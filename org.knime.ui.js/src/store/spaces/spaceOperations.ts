@@ -268,19 +268,59 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async deleteItems(
-    { dispatch, commit },
-    { projectId, itemIds, isDeletingActiveProject, spaceId, spaceProviderId },
+    { dispatch, commit, state, rootState, getters },
+    { projectId, itemIds, $router },
   ) {
     try {
+      const { spaceId, spaceProviderId } = state.projectPath[projectId];
+      const { openProjects } = rootState.application;
+
+      // find if among the items being deleted some pertain to currently open projects
+      const openProjectIds = openProjects
+        .filter(
+          (openProject) =>
+            getters.isWorkflowProjectInProjectPath(openProject, projectId) &&
+            itemIds.includes(openProject?.origin?.itemId),
+        )
+        .map(({ projectId }) => projectId);
+
+      const isDeletingOpenProjects = openProjectIds.length > 0;
+
+      // when open projects are being deleted we must force close them first.
+      // this in-turn will return which is the project that should be active after deletion
+      const nextProjectId = isDeletingOpenProjects
+        ? await dispatch(
+            "application/forceCloseProjects",
+            { projectIds: openProjectIds },
+            { root: true },
+          )
+        : null;
+
+      const isDeletingActiveProject = isDeletingOpenProjects
+        ? openProjectIds.includes(projectId)
+        : false;
+
       // loading is cleared after data is fetched by fetchWorkflowGroupContent
       commit("setIsLoadingContent", true);
       commit("setActiveRenamedItemId", "");
+
       await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
       await dispatch("fetchWorkflowGroupContent", {
         projectId: isDeletingActiveProject
-          ? globalSpaceBrowserProjectId
-          : projectId,
+          ? // if the active project is beind deleted activate the next project
+            // with a fallback to the global space browser
+            nextProjectId ?? globalSpaceBrowserProjectId
+          : // otherwise simply refresh the current space
+            projectId,
       });
+
+      // navigate to the next workflow (if any) to set it as active
+      if (nextProjectId) {
+        await $router.push({
+          name: APP_ROUTES.WorkflowPage,
+          params: { projectId: nextProjectId, workflowId: "root" },
+        });
+      }
     } catch (error) {
       commit("setIsLoadingContent", false);
       consola.log("Error deleting item", { error });

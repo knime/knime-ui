@@ -561,19 +561,17 @@ describe("SpaceExplorer.vue", () => {
       // @ts-expect-error
       await wrapper.vm.deleteItems();
 
+      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/deleteItems", {
+        itemIds: ["item0"],
+        projectId: "someProjectId",
+        $router: expect.anything(),
+      });
+
       expect(dispatchSpy).toHaveBeenNthCalledWith(
-        3,
+        4,
         "application/forceCloseProjects",
         { projectIds: [openProjects[0].projectId] },
       );
-
-      expect(dispatchSpy).toHaveBeenNthCalledWith(4, "spaces/deleteItems", {
-        itemIds: ["item0"],
-        projectId: "someProjectId",
-        spaceId: "local",
-        spaceProviderId: "local",
-        isDeletingActiveProject: false,
-      });
     });
 
     it("should not delete item on negative response", async () => {

@@ -84,12 +84,13 @@ export const loadStore = ({
   mockListSchedulesForWorkflowResponse = listSchedulesForWorkflowResponse,
   openProjects = [],
   activeProjectId = "",
+  forceCloseProjects = vi.fn(),
 } = {}) => {
   const store = mockVuexStore<RootStoreState>({
     spaces: spacesStore,
     application: {
       state: { openProjects, activeProjectId },
-      actions: { updateGlobalLoader: () => {} },
+      actions: { updateGlobalLoader: () => {}, forceCloseProjects },
     },
   });
 

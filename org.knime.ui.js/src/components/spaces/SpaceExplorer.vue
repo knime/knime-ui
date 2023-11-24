@@ -16,8 +16,6 @@ import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import { SpaceProviderNS } from "@/api/custom-types";
-import { APP_ROUTES } from "@/router/appRoutes";
 import { useStore } from "@/composables/useStore";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
@@ -58,18 +56,13 @@ const $toast = useToasts();
 const projectId = toRef(props, "projectId");
 
 const selectedItemIds = ref<string[]>([]);
-const deleteModal = ref<{ isActive: boolean; items: any[] }>({
+const deleteModal = ref<{ isActive: boolean; items: FileExplorerItem[] }>({
   isActive: false,
   items: [],
 });
 
-// application
-const openProjects = computed(() => store.state.application.openProjects);
-
 // spaces
-const projectPath = computed(() => store.state.spaces.projectPath);
 const isLoadingContent = computed(() => store.state.spaces.isLoadingContent);
-const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 const activeRenamedItemId = computed(
   () => store.state.spaces.activeRenamedItemId,
 );
@@ -194,46 +187,15 @@ const openDeleteConfirmModal = ({ items }: { items: FileExplorerItem[] }) => {
 };
 
 const deleteItems = async () => {
-  // TODO NXT-2205: move all of this logic into the store action
-  // and re-use item-to-project-mapping-logic
   deleteModal.value.isActive = false;
 
-  const itemIds = deleteModal.value.items.map((item) => item.id);
-  const projectIds = openProjects.value
-    .filter(
-      (project) =>
-        project.origin &&
-        itemIds.includes(project.origin.itemId) &&
-        spaceProviders.value[project.origin.providerId]?.type ===
-          SpaceProviderNS.TypeEnum.LOCAL,
-    )
-    .map(({ projectId }) => projectId);
-
-  const { spaceId, spaceProviderId } = projectPath.value[props.projectId];
-  let nextProjectId;
-  let isDeletingActiveProject = false;
-
-  if (projectIds.length) {
-    isDeletingActiveProject = projectIds.includes(props.projectId);
-    nextProjectId = await store.dispatch("application/forceCloseProjects", {
-      projectIds,
-    });
-  }
+  const itemIds = deleteModal.value.items.map(({ id }) => id);
 
   await store.dispatch("spaces/deleteItems", {
     projectId: props.projectId,
     itemIds,
-    isDeletingActiveProject,
-    spaceId,
-    spaceProviderId,
+    $router,
   });
-
-  if (nextProjectId) {
-    await $router.push({
-      name: APP_ROUTES.WorkflowPage,
-      params: { projectId: nextProjectId, workflowId: "root" },
-    });
-  }
 };
 
 const { onMoveItems, onDuplicateItems } = useMovingItems({ projectId });

@@ -381,14 +381,72 @@ describe("spaces::spaceOperations", () => {
       await store.dispatch("spaces/deleteItems", {
         projectId: "project2",
         itemIds,
-        spaceProviderId,
-        spaceId,
+        $router: {},
       });
-      expect(store.state.spaces.activeRenamedItemId).toBe("");
+
       expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "local",
         itemIds,
+      });
+    });
+
+    it("should force close projects that are open", async () => {
+      const itemIds = ["item0", "item1"];
+
+      const space = createSpace({ id: "local" });
+      const localProvider = createSpaceProvider({
+        spaces: [space],
+      });
+
+      const openProjects = [
+        createWorkflowProject({
+          projectId: "project1",
+          origin: {
+            spaceId: space.id,
+            providerId: localProvider.id,
+            itemId: "item0",
+          },
+        }),
+      ];
+
+      const { store, dispatchSpy } = loadStore({
+        openProjects,
+        forceCloseProjects: vi.fn(() => "project2"),
+      });
+
+      store.state.spaces.projectPath.project2 = {
+        spaceProviderId: localProvider.id,
+        spaceId: space.id,
+        itemId: "level2",
+      };
+
+      store.commit("spaces/setSpaceProviders", {
+        [localProvider.id]: localProvider,
+      });
+
+      const $router = { push: vi.fn() };
+
+      await store.dispatch("spaces/deleteItems", {
+        projectId: "project2",
+        itemIds,
+        $router,
+      });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/forceCloseProjects",
+        { projectIds: ["project1"] },
+      );
+
+      expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
+        spaceId: "local",
+        spaceProviderId: "local",
+        itemIds,
+      });
+
+      expect($router.push).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "project2", workflowId: "root" },
       });
     });
 
