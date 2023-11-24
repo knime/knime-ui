@@ -1,14 +1,18 @@
 import { expect, describe, it, vi } from "vitest";
+import { nextTick } from "vue";
+import type { Store } from "vuex";
 import { mount } from "@vue/test-utils";
 
 import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
+import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";
-import * as spacesStore from "@/store/spaces";
 import { API } from "@api";
-import { createSpaceProvider } from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
+import * as spacesStore from "@/store/spaces";
+import type { RootStoreState } from "@/store/types";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 
 const mockedAPI = deepMocked(API);
@@ -19,49 +23,12 @@ mockedAPI.space.createWorkflowGroup.mockResolvedValue({
 });
 
 describe("SpaceExplorerActions.vue", () => {
-  const doMount = ({
-    props = {},
-    projectPath = null,
-    spaceProvider = null,
-    moreSpaceProviders = null,
-  } = {}) => {
+  const doMount = ({ props = {} } = {}) => {
     const store = mockVuexStore({
       spaces: spacesStore,
     });
 
     const projectId = "someProjectId";
-
-    const projectPathWithDefaults = {
-      spaceId: "space",
-      spaceProviderId: "provider",
-      itemId: "root",
-      ...projectPath,
-    };
-
-    store.commit("spaces/setProjectPath", {
-      projectId,
-      value: projectPathWithDefaults,
-    });
-
-    store.commit("spaces/setSpaceProviders", {
-      [projectPathWithDefaults.spaceProviderId]: createSpaceProvider({
-        id: projectPathWithDefaults.spaceProviderId,
-        name: "Space Prov",
-        connected: true,
-        type: SpaceProviderNS.TypeEnum.HUB,
-        spaces: [
-          {
-            id: projectPathWithDefaults.spaceId,
-            name: "Space",
-            owner: "some User",
-            description: "Just a space",
-            private: false,
-          },
-        ],
-        ...spaceProvider,
-      }),
-      ...moreSpaceProviders,
-    });
 
     const dispatchSpy = vi.spyOn(store, "dispatch");
     const commitSpy = vi.spyOn(store, "commit");
@@ -79,27 +46,59 @@ describe("SpaceExplorerActions.vue", () => {
       },
     });
 
-    return { wrapper, store, dispatchSpy, commitSpy };
+    return { wrapper, store, dispatchSpy, commitSpy, projectId };
+  };
+
+  const setupStoreWithProvider = async (
+    store: Store<RootStoreState>,
+    projectId: string,
+    providerType: SpaceProviderNS.TypeEnum,
+  ) => {
+    store.commit("spaces/setProjectPath", {
+      projectId,
+      value: {
+        spaceId: "space1",
+        spaceProviderId: "provider1",
+        itemId: "item1",
+      },
+    });
+
+    const provider = createSpaceProvider({
+      id: "provider1",
+      type: providerType,
+      spaces: [createSpace({ id: "space1" })],
+    });
+
+    store.commit("spaces/setSpaceProviders", {
+      [provider.id]: provider,
+    });
+
+    await nextTick();
   };
 
   describe("normal mode", () => {
-    it("should render actions for local space", () => {
-      const { wrapper } = doMount({
-        projectPath: {
-          spaceId: "local",
-          spaceProviderId: "local",
-        },
-      });
+    it("should render actions for local space", async () => {
+      const { wrapper, store, projectId } = doMount();
+
+      await setupStoreWithProvider(
+        store,
+        projectId,
+        SpaceProviderNS.TypeEnum.LOCAL,
+      );
 
       expect(wrapper.find(".toolbar-actions-normal").exists()).toBe(true);
       expect(wrapper.find(".toolbar-actions-mini").exists()).toBe(false);
 
-      expect(wrapper.text()).toMatch("Upload");
       expect(wrapper.text()).toMatch("Create folder");
       expect(wrapper.text()).toMatch("Import workflow");
       expect(wrapper.text()).toMatch("Add files");
+      expect(wrapper.text()).toMatch("Upload");
+      expect(wrapper.text()).toMatch("Reload");
 
       expect(wrapper.findComponent(PlusButton).exists()).toBe(true);
+      expect(
+        wrapper.findAllComponents(OptionalSubMenuActionButton).length,
+      ).toBe(5);
     });
 
     it("should render actions for hub", () => {
@@ -108,12 +107,18 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.find(".toolbar-actions-normal").exists()).toBe(true);
       expect(wrapper.find(".toolbar-actions-mini").exists()).toBe(false);
 
-      expect(wrapper.text()).toMatch("Download to local space");
       expect(wrapper.text()).toMatch("Create folder");
       expect(wrapper.text()).toMatch("Import workflow");
       expect(wrapper.text()).toMatch("Add files");
+      expect(wrapper.text()).toMatch("Download to local space");
+      expect(wrapper.text()).toMatch("Import workflow");
+      expect(wrapper.text()).toMatch("Add files");
+      expect(wrapper.text()).toMatch("Reload");
 
       expect(wrapper.findComponent(PlusButton).exists()).toBe(true);
+      expect(
+        wrapper.findAllComponents(OptionalSubMenuActionButton).length,
+      ).toBe(7);
     });
 
     it("should disable actions that require selected items", () => {
@@ -146,8 +151,14 @@ describe("SpaceExplorerActions.vue", () => {
       ],
     ])(
       "should call store actions on the action",
-      (actionId, storeAction, params) => {
-        const { wrapper, dispatchSpy } = doMount();
+      async (actionId, storeAction, params) => {
+        const { wrapper, store, dispatchSpy, projectId } = doMount();
+
+        await setupStoreWithProvider(
+          store,
+          projectId,
+          SpaceProviderNS.TypeEnum.HUB,
+        );
 
         wrapper.find(`#${actionId}`).trigger("click");
         expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
@@ -173,15 +184,17 @@ describe("SpaceExplorerActions.vue", () => {
 
   describe("mini mode", () => {
     it("should render actions for local space", async () => {
-      const { wrapper } = doMount({
+      const { wrapper, projectId, store } = doMount({
         props: {
           mode: "mini",
         },
-        projectPath: {
-          spaceId: "local",
-          spaceProviderId: "local",
-        },
       });
+
+      await setupStoreWithProvider(
+        store,
+        projectId,
+        SpaceProviderNS.TypeEnum.LOCAL,
+      );
 
       expect(wrapper.find(".toolbar-actions-mini").exists()).toBe(true);
       expect(wrapper.find(".toolbar-actions-normal").exists()).toBe(false);
@@ -204,9 +217,15 @@ describe("SpaceExplorerActions.vue", () => {
     });
 
     it("should render actions for hub", async () => {
-      const { wrapper } = doMount({
+      const { wrapper, store, projectId } = doMount({
         props: { mode: "mini" },
       });
+
+      await setupStoreWithProvider(
+        store,
+        projectId,
+        SpaceProviderNS.TypeEnum.HUB,
+      );
 
       expect(wrapper.find(".toolbar-actions-mini").exists()).toBe(true);
       expect(wrapper.find(".toolbar-actions-normal").exists()).toBe(false);
@@ -231,31 +250,34 @@ describe("SpaceExplorerActions.vue", () => {
       expect(items.length).toBe(7);
     });
 
-    it("shows multiple hubs to connect to in a sub menu", () => {
-      const { wrapper } = doMount({
-        props: {
-          mode: "mini",
-        },
-        // local to have the upload and connect options
-        projectPath: {
-          spaceId: "local",
-          spaceProviderId: "local",
-        },
-        moreSpaceProviders: {
-          hub2: {
-            id: "hub2",
-            name: "Hub 2",
-            connected: false,
-            spaces: [],
-          },
-          hub3: {
-            id: "hub3",
-            name: "Hub 3",
-            connected: false,
-            spaces: [],
-          },
-        },
+    it("shows multiple hubs to connect to in a sub menu", async () => {
+      const { wrapper, store, projectId } = doMount({
+        props: { mode: "mini" },
       });
+
+      await setupStoreWithProvider(
+        store,
+        projectId,
+        SpaceProviderNS.TypeEnum.LOCAL,
+      );
+
+      store.commit("spaces/setSpaceProviders", {
+        ...store.state.spaces.spaceProviders,
+        hub2: createSpaceProvider({
+          id: "hub2",
+          name: "Hub 2",
+          connected: false,
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
+        hub3: createSpaceProvider({
+          id: "hub3",
+          name: "Hub 3",
+          connected: false,
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
+      });
+
+      await nextTick();
 
       const items = wrapper.findComponent(SubMenu).props("items");
 
@@ -276,25 +298,28 @@ describe("SpaceExplorerActions.vue", () => {
       );
     });
 
-    it("shows a single hub and triggers its connection on click", () => {
-      const { wrapper, dispatchSpy } = doMount({
-        props: {
-          mode: "mini",
-        },
-        // local to have the upload and connect options
-        projectPath: {
-          spaceId: "local",
-          spaceProviderId: "local",
-        },
-        moreSpaceProviders: {
-          hub2: {
-            id: "hub2",
-            name: "Hub 2",
-            connected: false,
-            spaces: [],
-          },
-        },
+    it("shows a single hub and triggers its connection on click", async () => {
+      const { wrapper, store, projectId, dispatchSpy } = doMount({
+        props: { mode: "mini" },
       });
+
+      await setupStoreWithProvider(
+        store,
+        projectId,
+        SpaceProviderNS.TypeEnum.LOCAL,
+      );
+
+      store.commit("spaces/setSpaceProviders", {
+        ...store.state.spaces.spaceProviders,
+        hub2: createSpaceProvider({
+          id: "hub2",
+          name: "Hub 2",
+          connected: false,
+          type: SpaceProviderNS.TypeEnum.HUB,
+        }),
+      });
+
+      await nextTick();
 
       expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
         expect.arrayContaining([
@@ -316,16 +341,16 @@ describe("SpaceExplorerActions.vue", () => {
       });
     });
 
-    it("should disable upload if no provider is connected", () => {
-      const { wrapper } = doMount({
-        props: {
-          mode: "mini",
-        },
-        projectPath: {
-          spaceId: "local",
-          spaceProviderId: "local",
-        },
+    it("should disable upload if no provider is connected", async () => {
+      const { wrapper, store, projectId } = doMount({
+        props: { mode: "mini" },
       });
+
+      await setupStoreWithProvider(
+        store,
+        projectId,
+        SpaceProviderNS.TypeEnum.LOCAL,
+      );
 
       expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
         expect.arrayContaining([
@@ -370,14 +395,16 @@ describe("SpaceExplorerActions.vue", () => {
       ],
     ])(
       "should execute action %s via store",
-      (actionId, storeAction, params) => {
-        const { wrapper, dispatchSpy } = doMount({
+      async (actionId, storeAction, params) => {
+        const { wrapper, store, projectId, dispatchSpy } = doMount({
           props: { mode: "mini" },
-          projectPath: {
-            spaceId: "local",
-            spaceProviderId: "local",
-          },
         });
+
+        await setupStoreWithProvider(
+          store,
+          projectId,
+          SpaceProviderNS.TypeEnum.LOCAL,
+        );
 
         const subMenu = wrapper.findComponent(SubMenu);
         const item = subMenu

@@ -25,7 +25,6 @@ export const createSpaceProvider = (
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Local Space",
-    local: true,
     type: SpaceProviderNS.TypeEnum.LOCAL,
     spaces: [],
   };

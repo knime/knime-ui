@@ -3,7 +3,10 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import { SpaceItem } from "@/api/gateway-api/generated-api";
+import {
+  SpaceItem,
+  type WorkflowProject,
+} from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 
@@ -176,16 +179,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   ) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const { openProjects } = rootState.application;
-    const isLocal = getters.isLocalProvider(projectId);
 
-    // TODO NXT-2205: make re-usable and re-use item-to-project-mapping-logic
     const foundOpenProject = openProjects.find(
-      ({ origin }) =>
-        origin &&
-        origin.providerId === spaceProviderId &&
-        isLocal &&
-        origin.spaceId === spaceId &&
-        origin.itemId === workflowItemId,
+      (openProject) =>
+        getters.isWorkflowProjectInProjectPath(openProject, projectId) &&
+        openProject?.origin?.itemId === workflowItemId,
     );
 
     if (foundOpenProject) {
@@ -344,6 +342,26 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     return pathId;
   },
 
+  isWorkflowProjectInProjectPath: (state, getters) => {
+    return (project: WorkflowProject, pathKey: string) => {
+      if (!state.projectPath.hasOwnProperty(pathKey)) {
+        return false;
+      }
+
+      const { spaceProviderId, spaceId } = state.projectPath[pathKey];
+
+      if (!project.origin) {
+        return false;
+      }
+
+      return (
+        project.origin.providerId === spaceProviderId &&
+        project.origin.spaceId === spaceId &&
+        getters.isLocalProvider(pathKey)
+      );
+    };
+  },
+
   parentWorkflowGroupId:
     (state, getters) =>
     (projectId: string): string => {
@@ -378,10 +396,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
   getOpenedWorkflowItems:
     (state, getters, { application }) =>
     (projectId: string) => {
-      const { spaceId, spaceProviderId } = state.projectPath[projectId];
       const { openProjects } = application;
       const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
-      const isLocal = getters.isLocalProvider(projectId);
 
       if (workflowGroupContent === null) {
         return [];
@@ -393,15 +409,11 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         )
         .map((item) => item.id);
 
-      // TODO NXT-2205: make re-usable and re-use item-to-project-mapping-logic
       return openProjects
         .filter(
-          ({ origin }) =>
-            origin &&
-            origin.providerId === spaceProviderId &&
-            isLocal &&
-            origin.spaceId === spaceId &&
-            projectItemIds.includes(origin.itemId),
+          (openProject) =>
+            getters.isWorkflowProjectInProjectPath(openProject, projectId) &&
+            projectItemIds.includes(openProject?.origin?.itemId),
         )
         .map(({ origin }) => origin.itemId);
     },
@@ -409,7 +421,6 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
   getOpenedFolderItems:
     (state, getters, { application }) =>
     (projectId: string) => {
-      const { spaceProviderId, spaceId } = state.projectPath[projectId];
       const { openProjects } = application;
 
       const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
@@ -419,11 +430,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       }
 
       const openProjectsFolders = openProjects
-        .filter(
-          ({ origin }) =>
-            origin &&
-            origin.providerId === spaceProviderId &&
-            origin.spaceId === spaceId,
+        .filter((openProject) =>
+          getters.isWorkflowProjectInProjectPath(openProject, projectId),
         )
         .flatMap(({ origin }) => origin.ancestorItemIds ?? []);
 

@@ -76,6 +76,7 @@ describe("SpaceBrowsingPage", () => {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "root",
+        type: "LOCAL",
       },
     });
 
@@ -197,13 +198,19 @@ describe("SpaceBrowsingPage", () => {
   });
 
   it("should handle the upload to hub action", async () => {
-    const { wrapper, dispatchSpy } = doMount({
-      initialStoreState: {
-        spaceProviders: {
-          hub1: { connected: true },
-        },
+    const { wrapper, dispatchSpy, $store } = doMount();
+    $store.commit("spaces/setSpaceProviders", {
+      local: {
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "root",
+        type: "LOCAL",
       },
+      // add any hub so that upload is possible
+      hub1: { connected: true, type: "HUB" },
     });
+
+    await nextTick();
 
     wrapper
       .findComponent(SpaceExplorer)

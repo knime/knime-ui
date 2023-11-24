@@ -15,7 +15,6 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Local Space",
-    local: true,
     type: SpaceProviderNS.TypeEnum.LOCAL,
     spaces: [
       {
@@ -31,7 +30,6 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connected: false,
     connectionMode: "AUTOMATIC",
     name: "Hub 1",
-    local: false,
     type: SpaceProviderNS.TypeEnum.HUB,
   }),
   server1: createSpaceProvider({
@@ -39,7 +37,6 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connected: false,
     connectionMode: "AUTOMATIC",
     name: "Server 1",
-    local: false,
     type: SpaceProviderNS.TypeEnum.SERVER,
     spaces: [createSpace({ id: "serverSpace1" })],
   }),
@@ -145,23 +142,24 @@ describe("SpaceSelectionContextMenu.vue", () => {
     ]);
   });
 
-  it("hides connect to hub if there is nothing to connect to", () => {
+  it("hides connect to hub if there is nothing to connect to", async () => {
     const { wrapper } = doMount({
       props: {
         selectedItemIds: ["2342", "3432"],
         isMultipleSelectionActive: true,
       },
       spaceProviders: {
+        local: createSpaceProvider(),
         hub1: createSpaceProvider({
           id: "hub1",
           connected: true,
           connectionMode: "AUTHENTICATED",
           name: "Hub 1",
-          local: false,
           type: SpaceProviderNS.TypeEnum.HUB,
         }),
       },
     });
+    await nextTick();
 
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items.map((item) => item.text)).toStrictEqual([

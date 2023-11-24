@@ -1,6 +1,8 @@
-import { API } from "@api";
-
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
+import { API } from "@api";
+import { SpaceProviderNS } from "@/api/custom-types";
+
 import type { RootStoreState } from "../types";
 import type { SpacesState } from "./index";
 
@@ -90,7 +92,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
     return Boolean(
       Object.values(spaceProviders).find(
-        ({ id, connected }) => id !== "local" && connected,
+        ({ connected, type }) =>
+          type !== SpaceProviderNS.TypeEnum.LOCAL && connected,
       ),
     );
   },

@@ -4,6 +4,7 @@ import { API } from "@api";
 
 import { fetchAllSpaceProvidersResponse, loadStore } from "./loadStore";
 import { flushPromises } from "@vue/test-utils";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 const mockedAPI = deepMocked(API);
 
@@ -25,15 +26,18 @@ describe("spaces::providers", () => {
 
   describe("setAllSpaceProviders", () => {
     it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
-      const mockFetchAllProvidersResponse = {
-        ...fetchAllSpaceProvidersResponse,
-        hub1: {
-          id: "hub1",
-          connected: true,
-          name: "Hub 1",
-          connectionMode: "AUTOMATIC",
-        },
-      };
+      const mockFetchAllProvidersResponse: typeof fetchAllSpaceProvidersResponse =
+        {
+          ...fetchAllSpaceProvidersResponse,
+          hub1: {
+            id: "hub1",
+            connected: true,
+            name: "Hub 1",
+            connectionMode: "AUTOMATIC",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          },
+        };
+
       const { store } = loadStore({ mockFetchAllProvidersResponse });
 
       await store.dispatch("spaces/fetchAllSpaceProviders");
@@ -54,15 +58,17 @@ describe("spaces::providers", () => {
     });
 
     it("should keep user data set by connectProvider", async () => {
-      const mockFetchAllProvidersResponse = {
-        ...fetchAllSpaceProvidersResponse,
-        hub1: {
-          id: "hub1",
-          connected: true,
-          name: "Hub 1",
-          connectionMode: "AUTOMATIC",
-        },
-      };
+      const mockFetchAllProvidersResponse: typeof fetchAllSpaceProvidersResponse =
+        {
+          ...fetchAllSpaceProvidersResponse,
+          hub1: {
+            id: "hub1",
+            connected: true,
+            name: "Hub 1",
+            connectionMode: "AUTOMATIC",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          },
+        };
       const { store } = loadStore({ mockFetchAllProvidersResponse });
 
       const mockUser = { name: "John Doe" };
@@ -123,16 +129,24 @@ describe("spaces::providers", () => {
       };
       store.state.spaces.spaceProviders = {
         local: {
-          // @ts-ignore
-          spaces: [{ id: "local" }],
+          id: "local",
+          type: SpaceProviderNS.TypeEnum.LOCAL,
+          connected: true,
+          connectionMode: "AUTOMATIC",
+          name: "",
+          spaces: [
+            { id: "local", name: "Local space", private: false, owner: "" },
+          ],
         },
       };
 
-      expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual({
-        local: true,
-        private: false,
-        name: "Local space",
-      });
+      expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual(
+        expect.objectContaining({
+          private: false,
+          name: "Local space",
+          id: "local",
+        }),
+      );
     });
 
     it("should return the information about the private active space", () => {
@@ -145,19 +159,33 @@ describe("spaces::providers", () => {
       };
       store.state.spaces.spaceProviders = {
         knime1: {
+          type: SpaceProviderNS.TypeEnum.HUB,
+          connected: true,
+          id: "",
+          name: "",
+          connectionMode: "AUTHENTICATED",
           spaces: [
-            // @ts-ignore
-            { id: "privateSpace", name: "Private space", private: true },
-            // @ts-ignore
-            { id: "publicSpace", name: "Public space", private: false },
+            {
+              id: "privateSpace",
+              name: "Private space",
+              private: true,
+              owner: "",
+            },
+            {
+              id: "publicSpace",
+              name: "Public space",
+              private: false,
+              owner: "",
+            },
           ],
         },
       };
 
       expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual({
-        local: false,
-        private: true,
+        id: "privateSpace",
         name: "Private space",
+        private: true,
+        owner: "",
       });
     });
   });

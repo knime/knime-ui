@@ -72,7 +72,6 @@ export const buildHubUploadMenuItems = (
   // eslint-disable-next-line max-params
 ): ActionMenuItem[] => {
   const isSelectionEmpty = selectedItems.length === 0;
-
   const uploadToRemote = {
     id: "upload",
     text: "Upload",

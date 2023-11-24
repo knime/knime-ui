@@ -5,7 +5,12 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { deepMocked } from "@/test/utils";
 import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
-import { createSpaceProvider } from "@/test/factories";
+import {
+  createSpace,
+  createSpaceProvider,
+  createWorkflowProject,
+} from "@/test/factories";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 const mockedAPI = deepMocked(API);
 
@@ -278,12 +283,10 @@ describe("spaces::spaceOperations", () => {
         spaceId: "local",
         itemId: "folder1",
       };
-      store.state.spaces.spaceProviders = {
-        private: {
-          // @ts-ignore
-          spaces: [{ id: "local" }],
-        },
-      };
+
+      store.commit("spaces/setSpaceProviders", {
+        local: createSpaceProvider(),
+      });
 
       const mockRouter = { push: vi.fn() };
       await store.dispatch("spaces/openWorkflow", {
@@ -472,6 +475,87 @@ describe("spaces::spaceOperations", () => {
       });
     });
 
+    describe("isWorkflowProjectInProjectPath", () => {
+      it("should determine whether the given workflow project is loaded in path", () => {
+        const { store } = loadStore();
+        const projectId1 = "project1";
+        const projectId2 = "project2";
+
+        store.state.spaces.projectPath[projectId1] = {
+          spaceProviderId: "local",
+          spaceId: "local",
+          itemId: "itemId",
+        };
+
+        store.commit("spaces/setSpaceProviders", {
+          local: createSpaceProvider(),
+        });
+
+        const workflowProject = createWorkflowProject({
+          projectId: projectId1,
+          origin: { spaceId: "local", providerId: "local" },
+        });
+
+        expect(
+          store.getters["spaces/isWorkflowProjectInProjectPath"](
+            workflowProject,
+            projectId1,
+          ),
+        ).toBe(true);
+        expect(
+          store.getters["spaces/isWorkflowProjectInProjectPath"](
+            workflowProject,
+            projectId2,
+          ),
+        ).toBe(false);
+      });
+
+      it("should return false for projects without origin", () => {
+        const { store } = loadStore();
+        const projectId = "some-project-id";
+
+        const workflowProject = createWorkflowProject({ projectId });
+
+        expect(
+          store.getters["spaces/isWorkflowProjectInProjectPath"](
+            workflowProject,
+            projectId,
+          ),
+        ).toBe(false);
+      });
+
+      it("should return false for non-local projects", () => {
+        const { store } = loadStore();
+        const projectId = "project1";
+
+        store.state.spaces.projectPath[projectId] = {
+          spaceProviderId: "provider1",
+          spaceId: "space1",
+          itemId: "itemId",
+        };
+
+        store.commit("spaces/setSpaceProviders", {
+          provider1: createSpaceProvider({
+            id: "provider1",
+            type: SpaceProviderNS.TypeEnum.HUB,
+            spaces: [createSpace({ id: "space1" })],
+          }),
+        });
+
+        const workflowProject = createWorkflowProject({
+          projectId,
+          origin: { spaceId: "space1", providerId: "provider1" },
+        });
+
+        expect(
+          store.getters["spaces/isWorkflowProjectInProjectPath"](
+            workflowProject,
+            projectId,
+          ),
+        ).toBe(false);
+      });
+    });
+
     describe("parentWorkflowGroupId", () => {
       it("should return the correct parent id for a root path", () => {
         const { store } = loadStore();
@@ -585,17 +669,16 @@ describe("spaces::spaceOperations", () => {
           spaceId: "local",
           itemId: "level2",
         };
+
         store.state.spaces.workflowGroupCache.set(
           store.state.spaces.projectPath[projectId],
           // @ts-ignore
           fetchWorkflowGroupContentResponse,
         );
-        store.state.spaces.spaceProviders = {
-          private: {
-            // @ts-ignore
-            spaces: [{ id: "local" }],
-          },
-        };
+
+        store.commit("spaces/setSpaceProviders", {
+          local: createSpaceProvider(),
+        });
 
         expect(
           store.getters["spaces/getOpenedWorkflowItems"](projectId),
@@ -634,6 +717,10 @@ describe("spaces::spaceOperations", () => {
         });
 
         const { store } = loadStore({ openProjects });
+
+        store.commit("spaces/setSpaceProviders", {
+          local: createSpaceProvider(),
+        });
 
         const projectId = "project2";
         store.state.spaces.projectPath[projectId] = {

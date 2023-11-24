@@ -91,49 +91,51 @@ export default {
     actions(): ActionMenuItem[] {
       const { projectId } = this;
 
-      const downloadToLocalSpace = buildHubDownloadMenuItem(
-        this.$store.dispatch,
-        this.projectId,
-        this.selectedItemIds,
-      );
+      const getLocalActions = () => {
+        const uploadAndConnectToHub = buildHubUploadMenuItems(
+          this.$store.dispatch,
+          this.hasActiveHubSession,
+          this.projectId,
+          this.selectedItemIds,
+          this.spaceProviders,
+        );
 
-      const uploadAndConnectToHub = buildHubUploadMenuItems(
-        this.$store.dispatch,
-        this.hasActiveHubSession,
-        this.projectId,
-        this.selectedItemIds,
-        this.spaceProviders,
-      );
-
-      const moveToSpace = buildMoveToSpaceMenuItem(
-        this.$store.dispatch,
-        this.projectId,
-        this.selectedItemIds,
-      );
-
-      const openInBrowser = buildOpenInBrowserMenuItem(
-        this.$store.dispatch,
-        this.projectId,
-        this.selectedItemIds,
-        this.getProviderInfo(projectId),
-      );
-
-      const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
-        this.$store.dispatch,
-        this.projectId,
-        this.selectedItemIds,
-      );
-
-      const getHubActions = () => {
         if (this.isLocal) {
           return uploadAndConnectToHub;
         }
 
-        if (this.isFileSelected) {
-          return [downloadToLocalSpace, moveToSpace];
+        return [];
+      };
+
+      const getHubActions = () => {
+        if (this.isLocal) {
+          return [];
         }
 
-        return [downloadToLocalSpace, moveToSpace, openInBrowser];
+        const downloadToLocalSpace = buildHubDownloadMenuItem(
+          this.$store.dispatch,
+          this.projectId,
+          this.selectedItemIds,
+        );
+
+        const openInBrowser = buildOpenInBrowserMenuItem(
+          this.$store.dispatch,
+          this.projectId,
+          this.selectedItemIds,
+          this.getProviderInfo(projectId),
+        );
+
+        const moveToSpace = buildMoveToSpaceMenuItem(
+          this.$store.dispatch,
+          this.projectId,
+          this.selectedItemIds,
+        );
+
+        const baseActions = [downloadToLocalSpace, moveToSpace];
+
+        return this.isFileSelected
+          ? baseActions
+          : baseActions.concat(openInBrowser);
       };
 
       const getServerActions = () => {
@@ -147,6 +149,12 @@ export default {
         if (!this.isWorkflowSelected) {
           return [];
         }
+
+        const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
+          this.$store.dispatch,
+          this.projectId,
+          this.selectedItemIds,
+        );
 
         return [openAPIDefinition];
       };
@@ -187,6 +195,7 @@ export default {
             });
           },
         },
+        ...getLocalActions(),
         ...getHubActions(),
         ...getServerActions(),
         {
