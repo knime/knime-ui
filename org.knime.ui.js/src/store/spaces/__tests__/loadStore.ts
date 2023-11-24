@@ -1,11 +1,13 @@
+import { vi } from "vitest";
+
 import type { RootStoreState } from "@/store/types";
 import { deepMocked, mockVuexStore } from "@/test/utils";
+import { createJob, createSchedule } from "@/test/factories";
 
 import { API } from "@api";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 import * as spacesStore from "../index";
-import { vi } from "vitest";
-import { createJob, createSchedule } from "@/test/factories";
 
 export const fetchWorkflowGroupContentResponse = {
   id: "root",
@@ -34,12 +36,22 @@ export const fetchWorkflowGroupContentResponse = {
   ],
 };
 
-export const fetchAllSpaceProvidersResponse = {
+type WithOptionalProviderSpaces = Omit<
+  SpaceProviderNS.SpaceProvider,
+  "spaces"
+> &
+  Partial<Pick<SpaceProviderNS.SpaceProvider, "spaces">>;
+
+export const fetchAllSpaceProvidersResponse: Record<
+  string,
+  WithOptionalProviderSpaces
+> = {
   local: {
     id: "local",
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Local Space",
+    type: SpaceProviderNS.TypeEnum.LOCAL,
   },
 };
 

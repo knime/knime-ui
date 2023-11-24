@@ -176,7 +176,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   ) {
     const { spaceId, spaceProviderId } = state.projectPath[projectId];
     const { openProjects } = rootState.application;
-    const isLocal = getters.getSpaceInfo(projectId).local;
+    const isLocal = getters.isLocalProvider(projectId);
 
     // TODO NXT-2205: make re-usable and re-use item-to-project-mapping-logic
     const foundOpenProject = openProjects.find(
@@ -381,7 +381,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       const { spaceId, spaceProviderId } = state.projectPath[projectId];
       const { openProjects } = application;
       const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
-      const isLocal = getters.getSpaceInfo(projectId).local;
+      const isLocal = getters.isLocalProvider(projectId);
 
       if (workflowGroupContent === null) {
         return [];

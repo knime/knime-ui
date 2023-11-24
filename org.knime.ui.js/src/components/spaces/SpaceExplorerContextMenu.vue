@@ -63,6 +63,10 @@ const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
 const valueOrEmpty = <T,>(condition: boolean, value: T) =>
   condition ? [value] : [];
 
+const isLocal = computed(() =>
+  store.getters["spaces/isLocalProvider"](props.projectId),
+);
+
 const fileExplorerContextMenuItems = computed(() => {
   const {
     createRenameOption,
@@ -71,7 +75,6 @@ const fileExplorerContextMenuItems = computed(() => {
     isMultipleSelectionActive,
   } = props;
 
-  const isLocal = store.getters["spaces/getSpaceInfo"](props.projectId).local;
   const isServer =
     getProviderInfo.value(props.projectId).type ===
     BaseSpaceProvider.TypeEnum.SERVER;
@@ -120,7 +123,7 @@ const fileExplorerContextMenuItems = computed(() => {
   );
 
   const getHubActions = () => {
-    if (isLocal) {
+    if (isLocal.value) {
       return uploadAndConnectToHub;
     }
 
@@ -233,7 +236,7 @@ const fileExplorerContextMenuItems = computed(() => {
     createDuplicateItemOption(),
 
     ...valueOrEmpty(
-      isLocal,
+      isLocal.value,
       createExportItemOption(
         store.dispatch,
         props.projectId,

@@ -9,7 +9,7 @@ import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
 import MoveToSpaceIcon from "webapps-common/ui/assets/img/icons/move-from-space-to-space.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
-import type { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 
 export type ActionMenuItem = MenuItem & {
@@ -90,7 +90,7 @@ export const buildHubUploadMenuItems = (
   };
 
   const remoteSpaceProviders = Object.values(spaceProviders || {}).filter(
-    (provider) => !provider.local,
+    (provider) => provider.type !== SpaceProviderNS.TypeEnum.LOCAL,
   );
 
   const disconnectedSpaceProviders = remoteSpaceProviders.filter(

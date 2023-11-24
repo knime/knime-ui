@@ -150,55 +150,52 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {
-  getProviderInfo: (state) => (projectId: string) => {
-    // spaces data has not been cached or providers are not yet loaded
-    if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {
-      return {};
-    }
+  getProviderInfo:
+    (state) =>
+    (projectId: string): SpaceProviderNS.SpaceProvider | {} => {
+      // spaces data has not been cached or providers are not yet loaded
+      if (
+        !state.projectPath.hasOwnProperty(projectId) ||
+        !state.spaceProviders
+      ) {
+        return {};
+      }
 
-    const { spaceProviderId: activeSpaceProviderId } =
-      state.projectPath[projectId];
+      const { spaceProviderId } = state.projectPath[projectId];
 
-    return state.spaceProviders[activeSpaceProviderId] || {};
+      return state.spaceProviders[spaceProviderId] || {};
+    },
+
+  isLocalProvider: (_, getters) => (projectId: string) => {
+    const provider = getters.getProviderInfo(projectId);
+    return provider.type === SpaceProviderNS.TypeEnum.LOCAL;
   },
 
-  isServerSpace: (_, getters) => (projectId: string) => {
+  isServerProvider: (_, getters) => (projectId: string) => {
     const provider = getters.getProviderInfo(projectId);
     return provider.type === SpaceProviderNS.TypeEnum.SERVER;
   },
 
-  getSpaceInfo: (state) => (projectId: string) => {
-    // spaces data has not been cached or providers are not yet loaded
-    if (!state.projectPath.hasOwnProperty(projectId) || !state.spaceProviders) {
-      return {};
-    }
+  getSpaceInfo:
+    (state, getters) =>
+    (projectId: string): SpaceProviderNS.Space | {} => {
+      // spaces data has not been cached or providers are not yet loaded
+      if (
+        !state.projectPath.hasOwnProperty(projectId) ||
+        !state.spaceProviders
+      ) {
+        return {};
+      }
 
-    const { spaceId: activeId, spaceProviderId: activeSpaceProviderId } =
-      state.projectPath[projectId];
+      const { spaceId } = state.projectPath[projectId];
+      const spaceProvider = getters.getProviderInfo(projectId);
 
-    if (activeId === "local") {
-      return {
-        local: true,
-        private: false,
-        name: "Local space",
-      };
-    }
+      if (!spaceProvider?.spaces) {
+        return {};
+      }
 
-    const activeSpaceProvider = state.spaceProviders[activeSpaceProviderId];
-    if (!activeSpaceProvider?.spaces) {
-      return {};
-    }
+      const space = spaceProvider.spaces.find(({ id }) => id === spaceId);
 
-    const space = activeSpaceProvider.spaces.find(({ id }) => id === activeId);
-
-    if (space) {
-      return {
-        local: false,
-        private: space.private,
-        name: space.name,
-      };
-    }
-
-    return {};
-  },
+      return space ?? {};
+    },
 };

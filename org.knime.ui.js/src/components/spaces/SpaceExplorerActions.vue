@@ -54,6 +54,7 @@ export default {
     ...mapGetters("spaces", [
       "getSpaceInfo",
       "getProviderInfo",
+      "isLocalProvider",
       "hasActiveHubSession",
       "selectionContainsFile",
       "selectionContainsWorkflow",
@@ -61,7 +62,7 @@ export default {
     ...mapState("spaces", ["spaceProviders", "isLoadingContent"]),
 
     isLocal() {
-      return this.getSpaceInfo(this.projectId).local;
+      return this.isLocalProvider(this.projectId);
     },
     isFileSelected() {
       return this.selectionContainsFile(this.projectId, this.selectedItemIds);

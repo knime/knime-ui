@@ -256,8 +256,9 @@ const selectedText = computed(() => {
 
 const spaceIcon = computed(() => {
   const activeSpaceInfo = store.getters["spaces/getSpaceInfo"](props.projectId);
+  const isLocal = store.getters["spaces/isLocalProvider"](props.projectId);
 
-  if (activeSpaceInfo?.local) {
+  if (isLocal) {
     return ComputerDesktopIcon;
   }
 

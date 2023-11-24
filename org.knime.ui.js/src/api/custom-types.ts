@@ -54,7 +54,7 @@ export namespace SpaceProviderNS {
   // eslint-disable-next-line unused-imports/no-unused-vars
   export import TypeEnum = _SpaceProviderNS.TypeEnum;
 
-  export interface Space extends _Space {
+  export interface Space extends Omit<_Space, "_private"> {
     private: boolean;
   }
 
@@ -63,7 +63,6 @@ export namespace SpaceProviderNS {
     name: string;
     connected: boolean;
     connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
-    local: boolean;
     spaces: Array<Space>;
     user?: SpaceUser;
   }

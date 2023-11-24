@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+import { defineComponent } from "vue";
 import { mapGetters, mapState } from "vuex";
 
 import Button from "webapps-common/ui/components/Button.vue";
@@ -10,13 +11,12 @@ import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.s
 import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 import { APP_ROUTES } from "@/router/appRoutes";
 import PageHeader from "@/components/common/PageHeader.vue";
+import { globalSpaceBrowserProjectId } from "@/store/spaces";
 
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
-
-export default {
+export default defineComponent({
   components: {
     ArrowLeftIcon,
     SpaceExplorer,
@@ -43,7 +43,8 @@ export default {
     ...mapGetters("spaces", [
       "getSpaceInfo",
       "hasActiveHubSession",
-      "isServerSpace",
+      "isServerProvider",
+      "isLocalProvider",
     ]),
 
     activeSpaceInfo() {
@@ -51,7 +52,7 @@ export default {
     },
 
     spaceInfo() {
-      if (this.activeSpaceInfo.local) {
+      if (this.isLocalProvider(globalSpaceBrowserProjectId)) {
         return {
           title: "Your local space",
           subtitle: "Local space",
@@ -61,7 +62,7 @@ export default {
 
       const title = this.activeSpaceInfo.name || "";
 
-      if (this.isServerSpace(globalSpaceBrowserProjectId)) {
+      if (this.isServerProvider(globalSpaceBrowserProjectId)) {
         return {
           title,
           subtitle: "Server",
@@ -88,7 +89,7 @@ export default {
       this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
     },
   },
-};
+});
 </script>
 
 <template>
