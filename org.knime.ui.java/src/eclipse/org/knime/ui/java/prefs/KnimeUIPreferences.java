@@ -57,7 +57,7 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.view.preferences.MountSettings;
 
 /**
  * The preference of the modern UI.
@@ -91,7 +91,7 @@ public final class KnimeUIPreferences {
             }
         });
 
-        ExplorerMountTable.addPropertyChangeListener(e -> {
+        MountSettings.addMountSettingsSavedListener(() -> {
             if (explorerMountPointChangeListener != null) {
                 explorerMountPointChangeListener.run();
             }
