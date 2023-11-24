@@ -134,8 +134,8 @@ final class OpenProject {
                 return false;
             }
             final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm).orElse(null);
-            final var wfProj = DefaultProject.builder(wfm).setOrigin(origin).build();
-            setProjectActiveAndUpdateAppState(wfProj, wfm, WorkflowType.REMOTE);
+            final var project = DefaultProject.builder(wfm).setOrigin(origin).build();
+            registerProjectAndSetActiveAndUpdateAppState(project, wfm, WorkflowType.REMOTE);
         }
         return true;
     }
@@ -180,13 +180,15 @@ final class OpenProject {
             return;
         }
 
-        setProjectActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
+        registerProjectAndSetActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }
 
-    private static void setProjectActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
+    private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
         final WorkflowType wfType) {
-        ProjectManager.getInstance().setProjectActive(project.getID());
+        var pm = ProjectManager.getInstance();
+        pm.addProject(project);
+        pm.setProjectActive(project.getID());
         // instrumentation
         NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
         // update application state
@@ -233,7 +235,6 @@ final class OpenProject {
         }
 
         var project = ProjectFactory.createProject(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
-        ProjectManager.getInstance().addProject(project);
         return new ProjectAndWorkflowManager(project, wfm);
     }
 
