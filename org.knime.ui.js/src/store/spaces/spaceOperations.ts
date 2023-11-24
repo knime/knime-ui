@@ -425,7 +425,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
             origin.providerId === spaceProviderId &&
             origin.spaceId === spaceId,
         )
-        .flatMap(({ origin }) => origin.ancestorItemIds);
+        .flatMap(({ origin }) => origin.ancestorItemIds ?? []);
 
       return workflowGroupContent.items
         .filter(

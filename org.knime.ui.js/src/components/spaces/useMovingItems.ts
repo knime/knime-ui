@@ -36,7 +36,9 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
         return false;
       }
 
-      return project.origin.ancestorItemIds.some((ancestorId) =>
+      const { ancestorItemIds = [] } = project.origin;
+
+      return ancestorItemIds.some((ancestorId) =>
         sourceItems.includes(ancestorId),
       );
     });
