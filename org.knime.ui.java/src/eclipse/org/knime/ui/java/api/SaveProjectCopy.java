@@ -106,7 +106,7 @@ final class SaveProjectCopy {
                 final var message = String.format("No local workflow path found for <%s>", projectId);
                 return new NoSuchElementException(message);
             });
-        final var wfm = project.openProject();
+        final var wfm = project.loadWorkflowManager();
         final var oldContext = CheckUtils.checkArgumentNotNull(wfm.getContextV2());
         final var newContext = pickDestinationAndGetNewContext(oldContext);
 
@@ -238,7 +238,7 @@ final class SaveProjectCopy {
         }
 
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) { // To sync the classic perspective
-            final var wfm = project.openProject();
+            final var wfm = project.loadWorkflowManager();
             project.getOrigin().ifPresent(origin -> ClassicWorkflowEditorUtil.updateInputForOpenEditors(origin, wfm));
         }
     }

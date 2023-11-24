@@ -86,7 +86,6 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Version;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
@@ -229,8 +228,13 @@ public final class ClassicWorkflowEditorUtil {
                 }
 
                 @Override
-                public WorkflowManager openProject() {
+                public WorkflowManager loadWorkflowManager() {
                     return wfm;
+                }
+
+                @Override
+                public Optional<WorkflowManager> getWorkflowManager() {
+                    return Optional.of(wfm);
                 }
 
                 @Override

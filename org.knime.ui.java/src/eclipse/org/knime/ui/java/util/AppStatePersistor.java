@@ -241,7 +241,7 @@ public final class AppStatePersistor {
             }
 
             @Override
-            public WorkflowManager openProject() {
+            public WorkflowManager loadWorkflowManager() {
                 if (!Files.exists(absolutePath)) {
                     DesktopAPUtil.showWarning("No workflow project found",
                         "No workflow project found at " + absolutePath);

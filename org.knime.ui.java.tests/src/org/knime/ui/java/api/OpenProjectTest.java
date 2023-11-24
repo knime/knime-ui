@@ -106,7 +106,7 @@ class OpenProjectTest {
         assertThat(projectIds).hasSize(1);
         var project = pm.getProject(projectIds.iterator().next()).get();
         assertThat(project.getName()).isEqualTo("simple");
-        m_wfm = project.openProject();
+        m_wfm = project.loadWorkflowManager();
         assertThat(m_wfm).isNotNull();
         assertThat(m_wfm.getName()).startsWith("simple");
 
@@ -120,7 +120,7 @@ class OpenProjectTest {
             ProjectTypeEnum.WORKFLOW, "projectId");
         assertThat(project.getName()).isEqualTo("workflow");
         assertThat(project.getID()).isEqualTo("projectId");
-        assertThat(project.openProject()).isSameAs(m_wfm);
+        assertThat(project.loadWorkflowManager()).isSameAs(m_wfm);
         var origin = project.getOrigin().orElseThrow();
         assertThat(origin.getItemId()).isEqualTo("itemId");
         assertThat(origin.getSpaceId()).isEqualTo("spaceId");
