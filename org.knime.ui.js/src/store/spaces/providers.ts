@@ -190,11 +190,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       const { spaceId } = state.projectPath[projectId];
       const spaceProvider = getters.getProviderInfo(projectId);
 
-      if (!spaceProvider?.spaces) {
-        return {};
-      }
-
-      const space = spaceProvider.spaces.find(({ id }) => id === spaceId);
+      const space = spaceProvider?.spaces?.find(({ id }) => id === spaceId);
 
       return space ?? {};
     },
