@@ -71,7 +71,6 @@ export const usePortDragging = (params: Params) => {
   const didMove = ref(false);
   const pointerDown = ref(false);
   const didDragToCompatibleTarget = ref(false);
-  const showAddNodeGhost = ref(false);
 
   const hasAbortedDrag = ref(false);
   useEscapeStack({
@@ -338,7 +337,6 @@ export const usePortDragging = (params: Params) => {
 
   return {
     didMove,
-    showAddNodeGhost,
     didDragToCompatibleTarget,
     dragConnector,
     onPointerDown,

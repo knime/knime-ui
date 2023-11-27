@@ -112,9 +112,13 @@ export default defineComponent({
       );
     },
     fakePortConnector(): DragConnector {
+      // port can be null for the so called global mode
+      const portType = this.availablePortTypes[this.port?.typeId];
+      const flowVariableConnection = portType?.kind === "flowVariable";
+
       return {
         id: `quick-add-${this.nodeId}-${this.portIndex}`,
-        flowVariableConnection: this.portIndex === 0,
+        flowVariableConnection,
         absolutePoint: [this.position.x, this.position.y],
         allowedActions: { canDelete: false },
         interactive: false,
