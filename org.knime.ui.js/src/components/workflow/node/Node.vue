@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 // TODO: NXT-1069 split up this file
 
-import { mapActions, mapState, mapGetters } from "vuex";
+import { mapActions, mapState, mapGetters, mapMutations } from "vuex";
 
 import NodePorts from "@/components/workflow/ports/NodePorts.vue";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
@@ -281,6 +281,7 @@ export default {
       "deselectAllObjects",
       "deselectNode",
     ]),
+    ...mapMutations("workflow", ["setIsDragging"]),
 
     onLeaveHoverArea(e) {
       const actionBarElement = this.$refs.actionbar?.$el;
@@ -419,11 +420,17 @@ export default {
     },
 
     onNodeDragggingEnd(dragEvent) {
+      this.isDraggedOver = false;
+      this.setIsDragging(false);
+      // on quickly successive click and drag a draggingEnd might be triggered on the same node
+      // that fired the dragging event, this check avoid sending a false replaceNode call
+      if (this.id === dragEvent.detail.id) {
+        return;
+      }
       this.replaceNode({
         targetNodeId: this.id,
         replacementNodeId: dragEvent.detail.id,
       });
-      this.isDraggedOver = false;
     },
 
     // public

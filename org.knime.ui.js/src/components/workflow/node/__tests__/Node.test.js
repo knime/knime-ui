@@ -1167,6 +1167,22 @@ describe("Node", () => {
           },
         );
       });
+
+      it("ignores if dropped on the same node", async () => {
+        props = { ...commonNode };
+        doMount();
+        const torso = wrapper.findComponent(NodeTorso);
+
+        await torso.trigger("node-dragging-enter", {
+          detail: { isNodeConnected: false },
+        });
+        expect(torso.vm.$props.isDraggedOver).toBeTruthy();
+
+        await torso.trigger("node-dragging-end", {
+          detail: { id: "root:1", clientX: 0, clientY: 0 },
+        });
+        expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
+      });
     });
   });
 });
