@@ -5,6 +5,7 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
+import ServerIcon from "webapps-common/ui/assets/img/icons/server-racks.svg";
 import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
 import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
@@ -257,9 +258,14 @@ const selectedText = computed(() => {
 const spaceIcon = computed(() => {
   const activeSpaceInfo = store.getters["spaces/getSpaceInfo"](props.projectId);
   const isLocal = store.getters["spaces/isLocalProvider"](props.projectId);
+  const isServer = store.getters["spaces/isServerProvider"](props.projectId);
 
   if (isLocal) {
     return ComputerDesktopIcon;
+  }
+
+  if (isServer) {
+    return ServerIcon;
   }
 
   return activeSpaceInfo?.private ? PrivateSpaceIcon : CubeIcon;

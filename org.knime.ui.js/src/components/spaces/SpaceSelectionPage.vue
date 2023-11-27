@@ -6,6 +6,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 
 import { APP_ROUTES } from "@/router/appRoutes";
+import { SpaceProviderNS } from "@/api/custom-types";
 import GridOutbreaker from "@/components/common/GridOutbreaker.vue";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
@@ -79,11 +80,12 @@ export default {
       this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
     },
 
-    isLocalSpace(spaceProvider) {
-      return (
-        spaceProvider.connectionMode === "AUTOMATIC" &&
-        spaceProvider.id === "local"
-      );
+    isLocalProvider(spaceProvider) {
+      return spaceProvider.type === SpaceProviderNS.TypeEnum.LOCAL;
+    },
+
+    isServerProvider(spaceProvider) {
+      return spaceProvider.type === SpaceProviderNS.TypeEnum.SERVER;
     },
 
     isCommunityHub(spaceProvider) {
@@ -192,11 +194,12 @@ export default {
             v-for="(space, id) of spaceProvider.spaces"
             :key="id"
             :space="space"
-            :is-local="isLocalSpace(spaceProvider)"
+            :is-local="isLocalProvider(spaceProvider)"
+            :is-server="isServerProvider(spaceProvider)"
             @click="onSpaceCardClick({ space: $event, spaceProvider })"
           />
           <Card
-            v-if="isLocalSpace(spaceProvider)"
+            v-if="isLocalProvider(spaceProvider)"
             class="create-workflow-local"
             @click="createWorkflowLocally"
           >
@@ -213,14 +216,14 @@ export default {
 
           <div
             v-if="
-              !isLocalSpace(spaceProvider) &&
+              !isLocalProvider(spaceProvider) &&
               isConnectingToProvider === spaceProvider.id
             "
             class="skeleton-card"
           />
           <div
             v-if="
-              !isLocalSpace(spaceProvider) &&
+              !isLocalProvider(spaceProvider) &&
               isConnectingToProvider === spaceProvider.id
             "
             class="skeleton-card"

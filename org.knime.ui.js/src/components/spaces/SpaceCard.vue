@@ -4,6 +4,7 @@ import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
 import HeartIcon from "webapps-common/ui/assets/img/icons/heart.svg";
 import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
+import ServerIcon from "webapps-common/ui/assets/img/icons/server-racks.svg";
 
 import Avatar from "@/components/common/Avatar.vue";
 import Card from "@/components/common/Card.vue";
@@ -22,6 +23,7 @@ export default {
     CubeIcon,
     PrivateSpaceIcon,
     HeartIcon,
+    ServerIcon,
     ComputerDesktopIcon,
   },
 
@@ -35,6 +37,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    isServer: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   emits: ["click"],
@@ -43,6 +49,10 @@ export default {
     icon() {
       if (this.isLocal) {
         return ComputerDesktopIcon;
+      }
+
+      if (this.isServer) {
+        return ServerIcon;
       }
 
       return this.space.private ? PrivateSpaceIcon : CubeIcon;
