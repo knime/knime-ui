@@ -61,7 +61,6 @@ const onBreadcrumbClick = ({ id }) => {
 
 <style lang="postcss" scoped>
 .breadcrumb-wrapper {
-  padding: 0 var(--space-both-sides, 0);
   position: relative;
   display: flex;
   justify-content: space-between;

@@ -299,15 +299,17 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
 @import url("@/assets/mixins.css");
 
 .mini-actions-wrapper {
-  background-color: var(--sidebar-background-color);
   position: sticky;
   top: 0;
+
+  /* add a slight negative margin to add box-shadows behind this sticky element */
+  margin: 0 -2px;
+  background-color: var(--sidebar-background-color);
   z-index: 5;
 }
 
 .mini-actions {
   display: flex;
-  margin: 0 var(--space-both-sides);
   justify-content: space-between;
   padding-bottom: 7px;
   padding-top: 10px;
@@ -315,14 +317,8 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
-.content {
-  padding: 0 var(--space-both-sides);
-}
-
 .mini {
-  --space-both-sides: 20px;
-
-  padding-bottom: 5px;
+  padding: 0 20px 20px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
