@@ -17,6 +17,7 @@ type UseCustomDragPreviewOptions = {
 
 export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   const isAboveCanvas = ref(false);
+  const hasDragEnded = ref(false);
   const nodeTemplate = ref<NodeTemplate | null>(null);
 
   const $route = useRoute();
@@ -58,6 +59,8 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     event: DragEvent;
     item: FileExplorerItem;
   }) => {
+    // reset state on subsequent drags
+    hasDragEnded.value = false;
     const nodeTemplateId = getNodeTemplateId(item);
     const isItemAComponent = isComponent(nodeTemplateId, item);
 
@@ -93,6 +96,8 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     sourceItem: FileExplorerItem;
     onComplete: (isSuccessful: boolean) => void;
   }) => {
+    hasDragEnded.value = true;
+    isAboveCanvas.value = false;
     nodeTemplate.value = null;
 
     const screenX = event.clientX - $shapes.nodeSize / 2;
@@ -149,7 +154,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   };
 
   const shouldShowCustomPreview = computed(
-    () => nodeTemplate.value && isAboveCanvas.value,
+    () => !hasDragEnded.value && nodeTemplate.value && isAboveCanvas.value,
   );
 
   return { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd };
