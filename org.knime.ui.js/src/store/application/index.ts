@@ -339,10 +339,11 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
 
     // try to find a provider that contains the spaceId referenced
     // by the activeProject's origin
-    return !Object.values(spaceProviders).find((provider) =>
-      provider.spaces.find(
+    return !Object.values(spaceProviders).find((provider) => {
+      const { spaces = [] } = provider;
+      return spaces.find(
         (space) => space.id === getters.activeProjectOrigin.spaceId,
-      ),
-    );
+      );
+    });
   },
 };

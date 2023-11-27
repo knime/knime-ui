@@ -101,14 +101,15 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     // add
     openProjects.forEach(({ projectId, origin }) => {
       if (!state.projectPath[projectId]) {
-        // Take local root as default in case the workflow does not have an origin (ex. was Drag & Dropped from hub)
+        // Take local root as default in case the workflow does not have an origin
         let projectPath = localRootProjectPath;
         if (origin) {
           const {
             spaceId,
             providerId: spaceProviderId,
-            ancestorItemIds: [itemId = "root"],
+            ancestorItemIds = [],
           } = origin;
+          const [itemId = "root"] = ancestorItemIds;
           projectPath = {
             spaceId,
             spaceProviderId,
