@@ -79,7 +79,6 @@ org.knime.google.api.sheets.nodes.sheetupdater.GoogleSheetUpdaterFactory
 org.knime.google.api.sheets.nodes.spreadsheetwriter.GoogleSpreadsheetWriterFactory
 org.knime.reporting2.nodes.concatenate.ReportConcatenatePortsNodeFactory
 org.knime.reporting2.nodes.htmlwriter.ReportHtmlWriterNodeFactory
-org.knime.reporting2.nodes.loopend.ReportLoopEndNodeFactory
 org.knime.reporting2.nodes.pdfwriter.ReportPdfWriterNodeFactory
 org.knime.reporting2.nodes.reportstart.ReportStartNodeFactory
 org.knime.reporting2.nodes.textview.TextViewNodeFactory
