@@ -218,6 +218,26 @@ class LifeCycleTest {
         assertFails(() -> lc.suspend());
     }
 
+    /**
+     * Tests {@link LifeCycle#forceShutdown()} which can be called any time.
+     */
+    @Test
+    void testForceShutdown() { // NOSONAR we check that nothing is thrown
+        var lc = LifeCycle.get();
+
+        lc.setStateTransition(StateTransition.CREATE);
+        lc.forceShutdown();
+
+        lc.setStateTransition(StateTransition.INIT);
+        lc.forceShutdown();
+
+        lc.setStateTransition(StateTransition.WEB_APP_LOADED);
+        lc.forceShutdown();
+
+        lc.setStateTransition(StateTransition.SUSPEND);
+        lc.forceShutdown();
+    }
+
     private static void assertFails(final Executable executable) {
         var message = assertThrows(IllegalStateException.class, executable).getMessage();
         assertThat(message).contains("wrong life cycle state transition");

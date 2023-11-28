@@ -156,6 +156,8 @@ public final class LifeCycle {
      * Runs the init-state-transition.
      *
      * @param checkForUpdates whether to check for updates on initialization
+     *
+     * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void init(final boolean checkForUpdates) {
         doStateTransition(StateTransition.INIT, () -> m_state = Init.run(checkForUpdates),
@@ -164,6 +166,8 @@ public final class LifeCycle {
 
     /**
      * Runs the state transition required once the web app (web page) is loaded.
+     *
+     * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void webAppLoaded() {
         doStateTransition(StateTransition.WEB_APP_LOADED, WebAppLoaded::run, StateTransition.INIT,
@@ -172,6 +176,8 @@ public final class LifeCycle {
 
     /**
      * Runs the state transition required to reload the web app.
+     *
+     * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void reload() {
         doStateTransition(StateTransition.RELOAD, () ->
@@ -182,6 +188,8 @@ public final class LifeCycle {
 
     /**
      * Runs the save-state-state-transition.
+     *
+     * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void saveState() {
         doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state),
@@ -190,6 +198,8 @@ public final class LifeCycle {
 
     /**
      * Runs the suspend-state-transition.
+     *
+     * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void suspend() {
         doStateTransition(StateTransition.SUSPEND, () -> m_state = Suspend.run(m_state), StateTransition.SAVE_STATE);
@@ -197,10 +207,26 @@ public final class LifeCycle {
 
     /**
      * Runs the shutdown-state-transition.
+     *
+     * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void shutdown() {
         doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), StateTransition.SUSPEND,
             StateTransition.STARTUP);
+    }
+
+    /**
+     * Runs the shutdown-state-transition but doesn't check for the expected previous state-transition and swallows any
+     * exception.
+     */
+    public void forceShutdown() {
+        doStateTransition(StateTransition.SHUTDOWN, () -> {
+            try {
+                Shutdown.run(m_state);
+            } catch (Throwable e) { // NOSONAR we're shutting down anyway, so catch everything
+                getLogger().error("Unexpected problem on shutdown", e);
+            }
+        });
     }
 
     private void doStateTransition(final StateTransition nextStateTransition,
@@ -223,6 +249,9 @@ public final class LifeCycle {
 
     private static void checkExpectedLastStateTransition(final StateTransition lastStateTransition,
         final StateTransition nextStateTransition, final StateTransition... expectedLastStateTransitions) {
+        if (expectedLastStateTransitions.length == 0) {
+            return;
+        }
         boolean match = Arrays.stream(expectedLastStateTransitions)
             .anyMatch(expectedLastPhase -> expectedLastPhase == lastStateTransition);
         CheckUtils.checkState(match,

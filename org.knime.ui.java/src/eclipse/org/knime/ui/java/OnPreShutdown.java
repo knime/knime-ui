@@ -73,7 +73,7 @@ public class OnPreShutdown implements PreShutdown {
             }
             lifeCycle.suspend();
         }
-        lifeCycle.shutdown();
+        lifeCycle.forceShutdown();
         return true;
     }
 
