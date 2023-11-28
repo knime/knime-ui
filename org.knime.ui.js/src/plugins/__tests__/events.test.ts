@@ -56,7 +56,11 @@ describe("Event Plugin", () => {
       push: vi.fn(),
     };
 
-    eventsPlugin({ $store: storeMock, $router: routerMock });
+    const toastMock = {
+      show: vi.fn(),
+    };
+
+    eventsPlugin({ $store: storeMock, $router: routerMock, $toast: toastMock });
 
     return { storeMock, routerMock };
   };
@@ -70,6 +74,7 @@ describe("Event Plugin", () => {
       "AppStateChangedEvent",
       "UpdateAvailableEvent",
       "NodeRepositoryLoadingProgressEvent",
+      "ShowToastEvent",
       "SaveAndCloseWorkflowsEvent",
       "ImportURIEvent",
       "ProgressEvent",

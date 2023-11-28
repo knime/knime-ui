@@ -78,16 +78,19 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.entity.AddNodeCommandEnt.AddNodeCommandEntBuilder;
 import org.knime.gateway.api.webui.entity.NodeFactoryKeyEnt;
+import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.WorkflowCommandEnt.KindEnum;
 import org.knime.gateway.api.webui.entity.XYEnt.XYEntBuilder;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.service.events.EventConsumer;
+import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.ExtensionImport;
+import org.knime.workbench.core.imports.ImportForbiddenException;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.core.imports.RepoObjectImport.RepoObjectType;
@@ -127,7 +130,16 @@ public final class ImportURI {
      *         installed), {@code false} otherwise
      */
     public static boolean importURI(final Supplier<int[]> cursorLocationSupplier, final String uriString) {
-        entityImportInProgress = getEntityImport(uriString);
+        var importResult = getEntityImportResult(uriString);
+        if(importResult.status == EntityImportResult.Status.UNAUTHORIZED) {
+            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Import error",
+                "It looks like you do not have permissions to open this workflow or component. "
+                + "Are you logged in to the correct KNIME Hub?",
+                false);
+            return true;
+        }
+
+        entityImportInProgress = importResult.entityImport;
         if (entityImportInProgress == null) {
             return false;
         }
@@ -143,7 +155,7 @@ public final class ImportURI {
         }
     }
 
-    private static EntityImport getEntityImport(final String uriString) {
+    private static EntityImportResult getEntityImportResult(final String uriString) {
         URI uri;
         Exception exception = null;
         try {
@@ -151,7 +163,7 @@ public final class ImportURI {
             var entityImport = URIImporterFinder.getInstance().createEntityImportFor(uri).orElse(null);
             if (entityImport != null) {
                 trackNodeImportFromHub(uriString, entityImport);
-                return entityImport;
+                return EntityImportResult.success(entityImport);
             }
             Path path = null;
             if ("file".equals(uri.getScheme())) {
@@ -160,8 +172,11 @@ public final class ImportURI {
                 path = Path.of(uriString);
             }
             if (path != null && Files.exists(path)) {
-                return new FromFileEntityImport(path);
+                return EntityImportResult.success(new FromFileEntityImport(path));
             }
+        } catch (ImportForbiddenException e) {
+            LOGGER.debug(e);
+            return EntityImportResult.unauthorized();
         } catch (Exception e) { // NOSONAR
             exception = e;
         }
@@ -171,7 +186,7 @@ public final class ImportURI {
         } else {
             LOGGER.debug(message, exception);
         }
-        return null;
+        return EntityImportResult.error();
     }
 
     private static void trackNodeImportFromHub(final String uri, final EntityImport entityImport) {
@@ -235,7 +250,7 @@ public final class ImportURI {
         if (uri == null) {
             entityImport = entityImportInProgress;
         } else {
-            entityImport = getEntityImport(uri);
+            entityImport = getEntityImportResult(uri).entityImport;
         }
         entityImportInProgress = null;
 
@@ -253,8 +268,8 @@ public final class ImportURI {
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
             return OpenProject.openProjectCopy(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
-            return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId,
-                workflowId, canvasX, canvasY);
+            return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId,
+                canvasX, canvasY);
         }
 
         return false;
@@ -379,6 +394,26 @@ public final class ImportURI {
             m_path = path;
         }
 
+    }
+
+    private static record EntityImportResult(EntityImport entityImport, Status status) {
+        private enum Status {
+            SUCCESS,
+            UNAUTHORIZED,
+            ERROR
+        }
+
+        public static EntityImportResult success(final EntityImport entityImport) {
+            return new EntityImportResult(entityImport, Status.SUCCESS);
+        }
+
+        public static EntityImportResult unauthorized() {
+            return new EntityImportResult(null, Status.UNAUTHORIZED);
+        }
+
+        public static EntityImportResult error() {
+            return new EntityImportResult(null, Status.ERROR);
+        }
     }
 
 }
