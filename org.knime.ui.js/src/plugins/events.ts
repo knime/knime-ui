@@ -83,6 +83,11 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         extensionName,
       });
     },
+
+    // Event to show a toast.
+    ShowToastEvent(toast) {
+      $toast.show(toast);
+    },
   });
 
   API.desktop.registerEventHandlers({

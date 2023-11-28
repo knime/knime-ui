@@ -2887,6 +2887,57 @@ export interface SelectionEventType extends EventType {
 
 
 /**
+ * Event emmitted in order to show a toast.
+ * @export
+ * @interface ShowToastEvent
+ */
+export interface ShowToastEvent extends Event {
+
+    /**
+     * The type of toast.
+     * @type {string}
+     * @memberof ShowToastEvent
+     */
+    type: ShowToastEvent.TypeEnum;
+    /**
+     * The headline. If not specified, the type is used as headline.
+     * @type {string}
+     * @memberof ShowToastEvent
+     */
+    headline?: string;
+    /**
+     * The toast message.
+     * @type {string}
+     * @memberof ShowToastEvent
+     */
+    message?: string;
+    /**
+     * If set to true, the toast will have an animated progress bar indicating time before being automatically dismissed.
+     * @type {boolean}
+     * @memberof ShowToastEvent
+     */
+    autoRemove?: boolean;
+
+}
+
+
+/**
+ * @export
+ * @namespace ShowToastEvent
+ */
+export namespace ShowToastEvent {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        Error = 'error',
+        Warning = 'warning',
+        Success = 'success',
+        Info = 'info'
+    }
+}
+/**
  * Represents a single space (local workspace, hub space, ...).
  * @export
  * @interface Space
@@ -5110,6 +5161,7 @@ export interface EventHandlers {
     AppStateChangedEvent?(payload: AppStateChangedEvent): void;
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
     NodeRepositoryLoadingProgressEvent?(payload: NodeRepositoryLoadingProgressEvent): void;
+    ShowToastEvent?(payload: ShowToastEvent): void;
 }
 
 const EventApiWrapper = function (rpcClient: RPCClient) {

@@ -72,6 +72,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ExampleProjects;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.PreferencesProvider;
+import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
@@ -117,13 +118,14 @@ final class Init {
         var appStateUpdater = new AppStateUpdater();
         var eventConsumer = createEventConsumer();
         var spaceProviders = createSpaceProviders();
+        var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         DefaultServicesUtil.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
             createNodeFactoryProvider());
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
-            eventConsumer, workflowMiddleware);
+            eventConsumer, workflowMiddleware, toastService);
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 
