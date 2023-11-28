@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useFeatures } from "@/plugins/feature-flags";
 import { useHubAuth } from "./useHubAuth";
 import { useKaiServer } from "./useKaiServer";
@@ -13,11 +13,15 @@ import ChatPanel from "./ChatPanel.vue";
 const { isKaiInstalled: _isKaiInstalled } = useFeatures();
 const isKaiInstalled = _isKaiInstalled();
 const { isHubConfigured, isAuthenticated } = useHubAuth();
-const { isServerAvailable } = useKaiServer();
-const showDisclaimer = ref(true);
+const { isServerAvailable, hasDisclaimer } = useKaiServer();
+
+const isDisclaimerOpen = ref(true);
 const closeDisclaimer = () => {
-  showDisclaimer.value = false;
+  isDisclaimerOpen.value = false;
 };
+const showDisclaimer = computed(
+  () => hasDisclaimer.value && isDisclaimerOpen.value,
+);
 </script>
 
 <template>

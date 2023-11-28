@@ -1,4 +1,4 @@
-import { ref, reactive } from "vue";
+import { ref, reactive, computed } from "vue";
 import sleep from "webapps-common/util/sleep";
 import { API } from "@api";
 import type { UiStrings } from "./types";
@@ -8,6 +8,7 @@ const SLEEP_AFTER_ERROR = 2000;
 const isServerAvailable = ref(false);
 const isLoading = ref(false);
 const uiStrings = reactive<UiStrings | Record<string, never>>({});
+const hasDisclaimer = computed(() => Boolean(uiStrings.disclaimer));
 
 const fetchUiStrings = async () => {
   if (isLoading.value) {
@@ -33,6 +34,7 @@ fetchUiStrings();
 const useKaiServer = () => {
   return {
     uiStrings: uiStrings as UiStrings,
+    hasDisclaimer,
     isLoading,
     isServerAvailable,
     fetchUiStrings,
