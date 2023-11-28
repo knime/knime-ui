@@ -125,7 +125,36 @@ public final class ClassicWorkflowEditorUtil {
      */
     public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
         final MApplication app) {
-        registerWorkflowProjects(modelService, app);
+        List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
+        var activeProjectId = new AtomicReference<String>();
+        var workflowProjects = editorParts.stream().map(part -> {
+            var wp = getOrCreateWorkflowProject(part);
+            if (wp != null && isEditorPartSelectedElement(part)) {
+                activeProjectId.set(wp.getID());
+            }
+            return wp;
+        }) //
+            .filter(Objects::nonNull);
+
+        var pm = ProjectManager.getInstance();
+        var resolved = resolveDuplicates(workflowProjects,
+            // Determine duplicates by project ID
+            Project::getID,
+            // Among duplicates, prefer picking one that is not visible
+            group -> group.stream().min( //
+                (p1, p2) -> Boolean.compare(!pm.isActiveProject(p1.getID()),
+                    !pm.isActiveProject(p2.getID())) //
+            ).get() // NOSONAR: group is never empty (result of groupBy)
+        );
+
+        pm.removeProject(WORKFLOW_EDITOR_PART_ID, null);
+        resolved.forEach(p -> {
+            pm.addProject(p);
+            pm.openAndCacheProject(p.getID());
+        });
+        if (activeProjectId.get() != null) {
+            pm.setProjectActive(activeProjectId.get());
+        }
     }
 
     private static Project getOrCreateWorkflowProject(final MPart editorPart) {
@@ -142,38 +171,6 @@ public final class ClassicWorkflowEditorUtil {
             return createWorkflowProject(editorPart, projWfm);
         }
         return wp;
-    }
-
-    private static void registerWorkflowProjects(final EModelService modelService, final MApplication app) {
-        List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        var activeProjectId = new AtomicReference<String>();
-        var workflowProjects = editorParts.stream().map(part -> {
-            var wp = getOrCreateWorkflowProject(part);
-            if (wp != null && isEditorPartSelectedElement(part)) {
-                activeProjectId.set(wp.getID());
-            }
-            return wp;
-        }) //
-            .filter(Objects::nonNull);
-
-        var wpm = ProjectManager.getInstance();
-        var resolved = resolveDuplicates(workflowProjects,
-            // Determine duplicates by project ID
-            Project::getID,
-            // Among duplicates, prefer picking one that is not visible
-            group -> group.stream().min( //
-                (p1, p2) -> Boolean.compare(!wpm.isActiveProject(p1.getID()),
-                    !wpm.isActiveProject(p2.getID())) //
-            ).get() // NOSONAR: group is never empty (result of groupBy)
-        );
-
-        resolved.forEach(p -> {
-            wpm.addProject(p);
-            wpm.openAndCacheProject(p.getID());
-        });
-        if (activeProjectId.get() != null) {
-            wpm.setProjectActive(activeProjectId.get());
-        }
     }
 
     /**

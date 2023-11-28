@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.api;
 
+import static org.knime.ui.java.api.SaveProject.saveWorkflowSvg;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
@@ -58,11 +60,15 @@ import java.util.NoSuchElementException;
 import org.apache.commons.lang3.Functions.FailableFunction;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.util.CheckUtils;
+import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
+import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -81,6 +87,8 @@ import org.knime.ui.java.util.ProjectFactory;
  *     <li>Save an opened remote workflow project locally</li>
  *     <li>Save a copy of a local project under a different name ("Save As...")</li>
  * </ul>
+ *
+ * Note: the project copy will replace the original one in the {@link ProjectManager}.
  *
  * @author Kai Franze, KNIME GmbH, Germany
  */
@@ -121,9 +129,9 @@ final class SaveProjectCopy {
         }
 
         if (wfm.isComponentProjectWFM()) {
-            saveAndOpenComponentProject(oldContext, newContext, wfm, projectId);
+            saveAndReplaceComponentProject(oldContext, newContext, wfm, projectId);
         } else {
-            saveAndOpenWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG);
+            saveAndReplaceWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG);
         }
     }
 
@@ -205,25 +213,76 @@ final class SaveProjectCopy {
         }
     }
 
-    private static void saveAndOpenWorkflowProject(final WorkflowContextV2 oldContext,
+    private static void saveAndReplaceWorkflowProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
         final String projectSVG) {
         final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId);
-        saveAndOpenProject(oldContext, newContext, project,
-            monitor -> SaveProject.saveWorkflowAs(newContext, monitor, wfm, projectSVG));
+        saveAndReplaceProject(oldContext, newContext, project,
+            monitor -> saveWorkflowCopy(newContext, monitor, wfm, projectSVG));
     }
 
-    private static void saveAndOpenComponentProject(final WorkflowContextV2 oldContext,
+    private static void saveAndReplaceComponentProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId) {
         final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId);
-        saveAndOpenProject(oldContext, newContext, project,
-            monitor -> SaveProject.saveComponentTemplateAs(monitor, wfm, newContext));
+        saveAndReplaceProject(oldContext, newContext, project, monitor -> saveComponentCopy(monitor, wfm, newContext));
     }
 
-    private static void saveAndOpenProject(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
-        final Project project, final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> func) {
+    /**
+     * Save regular workflow as
+     *
+     * @param context The context with the information about the new workflow
+     * @param monitor The monitor to show the progress of this operation
+     * @param wfm The Workflowmanager that will save the workflow
+     * @param svg workflow SVG
+     */
+    private static boolean saveWorkflowCopy(final WorkflowContextV2 context, final IProgressMonitor monitor,
+        final WorkflowManager wfm, final String svg) {
+        monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
+
+        try {
+            wfm.saveAs(context, DesktopAPUtil.toExecutionMonitor(monitor));
+        } catch (final IOException | CanceledExecutionException | LockFailedException e) {
+            DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work", LOGGER, e);
+            monitor.done();
+            return false;
+        }
+        saveWorkflowSvg(wfm.getName(), svg, context.getExecutorInfo().getLocalWorkflowPath());
+        monitor.done();
+        return true;
+    }
+
+    /**
+     * Save component template as
+     *
+     * @param context The context with the information about the new component
+     * @param monitor The monitor to show the progress of this operation
+     * @param wfm The workflow manager that will save the component
+     * @param svg workflow SVG
+     */
+    private static boolean saveComponentCopy(final IProgressMonitor monitor, final WorkflowManager wfm,
+        final WorkflowContextV2 newContext) {
+        monitor.beginTask("Saving a component template", IProgressMonitor.UNKNOWN);
+        try {
+            final var snc = (SubNodeContainer)wfm.getDirectNCParent();
+            final var path = newContext.getExecutorInfo().getLocalWorkflowPath().toFile();
+            snc.saveAsTemplate(path, DesktopAPUtil.toExecutionMonitor(monitor));
+            wfm.setWorkflowContext(newContext);
+            wfm.getNodeContainerDirectory().changeRoot(path);
+        } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
+            final var title = "Component save attempt";
+            final var message = "Saving the component didn't work";
+            DesktopAPUtil.showWarningAndLogError(title, message, LOGGER, e);
+            monitor.done();
+            return false;
+        }
+        monitor.done();
+        return true;
+    }
+
+    private static void saveAndReplaceProject(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
+        final Project project, final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> saveLogic) {
         final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
-        final var resultOptional = DesktopAPUtil.runWithProgress("Saving as", LOGGER, func);
+        final var resultOptional = DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic);
 
         if (resultOptional.isEmpty() || !resultOptional.get().booleanValue()) { // If saving has failed
             FileUtil.deleteRecursively(newPath.toFile());
