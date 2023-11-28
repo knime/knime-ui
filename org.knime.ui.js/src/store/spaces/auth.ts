@@ -46,13 +46,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     try {
       await API.desktop.disconnectSpaceProvider({ spaceProviderId });
 
-      // update project paths that used this space provider
       const projectsWithDisconnectedProvider = Object.entries(
         state.projectPath,
       ).flatMap(([projectId, path]) =>
         path.spaceProviderId === spaceProviderId ? [projectId] : [],
       );
 
+      // update project paths that used this space provider
       projectsWithDisconnectedProvider.forEach((projectId) =>
         commit("setProjectPath", {
           projectId,
@@ -66,16 +66,19 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       // update space provider state
       const { spaceProviders } = state;
-      const { name, connectionMode } = spaceProviders[spaceProviderId];
+      const {
+        spaces: _,
+        user: __,
+        ...skeleton
+      } = spaceProviders[spaceProviderId];
       commit("setSpaceProviders", {
         ...state.spaceProviders,
         [spaceProviderId]: {
-          id: spaceProviderId,
-          name,
-          connectionMode,
+          ...skeleton,
           connected: false,
         },
       });
+
       return spaceProviderId;
     } catch (error) {
       consola.error("Error disconnecting from provider", { error });

@@ -4,6 +4,7 @@ import { API } from "@api";
 
 import { loadStore } from "./loadStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
@@ -76,6 +77,7 @@ describe("spaces::auth", () => {
       const fullProvider: SpaceProviderNS.SpaceProvider = {
         name: "Hub 1",
         id: "hub1",
+        type: BaseSpaceProvider.TypeEnum.HUB,
         connected: true,
         connectionMode: "AUTHENTICATED",
         user: { name: "John Doe" },
@@ -94,10 +96,9 @@ describe("spaces::auth", () => {
         hub1: fullProvider,
       };
 
+      const { spaces: _, user: __, ...skeleton } = fullProvider;
       const expectedProvider = {
-        id: fullProvider.id,
-        name: fullProvider.name,
-        connectionMode: fullProvider.connectionMode,
+        ...skeleton,
         connected: false,
       };
 

@@ -124,11 +124,6 @@ export const buildHubUploadMenuItems = (
 
     const [provider] = disconnectedSpaceProviders;
 
-    // TODO NXT-2212 Remove this workaround
-    if (!provider.type) {
-      return "Connect";
-    }
-
     return provider.type === BaseSpaceProvider.TypeEnum.HUB
       ? "Connect to Hub"
       : "Connect to Server";
