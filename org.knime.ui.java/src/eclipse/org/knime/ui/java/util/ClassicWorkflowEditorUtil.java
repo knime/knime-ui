@@ -147,7 +147,11 @@ public final class ClassicWorkflowEditorUtil {
             ).get() // NOSONAR: group is never empty (result of groupBy)
         );
 
-        pm.removeProject(WORKFLOW_EDITOR_PART_ID, null);
+        // All projects need to be removed first to avoid duplicates in the opened projects.
+        // Because it can contain projects whose id does _not_ equal WorkflowManager.getNameWithId anymore
+        // due to a 'save-as' in which case it wouldn't be replaced even though it represents
+        // the same workflow.
+        pm.getProjectIds().forEach(id -> pm.removeProject(id, wfm -> {}));
         resolved.forEach(p -> {
             pm.addProject(p);
             pm.openAndCacheProject(p.getID());
