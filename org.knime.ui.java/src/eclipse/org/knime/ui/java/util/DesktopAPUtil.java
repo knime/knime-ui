@@ -98,7 +98,10 @@ import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.LocalExplorerFileStore;
+import org.knime.workbench.explorer.filesystem.MessageFileStore;
+import org.knime.workbench.explorer.filesystem.RemoteExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
+import org.knime.workbench.explorer.view.AbstractContentProvider;
 import org.knime.workbench.explorer.view.actions.DownloadAndOpenWorkflowAction;
 import org.knime.workbench.explorer.view.actions.WorkflowDownload;
 import org.knime.workbench.explorer.view.dialogs.SnapshotPanel;
@@ -436,17 +439,30 @@ public final class DesktopAPUtil {
      * @param source source file store
      * @param locationInfo inferred from {@code source} if null.
      * @return
+     * @throws InterruptedException
      */
     private static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
-        final RemoteExplorerFileStore source, final LocationInfo locationInfo) {
+        final RemoteExplorerFileStore initSource, final LocationInfo locationInfo) {
+        final RemoteExplorerFileStore source;
         final LocalExplorerFileStore tmpDestDir;
         try {
+            // It's possible to out-run the KNIME-Explorer fetcher in here, and then the workflow can't be downloaded
+            final var optSource = waitForMountpointToFinishFetching(progress, initSource);
+            if (optSource.isEmpty()) {
+                // user has aborted
+                return null;
+            }
+            source = optSource.get();
+
             // fetch the actual name from the remote side because `source.getName()` may only return the repository ID
             // at that is not always a valid directory name
             final var name = source.fetchInfo().getName();
             tmpDestDir = ExplorerMountTable.createExplorerTempDir(name).getChild(name);
             tmpDestDir.mkdir(EFS.NONE, progress);
         } catch (CoreException e1) {
+            throw new IllegalStateException(e1);
+        } catch (InterruptedException e1) {
+            Thread.currentThread().interrupt();
             throw new IllegalStateException(e1);
         }
 
@@ -493,6 +509,38 @@ public final class DesktopAPUtil {
         }
 
         return new RemoteWorkflowInput(workflowDir, context);
+    }
+
+    /**
+     * We have to wait for the mountpoint to finish its initial fetching process, otherwise the {@link WorkflowDownload}
+     * receives a {@link RemoteExplorerFileInfo} which claims that it is neither for a workflow nor for a component.
+     * Since we can't access anything from here which could tell us directly when the mountpoint is finished loading, we
+     * ask {@link AbstractContentProvider} the for the source workflow's (hypothetical) children instead and check
+     * whether a message with a specific string content is returned.
+     *
+     * @param progress progress monitor
+     * @param source source file store
+     * @return newly fetch file store
+     * @throws InterruptedException if the waiting was interrupted
+     */
+    private static Optional<RemoteExplorerFileStore> waitForMountpointToFinishFetching(final IProgressMonitor progress,
+            final RemoteExplorerFileStore source) throws InterruptedException {
+        // TODO remove this immediately after the "hybrid mode" of CUI and MUI has been retired
+        progress.subTask("Waiting for remote directory to load...");
+        final var provider = source.getContentProvider();
+        for (var i = 0; i < 600; i++) {
+            if (progress.isCanceled()) {
+                return Optional.empty();
+            }
+            final var children = provider.getChildren(source);
+            final var isFetching = children.length == 1 && children[0] instanceof MessageFileStore msg
+                    && "Fetching content...".equals(msg.getName());
+            if (!isFetching) {
+                break;
+            }
+            Thread.sleep(500);
+        }
+        return Optional.of((RemoteExplorerFileStore)provider.getFileStore(source.getFullName()));
     }
 
     /**
