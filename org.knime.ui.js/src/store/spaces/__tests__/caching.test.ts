@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { loadStore } from "./loadStore";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
+import { createSpace, createSpaceProvider } from "@/test/factories";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 describe("spaces::caching", () => {
   describe("actions", () => {
     it("should sync state of projectPaths with openProjects", async () => {
       const { store } = loadStore();
+
+      const hub4 = createSpaceProvider({
+        id: "hub4",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        spaces: [createSpace({ id: "space6" })],
+      });
+
+      store.commit("spaces/setSpaceProviders", {
+        [hub4.id]: hub4,
+      });
 
       // project that should be removed (not part of openProjects anymore)
       store.state.spaces.projectPath.oldProject = {
@@ -70,6 +82,81 @@ describe("spaces::caching", () => {
         spaceProviderId: "mockProviderId",
         spaceId: "mockSpaceId",
         itemId: "bar",
+      });
+    });
+
+    it('should use fallback to "root" when ancestorItemIds is missing', async () => {
+      const { store } = loadStore();
+
+      const hub1 = createSpaceProvider({
+        id: "hub1",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        spaces: [createSpace({ id: "space1" })],
+      });
+
+      store.commit("spaces/setSpaceProviders", {
+        [hub1.id]: hub1,
+      });
+
+      // currently open projects
+      const openProjects: {
+        projectId: string;
+        origin: Omit<SpaceItemReference, "itemId">; // TODO: remove this field from the API its outdated
+      }[] = [
+        {
+          projectId: "myProject2",
+          origin: {
+            providerId: "hub1",
+            spaceId: "space1",
+          },
+        },
+      ];
+
+      await store.dispatch("spaces/syncPathWithOpenProjects", {
+        openProjects,
+      });
+
+      expect(store.state.spaces.projectPath.myProject2).toStrictEqual({
+        spaceProviderId: "hub1",
+        spaceId: "space1",
+        itemId: "root",
+      });
+    });
+
+    it("should fallback to local when open project refers to an unknown space", async () => {
+      const { store } = loadStore();
+
+      const hub1 = createSpaceProvider({
+        id: "hub1",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        spaces: [createSpace({ id: "space1" }), createSpace({ id: "space2" })],
+      });
+
+      store.commit("spaces/setSpaceProviders", {
+        [hub1.id]: hub1,
+      });
+
+      const openProjects: {
+        projectId: string;
+        origin: Omit<SpaceItemReference, "itemId">; // TODO: remove this field from the API its outdated
+      }[] = [
+        {
+          projectId: "myProject2",
+          origin: {
+            providerId: "hub1",
+            spaceId: "this-is-an-unknown-space",
+          },
+        },
+      ];
+
+      await store.dispatch("spaces/syncPathWithOpenProjects", {
+        openProjects,
+      });
+
+      expect(store.state.spaces.projectPath.myProject2).toStrictEqual({
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "root",
       });
     });
 

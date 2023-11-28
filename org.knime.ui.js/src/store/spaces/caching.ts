@@ -98,35 +98,48 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       openProjects,
     }: { openProjects: { projectId: string; origin: SpaceItemReference }[] },
   ) {
+    const findSpaceById = (spaceId: string) => {
+      const spaceProviders = state.spaceProviders ?? {};
+
+      const foundSpace = Object.values(spaceProviders).find((provider) => {
+        const { spaces = [] } = provider;
+        return spaces.find((space) => space.id === spaceId);
+      });
+
+      return Boolean(foundSpace);
+    };
+
     // add
     openProjects.forEach(({ projectId, origin }) => {
-      if (!state.projectPath[projectId]) {
-        // Take local root as default in case the workflow does not have an origin
-        let projectPath = localRootProjectPath;
-        if (origin) {
-          const {
-            spaceId,
-            providerId: spaceProviderId,
-            ancestorItemIds = [],
-          } = origin;
-          const [itemId = "root"] = ancestorItemIds;
-          projectPath = {
-            spaceId,
-            spaceProviderId,
-            itemId,
-          };
-        }
-        commit("setProjectPath", {
-          projectId,
-          value: projectPath,
-        });
+      // skip already existing paths
+      if (state.projectPath[projectId]) {
+        return;
       }
+
+      const isKnownSpace = origin && findSpaceById(origin.spaceId);
+
+      const projectPath = isKnownSpace
+        ? {
+            spaceId: origin.spaceId,
+            spaceProviderId: origin.providerId,
+            itemId: origin.ancestorItemIds?.at(0) ?? "root",
+          }
+        : // Take local root as default in case the workflow does not
+          // have an origin or is from an unknown space
+          localRootProjectPath;
+
+      commit("setProjectPath", {
+        projectId,
+        value: projectPath,
+      });
     });
+
     // remove
     const openProjectIds = openProjects.map((project) => project.projectId);
     const unknownProjectIds = Object.keys(state.projectPath).filter(
       (id) => !specialProjectIds.includes(id) && !openProjectIds.includes(id),
     );
+
     unknownProjectIds.forEach((projectId) => {
       commit("removeProjectPath", projectId);
     });
