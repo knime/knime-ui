@@ -96,9 +96,9 @@ describe("spaces::auth", () => {
         hub1: fullProvider,
       };
 
-      const { spaces: _, user: __, ...skeleton } = fullProvider;
+      const { spaces: _, user: __, ...otherProperties } = fullProvider;
       const expectedProvider = {
-        ...skeleton,
+        ...otherProperties,
         connected: false,
       };
 

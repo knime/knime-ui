@@ -69,12 +69,12 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       const {
         spaces: _,
         user: __,
-        ...skeleton
+        ...otherProperties
       } = spaceProviders[spaceProviderId];
       commit("setSpaceProviders", {
         ...state.spaceProviders,
         [spaceProviderId]: {
-          ...skeleton,
+          ...otherProperties,
           connected: false,
         },
       });
