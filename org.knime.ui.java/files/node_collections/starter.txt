@@ -66,7 +66,7 @@ org.knime.base.views.node.sunburstchart.SunburstChartNodeFactory
 org.knime.base.views.node.tableview.TableViewNodeFactory
 org.knime.ext.jep.JEPNodeFactory
 org.knime.ext.jep.multicolumn.MultiColumnJEPNodeFactory
-org.knime.ext.microsoft.authentication.node.auth.MicrosoftAuthenticationNodeFactory
+org.knime.ext.microsoft.authentication.node.MicrosoftAuthenticatorNodeFactory
 org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory
 org.knime.ext.poi3.node.io.filehandling.excel.updater.cell.ExcelCellUpdaterNodeFactory
 org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory
