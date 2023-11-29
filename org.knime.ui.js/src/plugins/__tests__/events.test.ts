@@ -12,7 +12,10 @@ import { notifyPatch } from "@/util/event-syncer";
 import { deepMocked } from "@/test/utils";
 
 import { API } from "@api";
-import type { EventHandlers } from "@/api/gateway-api/generated-api";
+import {
+  ShowToastEvent,
+  type EventHandlers,
+} from "@/api/gateway-api/generated-api";
 import type { DesktopEventHandlers } from "@/api/desktop-api";
 import type { SpaceProviderNS } from "@/api/custom-types";
 
@@ -62,7 +65,7 @@ describe("Event Plugin", () => {
 
     eventsPlugin({ $store: storeMock, $router: routerMock, $toast: toastMock });
 
-    return { storeMock, routerMock };
+    return { storeMock, routerMock, toastMock };
   };
 
   it("fixed Events", () => {
@@ -295,6 +298,23 @@ describe("Event Plugin", () => {
           "spaces/setAllSpaceProviders",
           expect.anything(),
         );
+      });
+    });
+
+    describe("showToastEvent", () => {
+      it("should call method show", () => {
+        const { toastMock } = loadPlugin();
+
+        const toastEvent = {
+          type: ShowToastEvent.TypeEnum.Success,
+          autoRemove: true,
+          headline: "Brave new toast",
+          message: "Some toast in my message",
+        };
+
+        registeredHandlers.ShowToastEvent(toastEvent);
+
+        expect(toastMock.show).toBeCalledWith(toastEvent);
       });
     });
   });
