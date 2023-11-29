@@ -182,7 +182,7 @@ export default {
             >
               {{
                 spaceProvider.connectionMode === "AUTHENTICATED"
-                  ? "Sign in"
+                  ? "Sign&nbsp;in"
                   : "Connect"
               }}
             </Button>
