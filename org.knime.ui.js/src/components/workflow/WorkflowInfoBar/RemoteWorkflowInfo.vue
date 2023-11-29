@@ -33,10 +33,7 @@ const shouldShow = computed(() => {
 </script>
 
 <template>
-  <div
-    v-if="shouldShow"
-    :class="['banner', { blue: isServerSpace, yellow: isUnknownProject }]"
-  >
+  <div v-if="shouldShow" class="banner">
     <span>
       <template v-if="isUnknownProject">
         You have opened a workflow that is not part of your spaces. “Save” a
@@ -59,13 +56,6 @@ const shouldShow = computed(() => {
   justify-content: center;
   align-items: center;
   min-height: 40px;
-
-  &.yellow {
-    background: v-bind("$colors.notifications.warning");
-  }
-
-  &.blue {
-    background: v-bind("$colors.notifications.info");
-  }
+  background: v-bind("$colors.notifications.warning");
 }
 </style>

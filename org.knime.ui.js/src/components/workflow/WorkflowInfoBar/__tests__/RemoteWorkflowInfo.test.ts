@@ -108,8 +108,6 @@ describe("RemoteWorkflowInfo.vue", () => {
     });
 
     expect(wrapper.find(".banner").exists()).toBe(true);
-    expect(wrapper.find(".banner.yellow").exists()).toBe(true);
-    expect(wrapper.find(".banner.blue").exists()).toBe(false);
     expect(wrapper.text()).toMatch(
       "You have opened a workflow that is not part of your spaces. “Save” a local copy to keep your changes.",
     );
@@ -137,8 +135,6 @@ describe("RemoteWorkflowInfo.vue", () => {
     await nextTick();
 
     expect(wrapper.find(".banner").exists()).toBe(true);
-    expect(wrapper.find(".banner.yellow").exists()).toBe(true);
-    expect(wrapper.find(".banner.blue").exists()).toBe(false);
     expect(wrapper.text()).toMatch(
       "You have opened a workflow that is not part of your spaces. “Save” a local copy to keep your changes.",
     );
@@ -170,8 +166,6 @@ describe("RemoteWorkflowInfo.vue", () => {
     });
 
     expect(wrapper.find(".banner").exists()).toBe(true);
-    expect(wrapper.find(".banner.yellow").exists()).toBe(false);
-    expect(wrapper.find(".banner.blue").exists()).toBe(true);
     expect(wrapper.text()).toMatch(
       "You have opened a workflow from a KNIME Server. “Save” the workflow back to KNIME Server to keep your changes.",
     );
