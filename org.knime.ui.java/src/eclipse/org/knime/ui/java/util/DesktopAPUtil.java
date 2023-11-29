@@ -442,17 +442,14 @@ public final class DesktopAPUtil {
      * @throws InterruptedException
      */
     private static RemoteWorkflowInput downloadWorkflowFromMountpoint(final IProgressMonitor progress,
-        final RemoteExplorerFileStore initSource, final LocationInfo locationInfo) {
-        final RemoteExplorerFileStore source;
+        final RemoteExplorerFileStore source, final LocationInfo locationInfo) {
         final LocalExplorerFileStore tmpDestDir;
         try {
             // It's possible to out-run the KNIME-Explorer fetcher in here, and then the workflow can't be downloaded
-            final var optSource = waitForMountpointToFinishFetching(progress, initSource);
-            if (optSource.isEmpty()) {
+            if (!waitForMountpointToFinishFetching(progress, source)) {
                 // user has aborted
                 return null;
             }
-            source = optSource.get();
 
             // fetch the actual name from the remote side because `source.getName()` may only return the repository ID
             // at that is not always a valid directory name
@@ -523,14 +520,14 @@ public final class DesktopAPUtil {
      * @return newly fetch file store
      * @throws InterruptedException if the waiting was interrupted
      */
-    private static Optional<RemoteExplorerFileStore> waitForMountpointToFinishFetching(final IProgressMonitor progress,
+    private static boolean waitForMountpointToFinishFetching(final IProgressMonitor progress,
             final RemoteExplorerFileStore source) throws InterruptedException {
         // TODO remove this immediately after the "hybrid mode" of CUI and MUI has been retired
         progress.subTask("Waiting for remote directory to load...");
         final var provider = source.getContentProvider();
         for (var i = 0; i < 600; i++) {
             if (progress.isCanceled()) {
-                return Optional.empty();
+                return false;
             }
             final var children = provider.getChildren(source);
             final var isFetching = children.length == 1 && children[0] instanceof MessageFileStore msg
@@ -540,7 +537,7 @@ public final class DesktopAPUtil {
             }
             Thread.sleep(500);
         }
-        return Optional.of((RemoteExplorerFileStore)provider.getFileStore(source.getFullName()));
+        return true;
     }
 
     /**
