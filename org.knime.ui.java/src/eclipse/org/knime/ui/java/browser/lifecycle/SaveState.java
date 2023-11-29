@@ -61,6 +61,7 @@ import org.knime.ui.java.util.PerspectiveUtil;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings("restriction")
 final class SaveState {
 
     private SaveState() {
@@ -71,26 +72,13 @@ final class SaveState {
         throws StateTransitionAbortedException {
         IntSupplier saveAndCloseAllWorkflows;
         boolean workflowsSaved;
-        var serializedAppState = AppStatePersistor.serializeAppState();
+        var serializedAppState = AppStatePersistor.serializeAppState(); // NOSONAR
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            boolean allEditorsClosed = true;
-            if (forShutdown) {
-                var workbench = (Workbench)PlatformUI.getWorkbench();
-                var window = workbench.getActiveWorkbenchWindow();
-                if (window != null) {
-                    var pages = window.getPages();
-                    for (var page : pages) {
-                        if (!page.closeAllEditors(true)) {
-                            allEditorsClosed = false;
-                        }
-                    }
-                }
-            }
             saveAndCloseAllWorkflows = null;
-            workflowsSaved = allEditorsClosed;
+            workflowsSaved = !forShutdown || saveAndCloseClassicWorkbenchEditors();
         } else {
             saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-            var saveState = saveAndCloseAllWorkflows.getAsInt();
+            final var saveState = saveAndCloseAllWorkflows.getAsInt();
             if (saveState == 0) {
                 // saving has been cancelled
                 throw new StateTransitionAbortedException();
@@ -120,6 +108,26 @@ final class SaveState {
                 return state.getJobChangeListener();
             }
         };
+    }
+
+    /**
+     * Tries to close all editors in the Classic perspective, asking the user to save them if applicable.
+     *
+     * @return {@code true} if all editors have been closed, {@code false} otherwise
+     */
+    private static boolean saveAndCloseClassicWorkbenchEditors() {
+        final var workbench = (Workbench)PlatformUI.getWorkbench();
+        final var window = workbench.getActiveWorkbenchWindow();
+
+        var allEditorsClosed = true;
+        if (window != null) {
+            for (var page : window.getPages()) {
+                if (!page.closeAllEditors(true)) {
+                    allEditorsClosed = false;
+                }
+            }
+        }
+        return allEditorsClosed;
     }
 
 }
