@@ -51,6 +51,8 @@ package org.knime.ui.java.browser.lifecycle;
 import java.util.function.IntSupplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.Workbench;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
 
@@ -65,19 +67,31 @@ final class SaveState {
         //
     }
 
-    static LifeCycleStateInternal run(final LifeCycleStateInternal state) throws StateTransitionAbortedException {
+    static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean forShutdown)
+        throws StateTransitionAbortedException {
         IntSupplier saveAndCloseAllWorkflows;
         boolean workflowsSaved;
         var serializedAppState = AppStatePersistor.serializeAppState();
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            // nothing we need to do here because the (in the classic UI) opened WorkflowEditor(s) take care
-            // of saving the opened workflow projects on shutdown
+            boolean allEditorsClosed = true;
+            if (forShutdown) {
+                var workbench = (Workbench)PlatformUI.getWorkbench();
+                var window = workbench.getActiveWorkbenchWindow();
+                if (window != null) {
+                    var pages = window.getPages();
+                    for (var page : pages) {
+                        if (!page.closeAllEditors(true)) {
+                            allEditorsClosed = false;
+                        }
+                    }
+                }
+            }
             saveAndCloseAllWorkflows = null;
-            workflowsSaved = true;
+            workflowsSaved = allEditorsClosed;
         } else {
             saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
             var saveState = saveAndCloseAllWorkflows.getAsInt();
-            if(saveState == 0) {
+            if (saveState == 0) {
                 // saving has been cancelled
                 throw new StateTransitionAbortedException();
             }

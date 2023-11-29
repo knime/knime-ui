@@ -49,8 +49,6 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.Workbench;
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -83,17 +81,5 @@ final class Shutdown {
         } catch (BackingStoreException e) {
             NodeLogger.getLogger(Shutdown.class).error(e);
         }
-
-        if (!PerspectiveUtil.isClassicPerspectiveActive() && PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            var workbench = (Workbench)PlatformUI.getWorkbench();
-            var window = workbench.getActiveWorkbenchWindow();
-            if (window != null) {
-                var pages = window.getPages();
-                for (var page : pages) {
-                    page.closeAllEditors(true);
-                }
-            }
-        }
-
     }
 }
