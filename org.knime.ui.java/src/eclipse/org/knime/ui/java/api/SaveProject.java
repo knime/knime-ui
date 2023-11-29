@@ -186,10 +186,8 @@ final class SaveProject {
     }
 
     private static void saveComponentTemplate(final IProgressMonitor monitor, final WorkflowManager wfm) {
-        var componentPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
         try {
-            ((SubNodeContainer)wfm.getDirectNCParent()).saveAsTemplate(componentPath.toFile(),
-                DesktopAPUtil.toExecutionMonitor(monitor), null);
+            ((SubNodeContainer)wfm.getDirectNCParent()).saveTemplate(DesktopAPUtil.toExecutionMonitor(monitor));
         } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
             DesktopAPUtil.showWarningAndLogError("Component save attempt", "Saving the component failed", LOGGER, e);
             monitor.done();
