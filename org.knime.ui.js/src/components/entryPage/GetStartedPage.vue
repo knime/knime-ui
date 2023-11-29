@@ -81,7 +81,7 @@ export default {
 
       <div class="grid-container more-workflows">
         <a
-          href="https://knime.com/modern-ui-hub-home-link-5-1?src=knimeappmodernui"
+          href="https://knime.com/modern-ui-hub-home-link?src=knimeappmodernui"
         >
           <LinkExternalIcon />Find more resources on the KNIME Community Hub
         </a>
