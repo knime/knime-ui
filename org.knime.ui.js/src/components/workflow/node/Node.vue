@@ -420,17 +420,11 @@ export default {
     },
 
     onNodeDragggingEnd(dragEvent) {
-      this.isDraggedOver = false;
-      this.setIsDragging(false);
-      // on quickly successive click and drag a draggingEnd might be triggered on the same node
-      // that fired the dragging event, this check avoid sending a false replaceNode call
-      if (this.id === dragEvent.detail.id) {
-        return;
-      }
       this.replaceNode({
         targetNodeId: this.id,
         replacementNodeId: dragEvent.detail.id,
       });
+      this.isDraggedOver = false;
     },
 
     // public
