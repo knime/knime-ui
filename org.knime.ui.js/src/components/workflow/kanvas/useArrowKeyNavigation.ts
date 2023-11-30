@@ -4,32 +4,15 @@ import throttle from "raf-throttle";
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
 import { useStore } from "@/composables/useStore";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
+import {
+  workflowNavigationService,
+  type Direction,
+} from "@/util/workflowNavigationService";
+import { isInputElement } from "@/util/isInputElement";
 
 const isMovementEvent = (event: KeyboardEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
   return event.shiftKey && event[metaOrCtrlKey];
-};
-
-const getDeltas = (event: KeyboardEvent) => {
-  const movementMinDistance = 10;
-  const selectionMinDistance = 200;
-
-  const delta = isMovementEvent(event)
-    ? movementMinDistance
-    : selectionMinDistance;
-
-  const deltaY = {
-    ArrowUp: -delta,
-    ArrowDown: delta,
-  }[event.key];
-
-  const deltaX = {
-    ArrowLeft: -delta,
-    ArrowRight: delta,
-  }[event.key];
-
-  return { deltaX, deltaY };
 };
 
 export const useArrowKeyNavigation = () => {
@@ -41,25 +24,54 @@ export const useArrowKeyNavigation = () => {
     () => store.getters["selection/singleSelectedNode"],
   );
 
+  const zoomFactor = computed(() => store.state.canvas.zoomFactor);
   const getScrollContainerElement = computed(
     () => store.state.canvas.getScrollContainerElement,
   );
 
+  const shouldNavigate = (event: KeyboardEvent) => {
+    const isKanvasFocused =
+      document.activeElement === getScrollContainerElement.value();
+    const isBodyFocused = document.activeElement === document.body;
+
+    return (
+      (isKanvasFocused || isBodyFocused) &&
+      !isInputElement(event.target as HTMLElement)
+    );
+  };
+
+  // prevent native events
   window.addEventListener(
     "keydown",
-    function (e) {
-      if (
-        ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(
-          e.code,
-        ) > -1
-      ) {
-        e.preventDefault();
+    function (event) {
+      const isScrollingKey = [
+        "Space",
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+      ].includes(event.key);
+
+      if (shouldNavigate(event) && isScrollingKey) {
+        event.preventDefault();
       }
     },
     false,
   );
 
-  const handleMovement = (deltaX: number, deltaY: number) => {
+  const handleMovement = (event: KeyboardEvent) => {
+    const movementMinDistance = 10;
+
+    const deltaY = {
+      ArrowUp: -movementMinDistance,
+      ArrowDown: movementMinDistance,
+    }[event.key];
+
+    const deltaX = {
+      ArrowLeft: -movementMinDistance,
+      ArrowRight: movementMinDistance,
+    }[event.key];
+
     if (!isDragging.value) {
       store.commit("workflow/setIsDragging", true);
     }
@@ -71,73 +83,43 @@ export const useArrowKeyNavigation = () => {
     store.dispatch("workflow/moveObjects");
   };
 
-  const handleSelection = async (
-    event: KeyboardEvent,
-    deltaX: number,
-    deltaY: number,
-  ) => {
-    const isXAxis = event.key === "ArrowLeft" || event.key === "ArrowRight";
-    const isYAxis = event.key === "ArrowUp" || event.key === "ArrowDown";
-
+  const handleSelection = async (event: KeyboardEvent) => {
     if (!singleSelectedNode.value) {
       return;
     }
 
     const {
       id,
-      position: { x: origX, y: origY },
+      position: { x, y },
     } = singleSelectedNode.value;
 
-    const isOnDirectionVector = (event: KeyboardEvent, { x, y }) => {
-      if (event.key === "ArrowUp") {
-        return y < origY;
-      }
-      if (event.key === "ArrowDown") {
-        return y > origY;
-      }
-      if (event.key === "ArrowLeft") {
-        return x < origX;
-      }
-      if (event.key === "ArrowRight") {
-        return x > origX;
-      }
-      return false;
+    const getDirection = (): Direction => {
+      return (
+        {
+          ArrowUp: "top",
+          ArrowDown: "bottom",
+          ArrowLeft: "left",
+          ArrowRight: "right",
+        } as const
+      )[event.key];
     };
 
-    const x = isXAxis ? origX + deltaX : origX;
-    const y = isYAxis ? origY + deltaY : origY;
-
-    const nearestNodes = await workflowNavigationService.nearest({
+    const nearestNode = await workflowNavigationService.nearest({
       workflow: activeWorkflow.value,
-      position: { x, y },
+      position: { x, y, id },
+      direction: getDirection(),
     });
 
-    const nearest = nearestNodes
-      .filter(([node]) => node.id !== id)
-      .filter(([node]) => isOnDirectionVector(event, { x: node.x, y: node.y }))
-      // find the node with the smallest delta
-      .reduce(
-        (acc, [node, delta], index) =>
-          acc.delta > delta ? { index, ...node, delta } : acc,
-        {
-          index: -1,
-          id: null,
-          delta: Infinity,
-          x: null,
-          y: null,
-        },
-      );
-
-    if (nearest.id) {
+    if (nearestNode?.id) {
       const kanvas = getScrollContainerElement.value();
-      const halfX = kanvas.clientWidth / 2;
-      const halfY = kanvas.clientHeight / 2;
+      const halfX = kanvas.clientWidth / 2 / zoomFactor.value;
+      const halfY = kanvas.clientHeight / 2 / zoomFactor.value;
 
       await store.dispatch("selection/deselectAllObjects");
-      await store.dispatch("selection/selectNode", nearest.id);
+      await store.dispatch("selection/selectNode", nearestNode.id);
       await store.dispatch("canvas/scroll", {
-        canvasX: nearest.x - halfX,
-        canvasY: nearest.y - halfY,
+        canvasX: nearestNode.x - halfX,
+        canvasY: nearestNode.y - halfY,
         smooth: true,
       });
     }
@@ -148,19 +130,17 @@ export const useArrowKeyNavigation = () => {
       return;
     }
 
-    const { deltaX, deltaY } = getDeltas(event);
+    const isArrowKey = [
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+    ].includes(event.key);
 
-    if (
-      event.key === "ArrowUp" ||
-      event.key === "ArrowDown" ||
-      event.key === "ArrowLeft" ||
-      event.key === "ArrowRight"
-    ) {
-      if (isMovementEvent(event)) {
-        handleMovement(deltaX, deltaY);
-      } else {
-        handleSelection(event, deltaX, deltaY);
-      }
+    if (isArrowKey && shouldNavigate(event)) {
+      const handler = isMovementEvent(event) ? handleMovement : handleSelection;
+
+      handler(event);
     }
   });
 

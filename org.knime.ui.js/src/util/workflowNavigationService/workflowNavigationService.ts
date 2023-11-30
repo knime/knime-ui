@@ -1,7 +1,6 @@
-import type { Workflow } from "@/api/custom-types";
-import type { EventTypes } from "./common";
 import { toRaw } from "vue";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { Workflow } from "@/api/custom-types";
+import type { Direction, EventTypes, PointNode } from "./common";
 
 const webWorker = new Worker(new URL("./worker", import.meta.url), {
   type: "module",
@@ -21,24 +20,23 @@ const sendMessage = <TResponse, TPayload = Record<string, any>>(
     });
   });
 
-const createTree = (data: Workflow) => {
-  const message: Message<Workflow> = { type: "create", payload: toRaw(data) };
-  return sendMessage(message);
-};
-
-const nearest = (data: { workflow: Workflow; position: XY }) => {
+const nearest = (data: {
+  workflow: Workflow;
+  position: PointNode;
+  direction: Direction;
+}) => {
   const message: Message<typeof data> = {
     type: "nearest",
     payload: {
       workflow: toRaw(data.workflow),
       position: data.position,
+      direction: data.direction,
     },
   };
 
-  return sendMessage<Array<[XY & { id: string }, number]>>(message);
+  return sendMessage<PointNode>(message);
 };
 
 export const workflowNavigationService = {
-  createTree,
   nearest,
 };
