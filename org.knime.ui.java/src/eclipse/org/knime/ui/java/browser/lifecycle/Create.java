@@ -53,7 +53,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Optional;
@@ -63,7 +62,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -76,6 +74,7 @@ import org.knime.core.util.EclipseUtil;
 import org.knime.core.util.HubStatistics;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
+import org.knime.product.rcp.KNIMEApplication;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
@@ -83,7 +82,6 @@ import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
-import org.osgi.framework.FrameworkUtil;
 
 /**
  * The 'create' lifecycle-phase for the KNIME-UI. Only called exactly once at the beginning.
@@ -179,7 +177,7 @@ final class Create {
     private static String buildAPUsage() {
         // simple distinction between first and recurring users
         var apUsage = "apUsage:";
-        if (isFreshWorkspace()) {
+        if (KNIMEApplication.isStartedWithFreshWorkspace()) {
             apUsage += "first";
         } else {
             apUsage += "recurring";
@@ -206,14 +204,6 @@ final class Create {
             hubUsage += "none";
         }
         return hubUsage;
-    }
-
-    private static boolean isFreshWorkspace() {
-        var productBundle = FrameworkUtil.getBundle(Create.class);
-        IPath path = Platform.getStateLocation(productBundle);
-        var workbenchStateFile =
-            path.toFile().toPath().getParent().resolve("org.eclipse.e4.workbench").resolve("workbench.xmi");
-        return !Files.exists(workbenchStateFile);
     }
 
     private static void initializeResourceHandlers() {
