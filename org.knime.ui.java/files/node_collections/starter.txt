@@ -80,6 +80,7 @@ org.knime.google.api.sheets.nodes.spreadsheetwriter.GoogleSpreadsheetWriterFacto
 org.knime.reporting2.nodes.concatenate.ReportConcatenatePortsNodeFactory
 org.knime.reporting2.nodes.htmlwriter.ReportHtmlWriterNodeFactory
 org.knime.reporting2.nodes.pdfwriter.ReportPdfWriterNodeFactory
+org.knime.reporting2.nodes.pagebreak.ReportPageBreakNodeFactory
 org.knime.reporting2.nodes.create.ReportTemplateCreatorNodeFactory
 org.knime.reporting2.nodes.textview.TextViewNodeFactory
 org.knime.time.node.calculate.datetimedifference.DateTimeDifferenceNodeFactory
