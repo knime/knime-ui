@@ -47,6 +47,12 @@ export default defineComponent({
     return { error: null };
   },
 
+  watch: {
+    uniquePortKey() {
+      this.error = null;
+    },
+  },
+
   methods: {
     async viewConfigLoaderFn() {
       const portView = await API.port.getPortView({
@@ -60,16 +66,24 @@ export default defineComponent({
       return portView;
     },
 
-    modifyPortViewSettings(portView) {
+    modifyPortViewSettings(portView: unknown) {
       // Introduced with NXT-2044 because selection is enabled for the detached
       // table port view (via the table port view settings) but not yet
       // supported by the _embedded_ (this) table port view. Hence, we modify
       // the table port view settings to _not_ show the selection checkboxes.
       // Workaround to be removed with NXT-2042.
 
-      if (!portView.initialData) {
+      if (
+        typeof portView !== "object" ||
+        (typeof portView === "object" && !("initialData" in portView))
+      ) {
         return;
       }
+
+      if (!portView.initialData || typeof portView.initialData !== "string") {
+        return;
+      }
+
       const initialData = JSON.parse(portView.initialData);
       const settings = initialData?.result?.settings;
       if (settings?.selectionMode === "EDIT") {
@@ -89,7 +103,7 @@ export default defineComponent({
     onStateChange(newState) {
       if (this.uniquePortKey !== newState.portKey) {
         // We are not interested in this state change since it corresponds to a port key
-        //   we are not currently displaying.
+        // we are not currently displaying.
         return;
       }
       this.$emit("stateChange", newState);
@@ -121,6 +135,11 @@ export default defineComponent({
           // TODO: NXT-1211 implement follow-up ticket for selection/hightlighting in the knime-ui-table
           consola.warn("Notifications not yet implemented");
           this.error = pushEvent.alert.subtitle;
+
+          this.$emit("stateChange", {
+            state: "error",
+            message: this.error,
+          });
           return Promise.resolve("");
         },
       );
@@ -130,11 +149,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <div v-if="error" class="error-container">
-    <p>{{ error }}</p>
-  </div>
   <ViewLoader
-    v-else
+    v-if="!error"
     :render-key="uniquePortKey"
     :init-knime-service="initKnimeService"
     :view-config-loader-fn="viewConfigLoaderFn"
@@ -142,18 +158,3 @@ export default defineComponent({
     @state-change="onStateChange"
   />
 </template>
-
-<style lang="postcss" scoped>
-.error-container {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--theme-color-error);
-
-  & p {
-    width: 50%;
-  }
-}
-</style>
