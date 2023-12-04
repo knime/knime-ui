@@ -393,7 +393,7 @@ describe("SpaceExplorer.vue", () => {
 
     await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
       projectId: "someProjectId",
       workflowItemId: "dummy",
       $router: expect.anything(),
@@ -409,7 +409,7 @@ describe("SpaceExplorer.vue", () => {
 
     await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
       projectId: "someProjectId",
       workflowItemId: "dummy",
       $router: expect.anything(),

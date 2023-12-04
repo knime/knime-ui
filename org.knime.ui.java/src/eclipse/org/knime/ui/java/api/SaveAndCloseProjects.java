@@ -156,11 +156,11 @@ public final class SaveAndCloseProjects {
         switch (shallSaveProjects) {
             case 0: // YES
                 if (shallCancelProjectsIfNecessary(dirtyWfms)) {
-                    sendSaveAndCloseProjectEventToFrontend(dirtyProjectIds, eventConsumer, action);
+                    sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer, action);
                 }
                 return 2;
             case 1: // NO
-                return CloseProject.closeProject(projectIds) ? 1 : 0;
+                return CloseProject.closeProjects(projectIds) ? 1 : 0;
             default: // CANCEL button or window 'x'
                 return 0;
         }
@@ -205,7 +205,7 @@ public final class SaveAndCloseProjects {
         return success;
     }
 
-    private static void sendSaveAndCloseProjectEventToFrontend(final String[] dirtyProjectIds,
+    private static void sendSaveAndCloseProjectsEventToFrontend(final String[] dirtyProjectIds,
         final EventConsumer eventConsumer, final PostProjectCloseAction action) {
         var projectIdsJson = MAPPER.createArrayNode();
         Arrays.stream(dirtyProjectIds).forEach(projectIdsJson::add);
@@ -214,7 +214,7 @@ public final class SaveAndCloseProjects {
         var event = MAPPER.createObjectNode();
         event.set("projectIds", projectIdsJson);
         event.set("params", paramsJson);
-        eventConsumer.accept("SaveAndCloseWorkflowsEvent", event);
+        eventConsumer.accept("SaveAndCloseProjectsEvent", event);
     }
 
     private static int promptWhetherToSaveProjects(final WorkflowManager... dirtyWfms) {

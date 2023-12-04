@@ -4,7 +4,7 @@ import type {
   ExampleProject,
   PortType,
   UpdateAvailableEvent,
-  WorkflowProject,
+  Project,
   XY,
 } from "@/api/gateway-api/generated-api";
 import { API } from "@api";
@@ -24,7 +24,7 @@ export interface ApplicationState {
   /**
    * Currently open projects (tabs)
    */
-  openProjects: Array<WorkflowProject>;
+  openProjects: Array<Project>;
   /**
    * Id of currently active project (tab)
    */
@@ -252,7 +252,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       closingProjectIds: projectIds,
     });
 
-    await API.desktop.forceCloseWorkflows({ projectIds });
+    await API.desktop.forceCloseProjects({ projectIds });
     return nextProjectId;
   },
 

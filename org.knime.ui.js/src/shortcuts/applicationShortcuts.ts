@@ -5,7 +5,7 @@ import {
 import type { UnionToShortcutRegistry } from "./types";
 
 type ApplicationShortcuts = UnionToShortcutRegistry<
-  "closeWorkflow" | "createWorkflow"
+  "closeProject" | "createWorkflow"
 >;
 
 declare module "./index" {
@@ -13,12 +13,12 @@ declare module "./index" {
 }
 
 const applicationShortcuts: ApplicationShortcuts = {
-  closeWorkflow: {
+  closeProject: {
     text: "Close workflow",
     hotkey: ["Ctrl", "W"],
     execute: ({ $store }) =>
       $store.dispatch(
-        "workflow/closeWorkflow",
+        "workflow/closeProject",
         $store.state.workflow.activeWorkflow?.projectId,
       ),
     condition: ({ $store }) =>

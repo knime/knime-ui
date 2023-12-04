@@ -6,7 +6,7 @@ import { applicationState, loadStore } from "./loadStore";
 import {
   createSpace,
   createSpaceProvider,
-  createWorkflowProject,
+  createProject,
 } from "@/test/factories";
 
 describe("application::index", () => {
@@ -55,14 +55,14 @@ describe("application::index", () => {
     const { store } = loadStore();
     store.commit("application/setOpenProjects", [
       // project without origin
-      createWorkflowProject({ projectId: "project1" }),
+      createProject({ projectId: "project1" }),
       // project with origin BUT KNOWN space
-      createWorkflowProject({
+      createProject({
         projectId: "project2",
         origin: { providerId: "provider1", spaceId: "known-space" },
       }),
       // project with origin BUT UNKNOWN space
-      createWorkflowProject({
+      createProject({
         projectId: "project3",
         origin: { providerId: "provider1", spaceId: "some-space" },
       }),

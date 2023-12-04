@@ -48,7 +48,6 @@ package org.knime.ui.java.api;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -109,7 +108,7 @@ final class CloseProject {
     /**
      * @param projectIdsToClose
      */
-    static boolean forceCloseProject(final List<String> projectIdsToClose) {
+    static boolean forceCloseProjects(final Collection<String> projectIdsToClose) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             var success = true;
             for (var id : projectIdsToClose) {
@@ -117,13 +116,13 @@ final class CloseProject {
             }
             return success;
         } else {
-            var success = closeProject(projectIdsToClose);
+            var success = closeProjects(projectIdsToClose);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             return success;
         }
     }
 
-    static boolean closeProject(final Collection<String> projectIds) {
+    static boolean closeProjects(final Collection<String> projectIds) {
         var success = true;
         for (var projectId : projectIds) {
             success &= closeProject(projectId);

@@ -7,7 +7,7 @@ import Card from "@/components/common/Card.vue";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
 
 describe("GettingStartedPage.vue", () => {
-  const doMount = ({ openWorkflowMock = vi.fn() } = {}) => {
+  const doMount = ({ openProjectMock = vi.fn() } = {}) => {
     const $store = mockVuexStore({
       application: {
         state: {
@@ -35,7 +35,7 @@ describe("GettingStartedPage.vue", () => {
       },
       spaces: {
         actions: {
-          openWorkflow: openWorkflowMock,
+          openProject: openProjectMock,
         },
       },
     });
@@ -67,8 +67,8 @@ describe("GettingStartedPage.vue", () => {
   });
 
   it("click opens workflow", async () => {
-    const openWorkflowMock = vi.fn();
-    const { wrapper } = doMount({ openWorkflowMock });
+    const openProjectMock = vi.fn();
+    const { wrapper } = doMount({ openProjectMock });
     expect(wrapper.findComponent(Card).exists()).toBe(true);
 
     const cards = wrapper.findAll(".card");
@@ -76,7 +76,7 @@ describe("GettingStartedPage.vue", () => {
 
     cards.at(0).trigger("click");
     await wrapper.vm.$nextTick();
-    expect(openWorkflowMock).toBeCalledWith(
+    expect(openProjectMock).toBeCalledWith(
       expect.anything(),
       expect.objectContaining({
         projectId: cachedLocalSpaceProjectId,

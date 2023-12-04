@@ -8,7 +8,7 @@ import {
   createSpace,
   createSpaceProvider,
   createWorkflow,
-  createWorkflowProject,
+  createProject,
 } from "@/test/factories";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
@@ -19,10 +19,10 @@ import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
 
 describe("RemoteWorkflowInfo.vue", () => {
   const openProjects = [
-    createWorkflowProject({
+    createProject({
       projectId: "no-origin",
     }),
-    createWorkflowProject({
+    createProject({
       projectId: "hub-project",
       origin: {
         itemId: "1234",
@@ -30,7 +30,7 @@ describe("RemoteWorkflowInfo.vue", () => {
         providerId: "hub-provider1",
       },
     }),
-    createWorkflowProject({
+    createProject({
       projectId: "server-project",
       origin: {
         itemId: "1234",
@@ -114,7 +114,7 @@ describe("RemoteWorkflowInfo.vue", () => {
   });
 
   it("should display banner for projects that belong to an unknown space", async () => {
-    const project = createWorkflowProject({
+    const project = createProject({
       projectId: "server-project",
       origin: {
         itemId: "1234",

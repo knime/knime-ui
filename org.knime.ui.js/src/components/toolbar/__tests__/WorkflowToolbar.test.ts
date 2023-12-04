@@ -16,7 +16,7 @@ import {
   createSpace,
   createSpaceProvider,
   createWorkflow,
-  createWorkflowProject,
+  createProject,
 } from "@/test/factories";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import type { Workflow } from "@/api/custom-types";
@@ -152,7 +152,7 @@ describe("WorkflowToolbar.vue", () => {
 
       // create open projects matching the workflow that is active (by projectId)
       const openProjects = [
-        createWorkflowProject({
+        createProject({
           projectId: workflow.projectId,
           origin: {
             itemId: "1234",
@@ -213,7 +213,7 @@ describe("WorkflowToolbar.vue", () => {
       $store.commit("workflow/setActiveWorkflow", workflow);
 
       const openProjects = [
-        createWorkflowProject({
+        createProject({
           projectId: workflow.projectId,
         }),
       ];

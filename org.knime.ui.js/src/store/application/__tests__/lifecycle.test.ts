@@ -201,7 +201,7 @@ describe("application::lifecycle", () => {
         force: true,
       });
 
-      expect(mockedAPI.desktop.forceCloseWorkflows).toHaveBeenCalledWith({
+      expect(mockedAPI.desktop.forceCloseProjects).toHaveBeenCalledWith({
         projectIds: ["projectTest1"],
       });
     });

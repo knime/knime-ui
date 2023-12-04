@@ -17,7 +17,7 @@ export const mutations = {};
 
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* See docs in API */
-  async saveWorkflow({ state, dispatch }) {
+  async saveProject({ state, dispatch }) {
     const { projectId } = getProjectAndWorkflowIds(state);
 
     const { svgElement, isCanvasEmpty } = await dispatch(
@@ -31,11 +31,11 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       isCanvasEmpty,
     );
 
-    await API.desktop.saveWorkflow({ projectId, workflowPreviewSvg });
+    await API.desktop.saveProject({ projectId, workflowPreviewSvg });
   },
 
-  /* Tell the backend to unload this workflow from memory */
-  async closeWorkflow({ dispatch, rootState }, closingProjectId) {
+  /* Tell the backend to unload this project from memory */
+  async closeProject({ dispatch, rootState }, closingProjectId) {
     const { openProjects, activeProjectId } = rootState.application;
     const nextProjectId = getNextProjectId({
       openProjects,
@@ -43,7 +43,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       closingProjectIds: [closingProjectId],
     });
 
-    const didClose = await API.desktop.closeWorkflow({
+    const didClose = await API.desktop.closeProject({
       closingProjectId,
       nextProjectId,
     });
@@ -104,7 +104,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     API.desktop.openLayoutEditor({ projectId, workflowId: nodeId });
   },
 
-  async saveWorkflowAs({ state, dispatch, rootState }) {
+  async saveProjectAs({ state, dispatch, rootState }) {
     const { projectId } = getProjectAndWorkflowIds(state);
 
     const { svgElement, isCanvasEmpty } = await dispatch(
@@ -118,7 +118,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       isCanvasEmpty,
     );
 
-    await API.desktop.saveWorkflowAs({ projectId, workflowPreviewSvg });
+    await API.desktop.saveProjectAs({ projectId, workflowPreviewSvg });
     // refresh space after save workflow
     dispatch(
       "spaces/fetchWorkflowGroupContent",

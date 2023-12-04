@@ -52,7 +52,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
 
     try {
-      const nodeIds = await API.workflow.getLinkUpdates({
+      const nodeIds = await API.workflow.getUpdatableLinkedComponents({
         projectId,
         workflowId,
       });

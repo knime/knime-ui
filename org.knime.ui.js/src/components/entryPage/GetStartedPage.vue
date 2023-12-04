@@ -44,7 +44,7 @@ export default {
   },
   methods: {
     async onExampleClick({ origin }) {
-      await this.$store.dispatch("spaces/openWorkflow", {
+      await this.$store.dispatch("spaces/openProject", {
         projectId: cachedLocalSpaceProjectId,
         workflowItemId: origin.itemId,
         $router: this.$router,

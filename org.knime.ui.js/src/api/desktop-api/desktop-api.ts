@@ -294,7 +294,7 @@ export const openPortView = ({
   );
 };
 
-export const saveWorkflow = ({
+export const saveProject = ({
   projectId,
   workflowPreviewSvg,
 }: {
@@ -302,7 +302,7 @@ export const saveWorkflow = ({
   workflowPreviewSvg: string;
 }) => {
   return callBrowserFunction(
-    window.saveWorkflow,
+    window.saveProject,
     [projectId, workflowPreviewSvg],
     "Could not save workflow",
     false,
@@ -310,13 +310,13 @@ export const saveWorkflow = ({
   );
 };
 
-export const openWorkflow = ({
+export const openProject = ({
   spaceId = "local",
   itemId,
   spaceProviderId = "local",
 }: FullSpacePath) => {
   return callBrowserFunction(
-    window.openWorkflow,
+    window.openProject,
     [spaceId, itemId, spaceProviderId],
     "Could not open workflow",
     false,
@@ -324,7 +324,7 @@ export const openWorkflow = ({
   );
 };
 
-export const closeWorkflow = ({
+export const closeProject = ({
   closingProjectId,
   nextProjectId,
 }: {
@@ -332,7 +332,7 @@ export const closeWorkflow = ({
   nextProjectId: string;
 }) => {
   return callBrowserFunction(
-    window.closeWorkflow,
+    window.closeProject,
     [closingProjectId, nextProjectId],
     "Could not close workflow",
     true,
@@ -340,13 +340,13 @@ export const closeWorkflow = ({
   );
 };
 
-export const forceCloseWorkflows = ({
+export const forceCloseProjects = ({
   projectIds,
 }: {
   projectIds: Array<string>;
 }) => {
   return callBrowserFunction(
-    window.forceCloseWorkflows,
+    window.forceCloseProjects,
     projectIds,
     "Could not close workflow",
     true,
@@ -546,7 +546,7 @@ export const openAPIDefinition = ({
   );
 };
 
-export const saveWorkflowAs = ({
+export const saveProjectAs = ({
   projectId,
   workflowPreviewSvg,
 }: {
@@ -554,7 +554,7 @@ export const saveWorkflowAs = ({
   workflowPreviewSvg: string;
 }) => {
   return callBrowserFunction(
-    window.saveWorkflowAs,
+    window.saveProjectAs,
     [projectId, workflowPreviewSvg],
     "Could not save workflow locally",
     false,
@@ -562,7 +562,7 @@ export const saveWorkflowAs = ({
   );
 };
 
-export const saveAndCloseWorkflows = ({
+export const saveAndCloseProjects = ({
   totalProjects,
   projectIds,
   svgSnapshots,
@@ -574,7 +574,7 @@ export const saveAndCloseWorkflows = ({
   params: any[];
 }) => {
   return callBrowserFunction(
-    window.saveAndCloseWorkflows,
+    window.saveAndCloseProjects,
     [totalProjects, ...projectIds, ...svgSnapshots, ...params],
     "Could not save and close all workflows",
     false,

@@ -3,10 +3,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import {
-  SpaceItem,
-  type WorkflowProject,
-} from "@/api/gateway-api/generated-api";
+import { SpaceItem, type Project } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 
@@ -173,7 +170,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async openWorkflow(
+  async openProject(
     { rootState, state, dispatch, getters },
     { workflowItemId, $router, projectId },
   ) {
@@ -182,7 +179,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     const foundOpenProject = openProjects.find(
       (openProject) =>
-        getters.isWorkflowProjectInProjectPath(openProject, projectId) &&
+        getters.isProjectInProjectPath(openProject, projectId) &&
         openProject?.origin?.itemId === workflowItemId,
     );
 
@@ -195,14 +192,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
 
     // use global loader because just using the local one for the space explorer
-    // is not enough since openWorkflow would open a new workflow instead of just
+    // is not enough since 'openProject' would open a new project instead of just
     // doing a local operation like fetching data or renaming
     await dispatch(
       "application/updateGlobalLoader",
       { loading: true, config: { displayMode: "transparent" } },
       { root: true },
     );
-    await API.desktop.openWorkflow({
+    await API.desktop.openProject({
       spaceProviderId,
       spaceId,
       itemId: workflowItemId,
@@ -279,7 +276,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       const openProjectIds = openProjects
         .filter(
           (openProject) =>
-            getters.isWorkflowProjectInProjectPath(openProject, projectId) &&
+            getters.isProjectInProjectPath(openProject, projectId) &&
             itemIds.includes(openProject?.origin?.itemId),
         )
         .map(({ projectId }) => projectId);
@@ -382,8 +379,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     return pathId;
   },
 
-  isWorkflowProjectInProjectPath: (state, getters) => {
-    return (project: WorkflowProject, pathKey: string) => {
+  isProjectInProjectPath: (state, getters) => {
+    return (project: Project, pathKey: string) => {
       if (!state.projectPath.hasOwnProperty(pathKey)) {
         return false;
       }
@@ -452,7 +449,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       return openProjects
         .filter(
           (openProject) =>
-            getters.isWorkflowProjectInProjectPath(openProject, projectId) &&
+            getters.isProjectInProjectPath(openProject, projectId) &&
             projectItemIds.includes(openProject?.origin?.itemId),
         )
         .map(({ origin }) => origin.itemId);
@@ -471,7 +468,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
       const openProjectsFolders = openProjects
         .filter((openProject) =>
-          getters.isWorkflowProjectInProjectPath(openProject, projectId),
+          getters.isProjectInProjectPath(openProject, projectId),
         )
         .flatMap(({ origin }) => origin.ancestorItemIds ?? []);
 

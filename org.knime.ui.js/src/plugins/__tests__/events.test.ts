@@ -78,7 +78,7 @@ describe("Event Plugin", () => {
       "UpdateAvailableEvent",
       "NodeRepositoryLoadingProgressEvent",
       "ShowToastEvent",
-      "SaveAndCloseWorkflowsEvent",
+      "SaveAndCloseProjectsEvent",
       "ImportURIEvent",
       "ProgressEvent",
       "AiAssistantEvent",
@@ -209,7 +209,7 @@ describe("Event Plugin", () => {
     });
 
     // TODO NXT-1437
-    describe("saveAndCloseWorkflowsEvent", () => {
+    describe("saveAndCloseProjectsEvent", () => {
       it.todo("should set the application busy state");
 
       it.todo("should generate all unsaved project snapshots");

@@ -86,7 +86,9 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).not.toHaveBeenCalled();
       expect(show).not.toHaveBeenCalled();
     });
 
@@ -97,7 +99,7 @@ describe("workflow::componentInteractions", () => {
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
 
-      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce([]);
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce([]);
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
         auto: true,
@@ -113,7 +115,7 @@ describe("workflow::componentInteractions", () => {
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
 
-      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce([]);
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce([]);
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
         auto: false,
@@ -137,7 +139,9 @@ describe("workflow::componentInteractions", () => {
       const dispatchSpy = vi.spyOn(store, "dispatch");
 
       const nodeIds = ["root:1", "root:2", "root:3"];
-      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce(nodeIds);
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
+        nodeIds,
+      );
 
       mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
         status: UpdateLinkedComponentsResult.StatusEnum.Success,
@@ -156,7 +160,9 @@ describe("workflow::componentInteractions", () => {
           ]),
         }),
       );
-      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).toHaveBeenCalledWith({
         projectId: workflow.projectId,
         workflowId: workflow.info.containerId,
       });
@@ -193,7 +199,9 @@ describe("workflow::componentInteractions", () => {
       store.commit("workflow/setActiveWorkflow", workflow);
 
       const nodeIds = ["root:1", "root:2", "root:3"];
-      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce(nodeIds);
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
+        nodeIds,
+      );
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
         auto: true,
@@ -218,7 +226,7 @@ describe("workflow::componentInteractions", () => {
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
 
-      mockedAPI.workflow.getLinkUpdates.mockRejectedValue(
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockRejectedValue(
         new Error("anything"),
       );
       // mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce([]);
@@ -244,20 +252,24 @@ describe("workflow::componentInteractions", () => {
       store.commit("workflow/setActiveWorkflow", workflow);
 
       const nodeIds = ["root:1", "root:2", "root:3"];
-      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce(nodeIds);
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
+        nodeIds,
+      );
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
         auto: true,
       });
 
       expect(show).toHaveBeenCalledOnce();
-      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).toHaveBeenCalledWith({
         projectId: workflow.projectId,
         workflowId: workflow.info.containerId,
       });
 
       // clear mocks before second dispatch
-      mockedAPI.workflow.getLinkUpdates.mockClear();
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockClear();
       show.mockClear();
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
@@ -265,10 +277,12 @@ describe("workflow::componentInteractions", () => {
       });
 
       expect(show).not.toHaveBeenCalled();
-      expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).not.toHaveBeenCalled();
 
       // clear mocks before third dispatch
-      mockedAPI.workflow.getLinkUpdates.mockClear();
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockClear();
       show.mockClear();
 
       // clear state that remembers whether to show/hide notifications
@@ -280,7 +294,9 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).toHaveBeenCalledWith({
         projectId: workflow.projectId,
         workflowId: workflow.info.containerId,
       });

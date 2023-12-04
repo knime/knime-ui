@@ -51,23 +51,23 @@ declare function openPortView(
   viewIndex: number,
 ): void;
 
-declare function saveWorkflow(
+declare function saveProject(
   projectId: string,
   workflowPreviewSvg: string,
 ): void;
 
-declare function openWorkflow(
+declare function openProject(
   spaceId: string,
   itemId: string,
   spaceProviderId: string,
 ): void;
 
-declare function closeWorkflow(
+declare function closeProject(
   closingProjectId: string,
   nextProjectId: string,
 ): boolean;
 
-declare function forceCloseWorkflows(...args: string[]): boolean;
+declare function forceCloseProjects(...args: string[]): boolean;
 
 declare function setProjectActiveAndEnsureItsLoaded(projectId: string): void;
 
@@ -132,12 +132,12 @@ declare function openAPIDefinition(
   itemId: string,
 ): void;
 
-declare function saveWorkflowAs(
+declare function saveProjectAs(
   projectId: string,
   workflowPreviewSvg: string,
 ): void;
 
-declare function saveAndCloseWorkflows(
+declare function saveAndCloseProjects(
   totalProjects: number,
   ...args: unknown[]
 ): unknown;

@@ -77,14 +77,14 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "saveWorkflow",
+    name: "saveProject",
     params: [
       ["projectId", "project1"],
       ["workflowPreviewSvg", "<svg></svg>"],
     ],
   },
   {
-    name: "openWorkflow",
+    name: "openProject",
     params: [
       ["spaceId", "space1"],
       ["itemId", "123"],
@@ -92,7 +92,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "closeWorkflow",
+    name: "closeProject",
     params: [
       ["closingProjectId", "1"],
       ["nextProjectId", "1"],
@@ -100,7 +100,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     returnValue: true,
   },
   {
-    name: "forceCloseWorkflows",
+    name: "forceCloseProjects",
     params: [["projectIds", ["1", "2", "3"]]],
     flattenParams: true,
   },
@@ -195,7 +195,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "saveWorkflowAs",
+    name: "saveProjectAs",
     params: [
       ["projectId", "project1"],
       ["workflowPreviewSvg", "<svg></svg>"],
@@ -214,7 +214,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "saveAndCloseWorkflows",
+    name: "saveAndCloseProjects",
     params: [
       ["totalProjects", 2],
       ["projectIds", ["project1", "project2"]],

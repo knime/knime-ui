@@ -8,7 +8,7 @@ import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
 import {
   createSpace,
   createSpaceProvider,
-  createWorkflowProject,
+  createProject,
 } from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
 
@@ -219,7 +219,7 @@ describe("spaces::spaceOperations", () => {
     });
   });
 
-  describe("openWorkflow", () => {
+  describe("openProject", () => {
     it("should open workflow", async () => {
       const { store, dispatchSpy } = loadStore();
 
@@ -229,7 +229,7 @@ describe("spaces::spaceOperations", () => {
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/openWorkflow", {
+      await store.dispatch("spaces/openProject", {
         projectId: "project2",
         workflowItemId: "foobar",
       });
@@ -237,7 +237,7 @@ describe("spaces::spaceOperations", () => {
         "application/updateGlobalLoader",
         { loading: true, config: { displayMode: "transparent" } },
       );
-      expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
+      expect(mockedAPI.desktop.openProject).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "local",
         itemId: "foobar",
@@ -257,12 +257,12 @@ describe("spaces::spaceOperations", () => {
         itemId: "folder1",
       };
 
-      await store.dispatch("spaces/openWorkflow", {
+      await store.dispatch("spaces/openProject", {
         workflowItemId: "foobar",
         projectId: "project3",
       });
 
-      expect(mockedAPI.desktop.openWorkflow).toHaveBeenCalledWith({
+      expect(mockedAPI.desktop.openProject).toHaveBeenCalledWith({
         spaceId: "remote1",
         spaceProviderId: "knime1",
         itemId: "foobar",
@@ -289,13 +289,13 @@ describe("spaces::spaceOperations", () => {
       });
 
       const mockRouter = { push: vi.fn() };
-      await store.dispatch("spaces/openWorkflow", {
+      await store.dispatch("spaces/openProject", {
         projectId: "project2",
         workflowItemId: "dummy",
         $router: mockRouter,
       });
 
-      expect(mockedAPI.desktop.openWorkflow).not.toHaveBeenCalled();
+      expect(mockedAPI.desktop.openProject).not.toHaveBeenCalled();
       expect(mockRouter.push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: "dummyProject", workflowId: "root" },
@@ -400,7 +400,7 @@ describe("spaces::spaceOperations", () => {
       });
 
       const openProjects = [
-        createWorkflowProject({
+        createProject({
           projectId: "project1",
           origin: {
             spaceId: space.id,
@@ -533,7 +533,7 @@ describe("spaces::spaceOperations", () => {
       });
     });
 
-    describe("isWorkflowProjectInProjectPath", () => {
+    describe("isProjectInProjectPath", () => {
       it("should determine whether the given workflow project is loaded in path", () => {
         const { store } = loadStore();
         const projectId1 = "project1";
@@ -549,22 +549,16 @@ describe("spaces::spaceOperations", () => {
           local: createSpaceProvider(),
         });
 
-        const workflowProject = createWorkflowProject({
+        const project = createProject({
           projectId: projectId1,
           origin: { spaceId: "local", providerId: "local" },
         });
 
         expect(
-          store.getters["spaces/isWorkflowProjectInProjectPath"](
-            workflowProject,
-            projectId1,
-          ),
+          store.getters["spaces/isProjectInProjectPath"](project, projectId1),
         ).toBe(true);
         expect(
-          store.getters["spaces/isWorkflowProjectInProjectPath"](
-            workflowProject,
-            projectId2,
-          ),
+          store.getters["spaces/isProjectInProjectPath"](project, projectId2),
         ).toBe(false);
       });
 
@@ -572,13 +566,10 @@ describe("spaces::spaceOperations", () => {
         const { store } = loadStore();
         const projectId = "some-project-id";
 
-        const workflowProject = createWorkflowProject({ projectId });
+        const project = createProject({ projectId });
 
         expect(
-          store.getters["spaces/isWorkflowProjectInProjectPath"](
-            workflowProject,
-            projectId,
-          ),
+          store.getters["spaces/isProjectInProjectPath"](project, projectId),
         ).toBe(false);
       });
 
@@ -600,16 +591,13 @@ describe("spaces::spaceOperations", () => {
           }),
         });
 
-        const workflowProject = createWorkflowProject({
+        const project = createProject({
           projectId,
           origin: { spaceId: "space1", providerId: "provider1" },
         });
 
         expect(
-          store.getters["spaces/isWorkflowProjectInProjectPath"](
-            workflowProject,
-            projectId,
-          ),
+          store.getters["spaces/isProjectInProjectPath"](project, projectId),
         ).toBe(false);
       });
     });

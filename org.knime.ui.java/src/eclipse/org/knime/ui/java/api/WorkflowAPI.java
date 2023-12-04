@@ -71,16 +71,16 @@ final class WorkflowAPI {
     }
 
     /**
-     * Opens the workflow either in both, the Classic UI and the Modern/Web UI if the classic UI is active (the
-     * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
-     * Modern UI. Those workflows won't be available in the classic UI when switching to it.
+     * Opens the workflow or component project either in both, the Classic UI and the Modern/Web UI if the classic UI is
+     * active (the WorkflowEditor is used in that case to open the workflow). Or it opens and loads the project
+     * exclusively in the Modern UI. Those projects won't be available in the classic UI when switching to it.
      *
      * @param spaceId
      * @param itemId
      * @param spaceProviderId {@code local} if absent
      */
     @API
-    static void openWorkflow(final String spaceId, final String itemId, final String spaceProviderId) {
+    static void openProject(final String spaceId, final String itemId, final String spaceProviderId) {
         OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 
@@ -93,26 +93,26 @@ final class WorkflowAPI {
      * @return A boolean indicating whether an editor has been closed.
      */
     @API
-    static boolean closeWorkflow(final String projectIdToClose, final String nextProjectId) {
+    static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
         return CloseProject.closeProject(projectIdToClose, nextProjectId);
     }
 
     /**
-     * Closes (i.e. removes from memory) all the workflows for the given projects ids without saving any pending
-     * changes.
+     * Closes (i.e. removes from memory) all the workflow or component projects for the given projects ids without
+     * saving any pending changes.
      *
      * @return whether all the workflows have been successfully been closed
      */
     @API
-    static boolean forceCloseWorkflows(final Object[] projectIdsToClose) {
-        return CloseProject.forceCloseProject(Arrays.stream(projectIdsToClose).map(String.class::cast).toList());
+    static boolean forceCloseProjects(final Object[] projectIdsToClose) {
+        return CloseProject.forceCloseProjects(Arrays.stream(projectIdsToClose).map(String.class::cast).toList());
     }
 
     /**
      * Save the project workflow manager identified by a given project ID.
      */
     @API
-    static void saveWorkflow(final String projectId, final String projectSVG) {
+    static void saveProject(final String projectId, final String projectSVG) {
         SaveProject.saveProject(projectId, projectSVG, false);
     }
 
@@ -120,13 +120,13 @@ final class WorkflowAPI {
      * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
-     *            after the workflows have been saved ('PostWorkflowCloseAction').
+     *            after the projects have been saved ('PostProjectCloseAction').
      */
     @API
-    static void saveAndCloseWorkflows(final Object[] projectIdsAndSvgsAndMore) {
+    static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore) {
         var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, postWorkflowCloseAction -> { // NOSONAR
-            switch (postWorkflowCloseAction) {
+        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, postProjectCloseAction -> { // NOSONAR
+            switch (postProjectCloseAction) {
                 case SWITCH_PERSPECTIVE -> EclipseUIAPI.doSwitchToJavaUI();
                 case SHUTDOWN -> { // NOSONAR
                     var lifeCycle = LifeCycle.get();
@@ -177,7 +177,7 @@ final class WorkflowAPI {
      * @throws IOException if moving the workflow fails
      */
     @API
-    static void saveWorkflowAs(final String projectId, final String workflowSvg) throws IOException {
+    static void saveProjectAs(final String projectId, final String workflowSvg) throws IOException {
         SaveProjectCopy.saveCopyOf(projectId, workflowSvg);
     }
 
@@ -191,7 +191,7 @@ final class WorkflowAPI {
      */
     @API
     static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException {
+        throws IOException { // TODO: Double check whether this exception makes sense
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         space.openRemoteExecution(itemId);
     }

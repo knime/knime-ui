@@ -88,19 +88,19 @@ describe("applicationShortcuts", () => {
     });
   });
 
-  it("closeWorkflow", () => {
-    applicationShortcuts.closeWorkflow.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("workflow/closeWorkflow", "1");
+  it("closeProject", () => {
+    applicationShortcuts.closeProject.execute({ $store });
+    expect(mockDispatch).toHaveBeenCalledWith("workflow/closeProject", "1");
   });
 
   describe("condition", () => {
-    it("closeWorkflow", () => {
-      expect(applicationShortcuts.closeWorkflow.condition({ $store })).toBe(
+    it("closeProject", () => {
+      expect(applicationShortcuts.closeProject.condition({ $store })).toBe(
         true,
       );
       $store.state.workflow.activeWorkflow.projectId = null;
       expect(
-        applicationShortcuts.closeWorkflow.condition({ $store }),
+        applicationShortcuts.closeProject.condition({ $store }),
       ).toBeFalsy();
     });
   });

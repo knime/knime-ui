@@ -63,7 +63,7 @@ export default defineComponent({
       event.preventDefault();
     },
     onSaveLocalCopy() {
-      this.$store.dispatch("workflow/saveWorkflowAs");
+      this.$store.dispatch("workflow/saveProjectAs");
     },
   },
 });

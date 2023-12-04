@@ -61,7 +61,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         $store.dispatch("application/setActiveProject", { $router });
       }
 
-      // In case a `SaveAndCloseWorkflowsEvent` was received before, which might've triggered
+      // In case a `SaveAndCloseProjectsEvent` was received before, which might've triggered
       // an `AppStateChangedEvent` later, then we make sure to clean up the busy state here
       $store.dispatch("application/updateGlobalLoader", { loading: false });
     },
@@ -91,7 +91,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   });
 
   API.desktop.registerEventHandlers({
-    async SaveAndCloseWorkflowsEvent({ projectIds, params = [] }) {
+    async SaveAndCloseProjectsEvent({ projectIds, params = [] }) {
       await $store.dispatch("application/updateGlobalLoader", {
         loading: true,
       });
@@ -129,7 +129,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         const svgSnapshots = await Promise.all(svgSnapshotResolvePromises);
         const totalProjects = projectIds.length;
 
-        await API.desktop.saveAndCloseWorkflows({
+        await API.desktop.saveAndCloseProjects({
           totalProjects,
           projectIds,
           svgSnapshots,
@@ -147,7 +147,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
           headline: "Error saving your work",
           type: "error",
           message:
-            "There was a problem saving one of your workflows. Please try again or save them individually",
+            "There was a problem saving one of your projects. Please try again or save them individually",
         });
       }
 

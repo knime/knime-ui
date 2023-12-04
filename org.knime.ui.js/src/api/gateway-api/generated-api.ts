@@ -444,10 +444,10 @@ export interface AppState {
 
     /**
      * List of all opened workflow projects.
-     * @type {Array<WorkflowProject>}
+     * @type {Array<Project>}
      * @memberof AppState
      */
-    openProjects?: Array<WorkflowProject>;
+    openProjects?: Array<Project>;
     /**
      * List of example projects, e.g., to be shown on and opened from the &#39;get started&#39; page.
      * @type {Array<ExampleProject>}
@@ -2721,6 +2721,41 @@ export interface PortViews {
 
 
 /**
+ * Represents an entire workflow project.
+ * @export
+ * @interface Project
+ */
+export interface Project {
+
+    /**
+     *
+     * @type {string}
+     * @memberof Project
+     */
+    projectId: string;
+    /**
+     *
+     * @type {SpaceItemReference}
+     * @memberof Project
+     */
+    origin?: SpaceItemReference;
+    /**
+     *
+     * @type {string}
+     * @memberof Project
+     */
+    name: string;
+    /**
+     * If this workflow project is active, it provides the node id of the active workflow (e.g. the root workflow or a sub-workflow (component/metanode)).
+     * @type {string}
+     * @memberof Project
+     */
+    activeWorkflowId?: string;
+
+}
+
+
+/**
  * Event for changes to the dirtyState of a project/workflow.
  * @export
  * @interface ProjectDirtyStateEvent
@@ -4051,41 +4086,6 @@ export namespace WorkflowInfo {
     }
 }
 /**
- * Represents an entire workflow project.
- * @export
- * @interface WorkflowProject
- */
-export interface WorkflowProject {
-
-    /**
-     *
-     * @type {string}
-     * @memberof WorkflowProject
-     */
-    projectId: string;
-    /**
-     *
-     * @type {SpaceItemReference}
-     * @memberof WorkflowProject
-     */
-    origin?: SpaceItemReference;
-    /**
-     *
-     * @type {string}
-     * @memberof WorkflowProject
-     */
-    name: string;
-    /**
-     * If this workflow project is active, it provides the node id of the active workflow (e.g. the root workflow or a sub-workflow (component/metanode)).
-     * @type {string}
-     * @memberof WorkflowProject
-     */
-    activeWorkflowId?: string;
-
-}
-
-
-/**
  * A workflow with an additional snapshot id.
  * @export
  * @interface WorkflowSnapshot
@@ -4698,19 +4698,19 @@ const workflow = function(rpcClient: RPCClient) {
            return rpcClient.call('WorkflowService.executeWorkflowCommand', { ...defaultParams, ...params });
         },
         /**
-         * Get the number of component link updates.
+         * Returns the node IDs of all updatable linked components present on a workflow, even if they are deeply nested.
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getLinkUpdates(
+        getUpdatableLinkedComponents(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Array<string>> {
            const defaultParams = { 
            }
 
-           return rpcClient.call('WorkflowService.getLinkUpdates', { ...defaultParams, ...params });
+           return rpcClient.call('WorkflowService.getUpdatableLinkedComponents', { ...defaultParams, ...params });
         },
         /**
          * Retrieves the complete structure (sub-)workflows.

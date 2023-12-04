@@ -46,7 +46,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: "hover", projectId: string): void;
   (e: "switchWorkflow", projectId: string): void;
-  (e: "closeWorkflow", projectId: string): void;
+  (e: "closeProject", projectId: string): void;
 }>();
 
 const { windowWidth, name, provider } = toRefs(props);
@@ -81,7 +81,7 @@ const onHover = (hoverValue: string) => {
       @click.stop="isActive ? null : emit('switchWorkflow', projectId)"
       @mouseover="onHover(projectId)"
       @mouseleave="onHover(null)"
-      @click.middle.stop="emit('closeWorkflow', projectId)"
+      @click.middle.stop="emit('closeProject', projectId)"
     >
       <!-- There are different icons for local workflows and for components -->
       <template v-if="isLocal">
@@ -97,7 +97,7 @@ const onHover = (hoverValue: string) => {
       <CloseButton
         class="close-icon"
         :has-unsaved-changes="hasUnsavedChanges"
-        @close.stop="emit('closeWorkflow', projectId)"
+        @close.stop="emit('closeProject', projectId)"
       />
     </li>
   </ul>

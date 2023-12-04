@@ -153,9 +153,9 @@ describe("workflow store: desktop interactions", () => {
           }),
         );
 
-        await store.dispatch("workflow/saveWorkflow");
+        await store.dispatch("workflow/saveProject");
 
-        expect(mockedAPI.desktop.saveWorkflow).toHaveBeenCalledWith(
+        expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({ projectId: "foo" }),
         );
       });
@@ -173,9 +173,9 @@ describe("workflow store: desktop interactions", () => {
           }),
         );
 
-        await store.dispatch("workflow/saveWorkflow");
+        await store.dispatch("workflow/saveProject");
 
-        expect(mockedAPI.desktop.saveWorkflow).toHaveBeenCalledWith(
+        expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({
             workflowPreviewSvg: "mock svg preview",
           }),
@@ -209,9 +209,9 @@ describe("workflow store: desktop interactions", () => {
           }),
         );
 
-        await store.dispatch("workflow/saveWorkflow");
+        await store.dispatch("workflow/saveProject");
 
-        expect(mockedAPI.desktop.saveWorkflow).toHaveBeenCalledWith(
+        expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({
             workflowPreviewSvg: dummyEl.outerHTML,
           }),
@@ -221,7 +221,7 @@ describe("workflow store: desktop interactions", () => {
 
     describe("close workflow", () => {
       it("closes correctly when single project is opened", async () => {
-        mockedAPI.desktop.closeWorkflow.mockImplementation(() => true);
+        mockedAPI.desktop.closeProject.mockImplementation(() => true);
 
         const openProjects = [
           { name: "Mock project 1", projectId: "Mock project 1" },
@@ -241,8 +241,8 @@ describe("workflow store: desktop interactions", () => {
           }),
         );
 
-        await store.dispatch("workflow/closeWorkflow", closingProjectId);
-        expect(mockedAPI.desktop.closeWorkflow).toHaveBeenCalledWith({
+        await store.dispatch("workflow/closeProject", closingProjectId);
+        expect(mockedAPI.desktop.closeProject).toHaveBeenCalledWith({
           closingProjectId,
           nextProjectId: null,
         });
@@ -278,7 +278,7 @@ describe("workflow store: desktop interactions", () => {
       ])(
         "should %s",
         async (_, { activeProject, closingProject, expectedNextProject }) => {
-          mockedAPI.desktop.closeWorkflow.mockImplementation(() => true);
+          mockedAPI.desktop.closeProject.mockImplementation(() => true);
 
           const openProjects = [
             { name: "Mock project 1", projectId: "Mock project 1" },
@@ -302,8 +302,8 @@ describe("workflow store: desktop interactions", () => {
             }),
           );
 
-          await store.dispatch("workflow/closeWorkflow", closingProjectId);
-          expect(mockedAPI.desktop.closeWorkflow).toHaveBeenCalledWith({
+          await store.dispatch("workflow/closeProject", closingProjectId);
+          expect(mockedAPI.desktop.closeProject).toHaveBeenCalledWith({
             closingProjectId,
             nextProjectId: expectedNextProjectId,
           });
@@ -314,11 +314,11 @@ describe("workflow store: desktop interactions", () => {
         },
       );
 
-      it("does not remove canvasState nor workflowPreviewSnapshot if closeWorkflow is cancelled", async () => {
-        mockedAPI.desktop.closeWorkflow.mockImplementation(() => false);
+      it("does not remove canvasState nor workflowPreviewSnapshot if closeProject is cancelled", async () => {
+        mockedAPI.desktop.closeProject.mockImplementation(() => false);
         const { store, dispatchSpy } = await loadStore();
 
-        await store.dispatch("workflow/closeWorkflow", "foo");
+        await store.dispatch("workflow/closeProject", "foo");
 
         expect(dispatchSpy).not.toHaveBeenCalledWith(
           "application/removeRootWorkflowSnapshot",
@@ -343,9 +343,9 @@ describe("workflow store: desktop interactions", () => {
         }),
       );
 
-      await store.dispatch("workflow/saveWorkflowAs");
+      await store.dispatch("workflow/saveProjectAs");
 
-      expect(mockedAPI.desktop.saveWorkflowAs).toHaveBeenCalledWith(
+      expect(mockedAPI.desktop.saveProjectAs).toHaveBeenCalledWith(
         expect.objectContaining({ projectId: "foo" }),
       );
     });
@@ -363,9 +363,9 @@ describe("workflow store: desktop interactions", () => {
         }),
       );
 
-      await store.dispatch("workflow/saveWorkflowAs");
+      await store.dispatch("workflow/saveProjectAs");
 
-      expect(mockedAPI.desktop.saveWorkflowAs).toHaveBeenCalledWith(
+      expect(mockedAPI.desktop.saveProjectAs).toHaveBeenCalledWith(
         expect.objectContaining({
           workflowPreviewSvg: "mock svg preview",
         }),

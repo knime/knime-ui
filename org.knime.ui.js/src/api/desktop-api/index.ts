@@ -3,7 +3,7 @@ import { registerEventHandler } from "../json-rpc-client";
 import * as desktopAPIMethods from "./desktop-api";
 
 export interface DesktopEventHandlers {
-  SaveAndCloseWorkflowsEvent(payload: {
+  SaveAndCloseProjectsEvent(payload: {
     projectIds: Array<string>;
     params: unknown[];
   }): void | Promise<any>;

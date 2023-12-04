@@ -148,7 +148,7 @@ describe("CreateWorkflowModal.vue", () => {
         expect.objectContaining({ loading: false }),
       );
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/openWorkflow", {
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
         projectId: "someProject",
         workflowItemId: "new-wf",
       });

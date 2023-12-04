@@ -42,7 +42,7 @@ describe("AppHeader.vue", () => {
         actions: { switchWorkflow: vi.fn() },
       },
       workflow: {
-        actions: { closeWorkflow: vi.fn() },
+        actions: { closeProject: vi.fn() },
       },
     };
     const $router = {
@@ -72,7 +72,7 @@ describe("AppHeader.vue", () => {
 
       expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
       wrapper.findAllComponents(CloseButton).at(1).trigger("click");
-      expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalledWith(
+      expect(storeConfig.workflow.actions.closeProject).toHaveBeenCalledWith(
         expect.anything(),
         "2",
       );

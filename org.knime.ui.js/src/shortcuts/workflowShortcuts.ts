@@ -45,9 +45,9 @@ const workflowShortcuts: WorkflowShortcuts = {
     icon: SaveIcon,
     execute: ({ $store }) => {
       if ($store.getters["application/activeProjectOrigin"]) {
-        $store.dispatch("workflow/saveWorkflow");
+        $store.dispatch("workflow/saveProject");
       } else {
-        $store.dispatch("workflow/saveWorkflowAs");
+        $store.dispatch("workflow/saveProjectAs");
       }
     },
     condition: ({ $store }) =>
@@ -58,7 +58,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     title: "Save workflow as",
     text: "Save as…",
     icon: SaveAsIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/saveWorkflowAs"),
+    execute: ({ $store }) => $store.dispatch("workflow/saveProjectAs"),
   },
   undo: {
     title: "Undo",

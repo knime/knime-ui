@@ -63,7 +63,7 @@ const onSubmit = async () => {
     isSubmitted.value = false;
     closeModal();
 
-    await store.dispatch("spaces/openWorkflow", {
+    await store.dispatch("spaces/openProject", {
       projectId,
       workflowItemId: workflowItem.id,
     });

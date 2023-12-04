@@ -75,7 +75,7 @@ export default defineComponent({
     this.setupResizeListener();
   },
   methods: {
-    ...mapActions("workflow", ["closeWorkflow"]),
+    ...mapActions("workflow", ["closeProject"]),
 
     setupResizeListener() {
       const onResize = () => {
@@ -158,7 +158,7 @@ export default defineComponent({
               :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"
               @switch-workflow="onProjectTabChange"
-              @close-workflow="closeWorkflow($event)"
+              @close-project="closeProject($event)"
             />
           </div>
         </Carousel>

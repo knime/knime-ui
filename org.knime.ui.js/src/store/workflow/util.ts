@@ -1,4 +1,4 @@
-import type { WorkflowProject } from "@/api/gateway-api/generated-api";
+import type { Project } from "@/api/gateway-api/generated-api";
 import type { WorkflowState } from "./index";
 
 export const getProjectAndWorkflowIds = (state: WorkflowState) => {
@@ -22,7 +22,7 @@ export const getNextProjectId = ({
   activeProjectId,
   closingProjectIds,
 }: {
-  openProjects: Array<Pick<WorkflowProject, "projectId">>;
+  openProjects: Array<Pick<Project, "projectId">>;
   activeProjectId: string;
   closingProjectIds: Array<string>;
 }) => {

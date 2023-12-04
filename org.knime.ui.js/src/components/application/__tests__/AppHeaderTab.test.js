@@ -66,7 +66,7 @@ describe("AppHeaderTab.vue", () => {
 
     // testing click with middle click works best with triggering mouseup
     await wrapper.find("li").trigger("mouseup", { button: 1 });
-    expect(wrapper.emitted("closeWorkflow")[0][0]).toBe("1");
+    expect(wrapper.emitted("closeProject")[0][0]).toBe("1");
   });
 
   it("should emit a close-workflow event if the close button is pressed", async () => {
@@ -78,7 +78,7 @@ describe("AppHeaderTab.vue", () => {
       .vm.$emit("close", { stopPropagation });
 
     expect(stopPropagation).toHaveBeenCalled();
-    expect(wrapper.emitted("closeWorkflow")[0][0]).toBe("1");
+    expect(wrapper.emitted("closeProject")[0][0]).toBe("1");
   });
 
   describe("truncates the workflow name", () => {
