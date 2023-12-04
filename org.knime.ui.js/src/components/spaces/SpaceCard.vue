@@ -119,6 +119,8 @@ export default {
     font-size: 19px;
     font-weight: 700;
     line-height: 24px;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   & p {
@@ -126,6 +128,8 @@ export default {
     margin: 5px 0;
     font-weight: 300;
     line-height: 24px;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   & span {
