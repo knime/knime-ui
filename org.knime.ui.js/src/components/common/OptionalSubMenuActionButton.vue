@@ -30,7 +30,7 @@ withDefaults(defineProps<Props>(), {
     :title="item.title"
     orientation="left"
     class="submenu-button"
-    :disabled="item.disabled || null"
+    :disabled="item.disabled"
     :items="item.children"
     @item-click="(_, item) => (item.disabled ? null : $emit('click', item))"
   >

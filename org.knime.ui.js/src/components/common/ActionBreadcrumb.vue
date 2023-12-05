@@ -39,11 +39,15 @@ export default {
     },
   },
   methods: {
-    onClick({ target }) {
-      if (!target || !target.href) {
+    onClick({ target }: MouseEvent) {
+      if (!target || !(target as HTMLAnchorElement).href) {
         return;
       }
-      let { hash } = new URL(target.href, "file://dummy/");
+
+      let { hash } = new URL(
+        (target as HTMLAnchorElement).href,
+        "file://dummy/",
+      );
       let id = decodeURIComponent(hash.replace(/^#/, ""));
 
       this.$emit("click", { id, target });

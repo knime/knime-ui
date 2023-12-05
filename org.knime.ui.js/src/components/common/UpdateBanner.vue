@@ -42,7 +42,7 @@ export default defineComponent({
 
       const { newReleases } = this.availableUpdates;
 
-      return newReleases.every(({ isUpdatePossible }) => isUpdatePossible);
+      return newReleases!.every(({ isUpdatePossible }) => isUpdatePossible);
     },
 
     buttonText() {
@@ -53,7 +53,7 @@ export default defineComponent({
 
     updateMessage() {
       if (this.hasBugFixes) {
-        const totalBugFixes = this.availableUpdates.bugfixes.length;
+        const totalBugFixes = this.availableUpdates.bugfixes!.length;
         const isPlural = totalBugFixes > 1;
 
         if (isPlural) {
@@ -66,7 +66,7 @@ export default defineComponent({
       if (this.hasNewReleases) {
         const { newReleases } = this.availableUpdates;
 
-        const { shortName } = newReleases.at(0);
+        const { shortName } = newReleases!.at(0)!;
         const baseMessage = "Get the latest features and enhancements!";
         const updateMessage = `${baseMessage} Update to ${shortName} now.`;
         const downloadMessage = `${baseMessage} Download ${shortName} now.`;

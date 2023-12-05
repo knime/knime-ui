@@ -55,9 +55,9 @@ const createStaggeredLoader = ({
   const stage1Delay = options.stage1Delay || DEFAULT_STAGE1_DELAY;
   const stage2Delay = options.stage2Delay || DEFAULT_STAGE2_DELAY;
 
-  let internalTimer = null;
+  let internalTimer: NodeJS.Timeout;
 
-  const startLoader = (value) => {
+  const startLoader = (value: boolean) => {
     if (!value) {
       clearTimeout(internalTimer);
       resetCallback();
@@ -144,7 +144,8 @@ export default defineComponent({
         [DISPLAY_MODES.fullscreen]: "fixed",
         [DISPLAY_MODES.localized]: "relative",
         [DISPLAY_MODES.transparent]: "fixed",
-      };
+        [DISPLAY_MODES.toast]: "static",
+      } as const;
 
       const zIndexMap = {
         [DISPLAY_MODES.fullscreen]: "99",

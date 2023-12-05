@@ -16,7 +16,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 interface Props {
-  modelValue: string | undefined; // base64 encoded image
+  modelValue: string | null; // base64 encoded image
 }
 
 const props = defineProps<Props>();
@@ -27,10 +27,10 @@ const emit = defineEmits<{
   (e: "update:modelValue", icon: string): void;
 }>();
 
-const input = ref<HTMLInputElement>(null);
+const input = ref<HTMLInputElement | null>(null);
 
 const triggerInput = () => {
-  input.value.click();
+  input.value?.click();
 };
 
 const onChange = async (e: Event) => {
@@ -63,7 +63,9 @@ const onChange = async (e: Event) => {
 
 const { modelValue } = toRefs(props);
 watch(modelValue, () => {
-  input.value.value = "";
+  if (input.value) {
+    input.value.value = "";
+  }
 });
 </script>
 

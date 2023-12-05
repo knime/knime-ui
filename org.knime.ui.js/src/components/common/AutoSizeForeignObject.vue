@@ -21,7 +21,7 @@ type Props = {
   maxWidth?: number;
   yOffset: number;
   offsetByHeight?: boolean;
-  parentWidth: number;
+  parentWidth?: number | null;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -42,7 +42,7 @@ const width = ref(0);
 const height = ref(1);
 const x = ref(0);
 const wrapper = ref<HTMLElement | null>(null);
-let resizeObserver: ResizeObserver = null;
+let resizeObserver: ResizeObserver;
 
 const y = computed(() => {
   if (offsetByHeight.value) {
@@ -84,7 +84,7 @@ onMounted(async () => {
     }
   });
 
-  resizeObserver.observe(wrapper.value);
+  resizeObserver.observe(wrapper.value!);
 });
 
 onBeforeUnmount(() => {
