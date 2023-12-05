@@ -9,25 +9,25 @@ import { SpaceProviderNS } from "@/api/custom-types";
 
 /* eslint-disable no-magic-numbers */
 const maxCharSwitch = [
-  (width) => (width < 600 ? 10 : 0),
-  (width) => (width < 900 ? 20 : 0),
-  (width) => (width < 1280 ? 50 : 0),
-  (width) => (width < 1680 ? 100 : 0),
-  (width) => (width < 2180 ? 150 : 0),
-  (width) => (width < 2800 ? 200 : 0),
-  (width) => (width >= 2800 ? 256 : 0),
+  (width: number) => (width < 600 ? 10 : 0),
+  (width: number) => (width < 900 ? 20 : 0),
+  (width: number) => (width < 1280 ? 50 : 0),
+  (width: number) => (width < 1680 ? 100 : 0),
+  (width: number) => (width < 2180 ? 150 : 0),
+  (width: number) => (width < 2800 ? 200 : 0),
+  (width: number) => (width >= 2800 ? 256 : 0),
 ];
 /* eslint-enable no-magic-numbers */
 
 const maxCharFunction = (windowWidth: number) => {
-  const getMaxChars = maxCharSwitch.find((fn) => fn(windowWidth));
+  const getMaxChars = maxCharSwitch.find((fn) => fn(windowWidth))!;
   return getMaxChars(windowWidth);
 };
 
 type Props = {
   name: string;
   projectId: string;
-  projectType?: string;
+  projectType?: string | null;
   isActive?: boolean;
   hasUnsavedChanges?: boolean;
   isHoveredOver?: boolean;
@@ -44,7 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: "hover", projectId: string): void;
+  (e: "hover", projectId: string | null): void;
   (e: "switchWorkflow", projectId: string): void;
   (e: "closeProject", projectId: string): void;
 }>();
@@ -68,7 +68,7 @@ const isLocal = computed(
   () => provider.value.toUpperCase() === SpaceProviderNS.TypeEnum.LOCAL,
 );
 
-const onHover = (hoverValue: string) => {
+const onHover = (hoverValue: string | null) => {
   emit("hover", hoverValue);
 };
 </script>
@@ -77,7 +77,7 @@ const onHover = (hoverValue: string) => {
   <ul>
     <li
       :class="{ active: isActive, hovered: isHoveredOver }"
-      :title="shouldTruncateName ? name : null"
+      :title="shouldTruncateName ? name : undefined"
       @click.stop="isActive ? null : emit('switchWorkflow', projectId)"
       @mouseover="onHover(projectId)"
       @mouseleave="onHover(null)"

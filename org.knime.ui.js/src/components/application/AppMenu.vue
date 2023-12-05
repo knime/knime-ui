@@ -65,7 +65,7 @@ const menuItem: MenuItem = {
   ],
 };
 
-const onItemClick = (_, item) => item.metadata?.handler?.();
+const onItemClick = (_: any, item: MenuItem) => item.metadata?.handler?.();
 </script>
 
 <template>

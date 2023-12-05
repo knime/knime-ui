@@ -6,17 +6,17 @@ import { ref, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 const block = ref(false);
 const darkenBackground = ref(false);
 
-const blocker = ref<HTMLElement>(null);
+const blocker = ref<HTMLElement | null>(null);
 
 const focus = async () => {
   await nextTick();
-  blocker.value.focus();
+  blocker.value?.focus();
 };
 
 onMounted(() => {
   $bus.on("desktop-api-function-block-ui", (config) => {
     block.value = config.block;
-    darkenBackground.value = config.darkenBackground;
+    darkenBackground.value = Boolean(config.darkenBackground);
   });
 });
 

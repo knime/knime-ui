@@ -16,6 +16,13 @@ import { APP_ROUTES } from "@/router/appRoutes";
 
 import AppHeaderTab from "./AppHeaderTab.vue";
 
+type ComponentData = {
+  windowWidth: number;
+  hoveredTab: string | null;
+  activeProjectTab: string | null;
+  lastActiveProject: string | null;
+};
+
 /**
  * Header Bar containing Logo, Open project tabs, and the 3 buttons Help, Preferences and Menu
  */
@@ -31,7 +38,7 @@ export default defineComponent({
     CodeHtmlIcon,
     CogIcon,
   },
-  data() {
+  data(): ComponentData {
     return {
       windowWidth: 0,
       hoveredTab: null,
@@ -104,7 +111,7 @@ export default defineComponent({
       this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
     },
 
-    onProjectTabChange(projectId) {
+    onProjectTabChange(projectId: string) {
       this.$router.push({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId, workflowId: "root" },

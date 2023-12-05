@@ -21,6 +21,7 @@ import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
 import * as $shapes from "@/style/shapes.mjs";
 import { compatibility } from "@/environment";
+import type { ApplicationState } from "@/store/application";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
 
@@ -37,7 +38,7 @@ const menuGroups = function () {
 
   const onlyEnabled = (item: MenuItem) => !item.disabled;
 
-  const removeInvalidItems = (items: Array<MenuItem>) => {
+  const removeInvalidItems = (items: Array<MenuItem>): Array<MenuItem> => {
     return (
       items
         .filter(onlyEnabled)
@@ -57,7 +58,7 @@ const menuGroups = function () {
 
       if (currItems.length !== 0 && newItems.length > 0) {
         // add separator to last item of previous group
-        currItems.at(-1).separator = true;
+        currItems.at(-1)!.separator = true;
       }
 
       currItems = currItems.concat(newItems);
@@ -139,9 +140,10 @@ export default defineComponent({
       "isSelectionEmpty",
     ]),
     ...mapState("application", {
-      projectId: (state) => state.activeProjectId as string | null,
-      availablePortTypes: (state) =>
-        state.availablePortTypes as AvailablePortTypes,
+      projectId: (state: any) =>
+        (state as ApplicationState).activeProjectId as string | null,
+      availablePortTypes: (state: any) =>
+        (state as ApplicationState).availablePortTypes as AvailablePortTypes,
     }),
   },
   watch: {
@@ -159,13 +161,13 @@ export default defineComponent({
   },
   beforeMount() {
     // deselect any selected text to make copy and paste of non text possible
-    window?.getSelection().removeAllRanges();
+    window?.getSelection()?.removeAllRanges();
   },
   methods: {
     mapToShortcut(
       shortcutItem: ShortcutItem | Array<ShortcutItem>,
     ): Array<MenuItem> {
-      const mapSingleItem = (shortcutItem: ShortcutItem) => {
+      const mapSingleItem = (shortcutItem: ShortcutItem): MenuItem[] => {
         if (!shortcutItem.isVisible) {
           return []; // end early
         }
@@ -179,13 +181,14 @@ export default defineComponent({
 
         return [
           {
-            text: shortcutText,
+            text: shortcutText ?? "",
             hotkeyText: shortcut.hotkeyText,
             disabled: !this.$shortcuts.isEnabled(shortcutItem.name),
             metadata: { shortcutName: shortcutItem.name },
           },
         ];
       };
+
       return Array.isArray(shortcutItem)
         ? shortcutItem.flatMap(mapSingleItem)
         : mapSingleItem(shortcutItem);
@@ -213,8 +216,9 @@ export default defineComponent({
     setActiveDescendant(itemId: string | null) {
       this.activeDescendant = itemId;
     },
-    portViews() {
+    portViews(): MenuItem[] {
       const node = this.singleSelectedNode as KnimeNode;
+
       if (!node) {
         return [];
       }
@@ -249,7 +253,7 @@ export default defineComponent({
                 },
               },
             },
-          ];
+          ] as MenuItem[];
         }
 
         const portViewItems = getPortViewByViewDescriptors(
@@ -258,13 +262,13 @@ export default defineComponent({
           portIndex,
         );
 
-        let mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
+        const mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
           text: item.text,
           disabled: item.disabled,
           metadata: {
             handler: () => {
               API.desktop.openPortView({
-                projectId: this.projectId,
+                projectId: this.projectId!,
                 nodeId,
                 portIndex,
                 viewIndex: Number(item.id),

@@ -9,6 +9,7 @@ import Label from "webapps-common/ui/components/forms/Label.vue";
 
 import { useNameValidator } from "webapps-common/ui/components/FileExplorer/useNameValidator";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
+import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 
 const NAME_TEMPLATE = "KNIME_project";
 
@@ -22,7 +23,7 @@ const isCreateWorkflowModalOpen = computed(
   () => store.state.spaces.createWorkflowModalConfig.isOpen,
 );
 
-const activeSpace = computed(() =>
+const activeSpace = computed<WorkflowGroupContent>(() =>
   store.getters["spaces/getWorkflowGroupContent"](
     store.state.spaces.createWorkflowModalConfig.projectId,
   ),
