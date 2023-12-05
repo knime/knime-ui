@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
+
 interface Props {
   expanded?: boolean;
   disabled?: boolean;
@@ -11,7 +12,7 @@ interface Props {
   /**
    * The hover title to be shown when the panel is collapsed
    */
-  title?: string;
+  title?: string | null;
 }
 
 withDefaults(defineProps<Props>(), {
@@ -37,11 +38,11 @@ defineEmits<Emits>();
     </div>
 
     <button
-      :title="expanded ? null : title"
+      :title="expanded ? undefined : title ?? undefined"
       :disabled="disabled"
       @click="$emit('toggleExpand')"
     >
-      <SwitchIcon :style="{ transform: expanded ? null : 'scaleX(-1)' }" />
+      <SwitchIcon :style="{ transform: expanded ? undefined : 'scaleX(-1)' }" />
     </button>
   </div>
 </template>
