@@ -187,11 +187,9 @@ final class ProjectAPI {
      * @param spaceProviderId
      * @param spaceId
      * @param itemId
-     * @throws IOException
      */
     @API
-    static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId)
-        throws IOException { // TODO: Double check whether this exception makes sense
+    static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         space.openRemoteExecution(itemId);
     }
