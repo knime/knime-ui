@@ -13,7 +13,7 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
 
   const pathToItemId = computed(() => store.getters["spaces/pathToItemId"]);
   const activeSpacePath = computed(() => {
-    return store.state.spaces.projectPath[options.projectId.value];
+    return store.state.spaces.projectPath[options.projectId.value ?? ""];
   });
 
   const onMoveItems = async ({
@@ -24,11 +24,11 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
   }: {
     sourceItems: string[];
     targetItem: string;
-    isCopy: boolean;
     onComplete: (success: boolean) => void;
+    isCopy?: boolean;
   }) => {
     const openedWorkflows = openProjects.value.filter((project) =>
-      sourceItems.includes(project?.origin?.itemId),
+      sourceItems.includes(project?.origin?.itemId ?? ""),
     );
 
     const isInsideFolder = openProjects.value.filter((project) => {

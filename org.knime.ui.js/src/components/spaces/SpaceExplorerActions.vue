@@ -45,7 +45,7 @@ export default {
       required: true,
     },
     projectId: {
-      type: [String, null] as PropType<string | null>,
+      type: String as PropType<string>,
       required: true,
     },
   },
@@ -239,9 +239,7 @@ export default {
           :key="action.id"
           :disabled="isLoadingContent"
           :item="action"
-          @click="
-            (item: ActionMenuItem) => (item.execute ? item.execute() : null)
-          "
+          @click="(item) => (item as ActionMenuItem).execute?.()"
         />
 
         <div class="create-workflow-btn">

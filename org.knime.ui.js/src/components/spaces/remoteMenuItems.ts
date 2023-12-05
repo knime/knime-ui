@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import type { Dispatch } from "vuex";
 import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
 import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
@@ -14,7 +15,7 @@ import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-
 
 export type ActionMenuItem = MenuItem & {
   id: string;
-  execute: () => void;
+  execute: (() => void) | null;
 };
 
 export const buildHubDownloadMenuItem = (
@@ -29,7 +30,9 @@ export const buildHubDownloadMenuItem = (
     text: "Download to local space",
     icon: CloudDownloadIcon,
     disabled: isSelectionEmpty,
-    title: isSelectionEmpty ? "Select at least one file to download." : null,
+    title: isSelectionEmpty
+      ? "Select at least one file to download."
+      : undefined,
     separator: true,
     execute: () => {
       dispatch("spaces/copyBetweenSpaces", {
@@ -51,7 +54,7 @@ export const buildMoveToSpaceMenuItem = (
     text: "Move to...",
     icon: MoveToSpaceIcon,
     disabled: isSelectionEmpty,
-    title: isSelectionEmpty ? "Select at least one item to move." : null,
+    title: isSelectionEmpty ? "Select at least one item to move." : undefined,
     separator: true,
     execute: () => {
       dispatch("spaces/moveOrCopyToSpace", {
@@ -78,7 +81,7 @@ export const buildHubUploadMenuItems = (
     icon: CloudUploadIcon,
     disabled: !hasActiveHubSession || isSelectionEmpty,
     title: hasActiveHubSession
-      ? (isSelectionEmpty && "Select at least one file to upload.") || null
+      ? (isSelectionEmpty && "Select at least one file to upload.") || undefined
       : "A connection to a hub is required to upload.",
     execute: () => {
       dispatch("spaces/copyBetweenSpaces", {
@@ -136,8 +139,8 @@ export const buildHubUploadMenuItems = (
     // connect on click without submenu if there is only one remote hub known
     execute: hasSingleDisconnectedProvider ? firstItem.execute : null,
     // show list of disconnected hubs if we have multiple configured
-    children: hasSingleDisconnectedProvider ? null : connectToHubItems,
-  };
+    children: hasSingleDisconnectedProvider ? undefined : connectToHubItems,
+  } satisfies ActionMenuItem;
 
   return [uploadToRemote, connectToHub];
 };
@@ -161,7 +164,7 @@ export const buildOpenInBrowserMenuItem = (
     disabled: isSelectionEmpty || isSelectionMultiple,
     title: isSelectionEmpty
       ? `Select one file to open in ${providerType}.`
-      : null,
+      : undefined,
     execute: () => {
       dispatch("spaces/openInBrowser", {
         projectId,
@@ -183,7 +186,9 @@ export const buildOpenAPIDefinitionMenuItem = (
     text: "Open API Definition",
     icon: LinkExternal,
     disabled: isSelectionEmpty || isSelectionMultiple,
-    title: isSelectionEmpty ? "Select one workflow to open in server." : null,
+    title: isSelectionEmpty
+      ? "Select one workflow to open in server."
+      : undefined,
     execute: () => {
       dispatch("spaces/openAPIDefinition", {
         projectId,
@@ -205,7 +210,7 @@ export const buildOpenPermissionsDialog = (
     text: "Permissions",
     icon: KeyIcon,
     disabled: isSelectionEmpty || isSelectionMultiple,
-    title: isSelectionEmpty ? "View and edit access permissions" : null,
+    title: isSelectionEmpty ? "View and edit access permissions" : undefined,
     execute: () => {
       dispatch("spaces/openPermissionsDialog", {
         projectId,
@@ -231,7 +236,7 @@ export const buildDisplayDeploymentsMenuItem = (
     disabled: isSelectionEmpty || isSelectionMultiple,
     title: isSelectionEmpty
       ? "Select a file to display schedules and jobs."
-      : null,
+      : undefined,
     execute: () => {
       dispatch("spaces/displayDeployments", {
         projectId,
@@ -255,7 +260,9 @@ export const buildExecuteWorkflowMenuItem = (
     text: "Execute",
     icon: CirclePlayIcon,
     disabled: isSelectionEmpty || isSelectionMultiple,
-    title: isSelectionEmpty ? "Select a file to execute a workflow." : null,
+    title: isSelectionEmpty
+      ? "Select a file to execute a workflow."
+      : undefined,
     execute: () => {
       dispatch("spaces/executeWorkflow", {
         projectId,

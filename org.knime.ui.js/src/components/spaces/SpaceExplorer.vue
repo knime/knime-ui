@@ -30,7 +30,7 @@ import { useMovingItems } from "./useMovingItems";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
-const itemIconRenderer = (item: FileExplorerItemWithMeta) => {
+const itemIconRenderer = (item: FileExplorerItem) => {
   const typeIcons = {
     [SpaceItem.TypeEnum.WorkflowGroup]: FolderIcon,
     [SpaceItem.TypeEnum.Workflow]: WorkflowIcon,
@@ -39,11 +39,11 @@ const itemIconRenderer = (item: FileExplorerItemWithMeta) => {
     [SpaceItem.TypeEnum.Data]: FileTextIcon,
   };
 
-  return typeIcons[item.meta.type];
+  return typeIcons[(item as FileExplorerItemWithMeta).meta!.type];
 };
 
 interface Props {
-  projectId: string | null;
+  projectId: string;
   mode?: "normal" | "mini";
 }
 
@@ -89,6 +89,10 @@ const openedFolderItems = computed<string[]>(() => {
 });
 
 const fileExplorerItems = computed<Array<FileExplorerItemWithMeta>>(() => {
+  if (!activeWorkflowGroup.value) {
+    return [];
+  }
+
   return activeWorkflowGroup.value.items.map((item) => {
     const isOpen =
       openedWorkflowItems.value.includes(item.id) ||
@@ -249,7 +253,10 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
         @drag="onDrag"
         @dragend="onDragEnd"
       >
-        <template v-if="shouldShowCustomPreview" #customDragPreview>
+        <template
+          v-if="shouldShowCustomPreview && nodeTemplate"
+          #customDragPreview
+        >
           <NodePreview
             :type="nodeTemplate.type"
             :in-ports="nodeTemplate.inPorts"

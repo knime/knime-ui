@@ -8,7 +8,7 @@ import * as $shapes from "@/style/shapes.mjs";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
-  return !nodeTemplateId && item.meta.type === SpaceItem.TypeEnum.Component;
+  return !nodeTemplateId && item.meta?.type === SpaceItem.TypeEnum.Component;
 };
 
 type UseCustomDragPreviewOptions = {
@@ -28,7 +28,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
 
   // spaces
   const activeSpacePath = computed(
-    () => store.state.spaces.projectPath[options.projectId.value],
+    () => store.state.spaces.projectPath[options.projectId.value ?? ""],
   );
 
   // canvas
@@ -49,7 +49,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       fileExtensionToNodeTemplateId.value,
     ).find((extension) => sourceItem.name.endsWith(extension));
 
-    return fileExtensionToNodeTemplateId.value[sourceFileExtension];
+    return fileExtensionToNodeTemplateId.value[sourceFileExtension ?? ""];
   };
 
   const onDrag = async ({
@@ -80,7 +80,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
           isComponent: true,
           inPorts: [],
           outPorts: [],
-          type: item.meta.type,
+          type: item.meta?.type,
         }
       : await store.dispatch("nodeRepository/getNodeTemplate", nodeTemplateId);
 

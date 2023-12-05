@@ -14,7 +14,14 @@ const emit = defineEmits<{
   (e: "click", id: string): void;
 }>();
 
-const breadcrumbItems = computed(() => {
+type BreadcrumbItem = {
+  id: string;
+  icon: any;
+  text: string | null;
+  clickable: boolean;
+};
+
+const breadcrumbItems = computed<Array<BreadcrumbItem>>(() => {
   const homeBreadcrumbItem = {
     icon: HouseIcon,
     id: "root",
@@ -31,7 +38,7 @@ const breadcrumbItems = computed(() => {
   }
 
   const { path } = props.activeWorkflowGroup;
-  const rootBreadcrumb = {
+  const rootBreadcrumb: BreadcrumbItem = {
     ...homeBreadcrumbItem,
     text: path.length === 0 ? "Home" : null,
     clickable: path.length > 0,
@@ -48,7 +55,7 @@ const breadcrumbItems = computed(() => {
   );
 });
 
-const onBreadcrumbClick = ({ id }) => {
+const onBreadcrumbClick = ({ id }: BreadcrumbItem) => {
   emit("click", id);
 };
 </script>

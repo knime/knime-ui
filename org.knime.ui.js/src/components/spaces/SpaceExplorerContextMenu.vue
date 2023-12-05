@@ -45,7 +45,7 @@ interface Props {
 const props = defineProps<Props>();
 
 interface Emits {
-  (e: "duplicateItems", sourceItems: string[]);
+  (e: "duplicateItems", sourceItems: string[]): void;
 }
 
 const emit = defineEmits<Emits>();
@@ -119,7 +119,7 @@ const fileExplorerContextMenuItems = computed(() => {
     store.getters["spaces/hasActiveHubSession"],
     props.projectId,
     props.selectedItemIds,
-    store.state.spaces.spaceProviders,
+    store.state.spaces.spaceProviders ?? {},
   );
 
   const getHubActions = () => {
@@ -197,7 +197,7 @@ const fileExplorerContextMenuItems = computed(() => {
   };
 
   const openFileType =
-    anchorItem.meta.type === SpaceItem.TypeEnum.Workflow
+    anchorItem.meta?.type === SpaceItem.TypeEnum.Workflow
       ? "workflows"
       : "folders";
 

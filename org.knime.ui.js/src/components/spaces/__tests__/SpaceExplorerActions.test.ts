@@ -325,7 +325,7 @@ describe("SpaceExplorerActions.vue", () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: "connectToHub",
-            children: null,
+            children: undefined,
           }),
         ]),
       );

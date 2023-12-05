@@ -15,7 +15,7 @@ import { useStore } from "@/composables/useStore";
 
 interface Props {
   showText?: boolean;
-  projectId: string | null;
+  projectId: string;
 }
 
 const store = useStore();
@@ -45,7 +45,7 @@ const onSpaceChange = async ({
 }: MenuItemWithMetadata<SpaceMetadata>) => {
   const { projectId } = props;
 
-  const { spaceId, spaceProviderId, requestSignIn = false } = metadata;
+  const { spaceId, spaceProviderId, requestSignIn = false } = metadata!;
 
   // handle sign in request
   if (requestSignIn) {
@@ -73,7 +73,7 @@ const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 
 const createProviderHeadlineMenuItem = (
   provider: SpaceProviderNS.SpaceProvider,
-): [MenuItemWithMetadata<SpaceMetadata>?] => {
+): [MenuItemWithMetadata<SpaceMetadata>] | [] => {
   return provider.type === SpaceProviderNS.TypeEnum.LOCAL
     ? []
     : [
@@ -121,7 +121,6 @@ const createSignInMenuItem = (
   separator: false,
   metadata: {
     id: `${provider.id}__SIGN_IN`,
-    spaceId: null,
     spaceProviderId: provider.id,
     requestSignIn: true,
   },
@@ -170,7 +169,7 @@ const mapGroupsToMenuItems = (groups: {
 
     if (shouldHaveChildren(provider)) {
       const containsActiveSpace = spaces[groupName].find(
-        (item) => item.metadata.space.id === activeSpacePath.value?.spaceId,
+        (item) => item.metadata!.space!.id === activeSpacePath.value?.spaceId,
       );
 
       return {
@@ -179,14 +178,15 @@ const mapGroupsToMenuItems = (groups: {
         // cannot use the `selected` property because this is a parent item (which spawns  a submenu)
         // and the `selected` property on these type of items messes up the styles (hover, focused, etc)
         metadata: { active: Boolean(containsActiveSpace) },
-      };
+      } satisfies MenuItemWithMetadata<ProviderMetadata>;
     }
 
-    const space = spaces[groupName].at(0).metadata.space;
+    const space = spaces[groupName].at(0)!.metadata!.space!;
 
-    return {
+    const item: MenuItemWithMetadata<SpaceMetadata> = {
       text: space.name,
       selected: isActiveProvider,
+      // @ts-expect-error
       icon: getIcon(provider, space),
       metadata: {
         id: `${provider.id}__${space.id}`,
@@ -194,6 +194,8 @@ const mapGroupsToMenuItems = (groups: {
         spaceProviderId: provider.id,
       },
     };
+
+    return item;
   });
 };
 
@@ -220,7 +222,7 @@ const spacesDropdownData = computed(
       const items = mapGroupsToMenuItems({ provider, spaces });
 
       return (
-        []
+        ([] as Array<MenuItemWithMetadata<ProviderMetadata | SpaceMetadata>>)
           .concat(withHeadline)
           // only add sign-in option for disconnected providers
           .concat(provider.connected ? items : [createSignInMenuItem(provider)])

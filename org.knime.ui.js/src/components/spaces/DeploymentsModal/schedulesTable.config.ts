@@ -1,6 +1,8 @@
 import { columnTypes } from "@knime/knime-ui-table";
 import { getIntervalFromSchedule } from "@/util/intervalFromSchedule";
 import { formatTime } from "@/util/time";
+import type { RootStoreState } from "@/store/types";
+import type { Store } from "vuex";
 
 export const defaultScheduleColumns = [
   "lastRun",
@@ -56,12 +58,14 @@ export const scheduleTypes = {
 };
 
 export const scheduleFormatters = {
-  numFailures: (failures) => (failures ? `${failures} Failures` : "-"),
-  schedule: (schedule) => getIntervalFromSchedule(schedule),
-  actions: (actions) => (actions?.length ? `${actions.length} Actions` : "-"),
-  disabled: (disabled) => (disabled ? "Inactive" : "Active"),
-  lastRun: (lastRun) => (lastRun ? formatTime(lastRun) : ""),
-  nextScheduledExecution: (nextScheduledExecution) =>
+  numFailures: (failures: unknown) => (failures ? `${failures} Failures` : "-"),
+  schedule: (schedule: unknown) => getIntervalFromSchedule(schedule),
+  actions: (actions: unknown[]) =>
+    actions?.length ? `${actions.length} Actions` : "-",
+  disabled: (disabled: boolean) => (disabled ? "Inactive" : "Active"),
+  lastRun: (lastRun: string | undefined) =>
+    lastRun ? formatTime(lastRun) : "",
+  nextScheduledExecution: (nextScheduledExecution: string) =>
     formatTime(nextScheduledExecution),
 };
 
@@ -78,7 +82,7 @@ export const schedulePopoverRenderers = {
   configuration: true,
   disabled: {
     type: "StringRenderer",
-    process: (disabled) => (disabled ? "Active" : "Inactive"),
+    process: (disabled: boolean) => (disabled ? "Active" : "Inactive"),
   },
 };
 
@@ -88,14 +92,20 @@ export const scheduleSubMenuItems = [
   {
     name: "edit",
     text: "Edit",
-    callback: (row, context) => {
+    callback: (
+      row: { id: string },
+      context: { $store: Store<RootStoreState> },
+    ) => {
       context.$store.dispatch("spaces/editSchedule", { scheduleId: row.id });
     },
   },
   {
     name: "delete",
     text: "Delete",
-    callback: (row, context) => {
+    callback: (
+      row: { id: string },
+      context: { $store: Store<RootStoreState> },
+    ) => {
       context.$store.dispatch("spaces/deleteSchedule", {
         scheduleId: row.id,
       });

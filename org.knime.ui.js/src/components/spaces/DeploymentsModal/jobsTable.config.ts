@@ -1,6 +1,8 @@
 import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "webapps-common/util/capitalize";
 import { formatTime } from "@/util/time";
+import type { Store } from "vuex";
+import type { RootStoreState } from "@/store/types";
 
 export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 
@@ -53,16 +55,17 @@ export const jobTypes = {
 };
 
 export const jobFormatters = () => ({
-  actions: (actions) => (actions?.length ? `${actions.length} Actions` : "-"),
-  state: (state) =>
+  actions: (actions: unknown[]) =>
+    actions?.length ? `${actions.length} Actions` : "-",
+  state: (state: unknown) =>
     caseFormatter({ string: state, format: "snakeFormat", delimiter: null }),
-  nodeMessages: (messages) =>
+  nodeMessages: (messages: unknown[]) =>
     messages?.length ? `${messages.length} Messages` : "-",
-  createdAt: (createdAt) => formatTime(createdAt),
+  createdAt: (createdAt: string) => formatTime(createdAt),
 });
 
 export const jobClassGenerators = {
-  state: ["state", (state) => state.toLowerCase().replace(" ", "-")],
+  state: ["state", (state: string) => state.toLowerCase().replace(" ", "-")],
   workflow: ["workflow-path"],
   nodeMessages: ["node-messages"],
 };
@@ -72,7 +75,7 @@ export const popoverRenderers = {
   configuration: true,
   nodeMessages: {
     type: "MessageRenderer",
-    process: (data) =>
+    process: (data: any[]) =>
       data?.map((item) => ({
         type: item.messageType,
         item: item.node,
@@ -91,7 +94,10 @@ export const jobSubMenuItems = [
   {
     name: "save",
     text: "Save as workflow",
-    callback: (row, context) => {
+    callback: (
+      row: { id: string; name: string },
+      context: { $store: Store<RootStoreState> },
+    ) => {
       context.$store.dispatch("spaces/saveJobAsWorkflow", {
         jobId: row.id,
         jobName: row.name,
@@ -101,7 +107,10 @@ export const jobSubMenuItems = [
   {
     name: "delete",
     text: "Delete",
-    callback: (row, context) => {
+    callback: (
+      row: { id: string; schedulerId?: string },
+      context: { $store: Store<RootStoreState> },
+    ) => {
       context.$store.dispatch("spaces/deleteJob", {
         jobId: row.id,
         schedulerId: row.schedulerId ? row.schedulerId : null,
