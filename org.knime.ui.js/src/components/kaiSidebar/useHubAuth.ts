@@ -17,7 +17,7 @@ const useHubAuth = () => {
   const isHubConfigured = computed(() => Boolean(hubId.value));
 
   const isAuthenticated = computed(() => {
-    return store.state.spaces.spaceProviders?.[hubId.value]?.connected;
+    return store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.connected;
   });
 
   const authenticateWithHub = () => {

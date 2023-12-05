@@ -1,5 +1,7 @@
 import { computed } from "vue";
+
 import { useStore } from "@/composables/useStore";
+import type { Message } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
 
 const useChat = (chainType: ChainType) => {
@@ -23,7 +25,7 @@ const useChat = (chainType: ChainType) => {
     const messages = store.state.aiAssistant[chainType].messages;
     // @ts-expect-error
     const lastUserMessage = messages.findLast(
-      (message) => message.role === "user",
+      (message: Message) => message.role === "user",
     );
     return lastUserMessage?.content ?? "";
   });

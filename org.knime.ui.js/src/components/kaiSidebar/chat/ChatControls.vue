@@ -27,14 +27,14 @@ const sendMessage = () => {
   }
 };
 
-const handleKeyDown = (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
     if (!props.isProcessing) {
       sendMessage();
     }
   }
-  if (e.key === "ArrowUp" && input.value === "") {
+  if (event.key === "ArrowUp" && input.value === "") {
     input.value = props.lastUserMessage;
   }
 };

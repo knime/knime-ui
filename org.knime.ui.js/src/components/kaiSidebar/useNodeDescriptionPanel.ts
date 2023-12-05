@@ -3,7 +3,7 @@ import { useStore } from "@/composables/useStore";
 import { TABS } from "@/store/panel";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 
-const selectedNodeTemplate = ref<NodeTemplate>(null);
+const selectedNodeTemplate = ref<NodeTemplate | null>(null);
 
 const useNodeDescriptionPanel = () => {
   const store = useStore();
@@ -15,6 +15,7 @@ const useNodeDescriptionPanel = () => {
   const isKaiActive = computed(() => {
     const activeProjectId = store.state.application.activeProjectId;
     return (
+      activeProjectId &&
       isExtensionPanelOpen.value &&
       store.state.panel.activeTab[activeProjectId] === TABS.KAI
     );
@@ -27,7 +28,13 @@ const useNodeDescriptionPanel = () => {
     }, 50);
   };
 
-  const toggleNodeDescription = ({ isSelected, nodeTemplate }) => {
+  const toggleNodeDescription = ({
+    isSelected,
+    nodeTemplate,
+  }: {
+    isSelected: boolean;
+    nodeTemplate: NodeTemplate;
+  }) => {
     if (isSelected) {
       store.dispatch("panel/closeExtensionPanel");
     } else {
