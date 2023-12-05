@@ -92,6 +92,7 @@ export default defineComponent({
 
       if (
         typeof portView !== "object" ||
+        portView === null ||
         (typeof portView === "object" && !("initialData" in portView))
       ) {
         return;
@@ -109,7 +110,7 @@ export default defineComponent({
       }
     },
 
-    resourceLocationResolver({ resourceInfo }) {
+    resourceLocationResolver({ resourceInfo }: ViewConfig): string {
       // TODO: NXT-1295. Originally caused NXT-1217
       // Remove this unnecessary store getter once the issue in the ticket
       // can be solved in a better way. It is necessary at the moment because the TableView is accessing
@@ -117,7 +118,7 @@ export default defineComponent({
       return this.$store.getters["api/uiExtResourceLocation"]({ resourceInfo });
     },
 
-    onStateChange(newState) {
+    onStateChange(newState: { portKey: string }) {
       if (this.uniquePortKey !== newState.portKey) {
         // We are not interested in this state change since it corresponds to a port key
         // we are not currently displaying.
