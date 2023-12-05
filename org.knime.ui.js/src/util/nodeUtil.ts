@@ -29,7 +29,7 @@ export const canExecute = (node: KnimeNode, portIndex: number) => {
 export const getNodeState = (node: KnimeNode, portIndex: number) => {
   return isNodeMetaNode(node)
     ? node.outPorts[portIndex].nodeState
-    : node.state.executionState;
+    : node.state?.executionState;
 };
 
 export const isExecuted = (node: KnimeNode, portIndex = 0) => {
