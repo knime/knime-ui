@@ -104,7 +104,7 @@ export default defineComponent({
     async loadComponentDescription() {
       const data = await this.$store.dispatch(
         "nodeRepository/getComponentDescription",
-        { nodeId: this.selectedNode.id },
+        { nodeId: this.selectedNode!.id },
       );
 
       this.descriptionData = {
@@ -186,7 +186,10 @@ export default defineComponent({
             class="node-feature-list"
           />
 
-          <div v-if="descriptionData.extension" class="extension-info">
+          <div
+            v-if="descriptionData.extension && descriptionData.extension.vendor"
+            class="extension-info"
+          >
             <div class="header">
               <ExtensionIcon class="icon" />
               <span>Extension</span>

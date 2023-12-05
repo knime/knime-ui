@@ -36,7 +36,10 @@ const nodeRepositoryLoadingProgress = computed(
 );
 const activeTab = computed(() => store.state.panel.activeTab);
 const isNodeRepositoryTabActive = computed(() => {
-  return activeTab.value[activeProjectId.value] === TABS.NODE_REPOSITORY;
+  return (
+    activeProjectId.value &&
+    activeTab.value[activeProjectId.value] === TABS.NODE_REPOSITORY
+  );
 });
 const isExtensionPanelOpen = computed(
   () => store.state.panel.isExtensionPanelOpen,

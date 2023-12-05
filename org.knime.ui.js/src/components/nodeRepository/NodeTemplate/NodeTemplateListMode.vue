@@ -25,9 +25,9 @@ const emit = defineEmits(["helpIconClick"]);
   <div
     class="display-list"
     :title="
-      nodeTemplate.extension
+      nodeTemplate.extension && nodeTemplate.extension.vendor
         ? `${nodeTemplate.extension.name} \nby “${nodeTemplate.extension.vendor.name}”`
-        : null
+        : undefined
     "
   >
     <div class="node-preview">

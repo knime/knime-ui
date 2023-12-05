@@ -29,7 +29,7 @@ export default defineComponent({
       default: "icon",
     },
     selectedNode: {
-      type: [Object, null],
+      type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
       default: null,
     },
     highlightFirst: {
@@ -84,7 +84,7 @@ export default defineComponent({
     focusFirst() {
       this.focusItem(this.nodes?.at(0));
     },
-    focusItem(focusNode) {
+    focusItem(focusNode: NodeTemplateWithExtendedPorts | undefined) {
       // select the item if the current selection is not in our list
       if (
         focusNode &&
@@ -99,7 +99,7 @@ export default defineComponent({
       );
       nodeListElement?.focus();
     },
-    onKeyDown(key) {
+    onKeyDown(key: string) {
       // no navigation for empty nodes
       if (this.nodes.length < 1) {
         return;
@@ -124,7 +124,7 @@ export default defineComponent({
         return;
       }
 
-      const selectNextNode = (indexOffset) => {
+      const selectNextNode = (indexOffset: number) => {
         const nextIndex = activeItemIndex + indexOffset;
         if (nextIndex >= this.nodes.length) {
           this.$emit("navReachedEnd");

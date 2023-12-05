@@ -40,7 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: "navReachedTop"): void;
   (e: "update:searchScrollPosition", position: number): void;
-  (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts): void;
+  (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts | null): void;
   (e: "itemEnterKey", event: KeyboardEvent): void;
   (e: "openPreferences"): void;
 }>();
@@ -69,7 +69,7 @@ const onSaveScrollPosition = (position: number) => {
   emit("update:searchScrollPosition", position);
 };
 
-const scroller = ref<InstanceType<typeof ScrollViewContainer>>(null);
+const scroller = ref<InstanceType<typeof ScrollViewContainer> | null>(null);
 const onSearchChanged = async () => {
   // wait for new content to be displayed, then scroll to top
   await nextTick();
@@ -85,7 +85,7 @@ const loadMoreSearchResults = () => {
   });
 };
 
-const nodeList = ref<InstanceType<typeof NodeList>>(null);
+const nodeList = ref<InstanceType<typeof NodeList> | null>(null);
 const focusFirst = () => {
   nodeList.value?.focusFirst();
 };
@@ -109,7 +109,7 @@ defineExpose({ focusFirst });
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNodeModel"
-          :nodes="nodes"
+          :nodes="nodes!"
           :highlight-first="highlightFirst"
           :display-mode="displayMode"
           @nav-reached-top="emit('navReachedTop')"

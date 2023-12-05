@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits(["helpIconClick"]);
 const extensionText = computed(() => {
-  if (!props.nodeTemplate.extension) {
+  if (!props.nodeTemplate.extension || !props.nodeTemplate.extension.vendor) {
     return "";
   }
   return `\n———\n${props.nodeTemplate.extension.name}\nby ${props.nodeTemplate.extension.vendor.name}`;
