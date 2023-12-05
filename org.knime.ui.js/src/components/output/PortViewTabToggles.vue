@@ -64,7 +64,7 @@ const openInNewWindow = (item = null) => {
       v-if="tabToggles.length > 1"
       class="value-switch"
       compact
-      :model-value="activeView === null ? null : activeView.toString()"
+      :model-value="activeView === null ? undefined : activeView.toString()"
       :possible-values="tabToggles"
       @update:model-value="activeView = Number($event)"
     >

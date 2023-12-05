@@ -143,13 +143,13 @@ export default defineComponent({
     },
 
     validationError(): ValidationResult["error"] | null {
-      const { error } = runValidationChecks({
+      const validationResult = runValidationChecks({
         selectedNode: this.selectedNode,
         portTypes: this.availablePortTypes,
         selectedPortIndex: this.selectedPortIndex,
       });
 
-      return error || null;
+      return validationResult?.error ?? null;
     },
 
     selectedPort() {
@@ -161,13 +161,17 @@ export default defineComponent({
     },
 
     fullPortObject() {
+      if (!this.selectedPort) {
+        return null;
+      }
+
       return toExtendedPortObject(this.availablePortTypes)(
         this.selectedPort.typeId,
       );
     },
 
     portViews() {
-      return this.fullPortObject.views;
+      return this.fullPortObject?.views;
     },
 
     shouldShowExecuteAction() {
@@ -184,7 +188,7 @@ export default defineComponent({
         return canSelectedNodeExecute;
       }
 
-      const isFlowVariable = this.fullPortObject.kind === "flowVariable";
+      const isFlowVariable = this.fullPortObject?.kind === "flowVariable";
       return canSelectedNodeExecute && !isFlowVariable;
     },
   },
@@ -220,7 +224,7 @@ export default defineComponent({
         }
         case "error": {
           this.$emit("outputStateChange", {
-            message: this.portViewState.message,
+            message: this.portViewState.message ?? "",
           });
           return;
         }
@@ -229,7 +233,7 @@ export default defineComponent({
         }
       }
     },
-    openViewInNewWindow(viewIndex) {
+    openViewInNewWindow(viewIndex: number) {
       API.desktop.openPortView({
         projectId: this.projectId,
         nodeId: this.selectedNode.id,
@@ -243,7 +247,7 @@ export default defineComponent({
 
 <template>
   <PortViewTabToggles
-    v-if="!validationError"
+    v-if="!validationError && portViews"
     :selected-node="selectedNode"
     :selected-port-index="selectedPortIndex"
     :unique-port-key="uniquePortKey"

@@ -77,13 +77,11 @@ export type ValidationResult = {
   };
 };
 
-type NextFn<T = any> = (
-  context: T & Record<string, any>,
-) => ValidationResult | null;
+type NextFn<T = any> = (context: T & Record<string, any>) => ValidationResult;
 export type ValidationFn<T = any> = (
   context: T,
   next: NextFn<T>,
-) => ValidationResult | null;
+) => ValidationResult;
 
 /**
  * Validation middleware function. Asserts that:
@@ -334,7 +332,7 @@ export const validateNodeExecutionState: ValidationFn<{
     return next(context);
   }
 
-  const state = selectedNode.state.executionState;
+  const state = selectedNode.state?.executionState;
   if (state === "QUEUED" || state === "EXECUTING") {
     return {
       error: {

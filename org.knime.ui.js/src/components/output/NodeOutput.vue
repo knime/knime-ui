@@ -3,7 +3,7 @@ import { defineComponent } from "vue";
 import { mapState, mapGetters } from "vuex";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import type { AvailablePortTypes } from "@/api/custom-types";
+import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import Button from "webapps-common/ui/components/Button.vue";
 import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 
@@ -18,8 +18,16 @@ import {
   type ValidationResult,
 } from "./output-validator";
 import { canExecute, getNodeState } from "@/util/nodeUtil";
+import type { ApplicationState } from "@/store/application";
+import type { WorkflowState } from "@/store/workflow";
 
-export const runValidationChecks = ({ selectedNodes, isDragging }) => {
+export const runValidationChecks = ({
+  selectedNodes,
+  isDragging,
+}: {
+  selectedNodes: KnimeNode[];
+  isDragging: boolean;
+}) => {
   const validationMiddleware = buildMiddleware(
     validateDragging,
     validateSelection,
@@ -62,13 +70,15 @@ export default defineComponent({
   },
   computed: {
     ...mapState("application", {
-      projectId: (state) => state.activeProjectId as string | null,
-      availablePortTypes: (state) =>
-        state.availablePortTypes as AvailablePortTypes,
+      projectId: (state: any) =>
+        (state as ApplicationState).activeProjectId as string | null,
+      availablePortTypes: (state: any) =>
+        (state as ApplicationState).availablePortTypes as AvailablePortTypes,
     }),
     ...mapState("workflow", {
-      workflowId: (state) => state.activeWorkflow.info.containerId as string,
-      isDragging: (state) => state.isDragging as boolean,
+      workflowId: (state: any) =>
+        (state as WorkflowState).activeWorkflow!.info.containerId,
+      isDragging: (state: any) => (state as WorkflowState).isDragging,
     }),
     ...mapGetters("selection", ["selectedNodes", "singleSelectedNode"]),
 
@@ -93,30 +103,38 @@ export default defineComponent({
     },
 
     validationErrors() {
-      const { error } = runValidationChecks({
+      const validationResult = runValidationChecks({
         selectedNodes: this.selectedNodes,
         isDragging: this.isDragging,
       });
 
-      return error;
+      return validationResult?.error ?? null;
     },
 
     canExecute() {
-      return canExecute(this.singleSelectedNode, this.selectedPortIndex);
+      return (
+        this.selectedPortIndex &&
+        canExecute(this.singleSelectedNode, this.selectedPortIndex)
+      );
     },
 
     isExecuted() {
+      if (this.selectedPortIndex === null) {
+        return false;
+      }
+
       const state = getNodeState(
         this.singleSelectedNode,
         this.selectedPortIndex,
       );
+
       return state === "EXECUTED";
     },
   },
   watch: {
     validationErrors: {
       handler(validationErrors) {
-        if (validationErrors) {
+        if (this.validationErrors) {
           this.outputState = {
             message: this.validationErrors.message,
             error: validationErrors,
@@ -218,7 +236,7 @@ export default defineComponent({
     <template v-if="!validationErrors">
       <NodeViewTabOutput
         v-if="isViewTabSelected && $features.shouldDisplayEmbeddedViews()"
-        :project-id="projectId"
+        :project-id="projectId!"
         :workflow-id="workflowId"
         :selected-node="singleSelectedNode"
         :available-port-types="availablePortTypes"
@@ -228,10 +246,10 @@ export default defineComponent({
 
       <PortViewTabOutput
         v-if="!isViewTabSelected"
-        :project-id="projectId"
+        :project-id="projectId!"
         :workflow-id="workflowId"
         :selected-node="singleSelectedNode"
-        :selected-port-index="selectedPortIndex"
+        :selected-port-index="selectedPortIndex!"
         :available-port-types="availablePortTypes"
         class="output"
         @output-state-change="outputState = $event"
