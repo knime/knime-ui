@@ -64,9 +64,9 @@ import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class WorkflowAPI {
+final class ProjectAPI {
 
-    private WorkflowAPI() {
+    private ProjectAPI() {
         // stateless
     }
 
@@ -164,7 +164,7 @@ final class WorkflowAPI {
             wpm.setProjectActive(projectId);
         } else {
             wpm.removeProject(projectId, w -> {});
-            NodeLogger.getLogger(WorkflowAPI.class)
+            NodeLogger.getLogger(ProjectAPI.class)
                 .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }

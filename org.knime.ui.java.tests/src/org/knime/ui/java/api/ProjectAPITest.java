@@ -61,11 +61,11 @@ import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.ProjectFactory;
 
 /**
- * Tests some methods in {@link WorkflowAPI}.
+ * Tests some methods in {@link ProjectAPI}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-class WorkflowAPITest {
+class ProjectAPITest {
 
     private WorkflowManager m_wfm;
 
@@ -76,7 +76,7 @@ class WorkflowAPITest {
         wpm.addProject(ProjectFactory.createProject(m_wfm, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
 
-        WorkflowAPI.setProjectActiveAndEnsureItsLoaded("projectId");
+        ProjectAPI.setProjectActiveAndEnsureItsLoaded("projectId");
 
         assertThat(wpm.getCachedProject("projectId")).isNotNull();
         assertThat(wpm.isActiveProject("projectId")).isTrue();
