@@ -1,4 +1,4 @@
-import { camelCase } from "lodash";
+import { camelCase } from "lodash-es";
 import robotoCondensed from "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff";
 
 const LICENSE = `<!--

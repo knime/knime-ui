@@ -2,7 +2,7 @@ import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
 
-vi.mock("lodash", () => ({
+vi.mock("lodash-es", () => ({
   throttle(func) {
     return function (...args) {
       // eslint-disable-next-line no-invalid-this

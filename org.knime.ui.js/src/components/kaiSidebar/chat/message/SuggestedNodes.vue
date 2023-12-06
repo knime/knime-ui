@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { isEmpty } from "lodash";
 import NodeIcon from "webapps-common/ui/assets/img/icons/node.svg";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
@@ -15,7 +14,7 @@ const props = defineProps<Props>();
 
 const { toggleNodeDescription } = useNodeDescriptionPanel();
 
-const hasNodeTemplates = computed(() => !isEmpty(props.nodeTemplates));
+const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
 </script>
 
 <template>

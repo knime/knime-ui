@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from "vuex";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";

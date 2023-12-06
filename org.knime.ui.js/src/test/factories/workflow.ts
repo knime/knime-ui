@@ -1,4 +1,4 @@
-import merge from "lodash/merge";
+import { merge } from "lodash-es";
 
 import type { KnimeNode, Workflow } from "@/api/custom-types";
 import {

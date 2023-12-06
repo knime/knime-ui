@@ -1,8 +1,8 @@
 import { vi } from "vitest";
 
 export const mockLodashThrottleAndDebounce = () => {
-  vi.mock("lodash", async () => {
-    const actual = await vi.importActual("lodash");
+  vi.mock("lodash-es", async () => {
+    const actual = await vi.importActual("lodash-es");
 
     const throttle = function (func) {
       return function (...args) {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
-import { difference } from "lodash";
+import { difference } from "lodash-es";
 import Tag from "webapps-common/ui/components/Tag.vue";
 
 export const defaultInitialTagCount = 5;

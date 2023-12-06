@@ -1,5 +1,4 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
-import { isEqual } from "lodash";
 
 import { API } from "@api";
 import {
@@ -391,12 +390,16 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
       return !linkage;
     }
 
+    const {
+      aiAssistant: { build: aiAssistantBuildMode },
+    } = rootState;
+
     const isAiProcessingCurrentWorkflow =
-      rootState.aiAssistant.build.isProcessing &&
-      isEqual(
-        rootState.aiAssistant.build.projectAndWorkflowIds,
-        projectAndWorkflowIds,
-      );
+      aiAssistantBuildMode.isProcessing &&
+      aiAssistantBuildMode.projectAndWorkflowIds.projectId ===
+        projectAndWorkflowIds.projectId &&
+      aiAssistantBuildMode.projectAndWorkflowIds.workflowId ===
+        projectAndWorkflowIds.workflowId;
 
     // TODO: document better under which conditions a workflow is not writable
     return !linkage && !isAiProcessingCurrentWorkflow;

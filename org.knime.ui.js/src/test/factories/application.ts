@@ -1,4 +1,5 @@
-import merge from "lodash/merge";
+import { merge } from "lodash-es";
+
 import type { Project } from "@/api/gateway-api/generated-api";
 import type { DeepPartial } from "../utils";
 

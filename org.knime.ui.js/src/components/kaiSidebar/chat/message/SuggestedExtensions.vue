@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { isEmpty } from "lodash";
 import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
 import LinkIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import Button from "webapps-common/ui/components/Button.vue";
@@ -13,7 +12,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const hasExtensions = computed(() => !isEmpty(props.extensions));
+const hasExtensions = computed(() => Object.keys(props.extensions).length > 0);
 
 const openNodeInBrowser = (
   extension: ExtensionWithNodes,

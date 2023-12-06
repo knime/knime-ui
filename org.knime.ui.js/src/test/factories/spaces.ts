@@ -1,4 +1,4 @@
-import merge from "lodash/merge";
+import { merge } from "lodash-es";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { DeepPartial } from "../utils";

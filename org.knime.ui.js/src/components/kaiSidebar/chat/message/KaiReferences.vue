@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
-import { isEmpty } from "lodash";
 import type { References } from "../../types";
 
 interface Props {
@@ -16,7 +15,7 @@ const openReferences = (refName: string) => {
   props.references[refName].forEach((url) => window.open(url));
 };
 
-const hasReferences = computed(() => !isEmpty(props.references));
+const hasReferences = computed(() => Object.keys(props.references).length > 0);
 const referenceCategories = computed(() => Object.keys(props.references));
 
 const showPopover = ref(false);

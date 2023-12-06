@@ -35,7 +35,7 @@
     "events": "^3.3.0",
     "fuse.js": "6.6.2",
     "gsap": "3.12.2",
-    "lodash": "4.17.21",
+    "lodash-es": "^4.17.21",
     "markdown-it": "^13.0.2",
     "mitt": "^3.0.0",
     "pagebuilder": "file:knime-js-pagebuilder/org.knime.js.pagebuilder",
@@ -47,7 +47,8 @@
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
-    "@knime/eslint-config": "8.0.7",
+    "@knime/eslint-config": "8.0.8",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^18.14.4",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vitest/coverage-c8": "^0.29.2",
