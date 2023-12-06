@@ -464,7 +464,7 @@ describe("ConnectorSnappingProvider.vue", () => {
 
         const events = openPortTypeMenuMock.mock.calls[0][1].events;
 
-        events["item-click"]({ typeId: "SOME_TYPE", portGroup: "default" });
+        events.itemClick({ typeId: "SOME_TYPE", portGroup: "default" });
         await Vue.nextTick();
 
         expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
@@ -486,7 +486,7 @@ describe("ConnectorSnappingProvider.vue", () => {
         const events = openPortTypeMenuMock.mock.calls[0][1].events;
 
         const port = { typeId: "active" };
-        events["item-active"]({ port });
+        events.itemActive({ port });
         await Vue.nextTick();
 
         expect(setPortTypeMenuPreviewPortMock).toHaveBeenCalledWith(
@@ -505,7 +505,7 @@ describe("ConnectorSnappingProvider.vue", () => {
 
         const events = openPortTypeMenuMock.mock.calls[0][1].events;
 
-        events["menu-close"]();
+        events.menuClose();
         await Vue.nextTick();
 
         expect(closePortTypeMenuMock).toHaveBeenCalledTimes(1);
