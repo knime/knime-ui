@@ -360,10 +360,10 @@ export default {
           portGroups: targetPort.validPortGroups,
         },
         events: {
-          "item-active": (item) => {
+          itemActive: (item) => {
             this.setPortTypeMenuPreviewPort(item?.port);
           },
-          "item-click": ({ typeId, portGroup }) => {
+          itemClick: ({ typeId, portGroup }) => {
             portGroup = portGroup === "default" ? null : portGroup;
             const side = targetPort.side;
             this.addPortAndConnectIt({
@@ -374,7 +374,7 @@ export default {
               startPort,
             });
           },
-          "menu-close": this.closePortTypeMenu,
+          menuClose: this.closePortTypeMenu,
         },
       });
     },
