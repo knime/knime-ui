@@ -99,6 +99,8 @@ header {
     font-size: 36px;
     font-weight: 700;
     color: var(--knime-masala);
+    max-width: 100%;
+    overflow-wrap: break-word;
 
     &.padded {
       padding-top: 18px;
