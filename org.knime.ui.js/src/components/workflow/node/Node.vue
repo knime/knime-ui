@@ -275,7 +275,11 @@ export default {
     },
   },
   methods: {
-    ...mapActions("workflow", ["openNodeConfiguration", "replaceNode"]),
+    ...mapActions("workflow", [
+      "openNodeConfiguration",
+      "replaceNode",
+      "resetDragState",
+    ]),
     ...mapActions("selection", [
       "selectNode",
       "deselectAllObjects",
@@ -419,12 +423,16 @@ export default {
       this.isDraggedOver = false;
     },
 
-    onNodeDragggingEnd(dragEvent) {
-      this.replaceNode({
-        targetNodeId: this.id,
-        replacementNodeId: dragEvent.detail.id,
-      });
+    async onNodeDragggingEnd(dragEvent) {
+      // avoid calling replaceNode by accident on quickly succesive click events
+      if (this.id !== dragEvent.detail.id) {
+        await this.replaceNode({
+          targetNodeId: this.id,
+          replacementNodeId: dragEvent.detail.id,
+        });
+      }
       this.isDraggedOver = false;
+      this.resetDragState();
     },
 
     // public
