@@ -27,6 +27,12 @@ export default {
     },
   },
 
+  data() {
+    return {
+      deactivateDataServicesFn: null,
+    };
+  },
+
   computed: {
     renderKey() {
       if (this.selectedNode?.hasDialog) {
@@ -36,6 +42,12 @@ export default {
       }
       return "";
     },
+  },
+
+  unmounted() {
+    if (this.deactivateDataServicesFn) {
+      this.deactivateDataServicesFn();
+    }
   },
 
   created() {
@@ -53,6 +65,17 @@ export default {
           workflowId: this.workflowId,
           nodeId: this.selectedNode.id,
         });
+
+        if (nodeDialogView.deactivationRequired) {
+          this.deactivateDataServicesFn = () => {
+            API.node.deactivateNodeDataServices({
+              projectId: this.projectId,
+              workflowId: this.workflowId,
+              nodeId: this.selectedNode.id,
+              extensionType: "dialog",
+            });
+          };
+        }
 
         return nodeDialogView;
       } catch (error) {

@@ -62,6 +62,7 @@ describe("PortViewLoader.vue", () => {
 
   afterEach(() => {
     mockedAPI.port.getPortView.mockReset();
+    mockedAPI.port.deactivatePortDataServices.mockReset();
   });
 
   const doMount = (customProps = {}) => {
@@ -91,6 +92,27 @@ describe("PortViewLoader.vue", () => {
         portIdx: props.selectedPortIndex,
       }),
     );
+  });
+
+  it("should conditionally deactivate data services on unmount", async () => {
+    const wrapper = doMount();
+    wrapper.unmount();
+    await flushPromises();
+    expect(mockedAPI.port.deactivatePortDataServices).toHaveBeenCalledTimes(0);
+
+    mockedAPI.port.getPortView.mockResolvedValue({
+      deactivationRequired: true,
+    });
+    const wrapper2 = doMount();
+    await flushPromises();
+    wrapper2.unmount();
+    expect(mockedAPI.port.deactivatePortDataServices).toHaveBeenCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId: props.selectedNode.id,
+      portIdx: props.selectedPortIndex,
+      viewIdx: 0,
+    });
   });
 
   describe("load data on uniquePortKeyChange", () => {

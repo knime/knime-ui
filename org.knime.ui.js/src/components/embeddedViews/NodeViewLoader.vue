@@ -18,6 +18,7 @@ export default {
   data() {
     return {
       isReady: false,
+      deactivateDataServicesFn: null,
     };
   },
 
@@ -50,6 +51,12 @@ export default {
     },
   },
 
+  unmounted() {
+    if (this.deactivateDataServicesFn) {
+      this.deactivateDataServicesFn();
+    }
+  },
+
   async created() {
     try {
       this.$emit("stateChange", { state: "loading", message: "Loading view" });
@@ -75,6 +82,17 @@ export default {
           workflowId: this.workflowId,
           nodeId: this.selectedNode.id,
         });
+
+        if (nodeView.deactivationRequired) {
+          this.deactivateDataServicesFn = () => {
+            API.node.deactivateNodeDataServices({
+              projectId: this.projectId,
+              workflowId: this.workflowId,
+              nodeId: this.nodeId,
+              extensionType: "view",
+            });
+          };
+        }
 
         const page = JSON.parse(JSON.stringify(singleViewPage));
         page.wizardPageContent.nodeViews.ROOT = nodeView;

@@ -44,13 +44,19 @@ export default defineComponent({
   emits: ["stateChange"],
 
   data() {
-    return { error: null };
+    return { error: null, deactivateDataServicesFn: null };
   },
 
   watch: {
     uniquePortKey() {
       this.error = null;
     },
+  },
+
+  unmounted() {
+    if (this.deactivateDataServicesFn) {
+      this.deactivateDataServicesFn();
+    }
   },
 
   methods: {
@@ -63,6 +69,17 @@ export default defineComponent({
         viewIdx: this.selectedViewIndex,
       });
       this.modifyPortViewSettings(portView);
+      if (portView.deactivationRequired) {
+        this.deactivateDataServicesFn = () => {
+          API.port.deactivatePortDataServices({
+            projectId: this.projectId,
+            workflowId: this.workflowId,
+            nodeId: this.selectedNode.id,
+            portIdx: this.selectedPortIndex,
+            viewIdx: this.selectedViewIndex,
+          });
+        };
+      }
       return portView;
     },
 

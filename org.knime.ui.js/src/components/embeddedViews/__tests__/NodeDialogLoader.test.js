@@ -1,6 +1,6 @@
 import { expect, describe, beforeAll, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { KnimeService } from "@knime/ui-extension-service";
 
 import { deepMocked } from "@/test/utils";
@@ -72,6 +72,26 @@ describe("NodeDialogLoader.vue", () => {
         nodeId: "node2",
       }),
     );
+  });
+
+  it("should conditionally deactivate data services on unmount", async () => {
+    const wrapper = doMount();
+    wrapper.unmount();
+    await flushPromises();
+    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
+
+    mockedAPI.node.getNodeDialog.mockResolvedValue({
+      deactivationRequired: true,
+    });
+    const wrapper2 = doMount();
+    await flushPromises();
+    wrapper2.unmount();
+    expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId: props.selectedNode.id,
+      extensionType: "dialog",
+    });
   });
 
   describe("knime service callbacks", () => {
