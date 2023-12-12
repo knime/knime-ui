@@ -1,12 +1,15 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-
-import { loadAsyncComponent } from "webapps-common/ui/util/loadComponentLibrary";
 import ViewLoader from "../ViewLoader.vue";
+import { createApp } from "vue";
+import { useDynamicImport } from "../useDynamicImport";
+import { mockVuexStore } from "@/test/utils";
 
-vi.mock("webapps-common/ui/util/loadComponentLibrary", () => ({
-  loadAsyncComponent: vi.fn(),
+vi.mock("../useDynamicImport", () => ({
+  useDynamicImport: vi.fn().mockReturnValue({
+    dynamicImport: vi.fn(),
+  }),
 }));
 
 describe("ViewLoader.vue", () => {
@@ -25,7 +28,10 @@ describe("ViewLoader.vue", () => {
         },
       },
       render() {
-        return Vue.h("div");
+        return Vue.h("div", {
+          class: "mock-component",
+          "data-initial": initialData,
+        });
       },
     };
 
@@ -39,12 +45,32 @@ describe("ViewLoader.vue", () => {
       }),
     );
 
-    loadAsyncComponent.mockImplementation(() => MockComponent);
-    return { MockComponent, viewConfigLoaderFn };
+    const { dynamicImport } = useDynamicImport();
+
+    dynamicImport.mockReturnValue({
+      default: (shadowRoot) => {
+        const holder = document.createElement("div");
+        const app = createApp(MockComponent);
+        app.mount(holder);
+        shadowRoot.appendChild(holder);
+        return { teardown: () => {} };
+      },
+    });
+
+    return { dynamicImport, viewConfigLoaderFn };
   };
 
   const renderKey = "123";
   const doMount = (customProps = {}) => {
+    const store = mockVuexStore({
+      // TODO: NXT-1295 remove once api store is not needed
+      api: {
+        getters: {
+          uiExtResourceLocation: () => () => {},
+        },
+      },
+    });
+
     const defaultProps = {
       renderKey,
       viewConfigLoaderFn: vi.fn(),
@@ -57,6 +83,7 @@ describe("ViewLoader.vue", () => {
         ...defaultProps,
         ...customProps,
       },
+      global: { plugins: [store] },
     });
   };
 
@@ -90,7 +117,7 @@ describe("ViewLoader.vue", () => {
   });
 
   it("should render the dynamic view component", async () => {
-    const { MockComponent, viewConfigLoaderFn } = setupDynamicMockComponent({
+    const { dynamicImport, viewConfigLoaderFn } = setupDynamicMockComponent({
       initialData: JSON.stringify({ result: { myProp: "mock-prop" } }),
     });
 
@@ -98,10 +125,16 @@ describe("ViewLoader.vue", () => {
 
     await flushRender();
 
-    expect(loadAsyncComponent).toHaveBeenCalled();
-    expect(wrapper.findComponent(MockComponent).exists()).toBe(true);
-    expect(wrapper.findComponent(MockComponent).props("initialData")).toEqual({
-      myProp: "mock-prop",
+    expect(dynamicImport).toHaveBeenCalled();
+
+    const loadContainer = wrapper.find(".view-loader-container");
+    const mockComponent =
+      loadContainer.element.shadowRoot.querySelector(".mock-component");
+    expect(mockComponent.classList[0]).toBe("mock-component");
+    expect(
+      JSON.parse(mockComponent.getAttribute("data-initial")),
+    ).toStrictEqual({
+      result: { myProp: "mock-prop" },
     });
   });
 
@@ -149,12 +182,11 @@ describe("ViewLoader.vue", () => {
 
     const initKnimeService = vi.fn(() => ({ mockService: true }));
 
-    const wrapper = doMount({ viewConfigLoaderFn, initKnimeService });
+    doMount({ viewConfigLoaderFn, initKnimeService });
 
     await flushRender();
 
     expect(initKnimeService).toHaveBeenCalled();
-    expect(wrapper.vm.getKnimeService()).toEqual({ mockService: true });
   });
 
   it("should abort calls of pending view loads", async () => {
@@ -186,7 +218,7 @@ describe("ViewLoader.vue", () => {
   });
 
   it("should use the resourceLocationResolver", async () => {
-    const { viewConfigLoaderFn } = setupDynamicMockComponent();
+    const { dynamicImport, viewConfigLoaderFn } = setupDynamicMockComponent();
 
     const resourceLocationResolver = vi.fn(() => "dummy-location");
 
@@ -195,28 +227,6 @@ describe("ViewLoader.vue", () => {
     await flushRender();
 
     expect(resourceLocationResolver).toHaveBeenCalled();
-    expect(loadAsyncComponent).toHaveBeenCalledWith(
-      expect.objectContaining({ resourceLocation: "dummy-location" }),
-    );
-  });
-
-  it("should override component name", async () => {
-    const { viewConfigLoaderFn } = setupDynamicMockComponent({
-      componentName: "OtherComponent",
-    });
-
-    const wrapper = doMount({
-      viewConfigLoaderFn,
-      overrideComponentName: "OtherComponent",
-    });
-
-    await flushRender();
-
-    expect(wrapper.findComponent({ name: "MockComponent" }).exists()).toBe(
-      false,
-    );
-    expect(wrapper.findComponent({ name: "OtherComponent" }).exists()).toBe(
-      true,
-    );
+    expect(dynamicImport).toHaveBeenCalledWith("dummy-location");
   });
 });

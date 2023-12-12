@@ -1,12 +1,17 @@
-<script lang="ts">
-/* eslint-disable valid-jsdoc */
-import { defineComponent, type PropType } from "vue";
+<script setup lang="ts">
+/**
+ * Dynamically loads and renders a component for a view in the workflow. This could be a port view
+ * or a dialog view
+ */
+import { ref, watch, toRefs, onMounted, onUnmounted } from "vue";
 import type { KnimeService } from "@knime/ui-extension-service";
 
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
 import IFramePortView from "@/components/output/IFramePortView.vue";
 import type { ViewConfig, ResourceInfo } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
+import { useDynamicImport } from "./useDynamicImport";
 
 export type ViewStateChangeEvent = {
   state: "loading" | "ready" | "error";
@@ -26,166 +31,118 @@ type ViewLoaderConfigFn = () => Promise<ViewConfig>;
 // been loaded, then we can ignore this outdated response by means of this key
 let mostRecentlyLoadedViewKey = null;
 
-// cache the imported dynamic views
-let dynamicViewImportCache = {};
+type Props = {
+  renderKey: string;
+  viewConfigLoaderFn: ViewLoaderConfigFn;
+  initKnimeService: InitKnimeServiceFn;
+  resourceLocationResolver: ResourceLocationResolverFn;
+  loadOnMount?: boolean;
+};
 
-/**
- * Dynamically loads and renders a component for a view in the workflow. This could be a port view
- * or a dialog view
+const props = withDefaults(defineProps<Props>(), {
+  loadOnMount: true,
+});
+
+type Emits = {
+  (e: "stateChange", payload: ViewStateChangeEvent): void;
+};
+
+const emit = defineEmits<Emits>();
+
+const activeDynamicView = ref(null);
+const initialData = ref(null);
+const useIframe = ref(false);
+const container = ref<HTMLElement | null>(null);
+const { renderKey } = toRefs(props);
+
+const store = useStore();
+const { dynamicImport } = useDynamicImport();
+
+/*
+ * Renders a view dynamically by fetching the component library script over the network.
  */
-export default defineComponent({
-  components: {
-    IFramePortView,
-  },
+const renderDynamicView = async (viewConfig: ViewConfig) => {
+  // create knime service and update provide/inject
+  const knimeService = props.initKnimeService(viewConfig);
 
-  props: {
-    /**
-     * A unique key that will be tracked for the loading / re-loading of the view.
-     * Every time it changes the view will reload
-     */
-    renderKey: {
-      type: String,
-      required: true,
-    },
-    /**
-     * A function to fetch the view's configuration object
-     */
-    viewConfigLoaderFn: {
-      type: Function as PropType<ViewLoaderConfigFn>,
-      required: true,
-    },
-    /**
-     * A function to initialize the KnimeService. Will return the instance of the
-     * KnimeService to inject into the loaded view
-     */
-    initKnimeService: {
-      type: Function as PropType<InitKnimeServiceFn>,
-      required: true,
-    },
-    /**
-     * A function to resolve the url where to fetch the view from
-     */
-    resourceLocationResolver: {
-      type: Function as PropType<ResourceLocationResolverFn>,
-      required: true,
-    },
-    /**
-     * Whether the view should be loaded as soon as the component is mounted
-     */
-    loadOnMount: {
-      type: Boolean,
-      default: true,
-    },
-  },
+  // set initial data and component
+  const initialData = viewConfig.initialData
+    ? JSON.parse(viewConfig.initialData).result
+    : null;
 
-  emits: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    stateChange: (_payload: ViewStateChangeEvent) => true,
-  },
+  // get location of the script (es module)
+  const { resourceInfo } = viewConfig;
+  const resourceLocation = props.resourceLocationResolver({ resourceInfo });
 
-  data() {
-    return {
-      activeDynamicView: null,
-      initialData: null,
-      useIframe: false,
-    };
-  },
+  // load the dynamic view (es module) if its not already loaded
+  const dynamicView = await dynamicImport(resourceLocation);
 
-  watch: {
-    async renderKey() {
-      await this.loadView();
-    },
-  },
+  // create dynamic view in shadow root
+  // teardown active view if we have one
+  if (activeDynamicView.value) {
+    activeDynamicView.value?.teardown();
+  }
 
-  async mounted() {
-    if (this.loadOnMount) {
-      await this.loadView();
+  // create or reuse shadow root
+  const shadowRoot = container.value.shadowRoot
+    ? container.value.shadowRoot
+    : container.value.attachShadow({ mode: "open" });
+
+  // call module default exported function to load the view
+  activeDynamicView.value = dynamicView.default(
+    shadowRoot,
+    knimeService,
+    initialData,
+    (resourceInfo: { baseUrl: string; path: string }) =>
+      store.getters["api/uiExtResourceLocation"]({ resourceInfo }),
+  );
+};
+
+const loadView = async () => {
+  let portKey = renderKey.value; // value at the time of dispatch
+  mostRecentlyLoadedViewKey = portKey;
+  emit("stateChange", { state: "loading", portKey });
+  initialData.value = null;
+  useIframe.value = false;
+
+  try {
+    const viewConfig = await props.viewConfigLoaderFn();
+    if (portKey !== mostRecentlyLoadedViewKey) {
+      return;
     }
-  },
 
-  unmounted() {
-    mostRecentlyLoadedViewKey = null;
-    this.activeDynamicView?.teardown();
-  },
+    const resourceType = viewConfig.resourceInfo.type;
+    if (resourceType === "HTML") {
+      initialData.value = {
+        src: props.resourceLocationResolver(viewConfig),
+        style: viewConfig.iframeStyle,
+      };
+      useIframe.value = true;
+    } else if (resourceType === "VUE_COMPONENT_LIB") {
+      // suggestion: SHADOW_ROOT_VIEW_LIB
+      await renderDynamicView(viewConfig);
+    } else {
+      throw new Error("unknown resource type");
+    }
+    emit("stateChange", { state: "ready", portKey });
+  } catch (e) {
+    emit("stateChange", { state: "error", message: e, portKey });
+  }
+};
 
-  methods: {
-    async loadView() {
-      let portKey = this.renderKey; // value at the time of dispatch
-      mostRecentlyLoadedViewKey = portKey;
-      this.$emit("stateChange", { state: "loading", portKey });
-      this.initialData = null;
-      this.useIframe = false;
+watch(renderKey, async () => {
+  await loadView();
+});
 
-      try {
-        const viewConfig = await this.viewConfigLoaderFn();
-        if (portKey !== mostRecentlyLoadedViewKey) {
-          return;
-        }
+onMounted(async () => {
+  if (props.loadOnMount) {
+    await loadView();
+  }
+});
 
-        const resourceType = viewConfig.resourceInfo.type;
-        if (resourceType === "HTML") {
-          this.initialData = {
-            src: this.resourceLocationResolver(viewConfig),
-            style: viewConfig.iframeStyle,
-          };
-          this.useIframe = true;
-        } else if (resourceType === "VUE_COMPONENT_LIB") {
-          await this.renderDynamicView(viewConfig);
-        } else {
-          throw new Error("unknown resource type");
-        }
-        this.$emit("stateChange", { state: "ready", portKey });
-      } catch (e) {
-        this.$emit("stateChange", { state: "error", message: e, portKey });
-      }
-    },
-
-    /*
-     * Renders a view dynamically by fetching the component library script over the network.
-     */
-    async renderDynamicView(viewConfig: ViewConfig) {
-      // create knime service and update provide/inject
-      const knimeService = this.initKnimeService(viewConfig);
-
-      // set initial data and component
-      const initialData = viewConfig.initialData
-        ? JSON.parse(viewConfig.initialData).result
-        : null;
-
-      // get location of the script (es module)
-      const { resourceInfo } = viewConfig;
-      const resourceLocation = this.resourceLocationResolver({ resourceInfo });
-
-      // load the dynamic view (es module) if its not already loaded
-      if (!dynamicViewImportCache[resourceLocation]) {
-        dynamicViewImportCache[resourceLocation] = await import(
-          /* @vite-ignore */ resourceLocation
-        );
-      }
-
-      // create dynamic view in shadow root
-      const container = this.$refs.container as HTMLElement;
-      // teardown active view if we have one
-      if (this.activeDynamicView) {
-        this.activeDynamicView?.teardown();
-      }
-
-      // create or reuse shadow root
-      const shadowRoot = container.shadowRoot
-        ? container.shadowRoot
-        : container.attachShadow({ mode: "open" });
-
-      // call module default exported function to load the view
-      const loadDynamicView = dynamicViewImportCache[resourceLocation].default;
-      this.activeDynamicView = loadDynamicView(
-        shadowRoot,
-        knimeService,
-        initialData,
-        (resourceInfo: { baseUrl: string; path: string }) =>
-          this.$store.getters["api/uiExtResourceLocation"]({ resourceInfo }),
-      );
-    },
-  },
+onUnmounted(() => {
+  mostRecentlyLoadedViewKey = null;
+  activeDynamicView.value?.teardown();
 });
 </script>
 

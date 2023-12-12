@@ -1,6 +1,6 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-
+import { h, createApp } from "vue";
 import { mocks } from "@knime/ui-extension-service";
 
 import { API } from "@api";
@@ -8,6 +8,13 @@ import { deepMocked, mockVuexStore } from "@/test/utils";
 
 import PortViewLoader from "../PortViewLoader.vue";
 import ViewLoader from "../ViewLoader.vue";
+import { useDynamicImport } from "../useDynamicImport";
+
+vi.mock("../useDynamicImport", () => ({
+  useDynamicImport: vi.fn().mockReturnValue({
+    dynamicImport: vi.fn(),
+  }),
+}));
 
 const mockedAPI = deepMocked(API);
 
@@ -63,6 +70,21 @@ describe("PortViewLoader.vue", () => {
   afterEach(() => {
     mockedAPI.port.getPortView.mockReset();
     mockedAPI.port.deactivatePortDataServices.mockReset();
+  });
+
+  // mock a simple dynamic view
+  useDynamicImport().dynamicImport.mockReturnValue({
+    default: (shadowRoot) => {
+      const holder = document.createElement("div");
+      const app = createApp({
+        render() {
+          return h("div", { class: "mock-component" });
+        },
+      });
+      app.mount(holder);
+      shadowRoot.appendChild(holder);
+      return { teardown: () => {} };
+    },
   });
 
   const doMount = (customProps = {}) => {
