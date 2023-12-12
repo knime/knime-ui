@@ -2,7 +2,6 @@
 /* eslint-disable valid-jsdoc */
 import { defineComponent, type PropType } from "vue";
 import type { KnimeService } from "@knime/ui-extension-service";
-import { loadAsyncComponent } from "webapps-common/ui/util/loadComponentLibrary";
 
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
@@ -27,6 +26,9 @@ type ViewLoaderConfigFn = () => Promise<ViewConfig>;
 // been loaded, then we can ignore this outdated response by means of this key
 let mostRecentlyLoadedViewKey = null;
 
+// cache the imported dynamic views
+let dynamicViewImportCache = {};
+
 /**
  * Dynamically loads and renders a component for a view in the workflow. This could be a port view
  * or a dialog view
@@ -36,15 +38,10 @@ export default defineComponent({
     IFramePortView,
   },
 
-  provide() {
-    // "getKnimeService" is required by the loaded view
-    return { getKnimeService: () => this.getKnimeService() };
-  },
-
   props: {
     /**
      * A unique key that will be tracked for the loading / re-loading of the view.
-     * Everytime it changes the view will reload
+     * Every time it changes the view will reload
      */
     renderKey: {
       type: String,
@@ -79,15 +76,6 @@ export default defineComponent({
       type: Boolean,
       default: true,
     },
-    /**
-     * Override the component name returned in the view's configuration object and instead
-     * use this name to (1) Detect the component after its script is loaded and (2) Register it into the
-     * Vue instance under this name
-     */
-    overrideComponentName: {
-      type: [String, null],
-      default: null,
-    },
   },
 
   emits: {
@@ -97,20 +85,13 @@ export default defineComponent({
 
   data() {
     return {
-      componentName: null,
+      activeDynamicView: null,
       initialData: null,
-      getKnimeService: null,
+      useIframe: false,
     };
   },
 
   watch: {
-    componentName(componentName) {
-      if (componentName && !this.$options.components[componentName]) {
-        throw new Error(
-          `Component ${componentName} hasn't been loaded properly`,
-        );
-      }
-    },
     async renderKey() {
       await this.loadView();
     },
@@ -124,6 +105,7 @@ export default defineComponent({
 
   unmounted() {
     mostRecentlyLoadedViewKey = null;
+    this.activeDynamicView?.teardown();
   },
 
   methods: {
@@ -132,7 +114,7 @@ export default defineComponent({
       mostRecentlyLoadedViewKey = portKey;
       this.$emit("stateChange", { state: "loading", portKey });
       this.initialData = null;
-      this.componentName = null;
+      this.useIframe = false;
 
       try {
         const viewConfig = await this.viewConfigLoaderFn();
@@ -146,11 +128,9 @@ export default defineComponent({
             src: this.resourceLocationResolver(viewConfig),
             style: viewConfig.iframeStyle,
           };
-          this.componentName = "IFramePortView";
+          this.useIframe = true;
         } else if (resourceType === "VUE_COMPONENT_LIB") {
-          this.componentName = await this.renderDynamicViewComponent(
-            viewConfig,
-          );
+          await this.renderDynamicView(viewConfig);
         } else {
           throw new Error("unknown resource type");
         }
@@ -163,46 +143,60 @@ export default defineComponent({
     /*
      * Renders a view dynamically by fetching the component library script over the network.
      */
-    async renderDynamicViewComponent(viewConfig: ViewConfig) {
+    async renderDynamicView(viewConfig: ViewConfig) {
       // create knime service and update provide/inject
       const knimeService = this.initKnimeService(viewConfig);
-      this.getKnimeService = () => knimeService;
-
-      // set up component, if dynamically loaded
-      await this.setupDynamicComponent(viewConfig);
 
       // set initial data and component
-      if (viewConfig.initialData) {
-        this.initialData = JSON.parse(viewConfig.initialData).result;
-      }
-      return this.overrideComponentName || viewConfig.resourceInfo.id;
-    },
+      const initialData = viewConfig.initialData
+        ? JSON.parse(viewConfig.initialData).result
+        : null;
 
-    /**
-     * Fetches and registers a dynamic component that will render a view.
-     * It will also initialize the KnimeService that said view requires
-     */
-    async setupDynamicComponent(viewConfig: ViewConfig) {
+      // get location of the script (es module)
       const { resourceInfo } = viewConfig;
-
       const resourceLocation = this.resourceLocationResolver({ resourceInfo });
 
-      const componentName = this.overrideComponentName || resourceInfo.id;
-      // @ts-expect-error
-      const component = await loadAsyncComponent({
-        resourceLocation,
-        componentName,
-      });
-      this.$options.components[componentName] = component;
+      // load the dynamic view (es module) if its not already loaded
+      if (!dynamicViewImportCache[resourceLocation]) {
+        dynamicViewImportCache[resourceLocation] = await import(
+          /* @vite-ignore */ resourceLocation
+        );
+      }
+
+      // create dynamic view in shadow root
+      const container = this.$refs.container as HTMLElement;
+      // teardown active view if we have one
+      if (this.activeDynamicView) {
+        this.activeDynamicView?.teardown();
+      }
+
+      // create or reuse shadow root
+      const shadowRoot = container.shadowRoot
+        ? container.shadowRoot
+        : container.attachShadow({ mode: "open" });
+
+      // call module default exported function to load the view
+      const loadDynamicView = dynamicViewImportCache[resourceLocation].default;
+      this.activeDynamicView = loadDynamicView(
+        shadowRoot,
+        knimeService,
+        initialData,
+        (resourceInfo: { baseUrl: string; path: string }) =>
+          this.$store.getters["api/uiExtResourceLocation"]({ resourceInfo }),
+      );
     },
   },
 });
 </script>
 
 <template>
-  <Component
-    :is="componentName"
-    v-if="componentName"
-    :initial-data="initialData"
-  />
+  <IFramePortView v-if="useIframe" :initial-data="initialData" />
+  <div v-else ref="container" class="view-loader-container" />
 </template>
+
+<style lang="postcss" scoped>
+.view-loader-container {
+  /** required for the table view */
+  height: 100%;
+}
+</style>

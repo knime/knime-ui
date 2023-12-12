@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
       reporters: ["default", "junit"],
       alias: {
         "@api": fileURLToPath(
-          new URL("./src/api/__mocks__/index.ts", import.meta.url)
+          new URL("./src/api/__mocks__/index.ts", import.meta.url),
         ),
       },
       coverage: {

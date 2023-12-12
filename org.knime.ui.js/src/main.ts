@@ -21,10 +21,6 @@ import { getToastsProvider } from "./plugins/toasts";
 // Setup logger for production
 setupLogger();
 
-// required for dynamically loaded components which will access the Vue instance off of the window object
-// e.g: TableView, NodeDialog
-window.Vue = Vue;
-
 // Keep these in sync with the 'ap-loader' wrapper application, until the
 const AWAITING_CONNECTION_INFO_MESSAGE = "KNIME_UI__AWAITING_CONNECTION_INFO";
 const CONNECTION_INFO_MESSAGE = "KNIME_UI__CONNECTION_INFO";
