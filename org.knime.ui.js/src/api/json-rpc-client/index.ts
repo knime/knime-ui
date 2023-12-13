@@ -56,10 +56,7 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
         return;
       }
 
-      const transport = new WebSocketTransport(
-        connectionInfo.url,
-        connectionInfo.jobId,
-      );
+      const transport = new WebSocketTransport(connectionInfo.url);
       const { connection } = transport;
 
       // setup server event handler
