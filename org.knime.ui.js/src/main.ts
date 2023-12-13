@@ -46,10 +46,10 @@ const apiURLResolver = () =>
     }
 
     // for dev mode, use provided url directly
-    if (import.meta.env.VITE_BROWSER_DEV_MODE) {
+    if (import.meta.env.VITE_BROWSER_DEV_MODE === "true") {
       resolve({
         url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
-        restApiBaseUrl: import.meta.env.VITE_BROWSER_DEV_REST_API_BASE_URL,
+        restApiBaseUrl: "",
         jobId: "",
         sessionId: "",
       });
