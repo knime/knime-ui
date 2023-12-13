@@ -4,13 +4,6 @@ import type { JSONRPCRequestData } from "@open-rpc/client-js/build/Request";
 const DEFAULT_TIMEOUT = 5000;
 
 export class WebSocketTransport extends BaseWebSocketTransport {
-  private jobId: string;
-
-  constructor(uri: string, jobId: string) {
-    super(uri);
-    this.jobId = jobId;
-  }
-
   public sendData(
     data: JSONRPCRequestData,
     timeout: number | null = DEFAULT_TIMEOUT,
