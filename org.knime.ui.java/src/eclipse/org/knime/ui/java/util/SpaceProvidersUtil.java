@@ -53,7 +53,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.util.function.Predicate;
 
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
-import org.knime.gateway.impl.service.events.EventConsumer;
+import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;

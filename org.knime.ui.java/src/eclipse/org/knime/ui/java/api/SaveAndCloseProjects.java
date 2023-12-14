@@ -68,8 +68,8 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.ui.java.util.DesktopAPUtil;
 
 /**

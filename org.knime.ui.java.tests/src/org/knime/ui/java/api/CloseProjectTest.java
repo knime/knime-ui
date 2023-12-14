@@ -67,8 +67,8 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.ProjectFactory;
 
