@@ -42,11 +42,17 @@ npm run dev
 
 ## UI running in the browser
 
-In addition to running embedded inside the KNIME Analytics Platform, the new UI can also run in the browser (though this is still in beta at the time of writing). To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page](debugapbrowser).
+### Standalone
+
+In addition to running inside the KNIME Analytics Platform, the new UI can also run in the browser. To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page](debugapbrowser).
 
 After following the steps above, copy the contents of the `.env.example` file over to a `.env` file. Then adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url and port of the running WSS server (as configured in your Eclipse setup). NOTE: Remember to set `VITE_BROWSER_DEV_MODE` to `true` in your `.env` file, otherwise the `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
 
 When both steps are done, you can open the app in the browser under `http://localhost:3000`
+
+### Loaded in iframe via [AP-loader](https://bitbucket.org/KNIME/knime-hub-ap-loader/src/master/)
+
+If you want to load KNIME UI in an iframe by means of the AP-loader, in addition to the above you need to set the `VITE_BROWSER_DEV_MODE_EMBEDDED` variable to `true` in your `.env` file. This mode will enable you to develop for both knime-ui and the ap-loader application.
 
 ## Git hooks
 

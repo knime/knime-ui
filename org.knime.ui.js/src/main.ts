@@ -46,7 +46,11 @@ const apiURLResolver = () =>
     }
 
     // for dev mode, use provided url directly
-    if (import.meta.env.VITE_BROWSER_DEV_MODE === "true") {
+    // see .env file for more details
+    if (
+      import.meta.env.VITE_BROWSER_DEV_MODE === "true" &&
+      import.meta.env.VITE_BROWSER_DEV_MODE_EMBEDDED !== "true"
+    ) {
       resolve({
         url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
         restApiBaseUrl: "",
@@ -67,6 +71,17 @@ const apiURLResolver = () =>
 
         if (event.data.type !== CONNECTION_INFO_MESSAGE) {
           return;
+        }
+
+        // for embedded dev mode, resolve to the dev urls
+        // see .env file for more details
+        if (import.meta.env.VITE_BROWSER_DEV_MODE_EMBEDDED === "true") {
+          resolve({
+            url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
+            restApiBaseUrl: "",
+            jobId: "",
+            sessionId: "",
+          });
         }
 
         const { data } = event as MessageEvent<{
