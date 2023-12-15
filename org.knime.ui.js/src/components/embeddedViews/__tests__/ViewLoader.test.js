@@ -75,7 +75,7 @@ describe("ViewLoader.vue", () => {
       renderKey,
       viewConfigLoaderFn: vi.fn(),
       initKnimeService: vi.fn(),
-      resourceLocationResolver: vi.fn(),
+      resourceLocationResolver: vi.fn().mockReturnValue("location.js"),
     };
 
     return mount(ViewLoader, {

@@ -92,7 +92,7 @@ describe("PortViewLoader.vue", () => {
       // TODO: NXT-1295 remove once api store is not needed
       api: {
         getters: {
-          uiExtResourceLocation: () => () => {},
+          uiExtResourceLocation: () => () => "location.js",
         },
       },
     });
