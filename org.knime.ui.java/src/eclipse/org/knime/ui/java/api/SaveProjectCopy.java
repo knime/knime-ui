@@ -69,10 +69,12 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.FileUtil;
 import org.knime.core.util.LockFailedException;
+import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
@@ -107,7 +109,7 @@ final class SaveProjectCopy {
      * @param projectSVG The project SVG
      * @throws IOException In case the project could not be saved
      */
-    static void saveCopyOf(final String projectId, final String projectSVG) throws IOException {
+    static void saveCopyOf(final String projectId, final String projectSVG) {
         final var project = ProjectManager.getInstance()//
             .getProject(projectId) //
             .orElseThrow(() -> {
@@ -116,7 +118,13 @@ final class SaveProjectCopy {
             });
         final var wfm = project.loadWorkflowManager();
         final var oldContext = CheckUtils.checkArgumentNotNull(wfm.getContextV2());
-        final var newContext = pickDestinationAndGetNewContext(oldContext);
+        WorkflowContextV2 newContext = null;
+        try {
+            newContext = pickDestinationAndGetNewContext(oldContext);
+        } catch (Exception ex) {
+            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
+                String.format("There was an error saving the workflow. %s", ex.getMessage()), false);
+        }
 
         if (newContext == null) {
             LOGGER.error("No valid destionation could be picked");

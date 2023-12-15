@@ -177,7 +177,7 @@ final class ProjectAPI {
      * @throws IOException if moving the workflow fails
      */
     @API
-    static void saveProjectAs(final String projectId, final String workflowSvg) throws IOException {
+    static void saveProjectAs(final String projectId, final String workflowSvg) {
         SaveProjectCopy.saveCopyOf(projectId, workflowSvg);
     }
 
