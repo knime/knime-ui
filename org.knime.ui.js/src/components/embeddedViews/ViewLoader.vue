@@ -74,8 +74,11 @@ const renderDynamicView = async (viewConfig: ViewConfig) => {
   const { resourceInfo } = viewConfig;
   const resourceLocation = props.resourceLocationResolver({ resourceInfo });
 
+  // TODO: NXT-2291 This is a hack as we only have one type right now
+  const shadowRootLibLocation = resourceLocation.replace(".umd.js", ".js");
+
   // load the dynamic view (es module) if its not already loaded
-  const dynamicView = await dynamicImport(resourceLocation);
+  const dynamicView = await dynamicImport(shadowRootLibLocation);
 
   // create dynamic view in shadow root
   // teardown active view if we have one
@@ -119,7 +122,7 @@ const loadView = async () => {
       };
       useIframe.value = true;
     } else if (resourceType === "VUE_COMPONENT_LIB") {
-      // suggestion: SHADOW_ROOT_VIEW_LIB
+      // suggestion: ES_SHADOW_ROOT_DYNAMIC_VIEW_LIB
       await renderDynamicView(viewConfig);
     } else {
       throw new Error("unknown resource type");
