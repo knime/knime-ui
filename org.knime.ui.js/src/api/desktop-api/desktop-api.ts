@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { environment } from "@/environment";
+import { isBrowser } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 
 import type {
@@ -18,7 +18,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   blockUi: { block: boolean; darkenBackground?: boolean },
   // eslint-disable-next-line max-params
 ): Promise<ReturnType<TFunction> | null> => {
-  if (environment === "BROWSER") {
+  if (isBrowser) {
     return null;
   }
 

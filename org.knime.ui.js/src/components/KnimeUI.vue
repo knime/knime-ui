@@ -3,7 +3,7 @@ import { defineComponent, defineAsyncComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 
 import { ToastStack } from "webapps-common/ui/services/toast";
-import { environment } from "@/environment";
+import { environment, isDesktop } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import Error from "@/components/application/Error.vue";
@@ -85,7 +85,7 @@ export default defineComponent({
     },
 
     async checkClipboardSupport() {
-      if (environment === "DESKTOP") {
+      if (isDesktop) {
         this.$store.commit("application/setHasClipboardSupport", true);
         return;
       }

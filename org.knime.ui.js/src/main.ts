@@ -9,6 +9,7 @@ import { initPlugins } from "./plugins";
 import {
   environment,
   initGlobalEnvProperty,
+  isDesktop,
   runInEnvironment,
 } from "./environment";
 
@@ -40,7 +41,7 @@ const isValidOrigin = (origin: string) => {
 const apiURLResolver = () =>
   new Promise<ConnectionInfo | null>((resolve, reject) => {
     // immediately resolve for desktop environment
-    if (environment === "DESKTOP") {
+    if (isDesktop) {
       resolve(null);
       return;
     }

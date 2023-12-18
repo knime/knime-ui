@@ -14,6 +14,7 @@ import { isNodeMetaNode } from "@/util/nodeUtil";
 import type { XY } from "@/api/gateway-api/generated-api";
 
 import type { UnionToShortcutRegistry } from "./types";
+import { isDesktop } from "@/environment";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -86,9 +87,20 @@ const workflowShortcuts: WorkflowShortcuts = {
         $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("workflow/openNodeConfiguration", selectedNodeId);
     },
-    condition: ({ $store }) =>
-      $store.getters["selection/singleSelectedNode"]?.allowedActions
-        .canOpenDialog,
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+
+      if (singleSelectedNode) {
+        const { canOpenDialog } = singleSelectedNode.allowedActions;
+
+        return (
+          canOpenDialog &&
+          (isDesktop ? true : singleSelectedNode.kind === "node")
+        );
+      }
+
+      return false;
+    },
   },
   configureFlowVariables: {
     text: "Configure flow variables",
@@ -98,9 +110,18 @@ const workflowShortcuts: WorkflowShortcuts = {
         "workflow/openFlowVariableConfiguration",
         $store.getters["selection/singleSelectedNode"].id,
       ),
-    condition: ({ $store }) =>
-      $store.getters["selection/singleSelectedNode"]?.allowedActions
-        .canOpenLegacyFlowVariableDialog,
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+
+      if (singleSelectedNode) {
+        const { canOpenLegacyFlowVariableDialog } =
+          singleSelectedNode.allowedActions;
+
+        return canOpenLegacyFlowVariableDialog && isDesktop;
+      }
+
+      return false;
+    },
   },
   editName: {
     text: ({ $store }) =>
