@@ -8,7 +8,7 @@ import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import AiIcon from "webapps-common/ui/assets/img/icons/ai-general.svg";
 
-import { environment } from "@/environment";
+import { isDesktop } from "@/environment";
 import MetainfoIcon from "@/assets/metainfo.svg";
 import { TABS } from "@/store/panel";
 
@@ -68,7 +68,7 @@ export default defineComponent({
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
 
     isDesktopEnvironment() {
-      return environment === "DESKTOP";
+      return isDesktop;
     },
     showKaiTab() {
       return this.$features.isKaiPermitted() && this.isDesktopEnvironment;

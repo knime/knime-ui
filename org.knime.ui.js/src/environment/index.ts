@@ -1,3 +1,5 @@
+import DynamicEnvRenderer from "./DynamicEnvRenderer.vue";
+
 /* eslint-disable new-cap */
 import type { App } from "vue";
 
@@ -6,6 +8,9 @@ export type Environment = "DESKTOP" | "BROWSER";
 export const environment: Environment =
   // eslint-disable-next-line no-undefined
   window.switchToJavaUI === undefined ? "BROWSER" : "DESKTOP";
+
+export const isDesktop = environment === "DESKTOP";
+export const isBrowser = environment === "BROWSER";
 
 export const initGlobalEnvProperty = (app: App) => {
   app.config.globalProperties.$environment = environment;
@@ -26,3 +31,5 @@ export const runInEnvironment = (matcher: Matcher) => {
 
   return (matcher[environment] ?? noop)();
 };
+
+export { DynamicEnvRenderer };

@@ -479,6 +479,7 @@ export default {
             :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
             :node-id="id"
             :is-node-selected="isSelected"
+            :node-kind="kind"
             @mouseleave="onLeaveHoverArea"
           />
         </Portal>

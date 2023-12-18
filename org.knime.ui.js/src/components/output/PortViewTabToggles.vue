@@ -11,6 +11,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import { DynamicEnvRenderer } from "@/environment";
 
 interface ComponentData {
   activeView: number | null;
@@ -22,6 +23,7 @@ export default defineComponent({
     Button,
     OpenInNewWindowIcon,
     ValueSwitch,
+    DynamicEnvRenderer,
   },
 
   props: {
@@ -117,14 +119,16 @@ export default defineComponent({
       @update:model-value="activeView = Number($event)"
     >
       <template #default="{ item }">
-        <Button
-          class="open-window"
-          :disabled="!item.canDetach || item.disabled"
-          :title="`Open ${item.text} view in new window`"
-          @click="openInNewWindow(item)"
-        >
-          <OpenInNewWindowIcon />
-        </Button>
+        <DynamicEnvRenderer value="DESKTOP">
+          <Button
+            class="open-window"
+            :disabled="!item.canDetach || item.disabled"
+            :title="`Open ${item.text} view in new window`"
+            @click="openInNewWindow(item)"
+          >
+            <OpenInNewWindowIcon />
+          </Button>
+        </DynamicEnvRenderer>
       </template>
     </ValueSwitch>
     <Button

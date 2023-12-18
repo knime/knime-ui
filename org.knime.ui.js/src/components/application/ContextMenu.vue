@@ -20,6 +20,7 @@ import { getNodeState, isNodeMetaNode } from "@/util/nodeUtil";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
 import * as $shapes from "@/style/shapes.mjs";
+import { isDesktop } from "@/environment";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
 
@@ -320,7 +321,7 @@ export default defineComponent({
             text: "Open output port",
             children: portViewItems,
           },
-          portViewItems.length > 0,
+          portViewItems.length > 0 && isDesktop,
         ),
         // Loop nodes
         ...this.mapToShortcut([
@@ -394,7 +395,10 @@ export default defineComponent({
       const metanodeAndComponentGroup: Array<MenuItem> = [
         ...this.mapToShortcut([
           { name: "createMetanode", isVisible: this.selectedNodes.length },
-          { name: "createComponent", isVisible: this.selectedNodes.length },
+          {
+            name: "createComponent",
+            isVisible: this.selectedNodes.length && isDesktop,
+          },
         ]),
         ...filterItemVisibility(
           {
@@ -441,7 +445,7 @@ export default defineComponent({
               },
             ]),
           },
-          isComponent,
+          isComponent && isDesktop,
         ),
       ];
 

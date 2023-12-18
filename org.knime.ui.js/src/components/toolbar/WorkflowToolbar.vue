@@ -10,6 +10,7 @@ import type { ShortcutName } from "@/shortcuts";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
+import { isDesktop } from "@/environment";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -96,8 +97,8 @@ export default {
       }
 
       const visibleItems: Partial<Record<ShortcutName, boolean>> = {
-        save: !this.isUnknownProject,
-        saveAs: this.isUnknownProject,
+        save: !this.isUnknownProject && isDesktop,
+        saveAs: this.isUnknownProject && isDesktop,
 
         // Always visible
         undo: true,
@@ -116,7 +117,7 @@ export default {
         // Workflow abstraction
         createMetanode: this.selectedNodes.length,
         createComponent: this.selectedNodes.length,
-        openLayoutEditor: isInsideComponent,
+        openLayoutEditor: isInsideComponent && isDesktop,
       };
 
       return (

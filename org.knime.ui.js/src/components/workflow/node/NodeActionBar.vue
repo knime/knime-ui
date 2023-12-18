@@ -1,4 +1,5 @@
 <script lang="ts">
+import { defineComponent, type PropType } from "vue";
 import ExecuteIcon from "@/assets/execute.svg";
 import ResumeIcon from "@/assets/resume-execution.svg";
 import ResetIcon from "@/assets/reset-all.svg";
@@ -9,7 +10,8 @@ import OpenViewIcon from "@/assets/open-view.svg";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 
 import ActionBar from "@/components/common/ActionBar.vue";
-import { defineComponent } from "vue";
+import { isDesktop } from "@/environment";
+import type { Node } from "@/api/gateway-api/generated-api";
 
 /**
  *  Displays a bar of action buttons above nodes
@@ -22,6 +24,10 @@ export default defineComponent({
     nodeId: {
       type: String,
       default: "NODE ID MISSING",
+    },
+    nodeKind: {
+      type: String as PropType<Node.KindEnum>,
+      required: true,
     },
     isNodeSelected: {
       type: Boolean,
@@ -152,7 +158,9 @@ export default defineComponent({
     },
     visibleActions() {
       const conditionMap = {
-        configureNode: this.canOpenDialog !== null,
+        configureNode:
+          this.canOpenDialog !== null &&
+          (isDesktop ? true : this.nodeKind === "node"),
 
         // plain execution
         execute: !this.canPause && !this.canResume,
