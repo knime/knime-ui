@@ -4,7 +4,6 @@ import { mount } from "@vue/test-utils";
 import * as $shapes from "@/style/shapes.mjs";
 
 import ActionButton from "@/components/common/ActionButton.vue";
-import NodeActionBar from "../NodeActionBar.vue";
 
 describe("NodeActionBar", () => {
   const $shortcuts = {
@@ -12,11 +11,25 @@ describe("NodeActionBar", () => {
     dispatch: vi.fn(() => ({})),
   };
 
-  const doMount = ({ props } = {}) => {
+  const doMount = async ({ props, environment = "DESKTOP" } = {}) => {
+    vi.doMock("@/environment", async () => {
+      const actual = await vi.importActual("@/environment");
+
+      return {
+        ...actual,
+        environment,
+        isDesktop: environment === "DESKTOP",
+        isBrowser: environment === "BROWSER",
+      };
+    });
+
     const defaultProps = {
       nodeId: "root:1",
       isNodeSelected: false,
+      nodeKind: "node",
     };
+
+    const NodeActionBar = (await import("../NodeActionBar.vue")).default;
 
     const wrapper = mount(NodeActionBar, {
       props: {
@@ -35,8 +48,8 @@ describe("NodeActionBar", () => {
     vi.clearAllMocks();
   });
 
-  it("renders disabled action buttons without openNodeConfiguration and openView", () => {
-    const { wrapper } = doMount();
+  it("renders disabled action buttons without openNodeConfiguration and openView", async () => {
+    const { wrapper } = await doMount();
 
     let buttons = wrapper.findAllComponents(ActionButton);
 
@@ -51,8 +64,8 @@ describe("NodeActionBar", () => {
     );
   });
 
-  it("renders disabled action buttons with openNodeConfiguration and without openView", () => {
-    const { wrapper } = doMount({ props: { canOpenDialog: false } });
+  it("renders disabled action buttons with openNodeConfiguration and without openView", async () => {
+    const { wrapper } = await doMount({ props: { canOpenDialog: false } });
 
     let buttons = wrapper.findAllComponents(ActionButton);
 
@@ -70,8 +83,49 @@ describe("NodeActionBar", () => {
     );
   });
 
-  it("renders disabled action buttons with openNodeConfiguration and openView", () => {
-    const { wrapper } = doMount({
+  describe("configure option", () => {
+    it("shows configure option for components in desktop", async () => {
+      const { wrapper } = await doMount({
+        props: { canOpenDialog: true, nodeKind: "component" },
+        environment: "DESKTOP",
+      });
+
+      const actions = wrapper
+        .findAllComponents(ActionButton)
+        .map((b) => b.props());
+
+      expect(actions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ title: "Configure" }),
+          expect.objectContaining({ title: "Execute" }),
+          expect.objectContaining({ title: "Cancel" }),
+          expect.objectContaining({ title: "Reset" }),
+        ]),
+      );
+    });
+
+    it("hides configure option for components in the browser", async () => {
+      const { wrapper } = await doMount({
+        props: { canOpenDialog: true, nodeKind: "component" },
+        environment: "BROWSER",
+      });
+
+      const actions = wrapper
+        .findAllComponents(ActionButton)
+        .map((b) => b.props());
+
+      expect(actions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ title: "Execute" }),
+          expect.objectContaining({ title: "Cancel" }),
+          expect.objectContaining({ title: "Reset" }),
+        ]),
+      );
+    });
+  });
+
+  it("renders disabled action buttons with openNodeConfiguration and openView", async () => {
+    const { wrapper } = await doMount({
       props: { canOpenDialog: false, canOpenView: false },
     });
 
@@ -94,8 +148,8 @@ describe("NodeActionBar", () => {
     );
   });
 
-  it("renders enabled action buttons", () => {
-    const { wrapper } = doMount({
+  it("renders enabled action buttons", async () => {
+    const { wrapper } = await doMount({
       props: {
         canOpenDialog: true,
         canExecute: true,
@@ -144,8 +198,8 @@ describe("NodeActionBar", () => {
   });
 
   describe("loop action buttons", () => {
-    it("should step and pause", () => {
-      const { wrapper } = doMount({
+    it("should step and pause", async () => {
+      const { wrapper } = await doMount({
         props: { canStep: true, canPause: true, canResume: false },
       });
 
@@ -175,8 +229,8 @@ describe("NodeActionBar", () => {
       );
     });
 
-    it("should step and resume", () => {
-      const { wrapper } = doMount({
+    it("should step and resume", async () => {
+      const { wrapper } = await doMount({
         props: { canStep: true, canPause: false, canResume: true },
       });
 
@@ -205,9 +259,9 @@ describe("NodeActionBar", () => {
       );
     });
 
-    it("should step, pause, resume", () => {
+    it("should step, pause, resume", async () => {
       // ensure only two of the three loop options are rendered at a time
-      const { wrapper } = doMount({
+      const { wrapper } = await doMount({
         props: { canStep: true, canPause: true, canResume: true },
       });
 
@@ -245,16 +299,16 @@ describe("NodeActionBar", () => {
     });
   });
 
-  it("renders node Id", () => {
-    const { wrapper } = doMount();
+  it("renders node Id", async () => {
+    const { wrapper } = await doMount();
 
     expect(wrapper.find("text").text()).toBe("root:1");
   });
 
-  it("should add the hotkey binding to the action tooltip when node is selected", () => {
+  it("should add the hotkey binding to the action tooltip when node is selected", async () => {
     $shortcuts.get = vi.fn(() => ({ hotkeyText: "MOCK HOTKEY TEXT" }));
 
-    const { wrapper } = doMount({
+    const { wrapper } = await doMount({
       props: { canReset: true, isNodeSelected: true },
     });
 

@@ -21,9 +21,16 @@ describe("KnimeUI.vue", () => {
     destroyApplication = vi.fn(),
     setHasClipboardSupport = vi.fn(),
   } = {}) => {
-    vi.doMock("@/environment", () => ({
-      environment,
-    }));
+    vi.doMock("@/environment", async () => {
+      const actual = await vi.importActual("@/environment");
+
+      return {
+        ...actual,
+        environment,
+        isDesktop: environment === "DESKTOP",
+        isBrowser: environment === "BROWSER",
+      };
+    });
 
     document.fonts = {
       load: vi.fn(() => Promise.resolve("dummy")),

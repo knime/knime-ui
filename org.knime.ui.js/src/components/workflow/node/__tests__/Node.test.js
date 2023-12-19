@@ -417,6 +417,7 @@ describe("Node", () => {
         isNodeSelected: false,
         canOpenDialog: true,
         canOpenView: true,
+        nodeKind: "node",
       });
       expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe(
         "translate(516, 161)",
@@ -630,6 +631,7 @@ describe("Node", () => {
         canOpenDialog: true,
         canOpenView: true,
         nodeId: "root:1",
+        nodeKind: "node",
       });
     });
 

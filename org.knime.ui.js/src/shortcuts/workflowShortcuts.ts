@@ -12,9 +12,9 @@ import { nodeSize } from "@/style/shapes.mjs";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import type { XY } from "@/api/gateway-api/generated-api";
+import { compatibility } from "@/environment";
 
 import type { UnionToShortcutRegistry } from "./types";
-import { isDesktop } from "@/environment";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -95,7 +95,7 @@ const workflowShortcuts: WorkflowShortcuts = {
 
         return (
           canOpenDialog &&
-          (isDesktop ? true : singleSelectedNode.kind === "node")
+          compatibility.canConfigureNodes(singleSelectedNode.kind)
         );
       }
 
@@ -117,7 +117,10 @@ const workflowShortcuts: WorkflowShortcuts = {
         const { canOpenLegacyFlowVariableDialog } =
           singleSelectedNode.allowedActions;
 
-        return canOpenLegacyFlowVariableDialog && isDesktop;
+        return (
+          canOpenLegacyFlowVariableDialog &&
+          compatibility.canConfigureFlowVariables()
+        );
       }
 
       return false;

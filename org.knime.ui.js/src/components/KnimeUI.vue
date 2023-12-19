@@ -3,7 +3,7 @@ import { defineComponent, defineAsyncComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 
 import { ToastStack } from "webapps-common/ui/services/toast";
-import { environment, isDesktop } from "@/environment";
+import { DynamicEnvRenderer, environment, isDesktop } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import Error from "@/components/application/Error.vue";
@@ -28,6 +28,7 @@ export default defineComponent({
     SmartLoader,
     CreateWorkflowModal,
     ToastStack,
+    DynamicEnvRenderer,
   },
 
   data() {
@@ -131,7 +132,10 @@ export default defineComponent({
     <!-- if subsequent errors occur, stick with the first one -->
     <Error v-if="error" v-bind="error" @close="onCloseError" />
 
-    <AppHeader v-if="environment === 'DESKTOP'" id="app-header" />
+    <DynamicEnvRenderer value="DESKTOP">
+      <AppHeader id="app-header" />
+    </DynamicEnvRenderer>
+
     <HotkeyHandler />
 
     <template v-if="loaded">
