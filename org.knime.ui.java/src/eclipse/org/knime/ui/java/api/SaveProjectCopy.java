@@ -118,28 +118,27 @@ final class SaveProjectCopy {
             });
         final var wfm = project.loadWorkflowManager();
         final var oldContext = CheckUtils.checkArgumentNotNull(wfm.getContextV2());
-        WorkflowContextV2 newContext = null;
         try {
-            newContext = pickDestinationAndGetNewContext(oldContext);
+            final var newContext = pickDestinationAndGetNewContext(oldContext);
+
+            if (newContext == null) {
+                LOGGER.error("No valid destination could be picked");
+                return;
+            }
+
+            if (newContext.equals(oldContext)) { // Simply overwrite the old project
+                SaveProject.saveProject(projectId, projectSVG, false);
+                return;
+            }
+
+            if (wfm.isComponentProjectWFM()) {
+                saveAndReplaceComponentProject(oldContext, newContext, wfm, projectId);
+            } else {
+                saveAndReplaceWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG);
+            }
         } catch (Exception ex) {
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
                 String.format("There was an error saving the workflow. %s", ex.getMessage()), false);
-        }
-
-        if (newContext == null) {
-            LOGGER.error("No valid destionation could be picked");
-            return;
-        }
-
-        if (newContext.equals(oldContext)) { // Simply overwrite the old project
-            SaveProject.saveProject(projectId, projectSVG, false);
-            return;
-        }
-
-        if (wfm.isComponentProjectWFM()) {
-            saveAndReplaceComponentProject(oldContext, newContext, wfm, projectId);
-        } else {
-            saveAndReplaceWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG);
         }
     }
 
