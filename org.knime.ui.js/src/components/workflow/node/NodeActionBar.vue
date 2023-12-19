@@ -10,7 +10,7 @@ import OpenViewIcon from "@/assets/open-view.svg";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 
 import ActionBar from "@/components/common/ActionBar.vue";
-import { isDesktop } from "@/environment";
+import { compatibility } from "@/environment";
 import type { Node } from "@/api/gateway-api/generated-api";
 
 /**
@@ -160,7 +160,7 @@ export default defineComponent({
       const conditionMap = {
         configureNode:
           this.canOpenDialog !== null &&
-          (isDesktop ? true : this.nodeKind === "node"),
+          compatibility.canConfigureNodes(this.nodeKind),
 
         // plain execution
         execute: !this.canPause && !this.canResume,

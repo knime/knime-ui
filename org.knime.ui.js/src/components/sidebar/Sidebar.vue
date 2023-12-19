@@ -8,7 +8,7 @@ import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import AiIcon from "webapps-common/ui/assets/img/icons/ai-general.svg";
 
-import { isDesktop } from "@/environment";
+import { compatibility } from "@/environment";
 import MetainfoIcon from "@/assets/metainfo.svg";
 import { TABS } from "@/store/panel";
 
@@ -67,13 +67,6 @@ export default defineComponent({
     ...mapState("application", ["activeProjectId"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
 
-    isDesktopEnvironment() {
-      return isDesktop;
-    },
-    showKaiTab() {
-      return this.$features.isKaiPermitted() && this.isDesktopEnvironment;
-    },
-
     sidebarSections(): Array<SidebarSection> {
       return [
         {
@@ -105,7 +98,7 @@ export default defineComponent({
           },
         ),
 
-        ...registerSidebarSection(this.isDesktopEnvironment, {
+        ...registerSidebarSection(compatibility.isSpaceExplorerSupported(), {
           name: TABS.SPACE_EXPLORER,
           title: "Space explorer",
           icon: CubeIcon,
@@ -114,14 +107,17 @@ export default defineComponent({
           onClick: () => this.clickItem(TABS.SPACE_EXPLORER),
         }),
 
-        ...registerSidebarSection(this.showKaiTab, {
-          name: TABS.KAI,
-          title: "K-AI AI assistant",
-          icon: AiIcon,
-          isActive: this.isTabActive(TABS.KAI),
-          isExpanded: this.expanded,
-          onClick: () => this.clickItem(TABS.KAI),
-        }),
+        ...registerSidebarSection(
+          this.$features.isKaiPermitted() && compatibility.isKaiSupported(),
+          {
+            name: TABS.KAI,
+            title: "K-AI AI assistant",
+            icon: AiIcon,
+            isActive: this.isTabActive(TABS.KAI),
+            isExpanded: this.expanded,
+            onClick: () => this.clickItem(TABS.KAI),
+          },
+        ),
       ];
     },
   },

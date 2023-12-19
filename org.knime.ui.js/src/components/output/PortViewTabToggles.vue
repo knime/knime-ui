@@ -1,5 +1,5 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
+<script setup lang="ts">
+import { ref, computed, watch, toRef, onMounted } from "vue";
 
 import OpenInNewWindowIcon from "webapps-common/ui/assets/img/icons/open-in-new-window.svg";
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
@@ -11,100 +11,51 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { DynamicEnvRenderer } from "@/environment";
+import { compatibility } from "@/environment";
 
-interface ComponentData {
-  activeView: number | null;
-  position: { top: string; left: string };
-}
+type Props = {
+  uniquePortKey: string;
+  viewDescriptors: Array<PortViewDescriptor>;
+  viewDescriptorMapping: PortViewDescriptorMapping;
+  selectedNode: KnimeNode;
+  selectedPortIndex: number;
+};
 
-export default defineComponent({
-  components: {
-    Button,
-    OpenInNewWindowIcon,
-    ValueSwitch,
-    DynamicEnvRenderer,
-  },
+const props = defineProps<Props>();
 
-  props: {
-    uniquePortKey: {
-      type: String,
-      required: true,
+const emit = defineEmits(["openViewInNewWindow"]);
+
+const activeView = ref<number | null>(null);
+
+const tabToggles = computed(() => {
+  return getPortViewByViewDescriptors(
+    {
+      descriptors: props.viewDescriptors,
+      descriptorMapping: props.viewDescriptorMapping,
     },
-
-    viewDescriptors: {
-      type: Array as PropType<Array<PortViewDescriptor>>,
-      required: true,
-    },
-
-    viewDescriptorMapping: {
-      type: Object as PropType<PortViewDescriptorMapping>,
-      required: true,
-    },
-
-    selectedNode: {
-      type: Object as PropType<KnimeNode>,
-      required: true,
-    },
-
-    selectedPortIndex: {
-      type: Number,
-      required: true,
-    },
-  },
-
-  emits: ["openViewInNewWindow"],
-
-  data(): ComponentData {
-    return {
-      activeView: null,
-      position: {
-        top: "0",
-        left: "0",
-      },
-    };
-  },
-
-  computed: {
-    tabToggles() {
-      return getPortViewByViewDescriptors(
-        {
-          descriptors: this.viewDescriptors,
-          descriptorMapping: this.viewDescriptorMapping,
-        },
-        this.selectedNode,
-        this.selectedPortIndex,
-      );
-    },
-  },
-
-  watch: {
-    uniquePortKey() {
-      this.setFirstTab();
-    },
-  },
-
-  mounted() {
-    this.setFirstTab();
-  },
-
-  methods: {
-    setFirstTab() {
-      this.activeView = this.tabToggles.at(0)
-        ? Number(this.tabToggles.at(0).id)
-        : null;
-    },
-
-    resetActiveView() {
-      this.activeView = null;
-    },
-
-    openInNewWindow(item = null) {
-      const viewIndex = item === null ? this.activeView : Number(item.id);
-      this.$emit("openViewInNewWindow", viewIndex);
-    },
-  },
+    props.selectedNode,
+    props.selectedPortIndex,
+  );
 });
+
+const setFirstTab = () => {
+  activeView.value = tabToggles.value.at(0)
+    ? Number(tabToggles.value.at(0).id)
+    : null;
+};
+
+watch(toRef(props, "uniquePortKey"), () => {
+  setFirstTab();
+});
+
+onMounted(() => {
+  setFirstTab();
+});
+
+const openInNewWindow = (item = null) => {
+  const viewIndex = item === null ? activeView.value : Number(item.id);
+  emit("openViewInNewWindow", viewIndex);
+};
 </script>
 
 <template>
@@ -118,17 +69,15 @@ export default defineComponent({
       :possible-values="tabToggles"
       @update:model-value="activeView = Number($event)"
     >
-      <template #default="{ item }">
-        <DynamicEnvRenderer value="DESKTOP">
-          <Button
-            class="open-window"
-            :disabled="!item.canDetach || item.disabled"
-            :title="`Open ${item.text} view in new window`"
-            @click="openInNewWindow(item)"
-          >
-            <OpenInNewWindowIcon />
-          </Button>
-        </DynamicEnvRenderer>
+      <template v-if="compatibility.canDetachPortViews()" #default="{ item }">
+        <Button
+          class="open-window"
+          :disabled="!item.canDetach || item.disabled"
+          :title="`Open ${item.text} view in new window`"
+          @click="openInNewWindow(item)"
+        >
+          <OpenInNewWindowIcon />
+        </Button>
       </template>
     </ValueSwitch>
     <Button
