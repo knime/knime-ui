@@ -137,6 +137,7 @@ final class SaveProjectCopy {
                 saveAndReplaceWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG);
             }
         } catch (Exception ex) {
+            LOGGER.error(ex);
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
                 String.format("There was an error saving the workflow. %s", ex.getMessage()), false);
         }
