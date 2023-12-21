@@ -384,6 +384,23 @@ describe("WorkflowAnnotation.vue", () => {
         borderColor: newColor,
       });
     });
+
+    it("should save content before unmounting", async () => {
+      const { wrapper, $store, dispatchSpy } = doMount({
+        props: { annotation: modernAnnotation },
+      });
+
+      await toggleAnnotationEdit($store, modernAnnotation.id);
+      const newText = "some newer text";
+      wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newText);
+
+      wrapper.unmount();
+      expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
+        annotationId: defaultProps.annotation.id,
+        text: newText,
+        borderColor: modernAnnotation.borderColor,
+      });
+    });
   });
 
   describe("selection", () => {

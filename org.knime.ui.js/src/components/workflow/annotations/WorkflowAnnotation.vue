@@ -137,6 +137,12 @@ export default defineComponent({
     this.initializeData();
   },
 
+  unmounted() {
+    if (this.hasEdited) {
+      this.updateAnnotation();
+    }
+  },
+
   methods: {
     ...mapActions("selection", [
       "selectAnnotation",
@@ -197,6 +203,14 @@ export default defineComponent({
       );
     },
 
+    updateAnnotation() {
+      return this.$store.dispatch("workflow/updateAnnotation", {
+        annotationId: this.annotation.id,
+        text: this.newAnnotationData.richTextContent,
+        borderColor: this.newAnnotationData.borderColor,
+      });
+    },
+
     async onClickAway() {
       if (window.getSelection().toString() !== "" && this.isSelected) {
         return;
@@ -206,11 +220,7 @@ export default defineComponent({
       }
 
       if (this.hasEdited) {
-        await this.$store.dispatch("workflow/updateAnnotation", {
-          annotationId: this.annotation.id,
-          text: this.newAnnotationData.richTextContent,
-          borderColor: this.newAnnotationData.borderColor,
-        });
+        await this.updateAnnotation();
       }
 
       this.toggleEdit();
