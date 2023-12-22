@@ -138,7 +138,7 @@ final class SaveProjectCopy {
             }
         } catch (Exception ex) {
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Save Error",
-                String.format("There was an error saving the workflow. %s", ex.getMessage()), false);
+                ex.getMessage(), false);
         }
     }
 
