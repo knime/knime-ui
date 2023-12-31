@@ -250,7 +250,8 @@ final class SaveProjectCopy {
         try {
             wfm.saveAs(context, DesktopAPUtil.toExecutionMonitor(monitor));
         } catch (final IOException | CanceledExecutionException | LockFailedException e) {
-            DesktopAPUtil.showWarningAndLogError("Workflow save attempt", "Saving the workflow didn't work", LOGGER, e);
+            DesktopAPUtil.showWarningAndLogError("Workflow save attempt",
+                "Saving the workflow didn't work: " + e.getMessage(), LOGGER, e);
             monitor.done();
             return false;
         }
