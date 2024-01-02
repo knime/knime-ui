@@ -62,7 +62,6 @@ const openInNewWindow = (item = null) => {
   <div class="tab-toggles">
     <ValueSwitch
       v-if="tabToggles.length > 1"
-      ref="tabToggles"
       class="value-switch"
       compact
       :model-value="activeView === null ? null : activeView.toString()"
@@ -81,7 +80,7 @@ const openInNewWindow = (item = null) => {
       </template>
     </ValueSwitch>
     <Button
-      v-else
+      v-if="tabToggles.length === 1 && compatibility.canDetachPortViews()"
       with-border
       class="fallback-open-window"
       title="Open port view in new window"
