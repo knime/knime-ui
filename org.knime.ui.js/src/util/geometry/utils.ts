@@ -5,24 +5,15 @@ import type { XY } from "@/api/gateway-api/generated-api";
 
 /**
  * Finds the intersection of A and B
- * @param { Object } A area A
- * @param { Number } A.top
- * @param { Number } A.left
- * @param { Number } A.width
- * @param { Number } A.height
+ * @param A area A
+ * @param B area B
  *
- * @param { Object } B area B
- * @param { Number } B.top
- * @param { Number } B.left
- * @param { Number } B.width
- * @param { Number } B.height
- *
- * @returns { Object | null } returns the intersection rectangle between A and B or null
+ * @returns returns the intersection rectangle between A and B or null
  */
 export const rectangleIntersection = (
   A: GeometryBounds,
   B: GeometryBounds,
-): GeometryBounds => {
+): GeometryBounds | null => {
   const intersectionX1 = Math.max(A.left, B.left);
   const intersectionX2 = Math.min(A.left + A.width, B.left + B.width);
   if (intersectionX2 <= intersectionX1) {

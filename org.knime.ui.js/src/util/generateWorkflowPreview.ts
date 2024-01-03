@@ -78,7 +78,7 @@ const removeElements = (
 ) => {
   elements.forEach((el) => {
     if (predicateFn(el as HTMLElement)) {
-      el.parentNode.removeChild(el);
+      el.parentNode?.removeChild(el);
     }
   });
 };
@@ -194,8 +194,10 @@ const useCSSfromComputedStyles =
 
     if (compStyles.length > 0) {
       inheritedCssProperties.forEach((property) => {
+        // @ts-ignore
         const value = styleOverrides[camelCase(property)]
-          ? styleOverrides[camelCase(property)]
+          ? // @ts-ignore
+            styleOverrides[camelCase(property)]
           : compStyles.getPropertyValue(property);
 
         element.style.setProperty(property, value);
@@ -210,7 +212,7 @@ const useCSSfromComputedStyles =
  * @param filepath
  * @returns
  */
-const fileToBase64 = async (filepath): Promise<string> => {
+const fileToBase64 = async (filepath: string): Promise<string> => {
   const dataUrlDeclarationHeaderRegex = /data:.+\/.+;base64,/g;
 
   const blobContent = await fetch(filepath).then((response) => response.blob());
@@ -222,7 +224,7 @@ const fileToBase64 = async (filepath): Promise<string> => {
     reader.onload = function (event) {
       resolve(
         // remove data url preceding headers to be left only with the base64 encoded string
-        (event.target.result as string).replace(
+        (event.target!.result as string).replace(
           dataUrlDeclarationHeaderRegex,
           "",
         ),
@@ -340,6 +342,7 @@ export const generateWorkflowPreview = async (
   // Select connectors and inline all styles that may be only available from classes.
   // Additionally, override strokeWidth in case any connector is highlighted
   svgClone.querySelectorAll("[data-connector-id]").forEach(
+    // @ts-ignore
     useCSSfromComputedStyles({
       strokeWidth: "1px",
     }),
@@ -352,6 +355,7 @@ export const generateWorkflowPreview = async (
 
   // select `foreignObject`s and inline all styles that may be only available from classes
   svgClone.querySelectorAll(".annotation-editor").forEach(
+    // @ts-ignore
     useCSSfromComputedStyles({
       overflowX: "hidden",
       overflowY: "hidden",

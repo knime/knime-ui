@@ -5,7 +5,11 @@ import {
   type MetaNode,
   type ComponentNode,
   NodeState,
+  type NativeNode,
 } from "@/api/gateway-api/generated-api";
+
+export const isNativeNode = (node: KnimeNode): node is NativeNode =>
+  node.kind === Node.KindEnum.Node;
 
 export const isNodeMetaNode = (node: KnimeNode): node is MetaNode =>
   node.kind === Node.KindEnum.Metanode;
@@ -20,7 +24,7 @@ export const canExecute = (node: KnimeNode, portIndex: number) => {
   return isNodeMetaNode(node)
     ? node.outPorts[portIndex].nodeState ===
         MetaNodePort.NodeStateEnum.CONFIGURED
-    : node.allowedActions.canExecute;
+    : node.allowedActions?.canExecute;
 };
 
 /**

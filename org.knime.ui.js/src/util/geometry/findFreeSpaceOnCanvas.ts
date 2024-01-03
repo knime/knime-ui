@@ -91,7 +91,7 @@ type FindFreeSpaceFromOptions = {
  */
 export const findFreeSpaceFrom =
   ({ objectBounds, nodes, visibleFrame }: FindFreeSpaceFromOptions) =>
-  ({ left, top }) => {
+  ({ left, top }: { left: number; top: number }) => {
     const position = findFreeSpace({
       // eslint-disable-line implicit-arrow-linebreak
       area: objectBounds,
@@ -153,7 +153,7 @@ export const findFreeSpaceAroundPointWithFallback = ({
 
     // eslint-disable-next-line no-magic-numbers
     offsetX += 120;
-  } while (offsetX < visibleFrame.right);
+  } while (offsetX < (visibleFrame?.right ?? -Infinity));
 
   consola.info("no free space found around center");
   return {

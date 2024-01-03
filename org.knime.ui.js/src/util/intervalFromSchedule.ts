@@ -17,7 +17,7 @@
  *      schedule should execute.
  * @returns {String} interval - the human readable interval that was parsed from the schedule provided.
  */
-export const getIntervalFromSchedule = (schedule) => {
+export const getIntervalFromSchedule = (schedule: any) => {
   if (!schedule?.startTime) {
     return "-";
   }

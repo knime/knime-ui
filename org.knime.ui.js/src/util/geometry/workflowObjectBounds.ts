@@ -73,7 +73,10 @@ const getMetanodePortbarMargins = (
   type: "in" | "out",
   calculatedBounds: Bounds,
 ) => {
-  const bounds = mergePortBarBounds(metanodePortbar.bounds, calculatedBounds);
+  const bounds = mergePortBarBounds(
+    metanodePortbar.bounds ?? null,
+    calculatedBounds,
+  );
 
   const getTopMargin = () => {
     return bounds.y;
@@ -120,10 +123,10 @@ export default (
   {
     nodes = {},
     workflowAnnotations = [],
-    metaInPorts = null,
-    metaOutPorts = null,
+    metaInPorts,
+    metaOutPorts,
   }: ObjectBoundsParameter,
-  { padding = false, calculatedPortBarBounds = null }: ObjectBoundsOption = {},
+  { padding = false, calculatedPortBarBounds }: ObjectBoundsOption = {},
 ) => {
   let { left, top, right, bottom } = getLimitBounds({
     nodes,
@@ -133,10 +136,10 @@ export default (
 
   const hasNodes = Object.keys(nodes).length !== 0;
   const isMetanode = Boolean(metaInPorts || metaOutPorts);
-  const hasMetaInPorts = metaInPorts?.ports?.length > 0;
-  const addMetaPortInMargins = Boolean(calculatedPortBarBounds?.in);
-  const addMetaPortOutMargins = Boolean(calculatedPortBarBounds?.out);
-  const hasMetaOutPorts = metaOutPorts?.ports?.length > 0;
+  const hasMetaInPorts =
+    metaInPorts?.ports?.length && metaInPorts?.ports?.length > 0;
+  const hasMetaOutPorts =
+    metaOutPorts?.ports?.length && metaOutPorts?.ports?.length > 0;
 
   if (!hasNodes && isMetanode && (hasMetaInPorts || hasMetaOutPorts)) {
     return {
@@ -149,9 +152,16 @@ export default (
     };
   }
 
+  const addMetaPortInMargins = Boolean(calculatedPortBarBounds?.in);
+  const addMetaPortOutMargins = Boolean(calculatedPortBarBounds?.out);
+
   if (hasMetaInPorts && addMetaPortInMargins) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
-      getMetanodePortbarMargins(metaInPorts, "in", calculatedPortBarBounds?.in);
+      getMetanodePortbarMargins(
+        metaInPorts,
+        "in",
+        calculatedPortBarBounds!.in!,
+      );
 
     left = Math.min(left, leftMargin);
     right = Math.max(right, rightMargin);
@@ -164,7 +174,7 @@ export default (
       getMetanodePortbarMargins(
         metaOutPorts,
         "out",
-        calculatedPortBarBounds?.out,
+        calculatedPortBarBounds!.out!,
       );
     left = Math.min(left, leftMargin);
     right = Math.max(right, rightMargin);

@@ -25,7 +25,7 @@ const getDescriptorMappingKeyForPortView = (
       : "executed";
   }
 
-  return node.state.executionState === NodeState.ExecutionStateEnum.CONFIGURED
+  return node.state?.executionState === NodeState.ExecutionStateEnum.CONFIGURED
     ? "configured"
     : "executed";
 };
@@ -46,14 +46,14 @@ export const getPortViewByViewDescriptors = (
 }> => {
   const descriptorKey = getDescriptorMappingKeyForPortView(node, portIndex);
 
-  const descriptorIndexes = data.descriptorMapping[descriptorKey];
+  const descriptorIndexes = data.descriptorMapping[descriptorKey] ?? [];
 
   // non-spec views are disabled at the configured state
   const isDisabled = (item: PortViewDescriptor) =>
     !item.isSpecView && descriptorKey === "configured";
 
   return descriptorIndexes.map((index) => {
-    const descriptor = data.descriptors.at(index);
+    const descriptor = data.descriptors.at(index)!;
 
     return {
       // tab id will be the descriptor index

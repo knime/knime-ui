@@ -2,9 +2,10 @@ import { API } from "@api";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { nodeSize } from "@/style/shapes.mjs";
 
-import type { GeometryBounds } from "@/util/geometry/types";
+import type { GeometryArea, GeometryBounds } from "@/util/geometry/types";
 import { geometry } from "@/util/geometry";
 import type { Workflow } from "@/api/custom-types";
+import type { Store } from "vuex";
 
 // eslint-disable-next-line no-magic-numbers
 const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
@@ -14,7 +15,13 @@ const getRandomNoise = () => (Math.random() * 2 - 1) * 25;
  * If no free space is found within the canvas's border, it will be pasted directly at center
  * @returns { Object } x and y position
  */
-export const centerStrategy = ({ visibleFrame, clipboardContent }) => {
+export const centerStrategy = ({
+  visibleFrame,
+  clipboardContent,
+}: {
+  visibleFrame: GeometryBounds;
+  clipboardContent: { objectBounds: GeometryArea };
+}) => {
   const { x, y } = geometry.utils.getCenteredPositionInVisibleFrame(
     visibleFrame,
     clipboardContent.objectBounds,
@@ -33,7 +40,13 @@ export const centerStrategy = ({ visibleFrame, clipboardContent }) => {
  * If the offsetted position is not visible within the canvas' borders, it returns null
  * @returns { Object | null } x and y position
  */
-export const offsetStrategy = ({ clipboardContent, visibleFrame }) => {
+export const offsetStrategy = ({
+  clipboardContent,
+  visibleFrame,
+}: {
+  visibleFrame: GeometryBounds;
+  clipboardContent: { objectBounds: GeometryBounds };
+}) => {
   const { objectBounds } = clipboardContent;
   const meanOffset = 120;
 
@@ -65,6 +78,11 @@ export const pastePartsAt = ({
   clipboardContent,
   isWorkflowEmpty,
   dispatch,
+}: {
+  visibleFrame: GeometryBounds;
+  clipboardContent: { objectBounds: GeometryBounds };
+  isWorkflowEmpty: boolean;
+  dispatch: Store<any>["dispatch"];
 }) => {
   /* Workflow is empty */
   if (isWorkflowEmpty) {

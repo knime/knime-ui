@@ -59,6 +59,10 @@ export const placeholderPosition = ({
   portCount,
   isOutport = false,
   isMetanode = false,
+}: {
+  portCount: number;
+  isOutport?: boolean;
+  isMetanode?: boolean;
 }) => {
   const castedIsMetanode = Number(isMetanode); // cast to 1 or 0
 
@@ -79,6 +83,10 @@ export const portPositions = ({
   portCount,
   isMetanode = false,
   isOutports = false,
+}: {
+  portCount: number;
+  isMetanode?: boolean;
+  isOutports?: boolean;
 }) =>
   [...Array(portCount).keys()].map((index) =>
     portShift(index, portCount, isMetanode, isOutports),

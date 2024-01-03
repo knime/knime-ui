@@ -18,16 +18,21 @@ export const formatHotkeys = (hotkeys: Hotkeys) => {
     Alt: "⌥",
   };
 
-  const mapSymbols = (formatMap: KeyFormatMap) => (key: Hotkey) =>
-    formatMap[key] || key;
+  const mapSymbols =
+    (formatMap: KeyFormatMap) =>
+    (key: Hotkey): Hotkey | string =>
+      formatMap[key] || key;
+
   const identity = (value: any) => value;
 
   return (
     hotkeys
+      // map only for mac the symbols that should be displayed differently
+      .map((key) =>
+        isMac() ? mapSymbols(MacOSkeyMap)(key as Hotkey) : identity(key),
+      )
       // map all keys that should be displayed differently
       .map(mapSymbols(globalKeyMap))
-      // map only for mac the symbols that should be displayed differently
-      .map(isMac() ? mapSymbols(MacOSkeyMap) : identity)
       .join(" ")
   );
 };
