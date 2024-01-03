@@ -27,12 +27,12 @@ export const state = (): State => ({
 
 export const mutations: MutationTree<WorkflowState> = {
   updateConnection(state, { connectionId, data }) {
-    state.activeWorkflow.connections[connectionId] = data;
+    state.activeWorkflow!.connections[connectionId] = data;
   },
 
   addVirtualBendpoint(state, { connectionId, index, position }) {
     const currentBendpointCount =
-      state.activeWorkflow.connections[connectionId].bendpoints?.length ?? 0;
+      state.activeWorkflow!.connections[connectionId].bendpoints?.length ?? 0;
 
     state.virtualBendpoints = {
       ...state.virtualBendpoints,

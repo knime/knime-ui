@@ -3,17 +3,15 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import type {
   Connection,
-  NativeNode,
-  NodeTemplate,
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
 import type { RootStoreState } from "../types";
 import { getProjectAndWorkflowIds } from "./util";
 import type { WorkflowState } from ".";
+import { isNativeNode } from "@/util/nodeUtil";
 
 interface State {
   nameEditorNodeId: string | null;
@@ -92,11 +90,12 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     { state, dispatch },
     {
       position,
-      nodeFactory = null,
-      spaceItemReference,
       // use either nodeFactory or spaceItemReference
-      sourceNodeId = null,
-      sourcePortIdx = null,
+      nodeFactory,
+      spaceItemReference,
+
+      sourceNodeId,
+      sourcePortIdx,
       // possible values are: 'new-only' | 'add' | 'none'
       // 'new-only' clears the active selection and selects only the new node
       // 'add' adds the new node to the active selection
@@ -105,10 +104,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       isComponent = false,
     }: {
       position: XY;
-      nodeFactory: { className: string };
+      nodeFactory?: { className: string };
       spaceItemReference: SpaceItemReference;
-      sourceNodeId: string | null;
-      sourcePortIdx: number | null;
+      sourceNodeId?: string;
+      sourcePortIdx?: number;
       /**
        * 'new-only' clears the active selection and selects only the new node
        * 'add' adds the new node to the active selection
@@ -186,8 +185,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     { state: { activeWorkflow } },
     { connectionId, position, nodeFactory, nodeId },
   ) {
-    const projectId = activeWorkflow.projectId;
-    const workflowId = activeWorkflow.info.containerId;
+    const projectId = activeWorkflow!.projectId;
+    const workflowId = activeWorkflow!.info.containerId;
 
     return API.workflowCommand.InsertNode({
       projectId,
@@ -229,25 +228,22 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 const getNodeTemplateProperty = (params: {
   activeWorkflow: WorkflowState["activeWorkflow"];
   nodeId: string;
-  property: keyof NodeTemplate;
-  fallbackProperty?: keyof KnimeNode | null;
+  property: "name" | "icon" | "type" | "nodeFactory";
 }) => {
-  const {
-    activeWorkflow,
-    nodeId,
-    property,
-    fallbackProperty = property,
-  } = params;
+  const { activeWorkflow, nodeId, property } = params;
 
-  const node = activeWorkflow.nodes[nodeId] as NativeNode;
-  const { templateId } = node;
+  const node = activeWorkflow!.nodes[nodeId];
+  const nodeTemplates = activeWorkflow!.nodeTemplates;
 
-  // get property from the node if there's no templateId
-  const fallbackValue = fallbackProperty ? node[fallbackProperty] : null;
+  if (isNativeNode(node)) {
+    const { templateId } = node;
 
-  return templateId
-    ? activeWorkflow.nodeTemplates[templateId][property]
-    : fallbackValue;
+    return nodeTemplates[templateId][property];
+  }
+
+  // @ts-expect-error - TODO: NXT-2023 component is not inheriting properties correctly. Type narrowing
+  // can be improved here once NativeNode, ComponentNode and MetaNode types are generated correctly
+  return node[property];
 };
 
 export const getters: GetterTree<WorkflowState, RootStoreState> = {
@@ -256,8 +252,10 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     (nodeId: string) => {
       let connection: Connection;
 
-      for (const connectionID in activeWorkflow.connections) {
-        connection = activeWorkflow.connections[connectionID];
+      const currentConnections = activeWorkflow!.connections;
+
+      for (const connectionID in currentConnections) {
+        connection = currentConnections[connectionID];
         if (
           connection.destNode === nodeId ||
           connection.sourceNode === nodeId
@@ -301,7 +299,6 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
         nodeId,
         activeWorkflow,
         property: "nodeFactory",
-        fallbackProperty: null,
       });
     },
 

@@ -42,7 +42,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ) {
     const isWritable = getters.isWritable;
     const shouldCheckForUpdates =
-      isWritable && state.activeWorkflow.info.containsLinkedComponents;
+      isWritable && state.activeWorkflow!.info.containsLinkedComponents;
 
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
     const hasAlreadyChecked = state.processedUpdateNotifications[projectId];
@@ -70,9 +70,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         return;
       }
 
-      const {
-        activeWorkflow: { nodes },
-      } = state;
+      const { nodes } = state.activeWorkflow!;
 
       const hasExecutedNodes = nodeIds.some((id) => {
         const node = nodes[id];
@@ -216,7 +214,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   clearComponentUpdateToasts() {
     const $toast = getToastsProvider();
-    $toast.removeBy((toast) => toast.id.startsWith(TOAST_ID_PREFIX));
+    $toast.removeBy((toast) => (toast.id ?? "").startsWith(TOAST_ID_PREFIX));
   },
 
   clearProcessedUpdateNotification({ commit }, { projectId }) {

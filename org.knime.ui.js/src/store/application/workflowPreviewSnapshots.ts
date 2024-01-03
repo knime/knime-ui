@@ -84,11 +84,9 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   async getActiveWorkflowSnapshot({ rootState, dispatch, rootGetters }) {
     const { getScrollContainerElement } = rootState.canvas;
     const {
-      activeWorkflow: {
-        projectId,
-        info: { containerId },
-      },
-    } = rootState.workflow;
+      projectId,
+      info: { containerId },
+    } = rootState.workflow.activeWorkflow!;
 
     const isRootWorkflow = containerId === "root";
 

@@ -21,9 +21,9 @@ export interface CommonNodeSearchState {
   portTypeId: string | null;
   searchScrollPosition: number;
 
-  nodes: NodeTemplateWithExtendedPorts[];
+  nodes: NodeTemplateWithExtendedPorts[] | null;
   totalNumNodesFound: number;
-  totalNumFilteredNodesFound?: number;
+  totalNumFilteredNodesFound: number;
   nodeSearchPage: number;
   nodesTags: string[];
 
@@ -71,10 +71,10 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
     state.nodes = nodes;
   },
 
-  addNodes(state, nodes) {
-    const existingNodeIds = state.nodes.map((node) => node.id);
+  addNodes(state, nodes: NodeTemplateWithExtendedPorts[]) {
+    const existingNodeIds = (state.nodes ?? []).map((node) => node.id);
     const newNodes = nodes.filter((node) => !existingNodeIds.includes(node.id));
-    state.nodes.push(...newNodes);
+    state.nodes = state.nodes ? state.nodes.concat(...newNodes) : newNodes;
   },
 
   setTotalNumNodesFound(state, totalNumNodesFound) {
@@ -139,6 +139,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           limit: nodeSearchPageSize,
           fullTemplateInfo: true,
           nodesPartition: all ? "ALL" : "IN_COLLECTION",
+          // @ts-expect-error - due to a limitation of the API type generation
           portTypeId: state.portTypeId,
         }),
       );
@@ -165,7 +166,12 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       commit("setNodesTags", tags);
     } catch (error) {
       // we aborted the call so just return and do nothing
-      if (error?.name === "AbortError") {
+      if (
+        typeof error === "object" &&
+        error &&
+        "name" in error &&
+        error.name === "AbortError"
+      ) {
         return;
       }
       throw error;
@@ -250,10 +256,10 @@ export const getters: GetterTree<CommonNodeSearchState, RootStoreState> = {
     state.query !== "" || state.selectedTags.length > 0,
   searchIsActive: (state) => Boolean(state.query || state.nodesTags.length),
   searchResultsContainNodeId(state) {
-    return (selectedNodeId) =>
+    return (selectedNodeId: string) =>
       Boolean(state.nodes?.some((node) => node.id === selectedNodeId));
   },
-  getFirstSearchResult: (state) => () => state.nodes.at(0) || null,
+  getFirstSearchResult: (state) => () => (state.nodes ?? []).at(0) || null,
   tagsOfVisibleNodes: (state) => {
     const allTags = [...state.nodesTags, ...state.selectedTags];
     return [...new Set(allTags)];

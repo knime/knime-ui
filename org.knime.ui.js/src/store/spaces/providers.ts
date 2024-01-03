@@ -7,7 +7,7 @@ import type { SpacesState } from "./index";
 import { localRootProjectPath } from "./caching";
 
 export interface State {
-  spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider>;
+  spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
   isLoadingProvider: boolean;
   hasLoadedProviders: boolean;
 }
@@ -42,7 +42,7 @@ export const mutations: MutationTree<SpacesState> = {
   ) {
     state.spaceProviders = {
       ...state.spaceProviders,
-      [id]: { ...state.spaceProviders[id], ...value },
+      [id]: { ...(state.spaceProviders ?? {})[id], ...value },
     };
   },
 
@@ -82,14 +82,16 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return;
     }
 
-    const localSpace =
-      state.spaceProviders[localRootProjectPath.spaceProviderId];
+    if (state.spaceProviders) {
+      const localSpace =
+        state.spaceProviders[localRootProjectPath.spaceProviderId];
 
-    const spaceProviders = keepLocalSpace
-      ? { [localRootProjectPath.spaceProviderId]: localSpace }
-      : null;
+      const spaceProviders = keepLocalSpace
+        ? { [localRootProjectPath.spaceProviderId]: localSpace }
+        : null;
 
-    commit("setSpaceProviders", spaceProviders);
+      commit("setSpaceProviders", spaceProviders);
+    }
 
     dispatch("fetchAllSpaceProviders");
   },
@@ -188,9 +190,10 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       }
 
       const { spaceId } = state.projectPath[projectId];
-      const spaceProvider = getters.getProviderInfo(projectId);
+      const spaceProvider: SpaceProviderNS.SpaceProvider =
+        getters.getProviderInfo(projectId);
 
-      const space = spaceProvider?.spaces?.find(({ id }) => id === spaceId);
+      const space = spaceProvider.spaces?.find(({ id }) => id === spaceId);
 
       return space ?? {};
     },

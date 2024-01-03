@@ -282,7 +282,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       typeId: "WorkflowChangedEventType",
       projectId,
       workflowId,
-      snapshotId,
+      snapshotId: snapshotId!,
     });
 
     commit("selection/clearSelection", null, { root: true });

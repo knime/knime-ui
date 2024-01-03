@@ -14,7 +14,7 @@ import type { RootStoreState } from "./types";
 const recommendationLimit = 12;
 
 export interface QuickAddNodesState extends nodeSearch.CommonNodeSearchState {
-  recommendedNodes: Array<NodeTemplateWithExtendedPorts>;
+  recommendedNodes: Array<NodeTemplateWithExtendedPorts> | null;
 }
 
 export const state = (): QuickAddNodesState => ({
@@ -37,6 +37,10 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
     { commit, rootState },
     { nodeId, portIdx, nodesLimit = recommendationLimit },
   ) {
+    if (!rootState.workflow.activeWorkflow) {
+      return;
+    }
+
     const {
       projectId,
       info: { containerId: workflowId },
@@ -75,7 +79,8 @@ export const getters: GetterTree<QuickAddNodesState, RootStoreState> = {
     if (getters.searchIsActive) {
       return getters.getFirstSearchResult();
     }
-    return state.recommendedNodes?.length > 0
+
+    return state.recommendedNodes && state.recommendedNodes.length > 0
       ? state.recommendedNodes[0]
       : null;
   },

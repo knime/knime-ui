@@ -15,6 +15,7 @@ export interface Message {
   references?: {
     [refName: string]: string[];
   };
+  isError: boolean;
 }
 
 interface ProjectAndWorkflowIds {
@@ -42,6 +43,18 @@ export interface AiAssistantState {
   };
 }
 
+type ChainType = Exclude<keyof AiAssistantState, "hubID">;
+
+type AiAssistantEventPayload = {
+  type: "token" | "result" | "error" | "status_update";
+  payload: {
+    message: Message;
+    references: unknown;
+    nodes: NodeWithExtensionInfo[];
+  };
+  conversation_id: string;
+};
+
 export const state = (): AiAssistantState => ({
   hubID: null,
   qa: {
@@ -68,8 +81,24 @@ export const mutations: MutationTree<AiAssistantState> = {
   },
   pushMessage(
     state,
-    { chainType, role, content, nodes, references, isError = false },
+    payload: {
+      chainType: ChainType;
+      role: Message["role"];
+      content: string;
+      nodes: Message["nodes"];
+      references: Message["references"];
+      isError?: boolean;
+    },
   ) {
+    const {
+      chainType,
+      role,
+      content,
+      nodes,
+      references,
+      isError = false,
+    } = payload;
+
     state[chainType].messages.push({
       role,
       content,
@@ -78,32 +107,62 @@ export const mutations: MutationTree<AiAssistantState> = {
       isError,
     });
   },
-  popUserQuery(state, { chainType }) {
+  popUserQuery(state, { chainType }: { chainType: ChainType }) {
     const messages = state[chainType].messages;
     const lastMessage = messages.at(-1);
     if (lastMessage?.role === "user") {
       messages.pop();
     }
   },
-  setStatusUpdate(state, { chainType, statusUpdate }) {
+  setStatusUpdate(
+    state,
+    {
+      chainType,
+      statusUpdate,
+    }: { chainType: ChainType; statusUpdate: string | null },
+  ) {
     state[chainType].statusUpdate = statusUpdate;
   },
-  setIsProcessing(state, { chainType, isProcessing }) {
+  setIsProcessing(
+    state,
+    {
+      chainType,
+      isProcessing,
+    }: { chainType: ChainType; isProcessing: boolean },
+  ) {
     state[chainType].isProcessing = isProcessing;
   },
-  addToken(state, { chainType, token }) {
+  addToken(
+    state,
+    { chainType, token }: { chainType: ChainType; token: string },
+  ) {
     state[chainType].incomingTokens += token;
   },
-  setProjectAndWorkflowIds(state, { chainType, projectAndWorkflowIds }) {
+  setProjectAndWorkflowIds(
+    state,
+    {
+      chainType,
+      projectAndWorkflowIds,
+    }: {
+      chainType: ChainType;
+      projectAndWorkflowIds: { workflowId: string; projectId: string };
+    },
+  ) {
     state[chainType].projectAndWorkflowIds = projectAndWorkflowIds;
   },
-  clearChain(state, { chainType }) {
+  clearChain(state, { chainType }: { chainType: ChainType }) {
     state[chainType].isProcessing = false;
     state[chainType].incomingTokens = "";
-    state[chainType].statusUpdate = false;
+    state[chainType].statusUpdate = null;
     state[chainType].projectAndWorkflowIds = null;
   },
-  setConversationId(state, { chainType, conversationId }) {
+  setConversationId(
+    state,
+    {
+      chainType,
+      conversationId,
+    }: { chainType: ChainType; conversationId: string | null },
+  ) {
     state[chainType].conversationId = conversationId;
   },
 };
@@ -112,7 +171,10 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   async getHubID({ commit }) {
     commit("setHubID", await API.desktop.getHubID());
   },
-  async makeAiRequest({ commit, state, rootGetters }, { chainType, message }) {
+  async makeAiRequest(
+    { commit, state, rootGetters },
+    { chainType, message }: { chainType: ChainType; message: Message },
+  ) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
     const selectedNodes = rootGetters["selection/selectedNodeIds"];
 
@@ -149,7 +211,10 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   handleAiAssistantEvent(
     { commit },
-    { chainType, data: { type, payload, conversation_id: conversationId } },
+    {
+      chainType,
+      data: { type, payload, conversation_id: conversationId },
+    }: { chainType: ChainType; data: AiAssistantEventPayload },
   ) {
     switch (type) {
       case "token":
@@ -188,7 +253,10 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         break;
     }
   },
-  async abortAiRequest({ state, commit }, { chainType }) {
+  async abortAiRequest(
+    { state, commit },
+    { chainType }: { chainType: ChainType },
+  ) {
     const conversationId = state[chainType].conversationId;
     try {
       await API.desktop.abortAiRequest({ conversationId, chainType });

@@ -146,8 +146,8 @@ describe("workflow::nodeInteractions", () => {
         workflowId: store.state.workflow.activeWorkflow.info.containerId,
         position: { x: 5, y: 30 },
         nodeFactory: "factory",
-        sourceNodeId: null,
-        sourcePortIdx: null,
+        sourceNodeId: undefined,
+        sourcePortIdx: undefined,
       });
     });
 
@@ -242,8 +242,10 @@ describe("workflow::nodeInteractions", () => {
         nodes: {
           foo: {
             templateId: "bla",
+            kind: "node",
           },
           ownData: {
+            kind: "component",
             icon: "ownIcon",
             name: "ownName",
             type: "ownType",
@@ -276,7 +278,9 @@ describe("workflow::nodeInteractions", () => {
       expect(store.getters["workflow/getNodeFactory"]("foo")).toMatchObject({
         className: "example.class.name",
       });
-      expect(store.getters["workflow/getNodeFactory"]("ownData")).toBeNull();
+      expect(
+        store.getters["workflow/getNodeFactory"]("ownData"),
+      ).toBeUndefined();
     });
 
     it("gets icon", async () => {

@@ -69,7 +69,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* Some nodes generate views from their data. The node gets executed and a Classic UI dialog opens to present this view */
   executeNodeAndOpenView({ state }, nodeId) {
     API.desktop.executeNodeAndOpenView({
-      projectId: state.activeWorkflow.projectId,
+      projectId: state.activeWorkflow!.projectId,
       nodeId,
     });
   },
@@ -77,7 +77,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* See docs in API */
   openNodeConfiguration({ state }, nodeId) {
     API.desktop.openNodeDialog({
-      projectId: state.activeWorkflow.projectId,
+      projectId: state.activeWorkflow!.projectId,
       nodeId,
     });
   },
@@ -85,7 +85,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* See docs in API */
   openFlowVariableConfiguration({ state }, nodeId) {
     API.desktop.openLegacyFlowVariableDialog({
-      projectId: state.activeWorkflow.projectId,
+      projectId: state.activeWorkflow!.projectId,
       nodeId,
     });
   },

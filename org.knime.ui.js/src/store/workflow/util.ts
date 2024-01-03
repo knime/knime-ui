@@ -3,11 +3,9 @@ import type { WorkflowState } from "./index";
 
 export const getProjectAndWorkflowIds = (state: WorkflowState) => {
   const {
-    activeWorkflow: {
-      projectId,
-      info: { containerId },
-    },
-  } = state;
+    projectId,
+    info: { containerId },
+  } = state.activeWorkflow!;
 
   return { projectId, workflowId: containerId };
 };
@@ -23,10 +21,10 @@ export const getNextProjectId = ({
   closingProjectIds,
 }: {
   openProjects: Array<Pick<Project, "projectId">>;
-  activeProjectId: string;
+  activeProjectId: string | null;
   closingProjectIds: Array<string>;
 }) => {
-  if (!closingProjectIds.includes(activeProjectId)) {
+  if (!closingProjectIds.includes(activeProjectId ?? "")) {
     return activeProjectId;
   }
 
@@ -42,5 +40,5 @@ export const getNextProjectId = ({
     return null; // null equals going to the entry page
   }
 
-  return remainingProjects.at(-1).projectId;
+  return remainingProjects.at(-1)!.projectId;
 };

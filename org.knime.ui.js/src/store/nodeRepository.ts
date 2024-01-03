@@ -32,9 +32,9 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
   categoryPage: number;
   categoryScrollPosition: number;
 
-  selectedNode: NodeTemplateWithExtendedPorts;
+  selectedNode: NodeTemplateWithExtendedPorts | null;
   isDraggingNode: boolean;
-  draggedNodeData: NodeTemplateWithExtendedPorts;
+  draggedNodeData: NodeTemplateWithExtendedPorts | null;
 
   nodeTemplates: Record<string, NodeTemplate>;
 }

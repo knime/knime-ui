@@ -154,6 +154,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       if (!state.workflowGroupCache.has(pathTriplet)) {
         return null;
       }
-      return state.workflowGroupCache.get(pathTriplet);
+
+      return state.workflowGroupCache.get(pathTriplet)!;
     },
 };

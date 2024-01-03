@@ -6,6 +6,7 @@ import * as Vue from "vue";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { RootStoreState } from "./types";
+import type { XY } from "@/api/gateway-api/generated-api";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -15,7 +16,7 @@ export const maxZoomFactor = 5; // 500%
 export const padding = 20; // 20 canvas units
 export const zoomCacheLifespan = 1000; // 1 second
 
-const clampZoomFactor = (newFactor) =>
+const clampZoomFactor = (newFactor: number) =>
   Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
 const unsetScrollContainer = () => {
@@ -159,7 +160,7 @@ export const actions: ActionTree<CanvasState, RootStoreState> = {
     // to prevent the content from shifting when zooming in and out quickly due to inprecise calculations
     let canvasCoordinatesPoint;
     if (
-      Date.now() - state.zoomCache?.timestamp < zoomCacheLifespan &&
+      Date.now() - (state.zoomCache?.timestamp ?? 0) < zoomCacheLifespan &&
       state.zoomCache?.invariant[0] === cursorX &&
       state.zoomCache?.invariant[1] === cursorY &&
       state.zoomCache?.invariant[2] === scrollLeft &&
@@ -405,7 +406,7 @@ export const getters: GetterTree<CanvasState, RootStoreState> = {
         returns the true offset from the upper-left corner of the Kanvas for a given point on the workflow
     */
   fromCanvasCoordinates({ zoomFactor }, { viewBox }) {
-    return ({ x: origX, y: origY }) => ({
+    return ({ x: origX, y: origY }: XY) => ({
       x: (origX - viewBox.left) * zoomFactor,
       y: (origY - viewBox.top) * zoomFactor,
     });
@@ -420,7 +421,7 @@ export const getters: GetterTree<CanvasState, RootStoreState> = {
   ) {
     const scrollContainerElement = getScrollContainerElement();
 
-    return ({ x, y }) => {
+    return ({ x, y }: XY) => {
       const { x: offsetLeft, y: offsetTop } =
         scrollContainerElement.getBoundingClientRect();
       const { scrollLeft, scrollTop } = scrollContainerElement;
@@ -437,7 +438,7 @@ export const getters: GetterTree<CanvasState, RootStoreState> = {
         find point in workflow, based on absolute coordinate on canvas
     */
   toCanvasCoordinates({ zoomFactor }, { viewBox }) {
-    return ([origX, origY]) => [
+    return ([origX, origY]: [number, number]) => [
       origX / zoomFactor + viewBox.left,
       origY / zoomFactor + viewBox.top,
     ];
@@ -452,7 +453,7 @@ export const getters: GetterTree<CanvasState, RootStoreState> = {
   ) {
     const scrollContainerElement = getScrollContainerElement();
 
-    return ([origX, origY]) => {
+    return ([origX, origY]: [number, number]) => {
       const { x: offsetLeft, y: offsetTop } =
         scrollContainerElement.getBoundingClientRect();
       const { scrollLeft, scrollTop } = scrollContainerElement;

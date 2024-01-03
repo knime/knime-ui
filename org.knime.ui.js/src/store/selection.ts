@@ -2,6 +2,8 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { RootStoreState } from "./types";
 import { parseBendpointId } from "@/util/connectorUtil";
+import type { KnimeNode } from "@/api/custom-types";
+import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
 
 export interface SelectionState {
   selectedNodes: Record<string, boolean>;
@@ -81,13 +83,19 @@ export const mutations: MutationTree<SelectionState> = {
     });
   },
 
-  removeMetanodePortBarsFromSelection(state, metaNodePortBarTypes: string[]) {
+  removeMetanodePortBarsFromSelection(
+    state,
+    metaNodePortBarTypes: Array<"in" | "out">,
+  ) {
     metaNodePortBarTypes.forEach((type) => {
       delete state.selectedMetanodePortBars[type];
     });
   },
 
-  addMetanodePortBarsToSelection(state, metaNodePortBarTypes: string[]) {
+  addMetanodePortBarsToSelection(
+    state,
+    metaNodePortBarTypes: Array<"in" | "out">,
+  ) {
     metaNodePortBarTypes.forEach(
       (type) => (state.selectedMetanodePortBars[type] = true),
     );
@@ -134,11 +142,11 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
   selectAllObjects({ commit, rootState }) {
     commit(
       "addNodesToSelection",
-      Object.keys(rootState.workflow.activeWorkflow.nodes),
+      Object.keys(rootState.workflow.activeWorkflow!.nodes),
     );
     commit(
       "addAnnotationToSelection",
-      rootState.workflow.activeWorkflow.workflowAnnotations.map(
+      rootState.workflow.activeWorkflow!.workflowAnnotations.map(
         (annotation) => annotation.id,
       ),
     );
@@ -242,7 +250,7 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
       return [];
     }
     return Object.keys(state.selectedNodes)
-      .map((nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId])
+      .map((nodeId) => rootState.workflow.activeWorkflow!.nodes[nodeId])
       .filter(Boolean);
   },
 
@@ -262,7 +270,9 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
     }
 
     return Object.keys(state.selectedMetanodePortBars)
-      .map((type) => (state.selectedMetanodePortBars[type] ? type : null))
+      .map((type) =>
+        state.selectedMetanodePortBars[type as "in" | "out"] ? type : null,
+      )
       .filter(Boolean);
   },
 
@@ -278,26 +288,31 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
 
   selectedBendpoints(state, _getters, rootState) {
     if (!rootState.workflow.activeWorkflow) {
-      return [];
+      return {};
     }
 
     return Object.keys(state.selectedBendpoints)
       .map((bendpointId) => parseBendpointId(bendpointId))
-      .reduce((acc, item) => {
-        const { connectionId, index } = item;
-        const indexes = acc[connectionId] ?? [];
-        indexes.push(index);
-        acc[connectionId] = indexes;
-        return acc;
-      }, {});
+      .reduce(
+        (acc, item) => {
+          const { connectionId, index } = item;
+          const indexes = acc[connectionId] ?? [];
+          indexes.push(index);
+          acc[connectionId] = indexes;
+          return acc;
+        },
+        {} as Record<string, number[]>,
+      );
   },
 
   selectedNodeIds(_state, { selectedNodes }) {
-    return selectedNodes.map((node) => node.id);
+    return selectedNodes.map((node: KnimeNode) => node.id);
   },
 
   selectedAnnotationIds(_state, { selectedAnnotations }) {
-    return selectedAnnotations.map((annotation) => annotation.id);
+    return selectedAnnotations.map(
+      (annotation: WorkflowAnnotation) => annotation.id,
+    );
   },
 
   selectedBendpointIds(state) {

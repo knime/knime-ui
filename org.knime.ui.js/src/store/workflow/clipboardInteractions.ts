@@ -24,7 +24,7 @@ interface State {
 
 let copyCutAbortController: AbortController = new AbortController();
 
-let pasteOperation: () => Promise<unknown> | null = null;
+let pasteOperation: (() => Promise<unknown>) | null = null;
 const enqueuePasteOperation = (handler: () => Promise<unknown>) => {
   pasteOperation = handler;
 };
@@ -128,7 +128,12 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       consola.info("Copied workflow parts", clipboardContent);
     } catch (error) {
       // we aborted the call so just return and do nothing
-      if (error?.name === "AbortError") {
+      if (
+        typeof error === "object" &&
+        error &&
+        "name" in error &&
+        error.name === "AbortError"
+      ) {
         consola.info("Aborting first copy/cut request");
         return;
       }
@@ -167,7 +172,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       if (
         !pasteURI(
           clipboardText,
-          activeWorkflow,
+          activeWorkflow!,
           customPosition,
           rootGetters["canvas/getVisibleFrame"](),
         )

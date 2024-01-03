@@ -5,8 +5,9 @@ import {
   WorkflowInfo,
   type Bounds,
   TransformMetanodePortsBarCommand,
+  type Connection,
 } from "@/api/gateway-api/generated-api";
-import type { Workflow } from "@/api/custom-types";
+import type { KnimeNode, Workflow } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
 
@@ -35,8 +36,8 @@ export interface WorkflowState {
   tooltip: TooltipDefinition | null;
 
   calculatedMetanodePortBarBounds: {
-    in: Bounds;
-    out: Bounds;
+    in: Bounds | null;
+    out: Bounds | null;
   };
 }
 
@@ -124,29 +125,34 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
    */
   async deleteSelectedObjects({ state, rootGetters, dispatch }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const selectedNodes = rootGetters["selection/selectedNodes"];
-    const selectedConnections = rootGetters["selection/selectedConnections"];
-    const selectedAnnotationIds =
+    const selectedNodes: KnimeNode[] = rootGetters["selection/selectedNodes"];
+    const selectedConnections: Connection[] =
+      rootGetters["selection/selectedConnections"];
+    const selectedAnnotationIds: string[] =
       rootGetters["selection/selectedAnnotationIds"];
-    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
+    const connectionBendpoints: Record<string, number[]> =
+      rootGetters["selection/selectedBendpoints"];
 
     const deletableNodeIds = selectedNodes
-      .filter((node) => node.allowedActions.canDelete)
+      .filter((node) => node.allowedActions?.canDelete)
       .map((node) => node.id);
+
     const nonDeletableNodeIds = selectedNodes
-      .filter((node) => !node.allowedActions.canDelete)
+      .filter((node) => !node.allowedActions?.canDelete)
       .map((node) => node.id);
+
     const deletableConnectionIds = selectedConnections
-      .filter((connection) => connection.allowedActions.canDelete)
+      .filter((connection) => connection.allowedActions?.canDelete)
       .map((connection) => connection.id);
+
     const nonDeletableConnectionIds = selectedConnections
-      .filter((connection) => !connection.allowedActions.canDelete)
+      .filter((connection) => !connection.allowedActions?.canDelete)
       .map((connection) => connection.id);
 
     const deleteableBendpoints = Object.keys(connectionBendpoints).reduce(
       (acc, connectionId) => {
-        const connection = state.activeWorkflow.connections[connectionId];
-        return connection.allowedActions.canDelete
+        const connection = state.activeWorkflow!.connections[connectionId];
+        return connection.allowedActions?.canDelete
           ? {
               ...acc,
               [connectionId]: connectionBendpoints[connectionId],
@@ -206,14 +212,15 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     { containerType },
   ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const selectedNodeIds = rootGetters["selection/selectedNodeIds"];
-    const selectedNodes = rootGetters["selection/selectedNodes"];
-    const selectedAnnotationIds =
+    const selectedNodeIds: string[] = rootGetters["selection/selectedNodeIds"];
+    const selectedNodes: KnimeNode[] = rootGetters["selection/selectedNodes"];
+    const selectedAnnotationIds: string[] =
       rootGetters["selection/selectedAnnotationIds"];
-    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
+    const connectionBendpoints: Record<string, number[]> =
+      rootGetters["selection/selectedBendpoints"];
 
     const isResetRequired = selectedNodes.some(
-      (node) => node.allowedActions.canCollapse === "resetRequired",
+      (node) => node.allowedActions?.canCollapse === "resetRequired",
     );
 
     if (isResetRequired) {
@@ -352,7 +359,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
 
   /* Workflow is empty if it doesn't contain nodes */
   isWorkflowEmpty({ activeWorkflow }) {
-    const hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
+    const hasNodes = Boolean(Object.keys(activeWorkflow?.nodes ?? {}).length);
     const hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
 
     return !hasNodes && !hasAnnotations;
@@ -396,6 +403,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
 
     const isAiProcessingCurrentWorkflow =
       aiAssistantBuildMode.isProcessing &&
+      aiAssistantBuildMode.projectAndWorkflowIds &&
       aiAssistantBuildMode.projectAndWorkflowIds.projectId ===
         projectAndWorkflowIds.projectId &&
       aiAssistantBuildMode.projectAndWorkflowIds.workflowId ===
@@ -413,7 +421,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
 
   /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
   workflowBounds({ activeWorkflow, calculatedMetanodePortBarBounds }) {
-    return geometry.getWorkflowObjectBounds(activeWorkflow, {
+    return geometry.getWorkflowObjectBounds(activeWorkflow!, {
       padding: true,
       calculatedPortBarBounds: calculatedMetanodePortBarBounds,
     });

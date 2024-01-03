@@ -55,7 +55,7 @@ export interface ApplicationState {
   /**
    * Available feature flags
    */
-  featureFlags: Record<string, unknown>;
+  featureFlags: Record<string, boolean>;
   /**
    * example projects with name, svg and origin
    */

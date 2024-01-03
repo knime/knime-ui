@@ -27,16 +27,15 @@ export const state = (): State => ({
 
 export const mutations: MutationTree<WorkflowState> = {
   setAnnotation(state, { annotationId, text, borderColor }) {
-    const {
-      activeWorkflow: { workflowAnnotations },
-    } = state;
+    const { workflowAnnotations } = state.activeWorkflow!;
+
     const mapped = workflowAnnotations.map<WorkflowAnnotation>((annotation) =>
       annotation.id === annotationId
         ? { ...annotation, text, borderColor }
         : annotation,
     );
 
-    state.activeWorkflow.workflowAnnotations = mapped;
+    state.activeWorkflow!.workflowAnnotations = mapped;
   },
 
   setEditableAnnotationId(state, annotationId) {
@@ -101,9 +100,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
     const { text: originalText, borderColor: originalBorderColor } =
-      state.activeWorkflow.workflowAnnotations.find(
+      state.activeWorkflow!.workflowAnnotations.find(
         (annotation) => annotation.id === annotationId,
-      );
+      )!;
 
     try {
       // do small optimistic update to prevent annotation from flashing between legacy and new

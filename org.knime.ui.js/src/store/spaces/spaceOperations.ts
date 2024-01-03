@@ -3,7 +3,11 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import { SpaceItem, type Project } from "@/api/gateway-api/generated-api";
+import {
+  SpaceItem,
+  type Project,
+  type WorkflowGroupContent,
+} from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 
@@ -401,7 +405,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
   parentWorkflowGroupId:
     (state, getters) =>
-    (projectId: string): string => {
+    (projectId: string): string | null => {
       const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
 
       if (workflowGroupContent === null) {
@@ -434,7 +438,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     (state, getters, { application }) =>
     (projectId: string) => {
       const { openProjects } = application;
-      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      const workflowGroupContent: WorkflowGroupContent =
+        getters.getWorkflowGroupContent(projectId);
 
       if (workflowGroupContent === null) {
         return [];
@@ -450,9 +455,9 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         .filter(
           (openProject) =>
             getters.isProjectInProjectPath(openProject, projectId) &&
-            projectItemIds.includes(openProject?.origin?.itemId),
+            projectItemIds.includes(openProject?.origin?.itemId ?? ""),
         )
-        .map(({ origin }) => origin.itemId);
+        .map(({ origin }) => origin?.itemId);
     },
 
   getOpenedFolderItems:
@@ -460,7 +465,8 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     (projectId: string) => {
       const { openProjects } = application;
 
-      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      const workflowGroupContent: WorkflowGroupContent =
+        getters.getWorkflowGroupContent(projectId);
 
       if (workflowGroupContent === null) {
         return [];
@@ -470,7 +476,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         .filter((openProject) =>
           getters.isProjectInProjectPath(openProject, projectId),
         )
-        .flatMap(({ origin }) => origin.ancestorItemIds ?? []);
+        .flatMap(({ origin }) => origin?.ancestorItemIds ?? []);
 
       return workflowGroupContent.items
         .filter(
@@ -483,10 +489,12 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
   selectionContainsFile:
     (state, getters) => (projectId: string, selectedItemIds: string[]) => {
-      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      const workflowGroupContent: WorkflowGroupContent =
+        getters.getWorkflowGroupContent(projectId);
       if (!workflowGroupContent) {
         return false;
       }
+
       return workflowGroupContent.items
         .filter((item) => selectedItemIds.includes(item.id))
         .some((selectedItem) => selectedItem.type === SpaceItem.TypeEnum.Data);
@@ -494,10 +502,12 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
   selectionContainsWorkflow:
     (state, getters) => (projectId: string, selectedItemIds: string[]) => {
-      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      const workflowGroupContent: WorkflowGroupContent =
+        getters.getWorkflowGroupContent(projectId);
       if (!workflowGroupContent) {
         return false;
       }
+
       return workflowGroupContent.items
         .filter((item) => selectedItemIds.includes(item.id))
         .some(

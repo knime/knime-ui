@@ -11,7 +11,7 @@ import type { RootStoreState } from "../types";
 
 interface CreateWorkflowModalConfig {
   isOpen: boolean;
-  projectId: string;
+  projectId: string | null;
 }
 
 interface DeploymentsModalConfig {
@@ -43,9 +43,9 @@ export const state = (): SpacesState => ({
   },
   deploymentsModalConfig: {
     isOpen: false,
-    name: null,
-    projectId: null,
-    itemId: null,
+    name: "",
+    projectId: "",
+    itemId: "",
   },
 });
 

@@ -66,11 +66,17 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       // update space provider state
       const { spaceProviders } = state;
+
+      if (!spaceProviders) {
+        return null;
+      }
+
       const {
         spaces: _,
         user: __,
         ...otherProperties
       } = spaceProviders[spaceProviderId];
+
       commit("setSpaceProviders", {
         ...state.spaceProviders,
         [spaceProviderId]: {

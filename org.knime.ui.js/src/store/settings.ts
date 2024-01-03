@@ -14,7 +14,7 @@ export interface SettingsState {
   };
 }
 
-const loadItem = <T>(key: string, defaultValue: T = null): T => {
+const loadItem = <T>(key: string, defaultValue: T | null = null): T => {
   const item = window?.localStorage?.getItem(key);
   return item === null ? defaultValue : JSON.parse(item);
 };

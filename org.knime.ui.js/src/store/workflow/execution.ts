@@ -80,7 +80,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   openLegacyPortView({ state }, { nodeId, portIndex, executeNode = false }) {
     API.desktop.openLegacyPortView({
-      projectId: state.activeWorkflow.projectId,
+      projectId: state.activeWorkflow!.projectId,
       nodeId,
       portIdx: portIndex,
       executeNode,
@@ -89,7 +89,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
   executeNodeAndOpenView({ state }, nodeId) {
     API.desktop.executeNodeAndOpenView({
-      projectId: state.activeWorkflow.projectId,
+      projectId: state.activeWorkflow!.projectId,
       nodeId,
     });
   },
