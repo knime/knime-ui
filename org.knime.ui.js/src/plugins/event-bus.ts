@@ -1,19 +1,20 @@
 import mitt, { type Emitter } from "mitt";
 import type { NodePort } from "@/api/gateway-api/generated-api";
+import type { PluginInitFunction } from "./types";
 
 type BusEvents = {
-  "selection-pointerdown": MouseEvent;
-  "selection-pointerup": MouseEvent;
-  "selection-pointermove": MouseEvent;
-  "selection-lostpointercapture": MouseEvent;
+  "selection-pointerdown": PointerEvent;
+  "selection-pointerup": PointerEvent;
+  "selection-pointermove": PointerEvent;
+  "selection-lostpointercapture": PointerEvent;
 
   "connector-start": {
     validConnectionTargets: Set<string>;
     startNodeId: string;
     startPort: NodePort;
   };
-  "connector-dropped": null;
-  "connector-end": null;
+  "connector-dropped": undefined;
+  "connector-end": undefined;
 
   [key: `desktop-api-function-result-${string}`]: string | null | boolean;
 
@@ -29,12 +30,21 @@ const clearAll = () => {
   emitter.all.clear();
 };
 
-const $bus = { on: emitter.on, off: emitter.off, emit: emitter.emit, clearAll };
+export type EventBus = Omit<Emitter<BusEvents>, "all"> & {
+  clearAll: typeof clearAll;
+};
 
-export type EventBus = Emitter<BusEvents> & { clearAll: typeof clearAll };
+const $bus: EventBus = {
+  on: emitter.on,
+  off: emitter.off,
+  emit: emitter.emit,
+  clearAll,
+};
 
 export { $bus };
 
-export default ({ app }) => {
+const init: PluginInitFunction = ({ app }) => {
   app.config.globalProperties.$bus = $bus;
 };
+
+export default init;

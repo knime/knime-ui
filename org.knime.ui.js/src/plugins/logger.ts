@@ -13,19 +13,20 @@ const silentLogger = () => {
     "info",
     "log",
     "ready",
-    "silent",
     "start",
     "success",
     "trace",
-    "verbose",
     "warn",
-  ];
+  ] as const;
 
   // @ts-expect-error
-  window.consola = methods.reduce((consola, method) => {
-    consola[method] = noop;
-    return consola;
-  }, {});
+  window.consola = methods.reduce(
+    (consola, method) => {
+      consola[method] = noop;
+      return consola;
+    },
+    {} as typeof consola,
+  );
 };
 
 const getLogLevelFromEnv = (): LogLevel => {

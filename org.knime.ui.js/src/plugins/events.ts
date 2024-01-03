@@ -15,7 +15,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
      */
     // @ts-expect-error
     CompositeEvent({ events, params, eventHandlers }) {
-      events.forEach((event, index) => {
+      (events ?? []).forEach((event, index) => {
         const handler = eventHandlers.get(event);
         if (params[index]) {
           handler(params[index]);
@@ -99,7 +99,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       const resolveSnapshot = async (
         $store: Store<RootStoreState>,
         projectId: string,
-        activeProjectId: string,
+        activeProjectId: string | undefined,
       ): Promise<string | null> => {
         try {
           const { svgElement, isCanvasEmpty } =
@@ -180,7 +180,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       const el = document.elementFromPoint(x, y);
       const kanvas = $store.state.canvas.getScrollContainerElement();
 
-      if (kanvas.contains(el)) {
+      if (kanvas && kanvas.contains(el)) {
         const [canvasX, canvasY] = $store.getters[
           "canvas/screenToCanvasCoordinates"
         ]([x, y]);
@@ -189,8 +189,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
         API.desktop.importURIAtWorkflowCanvas({
           uri: null,
-          projectId: workflow.projectId,
-          workflowId: workflow.info.containerId,
+          projectId: workflow!.projectId,
+          workflowId: workflow!.info.containerId,
           x: canvasX - nodeSize / 2,
           y: canvasY - nodeSize / 2,
         });

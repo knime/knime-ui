@@ -20,9 +20,10 @@ const featureFlagDefaults = {
   [`${featureFlagsPrefix}.ai_assistant_installed`]: false,
 };
 
-const getFlagValue = (store, name) => {
+const getFlagValue = (store: Store<RootStoreState>, name: string) => {
   const featureFlags =
     store.state.application.featureFlags || featureFlagDefaults;
+
   return featureFlags[`${featureFlagsPrefix}.${name}`];
 };
 

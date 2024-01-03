@@ -5,8 +5,9 @@ import {
 
 type RemoveBy = (callback: (toast: Toast) => boolean) => void;
 
-let __toastsProviderSingleton: ToastServiceProvider & { removeBy: RemoveBy } =
-  null;
+let __toastsProviderSingleton:
+  | (ToastServiceProvider & { removeBy: RemoveBy })
+  | null = null;
 
 export const getToastsProvider = (): ToastServiceProvider & {
   removeBy: RemoveBy;
