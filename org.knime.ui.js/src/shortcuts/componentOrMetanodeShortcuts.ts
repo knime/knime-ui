@@ -7,6 +7,7 @@ import type {
   ShortcutConditionContext,
   UnionToShortcutRegistry,
 } from "./types";
+import type { KnimeNode } from "@/api/custom-types";
 
 type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "createMetanode"
@@ -76,7 +77,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       }
 
       return $store.getters["selection/selectedNodes"].every(
-        (node) => node.allowedActions.canCollapse !== "false",
+        (node: KnimeNode) => node.allowedActions?.canCollapse !== "false",
       );
     },
   },
@@ -98,7 +99,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       }
 
       return $store.getters["selection/selectedNodes"].every(
-        (node) => node.allowedActions.canCollapse !== "false",
+        (node: KnimeNode) => node.allowedActions?.canCollapse !== "false",
       );
     },
   },
@@ -125,8 +126,9 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     execute: ({ $store, $router }) => {
       const projectId = $store.state.application.activeProjectId;
       const activeWorkflowParents =
-        $store.state.workflow.activeWorkflow.parents;
-      const id = activeWorkflowParents.at(-1).containerId;
+        $store.state.workflow.activeWorkflow?.parents ?? [];
+
+      const id = activeWorkflowParents.at(-1)?.containerId;
 
       $router.push({
         name: APP_ROUTES.WorkflowPage,
@@ -137,8 +139,9 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => {
       const activeWorkflowParents =
-        $store.state.workflow.activeWorkflow.parents;
-      return activeWorkflowParents?.length > 0;
+        $store.state.workflow.activeWorkflow?.parents;
+
+      return (activeWorkflowParents ?? []).length > 0;
     },
   },
   expandMetanode: {
@@ -262,7 +265,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => {
       const { containsLinkedComponents } =
-        $store.state.workflow.activeWorkflow.info;
+        $store.state.workflow.activeWorkflow!.info;
 
       const isWritable = $store.getters["workflow/isWritable"];
       return containsLinkedComponents && isWritable;

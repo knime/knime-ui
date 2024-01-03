@@ -36,6 +36,9 @@ type LooseAutoComplete<T extends string> = T | Omit<string, T>;
 export type Hotkey = Keys | Modifiers;
 export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers>>;
 
+// export type Hotkey = LooseAutoComplete<Keys | Modifiers>;
+// export type Hotkeys = Array<Hotkey>;
+
 export type ShortcutExecuteContext = {
   $store: Store<RootStoreState>;
   $router: Router;

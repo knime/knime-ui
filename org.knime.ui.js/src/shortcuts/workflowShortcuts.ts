@@ -11,10 +11,11 @@ import { portPositions } from "@/util/portShift";
 import { nodeSize } from "@/style/shapes.mjs";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { Connection, XY } from "@/api/gateway-api/generated-api";
 import { compatibility } from "@/environment";
 
 import type { UnionToShortcutRegistry } from "./types";
+import type { KnimeNode } from "@/api/custom-types";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -67,7 +68,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     icon: UndoIcon,
     execute: ({ $store }) => $store.dispatch("workflow/undo"),
     condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.allowedActions.canUndo,
+      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canUndo),
   },
   redo: {
     title: "Redo",
@@ -75,7 +76,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     icon: RedoIcon,
     execute: ({ $store }) => $store.dispatch("workflow/redo"),
     condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.allowedActions.canRedo,
+      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canRedo),
   },
   configureNode: {
     text: "Configure",
@@ -169,8 +170,9 @@ const workflowShortcuts: WorkflowShortcuts = {
         return false;
       }
 
-      const selectedNodes = $store.getters["selection/selectedNodes"];
-      const selectedConnections =
+      const selectedNodes: Array<KnimeNode> =
+        $store.getters["selection/selectedNodes"];
+      const selectedConnections: Array<Connection> =
         $store.getters["selection/selectedConnections"];
       const selectedAnnotations =
         $store.getters["selection/selectedAnnotations"];
@@ -188,9 +190,9 @@ const workflowShortcuts: WorkflowShortcuts = {
       }
 
       const allSelectedDeletable =
-        selectedNodes.every((node) => node.allowedActions.canDelete) &&
+        selectedNodes.every((node) => node.allowedActions?.canDelete) &&
         selectedConnections.every(
-          (connection) => connection.allowedActions.canDelete,
+          (connection) => connection.allowedActions?.canDelete,
         );
 
       // enabled, if all selected objects are deletable
@@ -207,7 +209,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     condition: ({ $store }) => {
       const nodeOutput = document.querySelector("#node-output");
 
-      if (nodeOutput.contains(document.activeElement)) {
+      if (nodeOutput && nodeOutput.contains(document.activeElement)) {
         return false;
       }
 
@@ -219,7 +221,7 @@ const workflowShortcuts: WorkflowShortcuts = {
 
       const kanvas = $store.state.canvas.getScrollContainerElement();
       const kanvasIsActiveElement = document.activeElement === kanvas;
-      const textSelectionIsEmpty = window?.getSelection().toString() === "";
+      const textSelectionIsEmpty = window?.getSelection()?.toString() === "";
       const isSomethingSelected =
         selectedNodes.length !== 0 || selectedAnnotations.length !== 0;
 
@@ -288,14 +290,11 @@ const workflowShortcuts: WorkflowShortcuts = {
       // destruct current state
       const { isOpen, props } = $store.state.workflow.quickAddNodeMenu;
 
-      const {
-        nodeId: lastNodeId,
-        port: { index: lastPortIndex } = { index: -1 },
-        position: lastPosition,
-      } = props ?? {};
+      const { nodeId: lastNodeId, port, position: lastPosition } = props ?? {};
+      const lastPortIndex = port?.index ?? -1;
 
       // use the node of the currently open dialog because the node might not be selected in that case
-      const node = isOpen
+      const node: KnimeNode = isOpen
         ? $store.getters["workflow/getNodeById"](lastNodeId)
         : $store.getters["selection/singleSelectedNode"];
 
@@ -303,7 +302,7 @@ const workflowShortcuts: WorkflowShortcuts = {
       if (node === null) {
         const position = geometry.findFreeSpaceAroundCenterWithFallback({
           visibleFrame: $store.getters["canvas/getVisibleFrame"](),
-          nodes: $store.state.workflow.activeWorkflow.nodes,
+          nodes: $store.state.workflow.activeWorkflow!.nodes,
         });
         $store.dispatch("workflow/openQuickAddNodeMenu", {
           props: { position },
@@ -321,7 +320,11 @@ const workflowShortcuts: WorkflowShortcuts = {
       const portIndex = lastNodeId === nodeId ? nextIndex : startIndex;
 
       // if it's not open we need to find a proper position to put the menu
-      const calculatePosition = (node, portIndex, portCount, $store) => {
+      const calculatePosition = (
+        node: KnimeNode,
+        portIndex: number,
+        portCount: number,
+      ) => {
         const outPortPositions = portPositions({
           portCount,
           isMetanode: isNodeMetaNode(node),
@@ -335,20 +338,21 @@ const workflowShortcuts: WorkflowShortcuts = {
           x: node.position.x + outPortPositions[portIndex][0] + xOffset,
           y: node.position.y + outPortPositions[portIndex][1],
         };
+
         return geometry.findFreeSpaceAroundPointWithFallback({
           startPoint,
           visibleFrame: $store.getters["canvas/getVisibleFrame"](),
-          nodes: $store.state.workflow.activeWorkflow.nodes,
+          nodes: $store.state.workflow.activeWorkflow!.nodes,
         });
       };
 
-      const port = node.outPorts[portIndex];
+      const outputPort = node.outPorts[portIndex];
       const position = isOpen
         ? lastPosition
-        : calculatePosition(node, portIndex, outPortCount, $store);
+        : calculatePosition(node, portIndex, outPortCount);
 
       $store.dispatch("workflow/openQuickAddNodeMenu", {
-        props: { nodeId, port, position },
+        props: { nodeId, port: outputPort, position },
       });
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],

@@ -16,6 +16,7 @@ import type {
   ShortcutExecuteContext,
   UnionToShortcutRegistry,
 } from "./types";
+import type { KnimeNode } from "@/api/custom-types";
 
 const executeAndOpenViewHelper = ({
   $store,
@@ -59,7 +60,7 @@ const executionShortcuts: ExecutionShortcuts = {
     icon: ExecuteAllIcon,
     execute: ({ $store }) => $store.dispatch("workflow/executeNodes", "all"),
     condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.allowedActions.canExecute,
+      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canExecute),
   },
   cancelAll: {
     text: "Cancel all",
@@ -69,7 +70,7 @@ const executionShortcuts: ExecutionShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch("workflow/cancelNodeExecution", "all"),
     condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.allowedActions.canCancel,
+      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canCancel),
   },
   resetAll: {
     text: "Reset all",
@@ -78,7 +79,7 @@ const executionShortcuts: ExecutionShortcuts = {
     icon: ResetAllIcon,
     execute: ({ $store }) => $store.dispatch("workflow/resetNodes", "all"),
     condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.allowedActions.canReset,
+      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canReset),
   },
 
   // selected nodes (multiple)
@@ -95,7 +96,7 @@ const executionShortcuts: ExecutionShortcuts = {
     },
     condition: ({ $store }) =>
       $store.getters["selection/selectedNodes"].some(
-        (node) => node.allowedActions.canExecute,
+        (node: KnimeNode) => node.allowedActions?.canExecute,
       ),
   },
   executeAndOpenView: {
@@ -131,7 +132,7 @@ const executionShortcuts: ExecutionShortcuts = {
     },
     condition: ({ $store }) =>
       $store.getters["selection/selectedNodes"].some(
-        (node) => node.allowedActions.canCancel,
+        (node: KnimeNode) => node.allowedActions?.canCancel,
       ),
   },
   resetSelected: {
@@ -147,7 +148,7 @@ const executionShortcuts: ExecutionShortcuts = {
     },
     condition: ({ $store }) =>
       $store.getters["selection/selectedNodes"].some(
-        (node) => node.allowedActions.canReset,
+        (node: KnimeNode) => node.allowedActions?.canReset,
       ),
   },
 

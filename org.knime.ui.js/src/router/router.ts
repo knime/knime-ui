@@ -51,18 +51,26 @@ export const routes: Array<RouteRecordRaw> = [
   }),
 ];
 
-export const getPathFromRouteName = (name) => {
-  const searchByName = (_routes, name, fullPath = "") => {
+export const getPathFromRouteName = (name: string) => {
+  const searchByName = (
+    _routes: typeof routes,
+    name: string,
+    fullPath = "",
+  ): string => {
     const foundRoute = _routes.find((route) => route.name === name);
     if (foundRoute) {
       return `${fullPath}${foundRoute.path}`;
     }
 
-    let result = null;
+    let result: string = "";
     for (let i = 0; i < _routes.length; i++) {
       const currentRoute = _routes[i];
       if (currentRoute.children) {
-        result = searchByName(routes[i].children, name, currentRoute.path);
+        result = searchByName(
+          routes[i]?.children ?? [],
+          name,
+          currentRoute.path,
+        );
       }
     }
     return result;

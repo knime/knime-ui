@@ -3,7 +3,7 @@ import { getId } from "@/util/getUniqueId";
 
 type StackItemConfig = {
   onEscape: () => void;
-  group?: string;
+  group?: string | null;
   alwaysActive?: boolean;
 };
 
@@ -115,7 +115,7 @@ export const escapePressed = () => {
     // Entries that do not remove their handler after call are considered as "always active"
     // so we call all stored entries regardless of which is the last entry in the stack
     if (hasAlwaysActiveEntries) {
-      runAllEntries(stack, ([_, entryData]) => entryData.alwaysActive);
+      runAllEntries(stack, ([_, entryData]) => Boolean(entryData.alwaysActive));
     }
 
     // eslint-disable-next-line no-unused-vars

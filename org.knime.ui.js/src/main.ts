@@ -121,7 +121,7 @@ try {
   const store = initStore();
   runInEnvironment({
     BROWSER: () => {
-      store.commit("api/setRestApiBaseUrl", connectionInfo.restApiBaseUrl);
+      store.commit("api/setRestApiBaseUrl", connectionInfo?.restApiBaseUrl);
     },
   });
 

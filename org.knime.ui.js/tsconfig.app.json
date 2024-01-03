@@ -1,6 +1,11 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.web.json",
-  "include": ["src/**/*", "src/**/*.vue", "webapps-common/util", "webapps-common/ui/**/*"],
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "src/**/*",
+    "src/**/*.vue",
+    "webapps-common/util",
+    "webapps-common/ui/**/*"
+  ],
   "exclude": ["src/**/__tests__/*", "webapps-common/**/__tests__/*"],
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -9,7 +14,8 @@
       "@/*": ["./src/*"],
       "@api": ["./src/api/index"]
     },
-    "strict": false,
-    "allowJs": true
+    "strict": true,
+    "allowJs": true,
+    "skipLibCheck": true
   }
 }
