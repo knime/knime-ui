@@ -6,6 +6,11 @@ import { API } from "@api";
 import type { KnimeNode, ViewConfig } from "@/api/custom-types";
 import ViewLoader from "@/components/embeddedViews/ViewLoader.vue";
 
+type ComponentData = {
+  error: unknown | null;
+  deactivateDataServicesFn: (() => void) | null;
+};
+
 /**
  * Dynamically loads a component that will render a Port's output view
  */
@@ -43,7 +48,7 @@ export default defineComponent({
 
   emits: ["stateChange"],
 
-  data() {
+  data(): ComponentData {
     return { error: null, deactivateDataServicesFn: null };
   },
 

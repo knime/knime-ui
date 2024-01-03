@@ -29,8 +29,10 @@ const scrollableContainer = ref<HTMLElement | null>(null);
 
 const scrollToBottomAfterNextTick = () => {
   nextTick(() => {
-    scrollableContainer.value.scrollTop =
-      scrollableContainer.value.scrollHeight;
+    if (scrollableContainer.value) {
+      scrollableContainer.value.scrollTop =
+        scrollableContainer.value.scrollHeight;
+    }
   });
 };
 watch(() => incomingTokens.value, scrollToBottomAfterNextTick);
@@ -58,7 +60,7 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
           key="processing"
           role="assistant"
           :content="incomingTokens"
-          :status-update="statusUpdate"
+          :status-update="statusUpdate ?? ''"
         />
       </div>
     </div>

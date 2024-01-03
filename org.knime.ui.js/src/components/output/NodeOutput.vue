@@ -70,15 +70,15 @@ export default defineComponent({
   },
   computed: {
     ...mapState("application", {
-      projectId: (state: any) =>
+      projectId: (state: unknown) =>
         (state as ApplicationState).activeProjectId as string | null,
-      availablePortTypes: (state: any) =>
+      availablePortTypes: (state: unknown) =>
         (state as ApplicationState).availablePortTypes as AvailablePortTypes,
     }),
     ...mapState("workflow", {
-      workflowId: (state: any) =>
+      workflowId: (state: unknown) =>
         (state as WorkflowState).activeWorkflow!.info.containerId,
-      isDragging: (state: any) => (state as WorkflowState).isDragging,
+      isDragging: (state: unknown) => (state as WorkflowState).isDragging,
     }),
     ...mapGetters("selection", ["selectedNodes", "singleSelectedNode"]),
 

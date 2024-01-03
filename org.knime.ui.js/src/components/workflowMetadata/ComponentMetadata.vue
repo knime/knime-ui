@@ -42,8 +42,8 @@ const nodeFeatures = computed(() => {
   const {
     inPorts = [],
     outPorts = [],
-    options,
-    views,
+    options = [],
+    views = [],
   } = componentMetadata.value;
 
   return {
@@ -66,8 +66,8 @@ type MetadataDraft = {
     tags: string[];
     inPorts: Array<ComponentPortDescription>;
     outPorts: Array<ComponentPortDescription>;
-    icon: string; // base64 url-encoded
-    type: ComponentNodeAndDescription.TypeEnum | string;
+    icon: string | null; // base64 url-encoded
+    type: ComponentNodeAndDescription.TypeEnum | string | null;
   };
 };
 
@@ -93,7 +93,7 @@ const getInitialDraftData = () => {
   }));
 
   return {
-    description: componentMetadata.value.description.value,
+    description: componentMetadata.value.description?.value ?? "",
     links: structuredClone(toRaw(componentMetadata.value.links || [])),
     tags: structuredClone(toRaw(componentMetadata.value.tags || [])),
     inPorts,
@@ -112,7 +112,7 @@ const createNewDraft = (draftId: string) => {
   };
 };
 
-type SaveEventPayload = {
+export type SaveEventPayload = {
   projectId: string;
   workflowId: string;
   description: TypedText;
@@ -120,7 +120,7 @@ type SaveEventPayload = {
   tags: Array<string>;
   inPorts: Array<ComponentPortDescription>;
   outPorts: Array<ComponentPortDescription>;
-  icon: string; // base64 url-encoded
+  icon: string | null; // base64 url-encoded
   type: UpdateComponentMetadataCommand.TypeEnum | string | null;
 };
 
@@ -247,6 +247,7 @@ watch(
   <div class="header">
     <h2 class="component-name">
       <span class="node-preview">
+        <!-- @vue-expect-error -- NodePreview is not properly typed -->
         <NodePreview v-bind="nodePreview" />
       </span>
 
@@ -254,7 +255,7 @@ watch(
         componentMetadata.name
       }}</span>
     </h2>
-    <!-- <MetadataLastEdit :last-edit="lastEdit" /> -->
+
     <MetadataHeaderButtons
       v-if="isWorkflowWritable"
       :is-editing="isEditing"
@@ -266,7 +267,7 @@ watch(
   </div>
 
   <MetadataDescription
-    :original-description="componentMetadata.description.value"
+    :original-description="componentMetadata.description?.value ?? ''"
     :model-value="getMetadataFieldValue('description')"
     :editable="isEditing"
     @update:model-value="updateMetadataField('description', $event)"

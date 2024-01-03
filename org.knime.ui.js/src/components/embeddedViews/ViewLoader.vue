@@ -47,8 +47,8 @@ type Emits = {
 
 const emit = defineEmits<Emits>();
 
-const activeDynamicView = ref(null);
-const initialData = ref(null);
+const activeDynamicView = ref<{ teardown: () => void } | null>(null);
+const initialData = ref<unknown | null>(null);
 const useIframe = ref(false);
 const container = ref<HTMLElement | null>(null);
 const { renderKey } = toRefs(props);
@@ -84,9 +84,9 @@ const renderDynamicView = async (viewConfig: ViewConfig) => {
   }
 
   // create or reuse shadow root
-  const shadowRoot = container.value.shadowRoot
-    ? container.value.shadowRoot
-    : container.value.attachShadow({ mode: "open" });
+  const shadowRoot = container.value!.shadowRoot
+    ? container.value!.shadowRoot
+    : container.value!.attachShadow({ mode: "open" });
 
   // call module default exported function to load the view
   activeDynamicView.value = dynamicView.default(
@@ -126,6 +126,7 @@ const loadView = async () => {
     }
     emit("stateChange", { state: "ready", portKey });
   } catch (e) {
+    // @ts-expect-error
     emit("stateChange", { state: "error", message: e, portKey });
   }
 };

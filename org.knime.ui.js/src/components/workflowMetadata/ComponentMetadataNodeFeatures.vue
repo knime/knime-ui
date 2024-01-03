@@ -9,7 +9,9 @@ import type {
 } from "@/api/gateway-api/generated-api";
 
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
-import MetadataPortEditor from "@/components/workflowMetadata/MetadataPortEditor.vue";
+import MetadataPortEditor, {
+  type PortEditorData,
+} from "@/components/workflowMetadata/MetadataPortEditor.vue";
 
 export interface NodeFeatures {
   options: Array<NodeDialogOptionGroup>;
@@ -53,7 +55,7 @@ const emit = defineEmits<{
   (e: "update:outPorts", value: Array<ComponentPortDescription>): void;
 }>();
 
-const filterPortData = (fullPorts) =>
+const filterPortData = (fullPorts: PortEditorData[]) =>
   fullPorts.map(({ name, description }) => ({
     name,
     description,

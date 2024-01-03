@@ -40,7 +40,7 @@ const tabToggles = computed(() => {
 
 const setFirstTab = () => {
   activeView.value = tabToggles.value.at(0)
-    ? Number(tabToggles.value.at(0).id)
+    ? Number(tabToggles.value.at(0)!.id)
     : null;
 };
 
@@ -52,7 +52,7 @@ onMounted(() => {
   setFirstTab();
 });
 
-const openInNewWindow = (item = null) => {
+const openInNewWindow = (item: { id: string } | null = null) => {
   const viewIndex = item === null ? activeView.value : Number(item.id);
   emit("openViewInNewWindow", viewIndex);
 };

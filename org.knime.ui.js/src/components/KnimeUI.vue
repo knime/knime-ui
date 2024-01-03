@@ -11,6 +11,11 @@ import SmartLoader from "@/components/common/SmartLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import BlockUi from "@/components/application/BlockUi.vue";
 
+type ComponentData = {
+  loaded: boolean;
+  error: { message: string; stack: string } | null;
+};
+
 /**
  * Main page and entry point of KNIME Next
  * Initiates application state
@@ -31,7 +36,7 @@ export default defineComponent({
     DynamicEnvRenderer,
   },
 
-  data() {
+  data(): ComponentData {
     return {
       loaded: false,
       error: null,
@@ -80,7 +85,9 @@ export default defineComponent({
 
         // render the application
         this.loaded = true;
+        // @ts-ignore
       } catch ({ message, stack }) {
+        // @ts-ignore
         this.error = { message, stack };
       }
     },

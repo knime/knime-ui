@@ -25,11 +25,11 @@ type MetadataDraft = {
 };
 
 const store = useStore<RootStoreState>();
-const workflow = computed(() => store.state.workflow.activeWorkflow);
-const projectMetadata = computed(() => workflow.value.projectMetadata);
+const workflow = computed(() => store.state.workflow.activeWorkflow!); // not null because component gets rendered when this has value
+const projectMetadata = computed(() => workflow.value.projectMetadata!); // not null because component gets rendered when this has value
 const currentProjectId = computed(() => workflow.value.projectId);
 const currentWorkflowId = computed(() => workflow.value.info.containerId);
-const lastEdit = computed(() => projectMetadata.value.lastEdit.toString());
+const lastEdit = computed(() => projectMetadata.value.lastEdit?.toString());
 
 const currentDraftID = computed(
   () => `${currentProjectId.value}${ID_SEPARATOR}${currentWorkflowId.value}`,
@@ -44,7 +44,7 @@ const isEditing = computed(
 const getInitialDraftData = () => {
   return projectMetadata.value
     ? {
-        description: projectMetadata.value.description.value,
+        description: projectMetadata.value.description?.value ?? "",
         links: structuredClone(toRaw(projectMetadata.value.links || [])),
         tags: structuredClone(toRaw(projectMetadata.value.tags || [])),
       }
@@ -64,7 +64,7 @@ const createNewDraft = (draftId: string) => {
   };
 };
 
-type SaveEventPayload = {
+export type SaveEventPayload = {
   projectId: string;
   workflowId: string;
   description: TypedText;
@@ -174,7 +174,7 @@ watch(
   </div>
 
   <MetadataDescription
-    :original-description="projectMetadata.description.value"
+    :original-description="projectMetadata.description?.value ?? ''"
     :model-value="getMetadataFieldValue('description')"
     :editable="isEditing"
     @update:model-value="updateMetadataField('description', $event)"

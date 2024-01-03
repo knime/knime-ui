@@ -61,7 +61,7 @@ export const jobFormatters = () => ({
     caseFormatter({ string: state, format: "snakeFormat", delimiter: null }),
   nodeMessages: (messages: unknown[]) =>
     messages?.length ? `${messages.length} Messages` : "-",
-  createdAt: (createdAt: string) => formatTime(createdAt),
+  createdAt: (createdAt: number) => formatTime(createdAt),
 });
 
 export const jobClassGenerators = {

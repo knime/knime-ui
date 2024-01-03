@@ -16,7 +16,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const getTypeIcon = (type: string) => {
+const getTypeIcon = (type: keyof typeof nodeBackgroundColors) => {
   return () =>
     h(ComponentTypeSvgIcon, {
       color: nodeBackgroundColors[type] || colorHibiscusDark,
@@ -31,7 +31,7 @@ const componentTypeMenuItems = computed(() => [
   },
   ...props.componentTypes.map((type) => ({
     text: type,
-    icon: getTypeIcon(type),
+    icon: getTypeIcon(type as keyof typeof nodeBackgroundColors),
     metadata: { id: type },
   })),
 ]);

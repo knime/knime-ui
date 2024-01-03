@@ -5,7 +5,7 @@ import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 interface Props {
   originalDescription: string;
   editable?: boolean;
-  modelValue?: string | null;
+  modelValue?: string;
 }
 
 const editor = ref<HTMLTextAreaElement | null>(null);
@@ -22,7 +22,7 @@ defineEmits<{
 watch(toRef(props, "editable"), async (next) => {
   if (next) {
     await nextTick();
-    editor.value.focus();
+    editor.value?.focus();
   }
 });
 </script>

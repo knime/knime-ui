@@ -9,7 +9,7 @@ interface Props {
 }
 
 const emit = defineEmits<{
-  (e: "update:modelValue", componentType: string): void;
+  (e: "update:modelValue", componentType: string | null): void;
 }>();
 
 defineProps<Props>();

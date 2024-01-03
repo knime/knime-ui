@@ -8,7 +8,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import portIconRenderer from "@/components/common/PortIconRenderer";
 
-type PortEditorData = Pick<PortType, "color"> & NodePortDescription;
+export type PortEditorData = Pick<PortType, "color"> & NodePortDescription;
 
 interface Props {
   modelValue: Array<PortEditorData>;

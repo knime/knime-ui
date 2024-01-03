@@ -11,6 +11,7 @@ import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 import { isDesktop } from "@/environment";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -36,7 +37,7 @@ export default {
       "isUnknownProject",
     ]),
 
-    canvasModes() {
+    canvasModes(): Array<MenuItem> {
       const canvasModeShortcuts: Array<{
         id: string;
         shortcutName: ShortcutName;
@@ -46,32 +47,30 @@ export default {
         { id: "pan", shortcutName: "switchToPanMode" },
       ];
 
-      return canvasModeShortcuts
-        .map(({ id, shortcutName }) => {
-          const shortcut = this.$shortcuts.get(shortcutName);
-          if (!shortcut) {
-            return null;
-          }
+      return canvasModeShortcuts.flatMap(({ id, shortcutName }) => {
+        const shortcut = this.$shortcuts.get(shortcutName);
+        if (!shortcut) {
+          return [];
+        }
 
-          const shortcutText =
-            typeof shortcut.text === "function"
-              ? shortcut.text({ $store: this.$store })
-              : shortcut.text;
+        const shortcutText =
+          typeof shortcut.text === "function"
+            ? shortcut.text({ $store: this.$store })
+            : shortcut.text ?? "";
 
-          return {
-            text: shortcutText,
-            hotkeyText: shortcut.hotkeyText,
-            disabled: !this.$shortcuts.isEnabled(shortcutName),
-            metadata: { id },
-          };
-        })
-        .filter(Boolean);
+        return {
+          text: shortcutText,
+          hotkeyText: shortcut.hotkeyText,
+          disabled: !this.$shortcuts.isEnabled(shortcutName),
+          metadata: { id },
+        };
+      });
     },
 
     hasBreadcrumb() {
       return this.workflow?.parents?.length > 0;
     },
-    hideText() {
+    hideText(): Partial<Record<ShortcutName, boolean>> {
       return {
         save: true,
         saveAs: true,
@@ -79,7 +78,7 @@ export default {
         redo: true,
       };
     },
-    toolbarDropdowns() {
+    toolbarDropdowns(): Partial<Record<ShortcutName, ShortcutName[]>> {
       // when the project is unknown we won't show the "save" action, and therefore
       // cannot show the dropdown
       if (this.isUnknownProject) {
@@ -129,7 +128,10 @@ export default {
     },
   },
   methods: {
-    onCanvasModeUpdate(_, { metadata: { id } }) {
+    onCanvasModeUpdate(
+      _: unknown,
+      { metadata: { id } }: { metadata: { id: string } },
+    ) {
       this.$store.dispatch("application/switchCanvasMode", id);
     },
   },

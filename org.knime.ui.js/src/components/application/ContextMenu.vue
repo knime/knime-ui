@@ -140,9 +140,9 @@ export default defineComponent({
       "isSelectionEmpty",
     ]),
     ...mapState("application", {
-      projectId: (state: any) =>
+      projectId: (state: unknown) =>
         (state as ApplicationState).activeProjectId as string | null,
-      availablePortTypes: (state: any) =>
+      availablePortTypes: (state: unknown) =>
         (state as ApplicationState).availablePortTypes as AvailablePortTypes,
     }),
   },
@@ -279,6 +279,7 @@ export default defineComponent({
 
         const headline: MenuItem = {
           text: buildPortNameAndIndex(port.name, portIndex),
+          // @ts-expect-error - because the icon is tricky to type properly
           icon: buildPortViewIcon(node, port, portIndex),
           sectionHeadline: true,
           separator: true,

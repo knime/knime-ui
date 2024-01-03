@@ -5,8 +5,12 @@ import { useStore } from "vuex";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 
-import ProjectMetadata from "./ProjectMetadata.vue";
-import ComponentMetadata from "./ComponentMetadata.vue";
+import ProjectMetadata, {
+  type SaveEventPayload as SaveProjectEventPayload,
+} from "./ProjectMetadata.vue";
+import ComponentMetadata, {
+  type SaveEventPayload as SaveComponentEventPayload,
+} from "./ComponentMetadata.vue";
 import type { ComponentMetadata as ComponentMetadataType } from "@/api/custom-types";
 
 const store = useStore<RootStoreState>();
@@ -14,8 +18,8 @@ const store = useStore<RootStoreState>();
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,
 );
-const workflow = computed(() => store.state.workflow.activeWorkflow);
-const containerType = computed(() => workflow.value.info.containerType);
+const workflow = computed(() => store.state.workflow!.activeWorkflow!);
+const containerType = computed(() => workflow.value!.info.containerType);
 
 const isProjectType = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Project,
@@ -50,7 +54,7 @@ const updateProjectMetadata = ({
   tags,
   projectId,
   workflowId,
-}) => {
+}: SaveProjectEventPayload) => {
   store.dispatch("workflow/updateWorkflowMetadata", {
     projectId,
     workflowId,
@@ -70,7 +74,7 @@ const updateComponentMetadata = ({
   outPorts,
   links,
   tags,
-}) => {
+}: SaveComponentEventPayload) => {
   store.dispatch("workflow/updateComponentMetadata", {
     projectId,
     workflowId, // in this case the componentId

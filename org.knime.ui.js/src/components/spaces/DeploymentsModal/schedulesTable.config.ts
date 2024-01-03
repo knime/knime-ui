@@ -63,9 +63,9 @@ export const scheduleFormatters = {
   actions: (actions: unknown[]) =>
     actions?.length ? `${actions.length} Actions` : "-",
   disabled: (disabled: boolean) => (disabled ? "Inactive" : "Active"),
-  lastRun: (lastRun: string | undefined) =>
+  lastRun: (lastRun: number | undefined) =>
     lastRun ? formatTime(lastRun) : "",
-  nextScheduledExecution: (nextScheduledExecution: string) =>
+  nextScheduledExecution: (nextScheduledExecution: number) =>
     formatTime(nextScheduledExecution),
 };
 
