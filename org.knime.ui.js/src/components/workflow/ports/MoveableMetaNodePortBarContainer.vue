@@ -22,8 +22,8 @@ const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
 const workflow = computed(() => store.state.workflow.activeWorkflow);
 const backendBounds = computed(() =>
   props.type === "out"
-    ? workflow.value.metaOutPorts?.bounds
-    : workflow.value.metaInPorts?.bounds,
+    ? workflow.value?.metaOutPorts?.bounds
+    : workflow.value?.metaInPorts?.bounds,
 );
 
 const isMetaNodePortBarSelected = computed(

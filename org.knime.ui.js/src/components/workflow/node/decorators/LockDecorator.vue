@@ -1,9 +1,11 @@
 <script lang="ts">
+import { defineComponent } from "vue";
+
 /**
  * A lock icon that is used to indicate an un-/locked component / metanode.
  * For use inside the Node component.
  */
-export default {
+export default defineComponent({
   props: {
     /**
      * Node type for determining the background color.
@@ -20,10 +22,16 @@ export default {
   },
   computed: {
     backgroundColor() {
-      return this.$colors.nodeBackgroundColors[this.backgroundType];
+      const type = this
+        .backgroundType as keyof typeof this.$colors.nodeBackgroundColors;
+
+      return type in this.$colors.nodeBackgroundColors
+        ? this.$colors.nodeBackgroundColors[type]
+        : // eslint-disable-next-line no-undefined
+          undefined;
     },
   },
-};
+});
 </script>
 
 <template>

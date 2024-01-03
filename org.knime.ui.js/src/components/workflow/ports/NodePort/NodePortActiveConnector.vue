@@ -11,15 +11,18 @@ import type { Direction } from "@/util/compatibleConnections";
 import type { DragConnector } from "./types";
 
 interface Props {
-  port?: NodePort;
-  dragConnector?: DragConnector;
+  port?: NodePort | null;
+  dragConnector?: DragConnector | null;
   direction: Direction;
   targeted: boolean;
   didDragToCompatibleTarget: boolean;
   disableQuickNodeAdd: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  port: null,
+  dragConnector: null,
+});
 
 const showAddNodeGhost = computed(
   () =>
@@ -35,7 +38,7 @@ const showAddNodeGhost = computed(
  * indicate, if this port is the starting point of a new connector
  */
 const indicateConnectorReplacement = computed(() => {
-  const isConnected = props.port?.connectedVia.length > 0;
+  const isConnected = props.port && props.port.connectedVia.length > 0;
 
   return (
     props.direction === "in" &&
@@ -53,7 +56,7 @@ watch(indicateConnectorReplacement, (indicateReplacement) => {
   const [incomingConnection] = props.port.connectedVia;
   const incomingConnector = document.querySelector(
     `[data-connector-id="${incomingConnection}"]`,
-  );
+  )!;
 
   incomingConnector.dispatchEvent(
     new CustomEvent("indicate-replacement", {

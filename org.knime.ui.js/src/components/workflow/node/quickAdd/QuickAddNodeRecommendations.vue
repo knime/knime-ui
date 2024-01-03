@@ -4,7 +4,7 @@ import { mapState } from "vuex";
 
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
-import type { KnimeNode } from "@/api/custom-types";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 export default defineComponent({
@@ -14,7 +14,7 @@ export default defineComponent({
   },
   props: {
     selectedNode: {
-      type: [Object, null] as PropType<KnimeNode | null>,
+      type: [Object, null] as PropType<NodeTemplateWithExtendedPorts | null>,
       required: true,
     },
     disableRecommendations: {

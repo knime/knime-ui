@@ -4,6 +4,22 @@ import { mapGetters, mapState, mapActions } from "vuex";
 import throttle from "raf-throttle";
 
 import { findObjectsForSelection } from "./findObjectsForSelection";
+import type { XY } from "@/api/gateway-api/generated-api";
+
+type ComponentData = {
+  startPos: XY;
+  endPos: XY;
+  pointerId: number | null;
+  nodeIdsToSelectOnEnd: string[];
+  nodeIdsToDeselectOnEnd: string[];
+  selectedNodeIdsAtStart: string[];
+  nodeIdsInsidePreviousSelection: string[];
+
+  annotationIdsToSelectOnEnd: string[];
+  annotationIdsToDeselectOnEnd: string[];
+  selectedAnnotationIdsAtStart: string[];
+  annotationIdsInsidePreviousSelection: string[];
+};
 
 /**
  * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement
@@ -16,7 +32,7 @@ import { findObjectsForSelection } from "./findObjectsForSelection";
  */
 export default defineComponent({
   emits: ["nodeSelectionPreview", "annotationSelectionPreview"],
-  data: () => ({
+  data: (): ComponentData => ({
     startPos: {
       x: 0,
       y: 0,
@@ -74,9 +90,9 @@ export default defineComponent({
       "deselectAnnotations",
     ]),
 
-    startRectangleSelection(e) {
+    startRectangleSelection(e: PointerEvent) {
       this.pointerId = e.pointerId;
-      e.target.setPointerCapture(e.pointerId);
+      (e.target! as HTMLElement).setPointerCapture(e.pointerId);
 
       [this.startPos.x, this.startPos.y] = this.screenToCanvasCoordinates([
         e.clientX,
@@ -180,7 +196,7 @@ export default defineComponent({
       /* eslint-enable no-invalid-this */
     }),
 
-    previewSelectionForItemsInRectangle(startPos, endPos) {
+    previewSelectionForItemsInRectangle(startPos: XY, endPos: XY) {
       let { nodesInside, nodesOutside, annotationsInside, annotationsOutside } =
         findObjectsForSelection({
           startPos,
@@ -189,10 +205,10 @@ export default defineComponent({
         });
 
       // remember this for the real selection at the end of the movement (pointerup)
-      let selectNodes = [];
-      let deselectNodes = [];
-      let selectAnnotations = [];
-      let deselectAnnotations = [];
+      let selectNodes: string[] = [];
+      let deselectNodes: string[] = [];
+      let selectAnnotations: string[] = [];
+      let deselectAnnotations: string[] = [];
 
       // do the preview
       nodesInside.forEach((nodeId) => {

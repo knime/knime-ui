@@ -18,12 +18,18 @@ import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoa
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import type { SettingsState } from "@/store/settings";
 import { API } from "@/api";
+import type {
+  AvailablePortTypes,
+  NodeTemplateWithExtendedPorts,
+} from "@/api/custom-types";
 
-const calculatePortOffset = ({
-  targetPorts,
-  sourcePort,
-  availablePortTypes,
+const calculatePortOffset = (params: {
+  targetPorts: any[];
+  sourcePort: NodePort;
+  availablePortTypes: AvailablePortTypes;
 }) => {
+  const { targetPorts, sourcePort, availablePortTypes } = params;
+
   const targetPortIndex = targetPorts.findIndex((toPort) =>
     checkPortCompatibility({
       fromPort: sourcePort,
@@ -44,6 +50,10 @@ const calculatePortOffset = ({
   } else {
     return positions[targetPortIndex + 1];
   }
+};
+
+type ComponentData = {
+  selectedNode: NodeTemplateWithExtendedPorts | null;
 };
 
 /*
@@ -75,7 +85,7 @@ export default defineComponent({
     },
   },
   emits: ["menuClose"],
-  data() {
+  data(): ComponentData {
     return {
       selectedNode: null,
     };
@@ -88,8 +98,8 @@ export default defineComponent({
       "nodeRepositoryLoadingProgress",
     ]),
     ...mapState("settings", {
-      displayMode: (state: SettingsState) =>
-        state.settings.nodeRepositoryDisplayMode,
+      displayMode: (state: unknown) =>
+        (state as SettingsState).settings.nodeRepositoryDisplayMode,
     }),
     ...mapState("canvas", ["zoomFactor"]),
     ...mapState("quickAddNodes", ["recommendedNodes"]),
@@ -113,7 +123,9 @@ export default defineComponent({
     },
     fakePortConnector(): DragConnector {
       // port can be null for the so called global mode
-      const portType = this.availablePortTypes[this.port?.typeId];
+      const portType = this.port
+        ? this.availablePortTypes[this.port.typeId]
+        : null;
       const flowVariableConnection = portType?.kind === "flowVariable";
 
       return {
@@ -122,8 +134,10 @@ export default defineComponent({
         absolutePoint: [this.position.x, this.position.y],
         allowedActions: { canDelete: false },
         interactive: false,
-        sourceNode: this.nodeId,
-        sourcePort: this.portIndex,
+        // eslint-disable-next-line no-undefined
+        sourceNode: this.nodeId ?? undefined,
+        // eslint-disable-next-line no-undefined
+        sourcePort: this.portIndex ?? undefined,
       };
     },
     marginTop() {
@@ -186,7 +200,7 @@ export default defineComponent({
         portIdx,
       });
     },
-    async addNode(nodeTemplate) {
+    async addNode(nodeTemplate: NodeTemplateWithExtendedPorts) {
       if (!this.isWritable || nodeTemplate === null) {
         return;
       }

@@ -11,6 +11,15 @@ import NodeNameTextarea from "./NodeNameTextarea.vue";
 
 const invalidCharsErrorVisibleTime = 4000; // ms
 
+type ComponentData = {
+  hideInvalidCharsTimeoutId: number | null;
+  currentName: string;
+  latestDimensions: {
+    width: number | null;
+    height: number | null;
+  };
+};
+
 /**
  * Node Name Editor. Component wraps inline textarea and editor action bar (cancel, save). It overlays the whole
  * canvas (via the portal) with a rect that avoids changes to the canvas.
@@ -47,7 +56,7 @@ export default defineComponent({
     },
   },
   emits: ["save", "cancel", "widthChange", "heightChange"],
-  data() {
+  data(): ComponentData {
     return {
       hideInvalidCharsTimeoutId: null,
       currentName: this.value,
@@ -93,7 +102,7 @@ export default defineComponent({
         this.nodePosition.x + this.$shapes.nodeSize / 2,
         this.nodePosition.y -
           this.$shapes.nodeSelectionPadding[0] -
-          this.latestDimensions.height,
+          (this.latestDimensions.height ?? 0),
       ];
     },
 
@@ -101,7 +110,7 @@ export default defineComponent({
       const halfNodeSize = this.$shapes.nodeSize / 2;
       // use node with padding as minimum
       const currentWidthWithMinimum = Math.max(
-        this.latestDimensions.width,
+        this.latestDimensions.width ?? 0,
         this.$shapes.nodeWidthWithPadding,
       );
       return {
@@ -156,7 +165,7 @@ export default defineComponent({
       if (this.hideInvalidCharsTimeoutId) {
         clearTimeout(this.hideInvalidCharsTimeoutId);
       }
-      this.hideInvalidCharsTimeoutId = setTimeout(() => {
+      this.hideInvalidCharsTimeoutId = window.setTimeout(() => {
         this.hideInvalidCharsTimeoutId = null;
       }, invalidCharsErrorVisibleTime);
     },
@@ -198,7 +207,9 @@ export default defineComponent({
     <!-- Validation/Error Message -->
     <foreignObject
       v-if="Boolean(hideInvalidCharsTimeoutId)"
-      :width="Math.max(latestDimensions.width, $shapes.nodeWidthWithPadding)"
+      :width="
+        Math.max(latestDimensions.width ?? 0, $shapes.nodeWidthWithPadding)
+      "
       :height="70"
       :x="errorMessagePosition.x"
       :y="errorMessagePosition.y"

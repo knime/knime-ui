@@ -1,5 +1,4 @@
 import { computed } from "vue";
-import { useStore } from "vuex";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes, NodePortGroups } from "@/api/custom-types";
@@ -9,6 +8,7 @@ import {
   generateValidPortGroupsForPlaceholderPort,
   type Direction,
 } from "@/util/compatibleConnections";
+import { useStore } from "@/composables/useStore";
 
 type PlaceholderPort = {
   isPlaceHolderPort: boolean;
@@ -20,7 +20,7 @@ export type PortSnapCallback = (params: {
   targetPortGroups: NodePortGroups;
 }) => {
   didSnap: boolean;
-  createPortFromPlaceholder: { validPortGroups: NodePortGroups } | null;
+  createPortFromPlaceholder?: { validPortGroups: NodePortGroups } | null;
 };
 
 const isPlaceholderPort = (
@@ -30,7 +30,7 @@ const isPlaceholderPort = (
 export const usePortSnapping = () => {
   const store = useStore();
   const connections = computed(
-    () => store.state.workflow.activeWorkflow.connections,
+    () => store.state.workflow.activeWorkflow!.connections,
   );
   const availablePortTypes = computed<AvailablePortTypes>(
     () => store.state.application.availablePortTypes,

@@ -13,7 +13,16 @@ type ConnectorLabelProps = {
 
 const props = withDefaults(
   defineProps<ConnectorProps & ConnectorLabelProps>(),
-  { label: "", bendpoints: () => [] },
+  {
+    label: "",
+    bendpoints: () => [],
+    sourceNode: null,
+    sourcePort: null,
+    destNode: null,
+    destPort: null,
+    absolutePoint: null,
+    interactive: true,
+  },
 );
 const LABEL_WIDTH = 1000;
 const LABEL_HEIGHT = 60;

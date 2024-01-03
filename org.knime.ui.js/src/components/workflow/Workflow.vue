@@ -50,12 +50,30 @@ export default defineComponent({
   },
 
   methods: {
-    applyNodeSelectionPreview({ nodeId, type }) {
-      this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
+    applyNodeSelectionPreview({
+      nodeId,
+      type,
+    }: {
+      nodeId: string;
+      type: string;
+    }) {
+      (
+        this.$refs[`node-${nodeId}`] as Array<InstanceType<typeof Node>>
+      )[0].setSelectionPreview(type);
     },
 
-    applyAnnotationSelectionPreview({ annotationId, type }) {
-      this.$refs[`annotation-${annotationId}`][0].setSelectionPreview(type);
+    applyAnnotationSelectionPreview({
+      annotationId,
+      type,
+    }: {
+      annotationId: string;
+      type: string;
+    }) {
+      (
+        this.$refs[`annotation-${annotationId}`] as Array<
+          InstanceType<typeof WorkflowAnnotation>
+        >
+      )[0].setSelectionPreview(type);
     },
   },
 });

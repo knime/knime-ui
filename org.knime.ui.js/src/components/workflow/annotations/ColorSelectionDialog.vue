@@ -12,7 +12,7 @@ interface Props {
 const props = defineProps<Props>();
 
 interface Emits {
-  (e: "hoverColor", color: string): void;
+  (e: "hoverColor", color: string | null): void;
   (e: "selectColor", color: string): void;
 }
 

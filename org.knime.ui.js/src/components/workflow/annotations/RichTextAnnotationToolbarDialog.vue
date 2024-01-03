@@ -17,8 +17,8 @@ const popperInstance = ref<PopperInstance | null>(null);
 const showDialog = () => {
   const yOffset = 20;
   popperInstance.value = createPopper(
-    toolbarElement.value,
-    toolbarDialogElement.value,
+    toolbarElement.value!,
+    toolbarDialogElement.value!,
     {
       placement: "bottom",
       strategy: "absolute",

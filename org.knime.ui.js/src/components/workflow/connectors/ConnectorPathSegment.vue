@@ -54,7 +54,7 @@ const centerPoint = computed(() =>
   geometry.utils.getCenterPoint(props.segment.start, props.segment.end),
 );
 
-const visiblePath = ref<SVGPathElement>(null);
+const visiblePath = ref<SVGPathElement | null>(null);
 /*
  * if suggestDelete changes to 'true' the connector will animate away from its target port
  * if suggestDelete changes back to 'false' the connector will move back

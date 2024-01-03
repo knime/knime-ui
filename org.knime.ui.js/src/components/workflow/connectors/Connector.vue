@@ -142,17 +142,23 @@ const onNodeDragLeave = () => {
   isDraggedOver.value = false;
 };
 
-const virtualBendpoint = ref<{ index: number; position: XY }>(null);
+const virtualBendpoint = ref<{ index: number; position: XY } | null>(null);
 const itemRefs = ref<{ $el: HTMLElement }[]>([]);
 
-const onVirtualBendpointAdded = async ({ position, index, event }) => {
+const onVirtualBendpointAdded = async ({
+  position,
+  index,
+  event,
+}: {
+  position: XY;
+  index: number;
+  event: PointerEvent;
+}) => {
   await store.dispatch("workflow/addVirtualBendpoint", {
     position,
     connectionId: props.id,
     index,
   });
-
-  // await nextTick();
 
   const [x, y] = screenToCanvasCoordinates.value([
     event.clientX,
@@ -282,7 +288,7 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
         :connection-id="id"
         :segment="segment"
         :index="index"
-        :is-flowvariable-connection="flowVariableConnection"
+        :is-flowvariable-connection="Boolean(flowVariableConnection)"
         :is-highlighted="isHighlighted"
         :is-dragged-over="isDraggedOver"
         :is-readonly="!isWorkflowWritable"
@@ -290,7 +296,7 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
         :is-selected="isConnectionSelected(id) && !isDragging"
         :interactive="interactive"
         :streaming="streaming"
-        :suggest-delete="segment.isEnd && suggestDelete"
+        :suggest-delete="Boolean(segment.isEnd && suggestDelete)"
         :is-connection-hovered="isHovered"
         @mouseenter="isHovered = true"
         @mouseleave="isHovered = false"
@@ -316,7 +322,7 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
           )
         "
         :is-dragging="isDragging"
-        :is-flow-variable-connection="flowVariableConnection"
+        :is-flow-variable-connection="Boolean(flowVariableConnection)"
         :position="pathSegments[index].start"
         :index="index - 1"
         :connection-id="id"

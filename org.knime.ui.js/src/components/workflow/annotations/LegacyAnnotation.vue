@@ -13,11 +13,12 @@ export default defineComponent({
   emits: ["editStart"],
   computed: {
     styledText() {
-      const { styleRanges, text } = this.annotation;
+      const { styleRanges = [], text } = this.annotation;
       const { textRanges, isValid } = applyStyleRanges(
         styleRanges,
         text.value || "",
       );
+
       if (!isValid) {
         consola.warn(
           `Invalid styleRanges: ${JSON.stringify(
@@ -58,7 +59,8 @@ export default defineComponent({
         ? `${
             part.fontSize * this.$shapes.annotationsFontSizePointToPixelFactor
           }px`
-        : null;
+        : // eslint-disable-next-line no-undefined
+          undefined;
     },
   },
 });
@@ -72,8 +74,8 @@ export default defineComponent({
       :style="{
         fontSize: getFontSize(part),
         color: part.color,
-        fontWeight: part.bold ? 'bold' : null,
-        fontStyle: part.italic ? 'italic' : null,
+        fontWeight: part.bold ? 'bold' : undefined,
+        fontStyle: part.italic ? 'italic' : undefined,
       }"
       >{{ part.text }}</span
     >

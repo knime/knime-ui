@@ -1,8 +1,9 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
 import { mapState, mapActions, mapGetters } from "vuex";
-import { mixin as VueClickAway } from "vue3-click-away";
+import { directive as clickAway } from "vue3-click-away";
 
+import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 import type {
   Bounds,
   WorkflowAnnotation,
@@ -10,12 +11,21 @@ import type {
 import { TypedText } from "@/api/gateway-api/generated-api";
 
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import type { WorkflowState } from "@/store/workflow";
 
 import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import RichTextAnnotation from "./RichTextAnnotation.vue";
-import type { WorkflowState } from "@/store/workflow";
+
+type ComponentData = {
+  selectionPreview: string | null;
+
+  hasEdited: boolean;
+  newAnnotationData: {
+    richTextContent: string;
+    borderColor: string;
+  };
+};
 
 /**
  * A workflow annotation, a rectangular box containing text.
@@ -26,7 +36,8 @@ export default defineComponent({
     RichTextAnnotation,
     TransformControls,
   },
-  mixins: [VueClickAway],
+
+  directives: { clickAway },
   inheritAttrs: false,
 
   props: {
@@ -40,7 +51,7 @@ export default defineComponent({
 
   expose: ["setSelectionPreview"],
 
-  data() {
+  data(): ComponentData {
     return {
       selectionPreview: null,
 
@@ -54,12 +65,13 @@ export default defineComponent({
 
   computed: {
     ...mapState("workflow", {
-      projectId: (state: WorkflowState) => state.activeWorkflow.projectId,
-      activeWorkflowId: (state: WorkflowState) =>
-        state.activeWorkflow.info.containerId,
-      editableAnnotationId: (state: WorkflowState) =>
-        state.editableAnnotationId,
-      isDragging: (state: WorkflowState) => state.isDragging,
+      projectId: (state: unknown) =>
+        (state as WorkflowState).activeWorkflow!.projectId,
+      activeWorkflowId: (state: unknown) =>
+        (state as WorkflowState).activeWorkflow!.info.containerId,
+      editableAnnotationId: (state: unknown) =>
+        (state as WorkflowState).editableAnnotationId,
+      isDragging: (state: unknown) => (state as WorkflowState).isDragging,
     }),
     ...mapState("selection", ["selectedAnnotations"]),
     ...mapGetters("workflow", ["isWritable"]),
@@ -212,7 +224,7 @@ export default defineComponent({
     },
 
     async onClickAway() {
-      if (window.getSelection().toString() !== "" && this.isSelected) {
+      if (window.getSelection()?.toString() !== "" && this.isSelected) {
         return;
       }
       if (!this.isEditing) {

@@ -16,11 +16,17 @@ import SearchBar from "@/components/common/SearchBar.vue";
 const isPortGroupWithSinglePort = (
   portGroups: NodePortGroups,
   groupName: string,
-) => portGroups[groupName].supportedPortTypeIds.length === 1;
+) => portGroups[groupName]?.supportedPortTypeIds?.length === 1;
 
 const portNameSizeThreshold = 20;
 
 type MenuItemWithPort = MenuItem & { port?: { typeId: string } };
+
+type ComponentData = {
+  searchQuery: string;
+  selectedPortGroup: string | null;
+  ariaActiveDescendant: string | undefined;
+};
 
 export default defineComponent({
   components: {
@@ -53,10 +59,11 @@ export default defineComponent({
 
   emits: ["itemClick", "itemActive", "menuClose"],
 
-  data: () => ({
+  data: (): ComponentData => ({
     searchQuery: "",
     selectedPortGroup: null,
-    ariaActiveDescendant: null,
+    // eslint-disable-next-line no-undefined
+    ariaActiveDescendant: undefined,
   }),
 
   computed: {
@@ -96,11 +103,13 @@ export default defineComponent({
         ? this.portTypesInSelectedGroup
         : Object.keys(this.availablePortTypes);
 
+      const suggestedPortTypes: string[] = this.suggestedPortTypes;
+
       const suggestedTypeIds = this.portTypesInSelectedGroup
-        ? this.suggestedPortTypes.filter((typeId) =>
-            this.portTypesInSelectedGroup.includes(typeId),
+        ? suggestedPortTypes.filter((typeId) =>
+            this.portTypesInSelectedGroup!.includes(typeId),
           )
-        : this.suggestedPortTypes;
+        : suggestedPortTypes;
 
       return makeTypeSearch({
         typeIds: searchTypeIds,
@@ -129,13 +138,13 @@ export default defineComponent({
 
     menuItems(): Array<MenuItemWithPort> {
       if (this.portGroups && !this.selectedPortGroup) {
-        return this.sidePortGroups.map(([groupName]) => ({ text: groupName }));
+        return this.sidePortGroups!.map(([groupName]) => ({ text: groupName }));
       }
 
       return this.searchResults.map(({ typeId, name }) => ({
         port: { typeId },
         text: name,
-        icon: portIcon({ typeId }),
+        icon: portIcon({ typeId }) as any,
         title: name.length > portNameSizeThreshold ? name : null,
       }));
     },
@@ -145,7 +154,7 @@ export default defineComponent({
         return null;
       }
 
-      return this.portGroups[this.selectedPortGroup].supportedPortTypeIds;
+      return this.portGroups[this.selectedPortGroup].supportedPortTypeIds ?? [];
     },
 
     shouldDisplaySearchBar() {
@@ -168,12 +177,18 @@ export default defineComponent({
     (this.$refs.searchBar as HTMLElement)?.focus();
   },
   methods: {
-    emitPortClick({ typeId, portGroup }) {
+    emitPortClick({
+      typeId,
+      portGroup,
+    }: {
+      typeId: string;
+      portGroup: string | null;
+    }) {
       this.$emit("itemClick", { typeId, portGroup });
       this.$emit("menuClose", { typeId, portGroup });
     },
 
-    onMenuItemClick(_, item: MenuItemWithPort) {
+    onMenuItemClick(_: unknown, item: MenuItemWithPort) {
       if (item.port) {
         const { typeId } = item.port;
         this.emitPortClick({ typeId, portGroup: this.selectedPortGroup });
@@ -182,7 +197,9 @@ export default defineComponent({
         // grab the first typeId of the matching group (group's name is the item.text property)
         // if there's only 1 type inside
         if (isPortGroupWithSinglePort(this.portGroups, item.text)) {
-          const [typeId] = this.portGroups[item.text].supportedPortTypeIds;
+          const [typeId] =
+            this.portGroups[item.text].supportedPortTypeIds ?? [];
+
           this.emitPortClick({ typeId, portGroup: item.text });
           return;
         }
@@ -200,7 +217,7 @@ export default defineComponent({
       }
     },
 
-    setActiveDescendant(id: string | null, item: MenuItemWithPort) {
+    setActiveDescendant(id: string | null, item: MenuItemWithPort | null) {
       this.ariaActiveDescendant =
         id === null
           ? // eslint-disable-next-line no-undefined
@@ -225,7 +242,7 @@ export default defineComponent({
     </div>
 
     <div
-      v-if="selectedPortGroup && Object.keys(sidePortGroups).length > 1"
+      v-if="selectedPortGroup && Object.keys(sidePortGroups ?? {}).length > 1"
       class="return-button"
       @click="selectedPortGroup = null"
     >

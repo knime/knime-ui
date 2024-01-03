@@ -5,7 +5,7 @@ import ContextMenu from "@/components/application/ContextMenu.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
-import type { Workflow } from "@/api/gateway-api/generated-api";
+import type { WorkflowState } from "@/store/workflow";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 
 export default defineComponent({
@@ -18,10 +18,9 @@ export default defineComponent({
   },
   computed: {
     ...mapState("workflow", {
-      workflow: (state) =>
-        state.activeWorkflow as Workflow & { projectId: string },
-      activeWorkflowId: (state) =>
-        state.activeWorkflow.info.containerId as string,
+      workflow: (state: unknown) => (state as WorkflowState).activeWorkflow,
+      activeWorkflowId: (state: unknown) =>
+        (state as WorkflowState).activeWorkflow!.info.containerId,
     }),
     ...mapState("workflow", ["portTypeMenu", "quickAddNodeMenu"]),
     ...mapState("application", ["contextMenu"]),
@@ -49,14 +48,17 @@ export default defineComponent({
     },
   },
   methods: {
-    toggleContextMenu(event) {
+    toggleContextMenu(event: unknown) {
       // this is not the only place where it is activated, look into Kanvas
       // where an unsuccessful pan by right click also opens it
       this.$store.dispatch("application/toggleContextMenu", { event });
     },
-    onContextMenu(event) {
+    onContextMenu(event: MouseEvent) {
       // this is the only place where we handle native context menu events
-      if (event.srcElement.classList.contains("native-context-menu")) {
+      if (
+        event.target &&
+        (event.target as HTMLElement).classList.contains("native-context-menu")
+      ) {
         return;
       }
       // prevent native context menus to appear
@@ -105,7 +107,7 @@ export default defineComponent({
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
       instead of diffing old and new workflow.
     -->
-    <WorkflowCanvas :key="`${workflow.projectId}-${activeWorkflowId}`" />
+    <WorkflowCanvas :key="`${workflow!.projectId}-${activeWorkflowId}`" />
   </div>
 </template>
 

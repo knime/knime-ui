@@ -5,6 +5,7 @@ import { useStore } from "@/composables/useStore";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import * as $shapes from "@/style/shapes.mjs";
 import { KnimeMIME } from "@/mixins/dropNode";
+import type { ExtendedPortType } from "@/api/custom-types";
 
 type UseConnectionReplacementOptions = {
   /**
@@ -30,7 +31,7 @@ type UseConnectionReplacementOptions = {
   /**
    * Determines whether the connection can be deleted
    */
-  allowedActions: { canDelete?: boolean };
+  allowedActions?: { canDelete?: boolean };
 };
 
 export const useConnectionReplacement = (
@@ -60,12 +61,15 @@ export const useConnectionReplacement = (
     () => store.state.application.availablePortTypes,
   );
 
-  const hasCompatiblePorts = (replacementInPorts, replacementOutPorts) => {
+  const hasCompatiblePorts = (
+    replacementInPorts: ExtendedPortType[],
+    replacementOutPorts: ExtendedPortType[],
+  ) => {
     const hasCompatibleSrcPort =
       sourceNodeObject.value &&
       replacementInPorts.some((toPort) =>
         checkPortCompatibility({
-          fromPort: sourceNodeObject.value.outPorts[options.sourcePort.value],
+          fromPort: sourceNodeObject.value!.outPorts[options.sourcePort.value!],
           toPort,
           availablePortTypes: availablePortTypes.value,
         }),
@@ -76,7 +80,7 @@ export const useConnectionReplacement = (
       replacementOutPorts.some((fromPort) =>
         checkPortCompatibility({
           fromPort,
-          toPort: destNodeObject.value.inPorts[options.destPort.value],
+          toPort: destNodeObject.value!.inPorts[options.destPort.value!],
           availablePortTypes: availablePortTypes.value,
         }),
       );
@@ -90,6 +94,12 @@ export const useConnectionReplacement = (
     event,
     nodeId = null,
     nodeFactory = null,
+  }: {
+    clientX: number;
+    clientY: number;
+    event: DragEvent | CustomEvent;
+    nodeId?: string | null;
+    nodeFactory?: string | null;
   }) => {
     if (!isWorkflowWritable.value) {
       return;
@@ -100,7 +110,7 @@ export const useConnectionReplacement = (
       clientY - $shapes.nodeSize / 2,
     ]);
 
-    if (options.allowedActions.canDelete) {
+    if (options.allowedActions?.canDelete) {
       store.dispatch("workflow/insertNode", {
         connectionId: options.id.value,
         position: { x, y },
@@ -121,7 +131,11 @@ export const useConnectionReplacement = (
       return;
     }
 
-    if ([...dragEvent.dataTransfer.types].includes(KnimeMIME)) {
+    if (
+      dragEvent.dataTransfer &&
+      [...dragEvent.dataTransfer.types].includes(KnimeMIME) &&
+      draggedNodeTemplate.value
+    ) {
       const { inPorts, outPorts } = draggedNodeTemplate.value;
 
       if (hasCompatiblePorts(inPorts, outPorts)) {
@@ -131,6 +145,10 @@ export const useConnectionReplacement = (
   };
 
   const onRepositoryNodeDrop = (dragEvent: DragEvent) => {
+    if (!dragEvent.dataTransfer) {
+      return;
+    }
+
     const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
     insertNode({
       clientX: dragEvent.clientX,

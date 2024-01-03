@@ -26,7 +26,7 @@ type UseConnectorPathSegmentsOptions = {
   /**
    * If either destNode or sourceNode is unspecified the connector will be drawn up to this point
    */
-  absolutePoint: Ref<[number, number]>;
+  absolutePoint: Ref<[number, number] | null>;
 
   bendpoints: Ref<Array<XY>>;
 };
@@ -54,20 +54,23 @@ export const useConnectorPathSegments = (
     () => store.getters["selection/isMetaNodePortBarSelected"],
   );
 
-  const isConnectedToConnectionId = (ports: NodePort[], id: string) =>
+  const isConnectedToConnectionId = (
+    ports: NodePort[] | undefined,
+    id: string,
+  ) =>
     ports &&
     ports.length > 0 &&
     ports.find((port) => port.connectedVia.includes(id));
 
   const isMetanodeInPortBarConnection = computed(() =>
     isConnectedToConnectionId(
-      store.state.workflow.activeWorkflow.metaInPorts?.ports,
+      store.state.workflow.activeWorkflow!.metaInPorts?.ports,
       options.id,
     ),
   );
   const isMetanodeOutPortBarConnection = computed(() =>
     isConnectedToConnectionId(
-      store.state.workflow.activeWorkflow.metaOutPorts?.ports,
+      store.state.workflow.activeWorkflow!.metaOutPorts?.ports,
       options.id,
     ),
   );
@@ -134,7 +137,7 @@ export const useConnectorPathSegments = (
       ...Array(options.bendpoints.value.length + totalVirtualBendpoints.value)
         .fill(null)
         .flatMap((_, index) => {
-          const bendpoint = options.bendpoints.value.at(index);
+          const bendpoint = options.bendpoints.value.at(index)!;
           const virtualBendpoint = virtualBendpoints.value[index];
 
           // (2) if the current index does not have a VBP associated with it
@@ -151,8 +154,11 @@ export const useConnectorPathSegments = (
             virtualBendpoint.currentBendpointCount ===
             options.bendpoints.value.length;
 
-          return [
-            shouldAddVirtual ? { ...virtualBendpoint, virtual: true } : null,
+          const result: Array<XY & { virtual?: boolean }> = [
+            // @ts-expect-error - because null will be removed by the .filter(Boolean) call
+            shouldAddVirtual
+              ? { x: virtualBendpoint.x, y: virtualBendpoint.y, virtual: true }
+              : null,
 
             // we always consider the real BP, but only after we add a virtual one.
             // Note that this iteration could go beyond the total amount of BPs
@@ -160,6 +166,8 @@ export const useConnectorPathSegments = (
             // so the `bendpoint` variable could be undefined
             bendpoint,
           ];
+
+          return result;
         })
         .filter(Boolean),
 
@@ -197,7 +205,7 @@ export const useConnectorPathSegments = (
       // if it's connected to the bendpoint that's being dragged
       const startWithDelta: XY = shouldAddTranslationDelta(
         i - 1,
-        start.virtual,
+        Boolean(start.virtual),
         isStartSegment,
       )
         ? {
@@ -210,7 +218,7 @@ export const useConnectorPathSegments = (
       // if it's connected to the bendpoint that's being dragged
       const endWithDelta: XY = shouldAddTranslationDelta(
         i,
-        end.virtual,
+        Boolean(end.virtual),
         isEndSegment,
       )
         ? {

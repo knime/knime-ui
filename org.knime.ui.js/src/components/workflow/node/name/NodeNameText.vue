@@ -83,7 +83,7 @@ export default defineComponent({
     >
       <span
         :style="{ 'max-width': `${$shapes.maxNodeNameWidth}px` }"
-        :title="showOverflow ? null : value"
+        :title="showOverflow ? undefined : value"
         class="text"
       >
         <slot>{{ value }}</slot>

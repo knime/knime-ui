@@ -19,7 +19,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const inputRef = ref(null);
+const inputRef = ref<HTMLInputElement | null>(null);
 
 const editedText = ref(props.text);
 const editedUrl = ref(props.url);

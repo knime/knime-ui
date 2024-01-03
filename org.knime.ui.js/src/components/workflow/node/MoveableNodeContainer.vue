@@ -89,7 +89,7 @@ const position = toRef(props, "position");
 
 const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => {
-    return container.value.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;
+    return container.value!.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;
   }),
 
   onMoveStartCallback: () => {

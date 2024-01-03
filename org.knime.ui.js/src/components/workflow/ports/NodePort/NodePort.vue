@@ -18,7 +18,7 @@ import { usePortDragging } from "./usePortDragging";
 
 interface Props {
   direction: "in" | "out";
-  nodeId: string | null;
+  nodeId: string;
   relativePosition: [number, number];
   port: NodePort;
   targeted?: boolean;
@@ -75,15 +75,15 @@ const tooltip = computed<TooltipDefinition>(() => {
       y: props.relativePosition[1] - portSize / 2,
     },
     gap,
-    anchorPoint,
+    anchorPoint: anchorPoint ?? { x: 0, y: 0 },
     title: props.port.name,
-    text: props.port.info,
+    text: props.port.info ?? "",
     orientation: "top",
     hoverable: false,
-  };
+  } satisfies TooltipDefinition;
 });
 
-const openQuickAddNodeMenuAction = (payload) => {
+const openQuickAddNodeMenuAction = (payload: unknown) => {
   store.dispatch("workflow/openQuickAddNodeMenu", payload);
 };
 
@@ -108,7 +108,7 @@ const {
       return { removeConnector: true };
     }
 
-    const [x, y] = dragConnector.value.absolutePoint;
+    const [x, y] = dragConnector.value!.absolutePoint;
 
     openQuickAddNodeMenuAction({
       props: {

@@ -46,10 +46,8 @@ vi.mock("vue3-click-away", () => {
   return {
     mixin: {
       trigger: mockClickAwayDirective.trigger,
-      directives: {
-        ClickAway: mockClickAwayDirective,
-      },
     },
+    directive: mockClickAwayDirective,
   };
 });
 

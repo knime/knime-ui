@@ -23,6 +23,7 @@ import ColorSelectionDialog from "./ColorSelectionDialog.vue";
 import CreateLinkModal from "./CreateLinkModal.vue";
 
 import { addCustomLink } from "./extended-link";
+import type { Hotkey } from "@/shortcuts";
 
 interface Props {
   editor: Editor;
@@ -36,7 +37,7 @@ const store = useStore();
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: "previewBorderColor", color: string): void;
+  (e: "previewBorderColor", color: string | null): void;
   (e: "changeBorderColor", color: string): void;
 }>();
 
@@ -127,7 +128,7 @@ const secondaryToolsMenuItems = computed(() =>
   secondaryTools.value.map((tool) => ({
     text: tool.name,
     disabled: tool.disabled?.(),
-    hotkeyText: formatHotkeys(tool.hotkey ?? []),
+    hotkeyText: formatHotkeys((tool.hotkey as Hotkey[]) ?? []),
     icon: tool.icon,
     id: tool.id,
   })),
@@ -135,7 +136,7 @@ const secondaryToolsMenuItems = computed(() =>
 
 const onSecondaryToolClick = (_: any, { id }: { id: string }) => {
   const foundTool = secondaryTools.value.find((tool) => tool.id === id);
-  foundTool?.onClick();
+  foundTool?.onClick?.();
 };
 
 // +1 to include the border color tool
@@ -153,12 +154,16 @@ const headingPresets = computed(() => {
       text: "Normal text",
       selected: !props.editor.isActive("heading"),
       hotkeyText: formatHotkeys(["Ctrl", "Alt", "0"]),
-      onClick: () =>
-        props.editor
-          .chain()
-          .focus()
-          .toggleHeading({ level: getCurrentLevel() })
-          .run(),
+      onClick: () => {
+        const currentLevel = getCurrentLevel();
+        if (currentLevel) {
+          props.editor
+            .chain()
+            .focus()
+            .toggleHeading({ level: currentLevel })
+            .run();
+        }
+      },
     },
   ];
 

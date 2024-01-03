@@ -20,7 +20,7 @@ const insideLinkedType = computed(
   () => store.getters["workflow/insideLinkedType"],
 );
 const containerType = computed(
-  () => store.state.workflow.activeWorkflow.info.containerType,
+  () => store.state.workflow.activeWorkflow!.info.containerType,
 );
 </script>
 

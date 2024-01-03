@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script lang="ts">
 import { defineComponent, type PropType, type StyleValue } from "vue";
 import { applyStyleRanges } from "@/util/styleRanges";
@@ -62,12 +63,17 @@ export default defineComponent({
     },
     styledText() {
       const styleRanges = this.annotation ? this.annotation.styleRanges : [];
-      let { textRanges, isValid } = applyStyleRanges(styleRanges, this.value);
+      let { textRanges, isValid } = applyStyleRanges(
+        styleRanges ?? [],
+        this.value,
+      );
+
       if (!isValid) {
-        consola.warn(`Invalid styleRanges:
-                ${JSON.stringify(
-                  this.annotation.styleRanges,
-                )}. Using default style.`);
+        consola.warn(
+          `Invalid styleRanges: ${JSON.stringify(
+            this.annotation.styleRanges,
+          )}. Using default style.`,
+        );
       }
 
       return textRanges;
@@ -90,11 +96,11 @@ export default defineComponent({
               styledTextPart.fontSize *
               this.$shapes.annotationsFontSizePointToPixelFactor
             }px`
-          : null,
+          : undefined,
         color: styledTextPart.color,
-        fontWeight: styledTextPart.bold ? "bold" : null,
-        fontStyle: styledTextPart.italic ? "italic" : null,
-        lineHeight: styledTextPart.fontSize ? lineHeight : null,
+        fontWeight: styledTextPart.bold ? "bold" : undefined,
+        fontStyle: styledTextPart.italic ? "italic" : undefined,
+        lineHeight: styledTextPart.fontSize ? lineHeight : undefined,
       };
     },
   },

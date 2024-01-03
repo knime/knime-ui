@@ -125,6 +125,7 @@ export const usePortDragging = (params: Params) => {
    * */
   const initialPointerMove = (event: PointerEvent) => {
     if (
+      startPosition &&
       !isSignificantMove(startPosition, { x: event.clientX, y: event.clientY })
     ) {
       return;
@@ -172,7 +173,7 @@ export const usePortDragging = (params: Params) => {
       event.y,
     ]);
     const setDragConnectorCoords = (x: number, y: number) => {
-      dragConnector.value.absolutePoint = [x, y];
+      dragConnector.value!.absolutePoint = [x, y];
     };
     setDragConnectorCoords(absoluteX, absoluteY);
 
@@ -218,7 +219,7 @@ export const usePortDragging = (params: Params) => {
 
     const isSameTarget = hitTarget && lastHitTarget?.element === hitTarget;
 
-    if (isSameTarget && !lastHitTarget.allowsDrop) {
+    if (isSameTarget && !lastHitTarget?.allowsDrop) {
       // same hitTarget as before, but doesn't allow drop
       // just reset state (important for add node ghost)
       didDragToCompatibleTarget.value = false;
@@ -230,7 +231,7 @@ export const usePortDragging = (params: Params) => {
 
       // send 'connector-leave' to last hitTarget, if it exists and has allowed connector dropping
       if (lastHitTarget && lastHitTarget.allowsDrop) {
-        lastHitTarget.element.dispatchEvent(
+        lastHitTarget.element!.dispatchEvent(
           new CustomEvent("connector-leave", {
             detail: { relatedTarget: hitTarget },
             bubbles: true,
@@ -274,7 +275,7 @@ export const usePortDragging = (params: Params) => {
     }
   });
 
-  const onPointerUp = (event) => {
+  const onPointerUp = (event: PointerEvent) => {
     pointerDown.value = false;
 
     if (!dragConnector.value) {
@@ -282,10 +283,10 @@ export const usePortDragging = (params: Params) => {
     }
 
     event.stopPropagation();
-    event.target.releasePointerCapture(event.pointerId);
+    (event.target as HTMLElement).releasePointerCapture(event.pointerId);
 
     if (lastHitTarget && lastHitTarget.allowsDrop) {
-      const dropped = lastHitTarget.element.dispatchEvent(
+      const dropped = lastHitTarget.element!.dispatchEvent(
         new CustomEvent("connector-drop", {
           detail: {
             startNode: params.nodeId,
@@ -315,11 +316,15 @@ export const usePortDragging = (params: Params) => {
       return;
     }
 
+    const onCanvasDrop =
+      params.onCanvasDrop ?? (() => ({ removeConnector: true }));
+
     const isDroppedOnCanvas =
       !didDragToCompatibleTarget.value && params.direction === "out";
+
     const { removeConnector } =
       isDroppedOnCanvas && dragConnector.value
-        ? params.onCanvasDrop(dragConnector.value)
+        ? onCanvasDrop(dragConnector.value)
         : { removeConnector: true };
 
     if (removeConnector) {
@@ -327,7 +332,7 @@ export const usePortDragging = (params: Params) => {
     }
 
     if (lastHitTarget && lastHitTarget.allowsDrop) {
-      lastHitTarget.element.dispatchEvent(
+      lastHitTarget.element!.dispatchEvent(
         new CustomEvent("connector-leave", { bubbles: true }),
       );
     }

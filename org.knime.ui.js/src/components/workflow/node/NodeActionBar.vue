@@ -12,6 +12,7 @@ import OpenDialogIcon from "@/assets/configure-node.svg";
 import ActionBar from "@/components/common/ActionBar.vue";
 import { compatibility } from "@/environment";
 import type { Node } from "@/api/gateway-api/generated-api";
+import type { ShortcutName } from "@/shortcuts";
 
 /**
  *  Displays a bar of action buttons above nodes
@@ -157,7 +158,8 @@ export default defineComponent({
       };
     },
     visibleActions() {
-      const conditionMap = {
+      type Actions = typeof this.actions;
+      const conditionMap: Record<keyof Actions, boolean> = {
         configureNode:
           this.canOpenDialog !== null &&
           compatibility.canConfigureNodes(this.nodeKind),
@@ -177,9 +179,13 @@ export default defineComponent({
         openView: this.canOpenView !== null,
       };
 
-      return Object.entries(conditionMap)
-        .filter(([_, visible]) => visible)
-        .map(([name, _]) => this.actions[name]);
+      return (
+        Object.entries(conditionMap)
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          .filter(([_, visible]) => visible)
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          .map(([name, _]) => this.actions[name as keyof Actions])
+      );
     },
   },
   methods: {
@@ -187,12 +193,12 @@ export default defineComponent({
      * If this node is selected, hoverTitle appends the hotkey to the title
      * otherwise the title is returned
      */
-    hoverTitle(title, hotkeyText) {
+    hoverTitle(title: string, hotkeyText?: string) {
       return this.isNodeSelected && hotkeyText
         ? `${title} - ${hotkeyText}`
         : title;
     },
-    dispatchShortcut(shortcut, additionalMetadata = {}) {
+    dispatchShortcut(shortcut: ShortcutName, additionalMetadata = {}) {
       this.$shortcuts.dispatch(shortcut, {
         metadata: { nodeId: this.nodeId, ...additionalMetadata },
       });

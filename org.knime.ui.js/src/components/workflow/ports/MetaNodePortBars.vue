@@ -8,7 +8,9 @@ import { computed } from "vue";
 import MoveableMetaNodePortBarContainer from "./MoveableMetaNodePortBarContainer.vue";
 
 const store = useStore();
-const workflow = computed(() => store.state.workflow.activeWorkflow);
+// can guarantee existence of workflow (!) because this component is only rendered
+// in the canvas whenwe actually have a workflow
+const workflow = computed(() => store.state.workflow.activeWorkflow!);
 
 const hasInPorts = computed(() => workflow.value.metaInPorts?.ports?.length);
 const hasOutPorts = computed(() => workflow.value.metaOutPorts?.ports?.length);
@@ -19,14 +21,14 @@ const hasOutPorts = computed(() => workflow.value.metaOutPorts?.ports?.length);
     <MoveableMetaNodePortBarContainer v-if="hasInPorts" type="in">
       <MetaNodePortBar
         type="in"
-        :ports="workflow.metaInPorts.ports"
+        :ports="workflow.metaInPorts!.ports!"
         :container-id="workflow.info.containerId"
       />
     </MoveableMetaNodePortBarContainer>
     <MoveableMetaNodePortBarContainer v-if="hasOutPorts" type="out">
       <MetaNodePortBar
         type="out"
-        :ports="workflow.metaOutPorts.ports"
+        :ports="workflow.metaOutPorts!.ports!"
         :container-id="workflow.info.containerId"
       />
     </MoveableMetaNodePortBarContainer>
