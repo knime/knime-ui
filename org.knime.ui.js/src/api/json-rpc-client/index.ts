@@ -10,7 +10,7 @@ import type { JSONRPCClient } from "./types";
 import { DesktopAPTransport } from "./DesktopAPTransport";
 import { WebSocketTransport } from "./WebSocketTransport";
 
-let jsonRPCClient: JSONRPCClient = null;
+let jsonRPCClient: JSONRPCClient;
 
 export type ConnectionInfo = {
   url: string;
@@ -51,6 +51,11 @@ const initDesktopClient = () => {
 const initBrowserClient = (connectionInfo: ConnectionInfo) =>
   new Promise((resolve, reject) => {
     try {
+      if (!connectionInfo) {
+        reject(new Error("Missing connection info"));
+        return;
+      }
+
       if (jsonRPCClient) {
         resolve("SUCCESS");
         return;
@@ -60,7 +65,7 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
       const { connection } = transport;
 
       // setup server event handler
-      connection.addEventListener("message", (message) => {
+      connection.addEventListener("message", (message: { data: unknown }) => {
         const { data } = message;
         if (typeof data !== "string") {
           return;
@@ -91,13 +96,15 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
 
 const initJSONRPCClient = async (
   mode: "BROWSER" | "DESKTOP",
-  connectionInfo: ConnectionInfo,
+  connectionInfo: ConnectionInfo | null,
 ) => {
   try {
     const clientInitializer =
-      mode === "DESKTOP" ? initDesktopClient : initBrowserClient;
+      mode === "DESKTOP"
+        ? initDesktopClient()
+        : initBrowserClient(connectionInfo!);
 
-    await clientInitializer(connectionInfo);
+    await clientInitializer;
 
     return Promise.resolve();
   } catch (error) {

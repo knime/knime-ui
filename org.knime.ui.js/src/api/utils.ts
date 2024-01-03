@@ -4,9 +4,9 @@ export const createAbortablePromise = () => {
   const runAbortablePromise = <T = unknown>(request: () => Promise<T>) => {
     return new Promise<T>((resolve, reject) => {
       // abort logic
-      const abortListener = ({ target }) => {
+      const abortListener = ({ target }: Event) => {
         abortController.signal.removeEventListener("abort", abortListener);
-        reject(target.reason);
+        reject((target as AbortSignal).reason);
       };
 
       // the actual call

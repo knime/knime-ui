@@ -33,8 +33,13 @@ export class DesktopAPTransport extends Transport {
       if (responseErr) {
         return Promise.reject(responseErr);
       }
-    } catch (e) {
-      const responseErr = new JSONRPCError(e.message, ERR_UNKNOWN, e);
+    } catch (error: unknown) {
+      const message =
+        error && typeof error === "object" && "message" in error
+          ? (error.message as string)
+          : "";
+
+      const responseErr = new JSONRPCError(message, ERR_UNKNOWN, error);
 
       return Promise.reject(responseErr);
     }

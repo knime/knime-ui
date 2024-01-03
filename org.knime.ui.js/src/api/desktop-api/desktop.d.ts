@@ -53,7 +53,7 @@ declare function openPortView(
 
 declare function saveProject(
   projectId: string,
-  workflowPreviewSvg: string,
+  workflowPreviewSvg: string | null,
 ): void;
 
 declare function openProject(
@@ -64,7 +64,7 @@ declare function openProject(
 
 declare function closeProject(
   closingProjectId: string,
-  nextProjectId: string,
+  nextProjectId: string | null,
 ): boolean;
 
 declare function forceCloseProjects(...args: string[]): boolean;
@@ -134,7 +134,7 @@ declare function openAPIDefinition(
 
 declare function saveProjectAs(
   projectId: string,
-  workflowPreviewSvg: string,
+  workflowPreviewSvg: string | null,
 ): void;
 
 declare function saveAndCloseProjects(

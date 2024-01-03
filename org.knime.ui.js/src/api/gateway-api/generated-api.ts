@@ -2050,7 +2050,7 @@ export interface NodePort extends NodePortTemplate {
      * @type {Array<string>}
      * @memberof NodePort
      */
-    connectedVia?: Array<string>;
+    connectedVia: Array<string>;
     /**
      *
      * @type {boolean}
@@ -2446,7 +2446,7 @@ export interface Patch {
      * @type {Array<PatchOp>}
      * @memberof Patch
      */
-    ops?: Array<PatchOp>;
+    ops: Array<PatchOp>;
 
 }
 
@@ -4799,7 +4799,7 @@ const workflow = function(rpcClient: RPCClient) {
 
 
 const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: Configuration) {
-  const identity = (response) => response
+  const identity = <T>(response: T) => response;
   const { postProcessCommandResponse = identity } = configuration;
 
   return {

@@ -19,7 +19,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
   // eslint-disable-next-line max-params
 ): Promise<ReturnType<TFunction> | null> => {
   if (isBrowser) {
-    return null;
+    return Promise.resolve(null);
   }
 
   try {
@@ -28,7 +28,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
       // 'forwarded' backend event from events.ts
       $bus.on(
         `desktop-api-function-result-${browserFunction.name}`,
-        (result: string | boolean) => {
+        (result) => {
           $bus.off(`desktop-api-function-result-${browserFunction.name}`);
           // unblock UI (if it was blocked) when the desktop function has returned (which is indicated by this event)
           if (blockUi.block) {
@@ -299,7 +299,7 @@ export const saveProject = ({
   workflowPreviewSvg,
 }: {
   projectId: string;
-  workflowPreviewSvg: string;
+  workflowPreviewSvg: string | null;
 }) => {
   return callBrowserFunction(
     window.saveProject,
@@ -329,7 +329,7 @@ export const closeProject = ({
   nextProjectId,
 }: {
   closingProjectId: string;
-  nextProjectId: string;
+  nextProjectId: string | null;
 }) => {
   return callBrowserFunction(
     window.closeProject,
@@ -415,7 +415,7 @@ export const connectSpaceProvider = async ({
     { block: true },
   );
 
-  return JSON.parse(providerData);
+  return JSON.parse(providerData ?? "");
 };
 
 export const disconnectSpaceProvider = ({
@@ -551,7 +551,7 @@ export const saveProjectAs = ({
   workflowPreviewSvg,
 }: {
   projectId: string;
-  workflowPreviewSvg: string;
+  workflowPreviewSvg: string | null;
 }) => {
   return callBrowserFunction(
     window.saveProjectAs,
@@ -570,7 +570,7 @@ export const saveAndCloseProjects = ({
 }: {
   totalProjects: number;
   projectIds: string[];
-  svgSnapshots: string[];
+  svgSnapshots: Array<string | null>;
   params: any[];
 }) => {
   return callBrowserFunction(
@@ -629,7 +629,13 @@ export const importURIAtWorkflowCanvas = ({
   );
 };
 
-export const abortAiRequest = ({ conversationId, chainType }) => {
+export const abortAiRequest = ({
+  conversationId,
+  chainType,
+}: {
+  conversationId: string | null;
+  chainType: string;
+}) => {
   return callBrowserFunction(
     window.abortAiRequest,
     [conversationId, chainType],
@@ -646,6 +652,13 @@ export const makeAiRequest = ({
   workflowId,
   selectedNodes,
   messages,
+}: {
+  conversationId: string | null;
+  chainType: string;
+  projectId: string;
+  workflowId: string;
+  selectedNodes: string[];
+  messages: unknown[];
 }) => {
   return callBrowserFunction(
     window.makeAiRequest,
@@ -671,7 +684,7 @@ export const getUiStrings = async () => {
     true,
     { block: false },
   );
-  return JSON.parse(response);
+  return JSON.parse(response ?? "");
 };
 
 export const installKAI = () => {

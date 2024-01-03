@@ -113,7 +113,9 @@ export const serverEventHandler = function (rawServerEvent: string) {
         }
       : payload;
 
-    const handler = REGISTERED_HANDLERS.get(handlerName);
+    // note the (!) at the end of the statement -> we can guarantee existence
+    // of handler since it was already validated
+    const handler = REGISTERED_HANDLERS.get(handlerName)!;
 
     handler(handlerParams);
   } catch (error) {
