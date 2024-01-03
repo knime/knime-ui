@@ -23,7 +23,8 @@ export const createSlottedChildComponent = (params: {
   /**
    * Function used to render a slot that has a dummy component in it
    */
-  const renderSlot = (props) => h(mockComponentInSlot, { scope: props });
+  const renderSlot = (props: unknown) =>
+    h(mockComponentInSlot, { scope: props });
 
   /**
    * Given a test component wrapper, this function is used to find the

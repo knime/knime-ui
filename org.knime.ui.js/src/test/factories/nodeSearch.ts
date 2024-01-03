@@ -40,7 +40,7 @@ export const createSearchNodesResponse = (): NodeSearchResult => ({
 export const createSearchAllNodesResponse = (): NodeSearchResult => ({
   tags: ["H2O Machine Learning", "R"],
   totalNumNodesFound: 122,
-  totalNumFilteredNodesFound: null,
+  totalNumFilteredNodesFound: 0,
   nodes: [
     {
       name: "H2O to Table",

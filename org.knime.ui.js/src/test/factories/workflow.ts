@@ -137,7 +137,7 @@ const extractNodeTemplates = (nodes: KnimeNode[]): NativeNodeInvariants[] => {
     type: NativeNodeInvariants.TypeEnum.Source,
     icon: "data:image/png;base64,iVBORw0KGg",
     nodeFactory: {
-      className: id,
+      className: id!,
     },
   }));
 };

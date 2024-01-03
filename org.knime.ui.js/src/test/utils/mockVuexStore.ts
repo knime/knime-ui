@@ -4,6 +4,7 @@ const mockVuexStore = <T = any>(moduleInput: Record<any, any>) => {
   const modules = Object.entries(moduleInput).reduce(
     (modules, [moduleName, moduleConfig]) => {
       if (moduleName !== "index") {
+        // @ts-expect-error
         modules[moduleName] = { ...moduleConfig, namespaced: true };
       }
       return modules;

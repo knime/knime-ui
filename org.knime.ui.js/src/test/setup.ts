@@ -15,7 +15,7 @@ consola.level = LogLevel.Error;
 window.switchToJavaUI = () => {};
 
 vi.mock("raf-throttle", () => ({
-  default(func) {
+  default(func: (..._args: any) => any) {
     return function (this: any, ...args: any[]) {
       // eslint-disable-next-line no-invalid-this
       return func.apply(this, args);

@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 
 type IntersectionObserverMockType = {
-  (callback: (...args: any[]) => any);
+  (callback: (...args: any[]) => any): void;
   __trigger__: (isIntersecting: boolean) => void;
 };
 
@@ -16,7 +16,7 @@ export const MockIntersectionObserver: IntersectionObserverMockType =
       this.callbackRef([{ isIntersecting }]);
     };
 
-    this.observe = function (element) {
+    this.observe = function (element: any) {
       this.element = element;
     };
 
