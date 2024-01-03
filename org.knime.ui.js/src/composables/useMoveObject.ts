@@ -15,7 +15,7 @@ interface UseMoveObjectOptions {
   onMoveEndCallback?: (event: PointerEvent) => Promise<boolean>;
 }
 
-const defaultOptions: Omit<UseMoveObjectOptions, "objectElement"> = {
+const defaultOptions: Required<Omit<UseMoveObjectOptions, "objectElement">> = {
   useGridSnapping: true,
   onMoveStartCallback: () => {},
   onMoveCallback: () => {},
@@ -44,7 +44,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
     options.useGridSnapping ?? defaultOptions.useGridSnapping;
 
   const isClickInsideReference = (pointerDownEvent: PointerEvent) => {
-    const rect = options.objectElement.value.getBoundingClientRect();
+    const rect = options.objectElement!.value!.getBoundingClientRect();
     return (
       pointerDownEvent.clientX > rect.left &&
       pointerDownEvent.clientX < rect.right &&
@@ -71,9 +71,10 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         return;
       }
 
-      const rect = options.objectElement
-        ? options.objectElement.value.getBoundingClientRect()
-        : { left: pointerDownEvent.clientX, top: pointerDownEvent.clientY };
+      const rect =
+        options.objectElement && options.objectElement.value
+          ? options.objectElement.value.getBoundingClientRect()
+          : { left: pointerDownEvent.clientX, top: pointerDownEvent.clientY };
 
       const clickPosition = {
         x: Math.floor(pointerDownEvent.clientX - rect.left) / zoomFactor.value,
@@ -123,7 +124,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
 
         const snapFn = useGridSnapping
           ? geometry.utils.snapToGrid
-          : (val) => val;
+          : (val: number) => val;
 
         const deltaX = snapFn(
           moveX - startPosition.x - clickPosition.x,

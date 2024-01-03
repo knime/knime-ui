@@ -17,11 +17,16 @@ export const useConnectedNodeObjects = (
 ) => {
   const store = useStore();
 
-  const sourceNodeObject = computed(
-    () => store.state.workflow.activeWorkflow.nodes[options.sourceNode.value],
+  const sourceNodeObject = computed(() =>
+    options.sourceNode.value
+      ? store.state.workflow!.activeWorkflow!.nodes[options.sourceNode.value]
+      : null,
   );
-  const destNodeObject = computed(
-    () => store.state.workflow.activeWorkflow.nodes[options.destNode.value],
+
+  const destNodeObject = computed(() =>
+    options.destNode.value
+      ? store.state.workflow!.activeWorkflow!.nodes[options.destNode.value]
+      : null,
   );
 
   return {

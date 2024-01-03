@@ -1,11 +1,4 @@
-import {
-  watch,
-  type Ref,
-  onMounted,
-  onBeforeUnmount,
-  ref,
-  type ComputedRef,
-} from "vue";
+import { watch, onMounted, onBeforeUnmount, ref, type ComputedRef } from "vue";
 import { useStore } from "vuex";
 
 export const entryDelay = 750;
@@ -27,10 +20,11 @@ export interface TooltipDefinition {
 export const useTooltip = (params: {
   tooltip: ComputedRef<TooltipDefinition>;
 }) => {
-  const elemRef: Ref<HTMLElement> = ref(null);
+  const elemRef = ref<HTMLElement | null>(null);
   const store = useStore();
-  let removeTooltipWatcher: () => void | null;
-  let tooltipTimeout = null;
+  let removeTooltipWatcher: (() => void) | null;
+  // eslint-disable-next-line one-var
+  let tooltipTimeout: number;
 
   // takes care of removing the tooltip watcher even if the tooltip got closed from any other component (set null)
   store.watch(
@@ -67,7 +61,7 @@ export const useTooltip = (params: {
       return;
     }
     // wait for entryDelay to set tooltip
-    tooltipTimeout = setTimeout(showTooltip, entryDelay);
+    tooltipTimeout = window.setTimeout(showTooltip, entryDelay);
   };
 
   const onTooltipMouseLeave = (event: MouseEvent) => {
@@ -96,13 +90,22 @@ export const useTooltip = (params: {
   };
 
   onMounted(() => {
+    if (!elemRef.value) {
+      return;
+    }
+
     elemRef.value.addEventListener("mouseenter", onTooltipMouseEnter);
     elemRef.value.addEventListener("mouseleave", onTooltipMouseLeave);
   });
 
   onBeforeUnmount(() => {
+    if (!elemRef.value) {
+      return;
+    }
+
     elemRef.value.removeEventListener("mouseenter", onTooltipMouseEnter);
     elemRef.value.removeEventListener("mouseleave", onTooltipMouseLeave);
+
     if (removeTooltipWatcher) {
       store.commit("workflow/setTooltip", null);
     }

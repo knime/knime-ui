@@ -28,7 +28,7 @@ type UseConnectorPositionOptions = {
   /**
    * If either destNode or sourceNode is unspecified the connector will be drawn up to this point
    */
-  absolutePoint: Ref<[number, number]>;
+  absolutePoint: Ref<[number, number] | null>;
 };
 
 type SourceOrDest = "source" | "dest";
@@ -75,35 +75,33 @@ export const useConnectorPosition = (options: UseConnectorPositionOptions) => {
   };
 
   const getEndPointCoordinates = (type: SourceOrDest = "dest"): XY => {
-    const sourceNodeIndex = options[`${type}Port`];
+    const portIndex = options[`${type}Port`];
     const node = referenceNodes[`${type}NodeObject`];
     if (node.value) {
       // connected to a node
-      return getRegularNodePortPosition(
-        sourceNodeIndex.value,
-        type,
-        node.value,
-      );
+      return getRegularNodePortPosition(portIndex.value!, type, node.value);
     } else {
       // connected to a metanode port bar
-      return getMetaNodePortPosition(sourceNodeIndex.value, type);
+      return getMetaNodePortPosition(portIndex.value!, type);
     }
   };
 
   const start = computed<XY>(
     () =>
-      (options.sourceNode.value && getEndPointCoordinates("source")) || {
-        x: options.absolutePoint.value.at(0),
-        y: options.absolutePoint.value.at(1),
-      } || { x: 0, y: 0 },
+      (options.sourceNode.value && getEndPointCoordinates("source")) ||
+      (options.absolutePoint.value && {
+        x: options.absolutePoint.value.at(0)!,
+        y: options.absolutePoint.value.at(1)!,
+      }) || { x: 0, y: 0 },
   );
 
   const end = computed<XY>(
     () =>
-      (options.destNode.value && getEndPointCoordinates("dest")) || {
-        x: options.absolutePoint.value.at(0),
-        y: options.absolutePoint.value.at(1),
-      } || { x: 0, y: 0 },
+      (options.destNode.value && getEndPointCoordinates("dest")) ||
+      (options.absolutePoint.value && {
+        x: options.absolutePoint.value.at(0)!,
+        y: options.absolutePoint.value.at(1)!,
+      }) || { x: 0, y: 0 },
   );
 
   return {

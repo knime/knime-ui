@@ -12,19 +12,19 @@ export const usePortBarPositions = () => {
 
   const getPorts = (isOutgoing: boolean) => {
     return isOutgoing
-      ? workflow.value.metaOutPorts.ports
-      : workflow.value.metaInPorts.ports;
+      ? workflow.value!.metaOutPorts?.ports
+      : workflow.value!.metaInPorts?.ports;
   };
 
   const getBounds = (isOutgoing: boolean) => {
     return isOutgoing
       ? mergePortBarBounds(
-          workflow.value.metaOutPorts?.bounds || null,
-          calculatedBounds.value.out,
+          workflow.value!.metaOutPorts?.bounds || null,
+          calculatedBounds.value.out!,
         )
       : mergePortBarBounds(
-          workflow.value.metaInPorts?.bounds || null,
-          calculatedBounds.value.in,
+          workflow.value!.metaInPorts?.bounds || null,
+          calculatedBounds.value.in!,
         );
   };
 
@@ -41,7 +41,7 @@ export const usePortBarPositions = () => {
     const ports = getPorts(isOutgoing);
     const height = portBarHeight(isOutgoing);
 
-    const total = ports.length;
+    const total = ports?.length ?? 0;
     return (
       (height * (index + 1)) / (total + 1) +
       (absolute ? portBarYPos(isOutgoing) : 0)
