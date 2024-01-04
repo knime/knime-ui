@@ -383,7 +383,7 @@ describe("WorkflowAnnotation.vue", () => {
       });
     });
 
-    it("should save content before unmounting", async () => {
+    it("should save content on  blur event", async () => {
       const { wrapper, $store, dispatchSpy } = doMount({
         props: { annotation: modernAnnotation },
       });
@@ -391,8 +391,8 @@ describe("WorkflowAnnotation.vue", () => {
       await toggleAnnotationEdit($store, modernAnnotation.id);
       const newText = "some newer text";
       wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newText);
+      wrapper.findComponent(RichTextAnnotation).vm.$emit("blur", newText);
 
-      wrapper.unmount();
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
         annotationId: defaultProps.annotation.id,
         text: newText,

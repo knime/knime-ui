@@ -27,6 +27,7 @@ const emit = defineEmits<{
   (e: "editStart"): void;
   (e: "change", content: string): void;
   (e: "changeBorderColor", color: string): void;
+  (e: "blur"): void;
 }>();
 
 const activeBorderColor = computed(
@@ -65,6 +66,7 @@ const customExtensions = [
       }"
       @update:model-value="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
+      @blur="emit('blur')"
     >
       <template #customToolbar="{ editor, tools }">
         <Portal v-if="editable && editor" to="annotation-editor-toolbar">

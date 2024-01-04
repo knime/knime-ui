@@ -149,12 +149,6 @@ export default defineComponent({
     this.initializeData();
   },
 
-  unmounted() {
-    if (this.hasEdited) {
-      this.updateAnnotation();
-    }
-  },
-
   methods: {
     ...mapActions("selection", [
       "selectAnnotation",
@@ -238,6 +232,12 @@ export default defineComponent({
       this.toggleEdit();
     },
 
+    onBlur() {
+      if (this.hasEdited) {
+        this.updateAnnotation();
+      }
+    },
+
     onAnnotationChange(content: string) {
       this.hasEdited = true;
       this.newAnnotationData.richTextContent = content;
@@ -284,6 +284,7 @@ export default defineComponent({
           @change="onAnnotationChange"
           @change-border-color="setColor"
           @edit-start="toggleEdit"
+          @blur="onBlur"
         />
       </foreignObject>
     </template>
