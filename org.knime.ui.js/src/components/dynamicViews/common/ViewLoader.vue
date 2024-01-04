@@ -8,10 +8,8 @@ import type { KnimeService } from "@knime/ui-extension-service";
 
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
-import type { ViewConfig } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
-
 import IFramePortView from "../portViews/IFramePortView.vue";
+import type { ViewConfig, ResourceInfo } from "@/api/custom-types";
 import { useDynamicImport } from "./useDynamicImport";
 
 export type ViewStateChangeEvent = {
@@ -20,7 +18,11 @@ export type ViewStateChangeEvent = {
   portKey: string;
 };
 
-type ResourceLocationResolverFn = (params: ViewConfig) => string;
+type ResourceLocationResolverFn = ({
+  resourceInfo,
+}: {
+  resourceInfo: ResourceInfo;
+}) => string;
 type InitKnimeServiceFn = (viewConfig: ViewConfig) => KnimeService;
 type ViewLoaderConfigFn = () => Promise<ViewConfig>;
 
@@ -54,7 +56,6 @@ const useIframe = ref(false);
 const container = ref<HTMLElement | null>(null);
 const { renderKey } = toRefs(props);
 
-const store = useStore();
 const { dynamicImport } = useDynamicImport();
 
 /*
@@ -70,7 +71,9 @@ const renderDynamicView = async (viewConfig: ViewConfig) => {
     : null;
 
   // get location of the script (es module)
-  const resourceLocation = props.resourceLocationResolver(viewConfig);
+  const resourceLocation = props.resourceLocationResolver({
+    resourceInfo: viewConfig.resourceInfo,
+  });
 
   // TODO: NXT-2291 This is a hack as we only have one type right now
   const shadowRootLibLocation = resourceLocation.replace(".umd.js", ".js");
@@ -94,8 +97,8 @@ const renderDynamicView = async (viewConfig: ViewConfig) => {
     shadowRoot,
     knimeService,
     initialData,
-    (resourceInfo: { baseUrl: string; path: string }) =>
-      store.getters["api/uiExtResourceLocation"]({ resourceInfo }),
+    (resourceInfo: ResourceInfo) =>
+      props.resourceLocationResolver({ resourceInfo }),
   );
 };
 

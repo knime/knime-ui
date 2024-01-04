@@ -32,6 +32,8 @@ export type NodePortGroups = Record<string, PortGroup>;
 export type ResourceInfo = {
   id: string;
   type: "VUE_COMPONENT_LIB" | "HTML";
+  path: string;
+  baseUrl?: string;
 };
 export type ViewConfig = {
   initialData: string;

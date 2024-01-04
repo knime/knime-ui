@@ -3,7 +3,7 @@ import { defineComponent, type PropType } from "vue";
 import { KnimeService } from "@knime/ui-extension-service";
 
 import { API } from "@api";
-import type { KnimeNode, ViewConfig } from "@/api/custom-types";
+import type { KnimeNode, ResourceInfo, ViewConfig } from "@/api/custom-types";
 import ViewLoader from "../common/ViewLoader.vue";
 
 type ComponentData = {
@@ -115,7 +115,11 @@ export default defineComponent({
       }
     },
 
-    resourceLocationResolver({ resourceInfo }: ViewConfig): string {
+    resourceLocationResolver({
+      resourceInfo,
+    }: {
+      resourceInfo: ResourceInfo;
+    }): string {
       // TODO: NXT-1295. Originally caused NXT-1217
       // Remove this unnecessary store getter once the issue in the ticket
       // can be solved in a better way. It is necessary at the moment because the TableView is accessing
