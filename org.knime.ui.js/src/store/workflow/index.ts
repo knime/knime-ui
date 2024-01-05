@@ -383,6 +383,10 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     { isLinked, isInsideLinked, projectAndWorkflowIds },
     rootState,
   ) {
+    if (!rootState.application.permissions.canEditWorkflow) {
+      return false;
+    }
+
     // linking state
     const linkage = isLinked || isInsideLinked;
 

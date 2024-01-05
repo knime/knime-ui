@@ -19,6 +19,7 @@ import * as settings from "./settings";
 import * as globalLoader from "./globalLoader";
 import * as dirtyProjectTracking from "./dirtyProjectsTracking";
 import * as canvasModes from "./canvasModes";
+import * as permissions from "./permissions";
 
 export interface ApplicationState {
   /**
@@ -85,6 +86,7 @@ export const state = (): ApplicationState => ({
   ...globalLoader.state(),
   ...dirtyProjectTracking.state(),
   ...canvasModes.state(),
+  ...permissions.state(),
 
   openProjects: [],
   activeProjectId: null,
@@ -112,6 +114,7 @@ export const mutations: MutationTree<ApplicationState> = {
   ...globalLoader.mutations,
   ...dirtyProjectTracking.mutations,
   ...canvasModes.mutations,
+  ...permissions.mutations,
 
   setActiveProjectId(state, projectId) {
     state.activeProjectId = projectId;
