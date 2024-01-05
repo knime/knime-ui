@@ -5,10 +5,10 @@ import { nextTick } from "vue";
 import { createNativeNode, createPort } from "@/test/factories";
 import type { AvailablePortTypes } from "@/api/custom-types";
 import { NodeState, PortType } from "@/api/gateway-api/generated-api";
-import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 
 import PortViewTabOutput from "../PortViewTabOutput.vue";
 import PortViewTabToggles from "../PortViewTabToggles.vue";
+import PortViewLoader from "../PortViewLoader.vue";
 
 describe("PortViewTabOutput.vue", () => {
   const dummyNode = createNativeNode({

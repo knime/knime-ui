@@ -6,11 +6,11 @@ import { mocks } from "@knime/ui-extension-service";
 import { API } from "@api";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
+import ViewLoader from "../../common/ViewLoader.vue";
+import { useDynamicImport } from "../../common/useDynamicImport";
 import PortViewLoader from "../PortViewLoader.vue";
-import ViewLoader from "../ViewLoader.vue";
-import { useDynamicImport } from "../useDynamicImport";
 
-vi.mock("../useDynamicImport", () => ({
+vi.mock("../../common/useDynamicImport", () => ({
   useDynamicImport: vi.fn().mockReturnValue({
     dynamicImport: vi.fn(),
   }),

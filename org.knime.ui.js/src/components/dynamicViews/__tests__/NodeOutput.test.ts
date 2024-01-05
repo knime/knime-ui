@@ -1,5 +1,6 @@
-import { expect, describe, it, vi } from "vitest";
 /* eslint-disable max-params */
+import { expect, describe, it, vi } from "vitest";
+import { nextTick } from "vue";
 import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -16,8 +17,6 @@ import * as $colors from "@/style/colors.mjs";
 import NodeOutput from "../NodeOutput.vue";
 import PortTabs from "../PortTabs.vue";
 
-import PortViewTabOutput from "../PortViewTabOutput.vue";
-import NodeViewTabOutput from "../NodeViewTabOutput.vue";
 import { NodeState } from "@/api/gateway-api/generated-api";
 import {
   createAvailablePortTypes,
@@ -25,7 +24,8 @@ import {
   createPort,
 } from "@/test/factories";
 import type { KnimeNode } from "@/api/custom-types";
-import { nextTick } from "vue";
+import PortViewTabOutput from "../portViews/PortViewTabOutput.vue";
+import NodeViewTabOutput from "../nodeViews/NodeViewTabOutput.vue";
 
 vi.mock("@knime/ui-extension-service");
 

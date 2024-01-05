@@ -1,10 +1,11 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { createApp, h as createElement } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-import ViewLoader from "../ViewLoader.vue";
-import { createApp } from "vue";
-import { useDynamicImport } from "../useDynamicImport";
+
 import { mockVuexStore } from "@/test/utils";
+import ViewLoader from "../ViewLoader.vue";
+
+import { useDynamicImport } from "../useDynamicImport";
 
 vi.mock("../useDynamicImport", () => ({
   useDynamicImport: vi.fn().mockReturnValue({
@@ -28,7 +29,7 @@ describe("ViewLoader.vue", () => {
         },
       },
       render() {
-        return Vue.h("div", {
+        return createElement("div", {
           class: "mock-component",
           "data-initial": initialData,
         });

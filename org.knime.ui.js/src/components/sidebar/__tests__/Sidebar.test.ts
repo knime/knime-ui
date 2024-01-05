@@ -8,7 +8,7 @@ import * as nodeRepositoryStore from "@/store/nodeRepository";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import Metainfo from "@/assets/metainfo.svg";
 
-import NodeDialogWrapper from "@/components/embeddedViews/NodeDialogWrapper.vue";
+import NodeDialogWrapper from "@/components/dynamicViews/nodeDialogs/NodeDialogWrapper.vue";
 import Sidebar from "../Sidebar.vue";
 import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
 

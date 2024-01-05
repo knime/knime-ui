@@ -44,7 +44,8 @@ export default defineComponent({
       loadingComponent: SidebarContentLoading,
     }),
     NodeDialogWrapper: defineAsyncComponent({
-      loader: () => import("@/components/embeddedViews/NodeDialogWrapper.vue"),
+      loader: () =>
+        import("@/components/dynamicViews/nodeDialogs/NodeDialogWrapper.vue"),
       loadingComponent: SidebarContentLoading,
     }),
     SidebarSpaceExplorer: defineAsyncComponent({
