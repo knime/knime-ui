@@ -10,7 +10,7 @@ import type { ShortcutName } from "@/shortcuts";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
-import { isDesktop } from "@/environment";
+import { compatibility, isDesktop } from "@/environment";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 /**
@@ -115,8 +115,11 @@ export default {
 
         // Workflow abstraction
         createMetanode: this.selectedNodes.length,
-        createComponent: this.selectedNodes.length,
-        openLayoutEditor: isInsideComponent && isDesktop,
+        createComponent:
+          this.selectedNodes.length && compatibility.canDoComponentOperations(),
+
+        openLayoutEditor:
+          isInsideComponent && compatibility.canDoComponentOperations(),
       };
 
       return (

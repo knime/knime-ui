@@ -8,6 +8,7 @@ import type {
   UnionToShortcutRegistry,
 } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
+import { compatibility } from "@/environment";
 
 type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "createMetanode"
@@ -91,9 +92,13 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         containerType: "component",
       }),
     condition({ $store }) {
-      if (!$store.getters["workflow/isWritable"]) {
+      if (
+        !$store.getters["workflow/isWritable"] ||
+        !compatibility.canDoComponentOperations()
+      ) {
         return false;
       }
+
       if (!$store.getters["selection/selectedNodes"].length) {
         return false;
       }
