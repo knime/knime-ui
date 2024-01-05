@@ -1,23 +1,24 @@
-<script lang="ts">
-import { defineAsyncComponent, defineComponent } from "vue";
+<script setup lang="ts">
+import { defineAsyncComponent, computed, watch } from "vue";
 import type { FunctionalComponent, SVGAttributes } from "vue";
-import { mapState, mapActions, mapMutations, mapGetters } from "vuex";
 
 import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import AiIcon from "webapps-common/ui/assets/img/icons/ai-general.svg";
 
-import { compatibility } from "@/environment";
 import MetainfoIcon from "@/assets/metainfo.svg";
-import { TABS } from "@/store/panel";
+import { compatibility } from "@/environment";
+import { TABS, type TabValues } from "@/store/panel";
+import { useStore } from "@/composables/useStore";
+import { useFeatures } from "@/plugins/feature-flags";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
 import SidebarExtensionPanel from "./SidebarExtensionPanel.vue";
 import SidebarContentLoading from "./SidebarContentLoading.vue";
 
 type SidebarSection = {
-  name: string;
+  name: TabValues;
   title: string;
   icon: FunctionalComponent<SVGAttributes>;
   isActive: boolean;
@@ -32,146 +33,145 @@ const registerSidebarSection = (
   return condition ? [sectionData] : [];
 };
 
-export default defineComponent({
-  components: {
-    LeftCollapsiblePanel,
-    ContextAwareDescription: defineAsyncComponent({
-      loader: () => import("@/components/sidebar/ContextAwareDescription.vue"),
-      loadingComponent: SidebarContentLoading,
-    }),
-    NodeRepository: defineAsyncComponent({
-      loader: () => import("@/components/nodeRepository/NodeRepository.vue"),
-      loadingComponent: SidebarContentLoading,
-    }),
-    NodeDialogWrapper: defineAsyncComponent({
-      loader: () =>
-        import("@/components/dynamicViews/nodeDialogs/NodeDialogWrapper.vue"),
-      loadingComponent: SidebarContentLoading,
-    }),
-    SidebarSpaceExplorer: defineAsyncComponent({
-      loader: () => import("@/components/sidebar/SidebarSpaceExplorer.vue"),
-      loadingComponent: SidebarContentLoading,
-    }),
-    KaiSidebar: defineAsyncComponent({
-      loader: () => import("@/components/kaiSidebar/KaiSidebar.vue"),
-      loadingComponent: SidebarContentLoading,
-    }),
-    SidebarExtensionPanel,
-  },
-  data() {
-    return {
-      TABS: Object.freeze(TABS),
-    };
-  },
-  computed: {
-    ...mapState("panel", ["activeTab", "expanded", "isExtensionPanelOpen"]),
-    ...mapState("application", ["activeProjectId"]),
-    ...mapGetters("workflow", ["isWorkflowEmpty"]),
-
-    sidebarSections(): Array<SidebarSection> {
-      return [
-        {
-          name: TABS.CONTEXT_AWARE_DESCRIPTION,
-          title: "Description",
-          icon: MetainfoIcon,
-          isActive: this.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
-          isExpanded: this.expanded,
-          onClick: () => this.clickItem(TABS.CONTEXT_AWARE_DESCRIPTION),
-        },
-        {
-          name: TABS.NODE_REPOSITORY,
-          title: "Nodes",
-          icon: PlusIcon,
-          isActive: this.isTabActive(TABS.NODE_REPOSITORY),
-          isExpanded: this.expanded,
-          onClick: () => this.clickItem(TABS.NODE_REPOSITORY),
-        },
-
-        ...registerSidebarSection(
-          this.$features.shouldDisplayEmbeddedDialogs(),
-          {
-            name: TABS.NODE_DIALOG,
-            title: "Node dialog",
-            icon: NodeCogIcon,
-            isActive: this.isTabActive(TABS.NODE_DIALOG),
-            isExpanded: this.expanded,
-            onClick: () => this.clickItem(TABS.NODE_DIALOG),
-          },
-        ),
-
-        ...registerSidebarSection(compatibility.isSpaceExplorerSupported(), {
-          name: TABS.SPACE_EXPLORER,
-          title: "Space explorer",
-          icon: CubeIcon,
-          isActive: this.isTabActive(TABS.SPACE_EXPLORER),
-          isExpanded: this.expanded,
-          onClick: () => this.clickItem(TABS.SPACE_EXPLORER),
-        }),
-
-        ...registerSidebarSection(
-          this.$features.isKaiPermitted() && compatibility.isKaiSupported(),
-          {
-            name: TABS.KAI,
-            title: "K-AI AI assistant",
-            icon: AiIcon,
-            isActive: this.isTabActive(TABS.KAI),
-            isExpanded: this.expanded,
-            onClick: () => this.clickItem(TABS.KAI),
-          },
-        ),
-      ];
-    },
-  },
-  watch: {
-    isWorkflowEmpty: {
-      handler() {
-        if (this.isWorkflowEmpty) {
-          this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
-        }
-      },
-      immediate: true,
-    },
-  },
-  methods: {
-    ...mapMutations("panel", ["closePanel", "toggleExpanded"]),
-    ...mapActions("panel", [
-      "setCurrentProjectActiveTab",
-      "closeExtensionPanel",
-    ]),
-
-    getDefaultTab() {
-      return this.isWorkflowEmpty
-        ? TABS.NODE_REPOSITORY
-        : TABS.CONTEXT_AWARE_DESCRIPTION;
-    },
-
-    isTabActive(tabName: string) {
-      if (!this.activeProjectId) {
-        return false;
-      }
-
-      const activeTab =
-        this.activeTab[this.activeProjectId] || this.getDefaultTab();
-
-      return activeTab === tabName;
-    },
-
-    hasSection(name: string) {
-      return this.sidebarSections.find((section) => section.name === name);
-    },
-
-    clickItem(tabName: string) {
-      const isAlreadyActive = this.isTabActive(tabName);
-      if (isAlreadyActive && this.expanded) {
-        this.closePanel();
-      } else {
-        this.setCurrentProjectActiveTab(tabName);
-      }
-
-      this.closeExtensionPanel();
-    },
-  },
+const ContextAwareDescription = defineAsyncComponent({
+  loader: () => import("@/components/sidebar/ContextAwareDescription.vue"),
+  loadingComponent: SidebarContentLoading,
 });
+
+const NodeRepository = defineAsyncComponent({
+  loader: () => import("@/components/nodeRepository/NodeRepository.vue"),
+  loadingComponent: SidebarContentLoading,
+});
+
+const NodeDialogWrapper = defineAsyncComponent({
+  loader: () =>
+    import("@/components/dynamicViews/nodeDialogs/NodeDialogWrapper.vue"),
+  loadingComponent: SidebarContentLoading,
+});
+
+const SidebarSpaceExplorer = defineAsyncComponent({
+  loader: () => import("@/components/sidebar/SidebarSpaceExplorer.vue"),
+  loadingComponent: SidebarContentLoading,
+});
+
+const KaiSidebar = defineAsyncComponent({
+  loader: () => import("@/components/kaiSidebar/KaiSidebar.vue"),
+  loadingComponent: SidebarContentLoading,
+});
+
+const $features = useFeatures();
+const store = useStore();
+const activeTab = computed(() => store.state.panel.activeTab);
+const expanded = computed(() => store.state.panel.expanded);
+const isExtensionPanelOpen = computed(
+  () => store.state.panel.isExtensionPanelOpen,
+);
+
+const activeProjectId = computed(() => store.state.application.activeProjectId);
+const permissions = computed(() => store.state.application.permissions);
+
+const isWorkflowEmpty = computed(
+  () => store.getters["workflow/isWorkflowEmpty"],
+);
+
+watch(
+  isWorkflowEmpty,
+  () => {
+    if (isWorkflowEmpty.value) {
+      store.dispatch("panel/setCurrentProjectActiveTab", TABS.NODE_REPOSITORY);
+    }
+  },
+  { immediate: true },
+);
+
+const isTabActive = (tabName: TabValues) => {
+  const getDefaultTab = () => {
+    return isWorkflowEmpty.value
+      ? TABS.NODE_REPOSITORY
+      : TABS.CONTEXT_AWARE_DESCRIPTION;
+  };
+
+  if (!activeProjectId.value) {
+    return false;
+  }
+
+  const _activeTab = activeTab.value[activeProjectId.value] || getDefaultTab();
+
+  return _activeTab === tabName;
+};
+
+const activateSection = (tabName: TabValues) => {
+  const isAlreadyActive = isTabActive(tabName);
+  if (isAlreadyActive && expanded.value) {
+    store.commit("panel/closePanel");
+  } else {
+    store.dispatch("panel/setCurrentProjectActiveTab", tabName);
+  }
+
+  store.dispatch("panel/closeExtensionPanel");
+};
+
+const sidebarSections = computed<Array<SidebarSection>>(() => {
+  return [
+    {
+      name: TABS.CONTEXT_AWARE_DESCRIPTION,
+      title: "Description",
+      icon: MetainfoIcon,
+      isActive: isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
+      isExpanded: expanded.value,
+      onClick: () => activateSection(TABS.CONTEXT_AWARE_DESCRIPTION),
+    },
+
+    ...registerSidebarSection(permissions.value.canAccessNodeRepository, {
+      name: TABS.NODE_REPOSITORY,
+      title: "Nodes",
+      icon: PlusIcon,
+      isActive: isTabActive(TABS.NODE_REPOSITORY),
+      isExpanded: expanded.value,
+      onClick: () => activateSection(TABS.NODE_REPOSITORY),
+    }),
+
+    ...registerSidebarSection($features.shouldDisplayEmbeddedDialogs(), {
+      name: TABS.NODE_DIALOG,
+      title: "Node dialog",
+      icon: NodeCogIcon,
+      isActive: isTabActive(TABS.NODE_DIALOG),
+      isExpanded: expanded.value,
+      onClick: () => activateSection(TABS.NODE_DIALOG),
+    }),
+
+    ...registerSidebarSection(
+      permissions.value.canAccessSpaceExplorer &&
+        compatibility.isSpaceExplorerSupported(),
+      {
+        name: TABS.SPACE_EXPLORER,
+        title: "Space explorer",
+        icon: CubeIcon,
+        isActive: isTabActive(TABS.SPACE_EXPLORER),
+        isExpanded: expanded.value,
+        onClick: () => activateSection(TABS.SPACE_EXPLORER),
+      },
+    ),
+
+    ...registerSidebarSection(
+      $features.isKaiPermitted() &&
+        compatibility.isKaiSupported() &&
+        permissions.value.canAccessKAIPanel,
+      {
+        name: TABS.KAI,
+        title: "K-AI AI assistant",
+        icon: AiIcon,
+        isActive: isTabActive(TABS.KAI),
+        isExpanded: expanded.value,
+        onClick: () => activateSection(TABS.KAI),
+      },
+    ),
+  ];
+});
+
+const hasSection = (name: TabValues) => {
+  return sidebarSections.value.find((section) => section.name === name);
+};
 </script>
 
 <template>
@@ -196,7 +196,7 @@ export default defineComponent({
       title="Open sidebar"
       :expanded="expanded"
       :disabled="isExtensionPanelOpen"
-      @toggle-expand="toggleExpanded"
+      @toggle-expand="store.commit('panel/toggleExpanded')"
     >
       <TransitionGroup name="tab" tag="span">
         <ContextAwareDescription

@@ -14,7 +14,7 @@ export const TABS = {
 } as const;
 
 type TabKeys = keyof typeof TABS;
-type TabValues = (typeof TABS)[TabKeys];
+export type TabValues = (typeof TABS)[TabKeys];
 export interface PanelState {
   expanded: boolean;
   activeTab: Record<string, TabValues>;
