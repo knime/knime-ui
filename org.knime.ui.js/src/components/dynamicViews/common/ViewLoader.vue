@@ -8,9 +8,10 @@ import type { KnimeService } from "@knime/ui-extension-service";
 
 // At the moment this component has to be directly provided because no dynamic counterparts
 // that can be loaded exists. Eventually this view will also be loaded dynamically
-import IFramePortView from "@/components/output/IFramePortView.vue";
 import type { ViewConfig } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
+
+import IFramePortView from "../portViews/IFramePortView.vue";
 import { useDynamicImport } from "./useDynamicImport";
 
 export type ViewStateChangeEvent = {

@@ -2,7 +2,7 @@
 import { KnimeService } from "@knime/ui-extension-service";
 
 import { API } from "@api";
-import ViewLoader from "./ViewLoader.vue";
+import ViewLoader from "../common/ViewLoader.vue";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog

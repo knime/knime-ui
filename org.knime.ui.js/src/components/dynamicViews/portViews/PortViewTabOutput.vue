@@ -6,8 +6,6 @@ import Button from "webapps-common/ui/components/Button.vue";
 
 import { API } from "@api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
-import type { ViewStateChangeEvent } from "@/components/embeddedViews/ViewLoader.vue";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { canExecute } from "@/util/nodeUtil";
 
@@ -19,8 +17,10 @@ import {
   validatePortSelection,
   validatePortSupport,
   type ValidationResult,
-} from "./output-validator";
+} from "../common/output-validator";
+import type { ViewStateChangeEvent } from "../common/ViewLoader.vue";
 
+import PortViewLoader from "./PortViewLoader.vue";
 import PortViewTabToggles from "./PortViewTabToggles.vue";
 
 /**

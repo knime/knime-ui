@@ -4,7 +4,7 @@ import { KnimeService } from "@knime/ui-extension-service";
 
 import { API } from "@api";
 import type { KnimeNode, ViewConfig } from "@/api/custom-types";
-import ViewLoader from "@/components/embeddedViews/ViewLoader.vue";
+import ViewLoader from "../common/ViewLoader.vue";
 
 type ComponentData = {
   error: unknown | null;

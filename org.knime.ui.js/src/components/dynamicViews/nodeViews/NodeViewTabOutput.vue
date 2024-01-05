@@ -1,11 +1,11 @@
 <script>
-import NodeViewLoader from "@/components/embeddedViews/NodeViewLoader.vue";
-
 import {
   buildMiddleware,
   validateNodeConfigurationState,
   validateNodeExecutionState,
-} from "./output-validator";
+} from "../common/output-validator";
+
+import NodeViewLoader from "./NodeViewLoader.vue";
 
 /**
  * Runs a set of validations that qualify whether a node from a given group is able

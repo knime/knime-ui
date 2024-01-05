@@ -7,19 +7,20 @@ import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import Button from "webapps-common/ui/components/Button.vue";
 import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 
+import { canExecute, getNodeState } from "@/util/nodeUtil";
+import type { ApplicationState } from "@/store/application";
+import type { WorkflowState } from "@/store/workflow";
+
 import PortTabs from "./PortTabs.vue";
-import PortViewTabOutput from "./PortViewTabOutput.vue";
-import NodeViewTabOutput from "./NodeViewTabOutput.vue";
+import PortViewTabOutput from "./portViews/PortViewTabOutput.vue";
+import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
 
 import {
   buildMiddleware,
   validateDragging,
   validateSelection,
   type ValidationResult,
-} from "./output-validator";
-import { canExecute, getNodeState } from "@/util/nodeUtil";
-import type { ApplicationState } from "@/store/application";
-import type { WorkflowState } from "@/store/workflow";
+} from "./common/output-validator";
 
 export const runValidationChecks = ({
   selectedNodes,
