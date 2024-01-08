@@ -358,8 +358,7 @@ export default defineComponent({
 .search-results {
   margin: 0;
   max-height: 160px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
 
   & :deep(.label) {
     font-size: 13px;

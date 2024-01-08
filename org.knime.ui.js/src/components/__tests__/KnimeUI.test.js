@@ -82,7 +82,7 @@ describe("KnimeUI.vue", () => {
       global: {
         plugins: [$store],
         mocks: { $features: mockFeatureFlags, $router, $route, $bus },
-        stubs: { RouterView: true },
+        stubs: { RouterView: true, HotkeyHandler: true },
       },
     });
 

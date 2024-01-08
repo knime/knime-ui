@@ -112,8 +112,7 @@ const updateComponentMetadata = ({
 
 <style lang="postcss" scoped>
 .metadata {
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   height: 100%;
   padding: 8px 20px 20px;
   font-size: 16px;

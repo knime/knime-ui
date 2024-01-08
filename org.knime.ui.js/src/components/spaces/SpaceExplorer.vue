@@ -327,8 +327,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
 .mini {
   padding: 0 20px 20px;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
 }
 
 .smart-loader {

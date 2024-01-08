@@ -40,8 +40,7 @@ defineEmits<Emits>();
   }
 
   & :deep(.notice) {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden auto;
     height: 100%;
   }
 }

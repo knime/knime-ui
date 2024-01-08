@@ -74,8 +74,7 @@ const closeModal = () => {
 :deep() {
   & .confirmation {
     background-color: var(--knime-porcelain);
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden auto;
     flex-grow: 1;
   }
 

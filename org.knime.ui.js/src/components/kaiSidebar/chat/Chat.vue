@@ -84,8 +84,7 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
   & .scrollable-container {
     width: calc(100% + 20px);
     flex: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden auto;
 
     & .message-area {
       width: calc(100% - 20px);

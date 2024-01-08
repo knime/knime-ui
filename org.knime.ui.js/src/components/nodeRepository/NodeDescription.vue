@@ -219,8 +219,7 @@ export default defineComponent({
   height: 100%;
   padding-right: 8px;
   padding-bottom: 8px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
 
   & .header {
     position: sticky;
