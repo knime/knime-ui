@@ -22,24 +22,19 @@ interface ProjectAndWorkflowIds {
   workflowId: string;
 }
 
+interface ConversationState {
+  conversationId: string | null;
+  messages: Message[];
+  statusUpdate: string | null;
+  isProcessing: boolean;
+  incomingTokens: string;
+  projectAndWorkflowIds: ProjectAndWorkflowIds | null;
+}
+
 export interface AiAssistantState {
   hubID: string | null;
-  qa: {
-    conversationId: string | null;
-    messages: Message[];
-    statusUpdate: string | null;
-    isProcessing: boolean;
-    incomingTokens: string;
-    projectAndWorkflowIds: ProjectAndWorkflowIds | null;
-  };
-  build: {
-    conversationId: string | null;
-    messages: Message[];
-    statusUpdate: string | null;
-    isProcessing: boolean;
-    incomingTokens: string;
-    projectAndWorkflowIds: ProjectAndWorkflowIds | null;
-  };
+  qa: ConversationState;
+  build: ConversationState;
 }
 
 export const state = (): AiAssistantState => ({

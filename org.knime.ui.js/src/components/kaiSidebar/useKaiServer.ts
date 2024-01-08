@@ -41,4 +41,4 @@ const useKaiServer = () => {
   };
 };
 
-export { useKaiServer };
+export { useKaiServer, fetchUiStrings };
