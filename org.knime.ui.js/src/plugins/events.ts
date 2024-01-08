@@ -6,6 +6,7 @@ import { nodeSize } from "@/style/shapes.mjs";
 import type { RootStoreState } from "@/store/types";
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
+import { fetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
 
 const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   API.event.registerEventHandlers({
@@ -225,6 +226,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
     AiAssistantServerChangedEvent() {
       $store.dispatch("aiAssistant/getHubID");
+      fetchUiStrings();
     },
 
     DesktopAPIFunctionResultEvent(payload) {
