@@ -57,35 +57,21 @@ describe("RemoteWorkflowInfo.vue", () => {
     $store.commit("application/setOpenProjects", openProjects);
     $store.commit("workflow/setActiveWorkflow", workflow);
 
-    const projectPathValue = openProjects.find(
-      ({ projectId }) => projectId === activeProjectId,
-    )?.origin;
-
     // update providers state to stay in sync with application state
-    if (projectPathValue) {
-      $store.commit("spaces/setProjectPath", {
-        projectId: activeProjectId,
-        value: {
-          spaceId: projectPathValue.spaceId,
-          spaceProviderId: projectPathValue.providerId,
-          itemId: projectPathValue.itemId,
-        },
-      });
-      $store.state.spaces.spaceProviders = {
-        [openProjects.at(1).origin.providerId]: createSpaceProvider({
-          id: "hub-provider1",
-          name: "Hub space",
-          type: SpaceProviderNS.TypeEnum.HUB,
-          spaces: [createSpace({ id: "space1" })],
-        }),
-        [openProjects.at(2).origin.providerId]: createSpaceProvider({
-          id: "server-provider1",
-          name: "Server space",
-          type: SpaceProviderNS.TypeEnum.SERVER,
-          spaces: [createSpace()],
-        }),
-      };
-    }
+    $store.state.spaces.spaceProviders = {
+      [openProjects.at(1)!.origin!.providerId]: createSpaceProvider({
+        id: "hub-provider1",
+        name: "Hub space",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        spaces: [createSpace({ id: "space1" })],
+      }),
+      [openProjects.at(2)!.origin!.providerId]: createSpaceProvider({
+        id: "server-provider1",
+        name: "Server space",
+        type: SpaceProviderNS.TypeEnum.SERVER,
+        spaces: [createSpace()],
+      }),
+    };
 
     const wrapper = mount(RemoteWorkflowInfo, {
       global: {
@@ -97,7 +83,7 @@ describe("RemoteWorkflowInfo.vue", () => {
   };
 
   it("should display banner for projects with unknown origin", () => {
-    const activeProjectId = openProjects.at(0).projectId;
+    const activeProjectId = openProjects.at(0)!.projectId;
     const workflow = createWorkflow({
       info: { containerId: activeProjectId },
     });
@@ -131,6 +117,7 @@ describe("RemoteWorkflowInfo.vue", () => {
       workflow,
       activeProjectId,
     });
+
     $store.commit("application/setOpenProjects", [project]);
     await nextTick();
 
@@ -141,7 +128,7 @@ describe("RemoteWorkflowInfo.vue", () => {
   });
 
   it("should not display the banner for hub workflows with known origin", () => {
-    const activeProjectId = openProjects.at(1).projectId;
+    const activeProjectId = openProjects.at(1)!.projectId;
     const workflow = createWorkflow({
       info: { containerId: activeProjectId },
     });
@@ -155,7 +142,7 @@ describe("RemoteWorkflowInfo.vue", () => {
   });
 
   it("should display banner for workflows from a KNIME server correctly", () => {
-    const activeProjectId = openProjects.at(2).projectId;
+    const activeProjectId = openProjects.at(2)!.projectId;
     const workflow = createWorkflow({
       info: { containerId: activeProjectId },
     });

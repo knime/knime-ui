@@ -1,7 +1,9 @@
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import { API } from "@api";
+import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { SpaceProviderNS } from "@/api/custom-types";
 
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "../types";
 import type { SpacesState } from "./index";
 import { localRootProjectPath } from "./caching";
@@ -165,6 +167,20 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
       return state.spaceProviders[spaceProviderId] || {};
     },
+
+  activeProjectProvider: (state, _getters, _rootState, rootGetters) => {
+    if (rootGetters["application/isUnknownProject"]) {
+      return null;
+    }
+
+    const activeProjectOrigin: SpaceItemReference =
+      rootGetters["application/activeProjectOrigin"];
+
+    const providers = state.spaceProviders ?? {};
+    const activeProjectProvider = providers[activeProjectOrigin.providerId];
+
+    return activeProjectProvider ?? null;
+  },
 
   isLocalProvider: (_, getters) => (projectId: string) => {
     const provider = getters.getProviderInfo(projectId);

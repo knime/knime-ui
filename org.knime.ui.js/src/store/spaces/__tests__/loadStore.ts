@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi, type Mock } from "vitest";
 
 import type { RootStoreState } from "@/store/types";
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -8,6 +8,10 @@ import { API } from "@api";
 import { SpaceProviderNS } from "@/api/custom-types";
 
 import * as spacesStore from "../index";
+import type {
+  Project,
+  SpaceItemReference,
+} from "@/api/gateway-api/generated-api";
 
 export const fetchWorkflowGroupContentResponse = {
   id: "root",
@@ -77,6 +81,18 @@ export const listSchedulesForWorkflowResponse = [
 
 const mockedAPI = deepMocked(API);
 
+type LoadStoreOpts = {
+  mockFetchWorkflowGroupResponse?: typeof fetchWorkflowGroupContentResponse;
+  mockFetchAllProvidersResponse?: typeof fetchAllSpaceProvidersResponse;
+  mockListJobsForWorkflowResponse?: typeof listJobsForWorkflowResponse;
+  mockListSchedulesForWorkflowResponse?: typeof listSchedulesForWorkflowResponse;
+  openProjects?: Project[];
+  activeProjectId?: string;
+  forceCloseProjects?: Mock<any[], any>;
+  isUnknownProject?: boolean;
+  activeProjectOrigin?: SpaceItemReference | null;
+};
+
 export const loadStore = ({
   mockFetchWorkflowGroupResponse = fetchWorkflowGroupContentResponse,
   mockFetchAllProvidersResponse = fetchAllSpaceProvidersResponse,
@@ -85,11 +101,17 @@ export const loadStore = ({
   openProjects = [],
   activeProjectId = "",
   forceCloseProjects = vi.fn(),
-} = {}) => {
+  isUnknownProject = false,
+  activeProjectOrigin = null,
+}: LoadStoreOpts = {}) => {
   const store = mockVuexStore<RootStoreState>({
     spaces: spacesStore,
     application: {
       state: { openProjects, activeProjectId },
+      getters: {
+        isUnknownProject: () => isUnknownProject,
+        activeProjectOrigin: () => activeProjectOrigin,
+      },
       actions: { updateGlobalLoader: () => {}, forceCloseProjects },
     },
   });
