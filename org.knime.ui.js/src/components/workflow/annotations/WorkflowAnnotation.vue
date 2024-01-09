@@ -197,6 +197,14 @@ export default defineComponent({
       );
     },
 
+    async updateAnnotation() {
+      await this.$store.dispatch("workflow/updateAnnotation", {
+        annotationId: this.annotation.id,
+        text: this.newAnnotationData.richTextContent,
+        borderColor: this.newAnnotationData.borderColor,
+      });
+    },
+
     async onClickAway() {
       if (window.getSelection().toString() !== "") {
         return;
@@ -206,11 +214,7 @@ export default defineComponent({
       }
 
       if (this.hasEdited) {
-        await this.$store.dispatch("workflow/updateAnnotation", {
-          annotationId: this.annotation.id,
-          text: this.newAnnotationData.richTextContent,
-          borderColor: this.newAnnotationData.borderColor,
-        });
+        await this.updateAnnotation();
       }
 
       this.toggleEdit();
