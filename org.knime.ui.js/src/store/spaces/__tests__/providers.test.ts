@@ -5,6 +5,7 @@ import { API } from "@api";
 import { fetchAllSpaceProvidersResponse, loadStore } from "./loadStore";
 import { flushPromises } from "@vue/test-utils";
 import { SpaceProviderNS } from "@/api/custom-types";
+import { createSpaceProvider } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -81,7 +82,7 @@ describe("spaces::providers", () => {
 
       await store.dispatch("spaces/fetchAllSpaceProviders");
 
-      expect(store.state.spaces.spaceProviders.hub1.user).toEqual(mockUser);
+      expect(store.state.spaces.spaceProviders!.hub1.user).toEqual(mockUser);
     });
   });
 
@@ -187,6 +188,109 @@ describe("spaces::providers", () => {
         private: true,
         owner: "",
       });
+    });
+  });
+
+  describe("getProviderInfo", () => {
+    it("should return the information about provider based on the projectPath", () => {
+      const { store } = loadStore();
+
+      const provider = createSpaceProvider({
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        id: "knime1",
+        name: "blah",
+        connectionMode: "AUTHENTICATED",
+        spaces: [],
+      });
+
+      store.state.spaces.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const projectId = "project2";
+      const data = {
+        spaceProviderId: provider.id,
+        spaceId: "space1",
+        itemId: "item1",
+      };
+
+      store.state.spaces.projectPath[projectId] = data;
+      expect(store.getters["spaces/getProviderInfo"](projectId)).toEqual(
+        provider,
+      );
+    });
+
+    it("should return empty object if the projectPath is empty", () => {
+      const { store } = loadStore();
+      store.state.spaces.projectPath = {};
+      expect(store.getters["spaces/getProviderInfo"]("anything")).toEqual({});
+    });
+
+    it("should return empty object if the provider is not found in spaceProviders", () => {
+      const { store } = loadStore();
+
+      const provider = createSpaceProvider({
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: true,
+        id: "knime1",
+        name: "blah",
+        connectionMode: "AUTHENTICATED",
+        spaces: [],
+      });
+
+      store.state.spaces.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      const projectId = "project2";
+
+      const data = {
+        spaceProviderId: "someProvider",
+        spaceId: "space1",
+        itemId: "item1",
+      };
+
+      store.state.spaces.projectPath[projectId] = data;
+      expect(store.getters["spaces/getProviderInfo"](projectId)).toEqual({});
+    });
+  });
+
+  describe("activeProjectProvider", () => {
+    it("should return the correct value", () => {
+      const provider = createSpaceProvider({
+        id: "provider1",
+      });
+
+      const { store } = loadStore({
+        activeProjectOrigin: {
+          providerId: provider.id,
+          spaceId: "some-space",
+          itemId: "some-item",
+        },
+      });
+
+      store.state.spaces.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      expect(store.getters["spaces/activeProjectProvider"]).toEqual(provider);
+    });
+
+    it("should return null if the active project's provider is from unknown origin", () => {
+      const provider = createSpaceProvider({
+        id: "provider1",
+      });
+
+      const { store } = loadStore({
+        activeProjectOrigin: {
+          providerId: provider.id,
+          spaceId: "some-space",
+          itemId: "some-item",
+        },
+      });
+
+      expect(store.getters["spaces/activeProjectProvider"]).toBeNull();
     });
   });
 });

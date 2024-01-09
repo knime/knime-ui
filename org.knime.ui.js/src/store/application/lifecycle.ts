@@ -152,7 +152,9 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
       // unload current workflow
       await dispatch("unloadActiveWorkflow", { clearWorkflow: !newWorkflow });
-      commit("setActiveProjectId", null);
+      if (!newWorkflow) {
+        commit("setActiveProjectId", null);
+      }
     }
 
     // only continue if the new workflow exists

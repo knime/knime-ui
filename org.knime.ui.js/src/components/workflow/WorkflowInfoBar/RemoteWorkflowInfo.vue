@@ -6,23 +6,20 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import * as $colors from "@/style/colors.mjs";
 
 const store = useStore();
-const isUnknownProject = computed(
+const isUnknownProject = computed<boolean>(
   () => store.getters["application/isUnknownProject"],
 );
+
+const activeProjectProvider = computed<SpaceProviderNS.SpaceProvider | null>(
+  () => store.getters["spaces/activeProjectProvider"],
+);
+
 const activeProjectId = computed(() => store.state.application.activeProjectId);
-
-const provider = computed<SpaceProviderNS.SpaceProvider | null>(() => {
-  if (isUnknownProject.value) {
-    return null;
-  }
-
-  return store.getters["spaces/getProviderInfo"](activeProjectId.value);
-});
 
 const isServerSpace = computed(
   () =>
     !isUnknownProject.value &&
-    provider.value?.type === SpaceProviderNS.TypeEnum.SERVER,
+    activeProjectProvider.value?.type === SpaceProviderNS.TypeEnum.SERVER,
 );
 
 const shouldShow = computed(() => {
