@@ -206,7 +206,10 @@ export default {
     };
   },
   computed: {
-    ...mapState("application", { projectId: "activeProjectId" }),
+    ...mapState("application", {
+      projectId: "activeProjectId",
+      permissions: "permissions",
+    }),
     ...mapState("workflow", ["isDragging"]),
     ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
     ...mapGetters("workflow", ["isWritable"]),
@@ -329,7 +332,10 @@ export default {
             params: { projectId: this.projectId, workflowId: this.id },
           });
         }
-      } else if (this.allowedActions?.canOpenDialog) {
+      } else if (
+        this.allowedActions?.canOpenDialog &&
+        this.permissions.canConfigureNodes
+      ) {
         // open node dialog if one is present
         this.openNodeConfiguration(this.id);
       }
@@ -381,6 +387,7 @@ export default {
         this.selectNode(this.id);
       }
 
+      // TODO check this toggleContextMenu
       this.$store.dispatch("application/toggleContextMenu", { event });
     },
 

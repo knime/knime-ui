@@ -1,5 +1,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
+import { mapState } from "vuex";
+
 import ExecuteIcon from "@/assets/execute.svg";
 import ResumeIcon from "@/assets/resume-execution.svg";
 import ResetIcon from "@/assets/reset-all.svg";
@@ -72,6 +74,7 @@ export default defineComponent({
     },
   },
   computed: {
+    ...mapState("application", ["permissions"]),
     // all possible actions
     actions() {
       return {
@@ -162,6 +165,7 @@ export default defineComponent({
       const conditionMap: Record<keyof Actions, boolean> = {
         configureNode:
           this.canOpenDialog !== null &&
+          this.permissions.canConfigureNodes &&
           compatibility.canConfigureNodes(this.nodeKind),
 
         // plain execution
