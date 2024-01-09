@@ -41,6 +41,8 @@ const isEditing = computed(
   () => metadataDrafts[currentDraftID.value].isEditing,
 );
 
+const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
+
 const getInitialDraftData = () => {
   return projectMetadata.value
     ? {
@@ -165,6 +167,7 @@ watch(
   <div class="header">
     <MetadataLastEdit :last-edit="lastEdit" />
     <MetadataHeaderButtons
+      v-if="isWorkflowWritable"
       :is-editing="isEditing"
       :is-valid="isValid"
       @start-edit="onStartEdit"

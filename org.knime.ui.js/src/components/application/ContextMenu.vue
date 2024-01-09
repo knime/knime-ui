@@ -143,6 +143,7 @@ export default defineComponent({
       availablePortTypes: (state) =>
         state.availablePortTypes as AvailablePortTypes,
     }),
+    ...mapState("application", ["permissions"]),
   },
   watch: {
     // set menu items on mounted,
@@ -307,11 +308,13 @@ export default defineComponent({
         ...this.mapToShortcut([
           {
             name: "configureNode",
-            isVisible: this.singleSelectedNode,
+            isVisible:
+              this.singleSelectedNode && this.permissions.canConfigureNodes,
           },
           {
             name: "configureFlowVariables",
-            isVisible: hasLegacyFlowVariableDialog,
+            isVisible:
+              hasLegacyFlowVariableDialog && this.permissions.canConfigureNodes,
           },
           { name: "executeSelected", isVisible: this.selectedNodes.length },
           { name: "executeAndOpenView", isVisible: isView },
