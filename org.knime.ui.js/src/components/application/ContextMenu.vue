@@ -139,6 +139,7 @@ export default defineComponent({
       "singleSelectedNode",
       "isSelectionEmpty",
     ]),
+    ...mapGetters("workflow", ["isWritable"]),
     ...mapState("application", {
       projectId: (state: unknown) =>
         (state as ApplicationState).activeProjectId as string | null,
@@ -431,7 +432,8 @@ export default defineComponent({
               { name: "expandComponent", isVisible: true },
               {
                 name: "openLayoutEditorByNodeId",
-                isVisible: !isLinked,
+                isVisible:
+                  !isLinked && compatibility.canDoComponentOperations(),
               },
               {
                 name: "linkComponent",

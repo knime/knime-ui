@@ -24,3 +24,5 @@ export const canDetachPortViews = () => isDesktop;
 export const isSpaceExplorerSupported = () => isDesktop;
 
 export const isKaiSupported = () => isDesktop;
+
+export const isLocalSaveSupported = () => isDesktop;

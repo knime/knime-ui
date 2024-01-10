@@ -28,6 +28,7 @@ export default {
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
+    ...mapState("application", ["permissions"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
     ...mapGetters("selection", ["selectedNodes"]),
     ...mapGetters("application", [
@@ -100,8 +101,8 @@ export default {
         saveAs: this.isUnknownProject && isDesktop,
 
         // Always visible
-        undo: true,
-        redo: true,
+        undo: this.permissions.canEditWorkflow,
+        redo: this.permissions.canEditWorkflow,
 
         // Workflow
         executeAll: !this.selectedNodes.length,
@@ -114,7 +115,8 @@ export default {
         resetSelected: this.selectedNodes.length,
 
         // Workflow abstraction
-        createMetanode: this.selectedNodes.length,
+        createMetanode:
+          this.selectedNodes.length && this.permissions.canEditWorkflow,
         createComponent:
           this.selectedNodes.length && compatibility.canDoComponentOperations(),
 
