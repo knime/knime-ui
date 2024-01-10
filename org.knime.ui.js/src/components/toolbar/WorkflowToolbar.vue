@@ -10,7 +10,7 @@ import type { ShortcutName } from "@/shortcuts";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
-import { isDesktop } from "@/environment";
+import { isDesktop, compatibility } from "@/environment";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -27,6 +27,7 @@ export default {
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
+    ...mapState("application", ["permissions"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
     ...mapGetters("selection", ["selectedNodes"]),
     ...mapGetters("application", [
@@ -101,8 +102,8 @@ export default {
         saveAs: this.isUnknownProject && isDesktop,
 
         // Always visible
-        undo: true,
-        redo: true,
+        undo: this.permissions.canEditWorkflow,
+        redo: this.permissions.canEditWorkflow,
 
         // Workflow
         executeAll: !this.selectedNodes.length,
@@ -115,9 +116,13 @@ export default {
         resetSelected: this.selectedNodes.length,
 
         // Workflow abstraction
-        createMetanode: this.selectedNodes.length,
-        createComponent: this.selectedNodes.length,
-        openLayoutEditor: isInsideComponent && isDesktop,
+        createMetanode:
+          this.selectedNodes.length && this.permissions.canEditWorkflow,
+        createComponent:
+          this.selectedNodes.length && compatibility.canDoComponentOperations(),
+
+        openLayoutEditor:
+          isInsideComponent && compatibility.canDoComponentOperations(),
       };
 
       return (

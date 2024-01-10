@@ -52,14 +52,16 @@ const workflowShortcuts: WorkflowShortcuts = {
       }
     },
     condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.dirty ||
-      !$store.getters["application/activeProjectOrigin"],
+      compatibility.isLocalSaveSupported() &&
+      ($store.state.workflow.activeWorkflow?.dirty ||
+        !$store.getters["application/activeProjectOrigin"]),
   },
   saveAs: {
     title: "Save workflow as",
     text: "Save as…",
     icon: SaveAsIcon,
     execute: ({ $store }) => $store.dispatch("workflow/saveWorkflowAs"),
+    condition: () => compatibility.isLocalSaveSupported(),
   },
   undo: {
     title: "Undo",
