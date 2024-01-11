@@ -10,6 +10,7 @@ import * as $shapes from "@/style/shapes.mjs";
 
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
+import * as applicationStore from "@/store/application";
 
 import MoveableNodeContainer from "../MoveableNodeContainer.vue";
 
@@ -53,8 +54,12 @@ describe("MoveableNodeContainer", () => {
         getters: { screenToCanvasCoordinates: () => screenToCanvasCoordinates },
       },
       application: {
+        ...applicationStore,
         state() {
-          return { activeProjectId: "projectId" };
+          return {
+            ...applicationStore.state(),
+            activeProjectId: "projectId",
+          };
         },
       },
       selection: selectionStore,

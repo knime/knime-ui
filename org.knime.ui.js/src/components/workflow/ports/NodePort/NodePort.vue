@@ -87,6 +87,8 @@ const openQuickAddNodeMenuAction = (payload) => {
   store.dispatch("workflow/openQuickAddNodeMenu", payload);
 };
 
+const isWritable = computed(() => store.getters["workflow/isWritable"]);
+
 const { elemRef: tooltipRef } = useTooltip({ tooltip });
 const {
   didMove,
@@ -151,7 +153,7 @@ const onClose = () => {
     <!-- regular port shown on the workflow -->
     <Port
       :port="port"
-      :class="{ 'hoverable-port': !selected }"
+      :class="{ 'hoverable-port': !selected && isWritable }"
       @click="onClick"
     />
 
