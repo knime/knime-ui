@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState, mapGetters, mapActions } from "vuex";
 import { placeholderPosition, portPositions } from "@/util/portShift";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
@@ -76,6 +76,7 @@ export default {
   }),
   computed: {
     ...mapState("workflow", ["isDragging", "quickAddNodeMenu"]),
+    ...mapGetters("workflow", ["isWritable"]),
 
     isMetanode() {
       return this.nodeKind === "metanode";
@@ -213,6 +214,7 @@ export default {
         "mickey-mouse": true,
         "connector-hover": this.connectorHover,
         connected: isShowingQuickAddNodeMenu || port.connectedVia.length, // eslint-disable-line quote-props
+        "read-only": !this.isWritable,
         "node-hover": this.hover,
       };
     },
@@ -336,6 +338,12 @@ export default {
       /* fade-in port without delay on connectorHover */
       transition: opacity 0.25s;
       opacity: 1;
+    }
+
+    &.read-only {
+      /* Hide if workflow is read-only */
+      transition: none;
+      opacity: 0;
     }
 
     &.connected {
