@@ -148,6 +148,9 @@ final class ClassicAPCopyMoveLogic {
             final List<AbstractExplorerFileStore> sources, final boolean excludeData,
             final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore target,
             final boolean performMove) {
+
+        // make sure that the target provider is finished loading
+        DesktopAPUtil.waitForMountpointToFinishFetching(target);
         if (!target.fetchInfo().isWriteable() || !isCopyOrMovePossible(sources, performMove)) {
             return false;
         }
@@ -172,11 +175,11 @@ final class ClassicAPCopyMoveLogic {
         final var instance = new ClassicAPCopyMoveLogic(shellProvider, sourceSpaceProvider, sources, excludeData,
             targetSpaceProvider, actualTarget, performMove);
         if (instance.run()) {
-            LOGGER.debug((performMove ? "Moving" : "Copying") + " to \"" + target.getFullName() + "\" failed.");
+            LOGGER.debug("Successfully " + (performMove ? "moved " : "copied ") + instance.m_sources.size()
+            + " item(s) to \"" + target.getFullName() + "\".");
             return true;
         } else {
-            LOGGER.debug("Successfully " + (performMove ? "moved " : "copied ") + instance.m_sources.size()
-                    + " item(s) to \"" + target.getFullName() + "\".");
+            LOGGER.debug((performMove ? "Moving" : "Copying") + " to \"" + target.getFullName() + "\" failed.");
             return false;
         }
     }
@@ -362,9 +365,13 @@ final class ClassicAPCopyMoveLogic {
         if (provider != null && !provider.isWritable() && performMove) {
             return false;
         }
+
+        // make sure that the source provider is finished loading
         final var selections = entry.getValue();
-        return !(selections.isEmpty() || selections.get(0) instanceof MessageFileStore) &&
-                selections.stream().allMatch(store -> performMove ? store.canMove() : store.canCopy());
+        DesktopAPUtil.waitForMountpointToFinishFetching(selections.get(0));
+
+        final var itemsSelected = !(selections.isEmpty() || selections.get(0) instanceof MessageFileStore);
+        return itemsSelected && selections.stream().allMatch(store -> performMove ? store.canMove() : store.canCopy());
     }
 
     private final class CopyMove {

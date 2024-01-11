@@ -512,32 +512,63 @@ public final class DesktopAPUtil {
      * We have to wait for the mountpoint to finish its initial fetching process, otherwise the {@link WorkflowDownload}
      * receives a {@link RemoteExplorerFileInfo} which claims that it is neither for a workflow nor for a component.
      * Since we can't access anything from here which could tell us directly when the mountpoint is finished loading, we
-     * ask {@link AbstractContentProvider} the for the source workflow's (hypothetical) children instead and check
-     * whether a message with a specific string content is returned.
+     * ask {@link AbstractContentProvider} for the source workflow's (hypothetical) children instead and check whether a
+     * message with a specific string content is returned.
+     *
+     * @param fileStore source file store
+     * @return newly fetch file store
+     */
+    public static boolean waitForMountpointToFinishFetching(final AbstractExplorerFileStore fileStore) {
+        final var provider = fileStore.getContentProvider();
+        if (fileStore instanceof RemoteExplorerFileStore && isMountpointFetching(provider, fileStore)) {
+            return runWithProgress("Fetching remote contents...", LOGGER, progress -> {
+                try {
+                    return waitForMountpointToFinishFetching(progress, fileStore);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+            }).orElse(false);
+        }
+        return true;
+    }
+
+    /**
+     * We have to wait for the mountpoint to finish its initial fetching process, otherwise the {@link WorkflowDownload}
+     * receives a {@link RemoteExplorerFileInfo} which claims that it is neither for a workflow nor for a component.
+     * Since we can't access anything from here which could tell us directly when the mountpoint is finished loading, we
+     * ask {@link AbstractContentProvider} for the source workflow's (hypothetical) children instead and check whether a
+     * message with a specific string content is returned.
      *
      * @param progress progress monitor
-     * @param source source file store
+     * @param fileStore source file store
      * @return newly fetch file store
      * @throws InterruptedException if the waiting was interrupted
      */
-    private static boolean waitForMountpointToFinishFetching(final IProgressMonitor progress,
-            final RemoteExplorerFileStore source) throws InterruptedException {
-        // TODO remove this immediately after the "hybrid mode" of CUI and MUI has been retired
-        progress.subTask("Waiting for remote directory to load...");
-        final var provider = source.getContentProvider();
-        for (var i = 0; i < 600; i++) {
-            if (progress.isCanceled()) {
-                return false;
+    public static boolean waitForMountpointToFinishFetching(final IProgressMonitor progress,
+            final AbstractExplorerFileStore fileStore) throws InterruptedException {
+        // TODO AP-22079 remove this immediately after the "hybrid mode" of CUI and MUI has been retired
+        final var provider = fileStore.getContentProvider();
+        if (fileStore instanceof RemoteExplorerFileStore) {
+            progress.subTask("Waiting for remote directory to load...");
+            for (var i = 0; i < 600; i++) {
+                if (progress.isCanceled()) {
+                    return false;
+                }
+                if (!isMountpointFetching(provider, fileStore)) {
+                    break;
+                }
+                Thread.sleep(500);
             }
-            final var children = provider.getChildren(source);
-            final var isFetching = children.length == 1 && children[0] instanceof MessageFileStore msg
-                    && "Fetching content...".equals(msg.getName());
-            if (!isFetching) {
-                break;
-            }
-            Thread.sleep(500);
         }
         return true;
+    }
+
+    private static boolean isMountpointFetching(final AbstractContentProvider provider,
+            final AbstractExplorerFileStore filestore) {
+        final var children = provider.getChildren(filestore);
+        return children.length == 1 && children[0] instanceof MessageFileStore msg
+                && "Fetching content...".equals(msg.getName());
     }
 
     /**
