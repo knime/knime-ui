@@ -172,9 +172,14 @@ final class SaveProjectCopy {
             return null;
         }
 
-        if (collisionHandling == NameCollisionHandling.OVERWRITE
-            && destWorkflowGroupPath.resolve(fileName).equals(srcPath)) {
-            return oldContext; // Simply overwrite the current location,
+        if (collisionHandling == NameCollisionHandling.OVERWRITE) {
+            final var path = destWorkflowGroupPath.resolve(fileName);
+            if (path.equals(srcPath)) {
+                return oldContext; // Simply overwrite the current location,
+            }
+            if (ProjectManager.getInstance().getProject(path).isPresent()) {
+                throw new IOException("Project <%s> is opened and can't be overwritten.".formatted(fileName));
+            }
         }
 
         final var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
