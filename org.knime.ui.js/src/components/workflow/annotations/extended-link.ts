@@ -72,6 +72,10 @@ export const ControlClickLink = Link.extend({
     return {
       ...this.parent?.(),
 
+      draggable: {
+        default: "false",
+      },
+
       title: {
         default: `Use "${modifier} click" to follow link`,
       },

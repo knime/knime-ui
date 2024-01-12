@@ -141,26 +141,37 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         });
       });
 
-      const onUp = async (ptrUpEvent: PointerEvent) => {
-        hasReleased = true;
+      const onUp = (ptrUpEvent: PointerEvent) => {
+        // use separate function to avoid returning promise
+        // from callback which should return void
+        const handler = async () => {
+          hasReleased = true;
 
-        const shouldMove = await onMoveEndCallback(ptrUpEvent);
-        if (shouldMove && !hasAbortedDrag.value) {
-          await store.dispatch("workflow/moveObjects");
-        }
+          const shouldMove = await onMoveEndCallback(ptrUpEvent);
+          try {
+            if (shouldMove && !hasAbortedDrag.value) {
+              await store.dispatch("workflow/moveObjects");
+            }
+          } catch (error) {
+            consola.error("Error moving objects", error);
+            await store.dispatch("workflow/resetDragState");
+          }
 
-        if (hasAbortedDrag.value) {
-          await store.dispatch("workflow/resetAbortDrag");
-        }
+          if (hasAbortedDrag.value) {
+            await store.dispatch("workflow/resetAbortDrag");
+          }
 
-        eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
-        document.removeEventListener("pointermove", onMove);
-        eventTarget.removeEventListener("pointerup", onUp);
-        eventTarget.removeEventListener(
-          "lostpointercapture",
-          // eslint-disable-next-line no-use-before-define
-          onLostPointerCapture,
-        );
+          eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
+          document.removeEventListener("pointermove", onMove);
+          eventTarget.removeEventListener("pointerup", onUp);
+          eventTarget.removeEventListener(
+            "lostpointercapture",
+            // eslint-disable-next-line no-use-before-define
+            onLostPointerCapture,
+          );
+        };
+
+        handler();
       };
 
       // eslint-disable-next-line func-style
@@ -171,6 +182,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
       }
 
       document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
       eventTarget.addEventListener("pointerup", onUp);
       eventTarget.addEventListener("lostpointercapture", onLostPointerCapture);
     };
