@@ -13,9 +13,8 @@ The frontend is based on the [Vue.js] JavaScript framework.
   - add the following arguments to the `<knime-installation-folder>/knime.ini` (For more information see [this page][debugap])
     | argument | comment |
     | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-    | `-Dchromium.remote_debugging_port=8888` | Enables debugging the AP's browser from Chrome at http://localhost:8888 |
+    | `-Dorg.knime.ui.dev.mode=true` | Enables debugging the AP's browser from your system browser at http://localhost:8888 and more |
     | `-Dorg.knime.ui.dev.url=http://localhost:3000` | Makes the AP use KNIME UI served from localhost instead of using the resources bundled with the KNIME UI Extension |
-    | `-Dchromium.debug` | (Optional) More verbose debugging output for the CEF |
 
 ### Initialize submodules
 
