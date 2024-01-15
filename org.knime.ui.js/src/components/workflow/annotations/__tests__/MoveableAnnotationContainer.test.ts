@@ -8,6 +8,7 @@ import * as $shapes from "@/style/shapes.mjs";
 import { API } from "@api";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
+import * as applicationStore from "@/store/application";
 
 import MoveableAnnotationContainer from "../MoveableAnnotationContainer.vue";
 import { createWorkflow } from "@/test/factories";
@@ -52,7 +53,9 @@ describe("MoveableAnnotationContainer.vue", () => {
       aiAssistant: {
         state: { build: { isProcessing: false } },
       },
-      application: { state: { canvasMode: "selection" } },
+      application: {
+        state: { ...applicationStore.state(), canvasMode: "selection" },
+      },
     });
 
     $store.commit("workflow/setActiveWorkflow", createWorkflow());

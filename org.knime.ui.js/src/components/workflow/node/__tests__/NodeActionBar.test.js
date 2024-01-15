@@ -1,5 +1,8 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import { mockVuexStore } from "@/test/utils";
+
+import * as applicationStore from "@/store/application";
 
 import * as $shapes from "@/style/shapes.mjs";
 
@@ -10,6 +13,8 @@ describe("NodeActionBar", () => {
     get: vi.fn(() => ({})),
     dispatch: vi.fn(() => ({})),
   };
+
+  const $store = mockVuexStore({ application: applicationStore });
 
   const doMount = async ({ props, environment = "DESKTOP" } = {}) => {
     vi.doMock("@/environment", async () => {
@@ -38,6 +43,7 @@ describe("NodeActionBar", () => {
       },
       global: {
         mocks: { $shapes, $shortcuts },
+        plugins: [$store],
       },
     });
 

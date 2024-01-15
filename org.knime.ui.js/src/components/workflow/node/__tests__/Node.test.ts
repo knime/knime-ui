@@ -2,7 +2,7 @@ import { expect, describe, beforeEach, it, vi } from "vitest";
 /* eslint-disable max-lines */
 
 import * as Vue from "vue";
-import { mount } from "@vue/test-utils";
+import { VueWrapper, mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 import { mockUserAgent } from "jest-useragent-mock";
@@ -22,11 +22,15 @@ import NodeState from "../NodeState.vue";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 import Node from "../Node.vue";
 
+import * as applicationStore from "@/store/application";
+
 import { KnimeMIME } from "@/mixins/dropNode";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
+import type { Store } from "vuex";
+import type { RootStoreState } from "@/store/types";
 
 const commonNode = {
   id: "root:1",
@@ -66,7 +70,7 @@ const commonNode = {
   loopInfo: {
     allowedActions: {},
   },
-  isLocked: null,
+  isLocked: null as boolean | null,
 };
 const nativeNode = {
   ...commonNode,
@@ -96,10 +100,15 @@ const linkedNode = {
 };
 
 describe("Node", () => {
-  let props, doMount, wrapper, storeConfig, $store;
+  let storeConfig: Record<any, any>,
+    props:
+      | typeof commonNode
+      | typeof nativeNode
+      | typeof commonNode
+      | typeof metaNode
+      | typeof linkedNode;
 
   beforeEach(() => {
-    wrapper = null;
     storeConfig = {
       workflow: {
         state: {
@@ -121,7 +130,10 @@ describe("Node", () => {
       },
       application: {
         state() {
-          return { activeProjectId: "projectId" };
+          return {
+            ...applicationStore.state(),
+            activeProjectId: "projectId",
+          };
         },
         getters: {
           hasAnnotationModeEnabled: () => false,
@@ -149,55 +161,55 @@ describe("Node", () => {
       },
     };
 
-    props = {
-      // insert node before mounting
-    };
-
-    doMount = (customStubs) => {
-      const $router = {
-        push: vi.fn(),
-      };
-      const $commands = {
-        dispatch: vi.fn(),
-        get: vi.fn().mockImplementation((name) => ({
-          text: "text",
-          hotkeyText: "hotkeyText",
-          name,
-        })),
-        isEnabled: vi.fn().mockReturnValue(false),
-      };
-      $store = mockVuexStore(storeConfig);
-      wrapper = mount(Node, {
-        props,
-        global: {
-          mocks: { $shapes, $colors, $commands, $bus, $router },
-          plugins: [$store],
-          stubs: {
-            NodeName: true,
-            NodeLabel: true,
-            NodeDecorators: true,
-            NodeActionBar: true,
-            NodeSelectionPlane: true,
-            NodeAnnotation: true,
-            NodeTorso: true,
-            NodePorts: true,
-            ...customStubs,
-          },
-        },
-      });
-    };
-
     document.elementFromPoint = vi.fn();
   });
+
+  const doMount = ({
+    storeState = storeConfig,
+    props = {},
+    customStubs = {},
+  } = {}) => {
+    const $router = {
+      push: vi.fn(),
+    };
+    const $commands = {
+      dispatch: vi.fn(),
+      get: vi.fn().mockImplementation((name) => ({
+        text: "text",
+        hotkeyText: "hotkeyText",
+        name,
+      })),
+      isEnabled: vi.fn().mockReturnValue(false),
+    };
+    const $store: Store<RootStoreState> = mockVuexStore(storeState);
+    const wrapper = mount(Node, {
+      props,
+      global: {
+        mocks: { $shapes, $colors, $commands, $bus, $router },
+        plugins: [$store],
+        stubs: {
+          NodeName: true,
+          NodeLabel: true,
+          NodeDecorators: true,
+          NodeActionBar: true,
+          NodeSelectionPlane: true,
+          NodeAnnotation: true,
+          NodeTorso: true,
+          NodePorts: true,
+          ...customStubs,
+        },
+      },
+    });
+    return { wrapper, storeConfig, $store, props };
+  };
 
   describe("features", () => {
     beforeEach(() => {
       props = JSON.parse(JSON.stringify(commonNode));
-      doMount();
     });
 
     it("renders ports", () => {
-      doMount();
+      const { wrapper } = doMount({ props });
       const nodePorts = wrapper.findComponent(NodePorts);
 
       expect(nodePorts.props("nodeId")).toBe(commonNode.id);
@@ -213,7 +225,7 @@ describe("Node", () => {
     });
 
     it("renders decorators", () => {
-      doMount();
+      const { wrapper } = doMount({ props });
 
       const decoratorProps = wrapper.findComponent(NodeDecorators).props();
       expect(props).toMatchObject(decoratorProps);
@@ -221,7 +233,7 @@ describe("Node", () => {
 
     it("renders ports for metanodes", () => {
       props = { ...metaNode };
-      doMount();
+      const { wrapper } = doMount({ props });
       const nodePorts = wrapper.findComponent(NodePorts);
 
       expect(nodePorts.props("isEditable")).toBe(true);
@@ -230,7 +242,7 @@ describe("Node", () => {
 
     it("renders ports for components", () => {
       props = { ...componentNode };
-      doMount();
+      const { wrapper } = doMount({ props });
       const nodePorts = wrapper.findComponent(NodePorts);
 
       expect(nodePorts.props("isEditable")).toBe(true);
@@ -238,6 +250,7 @@ describe("Node", () => {
     });
 
     it("displays annotation", () => {
+      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
         value: props.annotation.text.value,
         kind: commonNode.kind,
@@ -250,16 +263,19 @@ describe("Node", () => {
     });
 
     it("displays icon", () => {
+      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeTorso).props().icon).toBe(
         "data:image/icon",
       );
     });
 
     it("doesn’t show selection frame", () => {
+      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
     });
 
     it("renders node state", () => {
+      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeState).exists()).toBe(true);
       expect(wrapper.findComponent(NodeState).attributes("transform")).toBe(
         `translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`,
@@ -268,29 +284,30 @@ describe("Node", () => {
 
     it("renders metanode state", () => {
       props = { ...metaNode };
-      doMount();
+      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeTorso).props("executionState")).toBe(
         "EXECUTED",
       );
     });
 
     it("renders port with direction and nodeId", () => {
+      const { wrapper } = doMount({ props });
       const ports = wrapper.findAllComponents(NodePort);
 
-      ports.forEach((port) => {
+      ports.forEach((port: VueWrapper) => {
         expect(port.props("nodeId")).toBe(commonNode.id);
       });
 
       ports.forEach((port, index) => {
-        // eslint-disable-next-line vitest/no-conditional-tests
         expect(port.props("direction")).toBe(
+          // eslint-disable-next-line vitest/no-conditional-tests
           index < commonNode.inPorts.length ? "in" : "out",
         );
       });
     });
 
     it("blocks port editing while executing", async () => {
-      doMount();
+      const { wrapper } = doMount({ props });
       const nodePorts = wrapper.findComponent(NodePorts);
 
       expect(nodePorts.props("isEditable")).toBe(true);
@@ -302,13 +319,13 @@ describe("Node", () => {
   });
 
   it("opens the node config on double click", async () => {
-    props = {
+    const props = {
       ...commonNode,
       allowedActions: {
         canOpenDialog: true,
       },
     };
-    doMount();
+    const { wrapper } = doMount({ props });
     await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
     expect(
@@ -317,6 +334,8 @@ describe("Node", () => {
   });
 
   describe("node selection preview", () => {
+    let props = {};
+
     beforeEach(() => {
       props = {
         ...commonNode,
@@ -329,7 +348,7 @@ describe("Node", () => {
     it("shows frame if selection preview is active", async () => {
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(false);
-      doMount();
+      let { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
       wrapper.vm.setSelectionPreview("show");
       await Vue.nextTick();
@@ -337,14 +356,14 @@ describe("Node", () => {
 
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(true);
-      doMount();
+      wrapper = doMount({ props }).wrapper;
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
     });
 
     it('hides frame if selection preview is "hide" even if real selection is active', async () => {
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(true);
-      doMount();
+      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
       wrapper.vm.setSelectionPreview("hide");
       await Vue.nextTick();
@@ -354,7 +373,7 @@ describe("Node", () => {
     it("clears selection preview state", async () => {
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValue(true);
-      doMount();
+      const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
       wrapper.vm.setSelectionPreview("hide");
       await Vue.nextTick();
@@ -378,19 +397,19 @@ describe("Node", () => {
     it("shows frame if selected", () => {
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(true);
-      doMount();
+      let { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(false);
-      doMount();
+      wrapper = doMount({ props }).wrapper;
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
     });
 
     it("has no shadow effect", () => {
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValue(true);
-      doMount();
+      const { wrapper } = doMount({ props });
 
       expect(wrapper.findComponent(NodeTorso).attributes("filter")).toBe(
         "false",
@@ -401,7 +420,7 @@ describe("Node", () => {
     });
 
     it("renders NodeActionBar at correct position", async () => {
-      doMount();
+      const { wrapper } = doMount({ props });
 
       wrapper.find(".hover-container").trigger("mouseenter");
       await Vue.nextTick();
@@ -425,7 +444,7 @@ describe("Node", () => {
     });
 
     it("click to select", async () => {
-      doMount();
+      const { wrapper } = doMount({ props });
       await wrapper.find(".mouse-clickable").trigger("click", { button: 0 });
 
       expect(
@@ -441,7 +460,7 @@ describe("Node", () => {
       mockUserAgent("windows");
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(true);
-      doMount();
+      const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
@@ -457,7 +476,7 @@ describe("Node", () => {
       mockUserAgent("mac");
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(true);
-      doMount();
+      const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
@@ -475,7 +494,7 @@ describe("Node", () => {
         mockUserAgent("windows");
         storeConfig.selection.getters.isNodeSelected = () =>
           vi.fn().mockReturnValue(true);
-        doMount();
+        const { wrapper } = doMount({ props });
 
         await wrapper
           .find(".mouse-clickable")
@@ -491,7 +510,7 @@ describe("Node", () => {
       mockUserAgent("mac");
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValue(true);
-      doMount();
+      const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
@@ -507,7 +526,7 @@ describe("Node", () => {
       async (mod) => {
         storeConfig.selection.getters.isNodeSelected = () =>
           vi.fn().mockReturnValueOnce(true);
-        doMount();
+        const { wrapper } = doMount({ props });
 
         await wrapper
           .find(".mouse-clickable")
@@ -528,7 +547,7 @@ describe("Node", () => {
       async (mod) => {
         storeConfig.selection.getters.isNodeSelected = () =>
           vi.fn().mockReturnValue(true);
-        doMount();
+        const { wrapper } = doMount({ props });
 
         await wrapper
           .find(".mouse-clickable")
@@ -542,7 +561,7 @@ describe("Node", () => {
     it("right click to select node", async () => {
       storeConfig.selection.getters.isNodeSelected = () =>
         vi.fn().mockReturnValue(false);
-      doMount();
+      const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
@@ -561,7 +580,7 @@ describe("Node", () => {
       storeConfig.selection.getters.singleSelectedNode.mockReturnValue(
         commonNode,
       );
-      doMount();
+      const { wrapper } = doMount({ props });
 
       expect(wrapper.findComponent(NodePorts).props("isSingleSelected")).toBe(
         true,
@@ -570,14 +589,16 @@ describe("Node", () => {
   });
 
   describe("node hover", () => {
-    const triggerHover = (wrapper, hover) => {
+    let wrapper: VueWrapper;
+
+    const triggerHover = (wrapper: VueWrapper, hover: boolean) => {
       const eventName = hover ? "enter" : "leave";
       wrapper.find(".hover-container").trigger(`mouse${eventName}`);
     };
 
     beforeEach(() => {
       props = { ...commonNode };
-      doMount();
+      wrapper = doMount({ props }).wrapper;
     });
 
     it("increases the size of the hover-container on hover", async () => {
@@ -605,12 +626,12 @@ describe("Node", () => {
         .attributes();
 
       // increase from 20 to 40 (by 20)
-      wrapper.findComponent(NodeName).vm.$emit("height-change", 40);
+      wrapper.findComponent(NodeName).vm.$emit("heightChange", 40);
       await Vue.nextTick();
 
       const { y, height } = wrapper.find(".hover-area").attributes();
-      expect(oldY - y).toBe(20);
-      expect(height - oldHeight).toBe(20);
+      expect(Number(oldY) - Number(y)).toBe(20);
+      expect(Number(height) - Number(oldHeight)).toBe(20);
     });
 
     it("shows selection plane and action buttons", async () => {
@@ -673,7 +694,7 @@ describe("Node", () => {
       );
       expect(previousHoverHeight).toBe(89);
 
-      wrapper.findComponent(NodePorts).vm.$emit("update-port-positions", {
+      wrapper.findComponent(NodePorts).vm.$emit("updatePortPositions", {
         in: [[0, 96.5]],
         out: [],
       });
@@ -695,9 +716,11 @@ describe("Node", () => {
   });
 
   describe("connector drag & drop", () => {
+    let wrapper: VueWrapper;
+
     beforeEach(() => {
       props = { ...commonNode };
-      doMount();
+      wrapper = doMount({ props }).wrapper;
     });
 
     it("gets portPositions from NodePorts.vue and passes them to ConnectorSnappingProvider.vue", async () => {
@@ -705,7 +728,7 @@ describe("Node", () => {
 
       wrapper
         .findComponent(NodePorts)
-        .vm.$emit("update-port-positions", mockPortPositions);
+        .vm.$emit("updatePortPositions", mockPortPositions);
 
       await Vue.nextTick();
 
@@ -740,7 +763,7 @@ describe("Node", () => {
       // update Node.vue
       wrapper
         .findComponent(NodePorts)
-        .vm.$emit("update-port-positions", mockPortPositions);
+        .vm.$emit("updatePortPositions", mockPortPositions);
 
       // connector enters
       wrapper
@@ -779,10 +802,10 @@ describe("Node", () => {
         // update Node.vue
         wrapper
           .findComponent(NodePorts)
-          .vm.$emit("update-port-positions", mockPortPositions);
+          .vm.$emit("updatePortPositions", mockPortPositions);
       });
 
-      const moveConnectorTo = (x, y, direction = "in") => {
+      const moveConnectorTo = (x: number, y: number, direction = "in") => {
         wrapper.find(".hover-container").trigger("connector-move", {
           detail: {
             x: commonNode.position.x + x,
@@ -868,7 +891,7 @@ describe("Node", () => {
                 on: mockConnectorListeners,
               });
             },
-          },
+          } as any,
         };
       };
 
@@ -877,9 +900,12 @@ describe("Node", () => {
       });
 
       it("illegal", async () => {
-        doMount(
-          getConnectorSnappingProviderStub({ connectionForbidden: true }),
-        );
+        wrapper = doMount({
+          props,
+          customStubs: getConnectorSnappingProviderStub({
+            connectionForbidden: true,
+          }),
+        }).wrapper;
 
         await Vue.nextTick();
 
@@ -887,12 +913,13 @@ describe("Node", () => {
       });
 
       it("illegal but connection source", async () => {
-        doMount(
-          getConnectorSnappingProviderStub({
+        wrapper = doMount({
+          props,
+          customStubs: getConnectorSnappingProviderStub({
             connectionForbidden: true,
             isConnectionSource: true,
           }),
-        );
+        }).wrapper;
 
         await Vue.nextTick();
 
@@ -904,7 +931,7 @@ describe("Node", () => {
   describe("opening containers", () => {
     it("opens metanode on double click", async () => {
       props = { ...metaNode };
-      doMount();
+      const { wrapper } = doMount({ props });
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
       expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
@@ -918,7 +945,7 @@ describe("Node", () => {
 
     it("does not open metanode on double click if locked", async () => {
       props = { ...metaNode, isLocked: true };
-      doMount();
+      const { wrapper } = doMount({ props });
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
       expect(
@@ -928,7 +955,7 @@ describe("Node", () => {
 
     it("opens component on control-double click", async () => {
       props = { ...componentNode };
-      doMount();
+      const { wrapper } = doMount({ props });
       await wrapper.findComponent(NodeTorso).trigger("dblclick", {
         ctrlKey: true,
       });
@@ -943,7 +970,7 @@ describe("Node", () => {
 
     it("does not open component on control-double click if locked", async () => {
       props = { ...componentNode, isLocked: true };
-      doMount();
+      const { wrapper } = doMount({ props });
       await wrapper.findComponent(NodeTorso).trigger("dblclick", {
         ctrlKey: true,
       });
@@ -955,7 +982,7 @@ describe("Node", () => {
 
     it("does not open component on double click", async () => {
       props = { ...componentNode };
-      doMount();
+      const { wrapper, $store } = doMount({ props });
       vi.spyOn($store, "dispatch");
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
@@ -964,7 +991,7 @@ describe("Node", () => {
 
     it("does not open native node on double click", async () => {
       props = { ...nativeNode };
-      doMount();
+      const { wrapper, $store } = doMount({ props });
       vi.spyOn($store, "dispatch");
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
@@ -973,9 +1000,11 @@ describe("Node", () => {
   });
 
   describe("node name", () => {
+    let wrapper: VueWrapper;
+
     beforeEach(() => {
       props = { ...commonNode };
-      doMount();
+      wrapper = doMount({ props }).wrapper;
     });
 
     it("should forward to NodeName component", () => {
@@ -1027,7 +1056,7 @@ describe("Node", () => {
       const mockWidth = 200;
       const expectedSelectionWidth =
         mockWidth + $shapes.nodeNameHorizontalMargin * 2;
-      wrapper.findComponent(NodeName).vm.$emit("width-change", mockWidth);
+      wrapper.findComponent(NodeName).vm.$emit("widthChange", mockWidth);
 
       await Vue.nextTick();
 
@@ -1038,7 +1067,7 @@ describe("Node", () => {
 
     it("should handle height dimension changes and update the selection outline", async () => {
       const mockHeight = 200;
-      wrapper.findComponent(NodeName).vm.$emit("height-change", mockHeight);
+      wrapper.findComponent(NodeName).vm.$emit("heightChange", mockHeight);
 
       await Vue.nextTick();
 
@@ -1050,7 +1079,11 @@ describe("Node", () => {
 
   describe("replace node", () => {
     describe("when node is dragged from repository", () => {
-      const triggerDragEvent = (element, type, dataTransfer = {}) => {
+      const triggerDragEvent = (
+        element: Element,
+        type: string,
+        dataTransfer = {},
+      ) => {
         const event = new CustomEvent(type);
         Object.assign(event, { dataTransfer });
         element.dispatchEvent(event);
@@ -1060,13 +1093,13 @@ describe("Node", () => {
       it("should add the 'is-dragging' class to the hover-area", () => {
         props = { ...commonNode };
         storeConfig.workflow.state.isDragging = true;
-        doMount();
+        const { wrapper } = doMount({ props, storeState: storeConfig });
         expect(wrapper.find(".hover-area").classes()).toContain("is-dragging");
       });
 
       it("checks if dragged object is compatible", async () => {
         props = { ...commonNode };
-        doMount();
+        const { wrapper } = doMount({ props });
         const torso = wrapper.findComponent(NodeTorso);
 
         triggerDragEvent(torso.element, "dragenter", { types: [KnimeMIME] });
@@ -1081,7 +1114,7 @@ describe("Node", () => {
       it("does not give visual indication if node is not editable", async () => {
         props = { ...linkedNode };
         storeConfig.workflow.getters.isWritable = () => false;
-        doMount();
+        const { wrapper } = doMount({ props, storeState: storeConfig });
         const torso = wrapper.findComponent(NodeTorso);
 
         triggerDragEvent(torso.element, "dragenter", { types: [KnimeMIME] });
@@ -1092,7 +1125,7 @@ describe("Node", () => {
 
       it("replaces node on drop", async () => {
         props = { ...commonNode };
-        doMount();
+        const { wrapper } = doMount({ props });
         const node = wrapper.findComponent(Node);
 
         const dropEvent = triggerDragEvent(node.element, "drop", {
@@ -1109,7 +1142,7 @@ describe("Node", () => {
       it("does not replace node on drop is node is not editable", async () => {
         props = { ...linkedNode };
         storeConfig.workflow.getters.isWritable = () => false;
-        doMount();
+        const { wrapper } = doMount({ props });
         const node = wrapper.findComponent(Node);
 
         const dropEvent = triggerDragEvent(node.element, "drop", {
@@ -1124,7 +1157,7 @@ describe("Node", () => {
     describe("when node is dragged from the workflow", () => {
       it("gives visual indication when node is hovered", async () => {
         props = { ...commonNode };
-        doMount();
+        const { wrapper } = doMount({ props });
         const torso = wrapper.findComponent(NodeTorso);
 
         await torso.trigger("node-dragging-enter", {
@@ -1139,7 +1172,7 @@ describe("Node", () => {
 
       it("ignores already connected nodes", () => {
         props = { ...commonNode };
-        doMount();
+        const { wrapper } = doMount({ props });
         const torso = wrapper.findComponent(NodeTorso);
 
         torso.trigger("node-dragging-enter", {
@@ -1150,7 +1183,7 @@ describe("Node", () => {
 
       it("replaces node on drop", async () => {
         props = { ...commonNode };
-        doMount();
+        const { wrapper } = doMount({ props });
         const torso = wrapper.findComponent(NodeTorso);
 
         await torso.trigger("node-dragging-enter", {
@@ -1172,7 +1205,7 @@ describe("Node", () => {
 
       it("ignores if dropped on the same node", async () => {
         props = { ...commonNode };
-        doMount();
+        const { wrapper } = doMount({ props });
         const torso = wrapper.findComponent(NodeTorso);
         await torso.trigger("node-dragging-enter", {
           detail: { isNodeConnected: false },

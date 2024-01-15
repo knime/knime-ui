@@ -8,6 +8,7 @@ import * as $shapes from "@/style/shapes.mjs";
 import { API } from "@api";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
+import * as applicationStore from "@/store/application";
 
 import MoveableMetaNodePortBarContainer from "../MoveableMetaNodePortBarContainer.vue";
 import { createPort, createWorkflow } from "@/test/factories";
@@ -54,7 +55,14 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       aiAssistant: {
         state: { build: { isProcessing: false } },
       },
-      application: { state: { canvasMode: "selection" } },
+      application: {
+        state() {
+          return {
+            ...applicationStore.state(),
+            canvasMode: "selection",
+          };
+        },
+      },
     });
 
     $store.commit(

@@ -13,6 +13,7 @@ import * as $shapes from "@/style/shapes.mjs";
 import { API } from "@api";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
+import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
 import {
   type WorkflowAnnotation,
@@ -71,6 +72,7 @@ describe("WorkflowAnnotation.vue", () => {
       canvas: canvasStore,
       selection: selectionStore,
       application: {
+        ...applicationStore,
         actions: {
           toggleContextMenu: vi.fn(),
         },
