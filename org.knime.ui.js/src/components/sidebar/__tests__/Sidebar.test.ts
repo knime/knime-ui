@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as panelStore from "@/store/panel";
+import * as applicationStore from "@/store/application";
 import * as nodeRepositoryStore from "@/store/nodeRepository";
 
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
@@ -40,7 +41,12 @@ describe("Sidebar", () => {
           isWorkflowEmpty: isWorkflowEmptyMock,
         },
       },
-      application: { state: { activeProjectId: "activeProject1" } },
+      application: {
+        state: {
+          ...applicationStore.state(),
+          activeProjectId: "activeProject1",
+        },
+      },
     });
 
     const dispatchSpy = vi.spyOn($store, "dispatch");

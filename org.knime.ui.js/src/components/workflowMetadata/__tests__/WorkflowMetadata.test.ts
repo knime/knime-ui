@@ -18,6 +18,8 @@ import {
   type Workflow,
 } from "@/api/gateway-api/generated-api";
 import * as workflowStore from "@/store/workflow";
+import * as applicationStore from "@/store/application";
+
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
 import WorkflowMetadata from "../WorkflowMetadata.vue";
@@ -34,6 +36,7 @@ describe("WorkflowMetadata.vue", () => {
 
       application: {
         state: {
+          ...applicationStore.state(),
           availablePortTypes,
         },
       },

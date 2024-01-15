@@ -29,6 +29,7 @@ import { PortType } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
+import * as applicationStore from "@/store/application";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
@@ -63,10 +64,13 @@ describe("Connector.vue", () => {
   const createStore = ({ workflow = null, extraModules = {} } = {}) => {
     const $store = mockVuexStore({
       application: {
+        ...applicationStore,
         actions: {
+          ...applicationStore.actions,
           toggleContextMenu: vi.fn(),
         },
         state: {
+          ...applicationStore.state(),
           availablePortTypes: createAvailablePortTypes({
             portType1: {
               color: "#9B9B9B",

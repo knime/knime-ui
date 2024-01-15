@@ -54,7 +54,6 @@ describe("MoveableNodeContainer", () => {
         getters: { screenToCanvasCoordinates: () => screenToCanvasCoordinates },
       },
       application: {
-        ...applicationStore,
         state() {
           return {
             ...applicationStore.state(),

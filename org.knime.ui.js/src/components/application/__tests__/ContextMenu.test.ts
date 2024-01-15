@@ -28,6 +28,7 @@ import type { ShortcutName } from "@/shortcuts";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
+import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
 import * as $shapes from "@/style/shapes.mjs";
 
@@ -46,6 +47,7 @@ describe("ContextMenu.vue", () => {
       canvas: canvasStore,
       application: {
         state: {
+          ...applicationStore.state(),
           hasClipboardSupport: true,
           availablePortTypes: createAvailablePortTypes({
             "org.some.otherPorType": {

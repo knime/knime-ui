@@ -6,6 +6,7 @@ import { mockVuexStore } from "@/test/utils";
 import { createWorkflow } from "@/test/factories";
 import { TypedText, type Workflow } from "@/api/gateway-api/generated-api";
 import * as workflowStore from "@/store/workflow";
+import * as applicationStore from "@/store/application";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -36,6 +37,7 @@ describe("ProjectMetadata.vue", () => {
 
     const $store = mockVuexStore({
       workflow: workflowStore,
+      application: applicationStore,
     });
 
     const workflow = customWorkflow || baseWorkflow;
