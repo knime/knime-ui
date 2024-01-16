@@ -99,7 +99,8 @@ const workflowShortcuts: WorkflowShortcuts = {
 
         return (
           canOpenDialog &&
-          compatibility.canConfigureNodes(singleSelectedNode.kind)
+          compatibility.canConfigureNodes(singleSelectedNode.kind) &&
+          $store.state.application.permissions.canConfigureNodes
         );
       }
 
@@ -123,7 +124,8 @@ const workflowShortcuts: WorkflowShortcuts = {
 
         return (
           canOpenLegacyFlowVariableDialog &&
-          compatibility.canConfigureFlowVariables()
+          compatibility.canConfigureFlowVariables() &&
+          $store.state.application.permissions.canConfigureNodes
         );
       }
 

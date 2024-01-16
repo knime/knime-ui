@@ -387,7 +387,6 @@ export default {
         this.selectNode(this.id);
       }
 
-      // TODO check this toggleContextMenu
       this.$store.dispatch("application/toggleContextMenu", { event });
     },
 

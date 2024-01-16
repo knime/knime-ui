@@ -258,7 +258,11 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => {
       const selectedNode = $store.getters["selection/singleSelectedNode"];
-      return selectedNode?.kind === "component" && !selectedNode?.link;
+      return (
+        selectedNode?.kind === "component" &&
+        !selectedNode?.link &&
+        compatibility.canDoComponentOperations()
+      );
     },
   },
   checkForComponentUpdates: {
