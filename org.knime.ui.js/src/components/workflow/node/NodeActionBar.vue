@@ -160,7 +160,13 @@ export default defineComponent({
       };
     },
     visibleActions() {
-      const conditionMap = {
+      type Actions = typeof this.actions;
+
+      if (!this.permissions.canEditWorkflow) {
+        return [];
+      }
+
+      const conditionMap: Record<keyof Actions, boolean> = {
         configureNode:
           this.canOpenDialog !== null &&
           this.permissions.canConfigureNodes &&

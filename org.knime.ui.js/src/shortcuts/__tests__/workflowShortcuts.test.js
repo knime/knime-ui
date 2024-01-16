@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
+import * as applicationStore from "@/store/application";
 import workflowShortcuts from "../workflowShortcuts";
 
 describe("workflowShortcuts", () => {
@@ -23,6 +24,7 @@ describe("workflowShortcuts", () => {
       dispatch: mockDispatch,
       state: {
         application: {
+          ...applicationStore.state(),
           activeProjectId: "activeTestProjectId",
           hasClipboardSupport: true,
         },

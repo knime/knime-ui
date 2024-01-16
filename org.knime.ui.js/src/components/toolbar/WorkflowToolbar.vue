@@ -97,13 +97,17 @@ export default {
         return [];
       }
 
+      if (!this.workflow || !this.permissions.canEditWorkflow) {
+        return [];
+      }
+
       const visibleItems: Partial<Record<ShortcutName, boolean>> = {
         save: !this.isUnknownProject && isDesktop,
         saveAs: this.isUnknownProject && isDesktop,
 
         // Always visible
-        undo: this.permissions.canEditWorkflow,
-        redo: this.permissions.canEditWorkflow,
+        undo: true,
+        redo: true,
 
         // Workflow
         executeAll: !this.selectedNodes.length,
@@ -116,8 +120,7 @@ export default {
         resetSelected: this.selectedNodes.length,
 
         // Workflow abstraction
-        createMetanode:
-          this.selectedNodes.length && this.permissions.canEditWorkflow,
+        createMetanode: this.selectedNodes.length,
         createComponent:
           this.selectedNodes.length && compatibility.canDoComponentOperations(),
 

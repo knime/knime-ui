@@ -138,13 +138,11 @@ export default defineComponent({
       "singleSelectedNode",
       "isSelectionEmpty",
     ]),
-    ...mapGetters("workflow", ["isWritable"]),
     ...mapState("application", {
       projectId: (state) => state.activeProjectId as string | null,
       availablePortTypes: (state) =>
         state.availablePortTypes as AvailablePortTypes,
     }),
-    ...mapState("application", ["permissions"]),
   },
   watch: {
     // set menu items on mounted,
@@ -309,13 +307,11 @@ export default defineComponent({
         ...this.mapToShortcut([
           {
             name: "configureNode",
-            isVisible:
-              this.singleSelectedNode && this.permissions.canConfigureNodes,
+            isVisible: this.singleSelectedNode,
           },
           {
             name: "configureFlowVariables",
-            isVisible:
-              hasLegacyFlowVariableDialog && this.permissions.canConfigureNodes,
+            isVisible: hasLegacyFlowVariableDialog,
           },
           { name: "executeSelected", isVisible: this.selectedNodes.length },
           { name: "executeAndOpenView", isVisible: isView },
@@ -427,8 +423,7 @@ export default defineComponent({
               { name: "expandComponent", isVisible: true },
               {
                 name: "openLayoutEditorByNodeId",
-                isVisible:
-                  !isLinked && compatibility.canDoComponentOperations(),
+                isVisible: !isLinked,
               },
               {
                 name: "linkComponent",
