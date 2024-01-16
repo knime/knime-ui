@@ -304,11 +304,11 @@ final class SpaceAPI {
      */
     private static Optional<ItemIds> resolveIds(final SpaceProviders spaceProviders, final URI uri) {
         if (KnimeUrlType.MOUNTPOINT_ABSOLUTE != KnimeUrlType.getType(uri)
-                .orElseThrow(() -> new IllegalArgumentException("Not a KNIME URL: \"%s\"".formatted(uri)))) {
+            .orElseThrow(() -> new IllegalArgumentException("Not a KNIME URL: \"%s\"".formatted(uri)))) {
             throw new IllegalArgumentException("Not mountpoint-absolute: \"%s\"".formatted(uri));
         }
         final var mountId = uri.getAuthority();
-        final var providerId = "LOCAL".equals(mountId) ? LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID : mountId;
+        final var providerId = "LOCAL".equals(mountId) ? SpaceProvider.LOCAL_SPACE_PROVIDER_ID : mountId;
         final var provider = spaceProviders.getProvidersMap().get(providerId);
         final var spaceAndItemIds = provider.resolveSpaceAndItemId(uri);
         return spaceAndItemIds.map(ids -> new ItemIds(providerId, ids.spaceId(), ids.itemId()));

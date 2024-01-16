@@ -58,6 +58,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.DefaultProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 
 /**
@@ -121,7 +122,7 @@ public final class ProjectFactory {
         final var path = context.getExecutorInfo().getLocalWorkflowPath();
         final var itemId = LocalSpaceUtil.getLocalWorkspace().getItemId(path);
         final var relativePath = LocalSpaceUtil.getLocalWorkspace().getLocalRootPath().relativize(path).toString();
-        final var origin = getOrigin(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, itemId,
+        final var origin = getOrigin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, itemId,
             relativePath, projectType);
         final var projectName = path.toFile().getName();
         return createProject(wfm, origin, projectName, customProjectId);
