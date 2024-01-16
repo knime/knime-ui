@@ -64,6 +64,7 @@ import org.knime.core.node.KNIMEConstants;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.testing.util.WorkflowManagerUtil;
 
 /**
@@ -102,7 +103,7 @@ public class AppStatePersistorTest {
         when(project.getName()).thenReturn("Test Project");
         var origin = mock(Origin.class);
         when(origin.getSpaceId()).thenReturn("test_space_id");
-        when(origin.getProviderId()).thenReturn(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID);
+        when(origin.getProviderId()).thenReturn(SpaceProvider.LOCAL_SPACE_PROVIDER_ID);
         when(origin.getRelativePath()).thenReturn(Optional.of("a/relative/path"));
         when(project.getOrigin()).thenReturn(Optional.of(origin));
         wpm.addProject(project);
