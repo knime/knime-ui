@@ -9,6 +9,50 @@ import type { RootStoreState } from "../types";
 import type { WorkflowState } from ".";
 import { getProjectAndWorkflowIds } from "./util";
 
+import { uniqueId } from "lodash-es";
+import { getToastsProvider } from "@/plugins/toasts";
+import CopyIcon from "webapps-common/ui/assets/img/icons/copy.svg";
+const $toast = getToastsProvider();
+
+const showFallbackToast = (clipboardContent: string) => {
+  const fallbackToast = $toast.show({
+    id: "COPY_FALLBACK",
+    headline: "Clipboard data ready…",
+    message:
+      "This format allows you to  use the clipboard content in a different application.",
+    buttons: [
+      {
+        icon: CopyIcon,
+        text: "Copy JSON",
+        callback: () => {
+          navigator.clipboard.writeText(clipboardContent).then(() => {
+            $toast.remove(fallbackToast);
+          });
+        },
+      },
+    ],
+    autoRemove: false,
+  });
+  return fallbackToast;
+};
+
+const writeToClipboardWithFallback = async (clipboardContent: string) => {
+  try {
+    await navigator.clipboard.writeText(clipboardContent);
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error &&
+      "name" in error &&
+      error.name === "NotAllowedError"
+    ) {
+      // fallback for not allowed as we have a missing user-initiated call (returning from network call)
+      showFallbackToast(clipboardContent);
+    }
+    consola.info("Failed to write to clipboard", error);
+  }
+};
+
 interface State {
   copyPaste: {
     payloadIdentifier?: unknown;
@@ -19,6 +63,7 @@ interface State {
       height: number;
     };
   } | null;
+  cacheClipboardContent: Record<string, string>;
   isClipboardBusy: boolean;
 }
 
@@ -39,12 +84,22 @@ declare module "./index" {
 
 export const state = (): State => ({
   copyPaste: null,
+  cacheClipboardContent: {},
   isClipboardBusy: false,
 });
 
 export const mutations: MutationTree<WorkflowState> = {
   setCopyPaste(state, copyPasteState) {
     state.copyPaste = copyPasteState;
+  },
+
+  setClipboardContentCache(
+    state,
+    { cacheClipboardContentId, clipboardContent },
+  ) {
+    state.cacheClipboardContent = {
+      [cacheClipboardContentId]: clipboardContent,
+    };
   },
 
   setLastPasteBounds(state, bounds) {
@@ -97,6 +152,12 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     try {
       commit("setIsClipboardBusy", true);
 
+      // add this placeholder for webkit (safari) browsers to be able to fetch the data from the store later
+      const cacheClipboardContentId = `clipboard_cache_${uniqueId()}`;
+      await navigator.clipboard.writeText(
+        JSON.stringify({ cacheClipboardContentId }),
+      );
+
       const response = await runAbortablePromise(() =>
         workflowCommand({
           projectId,
@@ -117,11 +178,20 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         objectBounds,
       };
 
-      await navigator.clipboard.writeText(JSON.stringify(clipboardContent));
-
       commit("setCopyPaste", {
         payloadIdentifier: clipboardContent.payloadIdentifier,
       });
+
+      const clipboardContentSerialized = JSON.stringify(clipboardContent);
+
+      // remember the data for non chromium browsers
+      commit("setClipboardContentCache", {
+        cacheClipboardContentId,
+        clipboardContent: clipboardContentSerialized,
+      });
+
+      await writeToClipboardWithFallback(clipboardContentSerialized);
+
       commit("setIsClipboardBusy", false);
       processPasteOperation();
 
@@ -167,6 +237,15 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     try {
       clipboardContent = JSON.parse(clipboardText);
+      // replace the content with our cache if we have a hit (store cached data is used for non chrome browsers)
+      if (
+        clipboardContent.cacheClipboardContentId &&
+        state.cacheClipboardContent[clipboardContent.cacheClipboardContentId]
+      ) {
+        clipboardContent = JSON.parse(
+          state.cacheClipboardContent[clipboardContent.cacheClipboardContentId],
+        );
+      }
     } catch (e) {
       // try to paste the clipboard content as a URI
       if (
