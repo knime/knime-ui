@@ -177,7 +177,7 @@ final class WorkflowAPI {
      * @throws IOException if moving the workflow fails
      */
     @API
-    static void saveProjectAs(final String projectId, final String workflowSvg) {
+    static void saveWorkflowAs(final String projectId, final String workflowSvg) {
         SaveProjectCopy.saveCopyOf(projectId, workflowSvg);
     }
 
