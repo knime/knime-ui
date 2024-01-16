@@ -72,11 +72,6 @@ public final class LocalSpaceUtil {
      */
     private static LocalWorkspace localWorkspace = null;
 
-    /**
-     * The ID of the local space provider
-     */
-    public static final String LOCAL_SPACE_PROVIDER_ID = "local";
-
     private LocalSpaceUtil() {
         // Utility class
     }
@@ -144,7 +139,7 @@ public final class LocalSpaceUtil {
         return new Project.Origin() { // NOSONAR
             @Override
             public String getProviderId() {
-                return LOCAL_SPACE_PROVIDER_ID;
+                return SpaceProvider.LOCAL_SPACE_PROVIDER_ID;
             }
 
             @Override
@@ -184,7 +179,8 @@ public final class LocalSpaceUtil {
      *         otherwise.
      */
     public static boolean isLocalSpace(final String spaceProviderId, final String spaceId) {
-        return spaceProviderId.equals(LOCAL_SPACE_PROVIDER_ID) && spaceId.equals(LocalWorkspace.LOCAL_WORKSPACE_ID);
+        return spaceProviderId.equals(SpaceProvider.LOCAL_SPACE_PROVIDER_ID)
+            && spaceId.equals(LocalWorkspace.LOCAL_WORKSPACE_ID);
     }
 
     /**

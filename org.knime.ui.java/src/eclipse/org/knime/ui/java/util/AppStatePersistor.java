@@ -64,6 +64,7 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -111,15 +112,15 @@ public final class AppStatePersistor {
      */
     public static String serializeAppState() {
         var wpm = ProjectManager.getInstance();
-        var projectsJson = wpm.getProjectIds().stream().map(id -> wpm.getProject(id).orElse(null))
-            .filter(Objects::nonNull) //
-            // only persist local workflow projects
-            .filter(wp -> wp.getOrigin().map(o -> o.getProviderId().equals(LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID))
-                .orElse(Boolean.FALSE)) //
-            .map(wp -> serializeWorkflowProject(wpm, wp)) //
-            .collect(Collector.of(MAPPER::createArrayNode, (n, j) -> n.addPOJO(j), (n1, n2) -> {
-                throw new UnsupportedOperationException();
-            }));
+        var projectsJson =
+            wpm.getProjectIds().stream().map(id -> wpm.getProject(id).orElse(null)).filter(Objects::nonNull) //
+                // only persist local workflow projects
+                .filter(wp -> wp.getOrigin().map(o -> o.getProviderId().equals(SpaceProvider.LOCAL_SPACE_PROVIDER_ID))
+                    .orElse(Boolean.FALSE)) //
+                .map(wp -> serializeWorkflowProject(wpm, wp)) //
+                .collect(Collector.of(MAPPER::createArrayNode, (n, j) -> n.addPOJO(j), (n1, n2) -> {
+                    throw new UnsupportedOperationException();
+                }));
         return MAPPER.createObjectNode().put(VERSION, KNIMEConstants.VERSION).set(PROJECTS, projectsJson)
             .toPrettyString();
     }

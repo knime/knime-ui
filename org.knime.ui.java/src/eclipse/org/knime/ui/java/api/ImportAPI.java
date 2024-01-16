@@ -64,8 +64,8 @@ import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.commands.WorkflowCommand;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.workbench.editor2.commands.CreateMetaNodeTemplateCommand;
 
 /**
@@ -139,7 +139,7 @@ final class ImportAPI {
         var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
         var uri = space.toKnimeUrl(itemId);
-        var isRemoteLocation = !LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
+        var isRemoteLocation = !SpaceProvider.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
         return importComponent(projectId, workflowId, uri, isRemoteLocation, x, y);
     }
 

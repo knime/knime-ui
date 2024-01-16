@@ -173,19 +173,19 @@ final class SaveProjectCopy {
             return null;
         }
 
+        final var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         if (collisionHandling == NameCollisionHandling.OVERWRITE) {
             final var path = destWorkflowGroupPath.resolve(fileName);
             if (path.equals(srcPath)) {
                 return oldContext; // Simply overwrite the current location,
             }
-            if (ProjectManager.getInstance().getProject(path).isPresent()) {
+            final var relativePath = localWorkspace.getLocalRootPath().relativize(path);
+            if (ProjectManager.getInstance().getLocalProject(relativePath).isPresent()) {
                 throw new IOException("Project <%s> is opened and can't be overwritten.".formatted(fileName));
             }
         }
 
-        final var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         final var newPath = localWorkspace.createWorkflowDir(destWorkflowGroupItemId, fileName, collisionHandling);
-
         return WorkflowContextV2.builder() //
             .withAnalyticsPlatformExecutor(exec -> exec //
                 .withCurrentUserAsUserId() //
