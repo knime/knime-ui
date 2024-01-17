@@ -5,6 +5,7 @@ import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
 import { isInputElement } from "@/util/isInputElement";
+import { isDynamicViewFocused } from "@/components/dynamicViews";
 
 export const RESIZE_DEBOUNCE = 100;
 
@@ -153,7 +154,7 @@ export default {
         Panning
         */
     onPressSpace(e) {
-      if (isInputElement(e.target)) {
+      if (isInputElement(e.target) || isDynamicViewFocused()) {
         return;
       }
 
