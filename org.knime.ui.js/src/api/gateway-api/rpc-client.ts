@@ -1,8 +1,15 @@
+import { JSONRPCError } from "@open-rpc/client-js";
+import { ERR_TIMEOUT } from "@open-rpc/client-js/build/Error";
+
+import { getToastsProvider } from "@/plugins/toasts";
+import { getRPCClientInstance, registerEventHandler } from "../json-rpc-client";
 import type { Configuration } from "./configuration";
-import { jsonRPCClient, registerEventHandler } from "../json-rpc-client";
 
 export interface RPCClient {
-  call(method: string, params: unknown): Promise<any>;
+  call(
+    method: string,
+    params: object | readonly unknown[] | undefined,
+  ): Promise<any>;
 
   registerEventHandlers(eventHandlers: Record<string, any>): void;
 }
@@ -14,9 +21,42 @@ const request = {
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 export const createRPCClient = (configuration: Configuration): RPCClient => {
+  const $toasts = getToastsProvider();
+
   const rpcClient: RPCClient = {
-    call(method, params) {
-      return jsonRPCClient.request({ ...request, method, params });
+    async call(method, params) {
+      try {
+        return await getRPCClientInstance().request({
+          ...request,
+          method,
+          params,
+        });
+      } catch (error) {
+        // timeouts will be handled separately on the transport
+        if (error instanceof JSONRPCError && error.code !== ERR_TIMEOUT) {
+          const isDev = import.meta.env.DEV;
+
+          const stack = error.stack;
+          $toasts.show({
+            type: "error",
+            message: "Oops! Something went wrong",
+            buttons: isDev
+              ? [
+                  {
+                    text: "Copy stacktrace",
+                    callback: () => {
+                      navigator.clipboard.writeText(stack ?? "");
+                    },
+                  },
+                ]
+              : [],
+          });
+        }
+
+        consola.error("Error making RPC call", error);
+
+        throw error;
+      }
     },
 
     registerEventHandlers(handlers) {

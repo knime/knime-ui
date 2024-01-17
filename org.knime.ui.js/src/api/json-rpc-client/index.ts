@@ -1,4 +1,8 @@
 import { RequestManager, Client } from "@open-rpc/client-js";
+import type { Store } from "vuex";
+
+import type { RootStoreState } from "@/store/types";
+import { getToastsProvider } from "@/plugins/toasts";
 
 import {
   getRegisteredEventHandler,
@@ -6,11 +10,12 @@ import {
   serverEventHandler,
 } from "./server-events";
 
-import type { JSONRPCClient } from "./types";
 import { DesktopAPTransport } from "./DesktopAPTransport";
 import { WebSocketTransport } from "./WebSocketTransport";
 
-let jsonRPCClient: JSONRPCClient = null;
+let jsonRPCClient: Client;
+
+const $toast = getToastsProvider();
 
 export type ConnectionInfo = {
   url: string;
@@ -48,33 +53,94 @@ const initDesktopClient = () => {
   return Promise.resolve();
 };
 
-const initBrowserClient = (connectionInfo: ConnectionInfo) =>
+const setupServerEventListener = (transport: WebSocketTransport) => {
+  const { connection } = transport;
+
+  // setup server event handler
+  connection.addEventListener("message", (message: { data: unknown }) => {
+    const { data } = message;
+    if (typeof data !== "string") {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(data);
+      if (parsed.eventType) {
+        serverEventHandler(data);
+      }
+    } catch (error) {
+      consola.log(data);
+    }
+  });
+};
+
+const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
+  const CONNECTION_LOST_TOAST_ID = "__CONNECTION_LOST";
+  const onConnectionLost = (message: string) => {
+    // add transparent overlay to prevent user interactions
+    store.dispatch("application/updateGlobalLoader", {
+      loading: true,
+      config: { displayMode: "transparent" },
+    });
+
+    $toast.show({
+      id: CONNECTION_LOST_TOAST_ID,
+      headline: "Connection lost",
+      message,
+      type: "error",
+      autoRemove: false,
+    });
+  };
+
+  const onConnectionRestored = () => {
+    store.dispatch("application/updateGlobalLoader", { loading: false });
+
+    $toast.removeBy(({ id }) => id === CONNECTION_LOST_TOAST_ID);
+
+    $toast.show({
+      type: "success",
+      headline: "Connection restored",
+    });
+  };
+
+  ws.addEventListener("close", (wsCloseEvent) => {
+    consola.error("Websocket closed: ", wsCloseEvent);
+    onConnectionLost("Server is unreachable");
+  });
+
+  window.addEventListener("offline", () => {
+    onConnectionLost(
+      "Please, check your internet connection and try refreshing the page",
+    );
+  });
+
+  window.addEventListener("online", () => {
+    onConnectionRestored();
+  });
+};
+
+const initBrowserClient = (
+  connectionInfo: ConnectionInfo,
+  store: Store<RootStoreState>,
+) =>
   new Promise((resolve, reject) => {
     try {
+      if (!connectionInfo) {
+        reject(new Error("Missing connection info"));
+        return;
+      }
+
       if (jsonRPCClient) {
         resolve("SUCCESS");
         return;
       }
 
       const transport = new WebSocketTransport(connectionInfo.url);
-      const { connection } = transport;
 
-      // setup server event handler
-      connection.addEventListener("message", (message) => {
-        const { data } = message;
-        if (typeof data !== "string") {
-          return;
-        }
+      // setup server event handler and other events on the WS transport
+      setupServerEventListener(transport);
 
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.eventType) {
-            serverEventHandler(data);
-          }
-        } catch (error) {
-          consola.log(data);
-        }
-      });
+      handleConnectionLoss(transport.connection as WebSocket, store);
 
       // initialize the client and request manager to start the WS connection
       const requestManager = new RequestManager([transport]);
@@ -89,13 +155,18 @@ const initBrowserClient = (connectionInfo: ConnectionInfo) =>
     }
   });
 
+const getRPCClientInstance = () => jsonRPCClient;
+
 const initJSONRPCClient = async (
   mode: "BROWSER" | "DESKTOP",
-  connectionInfo: ConnectionInfo,
+  connectionInfo: ConnectionInfo | null,
+  store: Store<RootStoreState>,
 ) => {
   try {
     const clientInitializer =
-      mode === "DESKTOP" ? initDesktopClient : initBrowserClient;
+      mode === "DESKTOP"
+        ? initDesktopClient()
+        : initBrowserClient(connectionInfo!, store);
 
     await clientInitializer(connectionInfo);
 
@@ -107,7 +178,7 @@ const initJSONRPCClient = async (
 
 export {
   initJSONRPCClient,
-  jsonRPCClient,
+  getRPCClientInstance,
   registerEventHandler,
   getRegisteredEventHandler,
 };

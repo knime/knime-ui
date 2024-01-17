@@ -94,20 +94,21 @@ const apiURLResolver = () =>
   });
 
 try {
-  const connectionInfo = await apiURLResolver();
-  await initJSONRPCClient(environment, connectionInfo);
-
-  // Create Vue app
-  const app = Vue.createApp(KnimeUI);
+  const store = initStore();
 
   const toastServiceProvider = getToastsProvider();
   const toastPlugin = toastServiceProvider.getToastServicePlugin();
 
+  const connectionInfo = await apiURLResolver();
+
+  await initJSONRPCClient(environment, connectionInfo, store);
+
+  // Create Vue app
+  const app = Vue.createApp(KnimeUI);
+
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
 
-  // Provide store and init plugins
-  const store = initStore();
   runInEnvironment({
     BROWSER: () => {
       store.commit("api/setRestApiBaseUrl", connectionInfo.restApiBaseUrl);
@@ -122,11 +123,13 @@ try {
     window.router = router;
   }
 
+  // Init plugins, provide store and router
   initPlugins({ app, store, router });
   initGlobalEnvProperty(app);
 
   app.use(store);
   app.use(router);
+
   app.mount("#app");
 } catch (error) {
   consola.log("Could not initialize Application due to:", error);

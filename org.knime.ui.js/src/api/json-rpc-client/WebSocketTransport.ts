@@ -27,6 +27,7 @@ export class WebSocketTransport extends BaseWebSocketTransport {
       })
       .catch((error) => {
         consola.error(error.data);
+        throw error;
       });
 
     return promise;
