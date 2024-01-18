@@ -12,18 +12,20 @@ import { getProjectAndWorkflowIds } from "./util";
 import { uniqueId } from "lodash-es";
 import { getToastsProvider } from "@/plugins/toasts";
 import CopyIcon from "webapps-common/ui/assets/img/icons/copy.svg";
+import { shallowRef } from "vue";
 const $toast = getToastsProvider();
 
 const showFallbackToast = (clipboardContent: string) => {
   const fallbackToast = $toast.show({
     id: "COPY_FALLBACK",
-    headline: "Clipboard data ready…",
+    headline: "Data copied to clipboard",
     message:
-      "This format allows you to  use the clipboard content in a different application.",
+      "If you want to paste the data into a different Analytics Platform you need to copy the data in JSON format.",
     buttons: [
       {
-        icon: CopyIcon,
-        text: "Copy JSON",
+        // @ts-expect-error
+        icon: shallowRef(CopyIcon),
+        text: " Copy data in JSON format",
         callback: () => {
           navigator.clipboard.writeText(clipboardContent).then(() => {
             $toast.remove(fallbackToast);
@@ -31,7 +33,7 @@ const showFallbackToast = (clipboardContent: string) => {
         },
       },
     ],
-    autoRemove: false,
+    autoRemove: true,
   });
   return fallbackToast;
 };
