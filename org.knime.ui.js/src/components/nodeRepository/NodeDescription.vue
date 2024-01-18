@@ -135,7 +135,7 @@ export default defineComponent({
 
 <template>
   <div class="node-description">
-    <div class="header">
+    <div class="node-header">
       <div class="header-content">
         <h2>{{ title }}</h2>
         <!-- <slot name="header-action" /> -->
@@ -216,10 +216,9 @@ export default defineComponent({
   height: 100%;
   padding-right: 8px;
   padding-bottom: 8px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
 
-  & .header {
+  & > .node-header {
     position: sticky;
     z-index: 1;
     top: 0;
@@ -441,7 +440,7 @@ export default defineComponent({
   }
 
   & .extension-info {
-    & .header {
+    & > .header {
       display: flex;
       align-items: center;
       font-size: 16px;
