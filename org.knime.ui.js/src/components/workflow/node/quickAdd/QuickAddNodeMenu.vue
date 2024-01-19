@@ -247,7 +247,7 @@ export default defineComponent({
     class="quick-add-node"
     :canvas-position="canvasPosition"
     aria-label="Quick add node"
-    :prevent-oveflow="true"
+    :prevent-overflow="true"
     @menu-close="$emit('menuClose')"
   >
     <!-- this will be portalled to the canvas -->
