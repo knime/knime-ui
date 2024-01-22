@@ -54,18 +54,6 @@ describe("Connector.vue", () => {
 
   beforeAll(() => {
     window.alert = vi.fn();
-    class MockPointerEvent extends Event {
-      clientX = null;
-      clientY = null;
-      constructor(name, args) {
-        super(name, args);
-        this.clientX = args?.clientX;
-        this.clientY = args?.clientY;
-      }
-    }
-    window.PointerEvent = MockPointerEvent as any;
-    HTMLElement.prototype.setPointerCapture = vi.fn();
-    HTMLElement.prototype.releasePointerCapture = vi.fn();
   });
 
   afterEach(() => {

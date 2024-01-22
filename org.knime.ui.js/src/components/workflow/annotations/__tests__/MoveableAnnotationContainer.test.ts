@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
@@ -15,14 +15,7 @@ import { createWorkflow } from "@/test/factories";
 const mockedAPI = deepMocked(API);
 
 describe("MoveableAnnotationContainer.vue", () => {
-  beforeAll(() => {
-    class MockPointerEvent extends Event {}
-    window.PointerEvent = MockPointerEvent as any;
-    HTMLElement.prototype.setPointerCapture = vi.fn();
-    HTMLElement.prototype.releasePointerCapture = vi.fn();
-  });
-
-  const defaultProps: { id: String; bounds: Bounds } = {
+  const defaultProps: { id: string; bounds: Bounds } = {
     id: "annotation:1",
     bounds: { x: 500, y: 200, width: 100, height: 100 },
   };

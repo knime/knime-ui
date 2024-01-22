@@ -65,7 +65,7 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
   const hitTarget = document.elementFromPoint(x, y);
 
   // skip matched elements inside "self"
-  if (dragContainer.value.contains(hitTarget)) {
+  if (hitTarget && dragContainer.value.contains(hitTarget)) {
     return;
   }
 

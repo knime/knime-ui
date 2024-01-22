@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
@@ -15,13 +15,6 @@ import { createPort, createWorkflow } from "@/test/factories";
 const mockedAPI = deepMocked(API);
 
 describe("MoveableMetaNodePortBarContainer.vue", () => {
-  beforeAll(() => {
-    class MockPointerEvent extends Event {}
-    window.PointerEvent = MockPointerEvent as any;
-    HTMLElement.prototype.setPointerCapture = vi.fn();
-    HTMLElement.prototype.releasePointerCapture = vi.fn();
-  });
-
   const defaultProps: { type: "in" | "out" } = {
     type: "in",
   };

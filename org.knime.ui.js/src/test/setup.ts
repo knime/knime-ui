@@ -22,3 +22,18 @@ vi.mock("raf-throttle", () => ({
     };
   },
 }));
+
+class MockPointerEvent extends Event {
+  clientX = null;
+  clientY = null;
+  buttons = null;
+  constructor(name: string, args: any) {
+    super(name, args);
+    this.clientX = args?.clientX;
+    this.clientY = args?.clientY;
+    this.buttons = args?.buttons ?? 1;
+  }
+}
+window.PointerEvent = MockPointerEvent as any;
+HTMLElement.prototype.setPointerCapture = vi.fn();
+HTMLElement.prototype.releasePointerCapture = vi.fn();
