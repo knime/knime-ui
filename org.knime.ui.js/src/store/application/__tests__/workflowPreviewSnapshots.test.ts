@@ -8,6 +8,10 @@ vi.mock("@/util/encodeString", () => ({
   encodeString: vi.fn((value) => value),
 }));
 
+vi.mock("@/util/generateWorkflowPreview", () => ({
+  generateWorkflowPreview: vi.fn((value) => value.outerHTML),
+}));
+
 describe("workflow preview snapshot", () => {
   const getSnapshotKeys = (_store: Store<RootStoreState>) =>
     Array.from(_store.state.application.rootWorkflowSnapshots.keys());
@@ -25,20 +29,15 @@ describe("workflow preview snapshot", () => {
 
       store.state.workflow.activeWorkflow.info.containerId = "root:17";
 
-      const svgElement = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg",
+      store.state.application.rootWorkflowSnapshots.set(
+        "foo--root",
+        "<svg data-was-saved></svg>",
       );
-
-      store.state.application.rootWorkflowSnapshots.set("foo--root", {
-        svgElement,
-        isCanvasEmpty: false,
-      });
 
       const result = await store.dispatch(
         "application/getActiveWorkflowSnapshot",
       );
-      expect(result.svgElement).toBe(svgElement);
+      expect(result).toBe("<svg data-was-saved></svg>");
     });
   });
 
@@ -70,7 +69,7 @@ describe("workflow preview snapshot", () => {
 
     // create a dummy element to act as the workflow
     const canvasWrapperMockEl = document.createElement("div");
-    const canvasMockEl = document.createElement("div");
+    const canvasMockEl = document.createElement("svg");
     canvasWrapperMockEl.appendChild(canvasMockEl);
     // setup canvas
     store.state.canvas = {
@@ -100,10 +99,7 @@ describe("workflow preview snapshot", () => {
       store.state.application.rootWorkflowSnapshots.get(
         getSnapshotKeys(store)[0],
       ),
-    ).toEqual({
-      svgElement: canvasMockEl,
-      isCanvasEmpty: true,
-    });
+    ).toBe("<svg></svg>");
 
     // go back to the root workflow
     await store.dispatch("application/switchWorkflow", {

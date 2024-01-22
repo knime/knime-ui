@@ -192,9 +192,7 @@ describe("workflow store: desktop interactions", () => {
         const dummyEl = document.createElement("div");
         store.state.application.rootWorkflowSnapshots.set(
           `${projectId}--root`,
-          {
-            svgElement: dummyEl,
-          },
+          dummyEl.outerHTML,
         );
 
         mockedGenerateWorkflowPreview.mockImplementation((input) =>

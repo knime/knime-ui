@@ -2,15 +2,11 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { encodeString } from "@/util/encodeString";
 import type { RootStoreState } from "../types";
 import type { ApplicationState } from "./index";
-
-interface WorkflowPreviewSnapshot {
-  isCanvasEmpty: boolean;
-  svgElement: SVGSVGElement;
-}
+import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 
 interface State {
-  // Map that keeps track of root workflow snapshots. Used to generate SVGs when saving
-  rootWorkflowSnapshots: Map<string, WorkflowPreviewSnapshot>;
+  // Map that keeps track of root workflow snapshots. Used as SVGs when saving
+  rootWorkflowSnapshots: Map<string, string | null>;
 }
 
 declare module "./index" {
@@ -63,13 +59,16 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     }
   },
 
-  addToRootWorkflowSnapshots({ state }, { projectId, element, isCanvasEmpty }) {
+  async addToRootWorkflowSnapshots(
+    { state },
+    { projectId, element, isCanvasEmpty },
+  ) {
     // always use the "root" workflow
     const snapshotKey = encodeString(`${projectId}--root`);
-    state.rootWorkflowSnapshots.set(snapshotKey, {
-      svgElement: element.cloneNode(true),
-      isCanvasEmpty,
-    });
+    state.rootWorkflowSnapshots.set(
+      snapshotKey,
+      await generateWorkflowPreview(element, isCanvasEmpty),
+    );
   },
 
   removeFromRootWorkflowSnapshots({ state }, { projectId }) {
@@ -92,15 +91,15 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     const isRootWorkflow = containerId === "root";
 
-    const rootWorkflowSnapshot = isRootWorkflow
-      ? {
-          svgElement: getScrollContainerElement().firstChild,
-          isCanvasEmpty: rootGetters["workflow/isWorkflowEmpty"],
-        }
+    const preview = isRootWorkflow
+      ? await generateWorkflowPreview(
+          getScrollContainerElement()!.firstChild as SVGSVGElement,
+          rootGetters["workflow/isWorkflowEmpty"],
+        )
       : // when we're on a nested workflow (metanode/component) we then need to use the saved snapshot
         await dispatch("getRootWorkflowSnapshotByProjectId", { projectId });
 
-    return rootWorkflowSnapshot;
+    return preview;
   },
 };
 
