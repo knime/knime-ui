@@ -485,6 +485,12 @@ export interface AppState {
      */
     featureFlags?: { [key: string]: any; };
     /**
+     *
+     * @type {Permissions}
+     * @memberof AppState
+     */
+    permissions?: Permissions;
+    /**
      * If true, scrolling in the workflow canvas will be interpreted as zooming
      * @type {boolean}
      * @memberof AppState
@@ -2527,6 +2533,47 @@ export namespace PatchOp {
         Test = 'test'
     }
 }
+/**
+ *
+ * @export
+ * @interface Permissions
+ */
+export interface Permissions {
+
+    /**
+     *
+     * @type {boolean}
+     * @memberof Permissions
+     */
+    canConfigureNodes: boolean;
+    /**
+     *
+     * @type {boolean}
+     * @memberof Permissions
+     */
+    canEditWorkflow: boolean;
+    /**
+     *
+     * @type {boolean}
+     * @memberof Permissions
+     */
+    canAccessNodeRepository: boolean;
+    /**
+     *
+     * @type {boolean}
+     * @memberof Permissions
+     */
+    canAccessKAIPanel: boolean;
+    /**
+     *
+     * @type {boolean}
+     * @memberof Permissions
+     */
+    canAccessSpaceExplorer: boolean;
+
+}
+
+
 /**
  * Abstract schema for commands acting on ports (port operations).
  * @export

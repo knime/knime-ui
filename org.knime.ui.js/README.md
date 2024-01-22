@@ -53,6 +53,16 @@ When both steps are done, you can open the app in the browser under `http://loca
 
 If you want to load KNIME UI in an iframe by means of the AP-loader, in addition to the above you need to set the `VITE_BROWSER_DEV_MODE_EMBEDDED` variable to `true` in your `.env` file. This mode will enable you to develop for both knime-ui and the ap-loader application.
 
+### Modes
+
+With AP running in the browser there is the concept of modes. A mode define the set of features a user has access, and it may change the features enabled in the UI. The available modes are `JOB-VIEWER`.
+
+To enable a mode add the following property when starting AP either in `knime.ini` or in the `VM Arguments`.
+
+```sh
+-Dorg.knime.ui.mode=JOB-VIEWER
+```
+
 ## Git hooks
 
 To set up hooks via [husky] on the repository (recommended for a frontend-focused development setup) you can run the following npm script:
