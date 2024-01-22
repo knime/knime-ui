@@ -9,7 +9,6 @@ import { getToastsProvider } from "@/plugins/toasts";
 import type { RootStoreState } from "../types";
 import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
-import { isExecuted } from "@/util/nodeUtil";
 
 const TOAST_ID_PREFIX = "LINK_UPDATE";
 const TOAST_HEADLINE = "Linked components";
@@ -52,12 +51,12 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
 
     try {
-      const nodeIds = await API.workflow.getLinkUpdates({
+      const updatables = await API.workflow.getUpdatableLinkedComponents({
         projectId,
         workflowId,
       });
 
-      if (nodeIds.length === 0) {
+      if (updatables.length === 0) {
         if (!auto) {
           $toast.show({
             id: `${TOAST_ID_PREFIX}__ALL_UP_TO_DATE`,
@@ -70,14 +69,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         return;
       }
 
-      const {
-        activeWorkflow: { nodes },
-      } = state;
-
-      const hasExecutedNodes = nodeIds.some((id) => {
-        const node = nodes[id];
-        return isExecuted(node);
-      });
+      const hasExecutedNodes = updatables.some(
+        (updatable) => updatable.isExecuted,
+      );
+      const nodeIds = updatables.map((updatable) => updatable.id);
 
       const message = `You have ${nodeIds.length} ${pluralize(
         "update",

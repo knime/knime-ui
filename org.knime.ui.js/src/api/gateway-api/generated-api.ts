@@ -2027,6 +2027,29 @@ export interface NodeGroups {
 
 
 /**
+ * A node ID and whether the node is executed or not
+ * @export
+ * @interface NodeIdAndIsExecuted
+ */
+export interface NodeIdAndIsExecuted {
+
+    /**
+     *
+     * @type {string}
+     * @memberof NodeIdAndIsExecuted
+     */
+    id: string;
+    /**
+     *
+     * @type {boolean}
+     * @memberof NodeIdAndIsExecuted
+     */
+    isExecuted: boolean;
+
+}
+
+
+/**
  * A single port of a node.
  * @export
  * @interface NodePort
@@ -4706,7 +4729,7 @@ const workflow = function(rpcClient: RPCClient) {
          */
         getLinkUpdates(
         	params: { projectId: string,  workflowId: string  }
-        ): Promise<Array<string>> {
+        ): Promise<Array<NodeIdAndIsExecuted>> {
            const defaultParams = { 
            }
 
