@@ -117,9 +117,13 @@ describe("workflow::componentInteractions", () => {
 
       const dispatchSpy = vi.spyOn(store, "dispatch");
 
-      const nodeIds = ["root:1", "root:2", "root:3"];
+      const nodeIdAndIsExecuted = [
+        { id: "root:1", isExecuted: false },
+        { id: "root:2", isExecuted: false },
+        { id: "root:3", isExecuted: false },
+      ];
       mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
-        nodeIds,
+        nodeIdAndIsExecuted,
       );
 
       mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
@@ -153,6 +157,7 @@ describe("workflow::componentInteractions", () => {
         "workflow/clearComponentUpdateToasts",
         undefined,
       );
+      const nodeIds = nodeIdAndIsExecuted.map((item) => item.id);
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateComponents", {
         nodeIds,
       });
@@ -179,9 +184,13 @@ describe("workflow::componentInteractions", () => {
       });
       store.commit("workflow/setActiveWorkflow", workflow);
 
-      const nodeIds = ["root:1", "root:2", "root:3"];
+      const nodeIdAndIsExecuted = [
+        { id: "root:1", isExecuted: false },
+        { id: "root:2", isExecuted: false },
+        { id: "root:3", isExecuted: true },
+      ];
       mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
-        nodeIds,
+        nodeIdAndIsExecuted,
       );
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
