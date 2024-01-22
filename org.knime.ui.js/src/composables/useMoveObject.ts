@@ -53,6 +53,14 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
     );
   };
 
+  const isSignificantMove = (startPosition: XY, newPosition: XY) => {
+    const MOVE_THRESHOLD = 5;
+    const deltaX = Math.abs(newPosition.x - startPosition.x);
+    const deltaY = Math.abs(newPosition.y - startPosition.y);
+
+    return deltaX >= MOVE_THRESHOLD || deltaY >= MOVE_THRESHOLD;
+  };
+
   const createPointerDownHandler =
     (initialPosition: Ref<XY>) => (pointerDownEvent: PointerEvent) => {
       pointerDownEvent.stopPropagation();
@@ -71,10 +79,9 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         return;
       }
 
-      const rect =
-        options.objectElement && options.objectElement.value
-          ? options.objectElement.value.getBoundingClientRect()
-          : { left: pointerDownEvent.clientX, top: pointerDownEvent.clientY };
+      const rect = options.objectElement?.value
+        ? options.objectElement.value.getBoundingClientRect()
+        : { left: pointerDownEvent.clientX, top: pointerDownEvent.clientY };
 
       const clickPosition = {
         x: Math.floor(pointerDownEvent.clientX - rect.left) / zoomFactor.value,
@@ -100,11 +107,15 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         },
       };
 
-      const onMove = throttle((ptrMoveEvent: PointerEvent) => {
+      const onMove = throttle((pointerMoveEvent: PointerEvent) => {
         // skip first onMove event
         // on windows touchpads a single onMove is triggered when the user meant a double tap
         if (!hasFirstOnMoveOccurred) {
           hasFirstOnMoveOccurred = true;
+          return;
+        }
+
+        if (pointerMoveEvent.buttons !== 1) {
           return;
         }
 
@@ -113,14 +124,23 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           return;
         }
 
-        onMoveCallback(ptrMoveEvent);
-
-        const snapSize = ptrMoveEvent.altKey ? 1 : $shapes.gridSize.x;
+        const snapSize = pointerMoveEvent.altKey ? 1 : $shapes.gridSize.x;
 
         const [moveX, moveY] = screenToCanvasCoordinates.value([
-          ptrMoveEvent.clientX,
-          ptrMoveEvent.clientY,
+          pointerMoveEvent.clientX,
+          pointerMoveEvent.clientY,
         ]);
+
+        if (
+          !isSignificantMove(
+            { x: pointerDownEvent.clientX, y: pointerDownEvent.clientY },
+            { x: pointerMoveEvent.clientX, y: pointerMoveEvent.clientY },
+          )
+        ) {
+          return;
+        }
+
+        onMoveCallback(pointerMoveEvent);
 
         const snapFn = useGridSnapping
           ? geometry.utils.snapToGrid
@@ -142,13 +162,13 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
         });
       });
 
-      const onUp = (ptrUpEvent: PointerEvent) => {
+      const onUp = (pointerUpEvent: PointerEvent) => {
         // use separate function to avoid returning promise
         // from callback which should return void
         const handler = async () => {
           hasReleased = true;
 
-          const shouldMove = await onMoveEndCallback(ptrUpEvent);
+          const shouldMove = await onMoveEndCallback(pointerUpEvent);
           try {
             if (shouldMove && !hasAbortedDrag.value) {
               await store.dispatch("workflow/moveObjects");
@@ -164,6 +184,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
 
           eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
           document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
           eventTarget.removeEventListener("pointerup", onUp);
           eventTarget.removeEventListener(
             "lostpointercapture",
