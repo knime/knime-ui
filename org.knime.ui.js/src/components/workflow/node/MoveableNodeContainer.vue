@@ -53,12 +53,22 @@ watch(
   { deep: true },
 );
 
+const dragContainer = computed(() => {
+  return container.value!.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;
+});
+
 const moveNode = () => {
   store.dispatch("workflow/moveObjects");
 };
 
 const notifyNodeDraggingListeners = (x: number, y: number) => {
   const hitTarget = document.elementFromPoint(x, y);
+
+  // skip matched elements inside "self"
+  if (dragContainer.value.contains(hitTarget)) {
+    return;
+  }
+
   const isSameTarget = hitTarget && lastHitTarget === hitTarget;
   if (!isSameTarget && lastHitTarget) {
     lastHitTarget.dispatchEvent(
@@ -88,9 +98,7 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
 const position = toRef(props, "position");
 
 const { createPointerDownHandler } = useMoveObject({
-  objectElement: computed(() => {
-    return container.value.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;
-  }),
+  objectElement: dragContainer,
 
   onMoveStartCallback: () => {
     if (!isNodeSelected.value(props.id)) {
