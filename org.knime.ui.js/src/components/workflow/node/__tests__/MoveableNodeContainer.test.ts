@@ -1,4 +1,4 @@
-import { expect, describe, it, vi, beforeEach, beforeAll } from "vitest";
+import { expect, describe, it, vi, beforeEach } from "vitest";
 import * as Vue from "vue";
 import { VueWrapper, shallowMount } from "@vue/test-utils";
 
@@ -36,13 +36,6 @@ vi.mock("@/mixins/escapeStack", () => {
 const mockedAPI = deepMocked(API);
 
 describe("MoveableNodeContainer", () => {
-  beforeAll(() => {
-    class MockPointerEvent extends Event {}
-    window.PointerEvent = MockPointerEvent as any;
-    HTMLElement.prototype.setPointerCapture = vi.fn();
-    HTMLElement.prototype.releasePointerCapture = vi.fn();
-  });
-
   const doMount = ({
     props = {},
     screenToCanvasCoordinates = () => [0, 0],
@@ -221,7 +214,8 @@ describe("MoveableNodeContainer", () => {
   });
 
   it("should abort moving a node when Esc is pressed", async () => {
-    const mockTarget = { dispatchEvent: vi.fn() };
+    const mockTarget = document.createElement("div");
+    mockTarget.dispatchEvent = vi.fn();
     window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
     const { wrapper, $store } = doMount({
       isDragging: true,
@@ -250,7 +244,8 @@ describe("MoveableNodeContainer", () => {
 
   describe("node dragging notification", () => {
     const doMountWithHitTarget = async () => {
-      const mockTarget = { dispatchEvent: vi.fn() };
+      const mockTarget = document.createElement("div");
+      mockTarget.dispatchEvent = vi.fn();
       window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
       const mountResult = doMount({
         isDragging: true,
@@ -266,7 +261,8 @@ describe("MoveableNodeContainer", () => {
 
     it("changes dragging target", async () => {
       const { mockTarget } = await doMountWithHitTarget();
-      const otherTarget = { dispatchEvent: vi.fn() };
+      const otherTarget = document.createElement("div");
+      otherTarget.dispatchEvent = vi.fn();
       // @ts-ignore
       window.document.elementFromPoint.mockReturnValue(otherTarget);
 
@@ -285,6 +281,7 @@ describe("MoveableNodeContainer", () => {
     });
 
     it("triggers dragging drop", async () => {
+      document.elementFromPoint = () => document.createElement("div");
       const { mockTarget, wrapper } = await doMountWithHitTarget();
       endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
 

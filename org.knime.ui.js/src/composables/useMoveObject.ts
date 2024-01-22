@@ -115,6 +115,7 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           return;
         }
 
+        // only allow left-clicks
         if (pointerMoveEvent.buttons !== 1) {
           return;
         }
