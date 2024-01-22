@@ -8,6 +8,7 @@ import { applicationState, loadStore } from "./loadStore";
 import { runInEnvironment } from "@/environment";
 import { createWorkflow } from "@/test/factories";
 
+vi.mock("@/util/generateWorkflowPreview");
 const mockedAPI = deepMocked(API);
 
 vi.mock("@/environment");

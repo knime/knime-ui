@@ -1,7 +1,6 @@
 import type { Store } from "vuex";
 import { API } from "@api";
 import { notifyPatch } from "@/util/event-syncer";
-import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 import { nodeSize } from "@/style/shapes.mjs";
 import type { RootStoreState } from "@/store/types";
 import { $bus } from "./event-bus";
@@ -103,15 +102,12 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         activeProjectId: string | undefined,
       ): Promise<string | null> => {
         try {
-          const { svgElement, isCanvasEmpty } =
-            projectId === activeProjectId
-              ? await $store.dispatch("application/getActiveWorkflowSnapshot")
-              : await $store.dispatch(
-                  "application/getRootWorkflowSnapshotByProjectId",
-                  { projectId },
-                );
-
-          return generateWorkflowPreview(svgElement, isCanvasEmpty);
+          return projectId === activeProjectId
+            ? await $store.dispatch("application/getActiveWorkflowSnapshot")
+            : await $store.dispatch(
+                "application/getRootWorkflowSnapshotByProjectId",
+                { projectId },
+              );
         } catch (error) {
           consola.error(error);
           // null values will trigger a validation on the BE which will cause

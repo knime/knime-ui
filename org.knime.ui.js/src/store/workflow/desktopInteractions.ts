@@ -1,7 +1,6 @@
 import type { ActionTree, GetterTree } from "vuex";
 
 import { API } from "@api";
-import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 
 import type { RootStoreState } from "../types";
 import { getNextProjectId, getProjectAndWorkflowIds } from "./util";
@@ -20,15 +19,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   async saveProject({ state, dispatch }) {
     const { projectId } = getProjectAndWorkflowIds(state);
 
-    const { svgElement, isCanvasEmpty } = await dispatch(
+    const workflowPreviewSvg = await dispatch(
       "application/getActiveWorkflowSnapshot",
       null,
       { root: true },
-    );
-
-    const workflowPreviewSvg = await generateWorkflowPreview(
-      svgElement,
-      isCanvasEmpty,
     );
 
     await API.desktop.saveProject({ projectId, workflowPreviewSvg });
@@ -107,15 +101,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   async saveProjectAs({ state, dispatch, rootState }) {
     const { projectId } = getProjectAndWorkflowIds(state);
 
-    const { svgElement, isCanvasEmpty } = await dispatch(
+    const workflowPreviewSvg = await dispatch(
       "application/getActiveWorkflowSnapshot",
       null,
       { root: true },
-    );
-
-    const workflowPreviewSvg = await generateWorkflowPreview(
-      svgElement,
-      isCanvasEmpty,
     );
 
     await API.desktop.saveProjectAs({ projectId, workflowPreviewSvg });
