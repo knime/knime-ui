@@ -5,7 +5,6 @@ import {
   it,
   vi,
   type MockedFunction,
-  type Mock,
 } from "vitest";
 import { nextTick } from "vue";
 
@@ -13,20 +12,11 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 import { pastePartsAt } from "@/util/pasteToWorkflow";
 
-import { loadStore } from "./loadStore";
 import { createConnection } from "@/test/factories";
+import { getToastsProvider } from "@/plugins/toasts";
+import { loadStore } from "./loadStore";
 
 vi.mock("@/util/pasteToWorkflow");
-
-const show: Mock = vi.fn();
-const remove: Mock = vi.fn();
-const removeBy: Mock = vi.fn();
-
-vi.mock("@/plugins/toasts", () => ({
-  getToastsProvider: () => {
-    return { show, remove, removeBy };
-  },
-}));
 
 const mockedAPI = deepMocked(API);
 const mockedPastePartsAt = pastePartsAt as MockedFunction<typeof pastePartsAt>;
@@ -158,6 +148,7 @@ describe("workflow::clipboardInteractions", () => {
   );
 
   it("executes alternative copy method for webkit browsers", async () => {
+    const toast = getToastsProvider();
     const stringifiedPayload = JSON.stringify({
       payloadIdentifier: "p-id-1",
       otherData: "is here",
@@ -245,7 +236,7 @@ describe("workflow::clipboardInteractions", () => {
     });
 
     // toast
-    expect(show).toBeCalledWith(
+    expect(toast.show).toBeCalledWith(
       expect.objectContaining({ id: "COPY_FALLBACK" }),
     );
   });

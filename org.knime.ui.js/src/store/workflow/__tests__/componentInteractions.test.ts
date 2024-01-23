@@ -1,40 +1,26 @@
-import {
-  describe,
-  expect,
-  it,
-  vi,
-  afterEach,
-  type Mock,
-  beforeEach,
-} from "vitest";
+import { describe, expect, it, vi, afterEach, type MockedObject } from "vitest";
 import { createComponentNode, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { API } from "@api";
-
-import { loadStore } from "./loadStore";
 import {
   NodeState,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
 
+// import { getToastsProvider } from '@/plugins/toasts'
+
+import { loadStore } from "./loadStore";
+import { getToastsProvider } from "@/plugins/toasts";
+
 const mockedAPI = deepMocked(API);
 
-const show: Mock = vi.fn();
-const remove: Mock = vi.fn();
-const removeBy: Mock = vi.fn();
-
-vi.mock("@/plugins/toasts", () => ({
-  getToastsProvider: () => {
-    return { show, remove, removeBy };
-  },
-}));
-
 describe("workflow::componentInteractions", () => {
-  beforeEach(() => {
-    show.mockClear();
-    remove.mockClear();
-    removeBy.mockClear();
-  });
+  // beforeEach(() => {
+  //   vi.
+  // });
+  const toast = getToastsProvider() as MockedObject<
+    ReturnType<typeof getToastsProvider>
+  >;
 
   afterEach(() => {
     vi.clearAllMocks();
@@ -86,8 +72,10 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
-      expect(show).not.toHaveBeenCalled();
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).not.toHaveBeenCalled();
+      expect(toast.show).not.toHaveBeenCalled();
     });
 
     it("should not show any toasts if 'auto' is true and there are no updates", async () => {
@@ -103,7 +91,7 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(show).not.toHaveBeenCalled();
+      expect(toast.show).not.toHaveBeenCalled();
     });
 
     it("should show toast when there are no updates and auto is false", async () => {
@@ -119,8 +107,8 @@ describe("workflow::componentInteractions", () => {
         auto: false,
       });
 
-      expect(show).toHaveBeenCalledOnce();
-      expect(show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledOnce();
+      expect(toast.show).toHaveBeenCalledWith(
         expect.objectContaining({
           message: "No updates available",
         }),
@@ -153,8 +141,8 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(show).toHaveBeenCalledOnce();
-      expect(show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledOnce();
+      expect(toast.show).toHaveBeenCalledWith(
         expect.objectContaining({
           message: "You have 3 updates available",
           buttons: expect.arrayContaining([
@@ -166,8 +154,10 @@ describe("workflow::componentInteractions", () => {
         projectId: workflow.projectId,
         workflowId: workflow.info.containerId,
       });
-      const buttonCallback = show.mock.calls[0][0].buttons[0].callback;
+      const buttonCallback = toast.show.mock.calls[0][0]!.buttons![0].callback;
+      // @ts-expect-error
       await buttonCallback();
+
       expect(dispatchSpy).toHaveBeenCalledWith(
         "workflow/clearComponentUpdateToasts",
         undefined,
@@ -212,8 +202,8 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(show).toHaveBeenCalledOnce();
-      expect(show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledOnce();
+      expect(toast.show).toHaveBeenCalledWith(
         expect.objectContaining({
           message:
             "You have 3 updates available. Reset components and update now?",
@@ -234,14 +224,13 @@ describe("workflow::componentInteractions", () => {
       mockedAPI.workflow.getLinkUpdates.mockRejectedValue(
         new Error("anything"),
       );
-      // mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce([]);
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
         silent: false,
       });
 
-      expect(show).toHaveBeenCalledOnce();
-      expect(show).toHaveBeenCalledWith(
+      expect(toast.show).toHaveBeenCalledOnce();
+      expect(toast.show).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "error",
           message: "Problem checking for linked component updates",
@@ -263,26 +252,30 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(show).toHaveBeenCalledOnce();
-      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
+      expect(toast.show).toHaveBeenCalledOnce();
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).toHaveBeenCalledWith({
         projectId: workflow.projectId,
         workflowId: workflow.info.containerId,
       });
 
       // clear mocks before second dispatch
-      mockedAPI.workflow.getLinkUpdates.mockClear();
-      show.mockClear();
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockClear();
+      toast.show.mockClear();
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
         auto: true,
       });
 
-      expect(show).not.toHaveBeenCalled();
-      expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
+      expect(toast.show).not.toHaveBeenCalled();
+      expect(
+        mockedAPI.workflow.getUpdatableLinkedComponents,
+      ).not.toHaveBeenCalled();
 
       // clear mocks before third dispatch
-      mockedAPI.workflow.getLinkUpdates.mockClear();
-      show.mockClear();
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockClear();
+      toast.show.mockClear();
 
       // clear state that remembers whether to show/hide notifications
       await store.dispatch("workflow/clearProcessedUpdateNotification", {
@@ -297,7 +290,7 @@ describe("workflow::componentInteractions", () => {
         projectId: workflow.projectId,
         workflowId: workflow.info.containerId,
       });
-      expect(show).toHaveBeenCalledOnce();
+      expect(toast.show).toHaveBeenCalledOnce();
     });
   });
 
@@ -312,13 +305,13 @@ describe("workflow::componentInteractions", () => {
     await store.dispatch("workflow/updateComponents", {
       nodeIds: ["root:2", "root:1"],
     });
-    expect(show).toHaveBeenCalledTimes(2);
-    expect(show).toHaveBeenCalledWith(
+    expect(toast.show).toHaveBeenCalledTimes(2);
+    expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Updating...",
       }),
     );
-    expect(show).toHaveBeenCalledWith(
+    expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "success",
         message: "Updated",
@@ -344,13 +337,13 @@ describe("workflow::componentInteractions", () => {
     await store.dispatch("workflow/updateComponents", {
       nodeIds: ["root:2", "root:1"],
     });
-    expect(show).toHaveBeenCalledTimes(2);
-    expect(show).toHaveBeenCalledWith(
+    expect(toast.show).toHaveBeenCalledTimes(2);
+    expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Updating...",
       }),
     );
-    expect(show).toHaveBeenCalledWith(
+    expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "success",
         message: "Everything up-to-date",
@@ -376,13 +369,13 @@ describe("workflow::componentInteractions", () => {
     await store.dispatch("workflow/updateComponents", {
       nodeIds: ["root:2", "root:1"],
     });
-    expect(show).toHaveBeenCalledTimes(2);
-    expect(show).toHaveBeenCalledWith(
+    expect(toast.show).toHaveBeenCalledTimes(2);
+    expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Updating...",
       }),
     );
-    expect(show).toHaveBeenCalledWith(
+    expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "error",
         message: "Couldn't update linked components. Please try again",

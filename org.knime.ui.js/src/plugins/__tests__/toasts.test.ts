@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { getToastsProvider } from "../toasts";
+
+vi.unmock("@/plugins/toasts");
 
 describe("toasts", () => {
   it("should get the toasts provider as a singleton", () => {

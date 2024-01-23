@@ -53,11 +53,9 @@ const initDesktopClient = () => {
   return Promise.resolve();
 };
 
-const setupServerEventListener = (transport: WebSocketTransport) => {
-  const { connection } = transport;
-
+const setupServerEventListener = (ws: WebSocket) => {
   // setup server event handler
-  connection.addEventListener("message", (message: { data: unknown }) => {
+  ws.addEventListener("message", (message: { data: unknown }) => {
     const { data } = message;
     if (typeof data !== "string") {
       return;
@@ -137,10 +135,12 @@ const initBrowserClient = (
 
       const transport = new WebSocketTransport(connectionInfo.url);
 
-      // setup server event handler and other events on the WS transport
-      setupServerEventListener(transport);
+      const connection: WebSocket = transport.connection;
 
-      handleConnectionLoss(transport.connection as WebSocket, store);
+      // setup server event handler and other events on the WS transport
+      setupServerEventListener(connection);
+
+      handleConnectionLoss(connection, store);
 
       // initialize the client and request manager to start the WS connection
       const requestManager = new RequestManager([transport]);
