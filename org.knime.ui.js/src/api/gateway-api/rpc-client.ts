@@ -32,7 +32,6 @@ export const createRPCClient = (configuration: Configuration): RPCClient => {
           params,
         });
       } catch (error) {
-        // timeouts will be handled separately on the transport
         if (error instanceof JSONRPCError && error.code !== ERR_TIMEOUT) {
           const isDev = import.meta.env.DEV;
 

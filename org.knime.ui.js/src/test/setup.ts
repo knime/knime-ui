@@ -36,3 +36,15 @@ class MockPointerEvent extends Event {
 window.PointerEvent = MockPointerEvent as any;
 HTMLElement.prototype.setPointerCapture = vi.fn();
 HTMLElement.prototype.releasePointerCapture = vi.fn();
+
+vi.mock("@/plugins/toasts", () => {
+  const show = vi.fn();
+  const remove = vi.fn();
+  const removeBy = vi.fn();
+
+  return {
+    getToastsProvider: () => {
+      return { show, remove, removeBy };
+    },
+  };
+});
