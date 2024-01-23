@@ -193,6 +193,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       commit("setFeatureFlags", applicationState.featureFlags);
     }
 
+    if (applicationState.permissions) {
+      commit("setPermissions", applicationState.permissions);
+    }
+
     if (applicationState.openProjects) {
       commit("setOpenProjects", applicationState.openProjects);
       dispatch(
