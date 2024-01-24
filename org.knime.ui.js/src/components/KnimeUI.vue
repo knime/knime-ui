@@ -171,7 +171,7 @@ export default defineComponent({
 
     <CreateWorkflowModal />
 
-    <ToastStack />
+    <ToastStack class="toast-stack" />
 
     <BlockUi />
   </div>
@@ -206,5 +206,9 @@ export default defineComponent({
   height: calc(
     100vh - var(--app-header-height) - var(--app-update-banner-height)
   );
+}
+
+.toast-stack {
+  z-index: 9;
 }
 </style>
