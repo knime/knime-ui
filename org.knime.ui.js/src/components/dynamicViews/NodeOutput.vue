@@ -292,6 +292,7 @@ export default defineComponent({
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100%;
 
   & .is-viewer-loading {
     /* Wait for a short amount of time before rendering loading placeholder
