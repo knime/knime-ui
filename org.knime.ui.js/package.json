@@ -4,6 +4,7 @@
   "version": "0.0.0-unused+see-pom.xml",
   "description": "KNIME HTML based UI",
   "author": "KNIME AG",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "npm run type-check && vite build",
