@@ -62,8 +62,10 @@ const openInNewWindow = (item = null) => {
   <div class="tab-toggles">
     <ValueSwitch
       v-if="tabToggles.length > 1"
-      ref="tabToggles"
-      class="value-switch"
+      :class="[
+        'value-switch',
+        { 'has-detach-button': compatibility.canDetachPortViews() },
+      ]"
       compact
       :model-value="activeView === null ? null : activeView.toString()"
       :possible-values="tabToggles"
@@ -165,7 +167,7 @@ const openInNewWindow = (item = null) => {
       }
     }
 
-    & :deep(label > span) {
+    &.has-detach-button :deep(label > span) {
       padding-right: 5px;
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
