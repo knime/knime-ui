@@ -7,7 +7,6 @@ config.global.stubs = {
   Portal: true,
   PortalTarget: true,
   PageBuilder: true,
-  Teleport: true,
 };
 consola.level = LogLevel.Error;
 

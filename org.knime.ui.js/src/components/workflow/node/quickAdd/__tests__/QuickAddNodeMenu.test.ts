@@ -4,11 +4,7 @@ import { mount } from "@vue/test-utils";
 
 import Button from "webapps-common/ui/components/Button.vue";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import {
-  deepMocked,
-  mockLodashThrottleAndDebounce,
-  mockVuexStore,
-} from "@/test/utils";
+import { deepMocked, lodashMockFactory, mockVuexStore } from "@/test/utils";
 import {
   createAvailablePortTypes,
   createPort,
@@ -37,6 +33,15 @@ import {
 } from "@/api/gateway-api/generated-api";
 import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
 
+vi.mock("lodash-es", async () => {
+  const actual = await vi.importActual("lodash-es");
+
+  return {
+    ...actual,
+    ...lodashMockFactory(),
+  };
+});
+
 const defaultNodeRecommendationsResponse = [
   createNodeTemplate(),
   createNodeTemplate({
@@ -61,8 +66,6 @@ const defaultNodeRecommendationsResponse = [
 const allNodesSearchResult = createSearchAllNodesResponse();
 
 const defaultPortMock = createPort();
-
-mockLodashThrottleAndDebounce();
 
 const mockedAPI = deepMocked(API);
 

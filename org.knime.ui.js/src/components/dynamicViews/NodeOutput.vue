@@ -133,6 +133,14 @@ export default defineComponent({
     },
   },
   watch: {
+    singleSelectedNode: {
+      handler() {
+        if (!this.validationErrors) {
+          this.selectPort();
+        }
+      },
+      deep: true,
+    },
     validationErrors: {
       handler(validationErrors) {
         if (this.validationErrors) {

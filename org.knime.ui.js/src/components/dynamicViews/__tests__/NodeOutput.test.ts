@@ -248,7 +248,7 @@ describe("NodeOutput.vue", () => {
       // change from node1 -> node2
       store.commit("selection/clearSelection");
       store.commit("selection/addNodesToSelection", ["node2"]);
-      await Vue.nextTick();
+      await nextTick();
 
       // the port should change to 0 because metanode has a single port
       expect(

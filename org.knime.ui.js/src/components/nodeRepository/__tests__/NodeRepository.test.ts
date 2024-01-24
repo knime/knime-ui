@@ -1,6 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { lodashMockFactory } from "@/test/utils";
 
 import * as panelStore from "@/store/panel";
 import * as settingsStore from "@/store/settings";
@@ -10,10 +11,16 @@ import SearchResults from "../SearchResults.vue";
 import NodeDescription from "../NodeDescription.vue";
 import NodeRepositoryLoader from "../NodeRepositoryLoader.vue";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
-import { mockLodashThrottleAndDebounce } from "@/test/utils";
 import NodeRepository from "../NodeRepository.vue";
 
-mockLodashThrottleAndDebounce();
+vi.mock("lodash-es", async () => {
+  const actual = await vi.importActual("lodash-es");
+
+  return {
+    ...actual,
+    ...lodashMockFactory(),
+  };
+});
 
 describe("NodeRepository", () => {
   const doMount = ({

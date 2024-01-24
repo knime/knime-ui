@@ -7,10 +7,7 @@ import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 
 import CloseableTagList from "../CloseableTagList.vue";
-import { mockLodashThrottleAndDebounce } from "@/test/utils";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
-
-mockLodashThrottleAndDebounce();
 
 describe("NodeRepositoryHeader", () => {
   const doMount = ({

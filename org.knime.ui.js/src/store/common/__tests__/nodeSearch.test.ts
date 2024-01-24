@@ -1,6 +1,11 @@
 import { expect, describe, it, vi, afterEach } from "vitest";
 /* eslint-disable max-lines */
-import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
+import {
+  deepMocked,
+  lodashMockFactory,
+  mockVuexStore,
+  withPorts,
+} from "@/test/utils";
 import { API } from "@api";
 
 import {
@@ -12,6 +17,15 @@ const mockedAPI = deepMocked(API);
 
 const searchNodesResponse = createSearchNodesResponse();
 const searchAllNodesResponse = createSearchAllNodesResponse();
+
+vi.mock("lodash-es", async () => {
+  const actual = await vi.importActual("lodash-es");
+
+  return {
+    ...actual,
+    ...lodashMockFactory(),
+  };
+});
 
 describe("Node search partial store", () => {
   let hasNodeCollectionActive = true;
