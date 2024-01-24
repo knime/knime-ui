@@ -40,7 +40,7 @@
     "pagebuilder": "file:knime-js-pagebuilder/org.knime.js.pagebuilder",
     "raf-throttle": "2.0.6",
     "splitpanes": "^3.1.5",
-    "vue": "^3.3.4",
+    "vue": "^3.4.15",
     "vue-router": "^4.1.6",
     "vuex": "^4.1.0",
     "webapps-common": "file:webapps-common"
