@@ -1,13 +1,11 @@
-import { describe, expect, it, vi, afterEach, type MockedObject } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { createComponentNode, createWorkflow } from "@/test/factories";
-import { deepMocked } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
 import { API } from "@api";
 import {
   NodeState,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
-
-// import { getToastsProvider } from '@/plugins/toasts'
 
 import { loadStore } from "./loadStore";
 import { getToastsProvider } from "@/plugins/toasts";
@@ -15,12 +13,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 const mockedAPI = deepMocked(API);
 
 describe("workflow::componentInteractions", () => {
-  // beforeEach(() => {
-  //   vi.
-  // });
-  const toast = getToastsProvider() as MockedObject<
-    ReturnType<typeof getToastsProvider>
-  >;
+  const toast = mockedObject(getToastsProvider());
 
   afterEach(() => {
     vi.clearAllMocks();
