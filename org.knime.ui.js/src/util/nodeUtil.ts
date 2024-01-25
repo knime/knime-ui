@@ -4,7 +4,6 @@ import {
   Node,
   type MetaNode,
   type ComponentNode,
-  NodeState,
 } from "@/api/gateway-api/generated-api";
 
 export const isNodeMetaNode = (node: KnimeNode): node is MetaNode =>
@@ -30,11 +29,4 @@ export const getNodeState = (node: KnimeNode, portIndex: number) => {
   return isNodeMetaNode(node)
     ? node.outPorts[portIndex].nodeState
     : node.state?.executionState;
-};
-
-export const isExecuted = (node: KnimeNode, portIndex = 0) => {
-  return (
-    getNodeState(node, portIndex) === NodeState.ExecutionStateEnum.EXECUTED ||
-    getNodeState(node, portIndex) === NodeState.ExecutionStateEnum.EXECUTING
-  );
 };
