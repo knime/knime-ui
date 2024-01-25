@@ -282,6 +282,10 @@ section.space-provider {
     display: flex;
     align-items: center;
 
+    & h2 {
+      word-break: break-word;
+    }
+
     & .connection-btn {
       margin-left: auto;
     }
