@@ -2,6 +2,7 @@ import { expect, describe, it, vi, afterEach } from "vitest";
 /* eslint-disable max-lines */
 import {
   deepMocked,
+  lodashMockFactory,
   mockVuexStore,
   withPorts,
   withoutKeys,
@@ -89,6 +90,15 @@ const getNodeTemplatesResponse = {
 };
 
 const mockedAPI = deepMocked(API);
+
+vi.mock("lodash-es", async () => {
+  const actual = await vi.importActual("lodash-es");
+
+  return {
+    ...actual,
+    ...lodashMockFactory(),
+  };
+});
 
 describe("Node Repository store", () => {
   const createStore = async () => {
