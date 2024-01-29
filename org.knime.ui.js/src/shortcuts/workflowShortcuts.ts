@@ -55,7 +55,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     condition: ({ $store }) =>
       compatibility.isLocalSaveSupported() &&
-      ($store.state.workflow.activeWorkflow?.dirty ||
+      ($store.getters["application/isDirtyActiveProject"] ||
         !$store.getters["application/activeProjectOrigin"]),
   },
   saveAs: {

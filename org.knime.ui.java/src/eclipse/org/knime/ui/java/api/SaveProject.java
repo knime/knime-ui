@@ -76,6 +76,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -116,6 +117,8 @@ final class SaveProject {
                 .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
             editor.doSave(new NullProgressMonitor());
             unmarkDirtyChildWorkflowEditors(projectWfm);
+            // Emit a ProjectDirtyStateEvent
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         } else { // SVG received, workflow editor instance might not be present
             if (isExecutionInProgress(projectWfm)) {
                 // Show a warning otherwise
@@ -124,6 +127,8 @@ final class SaveProject {
                 saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
                 ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
                 unmarkDirtyChildWorkflowEditors(projectWfm);
+                // Emit a ProjectDirtyStateEvent
+                DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
             }
         }
     }

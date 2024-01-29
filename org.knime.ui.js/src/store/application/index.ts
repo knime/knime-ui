@@ -353,4 +353,10 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
       );
     });
   },
+  isDirtyActiveProject({ dirtyProjectsMap, activeProjectId }) {
+    if (!activeProjectId) {
+      return false;
+    }
+    return Boolean(dirtyProjectsMap[activeProjectId]);
+  },
 };
