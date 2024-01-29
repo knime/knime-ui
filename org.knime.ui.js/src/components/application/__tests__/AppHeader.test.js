@@ -50,13 +50,18 @@ describe("AppHeader.vue", () => {
       push: vi.fn(),
     };
 
+    const $shortcuts = {
+      dispatch: vi.fn(),
+      get: () => ({}),
+    };
+
     const $store = mockVuexStore(storeConfig);
     const wrapper = mount(AppHeader, {
       props,
-      global: { plugins: [$store], mocks: { $router, $route } },
+      global: { plugins: [$store], mocks: { $router, $route, $shortcuts } },
     });
 
-    return { storeConfig, wrapper, $store, $route, $router };
+    return { storeConfig, wrapper, $store, $route, $router, $shortcuts };
   };
 
   describe("tabs", () => {
@@ -141,6 +146,16 @@ describe("AppHeader.vue", () => {
     expect(
       wrapper.findAllComponents(AppHeaderTab).at(0).props("windowWidth"),
     ).toBe(100);
+  });
+
+  it("should show plus button to create workflow", async () => {
+    const { wrapper, $shortcuts } = doMount();
+
+    expect(wrapper.find(".create-workflow-btn").exists()).toBe(true);
+
+    await wrapper.find(".create-workflow-btn").trigger("click");
+
+    expect($shortcuts.dispatch).toHaveBeenCalledWith("createWorkflow");
   });
 
   describe("right side buttons", () => {

@@ -2,6 +2,7 @@
 import { defineComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 
+import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Carousel from "webapps-common/ui/components/Carousel.vue";
 import HelpMenu from "./HelpMenu.vue";
@@ -37,6 +38,7 @@ export default defineComponent({
     ReloadIcon,
     CodeHtmlIcon,
     CogIcon,
+    PlusIcon,
   },
   data(): ComponentData {
     return {
@@ -65,6 +67,11 @@ export default defineComponent({
         (!this.activeProjectId && !this.isLoadingWorkflow) ||
         this.isGetStartedPageActive
       );
+    },
+
+    createWorkflowTitle() {
+      const shortcut = this.$shortcuts.get("createWorkflow");
+      return `${shortcut.text} (${shortcut.hotkeyText})`;
     },
   },
   watch: {
@@ -167,10 +174,18 @@ export default defineComponent({
               @switch-workflow="onProjectTabChange"
               @close-project="closeProject($event)"
             />
+            <button
+              class="create-workflow-btn"
+              :title="createWorkflowTitle"
+              @click="$shortcuts.dispatch('createWorkflow')"
+            >
+              <PlusIcon />
+            </button>
           </div>
         </Carousel>
       </ul>
-      <div v-else class="application-name">
+
+      <div v-if="openProjects.length === 0" class="application-name">
         <span class="text">KNIME Analytics Platform 5</span>
       </div>
 
@@ -240,9 +255,32 @@ header {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
     align-items: center;
     align-content: center;
+
+    & .create-workflow-btn {
+      border: 0;
+      background-color: var(--knime-masala);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 2px;
+      margin-left: 2px;
+
+      &:hover {
+        outline: none;
+        background: var(--knime-black-semi);
+      }
+
+      & svg {
+        @mixin svg-icon-size 24;
+
+        padding-right: 2px;
+        stroke: var(--knime-white);
+      }
+    }
 
     /* right button bar: help, preferences and menu */
     & .buttons {

@@ -137,7 +137,7 @@ li {
   }
 
   &:hover {
-    background-color: var(--knime-masala);
+    background-color: hsl(0deg 3% 12% / 30%);
   }
 
   & .text {
@@ -155,7 +155,7 @@ li {
   }
 
   & .close-icon {
-    padding-left: 0;
+    padding-left: 5px;
 
     & :deep(svg) {
       stroke: var(--knime-white);
@@ -163,21 +163,6 @@ li {
       @mixin svg-icon-size 20;
     }
   }
-}
-
-li.hovered:only-child:not(.active) {
-  box-shadow:
-    -1px 0 0 1px var(--knime-black-semi),
-    45px 10px 45px 10px var(--knime-black-semi);
-}
-
-li.hovered:last-child:not(.active, :only-child) {
-  box-shadow: 10px 10px 45px 10px var(--knime-black-semi);
-  clip-path: inset(0 -100px 0 0);
-}
-
-li.hovered:first-child:not(.active, :only-child) {
-  box-shadow: -1px 0 0 45px var(--knime-black-semi);
 }
 
 li.active {
