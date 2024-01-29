@@ -26,6 +26,7 @@ describe("workflowShortcuts", () => {
         application: {
           ...applicationStore.state(),
           activeProjectId: "activeTestProjectId",
+          dirtyProjectsMap: { activeTestProjectId: false },
           hasClipboardSupport: true,
         },
         workflow: {
@@ -73,6 +74,7 @@ describe("workflowShortcuts", () => {
           providerId: "some-provider",
           spaceId: "some-space",
         },
+        "application/isDirtyActiveProject": false,
       },
     };
 
@@ -183,7 +185,7 @@ describe("workflowShortcuts", () => {
     it("save", () => {
       const { $store } = createStore();
       expect(workflowShortcuts.save.condition({ $store })).toBeFalsy();
-      $store.state.workflow.activeWorkflow.dirty = true;
+      $store.getters["application/isDirtyActiveProject"] = true;
       expect(workflowShortcuts.save.condition({ $store })).toBe(true);
     });
 
