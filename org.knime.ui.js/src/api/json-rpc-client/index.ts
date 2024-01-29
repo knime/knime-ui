@@ -9,11 +9,13 @@ import {
   registerEventHandler,
   serverEventHandler,
 } from "./server-events";
-
 import { DesktopAPTransport } from "./DesktopAPTransport";
 import { WebSocketTransport } from "./WebSocketTransport";
 
+import type WS from "isomorphic-ws";
+
 let jsonRPCClient: Client;
+let websocketConnection: WS = null;
 
 const $toast = getToastsProvider();
 
@@ -158,8 +160,9 @@ const initBrowserClient = (
       }
 
       const transport = new WebSocketTransport(connectionInfo.url);
-
       const connection: WebSocket = transport.connection;
+      websocketConnection = connection;
+      connection.binaryType = "arraybuffer";
 
       setupActivityHeartbeat(connection);
 
@@ -202,9 +205,27 @@ const initJSONRPCClient = async (
   }
 };
 
+const sendBinaryMessage = (data: any): void => {
+  websocketConnection.send(data);
+};
+
+const addBinaryEventListener = (listener: any) => {
+  websocketConnection.addEventListener(
+    "message",
+    (message: { data: unknown }) => {
+      const { data } = message;
+      if (data instanceof ArrayBuffer) {
+        listener(data);
+      }
+    },
+  );
+};
+
 export {
   initJSONRPCClient,
   getRPCClientInstance,
   registerEventHandler,
   getRegisteredEventHandler,
+  sendBinaryMessage,
+  addBinaryEventListener,
 };

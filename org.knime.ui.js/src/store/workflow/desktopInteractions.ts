@@ -1,18 +1,25 @@
-import type { ActionTree, GetterTree } from "vuex";
-
 import { API } from "@api";
-
-import type { RootStoreState } from "../types";
 import { getNextProjectId, getProjectAndWorkflowIds } from "./util";
+
+import type { ActionTree, GetterTree } from "vuex";
+import type { RootStoreState } from "../types";
 import type { WorkflowState } from "./index";
 
 /**
  * This store is merged with the workflow store.
  * It holds all calls from the workflow store to the local Analytics Platform.
  */
-export const state = () => ({});
+export const state = () => ({
+  webswingDialogConfig: {
+    nodeId: null,
+  },
+});
 
-export const mutations = {};
+export const mutations = {
+  setWebswingConfig(state: any, val: any) {
+    state.webswingDialogConfig = val;
+  },
+};
 
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /* See docs in API */
@@ -69,11 +76,17 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 
   /* See docs in API */
-  openNodeConfiguration({ state }, nodeId) {
-    API.desktop.openNodeDialog({
-      projectId: state.activeWorkflow!.projectId,
-      nodeId,
-    });
+  openNodeConfiguration({ state, rootState, commit }, nodeId) {
+    const shouldDisplayWebswingDialogs =
+      rootState.application.featureFlags["org.knime.ui.feature.webswing"];
+    if (shouldDisplayWebswingDialogs) {
+      commit("setWebswingConfig", { nodeId }); // TODO: That's all we need to do?
+    } else {
+      API.desktop.openNodeDialog({
+        projectId: state.activeWorkflow!.projectId,
+        nodeId,
+      });
+    }
   },
 
   /* See docs in API */

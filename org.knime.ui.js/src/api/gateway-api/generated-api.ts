@@ -5306,6 +5306,7 @@ export const createAPI = (configuration: Configuration) => {
         ...api,
         workflow: rest,
         event: EventApiWrapper(rpcClient),
-        workflowCommand: WorkflowCommandApiWrapper(rpcClient, configuration)
+        workflowCommand: WorkflowCommandApiWrapper(rpcClient, configuration),
+        rpcClient
     }
 };

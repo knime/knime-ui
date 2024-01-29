@@ -1,4 +1,9 @@
-import { getRPCClientInstance, registerEventHandler } from "../json-rpc-client";
+
+import { getToastsProvider } from "@/plugins/toasts";
+import { getRPCClientInstance, registerEventHandler ,
+  sendBinaryMessage,
+  addBinaryEventListener,
+} from "../json-rpc-client";
 import type { Configuration } from "./configuration";
 
 export interface RPCClient {
@@ -16,7 +21,8 @@ const request = {
 } as const;
 
 // eslint-disable-next-line unused-imports/no-unused-vars
-export const createRPCClient = (configuration: Configuration): RPCClient => {
+const createRPCClient = (configuration: Configuration): RPCClient => {
+  const $toasts = getToastsProvider();
   const rpcClient: RPCClient = {
     async call(method, params) {
       try {
@@ -41,3 +47,5 @@ export const createRPCClient = (configuration: Configuration): RPCClient => {
 
   return rpcClient;
 };
+
+export { createRPCClient, sendBinaryMessage, addBinaryEventListener };

@@ -10,6 +10,7 @@ import Error from "@/components/application/Error.vue";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import BlockUi from "@/components/application/BlockUi.vue";
+import WebswingContainer from "./application/WebswingContainer.vue";
 
 type ComponentData = {
   loaded: boolean;
@@ -34,6 +35,7 @@ export default defineComponent({
     CreateWorkflowModal,
     ToastStack,
     DynamicEnvRenderer,
+    WebswingContainer,
   },
 
   data(): ComponentData {
@@ -172,6 +174,9 @@ export default defineComponent({
     <CreateWorkflowModal />
 
     <ToastStack class="toast-stack" />
+
+    <!-- TODO: Can we also dynamically add this based on the feature flag? -->
+    <WebswingContainer />
 
     <BlockUi />
   </div>
