@@ -3,6 +3,7 @@ export const RESIZE_DEBOUNCE = 100;
 </script>
 
 <script setup lang="ts">
+import type { Ref } from "vue";
 import {
   onMounted,
   watch,
@@ -48,7 +49,7 @@ const isWorkflowEmpty = computed(
   () => store.getters["workflow/isWorkflowEmpty"],
 );
 
-const rootEl = ref<HTMLDivElement>(null);
+const rootEl = ref<HTMLDivElement | null>(null);
 let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
 
 const initResizeObserver = () => {
@@ -73,14 +74,14 @@ const initResizeObserver = () => {
     }
   };
 
-  resizeObserver.observe(rootEl.value);
+  resizeObserver.observe(rootEl.value!);
 };
 
 onMounted(() => {
   store.dispatch("canvas/initScrollContainerElement", rootEl.value);
   initResizeObserver();
 
-  rootEl.value.focus();
+  rootEl.value!.focus();
 });
 
 onBeforeUnmount(() => {
@@ -94,10 +95,12 @@ onBeforeUnmount(() => {
 useCanvasMoveLocking();
 useArrowKeyNavigation();
 
-const { onMouseWheel } = useMouseWheelZooming({ rootEl });
+const { onMouseWheel } = useMouseWheelZooming({
+  rootEl: rootEl as Ref<HTMLElement>,
+});
 
 const { shouldShowMoveCursor, beginPan, movePan, stopPan } = usePanning({
-  rootEl,
+  rootEl: rootEl as Ref<HTMLElement>,
 });
 
 const startRectangleSelection = (event: PointerEvent) => {

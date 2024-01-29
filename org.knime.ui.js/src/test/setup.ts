@@ -48,3 +48,7 @@ vi.mock("@/plugins/toasts", () => {
     },
   };
 });
+
+class MockWorker {}
+// @ts-expect-error
+window.Worker = MockWorker;

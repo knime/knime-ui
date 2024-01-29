@@ -101,11 +101,11 @@ export const useArrowKeyNavigation = () => {
           ArrowLeft: "left",
           ArrowRight: "right",
         } as const
-      )[event.key];
+      )[event.key]!;
     };
 
     const nearestNode = await workflowNavigationService.nearest({
-      workflow: activeWorkflow.value,
+      workflow: activeWorkflow.value!,
       position: { x, y, id },
       direction: getDirection(),
     });
