@@ -38,7 +38,7 @@ export const createRPCClient = (configuration: Configuration): RPCClient => {
           const stack = error.stack;
           $toasts.show({
             type: "error",
-            message: "Oops! Something went wrong",
+            message: "Something went wrong.",
             buttons: isDev
               ? [
                   {
