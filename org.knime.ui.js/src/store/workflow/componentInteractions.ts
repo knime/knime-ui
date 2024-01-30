@@ -51,7 +51,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }
 
     try {
-      const updatables = await API.workflow.getUpdatableLinkedComponents({
+      const updatables = await API.workflow.getLinkUpdates({
         projectId,
         workflowId,
       });

@@ -141,7 +141,7 @@ describe("workflow::componentInteractions", () => {
         { id: "root:2", isExecuted: false },
         { id: "root:3", isExecuted: false },
       ];
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
+      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce(
         nodeIdAndIsExecuted,
       );
 
@@ -204,7 +204,7 @@ describe("workflow::componentInteractions", () => {
         { id: "root:2", isExecuted: false },
         { id: "root:3", isExecuted: true },
       ];
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
+      mockedAPI.workflow.getLinkUpdates.mockResolvedValueOnce(
         nodeIdAndIsExecuted,
       );
 
