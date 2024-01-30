@@ -2,6 +2,7 @@ import CreateMetanode from "webapps-common/ui/assets/img/icons/metanode-add.svg"
 import CreateComponent from "webapps-common/ui/assets/img/icons/component.svg";
 import LayoutIcon from "webapps-common/ui/assets/img/icons/layout-editor.svg";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { compatibility } from "@/environment";
 
 import type {
   ShortcutConditionContext,

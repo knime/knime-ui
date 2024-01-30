@@ -44,8 +44,7 @@ const NodeRepository = defineAsyncComponent({
 });
 
 const NodeDialogWrapper = defineAsyncComponent({
-  loader: () =>
-    import("@/components/embeddedViews/nodeDialogs/NodeDialogWrapper.vue"),
+  loader: () => import("@/components/embeddedViews/NodeDialogWrapper.vue"),
   loadingComponent: SidebarContentLoading,
 });
 
