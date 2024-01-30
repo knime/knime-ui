@@ -2541,31 +2541,31 @@ export namespace PatchOp {
 export interface Permissions {
 
     /**
-     *
+     * Whether the current user is allowed to configure nodes
      * @type {boolean}
      * @memberof Permissions
      */
     canConfigureNodes: boolean;
     /**
-     *
+     * Whether the current user is allowed to edit workflows,  this includes most operations including execution and editing meta data
      * @type {boolean}
      * @memberof Permissions
      */
     canEditWorkflow: boolean;
     /**
-     *
+     * Whether the current user is allowed access to the node repository
      * @type {boolean}
      * @memberof Permissions
      */
     canAccessNodeRepository: boolean;
     /**
-     *
+     * Whether the current user is allowed access to KAI
      * @type {boolean}
      * @memberof Permissions
      */
     canAccessKAIPanel: boolean;
     /**
-     *
+     * Whether the current user is allowed to navigate in the space explorer
      * @type {boolean}
      * @memberof Permissions
      */
