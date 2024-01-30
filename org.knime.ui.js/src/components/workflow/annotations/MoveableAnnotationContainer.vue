@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRef, watch, computed } from "vue";
+import { ref, computed } from "vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/composables/useMoveObject";
@@ -28,16 +28,6 @@ const translationAmount = computed(() => {
     ? movePreviewDelta.value
     : { x: 0, y: 0 };
 });
-
-watch(
-  toRef(props, "bounds"),
-  () => {
-    if (isDragging.value) {
-      store.dispatch("workflow/resetDragState");
-    }
-  },
-  { deep: true },
-);
 
 const initialPosition = computed(() => ({
   x: props.bounds.x,

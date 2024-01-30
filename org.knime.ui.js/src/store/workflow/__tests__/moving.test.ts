@@ -102,10 +102,10 @@ describe("workflow::moving", () => {
     "should save position after move end for %s nodes and annotations",
     async (amount) => {
       const { store } = await loadStore();
-      const nodesArray: Record<string, { id: string; position: any }> = {};
+      const nodesRecords: Record<string, { id: string; position: any }> = {};
       for (let i = 0; i < amount; i++) {
         const name = `node-${i}`;
-        nodesArray[name] = { position: { x: 0, y: 0 }, id: name };
+        nodesRecords[name] = { position: { x: 0, y: 0 }, id: name };
       }
       const annotationsArray: Array<{ id: string; bounds: any }> = [];
       for (let i = 0; i < amount; i++) {
@@ -116,18 +116,29 @@ describe("workflow::moving", () => {
         });
       }
 
+      const annotationsArrayCopy: Array<{ id: string; bounds: any }> =
+        JSON.parse(JSON.stringify(annotationsArray));
+      const nodesRecordsCopy: Record<string, { id: string; position: any }> =
+        JSON.parse(JSON.stringify(nodesRecords));
+
       store.commit("workflow/setActiveWorkflow", {
         projectId: "foo",
-        nodes: nodesArray,
+        nodes: nodesRecords,
         info: {
           containerId: "test",
+        },
+        metaOutPorts: {
+          bounds: {
+            x: 0,
+            y: 0,
+          },
         },
         workflowAnnotations: annotationsArray,
       });
       await nextTick();
       const nodeIds = [];
       const annotationIds = [];
-      Object.values(nodesArray).forEach((node) => {
+      Object.values(nodesRecords).forEach((node) => {
         store.dispatch("selection/selectNode", node.id);
         nodeIds.push(node.id);
       });
@@ -140,6 +151,36 @@ describe("workflow::moving", () => {
 
       store.commit("workflow/setMovePreview", { deltaX: 50, deltaY: 50 });
       await store.dispatch("workflow/moveObjects");
+
+      // optimistic update
+      expect(
+        store.state.workflow.activeWorkflow.workflowAnnotations,
+      ).toStrictEqual(
+        annotationsArrayCopy.map((annotation: any) => ({
+          ...annotation,
+          bounds: {
+            ...annotation.bounds,
+            x: annotation.bounds.x + 50,
+            y: annotation.bounds.y + 50,
+          },
+        })),
+      );
+
+      expect(store.state.workflow.activeWorkflow.nodes).toStrictEqual(
+        Object.fromEntries(
+          Object.entries(nodesRecordsCopy).map(([key, value]) => [
+            key,
+            { ...value, position: { x: 50, y: 50 } },
+          ]),
+        ),
+      );
+
+      expect(
+        store.state.workflow.activeWorkflow.metaOutPorts.bounds,
+      ).toStrictEqual({
+        x: 50,
+        y: 50,
+      });
 
       expect(mockedAPI.workflowCommand.Translate).toHaveBeenNthCalledWith(1, {
         projectId: "foo",

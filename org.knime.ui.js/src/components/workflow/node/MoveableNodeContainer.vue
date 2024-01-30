@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, toRef } from "vue";
+import { ref, computed, toRef } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
@@ -42,16 +42,6 @@ const translationAmount = computed(() => {
     ? positionWithDelta.value
     : props.position;
 });
-
-watch(
-  toRef(props, "position"),
-  () => {
-    if (isDragging.value) {
-      store.dispatch("workflow/resetDragState");
-    }
-  },
-  { deep: true },
-);
 
 const dragContainer = computed(() => {
   return container.value!.querySelector(DRAG_TARGET_SELECTOR) as HTMLElement;

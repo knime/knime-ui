@@ -66,7 +66,10 @@ describe("MoveableNodeContainer", () => {
     $store.commit("workflow/setIsDragging", isDragging);
     $store.commit("workflow/setActiveWorkflow", {
       info: { containerId: "root" },
-      nodes: { "root:1": { id: "root:1" }, "root:2": { id: "root:2" } },
+      nodes: {
+        "root:1": { id: "root:1", position: { x: 0, y: 0 } },
+        "root:2": { id: "root:2", position: { x: 0, y: 0 } },
+      },
       connections: {},
       workflowAnnotations: [],
     });

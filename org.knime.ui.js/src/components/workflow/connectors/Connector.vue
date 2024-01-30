@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, toRefs, watch, toRef } from "vue";
+import { ref, computed, toRefs, watch } from "vue";
 
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -222,16 +222,6 @@ const onBendpointPointerdown = (
   const handler = createPointerDownHandler(computed(() => position));
   handler(event);
 };
-
-watch(
-  toRef(props, "bendpoints"),
-  () => {
-    if (isDragging.value) {
-      store.dispatch("workflow/resetDragState");
-    }
-  },
-  { deep: true },
-);
 
 const onBendpointClick = (event: MouseEvent, index: number) => {
   if (isDragging.value) {

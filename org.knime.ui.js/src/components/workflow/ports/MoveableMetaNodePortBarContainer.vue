@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, computed } from "vue";
 
 import { useMoveObject } from "@/composables/useMoveObject";
 import { useStore } from "@/composables/useStore";
@@ -37,24 +37,6 @@ const translationAmount = computed(() => {
     ? movePreviewDelta.value
     : { x: 0, y: 0 };
 });
-
-watch(
-  bounds,
-  (newBounds, oldBounds) => {
-    // ignore updates to the same values as this is the first set
-    if (
-      // check if the port bar has really moved
-      oldBounds.x === newBounds.x &&
-      oldBounds.y === newBounds.y
-    ) {
-      return;
-    }
-    if (isDragging.value) {
-      store.dispatch("workflow/resetDragState");
-    }
-  },
-  { deep: true },
-);
 
 const initialPosition = computed(() => ({
   x: bounds.value.x,

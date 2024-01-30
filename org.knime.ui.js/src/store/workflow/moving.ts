@@ -1,11 +1,12 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
 
 import type { RootStoreState } from "../types";
 import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
+import type { KnimeNode } from "@/api/custom-types";
 
 interface State {
   isDragging: boolean;
@@ -63,10 +64,11 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   /**
    * Calls the API to save the position of the nodes after the move is over
    */
-  async moveObjects({ state, commit, rootGetters, dispatch }) {
+  async moveObjects({ state, rootGetters, rootState, dispatch }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const selectedNodes = rootGetters["selection/selectedNodeIds"];
-    const selectedAnnotations = rootGetters["selection/selectedAnnotationIds"];
+    const selectedNodeIds = rootGetters["selection/selectedNodeIds"];
+    const selectedAnnotationIds =
+      rootGetters["selection/selectedAnnotationIds"];
     const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
     const metanodePortBars = rootGetters["selection/selectedMetanodePortBars"];
 
@@ -80,12 +82,63 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       return;
     }
 
+    // do optimistic updates
+    const selectedNodes = rootGetters["selection/selectedNodes"];
+    selectedNodes.forEach((node: KnimeNode) => {
+      node.position.x += translation.x;
+      node.position.y += translation.y;
+    });
+
+    const selectedAnnotations = rootGetters["selection/selectedAnnotations"];
+    selectedAnnotations.forEach((annotation: WorkflowAnnotation) => {
+      annotation.bounds.x += translation.x;
+      annotation.bounds.y += translation.y;
+    });
+
+    if (metanodePortBars.includes("in")) {
+      const metaInBounds =
+        rootState.workflow.activeWorkflow?.metaInPorts?.bounds;
+      if (!metaInBounds) {
+        return;
+      }
+      metaInBounds.x += translation.x;
+      metaInBounds.y += translation.y;
+    }
+
+    if (metanodePortBars.includes("out")) {
+      const metaOutBounds =
+        rootState.workflow.activeWorkflow?.metaOutPorts?.bounds;
+      if (!metaOutBounds) {
+        return;
+      }
+      metaOutBounds.x += translation.x;
+      metaOutBounds.y += translation.y;
+    }
+
+    Object.keys(connectionBendpoints).forEach((connectionId: string) => {
+      connectionBendpoints[connectionId].forEach((selectedIndex: number) => {
+        const connection =
+          rootState.workflow?.activeWorkflow?.connections[connectionId];
+        const bendpoint = connection?.bendpoints?.[selectedIndex];
+
+        if (!bendpoint) {
+          return;
+        }
+        bendpoint.x += translation.x;
+        bendpoint.y += translation.y;
+      });
+    });
+
+    // reset drag state
+    await dispatch("resetDragState");
+
+    // send data to backend
     try {
       await API.workflowCommand.Translate({
         projectId,
         workflowId,
-        nodeIds: selectedNodes,
-        annotationIds: selectedAnnotations,
+        nodeIds: selectedNodeIds,
+        annotationIds: selectedAnnotationIds,
         connectionBendpoints,
         metanodeInPortsBar: metanodePortBars.includes("in"),
         metanodeOutPortsBar: metanodePortBars.includes("out"),
@@ -93,7 +146,6 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       });
     } catch (e) {
       consola.log("The following error occurred: ", e);
-      commit("resetMovePreview");
     }
   },
 };

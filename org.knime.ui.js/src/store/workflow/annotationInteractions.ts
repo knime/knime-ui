@@ -70,6 +70,14 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   transformWorkflowAnnotation({ state }, { bounds, annotationId }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
 
+    // optimistic update
+    const annotation = state.activeWorkflow!.workflowAnnotations.find(
+      (annotationCandidate) => annotationCandidate.id === annotationId,
+    )!;
+    if (annotation) {
+      annotation.bounds = bounds;
+    }
+
     return API.workflowCommand.TransformWorkflowAnnotation({
       projectId,
       workflowId,

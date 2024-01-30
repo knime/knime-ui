@@ -16,18 +16,30 @@ const mockedAPI = deepMocked(API);
 
 describe("workflow::annotationInteractions", () => {
   it("should transform annotations", async () => {
+    const annotationId = "mock-annotation-id";
+
     const { store } = await loadStore();
     store.commit("workflow/setActiveWorkflow", {
       projectId: "foo",
       info: { containerId: "root" },
+      workflowAnnotations: [
+        {
+          id: annotationId,
+          bounds: { x: 0, y: 0, width: 0, height: 0 },
+        },
+      ],
     });
 
     const bounds = { x: 1, y: 2, width: 3, height: 4 };
-    const annotationId = "mock-annotation-id";
     store.dispatch("workflow/transformWorkflowAnnotation", {
       bounds,
       annotationId,
     });
+
+    // optimistic update
+    expect(
+      store.state.workflow.activeWorkflow.workflowAnnotations[0].bounds,
+    ).toStrictEqual(bounds);
 
     expect(
       mockedAPI.workflowCommand.TransformWorkflowAnnotation,
