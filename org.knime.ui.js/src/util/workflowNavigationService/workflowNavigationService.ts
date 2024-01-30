@@ -1,42 +1,57 @@
 import { toRaw } from "vue";
-import type { Workflow } from "@/api/custom-types";
-import type { Direction, EventTypes, PointNode } from "./common";
+import type {
+  FindNearestObjectPayload,
+  WorkflowObject,
+  WorkerMessage,
+} from "./common";
 
 const webWorker = new Worker(new URL("./worker", import.meta.url), {
   type: "module",
 });
 
-type Message<T> = { type: EventTypes; payload: T };
-
+/**
+ * Helper to wrap message passing to and from a WebWorker in a promise, for
+ * easier consumption
+ * @param message
+ * @returns
+ */
 const sendMessage = <TResponse, TPayload = Record<string, any>>(
-  message: Message<TPayload>,
+  message: WorkerMessage<TPayload>,
 ) =>
-  new Promise<TResponse>((resolve) => {
+  new Promise<TResponse>((resolve, reject) => {
     webWorker.postMessage(message);
 
-    // TODO: handle error messages
     webWorker.addEventListener("message", (event) => {
       resolve(event.data);
     });
+
+    webWorker.addEventListener("error", (event) => {
+      consola.error("Error finding nearest object", event);
+      reject(event.error);
+    });
   });
 
-const nearest = (data: {
-  workflow: Workflow;
-  position: PointNode;
-  direction: Direction;
-}) => {
-  const message: Message<typeof data> = {
+/**
+ * Find the nearest obeject (node or annotation) in the workflow with respect
+ * to the given reference object and the given (general) direction. This direction
+ * will be treated as a kind of cone of action that starts (and grows) from the
+ * reference object and points to the corresponding direction.
+ *
+ * @param data
+ * @returns The object that was found.
+ */
+const nearestObject = (data: FindNearestObjectPayload) => {
+  const message: WorkerMessage<FindNearestObjectPayload> = {
     type: "nearest",
     payload: {
+      // remove reactive proxies to keep the object simpler
       workflow: toRaw(data.workflow),
-      position: data.position,
+      reference: data.reference,
       direction: data.direction,
     },
   };
 
-  return sendMessage<PointNode>(message);
+  return sendMessage<WorkflowObject>(message);
 };
 
-export const workflowNavigationService = {
-  nearest,
-};
+export const workflowNavigationService = { nearestObject };

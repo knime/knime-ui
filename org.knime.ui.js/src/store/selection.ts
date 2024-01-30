@@ -327,6 +327,38 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
     return selectedNodes[0];
   },
 
+  singleSelectedAnnotation(_state, { selectedAnnotations }) {
+    if (selectedAnnotations.length !== 1) {
+      return null;
+    }
+
+    return selectedAnnotations[0];
+  },
+
+  singleSelectedObject(
+    _state,
+    {
+      selectedNodes,
+      selectedAnnotations,
+      singleSelectedNode,
+      singleSelectedAnnotation,
+    },
+  ) {
+    if (selectedNodes.length > 1 || selectedAnnotations.length > 1) {
+      return null;
+    }
+
+    if (singleSelectedNode && !singleSelectedAnnotation) {
+      return singleSelectedNode;
+    }
+
+    if (singleSelectedAnnotation && !singleSelectedNode) {
+      return singleSelectedAnnotation;
+    }
+
+    return null;
+  },
+
   isNodeSelected: (state) => (nodeId: string) => nodeId in state.selectedNodes,
 
   isMetaNodePortBarSelected: (state) => (metaNodePortBarType: "in" | "out") =>

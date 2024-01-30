@@ -4,9 +4,10 @@ import type { Workflow } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import {
   isValidEvent,
-  type EventTypes,
   type Direction,
-  type PointNode,
+  type WorkerMessage,
+  type FindNearestObjectPayload,
+  type GenericWorkflowObject,
 } from "./common";
 
 const distance = function (pt1: XY, pt2: XY) {
@@ -16,20 +17,32 @@ const distance = function (pt1: XY, pt2: XY) {
   return Math.hypot(x2 - x1, y2 - y1);
 };
 
+/**
+ * Create the KDTree data structure to keep track of the point coordinates
+ * of the objects in the workflow (nodes, annotations)
+ * @param data
+ * @returns
+ */
 const createTree = (data: Workflow) => {
-  const points = Object.values(data.nodes).map(({ id, position }) => ({
+  const nodePoints = Object.values(data.nodes).map(({ id, position }) => ({
     id,
+    type: "node" as const,
     x: position.x,
     y: position.y,
   }));
 
-  const tree = new KDTree<XY & { id?: string }>(points, distance, [
-    "id",
-    "x",
-    "y",
-  ]);
+  const annotationPoints = data.workflowAnnotations.map(({ id, bounds }) => ({
+    id,
+    type: "annotation" as const,
+    x: bounds.x,
+    y: bounds.y,
+  }));
 
-  return tree;
+  return new KDTree<GenericWorkflowObject>(
+    [...nodePoints, ...annotationPoints],
+    distance,
+    ["id", "x", "y"],
+  );
 };
 
 /**
@@ -75,8 +88,8 @@ const getDisplacementVector = (pointA: XY, pointB: XY): XY => ({
  * Uses the sign (- / +) of the coordinates of the point (x, y)
  * to determine on which quadrant of the plane this point lies in. Then, assuming
  * a 45deg counterclockwise rotation of said plane has been applied it will determine
- * whether the point matches the direction. For example, picture the following
- * rotated coordinates
+ * whether the point matches the direction. As an example, see the following
+ * rotated coordinates and see how the signs correspond to the quadrants of the plane
  *    -y        +x
  *     \   +-  /
  *      \     /
@@ -101,29 +114,26 @@ const isPointInDirection = ({ x, y }: XY, direction: Direction) => {
   return directionMatcher[direction];
 };
 
-const findNearestNode = (data: {
-  workflow: Workflow;
-  position: PointNode;
-  direction: Direction;
-}) => {
+const findNearestNode = (data: FindNearestObjectPayload) => {
+  const MAX_DISTANCE = 15;
   const tree = createTree(data.workflow);
-  const nearestNodes = tree.nearest(data.position, 15);
+  const nearestNodes = tree.nearest(data.reference, MAX_DISTANCE);
 
   const nearest = nearestNodes
     // exclude self
-    .filter(([node]) => node.id !== data.position.id)
+    .filter(([node]) => node.id !== data.reference.id)
     .slice()
     // sort by distance
     .sort(([_1, d1], [_2, d2]) => (d1 < d2 ? -1 : 1))
     // add rotated points
     .map(([point]) => ({
       ...point,
-      rotated: rotatePoint45deg(point, data.position),
+      rotated: rotatePoint45deg(point, data.reference),
     }))
     // add displacement vector
     .map((point) => ({
       ...point,
-      vector: getDisplacementVector(point.rotated, data.position),
+      vector: getDisplacementVector(point.rotated, data.reference),
     }))
     .filter((point) => isPointInDirection(point.vector, data.direction))
     // grab the 1st node since it's the closest because they're sorted
@@ -133,16 +143,12 @@ const findNearestNode = (data: {
 };
 
 self.onmessage = function (event: {
-  data: { type: EventTypes; payload: Workflow };
+  data: WorkerMessage<FindNearestObjectPayload>;
 }) {
-  if (!isValidEvent(event.data.type)) {
-    postMessage("UNKNOWN MESSAGE TYPE");
+  if (!isValidEvent(event.data?.type)) {
+    postMessage("UNKNOWN MESSAGE EVENT");
+    return;
   }
 
-  // TODO: improve typing
-  const messageHandler: Record<EventTypes, (data: any) => void> = {
-    nearest: findNearestNode,
-  };
-
-  messageHandler[event.data.type](event.data.payload);
+  findNearestNode(event.data.payload);
 };

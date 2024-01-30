@@ -9,10 +9,20 @@ import {
   type Direction,
 } from "@/util/workflowNavigationService";
 import { isInputElement } from "@/util/isInputElement";
+import type { KnimeNode } from "@/api/custom-types";
+import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
 
 const isMovementEvent = (event: KeyboardEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
   return event.shiftKey && event[metaOrCtrlKey];
+};
+
+const getPosition = (object: KnimeNode | WorkflowAnnotation) => {
+  if ("position" in object) {
+    return object.position;
+  }
+
+  return object.bounds;
 };
 
 export const useArrowKeyNavigation = () => {
@@ -20,8 +30,8 @@ export const useArrowKeyNavigation = () => {
   const activeWorkflow = computed(() => store.state.workflow.activeWorkflow);
   const isDragging = computed(() => store.state.workflow.isDragging);
   const isWritable = computed(() => store.getters["workflow/isWritable"]);
-  const singleSelectedNode = computed(
-    () => store.getters["selection/singleSelectedNode"],
+  const singleSelectedObject = computed<KnimeNode | WorkflowAnnotation>(
+    () => store.getters["selection/singleSelectedObject"],
   );
 
   const zoomFactor = computed(() => store.state.canvas.zoomFactor);
@@ -60,6 +70,10 @@ export const useArrowKeyNavigation = () => {
   );
 
   const handleMovement = (event: KeyboardEvent) => {
+    if (!isWritable.value) {
+      return;
+    }
+
     const movementMinDistance = 10;
 
     const deltaY = {
@@ -84,14 +98,12 @@ export const useArrowKeyNavigation = () => {
   };
 
   const handleSelection = async (event: KeyboardEvent) => {
-    if (!singleSelectedNode.value) {
+    if (!singleSelectedObject.value) {
       return;
     }
 
-    const {
-      id,
-      position: { x, y },
-    } = singleSelectedNode.value;
+    const { id } = singleSelectedObject.value;
+    const { x, y } = getPosition(singleSelectedObject.value);
 
     const getDirection = (): Direction => {
       return (
@@ -104,32 +116,30 @@ export const useArrowKeyNavigation = () => {
       )[event.key]!;
     };
 
-    const nearestNode = await workflowNavigationService.nearest({
+    const nearestObject = await workflowNavigationService.nearestObject({
       workflow: activeWorkflow.value!,
-      position: { x, y, id },
+      reference: { x, y, id },
       direction: getDirection(),
     });
 
-    if (nearestNode?.id) {
+    if (nearestObject?.id) {
       const kanvas = getScrollContainerElement.value();
       const halfX = kanvas.clientWidth / 2 / zoomFactor.value;
       const halfY = kanvas.clientHeight / 2 / zoomFactor.value;
+      const selectionAction =
+        nearestObject.type === "node" ? "selectNode" : "selectAnnotation";
 
       await store.dispatch("selection/deselectAllObjects");
-      await store.dispatch("selection/selectNode", nearestNode.id);
+      await store.dispatch(`selection/${selectionAction}`, nearestObject.id);
       await store.dispatch("canvas/scroll", {
-        canvasX: nearestNode.x - halfX,
-        canvasY: nearestNode.y - halfY,
+        canvasX: nearestObject.x - halfX,
+        canvasY: nearestObject.y - halfY,
         smooth: true,
       });
     }
   };
 
   const keyboardNavHandler = throttle((event: KeyboardEvent) => {
-    if (!isWritable.value) {
-      return;
-    }
-
     const isArrowKey = [
       "ArrowUp",
       "ArrowDown",
