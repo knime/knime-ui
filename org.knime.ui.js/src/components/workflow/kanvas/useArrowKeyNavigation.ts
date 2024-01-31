@@ -51,23 +51,19 @@ export const useArrowKeyNavigation = () => {
   };
 
   // prevent native events
-  window.addEventListener(
-    "keydown",
-    function (event) {
-      const isScrollingKey = [
-        "Space",
-        "ArrowUp",
-        "ArrowDown",
-        "ArrowLeft",
-        "ArrowRight",
-      ].includes(event.key);
+  const preventNativeEvents = function (event: KeyboardEvent) {
+    const isScrollingKey = [
+      "Space",
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+    ].includes(event.key);
 
-      if (shouldNavigate(event) && isScrollingKey) {
-        event.preventDefault();
-      }
-    },
-    false,
-  );
+    if (shouldNavigate(event) && isScrollingKey) {
+      event.preventDefault();
+    }
+  };
 
   const handleMovement = (event: KeyboardEvent) => {
     if (!isWritable.value) {
@@ -129,13 +125,30 @@ export const useArrowKeyNavigation = () => {
       const selectionAction =
         nearestObject.type === "node" ? "selectNode" : "selectAnnotation";
 
+      const objectScreenCoordinates =
+        store.getters["canvas/screenFromCanvasCoordinates"](nearestObject);
+
+      const DISTANCE_THRESHOLD = 25;
+      const isNearLeft =
+        objectScreenCoordinates.x - kanvas.offsetLeft <= DISTANCE_THRESHOLD;
+      const isNearTop =
+        objectScreenCoordinates.y - kanvas.offsetTop <= DISTANCE_THRESHOLD;
+      const isNearRight =
+        kanvas.offsetWidth - objectScreenCoordinates.x <= DISTANCE_THRESHOLD;
+      const isNearBottom =
+        kanvas.offsetHeight - objectScreenCoordinates.y <= DISTANCE_THRESHOLD;
+      const isNearEdge = isNearLeft || isNearTop || isNearRight || isNearBottom;
+
       await store.dispatch("selection/deselectAllObjects");
       await store.dispatch(`selection/${selectionAction}`, nearestObject.id);
-      await store.dispatch("canvas/scroll", {
-        canvasX: nearestObject.x - halfX,
-        canvasY: nearestObject.y - halfY,
-        smooth: true,
-      });
+
+      if (isNearEdge) {
+        await store.dispatch("canvas/scroll", {
+          canvasX: nearestObject.x - halfX,
+          canvasY: nearestObject.y - halfY,
+          smooth: true,
+        });
+      }
     }
   };
 
@@ -155,10 +168,12 @@ export const useArrowKeyNavigation = () => {
   });
 
   onMounted(() => {
+    window.addEventListener("keydown", preventNativeEvents);
     document.addEventListener("keydown", keyboardNavHandler);
   });
 
   onBeforeUnmount(() => {
+    window.removeEventListener("keydown", preventNativeEvents);
     document.removeEventListener("keydown", keyboardNavHandler);
   });
 };
