@@ -53,10 +53,21 @@ watch(isExtensionPanelOpen, (isOpen) => {
   }
 });
 
+watch(nodeRepositoryLoaded, (isLoaded, wasLoaded) => {
+  if (
+    isLoaded === true &&
+    wasLoaded === false &&
+    !nodesPerCategory.value.length
+  ) {
+    store.dispatch("nodeRepository/getAllNodes", { append: false });
+  }
+});
+
 onMounted(() => {
   store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
 
-  if (!nodesPerCategory.value.length) {
+  // load all nodes for the category view if we have the data otherwise this is done when the repo is loaded
+  if (nodeRepositoryLoaded.value && !nodesPerCategory.value.length) {
     store.dispatch("nodeRepository/getAllNodes", { append: false });
   }
 });
