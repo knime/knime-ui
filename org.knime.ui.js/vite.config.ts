@@ -3,12 +3,13 @@ import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import svgLoader from "vite-svg-loader";
 import { configDefaults } from "vitest/config";
+import vueDevTools from "vite-plugin-vue-devtools";
 
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
   return {
-    plugins: [vue(), svgLoader()],
+    plugins: [vue(), svgLoader(), vueDevTools()],
 
     build: {
       target: "esnext",
