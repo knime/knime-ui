@@ -225,5 +225,6 @@ export const usePanning = (options: UsePanningOptions) => {
     beginPan,
     movePan,
     stopPan,
+    isHoldingDownSpace: computed(() => isHoldingDownSpace.value),
   };
 };

@@ -248,7 +248,7 @@ export default {
     showSelectionPlane() {
       // no preview, honor dragging state
       if (this.selectionPreview === null) {
-        return this.isSelected; // && !this.isDragging;
+        return this.isSelected && !this.isDragging;
       }
 
       // preview can override selected state (think: deselect with shift)

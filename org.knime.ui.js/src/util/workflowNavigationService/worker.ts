@@ -86,10 +86,15 @@ const getDisplacementVector = (pointA: XY, pointB: XY): XY => ({
  * Matches whether a given point is located in a given direction.
  *
  * Uses the sign (- / +) of the coordinates of the point (x, y)
- * to determine on which quadrant of the plane this point lies in. Then, assuming
- * a 45deg counterclockwise rotation of said plane has been applied it will determine
- * whether the point matches the direction. As an example, see the following
- * rotated coordinates and see how the signs correspond to the quadrants of the plane
+ * to determine on which quadrant of the plane this point lies in. Assuming
+ * a 45deg clockwise rotation has been applied to the plane that means all points
+ * in it are rotated in a clockwise manner. Therefore, we can determine the
+ * direction of the points (as vectors from the origin) based on the quadrant they
+ * live in.
+ *
+ * To visualize this better, you can think of rotating the axes in a counterclockwise
+ * manner (which is the same as rotating all points clockwise) and then use the following
+ * example to see how the directions match the signs of the X,Y coordinates of the point
  *    -y        +x
  *     \   +-  /
  *      \     /
@@ -115,7 +120,7 @@ const isPointInDirection = ({ x, y }: XY, direction: Direction) => {
 };
 
 const findNearestNode = (data: FindNearestObjectPayload) => {
-  const MAX_DISTANCE = 15;
+  const MAX_DISTANCE = 25;
   const tree = createTree(data.workflow);
   const nearestNodes = tree.nearest(data.reference, MAX_DISTANCE);
 

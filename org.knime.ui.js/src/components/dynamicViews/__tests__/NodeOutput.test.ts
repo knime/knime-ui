@@ -186,20 +186,6 @@ describe("NodeOutput.vue", () => {
     expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
   });
 
-  it("should display placeholder when node is dragging", () => {
-    const store = createStore({ isDragging: true });
-    const wrapper = doMount(store);
-
-    expect(placeholderMessage(wrapper)).toBe(
-      "Node output will be loaded after moving is completed",
-    );
-    expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
-    expect(wrapper.findComponent(PortTabs).props("disabled")).toBe(true);
-
-    expect(wrapper.find(".loading-icon").exists()).toBe(false);
-    expect(wrapper.find(".action-button").exists()).toBe(false);
-  });
-
   describe("updates", () => {
     it("node gets problem -> display error placeholder", async () => {
       const wrapper = doMount();

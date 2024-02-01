@@ -28,10 +28,7 @@ export const runValidationChecks = ({
   selectedNodes: KnimeNode[];
   isDragging: boolean;
 }) => {
-  const validationMiddleware = buildMiddleware(
-    // validateDragging,
-    validateSelection,
-  );
+  const validationMiddleware = buildMiddleware(validateSelection);
 
   const result = validationMiddleware({ selectedNodes, isDragging })();
 

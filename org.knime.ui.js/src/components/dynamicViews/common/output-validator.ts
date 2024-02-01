@@ -85,27 +85,6 @@ export type ValidationFn<T = any> = (
 
 /**
  * Validation middleware function. Asserts that:
- * - Nodes are not being dragged
- */
-export const validateDragging: ValidationFn<{ isDragging: boolean }> = (
-  context,
-  next,
-) => {
-  if (context.isDragging) {
-    return {
-      error: {
-        type: "NODE",
-        code: "NODE_DRAGGING",
-        message: "Node output will be loaded after moving is completed",
-      },
-    };
-  }
-
-  return next(context);
-};
-
-/**
- * Validation middleware function. Asserts that:
  * - The selection contains a single node
  *
  * Adds the `selectedNode` to the context

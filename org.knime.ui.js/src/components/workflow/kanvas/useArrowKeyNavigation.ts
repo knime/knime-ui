@@ -1,7 +1,10 @@
-import { computed, onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, type ComputedRef } from "vue";
 import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+
+import type { KnimeNode } from "@/api/custom-types";
+import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
 
 import { useStore } from "@/composables/useStore";
 import {
@@ -9,8 +12,7 @@ import {
   type Direction,
 } from "@/util/workflowNavigationService";
 import { isInputElement } from "@/util/isInputElement";
-import type { KnimeNode } from "@/api/custom-types";
-import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
+import { gridSize } from "@/style/shapes.mjs";
 
 const isMovementEvent = (event: KeyboardEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
@@ -22,10 +24,39 @@ const getPosition = (object: KnimeNode | WorkflowAnnotation) => {
     return object.position;
   }
 
-  return object.bounds;
+  return { x: object.bounds.x, y: object.bounds.y };
 };
 
-export const useArrowKeyNavigation = () => {
+const isOutsideKanvasView = (
+  kanvas: HTMLElement,
+  referenceObjectCoords: XY,
+) => {
+  const DISTANCE_THRESHOLD = 25;
+
+  const isNearLeft =
+    referenceObjectCoords.x - kanvas.offsetLeft <= DISTANCE_THRESHOLD;
+
+  const isNearTop =
+    referenceObjectCoords.y - kanvas.offsetTop <= DISTANCE_THRESHOLD;
+
+  const isNearRight =
+    kanvas.offsetWidth - (referenceObjectCoords.x - kanvas.offsetLeft) <=
+    DISTANCE_THRESHOLD;
+
+  const isNearBottom =
+    kanvas.offsetHeight - (referenceObjectCoords.y - kanvas.offsetTop) <=
+    DISTANCE_THRESHOLD;
+
+  return isNearLeft || isNearTop || isNearRight || isNearBottom;
+};
+
+type UseArrowKeyNavigationOptions = {
+  isHoldingDownSpace: ComputedRef<boolean>;
+};
+
+export const useArrowKeyNavigation = (
+  options: UseArrowKeyNavigationOptions,
+) => {
   const store = useStore();
   const activeWorkflow = computed(() => store.state.workflow.activeWorkflow);
   const isDragging = computed(() => store.state.workflow.isDragging);
@@ -60,7 +91,11 @@ export const useArrowKeyNavigation = () => {
       "ArrowRight",
     ].includes(event.key);
 
-    if (shouldNavigate(event) && isScrollingKey) {
+    if (
+      shouldNavigate(event) &&
+      isScrollingKey &&
+      !options.isHoldingDownSpace.value
+    ) {
       event.preventDefault();
     }
   };
@@ -70,16 +105,16 @@ export const useArrowKeyNavigation = () => {
       return;
     }
 
-    const movementMinDistance = 10;
+    store.commit("workflow/setTooltip", null);
 
     const deltaY = {
-      ArrowUp: -movementMinDistance,
-      ArrowDown: movementMinDistance,
+      ArrowUp: -gridSize.y,
+      ArrowDown: gridSize.y,
     }[event.key];
 
     const deltaX = {
-      ArrowLeft: -movementMinDistance,
-      ArrowRight: movementMinDistance,
+      ArrowLeft: -gridSize.x,
+      ArrowRight: gridSize.x,
     }[event.key];
 
     if (!isDragging.value) {
@@ -118,41 +153,38 @@ export const useArrowKeyNavigation = () => {
       direction: getDirection(),
     });
 
-    if (nearestObject?.id) {
-      const kanvas = getScrollContainerElement.value();
+    if (!nearestObject?.id) {
+      return;
+    }
+
+    const kanvas = getScrollContainerElement.value();
+    const selectionAction =
+      nearestObject.type === "node" ? "selectNode" : "selectAnnotation";
+
+    const objectScreenCoordinates =
+      store.getters["canvas/screenFromCanvasCoordinates"](nearestObject);
+
+    await store.dispatch("selection/deselectAllObjects");
+    await store.dispatch(`selection/${selectionAction}`, nearestObject.id);
+
+    if (isOutsideKanvasView(kanvas, objectScreenCoordinates)) {
       const halfX = kanvas.clientWidth / 2 / zoomFactor.value;
       const halfY = kanvas.clientHeight / 2 / zoomFactor.value;
-      const selectionAction =
-        nearestObject.type === "node" ? "selectNode" : "selectAnnotation";
 
-      const objectScreenCoordinates =
-        store.getters["canvas/screenFromCanvasCoordinates"](nearestObject);
-
-      const DISTANCE_THRESHOLD = 25;
-      const isNearLeft =
-        objectScreenCoordinates.x - kanvas.offsetLeft <= DISTANCE_THRESHOLD;
-      const isNearTop =
-        objectScreenCoordinates.y - kanvas.offsetTop <= DISTANCE_THRESHOLD;
-      const isNearRight =
-        kanvas.offsetWidth - objectScreenCoordinates.x <= DISTANCE_THRESHOLD;
-      const isNearBottom =
-        kanvas.offsetHeight - objectScreenCoordinates.y <= DISTANCE_THRESHOLD;
-      const isNearEdge = isNearLeft || isNearTop || isNearRight || isNearBottom;
-
-      await store.dispatch("selection/deselectAllObjects");
-      await store.dispatch(`selection/${selectionAction}`, nearestObject.id);
-
-      if (isNearEdge) {
-        await store.dispatch("canvas/scroll", {
-          canvasX: nearestObject.x - halfX,
-          canvasY: nearestObject.y - halfY,
-          smooth: true,
-        });
-      }
+      // scroll object into canvas center
+      await store.dispatch("canvas/scroll", {
+        canvasX: nearestObject.x - halfX,
+        canvasY: nearestObject.y - halfY,
+        smooth: true,
+      });
     }
   };
 
   const keyboardNavHandler = throttle((event: KeyboardEvent) => {
+    if (options.isHoldingDownSpace.value) {
+      return;
+    }
+
     const isArrowKey = [
       "ArrowUp",
       "ArrowDown",

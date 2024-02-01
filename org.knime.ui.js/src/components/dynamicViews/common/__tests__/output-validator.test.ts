@@ -70,20 +70,6 @@ describe("output-validator", () => {
     expect(middleware2).toHaveBeenCalledWith(params, expect.any(Function));
   });
 
-  it("validates that node is not being dragged", () => {
-    const result = runNodeValidationChecks({
-      params: { selectedNodes: [dummyNode], portTypes, isDragging: true },
-      validations: [outputValidator.validateDragging],
-    });
-    expect(result).toEqual({
-      error: {
-        type: "NODE",
-        code: "NODE_DRAGGING",
-        message: "Node output will be loaded after moving is completed",
-      },
-    });
-  });
-
   it("validates that at least one node is selected", () => {
     const result = runNodeValidationChecks({
       params: {

@@ -93,15 +93,17 @@ onBeforeUnmount(() => {
 });
 
 useCanvasMoveLocking();
-useArrowKeyNavigation();
 
 const { onMouseWheel } = useMouseWheelZooming({
   rootEl: rootEl as Ref<HTMLElement>,
 });
 
-const { shouldShowMoveCursor, beginPan, movePan, stopPan } = usePanning({
-  rootEl: rootEl as Ref<HTMLElement>,
-});
+const { shouldShowMoveCursor, beginPan, movePan, stopPan, isHoldingDownSpace } =
+  usePanning({
+    rootEl: rootEl as Ref<HTMLElement>,
+  });
+
+useArrowKeyNavigation({ isHoldingDownSpace });
 
 const startRectangleSelection = (event: PointerEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
