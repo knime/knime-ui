@@ -93,7 +93,9 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   const onConnectionRestored = () => {
     store.dispatch("application/updateGlobalLoader", { loading: false });
 
-    $toast.removeBy(({ id }) => id === CONNECTION_LOST_TOAST_ID);
+    $toast.removeBy((toast) =>
+      (toast.id ?? "").startsWith(CONNECTION_LOST_TOAST_ID),
+    );
 
     $toast.show({
       type: "success",
