@@ -1,5 +1,5 @@
 <script>
-import { KnimeService } from "@knime/ui-extension-service";
+// import { KnimeService } from "@knime/ui-extension-service";
 
 import { API } from "@api";
 import ViewLoader from "../common/ViewLoader.vue";
@@ -89,8 +89,8 @@ export default {
     },
 
     /* Required by dynamically loaded view components */
-    initKnimeService(config) {
-      return new KnimeService(
+    initKnimeService(/* config */) {
+      return null; /* new KnimeService(
         config,
 
         // Data Service Callback
@@ -115,7 +115,7 @@ export default {
           // the pagebuilder are not coupled to each other like this
           this.$store.dispatch("pagebuilder/service/pushEvent", event);
         },
-      );
+      ); */
     },
   },
 };
