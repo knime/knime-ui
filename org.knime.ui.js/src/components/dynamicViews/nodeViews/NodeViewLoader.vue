@@ -1,36 +1,53 @@
-<script>
+<script lang="ts">
 import { mapGetters, mapState } from "vuex";
 import { API } from "@api";
-import PageBuilder from "pagebuilder/src/components/PageBuilder.vue";
 
-import singleViewPage from "./singleViewPage.json";
+import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
+import type { UIExtensionAPILayer } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
+import type { ExtensionConfig } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
+import { defineComponent } from "vue";
 
+type ComponentData = {
+  deactivateDataServicesFn: (() => void) | null;
+  apiLayer: null | UIExtensionAPILayer;
+  extensionConfig:
+    | null
+    | (ExtensionConfig & { resourceInfo: { baseUrl: string } });
+  isReady: boolean;
+};
 /**
  * Renders a node view via the PageBuilder component
  */
-export default {
+export default defineComponent({
   components: {
-    PageBuilder,
+    UIExtension,
   },
 
   emits: ["stateChange"],
 
-  data() {
+  data(): ComponentData {
     return {
       isReady: false,
       deactivateDataServicesFn: null,
+      apiLayer: null,
+      extensionConfig: null,
     };
   },
 
   computed: {
     ...mapState("application", { projectId: "activeProjectId" }),
     ...mapState("workflow", {
-      workflowId: (state) => state.activeWorkflow.info.containerId,
+      workflowId: (state: any) => state.activeWorkflow.info.containerId,
     }),
     ...mapGetters("selection", { selectedNode: "singleSelectedNode" }),
 
     hasView() {
       return Boolean(this.selectedNode?.hasView);
+    },
+
+    resourceLocation() {
+      const { baseUrl, path } = this.extensionConfig!.resourceInfo;
+      return `${baseUrl}${path}`;
     },
   },
 
@@ -45,7 +62,7 @@ export default {
         // }
 
         if (newNode?.hasView) {
-          this.loadContent(newNode.id);
+          this.loadContent();
         }
       },
     },
@@ -60,6 +77,36 @@ export default {
   async created() {
     try {
       this.$emit("stateChange", { state: "loading", message: "Loading view" });
+
+      this.apiLayer = {
+        getResourceLocation: (path: string) => {
+          const { baseUrl } = this.extensionConfig!.resourceInfo;
+          return Promise.resolve(`${baseUrl}${path}`);
+        },
+        callNodeDataService: async (params) => {
+          const { serviceType, dataServiceRequest } = params;
+          const data = await API.node.callNodeDataService({
+            projectId: this.projectId,
+            workflowId: this.workflowId,
+            nodeId: this.selectedNode.id,
+            extensionType: "view",
+            serviceType,
+            dataServiceRequest,
+          });
+          return data;
+        },
+        updateDataPointSelection: () => {
+          return Promise.resolve(null);
+        },
+        publishData: () => {},
+        setReportingContent: () => {},
+        imageGenerated: () => {},
+        registerPushEventService: () => {
+          return () => {};
+        },
+        sendAlert: () => {},
+        close: () => {},
+      };
 
       await this.loadContent();
 
@@ -77,10 +124,12 @@ export default {
           return;
         }
 
+        const nodeId = this.selectedNode.id;
+
         const nodeView = await API.node.getNodeView({
           projectId: this.projectId,
           workflowId: this.workflowId,
-          nodeId: this.selectedNode.id,
+          nodeId,
         });
 
         if (nodeView.deactivationRequired) {
@@ -88,38 +137,27 @@ export default {
             API.node.deactivateNodeDataServices({
               projectId: this.projectId,
               workflowId: this.workflowId,
-              nodeId: this.nodeId,
+              nodeId,
               extensionType: "view",
             });
           };
         }
 
-        const page = JSON.parse(JSON.stringify(singleViewPage));
-        page.wizardPageContent.nodeViews.ROOT = nodeView;
-
-        // eslint-disable-next-line consistent-return
-        return this.$store.dispatch("pagebuilder/setPage", { page });
+        this.extensionConfig = nodeView;
       } catch (error) {
         consola.log("Error loading view content", error);
         throw error;
       }
     },
   },
-};
+});
 </script>
 
 <template>
-  <PageBuilder v-if="isReady" class="page-builder" />
+  <UIExtension
+    v-if="isReady"
+    :extension-config="extensionConfig!"
+    :resource-location="resourceLocation"
+    :api-layer="apiLayer!"
+  />
 </template>
-
-<style lang="postcss" scoped>
-.page-builder {
-  height: 100%;
-
-  & :deep(> div),
-  & :deep(.container-fluid),
-  & :deep(.row) {
-    height: 100%;
-  }
-}
-</style>

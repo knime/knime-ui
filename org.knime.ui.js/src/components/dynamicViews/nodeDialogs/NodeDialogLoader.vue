@@ -1,15 +1,27 @@
-<script>
-// import { KnimeService } from "@knime/ui-extension-service";
-
+<script lang="ts">
 import { API } from "@api";
-import ViewLoader from "../common/ViewLoader.vue";
+import { defineComponent, type PropType } from "vue";
+import type { KnimeNode } from "@/api/custom-types";
+
+import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
+import type { UIExtensionAPILayer } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
+import type { ExtensionConfig } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
+
+type ComponentData = {
+  deactivateDataServicesFn: (() => void) | null;
+  apiLayer: null | UIExtensionAPILayer;
+  extensionConfig:
+    | null
+    | (ExtensionConfig & { resourceInfo: { baseUrl: string } });
+  configReady: boolean;
+};
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
  */
-export default {
+export default defineComponent({
   components: {
-    ViewLoader,
+    UIExtension,
   },
 
   props: {
@@ -22,25 +34,38 @@ export default {
       required: true,
     },
     selectedNode: {
-      type: Object,
+      type: Object as PropType<KnimeNode>,
       required: true,
     },
   },
 
-  data() {
+  data(): ComponentData {
     return {
       deactivateDataServicesFn: null,
+      apiLayer: null,
+      extensionConfig: null,
+      configReady: false,
     };
   },
 
   computed: {
-    renderKey() {
+    renderKey(): string {
       if (this.selectedNode?.hasDialog) {
         return [this.projectId, this.workflowId, this.selectedNode.id].join(
           "/",
         );
       }
       return "";
+    },
+    resourceLocation() {
+      const { baseUrl, path } = this.extensionConfig!.resourceInfo;
+      return `${baseUrl}${path}`;
+    },
+  },
+
+  watch: {
+    renderKey() {
+      this.loadExtensionConfig();
     },
   },
 
@@ -50,11 +75,38 @@ export default {
     }
   },
 
-  created() {
-    // TODO: NXT-1295 remove hack. Overwrite internally used function by UI Ext's NodeDialog.min.js
-    if (!window.closeCEFWindow) {
-      window.closeCEFWindow = () => {};
-    }
+  async mounted() {
+    await this.loadExtensionConfig();
+    this.apiLayer = {
+      getResourceLocation: (path: string) => {
+        const { baseUrl } = this.extensionConfig!.resourceInfo;
+        return Promise.resolve(`${baseUrl}${path}`);
+      },
+      callNodeDataService: async (params) => {
+        const { serviceType, dataServiceRequest } = params;
+        const data = await API.node.callNodeDataService({
+          projectId: this.projectId,
+          workflowId: this.workflowId,
+          nodeId: this.selectedNode.id,
+          extensionType: "dialog",
+          serviceType,
+          dataServiceRequest,
+        });
+        return data;
+      },
+      updateDataPointSelection: () => {
+        return Promise.resolve(null);
+      },
+      publishData: () => {},
+      setReportingContent: () => {},
+      imageGenerated: () => {},
+      registerPushEventService: () => {
+        return () => {};
+      },
+      sendAlert: () => {},
+      close: () => {},
+    };
+    this.configReady = true;
   },
 
   methods: {
@@ -83,50 +135,18 @@ export default {
       }
     },
 
-    resourceLocationResolver({ resourceInfo }) {
-      const { baseUrl, path } = resourceInfo;
-      return `${baseUrl}${path}`;
-    },
-
-    /* Required by dynamically loaded view components */
-    initKnimeService(/* config */) {
-      return null; /* new KnimeService(
-        config,
-
-        // Data Service Callback
-        async (nodeService, serviceType, dataServiceRequest) => {
-          if (nodeService === "NodeService.callNodeDataService") {
-            await API.node.callNodeDataService({
-              projectId: this.projectId,
-              workflowId: this.workflowId,
-              nodeId: this.selectedNode.id,
-              extensionType: "dialog",
-              serviceType,
-              dataServiceRequest,
-            });
-          }
-        },
-
-        // Notification Callback
-        (event) => {
-          // Dispatch an event to the page builder so that it updates the corresponding view
-          // of the active node, whose settings are controlled by THIS dialog
-          // TODO: NXT-1295 this should be reworked in the pagebuilder somehow, so that the NodeDialog and
-          // the pagebuilder are not coupled to each other like this
-          this.$store.dispatch("pagebuilder/service/pushEvent", event);
-        },
-      ); */
+    async loadExtensionConfig() {
+      this.extensionConfig = await this.viewConfigLoaderFn();
     },
   },
-};
+});
 </script>
 
 <template>
-  <ViewLoader
-    :render-key="renderKey"
-    :init-knime-service="initKnimeService"
-    :view-config-loader-fn="viewConfigLoaderFn"
-    :resource-location-resolver="resourceLocationResolver"
-    v-bind="$attrs"
+  <UIExtension
+    v-if="configReady"
+    :extension-config="extensionConfig!"
+    :resource-location="resourceLocation"
+    :api-layer="apiLayer!"
   />
 </template>
