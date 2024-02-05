@@ -11,6 +11,7 @@ import type {
   Workflow as _Workflow,
   EditableProjectMetadata,
   NodeTemplate,
+  XY,
 } from "./gateway-api/generated-api";
 
 import { SpaceProvider as _SpaceProviderNS } from "./gateway-api/generated-api";
@@ -140,3 +141,5 @@ export type NodeTemplateWithExtendedPorts = NodeTemplate & {
   inPorts: ExtendedPortType[];
   outPorts: ExtendedPortType[];
 };
+
+export type WorkflowObject = XY & { id: string; type: "node" | "annotation" };

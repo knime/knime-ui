@@ -1,6 +1,6 @@
 import { kdTree as KDTree } from "kd-tree-javascript";
 
-import type { Workflow } from "@/api/custom-types";
+import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import {
   isValidEvent,
@@ -20,29 +20,11 @@ const distance = function (pt1: XY, pt2: XY) {
 /**
  * Create the KDTree data structure to keep track of the point coordinates
  * of the objects in the workflow (nodes, annotations)
- * @param data
+ * @param objects
  * @returns
  */
-const createTree = (data: Workflow) => {
-  const nodePoints = Object.values(data.nodes).map(({ id, position }) => ({
-    id,
-    type: "node" as const,
-    x: position.x,
-    y: position.y,
-  }));
-
-  const annotationPoints = data.workflowAnnotations.map(({ id, bounds }) => ({
-    id,
-    type: "annotation" as const,
-    x: bounds.x,
-    y: bounds.y,
-  }));
-
-  return new KDTree<GenericWorkflowObject>(
-    [...nodePoints, ...annotationPoints],
-    distance,
-    ["id", "x", "y"],
-  );
+const createTree = (objects: WorkflowObject[]) => {
+  return new KDTree<GenericWorkflowObject>(objects, distance, ["id", "x", "y"]);
 };
 
 /**
@@ -121,7 +103,7 @@ const isPointInDirection = ({ x, y }: XY, direction: Direction) => {
 
 const findNearestNode = (data: FindNearestObjectPayload) => {
   const MAX_DISTANCE = 25;
-  const tree = createTree(data.workflow);
+  const tree = createTree(data.objects);
   const nearestNodes = tree.nearest(data.reference, MAX_DISTANCE);
 
   const nearest = nearestNodes

@@ -1,9 +1,6 @@
 import { toRaw } from "vue";
-import type {
-  FindNearestObjectPayload,
-  WorkflowObject,
-  WorkerMessage,
-} from "./common";
+import type { FindNearestObjectPayload, WorkerMessage } from "./common";
+import type { WorkflowObject } from "@/api/custom-types";
 
 const webWorker = new Worker(new URL("./worker", import.meta.url), {
   type: "module",
@@ -44,8 +41,8 @@ const nearestObject = (data: FindNearestObjectPayload) => {
   const message: WorkerMessage<FindNearestObjectPayload> = {
     type: "nearest",
     payload: {
-      // remove reactive proxies to keep the object simpler
-      workflow: toRaw(data.workflow),
+      // remove reactive proxies to keep the objects simpler
+      objects: toRaw(data.objects),
       reference: data.reference,
       direction: data.direction,
     },

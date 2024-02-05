@@ -7,7 +7,7 @@ import {
   TransformMetanodePortsBarCommand,
   type Connection,
 } from "@/api/gateway-api/generated-api";
-import type { KnimeNode, Workflow } from "@/api/custom-types";
+import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
 
@@ -356,6 +356,30 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   ...clipboardInteractions.getters,
   ...annotationInteractions.getters,
   ...connectionInteractions.getters,
+
+  workflowObjects(state): WorkflowObject[] {
+    if (!state.activeWorkflow) {
+      return [];
+    }
+
+    const { nodes, workflowAnnotations } = state.activeWorkflow;
+
+    const nodeObjects = Object.values(nodes).map(({ id, position }) => ({
+      id,
+      type: "node" as const,
+      x: position.x,
+      y: position.y,
+    }));
+
+    const annotationObjects = workflowAnnotations.map(({ id, bounds }) => ({
+      id,
+      type: "annotation" as const,
+      x: bounds.x,
+      y: bounds.y,
+    }));
+
+    return [...nodeObjects, ...annotationObjects];
+  },
 
   /* Workflow is empty if it doesn't contain nodes */
   isWorkflowEmpty({ activeWorkflow }) {

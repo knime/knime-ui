@@ -2,7 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { RootStoreState } from "./types";
 import { parseBendpointId } from "@/util/connectorUtil";
-import type { KnimeNode } from "@/api/custom-types";
+import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
 import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
 
 export interface SelectionState {
@@ -343,20 +343,55 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
       singleSelectedNode,
       singleSelectedAnnotation,
     },
-  ) {
+  ): WorkflowObject | null {
     if (selectedNodes.length > 1 || selectedAnnotations.length > 1) {
       return null;
     }
 
     if (singleSelectedNode && !singleSelectedAnnotation) {
-      return singleSelectedNode;
+      return {
+        id: singleSelectedNode.id,
+        type: "node",
+        ...singleSelectedNode.position,
+      };
     }
 
     if (singleSelectedAnnotation && !singleSelectedNode) {
-      return singleSelectedAnnotation;
+      return {
+        id: singleSelectedAnnotation.id,
+        type: "annotation",
+        x: singleSelectedAnnotation.bounds.x,
+        y: singleSelectedAnnotation.bounds.y,
+      };
     }
 
     return null;
+  },
+
+  selectedObjects(
+    _state,
+    {
+      selectedNodes,
+      selectedAnnotations,
+    }: {
+      selectedNodes: KnimeNode[];
+      selectedAnnotations: WorkflowAnnotation[];
+    },
+  ) {
+    const nodePositions = selectedNodes.map((node) => ({
+      id: node.id,
+      type: "node" as const,
+      ...node.position,
+    }));
+
+    const annotationPositions = selectedAnnotations.map(({ id, bounds }) => ({
+      id,
+      type: "annotation" as const,
+      x: bounds.x,
+      y: bounds.y,
+    }));
+
+    return [...nodePositions, ...annotationPositions];
   },
 
   isNodeSelected: (state) => (nodeId: string) => nodeId in state.selectedNodes,
