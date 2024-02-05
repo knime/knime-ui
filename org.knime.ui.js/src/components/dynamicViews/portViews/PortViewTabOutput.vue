@@ -258,7 +258,6 @@ export default defineComponent({
     <template #default="{ activeView }">
       <PortViewLoader
         v-if="!validationError && activeView !== null"
-        v-bind="$attrs"
         :unique-port-key="`${uniquePortKey}/${activeView}`"
         :project-id="projectId"
         :workflow-id="workflowId"
