@@ -1,12 +1,12 @@
 <script lang="ts">
 import { defineComponent, type PropType } from "vue";
-import { type ExtensionConfig } from "@knime/ui-extension-service";
 
 import { API } from "@api";
-import type { KnimeNode, ResourceInfo } from "@/api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
 
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
 import type { UIExtensionAPILayer } from "pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
+import type { ExtensionConfig } from "pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
 
 type ComponentData = {
   error: unknown | null;
@@ -14,10 +14,9 @@ type ComponentData = {
   apiLayer: null | UIExtensionAPILayer;
   extensionConfig:
     | null
-    | (Omit<ExtensionConfig, "resourceInfo"> & {
-        resourceInfo: ResourceInfo;
-      });
+    | (ExtensionConfig & { resourceInfo: { baseUrl: string } });
   configReady: boolean;
+  loading: boolean;
 };
 
 /**
@@ -64,13 +63,14 @@ export default defineComponent({
       apiLayer: null,
       extensionConfig: null,
       configReady: false,
+      loading: false,
     };
   },
 
   computed: {
     resourceLocation() {
       const { baseUrl, path } = this.extensionConfig!.resourceInfo;
-      return this.resourceLocationResolver(path, baseUrl);
+      return `${baseUrl}${path}`;
     },
   },
 
@@ -78,17 +78,17 @@ export default defineComponent({
     uniquePortKey: {
       async handler() {
         this.error = null;
-        this.configReady = false;
+        this.loading = true;
         this.$emit("stateChange", {
           state: "loading",
           portKey: this.uniquePortKey,
         });
         await this.loadExtensionConfig();
-        this.configReady = true;
         this.$emit("stateChange", {
           state: "ready",
           portKey: this.uniquePortKey,
         });
+        this.loading = false;
       },
     },
   },
@@ -102,15 +102,14 @@ export default defineComponent({
     this.apiLayer = {
       getResourceLocation: (path: string) => {
         const { baseUrl } = this.extensionConfig!.resourceInfo;
-        return this.resourceLocationResolver(path, baseUrl);
+        return Promise.resolve(`${baseUrl}${path}`);
       },
       callNodeDataService: async (params) => {
-        const { nodeId, workflowId, serviceType, dataServiceRequest } = params;
-        // TODO: investigate consola.log("proj", params.projectId, this.projectId);
+        const { serviceType, dataServiceRequest } = params;
         const response = await API.port.callPortDataService({
           projectId: this.projectId,
-          workflowId,
-          nodeId,
+          workflowId: this.workflowId,
+          nodeId: this.selectedNode.id,
           portIdx: this.selectedPortIndex,
           viewIdx: this.selectedViewIndex,
           serviceType: serviceType as "initial_data" | "data",
@@ -119,36 +118,17 @@ export default defineComponent({
 
         return { result: JSON.parse(response) };
       },
-      updateDataPointSelection: (params) => {
-        consola.log("updateDataPointSelection", params);
+      updateDataPointSelection: () => {
+        return Promise.resolve(null);
       },
-      publishData: (data) => {
-        consola.log("configReady", data);
+      publishData: () => {},
+      setReportingContent: () => {},
+      imageGenerated: () => {},
+      registerPushEventService: () => {
+        return () => {};
       },
-      setReportingContent: (reportingContent) => {
-        consola.log("setReportingContent", reportingContent);
-      },
-      imageGenerated: (generatedImage) => {
-        consola.log("imageGenerated", generatedImage);
-      },
-      registerPushEventService: ({ dispatchPushEvent }) => {
-        const service = {
-          onServiceEvent: dispatchPushEvent,
-          serviceId: "serviceID", // ?
-        };
-        consola.log("registerPushEventService", service);
-
-        this.$emit("registerPushEventService", dispatchPushEvent);
-        return () => {
-          /* deregister */
-        };
-      },
-      sendAlert: (alert: Alert, closeAlert?: () => void) => {
-        consola.log("sendAlert", alert, closeAlert);
-      },
-      close(isMetaKeyPressed: boolean) {
-        consola.log("close", isMetaKeyPressed);
-      },
+      sendAlert: () => {},
+      close: () => {},
     };
     this.configReady = true;
     this.$emit("stateChange", { state: "ready", portKey: this.uniquePortKey });
@@ -214,23 +194,13 @@ export default defineComponent({
     async loadExtensionConfig() {
       this.extensionConfig = await this.viewConfigLoaderFn();
     },
-
-    resourceLocationResolver(path: string, baseUrl?: string): string {
-      // TODO: NXT-1295. Originally caused NXT-1217
-      // Remove this unnecessary store getter once the issue in the ticket
-      // can be solved in a better way. It is necessary at the moment because the TableView is accessing
-      // this store module internally, so if not provided then it would error out in the application
-      return this.$store.getters["api/uiExtResourceLocation"]({
-        resourceInfo: { path, baseUrl },
-      });
-    },
   },
 });
 </script>
 
 <template>
   <UIExtension
-    v-if="!error && configReady"
+    v-if="!error && configReady && !loading"
     :extension-config="extensionConfig!"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
