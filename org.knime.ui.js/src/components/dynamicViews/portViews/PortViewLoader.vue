@@ -7,6 +7,7 @@ import type { KnimeNode } from "@/api/custom-types";
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
 import type { UIExtensionAPILayer } from "pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
 import type { ExtensionConfig } from "pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
+import type { Alert } from "@knime/ui-extension-service";
 
 type ComponentData = {
   error: unknown | null;
@@ -29,11 +30,11 @@ export default defineComponent({
 
   props: {
     projectId: {
-      type: String,
+      type: String as PropType<string>,
       required: true,
     },
     workflowId: {
-      type: String,
+      type: String as PropType<string>,
       required: true,
     },
     selectedNode: {
@@ -41,20 +42,20 @@ export default defineComponent({
       required: true,
     },
     selectedPortIndex: {
-      type: Number,
+      type: Number as PropType<number>,
       required: true,
     },
     selectedViewIndex: {
-      type: Number,
+      type: Number as PropType<number>,
       required: true,
     },
     uniquePortKey: {
-      type: String,
+      type: String as PropType<string>,
       required: true,
     },
   },
 
-  emits: ["stateChange", "registerPushEventService"],
+  emits: ["stateChange"],
 
   data(): ComponentData {
     return {
@@ -127,7 +128,17 @@ export default defineComponent({
       registerPushEventService: () => {
         return () => {};
       },
-      sendAlert: () => {},
+      sendAlert: (alert: Alert, closeAlert?: () => void) => {
+        consola.warn("Notifications not yet implemented");
+
+        this.$emit("stateChange", {
+          state: "error",
+          message: alert.subtitle,
+        });
+
+        // remove button if there is one
+        closeAlert?.();
+      },
       close: () => {},
     };
     this.configReady = true;

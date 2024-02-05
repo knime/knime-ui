@@ -18,7 +18,7 @@ import {
   validatePortSupport,
   type ValidationResult,
 } from "../common/output-validator";
-import type { ViewStateChangeEvent } from "../common/ViewLoader.vue";
+import type { ViewStateChangeEvent } from "../common/types";
 
 import PortViewLoader from "./PortViewLoader.vue";
 import PortViewTabToggles from "./PortViewTabToggles.vue";

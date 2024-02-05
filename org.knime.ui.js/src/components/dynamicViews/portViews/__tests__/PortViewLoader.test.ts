@@ -1,45 +1,25 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { h, createApp } from "vue";
-import { mocks } from "@knime/ui-extension-service";
 
 import { API } from "@api";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
 
-import ViewLoader from "../../common/ViewLoader.vue";
-import { useDynamicImport } from "../../common/useDynamicImport";
 import PortViewLoader from "../PortViewLoader.vue";
+import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
 
-vi.mock("../../common/useDynamicImport", () => ({
-  useDynamicImport: vi.fn().mockReturnValue({
-    dynamicImport: vi.fn(),
+const dynamicImportMock = vi.fn();
+
+vi.mock(
+  "pagebuilder/src/components/views/uiExtensions/useDynamicImport",
+  () => ({
+    useDynamicImport: vi.fn().mockImplementation(() => {
+      return { dynamicImport: dynamicImportMock };
+    }),
   }),
-}));
+);
 
 const mockedAPI = deepMocked(API);
-
-vi.mock("@knime/ui-extension-service", () => {
-  let dataFetchCallback, notificationCallback;
-
-  const triggerDataFetch = (...args) => {
-    dataFetchCallback?.(...args);
-  };
-  const triggerNotification = (...args) => {
-    notificationCallback?.(...args);
-  };
-
-  class MockService {
-    constructor(config, _cb1, _cb2) {
-      dataFetchCallback = _cb1;
-      notificationCallback = _cb2;
-    }
-  }
-
-  return {
-    KnimeService: MockService,
-    mocks: { triggerDataFetch, triggerNotification },
-  };
-});
 
 describe("PortViewLoader.vue", () => {
   const dummyNode = {
@@ -73,8 +53,8 @@ describe("PortViewLoader.vue", () => {
   });
 
   // mock a simple dynamic view
-  useDynamicImport().dynamicImport.mockReturnValue({
-    default: (shadowRoot) => {
+  dynamicImportMock.mockReturnValue({
+    default: (shadowRoot: ShadowRoot) => {
       const holder = document.createElement("div");
       const app = createApp({
         render() {
@@ -87,23 +67,25 @@ describe("PortViewLoader.vue", () => {
     },
   });
 
-  const doMount = (customProps = {}) => {
-    const store = mockVuexStore({
-      // TODO: NXT-1295 remove once api store is not needed
-      api: {
-        getters: {
-          uiExtResourceLocation: () => () => "location.js",
-        },
+  const mockGetPortView = (additionalMocks?: object) => {
+    mockedAPI.port.getPortView.mockResolvedValue({
+      resourceInfo: {
+        type: "VUE_COMPONENT_LIB",
+        baseUrl: "baseUrl",
+        path: "path",
       },
+      ...additionalMocks,
     });
+  };
 
+  const doMount = (customProps = {}) => {
     return mount(PortViewLoader, {
       props: { ...props, ...customProps },
-      global: { plugins: [store] },
     });
   };
 
   it("should load port view on mount", () => {
+    mockGetPortView();
     doMount();
 
     expect(mockedAPI.port.getPortView).toBeCalledWith(
@@ -117,12 +99,13 @@ describe("PortViewLoader.vue", () => {
   });
 
   it("should conditionally deactivate data services on unmount", async () => {
+    mockGetPortView();
     const wrapper = doMount();
     wrapper.unmount();
     await flushPromises();
     expect(mockedAPI.port.deactivatePortDataServices).toHaveBeenCalledTimes(0);
 
-    mockedAPI.port.getPortView.mockResolvedValue({
+    mockGetPortView({
       deactivationRequired: true,
     });
     const wrapper2 = doMount();
@@ -139,6 +122,7 @@ describe("PortViewLoader.vue", () => {
 
   describe("load data on uniquePortKeyChange", () => {
     it("should load port view when the selected node changes", async () => {
+      mockGetPortView();
       const wrapper = doMount();
       const newNode = { ...dummyNode, id: "node2" };
 
@@ -156,6 +140,7 @@ describe("PortViewLoader.vue", () => {
     });
 
     it("should load port view when the selected port index changes", async () => {
+      mockGetPortView();
       const wrapper = doMount();
 
       await wrapper.setProps({
@@ -172,6 +157,7 @@ describe("PortViewLoader.vue", () => {
     });
 
     it("should load port view when the selected view index changes", async () => {
+      mockGetPortView();
       const wrapper = doMount();
 
       await wrapper.setProps({
@@ -188,86 +174,39 @@ describe("PortViewLoader.vue", () => {
     });
   });
 
-  describe("state change events", () => {
-    it("forward state change events", async () => {
-      mockedAPI.port.getPortView.mockResolvedValue({
-        resourceInfo: {
-          type: "VUE_COMPONENT_LIB",
-        },
-      });
-
-      const wrapper = doMount();
-
-      await flushPromises();
-
-      const emittedEvents = wrapper.emitted("stateChange");
-      expect(emittedEvents[0][0]).toEqual(
-        expect.objectContaining({ state: "loading" }),
-      );
-      expect(emittedEvents[1][0]).toEqual(
-        expect.objectContaining({ state: "ready" }),
-      );
-    });
-
-    it("should skip forwarding state change event if event's portKey changed", async () => {
-      mockedAPI.port.getPortView.mockResolvedValue({
-        resourceInfo: {
-          type: "VUE_COMPONENT_LIB",
-        },
-      });
-      const wrapper = doMount({ uniquePortKey: "key1" });
-
-      await flushPromises();
-
-      await wrapper.setProps({ uniquePortKey: "key2" });
-      expect(wrapper.emitted("stateChange").length).toBe(3);
-
-      // emit an event that comes in after the uniquePortKey has changed with a reference to and old key
-      wrapper
-        .findComponent(ViewLoader)
-        .vm.$emit("stateChange", { state: "ready", portKey: "key1" });
-
-      expect(wrapper.emitted("stateChange").length).toBe(3);
-    });
-  });
-
   describe("error", () => {
     it("should emit error state when receiving a notification from the KnimeService", async () => {
-      mockedAPI.port.getPortView.mockResolvedValue({
-        resourceInfo: {
-          type: "VUE_COMPONENT_LIB",
-        },
-      });
+      mockGetPortView();
 
       const wrapper = doMount();
 
       await flushPromises();
 
-      // data errors from the BE would come in via the KnimeService notification
-      // callback
-      mocks.triggerNotification({ alert: { subtitle: "mock error" } });
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      // data errors from the BE would come in via the sendAlert apiLayer
+      props.apiLayer.sendAlert({ subtitle: "mock error" });
 
       const emittedEvents = wrapper.emitted("stateChange");
-      expect(emittedEvents[emittedEvents.length - 1][0]).toEqual({
+      expect(emittedEvents![emittedEvents!.length - 1][0]).toEqual({
         state: "error",
         message: "mock error",
       });
     });
 
     it("should reset error state if uniquePortKey changes", async () => {
-      mockedAPI.port.getPortView.mockResolvedValue({
-        resourceInfo: {
-          type: "VUE_COMPONENT_LIB",
-        },
-      });
+      mockGetPortView();
 
       const wrapper = doMount();
 
       await flushPromises();
 
-      // data errors from the BE would come in via the KnimeService notification
-      // callback
-      mocks.triggerNotification({ alert: { subtitle: "mock error" } });
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      // data errors from the BE would come in via the sendAlert apiLayer
+      props.apiLayer.sendAlert({ subtitle: "mock error" });
 
       await wrapper.setProps({
         selectedViewIndex: 2,
@@ -275,7 +214,7 @@ describe("PortViewLoader.vue", () => {
       });
 
       const emittedEvents = wrapper.emitted("stateChange");
-      expect(emittedEvents[emittedEvents.length - 1][0]).toEqual(
+      expect(emittedEvents![emittedEvents!.length - 1][0]).toEqual(
         expect.objectContaining({
           state: "loading",
         }),
