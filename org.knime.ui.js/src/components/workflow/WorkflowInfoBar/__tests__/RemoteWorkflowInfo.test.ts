@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 
@@ -43,9 +43,11 @@ describe("RemoteWorkflowInfo.vue", () => {
   const doMount = ({
     workflow,
     activeProjectId,
+    component = null,
   }: {
     workflow: Workflow;
     activeProjectId: string;
+    component?: typeof RemoteWorkflowInfo | null;
   }) => {
     const $store = mockVuexStore({
       workflow: workflowStore,
@@ -73,7 +75,7 @@ describe("RemoteWorkflowInfo.vue", () => {
       }),
     };
 
-    const wrapper = mount(RemoteWorkflowInfo, {
+    const wrapper = mount(component ?? RemoteWorkflowInfo, {
       global: {
         plugins: [$store],
       },
@@ -156,5 +158,38 @@ describe("RemoteWorkflowInfo.vue", () => {
     expect(wrapper.text()).toMatch(
       "You have opened a workflow from a KNIME Server. “Save” the workflow back to KNIME Server to keep your changes.",
     );
+  });
+
+  it("should hide bar for browser environment", async () => {
+    vi.resetModules();
+    vi.doMock("@/environment", async () => {
+      const actual = await vi.importActual("@/environment");
+
+      return {
+        ...actual,
+        environment: "BROWSER",
+        isDesktop: false,
+        isBrowser: true,
+      };
+    });
+
+    const RemoteWorkflowInfo = (await import("../RemoteWorkflowInfo.vue"))
+      .default;
+
+    const activeProjectId = openProjects.at(2)!.projectId;
+    const workflow = createWorkflow({
+      info: { containerId: activeProjectId },
+    });
+
+    const { wrapper, $store } = doMount({
+      workflow,
+      activeProjectId,
+      component: RemoteWorkflowInfo,
+    });
+
+    $store.state.application.permissions.canEditWorkflow = false;
+    await nextTick();
+
+    expect(wrapper.find(".banner").exists()).toBe(false);
   });
 });

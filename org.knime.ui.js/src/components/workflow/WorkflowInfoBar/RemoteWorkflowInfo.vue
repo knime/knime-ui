@@ -4,11 +4,13 @@ import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
 import { SpaceProviderNS } from "@/api/custom-types";
 import * as $colors from "@/style/colors.mjs";
+import { isBrowser } from "@/environment";
 
 const store = useStore();
 const isUnknownProject = computed<boolean>(
   () => store.getters["application/isUnknownProject"],
 );
+const permissions = computed(() => store.state.application.permissions);
 
 const activeProjectProvider = computed<SpaceProviderNS.SpaceProvider | null>(
   () => store.getters["spaces/activeProjectProvider"],
@@ -23,6 +25,10 @@ const isServerSpace = computed(
 );
 
 const shouldShow = computed(() => {
+  if (isBrowser && !permissions.value.canEditWorkflow) {
+    return false;
+  }
+
   return (
     activeProjectId.value && (isUnknownProject.value || isServerSpace.value)
   );
