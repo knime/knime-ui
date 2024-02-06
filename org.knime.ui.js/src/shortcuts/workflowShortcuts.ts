@@ -16,7 +16,7 @@ import { compatibility } from "@/environment";
 
 import type { UnionToShortcutRegistry } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
-import { isDynamicViewFocused } from "@/components/dynamicViews";
+import { isDynamicViewFocused } from "@/components/uiExtensions";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"

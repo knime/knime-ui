@@ -3,16 +3,10 @@ import { mapGetters, mapState } from "vuex";
 import { API } from "@api";
 
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
-import type { UIExtensionAPILayer } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
-import type { ExtensionConfig } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
 import { defineComponent } from "vue";
+import type { CommonViewLoaderData } from "../common/types";
 
-type ComponentData = {
-  deactivateDataServicesFn: (() => void) | null;
-  apiLayer: null | UIExtensionAPILayer;
-  extensionConfig:
-    | null
-    | (ExtensionConfig & { resourceInfo: { baseUrl: string } });
+type ComponentData = CommonViewLoaderData & {
   isReady: boolean;
 };
 /**

@@ -2,17 +2,10 @@
 import { API } from "@api";
 import { defineComponent, type PropType } from "vue";
 import type { KnimeNode } from "@/api/custom-types";
-
+import type { CommonViewLoaderData } from "../common/types";
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
-import type { UIExtensionAPILayer } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
-import type { ExtensionConfig } from "knime-js-pagebuilder/org.knime.js.pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
 
-type ComponentData = {
-  deactivateDataServicesFn: (() => void) | null;
-  apiLayer: null | UIExtensionAPILayer;
-  extensionConfig:
-    | null
-    | (ExtensionConfig & { resourceInfo: { baseUrl: string } });
+type ComponentData = CommonViewLoaderData & {
   configReady: boolean;
 };
 

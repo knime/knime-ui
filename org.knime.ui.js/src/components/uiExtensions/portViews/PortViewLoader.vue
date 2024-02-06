@@ -5,17 +5,11 @@ import { API } from "@api";
 import type { KnimeNode } from "@/api/custom-types";
 
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
-import type { UIExtensionAPILayer } from "pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
-import type { ExtensionConfig } from "pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
 import type { Alert } from "@knime/ui-extension-service";
+import type { CommonViewLoaderData } from "../common/types";
 
-type ComponentData = {
+type ComponentData = CommonViewLoaderData & {
   error: unknown | null;
-  deactivateDataServicesFn: (() => void) | null;
-  apiLayer: null | UIExtensionAPILayer;
-  extensionConfig:
-    | null
-    | (ExtensionConfig & { resourceInfo: { baseUrl: string } });
   configReady: boolean;
   loading: boolean;
 };

@@ -3,7 +3,7 @@ import { mapState } from "vuex";
 
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
-import NodeOutput from "@/components/dynamicViews/NodeOutput.vue";
+import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
 
 import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";

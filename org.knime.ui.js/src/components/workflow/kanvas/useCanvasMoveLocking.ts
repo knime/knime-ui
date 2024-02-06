@@ -3,7 +3,7 @@ import { useStore } from "vuex";
 
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 import { isInputElement } from "@/util/isInputElement";
-import { isDynamicViewFocused } from "@/components/dynamicViews";
+import { isDynamicViewFocused } from "@/components/uiExtensions";
 
 export const useCanvasMoveLocking = () => {
   const store = useStore();

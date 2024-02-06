@@ -4,7 +4,7 @@ import throttle from "raf-throttle";
 import { isMac } from "webapps-common/util/navigator";
 import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
-import { isDynamicViewFocused } from "@/components/dynamicViews";
+import { isDynamicViewFocused } from "@/components/uiExtensions";
 
 type UsePanningWithSpaceOptions = {
   shouldShowMoveCursor: Ref<boolean>;
