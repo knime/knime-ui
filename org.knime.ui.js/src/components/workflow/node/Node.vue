@@ -242,28 +242,29 @@ export default {
     isSelected() {
       return this.isNodeSelected(this.id);
     },
-    isFocused() {
-      return this.$store.getters["selection/focusedObject"]?.id === this.id;
-    },
 
     isSingleSelected() {
       return this.singleSelectedNode?.id === this.id;
     },
-    showSelectionPlane() {
-      const isSelectedOrFocused = this.isSelected || this.isFocused;
 
+    showSelection() {
       // no preview, honor dragging state
       if (this.selectionPreview === null) {
-        return isSelectedOrFocused && !this.isDragging;
+        return this.isSelected && !this.isDragging;
       }
 
       // preview can override selected state (think: deselect with shift)
-      if (isSelectedOrFocused && this.selectionPreview === "hide") {
+      if (this.isSelected && this.selectionPreview === "hide") {
         return false;
       }
 
-      return this.selectionPreview === "show" || isSelectedOrFocused;
+      return this.selectionPreview === "show" || this.isSelected;
     },
+
+    showFocus() {
+      return this.$store.getters["selection/focusedObject"]?.id === this.id;
+    },
+
     isExecuting() {
       return this.state?.executionState === "EXECUTING";
     },
@@ -499,9 +500,9 @@ export default {
         <!-- Node Selection Plane. Portalled to the back -->
         <Portal to="node-select">
           <NodeSelectionPlane
-            v-show="showSelectionPlane && !hasAnnotationModeEnabled"
-            :is-select="isSelected"
-            :is-focus="isFocused"
+            v-show="(showSelection || showFocus) && !hasAnnotationModeEnabled"
+            :show-selection="showSelection"
+            :show-focus="showFocus"
             :position="position"
             :width="selectionWidth"
             :extra-height="nameDimensions.height"

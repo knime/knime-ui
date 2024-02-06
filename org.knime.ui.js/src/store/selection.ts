@@ -15,7 +15,7 @@ export interface SelectionState {
   startedSelectionFromAnnotationId: string | null;
   didStartRectangleSelection: boolean;
 
-  focusedObject: Pick<WorkflowObject, "id" | "type"> | null;
+  focusedObject: WorkflowObject | null;
 }
 
 /**
@@ -390,7 +390,7 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
       selectedNodes: KnimeNode[];
       selectedAnnotations: WorkflowAnnotation[];
     },
-  ) {
+  ): WorkflowObject[] {
     const nodePositions = selectedNodes.map((node) => ({
       id: node.id,
       type: "node" as const,
@@ -430,7 +430,7 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
     );
   },
 
-  focusedObject(state, _, rootState) {
+  focusedObject(state, _, rootState): WorkflowObject | null {
     if (!state.focusedObject) {
       return null;
     }

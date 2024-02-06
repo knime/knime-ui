@@ -34,12 +34,12 @@ export default {
       validator: (kind) => ["node", "metanode", "component"].includes(kind),
     },
 
-    isSelect: {
+    showSelection: {
       type: Boolean,
       default: true,
     },
 
-    isFocus: {
+    showFocus: {
       type: Boolean,
       default: false,
     },
@@ -84,7 +84,7 @@ export default {
 <template>
   <g :transform="`translate(${position.x}, ${position.y})`">
     <rect
-      v-if="isFocus"
+      v-if="showFocus"
       :x="nodeSelectionMeasures.x - 4"
       :y="nodeSelectionMeasures.y - 4"
       :width="nodeSelectionMeasures.width + 8"
@@ -97,7 +97,7 @@ export default {
     />
 
     <rect
-      v-if="isSelect"
+      v-if="showSelection"
       :x="nodeSelectionMeasures.x"
       :y="nodeSelectionMeasures.y"
       :width="nodeSelectionMeasures.width"

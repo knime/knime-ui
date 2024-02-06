@@ -43,12 +43,12 @@ const nearestObject = (data: FindNearestObjectPayload) => {
     payload: {
       // remove reactive proxies to keep the objects simpler
       objects: toRaw(data.objects),
-      reference: data.reference,
+      reference: toRaw(data.reference),
       direction: data.direction,
     },
   };
 
-  return sendMessage<WorkflowObject>(message);
+  return sendMessage<WorkflowObject | undefined>(message);
 };
 
 export const workflowNavigationService = { nearestObject };
