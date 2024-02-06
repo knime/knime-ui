@@ -33,6 +33,16 @@ export default {
       required: true,
       validator: (kind) => ["node", "metanode", "component"].includes(kind),
     },
+
+    isSelect: {
+      type: Boolean,
+      default: true,
+    },
+
+    isFocus: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     // Getting the node selection measures and calculate if some additional space is needed for the status bar
@@ -74,6 +84,20 @@ export default {
 <template>
   <g :transform="`translate(${position.x}, ${position.y})`">
     <rect
+      v-if="isFocus"
+      :x="nodeSelectionMeasures.x - 4"
+      :y="nodeSelectionMeasures.y - 4"
+      :width="nodeSelectionMeasures.width + 8"
+      :height="nodeSelectionMeasures.height + 8"
+      :fill="$colors.selection.activeBackground"
+      :stroke="$colors.selection.activeBorder"
+      :stroke-width="$shapes.selectedNodeStrokeWidth"
+      :stroke-dasharray="5"
+      :rx="$shapes.selectedItemBorderRadius"
+    />
+
+    <rect
+      v-if="isSelect"
       :x="nodeSelectionMeasures.x"
       :y="nodeSelectionMeasures.y"
       :width="nodeSelectionMeasures.width"

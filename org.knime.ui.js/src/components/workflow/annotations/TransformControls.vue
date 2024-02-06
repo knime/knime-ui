@@ -29,6 +29,11 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+
+    showFocus: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   emits: {
@@ -155,6 +160,19 @@ export default defineComponent({
     <slot :transformed-bounds="innerValue" />
 
     <Portal to="annotation-transform">
+      <rect
+        v-if="showFocus"
+        :width="valueWithOffset.width + 8"
+        :height="valueWithOffset.height + 8"
+        :x="valueWithOffset.x - 4"
+        :y="valueWithOffset.y - 4"
+        class="transform-box"
+        :stroke="$colors.selection.activeBorder"
+        :stroke-width="transformRectStrokeWidth"
+        :rx="$shapes.selectedItemBorderRadius"
+        :stroke-dasharray="5"
+      />
+
       <rect
         v-if="showSelection"
         :width="valueWithOffset.width"

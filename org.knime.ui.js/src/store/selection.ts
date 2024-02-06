@@ -14,6 +14,8 @@ export interface SelectionState {
 
   startedSelectionFromAnnotationId: string | null;
   didStartRectangleSelection: boolean;
+
+  focusedObject: Pick<WorkflowObject, "id" | "type"> | null;
 }
 
 /**
@@ -28,6 +30,8 @@ export const state = (): SelectionState => ({
   startedSelectionFromAnnotationId: null,
   didStartRectangleSelection: false,
   selectedBendpoints: {},
+
+  focusedObject: null,
 });
 
 export const mutations: MutationTree<SelectionState> = {
@@ -132,11 +136,20 @@ export const mutations: MutationTree<SelectionState> = {
   setDidStartRectangleSelection(state, value) {
     state.didStartRectangleSelection = value;
   },
+
+  focusObject(state, value) {
+    state.focusedObject = value;
+  },
+
+  unfocusObject(state) {
+    state.focusedObject = null;
+  },
 };
 
 export const actions: ActionTree<SelectionState, RootStoreState> = {
   deselectAllObjects({ commit }) {
     commit("clearSelection");
+    commit("unfocusObject");
   },
 
   selectAllObjects({ commit, rootState }) {
@@ -415,5 +428,24 @@ export const getters: GetterTree<SelectionState, RootStoreState> = {
       getters.selectedAnnotationIds.length === 0 &&
       getters.selectedBendpointIds.length === 0
     );
+  },
+
+  focusedObject(state, _, rootState) {
+    if (!state.focusedObject) {
+      return null;
+    }
+
+    const { nodes, workflowAnnotations } = rootState.workflow.activeWorkflow!;
+    const { id, type } = state.focusedObject;
+
+    if (type === "node") {
+      return { id, type, ...nodes[id].position };
+    }
+
+    const annotation = workflowAnnotations.find(
+      ({ id: annotationId }) => annotationId === id,
+    )!;
+
+    return { id, type, x: annotation.bounds.x, y: annotation.bounds.y };
   },
 };

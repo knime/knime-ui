@@ -106,6 +106,13 @@ export default defineComponent({
       return this.selectionPreview === "show" || this.isSelected;
     },
 
+    showFocus() {
+      return (
+        this.$store.getters["selection/focusedObject"]?.id ===
+        this.annotation.id
+      );
+    },
+
     showTransformControls(): boolean {
       if (this.isDragging || !this.isWritable) {
         return false;
@@ -256,6 +263,7 @@ export default defineComponent({
     v-click-away="onClickAway"
     :show-transform-controls="showTransformControls"
     :show-selection="showSelectionPlane"
+    :show-focus="showFocus"
     :initial-value="annotation.bounds"
     @transform-end="transformAnnotation($event.bounds)"
     @click="onLeftClick"
