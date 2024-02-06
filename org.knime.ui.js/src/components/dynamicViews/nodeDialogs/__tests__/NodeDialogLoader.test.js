@@ -1,18 +1,26 @@
-import { expect, describe, beforeAll, afterEach, it, vi } from "vitest";
+import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-import { KnimeService } from "@knime/ui-extension-service";
 
-import { deepMocked } from "@/test/utils";
+import { deepMocked, mockDynamicImport } from "@/test/utils";
 import { API } from "@api";
 
 import NodeDialogLoader from "../NodeDialogLoader.vue";
 
-vi.mock("@knime/ui-extension-service", () => ({
-  KnimeService: vi.fn(),
-}));
+mockDynamicImport();
 
 const mockedAPI = deepMocked(API);
+
+const mockGetNodeDialog = (additionalMocks) => {
+  mockedAPI.node.getNodeDialog.mockResolvedValue({
+    resourceInfo: {
+      type: "VUE_COMPONENT_LIB",
+      baseUrl: "baseUrl",
+      path: "path",
+    },
+    ...additionalMocks,
+  });
+};
 
 describe("NodeDialogLoader.vue", () => {
   const dummyNode = {
@@ -39,14 +47,13 @@ describe("NodeDialogLoader.vue", () => {
     vi.clearAllMocks();
   });
 
-  const doMount = (mockStore = {}) =>
+  const doMount = () =>
     mount(NodeDialogLoader, {
       props,
-      // create a mock store instead of a real one via global.plugins
-      global: { mocks: { $store: mockStore } },
     });
 
   it("should load nodeDialog on mount", () => {
+    mockGetNodeDialog();
     doMount();
 
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith(
@@ -59,6 +66,7 @@ describe("NodeDialogLoader.vue", () => {
   });
 
   it("should load the node dialog when the selected node changes and the new node has a dialog", async () => {
+    mockGetNodeDialog();
     const wrapper = doMount();
     const newNode = { ...dummyNode, id: "node2" };
 
@@ -75,12 +83,13 @@ describe("NodeDialogLoader.vue", () => {
   });
 
   it("should conditionally deactivate data services on unmount", async () => {
+    mockGetNodeDialog();
     const wrapper = doMount();
     wrapper.unmount();
     await flushPromises();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
 
-    mockedAPI.node.getNodeDialog.mockResolvedValue({
+    mockGetNodeDialog({
       deactivationRequired: true,
     });
     const wrapper2 = doMount();
@@ -91,80 +100,6 @@ describe("NodeDialogLoader.vue", () => {
       workflowId: props.workflowId,
       nodeId: props.selectedNode.id,
       extensionType: "dialog",
-    });
-  });
-
-  describe("knime service callbacks", () => {
-    const mockCallbackRegistry = () => {
-      const registeredCallbacks = new Map();
-
-      return {
-        add: (name, cb) => {
-          registeredCallbacks.set(name, cb);
-        },
-
-        dispatch: async (name, ...params) => {
-          if (registeredCallbacks.has(name)) {
-            await registeredCallbacks.get(name)(...params);
-          }
-        },
-
-        clear: () => {
-          registeredCallbacks.clear();
-        },
-      };
-    };
-    const registry = mockCallbackRegistry();
-
-    beforeAll(() => {
-      KnimeService.mockImplementation((config, dataCb, notificationCb) => {
-        registry.add("data", dataCb);
-        registry.add("notification", notificationCb);
-      });
-    });
-
-    afterEach(() => {
-      registry.clear();
-    });
-
-    it("should register the data callback correctly", async () => {
-      const wrapper = doMount();
-      wrapper.vm.initKnimeService({ dummyConfig: true });
-      expect(mockedAPI.node.callNodeDataService).not.toHaveBeenCalled();
-      const params = [
-        "NodeService.callNodeDataService",
-        "mockServiceTypeParam",
-        "mockRequestParam",
-      ];
-      await registry.dispatch("data", ...params);
-
-      expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
-        projectId: props.projectId,
-        workflowId: props.workflowId,
-        nodeId: props.selectedNode.id,
-        extensionType: "dialog",
-        serviceType: "mockServiceTypeParam",
-        dataServiceRequest: "mockRequestParam",
-      });
-    });
-
-    it("should register the notification callback correctly", async () => {
-      const mockDispatch = vi.fn();
-      const mockStore = {
-        dispatch: mockDispatch,
-      };
-      const wrapper = doMount(mockStore);
-      wrapper.vm.initKnimeService({ dummyConfig: true });
-
-      const mockEvent = { mock: true };
-      expect(mockedAPI.node.callNodeDataService).not.toHaveBeenCalled();
-      const params = [mockEvent];
-      await registry.dispatch("notification", ...params);
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "pagebuilder/service/pushEvent",
-        mockEvent,
-      );
     });
   });
 });

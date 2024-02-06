@@ -1,23 +1,13 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
+import { expect, describe, afterEach, it } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { h, createApp } from "vue";
 
 import { API } from "@api";
-import { deepMocked } from "@/test/utils";
+import { deepMocked, mockDynamicImport } from "@/test/utils";
 
 import PortViewLoader from "../PortViewLoader.vue";
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
 
-const dynamicImportMock = vi.fn();
-
-vi.mock(
-  "pagebuilder/src/components/views/uiExtensions/useDynamicImport",
-  () => ({
-    useDynamicImport: vi.fn().mockImplementation(() => {
-      return { dynamicImport: dynamicImportMock };
-    }),
-  }),
-);
+mockDynamicImport();
 
 const mockedAPI = deepMocked(API);
 
@@ -50,21 +40,6 @@ describe("PortViewLoader.vue", () => {
   afterEach(() => {
     mockedAPI.port.getPortView.mockReset();
     mockedAPI.port.deactivatePortDataServices.mockReset();
-  });
-
-  // mock a simple dynamic view
-  dynamicImportMock.mockReturnValue({
-    default: (shadowRoot: ShadowRoot) => {
-      const holder = document.createElement("div");
-      const app = createApp({
-        render() {
-          return h("div", { class: "mock-component" });
-        },
-      });
-      app.mount(holder);
-      shadowRoot.appendChild(holder);
-      return { teardown: () => {} };
-    },
   });
 
   const mockGetPortView = (additionalMocks?: object) => {
