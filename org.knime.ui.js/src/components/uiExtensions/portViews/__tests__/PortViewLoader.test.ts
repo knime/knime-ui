@@ -2,7 +2,7 @@ import { expect, describe, afterEach, it } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@api";
-import { deepMocked, mockDynamicImport } from "@/test/utils";
+import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 
 import PortViewLoader from "../PortViewLoader.vue";
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
@@ -40,6 +40,7 @@ describe("PortViewLoader.vue", () => {
   afterEach(() => {
     mockedAPI.port.getPortView.mockReset();
     mockedAPI.port.deactivatePortDataServices.mockReset();
+    mockedAPI.port.callPortDataService.mockReset();
   });
 
   const mockGetPortView = (additionalMocks?: object) => {
@@ -54,8 +55,21 @@ describe("PortViewLoader.vue", () => {
   };
 
   const doMount = (customProps = {}) => {
+    const store = mockVuexStore({
+      // TODO: NXT-1295 remove once api store is not needed
+      api: {
+        getters: {
+          uiExtResourceLocation:
+            () =>
+            ({ resourceInfo: { path } }: { resourceInfo: { path: string } }) =>
+              `${path}/location.js`,
+        },
+      },
+    });
+
     return mount(PortViewLoader, {
       props: { ...props, ...customProps },
+      global: { plugins: [store] },
     });
   };
 
@@ -149,8 +163,54 @@ describe("PortViewLoader.vue", () => {
     });
   });
 
+  describe("apiLayer", () => {
+    it("implements getResourceLocation in apiLayer", async () => {
+      mockGetPortView();
+      const wrapper = doMount();
+      await flushPromises();
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      const apiLayer = props.apiLayer;
+
+      const location = await apiLayer.getResourceLocation("path1");
+
+      expect(location).toBe("path1/location.js");
+    });
+
+    it("implements callNodeDataService in apiLayer", async () => {
+      mockGetPortView();
+      mockedAPI.port.callPortDataService.mockResolvedValue({ something: true });
+      const wrapper = doMount();
+      await flushPromises();
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      const apiLayer = props.apiLayer;
+
+      const result = await apiLayer.callNodeDataService({
+        serviceType: "data",
+        dataServiceRequest: "request",
+      });
+
+      expect(result).toStrictEqual({ result: { something: true } });
+
+      expect(mockedAPI.port.callPortDataService).toHaveBeenCalledWith({
+        dataServiceRequest: "request",
+        nodeId: "node1",
+        portIdx: 0,
+        projectId: "project-id",
+        serviceType: "data",
+        viewIdx: 0,
+        workflowId: "workflow-id",
+      });
+    });
+  });
+
   describe("error", () => {
-    it("should emit error state when receiving a notification from the KnimeService", async () => {
+    it("should emit error state when receiving a alert from apiLayer", async () => {
       mockGetPortView();
 
       const wrapper = doMount();
@@ -161,7 +221,7 @@ describe("PortViewLoader.vue", () => {
       const props = uiExtension.props();
 
       // data errors from the BE would come in via the sendAlert apiLayer
-      props.apiLayer.sendAlert({ subtitle: "mock error" });
+      props.apiLayer.sendAlert({ subtitle: "mock error", type: "error" });
 
       const emittedEvents = wrapper.emitted("stateChange");
       expect(emittedEvents![emittedEvents!.length - 1][0]).toEqual({

@@ -2,16 +2,17 @@ import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { deepMocked, mockDynamicImport } from "@/test/utils";
+import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 import { API } from "@api";
 
+import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
 import NodeDialogLoader from "../NodeDialogLoader.vue";
 
 mockDynamicImport();
 
 const mockedAPI = deepMocked(API);
 
-const mockGetNodeDialog = (additionalMocks) => {
+const mockGetNodeDialog = (additionalMocks?: object) => {
   mockedAPI.node.getNodeDialog.mockResolvedValue({
     resourceInfo: {
       type: "VUE_COMPONENT_LIB",
@@ -47,10 +48,24 @@ describe("NodeDialogLoader.vue", () => {
     vi.clearAllMocks();
   });
 
-  const doMount = () =>
-    mount(NodeDialogLoader, {
-      props,
+  const doMount = () => {
+    const store = mockVuexStore({
+      // TODO: NXT-1295 remove once api store is not needed
+      api: {
+        getters: {
+          uiExtResourceLocation:
+            () =>
+            ({ resourceInfo: { path } }: { resourceInfo: { path: string } }) =>
+              `${path}/location.js`,
+        },
+      },
     });
+
+    return mount(NodeDialogLoader, {
+      props,
+      global: { plugins: [store] },
+    });
+  };
 
   it("should load nodeDialog on mount", () => {
     mockGetNodeDialog();
@@ -100,6 +115,51 @@ describe("NodeDialogLoader.vue", () => {
       workflowId: props.workflowId,
       nodeId: props.selectedNode.id,
       extensionType: "dialog",
+    });
+  });
+
+  describe("apiLayer", () => {
+    it("implements getResourceLocation in apiLayer", async () => {
+      mockGetNodeDialog();
+      const wrapper = doMount();
+      await flushPromises();
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      const apiLayer = props.apiLayer;
+
+      const location = await apiLayer.getResourceLocation("path1");
+
+      expect(location).toBe("path1/location.js");
+    });
+
+    it("implements callNodeDataService in apiLayer", async () => {
+      mockGetNodeDialog();
+      mockedAPI.node.callNodeDataService.mockResolvedValue({ something: true });
+      const wrapper = doMount();
+      await flushPromises();
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      const apiLayer = props.apiLayer;
+
+      const result = await apiLayer.callNodeDataService({
+        serviceType: "data",
+        dataServiceRequest: "request",
+      });
+
+      expect(result).toStrictEqual({ result: { something: true } });
+
+      expect(mockedAPI.node.callNodeDataService).toHaveBeenCalledWith({
+        dataServiceRequest: "request",
+        extensionType: "dialog",
+        nodeId: "node1",
+        projectId: "project-id",
+        serviceType: "data",
+        workflowId: "workflow-id",
+      });
     });
   });
 });

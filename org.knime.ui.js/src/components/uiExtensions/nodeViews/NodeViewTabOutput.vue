@@ -134,6 +134,9 @@ export default {
   <NodeViewLoader
     v-if="!nodeErrors"
     kind="node-view"
+    :project-id="projectId"
+    :workflow-id="workflowId"
+    :selected-node="selectedNode"
     @state-change="onNodeViewStateChange"
   />
 </template>

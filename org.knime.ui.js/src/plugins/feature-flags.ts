@@ -7,7 +7,6 @@ import type { PluginInitFunction } from "./types";
 export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;
   shouldDisplayEmbeddedViews: () => boolean;
-  shouldLoadPageBuilder: () => boolean;
   isKaiPermitted: () => boolean;
   isKaiInstalled: () => boolean;
 };
@@ -34,9 +33,6 @@ export const features: ($store: Store<RootStoreState>) => Features = (
     getFlagValue($store, "embedded_views_and_dialogs"),
 
   shouldDisplayEmbeddedViews: () =>
-    getFlagValue($store, "embedded_views_and_dialogs"),
-
-  shouldLoadPageBuilder: () =>
     getFlagValue($store, "embedded_views_and_dialogs"),
 
   isKaiPermitted: () => getFlagValue($store, "ai_assistant"),

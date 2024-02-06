@@ -1,20 +1,35 @@
 <script lang="ts">
-import { mapGetters, mapState } from "vuex";
 import { API } from "@api";
 
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
-import { defineComponent } from "vue";
+import { defineComponent, type PropType } from "vue";
 import type { CommonViewLoaderData } from "../common/types";
+import type { KnimeNode } from "@/api/custom-types";
 
 type ComponentData = CommonViewLoaderData & {
   isReady: boolean;
 };
 /**
- * Renders a node view via the PageBuilder component
+ * Renders a node view
  */
 export default defineComponent({
   components: {
     UIExtension,
+  },
+
+  props: {
+    projectId: {
+      type: String as PropType<string>,
+      required: true,
+    },
+    workflowId: {
+      type: String as PropType<string>,
+      required: true,
+    },
+    selectedNode: {
+      type: Object as PropType<KnimeNode & { hasView: boolean }>,
+      required: true,
+    },
   },
 
   emits: ["stateChange"],
@@ -29,12 +44,6 @@ export default defineComponent({
   },
 
   computed: {
-    ...mapState("application", { projectId: "activeProjectId" }),
-    ...mapState("workflow", {
-      workflowId: (state: any) => state.activeWorkflow.info.containerId,
-    }),
-    ...mapGetters("selection", { selectedNode: "singleSelectedNode" }),
-
     hasView() {
       return Boolean(this.selectedNode?.hasView);
     },
@@ -59,7 +68,7 @@ export default defineComponent({
         // }
 
         if (newNode?.hasView) {
-          this.loadContent();
+          this.loadExtensionConfig();
         }
       },
     },
@@ -71,7 +80,7 @@ export default defineComponent({
     }
   },
 
-  async created() {
+  async mounted() {
     try {
       this.$emit("stateChange", { state: "loading", message: "Loading view" });
 
@@ -112,7 +121,7 @@ export default defineComponent({
         close: noop,
       };
 
-      await this.loadContent();
+      await this.loadExtensionConfig();
 
       this.isReady = true;
       this.$emit("stateChange", { state: "ready" });
@@ -132,7 +141,7 @@ export default defineComponent({
       });
     },
 
-    async loadContent() {
+    async loadExtensionConfig() {
       try {
         if (!this.selectedNode) {
           return;

@@ -6,10 +6,6 @@ import { mockVuexStore } from "@/test/utils";
 import { $bus } from "@/plugins/event-bus";
 
 describe("KnimeUI.vue", () => {
-  const mockFeatureFlags = {
-    shouldLoadPageBuilder: vi.fn(() => true),
-  };
-
   beforeEach(() => {
     vi.resetModules();
   });
@@ -81,7 +77,7 @@ describe("KnimeUI.vue", () => {
     const wrapper = shallowMount(KnimeUI, {
       global: {
         plugins: [$store],
-        mocks: { $features: mockFeatureFlags, $router, $route, $bus },
+        mocks: { $router, $route, $bus },
         stubs: { RouterView: true, HotkeyHandler: true },
       },
     });
