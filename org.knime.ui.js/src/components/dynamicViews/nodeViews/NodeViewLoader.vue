@@ -85,7 +85,7 @@ export default defineComponent({
         },
         callNodeDataService: async (params) => {
           const { serviceType, dataServiceRequest } = params;
-          const data = await API.node.callNodeDataService({
+          const result = await API.node.callNodeDataService({
             projectId: this.projectId,
             workflowId: this.workflowId,
             nodeId: this.selectedNode.id,
@@ -93,7 +93,7 @@ export default defineComponent({
             serviceType,
             dataServiceRequest,
           });
-          return data;
+          return { result };
         },
         updateDataPointSelection: () => {
           return Promise.resolve(null);

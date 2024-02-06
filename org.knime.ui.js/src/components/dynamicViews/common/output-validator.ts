@@ -22,6 +22,9 @@ const isFlowVariablePort = ({
   portTypes: AvailablePortTypes;
   port: NodePort;
 }) => {
+  if (!port) {
+    return false;
+  }
   const { kind } = getPortType({ portTypes, port });
   return kind === "flowVariable";
 };
