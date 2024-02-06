@@ -40,8 +40,11 @@ export default defineComponent({
     },
 
     resourceLocation() {
-      const { baseUrl, path } = this.extensionConfig!.resourceInfo;
-      return `${baseUrl}${path}`;
+      if (!this.extensionConfig) {
+        return "";
+      }
+      const { baseUrl, path } = this.extensionConfig.resourceInfo;
+      return this.resourceLocationResolver(path ?? "", baseUrl);
     },
   },
 
@@ -72,10 +75,16 @@ export default defineComponent({
     try {
       this.$emit("stateChange", { state: "loading", message: "Loading view" });
 
+      const noop = () => {};
+
       this.apiLayer = {
         getResourceLocation: (path: string) => {
-          const { baseUrl } = this.extensionConfig!.resourceInfo;
-          return Promise.resolve(`${baseUrl}${path}`);
+          return Promise.resolve(
+            this.resourceLocationResolver(
+              path,
+              this.extensionConfig?.resourceInfo?.baseUrl,
+            ),
+          );
         },
         callNodeDataService: async (params) => {
           const { serviceType, dataServiceRequest } = params;
@@ -90,16 +99,17 @@ export default defineComponent({
           return { result };
         },
         updateDataPointSelection: () => {
+          // TODO: impl with NXT-2383 https://knime-com.atlassian.net/browse/NXT-2383
           return Promise.resolve(null);
         },
-        publishData: () => {},
-        setReportingContent: () => {},
-        imageGenerated: () => {},
+        publishData: noop,
+        setReportingContent: noop,
+        imageGenerated: noop,
         registerPushEventService: () => {
-          return () => {};
+          return noop;
         },
-        sendAlert: () => {},
-        close: () => {},
+        sendAlert: noop,
+        close: noop,
       };
 
       await this.loadContent();
@@ -112,6 +122,16 @@ export default defineComponent({
   },
 
   methods: {
+    resourceLocationResolver(path: string, baseUrl?: string) {
+      // TODO: NXT-1295. Originally caused NXT-1217
+      // Remove this unnecessary store getter once the issue in the ticket
+      // can be solved in a better way. It is necessary at the moment because the TableView is accessing
+      // this store module internally, so if not provided then it would error out in the application
+      return this.$store.getters["api/uiExtResourceLocation"]({
+        resourceInfo: { path, baseUrl },
+      });
+    },
+
     async loadContent() {
       try {
         if (!this.selectedNode) {

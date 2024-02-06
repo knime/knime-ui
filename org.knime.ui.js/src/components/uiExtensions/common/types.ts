@@ -12,5 +12,5 @@ export type CommonViewLoaderData = {
   apiLayer: null | UIExtensionAPILayer;
   extensionConfig:
     | null
-    | (ExtensionConfig & { resourceInfo: { baseUrl: string } });
+    | (ExtensionConfig & { resourceInfo: { baseUrl?: string } });
 };

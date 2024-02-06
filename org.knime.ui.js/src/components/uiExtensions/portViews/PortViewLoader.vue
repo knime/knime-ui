@@ -5,7 +5,7 @@ import { API } from "@api";
 import type { KnimeNode } from "@/api/custom-types";
 
 import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
-import type { Alert } from "@knime/ui-extension-service";
+import { AlertType, type Alert } from "@knime/ui-extension-service";
 import type { CommonViewLoaderData } from "../common/types";
 
 type ComponentData = CommonViewLoaderData & {
@@ -64,8 +64,11 @@ export default defineComponent({
 
   computed: {
     resourceLocation() {
-      const { baseUrl, path } = this.extensionConfig!.resourceInfo;
-      return `${baseUrl}${path}`;
+      if (!this.extensionConfig) {
+        return "";
+      }
+      const { baseUrl, path } = this.extensionConfig.resourceInfo;
+      return this.resourceLocationResolver(path ?? "", baseUrl);
     },
   },
 
@@ -94,10 +97,15 @@ export default defineComponent({
       portKey: this.uniquePortKey,
     });
     await this.loadExtensionConfig();
+    const noop = () => {};
     this.apiLayer = {
       getResourceLocation: (path: string) => {
-        const { baseUrl } = this.extensionConfig!.resourceInfo;
-        return Promise.resolve(`${baseUrl}${path}`);
+        return Promise.resolve(
+          this.resourceLocationResolver(
+            path,
+            this.extensionConfig?.resourceInfo?.baseUrl,
+          ),
+        );
       },
       callNodeDataService: async (params) => {
         const { serviceType, dataServiceRequest } = params;
@@ -114,26 +122,28 @@ export default defineComponent({
         return { result };
       },
       updateDataPointSelection: () => {
+        // TODO: impl with NXT-2383 https://knime-com.atlassian.net/browse/NXT-2383
         return Promise.resolve(null);
       },
-      publishData: () => {},
-      setReportingContent: () => {},
-      imageGenerated: () => {},
+      publishData: noop,
+      setReportingContent: noop,
+      imageGenerated: noop,
       registerPushEventService: () => {
-        return () => {};
+        return noop;
       },
       sendAlert: (alert: Alert, closeAlert?: () => void) => {
-        consola.warn("Notifications not yet implemented");
+        consola.warn("Alerts not yet implemented");
 
-        this.$emit("stateChange", {
-          state: "error",
-          message: alert.subtitle,
-        });
-
-        // remove button if there is one
-        closeAlert?.();
+        if (alert.type === AlertType.ERROR) {
+          this.$emit("stateChange", {
+            state: "error",
+            message: alert.subtitle,
+          });
+          // remove button if there is one
+          closeAlert?.();
+        }
       },
-      close: () => {},
+      close: noop,
     };
     this.configReady = true;
     this.$emit("stateChange", { state: "ready", portKey: this.uniquePortKey });
@@ -146,7 +156,17 @@ export default defineComponent({
   },
 
   methods: {
-    async viewConfigLoaderFn() {
+    resourceLocationResolver(path: string, baseUrl?: string) {
+      // TODO: NXT-1295. Originally caused NXT-1217
+      // Remove this unnecessary store getter once the issue in the ticket
+      // can be solved in a better way. It is necessary at the moment because the TableView is accessing
+      // this store module internally, so if not provided then it would error out in the application
+      return this.$store.getters["api/uiExtResourceLocation"]({
+        resourceInfo: { path, baseUrl },
+      });
+    },
+
+    async loadExtensionConfig() {
       const portView = await API.port.getPortView({
         projectId: this.projectId,
         workflowId: this.workflowId,
@@ -166,7 +186,7 @@ export default defineComponent({
           });
         };
       }
-      return portView;
+      this.extensionConfig = portView;
     },
 
     modifyPortViewSettings(portView: unknown) {
@@ -194,10 +214,6 @@ export default defineComponent({
         settings.selectionMode = "OFF";
         portView.initialData = JSON.stringify(initialData);
       }
-    },
-
-    async loadExtensionConfig() {
-      this.extensionConfig = await this.viewConfigLoaderFn();
     },
   },
 });

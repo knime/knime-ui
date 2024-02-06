@@ -51,8 +51,11 @@ export default defineComponent({
       return "";
     },
     resourceLocation() {
-      const { baseUrl, path } = this.extensionConfig!.resourceInfo;
-      return `${baseUrl}${path}`;
+      if (!this.extensionConfig) {
+        return "";
+      }
+      const { baseUrl, path } = this.extensionConfig.resourceInfo;
+      return this.resourceLocationResolver(path ?? "", baseUrl);
     },
   },
 
@@ -70,10 +73,15 @@ export default defineComponent({
 
   async mounted() {
     await this.loadExtensionConfig();
+    const noop = () => {};
     this.apiLayer = {
       getResourceLocation: (path: string) => {
-        const { baseUrl } = this.extensionConfig!.resourceInfo;
-        return Promise.resolve(`${baseUrl}${path}`);
+        return Promise.resolve(
+          this.resourceLocationResolver(
+            path,
+            this.extensionConfig?.resourceInfo?.baseUrl,
+          ),
+        );
       },
       callNodeDataService: async (params) => {
         const { serviceType, dataServiceRequest } = params;
@@ -90,20 +98,29 @@ export default defineComponent({
       updateDataPointSelection: () => {
         return Promise.resolve(null);
       },
-      publishData: () => {},
-      setReportingContent: () => {},
-      imageGenerated: () => {},
+      publishData: noop,
+      setReportingContent: noop,
+      imageGenerated: noop,
       registerPushEventService: () => {
-        return () => {};
+        return noop;
       },
-      sendAlert: () => {},
-      close: () => {},
+      sendAlert: noop,
+      close: noop,
     };
     this.configReady = true;
   },
 
   methods: {
-    async viewConfigLoaderFn() {
+    resourceLocationResolver(path: string, baseUrl?: string) {
+      // TODO: NXT-1295. Originally caused NXT-1217
+      // Remove this unnecessary store getter once the issue in the ticket
+      // can be solved in a better way. It is necessary at the moment because the TableView is accessing
+      // this store module internally, so if not provided then it would error out in the application
+      return this.$store.getters["api/uiExtResourceLocation"]({
+        resourceInfo: { path, baseUrl },
+      });
+    },
+    async loadExtensionConfig() {
       try {
         const nodeDialogView = await API.node.getNodeDialog({
           projectId: this.projectId,
@@ -122,14 +139,10 @@ export default defineComponent({
           };
         }
 
-        return nodeDialogView;
+        this.extensionConfig = nodeDialogView;
       } catch (error) {
         throw error;
       }
-    },
-
-    async loadExtensionConfig() {
-      this.extensionConfig = await this.viewConfigLoaderFn();
     },
   },
 });
