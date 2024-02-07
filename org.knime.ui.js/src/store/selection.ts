@@ -16,6 +16,8 @@ export interface SelectionState {
   didStartRectangleSelection: boolean;
 
   focusedObject: WorkflowObject | null;
+
+  shouldHideSelection: boolean;
 }
 
 /**
@@ -32,6 +34,8 @@ export const state = (): SelectionState => ({
   selectedBendpoints: {},
 
   focusedObject: null,
+
+  shouldHideSelection: false,
 });
 
 export const mutations: MutationTree<SelectionState> = {
@@ -143,6 +147,10 @@ export const mutations: MutationTree<SelectionState> = {
 
   unfocusObject(state) {
     state.focusedObject = null;
+  },
+
+  setShouldHideSelection(state, value) {
+    state.shouldHideSelection = value;
   },
 };
 

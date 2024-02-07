@@ -37,6 +37,8 @@ describe("NodeSlectionPlane.vue", () => {
       width: 0,
       extraHeight: 20,
       kind: "node",
+      showFocus: false,
+      showSelection: true,
       position: {
         x: 50,
         y: 50,
@@ -44,9 +46,20 @@ describe("NodeSlectionPlane.vue", () => {
     });
   });
 
-  it("renders component", () => {
+  it("renders selection plane", () => {
     const wrapper = doShallowMount();
     expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(true);
+    expect(wrapper.find('[data-testid="focus-plane"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="selection-plane"]').exists()).toBe(true);
+  });
+
+  it("renders focus plane", () => {
+    const wrapper = doShallowMount({ showFocus: true, showSelection: false });
+    expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(true);
+    expect(wrapper.find('[data-testid="focus-plane"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="selection-plane"]').exists()).toBe(
+      false,
+    );
   });
 
   it("checks node measures with status bar", () => {

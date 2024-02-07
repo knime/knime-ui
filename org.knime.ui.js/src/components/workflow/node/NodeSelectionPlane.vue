@@ -1,16 +1,20 @@
-<script>
+<script lang="ts">
+import type { Node, XY } from "@/api/gateway-api/generated-api";
+import type { PropType } from "vue";
+import { defineComponent } from "vue";
+
 /**
  * Colored rect that is used as selection plane for nodes
  */
-export default {
+export default defineComponent({
   props: {
     /**
      * The position of the node. Contains an x- and y-parameter
      */
     position: {
-      type: Object,
+      type: Object as PropType<XY>,
       required: true,
-      validator: (position) =>
+      validator: (position: XY) =>
         typeof position.x === "number" && typeof position.y === "number",
     },
     /**
@@ -29,9 +33,10 @@ export default {
      * @values 'node', 'metanode', 'component'
      */
     kind: {
-      type: String,
+      type: String as PropType<Node.KindEnum>,
       required: true,
-      validator: (kind) => ["node", "metanode", "component"].includes(kind),
+      validator: (kind) =>
+        ["node", "metanode", "component"].includes(kind as Node.KindEnum),
     },
 
     showSelection: {
@@ -78,13 +83,14 @@ export default {
       };
     },
   },
-};
+});
 </script>
 
 <template>
   <g :transform="`translate(${position.x}, ${position.y})`">
     <rect
       v-if="showFocus"
+      data-testid="focus-plane"
       :x="nodeSelectionMeasures.x - 4"
       :y="nodeSelectionMeasures.y - 4"
       :width="nodeSelectionMeasures.width + 8"
@@ -98,6 +104,7 @@ export default {
 
     <rect
       v-if="showSelection"
+      data-testid="selection-plane"
       :x="nodeSelectionMeasures.x"
       :y="nodeSelectionMeasures.y"
       :width="nodeSelectionMeasures.width"

@@ -211,6 +211,7 @@ export default {
       permissions: "permissions",
     }),
     ...mapState("workflow", ["isDragging"]),
+    ...mapState("selection", ["shouldHideSelection"]),
     ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
     ...mapGetters("workflow", ["isWritable"]),
     ...mapGetters("application", ["hasAnnotationModeEnabled"]),
@@ -250,7 +251,7 @@ export default {
     showSelection() {
       // no preview, honor dragging state
       if (this.selectionPreview === null) {
-        return this.isSelected && !this.isDragging;
+        return this.isSelected && !this.shouldHideSelection;
       }
 
       // preview can override selected state (think: deselect with shift)
