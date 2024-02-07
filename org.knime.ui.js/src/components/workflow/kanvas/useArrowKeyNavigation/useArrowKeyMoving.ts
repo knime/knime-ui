@@ -9,7 +9,7 @@ export const useArrowKeyMoving = () => {
   const isDragging = computed(() => store.state.workflow.isDragging);
   const isWritable = computed(() => store.getters["workflow/isWritable"]);
 
-  const handleMovement = async (event: KeyboardEvent) => {
+  const handleMovement = (event: KeyboardEvent) => {
     if (!isWritable.value) {
       return;
     }
@@ -30,12 +30,20 @@ export const useArrowKeyMoving = () => {
       store.commit("workflow/setIsDragging", true);
     }
 
+    const { x = 0, y = 0 } = store.state.workflow.movePreviewDelta;
+
     store.commit("workflow/setMovePreview", {
-      deltaX: deltaX ?? 0,
-      deltaY: deltaY ?? 0,
+      deltaX: (deltaX ?? 0) + x,
+      deltaY: (deltaY ?? 0) + y,
     });
 
-    await store.dispatch("workflow/moveObjects");
+    const doMove = async (event: KeyboardEvent) => {
+      if (["Control", "Shift"].includes(event.key)) {
+        await store.dispatch("workflow/moveObjects");
+        window.removeEventListener("keyup", doMove);
+      }
+    };
+    window.addEventListener("keyup", doMove);
   };
 
   return { handleMovement };
