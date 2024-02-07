@@ -119,6 +119,9 @@ export default defineComponent({
         },
         sendAlert: noop,
         close: noop,
+        setSettingsWithCleanModelSettings: noop,
+        setDirtyModelSettings: noop,
+        onApplied: noop,
       };
 
       await this.loadExtensionConfig();

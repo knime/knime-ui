@@ -144,6 +144,9 @@ export default defineComponent({
         }
       },
       close: noop,
+      setSettingsWithCleanModelSettings: noop,
+      setDirtyModelSettings: noop,
+      onApplied: noop,
     };
     this.configReady = true;
     this.$emit("stateChange", { state: "ready", portKey: this.uniquePortKey });
