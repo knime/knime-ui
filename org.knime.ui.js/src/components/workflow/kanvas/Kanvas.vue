@@ -13,9 +13,7 @@ import {
   onBeforeUnmount,
 } from "vue";
 import { debounce } from "lodash-es";
-
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
-
 import { useStore } from "@/composables/useStore";
 import { $bus } from "@/plugins/event-bus";
 import { useMouseWheelZooming } from "./useMouseWheelZooming";
