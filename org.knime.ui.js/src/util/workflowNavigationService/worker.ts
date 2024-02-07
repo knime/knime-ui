@@ -14,7 +14,7 @@ const distance = function (pt1: XY, pt2: XY) {
   const { x: x1, y: y1 } = pt1;
   const { x: x2, y: y2 } = pt2;
 
-  return Math.hypot(x2 - x1, y2 - y1);
+  return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 };
 
 /**

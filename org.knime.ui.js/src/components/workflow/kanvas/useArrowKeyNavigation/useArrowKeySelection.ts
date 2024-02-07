@@ -10,7 +10,7 @@ import {
   type Direction,
 } from "@/util/workflowNavigationService";
 import { isInputElement } from "@/util/isInputElement";
-import { isDynamicViewFocused } from "@/components/dynamicViews";
+import { isUIExtensionFocused } from "@/components/uiExtensions";
 
 const isOutsideKanvasView = (
   kanvas: HTMLElement,
@@ -255,7 +255,7 @@ export const useArrowKeySelection = () => {
     if (
       event.code !== "Enter" ||
       isInputElement(event.target as HTMLElement) ||
-      isDynamicViewFocused()
+      isUIExtensionFocused()
     ) {
       return;
     }

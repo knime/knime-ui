@@ -23,6 +23,25 @@ describe("worker", () => {
     messages = [];
   });
 
+  const getWorkflowObjects = (_workflow: ReturnType<typeof createWorkflow>) => {
+    const { nodes, workflowAnnotations } = _workflow;
+
+    const nodePositions = Object.values(nodes).map((node) => ({
+      id: node.id,
+      type: "node" as const,
+      ...node.position,
+    }));
+
+    const annotationPositions = workflowAnnotations.map(({ id, bounds }) => ({
+      id,
+      type: "annotation" as const,
+      x: bounds.x,
+      y: bounds.y,
+    }));
+
+    return [...nodePositions, ...annotationPositions];
+  };
+
   describe("find nearest object", () => {
     const node1 = createNativeNode({
       id: "root:1",
@@ -66,6 +85,8 @@ describe("worker", () => {
       workflowAnnotations: Object.create([]),
     });
 
+    const defaultObjects = getWorkflowObjects(workflow);
+
     it.each([
       // starting from root:1
       ["root:1", "top", { id: node1.id, ...node1.position }, "root:5"],
@@ -87,7 +108,7 @@ describe("worker", () => {
 
       // starting from root:6
       ["root:6", "top", { id: node6.id, ...node6.position }, "root:7"],
-      ["root:6", "right", { id: node6.id, ...node6.position }, "root:3"],
+      ["root:6", "right", { id: node6.id, ...node6.position }, "root:1"],
       ["root:6", "bottom", { id: node6.id, ...node6.position }, "root:4"],
       ["root:6", "left", { id: node6.id, ...node6.position }, undefined],
     ])(
@@ -98,7 +119,7 @@ describe("worker", () => {
             data: {
               type: "nearest",
               payload: {
-                workflow,
+                objects: defaultObjects,
                 reference,
                 direction,
               },
@@ -126,7 +147,7 @@ describe("worker", () => {
         data: {
           type: "nearest",
           payload: {
-            workflow,
+            objects: getWorkflowObjects(workflow),
             reference,
             direction: "right",
           },
@@ -155,7 +176,7 @@ describe("worker", () => {
       data: {
         type: "nearest",
         payload: {
-          workflow,
+          objects: getWorkflowObjects(workflow),
           reference: {
             id: "root:3",
             x: 0,
