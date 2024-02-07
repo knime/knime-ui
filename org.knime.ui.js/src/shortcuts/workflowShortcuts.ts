@@ -16,7 +16,7 @@ import { compatibility } from "@/environment";
 
 import type { UnionToShortcutRegistry } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
-import { isDynamicViewFocused } from "@/components/uiExtensions";
+import { isUIExtensionFocused } from "@/components/uiExtensions";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -212,7 +212,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "copy" }),
     condition: ({ $store }) => {
-      if (isDynamicViewFocused()) {
+      if (isUIExtensionFocused()) {
         return false;
       }
 

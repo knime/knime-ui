@@ -1,7 +1,7 @@
 <script>
 import { escapePressed } from "@/mixins/escapeStack";
 import { isInputElement } from "@/util/isInputElement";
-import { isDynamicViewFocused } from "@/components/uiExtensions";
+import { isUIExtensionFocused } from "@/components/uiExtensions";
 
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events
@@ -28,7 +28,7 @@ export default {
         escapePressed();
       }
 
-      if (isInputElement(e.target) || isDynamicViewFocused()) {
+      if (isInputElement(e.target) || isUIExtensionFocused()) {
         return;
       }
 

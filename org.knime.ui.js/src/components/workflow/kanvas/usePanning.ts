@@ -4,7 +4,7 @@ import throttle from "raf-throttle";
 import { isMac } from "webapps-common/util/navigator";
 import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
-import { isDynamicViewFocused } from "@/components/uiExtensions";
+import { isUIExtensionFocused } from "@/components/uiExtensions";
 
 type UsePanningWithSpaceOptions = {
   shouldShowMoveCursor: Ref<boolean>;
@@ -17,7 +17,7 @@ const usePanningWithSpace = (options: UsePanningWithSpaceOptions) => {
   const store = useStore();
 
   const onPressSpace = (event: KeyboardEvent) => {
-    if (isInputElement(event.target as HTMLElement) || isDynamicViewFocused()) {
+    if (isInputElement(event.target as HTMLElement) || isUIExtensionFocused()) {
       return;
     }
 

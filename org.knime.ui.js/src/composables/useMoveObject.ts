@@ -143,6 +143,8 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
 
         onMoveCallback(pointerMoveEvent);
 
+        store.commit("selection/setShouldHideSelection", true);
+
         const snapFn = useGridSnapping
           ? geometry.utils.snapToGrid
           : (val: number) => val;
@@ -177,6 +179,8 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           } catch (error) {
             consola.error("Error moving objects", error);
             await store.dispatch("workflow/resetDragState");
+          } finally {
+            store.commit("selection/setShouldHideSelection", false);
           }
 
           if (hasAbortedDrag.value) {

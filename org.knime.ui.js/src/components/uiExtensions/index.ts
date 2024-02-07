@@ -1,3 +1,3 @@
-import { isDynamicViewFocused } from "./common/utils";
+import { isUIExtensionFocused } from "./common/utils";
 
-export { isDynamicViewFocused };
+export { isUIExtensionFocused };
