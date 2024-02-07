@@ -20,18 +20,18 @@ try {
         junit '**/test-results/junit.xml'
         // knimetools.processAuditResults()
 
-        // stage('Sonarqube analysis') {
-        //     withCredentials([usernamePassword(credentialsId: 'ARTIFACTORY_CREDENTIALS', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_LOGIN')]) {
-        //         withSonarQubeEnv('Sonarcloud') {
-        //             withMaven(options: [artifactsPublisher(disabled: true)]) {
-        //                 def sonarArgs = knimetools.getSonarArgsForMaven(env.SONAR_CONFIG_NAME)
-        //                 sh """
-        //                     mvn -Dknime.p2.repo=${P2_REPO} package $sonarArgs -DskipTests=true
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Sonarqube analysis') {
+            withCredentials([usernamePassword(credentialsId: 'ARTIFACTORY_CREDENTIALS', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_LOGIN')]) {
+                withSonarQubeEnv('Sonarcloud') {
+                    withMaven(options: [artifactsPublisher(disabled: true)]) {
+                        def sonarArgs = knimetools.getSonarArgsForMaven(env.SONAR_CONFIG_NAME)
+                        sh """
+                            mvn -Dknime.p2.repo=${P2_REPO} package $sonarArgs -DskipTests=true
+                        """
+                    }
+                }
+            }
+        }
     }
 } catch (ex) {
     currentBuild.result = 'FAILURE'
