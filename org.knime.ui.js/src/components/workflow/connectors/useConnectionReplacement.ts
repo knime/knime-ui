@@ -179,6 +179,7 @@ export const useConnectionReplacement = (
       nodeId: dragEvent.detail.id,
       event: dragEvent,
     });
+    store.dispatch("workflow/resetDragState");
   };
 
   return {
