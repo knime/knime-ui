@@ -7,6 +7,8 @@ import type { AvailablePortTypes } from "@/api/custom-types";
 import Button from "webapps-common/ui/components/Button.vue";
 import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 
+import { compatibility } from "@/environment";
+
 import PortTabs from "./PortTabs.vue";
 import PortViewTabOutput from "./PortViewTabOutput.vue";
 import NodeViewTabOutput from "./NodeViewTabOutput.vue";
@@ -39,6 +41,8 @@ interface ComponentData {
     message?: string;
     error?: ValidationResult["error"];
   } | null;
+
+  compatibility: typeof compatibility;
 }
 
 /**
@@ -58,6 +62,7 @@ export default defineComponent({
     return {
       selectedTab: null,
       outputState: null,
+      compatibility,
     };
   },
   computed: {
@@ -111,6 +116,10 @@ export default defineComponent({
         this.selectedPortIndex,
       );
       return state === "EXECUTED";
+    },
+
+    isUnsupportedViewError() {
+      return this.outputState?.error?.code === "NO_SUPPORTED_VIEW";
     },
   },
   watch: {
@@ -186,9 +195,22 @@ export default defineComponent({
     >
       <span>
         <ReloadIcon v-if="outputState.loading" class="loading-icon" />
-        {{ outputState.message }}
+        <template
+          v-if="
+            isUnsupportedViewError && !compatibility.canOpenLegacyPortViews()
+          "
+        >
+          This port view is not supported in the browser. Please download the
+          KNIME Analytics Platform to see the content in the desktop application
+        </template>
+        <template v-else>
+          {{ outputState.message }}
+        </template>
+
         <div
-          v-if="outputState?.error?.code === 'NO_SUPPORTED_VIEW'"
+          v-if="
+            isUnsupportedViewError && compatibility.canOpenLegacyPortViews()
+          "
           data-testid="execute-open-legacy-view-action"
         >
           <Button

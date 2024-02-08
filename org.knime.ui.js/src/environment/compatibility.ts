@@ -26,3 +26,5 @@ export const isSpaceExplorerSupported = () => isDesktop;
 export const isKaiSupported = () => isDesktop;
 
 export const isLocalSaveSupported = () => isDesktop;
+
+export const canOpenLegacyPortViews = () => isDesktop;
