@@ -1,19 +1,40 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, vi } from "vitest";
+import { expect, describe, it, vi, afterEach } from "vitest";
 import * as Vue from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { $bus } from "@/plugins/event-bus";
 
-import Kanvas, { RESIZE_DEBOUNCE } from "../Kanvas.vue";
+import { workflowNavigationService } from "@/util/workflowNavigationService";
+
+import * as selectionStore from "@/store/selection";
+import * as workflowStore from "@/store/workflow";
+
+import Kanvas from "../Kanvas.vue";
+import {
+  createNativeNode,
+  createWorkflow,
+  createWorkflowAnnotation,
+  createWorkflowObject,
+} from "@/test/factories";
+import { mockedObject } from "@/test/utils";
+import { RESIZE_DEBOUNCE } from "../constants";
 
 vi.mock("@/plugins/event-bus", () => ({
   $bus: {
     emit: vi.fn(),
   },
 }));
+
+vi.mock("@/util/workflowNavigationService", () => {
+  return {
+    workflowNavigationService: {
+      nearestObject: vi.fn(),
+    },
+  };
+});
 
 describe("Kanvas", () => {
   const doShallowMount = ({
@@ -63,12 +84,14 @@ describe("Kanvas", () => {
           .mockImplementation(({ state }, el) => {
             state.getScrollContainerElement = () => el;
           }),
+        scroll: vi.fn(),
       },
       application: {
         toggleContextMenu: vi.fn(),
       },
     };
 
+    const isWorkflowWritableMock = vi.fn(() => true);
     const storeConfig = {
       application: {
         actions: actions.application,
@@ -90,6 +113,8 @@ describe("Kanvas", () => {
           contentBounds: (state) => state.__contentBounds,
           contentPadding: () => ({ left: 10, top: 10 }),
           canvasSize: () => ({ width: 30, height: 300 }),
+          screenFromCanvasCoordinates: () =>
+            vi.fn(() => ({ x: 1000, y: 1000 })),
         },
         actions: actions.canvas,
         mutations: {
@@ -99,8 +124,15 @@ describe("Kanvas", () => {
         },
       },
       workflow: {
+        ...workflowStore,
+        actions: {
+          ...workflowStore.actions,
+          moveObjects: vi.fn(),
+        },
         getters: {
+          ...workflowStore.getters,
           isWorkflowEmpty: isWorkflowEmptyMock,
+          isWritable: isWorkflowWritableMock,
         },
       },
       nodeRepository: {
@@ -108,11 +140,13 @@ describe("Kanvas", () => {
           isDraggingNode,
         },
       },
+      selection: selectionStore,
     };
 
     const $store = mockVuexStore(storeConfig);
 
     const commitSpy = vi.spyOn($store, "commit");
+    const dispatchSpy = vi.spyOn($store, "dispatch");
 
     const wrapper = shallowMount(Kanvas, {
       global: {
@@ -135,6 +169,8 @@ describe("Kanvas", () => {
       releasePointerCapture,
       ResizeObserverMock,
       commitSpy,
+      dispatchSpy,
+      isWorkflowWritableMock,
     };
   };
 
@@ -632,7 +668,7 @@ describe("Kanvas", () => {
       expect(Number(svg.attributes("width"))).toBe(canvasSize.width);
       expect(Number(svg.attributes("height"))).toBe(canvasSize.height);
 
-      let viewBoxString = $store.getters["canvas/viewBox"].string;
+      const viewBoxString = $store.getters["canvas/viewBox"].string;
 
       expect(svg.attributes("viewBox")).toBe(viewBoxString);
     });
@@ -687,6 +723,337 @@ describe("Kanvas", () => {
         }),
       );
       expect(actions.canvas.zoomAroundPointer).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("arrow key navigation", () => {
+    let wrapperRef: VueWrapper<any> | null = null;
+
+    const emitEvent = (
+      name: "keydown" | "keyup",
+      key:
+        | "ArrowUp"
+        | "ArrowDown"
+        | "ArrowLeft"
+        | "ArrowRight"
+        | "Enter"
+        | "Control"
+        | "Shift",
+      shiftKey = false,
+      ctrlKey = false,
+    ) => {
+      const event = new KeyboardEvent(name, { key, shiftKey, ctrlKey });
+      document.dispatchEvent(event);
+      window.dispatchEvent(event);
+    };
+
+    afterEach(() => {
+      vi.clearAllMocks();
+
+      // events are added to the window and document in this component
+      // which means we need to unmount it after every test to clear those events
+      if (wrapperRef) {
+        wrapperRef.unmount();
+        wrapperRef = null;
+      }
+    });
+
+    const mountWithWorkflow = () => {
+      const mountResult = doShallowMount();
+
+      const node1 = createNativeNode({
+        id: "root:1",
+        position: { x: 10, y: 10 },
+      });
+      const node2 = createNativeNode({
+        id: "root:2",
+        position: { x: 20, y: 10 },
+      });
+      const annotation1 = createWorkflowAnnotation({
+        id: "annotation:1",
+        bounds: { x: 40, y: 10, width: 20, height: 20 },
+      });
+      const workflow = createWorkflow({
+        nodes: {
+          [node1.id]: node1,
+          [node2.id]: node2,
+        },
+        workflowAnnotations: [annotation1],
+      });
+      mountResult.$store.commit("workflow/setActiveWorkflow", workflow);
+
+      return { ...mountResult, workflow, node1, node2, annotation1 };
+    };
+
+    describe("arrow key selection", () => {
+      const mocked = mockedObject(workflowNavigationService);
+
+      const mockNearestObject = (value) => {
+        mocked.nearestObject.mockResolvedValueOnce(value);
+      };
+
+      it("should move focus to near node when multiselection is used and focus was already active", async () => {
+        const { $store, node1, node2, wrapper, actions } = mountWithWorkflow();
+        const firstNodeObject = createWorkflowObject(node1);
+        const secondNodeObject = createWorkflowObject(node2);
+
+        $store.state.selection.focusedObject = firstNodeObject;
+
+        mockNearestObject(secondNodeObject);
+
+        emitEvent("keydown", "ArrowRight", true);
+
+        await flushPromises();
+
+        expect(mocked.nearestObject).toHaveBeenCalledOnce();
+        expect($store.state.selection.focusedObject).toEqual(secondNodeObject);
+        expect(actions.canvas.scroll).toHaveBeenCalled();
+
+        wrapperRef = wrapper;
+      });
+
+      it("should activate focus if it's not active and multiselection is used", async () => {
+        const { $store, node1, node2, wrapper, actions } = mountWithWorkflow();
+        const firstNodeObject = createWorkflowObject(node1);
+        const secondNodeObject = createWorkflowObject(node2);
+
+        const reset = async () => {
+          $store.commit("selection/unfocusObject");
+          await $store.dispatch("selection/deselectAllObjects");
+        };
+
+        mockNearestObject(secondNodeObject);
+
+        emitEvent("keydown", "ArrowRight", true);
+        await flushPromises();
+
+        // ----------------------- //
+        // no selection and no focus, nothing happens
+        expect(mocked.nearestObject).not.toHaveBeenCalled();
+        expect(actions.canvas.scroll).not.toHaveBeenCalled();
+
+        // ----------------------- //
+        // single item selected, should get focus
+        await $store.dispatch("selection/selectNode", node1.id);
+
+        emitEvent("keydown", "ArrowRight", true);
+        await flushPromises();
+
+        expect($store.state.selection.focusedObject).toEqual(firstNodeObject);
+        expect(actions.canvas.scroll).toHaveBeenCalled();
+
+        // ----------------------- //
+        // reset focus and select multiple items, go "right"
+        await reset();
+        await $store.dispatch("selection/selectNode", node1.id);
+        await $store.dispatch("selection/selectNode", node2.id);
+
+        emitEvent("keydown", "ArrowRight", true);
+        await flushPromises();
+
+        expect($store.state.selection.focusedObject).toEqual(secondNodeObject);
+
+        // ----------------------- //
+        // reset focus and select multiple items, go "left"
+        await reset();
+        await $store.dispatch("selection/selectNode", node1.id);
+        await $store.dispatch("selection/selectNode", node2.id);
+
+        emitEvent("keydown", "ArrowLeft", true);
+        await flushPromises();
+
+        expect($store.state.selection.focusedObject).toEqual(firstNodeObject);
+        expect(actions.canvas.scroll).toHaveBeenCalled();
+
+        wrapperRef = wrapper;
+      });
+
+      it("should select next nearest object when single object is selected and not using multi-select", async () => {
+        const { $store, node1, node2, wrapper, commitSpy } =
+          mountWithWorkflow();
+
+        await $store.dispatch("selection/selectNode", node1.id);
+        emitEvent("keydown", "ArrowRight", false);
+        await flushPromises();
+
+        expect($store.state.selection.selectedNodes).toStrictEqual({
+          [node2.id]: true,
+        });
+        expect(commitSpy).toHaveBeenCalledWith("selection/unfocusObject");
+        wrapperRef = wrapper;
+      });
+
+      it("should select next nearest object when selection is empty but one object has focus AND not using multi-select", async () => {
+        const { $store, node1, annotation1, wrapper, commitSpy } =
+          mountWithWorkflow();
+        const nodeObject = createWorkflowObject(node1);
+        const annotationObject = createWorkflowObject(annotation1);
+
+        mockNearestObject(annotationObject);
+        $store.state.selection.focusedObject = nodeObject;
+
+        emitEvent("keydown", "ArrowRight", false);
+        await flushPromises();
+
+        expect($store.state.selection.selectedNodes).toStrictEqual({});
+        expect($store.state.selection.selectedAnnotations).toStrictEqual({
+          [annotation1.id]: true,
+        });
+        expect(commitSpy).toHaveBeenCalledWith("selection/unfocusObject");
+        wrapperRef = wrapper;
+      });
+
+      it("should escape multiselection state when arrow key is used without multi-select modifier", async () => {
+        const { $store, node1, node2, annotation1, wrapper } =
+          mountWithWorkflow();
+
+        // Go right
+        await $store.dispatch("selection/selectNode", node1.id);
+        await $store.dispatch("selection/selectNode", node2.id);
+        await $store.dispatch("selection/selectAnnotation", annotation1.id);
+
+        emitEvent("keydown", "ArrowRight", false);
+        await flushPromises();
+
+        expect($store.state.selection.selectedNodes).toStrictEqual({});
+        expect($store.state.selection.selectedAnnotations).toStrictEqual({
+          [annotation1.id]: true,
+        });
+
+        // Go left
+        await $store.dispatch("selection/selectNode", node1.id);
+        await $store.dispatch("selection/selectNode", node2.id);
+        await $store.dispatch("selection/selectAnnotation", annotation1.id);
+
+        emitEvent("keydown", "ArrowLeft", false);
+        await flushPromises();
+
+        expect($store.state.selection.selectedNodes).toStrictEqual({
+          [node1.id]: true,
+        });
+        expect($store.state.selection.selectedAnnotations).toStrictEqual({});
+
+        wrapperRef = wrapper;
+      });
+
+      it("should add/remove from selection by pressing 'Enter'", async () => {
+        const { $store, node1, annotation1, wrapper } = mountWithWorkflow();
+
+        const nodeObject = createWorkflowObject(node1);
+        const annotationObject = createWorkflowObject(annotation1);
+        mockNearestObject(annotationObject);
+
+        await $store.dispatch("selection/selectNode", node1.id);
+
+        expect($store.state.selection.focusObject).toBeUndefined();
+
+        emitEvent("keydown", "ArrowRight", true);
+        await flushPromises();
+
+        expect($store.state.selection.focusedObject).toEqual(nodeObject);
+
+        emitEvent("keydown", "ArrowRight", true);
+        await flushPromises();
+
+        expect($store.state.selection.focusedObject).toEqual(annotationObject);
+
+        emitEvent("keydown", "Enter", true);
+        await flushPromises();
+
+        expect($store.state.selection.selectedNodes).toStrictEqual({
+          [node1.id]: true,
+        });
+        expect($store.state.selection.selectedAnnotations).toStrictEqual({
+          [annotation1.id]: true,
+        });
+
+        emitEvent("keydown", "Enter", true);
+        await flushPromises();
+        expect($store.state.selection.selectedNodes).toStrictEqual({
+          [node1.id]: true,
+        });
+        expect($store.state.selection.selectedAnnotations).toStrictEqual({});
+
+        wrapperRef = wrapper;
+      });
+    });
+
+    describe("arrow key movement", () => {
+      it("should move object with arrow keys", async () => {
+        const { $store, node1, node2, wrapper, commitSpy, dispatchSpy } =
+          mountWithWorkflow();
+
+        await $store.dispatch("selection/selectNode", node1.id);
+        await $store.dispatch("selection/selectNode", node2.id);
+
+        dispatchSpy.mockClear();
+
+        emitEvent("keydown", "Control", true, true);
+        emitEvent("keydown", "Shift", true, true);
+        emitEvent("keydown", "ArrowRight", true, true);
+
+        await flushPromises();
+
+        expect(commitSpy).toHaveBeenCalledWith("workflow/setTooltip", null);
+        expect(commitSpy).toHaveBeenCalledWith("workflow/setIsDragging", true);
+        expect(commitSpy).toHaveBeenLastCalledWith("workflow/setMovePreview", {
+          deltaX: 5,
+          deltaY: 0,
+        });
+        expect(dispatchSpy).not.toHaveBeenCalled();
+
+        emitEvent("keydown", "Control", true, true);
+        emitEvent("keydown", "Shift", true, true);
+        emitEvent("keydown", "ArrowUp", true, true);
+
+        await flushPromises();
+
+        expect(commitSpy).toHaveBeenLastCalledWith("workflow/setMovePreview", {
+          deltaX: 5,
+          deltaY: -5,
+        });
+        expect(dispatchSpy).not.toHaveBeenCalled();
+
+        emitEvent("keyup", "Control");
+        await flushPromises();
+        expect(dispatchSpy).toHaveBeenCalledWith("workflow/moveObjects");
+
+        wrapperRef = wrapper;
+      });
+
+      it("should not move objects if workflow is not writable", async () => {
+        const {
+          $store,
+          node1,
+          wrapper,
+          commitSpy,
+          dispatchSpy,
+          isWorkflowWritableMock,
+        } = mountWithWorkflow();
+
+        isWorkflowWritableMock.mockImplementationOnce(() => false);
+
+        await $store.dispatch("selection/selectNode", node1.id);
+
+        dispatchSpy.mockClear();
+        commitSpy.mockClear();
+
+        emitEvent("keydown", "Control", true, true);
+        emitEvent("keydown", "Shift", true, true);
+        emitEvent("keydown", "ArrowRight", true, true);
+
+        await flushPromises();
+
+        expect(commitSpy).not.toHaveBeenCalledWith("worflow/setIsDragging");
+        expect(commitSpy).not.toHaveBeenCalledWith("worflow/setMovePreview");
+        expect(dispatchSpy).not.toHaveBeenCalled();
+
+        emitEvent("keyup", "Control");
+        await flushPromises();
+        expect(dispatchSpy).not.toHaveBeenCalled();
+
+        wrapperRef = wrapper;
+      });
     });
   });
 });

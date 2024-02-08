@@ -1,6 +1,6 @@
 import { merge } from "lodash-es";
 
-import type { KnimeNode } from "@/api/custom-types";
+import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
 import {
   AllowedNodeActions,
   Annotation,
@@ -11,6 +11,7 @@ import {
   Node,
   NodeState,
   TypedText,
+  type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 import type { DeepPartial } from "../utils";
 import { createNodeAnnotation } from "./annotations";
@@ -132,4 +133,35 @@ export const createMetanode = (data: DeepPartial<MetaNode> = {}): MetaNode => {
   };
 
   return merge(metanode, data);
+};
+
+export const createWorkflowObject = (
+  data?: KnimeNode | WorkflowAnnotation,
+): WorkflowObject => {
+  const base: WorkflowObject = {
+    id: "some-obj",
+    type: "node",
+    x: 0,
+    y: 0,
+  };
+
+  if (!data) {
+    return base;
+  }
+
+  if ("bounds" in data) {
+    return merge(base, {
+      id: data.id,
+      type: "annotation",
+      x: data.bounds.x,
+      y: data.bounds.y,
+    });
+  } else {
+    return merge(base, {
+      id: data.id,
+      type: "node",
+      x: data.position.x,
+      y: data.position.y,
+    });
+  }
 };

@@ -1,7 +1,3 @@
-<script lang="ts">
-export const RESIZE_DEBOUNCE = 100;
-</script>
-
 <script setup lang="ts">
 import type { Ref } from "vue";
 import {
@@ -20,6 +16,7 @@ import { useMouseWheelZooming } from "./useMouseWheelZooming";
 import { usePanning } from "./usePanning";
 import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
 import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
+import { RESIZE_DEBOUNCE } from "./constants";
 
 const emit = defineEmits(["containerSizeChanged"]);
 

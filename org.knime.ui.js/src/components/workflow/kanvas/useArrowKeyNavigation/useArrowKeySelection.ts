@@ -253,7 +253,7 @@ export const useArrowKeySelection = () => {
 
   const selectOnEnter = (event: KeyboardEvent) => {
     if (
-      event.code !== "Enter" ||
+      event.key !== "Enter" ||
       isInputElement(event.target as HTMLElement) ||
       isUIExtensionFocused()
     ) {

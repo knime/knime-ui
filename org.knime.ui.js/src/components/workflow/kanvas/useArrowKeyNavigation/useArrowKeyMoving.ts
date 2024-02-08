@@ -1,13 +1,24 @@
 import { computed } from "vue";
 
+import { isMac } from "webapps-common/util/navigator";
 import { useStore } from "@/composables/useStore";
-
 import { gridSize } from "@/style/shapes.mjs";
 
 export const useArrowKeyMoving = () => {
   const store = useStore();
   const isDragging = computed(() => store.state.workflow.isDragging);
   const isWritable = computed(() => store.getters["workflow/isWritable"]);
+
+  let isKeupHandlerAttached = false;
+
+  const doMove = async (event: KeyboardEvent) => {
+    const modifiers = [isMac() ? "Meta" : "Control", "Shift"];
+    if (modifiers.includes(event.key)) {
+      await store.dispatch("workflow/moveObjects");
+      window.removeEventListener("keyup", doMove);
+      isKeupHandlerAttached = false;
+    }
+  };
 
   const handleMovement = (event: KeyboardEvent) => {
     if (!isWritable.value) {
@@ -37,13 +48,10 @@ export const useArrowKeyMoving = () => {
       deltaY: (deltaY ?? 0) + y,
     });
 
-    const doMove = async (event: KeyboardEvent) => {
-      if (["Control", "Shift"].includes(event.key)) {
-        await store.dispatch("workflow/moveObjects");
-        window.removeEventListener("keyup", doMove);
-      }
-    };
-    window.addEventListener("keyup", doMove);
+    if (!isKeupHandlerAttached) {
+      window.addEventListener("keyup", doMove);
+      isKeupHandlerAttached = true;
+    }
   };
 
   return { handleMovement };
