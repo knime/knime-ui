@@ -65,9 +65,7 @@ describe("workflow::componentInteractions", () => {
         auto: true,
       });
 
-      expect(
-        mockedAPI.workflow.getUpdatableLinkedComponents,
-      ).not.toHaveBeenCalled();
+      expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
       expect(toast.show).not.toHaveBeenCalled();
     });
 
@@ -246,15 +244,13 @@ describe("workflow::componentInteractions", () => {
       });
 
       expect(toast.show).toHaveBeenCalledOnce();
-      expect(
-        mockedAPI.workflow.getUpdatableLinkedComponents,
-      ).toHaveBeenCalledWith({
+      expect(mockedAPI.workflow.getLinkUpdates).toHaveBeenCalledWith({
         projectId: workflow.projectId,
         workflowId: workflow.info.containerId,
       });
 
       // clear mocks before second dispatch
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockClear();
+      mockedAPI.workflow.getLinkUpdates.mockClear();
       toast.show.mockClear();
 
       await store.dispatch("workflow/checkForLinkedComponentUpdates", {
@@ -262,12 +258,10 @@ describe("workflow::componentInteractions", () => {
       });
 
       expect(toast.show).not.toHaveBeenCalled();
-      expect(
-        mockedAPI.workflow.getUpdatableLinkedComponents,
-      ).not.toHaveBeenCalled();
+      expect(mockedAPI.workflow.getLinkUpdates).not.toHaveBeenCalled();
 
       // clear mocks before third dispatch
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockClear();
+      mockedAPI.workflow.getLinkUpdates.mockClear();
       toast.show.mockClear();
 
       // clear state that remembers whether to show/hide notifications

@@ -169,8 +169,7 @@ const initJSONRPCClient = async (
       mode === "DESKTOP"
         ? initDesktopClient()
         : initBrowserClient(connectionInfo!, store);
-
-    await clientInitializer(connectionInfo);
+    await clientInitializer;
 
     return Promise.resolve();
   } catch (error) {
