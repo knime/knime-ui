@@ -1,5 +1,5 @@
-import type { UIExtensionAPILayer } from "pagebuilder/src/components/views/uiExtensions/types/UIExtensionAPILayer";
-import type { ExtensionConfig } from "pagebuilder/src/components/views/uiExtensions/types/ExtensionConfig";
+import type { UIExtensionAPILayer } from "webapps-common/ui/uiExtensions/types/UIExtensionAPILayer";
+import type { ExtensionConfig } from "webapps-common/ui/uiExtensions/types/ExtensionConfig";
 
 export type ViewStateChangeEvent = {
   state: "loading" | "ready" | "error";

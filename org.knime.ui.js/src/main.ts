@@ -15,7 +15,6 @@ import {
 
 import "./assets/index.css";
 
-import PageBuilder from "pagebuilder/src/components/PageBuilder.vue";
 import { getToastsProvider } from "./plugins/toasts";
 
 // Setup logger for production
@@ -125,8 +124,6 @@ try {
       store.commit("api/setRestApiBaseUrl", connectionInfo?.restApiBaseUrl);
     },
   });
-
-  PageBuilder.initStore(store);
 
   // Enable easier store debugging while on dev
   if (import.meta.env.DEV) {

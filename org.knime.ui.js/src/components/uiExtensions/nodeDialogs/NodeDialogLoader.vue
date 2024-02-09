@@ -3,7 +3,7 @@ import { API } from "@api";
 import { defineComponent, type PropType } from "vue";
 import type { KnimeNode } from "@/api/custom-types";
 import type { CommonViewLoaderData } from "../common/types";
-import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
+import UIExtension from "webapps-common/ui/uiExtensions/UIExtension.vue";
 
 type ComponentData = CommonViewLoaderData & {
   configReady: boolean;

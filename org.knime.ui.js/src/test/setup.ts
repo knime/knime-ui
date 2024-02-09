@@ -6,7 +6,6 @@ config.global.renderStubDefaultSlot = true;
 config.global.stubs = {
   Portal: true,
   PortalTarget: true,
-  PageBuilder: true,
 };
 consola.level = LogLevel.Error;
 

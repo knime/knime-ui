@@ -4,14 +4,11 @@ import { createApp, h } from "vue";
 const dynamicImportMock = vi.fn();
 
 export const mockDynamicImport: any = () => {
-  vi.mock(
-    "pagebuilder/src/components/views/uiExtensions/useDynamicImport",
-    () => ({
-      useDynamicImport: vi.fn().mockImplementation(() => {
-        return { dynamicImport: dynamicImportMock };
-      }),
+  vi.mock("webapps-common/ui/uiExtensions/useDynamicImport", () => ({
+    useDynamicImport: vi.fn().mockImplementation(() => {
+      return { dynamicImport: dynamicImportMock };
     }),
-  );
+  }));
 
   // mock a simple dynamic view
   dynamicImportMock.mockReturnValue({

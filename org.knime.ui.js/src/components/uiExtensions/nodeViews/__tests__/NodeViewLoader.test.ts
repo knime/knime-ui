@@ -5,7 +5,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 import { API } from "@api";
 
-import UIExtension from "pagebuilder/src/components/views/uiExtensions/UIExtension.vue";
+import UIExtension from "webapps-common/ui/uiExtensions/UIExtension.vue";
 import NodeViewLoader from "../NodeViewLoader.vue";
 
 mockDynamicImport();
