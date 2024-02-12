@@ -73,6 +73,10 @@ export default defineComponent({
       const shortcut = this.$shortcuts.get("createWorkflow");
       return `${shortcut.text} (${shortcut.hotkeyText})`;
     },
+
+    hasOpenProjects() {
+      return this.openProjects.length >= 1;
+    },
   },
   watch: {
     activeProjectId: {
@@ -151,8 +155,16 @@ export default defineComponent({
     >
       <div class="text"><HouseIcon /> Home</div>
     </div>
-    <div class="toolbar">
-      <ul v-if="openProjects.length >= 1" class="project-tabs">
+    <div
+      :class="[
+        'toolbar',
+        {
+          'with-projects': hasOpenProjects,
+          'without-projects': !hasOpenProjects,
+        },
+      ]"
+    >
+      <div v-if="hasOpenProjects" class="project-tabs">
         <Carousel ref="carousel" @wheel="onWheelScroll">
           <div class="wrapper">
             <AppHeaderTab
@@ -174,16 +186,19 @@ export default defineComponent({
               @switch-workflow="onProjectTabChange"
               @close-project="closeProject($event)"
             />
-            <button
-              class="create-workflow-btn"
-              :title="createWorkflowTitle"
-              @click="$shortcuts.dispatch('createWorkflow')"
-            >
-              <PlusIcon />
-            </button>
           </div>
         </Carousel>
-      </ul>
+      </div>
+
+      <div v-if="hasOpenProjects" class="create-worflow-container">
+        <button
+          class="create-workflow-btn"
+          :title="createWorkflowTitle"
+          @click="$shortcuts.dispatch('createWorkflow')"
+        >
+          <PlusIcon />
+        </button>
+      </div>
 
       <div v-if="openProjects.length === 0" class="application-name">
         <span class="text">KNIME Analytics Platform 5</span>
@@ -255,30 +270,74 @@ header {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: 1fr auto auto;
     align-items: center;
     align-content: center;
 
-    & .create-workflow-btn {
-      border: 0;
-      background-color: var(--knime-masala);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-bottom: 2px;
-      margin-left: 2px;
+    &.without-projects {
+      grid-template-columns: 1fr auto;
+    }
 
-      &:hover {
-        outline: none;
-        background: var(--knime-black-semi);
+    &.with-projects {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    & .project-tabs {
+      padding: 0;
+      min-width: 0;
+      white-space: nowrap;
+      list-style: none;
+
+      & :deep(.shadow-wrapper) {
+        margin-right: 0;
       }
 
-      & svg {
-        @mixin svg-icon-size 24;
+      & :deep(.shadow-wrapper::before),
+      & :deep(.shadow-wrapper::after) {
+        background-image: none;
+      }
 
-        padding-right: 2px;
-        stroke: var(--knime-white);
+      & :deep(.carousel) {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      & .wrapper {
+        display: inline-flex;
+      }
+    }
+
+    & .create-worflow-container {
+      height: 100%;
+      display: flex;
+
+      & .separator {
+        width: 1px;
+        border-left: 2px solid var(--knime-silver-sand-semi);
+        margin: 10px 8px;
+      }
+
+      & .create-workflow-btn {
+        border: 0;
+        background-color: var(--knime-masala);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: 2px;
+        margin-left: 5px;
+        height: 100%;
+
+        &:hover {
+          outline: none;
+          background: var(--knime-black-semi);
+        }
+
+        & svg {
+          @mixin svg-icon-size 24;
+
+          padding-right: 2px;
+          stroke: var(--knime-white);
+        }
       }
     }
 
@@ -288,7 +347,7 @@ header {
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      margin-left: 30px;
+      margin-left: 15px;
 
       & .header-button,
       &:deep(.submenu-toggle) {
@@ -328,39 +387,6 @@ header {
         color: var(--knime-white);
         font-size: 13px;
         font-weight: 500;
-      }
-    }
-
-    & .project-tabs {
-      padding: 0;
-      min-width: 0;
-      white-space: nowrap;
-      list-style: none;
-
-      & :deep(.shadow-wrapper) {
-        margin-left: -24px;
-      }
-
-      & :deep(.shadow-wrapper::before) {
-        background-image: none;
-      }
-
-      & :deep(.shadow-wrapper::after) {
-        background-image: linear-gradient(
-          90deg,
-          hsl(0deg 0% 100% / 0%) 0%,
-          var(--knime-masala) 100%
-        );
-      }
-
-      & :deep(.carousel) {
-        padding-left: 24px;
-      }
-
-      & .wrapper {
-        display: inline-flex;
-        margin-left: -24px;
-        margin-right: -20px;
       }
     }
   }

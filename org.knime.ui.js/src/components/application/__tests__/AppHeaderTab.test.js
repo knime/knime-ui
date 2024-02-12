@@ -26,37 +26,37 @@ describe("AppHeaderTab.vue", () => {
   describe("hover", () => {
     it('should set the "hovered" class when `isHoveredOver` prop is true', () => {
       const wrapper = doMount({ isHoveredOver: true });
-      expect(wrapper.find("li").classes()).toContain("hovered");
+      expect(wrapper.find(".tab-item").classes()).toContain("hovered");
     });
 
     it("should emit hover event", async () => {
       const wrapper = doMount({ projectId: "2" });
 
-      await wrapper.find("li").trigger("mouseover");
+      await wrapper.find(".tab-item").trigger("mouseover");
       expect(wrapper.emitted("hover")[0][0]).toBe("2");
 
-      await wrapper.find("li").trigger("mouseleave");
+      await wrapper.find(".tab-item").trigger("mouseleave");
       expect(wrapper.emitted("hover")[1][0]).toBeNull();
     });
   });
 
   it('should set the "active" class when the `isActive` prop is true', () => {
     const wrapper = doMount({ isActive: true });
-    expect(wrapper.find("li").classes()).toContain("active");
+    expect(wrapper.find(".tab-item").classes()).toContain("active");
   });
 
   describe("switch workflow", () => {
     it("should emit a switchWorkflow event when the tab is NOT active", () => {
       const wrapper = doMount({ projectId: "1" });
 
-      wrapper.find("li").trigger("click");
+      wrapper.find(".tab-item").trigger("click");
       expect(wrapper.emitted("switchWorkflow")[0][0]).toBe("1");
     });
 
     it("should not emit a switchWorkflow event when the tab is active", () => {
       const wrapper = doMount({ projectId: "1", isActive: true });
 
-      wrapper.find("li").trigger("click");
+      wrapper.find(".tab-item").trigger("click");
       expect(wrapper.emitted("switchWorkflow")).toBeUndefined();
     });
   });
@@ -65,7 +65,7 @@ describe("AppHeaderTab.vue", () => {
     const wrapper = doMount({ projectId: "1" });
 
     // testing click with middle click works best with triggering mouseup
-    await wrapper.find("li").trigger("mouseup", { button: 1 });
+    await wrapper.find(".tab-item").trigger("mouseup", { button: 1 });
     expect(wrapper.emitted("closeProject")[0][0]).toBe("1");
   });
 

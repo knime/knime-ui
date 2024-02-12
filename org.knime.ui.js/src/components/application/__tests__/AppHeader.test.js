@@ -68,7 +68,7 @@ describe("AppHeader.vue", () => {
     it("renders tabs of opened projects", () => {
       const { wrapper } = doMount();
 
-      const tabs = wrapper.findAll("li");
+      const tabs = wrapper.findAll(".tab-item");
       expect(tabs.length).toBe(3);
     });
 
@@ -87,7 +87,7 @@ describe("AppHeader.vue", () => {
       const { wrapper, storeConfig, $router } = doMount();
       const projectId = storeConfig.application.state.openProjects[2].projectId;
 
-      wrapper.findAll("li").at(2).trigger("click");
+      wrapper.findAll(".tab-item").at(2).trigger("click");
       expect($router.push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId, workflowId: "root" },

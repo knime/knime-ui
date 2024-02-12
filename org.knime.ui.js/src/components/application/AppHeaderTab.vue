@@ -74,44 +74,38 @@ const onHover = (hoverValue: string | null) => {
 </script>
 
 <template>
-  <ul>
-    <li
-      :class="{ active: isActive, hovered: isHoveredOver }"
-      :title="shouldTruncateName ? name : undefined"
-      @click.stop="isActive ? null : emit('switchWorkflow', projectId)"
-      @mouseover="onHover(projectId)"
-      @mouseleave="onHover(null)"
-      @click.middle.stop="emit('closeProject', projectId)"
-    >
-      <!-- There are different icons for local workflows and for components -->
-      <template v-if="isLocal">
-        <NodeWorkflowIcon v-if="projectType === 'Component'" />
-        <WorkflowIcon v-else />
-      </template>
-      <template v-else>
-        <CloudComponentIcon v-if="projectType === 'Component'" />
-        <CloudWorkflowIcon v-else />
-      </template>
+  <div
+    class="tab-item"
+    :class="{ active: isActive, hovered: isHoveredOver }"
+    :title="shouldTruncateName ? name : undefined"
+    @click.stop="isActive ? null : emit('switchWorkflow', projectId)"
+    @mouseover="onHover(projectId)"
+    @mouseleave="onHover(null)"
+    @click.middle.stop="emit('closeProject', projectId)"
+  >
+    <!-- There are different icons for local workflows and for components -->
+    <template v-if="isLocal">
+      <NodeWorkflowIcon v-if="projectType === 'Component'" />
+      <WorkflowIcon v-else />
+    </template>
+    <template v-else>
+      <CloudComponentIcon v-if="projectType === 'Component'" />
+      <CloudWorkflowIcon v-else />
+    </template>
 
-      <span class="text">{{ truncatedProjectName }}</span>
-      <CloseButton
-        class="close-icon"
-        :has-unsaved-changes="hasUnsavedChanges"
-        @close.stop="emit('closeProject', projectId)"
-      />
-    </li>
-  </ul>
+    <span class="text">{{ truncatedProjectName }}</span>
+    <CloseButton
+      class="close-icon"
+      :has-unsaved-changes="hasUnsavedChanges"
+      @close.stop="emit('closeProject', projectId)"
+    />
+  </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-ul {
-  margin: 0;
-  padding: 0;
-}
-
-li {
+.tab-item {
   height: 39px;
   display: flex;
   align-items: center;
@@ -165,7 +159,7 @@ li {
   }
 }
 
-li.active {
+.tab-item.active {
   background-color: var(--knime-yellow);
   color: var(--knime-black);
   cursor: inherit;
