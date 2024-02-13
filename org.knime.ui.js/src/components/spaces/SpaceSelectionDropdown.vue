@@ -316,6 +316,24 @@ const spaceIcon = computed(() => {
     overflow-y: auto;
   }
 
+  /* TODO: NXT-2391, Rework the shared webapps common component to match the different cases */
+
+  & :deep(.menu-items-sub-level) {
+    & .list-item:not(.section-headline) {
+      padding-left: 6px !important;
+    }
+  }
+
+  & :deep(.menu-items) {
+    & .list-item:not(.section-headline) {
+      padding-left: 28px;
+    }
+
+    & li:first-of-type .list-item {
+      padding-left: 10px;
+    }
+  }
+
   & .selected-text {
     max-width: 160px;
     overflow: hidden;
@@ -330,7 +348,8 @@ const spaceIcon = computed(() => {
 
   & :deep(.menu-wrapper) {
     & .separator:has(.section-headline) {
-      padding-top: 5px;
+      border-bottom: none;
+      border-top: 1px solid var(--knime-porcelain);
 
       & .text {
         color: var(--knime-masala);
