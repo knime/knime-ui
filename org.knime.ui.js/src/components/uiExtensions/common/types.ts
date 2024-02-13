@@ -1,5 +1,7 @@
-import type { UIExtensionAPILayer } from "webapps-common/ui/uiExtensions/types/UIExtensionAPILayer";
-import type { ExtensionConfig } from "webapps-common/ui/uiExtensions/types/ExtensionConfig";
+import type {
+  UIExtensionAPILayer,
+  ExtensionConfig,
+} from "webapps-common/ui/uiExtensions";
 
 export type ViewStateChangeEvent = {
   state: "loading" | "ready" | "error";

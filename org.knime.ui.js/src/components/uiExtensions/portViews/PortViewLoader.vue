@@ -4,7 +4,7 @@ import { defineComponent, type PropType } from "vue";
 import { API } from "@api";
 import type { KnimeNode } from "@/api/custom-types";
 
-import UIExtension from "webapps-common/ui/uiExtensions/UIExtension.vue";
+import { UIExtension } from "webapps-common/ui/uiExtensions";
 import { AlertType, type Alert } from "@knime/ui-extension-service";
 import type { CommonViewLoaderData } from "../common/types";
 

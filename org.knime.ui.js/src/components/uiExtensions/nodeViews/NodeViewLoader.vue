@@ -1,7 +1,7 @@
 <script lang="ts">
 import { API } from "@api";
 
-import UIExtension from "webapps-common/ui/uiExtensions/UIExtension.vue";
+import { UIExtension } from "webapps-common/ui/uiExtensions";
 import { defineComponent, type PropType } from "vue";
 import type { CommonViewLoaderData } from "../common/types";
 import type { KnimeNode } from "@/api/custom-types";

@@ -5,7 +5,7 @@ import { API } from "@api";
 import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 
 import PortViewLoader from "../PortViewLoader.vue";
-import UIExtension from "webapps-common/ui/uiExtensions/UIExtension.vue";
+import { UIExtension } from "webapps-common/ui/uiExtensions";
 
 mockDynamicImport();
 
