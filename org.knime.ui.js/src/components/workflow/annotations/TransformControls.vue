@@ -12,6 +12,7 @@ import {
 } from "./transform-control-utils";
 
 export const TRANSFORM_RECT_OFFSET = 1;
+const FOCUS_PLANE_OFFSET_SIZE = 4;
 
 export default defineComponent({
   props: {
@@ -45,12 +46,14 @@ export default defineComponent({
     return {
       directions: DIRECTIONS,
       innerValue: getGridAdjustedBounds(this.initialValue),
+      FOCUS_PLANE_OFFSET_SIZE,
     };
   },
 
   computed: {
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
     ...mapState("canvas", ["zoomFactor"]),
+    ...mapState("workflow", ["movePreviewDelta"]),
 
     controlSize() {
       const CONTROL_SIZE = 6;
@@ -162,10 +165,10 @@ export default defineComponent({
     <Portal to="annotation-transform">
       <rect
         v-if="showFocus"
-        :width="valueWithOffset.width + 8"
-        :height="valueWithOffset.height + 8"
-        :x="valueWithOffset.x - 4"
-        :y="valueWithOffset.y - 4"
+        :width="valueWithOffset.width + FOCUS_PLANE_OFFSET_SIZE * 2"
+        :height="valueWithOffset.height + FOCUS_PLANE_OFFSET_SIZE * 2"
+        :x="valueWithOffset.x - FOCUS_PLANE_OFFSET_SIZE + movePreviewDelta.x"
+        :y="valueWithOffset.y - FOCUS_PLANE_OFFSET_SIZE + movePreviewDelta.y"
         class="transform-box"
         :stroke="$colors.selection.activeBorder"
         :stroke-width="transformRectStrokeWidth"

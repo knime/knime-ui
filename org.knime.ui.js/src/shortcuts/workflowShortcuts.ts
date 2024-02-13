@@ -26,7 +26,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "configureNode"
   | "configureFlowVariables"
   | "editName"
-  | "editNodeComment"
+  | "editNodeCommentOrAnnotation"
   | "deleteSelected"
   | "copy"
   | "cut"
@@ -148,20 +148,39 @@ const workflowShortcuts: WorkflowShortcuts = {
       !$store.getters["selection/singleSelectedNode"]?.link &&
       $store.getters["workflow/isWritable"],
   },
-  editNodeComment: {
-    text: "Edit node comment",
-    hotkey: ["F2"],
-    execute: ({ $store }) =>
-      $store.dispatch(
-        "workflow/openLabelEditor",
-        $store.getters["selection/singleSelectedNode"].id,
-      ),
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+  editNodeCommentOrAnnotation: {
+    text: ({ $store }) => {
+      if ($store.getters["selection/singleSelectedNode"]) {
+        return "Edit node comment";
+      }
 
-      return (
-        singleSelectedNode !== null && $store.getters["workflow/isWritable"]
-      );
+      if ($store.getters["selection/singleSelectedAnnotation"]) {
+        return "Edit annotation";
+      }
+
+      return "";
+    },
+    hotkey: ["F2"],
+    execute: ({ $store }) => {
+      if ($store.getters["selection/singleSelectedNode"]) {
+        $store.dispatch(
+          "workflow/openLabelEditor",
+          $store.getters["selection/singleSelectedNode"].id,
+        );
+      }
+
+      if ($store.getters["selection/singleSelectedAnnotation"]) {
+        $store.dispatch(
+          "workflow/setEditableAnnotationId",
+          $store.getters["selection/singleSelectedAnnotation"].id,
+        );
+      }
+    },
+    condition: ({ $store }) => {
+      const singleSelectedObject =
+        $store.getters["selection/singleSelectedObject"];
+
+      return singleSelectedObject && $store.getters["workflow/isWritable"];
     },
   },
   deleteSelected: {

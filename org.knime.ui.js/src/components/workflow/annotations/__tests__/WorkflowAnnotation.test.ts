@@ -491,10 +491,7 @@ describe("WorkflowAnnotation.vue", () => {
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 2 });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/deselectAllObjects",
-        undefined,
-      );
+      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
         defaultProps.annotation.id,

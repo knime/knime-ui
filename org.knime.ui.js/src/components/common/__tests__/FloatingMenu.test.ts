@@ -7,14 +7,23 @@ import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
 import FloatingMenu from "../FloatingMenu.vue";
 
 vi.mock("@/mixins/escapeStack", () => {
+  // eslint-disable-next-line func-style
   function escapeStack({ onEscape }) {
-    // eslint-disable-line func-style
+    // @ts-ignore
     escapeStack.onEscape = onEscape;
     return {
       /* empty mixin */
     };
   }
-  return { escapeStack };
+  // eslint-disable-next-line func-style
+  function useEscapeStack({ onEscape }) {
+    // @ts-ignore
+    escapeStack.onEscape = onEscape;
+    return {
+      /* empty mixin */
+    };
+  }
+  return { escapeStack, useEscapeStack };
 });
 
 describe("FloatingMenu.vue", () => {
@@ -25,6 +34,7 @@ describe("FloatingMenu.vue", () => {
     contentWidth = 10,
     isDraggingNodeInCanvas = false,
     isDraggingNodeFromRepository = false,
+    screenFromCanvasCoordinatesMock = null,
   } = {}) => {
     const defaultProps = {
       canvasPosition: {
@@ -33,30 +43,16 @@ describe("FloatingMenu.vue", () => {
       },
     };
 
-    // Mock ResizeObserver Class
-    let mockResizeObserver = null;
-    window.ResizeObserver = function (callback) {
-      mockResizeObserver = this; // eslint-disable-line consistent-this
-
-      this.callback = callback;
-      this.observe = function (element) {
-        this.element = element;
-      };
-      this.resize = function () {
-        this.callback([{ target: this.element }]);
-      };
-      this.disconnect = vi.fn();
-    };
-
     // Mock 'kanvas' element
     const mockKanvas = document.createElement("div");
     mockKanvas.setAttribute("id", "kanvas");
-    mockKanvas.getBoundingClientRect = () => ({
+    const getBoundingClientRect = vi.fn(() => ({
       x: 20,
       y: 20,
       width: 80,
       height: 80,
-    });
+    }));
+    mockKanvas.getBoundingClientRect = getBoundingClientRect;
     document.body.appendChild(mockKanvas);
 
     // Mock window bounds
@@ -69,9 +65,13 @@ describe("FloatingMenu.vue", () => {
     Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
       get: () => contentWidth,
     });
+    const removeEventListener = HTMLElement.prototype.removeEventListener;
+    HTMLElement.prototype.removeEventListener = vi.fn((...args) => {
+      removeEventListener(...args);
+    });
 
     // Mock screenFromCanvasCoordinates
-    const screenFromCanvasCoordinatesMock = vi
+    const defaultScreenFromCanvasCoordinatesMock = vi
       .fn()
       .mockImplementation(({ zoomFactor }) => ({ x, y }) => ({
         x: x * zoomFactor,
@@ -88,7 +88,9 @@ describe("FloatingMenu.vue", () => {
           zoomFactor: 1,
         },
         getters: {
-          screenFromCanvasCoordinates: screenFromCanvasCoordinatesMock,
+          screenFromCanvasCoordinates:
+            screenFromCanvasCoordinatesMock ??
+            defaultScreenFromCanvasCoordinatesMock,
         },
         mutations: mutations.canvas,
       },
@@ -110,7 +112,14 @@ describe("FloatingMenu.vue", () => {
       global: { plugins: [$store] },
     });
 
-    return { wrapper, $store, mockResizeObserver, mutations, mockKanvas };
+    return {
+      wrapper,
+      $store,
+      mutations,
+      mockKanvas,
+      getBoundingClientRect,
+      screenFromCanvasCoordinatesMock,
+    };
   };
 
   afterEach(() => {
@@ -238,30 +247,50 @@ describe("FloatingMenu.vue", () => {
     });
 
     it("re-position on canvas scroll", async () => {
-      const { wrapper } = doMount();
-      await Vue.nextTick();
+      const screenFromCanvasCoordinatesMock = vi
+        .fn()
+        .mockImplementationOnce(() => {
+          let wasCalledOnce = false;
+          return () => {
+            // eslint-disable-next-line vitest/no-conditional-tests
+            if (!wasCalledOnce) {
+              wasCalledOnce = true;
+              return {
+                x: 20,
+                y: 20,
+              };
+            }
 
-      // warning: tests internal behavior
-      let setPositionSpy = vi.spyOn(wrapper.vm, "setAbsolutePosition");
-      document
-        .getElementById("kanvas")
-        .dispatchEvent(new CustomEvent("scroll"));
+            return {
+              x: 50,
+              y: 50,
+            };
+          };
+        });
 
-      expect(setPositionSpy).toHaveBeenCalled();
-    });
-
-    it("re-position on content resize", async () => {
-      const { wrapper, mockResizeObserver } = doMount({
-        props: { anchor: "top-right" },
-        contentHeight: 100,
-        contentWidth: 100,
+      const { wrapper, getBoundingClientRect } = doMount({
+        screenFromCanvasCoordinatesMock,
       });
-
-      mockResizeObserver.resize();
       await Vue.nextTick();
 
-      expect(wrapper.attributes("style")).toMatch("left: -80px;");
-      expect(wrapper.attributes("style")).toMatch("top: 20px;");
+      expect(wrapper.attributes("style")).toContain("left: 20px");
+      expect(wrapper.attributes("style")).toContain("top: 20px");
+
+      const kanvas = document.getElementById("kanvas")!;
+      getBoundingClientRect.mockImplementationOnce(() => ({
+        x: 50,
+        y: 50,
+        width: 80,
+        height: 80,
+      }));
+
+      await Vue.nextTick();
+
+      kanvas.dispatchEvent(new CustomEvent("scroll"));
+
+      await Vue.nextTick();
+      expect(wrapper.attributes("style")).toContain("left: 50px");
+      expect(wrapper.attributes("style")).toContain("top: 50px");
     });
 
     it("disable interactions when the prop is set", () => {
@@ -279,25 +308,16 @@ describe("FloatingMenu.vue", () => {
       const { wrapper } = doMount();
       await Vue.nextTick();
 
-      // warning: tests internal behavior
-      let setPositionSpy = vi.spyOn(wrapper.vm, "setAbsolutePosition");
-
       wrapper.unmount();
 
-      document
-        .getElementById("kanvas")
-        .dispatchEvent(new CustomEvent("scroll"));
+      const kanvas = document.getElementById("kanvas")!;
 
-      expect(setPositionSpy).not.toHaveBeenCalled();
-    });
+      kanvas.dispatchEvent(new CustomEvent("scroll"));
 
-    it("disconnects resize observer", async () => {
-      const { wrapper, mockResizeObserver } = doMount();
-      await Vue.nextTick();
-
-      wrapper.unmount();
-
-      expect(mockResizeObserver.disconnect).toHaveBeenCalled();
+      expect(HTMLElement.prototype.removeEventListener).toHaveBeenCalledWith(
+        "scroll",
+        expect.anything(),
+      );
     });
 
     it("enables interactions", () => {

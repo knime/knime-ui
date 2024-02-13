@@ -137,6 +137,7 @@ export default defineComponent({
       "selectedConnections",
       "selectedBendpointIds",
       "singleSelectedNode",
+      "singleSelectedObject",
       "isSelectionEmpty",
     ]),
     ...mapState("application", {
@@ -460,8 +461,8 @@ export default defineComponent({
         .append(basicOperationsGroup)
         .append(
           this.mapToShortcut({
-            name: "editNodeComment",
-            isVisible: this.singleSelectedNode,
+            name: "editNodeCommentOrAnnotation",
+            isVisible: this.singleSelectedObject,
           }),
         )
         .append(emptySelectionGroup)

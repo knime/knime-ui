@@ -1,266 +1,247 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
-import { mapState, mapActions, mapGetters } from "vuex";
-import { directive as clickAway } from "vue3-click-away";
+<script setup lang="ts">
+import { onMounted, ref, computed, type UnwrapRef, watch } from "vue";
+import { directive as vClickAway } from "vue3-click-away";
+import { useMagicKeys } from "@vueuse/core";
 
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
 import type {
   Bounds,
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
 import { TypedText } from "@/api/gateway-api/generated-api";
+import * as $colors from "@/style/colors.mjs";
 
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
-import type { WorkflowState } from "@/store/workflow";
 
 import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import RichTextAnnotation from "./RichTextAnnotation.vue";
+import { useEscapeStack } from "@/mixins/escapeStack";
 
-type ComponentData = {
-  selectionPreview: string | null;
+defineOptions({ inheritAttrs: false });
 
-  hasEdited: boolean;
-  newAnnotationData: {
-    richTextContent: string;
-    borderColor: string;
+type Props = {
+  annotation: WorkflowAnnotation;
+};
+
+const props = defineProps<Props>();
+
+const selectionPreview = ref<"hide" | "show" | "clear" | null>(null);
+const hasEdited = ref(false);
+const newAnnotationData = ref({
+  richTextContent: "",
+  borderColor: "",
+});
+
+const store = useStore();
+
+const editableAnnotationId = computed(
+  () => store.state.workflow.editableAnnotationId,
+);
+const isDragging = computed(() => store.state.workflow.isDragging);
+
+const isWritable = computed(() => store.getters["workflow/isWritable"]);
+
+const isAnnotationSelected = computed<(id: string) => boolean>(
+  () => store.getters["selection/isAnnotationSelected"],
+);
+const selectedNodeIds = computed(
+  () => store.getters["selection/selectedNodeIds"],
+);
+const selectedConnections = computed(
+  () => store.getters["selection/selectedConnections"],
+);
+const selectedAnnotationIds = computed(
+  () => store.getters["selection/selectedAnnotationIds"],
+);
+
+const isSelected = computed(() => {
+  return isAnnotationSelected.value(props.annotation.id);
+});
+
+const isEditing = computed(() => {
+  return props.annotation.id === editableAnnotationId.value;
+});
+
+const showSelectionPlane = computed(() => {
+  if (isDragging.value) {
+    return false;
+  }
+
+  if (selectionPreview.value === null) {
+    return isSelected.value;
+  }
+
+  if (isSelected.value && selectionPreview.value === "hide") {
+    return false;
+  }
+
+  return selectionPreview.value === "show" || isSelected.value;
+});
+
+const showFocus = computed(() => {
+  return store.getters["selection/focusedObject"]?.id === props.annotation.id;
+});
+
+const showTransformControls = computed(() => {
+  if (isDragging.value || !isWritable.value) {
+    return false;
+  }
+
+  const isMoreThanOneAnnotationSelected =
+    selectedAnnotationIds.value.length > 1;
+  const isOneOrMoreNodesSelected = selectedNodeIds.value.length >= 1;
+  const isOneOrMoreConnectionsSelected = selectedConnections.value.length >= 1;
+
+  let isMoreThanOneItemSelected =
+    isMoreThanOneAnnotationSelected ||
+    isOneOrMoreNodesSelected ||
+    isOneOrMoreConnectionsSelected;
+
+  return (
+    isSelected.value && !isMoreThanOneItemSelected && showSelectionPlane.value
+  );
+});
+
+const isRichTextAnnotation = computed(() => {
+  return props.annotation.text.contentType === TypedText.ContentTypeEnum.Html;
+});
+
+const initialRichTextAnnotationValue = computed(() => {
+  return isRichTextAnnotation.value
+    ? props.annotation.text.value
+    : recreateLinebreaks(props.annotation.text.value);
+});
+
+const initialBorderColor = computed(() => {
+  return isRichTextAnnotation.value
+    ? props.annotation.borderColor
+    : $colors.defaultAnnotationBorderColor;
+});
+
+const initializeData = () => {
+  newAnnotationData.value = {
+    richTextContent: initialRichTextAnnotationValue.value,
+    borderColor: initialBorderColor.value,
   };
 };
 
-/**
- * A workflow annotation, a rectangular box containing text.
- */
-export default defineComponent({
-  components: {
-    LegacyAnnotation,
-    RichTextAnnotation,
-    TransformControls,
-  },
+onMounted(() => {
+  initializeData();
+});
 
-  directives: { clickAway },
-  inheritAttrs: false,
+const onLeftClick = async (event: PointerEvent) => {
+  const metaOrCtrlKey = getMetaOrCtrlKey();
+  const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-  props: {
-    annotation: {
-      type: Object as PropType<WorkflowAnnotation>,
-      required: true,
-    },
-  },
+  await store.dispatch("selection/toggleAnnotationSelection", {
+    annotationId: props.annotation.id,
+    isMultiselect,
+    isSelected: isSelected.value,
+  });
+};
 
-  emits: ["toggleEdit"],
+const onContextMenu = (event: PointerEvent) => {
+  const metaOrCtrlKey = getMetaOrCtrlKey();
+  const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-  expose: ["setSelectionPreview"],
+  if (!isMultiselect && !isSelected.value) {
+    store.dispatch("selection/deselectAllObjects");
+  }
 
-  data(): ComponentData {
-    return {
-      selectionPreview: null,
+  store.dispatch("selection/selectAnnotation", props.annotation.id);
+  store.dispatch("application/toggleContextMenu", { event });
+};
 
-      hasEdited: false,
-      newAnnotationData: {
-        richTextContent: "",
-        borderColor: "",
-      },
-    };
-  },
+const setSelectionPreview = (type: UnwrapRef<typeof selectionPreview>) => {
+  selectionPreview.value = type;
+};
 
-  computed: {
-    ...mapState("workflow", {
-      projectId: (state: unknown) =>
-        (state as WorkflowState).activeWorkflow!.projectId,
-      activeWorkflowId: (state: unknown) =>
-        (state as WorkflowState).activeWorkflow!.info.containerId,
-      editableAnnotationId: (state: unknown) =>
-        (state as WorkflowState).editableAnnotationId,
-      isDragging: (state: unknown) => (state as WorkflowState).isDragging,
-    }),
-    ...mapState("selection", ["selectedAnnotations"]),
-    ...mapGetters("workflow", ["isWritable"]),
-    ...mapGetters("selection", [
-      "isAnnotationSelected",
-      "selectedNodeIds",
-      "selectedConnections",
-      "selectedAnnotationIds",
-    ]),
+defineExpose({ setSelectionPreview });
 
-    isSelected(): boolean {
-      return this.isAnnotationSelected(this.annotation.id);
-    },
+const transformAnnotation = (bounds: Bounds) => {
+  store.dispatch("workflow/transformWorkflowAnnotation", {
+    bounds,
+    annotationId: props.annotation.id,
+  });
+};
 
-    isEditing(): boolean {
-      return this.annotation.id === this.editableAnnotationId;
-    },
+const toggleEdit = () => {
+  if (!isWritable.value) {
+    return;
+  }
 
-    showSelectionPlane(): boolean {
-      if (this.isDragging) {
-        return false;
-      }
+  store.dispatch(
+    "workflow/setEditableAnnotationId",
+    isEditing.value ? null : props.annotation.id,
+  );
+};
 
-      if (this.selectionPreview === null) {
-        return this.isSelected;
-      }
+const updateAnnotation = () => {
+  return store.dispatch("workflow/updateAnnotation", {
+    annotationId: props.annotation.id,
+    text: newAnnotationData.value.richTextContent,
+    borderColor: newAnnotationData.value.borderColor,
+  });
+};
 
-      if (this.isSelected && this.selectionPreview === "hide") {
-        return false;
-      }
+const saveContent = async () => {
+  if (window.getSelection()?.toString() !== "" && isSelected.value) {
+    return;
+  }
 
-      return this.selectionPreview === "show" || this.isSelected;
-    },
+  if (!isEditing.value) {
+    return;
+  }
 
-    showFocus() {
-      return (
-        this.$store.getters["selection/focusedObject"]?.id ===
-        this.annotation.id
-      );
-    },
+  if (hasEdited.value) {
+    await updateAnnotation();
+  }
 
-    showTransformControls(): boolean {
-      if (this.isDragging || !this.isWritable) {
-        return false;
-      }
+  toggleEdit();
+};
 
-      const isMoreThanOneAnnotationSelected =
-        this.selectedAnnotationIds.length > 1;
-      const isOneOrMoreNodesSelected = this.selectedNodeIds.length >= 1;
-      const isOneOrMoreConnectionsSelected =
-        this.selectedConnections.length >= 1;
-      let isMoreThanOneItemSelected =
-        isMoreThanOneAnnotationSelected ||
-        isOneOrMoreNodesSelected ||
-        isOneOrMoreConnectionsSelected;
+const keys = useMagicKeys();
+const saveAnnotationKeys = [
+  keys["Ctrl+Enter"],
+  isMac() ? keys["Cmd+Enter"] : null,
+].filter(Boolean);
 
-      return (
-        this.isSelected && !isMoreThanOneItemSelected && this.showSelectionPlane
-      );
-    },
+watch(saveAnnotationKeys, ([wasPressed]) => {
+  if (wasPressed && isEditing.value) {
+    saveContent();
+  }
+});
 
-    isRichTextAnnotation(): boolean {
-      return (
-        this.annotation.text.contentType === TypedText.ContentTypeEnum.Html
-      );
-    },
-
-    initialRichTextAnnotationValue(): string {
-      return this.isRichTextAnnotation
-        ? this.annotation.text.value
-        : recreateLinebreaks(this.annotation.text.value);
-    },
-
-    initialBorderColor(): string {
-      return this.isRichTextAnnotation
-        ? this.annotation.borderColor
-        : this.$colors.defaultAnnotationBorderColor;
-    },
-  },
-
-  mounted() {
-    this.initializeData();
-  },
-
-  methods: {
-    ...mapActions("selection", [
-      "selectAnnotation",
-      "deselectAnnotation",
-      "deselectAllObjects",
-    ]),
-    ...mapActions("application", ["toggleContextMenu"]),
-
-    initializeData() {
-      this.newAnnotationData = {
-        richTextContent: this.initialRichTextAnnotationValue,
-        borderColor: this.initialBorderColor,
-      };
-    },
-
-    async onLeftClick(event: PointerEvent) {
-      const metaOrCtrlKey = getMetaOrCtrlKey();
-      const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
-
-      await this.$store.dispatch("selection/toggleAnnotationSelection", {
-        annotationId: this.annotation.id,
-        isMultiselect,
-        isSelected: this.isSelected,
-      });
-    },
-
-    onContextMenu(event: PointerEvent) {
-      const metaOrCtrlKey = getMetaOrCtrlKey();
-      const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
-
-      if (!isMultiselect && !this.isSelected) {
-        this.deselectAllObjects();
-      }
-
-      this.selectAnnotation(this.annotation.id);
-      this.toggleContextMenu({ event });
-    },
-
-    setSelectionPreview(type: string) {
-      this.selectionPreview = type;
-    },
-
-    transformAnnotation(bounds: Bounds) {
-      this.$store.dispatch("workflow/transformWorkflowAnnotation", {
-        bounds,
-        annotationId: this.annotation.id,
-      });
-    },
-
-    toggleEdit() {
-      if (!this.isWritable) {
-        return;
-      }
-
-      this.$store.dispatch(
-        "workflow/setEditableAnnotationId",
-        this.isEditing ? null : this.annotation.id,
-      );
-    },
-
-    updateAnnotation() {
-      return this.$store.dispatch("workflow/updateAnnotation", {
-        annotationId: this.annotation.id,
-        text: this.newAnnotationData.richTextContent,
-        borderColor: this.newAnnotationData.borderColor,
-      });
-    },
-
-    async onClickAway() {
-      if (window.getSelection()?.toString() !== "" && this.isSelected) {
-        return;
-      }
-      if (!this.isEditing) {
-        return;
-      }
-
-      if (this.hasEdited) {
-        await this.updateAnnotation();
-      }
-
-      this.toggleEdit();
-    },
-
-    onBlur() {
-      if (this.hasEdited) {
-        this.updateAnnotation();
-      }
-    },
-
-    onAnnotationChange(content: string) {
-      this.hasEdited = true;
-      this.newAnnotationData.richTextContent = content;
-    },
-
-    setColor(color: string) {
-      this.hasEdited = true;
-      this.newAnnotationData.borderColor = color;
-    },
+useEscapeStack({
+  onEscape: () => {
+    if (isEditing.value) {
+      toggleEdit();
+    }
   },
 });
+
+const onBlur = () => {
+  if (hasEdited.value) {
+    updateAnnotation();
+  }
+};
+
+const onAnnotationChange = (content: string) => {
+  hasEdited.value = true;
+  newAnnotationData.value.richTextContent = content;
+};
+
+const setColor = (color: string) => {
+  hasEdited.value = true;
+  newAnnotationData.value.borderColor = color;
+};
 </script>
 
 <template>
   <TransformControls
-    v-click-away="onClickAway"
+    v-click-away="() => saveContent()"
     :show-transform-controls="showTransformControls"
     :show-selection="showSelectionPlane"
     :show-focus="showFocus"
