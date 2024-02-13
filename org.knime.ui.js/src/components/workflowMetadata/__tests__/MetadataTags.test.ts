@@ -43,9 +43,9 @@ describe("MetadataTags.vue", () => {
       { id: "tag1", text: "tag1" },
       { id: "tag2", text: "tag2" },
     ]);
-    expect(comboBox.props("initialSelectedIds")).toEqual(["tag1", "tag2"]);
+    expect(comboBox.props("modelValue")).toEqual(["tag1", "tag2"]);
 
     comboBox.vm.$emit("change", [{ id: "tag3", text: "tag3" }]);
-    expect(wrapper.emitted("update:modelValue")[0][0]).toEqual(["tag3"]);
+    expect(wrapper.emitted("update:modelValue")?.[0][0]).toEqual(["tag3"]);
   });
 });
