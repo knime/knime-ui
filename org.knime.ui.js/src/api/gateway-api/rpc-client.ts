@@ -1,5 +1,3 @@
-
-import { getToastsProvider } from "@/plugins/toasts";
 import { getRPCClientInstance, registerEventHandler ,
   sendBinaryMessage,
   addBinaryEventListener,
@@ -22,7 +20,6 @@ const request = {
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 const createRPCClient = (configuration: Configuration): RPCClient => {
-  const $toasts = getToastsProvider();
   const rpcClient: RPCClient = {
     async call(method, params) {
       try {
