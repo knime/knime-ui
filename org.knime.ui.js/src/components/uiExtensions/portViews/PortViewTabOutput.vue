@@ -22,6 +22,7 @@ import type { ViewStateChangeEvent } from "../common/types";
 
 import PortViewLoader from "./PortViewLoader.vue";
 import PortViewTabToggles from "./PortViewTabToggles.vue";
+import { mapState } from "vuex";
 
 /**
  * Runs a set of validations that qualify whether a port from a node is able
@@ -120,6 +121,7 @@ export default defineComponent({
   },
 
   computed: {
+    ...mapState("application", ["permissions"]),
     uniquePortKey() {
       // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
       // is created upon switching ports
@@ -175,6 +177,10 @@ export default defineComponent({
     },
 
     shouldShowExecuteAction() {
+      if (!this.permissions.canEditWorkflow) {
+        return false;
+      }
+
       if (this.validationError && !this.hasNoDataValidationError) {
         return false;
       }

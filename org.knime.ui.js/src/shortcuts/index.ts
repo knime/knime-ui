@@ -41,7 +41,10 @@ const shortcuts: ShortcutsRegistry = {
       ...workflowShortcuts,
       ...annotationShortcuts,
       ...componentOrMetanodeShortcuts,
-      ...executionShortcuts,
+      ...conditionGroup(
+        ({ $store }) => $store.state.application.permissions.canEditWorkflow,
+        executionShortcuts,
+      ),
       ...conditionGroup(
         ({ $store }) => Boolean($store.state.canvas.interactionsEnabled),
         selectionShortcuts,
