@@ -37,7 +37,8 @@ export const useArrowKeyNavigation = (
 
     return (
       (isKanvasFocused || isBodyFocused) &&
-      !isInputElement(event.target as HTMLElement)
+      !isInputElement(event.target as HTMLElement) &&
+      !event.altKey
     );
   };
 

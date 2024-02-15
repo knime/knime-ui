@@ -12,6 +12,7 @@ describe("workflowShortcuts", () => {
     selectedConnections = [],
     selectedAnnotations = [],
     singleSelectedNode = mockSelectedNode,
+    singleSelectedAnnotation = null,
     isWorkflowWritable = true,
     getScrollContainerElement = vi.fn(),
     getNodeById = vi.fn(),
@@ -67,6 +68,10 @@ describe("workflowShortcuts", () => {
         "selection/selectedConnections": selectedConnections,
         "selection/singleSelectedNode": singleSelectedNode,
         "selection/selectedAnnotations": selectedAnnotations,
+        "selection/singleSelectedAnnotation": singleSelectedAnnotation,
+        "selection/singleSelectedObject":
+          (singleSelectedNode && !singleSelectedAnnotation) ||
+          (!singleSelectedNode && singleSelectedAnnotation),
         "workflow/isWritable": isWorkflowWritable,
         "workflow/getNodeById": getNodeById,
         "canvas/getVisibleFrame": getVisibleFrame,
@@ -136,9 +141,9 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("editNodeComment", () => {
+    it("editNodeCommentOrAnnotation", () => {
       const { $store, mockDispatch } = createStore();
-      workflowShortcuts.editNodeComment.execute({ $store });
+      workflowShortcuts.editNodeCommentOrAnnotation.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openLabelEditor",
         "root:0",
@@ -261,16 +266,16 @@ describe("workflowShortcuts", () => {
       });
     });
 
-    describe("editNodeComment", () => {
+    describe("editNodeCommentOrAnnotation", () => {
       it("cannot edit label if no node is selected", () => {
         const { $store } = createStore({
           isWorkflowWritable: true,
           singleSelectedNode: null,
         });
 
-        expect(workflowShortcuts.editNodeComment.condition({ $store })).toBe(
-          false,
-        );
+        expect(
+          workflowShortcuts.editNodeCommentOrAnnotation.condition({ $store }),
+        ).toBeFalsy();
       });
 
       it("cannot edit label when workflow is not writable", () => {
@@ -282,9 +287,9 @@ describe("workflowShortcuts", () => {
           },
         });
 
-        expect(workflowShortcuts.editNodeComment.condition({ $store })).toBe(
-          false,
-        );
+        expect(
+          workflowShortcuts.editNodeCommentOrAnnotation.condition({ $store }),
+        ).toBe(false);
       });
     });
 

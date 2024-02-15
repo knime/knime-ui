@@ -11,13 +11,14 @@ import type {
 import { useStore } from "@/composables/useStore";
 import { TypedText } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors.mjs";
+import { gridSize } from "@/style/shapes.mjs";
 
+import { useEscapeStack } from "@/mixins/escapeStack";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
 import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import RichTextAnnotation from "./RichTextAnnotation.vue";
-import { useEscapeStack } from "@/mixins/escapeStack";
 
 defineOptions({ inheritAttrs: false });
 
@@ -43,9 +44,6 @@ const isDragging = computed(() => store.state.workflow.isDragging);
 
 const isWritable = computed(() => store.getters["workflow/isWritable"]);
 
-const isAnnotationSelected = computed<(id: string) => boolean>(
-  () => store.getters["selection/isAnnotationSelected"],
-);
 const selectedNodeIds = computed(
   () => store.getters["selection/selectedNodeIds"],
 );
@@ -55,9 +53,15 @@ const selectedConnections = computed(
 const selectedAnnotationIds = computed(
   () => store.getters["selection/selectedAnnotationIds"],
 );
+const singleSelectedAnnotation = computed(
+  () => store.getters["selection/singleSelectedAnnotation"],
+);
+const singleSelectedObject = computed(
+  () => store.getters["selection/singleSelectedObject"],
+);
 
 const isSelected = computed(() => {
-  return isAnnotationSelected.value(props.annotation.id);
+  return store.getters["selection/isAnnotationSelected"](props.annotation.id);
 });
 
 const isEditing = computed(() => {
@@ -203,15 +207,62 @@ const saveContent = async () => {
 };
 
 const keys = useMagicKeys();
-const saveAnnotationKeys = [
-  keys["Ctrl+Enter"],
-  isMac() ? keys["Cmd+Enter"] : null,
-].filter(Boolean);
+const saveAnnotationKeys = [isMac() ? keys["Cmd+Enter"] : keys["Ctrl+Enter"]];
 
 watch(saveAnnotationKeys, ([wasPressed]) => {
   if (wasPressed && isEditing.value) {
     saveContent();
   }
+});
+
+useMagicKeys({
+  onEventFired: (event) => {
+    if (
+      event.type !== "keydown" ||
+      !isSelected.value ||
+      !singleSelectedAnnotation.value ||
+      !singleSelectedObject.value ||
+      !event.altKey
+    ) {
+      return;
+    }
+
+    const keys = [
+      event.key === "ArrowUp",
+      event.key === "ArrowDown",
+      event.key === "ArrowLeft",
+      event.key === "ArrowRight",
+    ];
+
+    if (!keys.includes(true)) {
+      return;
+    }
+
+    const [isUp, isDown, isLeft, isRight] = keys;
+
+    const TRANSFORM_AMOUNT = gridSize.x * 2;
+    const delta = isUp || isLeft ? -1 : 1;
+    const isXAxis = isLeft || isRight;
+    const isYAxis = isUp || isDown;
+
+    const nextWidth = Math.max(
+      props.annotation.bounds.width + TRANSFORM_AMOUNT * delta,
+      0,
+    );
+    const nextHeight = Math.max(
+      props.annotation.bounds.height + TRANSFORM_AMOUNT * delta,
+      0,
+    );
+
+    const nextBounds: Bounds = {
+      x: props.annotation.bounds.x,
+      y: props.annotation.bounds.y,
+      width: isXAxis ? nextWidth : props.annotation.bounds.width,
+      height: isYAxis ? nextHeight : props.annotation.bounds.height,
+    };
+
+    transformAnnotation(nextBounds);
+  },
 });
 
 useEscapeStack({

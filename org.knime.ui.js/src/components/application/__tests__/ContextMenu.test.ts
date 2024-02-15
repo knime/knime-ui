@@ -268,7 +268,12 @@ describe("ContextMenu.vue", () => {
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
           { metadata: { shortcutName: "configureNode" } },
-          { metadata: { shortcutName: "editNodeComment" }, separator: true },
+          {
+            metadata: {
+              shortcutName: "editNodeCommentOrAnnotation",
+            },
+            separator: true,
+          },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -307,7 +312,10 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "stepLoopExecution" } },
           { metadata: { shortcutName: "cancelSelected" } },
           { metadata: { shortcutName: "resetSelected" } },
-          { metadata: { shortcutName: "editNodeComment" }, separator: true },
+          {
+            metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+            separator: true,
+          },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -340,7 +348,7 @@ describe("ContextMenu.vue", () => {
             children: expect.anything(),
             separator: true,
           },
-          { metadata: { shortcutName: "editNodeComment" } },
+          { metadata: { shortcutName: "editNodeCommentOrAnnotation" } },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -378,7 +386,10 @@ describe("ContextMenu.vue", () => {
             children: expect.anything(),
             separator: true,
           },
-          { metadata: { shortcutName: "editNodeComment" }, separator: true },
+          {
+            metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+            separator: true,
+          },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -497,7 +508,7 @@ describe("ContextMenu.vue", () => {
             children: expect.anything(),
             separator: true,
           },
-          { metadata: { shortcutName: "editNodeComment" } },
+          { metadata: { shortcutName: "editNodeCommentOrAnnotation" } },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -534,7 +545,10 @@ describe("ContextMenu.vue", () => {
               children: expect.anything(),
               separator: true,
             },
-            { metadata: { shortcutName: "editNodeComment" }, separator: true },
+            {
+              metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+              separator: true,
+            },
             { metadata: { shortcutName: "cut" } },
             { metadata: { shortcutName: "copy" } },
             { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -583,7 +597,10 @@ describe("ContextMenu.vue", () => {
               children: expect.anything(),
               separator: true,
             },
-            { metadata: { shortcutName: "editNodeComment" }, separator: true },
+            {
+              metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+              separator: true,
+            },
             { metadata: { shortcutName: "cut" } },
             { metadata: { shortcutName: "copy" } },
             { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -611,6 +628,11 @@ describe("ContextMenu.vue", () => {
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([
+          {
+            metadata: {
+              shortcutName: "editNodeCommentOrAnnotation",
+            },
+          },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
