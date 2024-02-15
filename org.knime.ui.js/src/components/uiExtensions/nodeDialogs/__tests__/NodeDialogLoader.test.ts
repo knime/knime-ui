@@ -15,7 +15,7 @@ const mockedAPI = deepMocked(API);
 const mockGetNodeDialog = (additionalMocks?: object) => {
   mockedAPI.node.getNodeDialog.mockResolvedValue({
     resourceInfo: {
-      type: "VUE_COMPONENT_LIB",
+      type: "SHADOW_APP",
       baseUrl: "baseUrl",
       path: "path",
     },

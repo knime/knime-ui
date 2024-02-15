@@ -46,7 +46,7 @@ describe("PortViewLoader.vue", () => {
   const mockGetPortView = (additionalMocks?: object) => {
     mockedAPI.port.getPortView.mockResolvedValue({
       resourceInfo: {
-        type: "VUE_COMPONENT_LIB",
+        type: "SHADOW_APP",
         baseUrl: "baseUrl",
         path: "path",
       },
