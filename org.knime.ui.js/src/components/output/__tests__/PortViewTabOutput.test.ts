@@ -10,6 +10,9 @@ import PortViewLoader from "@/components/embeddedViews/PortViewLoader.vue";
 import PortViewTabOutput from "../PortViewTabOutput.vue";
 import PortViewTabToggles from "../PortViewTabToggles.vue";
 
+import { mockVuexStore } from "@/test/utils";
+import * as applicationStore from "@/store/application";
+
 describe("PortViewTabOutput.vue", () => {
   const dummyNode = createNativeNode({
     id: "node1",
@@ -69,6 +72,10 @@ describe("PortViewTabOutput.vue", () => {
   };
 
   const doMount = ({ props = {} } = {}) => {
+    const $store = mockVuexStore({
+      application: applicationStore,
+    });
+
     const wrapper = mount(PortViewTabOutput, {
       props: {
         ...defaultProps,
@@ -76,6 +83,7 @@ describe("PortViewTabOutput.vue", () => {
       },
       global: {
         stubs: { PortViewLoader: true },
+        plugins: [$store],
       },
     });
 
