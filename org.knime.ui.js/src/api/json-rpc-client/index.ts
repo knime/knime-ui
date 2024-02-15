@@ -68,6 +68,7 @@ const setupServerEventListener = (ws: WebSocket) => {
         serverEventHandler(data);
       }
     } catch (error) {
+      debugger;
       consola.log(data);
     }
   });
@@ -159,6 +160,8 @@ const initBrowserClient = (
         return;
       }
 
+      // Note: We might need another websocket connection just to handle binary messages
+      // We might not be able to use the same connection for String and Binary messages
       const transport = new WebSocketTransport(connectionInfo.url);
       const connection: WebSocket = transport.connection;
       websocketConnection = connection;
@@ -209,13 +212,15 @@ const sendBinaryMessage = (data: any): void => {
   websocketConnection.send(data);
 };
 
-const addBinaryEventListener = (listener: any) => {
+// Note: Maybe we just convert binary to string and there we go
+const addBinaryEventListener = (listener: any) => { // Note: This approach does not work!
   websocketConnection.addEventListener(
     "message",
-    (message: { data: unknown }) => {
-      const { data } = message;
+    (message: any) => {
       debugger;
+      const { data } = message;
       if (data instanceof ArrayBuffer) {
+        debugger;
         listener(data);
       }
     },

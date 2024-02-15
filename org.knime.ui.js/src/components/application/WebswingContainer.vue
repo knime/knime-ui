@@ -9,10 +9,10 @@ const store = useStore();
 
 // @ts-ignore
 const config = computed(() => store.state.workflow.webswingDialogConfig);
-const projectId = computed( // TODO: Do we actually use it?
+const projectId = computed(
   () => store.state.workflow.activeWorkflow?.projectId,
 );
-const workflowId = computed( // TODO: Do we actually use it?
+const workflowId = computed(
   () => store.state.workflow.activeWorkflow?.info.containerId,
 );
 
@@ -25,14 +25,18 @@ function startSession() {
   API.webswing.startSession();
 }
 
-function openDialog(projectId: any, workflowId: any, nodeId: any) {
+function openDialog(
+  projectId: string | undefined,
+  workflowId: string | undefined,
+  nodeId: string | undefined
+) {
   debugger;
-  API.webswing.openDialog({ projectId, workflowId, nodeId }); // TODO: This is never called
+  API.webswing.openDialog({ projectId, workflowId, nodeId });
 }
 
-function sendMessageToJava(msg: any) {
+function sendMessageToJava(msg: ArrayBuffer) {
   debugger;
-  API.webswing.sendBinaryMessage(msg); // TODO: Is this ever called?
+  API.webswing.sendBinaryMessage(msg);
 }
 
 function registerMessageFromJavaHandler(handler: any) {
@@ -44,7 +48,7 @@ watch(config, async () => {
   if (config.value) {
     await loadScript({
       window,
-      url: "http://localhost:7000/com/knime/ui/webswing/javascript/webswing-embed.js",
+      url: "http://localhost:7000/com/knime/ui/webswing/javascript/webswing-embed.js", // TODO: Replace hard coded URL
     });
     isReady.value = true;
   }
@@ -70,9 +74,10 @@ window.webswingInstance0 = {
       const startPing = injector.services.ping.start;
 
       injector.services.socket.connect = () => {
-        registerMessageFromJavaHandler((data: any) =>
-          injector.services.socket.receiveEncodedMessage(data),
-        );
+        registerMessageFromJavaHandler((data: ArrayBuffer) => {
+          debugger;
+          injector.services.socket.receiveEncodedMessage(data);
+        });
         startSession();
         startPing();
 
@@ -115,16 +120,14 @@ window.webswingInstance0 = {
       };
       
       injector.services.socket.sendAppFrame = (appFrameProto: any) => {
-        debugger;
-        const msg = injector.services.socket.encodeAppFrameProto(appFrameProto); // Uint7Array
-        sendMessageToJava(msg); // TODO: Is this ever called?
+        const msg = injector.services.socket.encodeAppFrameProto(appFrameProto);
+        sendMessageToJava(msg);
       };
 
       injector.services.base.processMessage = (appFrame: any) => {
-        debugger;
         processMessage(appFrame);
         if (appFrame?.startApplication !== null) {
-          openDialog(projectId.value, workflowId.value, config.value.nodeId); // TODO: This is never called
+          openDialog(projectId.value, workflowId.value, config.value.nodeId);
         }
       };
 
