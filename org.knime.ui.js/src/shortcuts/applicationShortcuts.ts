@@ -4,15 +4,11 @@ import {
 } from "@/store/spaces";
 import type { UnionToShortcutRegistry } from "./types";
 
-type ApplicationShortcuts = UnionToShortcutRegistry<
+export type ApplicationShortcuts = UnionToShortcutRegistry<
   "closeProject" | "createWorkflow"
 >;
 
-declare module "./index" {
-  interface ShortcutsRegistry extends ApplicationShortcuts {}
-}
-
-const applicationShortcuts: ApplicationShortcuts = {
+export const applicationShortcuts: ApplicationShortcuts = {
   closeProject: {
     text: "Close workflow",
     hotkey: ["Ctrl", "W"],
@@ -51,5 +47,3 @@ const applicationShortcuts: ApplicationShortcuts = {
     condition: ({ $store }) => !$store.state.spaces.isLoadingContent,
   },
 };
-
-export default applicationShortcuts;

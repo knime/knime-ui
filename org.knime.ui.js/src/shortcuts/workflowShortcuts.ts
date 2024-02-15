@@ -18,7 +18,7 @@ import type { UnionToShortcutRegistry } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 
-type WorkflowShortcuts = UnionToShortcutRegistry<
+export type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
   | "saveAs"
   | "undo"
@@ -35,10 +35,6 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "switchToSelectionMode"
   | "quickAddNode"
 >;
-
-declare module "./index" {
-  interface ShortcutsRegistry extends WorkflowShortcuts {}
-}
 
 const workflowShortcuts: WorkflowShortcuts = {
   save: {

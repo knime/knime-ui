@@ -1,12 +1,10 @@
 import type { UnionToShortcutRegistry } from "./types";
 
-type SelectionShortcuts = UnionToShortcutRegistry<"selectAll" | "deselectAll">;
+export type SelectionShortcuts = UnionToShortcutRegistry<
+  "selectAll" | "deselectAll"
+>;
 
-type SidePanelShortcuts = UnionToShortcutRegistry<"toggleSidePanel">;
-
-declare module "./index" {
-  interface ShortcutsRegistry extends SelectionShortcuts, SidePanelShortcuts {}
-}
+export type SidePanelShortcuts = UnionToShortcutRegistry<"toggleSidePanel">;
 
 export const selectionShortcuts: SelectionShortcuts = {
   selectAll: {

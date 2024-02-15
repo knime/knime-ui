@@ -1,9 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import throttle from "raf-throttle";
+import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
+import SelectionModeIcon from "@/assets/selection-mode.svg";
 
 import type { UnionToShortcutRegistry } from "./types";
 
-type CanvasShortcuts = UnionToShortcutRegistry<
+export type CanvasShortcuts = UnionToShortcutRegistry<
   | "fitToScreen"
   | "fillScreen"
   | "zoomIn"
@@ -13,17 +16,16 @@ type CanvasShortcuts = UnionToShortcutRegistry<
   | "zoomTo100"
   | "zoomTo125"
   | "zoomTo150"
+  | "switchToAnnotationMode"
+  | "switchToPanMode"
+  | "switchToSelectionMode"
 >;
-
-declare module "./index" {
-  interface ShortcutsRegistry extends CanvasShortcuts {}
-}
 
 const zoomInHelper = throttle(({ $store }) => {
   $store.dispatch("canvas/zoomCentered", { delta: 1 });
 });
 
-const canvasShortcuts: CanvasShortcuts = {
+export const canvasShortcuts: CanvasShortcuts = {
   fitToScreen: {
     text: "Fit to screen",
     hotkey: ["Ctrl", "2"],
@@ -71,6 +73,30 @@ const canvasShortcuts: CanvasShortcuts = {
     execute: ({ $store }) =>
       $store.dispatch("canvas/zoomCentered", { factor: 1.5 }),
   },
+  switchToAnnotationMode: {
+    hotkey: ["T"],
+    text: "Annotation mode",
+    icon: AnnotationModeIcon,
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "annotation");
+    },
+    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+  switchToPanMode: {
+    hotkey: ["P"],
+    text: "Pan mode",
+    icon: ArrowMoveIcon,
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "pan");
+    },
+    condition: ({ $store }) => !$store.getters["workflow/isWorkflowEmpty"],
+  },
+  switchToSelectionMode: {
+    hotkey: ["V"],
+    text: "Selection mode",
+    icon: SelectionModeIcon,
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "selection");
+    },
+  },
 };
-
-export default canvasShortcuts;

@@ -1,46 +1,40 @@
-import workflowShortcuts from "./workflowShortcuts";
-import executionShortcuts from "./executionShortcuts";
-import canvasShortcuts from "./canvasShortcuts";
-import applicationShortcuts from "./applicationShortcuts";
-import annotationShortcuts from "./annotationShortcuts";
-import componentOrMetanodeShortcuts from "./componentOrMetanodeShortcuts";
-import { selectionShortcuts, sidePanelShortcuts } from "./miscShortcuts";
-import type { ShortcutConditionContext } from "./types";
+import { isDesktop } from "@/environment";
 
-// This interface will be enhanced and extended by the
-// other files which also declare shortcuts
-export interface ShortcutsRegistry {}
+import executionShortcuts, {
+  type ExecutionShortcuts,
+} from "./executionShortcuts";
 
-// chains a group condition before each individual shortcut condition
-// exported for testing purposes
-export const conditionGroup = (
-  groupCondition: (payload: ShortcutConditionContext) => boolean,
-  shortcuts: Partial<ShortcutsRegistry>,
-): ShortcutsRegistry => {
-  if (groupCondition) {
-    Object.values(shortcuts).forEach((shortcut) => {
-      const itemCondition = shortcut.condition;
-      if (itemCondition) {
-        shortcut.condition = (...args) =>
-          groupCondition(...args) && itemCondition(...args);
-      } else {
-        shortcut.condition = groupCondition;
-      }
-    });
-  }
+import { canvasShortcuts, type CanvasShortcuts } from "./canvasShortcuts";
 
-  return shortcuts as ShortcutsRegistry;
-};
+import {
+  applicationShortcuts,
+  type ApplicationShortcuts,
+} from "./applicationShortcuts";
+
+import {
+  selectionShortcuts,
+  type SelectionShortcuts,
+  sidePanelShortcuts,
+  type SidePanelShortcuts,
+} from "./miscShortcuts";
+
+import { type WorkflowShortcuts, workflowShortcuts } from "./workflow";
+import { conditionGroup } from "./util";
+
+export type ShortcutsRegistry = ApplicationShortcuts &
+  WorkflowShortcuts &
+  ExecutionShortcuts &
+  SelectionShortcuts &
+  SidePanelShortcuts &
+  CanvasShortcuts;
 
 const shortcuts: ShortcutsRegistry = {
-  ...applicationShortcuts,
+  ...conditionGroup(() => isDesktop, applicationShortcuts),
   ...conditionGroup(
     // Enabled if workflow is present
     ({ $store }) => Boolean($store.state.workflow.activeWorkflow),
     {
       ...workflowShortcuts,
-      ...annotationShortcuts,
-      ...componentOrMetanodeShortcuts,
       ...executionShortcuts,
       ...conditionGroup(
         ({ $store }) => Boolean($store.state.canvas.interactionsEnabled),
