@@ -214,6 +214,7 @@ const addBinaryEventListener = (listener: any) => {
     "message",
     (message: { data: unknown }) => {
       const { data } = message;
+      debugger;
       if (data instanceof ArrayBuffer) {
         listener(data);
       }

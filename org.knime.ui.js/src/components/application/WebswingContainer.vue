@@ -7,7 +7,8 @@ import { API } from "@api";
 
 const store = useStore();
 
-const config = computed(() => store.state.workflow.webswingDialogConfig); // TODO: Fix type issue
+// @ts-ignore
+const config = computed(() => store.state.workflow.webswingDialogConfig);
 const projectId = computed( // TODO: Do we actually use it?
   () => store.state.workflow.activeWorkflow?.projectId,
 );
@@ -20,18 +21,22 @@ const isReady = ref(false);
 const baseUrl = document.location.origin; // TODO: Is this correct?
 
 function startSession() {
+  debugger;
   API.webswing.startSession();
 }
 
 function openDialog(projectId: any, workflowId: any, nodeId: any) {
-  API.webswing.openDialog({ projectId, workflowId, nodeId });
+  debugger;
+  API.webswing.openDialog({ projectId, workflowId, nodeId }); // TODO: This is never called
 }
 
 function sendMessageToJava(msg: any) {
-  API.webswing.sendBinaryMessage(msg);
+  debugger;
+  API.webswing.sendBinaryMessage(msg); // TODO: Is this ever called?
 }
 
 function registerMessageFromJavaHandler(handler: any) {
+  debugger;
   API.webswing.addBinaryEventListener(handler);
 }
 
@@ -45,8 +50,9 @@ watch(config, async () => {
   }
 });
 
-// let instanceId;
+let instance_id: any; // eslint-disable-line
 
+// @ts-ignore
 window.webswingInstance0 = {
   options: {
     autoStart: true,
@@ -74,41 +80,51 @@ window.webswingInstance0 = {
       };
 
       injector.services.socket.instanceId = () => {
-        // return instanceId;
+        return instance_id; // eslint-disable-line
       };
+
       injector.services.socket.awaitResponse = (
-        callback,
-        request,
-        correlationId,
-        timeout,
+        callback: any,
+        request: any,
+        correlationId: any,
+        timeout: any,
       ) => {
-        // not supported
+        // eslint-disable-next-line
+        console.log(`callback: ${callback}, request: ${request}, correlationId: ${correlationId}, timeout: ${timeout}`);
+
+        // TODO not supported yet
       };
+
       injector.services.socket.dispose = () => {
-        // instanceId = null;
+        instance_id = null; // eslint-disable-line
+
         // TODO remove binary websocket message listener
       };
+
       injector.services.socket.clearInstanceId = () => {
-        // instanceId = null;
+        instance_id = null; // eslint-disable-line
       };
+
       injector.services.socket.getConnectionInfo = () => {
         return {
           serverId: "N/A",
           sessionPoolId: "N/A",
           tabId: window.name,
-          //   instanceId,
+          instanceId: instance_id // eslint-disable-line
         };
       };
+      
       injector.services.socket.sendAppFrame = (appFrameProto: any) => {
+        debugger;
         const msg = injector.services.socket.encodeAppFrameProto(appFrameProto); // Uint7Array
-        sendMessageToJava(msg);
+        sendMessageToJava(msg); // TODO: Is this ever called?
       };
 
       injector.services.base.processMessage = (appFrame: any) => {
+        debugger;
         processMessage(appFrame);
-
         if (appFrame?.startApplication !== null) {
-          openDialog(projectId.value, workflowId.value, config.value.nodeId); // When do we call this?
+          openDialog(projectId.value, workflowId.value, config.value.nodeId); // TODO: This is never called
         }
       };
 
