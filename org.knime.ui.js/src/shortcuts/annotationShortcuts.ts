@@ -1,6 +1,9 @@
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
-
+import {
+  defaultAddWorkflowAnnotationWidth,
+  defaultAddWorkflowAnnotationHeight,
+} from "@/style/shapes.mjs";
 import type { UnionToShortcutRegistry } from "./types";
 
 type AnnotationShortcuts = UnionToShortcutRegistry<
@@ -39,8 +42,8 @@ const annotationShortcuts: AnnotationShortcuts = {
         bounds: {
           x: metadata.position.x,
           y: metadata.position.y,
-          width: metadata.width || 80,
-          height: metadata.height || 80,
+          width: metadata.width || defaultAddWorkflowAnnotationWidth,
+          height: metadata.height || defaultAddWorkflowAnnotationHeight,
         },
       });
     },

@@ -86,3 +86,6 @@ export const annotationsFontSizePointToPixelFactor = 1.3333; // used to be: 4/3
 
 export const annotationToolbarContainerWidth = 300;
 export const annotationToolbarContainerHeight = 60;
+
+export const defaultAddWorkflowAnnotationWidth = 250;
+export const defaultAddWorkflowAnnotationHeight = 150;
