@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 
+import { API } from "@api";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 
@@ -87,6 +88,31 @@ const updateComponentMetadata = ({
     tags,
   });
 };
+
+const redirectLinks = async (redirect: (params: { url: string }) => void) => {
+  await nextTick();
+  const linksList = document.querySelector(".external-resources-list");
+
+  if (!linksList) {
+    return;
+  }
+
+  linksList.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      redirect({ url: link.href });
+      return false;
+    });
+  });
+};
+
+watch(
+  workflow,
+  () => {
+    redirectLinks(API.desktop.openUrlInExternalBrowser);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

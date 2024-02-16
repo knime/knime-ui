@@ -1,5 +1,6 @@
-<script>
-import { mapGetters } from "vuex";
+<script setup lang="ts">
+import { computed } from "vue";
+import { useStore } from "@/composables/useStore";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
@@ -7,40 +8,32 @@ import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
  */
-export default {
-  components: {
-    WorkflowMetadata,
-    NodeDescription,
-  },
-  computed: {
-    ...mapGetters("selection", ["singleSelectedNode"]),
-    ...mapGetters("workflow", ["getNodeName", "getNodeFactory"]),
-    showNodeDescription() {
-      // do not show description for metanodes
-      return (
-        this.singleSelectedNode && !isNodeMetaNode(this.singleSelectedNode)
-      );
-    },
-    isComponentSelected() {
-      return isNodeComponent(this.singleSelectedNode);
-    },
-    selectedNode() {
-      if (this.isComponentSelected) {
-        const { id, name } = this.singleSelectedNode;
+const store = useStore();
 
-        return { id, name };
-      }
+const singleSelectedNode = computed(
+  () => store.getters["selection/singleSelectedNode"],
+);
+const showNodeDescription = computed(
+  () => singleSelectedNode.value && !isNodeMetaNode(singleSelectedNode.value),
+);
+const isComponentSelected = computed(() =>
+  isNodeComponent(singleSelectedNode.value),
+);
+const selectedNode = computed(() => {
+  if (isComponentSelected.value) {
+    const { id, name } = singleSelectedNode.value;
 
-      // transform this into a node repo like node object
-      const { id } = this.singleSelectedNode;
-      return {
-        id,
-        name: this.getNodeName(id),
-        nodeFactory: this.getNodeFactory(id),
-      };
-    },
-  },
-};
+    return { id, name };
+  }
+
+  // transform this into a node repo like node object
+  const { id } = singleSelectedNode.value;
+  return {
+    id,
+    name: store.getters["workflow/getNodeName"](id),
+    nodeFactory: store.getters["workflow/getNodeFactory"](id),
+  };
+});
 </script>
 
 <template>

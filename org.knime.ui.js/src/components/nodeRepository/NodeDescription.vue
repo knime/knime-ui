@@ -79,6 +79,11 @@ export default defineComponent({
 
         if (this.isComponent) {
           await this.loadComponentDescription();
+          runInEnvironment({
+            DESKTOP: () => {
+              this.redirectLinks(API.desktop.openUrlInExternalBrowser);
+            },
+          });
           return;
         }
 
@@ -116,12 +121,21 @@ export default defineComponent({
     async redirectLinks(redirect: (params: { url: string }) => void) {
       await this.$nextTick();
       const descriptionEl = document.querySelector("#node-description-html");
+      const linksList = document.querySelector("#node-resources-list");
 
-      if (!descriptionEl) {
+      if (!descriptionEl && !linksList) {
         return;
       }
 
-      descriptionEl.querySelectorAll("a").forEach((link) => {
+      descriptionEl?.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          redirect({ url: link.href });
+          return false;
+        });
+      });
+
+      linksList?.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", (e) => {
           e.preventDefault();
           redirect({ url: link.href });
@@ -173,6 +187,7 @@ export default defineComponent({
 
           <ExternalResourcesList
             v-if="descriptionData.links"
+            id="node-resources-list"
             :model-value="descriptionData.links"
           />
 
