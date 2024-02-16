@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, type UnwrapRef, watch } from "vue";
-import { directive as vClickAway } from "vue3-click-away";
-import { useMagicKeys } from "@vueuse/core";
+import {
+  onMounted,
+  ref,
+  computed,
+  type UnwrapRef,
+  watch,
+  type ComponentPublicInstance,
+} from "vue";
+import { useMagicKeys, onClickOutside } from "@vueuse/core";
 
 import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
 import type {
@@ -209,6 +215,12 @@ const saveContent = async () => {
   toggleEdit();
 };
 
+const transformControlsRef = ref<ComponentPublicInstance<
+  typeof TransformControls
+> | null>(null);
+
+onClickOutside(transformControlsRef, saveContent);
+
 const keys = useMagicKeys();
 const saveAnnotationKeys = [isMac() ? keys["Cmd+Enter"] : keys["Ctrl+Enter"]];
 
@@ -296,7 +308,7 @@ const setColor = (color: string) => {
 
 <template>
   <TransformControls
-    v-click-away="() => saveContent()"
+    ref="transformControlsRef"
     :show-transform-controls="showTransformControls"
     :show-selection="showSelectionPlane"
     :show-focus="showFocus"

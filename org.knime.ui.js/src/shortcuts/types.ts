@@ -19,6 +19,8 @@ type Keys =
   | "F10"
   | "F11"
   | "F12"
+  | "PageUp"
+  | "PageDown"
   | "ArrowUp"
   | "ArrowRight"
   | "ArrowDown"

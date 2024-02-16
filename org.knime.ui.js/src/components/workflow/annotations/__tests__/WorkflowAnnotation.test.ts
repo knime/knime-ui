@@ -1,8 +1,8 @@
-import { expect, describe, it, vi } from "vitest";
+import { expect, describe, it, vi, afterEach } from "vitest";
 import { h, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import type { Store } from "vuex";
-import { mixin as VueClickAway } from "vue3-click-away";
+// import { mixin as VueClickAway } from "vue3-click-away";
 
 import { mockVuexStore } from "@/test/utils";
 import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
@@ -28,29 +28,29 @@ import RichTextAnnotation from "../RichTextAnnotation.vue";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
 import TransformControls from "../TransformControls.vue";
 
-vi.mock("vue3-click-away", () => {
-  const createMockClickAwayDirective = () => {
-    let callback = () => {};
+// vi.mock("vue3-click-away", () => {
+//   const createMockClickAwayDirective = () => {
+//     let callback = () => {};
 
-    return {
-      mounted(el, bindings) {
-        callback = bindings.value;
-      },
-      trigger() {
-        callback();
-      },
-    };
-  };
+//     return {
+//       mounted(el, bindings) {
+//         callback = bindings.value;
+//       },
+//       trigger() {
+//         callback();
+//       },
+//     };
+//   };
 
-  const mockClickAwayDirective = createMockClickAwayDirective();
+//   const mockClickAwayDirective = createMockClickAwayDirective();
 
-  return {
-    mixin: {
-      trigger: mockClickAwayDirective.trigger,
-    },
-    directive: mockClickAwayDirective,
-  };
-});
+//   return {
+//     mixin: {
+//       trigger: mockClickAwayDirective.trigger,
+//     },
+//     directive: mockClickAwayDirective,
+//   };
+// });
 
 describe("WorkflowAnnotation.vue", () => {
   const defaultProps = {
@@ -59,6 +59,10 @@ describe("WorkflowAnnotation.vue", () => {
       text: { value: "hallo" },
     }),
   };
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
 
   const doMount = ({
     props = {},
@@ -144,7 +148,7 @@ describe("WorkflowAnnotation.vue", () => {
 
   describe("transform", () => {
     const getTransformControlsStub = (transformedBounds: Bounds) => ({
-      render() {
+      render(): any {
         return h(
           "g",
           // @ts-ignore
@@ -175,9 +179,83 @@ describe("WorkflowAnnotation.vue", () => {
       });
     });
 
+    it("should transform annotation using keyboard shortcuts", async () => {
+      const { $store } = doMount();
+
+      const dispatchKeyEvent = (key: string, altKey: boolean) => {
+        const event = new KeyboardEvent("keydown", {
+          altKey,
+          key,
+        });
+
+        window.dispatchEvent(event);
+      };
+
+      dispatchKeyEvent("ArrowUp", false);
+
+      expect(
+        API.workflowCommand.TransformWorkflowAnnotation,
+      ).not.toHaveBeenCalled();
+
+      const projectId = $store.state.workflow.activeWorkflow.projectId;
+      const workflowId = $store.state.workflow.activeWorkflow.info.containerId;
+
+      await $store.dispatch(
+        "selection/selectAnnotation",
+        defaultProps.annotation.id,
+      );
+
+      const { bounds: currentBounds } = defaultProps.annotation;
+
+      dispatchKeyEvent("ArrowUp", true);
+
+      expect(
+        API.workflowCommand.TransformWorkflowAnnotation,
+      ).toHaveBeenCalledWith({
+        projectId,
+        workflowId,
+        bounds: expect.objectContaining({ height: currentBounds.height - 10 }),
+        annotationId: defaultProps.annotation.id,
+      });
+
+      dispatchKeyEvent("ArrowDown", true);
+
+      expect(
+        API.workflowCommand.TransformWorkflowAnnotation,
+      ).toHaveBeenCalledWith({
+        projectId,
+        workflowId,
+        bounds: expect.objectContaining({ height: currentBounds.height + 10 }),
+        annotationId: defaultProps.annotation.id,
+      });
+
+      dispatchKeyEvent("ArrowLeft", true);
+
+      expect(
+        API.workflowCommand.TransformWorkflowAnnotation,
+      ).toHaveBeenCalledWith({
+        projectId,
+        workflowId,
+        bounds: expect.objectContaining({ width: currentBounds.width - 10 }),
+        annotationId: defaultProps.annotation.id,
+      });
+
+      dispatchKeyEvent("ArrowRight", true);
+
+      expect(
+        API.workflowCommand.TransformWorkflowAnnotation,
+      ).toHaveBeenCalledWith({
+        projectId,
+        workflowId,
+        bounds: expect.objectContaining({ width: currentBounds.width + 10 }),
+        annotationId: defaultProps.annotation.id,
+      });
+    });
+
     it("should set the transformed annotation bounds", () => {
       const bounds = { x: 15, y: 15, width: 100, height: 100 };
       const transformControlStub = getTransformControlsStub(bounds);
+      // @ts-ignore
       const { wrapper } = doMount({ transformControlStub });
 
       expect(wrapper.find("foreignObject").attributes("x")).toEqual(
@@ -279,8 +357,9 @@ describe("WorkflowAnnotation.vue", () => {
       ).toBe("some text <br /> some more text");
 
       wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newText);
-      // @ts-ignore
-      VueClickAway.trigger();
+
+      // emulate click outside
+      window.dispatchEvent(new Event("click"));
 
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
         annotationId: defaultProps.annotation.id,
@@ -343,8 +422,9 @@ describe("WorkflowAnnotation.vue", () => {
       expect(
         wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
-      // @ts-ignore
-      VueClickAway.trigger();
+
+      // emulate click outside
+      window.dispatchEvent(new Event("click"));
 
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
         annotationId: defaultProps.annotation.id,
@@ -375,8 +455,9 @@ describe("WorkflowAnnotation.vue", () => {
       expect(
         wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
-      // @ts-ignore
-      VueClickAway.trigger();
+
+      // emulate click outside
+      window.dispatchEvent(new Event("click"));
 
       expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
         annotationId: defaultProps.annotation.id,

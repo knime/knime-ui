@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { toRef, watch, computed, ref, onBeforeUnmount, onMounted } from "vue";
-import { useResizeObserver } from "@vueuse/core";
+import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import throttle from "raf-throttle";
-import { directive as vClickAway } from "vue3-click-away";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
@@ -71,6 +70,10 @@ const isDraggingNodeFromRepository = computed(
 const isDraggingNodeInCanvas = computed(() => store.state.workflow.isDragging);
 
 const rootEl = ref<HTMLDivElement | null>(null);
+
+onClickOutside(rootEl, () => {
+  emit("menuClose");
+});
 
 const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
   let kanvas = document.getElementById("kanvas")!;
@@ -212,7 +215,6 @@ const onFocusOut = (event: FocusEvent) => {
 <template>
   <div
     ref="rootEl"
-    v-click-away="() => $emit('menuClose')"
     class="floating-menu"
     :style="{
       left: `${absolutePosition.left}px`,

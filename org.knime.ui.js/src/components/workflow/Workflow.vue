@@ -67,7 +67,7 @@ export default defineComponent({
       type,
     }: {
       annotationId: string;
-      type: string;
+      type: "hide" | "show" | "clear" | null;
     }) {
       (
         this.$refs[`annotation-${annotationId}`] as Array<
