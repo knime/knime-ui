@@ -1,13 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount, VueWrapper } from "@vue/test-utils";
-
+import { nextTick } from "vue";
 import type { Bounds } from "@/api/gateway-api/generated-api";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
 
 import TransformControls, {
-  // @ts-expect-error
   TRANSFORM_RECT_OFFSET,
 } from "../TransformControls.vue";
 import {
@@ -77,6 +76,11 @@ describe("TransformControls.vue", () => {
       });
 
     const $store = mockVuexStore({
+      workflow: {
+        state: {
+          movePreviewDelta: { x: 0, y: 0 },
+        },
+      },
       canvas: {
         getters: {
           screenToCanvasCoordinates: screenToCanvasCoordinatesMock,
@@ -95,7 +99,7 @@ describe("TransformControls.vue", () => {
       global: { plugins: [$store], mocks: { $shapes, $colors } },
     });
 
-    return { wrapper, getSlottedChildComponent };
+    return { wrapper, getSlottedChildComponent, $store };
   };
 
   const startDraggingControl = (
@@ -209,7 +213,7 @@ describe("TransformControls.vue", () => {
 
     stopDraggingControl(wrapper, "n");
 
-    expect(wrapper.emitted("transformEnd")[0][0]).toEqual({ bounds });
+    expect(wrapper.emitted("transformEnd")![0][0]).toEqual({ bounds });
     expect(
       wrapper.find(".transform-control-n").element.releasePointerCapture,
     ).toHaveBeenCalled();
@@ -236,5 +240,49 @@ describe("TransformControls.vue", () => {
     wrapper.findAll(".transform-control").forEach((_wrapper) => {
       expect(_wrapper.exists()).toBe(false);
     });
+  });
+
+  it("should render the focus and selection planes", async () => {
+    const { wrapper } = doMount();
+
+    expect(wrapper.findAll("rect").length).toBe(0);
+
+    await wrapper.setProps({ showFocus: true });
+    expect(wrapper.findAll("rect").length).toBe(1);
+
+    await wrapper.setProps({ showSelection: true });
+    expect(wrapper.findAll("rect").length).toBe(2);
+  });
+
+  it("should add move deltas to the selection plane", async () => {
+    const { wrapper, $store } = doMount({ props: { showSelection: true } });
+
+    expect(wrapper.find("rect").attributes("x")).toBe("9");
+    expect(wrapper.find("rect").attributes("y")).toBe("9");
+
+    $store.state.workflow.movePreviewDelta = { x: 100, y: 100 };
+
+    await nextTick();
+
+    expect(wrapper.find("rect").attributes("x")).toBe("109");
+    expect(wrapper.find("rect").attributes("y")).toBe("109");
+  });
+
+  it("should add offset to the focus plane if the selection plane is visible", async () => {
+    const { wrapper, $store } = doMount({
+      props: { showFocus: true, showSelection: true },
+    });
+
+    expect(wrapper.find("rect").attributes("x")).toBe("5");
+    expect(wrapper.find("rect").attributes("y")).toBe("5");
+    expect(wrapper.find("rect").attributes("width")).toBe("110");
+    expect(wrapper.find("rect").attributes("height")).toBe("110");
+
+    $store.state.workflow.movePreviewDelta = { x: 100, y: 100 };
+
+    await nextTick();
+
+    expect(wrapper.find("rect").attributes("x")).toBe("105");
+    expect(wrapper.find("rect").attributes("y")).toBe("105");
   });
 });

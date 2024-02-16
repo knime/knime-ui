@@ -63,13 +63,16 @@ const singleSelectedObject = computed(
 const isSelected = computed(() => {
   return store.getters["selection/isAnnotationSelected"](props.annotation.id);
 });
+const shouldHideSelection = computed(
+  () => store.state.selection.shouldHideSelection,
+);
 
 const isEditing = computed(() => {
   return props.annotation.id === editableAnnotationId.value;
 });
 
 const showSelectionPlane = computed(() => {
-  if (isDragging.value) {
+  if (shouldHideSelection.value) {
     return false;
   }
 
@@ -216,17 +219,8 @@ watch(saveAnnotationKeys, ([wasPressed]) => {
 });
 
 useMagicKeys({
+  passive: false,
   onEventFired: (event) => {
-    if (
-      event.type !== "keydown" ||
-      !isSelected.value ||
-      !singleSelectedAnnotation.value ||
-      !singleSelectedObject.value ||
-      !event.altKey
-    ) {
-      return;
-    }
-
     const keys = [
       event.key === "ArrowUp",
       event.key === "ArrowDown",
@@ -234,7 +228,17 @@ useMagicKeys({
       event.key === "ArrowRight",
     ];
 
-    if (!keys.includes(true)) {
+    if (event.type !== "keydown" || !event.altKey || !keys.includes(true)) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (
+      !isSelected.value ||
+      !singleSelectedAnnotation.value ||
+      !singleSelectedObject.value
+    ) {
       return;
     }
 

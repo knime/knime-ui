@@ -46,7 +46,6 @@ export default defineComponent({
     return {
       directions: DIRECTIONS,
       innerValue: getGridAdjustedBounds(this.initialValue),
-      FOCUS_PLANE_OFFSET_SIZE,
     };
   },
 
@@ -54,6 +53,19 @@ export default defineComponent({
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
     ...mapState("canvas", ["zoomFactor"]),
     ...mapState("workflow", ["movePreviewDelta"]),
+
+    focusPlaneOffset() {
+      const isSelected = this.showSelection;
+      const deltaX = isSelected ? this.movePreviewDelta.x : 0;
+      const deltaY = isSelected ? this.movePreviewDelta.y : 0;
+
+      return {
+        x: -FOCUS_PLANE_OFFSET_SIZE + deltaX,
+        y: -FOCUS_PLANE_OFFSET_SIZE + deltaY,
+        width: FOCUS_PLANE_OFFSET_SIZE * 2,
+        height: FOCUS_PLANE_OFFSET_SIZE * 2,
+      };
+    },
 
     controlSize() {
       const CONTROL_SIZE = 6;
@@ -165,10 +177,10 @@ export default defineComponent({
     <Portal to="annotation-transform">
       <rect
         v-if="showFocus"
-        :width="valueWithOffset.width + FOCUS_PLANE_OFFSET_SIZE * 2"
-        :height="valueWithOffset.height + FOCUS_PLANE_OFFSET_SIZE * 2"
-        :x="valueWithOffset.x - FOCUS_PLANE_OFFSET_SIZE + movePreviewDelta.x"
-        :y="valueWithOffset.y - FOCUS_PLANE_OFFSET_SIZE + movePreviewDelta.y"
+        :x="valueWithOffset.x + focusPlaneOffset.x"
+        :y="valueWithOffset.y + focusPlaneOffset.y"
+        :width="valueWithOffset.width + focusPlaneOffset.width"
+        :height="valueWithOffset.height + focusPlaneOffset.height"
         class="transform-box"
         :stroke="$colors.selection.activeBorder"
         :stroke-width="transformRectStrokeWidth"
@@ -180,8 +192,8 @@ export default defineComponent({
         v-if="showSelection"
         :width="valueWithOffset.width"
         :height="valueWithOffset.height"
-        :x="valueWithOffset.x"
-        :y="valueWithOffset.y"
+        :x="valueWithOffset.x + movePreviewDelta.x"
+        :y="valueWithOffset.y + movePreviewDelta.y"
         class="transform-box"
         :stroke="$colors.selection.activeBorder"
         :stroke-width="transformRectStrokeWidth"
