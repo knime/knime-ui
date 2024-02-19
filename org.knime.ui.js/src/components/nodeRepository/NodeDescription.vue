@@ -96,6 +96,14 @@ const redirectLinks = async (redirect: (params: { url: string }) => void) => {
   });
 };
 
+const overrideUrl = () => {
+  runInEnvironment({
+    DESKTOP: () => {
+      redirectLinks(API.desktop.openUrlInExternalBrowser);
+    },
+  });
+};
+
 watch(
   selectedNode,
   async () => {
@@ -106,15 +114,12 @@ watch(
 
     if (isComponent.value) {
       await loadComponentDescription();
-      runInEnvironment({
-        DESKTOP: () => {
-          redirectLinks(API.desktop.openUrlInExternalBrowser);
-        },
-      });
+      overrideUrl();
       return;
     }
 
     await loadNodeDescription();
+    overrideUrl();
   },
   { immediate: true },
 );

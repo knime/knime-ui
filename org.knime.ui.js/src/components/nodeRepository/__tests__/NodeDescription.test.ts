@@ -155,7 +155,7 @@ describe("NodeDescription", () => {
       },
     });
 
-    expect(runInEnvironment).not.toHaveBeenCalled();
+    expect(runInEnvironment).toHaveBeenCalled();
     expect(getNodeDescriptionMock).not.toHaveBeenCalled();
     expect(getComponentDescriptionMock).toHaveBeenCalled();
     expect(wrapper.find(".extension-info").exists()).toBe(false);
