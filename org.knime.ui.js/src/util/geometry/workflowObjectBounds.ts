@@ -69,12 +69,12 @@ const getLimitBounds = ({
 };
 
 const getMetanodePortbarMargins = (
-  metanodePortbar: MetaPorts,
+  metanodePortbar: MetaPorts | undefined,
   type: "in" | "out",
   calculatedBounds: Bounds,
 ) => {
   const bounds = mergePortBarBounds(
-    metanodePortbar.bounds ?? null,
+    metanodePortbar?.bounds ?? null,
     calculatedBounds,
   );
 
@@ -134,28 +134,16 @@ export default (
     padding,
   });
 
-  const hasNodes = Object.keys(nodes).length !== 0;
-  const isMetanode = Boolean(metaInPorts || metaOutPorts);
   const hasMetaInPorts =
     metaInPorts?.ports?.length && metaInPorts?.ports?.length > 0;
   const hasMetaOutPorts =
     metaOutPorts?.ports?.length && metaOutPorts?.ports?.length > 0;
-
-  if (!hasNodes && isMetanode && (hasMetaInPorts || hasMetaOutPorts)) {
-    return {
-      left,
-      top,
-      right,
-      bottom,
-      width: right - left,
-      height: bottom - top,
-    };
-  }
+  const hasMetaPort = hasMetaInPorts || hasMetaOutPorts;
 
   const addMetaPortInMargins = Boolean(calculatedPortBarBounds?.in);
   const addMetaPortOutMargins = Boolean(calculatedPortBarBounds?.out);
 
-  if (hasMetaInPorts && addMetaPortInMargins) {
+  if (hasMetaPort && addMetaPortInMargins) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
       getMetanodePortbarMargins(
         metaInPorts,
@@ -169,7 +157,7 @@ export default (
     bottom = Math.max(bottom, bottomMargin);
   }
 
-  if (hasMetaOutPorts && addMetaPortOutMargins) {
+  if (hasMetaPort && addMetaPortOutMargins) {
     const { leftMargin, rightMargin, topMargin, bottomMargin } =
       getMetanodePortbarMargins(
         metaOutPorts,
