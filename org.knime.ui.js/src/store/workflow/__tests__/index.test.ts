@@ -469,6 +469,23 @@ describe("workflow::index", () => {
         workflowAnnotations: ["something"],
       });
       expect(store.getters["workflow/isWorkflowEmpty"]).toBe(false);
+
+      store.commit("workflow/setActiveWorkflow", {
+        projectId: "foo",
+        nodes: [],
+        workflowAnnotations: [],
+        metaInPorts: { ports: [{ id: "port" }] },
+        metaOutPorts: { ports: [] },
+      });
+      expect(store.getters["workflow/isWorkflowEmpty"]).toBe(false);
+
+      store.commit("workflow/setActiveWorkflow", {
+        projectId: "foo",
+        nodes: [],
+        workflowAnnotations: [],
+        metaInPorts: { ports: [] },
+        metaOutPorts: { ports: [{ id: "port" }] },
+      });
     });
   });
 });

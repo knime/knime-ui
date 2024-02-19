@@ -385,8 +385,16 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
   isWorkflowEmpty({ activeWorkflow }) {
     const hasNodes = Boolean(Object.keys(activeWorkflow?.nodes ?? {}).length);
     const hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
+    const hasMetaNodeInBar = Boolean(
+      activeWorkflow?.metaInPorts?.ports?.length,
+    );
+    const hasMetaNodeOutBar = Boolean(
+      activeWorkflow?.metaOutPorts?.ports?.length,
+    );
 
-    return !hasNodes && !hasAnnotations;
+    return (
+      !hasNodes && !hasAnnotations && !hasMetaNodeInBar && !hasMetaNodeOutBar
+    );
   },
 
   isStreaming({ activeWorkflow }) {
