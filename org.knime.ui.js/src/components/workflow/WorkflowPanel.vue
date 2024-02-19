@@ -30,6 +30,7 @@ export default defineComponent({
       "insideLinkedType",
       "isWritable",
       "isStreaming",
+      "isWorkflowEmpty",
       "isRemoteWorkflow",
     ]),
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
@@ -49,7 +50,7 @@ export default defineComponent({
   },
   methods: {
     toggleContextMenu(event: unknown) {
-      // this is not the only place where it is activated, look into Kanvas
+      // this is not the only place where it is activated, look into Kanvas (usePanning.stopPan)
       // where an unsuccessful pan by right click also opens it
       this.$store.dispatch("application/toggleContextMenu", { event });
     },
@@ -63,6 +64,11 @@ export default defineComponent({
       }
       // prevent native context menus to appear
       event.preventDefault();
+
+      // trigger it for empty workflows as we don't have a pan there
+      if (this.isWorkflowEmpty) {
+        this.toggleContextMenu(event);
+      }
     },
     onSaveLocalCopy() {
       this.$store.dispatch("workflow/saveProjectAs");

@@ -115,6 +115,31 @@ describe("WorkflowPanel", () => {
       await wrapper.trigger("contextmenu", { preventDefault });
       expect(preventDefault).not.toHaveBeenCalled();
     });
+
+    it("does not open contextmenu if workflow is not empty", async () => {
+      const { wrapper, dispatchSpy } = doShallowMount();
+      expect(wrapper.vm.$store.getters["workflow/isWorkflowEmpty"]).toBe(false);
+      await wrapper.trigger("contextmenu");
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
+    });
+
+    it("opens contextmenu if, and only if the workflow is empty", async () => {
+      const { wrapper, dispatchSpy } = doShallowMount({
+        workflow: {
+          nodes: Object.create({}),
+          workflowAnnotations: Object.create({}),
+        },
+      });
+      expect(wrapper.vm.$store.getters["workflow/isWorkflowEmpty"]).toBe(true);
+      await wrapper.trigger("contextmenu");
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
+    });
   });
 
   describe("port Type menu", () => {
