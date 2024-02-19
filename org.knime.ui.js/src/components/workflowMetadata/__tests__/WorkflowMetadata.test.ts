@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { expect, describe, it } from "vitest";
+import { expect, describe, it, vi } from "vitest";
 import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -19,6 +19,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
+import { runInEnvironment } from "@/environment";
 
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
@@ -27,6 +28,8 @@ import ProjectMetadata from "../ProjectMetadata.vue";
 import ComponentMetadata from "../ComponentMetadata.vue";
 import MetadataDescription from "../MetadataDescription.vue";
 import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
+
+vi.mock("@/environment");
 
 describe("WorkflowMetadata.vue", () => {
   const doMount = ({ workflow = null }: { workflow?: Workflow } = {}) => {
@@ -266,5 +269,12 @@ describe("WorkflowMetadata.vue", () => {
 
     expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
     expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(false);
+  });
+
+  it("should override url redirects on desktop", async () => {
+    await doMount();
+    expect(runInEnvironment).toHaveBeenCalledWith({
+      DESKTOP: expect.any(Function),
+    });
   });
 });

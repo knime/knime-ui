@@ -27,7 +27,7 @@ type SelectedNode = Partial<Pick<NodeTemplate, "nodeFactory">> & {
 type Props = {
   selectedNode: SelectedNode | null;
   showCloseButton?: boolean;
-  isComponent: boolean;
+  isComponent?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
