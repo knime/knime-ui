@@ -1,5 +1,5 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
+<script setup lang="ts">
+import { toRefs, ref, computed, watch, nextTick } from "vue";
 
 import KNIMETriangleIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
@@ -9,6 +9,7 @@ import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue
 import CloseButton from "@/components/common/CloseButton.vue";
 
 import { API } from "@api";
+import { useStore } from "@/composables/useStore";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import { runInEnvironment } from "@/environment";
 import MetadataDescription from "@/components/workflowMetadata/MetadataDescription.vue";
@@ -19,132 +20,104 @@ type SelectedNode = Partial<Pick<NodeTemplate, "nodeFactory">> & {
   name: string;
 };
 
-type ComponentData = {
-  descriptionData: NativeNodeDescriptionWithExtendedPorts | null;
-};
-
 /*
  * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareDescription for nodes
  * of the workflow
  */
-export default defineComponent({
-  components: {
-    Description,
-    NodeFeatureList,
-    ExternalResourcesList,
-    CloseButton,
-    MetadataDescription,
-    ExtensionIcon,
-    KNIMETriangleIcon,
-  },
-  props: {
-    selectedNode: {
-      type: Object as PropType<SelectedNode | null>,
-      default: null,
-    },
-    showCloseButton: {
-      type: Boolean,
-      default: false,
-    },
-    isComponent: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ["close"],
-  data(): ComponentData {
-    return {
-      descriptionData: null,
-    };
-  },
-  computed: {
-    title() {
-      if (!this.selectedNode) {
-        return "";
-      }
+type Props = {
+  selectedNode: SelectedNode | null;
+  showCloseButton?: boolean;
+  isComponent: boolean;
+};
 
-      return this.selectedNode.name;
-    },
-  },
-  watch: {
-    // update description on change of node (if not null which means unselected)
-    selectedNode: {
-      immediate: true,
-      async handler() {
-        // reset data
-        const { selectedNode } = this;
-        if (selectedNode === null) {
-          return;
-        }
-
-        if (this.isComponent) {
-          await this.loadComponentDescription();
-          runInEnvironment({
-            DESKTOP: () => {
-              this.redirectLinks(API.desktop.openUrlInExternalBrowser);
-            },
-          });
-          return;
-        }
-
-        await this.loadNodeDescription();
-
-        runInEnvironment({
-          DESKTOP: () => {
-            this.redirectLinks(API.desktop.openUrlInExternalBrowser);
-          },
-        });
-      },
-    },
-  },
-
-  methods: {
-    async loadNodeDescription() {
-      this.descriptionData = await this.$store.dispatch(
-        "nodeRepository/getNodeDescription",
-        { selectedNode: this.selectedNode },
-      );
-    },
-
-    async loadComponentDescription() {
-      const data = await this.$store.dispatch(
-        "nodeRepository/getComponentDescription",
-        { nodeId: this.selectedNode!.id },
-      );
-
-      this.descriptionData = {
-        ...data,
-        description: data.description.value,
-      };
-    },
-
-    async redirectLinks(redirect: (params: { url: string }) => void) {
-      await this.$nextTick();
-      const descriptionEl = document.querySelector("#node-description-html");
-      const linksList = document.querySelector("#node-resources-list");
-
-      if (!descriptionEl && !linksList) {
-        return;
-      }
-
-      descriptionEl?.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          redirect({ url: link.href });
-          return false;
-        });
-      });
-
-      linksList?.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          redirect({ url: link.href });
-          return false;
-        });
-      });
-    },
-  },
+const props = withDefaults(defineProps<Props>(), {
+  selectedNode: null,
 });
+
+const store = useStore();
+
+const emit = defineEmits<(e: "close") => void>();
+
+const { selectedNode, isComponent } = toRefs(props);
+
+const descriptionData = ref<NativeNodeDescriptionWithExtendedPorts | null>(
+  null,
+);
+
+const title = computed(() => {
+  if (!selectedNode.value) {
+    return "";
+  }
+
+  return selectedNode.value.name;
+});
+
+const loadNodeDescription = async () => {
+  descriptionData.value = await store.dispatch(
+    "nodeRepository/getNodeDescription",
+    { selectedNode: selectedNode.value },
+  );
+};
+
+const loadComponentDescription = async () => {
+  const data = await store.dispatch("nodeRepository/getComponentDescription", {
+    nodeId: selectedNode.value?.id,
+  });
+
+  descriptionData.value = {
+    ...data,
+    description: data.description.value,
+  };
+};
+
+const redirectLinks = async (redirect: (params: { url: string }) => void) => {
+  await nextTick();
+  const descriptionEl = document.querySelector("#node-description-html");
+  const linksList = document.querySelector("#node-resources-list");
+
+  if (!descriptionEl && !linksList) {
+    return;
+  }
+
+  descriptionEl?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      redirect({ url: link.href });
+      return false;
+    });
+  });
+
+  linksList?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      redirect({ url: link.href });
+      return false;
+    });
+  });
+};
+
+watch(
+  selectedNode,
+  async () => {
+    // reset data
+    if (selectedNode.value === null) {
+      return;
+    }
+
+    if (isComponent.value) {
+      await loadComponentDescription();
+      runInEnvironment({
+        DESKTOP: () => {
+          redirectLinks(API.desktop.openUrlInExternalBrowser);
+        },
+      });
+      return;
+    }
+
+    await loadNodeDescription();
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -156,7 +129,7 @@ export default defineComponent({
         <CloseButton
           v-if="showCloseButton"
           class="close-button"
-          @close="$emit('close')"
+          @close="emit('close')"
         />
       </div>
       <hr />
