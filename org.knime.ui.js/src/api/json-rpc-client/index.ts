@@ -118,6 +118,29 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   });
 };
 
+const setupActivityHeartbeat = (ws: WebSocket) => {
+  let interval: number;
+
+  const startHeartbeat = () => {
+    const PING_INTERVAL_MS = 30000;
+
+    interval = window.setInterval(() => {
+      consola.trace("Sending Heartbeat to Websocket at: ", new Date());
+      ws.send("");
+    }, PING_INTERVAL_MS);
+  };
+
+  ws.addEventListener("open", () => {
+    startHeartbeat();
+  });
+
+  ws.addEventListener("close", () => {
+    if (interval) {
+      clearInterval(interval);
+    }
+  });
+};
+
 const initBrowserClient = (
   connectionInfo: ConnectionInfo,
   store: Store<RootStoreState>,
@@ -137,6 +160,8 @@ const initBrowserClient = (
       const transport = new WebSocketTransport(connectionInfo.url);
 
       const connection: WebSocket = transport.connection;
+
+      setupActivityHeartbeat(connection);
 
       // setup server event handler and other events on the WS transport
       setupServerEventListener(connection);
