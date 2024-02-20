@@ -50,7 +50,6 @@ const apiURLResolver = () =>
       resolve({
         url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
         restApiBaseUrl: "",
-        jobId: "",
         sessionId: "",
       });
       return;
@@ -75,7 +74,6 @@ const apiURLResolver = () =>
           resolve({
             url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
             restApiBaseUrl: "",
-            jobId: "",
             sessionId: "",
           });
         }
@@ -88,7 +86,7 @@ const apiURLResolver = () =>
         consola.log("received connection info message", data);
         const { payload } = data;
 
-        if (!payload.url || !payload.jobId || !payload.sessionId) {
+        if (!payload.url || !payload.sessionId) {
           consola.error("incorrect connection info payload", data);
           reject(new Error("incorrect connection info payload"));
         }
