@@ -23,7 +23,7 @@ type SelectedNode = Partial<Pick<NodeTemplate, "nodeFactory">> & {
  * of the workflow
  */
 type Props = {
-  selectedNode: SelectedNode | null;
+  selectedNode?: SelectedNode | null;
   showCloseButton?: boolean;
   isComponent?: boolean;
 };
