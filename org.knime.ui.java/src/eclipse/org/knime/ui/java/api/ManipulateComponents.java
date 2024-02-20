@@ -50,6 +50,7 @@ package org.knime.ui.java.api;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,12 @@ import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.core.util.KnimeUrlType;
+import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.HubItemVersion;
+import org.knime.core.util.urlresolve.KnimeUrlResolver;
+import org.knime.core.util.urlresolve.URLResolverUtil;
+import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
@@ -82,8 +88,7 @@ import org.knime.gateway.impl.webui.service.commands.UpdateComponentLinkInformat
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionAction;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionDialog;
-import org.knime.workbench.editor2.actions.ChangeSubNodeLinkAction.LinkPrompt;
-import org.knime.workbench.editor2.commands.BulkChangeMetaNodeLinksCommand;
+import org.knime.workbench.editor2.actions.ChangeSubNodeLinkAction;
 import org.knime.workbench.editor2.commands.ChangeSubNodeLinkCommand;
 import org.knime.workbench.editor2.commands.UpdateMetaNodeLinkCommand;
 import org.knime.workbench.explorer.ExplorerMountTable;
@@ -133,33 +138,47 @@ final class ManipulateComponents {
 
         final var templateInfo = component.getTemplateInformation();
         final var sourceURI = templateInfo.getSourceURI();
-        final var linkType = BulkChangeMetaNodeLinksCommand.resolveLinkType(sourceURI);
+        final var optLinkType = KnimeUrlType.getType(sourceURI);
+        if (optLinkType.isEmpty()) {
+            throw new OperationNotAllowedException(
+                "Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.");
+        }
+
+        final var linkType = optLinkType.get();
+        final Map<KnimeUrlType, URL> changeOptions;
+        try {
+            final var context = CoreUtil.getProjectWorkflow(component).getContextV2();
+            changeOptions = KnimeUrlResolver.getResolver(context).changeLinkType(URLResolverUtil.toURL(sourceURI));
+            if (changeOptions.size() <= (changeOptions.containsKey(linkType) ? 1 : 0)) {
+                // there are no other options available
+                return;
+            }
+        } catch (ResourceAccessException e) {
+            throw new IllegalStateException("Cannot compute alternative KNIME URL types for '"
+                    + sourceURI + "': " + e.getMessage(), e);
+        }
+
+        final var linkTypeName = switch (linkType) {
+            case MOUNTPOINT_ABSOLUTE -> "mountpoint-absolute";
+            case HUB_SPACE_RELATIVE  -> "space-relative";
+            case MOUNTPOINT_RELATIVE -> "mountpoint-relative";
+            case NODE_RELATIVE       -> "node-relative";
+            case WORKFLOW_RELATIVE   -> "workflow-relative";
+        };
+
         final var msg = String.format("""
                 This is a linked (read-only) component. Only the link type can be changed.
                 Please select the new type of the link to the shared component.
                 (current type: %s, current link: %s)
                 The origin of the component will not be changed - just the way it is referenced.
-                """, linkType, sourceURI);
+                """, linkTypeName, sourceURI);
+
         final var shell = SWTUtilities.getActiveShell();
-
-        final var dialog = new LinkPrompt(shell, msg, linkType); // Is this complete?
-        dialog.open();
-        if (dialog.getReturnCode() == Window.CANCEL) {
-            return;
-        }
-
-        var newLinkType = dialog.getLinkType();
-        if (linkType == newLinkType) {
-            LOGGER.info("Link type not changed, since selected type equals existing type: " + sourceURI);
-            return;
-        }
-
-        // as the workflow is local and the template in the same mountID, it should resolve to a file
-        var newURI = BulkChangeMetaNodeLinksCommand.changeLinkType(component, sourceURI, newLinkType);
-        if (newURI != null) { // Only does something if successfully changed the link
+        final var newUri = ChangeSubNodeLinkAction.showDialogAndGetUri(shell, sourceURI, linkType, msg, changeOptions);
+        if (newUri.isPresent()) {
             final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
             final var cmd = workflowMiddleware.getCommands();
-            cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newURI));
+            cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newUri.get()));
             cmd.execute(wfKey, null);
         }
     }
@@ -212,7 +231,7 @@ final class ManipulateComponents {
         throws OperationNotAllowedException {
         final BiPredicate<Role, Role> predicate = (left, right) -> isLinked ? (left == right) : (left != right);
         if (!predicate.test(component.getTemplateInformation().getRole(), Role.Link)) {
-            throw new OperationNotAllowedException("The componet is " + (isLinked ? "not " : "") + "linked.");
+            throw new OperationNotAllowedException("The component is " + (isLinked ? "not " : "") + "linked.");
         }
     }
 
