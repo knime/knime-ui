@@ -56,6 +56,7 @@ describe("WorkflowMetadata.vue", () => {
     });
 
     $store.commit("workflow/setActiveWorkflow", workflow || baseWorkflow);
+    const dispatchSpy = vi.spyOn($store, "dispatch");
 
     const wrapper = mount(WorkflowMetadata, {
       global: {
@@ -63,7 +64,7 @@ describe("WorkflowMetadata.vue", () => {
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, $store, dispatchSpy };
   };
 
   describe("project", () => {
@@ -218,6 +219,95 @@ describe("WorkflowMetadata.vue", () => {
         },
       ]);
     });
+
+    it("saves changes for component", async () => {
+      const { wrapper, $store, dispatchSpy } = doMount();
+
+      const workflow = createWorkflow({
+        info: {
+          containerType: WorkflowInfo.ContainerTypeEnum.Component,
+        },
+        projectMetadata: null,
+        componentMetadata: {
+          name: "name",
+          // @ts-ignore
+          inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
+          outPorts: [
+            {
+              typeId:
+                "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+            },
+          ],
+          description: {
+            value: "Description",
+            contentType: TypedText.ContentTypeEnum.Plain,
+          },
+          type: ComponentNodeAndDescription.TypeEnum.Source,
+          views: [{ name: "view", description: "description" }],
+          options: ["options"],
+        },
+      });
+      const savedComponent = {
+        projectId: "id1",
+        workflowId: "workflowId",
+        links: [],
+        tags: [],
+        description: {
+          value: "This is a description",
+          contentType: "",
+        },
+        inPorts: [],
+        outPorts: [],
+        icon: null,
+        type: "",
+      };
+
+      $store.commit("workflow/setActiveWorkflow", workflow);
+      await nextTick();
+
+      wrapper.findComponent(ComponentMetadata).vm.$emit("save", savedComponent);
+
+      expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(true);
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "workflow/updateComponentMetadata",
+        savedComponent,
+      );
+    });
+  });
+
+  it("saves changes for project metadata", async () => {
+    const { wrapper, $store, dispatchSpy } = doMount();
+
+    const workflow = createWorkflow({
+      info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
+      projectMetadata: {
+        lastEdit: "2000-01-01T00:00Z",
+        description: {
+          value: "Description",
+          contentType: TypedText.ContentTypeEnum.Plain,
+        },
+        links: [{ text: "link1" }],
+        tags: ["tag1"],
+      },
+    });
+    const savedProject = {
+      description: "This is a description",
+      links: [],
+      tags: [],
+      projectId: "id1",
+      workflowId: "workflow1",
+    };
+
+    $store.commit("workflow/setActiveWorkflow", workflow);
+    await nextTick();
+
+    wrapper.findComponent(ProjectMetadata).vm.$emit("save", savedProject);
+
+    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(true);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      "workflow/updateWorkflowMetadata",
+      savedProject,
+    );
   });
 
   it("should display metadata for Components opened as a project", async () => {
@@ -271,8 +361,8 @@ describe("WorkflowMetadata.vue", () => {
     expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(false);
   });
 
-  it("should override url redirects on desktop", async () => {
-    await doMount();
+  it("should override url redirects on desktop", () => {
+    doMount();
     expect(runInEnvironment).toHaveBeenCalledWith({
       DESKTOP: expect.any(Function),
     });
