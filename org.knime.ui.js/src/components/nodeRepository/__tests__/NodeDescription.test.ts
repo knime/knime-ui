@@ -6,7 +6,6 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 
-import { runInEnvironment } from "@/environment";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import NodeDescription from "../NodeDescription.vue";
 
@@ -140,13 +139,6 @@ describe("NodeDescription", () => {
     expect(placeholder.text()).toBe("Please select a node");
   });
 
-  it("should override url redirects on desktop", async () => {
-    await doMount();
-    expect(runInEnvironment).toHaveBeenCalledWith({
-      DESKTOP: expect.any(Function),
-    });
-  });
-
   it("should fetch a component description", async () => {
     const { wrapper } = await doMount({
       props: {
@@ -155,7 +147,6 @@ describe("NodeDescription", () => {
       },
     });
 
-    expect(runInEnvironment).toHaveBeenCalled();
     expect(getNodeDescriptionMock).not.toHaveBeenCalled();
     expect(getComponentDescriptionMock).toHaveBeenCalled();
     expect(wrapper.find(".extension-info").exists()).toBe(false);

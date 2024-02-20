@@ -19,7 +19,6 @@ import {
 } from "@/api/gateway-api/generated-api";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
-import { runInEnvironment } from "@/environment";
 
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
@@ -359,12 +358,5 @@ describe("WorkflowMetadata.vue", () => {
 
     expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
     expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(false);
-  });
-
-  it("should override url redirects on desktop", () => {
-    doMount();
-    expect(runInEnvironment).toHaveBeenCalledWith({
-      DESKTOP: expect.any(Function),
-    });
   });
 });

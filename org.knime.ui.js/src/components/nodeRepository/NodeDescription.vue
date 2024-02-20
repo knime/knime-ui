@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRefs, ref, computed, watch, nextTick } from "vue";
+import { toRefs, ref, computed, watch } from "vue";
 
 import KNIMETriangleIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
@@ -8,10 +8,8 @@ import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.v
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
 
-import { API } from "@api";
 import { useStore } from "@/composables/useStore";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
-import { runInEnvironment } from "@/environment";
 import MetadataDescription from "@/components/workflowMetadata/MetadataDescription.vue";
 import type { NativeNodeDescriptionWithExtendedPorts } from "@/util/portDataMapper";
 
@@ -70,40 +68,6 @@ const loadComponentDescription = async () => {
   };
 };
 
-const redirectLinks = async (redirect: (params: { url: string }) => void) => {
-  await nextTick();
-  const descriptionEl = document.querySelector("#node-description-html");
-  const linksList = document.querySelector("#node-resources-list");
-
-  if (!descriptionEl && !linksList) {
-    return;
-  }
-
-  descriptionEl?.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      redirect({ url: link.href });
-      return false;
-    });
-  });
-
-  linksList?.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      redirect({ url: link.href });
-      return false;
-    });
-  });
-};
-
-const overrideUrl = () => {
-  runInEnvironment({
-    DESKTOP: () => {
-      redirectLinks(API.desktop.openUrlInExternalBrowser);
-    },
-  });
-};
-
 watch(
   selectedNode,
   async () => {
@@ -114,12 +78,10 @@ watch(
 
     if (isComponent.value) {
       await loadComponentDescription();
-      overrideUrl();
       return;
     }
 
     await loadNodeDescription();
-    overrideUrl();
   },
   { immediate: true },
 );
@@ -165,7 +127,6 @@ watch(
 
           <ExternalResourcesList
             v-if="descriptionData.links"
-            id="node-resources-list"
             :model-value="descriptionData.links"
           />
 
