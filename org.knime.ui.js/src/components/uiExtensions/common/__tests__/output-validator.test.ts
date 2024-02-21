@@ -314,7 +314,7 @@ describe("output-validator", () => {
           selectedPortIndex: 1,
           selectedPort: selectedNode.outPorts[1],
         },
-        validations: [outputValidator.validateNodeExecutionState],
+        validations: [outputValidator.validateNodeNotBusy],
       });
 
       expect(result).toEqual({

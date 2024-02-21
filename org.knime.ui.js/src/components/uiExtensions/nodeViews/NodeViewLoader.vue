@@ -1,186 +1,149 @@
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, toRef, onMounted, onUnmounted } from "vue";
+
+import {
+  UIExtension,
+  type UIExtensionAPILayer,
+} from "webapps-common/ui/uiExtensions";
+
 import { API } from "@api";
+import type { NativeNode } from "@/api/gateway-api/generated-api";
 
-import { UIExtension } from "webapps-common/ui/uiExtensions";
-import { defineComponent, type PropType } from "vue";
-import type { CommonViewLoaderData } from "../common/types";
-import type { KnimeNode } from "@/api/custom-types";
+import { useResourceLocation } from "../common/useResourceLocation";
+import type { ExtensionConfig } from "../common/types";
 
-type ComponentData = CommonViewLoaderData & {
-  isReady: boolean;
-};
 /**
  * Renders a node view
  */
-export default defineComponent({
-  components: {
-    UIExtension,
-  },
 
-  props: {
-    projectId: {
-      type: String as PropType<string>,
-      required: true,
-    },
-    workflowId: {
-      type: String as PropType<string>,
-      required: true,
-    },
-    selectedNode: {
-      type: Object as PropType<KnimeNode & { hasView: boolean }>,
-      required: true,
-    },
-  },
+type Props = {
+  projectId: string;
+  workflowId: string;
+  selectedNode: NativeNode;
+};
 
-  emits: ["stateChange"],
+const props = defineProps<Props>();
 
-  data(): ComponentData {
-    return {
-      isReady: false,
-      deactivateDataServicesFn: null,
-      apiLayer: null,
-      extensionConfig: null,
-    };
-  },
+const emit = defineEmits(["stateChange"]);
 
-  computed: {
-    hasView() {
-      return Boolean(this.selectedNode?.hasView);
-    },
+const error = ref<any>(null);
+const isConfigReady = ref(false);
+const isLoading = ref(false);
+const extensionConfig = ref<ExtensionConfig | null>(null);
 
-    resourceLocation() {
-      if (!this.extensionConfig) {
-        return "";
-      }
-      const { baseUrl, path } = this.extensionConfig.resourceInfo;
-      return this.resourceLocationResolver(path ?? "", baseUrl);
-    },
-  },
+let deactivateDataServicesFn: () => void;
 
-  watch: {
-    selectedNode: {
-      handler(newNode) {
-        // if (!this.showDialog && newNode === null && oldNode.hasView) {
-        //     // TODO remove selection event listener if
-        //     // * node views are shown (instead of dialogs)
-        //     // * no other node is selected
-        //     // * the previous node had a view
-        // }
+const { resourceLocation, resourceLocationResolver } = useResourceLocation({
+  extensionConfig,
+});
 
-        if (newNode?.hasView) {
-          this.loadExtensionConfig();
-        }
-      },
-    },
-  },
+const loadExtensionConfig = async () => {
+  if (!props.selectedNode) {
+    return;
+  }
 
-  unmounted() {
-    if (this.deactivateDataServicesFn) {
-      this.deactivateDataServicesFn();
-    }
-  },
+  try {
+    const nodeId = props.selectedNode.id;
 
-  async mounted() {
-    try {
-      this.$emit("stateChange", { state: "loading", message: "Loading view" });
+    const nodeView = await API.node.getNodeView({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId,
+    });
 
-      const noop = () => {};
-
-      this.apiLayer = {
-        getResourceLocation: (path: string) => {
-          return Promise.resolve(
-            this.resourceLocationResolver(
-              path,
-              this.extensionConfig?.resourceInfo?.baseUrl,
-            ),
-          );
-        },
-        callNodeDataService: async (params) => {
-          const { serviceType, dataServiceRequest } = params;
-          const result = await API.node.callNodeDataService({
-            projectId: this.projectId,
-            workflowId: this.workflowId,
-            nodeId: this.selectedNode.id,
-            extensionType: "view",
-            serviceType,
-            dataServiceRequest,
-          });
-          return { result };
-        },
-        updateDataPointSelection: () => {
-          // TODO: impl with NXT-2383 https://knime-com.atlassian.net/browse/NXT-2383
-          return Promise.resolve(null);
-        },
-        publishData: noop,
-        setReportingContent: noop,
-        imageGenerated: noop,
-        registerPushEventService: () => {
-          return noop;
-        },
-        sendAlert: noop,
-        setSettingsWithCleanModelSettings: noop,
-        setDirtyModelSettings: noop,
-        onApplied: noop,
-      };
-
-      await this.loadExtensionConfig();
-
-      this.isReady = true;
-      this.$emit("stateChange", { state: "ready" });
-    } catch (error) {
-      this.$emit("stateChange", { state: "error", message: error });
-    }
-  },
-
-  methods: {
-    resourceLocationResolver(path: string, baseUrl?: string) {
-      // TODO: NXT-1295. Originally caused NXT-1217
-      // Remove this unnecessary store getter once the issue in the ticket
-      // can be solved in a better way. It is necessary at the moment because the TableView is accessing
-      // this store module internally, so if not provided then it would error out in the application
-      return this.$store.getters["api/uiExtResourceLocation"]({
-        resourceInfo: { path, baseUrl },
-      });
-    },
-
-    async loadExtensionConfig() {
-      try {
-        if (!this.selectedNode) {
-          return;
-        }
-
-        const nodeId = this.selectedNode.id;
-
-        const nodeView = await API.node.getNodeView({
-          projectId: this.projectId,
-          workflowId: this.workflowId,
+    if (nodeView.deactivationRequired) {
+      deactivateDataServicesFn = () => {
+        API.node.deactivateNodeDataServices({
+          projectId: props.projectId,
+          workflowId: props.workflowId,
           nodeId,
+          extensionType: "view",
         });
+      };
+    }
 
-        if (nodeView.deactivationRequired) {
-          this.deactivateDataServicesFn = () => {
-            API.node.deactivateNodeDataServices({
-              projectId: this.projectId,
-              workflowId: this.workflowId,
-              nodeId,
-              extensionType: "view",
-            });
-          };
-        }
+    extensionConfig.value = nodeView;
+  } catch (error) {
+    consola.log("Error loading view content", error);
+    throw error;
+  }
+};
 
-        this.extensionConfig = nodeView;
-      } catch (error) {
-        consola.log("Error loading view content", error);
-        throw error;
-      }
-    },
+watch(toRef(props, "selectedNode"), async () => {
+  error.value = null;
+  isLoading.value = true;
+  emit("stateChange", { state: "loading", message: "Loading view" });
+
+  await loadExtensionConfig();
+
+  emit("stateChange", { state: "ready" });
+
+  isLoading.value = false;
+});
+
+const noop = () => {};
+
+const apiLayer: UIExtensionAPILayer = {
+  getResourceLocation: (path: string) => {
+    return Promise.resolve(
+      resourceLocationResolver(
+        path,
+        extensionConfig.value?.resourceInfo?.baseUrl,
+      ),
+    );
   },
+
+  callNodeDataService: async (params) => {
+    const { serviceType, dataServiceRequest } = params;
+    const result = await API.node.callNodeDataService({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId: props.selectedNode.id,
+      extensionType: "view",
+      serviceType,
+      dataServiceRequest,
+    });
+    return { result };
+  },
+
+  updateDataPointSelection: () => {
+    // TODO: impl with NXT-2383 https://knime-com.atlassian.net/browse/NXT-2383
+    return Promise.resolve(null);
+  },
+
+  // NOOP - not required by this embedding context for this type of UI Extension
+  publishData: noop,
+  setReportingContent: noop,
+  imageGenerated: noop,
+  registerPushEventService: () => noop,
+  sendAlert: noop,
+  setSettingsWithCleanModelSettings: noop,
+  setDirtyModelSettings: noop,
+  onApplied: noop,
+};
+
+onMounted(async () => {
+  try {
+    emit("stateChange", { state: "loading", message: "Loading view" });
+
+    await loadExtensionConfig();
+
+    isConfigReady.value = true;
+    emit("stateChange", { state: "ready" });
+  } catch (_error) {
+    error.value = _error;
+    emit("stateChange", { state: "error", message: _error });
+  }
+});
+
+onUnmounted(() => {
+  deactivateDataServicesFn?.();
 });
 </script>
 
 <template>
   <UIExtension
-    v-if="isReady"
+    v-if="!error && isConfigReady && !isLoading"
     :extension-config="extensionConfig!"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"

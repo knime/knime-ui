@@ -2,7 +2,8 @@
 import {
   buildMiddleware,
   validateNodeConfigurationState,
-  validateNodeExecutionState,
+  validateNodeExecuted,
+  validateNodeNotBusy,
 } from "../common/output-validator";
 
 import NodeViewLoader from "./NodeViewLoader.vue";
@@ -21,7 +22,8 @@ import NodeViewLoader from "./NodeViewLoader.vue";
 export const runNodeValidationChecks = ({ selectedNode, portTypes }) => {
   const validationMiddleware = buildMiddleware(
     validateNodeConfigurationState,
-    validateNodeExecutionState,
+    validateNodeNotBusy,
+    validateNodeExecuted,
   );
 
   const result = validationMiddleware({ selectedNode, portTypes })();
@@ -110,7 +112,7 @@ export default {
       switch (this.nodeViewState?.state) {
         case "loading": {
           this.$emit("outputStateChange", {
-            message: "Loading data",
+            message: "Loading view",
             loading: true,
           });
           return;
@@ -133,7 +135,6 @@ export default {
 <template>
   <NodeViewLoader
     v-if="!nodeErrors"
-    kind="node-view"
     :project-id="projectId"
     :workflow-id="workflowId"
     :selected-node="selectedNode"

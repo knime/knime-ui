@@ -1,6 +1,6 @@
 import type {
   UIExtensionAPILayer,
-  ExtensionConfig,
+  ExtensionConfig as BaseExtensionConfig,
 } from "webapps-common/ui/uiExtensions";
 
 export type ViewStateChangeEvent = {
@@ -9,10 +9,14 @@ export type ViewStateChangeEvent = {
   portKey: string;
 };
 
+export type ExtensionConfig = BaseExtensionConfig & {
+  resourceInfo: { baseUrl?: string };
+};
+
 export type CommonViewLoaderData = {
   deactivateDataServicesFn: (() => void) | null;
   apiLayer: null | UIExtensionAPILayer;
   extensionConfig:
     | null
-    | (ExtensionConfig & { resourceInfo: { baseUrl?: string } });
+    | (BaseExtensionConfig & { resourceInfo: { baseUrl?: string } });
 };

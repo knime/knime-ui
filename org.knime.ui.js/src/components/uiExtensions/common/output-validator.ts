@@ -69,7 +69,8 @@ type ErrorCodes =
   | "PORT_INACTIVE"
   | "NO_DATA"
   | "NODE_UNCONFIGURED"
-  | "NODE_BUSY";
+  | "NODE_BUSY"
+  | "NODE_UNEXECUTED";
 
 export type ValidationResult = {
   error?: {
@@ -301,7 +302,7 @@ export const validateNodeConfigurationState: ValidationFn<{
  * Validation middleware function. Asserts that:
  * - The selected node is not in a busy state (QUEUE || EXECUTING)
  */
-export const validateNodeExecutionState: ValidationFn<{
+export const validateNodeNotBusy: ValidationFn<{
   selectedNode: KnimeNode;
   selectedPort: NodePort;
   portTypes: AvailablePortTypes;
@@ -320,6 +321,36 @@ export const validateNodeExecutionState: ValidationFn<{
         type: "NODE",
         code: "NODE_BUSY",
         message: "Output is available after execution.",
+      },
+    };
+  }
+
+  return next(context);
+};
+
+/**
+ * Validation middleware function. Asserts that:
+ * - The selected node is EXECUTED
+ */
+export const validateNodeExecuted: ValidationFn<{
+  selectedNode: KnimeNode;
+  selectedPort: NodePort;
+  portTypes: AvailablePortTypes;
+  selectedPortIndex: number;
+}> = (context, next) => {
+  const { selectedPort, selectedNode, portTypes } = context;
+
+  if (isFlowVariablePort({ portTypes, port: selectedPort })) {
+    return next(context);
+  }
+
+  const state = selectedNode.state?.executionState;
+  if (state !== "EXECUTED") {
+    return {
+      error: {
+        type: "NODE",
+        code: "NODE_UNEXECUTED",
+        message: "Please execute the node.",
       },
     };
   }

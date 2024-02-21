@@ -12,7 +12,7 @@ import { canExecute } from "@/util/nodeUtil";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
-  validateNodeExecutionState,
+  validateNodeNotBusy,
   validateOutputPorts,
   validatePortSelection,
   validatePortSupport,
@@ -47,7 +47,7 @@ const runValidationChecks = ({
     validatePortSelection,
     validatePortSupport,
     validateNodeConfigurationState,
-    validateNodeExecutionState,
+    validateNodeNotBusy,
   );
 
   const result = validationMiddleware({
