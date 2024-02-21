@@ -21,7 +21,6 @@ const isReady = ref(false);
 const baseUrl = document.location.origin; // TODO: Is this correct?
 
 function startSession() {
-  debugger;
   API.webswing.startSession();
 }
 
@@ -30,18 +29,15 @@ function openDialog(
   workflowId: string | undefined,
   nodeId: string | undefined
 ) {
-  debugger;
   API.webswing.openDialog({ projectId, workflowId, nodeId });
 }
 
 function sendMessageToJava(msg: ArrayBuffer) {
-  debugger;
   API.webswing.sendBinaryMessage(msg);
 }
 
 function registerMessageFromJavaHandler(handler: any) {
-  debugger;
-  API.webswing.addBinaryEventListener(handler);
+  API.webswing.addBinaryEventListener(handler); // TODO: We should do that at startup
 }
 
 watch(config, async () => {
@@ -75,7 +71,8 @@ window.webswingInstance0 = {
 
       injector.services.socket.connect = () => {
         registerMessageFromJavaHandler((data: ArrayBuffer) => {
-          debugger;
+          // debugger;
+          console.log("Receive message");
           injector.services.socket.receiveEncodedMessage(data);
         });
         startSession();
@@ -121,11 +118,13 @@ window.webswingInstance0 = {
       
       injector.services.socket.sendAppFrame = (appFrameProto: any) => {
         const msg = injector.services.socket.encodeAppFrameProto(appFrameProto);
+        console.log("Send message");
         sendMessageToJava(msg);
       };
 
       injector.services.base.processMessage = (appFrame: any) => {
         processMessage(appFrame);
+        debugger;
         if (appFrame?.startApplication !== null) {
           openDialog(projectId.value, workflowId.value, config.value.nodeId);
         }

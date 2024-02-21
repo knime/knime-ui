@@ -7,8 +7,9 @@ import { getToastsProvider } from "@/plugins/toasts";
 import {
   getRegisteredEventHandler,
   registerEventHandler,
-  serverEventHandler,
+  serverEventHandler
 } from "./server-events";
+import { webSwingEventHandler, registerWebSwingEventHandler } from "./webswing-events";
 import { DesktopAPTransport } from "./DesktopAPTransport";
 import { WebSocketTransport } from "./WebSocketTransport";
 
@@ -68,11 +69,29 @@ const setupServerEventListener = (ws: WebSocket) => {
         serverEventHandler(data);
       }
     } catch (error) {
-      debugger;
       consola.log(data);
     }
   });
 };
+
+const setupWebSwingEventListener = (ws: WebSocket) => {
+  // setup webswing event handler
+  ws.addEventListener("message", (message: { data: unknown }) => {
+    const { data } = message;
+    if (typeof data !== "string") {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(data);
+      if (parsed.eventType) {
+        webSwingEventHandler(data);
+      }
+    } catch (error) {
+        consola.log(data);
+    }
+  });
+}
 
 const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   const CONNECTION_LOST_TOAST_ID = "__CONNECTION_LOST";
@@ -172,6 +191,9 @@ const initBrowserClient = (
       // setup server event handler and other events on the WS transport
       setupServerEventListener(connection);
 
+      // setup webswing event handler
+      setupWebSwingEventListener(connection);
+
       handleConnectionLoss(connection, store);
 
       // initialize the client and request manager to start the WS connection
@@ -212,19 +234,9 @@ const sendBinaryMessage = (data: any): void => {
   websocketConnection.send(data);
 };
 
-// Note: Maybe we just convert binary to string and there we go
-const addBinaryEventListener = (listener: any) => { // Note: This approach does not work!
-  websocketConnection.addEventListener(
-    "message",
-    (message: any) => {
-      debugger;
-      const { data } = message;
-      if (data instanceof ArrayBuffer) {
-        debugger;
-        listener(data);
-      }
-    },
-  );
+// TODO: Does this make sense, really?
+const addBinaryEventListener = (listener: any) => {
+  registerWebSwingEventHandler("WebSwingEvent", listener);
 };
 
 export {
