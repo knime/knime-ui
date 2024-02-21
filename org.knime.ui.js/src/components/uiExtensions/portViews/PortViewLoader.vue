@@ -143,7 +143,6 @@ export default defineComponent({
           closeAlert?.();
         }
       },
-      close: noop,
       setSettingsWithCleanModelSettings: noop,
       setDirtyModelSettings: noop,
       onApplied: noop,

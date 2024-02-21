@@ -105,7 +105,6 @@ export default defineComponent({
         return noop;
       },
       sendAlert: noop,
-      close: noop,
       setSettingsWithCleanModelSettings: noop,
       setDirtyModelSettings: noop,
       onApplied: noop,

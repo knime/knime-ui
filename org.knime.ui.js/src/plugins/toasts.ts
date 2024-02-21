@@ -16,15 +16,6 @@ export const getToastsProvider = (): ToastServiceProvider & {
     return __toastsProviderSingleton;
   }
 
-  const baseProvider = new ToastServiceProvider();
-
-  __toastsProviderSingleton = {
-    ...baseProvider,
-
-    removeBy(callback: (toast: Toast) => boolean) {
-      this.toasts.value = this.toasts.value.filter((t) => !callback(t));
-    },
-  };
-
+  __toastsProviderSingleton = new ToastServiceProvider();
   return __toastsProviderSingleton;
 };
