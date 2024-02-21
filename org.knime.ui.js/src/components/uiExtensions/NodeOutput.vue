@@ -24,14 +24,12 @@ import {
 
 export const runValidationChecks = ({
   selectedNodes,
-  isDragging,
 }: {
   selectedNodes: KnimeNode[];
-  isDragging: boolean;
 }) => {
   const validationMiddleware = buildMiddleware(validateSelection);
 
-  const result = validationMiddleware({ selectedNodes, isDragging })();
+  const result = validationMiddleware({ selectedNodes })();
 
   return Object.freeze(result);
 };
@@ -79,7 +77,6 @@ export default defineComponent({
     ...mapState("workflow", {
       workflowId: (state: unknown) =>
         (state as WorkflowState).activeWorkflow!.info.containerId,
-      isDragging: (state: unknown) => (state as WorkflowState).isDragging,
     }),
     ...mapGetters("selection", ["selectedNodes", "singleSelectedNode"]),
 
@@ -89,8 +86,7 @@ export default defineComponent({
         // doesn't have errors in the output state
         !this.outputState?.error ||
         // or when it doesn't have these specific error types
-        (this.outputState?.error?.code !== "NO_SUPPORTED_PORTS" &&
-          this.outputState?.error?.code !== "NODE_DRAGGING")
+        this.outputState?.error?.code !== "NO_SUPPORTED_PORTS"
       );
     },
 
@@ -106,7 +102,6 @@ export default defineComponent({
     validationErrors() {
       const validationResult = runValidationChecks({
         selectedNodes: this.selectedNodes,
-        isDragging: this.isDragging,
       });
 
       return validationResult?.error ?? null;
@@ -266,7 +261,6 @@ export default defineComponent({
         :workflow-id="workflowId"
         :selected-node="singleSelectedNode"
         :available-port-types="availablePortTypes"
-        class="output"
         @output-state-change="outputState = $event"
       />
 
@@ -277,7 +271,6 @@ export default defineComponent({
         :selected-node="singleSelectedNode"
         :selected-port-index="selectedPortIndex!"
         :available-port-types="availablePortTypes"
-        class="output"
         @output-state-change="outputState = $event"
         @execute-node="
           $store.dispatch('workflow/executeNodes', [singleSelectedNode.id])
@@ -304,11 +297,6 @@ export default defineComponent({
   to {
     opacity: 1;
   }
-}
-
-.output {
-  flex-shrink: 1;
-  overflow-y: auto;
 }
 
 .placeholder {

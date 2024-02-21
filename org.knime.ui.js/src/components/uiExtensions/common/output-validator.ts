@@ -60,7 +60,6 @@ const canDisplayPortView = ({
 // ========================== Validation Functions ============================     //
 
 type ErrorCodes =
-  | "NODE_DRAGGING"
   | "NO_NODE_SELECTED"
   | "MULTIPLE_NODES_SELECTED"
   | "NO_OUTPUT_PORTS"
