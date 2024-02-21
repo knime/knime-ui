@@ -8,7 +8,6 @@ import {
   autoPositionMetanodeMargin,
   defaultMetaNodeBarHeight,
   defaultMetanodeBarPosition,
-  horizontalNodePadding,
   metaNodeBarWidth,
   nodeSize,
   portSize,
@@ -80,7 +79,15 @@ describe("workflow store", () => {
         },
         nodes: {},
         expected: {
-          workflowBounds: { left: 0, right: 0, top: 0, bottom: 0 },
+          workflowBounds: {
+            left: -(autoPositionMetanodeMargin + portSize),
+            right:
+              defaultMetanodeBarPosition -
+              autoPositionMetanodeMargin +
+              metaNodeBarWidth,
+            top: -autoPositionMetanodeMargin,
+            bottom: defaultMetaNodeBarHeight - autoPositionMetanodeMargin,
+          },
         },
       },
       "with input ports only": {
@@ -93,7 +100,10 @@ describe("workflow store", () => {
         expected: {
           workflowBounds: {
             left: -(autoPositionMetanodeMargin + portSize),
-            right: node.position.x + horizontalNodePadding + nodeSize,
+            right:
+              defaultMetanodeBarPosition -
+              autoPositionMetanodeMargin +
+              metaNodeBarWidth,
             top: -autoPositionMetanodeMargin,
             bottom: defaultMetaNodeBarHeight - autoPositionMetanodeMargin,
           },
@@ -108,7 +118,7 @@ describe("workflow store", () => {
         },
         expected: {
           workflowBounds: {
-            left: 0,
+            left: -(autoPositionMetanodeMargin + portSize),
             right:
               defaultMetanodeBarPosition -
               autoPositionMetanodeMargin +
@@ -151,8 +161,11 @@ describe("workflow store", () => {
         expected: {
           workflowBounds: {
             left: 0,
-            right: 123 + portSize,
-            top: 0,
+            right:
+              defaultMetanodeBarPosition -
+              autoPositionMetanodeMargin +
+              metaNodeBarWidth,
+            top: -autoPositionMetanodeMargin,
             bottom: 123 + defaultMetaNodeBarHeight,
           },
         },
@@ -161,6 +174,10 @@ describe("workflow store", () => {
       "with bounds set (only output)": {
         nodes: { [node.id]: node },
         additionalProps: {
+          metaInPorts: {
+            bounds: { x: 123, y: 123, width: 10, height: 500 },
+            ports: [{}],
+          },
           metaOutPorts: {
             bounds: { x: 123, y: 123, width: 10, height: 500 },
             ports: [{}],
