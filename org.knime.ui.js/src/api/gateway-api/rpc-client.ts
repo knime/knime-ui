@@ -1,7 +1,4 @@
-import { getRPCClientInstance, registerEventHandler ,
-  sendBinaryMessage,
-  addBinaryEventListener,
-} from "../json-rpc-client";
+import { getRPCClientInstance, registerEventHandler } from "../json-rpc-client";
 import type { Configuration } from "./configuration";
 
 export interface RPCClient {
@@ -45,4 +42,4 @@ const createRPCClient = (configuration: Configuration): RPCClient => {
   return rpcClient;
 };
 
-export { createRPCClient, sendBinaryMessage, addBinaryEventListener };
+export { createRPCClient };

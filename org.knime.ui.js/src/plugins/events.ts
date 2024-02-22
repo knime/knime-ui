@@ -88,6 +88,11 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     ShowToastEvent(toast) {
       $toast.show(toast);
     },
+
+    // @ts-ignore
+    WebSwingEvent(payload: string) {
+      API.webswing.applyMessageConsumer(payload);
+    }
   });
 
   API.desktop.registerEventHandlers({

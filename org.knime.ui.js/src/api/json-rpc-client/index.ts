@@ -9,14 +9,12 @@ import {
   registerEventHandler,
   serverEventHandler
 } from "./server-events";
-import { webSwingEventHandler, registerWebSwingEventHandler } from "./webswing-events";
 import { DesktopAPTransport } from "./DesktopAPTransport";
 import { WebSocketTransport } from "./WebSocketTransport";
 
 import type WS from "isomorphic-ws";
 
-let jsonRPCClient: Client;
-let websocketConnection: WS = null;
+let jsonRPCClient: Client, websocketConnection: WS;
 
 const $toast = getToastsProvider();
 
@@ -73,25 +71,6 @@ const setupServerEventListener = (ws: WebSocket) => {
     }
   });
 };
-
-const setupWebSwingEventListener = (ws: WebSocket) => {
-  // setup webswing event handler
-  ws.addEventListener("message", (message: { data: unknown }) => {
-    const { data } = message;
-    if (typeof data !== "string") {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(data);
-      if (parsed.eventType) {
-        webSwingEventHandler(data);
-      }
-    } catch (error) {
-        consola.log(data);
-    }
-  });
-}
 
 const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   const CONNECTION_LOST_TOAST_ID = "__CONNECTION_LOST";
@@ -179,20 +158,14 @@ const initBrowserClient = (
         return;
       }
 
-      // Note: We might need another websocket connection just to handle binary messages
-      // We might not be able to use the same connection for String and Binary messages
       const transport = new WebSocketTransport(connectionInfo.url);
       const connection: WebSocket = transport.connection;
       websocketConnection = connection;
-      connection.binaryType = "arraybuffer";
 
       setupActivityHeartbeat(connection);
 
       // setup server event handler and other events on the WS transport
       setupServerEventListener(connection);
-
-      // setup webswing event handler
-      setupWebSwingEventListener(connection);
 
       handleConnectionLoss(connection, store);
 
@@ -234,16 +207,10 @@ const sendBinaryMessage = (data: any): void => {
   websocketConnection.send(data);
 };
 
-// TODO: Does this make sense, really?
-const addBinaryEventListener = (listener: any) => {
-  registerWebSwingEventHandler("WebSwingEvent", listener);
-};
-
 export {
   initJSONRPCClient,
   getRPCClientInstance,
   registerEventHandler,
   getRegisteredEventHandler,
-  sendBinaryMessage,
-  addBinaryEventListener,
+  sendBinaryMessage
 };

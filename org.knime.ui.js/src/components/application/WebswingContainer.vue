@@ -7,8 +7,9 @@ import { API } from "@api";
 
 const store = useStore();
 
-// @ts-ignore
-const config = computed(() => store.state.workflow.webswingDialogConfig);
+const config = computed( // @ts-ignore
+  () => store.state.workflow.webswingDialogConfig
+);
 const projectId = computed(
   () => store.state.workflow.activeWorkflow?.projectId,
 );
@@ -20,24 +21,28 @@ const isReady = ref(false);
 
 const baseUrl = document.location.origin; // TODO: Is this correct?
 
-function startSession() {
+const startSession = () => {
   API.webswing.startSession();
 }
 
-function openDialog(
+const openDialog = (
   projectId: string | undefined,
   workflowId: string | undefined,
   nodeId: string | undefined
-) {
+) => {
   API.webswing.openDialog({ projectId, workflowId, nodeId });
 }
 
-function sendMessageToJava(msg: ArrayBuffer) {
-  API.webswing.sendBinaryMessage(msg);
+const sendMessageToJava = (msg: ArrayBuffer) => {
+  API.webswing.sendMessage(msg);
 }
 
-function registerMessageFromJavaHandler(handler: any) {
-  API.webswing.addBinaryEventListener(handler); // TODO: We should do that at startup
+const registerMessageFromJavaHandler = (handler: any) => {
+  API.webswing.setMessageConsumer(handler);
+}
+
+const removeMessageConsumer = () => {
+  API.webswing.removeMessageConsumer();
 }
 
 watch(config, async () => {
@@ -71,8 +76,7 @@ window.webswingInstance0 = {
 
       injector.services.socket.connect = () => {
         registerMessageFromJavaHandler((data: ArrayBuffer) => {
-          // debugger;
-          console.log("Receive message");
+          consola.info(`Webswing Container: Processing bytes <${data}>`);
           injector.services.socket.receiveEncodedMessage(data);
         });
         startSession();
@@ -99,8 +103,7 @@ window.webswingInstance0 = {
 
       injector.services.socket.dispose = () => {
         instance_id = null; // eslint-disable-line
-
-        // TODO remove binary websocket message listener
+        removeMessageConsumer();
       };
 
       injector.services.socket.clearInstanceId = () => {
@@ -118,14 +121,13 @@ window.webswingInstance0 = {
       
       injector.services.socket.sendAppFrame = (appFrameProto: any) => {
         const msg = injector.services.socket.encodeAppFrameProto(appFrameProto);
-        console.log("Send message");
         sendMessageToJava(msg);
       };
 
       injector.services.base.processMessage = (appFrame: any) => {
         processMessage(appFrame);
-        debugger;
         if (appFrame?.startApplication !== null) {
+          consola.info(`Webswing container: App frame <${JSON.stringify(appFrame)}>`);
           openDialog(projectId.value, workflowId.value, config.value.nodeId);
         }
       };
