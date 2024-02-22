@@ -111,7 +111,7 @@ const onResize = ({ size }: { size: number }) => {
         { 'will-snap': currentSecondarySize < secondaryMinSize },
       ]"
     >
-      <slot name="secondary" />
+      <slot v-if="!isClosed" name="secondary" />
     </pane>
     <pane :size="mainSize" :min-size="mainMinSize" class="main-panel">
       <slot />
@@ -124,7 +124,7 @@ const onResize = ({ size }: { size: number }) => {
         { 'will-snap': currentSecondarySize < secondaryMinSize },
       ]"
     >
-      <slot name="secondary" />
+      <slot v-if="!isClosed" name="secondary" />
     </pane>
   </splitpanes>
 </template>
