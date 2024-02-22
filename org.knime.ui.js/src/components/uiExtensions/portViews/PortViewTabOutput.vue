@@ -1,14 +1,11 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
-
-import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
-import Button from "webapps-common/ui/components/Button.vue";
+<script setup lang="ts">
+import { computed, watch } from "vue";
 
 import { API } from "@api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { toExtendedPortObject } from "@/util/portDataMapper";
-import { canExecute } from "@/util/nodeUtil";
 
+import type { UIExtensionLoadingState, ValidationError } from "../common/types";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
@@ -16,13 +13,10 @@ import {
   validateOutputPorts,
   validatePortSelection,
   validatePortSupport,
-  type ValidationResult,
 } from "../common/output-validator";
-import type { ViewStateChangeEvent } from "../common/types";
 
 import PortViewLoader from "./PortViewLoader.vue";
 import PortViewTabToggles from "./PortViewTabToggles.vue";
-import { mapState } from "vuex";
 
 /**
  * Runs a set of validations that qualify whether a port from a node is able
@@ -59,196 +53,92 @@ const runValidationChecks = ({
   return Object.freeze(result);
 };
 
-interface ComponentData {
-  portViewState: ViewStateChangeEvent | null;
-}
-
 /**
  * Validates and renders the PortViewLoader. It ensures the conditions are right for the PortView to be loaded
  * via several validation constraints. It yields back information about said validations as well as information
  * about the loading state of the PortView
  */
-export default defineComponent({
-  components: {
-    PortViewLoader,
-    PortViewTabToggles,
-    Button,
-    PlayIcon,
-  },
 
-  inheritAttrs: false,
+type Props = {
+  projectId: string;
+  workflowId: string;
+  selectedNode: KnimeNode;
+  selectedPortIndex: number;
+  availablePortTypes: AvailablePortTypes;
+};
 
-  props: {
-    projectId: {
-      type: String,
-      required: false, // Fixes opening components with double click.
-      default: "Missing project ID", // Fixes opening components with double click.
-    },
-    workflowId: {
-      type: String,
-      required: true,
-    },
-    selectedNode: {
-      type: Object as PropType<KnimeNode>,
-      required: true,
-    },
-    selectedPortIndex: {
-      type: Number,
-      required: true,
-    },
-    availablePortTypes: {
-      type: Object as PropType<AvailablePortTypes>,
-      required: true,
-    },
-  },
+const props = defineProps<Props>();
 
-  emits: {
-    outputStateChange: (
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _payload: {
-        message: string;
-        loading?: boolean;
-        error?: ValidationResult["error"];
-      } | null,
-    ) => true,
-    executeNode: () => true,
-  },
+const emit = defineEmits<{
+  loadingStateChange: [value: UIExtensionLoadingState];
+  validationError: [value: ValidationError | null];
+  executeNode: [];
+}>();
 
-  data(): ComponentData {
-    return {
-      portViewState: null,
-    };
-  },
+const uniquePortKey = computed(() => {
+  // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
+  // is created upon switching ports
+  // port object version changes whenever a port state has updated.
+  // "ABA"-Changes on the port will always trigger a re-render.
 
-  computed: {
-    ...mapState("application", ["permissions"]),
-    uniquePortKey() {
-      // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
-      // is created upon switching ports
-      // port object version changes whenever a port state has updated.
-      // "ABA"-Changes on the port will always trigger a re-render.
+  const { portContentVersion } =
+    props.selectedNode.outPorts[props.selectedPortIndex];
 
-      const { portContentVersion } =
-        this.selectedNode.outPorts[this.selectedPortIndex];
-
-      return [
-        this.projectId,
-        this.workflowId,
-        this.selectedNode.id,
-        this.selectedPortIndex,
-        portContentVersion,
-      ].join("/");
-    },
-
-    hasNoDataValidationError() {
-      return this.validationError && this.validationError.code === "NO_DATA";
-    },
-
-    validationError(): ValidationResult["error"] | null {
-      const validationResult = runValidationChecks({
-        selectedNode: this.selectedNode,
-        portTypes: this.availablePortTypes,
-        selectedPortIndex: this.selectedPortIndex,
-      });
-
-      return validationResult?.error ?? null;
-    },
-
-    selectedPort() {
-      if (this.validationError) {
-        return null;
-      }
-
-      return this.selectedNode.outPorts[this.selectedPortIndex];
-    },
-
-    fullPortObject() {
-      if (!this.selectedPort) {
-        return null;
-      }
-
-      return toExtendedPortObject(this.availablePortTypes)(
-        this.selectedPort.typeId,
-      );
-    },
-
-    portViews() {
-      return this.fullPortObject?.views;
-    },
-
-    shouldShowExecuteAction() {
-      if (!this.permissions.canEditWorkflow) {
-        return false;
-      }
-
-      if (this.validationError && !this.hasNoDataValidationError) {
-        return false;
-      }
-
-      const canSelectedNodeExecute = canExecute(
-        this.selectedNode,
-        this.selectedPortIndex,
-      );
-
-      if (this.hasNoDataValidationError) {
-        return canSelectedNodeExecute;
-      }
-
-      const isFlowVariable = this.fullPortObject?.kind === "flowVariable";
-      return canSelectedNodeExecute && !isFlowVariable;
-    },
-  },
-
-  watch: {
-    validationError: {
-      immediate: true,
-      handler() {
-        if (this.validationError) {
-          this.$emit("outputStateChange", {
-            loading: this.validationError.code === "NODE_BUSY",
-            message: this.validationError.message,
-            error: this.validationError,
-          });
-        } else {
-          this.$emit("outputStateChange", null);
-        }
-      },
-    },
-  },
-
-  methods: {
-    onPortViewLoaderStateChange(newPortViewState: ViewStateChangeEvent | null) {
-      this.portViewState = newPortViewState;
-
-      switch (this.portViewState?.state) {
-        case "loading": {
-          this.$emit("outputStateChange", {
-            message: "Loading data",
-            loading: true,
-          });
-          return;
-        }
-        case "error": {
-          this.$emit("outputStateChange", {
-            message: this.portViewState.message ?? "",
-          });
-          return;
-        }
-        default: {
-          this.$emit("outputStateChange", null);
-        }
-      }
-    },
-    openViewInNewWindow(viewIndex: number) {
-      API.desktop.openPortView({
-        projectId: this.projectId,
-        nodeId: this.selectedNode.id,
-        viewIndex,
-        portIndex: this.selectedPortIndex,
-      });
-    },
-  },
+  return [
+    props.projectId,
+    props.workflowId,
+    props.selectedNode.id,
+    props.selectedPortIndex,
+    portContentVersion,
+  ].join("/");
 });
+
+const validationError = computed(() => {
+  const validationResult = runValidationChecks({
+    selectedNode: props.selectedNode,
+    portTypes: props.availablePortTypes,
+    selectedPortIndex: props.selectedPortIndex,
+  });
+
+  return validationResult?.error ?? null;
+});
+
+const selectedPort = computed(() => {
+  if (validationError.value) {
+    return null;
+  }
+
+  return props.selectedNode.outPorts[props.selectedPortIndex];
+});
+
+const portViews = computed(() => {
+  if (!selectedPort.value) {
+    return null;
+  }
+
+  const fullPortObject = toExtendedPortObject(props.availablePortTypes)(
+    selectedPort.value.typeId,
+  );
+
+  return fullPortObject.views;
+});
+
+watch(
+  validationError,
+  () => {
+    emit("validationError", validationError.value ?? null);
+  },
+  { immediate: true },
+);
+
+const openViewInNewWindow = (viewIndex: number) => {
+  API.desktop.openPortView({
+    projectId: props.projectId,
+    nodeId: props.selectedNode.id,
+    viewIndex,
+    portIndex: props.selectedPortIndex,
+  });
+};
 </script>
 
 <template>
@@ -270,37 +160,8 @@ export default defineComponent({
         :selected-node="selectedNode"
         :selected-port-index="selectedPortIndex"
         :selected-view-index="activeView"
-        @state-change="onPortViewLoaderStateChange"
+        @loading-state-change="$emit('loadingStateChange', $event)"
       />
     </template>
   </PortViewTabToggles>
-
-  <div v-if="shouldShowExecuteAction" class="execute-node-action">
-    <span>To show the output, please execute the selected node.</span>
-    <Button class="action-button" primary compact @click="$emit('executeNode')">
-      <PlayIcon />
-      Execute
-    </Button>
-  </div>
 </template>
-
-<style lang="postcss" scoped>
-.execute-node-action {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  width: 440px;
-  height: 110px;
-  inset: v-bind("hasNoDataValidationError ? 0 : '130px'") 0 0 0;
-  margin: auto;
-  background: rgba(255 255 255 / 30%);
-  backdrop-filter: blur(10px);
-}
-
-.action-button {
-  margin-top: 20px;
-}
-</style>

@@ -2,12 +2,8 @@
 import { defineComponent } from "vue";
 import { mapState, mapGetters } from "vuex";
 
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import Button from "webapps-common/ui/components/Button.vue";
-import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 
-import { canExecute, getNodeState } from "@/util/nodeUtil";
 import type { ApplicationState } from "@/store/application";
 import type { WorkflowState } from "@/store/workflow";
 import { compatibility } from "@/environment";
@@ -16,11 +12,10 @@ import PortTabs from "./PortTabs.vue";
 import PortViewTabOutput from "./portViews/PortViewTabOutput.vue";
 import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
 
-import {
-  buildMiddleware,
-  validateSelection,
-  type ValidationResult,
-} from "./common/output-validator";
+import { buildMiddleware, validateSelection } from "./common/output-validator";
+import type { UIExtensionLoadingState, ValidationError } from "./common/types";
+import LoadingIndicator from "./LoadingIndicator.vue";
+import ValidationInfo from "./ValidationInfo.vue";
 
 export const runValidationChecks = ({
   selectedNodes,
@@ -38,11 +33,8 @@ interface ComponentData {
   // either 'view' or the number of the port as string
   selectedTab: "view" | Omit<string, "view"> | null;
 
-  outputState: {
-    loading?: boolean;
-    message?: string;
-    error?: ValidationResult["error"];
-  } | null;
+  loadingState: UIExtensionLoadingState | null;
+  currentValidationError: ValidationError | null;
 
   compatibility: typeof compatibility;
 }
@@ -54,16 +46,16 @@ interface ComponentData {
 export default defineComponent({
   components: {
     PortTabs,
-    ReloadIcon,
     PortViewTabOutput,
     NodeViewTabOutput,
-    Button,
-    PlayIcon,
+    LoadingIndicator,
+    ValidationInfo,
   },
   data(): ComponentData {
     return {
       selectedTab: null,
-      outputState: null,
+      currentValidationError: null,
+      loadingState: null,
       compatibility,
     };
   },
@@ -84,9 +76,9 @@ export default defineComponent({
       // allow selecting tabs when:
       return (
         // doesn't have errors in the output state
-        !this.outputState?.error ||
+        !this.currentValidationError ||
         // or when it doesn't have these specific error types
-        this.outputState?.error?.code !== "NO_SUPPORTED_PORTS"
+        this.currentValidationError.code !== "NO_SUPPORTED_PORTS"
       );
     },
 
@@ -99,7 +91,7 @@ export default defineComponent({
       return this.isViewTabSelected ? null : Number(this.selectedTab);
     },
 
-    validationErrors() {
+    selectionValidationError() {
       const validationResult = runValidationChecks({
         selectedNodes: this.selectedNodes,
       });
@@ -107,46 +99,38 @@ export default defineComponent({
       return validationResult?.error ?? null;
     },
 
-    canExecute() {
+    showLoadingIndicator() {
       return (
-        this.selectedPortIndex &&
-        canExecute(this.singleSelectedNode, this.selectedPortIndex)
+        this.loadingState?.value === "loading" ||
+        this.currentValidationError?.code === "NODE_BUSY"
       );
     },
 
-    isExecuted() {
-      if (this.selectedPortIndex === null) {
-        return false;
+    loadingMessage() {
+      if (this.loadingState?.value === "loading") {
+        return this.loadingState.message;
       }
 
-      const state = getNodeState(
-        this.singleSelectedNode,
-        this.selectedPortIndex,
-      );
+      if (this.currentValidationError?.code === "NODE_BUSY") {
+        return this.currentValidationError.message;
+      }
 
-      return state === "EXECUTED";
-    },
-
-    isUnsupportedViewError() {
-      return this.outputState?.error?.code === "NO_SUPPORTED_VIEW";
+      return "";
     },
   },
   watch: {
     singleSelectedNode: {
       handler() {
-        if (!this.validationErrors) {
+        if (!this.selectionValidationError) {
           this.selectPort();
         }
       },
       deep: true,
     },
-    validationErrors: {
-      handler(validationErrors) {
-        if (this.validationErrors) {
-          this.outputState = {
-            message: this.validationErrors.message,
-            error: validationErrors,
-          };
+    selectionValidationError: {
+      handler(selectionValidationError) {
+        if (this.selectionValidationError) {
+          this.currentValidationError = selectionValidationError;
         } else {
           this.selectPort();
         }
@@ -183,14 +167,6 @@ export default defineComponent({
       // select mickey-mouse port, if it is the only one, otherwise the first regular port
       this.selectedTab = outPorts.length > 1 ? "1" : "0";
     },
-
-    openLegacyPortView(executeNode = false) {
-      this.$store.dispatch("workflow/openLegacyPortView", {
-        nodeId: this.singleSelectedNode.id,
-        portIndex: this.selectedPortIndex,
-        executeNode,
-      });
-    },
   },
 });
 </script>
@@ -205,63 +181,23 @@ export default defineComponent({
       :disabled="!canSelectTabs"
     />
 
-    <!-- Error Message / Placeholder message -->
-    <div
-      v-if="outputState"
-      :class="['placeholder', { 'is-viewer-loading': outputState.loading }]"
-    >
-      <span>
-        <ReloadIcon v-if="outputState.loading" class="loading-icon" />
-        <template
-          v-if="
-            isUnsupportedViewError && !compatibility.canOpenLegacyPortViews()
-          "
-        >
-          This port view is not supported in the browser. Please download the
-          KNIME Analytics Platform to see the content in the desktop application
-        </template>
-        <template v-else>
-          {{ outputState.message }}
-        </template>
+    <LoadingIndicator v-if="showLoadingIndicator" :message="loadingMessage" />
 
-        <div
-          v-if="
-            isUnsupportedViewError && compatibility.canOpenLegacyPortViews()
-          "
-          data-testid="execute-open-legacy-view-action"
-        >
-          <Button
-            v-if="!isExecuted"
-            class="action-button action-execute"
-            primary
-            :disabled="!canExecute"
-            compact
-            @click="openLegacyPortView(true)"
-          >
-            <PlayIcon />
-            Execute and open legacy port view
-          </Button>
-          <Button
-            :with-border="!isExecuted"
-            :class="['action-button', { 'dim-border': !isExecuted }]"
-            :primary="isExecuted"
-            compact
-            @click="openLegacyPortView(false)"
-          >
-            Open legacy port view
-          </Button>
-        </div>
-      </span>
-    </div>
+    <ValidationInfo
+      :validation-error="currentValidationError"
+      :selected-node="singleSelectedNode"
+      :selected-port-index="selectedPortIndex"
+    />
 
-    <template v-if="!validationErrors">
+    <template v-if="!selectionValidationError">
       <NodeViewTabOutput
         v-if="isViewTabSelected && $features.shouldDisplayEmbeddedViews()"
         :project-id="projectId!"
         :workflow-id="workflowId"
         :selected-node="singleSelectedNode"
         :available-port-types="availablePortTypes"
-        @output-state-change="outputState = $event"
+        @loading-state-change="loadingState = $event"
+        @validation-error="currentValidationError = $event"
       />
 
       <PortViewTabOutput
@@ -271,67 +207,14 @@ export default defineComponent({
         :selected-node="singleSelectedNode"
         :selected-port-index="selectedPortIndex!"
         :available-port-types="availablePortTypes"
-        @output-state-change="outputState = $event"
-        @execute-node="
-          $store.dispatch('workflow/executeNodes', [singleSelectedNode.id])
-        "
+        @loading-state-change="loadingState = $event"
+        @validation-error="currentValidationError = $event"
       />
     </template>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
-@keyframes spin {
-  100% {
-    transform: rotate(-360deg);
-  }
-}
-
-@keyframes show {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.placeholder {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-
-  & .is-viewer-loading {
-    /* Wait for a short amount of time before rendering loading placeholder
-       to prevent flickering when the table loads very quickly */
-    animation: show 100ms ease-in 150ms;
-    animation-fill-mode: both;
-  }
-
-  & span {
-    font-size: 16px;
-    text-align: center;
-    font-style: italic;
-    color: var(--knime-masala);
-
-    & .loading-icon {
-      @mixin svg-icon-size 24;
-
-      animation: spin 2s linear infinite;
-      margin: auto;
-      stroke: var(--knime-masala);
-      vertical-align: -6px;
-      margin-right: 10px;
-    }
-  }
-}
-
 .output-container {
   height: 100%;
   padding: 10px 10px 0;
@@ -366,17 +249,5 @@ export default defineComponent({
       margin-left: 0;
     }
   }
-}
-
-.action-button {
-  margin-top: 20px;
-}
-
-.action-execute {
-  margin-right: 5px;
-}
-
-.dim-border {
-  --theme-button-small-border-color: var(--knime-silver-sand);
 }
 </style>

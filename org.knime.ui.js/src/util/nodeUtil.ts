@@ -23,7 +23,7 @@ export const canExecute = (node: KnimeNode, portIndex: number) => {
   return isNodeMetaNode(node)
     ? node.outPorts[portIndex].nodeState ===
         MetaNodePort.NodeStateEnum.CONFIGURED
-    : node.allowedActions?.canExecute;
+    : Boolean(node.allowedActions?.canExecute);
 };
 
 /**

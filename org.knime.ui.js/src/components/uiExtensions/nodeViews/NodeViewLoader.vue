@@ -10,7 +10,7 @@ import { API } from "@api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 
 import { useResourceLocation } from "../common/useResourceLocation";
-import type { ExtensionConfig } from "../common/types";
+import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 
 /**
  * Renders a node view
@@ -24,7 +24,9 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(["stateChange"]);
+const emit = defineEmits<{
+  loadingStateChange: [value: UIExtensionLoadingState];
+}>();
 
 const error = ref<any>(null);
 const isConfigReady = ref(false);
@@ -72,11 +74,11 @@ const loadExtensionConfig = async () => {
 watch(toRef(props, "selectedNode"), async () => {
   error.value = null;
   isLoading.value = true;
-  emit("stateChange", { state: "loading", message: "Loading view" });
+  emit("loadingStateChange", { value: "loading", message: "Loading view" });
 
   await loadExtensionConfig();
 
-  emit("stateChange", { state: "ready" });
+  emit("loadingStateChange", { value: "ready" });
 
   isLoading.value = false;
 });
@@ -124,15 +126,20 @@ const apiLayer: UIExtensionAPILayer = {
 
 onMounted(async () => {
   try {
-    emit("stateChange", { state: "loading", message: "Loading view" });
+    emit("loadingStateChange", { value: "loading", message: "Loading view" });
 
     await loadExtensionConfig();
 
     isConfigReady.value = true;
-    emit("stateChange", { state: "ready" });
+    emit("loadingStateChange", { value: "ready" });
   } catch (_error) {
     error.value = _error;
-    emit("stateChange", { state: "error", message: _error });
+    // TODO: improve error type checking
+    emit("loadingStateChange", {
+      value: "error",
+      message: _error as string,
+      error: _error,
+    });
   }
 });
 

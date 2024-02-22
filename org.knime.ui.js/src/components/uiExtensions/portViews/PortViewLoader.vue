@@ -9,7 +9,7 @@ import { AlertType, type Alert } from "@knime/ui-extension-service";
 import { API } from "@api";
 import type { KnimeNode } from "@/api/custom-types";
 
-import type { ExtensionConfig } from "../common/types";
+import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 
 /**
@@ -27,9 +27,11 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(["stateChange"]);
+const emit = defineEmits<{
+  loadingStateChange: [value: UIExtensionLoadingState];
+}>();
 
-const error = ref(null);
+const error = ref<any>(null);
 const extensionConfig = ref<ExtensionConfig | null>(null);
 const isConfigReady = ref(false);
 const isLoading = ref(false);
@@ -96,15 +98,15 @@ const loadExtensionConfig = async () => {
 watch(toRef(props, "uniquePortKey"), async () => {
   error.value = null;
   isLoading.value = true;
-  emit("stateChange", {
-    state: "loading",
-    portKey: props.uniquePortKey,
+  emit("loadingStateChange", {
+    value: "loading",
+    message: "Loading port view data",
   });
 
   await loadExtensionConfig();
-  emit("stateChange", {
-    state: "ready",
-    portKey: props.uniquePortKey,
+
+  emit("loadingStateChange", {
+    value: "ready",
   });
 
   isLoading.value = false;
@@ -146,9 +148,9 @@ const apiLayer: UIExtensionAPILayer = {
     consola.warn("Alerts not yet implemented");
 
     if (alert.type === AlertType.ERROR) {
-      emit("stateChange", {
-        state: "error",
-        message: alert.subtitle,
+      emit("loadingStateChange", {
+        value: "error",
+        message: alert.subtitle ?? "",
       });
 
       // remove button if there is one
@@ -167,18 +169,24 @@ const apiLayer: UIExtensionAPILayer = {
 };
 
 onMounted(async () => {
-  emit("stateChange", {
-    state: "loading",
-    portKey: props.uniquePortKey,
+  emit("loadingStateChange", {
+    value: "loading",
+    message: "Loading port view data",
   });
 
   try {
     await loadExtensionConfig();
 
     isConfigReady.value = true;
-    emit("stateChange", { state: "ready", portKey: props.uniquePortKey });
-  } catch (error) {
-    emit("stateChange", { state: "error", message: error });
+    emit("loadingStateChange", { value: "ready" });
+  } catch (_error) {
+    error.value = _error;
+    // TODO: improve error type checking
+    emit("loadingStateChange", {
+      value: "error",
+      message: _error as string,
+      error: _error,
+    });
   }
 });
 

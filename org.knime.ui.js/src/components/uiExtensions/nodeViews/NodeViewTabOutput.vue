@@ -1,4 +1,11 @@
-<script>
+<script setup lang="ts">
+import { computed, watch } from "vue";
+import type { NativeNode } from "@/api/gateway-api/generated-api";
+import type { AvailablePortTypes } from "@/api/custom-types";
+
+import NodeViewLoader from "./NodeViewLoader.vue";
+import type { UIExtensionLoadingState, ValidationError } from "../common/types";
+
 import {
   buildMiddleware,
   validateNodeConfigurationState,
@@ -6,20 +13,19 @@ import {
   validateNodeNotBusy,
 } from "../common/output-validator";
 
-import NodeViewLoader from "./NodeViewLoader.vue";
-
 /**
  * Runs a set of validations that qualify whether a node from a given group is able
  * to show its view
- * @param {Object} payload
- * @param {Object} payload.selectedNodes the group of nodes that are currently selected
- * @param {number} payload.isDragging whether there's a drag operation taking place
- * @param {Object} payload.portTypes dictionary of Port Types. Can be used to get more information on the port based
- * on its typeId property
- * @returns {Object} object containing an `error` property. If not null then it means the node is invalid. Additionally
+ * @returns object containing an `error` property. If not null then it means the node is invalid. Additionally
  * more details about the error can be read from that `error` object
  */
-export const runNodeValidationChecks = ({ selectedNode, portTypes }) => {
+const runNodeValidationChecks = ({
+  selectedNode,
+  portTypes,
+}: {
+  selectedNode: NativeNode;
+  portTypes: AvailablePortTypes;
+}) => {
   const validationMiddleware = buildMiddleware(
     validateNodeConfigurationState,
     validateNodeNotBusy,
@@ -36,100 +42,37 @@ export const runNodeValidationChecks = ({ selectedNode, portTypes }) => {
  * via several validation constraints. It yields back information about said validations as well as information
  * about the loading state of the PortView
  */
-export default {
-  components: {
-    NodeViewLoader,
-  },
 
-  props: {
-    projectId: {
-      type: String,
-      required: true,
-    },
-    workflowId: {
-      type: String,
-      required: true,
-    },
-    selectedNode: {
-      type: Object,
-      required: true,
-    },
-    availablePortTypes: {
-      type: Object,
-      required: true,
-    },
-  },
-
-  emits: ["outputStateChange"],
-
-  data() {
-    return {
-      nodeViewState: null,
-    };
-  },
-
-  computed: {
-    nodeErrors() {
-      const { error } = runNodeValidationChecks({
-        selectedNode: this.selectedNode,
-        portTypes: this.availablePortTypes,
-      });
-
-      return error;
-    },
-  },
-
-  watch: {
-    /**
-     * Emits null or an object with the following structure:
-     *  EventPayload {
-     *      message: string;
-     *      loading?: string;
-     *      error?: {
-     *          type: string;
-     *          code: string;
-     *      }
-     *  }
-     */
-    nodeErrors: {
-      immediate: true,
-      handler() {
-        if (this.nodeErrors) {
-          this.$emit("outputStateChange", {
-            loading: this.nodeErrors.code === "NODE_BUSY",
-            message: this.nodeErrors.message,
-            error: this.nodeErrors,
-          });
-        }
-      },
-    },
-  },
-
-  methods: {
-    onNodeViewStateChange(newState) {
-      this.nodeViewState = newState;
-
-      switch (this.nodeViewState?.state) {
-        case "loading": {
-          this.$emit("outputStateChange", {
-            message: "Loading view",
-            loading: true,
-          });
-          return;
-        }
-        case "error": {
-          this.$emit("outputStateChange", {
-            message: this.nodeViewState.message,
-          });
-          return;
-        }
-        default: {
-          this.$emit("outputStateChange", null);
-        }
-      }
-    },
-  },
+type Props = {
+  projectId: string;
+  workflowId: string;
+  selectedNode: NativeNode;
+  availablePortTypes: AvailablePortTypes;
 };
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  loadingStateChange: [value: UIExtensionLoadingState];
+  validationError: [value: ValidationError | null];
+}>();
+
+const nodeErrors = computed(() => {
+  const result = runNodeValidationChecks({
+    selectedNode: props.selectedNode,
+    portTypes: props.availablePortTypes,
+  });
+
+  return result?.error ?? null;
+});
+
+watch(
+  nodeErrors,
+  () => {
+    emit("validationError", nodeErrors.value ?? null);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -138,6 +81,6 @@ export default {
     :project-id="projectId"
     :workflow-id="workflowId"
     :selected-node="selectedNode"
-    @state-change="onNodeViewStateChange"
+    @loading-state-change="$emit('loadingStateChange', $event)"
   />
 </template>

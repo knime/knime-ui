@@ -32,8 +32,8 @@ export const features: ($store: Store<RootStoreState>) => Features = (
   shouldDisplayEmbeddedDialogs: () =>
     getFlagValue($store, "embedded_views_and_dialogs"),
 
-  shouldDisplayEmbeddedViews: () =>
-    getFlagValue($store, "embedded_views_and_dialogs"),
+  shouldDisplayEmbeddedViews: () => true,
+  // getFlagValue($store, "embedded_views_and_dialogs"),
 
   isKaiPermitted: () => getFlagValue($store, "ai_assistant"),
 
