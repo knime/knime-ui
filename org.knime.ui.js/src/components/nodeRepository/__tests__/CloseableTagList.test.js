@@ -1,19 +1,11 @@
-import { expect, describe, it, vi } from "vitest";
+import { expect, describe, it } from "vitest";
 import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import SelectableTagList from "@/components/common/SelectableTagList.vue";
-import CloseableTagList, {
-  minNumberOfInitialTags,
-} from "../CloseableTagList.vue";
+import CloseableTagList from "../CloseableTagList.vue";
 
-vi.mock(
-  "vue3-click-away",
-  () => ({
-    mixin: {},
-  }),
-  { virtual: true },
-);
+const minNumberOfInitialTags = 1;
 
 const sevenTags = [
   "tag1",
@@ -30,7 +22,6 @@ describe("CloseableTagList.vue", () => {
   const doShallowMount = (props) =>
     shallowMount(CloseableTagList, {
       props,
-      global: { directives: { clickAway: () => {} } },
     });
 
   it("renders with empty tags", () => {
@@ -73,24 +64,12 @@ describe("CloseableTagList.vue", () => {
       tags: sevenTags,
       modelValue: threeTags,
     });
-    await wrapper.setData({ displayAll: true });
+    await wrapper.findComponent(SelectableTagList).vm.$emit("show-more");
     let btn = wrapper.find(".tags-popout-close");
-    expect(wrapper.vm.displayAll).toBe(true);
     expect(btn.exists()).toBe(true);
     expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
       true,
     );
-  });
-
-  it("hides more on clickaway", async () => {
-    const wrapper = doShallowMount({
-      tags: sevenTags,
-      modelValue: threeTags,
-    });
-    await wrapper.setData({ displayAll: true });
-    expect(wrapper.vm.displayAll).toBe(true);
-    wrapper.vm.onClickAway();
-    expect(wrapper.vm.displayAll).toBe(false);
   });
 
   describe("dynamic number of initial tags", () => {
@@ -154,7 +133,7 @@ describe("CloseableTagList.vue", () => {
         modelValue: threeTags,
       });
 
-      await wrapper.setData({ displayAll: true });
+      await wrapper.findComponent(SelectableTagList).vm.$emit("show-more");
       let btn = wrapper.find(".tags-popout-close");
       expect(wrapper.vm.displayAll).toBe(true);
       expect(btn.exists()).toBe(true);

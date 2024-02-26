@@ -2,7 +2,6 @@ import { expect, describe, it, vi, afterEach } from "vitest";
 import { h, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import type { Store } from "vuex";
-// import { mixin as VueClickAway } from "vue3-click-away";
 
 import { mockVuexStore } from "@/test/utils";
 import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
@@ -27,30 +26,6 @@ import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
 import RichTextAnnotation from "../RichTextAnnotation.vue";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
 import TransformControls from "../TransformControls.vue";
-
-// vi.mock("vue3-click-away", () => {
-//   const createMockClickAwayDirective = () => {
-//     let callback = () => {};
-
-//     return {
-//       mounted(el, bindings) {
-//         callback = bindings.value;
-//       },
-//       trigger() {
-//         callback();
-//       },
-//     };
-//   };
-
-//   const mockClickAwayDirective = createMockClickAwayDirective();
-
-//   return {
-//     mixin: {
-//       trigger: mockClickAwayDirective.trigger,
-//     },
-//     directive: mockClickAwayDirective,
-//   };
-// });
 
 describe("WorkflowAnnotation.vue", () => {
   const defaultProps = {

@@ -7,7 +7,7 @@ import {
   watch,
   type ComponentPublicInstance,
 } from "vue";
-import { useMagicKeys, onClickOutside } from "@vueuse/core";
+import { onClickOutside, useMagicKeys } from "@vueuse/core";
 
 import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
 import type {
@@ -219,7 +219,9 @@ const transformControlsRef = ref<ComponentPublicInstance<
   typeof TransformControls
 > | null>(null);
 
-onClickOutside(transformControlsRef, saveContent);
+onClickOutside(transformControlsRef, saveContent, {
+  ignore: [".editor-toolbar.ignore-click-outside"],
+});
 
 const keys = useMagicKeys();
 const saveAnnotationKeys = [isMac() ? keys["Cmd+Enter"] : keys["Ctrl+Enter"]];

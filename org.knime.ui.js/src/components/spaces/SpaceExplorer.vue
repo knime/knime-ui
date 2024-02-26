@@ -206,6 +206,8 @@ const { onMoveItems, onDuplicateItems } = useMovingItems({ projectId });
 
 const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
   useCustomDragPreview({ projectId });
+
+const miniActions = ref<HTMLElement | null>(null);
 </script>
 
 <template>
@@ -215,6 +217,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
         <SpaceSelectionDropdown :project-id="projectId" />
 
         <SpaceExplorerActions
+          ref="miniActions"
           mode="mini"
           :project-id="projectId"
           :selected-item-ids="selectedItemIds"
@@ -243,6 +246,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
         :full-path="fullPath"
         :item-icon-renderer="itemIconRenderer"
         :active-renamed-item-id="activeRenamedItemId"
+        :click-outside-exception="miniActions"
         dragging-animation-mode="manual"
         @change-directory="onChangeDirectory"
         @change-selection="onSelectionChange"

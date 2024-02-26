@@ -42,10 +42,9 @@
     "mitt": "^3.0.1",
     "raf-throttle": "2.0.6",
     "splitpanes": "^3.1.5",
-    "vue": "^3.4.15",
+    "vue": "^3.4.16",
     "vue-router": "^4.1.6",
     "vuex": "^4.1.0",
-    "vue3-click-away": "1.2.4",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {

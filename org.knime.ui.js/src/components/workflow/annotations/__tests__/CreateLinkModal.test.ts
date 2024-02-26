@@ -11,12 +11,14 @@ describe("CreateWorkflowModal.vue", () => {
     url = "https://mock.url",
     text = "mock url",
     isActive = true,
+    isEdit = false,
   } = {}) => {
     const wrapper = mount(CreateLinkModal, {
       props: {
         url,
         text,
         isActive,
+        isEdit,
       },
       global: {
         stubs: { BaseModal: true },

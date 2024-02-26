@@ -71,9 +71,13 @@ const isDraggingNodeInCanvas = computed(() => store.state.workflow.isDragging);
 
 const rootEl = ref<HTMLDivElement | null>(null);
 
-onClickOutside(rootEl, () => {
-  emit("menuClose");
-});
+onClickOutside(
+  rootEl,
+  () => {
+    emit("menuClose");
+  },
+  { capture: false },
+);
 
 const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
   let kanvas = document.getElementById("kanvas")!;

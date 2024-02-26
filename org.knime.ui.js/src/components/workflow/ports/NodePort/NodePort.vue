@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { inject, computed } from "vue";
 import { useStore } from "vuex";
-import { directive as vClickAway } from "vue3-click-away";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
@@ -15,6 +14,7 @@ import NodePortActions from "./NodePortActions.vue";
 import NodePortActiveConnector from "./NodePortActiveConnector.vue";
 
 import { usePortDragging } from "./usePortDragging";
+import { onClickOutside } from "@vueuse/core";
 
 interface Props {
   direction: "in" | "out";
@@ -137,12 +137,13 @@ const onClose = () => {
     emit("deselect");
   }
 };
+
+onClickOutside(tooltipRef, onClose, { capture: false });
 </script>
 
 <template>
   <g
     ref="tooltipRef"
-    v-click-away="() => onClose()"
     :transform="`translate(${relativePosition})`"
     :class="{ targeted: targeted }"
     @pointerdown="onPointerDown"

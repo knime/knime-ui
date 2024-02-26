@@ -1,82 +1,77 @@
-<script>
-import { mixin as VueClickAway } from "vue3-click-away";
+<script lang="ts" setup>
 import ClosePopoverIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
-
 import SelectableTagList from "@/components/common/SelectableTagList.vue";
+import { computed, ref } from "vue";
+import { onClickOutside } from "@vueuse/core";
 
 const maxLengthOfTagInChars = 31;
 const maxLinesOfTags = 1;
-export const maxNumberOfInitialTags = 10;
-export const minNumberOfInitialTags = 1;
+const maxNumberOfInitialTags = 10;
+const minNumberOfInitialTags = 1;
 
 /**
  * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a
  * popover. Designed to work in NodeRepository. It has a dynamic number of initially shown tags based on the length
  * (number of chars) of a tag.
  */
-export default {
-  components: {
-    SelectableTagList,
-    ClosePopoverIcon,
-  },
-  mixins: [VueClickAway],
-  props: {
-    /**
-     * List of tags (Strings) to display. Not including selected ones.
-     */
-    tags: {
-      type: Array,
-      default: () => [],
-    },
-    /**
-     * List of selected tags (Strings) to display.
-     */
-    modelValue: {
-      type: Array,
-      default: () => [],
-    },
-  },
-  emits: ["update:modelValue"],
-  data() {
-    return {
-      displayAll: false,
-    };
-  },
-  computed: {
-    numberOfInitialTags() {
-      let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
-      let tagsToShow = 0;
 
-      // Count amount of tags that fit inside the limit of availableChars
-      for (let tag of this.tags) {
-        availableChars -= tag.length;
-        if (availableChars > 0) {
-          tagsToShow++;
-        } else {
-          break;
-        }
-      }
-      // limit to lower and upper bound
-      return Math.min(
-        Math.max(tagsToShow, minNumberOfInitialTags),
-        maxNumberOfInitialTags,
-      );
-    },
-  },
-  methods: {
-    onUpdateModelValue(value) {
-      this.displayAll = false;
-      this.$emit("update:modelValue", value);
-    },
-    onClickAway() {
-      this.displayAll = false;
-    },
-  },
+interface Props {
+  /**
+   * List of tags (Strings) to display. Not including selected ones.
+   */
+  tags?: string[];
+  /**
+   * List of selected tags (Strings) to display.
+   */
+  modelValue?: string[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tags: () => [],
+  modelValue: () => [],
+});
+
+interface Emits {
+  (e: "update:modelValue", value: string[]): void;
+}
+
+const emit = defineEmits<Emits>();
+
+const displayAll = ref(false);
+
+const numberOfInitialTags = computed(() => {
+  let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
+  let tagsToShow = 0;
+
+  // Count amount of tags that fit inside the limit of availableChars
+  for (const tag of props.tags) {
+    availableChars -= tag.length;
+    if (availableChars > 0) {
+      tagsToShow++;
+    } else {
+      break;
+    }
+  }
+  // limit to lower and upper bound
+  return Math.min(
+    Math.max(tagsToShow, minNumberOfInitialTags),
+    maxNumberOfInitialTags,
+  );
+});
+
+const onUpdateModelValue = (value: string[]) => {
+  displayAll.value = false;
+  emit("update:modelValue", value);
 };
+
+const closeableTagsRef = ref<HTMLElement | null>(null);
+onClickOutside(closeableTagsRef, () => {
+  displayAll.value = false;
+});
 </script>
 
 <template>
-  <div v-click-away="onClickAway" class="closeable-tags">
+  <div ref="closeableTagsRef" class="closeable-tags">
     <div class="popout">
       <SelectableTagList
         ref="tagList"
