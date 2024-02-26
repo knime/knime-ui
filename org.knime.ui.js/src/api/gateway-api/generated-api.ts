@@ -1368,6 +1368,116 @@ export namespace JobManager {
     }
 }
 /**
+ * A message send to K-AI. Consists of the role (user or AI) and a message content.
+ * @export
+ * @interface KaiMessage
+ */
+export interface KaiMessage {
+
+    /**
+     * Role of the message sender.
+     * @type {string}
+     * @memberof KaiMessage
+     */
+    role: string;
+    /**
+     * Content of the message.
+     * @type {string}
+     * @memberof KaiMessage
+     */
+    content: string;
+
+}
+
+
+/**
+ * Encapsulates a request to K-AI which contains the entire conversation  as well as information on the open workflow, subworkflow and selected nodes. 
+ * @export
+ * @interface KaiRequest
+ */
+export interface KaiRequest {
+
+    /**
+     * The conversationId is assigned by the service and allows to correlate requests. Null for the first request of a conversation. 
+     * @type {string}
+     * @memberof KaiRequest
+     */
+    conversationId?: string;
+    /**
+     * Identifies the top-level workflow.
+     * @type {string}
+     * @memberof KaiRequest
+     */
+    projectId: string;
+    /**
+     * ID of the subworkflow the user is in.
+     * @type {string}
+     * @memberof KaiRequest
+     */
+    workflowId: string;
+    /**
+     * The IDs of the selected nodes.
+     * @type {Array<string>}
+     * @memberof KaiRequest
+     */
+    selectedNodes: Array<string>;
+    /**
+     *
+     * @type {Array<KaiMessage>}
+     * @memberof KaiRequest
+     */
+    messages: Array<KaiMessage>;
+
+}
+
+
+/**
+ *
+ * @export
+ * @interface KaiUiStrings
+ */
+export interface KaiUiStrings {
+
+    /**
+     * The disclaimer users have to accept before they can chat with K-AI.
+     * @type {string}
+     * @memberof KaiUiStrings
+     */
+    disclaimer: string;
+    /**
+     *
+     * @type {KaiWelcomeMessages}
+     * @memberof KaiUiStrings
+     */
+    welcomeMessages: KaiWelcomeMessages;
+
+}
+
+
+/**
+ * The messages K-AI starts the conversations with.
+ * @export
+ * @interface KaiWelcomeMessages
+ */
+export interface KaiWelcomeMessages {
+
+    /**
+     * The welcome message for the Q&amp;A mode
+     * @type {string}
+     * @memberof KaiWelcomeMessages
+     */
+    qa: string;
+    /**
+     * The welcome message for the Build mode
+     * @type {string}
+     * @memberof KaiWelcomeMessages
+     */
+    build: string;
+
+}
+
+
+/**
  * Represents a single link including the URL and link text.
  * @export
  * @interface Link
@@ -4304,6 +4414,57 @@ const event = function(rpcClient: RPCClient) {
 };
 
 /**
+ * kai - functional programming interface
+ * @export
+ */
+const kai = function(rpcClient: RPCClient) {
+    return {
+        /**
+         * Aborts the currently running request to the given chain.
+         * @param {string} kaiChainId Id of a K-AI chain.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        abortAiRequest(
+        	params: { kaiChainId: string  }
+        ): Promise<Response> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('KAIService.abortAiRequest', { ...defaultParams, ...params });
+        },
+        /**
+         * Fetches the disclaimer and welcome messages displayed in K-AI's chat interface.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getUiStrings(
+        	params: {  }
+        ): Promise<KaiUiStrings> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('KAIService.getUiStrings', { ...defaultParams, ...params });
+        },
+        /**
+         * Sends a request to a chain.
+         * @param {string} kaiChainId Id of a K-AI chain.
+         * @param {KaiRequest} kaiRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        makeAiRequest(
+        	params: { kaiChainId: string,  kaiRequest: KaiRequest  }
+        ): Promise<Response> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('KAIService.makeAiRequest', { ...defaultParams, ...params });
+        },
+    }
+};
+
+/**
  * node - functional programming interface
  * @export
  */
@@ -5356,6 +5517,7 @@ export const createAPI = (configuration: Configuration) => {
     const api = { 
         application: application(rpcClient),
         event: event(rpcClient),
+        kai: kai(rpcClient),
         node: node(rpcClient),
         noderepository: noderepository(rpcClient),
         port: port(rpcClient),
