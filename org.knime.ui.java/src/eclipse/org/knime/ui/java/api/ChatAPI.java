@@ -53,7 +53,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 
@@ -62,7 +61,6 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
  *
  * @author Adrian Nembach, KNIME GmbH, Konstanz, Germany
  */
-@SuppressWarnings("restriction")
 public final class ChatAPI {
 
     /**
@@ -71,32 +69,6 @@ public final class ChatAPI {
      * @author Adrian Nembach, KNIME GmbH, Konstanz, Germany
      */
     public interface ChatListener {
-
-        /**
-         * Invoked when the user sends a message in the chat.
-         *
-         * @param conversationId id of the conversation (null if this is the first message of the conversation)
-         * @param chainType the type of chain (qa or build) to message
-         * @param projectId identifier of the workflow project
-         * @param workflowId identifier of the subworkflow (i.e. meta node or component)
-         * @param selectedNodes identifiers of the currently selected nodes
-         * @param messages a JSON string in the form [{"role": role, "content": content}, ...]
-         */
-        void onNewMessage(String conversationId, String chainType, String projectId, String workflowId, String[] selectedNodes, final String messages);
-
-        /**
-         * Invoked if the user cancels the answer of the currently processed message.
-         *
-         * @param conversationId id of the conversation
-         * @param chainType the type of chain to cancel
-         */
-        void onCancel(String conversationId, String chainType);
-
-
-        /**
-         * @return the UI strings (disclaimer and welcome messages) in JSON format
-         */
-        String getUiStrings();
 
         /**
          * @return the ID of the hub that provides the ai-service
@@ -127,31 +99,6 @@ public final class ChatAPI {
         return LISTENERS.remove(listener);
     }
 
-    /**
-     * @param conversationId id of the conversation (null if this is the first message of the conversation)
-     * @param chainType the type of chain to message (qa or build)
-     * @param projectId the workflow project identifier
-     * @param workflowId the identifier of the subworkflow (
-     * @param selectedNodes the identifiers of the currently selected nodes
-     * @param messages a JSON string in the form [{"role": role, "content": content}, ...]
-     */
-    @API
-    public static void makeAiRequest(final String conversationId, final String chainType, final String projectId,
-        final String workflowId, final Object[] selectedNodes, final String messages) {
-        var selectedNodeIds = Stream.of(selectedNodes).map(String.class::cast).toArray(String[]::new);
-        LISTENERS.forEach(l -> l.onNewMessage(conversationId, chainType, projectId, workflowId, selectedNodeIds, messages));
-    }
-
-    /**
-     * Aborts the specified chain.
-     *
-     * @param conversationId the id of the conversation
-     * @param chainType the chain to abort (qa or build)
-     */
-    @API
-    public static void abortAiRequest(final String conversationId, final String chainType) {
-        LISTENERS.forEach(l -> l.onCancel(conversationId, chainType));
-    }
 
 
     private static Optional<ChatListener> getListener() {
@@ -164,14 +111,6 @@ public final class ChatAPI {
     @API
     public static String getHubID() {
         return getListener().map(ChatListener::getHubID).orElse(null);
-    }
-
-    /**
-     * @return the ID of the hub that provides the ai-service
-     */
-    @API(runInUIThread = false) // unnecessarily blocks the UI otherwise - see AP-21492
-    public static String getUiStrings() {
-        return getListener().map(ChatListener::getUiStrings).orElse(null);
     }
 
     /**
