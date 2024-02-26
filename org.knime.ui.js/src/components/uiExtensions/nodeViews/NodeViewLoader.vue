@@ -182,6 +182,7 @@ export default defineComponent({
   <UIExtension
     v-if="isReady"
     :extension-config="extensionConfig!"
+    :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
   />

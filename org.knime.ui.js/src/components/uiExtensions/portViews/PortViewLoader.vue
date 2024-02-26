@@ -225,6 +225,7 @@ export default defineComponent({
   <UIExtension
     v-if="!error && configReady && !loading"
     :extension-config="extensionConfig!"
+    :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
   />
