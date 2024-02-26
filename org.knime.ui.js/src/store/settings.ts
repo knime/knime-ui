@@ -11,6 +11,7 @@ export interface SettingsState {
   settings: {
     nodeOutputSize: number;
     nodeRepositoryDisplayMode: NodeRepositoryDisplayModesType;
+    nodeDialogSize: number;
   };
 }
 
@@ -27,6 +28,7 @@ export const state = (): SettingsState => ({
   settings: {
     nodeRepositoryDisplayMode: "icon",
     nodeOutputSize: 40,
+    nodeDialogSize: 100,
   },
 });
 

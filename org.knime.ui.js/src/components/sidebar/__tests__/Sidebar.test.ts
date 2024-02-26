@@ -9,7 +9,6 @@ import * as nodeRepositoryStore from "@/store/nodeRepository";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import Metainfo from "@/assets/metainfo.svg";
 
-import NodeDialogWrapper from "@/components/uiExtensions/nodeDialogs/NodeDialogWrapper.vue";
 import Sidebar from "../Sidebar.vue";
 import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
 
@@ -62,7 +61,6 @@ describe("Sidebar", () => {
         stubs: {
           ContextAwareDescription: true,
           NodeRepository: true,
-          NodeDialogWrapper: true,
           SidebarSpaceExplorer: true,
           AiAssistant: true,
         },
@@ -138,18 +136,6 @@ describe("Sidebar", () => {
   it("has portal for extension panel", () => {
     const { wrapper } = doMount();
     expect(wrapper.findComponent(SidebarExtensionPanel).exists()).toBe(true);
-  });
-
-  it("should not display node dialog section when flag is set to false", () => {
-    const { wrapper } = doMount({
-      mockFeatureFlags: {
-        shouldDisplayEmbeddedDialogs: vi.fn(() => false),
-        isKaiPermitted: () => false,
-      },
-    });
-
-    expect(wrapper.find("ul").findAll("li").length).toBe(3);
-    expect(wrapper.findComponent(NodeDialogWrapper).exists()).toBe(false);
   });
 
   it("should show node repository if workflow is empty", () => {

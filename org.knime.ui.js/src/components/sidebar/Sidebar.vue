@@ -2,7 +2,6 @@
 import { defineAsyncComponent, computed, watch } from "vue";
 import type { FunctionalComponent, SVGAttributes } from "vue";
 
-import NodeCogIcon from "webapps-common/ui/assets/img/icons/node-cog.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import AiIcon from "webapps-common/ui/assets/img/icons/ai-general.svg";
@@ -40,12 +39,6 @@ const ContextAwareDescription = defineAsyncComponent({
 
 const NodeRepository = defineAsyncComponent({
   loader: () => import("@/components/nodeRepository/NodeRepository.vue"),
-  loadingComponent: SidebarContentLoading,
-});
-
-const NodeDialogWrapper = defineAsyncComponent({
-  loader: () =>
-    import("@/components/uiExtensions/nodeDialogs/NodeDialogWrapper.vue"),
   loadingComponent: SidebarContentLoading,
 });
 
@@ -131,15 +124,6 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       onClick: () => activateSection(TABS.NODE_REPOSITORY),
     }),
 
-    ...registerSidebarSection($features.shouldDisplayEmbeddedDialogs(), {
-      name: TABS.NODE_DIALOG,
-      title: "Node dialog",
-      icon: NodeCogIcon,
-      isActive: isTabActive(TABS.NODE_DIALOG),
-      isExpanded: expanded.value,
-      onClick: () => activateSection(TABS.NODE_DIALOG),
-    }),
-
     ...registerSidebarSection(
       permissions.value.canAccessSpaceExplorer &&
         compatibility.isSpaceExplorerSupported(),
@@ -212,12 +196,6 @@ const hasSection = (name: TabValues) => {
           "
           v-show="isTabActive(TABS.NODE_REPOSITORY)"
           key="node-repository"
-        />
-
-        <NodeDialogWrapper
-          v-if="hasSection(TABS.NODE_DIALOG)"
-          v-show="isTabActive(TABS.NODE_DIALOG)"
-          key="node-dialog"
         />
 
         <SidebarSpaceExplorer
@@ -299,6 +277,12 @@ nav {
     /* prevent scrollbar jump when switching between tabs in the LeftCollapsiblePanel */
     overflow-y: hidden;
   }
+}
+
+#right-panel {
+  /* flex: 0 0 auto; */
+  display: flex;
+  border-right: 1px solid var(--knime-silver-sand);
 }
 
 .tab-enter-active {

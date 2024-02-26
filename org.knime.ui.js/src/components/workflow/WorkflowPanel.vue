@@ -6,7 +6,10 @@ import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 import type { WorkflowState } from "@/store/workflow";
+import type { SettingsState } from "@/store/settings";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
+import RightPanel from "../sidebar/RightPanel.vue";
+import SplitPanel from "../common/SplitPanel.vue";
 
 export default defineComponent({
   components: {
@@ -15,6 +18,8 @@ export default defineComponent({
     QuickAddNodeMenu,
     PortTypeMenu,
     WorkflowInfoBar,
+    RightPanel,
+    SplitPanel,
   },
   computed: {
     ...mapState("workflow", {
@@ -24,6 +29,10 @@ export default defineComponent({
     }),
     ...mapState("workflow", ["portTypeMenu", "quickAddNodeMenu"]),
     ...mapState("application", ["contextMenu"]),
+    ...mapState("settings", {
+      nodeOutputSize: (state: unknown) =>
+        (state as SettingsState).settings.nodeOutputSize,
+    }),
     ...mapGetters("workflow", [
       "isLinked",
       "isInsideLinked",
@@ -34,11 +43,27 @@ export default defineComponent({
       "isRemoteWorkflow",
     ]),
     ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapGetters("selection", ["selectedNodeIds"]),
+    ...mapGetters("selection", ["selectedNodeIds", "singleSelectedNode"]),
     ...mapGetters("application", [
       "hasActiveProjectAnOrigin",
       "hasAnnotationModeEnabled",
     ]),
+    nodeDialogSize: {
+      get() {
+        return this.$store.state.settings.settings.nodeDialogSize;
+      },
+      set(value: number) {
+        this.$store.dispatch("settings/updateSetting", {
+          key: "nodeDialogSize",
+          value,
+        });
+      },
+    },
+    showNodeDialog() {
+      return Boolean(
+        this.singleSelectedNode && this.singleSelectedNode?.hasDialog,
+      );
+    },
   },
   watch: {
     // close quickAddNodeMenu if node selection changes
@@ -109,11 +134,21 @@ export default defineComponent({
 
     <WorkflowInfoBar />
 
-    <!--
+    <SplitPanel
+      id="kanvasOutputSplitter"
+      v-model:secondary-size="nodeDialogSize"
+      direction="right"
+      :show-secondary-panel="showNodeDialog"
+    >
+      <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
       instead of diffing old and new workflow.
     -->
-    <WorkflowCanvas :key="`${workflow!.projectId}-${activeWorkflowId}`" />
+      <WorkflowCanvas :key="`${workflow!.projectId}-${activeWorkflowId}`" />
+      <template #secondary>
+        <RightPanel id="right-panel" />
+      </template>
+    </SplitPanel>
   </div>
 </template>
 
