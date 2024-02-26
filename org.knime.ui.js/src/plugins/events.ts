@@ -88,6 +88,28 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     ShowToastEvent(toast) {
       $toast.show(toast);
     },
+
+    ProjectDisposedEvent() {
+      $store.dispatch("application/updateGlobalLoader", {
+        loading: true,
+        config: { displayMode: "transparent" },
+      });
+
+      $toast.show({
+        headline: "Session expired",
+        message: "Refresh the page to reactivate the session",
+        type: "error",
+        autoRemove: false,
+        buttons: [
+          {
+            text: "Refresh page",
+            callback: () => {
+              window.location.reload();
+            },
+          },
+        ],
+      });
+    },
   });
 
   API.desktop.registerEventHandlers({
