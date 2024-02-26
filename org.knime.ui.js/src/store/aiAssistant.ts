@@ -4,6 +4,8 @@ import { API } from "@api";
 import type { RootStoreState } from "./types";
 import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
 
+const LOCAL_STORAGE_KEY = "aiAssistantState";
+
 /**
  * This file contains the Vuex store module for the AI assistant.
  */
@@ -40,6 +42,12 @@ export interface AiAssistantState {
 
 type ChainType = Exclude<keyof AiAssistantState, "hubID">;
 
+type PersistedConversationState = Pick<
+  ConversationState,
+  "conversationId" | "messages"
+>;
+type PersistedAiAssistantState = Record<ChainType, PersistedConversationState>;
+
 type AiAssistantEventPayload = {
   type: "token" | "result" | "error" | "status_update";
   payload: {
@@ -50,25 +58,40 @@ type AiAssistantEventPayload = {
   conversation_id: string;
 };
 
-export const state = (): AiAssistantState => ({
-  hubID: null,
-  qa: {
+function createEmptyConversationState(): ConversationState {
+  return {
     conversationId: null,
     messages: [],
     statusUpdate: null,
     isProcessing: false,
     incomingTokens: "",
     projectAndWorkflowIds: null,
-  },
-  build: {
-    conversationId: null,
-    messages: [],
-    statusUpdate: null,
-    isProcessing: false,
-    incomingTokens: "",
-    projectAndWorkflowIds: null,
-  },
-});
+  };
+}
+
+export const state = (): AiAssistantState => {
+  let persistedState: PersistedAiAssistantState | null;
+  try {
+    persistedState = JSON.parse(
+      localStorage.getItem(LOCAL_STORAGE_KEY) || "{}",
+    );
+  } catch (error) {
+    persistedState = null;
+    consola.error("Error loading persisted AI Assistant state:", error);
+  }
+
+  return {
+    hubID: null,
+    qa: {
+      ...createEmptyConversationState(),
+      ...(persistedState?.qa || {}),
+    },
+    build: {
+      ...createEmptyConversationState(),
+      ...(persistedState?.build || {}),
+    },
+  };
+};
 
 export const mutations: MutationTree<AiAssistantState> = {
   setHubID(state, hubID) {
@@ -151,6 +174,9 @@ export const mutations: MutationTree<AiAssistantState> = {
     state[chainType].statusUpdate = null;
     state[chainType].projectAndWorkflowIds = null;
   },
+  clearConversation(state, { chainType }: { chainType: ChainType }) {
+    state[chainType] = createEmptyConversationState();
+  },
   setConversationId(
     state,
     {
@@ -165,6 +191,27 @@ export const mutations: MutationTree<AiAssistantState> = {
 export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   async getHubID({ commit }) {
     commit("setHubID", await API.desktop.getHubID());
+  },
+  async pushMessageAndPersistState(
+    { commit, dispatch },
+    payload: {
+      chainType: ChainType;
+      role: Message["role"];
+      content: string;
+      nodes: Message["nodes"];
+      references: Message["references"];
+      isError?: boolean;
+    },
+  ) {
+    commit("pushMessage", payload);
+    dispatch("persistStateToLocalStorage");
+  },
+  async clearConversationAndPersistState(
+    { commit, dispatch },
+    { chainType }: { chainType: ChainType }
+  ) {
+    commit("clearConversation", { chainType });
+    dispatch("persistStateToLocalStorage");
   },
   async makeAiRequest(
     { commit, state, rootGetters },
@@ -205,7 +252,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     }
   },
   handleAiAssistantEvent(
-    { commit },
+    { commit, dispatch },
     {
       chainType,
       data: { type, payload, conversation_id: conversationId },
@@ -220,7 +267,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         commit("setConversationId", { chainType, conversationId });
 
         if (payload.message) {
-          commit("pushMessage", {
+          dispatch("pushMessageAndPersistState", {
             chainType,
             role: "assistant",
             content: payload.message,
@@ -233,7 +280,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         commit("clearChain", { chainType });
         commit("setConversationId", { chainType, conversationId });
 
-        commit("pushMessage", {
+        dispatch("pushMessageAndPersistState", {
           chainType,
           role: "assistant",
           content: payload.message,
@@ -260,6 +307,19 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       commit("clearChain", { chainType });
     }
     commit("popUserQuery", { chainType });
+  },
+  async persistStateToLocalStorage({ state }) {
+    const data: PersistedAiAssistantState = {
+      qa: {
+        conversationId: state.qa.conversationId,
+        messages: state.qa.messages,
+      },
+      build: {
+        conversationId: state.build.conversationId,
+        messages: state.build.messages,
+      },
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   },
 };
 
