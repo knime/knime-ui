@@ -26,9 +26,7 @@ const currentTags = computed(() =>
   })),
 );
 
-const initialSelectedIds = computed(() =>
-  currentTags.value.map(({ id }) => id),
-);
+const selectedIds = computed(() => currentTags.value.map(({ id }) => id));
 
 const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
   emit(
@@ -50,7 +48,7 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
     <template v-else>
       <ComboBox
         :possible-values="currentTags"
-        :initial-selected-ids="initialSelectedIds"
+        :model-value="selectedIds"
         :size-visible-options="3"
         allow-new-values
         class="tag-editor"
