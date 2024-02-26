@@ -2849,6 +2849,40 @@ export interface ProjectDirtyStateEvent extends Event {
 
 
 /**
+ * Emitted when a project with a known project-id has been disposed.
+ * @export
+ * @interface ProjectDisposedEvent
+ */
+export interface ProjectDisposedEvent extends Event {
+
+    /**
+     * The id of the project that has been disposed.
+     * @type {string}
+     * @memberof ProjectDisposedEvent
+     */
+    projectId: string;
+
+}
+
+
+/**
+ * The event type to register for the respective event.
+ * @export
+ * @interface ProjectDisposedEventType
+ */
+export interface ProjectDisposedEventType extends EventType {
+
+    /**
+     * The event is going to emitted if the project  with this id is disposed.
+     * @type {string}
+     * @memberof ProjectDisposedEventType
+     */
+    projectId: string;
+
+}
+
+
+/**
  * Metadata of a workflow project
  * @export
  * @interface ProjectMetadata
@@ -5257,6 +5291,7 @@ export type EventParams =
     | (SelectionEventType & { typeId: 'SelectionEventType' })
     | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
     | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
+    | (ProjectDisposedEventType & { typeId: 'ProjectDisposedEventType' })
 ;
 
 export interface EventHandlers {
@@ -5267,6 +5302,7 @@ export interface EventHandlers {
     UpdateAvailableEvent?(payload: UpdateAvailableEvent): void;
     NodeRepositoryLoadingProgressEvent?(payload: NodeRepositoryLoadingProgressEvent): void;
     ShowToastEvent?(payload: ShowToastEvent): void;
+    ProjectDisposedEvent?(payload: ProjectDisposedEvent): void;
 }
 
 const EventApiWrapper = function (rpcClient: RPCClient) {
