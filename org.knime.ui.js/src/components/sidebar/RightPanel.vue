@@ -40,7 +40,6 @@ const NodeDialogLoader = defineAsyncComponent({
 
   & :deep(.ui-ext-shadow-app) {
     width: 100%;
-    overflow-y: scroll;
   }
 }
 </style>

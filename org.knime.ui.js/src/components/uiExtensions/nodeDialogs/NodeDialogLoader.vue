@@ -2,13 +2,12 @@
 import { API } from "@api";
 import { ref, toRefs, computed, watch, onUnmounted, onMounted } from "vue";
 import type { KnimeNode } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
-import type { CommonViewLoaderData } from "../common/types";
-import { UIExtension } from "webapps-common/ui/uiExtensions";
-
-type ComponentData = CommonViewLoaderData & {
-  configReady: boolean;
-};
+import {
+  UIExtension,
+  type UIExtensionAPILayer,
+} from "webapps-common/ui/uiExtensions";
+import type { ExtensionConfig } from "../common/types";
+import { useResourceLocation } from "../common/useResourceLocation";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
@@ -20,24 +19,15 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const store = useStore();
 const { projectId, workflowId, selectedNode } = toRefs(props);
-const componentData = ref<ComponentData>({
-  deactivateDataServicesFn: null,
-  apiLayer: null,
-  extensionConfig: null,
-  configReady: false,
-});
+const extensionConfig = ref<ExtensionConfig | null>(null);
+const isConfigReady = ref(false);
+let apiLayer = ref<UIExtensionAPILayer | null>(null);
+let deactivateDataServicesFn: () => void;
 
-const resourceLocationResolver = (path: string, baseUrl?: string) => {
-  // TODO: NXT-1295. Originally caused NXT-1217
-  // Remove this unnecessary store getter once the issue in the ticket
-  // can be solved in a better way. It is necessary at the moment because the TableView is accessing
-  // this store module internally, so if not provided then it would error out in the application
-  return store.getters["api/uiExtResourceLocation"]({
-    resourceInfo: { path, baseUrl },
-  });
-};
+const { resourceLocation, resourceLocationResolver } = useResourceLocation({
+  extensionConfig,
+});
 
 const loadExtensionConfig = async () => {
   try {
@@ -48,7 +38,7 @@ const loadExtensionConfig = async () => {
     });
 
     if (nodeDialogView.deactivationRequired) {
-      componentData.value.deactivateDataServicesFn = () => {
+      deactivateDataServicesFn = () => {
         API.node.deactivateNodeDataServices({
           projectId: projectId.value,
           workflowId: workflowId.value,
@@ -58,7 +48,7 @@ const loadExtensionConfig = async () => {
       };
     }
 
-    componentData.value.extensionConfig = nodeDialogView;
+    extensionConfig.value = nodeDialogView;
   } catch (error) {
     throw error;
   }
@@ -71,31 +61,23 @@ const renderKey = computed(() => {
   return "";
 });
 
-const resourceLocation = computed(() => {
-  if (!componentData.value.extensionConfig) {
-    return "";
-  }
-  const { baseUrl, path } = componentData.value.extensionConfig.resourceInfo;
-  return resourceLocationResolver(path ?? "", baseUrl);
-});
-
 watch(renderKey, () => loadExtensionConfig(), { immediate: true });
 
 onUnmounted(() => {
-  if (componentData.value.deactivateDataServicesFn) {
-    componentData.value.deactivateDataServicesFn();
+  if (deactivateDataServicesFn) {
+    deactivateDataServicesFn();
   }
 });
 
 onMounted(async () => {
   await loadExtensionConfig();
   const noop = () => {};
-  componentData.value.apiLayer = {
+  apiLayer.value = {
     getResourceLocation: (path: string) => {
       return Promise.resolve(
         resourceLocationResolver(
           path,
-          componentData.value.extensionConfig?.resourceInfo?.baseUrl,
+          extensionConfig?.value.resourceInfo?.baseUrl,
         ),
       );
     },
@@ -125,15 +107,16 @@ onMounted(async () => {
     setDirtyModelSettings: noop,
     onApplied: noop,
   };
-  componentData.value.configReady = true;
+  isConfigReady.value = true;
 });
 </script>
 
 <template>
   <UIExtension
-    v-if="componentData.configReady"
-    :extension-config="componentData.extensionConfig!"
+    v-if="isConfigReady"
+    :extension-config="extensionConfig!"
     :resource-location="resourceLocation"
-    :api-layer="componentData.apiLayer!"
+    :shadow-app-style="{ overflow: 'auto' }"
+    :api-layer="apiLayer!"
   />
 </template>
