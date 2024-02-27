@@ -4431,7 +4431,7 @@ const kai = function(rpcClient: RPCClient) {
            const defaultParams = { 
            }
 
-           return rpcClient.call('KAIService.abortAiRequest', { ...defaultParams, ...params });
+           return rpcClient.call('KaiService.abortAiRequest', { ...defaultParams, ...params });
         },
         /**
          * Fetches the disclaimer and welcome messages displayed in K-AI's chat interface.
@@ -4444,7 +4444,7 @@ const kai = function(rpcClient: RPCClient) {
            const defaultParams = { 
            }
 
-           return rpcClient.call('KAIService.getUiStrings', { ...defaultParams, ...params });
+           return rpcClient.call('KaiService.getUiStrings', { ...defaultParams, ...params });
         },
         /**
          * Sends a request to a chain.
@@ -4459,7 +4459,7 @@ const kai = function(rpcClient: RPCClient) {
            const defaultParams = { 
            }
 
-           return rpcClient.call('KAIService.makeAiRequest', { ...defaultParams, ...params });
+           return rpcClient.call('KaiService.makeAiRequest', { ...defaultParams, ...params });
         },
     }
 };
