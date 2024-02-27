@@ -17,7 +17,7 @@ const fetchUiStrings = async () => {
 
   isLoading.value = true;
   try {
-    const _uiStrings = await API.desktop.getUiStrings();
+    const _uiStrings = await API.kai.getUiStrings({});
     Object.assign(uiStrings, _uiStrings);
     isServerAvailable.value = true;
   } catch (error) {

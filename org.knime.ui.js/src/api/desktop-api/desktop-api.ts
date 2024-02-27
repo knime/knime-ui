@@ -629,64 +629,6 @@ export const importURIAtWorkflowCanvas = ({
   );
 };
 
-export const abortAiRequest = ({
-  conversationId,
-  chainType,
-}: {
-  conversationId: string | null;
-  chainType: string;
-}) => {
-  return callBrowserFunction(
-    window.abortAiRequest,
-    [conversationId, chainType],
-    "Could not abort AI request",
-    false,
-    { block: false },
-  );
-};
-
-export const makeAiRequest = ({
-  conversationId,
-  chainType,
-  projectId,
-  workflowId,
-  selectedNodes,
-  messages,
-}: {
-  conversationId: string | null;
-  chainType: string;
-  projectId: string;
-  workflowId: string;
-  selectedNodes: string[];
-  messages: unknown[];
-}) => {
-  return callBrowserFunction(
-    window.makeAiRequest,
-    [
-      conversationId,
-      chainType,
-      projectId,
-      workflowId,
-      selectedNodes,
-      JSON.stringify(messages),
-    ],
-    "Could not make AI request",
-    false,
-    { block: false },
-  );
-};
-
-export const getUiStrings = async () => {
-  const response = await callBrowserFunction(
-    window.getUiStrings,
-    [],
-    "Could not get UI strings",
-    true,
-    { block: false },
-  );
-  return JSON.parse(response ?? "");
-};
-
 export const installKAI = () => {
   callBrowserFunction(window.installKAI, [], "Could not install KAI", false, {
     block: false,

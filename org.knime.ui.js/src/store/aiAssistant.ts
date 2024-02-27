@@ -232,16 +232,18 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       content,
     }));
 
-    const conversationId = state[chainType].conversationId;
+    const conversationId = state[chainType].conversationId ?? undefined;
     const { projectId, workflowId } = projectAndWorkflowIds;
     try {
-      await API.desktop.makeAiRequest({
-        conversationId,
-        chainType,
-        projectId,
-        workflowId,
-        selectedNodes,
-        messages,
+      await API.kai.makeAiRequest({
+        kaiChainId: chainType,
+        kaiRequest: {
+          conversationId: conversationId,
+          projectId,
+          workflowId,
+          selectedNodes,
+          messages,
+        }
       });
     } catch (error) {
       consola.error("makeAiRequest", error);
@@ -302,9 +304,8 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     { state, commit },
     { chainType }: { chainType: ChainType },
   ) {
-    const conversationId = state[chainType].conversationId;
     try {
-      await API.desktop.abortAiRequest({ conversationId, chainType });
+      await API.kai.abortAiRequest({ kaiChainId: chainType });
     } catch (error) {
       consola.error("abortAiRequest", error);
       commit("clearChain", { chainType });

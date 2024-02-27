@@ -160,20 +160,6 @@ declare function importComponent(
   y: number,
 ): string | null;
 
-declare function makeAiRequest(
-  conversationId: string | null,
-  chainType: string,
-  projectId: string,
-  workflowId: string,
-  selectedNodes: string[],
-  messages: string,
-): void;
-
-declare function abortAiRequest(
-  conversationId: string | null,
-  chainType: string,
-): void;
-declare function getUiStrings(): string;
 declare function installKAI(): void;
 declare function getHubID(): string;
 declare function openAiAssistantPreferencePage(): void;
