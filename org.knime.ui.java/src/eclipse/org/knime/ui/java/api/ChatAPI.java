@@ -52,7 +52,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 
@@ -127,14 +126,6 @@ public final class ChatAPI {
     @API
     public static void openAiAssistantPreferencePage() {
         EclipseUIAPI.openPreferencePage(getListener().orElseThrow().getPreferencePageID());
-    }
-
-    /**
-     * @return the returned consumer relays events to the frontend (message must be JSON serializable)
-     */
-    public static Consumer<Object> getEventConsumer() {
-        var eventConsumer = DesktopAPI.getDeps(EventConsumer.class);
-        return m -> eventConsumer.accept("AiAssistantEvent", m);
     }
 
     /**
