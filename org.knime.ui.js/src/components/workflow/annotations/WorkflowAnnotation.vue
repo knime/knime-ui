@@ -220,7 +220,7 @@ const transformControlsRef = ref<ComponentPublicInstance<
 > | null>(null);
 
 onClickOutside(transformControlsRef, saveContent, {
-  ignore: [".editor-toolbar.ignore-click-outside"],
+  ignore: [".editor-toolbar[data-ignore-click-outside]"],
 });
 
 const keys = useMagicKeys();

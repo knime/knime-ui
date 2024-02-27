@@ -258,7 +258,7 @@ onUnmounted(() => {
     :close-on-escape="false"
     v-bind="$attrs"
   >
-    <div class="editor-toolbar ignore-click-outside">
+    <div class="editor-toolbar" data-ignore-click-outside>
       <SubMenu
         :items="headingPresets"
         orientation="right"
