@@ -8,7 +8,13 @@ import { API } from "@api";
 import { UIExtension } from "webapps-common/ui/uiExtensions";
 import NodeViewLoader from "../NodeViewLoader.vue";
 
-mockDynamicImport();
+const dynamicImportMock = mockDynamicImport();
+
+vi.mock("webapps-common/ui/uiExtensions/useDynamicImport", () => ({
+  useDynamicImport: vi.fn().mockImplementation(() => {
+    return { dynamicImport: dynamicImportMock };
+  }),
+}));
 
 const mockedAPI = deepMocked(API);
 

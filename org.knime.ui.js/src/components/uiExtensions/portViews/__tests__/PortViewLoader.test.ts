@@ -1,4 +1,4 @@
-import { expect, describe, afterEach, it } from "vitest";
+import { expect, describe, afterEach, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@api";
@@ -7,7 +7,13 @@ import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 import PortViewLoader from "../PortViewLoader.vue";
 import { UIExtension } from "webapps-common/ui/uiExtensions";
 
-mockDynamicImport();
+const dynamicImportMock = mockDynamicImport();
+
+vi.mock("webapps-common/ui/uiExtensions/useDynamicImport", () => ({
+  useDynamicImport: vi.fn().mockImplementation(() => {
+    return { dynamicImport: dynamicImportMock };
+  }),
+}));
 
 const mockedAPI = deepMocked(API);
 
@@ -223,9 +229,9 @@ describe("PortViewLoader.vue", () => {
       // data errors from the BE would come in via the sendAlert apiLayer
       props.apiLayer.sendAlert({ subtitle: "mock error", type: "error" });
 
-      const emittedEvents = wrapper.emitted("stateChange");
+      const emittedEvents = wrapper.emitted("loadingStateChange");
       expect(emittedEvents![emittedEvents!.length - 1][0]).toEqual({
-        state: "error",
+        value: "error",
         message: "mock error",
       });
     });
@@ -248,10 +254,11 @@ describe("PortViewLoader.vue", () => {
         uniquePortKey: "key-that-changed",
       });
 
-      const emittedEvents = wrapper.emitted("stateChange");
+      const emittedEvents = wrapper.emitted("loadingStateChange");
       expect(emittedEvents![emittedEvents!.length - 1][0]).toEqual(
         expect.objectContaining({
-          state: "loading",
+          value: "loading",
+          message: "Loading port view data",
         }),
       );
     });

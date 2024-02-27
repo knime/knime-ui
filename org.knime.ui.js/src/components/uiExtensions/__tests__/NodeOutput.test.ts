@@ -2,37 +2,38 @@
 import { expect, describe, it, vi } from "vitest";
 import { nextTick } from "vue";
 import * as Vue from "vue";
-import { shallowMount } from "@vue/test-utils";
+import type { Store } from "vuex";
+import { VueWrapper, mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import * as selectionStore from "@/store/selection";
-
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import Button from "webapps-common/ui/components/Button.vue";
-import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
+import * as applicationStore from "@/store/application";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
 
-import NodeOutput from "../NodeOutput.vue";
-import PortTabs from "../PortTabs.vue";
-
-import { NodeState } from "@/api/gateway-api/generated-api";
+import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
 import {
   createAvailablePortTypes,
+  createComponentNode,
+  createMetanode,
   createNativeNode,
   createPort,
 } from "@/test/factories";
-import type { KnimeNode } from "@/api/custom-types";
+
+import NodeOutput from "../NodeOutput.vue";
+import PortTabs from "../PortTabs.vue";
 import PortViewTabOutput from "../portViews/PortViewTabOutput.vue";
+import ValidationInfo from "../ValidationInfo.vue";
+import LoadingIndicator from "../LoadingIndicator.vue";
+import ExecuteButtons from "../ExecuteButtons.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 import NodeViewTabOutput from "../nodeViews/NodeViewTabOutput.vue";
 
 vi.mock("@knime/ui-extension-service");
 
 describe("NodeOutput.vue", () => {
-  const FLOW_VARIABLE = "flowVariable";
-  const TABLE = "table";
-
   const mockFeatureFlags = {
     shouldDisplayEmbeddedViews: vi.fn(() => true),
   };
@@ -55,11 +56,6 @@ describe("NodeOutput.vue", () => {
       ],
     }),
   };
-
-  const createNode = (customProperties) => ({
-    ...dummyNodes.node1,
-    ...customProperties,
-  });
 
   const createStore = ({
     nodes = dummyNodes,
@@ -87,50 +83,52 @@ describe("NodeOutput.vue", () => {
       actions: { executeNodes, openLegacyPortView },
     };
 
-    const application = {
-      state: {
-        activeProjectId: "projectId",
-        availablePortTypes: createAvailablePortTypes(),
-      },
-    };
-
     const $store = mockVuexStore({
       workflow,
-      application,
+      application: applicationStore,
       selection: selectionStore,
     });
+
+    $store.commit(
+      "application/setAvailablePortTypes",
+      createAvailablePortTypes({
+        unsupported: { kind: PortType.KindEnum.Other, name: "unsupported" },
+      }),
+    );
+    $store.commit("application/setActiveProjectId", "projectId");
     $store.commit("selection/addNodesToSelection", selectedNodeIds);
     return $store;
   };
 
-  const doMount = (store = null) =>
-    shallowMount(NodeOutput, {
+  const doMount = (store: Store<any> | null = null) => {
+    const $store = store || createStore();
+
+    const wrapper = mount(NodeOutput, {
       global: {
-        plugins: [store || createStore()],
+        plugins: [$store],
         mocks: { $shapes, $colors, $features: mockFeatureFlags },
+        stubs: { PortViewLoader: true, NodeViewLoader: true },
       },
     });
 
-  const placeholderMessage = (wrapper) => wrapper.find(".placeholder").text();
-  const triggerOutputStateChange = async (wrapper, state) => {
-    wrapper
-      .findComponent(PortViewTabOutput)
-      .vm.$emit("output-state-change", state);
-    await Vue.nextTick();
+    return { wrapper, $store };
   };
+
+  const validationInfoMessage = (wrapper: VueWrapper<any>) =>
+    wrapper.findComponent(ValidationInfo).text();
 
   describe("selection check", () => {
     it("should render placeholder if no node is selected", () => {
       const store = createStore({ selectedNodeIds: [] });
-      const wrapper = doMount(store);
+      const { wrapper } = doMount(store);
 
-      expect(placeholderMessage(wrapper)).toBe(
+      expect(validationInfoMessage(wrapper)).toBe(
         "To show the node output, please select a configured or executed node.",
       );
 
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
-      expect(wrapper.find(".loading-icon").exists()).toBe(false);
-      expect(wrapper.find(".action-button").exists()).toBe(false);
+      expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
     });
 
     it("should render placeholder if more than one node is selected", () => {
@@ -138,73 +136,100 @@ describe("NodeOutput.vue", () => {
         ...dummyNodes,
         node2: { ...dummyNodes.node1, id: "node2" },
       };
-      const store = createStore({ selectedNodeIds: ["node1", "node2"], nodes });
-      const wrapper = doMount(store);
 
-      expect(placeholderMessage(wrapper)).toBe(
+      const store = createStore({ selectedNodeIds: ["node1", "node2"], nodes });
+      const { wrapper } = doMount(store);
+
+      expect(validationInfoMessage(wrapper)).toBe(
         "To show the node output, please select only one node.",
       );
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
-      expect(wrapper.find(".loading-icon").exists()).toBe(false);
-      expect(wrapper.find(".action-button").exists()).toBe(false);
+      expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
     });
-  });
-
-  it("should render the emitted error state from the PortView", async () => {
-    const wrapper = doMount();
-    const viewComponent = wrapper.findComponent(PortViewTabOutput);
-
-    viewComponent.vm.$emit("outputStateChange", { message: "Some message" });
-
-    await Vue.nextTick();
-    expect(placeholderMessage(wrapper)).toBe("Some message");
-  });
-
-  it("should render the emitted error state from the NodeView", async () => {
-    const wrapper = doMount();
-    wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "view");
-    await Vue.nextTick();
-
-    const viewComponent = wrapper.findComponent(NodeViewTabOutput);
-    viewComponent.vm.$emit("outputStateChange", { message: "Some message" });
-
-    await Vue.nextTick();
-    expect(placeholderMessage(wrapper)).toBe("Some message");
   });
 
   it("should show loading indicator", async () => {
-    const wrapper = doMount();
-    const portView = wrapper.findComponent(PortViewTabOutput);
-
-    portView.vm.$emit("outputStateChange", {
-      loading: true,
-      message: "Loading data",
+    const node = createNativeNode({
+      id: "root:2",
+      state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
+      outPorts: dummyNodes.node1.outPorts,
     });
 
-    await Vue.nextTick();
-    expect(placeholderMessage(wrapper)).toBe("Loading data");
-    expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
+    const store = createStore({
+      selectedNodeIds: ["root:2"],
+      nodes: { [node.id]: node },
+    });
+
+    const { wrapper } = doMount(store);
+    const portView = wrapper.findComponent(PortViewTabOutput);
+
+    expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
+
+    portView.vm.$emit("loadingStateChange", {
+      value: "loading",
+      message: "Loading port data",
+    });
+
+    await nextTick();
+
+    expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(true);
+    expect(wrapper.findComponent(LoadingIndicator).text()).toBe(
+      "Loading port data",
+    );
   });
 
   describe("updates", () => {
-    it("node gets problem -> display error placeholder", async () => {
-      const wrapper = doMount();
+    it("should display validation info when transitioning from valid node -> error node", async () => {
+      const node = createNativeNode({
+        id: "root:2",
+        state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
+        outPorts: dummyNodes.node1.outPorts,
+      });
 
-      expect(wrapper.find(".placeholder").exists()).toBe(false);
+      const store = createStore({
+        selectedNodeIds: ["root:2"],
+        nodes: { [node.id]: node },
+      });
 
-      await triggerOutputStateChange(wrapper, { message: "Some Error" });
+      const { wrapper } = doMount(store);
 
-      expect(wrapper.find(".placeholder").exists()).toBe(true);
+      await nextTick();
+
+      expect(
+        wrapper.findComponent(ValidationInfo).props("validationError"),
+      ).toBeNull();
+
+      store.state.workflow.activeWorkflow.nodes[node.id].state = {
+        executionState: NodeState.ExecutionStateEnum.IDLE,
+      };
+
+      await nextTick();
+
+      expect(
+        wrapper.findComponent(ValidationInfo).props("validationError"),
+      ).toEqual(expect.objectContaining({ code: "NODE_UNCONFIGURED" }));
     });
 
-    it("node loses problem -> default port is selected", async () => {
-      const wrapper = doMount();
+    it("should remove validation info when error node becomes valid", async () => {
+      const { wrapper, $store } = doMount();
 
-      await triggerOutputStateChange(wrapper, { message: "Some Error" });
-      expect(wrapper.find(".placeholder").exists()).toBe(true);
+      await nextTick();
 
-      await triggerOutputStateChange(wrapper, null);
-      expect(wrapper.find(".placeholder").exists()).toBe(false);
+      expect(
+        wrapper.findComponent(ValidationInfo).props("validationError"),
+      ).toEqual(expect.objectContaining({ code: "NODE_UNCONFIGURED" }));
+
+      $store.state.workflow.activeWorkflow.nodes[dummyNodes.node1.id].state = {
+        executionState: NodeState.ExecutionStateEnum.CONFIGURED,
+      };
+
+      await nextTick();
+
+      expect(
+        wrapper.findComponent(ValidationInfo).props("validationError"),
+      ).toBeNull();
+
       expect(
         wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
       ).toBe(1);
@@ -212,18 +237,18 @@ describe("NodeOutput.vue", () => {
 
     it("selected node changes -> default port is selected", async () => {
       // create a full node containing 2 ports (1 flowvariable + 1 extra port)
-      const node1 = createNode({ id: "node1" });
+      const node1 = createNativeNode({ ...dummyNodes.node1, id: "node1" });
       // create a metanode with a single port
-      const node2 = createNode({
+      const node2 = createNativeNode({
         id: "node2",
-        kind: "metanode",
+        kind: Node.KindEnum.Metanode,
         outPorts: [dummyNodes.node1.outPorts[0]],
       });
       const store = createStore({
         nodes: { [node1.id]: node1, [node2.id]: node2 },
         selectedNodeIds: [node1.id],
       });
-      const wrapper = doMount(store);
+      const { wrapper } = doMount(store);
 
       // port should initially be 1 because regular nodes by default select the second port
       // since the first is the flowVariable port
@@ -243,112 +268,137 @@ describe("NodeOutput.vue", () => {
     });
 
     describe("show 'execute and open legacy port view' button", () => {
-      const nodePartial = createNode({
+      const configuredUnsupportedNode = createNativeNode({
         id: "1",
-        kind: "node",
-        outPorts: [{ typeId: "unsupported" }],
-      });
-      const outputState = {
-        error: {
-          type: "PORT",
-          code: "NO_SUPPORTED_VIEW",
-        },
-      };
-      const configuredNode = {
-        ...nodePartial,
+        kind: Node.KindEnum.Node,
+        outPorts: [
+          createPort({
+            typeId:
+              "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+          }),
+          createPort({ typeId: "unsupported", index: 1 }),
+        ],
+        allowedActions: { canExecute: true },
         state: {
           executionState: NodeState.ExecutionStateEnum.CONFIGURED,
         },
-        allowedActions: { canExecute: true },
-      };
-      const executedNode = {
-        ...nodePartial,
+      });
+
+      const executedUnsupportedNode = createNativeNode({
+        ...configuredUnsupportedNode,
         state: {
           executionState: NodeState.ExecutionStateEnum.EXECUTED,
         },
         allowedActions: { canExecute: false },
-      };
-      const storeWithNode = (node) =>
+      });
+
+      const storeWithNode = (node: KnimeNode) =>
         createStore({
           nodes: { [node.id]: node },
           selectedNodeIds: [node.id],
         });
 
       it("shows button if no supported view available", async () => {
-        const $store = storeWithNode(nodePartial);
+        const $store = storeWithNode(configuredUnsupportedNode);
         const dispatchSpy = vi.spyOn($store, "dispatch");
-        const wrapper = doMount($store);
-        await triggerOutputStateChange(wrapper, outputState);
-        await nextTick();
-        const buttonWrapper = wrapper.find(
-          '[data-testid="execute-open-legacy-view-action"]',
-        );
+        const { wrapper } = doMount($store);
 
-        expect(buttonWrapper.exists()).toBe(true);
-        await buttonWrapper.findComponent(Button).trigger("click");
+        await nextTick();
+
+        const button = wrapper
+          .find('[data-testid="execute-open-legacy-view-action"]')
+          .findComponent(Button);
+
+        expect(button.exists()).toBe(true);
+        await button.trigger("click");
         expect(dispatchSpy).toHaveBeenCalledWith(
           "workflow/openLegacyPortView",
           {
             nodeId: "1",
-            portIndex: 0,
+            portIndex: 1,
             executeNode: true,
           },
         );
       });
 
       it.each([
-        ["configured node", () => configuredNode, true],
-        ["executed node", () => executedNode, false],
-      ])("button properly displayed for %s", async (_, node, presence) => {
-        const wrapper = doMount(storeWithNode(node()));
-        await triggerOutputStateChange(wrapper, outputState);
+        [
+          "configured node",
+          () => configuredUnsupportedNode,
+          "Execute and open legacy port view",
+        ],
+        [
+          "executed node",
+          () => executedUnsupportedNode,
+          "Open legacy port view",
+        ],
+      ])("button properly displayed for %s", async (_, node, expectedText) => {
+        const { wrapper } = doMount(storeWithNode(node()));
+
         await nextTick();
-        expect(wrapper.findComponent(PlayIcon).exists()).toBe(presence);
+
+        const buttonWrapper = wrapper.find(
+          '[data-testid="execute-open-legacy-view-action"]',
+        );
+
+        expect(buttonWrapper.text()).toMatch(expectedText);
       });
     });
 
     describe("select port", () => {
-      const nodeWithPorts = createNode({
+      const defaultPorts = [
+        createPort({
+          typeId:
+            "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+          index: 0,
+        }),
+        createPort({
+          typeId: "org.knime.core.node.BufferedDataTable",
+          index: 1,
+        }),
+      ];
+
+      const nodeWithPorts = createNativeNode({
         id: "1",
-        kind: "node",
-        outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }],
+        kind: Node.KindEnum.Node,
+        outPorts: defaultPorts,
       });
 
-      const nodeWithManyPorts = createNode({
+      const nodeWithManyPorts = createNativeNode({
         id: "2",
-        kind: "node",
         outPorts: [
-          { typeId: FLOW_VARIABLE },
-          { typeId: TABLE },
-          { typeId: TABLE },
+          ...defaultPorts,
+          createPort({
+            typeId: "org.knime.core.node.BufferedDataTable",
+            index: 2,
+          }),
         ],
       });
 
-      const nodeWithoutPort = createNode({
+      const nodeWithoutPort = createNativeNode({
         id: "3",
-        outPorts: [],
+        outPorts: Object.create([]),
       });
 
-      const metanode = createNode({
+      const metanode = createMetanode({
         id: "4",
-        kind: "metanode",
-        outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }],
+        outPorts: defaultPorts,
       });
 
-      const nodeWithView = createNode({
+      const nodeWithView = createNativeNode({
         id: "5",
         hasView: true,
-        outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }],
+        outPorts: defaultPorts,
       });
 
       it("selects the proper tab when handling nodes with views", async () => {
-        const node2 = createNode({ ...nodeWithView, id: "6" });
+        const node2 = createNativeNode({ ...nodeWithView, id: "6" });
 
         const store = createStore({
           nodes: { [nodeWithView.id]: nodeWithView, [node2.id]: node2 },
           selectedNodeIds: [nodeWithView.id],
         });
-        const wrapper = doMount(store);
+        const { wrapper } = doMount(store);
 
         // start from the right tab
         wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "view");
@@ -373,12 +423,12 @@ describe("NodeOutput.vue", () => {
         ["node without port", () => nodeWithoutPort, 0],
         [
           "component with port",
-          () => ({ ...nodeWithPorts, kind: "component" }),
+          () => createComponentNode({ ...nodeWithPorts }),
           1,
         ],
         [
           "component without port",
-          () => ({ ...nodeWithoutPort, kind: "component" }),
+          () => createComponentNode({ ...nodeWithoutPort }),
           0,
         ],
         ["metanode", () => metanode, 0],
@@ -388,7 +438,7 @@ describe("NodeOutput.vue", () => {
           nodes: { [node.id]: node },
           selectedNodeIds: [node.id],
         });
-        const wrapper = doMount(store);
+        const { wrapper } = doMount(store);
         await Vue.nextTick();
 
         expect(
@@ -426,7 +476,7 @@ describe("NodeOutput.vue", () => {
           nodes: { [node1.id]: node1, [node2.id]: node2 },
           selectedNodeIds: [node1.id],
         });
-        const wrapper = doMount(store);
+        const { wrapper } = doMount(store);
 
         // start from the right port (tab values are strings)
         wrapper
@@ -450,7 +500,7 @@ describe("NodeOutput.vue", () => {
   it("should not display ViewTabOutput component when feature flag is set to false", async () => {
     mockFeatureFlags.shouldDisplayEmbeddedViews.mockImplementation(() => false);
 
-    const wrapper = doMount();
+    const { wrapper } = doMount();
 
     wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "view");
     await Vue.nextTick();

@@ -138,7 +138,7 @@ describe("output-validator", () => {
     expect(result).toEqual({
       error: {
         type: "NODE",
-        code: "NO_SUPPORTED_PORTS",
+        code: "ALL_PORTS_UNSUPPORTED",
         message: "The selected node has no supported output port.",
       },
     });
@@ -272,7 +272,7 @@ describe("output-validator", () => {
     expect(result).toEqual({
       error: {
         type: "PORT",
-        code: "NO_SUPPORTED_VIEW",
+        code: "UNSUPPORTED_PORT_VIEW",
         message:
           "The data at the output port is not supported by any modern viewer.",
       },

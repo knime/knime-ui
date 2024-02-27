@@ -78,7 +78,7 @@ export default defineComponent({
         // doesn't have errors in the output state
         !this.currentValidationError ||
         // or when it doesn't have these specific error types
-        this.currentValidationError.code !== "NO_SUPPORTED_PORTS"
+        this.currentValidationError.code !== "ALL_PORTS_UNSUPPORTED"
       );
     },
 
@@ -101,8 +101,7 @@ export default defineComponent({
 
     showLoadingIndicator() {
       return (
-        this.loadingState?.value === "loading" ||
-        this.currentValidationError?.code === "NODE_BUSY"
+        this.loadingState?.value === "loading" && !this.currentValidationError
       );
     },
 

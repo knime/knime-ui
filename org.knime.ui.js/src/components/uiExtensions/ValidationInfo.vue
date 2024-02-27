@@ -10,6 +10,7 @@ import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";
 import ExecuteButtons from "./ExecuteButtons.vue";
 import { useStore } from "@/composables/useStore";
 import { toExtendedPortObject } from "@/util/portDataMapper";
+import LoadingIndicator from "./LoadingIndicator.vue";
 
 type Props = {
   selectedNode: KnimeNode | null;
@@ -27,8 +28,23 @@ const availablePortTypes = computed(
 );
 
 const isUnsupportedView = computed(
-  () => props.validationError?.code === "NO_SUPPORTED_VIEW",
+  () => props.validationError?.code === "UNSUPPORTED_PORT_VIEW",
 );
+const isNodeBusy = computed(() => props.validationError?.code === "NODE_BUSY");
+
+const fullPortObject = computed(() => {
+  try {
+    if (!props.selectedNode || props.selectedPortIndex === null) {
+      return null;
+    }
+
+    const selectedPort = props.selectedNode.outPorts[props.selectedPortIndex];
+
+    return toExtendedPortObject(availablePortTypes.value)(selectedPort.typeId);
+  } catch (error) {
+    return null;
+  }
+});
 
 const canExecute = computed(() => {
   if (!permissions.value.canEditWorkflow) {
@@ -47,12 +63,7 @@ const canExecute = computed(() => {
   }
 
   if (props.selectedPortIndex !== null) {
-    const selectedPort = props.selectedNode.outPorts[props.selectedPortIndex];
-    const fullPortObject = toExtendedPortObject(availablePortTypes.value)(
-      selectedPort.typeId,
-    );
-
-    const isFlowVariable = fullPortObject.kind === "flowVariable";
+    const isFlowVariable = fullPortObject.value?.kind === "flowVariable";
 
     return (
       !isFlowVariable &&
@@ -105,7 +116,12 @@ const openLegacyPortView = (executeNode: boolean) => {
       </template>
 
       <template v-else>
-        {{ validationError.message }}
+        <LoadingIndicator
+          v-if="isNodeBusy"
+          :message="validationError.message"
+        />
+
+        <span v-else>{{ validationError.message }}</span>
       </template>
     </template>
 
@@ -113,12 +129,12 @@ const openLegacyPortView = (executeNode: boolean) => {
       v-if="isUnsupportedView && compatibility.canOpenLegacyPortViews()"
       :can-execute="canExecute"
       :is-executed="isPortExecuted"
-      @open-legacy-view="openLegacyPortView"
+      @open-legacy-port-view="openLegacyPortView"
     />
   </div>
 
   <ExecuteButtons
-    v-if="canExecute"
+    v-if="canExecute && !isUnsupportedView"
     :validation-error="validationError"
     :selected-node="selectedNode"
     :selected-port-index="selectedPortIndex"

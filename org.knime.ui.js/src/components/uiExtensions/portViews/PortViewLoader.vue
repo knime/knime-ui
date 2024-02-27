@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRef, watch, onMounted, onUnmounted } from "vue";
+import { ref, toRef, watch, onUnmounted } from "vue";
 import {
   UIExtension,
   type UIExtensionAPILayer,
@@ -95,23 +95,6 @@ const loadExtensionConfig = async () => {
   extensionConfig.value = portView;
 };
 
-watch(toRef(props, "uniquePortKey"), async () => {
-  error.value = null;
-  isLoading.value = true;
-  emit("loadingStateChange", {
-    value: "loading",
-    message: "Loading port view data",
-  });
-
-  await loadExtensionConfig();
-
-  emit("loadingStateChange", {
-    value: "ready",
-  });
-
-  isLoading.value = false;
-});
-
 const noop = () => {};
 
 const apiLayer: UIExtensionAPILayer = {
@@ -168,27 +151,37 @@ const apiLayer: UIExtensionAPILayer = {
   onApplied: noop,
 };
 
-onMounted(async () => {
-  emit("loadingStateChange", {
-    value: "loading",
-    message: "Loading port view data",
-  });
+watch(
+  toRef(props, "uniquePortKey"),
+  async () => {
+    error.value = null;
+    isLoading.value = true;
+    isConfigReady.value = false;
 
-  try {
-    await loadExtensionConfig();
-
-    isConfigReady.value = true;
-    emit("loadingStateChange", { value: "ready" });
-  } catch (_error) {
-    error.value = _error;
-    // TODO: improve error type checking
     emit("loadingStateChange", {
-      value: "error",
-      message: _error as string,
-      error: _error,
+      value: "loading",
+      message: "Loading port view data",
     });
-  }
-});
+
+    try {
+      await loadExtensionConfig();
+
+      isConfigReady.value = true;
+      emit("loadingStateChange", { value: "ready" });
+      isLoading.value = false;
+    } catch (_error) {
+      error.value = _error;
+      isLoading.value = false;
+
+      emit("loadingStateChange", {
+        value: "error",
+        message: _error as string,
+        error: _error,
+      });
+    }
+  },
+  { immediate: true },
+);
 
 onUnmounted(() => {
   deactivateDataServicesFn?.();

@@ -62,8 +62,6 @@ export const state = (): WorkflowState => ({
 
   activeWorkflow: null,
   activeSnapshotId: null,
-  // TODO: NXT-1143 find a better place for the tooltip logic
-  // maybe use an event that bubbles to the top (workflow canvas?)
   tooltip: null,
   calculatedMetanodePortBarBounds: { in: null, out: null },
 });

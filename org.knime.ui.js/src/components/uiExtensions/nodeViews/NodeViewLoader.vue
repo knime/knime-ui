@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, toRef, onMounted, onUnmounted } from "vue";
+import { ref, watch, toRef, onUnmounted } from "vue";
 
 import {
   UIExtension,
@@ -29,8 +29,7 @@ const emit = defineEmits<{
 }>();
 
 const error = ref<any>(null);
-const isConfigReady = ref(false);
-const isLoading = ref(false);
+const isLoadingConfig = ref(false);
 const extensionConfig = ref<ExtensionConfig | null>(null);
 
 let deactivateDataServicesFn: () => void;
@@ -53,7 +52,7 @@ const loadExtensionConfig = async () => {
       nodeId,
     });
 
-    if (nodeView.deactivationRequired) {
+    if (nodeView?.deactivationRequired) {
       deactivateDataServicesFn = () => {
         API.node.deactivateNodeDataServices({
           projectId: props.projectId,
@@ -70,18 +69,6 @@ const loadExtensionConfig = async () => {
     throw error;
   }
 };
-
-watch(toRef(props, "selectedNode"), async () => {
-  error.value = null;
-  isLoading.value = true;
-  emit("loadingStateChange", { value: "loading", message: "Loading view" });
-
-  await loadExtensionConfig();
-
-  emit("loadingStateChange", { value: "ready" });
-
-  isLoading.value = false;
-});
 
 const noop = () => {};
 
@@ -124,24 +111,32 @@ const apiLayer: UIExtensionAPILayer = {
   onApplied: noop,
 };
 
-onMounted(async () => {
-  try {
-    emit("loadingStateChange", { value: "loading", message: "Loading view" });
+watch(
+  toRef(props, "selectedNode"),
+  async () => {
+    try {
+      error.value = null;
+      isLoadingConfig.value = true;
 
-    await loadExtensionConfig();
+      emit("loadingStateChange", { value: "loading", message: "Loading view" });
 
-    isConfigReady.value = true;
-    emit("loadingStateChange", { value: "ready" });
-  } catch (_error) {
-    error.value = _error;
-    // TODO: improve error type checking
-    emit("loadingStateChange", {
-      value: "error",
-      message: _error as string,
-      error: _error,
-    });
-  }
-});
+      await loadExtensionConfig();
+
+      isLoadingConfig.value = false;
+      emit("loadingStateChange", { value: "ready" });
+    } catch (_error) {
+      error.value = _error;
+      isLoadingConfig.value = false;
+
+      emit("loadingStateChange", {
+        value: "error",
+        message: _error as string,
+        error: _error,
+      });
+    }
+  },
+  { immediate: true, deep: true },
+);
 
 onUnmounted(() => {
   deactivateDataServicesFn?.();
@@ -150,7 +145,7 @@ onUnmounted(() => {
 
 <template>
   <UIExtension
-    v-if="!error && isConfigReady && !isLoading"
+    v-if="!error && !isLoadingConfig"
     :extension-config="extensionConfig!"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"

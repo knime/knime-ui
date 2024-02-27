@@ -63,9 +63,9 @@ type ErrorCodes =
   | "NO_NODE_SELECTED"
   | "MULTIPLE_NODES_SELECTED"
   | "NO_OUTPUT_PORTS"
-  | "NO_SUPPORTED_PORTS"
+  | "ALL_PORTS_UNSUPPORTED"
   | "NO_PORT_SELECTED"
-  | "NO_SUPPORTED_VIEW"
+  | "UNSUPPORTED_PORT_VIEW"
   | "PORT_INACTIVE"
   | "NO_DATA"
   | "NODE_UNCONFIGURED"
@@ -158,7 +158,7 @@ export const validateOutputPorts: ValidationFn<{
     return {
       error: {
         type: "NODE",
-        code: "NO_SUPPORTED_PORTS",
+        code: "ALL_PORTS_UNSUPPORTED",
         message: "The selected node has no supported output port.",
       },
     };
@@ -229,7 +229,7 @@ export const validatePortSupport: ValidationFn<{
     return {
       error: {
         type: "PORT",
-        code: "NO_SUPPORTED_VIEW",
+        code: "UNSUPPORTED_PORT_VIEW",
         message:
           "The data at the output port is not supported by any modern viewer.",
       },

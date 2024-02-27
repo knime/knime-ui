@@ -10,9 +10,6 @@ import PortViewTabOutput from "../PortViewTabOutput.vue";
 import PortViewTabToggles from "../PortViewTabToggles.vue";
 import PortViewLoader from "../PortViewLoader.vue";
 
-import { mockVuexStore } from "@/test/utils";
-import * as applicationStore from "@/store/application";
-
 describe("PortViewTabOutput.vue", () => {
   const dummyNode = createNativeNode({
     id: "node1",
@@ -72,10 +69,6 @@ describe("PortViewTabOutput.vue", () => {
   };
 
   const doMount = ({ props = {} } = {}) => {
-    const $store = mockVuexStore({
-      application: applicationStore,
-    });
-
     const wrapper = mount(PortViewTabOutput, {
       props: {
         ...defaultProps,
@@ -83,7 +76,6 @@ describe("PortViewTabOutput.vue", () => {
       },
       global: {
         stubs: { PortViewLoader: true },
-        plugins: [$store],
       },
     });
 
@@ -98,12 +90,10 @@ describe("PortViewTabOutput.vue", () => {
         },
       });
 
-      expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
+      expect(wrapper.emitted("validationError")![0][0]).toEqual(
         expect.objectContaining({
-          error: expect.objectContaining({
-            type: "NODE",
-            code: "NO_OUTPUT_PORTS",
-          }),
+          type: "NODE",
+          code: "NO_OUTPUT_PORTS",
         }),
       );
     });
@@ -118,12 +108,10 @@ describe("PortViewTabOutput.vue", () => {
         },
       });
 
-      expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
+      expect(wrapper.emitted("validationError")![0][0]).toEqual(
         expect.objectContaining({
-          error: expect.objectContaining({
-            type: "NODE",
-            code: "NO_SUPPORTED_PORTS",
-          }),
+          type: "NODE",
+          code: "ALL_PORTS_UNSUPPORTED",
         }),
       );
     });
@@ -141,12 +129,10 @@ describe("PortViewTabOutput.vue", () => {
         props: { selectedNode, selectedPortIndex },
       });
 
-      expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
+      expect(wrapper.emitted("validationError")![0][0]).toEqual(
         expect.objectContaining({
-          error: expect.objectContaining({
-            type: "PORT",
-            code: "NO_SUPPORTED_VIEW",
-          }),
+          type: "PORT",
+          code: "UNSUPPORTED_PORT_VIEW",
         }),
       );
     });
@@ -163,12 +149,10 @@ describe("PortViewTabOutput.vue", () => {
         props: { selectedNode, selectedPortIndex: 0 },
       });
 
-      expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
+      expect(wrapper.emitted("validationError")![0][0]).toEqual(
         expect.objectContaining({
-          error: expect.objectContaining({
-            type: "PORT",
-            code: "PORT_INACTIVE",
-          }),
+          type: "PORT",
+          code: "PORT_INACTIVE",
         }),
       );
     });
@@ -183,12 +167,10 @@ describe("PortViewTabOutput.vue", () => {
         },
       });
 
-      expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
+      expect(wrapper.emitted("validationError")![0][0]).toEqual(
         expect.objectContaining({
-          error: expect.objectContaining({
-            type: "NODE",
-            code: "NODE_UNCONFIGURED",
-          }),
+          type: "NODE",
+          code: "NODE_UNCONFIGURED",
         }),
       );
     });
@@ -201,59 +183,7 @@ describe("PortViewTabOutput.vue", () => {
         },
       });
 
-      expect(wrapper.emitted("outputStateChange")[0][0]).toBeNull();
-    });
-
-    it("should not show execute node button if the port is a flowVariable", () => {
-      const { wrapper } = doMount({
-        props: {
-          selectedNode: { ...dummyNode, state: { executionState: "IDLE" } },
-          selectedPortIndex: 0,
-        },
-      });
-
-      expect(wrapper.find(".execute-node-action").exists()).toBe(false);
-    });
-
-    it("should show execute node button for configured (but not executed) nodes", async () => {
-      const { wrapper } = doMount({
-        props: {
-          selectedNode: {
-            ...dummyNode,
-            state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
-            allowedActions: { canExecute: true },
-          },
-          selectedPortIndex: 1,
-        },
-      });
-
-      await nextTick();
-
-      expect(wrapper.find(".execute-node-action").exists()).toBe(true);
-    });
-
-    it("should show execute node button for metanodes with configured (but not executed) nodes", async () => {
-      const { wrapper } = doMount({
-        props: {
-          selectedNode: {
-            ...dummyNode,
-            state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
-            kind: "metanode",
-            outPorts: [
-              {
-                index: 0,
-                typeId: "table",
-                nodeState: NodeState.ExecutionStateEnum.CONFIGURED,
-              },
-            ],
-          },
-          selectedPortIndex: 0,
-        },
-      });
-
-      await nextTick();
-
-      expect(wrapper.find(".execute-node-action").exists()).toBe(true);
+      expect(wrapper.emitted("validationError")![0][0]).toBeNull();
     });
 
     it("should handle port without content", async () => {
@@ -274,28 +204,6 @@ describe("PortViewTabOutput.vue", () => {
       await nextTick();
 
       expect(wrapper.findComponent(PortViewTabToggles).exists()).toBe(false);
-      expect(wrapper.find(".execute-node-action").exists()).toBe(true);
-    });
-
-    it("should emit event to execute node", async () => {
-      const { wrapper } = doMount({
-        props: {
-          selectedNode: {
-            ...dummyNode,
-            state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
-            allowedActions: { canExecute: true },
-          },
-          selectedPortIndex: 1,
-        },
-      });
-
-      await nextTick();
-
-      await wrapper
-        .find(".execute-node-action > .action-button")
-        .trigger("click");
-
-      expect(wrapper.emitted("executeNode")).toBeDefined();
     });
   });
 
@@ -311,13 +219,10 @@ describe("PortViewTabOutput.vue", () => {
         },
       });
 
-      expect(wrapper.emitted("outputStateChange")[0][0]).toEqual(
+      expect(wrapper.emitted("validationError")![0][0]).toEqual(
         expect.objectContaining({
-          error: expect.objectContaining({
-            type: "NODE",
-            code: "NODE_BUSY",
-          }),
-          loading: true,
+          type: "NODE",
+          code: "NODE_BUSY",
         }),
       );
     });
@@ -336,12 +241,12 @@ describe("PortViewTabOutput.vue", () => {
           },
         });
 
-        expect(wrapper.emitted("outputStateChange")[0][0]).toBeNull();
+        expect(wrapper.emitted("validationError")![0][0]).toBeNull();
       },
     );
   });
 
-  it("should emit outputStateChange events when the PortViewLoader state changes", async () => {
+  it("should forward loadingStateChange events from the PortViewLoader", async () => {
     const { wrapper } = doMount({
       props: {
         selectedNode: {
@@ -354,21 +259,15 @@ describe("PortViewTabOutput.vue", () => {
 
     await nextTick();
 
-    wrapper
-      .findComponent(PortViewLoader)
-      .vm.$emit("stateChange", { state: "loading" });
-    expect(wrapper.emitted("outputStateChange")[1][0]).toEqual(
-      expect.objectContaining({
-        loading: true,
-      }),
-    );
+    wrapper.findComponent(PortViewLoader).vm.$emit("loadingStateChange", {
+      value: "loading",
+      message: "Something",
+    });
 
-    wrapper
-      .findComponent(PortViewLoader)
-      .vm.$emit("stateChange", { state: "error", message: "Error message" });
-    expect(wrapper.emitted("outputStateChange")[2][0]).toEqual(
+    expect(wrapper.emitted("loadingStateChange")![0][0]).toEqual(
       expect.objectContaining({
-        message: "Error message",
+        value: "loading",
+        message: "Something",
       }),
     );
   });
