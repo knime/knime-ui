@@ -1,6 +1,6 @@
-<script>
-import { mapState } from "vuex";
-
+<script setup lang="ts">
+import { computed } from "vue";
+import { useStore } from "@/composables/useStore";
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
@@ -13,30 +13,20 @@ import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
 /**
  * Component that acts as a router page to render the workflow
  */
-export default {
-  components: {
-    Sidebar,
-    WorkflowPanel,
-    NodeOutput,
-    SplitPanel,
-    WorkflowToolbar,
-    TooltipContainer,
+const store = useStore();
+
+const workflow = computed(() => store.state.workflow.activeWorkflow);
+const savedSecondarySize = computed({
+  get() {
+    return store.state.settings.settings.nodeOutputSize;
   },
-  computed: {
-    ...mapState("workflow", { workflow: "activeWorkflow" }),
-    savedSecondarySize: {
-      get() {
-        return this.$store.state.settings.settings.nodeOutputSize;
-      },
-      set(value) {
-        this.$store.dispatch("settings/updateSetting", {
-          key: "nodeOutputSize",
-          value,
-        });
-      },
-    },
+  set(value: number) {
+    store.dispatch("settings/updateSetting", {
+      key: "nodeOutputSize",
+      value,
+    });
   },
-};
+});
 </script>
 
 <template>

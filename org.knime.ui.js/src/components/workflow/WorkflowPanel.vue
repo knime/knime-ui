@@ -1,105 +1,84 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import { mapState, mapGetters } from "vuex";
+<script setup lang="ts">
+import { computed, watch } from "vue";
+import { useStore } from "@/composables/useStore";
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
-import type { WorkflowState } from "@/store/workflow";
-import type { SettingsState } from "@/store/settings";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 import RightPanel from "../sidebar/RightPanel.vue";
 import SplitPanel from "../common/SplitPanel.vue";
 
-export default defineComponent({
-  components: {
-    ContextMenu,
-    WorkflowCanvas,
-    QuickAddNodeMenu,
-    PortTypeMenu,
-    WorkflowInfoBar,
-    RightPanel,
-    SplitPanel,
-  },
-  computed: {
-    ...mapState("workflow", {
-      workflow: (state: unknown) => (state as WorkflowState).activeWorkflow,
-      activeWorkflowId: (state: unknown) =>
-        (state as WorkflowState).activeWorkflow!.info.containerId,
-    }),
-    ...mapState("workflow", ["portTypeMenu", "quickAddNodeMenu"]),
-    ...mapState("application", ["contextMenu"]),
-    ...mapState("settings", {
-      nodeOutputSize: (state: unknown) =>
-        (state as SettingsState).settings.nodeOutputSize,
-    }),
-    ...mapGetters("workflow", [
-      "isLinked",
-      "isInsideLinked",
-      "insideLinkedType",
-      "isWritable",
-      "isStreaming",
-      "isWorkflowEmpty",
-      "isRemoteWorkflow",
-    ]),
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapGetters("selection", ["selectedNodeIds", "singleSelectedNode"]),
-    ...mapGetters("application", [
-      "hasActiveProjectAnOrigin",
-      "hasAnnotationModeEnabled",
-    ]),
-    nodeDialogSize: {
-      get() {
-        return this.$store.state.settings.settings.nodeDialogSize;
-      },
-      set(value: number) {
-        this.$store.dispatch("settings/updateSetting", {
-          key: "nodeDialogSize",
-          value,
-        });
-      },
-    },
-    showNodeDialog() {
-      return Boolean(
-        this.singleSelectedNode && this.singleSelectedNode?.hasDialog,
-      );
-    },
-  },
-  watch: {
-    // close quickAddNodeMenu if node selection changes
-    selectedNodeIds() {
-      if (this.quickAddNodeMenu.isOpen) {
-        this.quickAddNodeMenu.events.menuClose();
-      }
-    },
-  },
-  methods: {
-    toggleContextMenu(event: unknown) {
-      // this is not the only place where it is activated, look into Kanvas (usePanning.stopPan)
-      // where an unsuccessful pan by right click also opens it
-      this.$store.dispatch("application/toggleContextMenu", { event });
-    },
-    onContextMenu(event: MouseEvent) {
-      // this is the only place where we handle native context menu events
-      if (
-        event.target &&
-        (event.target as HTMLElement).classList.contains("native-context-menu")
-      ) {
-        return;
-      }
-      // prevent native context menus to appear
-      event.preventDefault();
+const store = useStore();
 
-      // trigger it for empty workflows as we don't have a pan there
-      if (this.isWorkflowEmpty) {
-        this.toggleContextMenu(event);
-      }
-    },
-    onSaveLocalCopy() {
-      this.$store.dispatch("workflow/saveProjectAs");
-    },
+const workflow = computed(() => store.state.workflow.activeWorkflow);
+const activeWorkflowId = computed(
+  () => store.state.workflow.activeWorkflow!.info.containerId,
+);
+const portTypeMenu = computed(() => store.state.workflow.portTypeMenu);
+const quickAddNodeMenu = computed(() => store.state.workflow.quickAddNodeMenu);
+const contextMenu = computed(() => store.state.application.contextMenu);
+const isWritable = computed(() => store.getters["workflow/isWritable"]);
+const isWorkflowEmpty = computed(
+  () => store.getters["workflow/isWorkflowEmpty"],
+);
+const selectedNodeIds = computed(
+  () => store.getters["selection/selectedNodeIds"],
+);
+const singleSelectedNode = computed(
+  () => store.getters["selection/singleSelectedNode"],
+);
+const hasAnnotationModeEnabled = computed(
+  () => store.getters["application/hasAnnotationModeEnabled"],
+);
+const nodeDialogSize = computed({
+  get() {
+    return store.state.settings.settings.nodeDialogSize;
+  },
+  set(value: number) {
+    store.dispatch("settings/updateSetting", {
+      key: "nodeDialogSize",
+      value,
+    });
   },
 });
+
+const showNodeDialog = computed(() =>
+  Boolean(singleSelectedNode.value && singleSelectedNode?.value.hasDialog),
+);
+
+watch(
+  selectedNodeIds,
+  () => {
+    if (quickAddNodeMenu.value.isOpen) {
+      quickAddNodeMenu.value.events.menuClose?.();
+    }
+  },
+  { immediate: true },
+);
+
+const toggleContextMenu = (event: unknown) => {
+  // this is not the only place where it is activated, look into Kanvas (usePanning.stopPan)
+  // where an unsuccessful pan by right click also opens it
+  store.dispatch("application/toggleContextMenu", { event });
+};
+
+const onContextMenu = (event: MouseEvent) => {
+  // this is the only place where we handle native context menu events
+  if (
+    event.target &&
+    (event.target as HTMLElement).classList.contains("native-context-menu")
+  ) {
+    return;
+  }
+  // prevent native context menus to appear
+  event.preventDefault();
+
+  // trigger it for empty workflows as we don't have a pan there
+  if (isWorkflowEmpty.value) {
+    toggleContextMenu(event);
+  }
+};
 </script>
 
 <template>
