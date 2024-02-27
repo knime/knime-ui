@@ -21,7 +21,7 @@ const openDialog = async ({
   workflowId,
   // @ts-ignore
   nodeId
-}) => {
+}) => { // TODO: Don't run this over and over again
   consola.info(`Webswing: Opening dialog for <${projectId}, ${workflowId}, ${nodeId}>`);
   const response = await client.call("WebswingService.openDialog", [
     projectId,
@@ -51,8 +51,9 @@ const setMessageConsumer = (consumer: any) => {
  * Consumes a `WebSwingEvent`
  */
 const applyMessageConsumer = (message: string) => {
-  if (message === "close") {
+  if (message === "close") { // TODO: Actually implement this
     consola.info("Webswing: Closing the current dialog");
+    return;
   }
   if (messageConsumer) {
     const bytes = base64ToBytes(message);
