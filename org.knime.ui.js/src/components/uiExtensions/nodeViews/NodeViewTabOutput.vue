@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+
+import OpenInNewWindowIcon from "webapps-common/ui/assets/img/icons/open-in-new-window.svg";
+import Button from "webapps-common/ui/components/Button.vue";
+
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
+import { compatibility } from "@/environment";
 
-import NodeViewLoader from "./NodeViewLoader.vue";
 import type { UIExtensionLoadingState, ValidationError } from "../common/types";
 
 import {
@@ -12,6 +17,8 @@ import {
   validateNodeExecuted,
   validateNodeNotBusy,
 } from "../common/output-validator";
+
+import NodeViewLoader from "./NodeViewLoader.vue";
 
 /**
  * Runs a set of validations that qualify whether a node from a given group is able
@@ -52,6 +59,8 @@ type Props = {
 
 const props = defineProps<Props>();
 
+const store = useStore();
+
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
   validationError: [value: ValidationError | null];
@@ -73,14 +82,61 @@ watch(
   },
   { immediate: true },
 );
+
+const openInNewWindow = () => {
+  store.dispatch("workflow/executeNodeAndOpenView", props.selectedNode.id);
+};
 </script>
 
 <template>
+  <div
+    v-if="!nodeErrors && compatibility.canDetachPortViews()"
+    class="detach-button-wrapper"
+  >
+    <Button
+      with-border
+      class="detach-view"
+      title="Open node view in new window"
+      @click="openInNewWindow()"
+    >
+      <OpenInNewWindowIcon />
+      <span>Open in new window</span>
+    </Button>
+  </div>
+
   <NodeViewLoader
     v-if="!nodeErrors"
     :project-id="projectId"
     :workflow-id="workflowId"
     :selected-node="selectedNode"
-    @loading-state-change="$emit('loadingStateChange', $event)"
+    @loading-state-change="emit('loadingStateChange', $event)"
   />
 </template>
+
+<style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
+.detach-button-wrapper {
+  display: flex;
+  width: max-content;
+  height: min-content;
+  position: absolute;
+  inset: 50px 0 0;
+  margin: 0 auto;
+  z-index: 3;
+
+  & .detach-view {
+    height: 20px;
+    padding: 0 10px 0 5px;
+    font-size: 13px;
+    line-height: 0.1;
+    border-color: var(--knime-silver-sand);
+
+    & svg {
+      margin-left: 5px;
+
+      @mixin svg-icon-size 12;
+    }
+  }
+}
+</style>
