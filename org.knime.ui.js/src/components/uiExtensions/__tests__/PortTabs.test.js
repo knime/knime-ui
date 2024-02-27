@@ -11,16 +11,9 @@ import PortTabs, { portIconSize } from "../PortTabs.vue";
 vi.mock("@/components/common/PortIconRenderer", () => ({ default: vi.fn() }));
 
 describe("PortTabs.vue", () => {
-  const mockFeatureFlags = {
-    shouldDisplayEmbeddedViews: vi.fn(() => true),
-  };
-
   const doShallowMount = (props = {}) =>
     shallowMount(PortTabs, {
       props,
-      global: {
-        mocks: { $features: mockFeatureFlags },
-      },
     });
 
   afterEach(() => {
@@ -129,36 +122,5 @@ describe("PortTabs.vue", () => {
       ],
     );
     expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
-  });
-
-  it("should not display view tab when feature flag is set to false", () => {
-    mockFeatureFlags.shouldDisplayEmbeddedViews.mockImplementation(() => false);
-
-    const wrapper = doShallowMount({
-      hasViewTab: true,
-      node: {
-        kind: "node",
-        outPorts: [
-          {
-            index: 0,
-            name: "flowVariable port",
-          },
-          {
-            index: 1,
-            name: "triangle port",
-          },
-        ],
-      },
-    });
-
-    expect(wrapper.findComponent(TabBar).props().possibleValues).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          value: "view",
-          label: "View",
-          icon: expect.anything(),
-        }),
-      ]),
-    );
   });
 });

@@ -148,10 +148,7 @@ export default defineComponent({
       let { outPorts, kind: nodeKind } = this.singleSelectedNode;
 
       // if a node has a view it's the first tab
-      if (
-        this.singleSelectedNode.hasView &&
-        this.$features.shouldDisplayEmbeddedViews()
-      ) {
+      if (this.singleSelectedNode.hasView) {
         this.selectedTab = "view";
         return;
       }
@@ -190,7 +187,7 @@ export default defineComponent({
 
     <template v-if="!selectionValidationError">
       <NodeViewTabOutput
-        v-if="isViewTabSelected && $features.shouldDisplayEmbeddedViews()"
+        v-if="isViewTabSelected"
         :project-id="projectId!"
         :workflow-id="workflowId"
         :selected-node="singleSelectedNode"

@@ -34,10 +34,6 @@ import NodeViewTabOutput from "../nodeViews/NodeViewTabOutput.vue";
 vi.mock("@knime/ui-extension-service");
 
 describe("NodeOutput.vue", () => {
-  const mockFeatureFlags = {
-    shouldDisplayEmbeddedViews: vi.fn(() => true),
-  };
-
   const dummyNodes: Record<string, KnimeNode> = {
     node1: createNativeNode({
       id: "node1",
@@ -106,7 +102,7 @@ describe("NodeOutput.vue", () => {
     const wrapper = mount(NodeOutput, {
       global: {
         plugins: [$store],
-        mocks: { $shapes, $colors, $features: mockFeatureFlags },
+        mocks: { $shapes, $colors },
         stubs: { PortViewLoader: true, NodeViewLoader: true },
       },
     });
@@ -495,15 +491,5 @@ describe("NodeOutput.vue", () => {
         ).toBe(toPort);
       });
     });
-  });
-
-  it("should not display ViewTabOutput component when feature flag is set to false", async () => {
-    mockFeatureFlags.shouldDisplayEmbeddedViews.mockImplementation(() => false);
-
-    const { wrapper } = doMount();
-
-    wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "view");
-    await Vue.nextTick();
-    expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(false);
   });
 });

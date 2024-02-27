@@ -70,7 +70,7 @@ export default {
       return (
         []
           .concat(
-            this.hasViewTab && this.$features.shouldDisplayEmbeddedViews()
+            this.hasViewTab
               ? { value: "view", label: "View", icon: Eye }
               : null,
           )
