@@ -61,7 +61,7 @@ const renderKey = computed(() => {
   return "";
 });
 
-watch(renderKey, () => loadExtensionConfig(), { immediate: true });
+watch(renderKey, () => loadExtensionConfig());
 
 onUnmounted(() => {
   if (deactivateDataServicesFn) {

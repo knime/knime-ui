@@ -9,6 +9,7 @@ import { createShortcutsService } from "@/plugins/shortcuts";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
+import * as settingsStore from "@/store/settings";
 
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
@@ -39,6 +40,7 @@ describe("WorkflowPanel", () => {
         },
       },
       selection: selectionStore,
+      settings: settingsStore,
     };
 
     const $store = mockVuexStore(storeConfig);
@@ -76,7 +78,7 @@ describe("WorkflowPanel", () => {
 
       expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
 
-      wrapper.vm.$store.dispatch("application/toggleContextMenu", {
+      wrapper.vm.store.dispatch("application/toggleContextMenu", {
         event: createEvent(242, 122),
       });
       await new Promise((r) => setTimeout(r, 0));
@@ -90,7 +92,7 @@ describe("WorkflowPanel", () => {
       const { wrapper } = doShallowMount();
 
       wrapper.trigger("contextmenu", { clientX: 100, clientY: 200 });
-      wrapper.vm.$store.dispatch("application/toggleContextMenu", {
+      wrapper.vm.store.dispatch("application/toggleContextMenu", {
         event: createEvent(100, 200),
       });
       await new Promise((r) => setTimeout(r, 0));
@@ -118,7 +120,7 @@ describe("WorkflowPanel", () => {
 
     it("does not open contextmenu if workflow is not empty", async () => {
       const { wrapper, dispatchSpy } = doShallowMount();
-      expect(wrapper.vm.$store.getters["workflow/isWorkflowEmpty"]).toBe(false);
+      expect(wrapper.vm.store.getters["workflow/isWorkflowEmpty"]).toBe(false);
       await wrapper.trigger("contextmenu");
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "application/toggleContextMenu",
@@ -133,7 +135,7 @@ describe("WorkflowPanel", () => {
           workflowAnnotations: Object.create({}),
         },
       });
-      expect(wrapper.vm.$store.getters["workflow/isWorkflowEmpty"]).toBe(true);
+      expect(wrapper.vm.store.getters["workflow/isWorkflowEmpty"]).toBe(true);
       await wrapper.trigger("contextmenu");
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
