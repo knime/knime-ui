@@ -42,33 +42,6 @@ const { resourceLocation, resourceLocationResolver } = useResourceLocation({
   extensionConfig,
 });
 
-const modifyPortViewSettings = (portView: unknown) => {
-  // Introduced with NXT-2044 because selection is enabled for the detached
-  // table port view (via the table port view settings) but not yet
-  // supported by the _embedded_ (this) table port view. Hence, we modify
-  // the table port view settings to _not_ show the selection checkboxes.
-  // Workaround to be removed with NXT-2042.
-
-  if (
-    typeof portView !== "object" ||
-    portView === null ||
-    (typeof portView === "object" && !("initialData" in portView))
-  ) {
-    return;
-  }
-
-  if (!portView.initialData || typeof portView.initialData !== "string") {
-    return;
-  }
-
-  const initialData = JSON.parse(portView.initialData);
-  const settings = initialData?.result?.settings;
-  if (settings?.selectionMode === "EDIT") {
-    settings.selectionMode = "OFF";
-    portView.initialData = JSON.stringify(initialData);
-  }
-};
-
 const loadExtensionConfig = async () => {
   const portView = await API.port.getPortView({
     projectId: props.projectId,
@@ -77,8 +50,6 @@ const loadExtensionConfig = async () => {
     portIdx: props.selectedPortIndex,
     viewIdx: props.selectedViewIndex,
   });
-
-  modifyPortViewSettings(portView);
 
   if (portView.deactivationRequired) {
     deactivateDataServicesFn = () => {
