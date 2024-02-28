@@ -67,6 +67,8 @@ const onSplitterClick = () => {
   }
 };
 
+const isResizing = ref(false);
+
 const onResized = ({ size }: { size: number }) => {
   // snapping on release of mouse (resize is done)
   if (size < props.secondaryMinSize && size > 0) {
@@ -77,10 +79,12 @@ const onResized = ({ size }: { size: number }) => {
   // update prev size if it did not snap
   previousSecondarySize.value = size;
   emit("update:secondarySize", size);
+  isResizing.value = false;
 };
 
 // update our current size on every resize
 const onResize = ({ size }: { size: number }) => {
+  isResizing.value = true;
   currentSecondarySize.value = size;
 };
 </script>
@@ -108,7 +112,10 @@ const onResize = ({ size }: { size: number }) => {
       :size="currentSecondarySize"
       :class="[
         'secondary-panel',
-        { 'will-snap': currentSecondarySize < secondaryMinSize },
+        {
+          'is-resizing': isResizing,
+          'will-snap': currentSecondarySize < secondaryMinSize,
+        },
       ]"
     >
       <slot v-if="!isClosed" name="secondary" />
@@ -121,7 +128,10 @@ const onResize = ({ size }: { size: number }) => {
       :size="currentSecondarySize"
       :class="[
         'secondary-panel',
-        { 'will-snap': currentSecondarySize < secondaryMinSize },
+        {
+          'is-resizing': isResizing,
+          'will-snap': currentSecondarySize < secondaryMinSize,
+        },
       ]"
     >
       <slot v-if="!isClosed" name="secondary" />
@@ -164,6 +174,11 @@ const onResize = ({ size }: { size: number }) => {
     top: -5px;
     bottom: -5px;
     width: 100%;
+  }
+
+  & .is-resizing {
+    /** if the content is an iframe it might steal our mousemove and we want to prevent that */
+    pointer-events: none;
   }
 
   /* snap overlay and message */
