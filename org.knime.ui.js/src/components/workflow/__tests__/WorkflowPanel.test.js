@@ -74,11 +74,11 @@ describe("WorkflowPanel", () => {
     });
 
     it("renders context menu", async () => {
-      const { wrapper } = doShallowMount();
+      const { wrapper, $store } = doShallowMount();
 
       expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
 
-      wrapper.vm.store.dispatch("application/toggleContextMenu", {
+      $store.dispatch("application/toggleContextMenu", {
         event: createEvent(242, 122),
       });
       await new Promise((r) => setTimeout(r, 0));
@@ -89,10 +89,10 @@ describe("WorkflowPanel", () => {
     });
 
     it("handles @menuClose event from ContextMenu properly", async () => {
-      const { wrapper } = doShallowMount();
+      const { wrapper, $store } = doShallowMount();
 
       wrapper.trigger("contextmenu", { clientX: 100, clientY: 200 });
-      wrapper.vm.store.dispatch("application/toggleContextMenu", {
+      $store.dispatch("application/toggleContextMenu", {
         event: createEvent(100, 200),
       });
       await new Promise((r) => setTimeout(r, 0));
@@ -119,8 +119,10 @@ describe("WorkflowPanel", () => {
     });
 
     it("does not open contextmenu if workflow is not empty", async () => {
-      const { wrapper, dispatchSpy } = doShallowMount();
-      expect(wrapper.vm.store.getters["workflow/isWorkflowEmpty"]).toBe(false);
+      const { wrapper, dispatchSpy, $store } = doShallowMount();
+      expect($store.getters["application/hasAnnotationModeEnabled"]).toBe(
+        false,
+      );
       await wrapper.trigger("contextmenu");
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "application/toggleContextMenu",
@@ -129,13 +131,13 @@ describe("WorkflowPanel", () => {
     });
 
     it("opens contextmenu if, and only if the workflow is empty", async () => {
-      const { wrapper, dispatchSpy } = doShallowMount({
+      const { wrapper, dispatchSpy, $store } = doShallowMount({
         workflow: {
           nodes: Object.create({}),
           workflowAnnotations: Object.create({}),
         },
       });
-      expect(wrapper.vm.store.getters["workflow/isWorkflowEmpty"]).toBe(true);
+      expect($store.getters["workflow/isWorkflowEmpty"]).toBe(true);
       await wrapper.trigger("contextmenu");
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",

@@ -47,15 +47,11 @@ const showNodeDialog = computed(() =>
   Boolean(singleSelectedNode.value && singleSelectedNode?.value.hasDialog),
 );
 
-watch(
-  selectedNodeIds,
-  () => {
-    if (quickAddNodeMenu.value.isOpen) {
-      quickAddNodeMenu.value.events.menuClose?.();
-    }
-  },
-  { immediate: true },
-);
+watch(selectedNodeIds, () => {
+  if (quickAddNodeMenu.value.isOpen) {
+    quickAddNodeMenu.value.events.menuClose?.();
+  }
+});
 
 const toggleContextMenu = (event: unknown) => {
   // this is not the only place where it is activated, look into Kanvas (usePanning.stopPan)
@@ -93,19 +89,19 @@ const onContextMenu = (event: MouseEvent) => {
   >
     <ContextMenu
       v-if="contextMenu.isOpen"
-      :position="contextMenu.position"
+      :position="contextMenu.position!"
       @menu-close="toggleContextMenu"
     />
 
     <PortTypeMenu
       v-if="portTypeMenu.isOpen"
-      v-bind="portTypeMenu.props"
+      v-bind="portTypeMenu.props!"
       v-on="portTypeMenu.events"
     />
 
     <QuickAddNodeMenu
       v-if="quickAddNodeMenu.isOpen"
-      v-bind="quickAddNodeMenu.props"
+      v-bind="quickAddNodeMenu.props!"
       v-on="quickAddNodeMenu.events"
     />
 

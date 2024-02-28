@@ -15,7 +15,7 @@ interface State {
       position: XY;
       side: "input" | "output";
       portGroups: Record<string, PortGroup>;
-    };
+    } | null;
 
     events: {
       itemActive?: () => void;
@@ -30,7 +30,7 @@ interface State {
       position: XY;
       nodeId?: string | null;
       port: NodePort | null;
-    };
+    } | null;
     events: {
       menuClose?: () => void;
     };
@@ -47,20 +47,13 @@ export const state = (): State => ({
     nodeId: null,
     startNodeId: null,
     previewPort: null,
-    props: {
-      position: { x: 0, y: 0 },
-      side: "input",
-      portGroups: {},
-    },
+    props: null,
     events: {},
   },
 
   quickAddNodeMenu: {
     isOpen: false,
-    props: {
-      position: { x: 0, y: 0 },
-      port: null,
-    },
+    props: null,
     events: {},
   },
 });

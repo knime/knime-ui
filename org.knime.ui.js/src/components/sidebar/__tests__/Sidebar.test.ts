@@ -17,7 +17,6 @@ describe("Sidebar", () => {
     props = {},
     isWorkflowEmptyMock = vi.fn().mockReturnValue(false),
     mockFeatureFlags = {
-      shouldDisplayEmbeddedDialogs: vi.fn(() => true),
       isKaiPermitted: () => false,
     },
   } = {}) => {

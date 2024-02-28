@@ -1,7 +1,4 @@
-import type {
-  UIExtensionAPILayer,
-  ExtensionConfig as BaseExtensionConfig,
-} from "webapps-common/ui/uiExtensions";
+import type { ExtensionConfig as BaseExtensionConfig } from "webapps-common/ui/uiExtensions";
 
 import type { ValidationResult } from "./output-validator";
 
@@ -18,12 +15,4 @@ export type UIExtensionLoadingState =
 
 export type ExtensionConfig = BaseExtensionConfig & {
   resourceInfo: { baseUrl?: string };
-};
-
-export type CommonViewLoaderData = {
-  deactivateDataServicesFn: (() => void) | null;
-  apiLayer: null | UIExtensionAPILayer;
-  extensionConfig:
-    | null
-    | (BaseExtensionConfig & { resourceInfo: { baseUrl?: string } });
 };

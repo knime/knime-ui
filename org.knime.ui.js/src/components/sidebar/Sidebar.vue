@@ -279,12 +279,6 @@ nav {
   }
 }
 
-#right-panel {
-  /* flex: 0 0 auto; */
-  display: flex;
-  border-right: 1px solid var(--knime-silver-sand);
-}
-
 .tab-enter-active {
   transition: all 150ms ease-in;
 }

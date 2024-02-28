@@ -12,6 +12,7 @@ describe("SplitPanel", () => {
       direction: "down",
       secondarySize: 45,
       secondaryMinSize: 15,
+      showSecondaryPanel: true,
       ...propsOverride,
     };
     const wrapper = mount(SplitPanel, {
@@ -123,4 +124,13 @@ describe("SplitPanel", () => {
       expect(secondary.props("size")).toBe(42);
     },
   );
+
+  it("does not show second panel if prop is set to false", () => {
+    const { wrapper } = doMount({
+      showSecondaryPanel: false,
+    });
+
+    expect(wrapper.findComponent(".main-panel").exists()).toBe(true);
+    expect(wrapper.findComponent(".secondary-panel").exists()).toBe(false);
+  });
 });

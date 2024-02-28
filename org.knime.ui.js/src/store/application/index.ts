@@ -47,7 +47,7 @@ export interface ApplicationState {
    */
   contextMenu: {
     isOpen: boolean;
-    position: XY;
+    position: XY | null;
   };
   /**
    * Object to track state of available updates
@@ -95,7 +95,7 @@ export const state = (): ApplicationState => ({
   availableComponentTypes: [],
   contextMenu: {
     isOpen: false,
-    position: { x: 0, y: 0 },
+    position: null,
   },
   availableUpdates: null,
   featureFlags: {},
