@@ -21,6 +21,8 @@ export const canDoComponentOperations = () => isDesktop;
 
 export const canDetachPortViews = () => isDesktop;
 
+export const canDetachNodeViews = () => isDesktop;
+
 export const isSpaceExplorerSupported = () => isDesktop;
 
 export const isKaiSupported = () => isDesktop;

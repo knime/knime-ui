@@ -185,7 +185,8 @@ export default defineComponent({
         reset: true,
 
         // other
-        openView: this.canOpenView !== null,
+        openView:
+          this.canOpenView !== null && compatibility.canDetachNodeViews(),
       };
 
       return (
