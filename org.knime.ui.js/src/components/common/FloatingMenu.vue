@@ -193,15 +193,15 @@ onMounted(() => {
 
   let kanvas = document.getElementById("kanvas")!;
   kanvas.addEventListener("scroll", onCanvasScroll);
-
-  if (props.closeOnEscape) {
-    useEscapeStack({
-      onEscape: () => {
-        emit("menuClose");
-      },
-    });
-  }
 });
+
+if (props.closeOnEscape) {
+  useEscapeStack({
+    onEscape: () => {
+      emit("menuClose");
+    },
+  });
+}
 
 onBeforeUnmount(() => {
   store.commit("canvas/setInteractionsEnabled", true);
