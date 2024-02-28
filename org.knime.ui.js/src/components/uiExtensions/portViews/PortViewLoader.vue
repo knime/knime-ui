@@ -122,9 +122,19 @@ const apiLayer: UIExtensionAPILayer = {
     return { result };
   },
 
-  updateDataPointSelection: () => {
-    // TODO: impl with NXT-2383 https://knime-com.atlassian.net/browse/NXT-2383
-    return Promise.resolve(null);
+  updateDataPointSelection: async (params) => {
+    const { mode, selection } = params;
+    const result = await API.port.updateDataPointSelection({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId: props.selectedNode.id,
+      portIdx: props.selectedPortIndex,
+      viewIdx: props.selectedViewIndex,
+      // @ts-ignore
+      mode,
+      selection,
+    });
+    return { result };
   },
 
   sendAlert: (alert: Alert, closeAlert?: () => void) => {
