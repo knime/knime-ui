@@ -292,7 +292,7 @@ final class ManipulateComponents {
     private static WorkflowCommandAdapter getChangeSubNodeLinkCommand(final SubNodeContainer component,
         final URI oldLink, final URI newLink) {
         final var wfm = component.getParent();
-        final var linkCmd = new ChangeSubNodeLinkCommand(wfm, component, oldLink, newLink);
+        final var linkCmd = new ChangeSubNodeLinkCommand(wfm, component, oldLink, null, newLink, null);
         return new WorkflowCommandAdapter(linkCmd, true);
     }
 
