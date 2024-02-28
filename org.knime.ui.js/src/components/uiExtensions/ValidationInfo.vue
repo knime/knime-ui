@@ -4,12 +4,12 @@ import { computed } from "vue";
 import type { KnimeNode } from "@/api/custom-types";
 import { compatibility } from "@/environment";
 import * as nodeUtils from "@/util/nodeUtil";
+import { toExtendedPortObject } from "@/util/portDataMapper";
+import { useStore } from "@/composables/useStore";
 
 import type { ValidationError } from "./common/types";
 import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";
 import ExecuteButtons from "./ExecuteButtons.vue";
-import { useStore } from "@/composables/useStore";
-import { toExtendedPortObject } from "@/util/portDataMapper";
 import LoadingIndicator from "./LoadingIndicator.vue";
 
 type Props = {
@@ -57,7 +57,7 @@ const canExecute = computed(() => {
 
   if (nodeUtils.isNodeMetaNode(props.selectedNode)) {
     return Boolean(
-      props.selectedPortIndex &&
+      props.selectedPortIndex !== null &&
         nodeUtils.canExecute(props.selectedNode, props.selectedPortIndex),
     );
   }
@@ -107,37 +107,32 @@ const openLegacyPortView = (executeNode: boolean) => {
 
 <template>
   <div v-if="validationError" class="info-wrapper">
-    <template v-if="!canExecute">
-      <template
-        v-if="isUnsupportedView && !compatibility.canOpenLegacyPortViews()"
-      >
+    <template v-if="isUnsupportedView">
+      <template v-if="!compatibility.canOpenLegacyPortViews()">
         This port view is not supported in the browser. Please download the
         KNIME Analytics Platform to see the content in the desktop application
       </template>
 
-      <template v-else>
-        <LoadingIndicator
-          v-if="isNodeBusy"
-          :message="validationError.message"
-        />
+      <span v-else>{{ validationError.message }}</span>
 
-        <span v-else>{{ validationError.message }}</span>
-      </template>
+      <LegacyPortViewButtons
+        v-if="isUnsupportedView && compatibility.canOpenLegacyPortViews()"
+        :can-execute="canExecute"
+        :is-executed="isPortExecuted"
+        @open-legacy-port-view="openLegacyPortView"
+      />
     </template>
 
-    <LegacyPortViewButtons
-      v-if="isUnsupportedView && compatibility.canOpenLegacyPortViews()"
-      :can-execute="canExecute"
-      :is-executed="isPortExecuted"
-      @open-legacy-port-view="openLegacyPortView"
-    />
+    <template v-if="!isUnsupportedView && !canExecute">
+      <LoadingIndicator v-if="isNodeBusy" :message="validationError.message" />
+
+      <span v-else>{{ validationError.message }}</span>
+    </template>
   </div>
 
   <ExecuteButtons
     v-if="canExecute && !isUnsupportedView"
-    :validation-error="validationError"
-    :selected-node="selectedNode"
-    :selected-port-index="selectedPortIndex"
+    :selected-node="selectedNode!"
     @execute-node="onExecuteNode"
   />
 </template>
