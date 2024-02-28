@@ -35,11 +35,8 @@ const NodeDialogLoader = defineAsyncComponent({
 
 .panel {
   display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
-
-  & :deep(.ui-ext-shadow-app) {
-    width: 100%;
-  }
 }
 </style>

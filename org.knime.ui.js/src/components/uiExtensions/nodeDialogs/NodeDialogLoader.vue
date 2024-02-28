@@ -77,7 +77,7 @@ onMounted(async () => {
       return Promise.resolve(
         resourceLocationResolver(
           path,
-          extensionConfig?.value.resourceInfo?.baseUrl,
+          extensionConfig.value?.resourceInfo?.baseUrl,
         ),
       );
     },
@@ -116,7 +116,7 @@ onMounted(async () => {
     v-if="isConfigReady"
     :extension-config="extensionConfig!"
     :resource-location="resourceLocation"
-    :shadow-app-style="{ overflow: 'auto' }"
     :api-layer="apiLayer!"
+    :shadow-app-style="{ width: '100%' }"
   />
 </template>
