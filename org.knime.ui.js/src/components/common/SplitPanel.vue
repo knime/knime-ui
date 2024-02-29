@@ -11,6 +11,7 @@ interface Props {
   secondaryMinSize?: number;
   mainMinSize?: number;
   withTransition?: boolean;
+  showSecondaryPanel?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,6 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
   secondaryMinSize: 15,
   mainMinSize: 25,
   withTransition: false,
+  showSecondaryPanel: true,
 });
 
 interface Emits {
@@ -108,7 +110,7 @@ const onResize = ({ size }: { size: number }) => {
     @resize="onResize($event[isSecondaryReverse ? 0 : 1])"
   >
     <pane
-      v-if="isSecondaryReverse"
+      v-if="isSecondaryReverse && showSecondaryPanel"
       :size="currentSecondarySize"
       :class="[
         'secondary-panel',
@@ -124,7 +126,7 @@ const onResize = ({ size }: { size: number }) => {
       <slot />
     </pane>
     <pane
-      v-if="!isSecondaryReverse"
+      v-if="!isSecondaryReverse && showSecondaryPanel"
       :size="currentSecondarySize"
       :class="[
         'secondary-panel',

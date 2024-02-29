@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 import { useStore } from "@/composables/useStore";
+import { useFeatures } from "@/plugins/feature-flags";
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
+import SplitPanel from "@/components/common/SplitPanel.vue";
+import RightPanel from "@/components/sidebar/RightPanel.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
-import RightPanel from "../sidebar/RightPanel.vue";
-import SplitPanel from "../common/SplitPanel.vue";
 
+const $features = useFeatures();
 const store = useStore();
 
 const workflow = computed(() => store.state.workflow.activeWorkflow);
@@ -106,6 +108,7 @@ const onContextMenu = (event: MouseEvent) => {
       id="kanvasOutputSplitter"
       v-model:secondary-size="nodeDialogSize"
       direction="right"
+      :show-secondary-panel="$features.shouldDisplayEmbeddedDialogs()"
     >
       <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,

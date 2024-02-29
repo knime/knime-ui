@@ -14,11 +14,19 @@ import * as settingsStore from "@/store/settings";
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
+import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
+import RightPanel from "@/components/sidebar/RightPanel.vue";
 
 import WorkflowPanel from "../WorkflowPanel.vue";
 
 describe("WorkflowPanel", () => {
-  const doShallowMount = ({ props = {}, workflow = {} } = {}) => {
+  const doShallowMount = ({
+    props = {},
+    workflow = {},
+    mockFeatureFlags = {
+      shouldDisplayEmbeddedDialogs: () => true,
+    },
+  } = {}) => {
     const baseWorkflow = {
       info: {
         containerType: "project",
@@ -59,7 +67,10 @@ describe("WorkflowPanel", () => {
 
     const wrapper = shallowMount(WorkflowPanel, {
       props,
-      global: { plugins: [$store], mocks: { $shortcuts } },
+      global: {
+        plugins: [$store],
+        mocks: { $shortcuts, $features: mockFeatureFlags },
+      },
     });
 
     return { wrapper, $store, dispatchSpy };
@@ -251,5 +262,16 @@ describe("WorkflowPanel", () => {
       quickAddNodeMenu.vm.$emit("menuClose");
       expect(closeCallback).toHaveBeenCalled();
     });
+  });
+
+  it("should not display right panel when flag is set to false", () => {
+    const { wrapper } = doShallowMount({
+      mockFeatureFlags: {
+        shouldDisplayEmbeddedDialogs: vi.fn(() => false),
+      },
+    });
+
+    expect(wrapper.findComponent(WorkflowCanvas).exists()).toBe(true);
+    expect(wrapper.findComponent(RightPanel).exists()).toBe(false);
   });
 });
