@@ -8,6 +8,7 @@ import {
 
 import { API } from "@api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 
 import { useResourceLocation } from "../common/useResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
@@ -72,6 +73,16 @@ const loadExtensionConfig = async () => {
 
 const noop = () => {};
 
+const $toast = getToastsProvider();
+const activeToastId = ref<string | null>(null);
+
+const removeActiveToast = () => {
+  if (activeToastId.value) {
+    $toast.remove(activeToastId.value);
+    activeToastId.value = null;
+  }
+};
+
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
     return Promise.resolve(
@@ -100,12 +111,30 @@ const apiLayer: UIExtensionAPILayer = {
     return Promise.resolve(null);
   },
 
+  sendAlert: (alert, removeAlertButton) => {
+    removeActiveToast();
+
+    const headline = alert.nodeInfo
+      ? `${alert.nodeInfo?.nodeName} (${alert.nodeId})`
+      : `Warning (${alert.nodeId})`;
+
+    const toastType = alert.type === "warn" ? "warning" : "error";
+
+    removeAlertButton?.();
+
+    activeToastId.value = $toast.show({
+      headline,
+      message: alert.message,
+      type: toastType,
+      autoRemove: alert.type !== "error",
+    });
+  },
+
   // NOOP - not required by this embedding context for this type of UI Extension
   publishData: noop,
   setReportingContent: noop,
   imageGenerated: noop,
   registerPushEventService: () => noop,
-  sendAlert: noop,
   setSettingsWithCleanModelSettings: noop,
   setDirtyModelSettings: noop,
   onApplied: noop,
@@ -140,6 +169,7 @@ watch(
 
 onUnmounted(() => {
   deactivateDataServicesFn?.();
+  removeActiveToast();
 });
 </script>
 
