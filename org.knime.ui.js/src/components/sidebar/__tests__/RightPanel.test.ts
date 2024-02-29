@@ -33,9 +33,6 @@ describe("RightPanel", () => {
       },
     });
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
-
     const wrapper = shallowMount(RightPanel, {
       props: {
         ...props,
@@ -45,7 +42,7 @@ describe("RightPanel", () => {
       },
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy };
+    return { wrapper, $store };
   };
 
   it("renders default", () => {
