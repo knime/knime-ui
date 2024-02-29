@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { defineAsyncComponent, computed } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
-import SidebarContentLoading from "./SidebarContentLoading.vue";
+import NodeDialogLoader from "@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue";
 
 const store = useStore();
 
@@ -12,21 +12,13 @@ const workflowId = computed(
 const selectedNode = computed(
   () => store.getters["selection/singleSelectedNode"],
 );
-const showNodeDialog = computed(() =>
-  Boolean(selectedNode.value && selectedNode?.value.hasDialog),
-);
+const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
 const placeholder = computed(() => {
   if (selectedNode.value && !selectedNode.value.hasDialog) {
     return "Node dialog cannot be displayed. Please open the configuration from the action bar";
   }
 
   return "Please select a node";
-});
-
-const NodeDialogLoader = defineAsyncComponent({
-  loader: () =>
-    import("@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue"),
-  loadingComponent: SidebarContentLoading,
 });
 </script>
 
@@ -52,6 +44,7 @@ const NodeDialogLoader = defineAsyncComponent({
   flex-direction: column;
   width: 100%;
   height: 100%;
+  background-color: var(--knime-gray-ultra-light);
 
   & .placeholder {
     display: flex;
