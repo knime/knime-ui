@@ -2,6 +2,9 @@ package org.knime.ui.java.browser;
 
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.WindowEvent;
+
 import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
@@ -16,12 +19,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.js.cef.CEFUtils;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
-
-import com.equo.chromium.swt.Browser;
 
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
@@ -109,20 +111,9 @@ public class KnimeBrowserView {
                 "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
         }
 
-
         browser = new Browser(parent, SWT.NONE); // NOSONAR
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
-        browser.addOpenWindowListener(e -> {
-            // cancels the navigation
-            e.required = true;
-            e.browser = null;
-
-            if (e.data instanceof String url) {
-                WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, getClass());
-            } else {
-                LOGGER.warnWithFormat("Browser window for '%s' couldn't be opened", e.data);
-            }
-        });
+        browser.addOpenWindowListener(this::cancelAndOpenInBrowser);
         browser.setMenu(new Menu(browser.getShell()));
 
         LifeCycle.get().create((name, function) -> new KnimeBrowserFunction(browser, name, function));
@@ -134,6 +125,35 @@ public class KnimeBrowserView {
                 }
                 initView(false, true);
             };
+        }
+    }
+
+    private void cancelAndOpenInBrowser(final WindowEvent windowEvent) {
+        // cancels the navigation
+        windowEvent.required = true;
+        windowEvent.browser = null;
+
+        if (windowEvent.data instanceof String location) {
+            openBrowserWindow(location);
+        } else {
+            LOGGER.warnWithFormat("Event payload %s is not a valid navigation target -- must be a string",
+                windowEvent.data);
+        }
+
+    }
+
+    /**
+     * Open a new browser window.
+     *
+     * @param location The location to navigate the new window to.
+     */
+    @SuppressWarnings("restriction")
+    private void openBrowserWindow(final String location) {
+        if (Boolean.getBoolean("org.knime.ui.java.use_cef_browser_for_external_links")) {
+            // For testing purposes only!
+            CEFUtils.openBrowserWindow(location);
+        } else {
+            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(location, getClass());
         }
     }
 
