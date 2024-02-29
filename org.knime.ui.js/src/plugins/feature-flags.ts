@@ -1,8 +1,7 @@
-import type { Store } from "vuex";
 import { useStore } from "vuex";
 
-import type { RootStoreState } from "@/store/types";
 import type { PluginInitFunction } from "./types";
+import type { ApplicationState } from "@/store/application";
 
 export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;
@@ -18,31 +17,33 @@ const featureFlagDefaults = {
   [`${featureFlagsPrefix}.ai_assistant_installed`]: false,
 };
 
-const getFlagValue = (store: Store<RootStoreState>, name: string) => {
-  const featureFlags =
-    store.state.application.featureFlags || featureFlagDefaults;
-
+const getFlagValue = (
+  featureFlags: ApplicationState["featureFlags"] = featureFlagDefaults,
+  name: string,
+) => {
   return featureFlags[`${featureFlagsPrefix}.${name}`];
 };
 
-export const features: ($store: Store<RootStoreState>) => Features = (
-  $store,
-) => ({
+export const features: (
+  featureFlags: ApplicationState["featureFlags"],
+) => Features = (featureFlags) => ({
   shouldDisplayEmbeddedDialogs: () =>
-    getFlagValue($store, "embedded_views_and_dialogs"),
+    getFlagValue(featureFlags, "embedded_views_and_dialogs"),
 
-  isKaiPermitted: () => getFlagValue($store, "ai_assistant"),
+  isKaiPermitted: () => getFlagValue(featureFlags, "ai_assistant"),
 
-  isKaiInstalled: () => getFlagValue($store, "ai_assistant_installed"),
+  isKaiInstalled: () => getFlagValue(featureFlags, "ai_assistant_installed"),
 });
 
 export const useFeatures: () => Features = () => {
   const store = useStore();
-  return features(store);
+  return features(store.state.application.featureFlags);
 };
 
 const init: PluginInitFunction = ({ app, $store }) => {
-  app.config.globalProperties.$features = features($store);
+  app.config.globalProperties.$features = features(
+    $store.state.application.featureFlags,
+  );
 };
 
 export default init;

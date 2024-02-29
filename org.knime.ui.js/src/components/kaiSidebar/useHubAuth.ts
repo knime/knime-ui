@@ -1,15 +1,17 @@
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
+import { isBrowser } from "@/environment";
 
-let isHubIdFetched = false;
+// If the app is running in the browser, we do not need a hubId.
+let isHubIdReadyOrNotNeeded = isBrowser;
 
 const useHubAuth = () => {
   const store = useStore();
 
   // Fetch hubID from the backend only once.
-  if (!isHubIdFetched) {
+  if (!isHubIdReadyOrNotNeeded) {
     store.dispatch("aiAssistant/getHubID");
-    isHubIdFetched = true;
+    isHubIdReadyOrNotNeeded = true;
   }
 
   const hubId = computed(() => store.state.aiAssistant.hubID);

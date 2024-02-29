@@ -1,7 +1,7 @@
 import { ref, reactive, computed } from "vue";
 import sleep from "webapps-common/util/sleep";
 import { API } from "@api";
-import { KaiUiStrings, KaiWelcomeMessages } from "../../api/gateway-api/generated-api";
+import type { KaiUiStrings } from "@/api/gateway-api/generated-api";
 
 const SLEEP_AFTER_ERROR = 2000;
 
@@ -28,8 +28,6 @@ const fetchUiStrings = async () => {
     isLoading.value = false;
   }
 };
-
-fetchUiStrings();
 
 const useKaiServer = () => {
   return {

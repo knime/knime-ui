@@ -13,6 +13,8 @@ import type {
   WorkflowSnapshot,
 } from "@/api/gateway-api/generated-api";
 import { runInEnvironment } from "@/environment";
+import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
+import { features } from "@/plugins/feature-flags";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -87,6 +89,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
           dispatch("spaces/fetchAllSpaceProviders", {}, { root: true }),
         ]),
     });
+
+    const { isKaiInstalled, isKaiPermitted } = features(
+      this.state.application.featureFlags,
+    );
+    if (isKaiInstalled() && isKaiPermitted()) {
+      kaiFetchUiStrings();
+    }
   },
 
   destroyApplication({ dispatch }) {
