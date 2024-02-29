@@ -21,7 +21,7 @@ export const isNodeComponent = (node: KnimeNode): node is ComponentNode =>
  */
 export const canExecute = (node: KnimeNode, portIndex: number) => {
   return isNodeMetaNode(node)
-    ? node.outPorts[portIndex].nodeState ===
+    ? node.outPorts[portIndex]?.nodeState ===
         MetaNodePort.NodeStateEnum.CONFIGURED
     : Boolean(node.allowedActions?.canExecute);
 };
@@ -31,6 +31,6 @@ export const canExecute = (node: KnimeNode, portIndex: number) => {
  */
 export const getNodeState = (node: KnimeNode, portIndex: number) => {
   return isNodeMetaNode(node)
-    ? node.outPorts[portIndex].nodeState
+    ? node.outPorts[portIndex]?.nodeState
     : node.state?.executionState;
 };

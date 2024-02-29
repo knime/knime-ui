@@ -232,8 +232,8 @@ describe("ValidationInfo.vue", () => {
       expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
     });
 
-    it("should render correctly for metanodes", () => {
-      const selectedNode = createMetanode({
+    it("should render correctly for metanodes", async () => {
+      const metanode1 = createMetanode({
         outPorts: [
           createMetanodePort({
             typeId: "org.knime.core.node.BufferedDataTable",
@@ -243,11 +243,54 @@ describe("ValidationInfo.vue", () => {
         ],
       });
 
-      const { wrapper } = doMount({
-        props: { selectedNode, selectedPortIndex: 0 },
+      // metanode without ports
+      const metanode2 = createMetanode({
+        outPorts: Object.create([]),
       });
 
+      // metanode with idle and configured ports
+      const metanode3 = createMetanode({
+        outPorts: [
+          createMetanodePort({
+            typeId: "org.knime.core.node.BufferedDataTable",
+            nodeState: MetaNodePort.NodeStateEnum.IDLE,
+            index: 0,
+          }),
+          createMetanodePort({
+            typeId: "org.knime.core.node.BufferedDataTable",
+            nodeState: MetaNodePort.NodeStateEnum.CONFIGURED,
+            index: 1,
+          }),
+          createMetanodePort({
+            typeId: "org.knime.core.node.BufferedDataTable",
+            nodeState: MetaNodePort.NodeStateEnum.EXECUTED,
+            index: 2,
+          }),
+        ],
+      });
+
+      const { wrapper } = doMount({
+        props: { selectedNode: metanode1, selectedPortIndex: 0 },
+      });
+
+      // first metanode - single configured port
       expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(true);
+
+      // second metanode - no ports
+      await wrapper.setProps({ selectedNode: metanode2 });
+      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+
+      // third metanode, 3 ports - port 1 idle
+      await wrapper.setProps({ selectedNode: metanode3, selectedPortIndex: 0 });
+      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+
+      // third metanode, 3 ports - port 2 configured
+      await wrapper.setProps({ selectedNode: metanode3, selectedPortIndex: 1 });
+      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(true);
+
+      // third metanode, 3 ports - port 3 executed
+      await wrapper.setProps({ selectedNode: metanode3, selectedPortIndex: 2 });
+      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
     });
 
     it("should render when a selectedPortIndex is present", () => {

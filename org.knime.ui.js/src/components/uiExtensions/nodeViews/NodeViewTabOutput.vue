@@ -90,7 +90,7 @@ const openInNewWindow = () => {
 
 <template>
   <div
-    v-if="!nodeErrors && compatibility.canDetachPortViews()"
+    v-if="!nodeErrors && compatibility.canDetachNodeViews()"
     class="detach-button-wrapper"
   >
     <Button
