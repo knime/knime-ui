@@ -25,9 +25,6 @@ const isWorkflowEmpty = computed(
 const selectedNodeIds = computed(
   () => store.getters["selection/selectedNodeIds"],
 );
-const singleSelectedNode = computed(
-  () => store.getters["selection/singleSelectedNode"],
-);
 const hasAnnotationModeEnabled = computed(
   () => store.getters["application/hasAnnotationModeEnabled"],
 );
@@ -42,10 +39,6 @@ const nodeDialogSize = computed({
     });
   },
 });
-
-const showNodeDialog = computed(() =>
-  Boolean(singleSelectedNode.value && singleSelectedNode?.value.hasDialog),
-);
 
 watch(selectedNodeIds, () => {
   if (quickAddNodeMenu.value.isOpen) {
@@ -113,7 +106,6 @@ const onContextMenu = (event: MouseEvent) => {
       id="kanvasOutputSplitter"
       v-model:secondary-size="nodeDialogSize"
       direction="right"
-      :show-secondary-panel="showNodeDialog"
     >
       <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
