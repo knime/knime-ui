@@ -40,7 +40,10 @@ export const mutations: MutationTree<ApplicationState> = {
 };
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
-  async initializeApplication({ dispatch }, { $router }: { $router: Router }) {
+  async initializeApplication(
+    { state, dispatch },
+    { $router }: { $router: Router },
+  ) {
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
     await runInEnvironment({
       DESKTOP: async () => {
@@ -90,9 +93,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         ]),
     });
 
-    const { isKaiInstalled, isKaiPermitted } = features(
-      this.state.application.featureFlags,
-    );
+    const { isKaiInstalled, isKaiPermitted } = features(state.featureFlags);
     if (isKaiInstalled() && isKaiPermitted()) {
       kaiFetchUiStrings();
     }

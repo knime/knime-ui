@@ -7,7 +7,7 @@ const SLEEP_AFTER_ERROR = 2000;
 
 const isServerAvailable = ref(false);
 const isLoading = ref(false);
-const uiStrings = reactive<KaiUiStrings | Record<string, never>>({});
+const uiStrings = reactive<Partial<KaiUiStrings>>({});
 const hasDisclaimer = computed(() => Boolean(uiStrings.disclaimer));
 
 const fetchUiStrings = async () => {
@@ -31,7 +31,7 @@ const fetchUiStrings = async () => {
 
 const useKaiServer = () => {
   return {
-    uiStrings: uiStrings as KaiUiStrings,
+    uiStrings,
     hasDisclaimer,
     isLoading,
     isServerAvailable,
