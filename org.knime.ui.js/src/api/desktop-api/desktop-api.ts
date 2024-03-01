@@ -773,3 +773,13 @@ export const editSchedule = ({
     { block: true },
   );
 };
+
+export const openWorkflowConfiguration = (projectId: string) => {
+  return callBrowserFunction(
+    window.openWorkflowConfiguration,
+    [projectId],
+    "Could not open workflow configuration",
+    true,
+    { block: true },
+  );
+};

@@ -2,9 +2,11 @@
 import { computed, reactive, toRaw, watch } from "vue";
 import { useStore } from "vuex";
 
+import { API } from "@api";
 import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import { isDesktop } from "@/environment";
 
 import MetadataLastEdit from "./MetadataLastEdit.vue";
 import MetadataDescription from "./MetadataDescription.vue";
@@ -42,6 +44,10 @@ const isEditing = computed(
 );
 
 const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
+
+const canOpenWorkflowConfiguration = computed(
+  () => isDesktop && isWorkflowWritable.value,
+);
 
 const getInitialDraftData = () => {
   return projectMetadata.value
@@ -161,6 +167,10 @@ watch(
   },
   { deep: true, immediate: true },
 );
+
+const openWorkflowConfiguration = () => {
+  API.desktop.openWorkflowConfiguration(currentProjectId.value);
+};
 </script>
 
 <template>
@@ -170,9 +180,11 @@ watch(
       v-if="isWorkflowWritable"
       :is-editing="isEditing"
       :is-valid="isValid"
+      :can-open-workflow-configuration="canOpenWorkflowConfiguration"
       @start-edit="onStartEdit"
       @save="onSave(currentDraftID)"
       @cancel-edit="onCancelEdit"
+      @open-workflow-configuration="openWorkflowConfiguration"
     />
   </div>
 

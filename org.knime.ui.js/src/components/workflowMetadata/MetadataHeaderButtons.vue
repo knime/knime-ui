@@ -3,27 +3,41 @@ import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import PencilIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
+import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 
 interface Props {
   isEditing: boolean;
   isValid: boolean;
+  canOpenWorkflowConfiguration?: boolean;
 }
 
 interface Emits {
   (e: "startEdit"): void;
   (e: "save"): void;
+  (e: "openWorkflowConfiguration"): void;
   (e: "cancelEdit"): void;
 }
 
 defineEmits<Emits>();
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  canOpenWorkflowConfiguration: false,
+});
 </script>
 
 <template>
   <div class="buttons">
     <FunctionButton
+      v-if="!isEditing && canOpenWorkflowConfiguration"
+      title="Open workflow configuration"
+      @click="$emit('openWorkflowConfiguration')"
+    >
+      <CogIcon />
+    </FunctionButton>
+
+    <FunctionButton
       v-if="!isEditing"
       title="Edit metadata"
+      data-test-id="edit-button"
       @click="$emit('startEdit')"
     >
       <PencilIcon />
@@ -33,6 +47,7 @@ defineProps<Props>();
       v-if="isEditing"
       :disabled="!isValid"
       title="Save metadata"
+      data-test-id="save-button"
       primary
       @click="$emit('save')"
     >
@@ -43,6 +58,7 @@ defineProps<Props>();
       v-if="isEditing"
       class="cancel-edit-button"
       title="Cancel edit"
+      data-test-id="cancel-edit-button"
       @click="$emit('cancelEdit')"
     >
       <CloseIcon />
