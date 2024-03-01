@@ -51,19 +51,25 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
+import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings("restriction")
 final class ProjectAPI {
 
     private ProjectAPI() {
@@ -194,4 +200,26 @@ final class ProjectAPI {
         space.openRemoteExecution(itemId);
     }
 
+    /**
+     * Opens the workflow configuration dialog for the given open workflow.
+     * <p>
+     * See org.knime.workbench.explorer.view.actions.GlobalConfigureWorkflowAction
+     *
+     * @param projectId the project ID of the open workflow
+     */
+    @API
+    static void openWorkflowConfiguration(final String projectId) {
+        final var projectWfm = ProjectManager.getInstance().openAndCacheProject(projectId).orElseThrow();
+        try {
+            var dialog = new WrappedNodeDialog(Display.getDefault().getActiveShell(),
+                    WorkflowManagerWrapper.wrap(projectWfm), null, null);
+            dialog.setBlockOnOpen(true);
+            dialog.open();
+        } catch (final NotConfigurableException exception) {
+            MessageDialog.openError( //
+                    Display.getDefault().getActiveShell(), //
+                    "Workflow not configurable", //
+                    "This workflow cannot be configured: " + exception.getMessage());
+        }
+    }
 }
