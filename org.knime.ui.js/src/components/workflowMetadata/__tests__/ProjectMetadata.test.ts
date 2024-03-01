@@ -59,7 +59,7 @@ describe("ProjectMetadata.vue", () => {
 
     const { description, links, tags } = workflow.projectMetadata;
 
-    expect(wrapper.findAllComponents(FunctionButton).length).toBe(1);
+    expect(wrapper.findAllComponents(FunctionButton).length).toBe(2);
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
       false,
     );
@@ -83,7 +83,7 @@ describe("ProjectMetadata.vue", () => {
   it("should go into edit mode", async () => {
     const { wrapper } = doMount();
 
-    await wrapper.findComponent(FunctionButton).find("button").trigger("click");
+    await wrapper.find("[data-test-id='edit-button']").trigger("click");
 
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
       true,
@@ -134,13 +134,10 @@ describe("ProjectMetadata.vue", () => {
   it("should disable saving if data is invalid", async () => {
     const { wrapper } = doMount();
 
-    await wrapper.findComponent(FunctionButton).find("button").trigger("click");
+    await wrapper.find("[data-test-id='edit-button']").trigger("click");
 
     expect(
-      wrapper
-        .findComponent(FunctionButton)
-        .find("button")
-        .attributes("disabled"),
+      wrapper.find("[data-test-id='save-button']").attributes("disabled"),
     ).toBeUndefined();
 
     wrapper.findComponent(ExternalResourcesList).vm.$emit("valid", false);
@@ -148,17 +145,14 @@ describe("ProjectMetadata.vue", () => {
     await nextTick();
 
     expect(
-      wrapper
-        .findComponent(FunctionButton)
-        .find("button")
-        .attributes("disabled"),
+      wrapper.find("[data-test-id='save-button']").attributes("disabled"),
     ).toBeDefined();
   });
 
   it("should cancel an edit", async () => {
     const { wrapper, workflow } = doMount();
 
-    await wrapper.findComponent(FunctionButton).find("button").trigger("click");
+    await wrapper.find("[data-test-id='edit-button']").trigger("click");
 
     const { description, links, tags } = workflow.projectMetadata;
 
@@ -177,11 +171,7 @@ describe("ProjectMetadata.vue", () => {
 
     tagsComponent.vm.$emit("update:modelValue", ["new tag"]);
 
-    await wrapper
-      .findAllComponents(FunctionButton)
-      .at(1)
-      .find("button")
-      .trigger("click");
+    await wrapper.find("[data-test-id='cancel-edit-button']").trigger("click");
 
     // values are reset
     expect(descriptionComponent.props("modelValue")).toBe(description.value);
@@ -218,7 +208,7 @@ describe("ProjectMetadata.vue", () => {
 
     const { wrapper, $store } = doMount({ customWorkflow: customWorkflow1 });
 
-    await wrapper.findComponent(FunctionButton).find("button").trigger("click");
+    await wrapper.find("[data-test-id='edit-button']").trigger("click");
 
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
@@ -386,10 +376,7 @@ describe("ProjectMetadata.vue", () => {
 
       const { wrapper, $store } = doMount({ customWorkflow: customWorkflow1 });
 
-      await wrapper
-        .findComponent(FunctionButton)
-        .find("button")
-        .trigger("click");
+      await wrapper.find("[data-test-id='edit-button']").trigger("click");
 
       const descriptionComponent = wrapper.findComponent(MetadataDescription);
       const linksComponent = wrapper.findComponent(ExternalResourcesList);

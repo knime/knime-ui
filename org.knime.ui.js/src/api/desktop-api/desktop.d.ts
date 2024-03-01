@@ -204,3 +204,5 @@ declare function editSchedule(
   itemId: string,
   scheduleId: string,
 ): string;
+
+declare function openWorkflowConfiguration(projectId: string): void;
