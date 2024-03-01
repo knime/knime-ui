@@ -55,7 +55,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.FileDialog;
@@ -75,23 +74,23 @@ abstract class AbstractImportItems {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(AbstractImportItems.class);
 
     /**
-     * @return True if at least one import succeeded, false otherwise
+     * @return the ids of the imported items or {@code null} if the import failed
      */
-    boolean importItems(final Space space, final String itemId) throws IOException {
+    String[] importItems(final Space space, final String itemId) throws IOException {
         // Get file paths of files to import
         var dialog = getFileDialog();
         var pathString = dialog.open();
         if (pathString == null) {
-            return false;
+            return null; // NOSONAR
         }
         var baseDir = Path.of(pathString).getParent();
         var fileNames = dialog.getFileNames();
-        var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).collect(Collectors.toList());
+        var srcPaths = Arrays.stream(fileNames).map(baseDir::resolve).toList();
 
         // Check for name collisions and solve them
         var collisionHandling = checkForNameCollisionsAndSuggestSolution(space, itemId, srcPaths).orElse(null);
         if (collisionHandling == null) {
-            return false;
+            return null; // NOSONAR
         }
 
         // Attempt to import files
@@ -104,7 +103,7 @@ abstract class AbstractImportItems {
         }
 
         // Create response for the FE
-        return !importedSpaceItems.isEmpty();
+        return importedSpaceItems.stream().map(SpaceItemEnt::getId).toArray(String[]::new);
     }
 
     /**

@@ -86,26 +86,26 @@ final class ImportAPI {
     /**
      * Import workflows into a workspace and save them to the specified location.
      *
-     * @return Success state
+     * @return the ids of the imported items or {@code null} if the import failed
      */
     @API
-    static boolean importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
+    static String[] importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        var success = IMPORT_WORKFLOWS.importItems(space, itemId);
-        if (success) {
+        var itemIds = IMPORT_WORKFLOWS.importItems(space, itemId);
+        if (itemIds != null && itemIds.length > 0) {
             NodeTimer.GLOBAL_TIMER.incWorkflowImport();
         }
-        return success;
+        return itemIds;
     }
 
     /**
      * Import data files into a workspace and save them to the specified location.
      *
-     * @return Success state
+     * @return the ids of the imported items or {@code null} if the import failed
      */
     @API
-    static boolean importFiles(final String spaceProviderId, final String spaceId, final String itemId)
+    static String[] importFiles(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         return IMPORT_FILES.importItems(space, itemId);
