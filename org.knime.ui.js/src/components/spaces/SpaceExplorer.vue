@@ -45,17 +45,17 @@ const itemIconRenderer = (item: FileExplorerItem) => {
 interface Props {
   projectId: string;
   mode?: "normal" | "mini";
+  selectedItemIds: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), { mode: "normal" });
-const $emit = defineEmits(["changeSelection", "itemChanged"]);
+const $emit = defineEmits(["itemChanged", "update:selectedItemIds"]);
 const store = useStore();
 const $router = useRouter();
 const $toast = useToasts();
 
 const projectId = toRef(props, "projectId");
 
-const selectedItemIds = ref<string[]>([]);
 const deleteModal = ref<{ isActive: boolean; items: FileExplorerItem[] }>({
   isActive: false,
   items: [],
@@ -140,19 +140,6 @@ watch(
   { immediate: true },
 );
 
-const onSelectionChange = (itemIds: string[]) => {
-  selectedItemIds.value = itemIds;
-  $emit("changeSelection", itemIds);
-};
-
-const fileExplorer = ref<InstanceType<typeof FileExplorer> | null>(null);
-
-const selectImportedItemIds = (itemIds: string[]) => {
-  fileExplorer.value!.setSelectedItemsIds(itemIds);
-};
-
-defineExpose({ selectImportedItemIds });
-
 const onChangeDirectory = async (pathId: string) => {
   const { itemId } = await store.dispatch("spaces/changeDirectory", {
     projectId: props.projectId,
@@ -229,7 +216,7 @@ const miniActions = ref<HTMLElement | null>(null);
           mode="mini"
           :project-id="projectId"
           :selected-item-ids="selectedItemIds"
-          @imported-item-ids="selectImportedItemIds"
+          @imported-item-ids="$emit('update:selectedItemIds', $event)"
         />
       </div>
     </div>
@@ -249,7 +236,7 @@ const miniActions = ref<HTMLElement | null>(null);
     >
       <FileExplorer
         v-if="activeWorkflowGroup"
-        ref="fileExplorer"
+        :selected-item-ids="selectedItemIds"
         :mode="mode"
         :items="fileExplorerItems"
         :is-root-folder="activeWorkflowGroup.path.length === 0"
@@ -258,8 +245,8 @@ const miniActions = ref<HTMLElement | null>(null);
         :active-renamed-item-id="activeRenamedItemId"
         :click-outside-exception="miniActions"
         dragging-animation-mode="manual"
+        @update:selected-item-ids="$emit('update:selectedItemIds', $event)"
         @change-directory="onChangeDirectory"
-        @change-selection="onSelectionChange"
         @open-file="onOpenFile"
         @rename-file="onRenameFile"
         @delete-items="openDeleteConfirmModal"

@@ -112,10 +112,7 @@ export default defineComponent({
             <SpaceExplorerActions
               :project-id="globalSpaceBrowserProjectId"
               :selected-item-ids="selectedItemIds"
-              @imported-item-ids="
-                (itemIds) =>
-                  ($refs.spaceExplorer as any).selectImportedItemIds(itemIds)
-              "
+              @imported-item-ids="selectedItemIds = $event"
             />
           </div>
         </div>
@@ -126,9 +123,8 @@ export default defineComponent({
       <div class="grid-container">
         <div class="grid-item-12">
           <SpaceExplorer
-            ref="spaceExplorer"
+            v-model:selected-item-ids="selectedItemIds"
             :project-id="globalSpaceBrowserProjectId"
-            @change-selection="selectedItemIds = $event"
           />
         </div>
       </div>

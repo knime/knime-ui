@@ -1,17 +1,19 @@
-<script>
+<script lang="ts" setup>
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
-import { mapState } from "vuex";
+import { useStore } from "@/composables/useStore";
+import { computed, ref } from "vue";
 
-export default {
-  components: {
-    SpaceExplorer,
-  },
-  computed: {
-    ...mapState("application", ["activeProjectId"]),
-  },
-};
+const store = useStore();
+const activeProjectId = computed(() => store.state.application.activeProjectId);
+
+const selectedItemIds = ref<string[]>([]);
 </script>
 
 <template>
-  <SpaceExplorer mode="mini" :project-id="activeProjectId" />
+  <SpaceExplorer
+    v-if="activeProjectId"
+    v-model:selected-item-ids="selectedItemIds"
+    mode="mini"
+    :project-id="activeProjectId"
+  />
 </template>
