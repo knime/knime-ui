@@ -86,13 +86,13 @@ declare function importFiles(
   spaceProviderId: string,
   spaceId: string,
   itemId: string,
-): boolean;
+): Array<string> | null;
 
 declare function importWorkflows(
   spaceProviderId: string,
   spaceId: string,
   itemId: string,
-): boolean;
+): Array<string> | null;
 
 declare function exportSpaceItem(
   spaceProviderId: string,

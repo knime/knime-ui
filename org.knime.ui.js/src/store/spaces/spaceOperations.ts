@@ -217,7 +217,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async importToWorkflowGroup({ state, dispatch }, { projectId, importType }) {
     const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
-    const success =
+    const importedItems =
       importType === "FILES"
         ? await API.desktop.importFiles({ spaceProviderId, spaceId, itemId })
         : await API.desktop.importWorkflows({
@@ -226,9 +226,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
             itemId,
           });
 
-    if (success) {
+    if (importedItems !== null && importedItems.length > 0) {
       await dispatch("fetchWorkflowGroupContent", { projectId });
     }
+    return importedItems;
   },
 
   async exportSpaceItem({ state, dispatch }, { projectId, itemId }) {

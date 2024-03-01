@@ -20,12 +20,12 @@ import {
 } from "@/components/spaces/remoteMenuItems";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import type { PropType } from "vue";
+import { defineComponent, type PropType } from "vue";
 import type { ActionMenuItem } from "@/components/spaces/remoteMenuItems";
 
 type DisplayModes = "normal" | "mini";
 
-export default {
+export default defineComponent({
   components: {
     OptionalSubMenuActionButton,
     PlusButton,
@@ -49,6 +49,8 @@ export default {
       required: true,
     },
   },
+
+  emits: ["importedItemIds"],
 
   computed: {
     ...mapGetters("spaces", [
@@ -176,11 +178,17 @@ export default {
           id: "importWorkflow",
           text: "Import workflow",
           icon: ImportWorkflowIcon,
-          execute: () => {
-            this.$store.dispatch("spaces/importToWorkflowGroup", {
-              projectId,
-              importType: "WORKFLOW",
-            });
+          execute: async () => {
+            const items: string[] | null = await this.$store.dispatch(
+              "spaces/importToWorkflowGroup",
+              {
+                projectId,
+                importType: "WORKFLOW",
+              },
+            );
+            if (items !== null && items.length > 0) {
+              this.$emit("importedItemIds", items);
+            }
           },
         },
         {
@@ -188,11 +196,17 @@ export default {
           text: "Add files",
           icon: AddFileIcon,
           separator: true,
-          execute: () => {
-            this.$store.dispatch("spaces/importToWorkflowGroup", {
-              projectId,
-              importType: "FILES",
-            });
+          execute: async () => {
+            const items: string[] | null = await this.$store.dispatch(
+              "spaces/importToWorkflowGroup",
+              {
+                projectId,
+                importType: "FILES",
+              },
+            );
+            if (items !== null && items.length > 0) {
+              this.$emit("importedItemIds", items);
+            }
           },
         },
         ...getLocalActions(),
@@ -226,7 +240,7 @@ export default {
       });
     },
   },
-};
+});
 </script>
 
 <template>

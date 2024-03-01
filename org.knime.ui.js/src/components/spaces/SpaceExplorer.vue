@@ -145,6 +145,14 @@ const onSelectionChange = (itemIds: string[]) => {
   $emit("changeSelection", itemIds);
 };
 
+const fileExplorer = ref<InstanceType<typeof FileExplorer> | null>(null);
+
+const selectImportedItemIds = (itemIds: string[]) => {
+  fileExplorer.value!.setSelectedItemsIds(itemIds);
+};
+
+defineExpose({ selectImportedItemIds });
+
 const onChangeDirectory = async (pathId: string) => {
   const { itemId } = await store.dispatch("spaces/changeDirectory", {
     projectId: props.projectId,
@@ -221,6 +229,7 @@ const miniActions = ref<HTMLElement | null>(null);
           mode="mini"
           :project-id="projectId"
           :selected-item-ids="selectedItemIds"
+          @imported-item-ids="selectImportedItemIds"
         />
       </div>
     </div>
@@ -240,6 +249,7 @@ const miniActions = ref<HTMLElement | null>(null);
     >
       <FileExplorer
         v-if="activeWorkflowGroup"
+        ref="fileExplorer"
         :mode="mode"
         :items="fileExplorerItems"
         :is-root-folder="activeWorkflowGroup.path.length === 0"
