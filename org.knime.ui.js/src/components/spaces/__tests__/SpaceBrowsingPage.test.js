@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils";
+import { mockVuexStore, deepMocked } from "@/test/utils";
 
 import ArrowLeftIcon from "webapps-common/ui/assets/img/icons/arrow-left.svg";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -13,6 +13,11 @@ import SpaceExplorer from "../SpaceExplorer.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceBrowsingPage from "../SpaceBrowsingPage.vue";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
+
+import { API } from "@api";
+const mockedAPI = deepMocked(API);
+mockedAPI.desktop.importWorkflows.mockResolvedValue([]);
+mockedAPI.desktop.importFiles.mockResolvedValue([]);
 
 vi.mock("webapps-common/ui/services/toast");
 vi.mock("vue-router", () => ({
@@ -214,7 +219,7 @@ describe("SpaceBrowsingPage", () => {
 
     wrapper
       .findComponent(SpaceExplorer)
-      .vm.$emit("changeSelection", ["1", "2"]);
+      .vm.$emit("update:selectedItemIds", ["1", "2"]);
 
     await wrapper.vm.$nextTick();
 
@@ -252,7 +257,7 @@ describe("SpaceBrowsingPage", () => {
 
     wrapper
       .findComponent(SpaceExplorer)
-      .vm.$emit("changeSelection", ["1", "2"]);
+      .vm.$emit("update:selectedItemIds", ["1", "2"]);
 
     await wrapper.vm.$nextTick();
 

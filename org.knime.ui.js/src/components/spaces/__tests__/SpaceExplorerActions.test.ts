@@ -17,6 +17,9 @@ import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 
 const mockedAPI = deepMocked(API);
 
+mockedAPI.desktop.importWorkflows.mockResolvedValue([]);
+mockedAPI.desktop.importFiles.mockResolvedValue([]);
+
 mockedAPI.space.createWorkflowGroup.mockResolvedValue({
   id: "NewFolder",
   type: "WorkflowGroup",
@@ -416,6 +419,38 @@ describe("SpaceExplorerActions.vue", () => {
           projectId: "someProjectId",
           ...params,
         });
+      },
+    );
+
+    it.each([
+      ["files", "importFiles", "importFiles"],
+      ["workflows", "importWorkflow", "importWorkflows"],
+    ])(
+      "should emit imported %s after successful import",
+      async (_name, menuId, apiName) => {
+        // @ts-ignore
+        mockedAPI.desktop[apiName].mockResolvedValue(["item1", "item2"]);
+        const { wrapper, store, projectId } = doMount({
+          props: { mode: "mini" },
+        });
+
+        await setupStoreWithProvider(
+          store,
+          projectId,
+          SpaceProviderNS.TypeEnum.LOCAL,
+        );
+
+        const subMenu = wrapper.findComponent(SubMenu);
+        const item = subMenu
+          .props("items")
+          .find(({ id }: { id: string }) => id === menuId);
+        subMenu.vm.$emit("item-click", null, item);
+
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(wrapper.emitted("importedItemIds")).toStrictEqual([
+          [["item1", "item2"]],
+        ]);
       },
     );
   });

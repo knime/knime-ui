@@ -305,6 +305,7 @@ describe("spaces::spaceOperations", () => {
 
   describe("importToWorkflowGroup", () => {
     it("should import files", () => {
+      mockedAPI.desktop.importFiles.mockResolvedValue(["file1"]);
       const { store } = loadStore();
 
       store.state.spaces.projectPath.project2 = {
@@ -325,6 +326,7 @@ describe("spaces::spaceOperations", () => {
     });
 
     it("should import workflows", () => {
+      mockedAPI.desktop.importWorkflows.mockResolvedValue(["wf1"]);
       const { store } = loadStore();
       store.state.spaces.projectPath.project2 = {
         spaceProviderId: "local",

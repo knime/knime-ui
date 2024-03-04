@@ -186,7 +186,7 @@ export default defineComponent({
                 importType: "WORKFLOW",
               },
             );
-            if (items !== null && items.length > 0) {
+            if (items && items.length > 0) {
               this.$emit("importedItemIds", items);
             }
           },
@@ -204,7 +204,7 @@ export default defineComponent({
                 importType: "FILES",
               },
             );
-            if (items !== null && items.length > 0) {
+            if (items && items.length > 0) {
               this.$emit("importedItemIds", items);
             }
           },

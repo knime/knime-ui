@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, type ExtractPropTypes } from "vue";
 import { useRoute } from "vue-router";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -79,13 +79,17 @@ vi.mock("vue-router", () => ({
 
 describe("SpaceExplorer.vue", () => {
   const doMount = ({
-    props = { projectId: null },
+    props = { projectId: null } as ExtractPropTypes<typeof SpaceExplorer>,
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
     openProjects = [],
     fileExtensionToNodeTemplateId = {},
     isWriteableMock = vi.fn().mockReturnValue(true),
   } = {}) => {
+    // add selected item ids is not supplied as its required now
+    if (!props.selectedItemIds) {
+      props.selectedItemIds = [];
+    }
     if (mockGetSpaceItems) {
       mockedAPI.space.listWorkflowGroup.mockImplementation(mockGetSpaceItems);
     } else {
