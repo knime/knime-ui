@@ -261,6 +261,7 @@ export default {
         <SubMenu
           :items="actions.filter((item) => !item?.metadata?.hideInMiniMode)"
           :disabled="isLoadingContent"
+          :teleport-to-body="false"
           class="more-actions"
           button-title="More actions"
           @toggle.stop
