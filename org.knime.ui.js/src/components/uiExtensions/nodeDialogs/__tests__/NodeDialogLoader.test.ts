@@ -6,7 +6,9 @@ import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 import { API } from "@api";
 
 import { UIExtension } from "webapps-common/ui/uiExtensions";
+import * as applicationStore from "@/store/application";
 import NodeDialogLoader from "../NodeDialogLoader.vue";
+import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 
 const dynamicImportMock = mockDynamicImport();
 
@@ -22,7 +24,7 @@ const mockGetNodeDialog = (additionalMocks?: object) => {
   mockedAPI.node.getNodeDialog.mockResolvedValue({
     resourceInfo: {
       type: "SHADOW_APP",
-      baseUrl: "baseUrl",
+      baseUrl: "baseUrl/",
       path: "path",
     },
     ...additionalMocks,
@@ -55,22 +57,16 @@ describe("NodeDialogLoader.vue", () => {
   });
 
   const doMount = () => {
-    const store = mockVuexStore({
-      // TODO: NXT-1295 remove once api store is not needed
-      api: {
-        getters: {
-          uiExtResourceLocation:
-            () =>
-            ({ resourceInfo: { path } }: { resourceInfo: { path: string } }) =>
-              `${path}/location.js`,
-        },
-      },
+    const $store = mockVuexStore({
+      application: applicationStore,
     });
 
-    return mount(NodeDialogLoader, {
+    const wrapper = mount(NodeDialogLoader, {
       props,
-      global: { plugins: [store] },
+      global: { plugins: [$store] },
     });
+
+    return { wrapper, $store };
   };
 
   it("should load nodeDialog on mount", () => {
@@ -88,7 +84,7 @@ describe("NodeDialogLoader.vue", () => {
 
   it("should load the node dialog when the selected node changes and the new node has a dialog", async () => {
     mockGetNodeDialog();
-    const wrapper = doMount();
+    const { wrapper } = doMount();
     const newNode = { ...dummyNode, id: "node2" };
 
     wrapper.setProps({ selectedNode: newNode });
@@ -105,7 +101,7 @@ describe("NodeDialogLoader.vue", () => {
 
   it("should conditionally deactivate data services on unmount", async () => {
     mockGetNodeDialog();
-    const wrapper = doMount();
+    const { wrapper } = doMount();
     wrapper.unmount();
     await flushPromises();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
@@ -113,7 +109,7 @@ describe("NodeDialogLoader.vue", () => {
     mockGetNodeDialog({
       deactivationRequired: true,
     });
-    const wrapper2 = doMount();
+    const { wrapper: wrapper2 } = doMount();
     await flushPromises();
     wrapper2.unmount();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
@@ -127,7 +123,7 @@ describe("NodeDialogLoader.vue", () => {
   describe("apiLayer", () => {
     it("implements getResourceLocation in apiLayer", async () => {
       mockGetNodeDialog();
-      const wrapper = doMount();
+      const { wrapper } = doMount();
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
@@ -137,13 +133,38 @@ describe("NodeDialogLoader.vue", () => {
 
       const location = await apiLayer.getResourceLocation("path1");
 
-      expect(location).toBe("path1/location.js");
+      expect(location).toBe("baseUrl/path1");
+    });
+
+    it("implements getResourceLocation in apiLayer (when rest api base url is defined)", async () => {
+      mockedAPI.node.getNodeDialog.mockResolvedValueOnce({
+        resourceInfo: {
+          type: "SHADOW_APP",
+          baseUrl: "",
+          path: "path",
+        },
+      });
+      setRestApiBaseUrl("API_URL_BASE");
+      const { wrapper, $store } = doMount();
+      await flushPromises();
+      $store.commit("application/setActiveProjectId", "project1");
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      const apiLayer = props.apiLayer;
+
+      const location = await apiLayer.getResourceLocation("path1");
+
+      expect(location).toBe(
+        "API_URL_BASE/jobs/project1/workflow/wizard/web-resources/path1",
+      );
     });
 
     it("implements callNodeDataService in apiLayer", async () => {
       mockGetNodeDialog();
       mockedAPI.node.callNodeDataService.mockResolvedValue({ something: true });
-      const wrapper = doMount();
+      const { wrapper } = doMount();
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);

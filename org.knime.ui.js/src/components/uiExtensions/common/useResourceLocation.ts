@@ -6,17 +6,23 @@ type UseResourceLocationOptions = {
   extensionConfig: Ref<ExtensionConfig | null>;
 };
 
+let restAPIBaseURL = "";
+
+export const setRestApiBaseUrl = (url: string) => {
+  restAPIBaseURL = url;
+};
+
 export const useResourceLocation = (options: UseResourceLocationOptions) => {
   const store = useStore();
 
   const resourceLocationResolver = (path: string, baseUrl?: string) => {
-    // TODO: NXT-1295. Originally caused NXT-1217
-    // Remove this unnecessary store getter once the issue in the ticket
-    // can be solved in a better way. It is necessary at the moment because the TableView is accessing
-    // this store module internally, so if not provided then it would error out in the application
-    return store.getters["api/uiExtResourceLocation"]({
-      resourceInfo: { path, baseUrl },
-    });
+    if (baseUrl) {
+      return `${baseUrl}${path}`;
+    } else {
+      const activeProjectId = store.state.application.activeProjectId;
+
+      return `${restAPIBaseURL}/jobs/${activeProjectId}/workflow/wizard/web-resources/${path}`;
+    }
   };
 
   const resourceLocation = computed(() => {

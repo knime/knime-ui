@@ -16,6 +16,7 @@ import {
 import "./assets/index.css";
 
 import { getToastsProvider } from "./plugins/toasts";
+import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
 
 // Setup logger for production
 setupLogger();
@@ -119,7 +120,7 @@ try {
 
   runInEnvironment({
     BROWSER: () => {
-      store.commit("api/setRestApiBaseUrl", connectionInfo?.restApiBaseUrl);
+      setRestApiBaseUrl(connectionInfo!.restApiBaseUrl!);
     },
   });
 

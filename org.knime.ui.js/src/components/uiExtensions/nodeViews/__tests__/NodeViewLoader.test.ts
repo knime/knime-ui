@@ -13,7 +13,9 @@ import { API } from "@api";
 
 import { getToastsProvider } from "@/plugins/toasts";
 
+import * as applicationStore from "@/store/application";
 import NodeViewLoader from "../NodeViewLoader.vue";
+import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 
 const dynamicImportMock = mockDynamicImport();
 const toast = mockedObject(getToastsProvider());
@@ -30,7 +32,7 @@ const mockGetNodeView = (additionalMocks?: object) => {
   mockedAPI.node.getNodeView.mockResolvedValue({
     resourceInfo: {
       type: "SHADOW_APP",
-      baseUrl: "baseUrl",
+      baseUrl: "baseUrl/",
       path: "path",
     },
     nodeInfo: {},
@@ -64,22 +66,16 @@ describe("NodeViewLoader.vue", () => {
   });
 
   const doMount = () => {
-    const store = mockVuexStore({
-      // TODO: NXT-1295 remove once api store is not needed
-      api: {
-        getters: {
-          uiExtResourceLocation:
-            () =>
-            ({ resourceInfo: { path } }: { resourceInfo: { path: string } }) =>
-              `${path}/location.js`,
-        },
-      },
+    const $store = mockVuexStore({
+      application: applicationStore,
     });
 
-    return mount(NodeViewLoader, {
+    const wrapper = mount(NodeViewLoader, {
       props,
-      global: { plugins: [store] },
+      global: { plugins: [$store] },
     });
+
+    return { wrapper, $store };
   };
 
   it("should load nodeView on mount", () => {
@@ -97,7 +93,7 @@ describe("NodeViewLoader.vue", () => {
 
   it("should load the node view when the selected node changes and the new node has a view", async () => {
     mockGetNodeView();
-    const wrapper = doMount();
+    const { wrapper } = doMount();
     const newNode = { ...dummyNode, id: "node2" };
 
     wrapper.setProps({ selectedNode: newNode });
@@ -114,7 +110,7 @@ describe("NodeViewLoader.vue", () => {
 
   it("should conditionally deactivate data services on unmount", async () => {
     mockGetNodeView();
-    const wrapper = doMount();
+    const { wrapper } = doMount();
     wrapper.unmount();
     await flushPromises();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledTimes(0);
@@ -122,7 +118,7 @@ describe("NodeViewLoader.vue", () => {
     mockGetNodeView({
       deactivationRequired: true,
     });
-    const wrapper2 = doMount();
+    const { wrapper: wrapper2 } = doMount();
     await flushPromises();
     wrapper2.unmount();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
@@ -136,7 +132,7 @@ describe("NodeViewLoader.vue", () => {
   describe("apiLayer", () => {
     it("implements getResourceLocation in apiLayer", async () => {
       mockGetNodeView();
-      const wrapper = doMount();
+      const { wrapper } = doMount();
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
@@ -146,13 +142,39 @@ describe("NodeViewLoader.vue", () => {
 
       const location = await apiLayer.getResourceLocation("path1");
 
-      expect(location).toBe("path1/location.js");
+      expect(location).toBe("baseUrl/path1");
+    });
+
+    it("implements getResourceLocation in apiLayer (when rest api base url is defined)", async () => {
+      mockedAPI.node.getNodeView.mockResolvedValueOnce({
+        resourceInfo: {
+          type: "SHADOW_APP",
+          baseUrl: "",
+          path: "path",
+        },
+      });
+
+      setRestApiBaseUrl("API_URL_BASE");
+      const { wrapper, $store } = doMount();
+      await flushPromises();
+      $store.commit("application/setActiveProjectId", "project1");
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const props = uiExtension.props();
+
+      const apiLayer = props.apiLayer;
+
+      const location = await apiLayer.getResourceLocation("path1");
+
+      expect(location).toBe(
+        "API_URL_BASE/jobs/project1/workflow/wizard/web-resources/path1",
+      );
     });
 
     it("implements callNodeDataService in apiLayer", async () => {
       mockGetNodeView();
       mockedAPI.node.callNodeDataService.mockResolvedValue({ something: true });
-      const wrapper = doMount();
+      const { wrapper } = doMount();
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
@@ -178,7 +200,7 @@ describe("NodeViewLoader.vue", () => {
     });
 
     it("should display toast when a view has a notification", async () => {
-      const wrapper = doMount();
+      const { wrapper } = doMount();
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
