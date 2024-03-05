@@ -260,6 +260,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       const selectedNode = $store.getters["selection/singleSelectedNode"];
       return (
         selectedNode?.kind === "component" &&
+        !selectedNode?.isLocked &&
         !selectedNode?.link &&
         compatibility.canDoComponentOperations()
       );
