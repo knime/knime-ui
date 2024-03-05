@@ -73,6 +73,7 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.EclipseUtil;
 import org.knime.core.util.HubStatistics;
 import org.knime.core.util.ThreadLocalHTTPAuthenticator;
+import org.knime.core.util.proxy.URLConnectionFactory;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.product.rcp.KNIMEApplication;
@@ -160,7 +161,7 @@ final class Create {
             builder.append(buildHubUsage());
 
             var url = new URL(builder.toString().replace(" ", "%20"));
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection)URLConnectionFactory.getConnection(url);
             conn.setReadTimeout(5000);
             conn.setConnectTimeout(2000);
             conn.connect();
