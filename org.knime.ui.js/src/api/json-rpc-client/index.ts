@@ -73,7 +73,7 @@ const setupServerEventListener = (ws: WebSocket) => {
 
 const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   const CONNECTION_LOST_TOAST_ID = "__CONNECTION_LOST";
-  const onConnectionLost = (message: string, showButton = false) => {
+  const onConnectionLost = (message: string) => {
     // add transparent overlay to prevent user interactions
     store.dispatch("application/updateGlobalLoader", {
       loading: true,
@@ -86,16 +86,6 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
       message,
       type: "error",
       autoRemove: false,
-      buttons: showButton
-        ? [
-            {
-              text: "Refresh page",
-              callback: () => {
-                window.location.reload();
-              },
-            },
-          ]
-        : [],
     });
   };
 
@@ -120,7 +110,6 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   window.addEventListener("offline", () => {
     onConnectionLost(
       "Please, check your internet connection and try refreshing the page",
-      true,
     );
   });
 

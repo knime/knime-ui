@@ -100,14 +100,6 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         message: "Refresh the page to reactivate the session",
         type: "error",
         autoRemove: false,
-        buttons: [
-          {
-            text: "Refresh page",
-            callback: () => {
-              window.location.reload();
-            },
-          },
-        ],
       });
     },
   });
