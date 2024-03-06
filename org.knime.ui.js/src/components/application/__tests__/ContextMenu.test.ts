@@ -270,7 +270,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "configureNode" } },
           {
             metadata: {
-              shortcutName: "editNodeCommentOrAnnotation",
+              shortcutName: "editNodeComment",
             },
             separator: true,
           },
@@ -313,7 +313,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "cancelSelected" } },
           { metadata: { shortcutName: "resetSelected" } },
           {
-            metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+            metadata: { shortcutName: "editNodeComment" },
             separator: true,
           },
           { metadata: { shortcutName: "cut" } },
@@ -348,7 +348,7 @@ describe("ContextMenu.vue", () => {
             children: expect.anything(),
             separator: true,
           },
-          { metadata: { shortcutName: "editNodeCommentOrAnnotation" } },
+          { metadata: { shortcutName: "editNodeComment" } },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -387,7 +387,7 @@ describe("ContextMenu.vue", () => {
             separator: true,
           },
           {
-            metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+            metadata: { shortcutName: "editNodeComment" },
             separator: true,
           },
           { metadata: { shortcutName: "cut" } },
@@ -508,7 +508,7 @@ describe("ContextMenu.vue", () => {
             children: expect.anything(),
             separator: true,
           },
-          { metadata: { shortcutName: "editNodeCommentOrAnnotation" } },
+          { metadata: { shortcutName: "editNodeComment" } },
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
@@ -546,7 +546,7 @@ describe("ContextMenu.vue", () => {
               separator: true,
             },
             {
-              metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+              metadata: { shortcutName: "editNodeComment" },
               separator: true,
             },
             { metadata: { shortcutName: "cut" } },
@@ -598,7 +598,7 @@ describe("ContextMenu.vue", () => {
               separator: true,
             },
             {
-              metadata: { shortcutName: "editNodeCommentOrAnnotation" },
+              metadata: { shortcutName: "editNodeComment" },
               separator: true,
             },
             { metadata: { shortcutName: "cut" } },
@@ -630,7 +630,7 @@ describe("ContextMenu.vue", () => {
         assertItems([
           {
             metadata: {
-              shortcutName: "editNodeCommentOrAnnotation",
+              shortcutName: "editAnnotation",
             },
           },
           { metadata: { shortcutName: "cut" } },

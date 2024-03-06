@@ -2,13 +2,16 @@ import { isMac } from "webapps-common/util/navigator";
 import type { Hotkey, Hotkeys } from "@/shortcuts";
 
 /**
- * Returns a string representation of a hotkey. Replaces some special key names with symbols
+ * Returns a string array where all special chars are replaced
  */
-export const formatHotkeys = (hotkeys: Hotkeys) => {
+export const mapKeyFormat = (hotkeys: Hotkeys) => {
   type KeyFormatMap = Partial<Record<Hotkey, string>>;
   const globalKeyMap: KeyFormatMap = {
     ArrowUp: "↑",
     ArrowDown: "↓",
+    ArrowLeft: "←",
+    ArrowRight: "→",
+    Enter: "↵",
   };
 
   const MacOSkeyMap: KeyFormatMap = {
@@ -16,12 +19,13 @@ export const formatHotkeys = (hotkeys: Hotkeys) => {
     Delete: "⌫",
     Ctrl: "⌘",
     Alt: "⌥",
+    Enter: "↩",
   };
 
   const mapSymbols =
     (formatMap: KeyFormatMap) =>
     (key: Hotkey): Hotkey | string =>
-      formatMap[key] || key;
+      formatMap[key] ?? key;
 
   const identity = (value: any) => value;
 
@@ -33,6 +37,16 @@ export const formatHotkeys = (hotkeys: Hotkeys) => {
       )
       // map all keys that should be displayed differently
       .map(mapSymbols(globalKeyMap))
-      .join(" ")
   );
+};
+
+export const getSeparator = () => {
+  return " ";
+};
+
+/**
+ * Returns a string representation of a hotkey. Replaces some special key names with symbols
+ */
+export const formatHotkeys = (hotkeys: Hotkeys) => {
+  return mapKeyFormat(hotkeys).join(getSeparator());
 };

@@ -152,6 +152,55 @@ describe("componentOrMetanodeShortcuts", () => {
       expect(mockDispatch).toHaveBeenCalledWith("workflow/openLayoutEditor");
     });
 
+    describe("editName", () => {
+      it("opens the name editor", () => {
+        const { $store, mockDispatch } = createStore();
+        componentOrMetanodeShortcuts.editName.execute({ $store });
+        expect(mockDispatch).toHaveBeenCalledWith(
+          "workflow/openNameEditor",
+          "root:0",
+        );
+      });
+
+      it("cannot rename when workflow is not writable", () => {
+        const { $store } = createStore();
+        $store.getters["selection/singleSelectedNode"].kind = "component";
+        $store.getters["workflow/isWritable"] = false;
+
+        expect(
+          componentOrMetanodeShortcuts.editName.condition({ $store }),
+        ).toBe(false);
+      });
+
+      it.each([
+        ["component", true],
+        ["metanode", true],
+        ["node", false],
+      ])(
+        'for nodes of kind: "%s" the condition should be "%s"',
+        (kind, conditionValue) => {
+          const { $store } = createStore();
+          $store.getters["workflow/isWritable"] = true;
+          $store.getters["selection/singleSelectedNode"].kind = kind;
+
+          expect(
+            componentOrMetanodeShortcuts.editName.condition({ $store }),
+          ).toBe(conditionValue);
+        },
+      );
+
+      it("cannot rename if the selected node is linked", () => {
+        const { $store } = createStore();
+        $store.getters["workflow/isWritable"] = true;
+        $store.getters["selection/singleSelectedNode"].kind = "component";
+        $store.getters["selection/singleSelectedNode"].link = true;
+
+        expect(
+          componentOrMetanodeShortcuts.editName.condition({ $store }),
+        ).toBe(false);
+      });
+    });
+
     describe("openLayoutEditorByNodeId", () => {
       it("has not a component selected, button disabled", () => {
         const { $store } = createStore({

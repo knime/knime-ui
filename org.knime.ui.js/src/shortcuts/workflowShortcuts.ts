@@ -25,8 +25,8 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "redo"
   | "configureNode"
   | "configureFlowVariables"
-  | "editName"
-  | "editNodeCommentOrAnnotation"
+  | "editAnnotation"
+  | "editNodeComment"
   | "deleteSelected"
   | "copy"
   | "cut"
@@ -45,6 +45,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     title: "Save workflow",
     text: "Save",
     hotkey: ["Ctrl", "S"],
+    group: "general",
     icon: SaveIcon,
     execute: ({ $store }) => {
       if ($store.getters["application/activeProjectOrigin"]) {
@@ -68,6 +69,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   undo: {
     title: "Undo",
     hotkey: ["Ctrl", "Z"],
+    group: "general",
     icon: UndoIcon,
     execute: ({ $store }) => $store.dispatch("workflow/undo"),
     condition: ({ $store }) =>
@@ -76,6 +78,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   redo: {
     title: "Redo",
     hotkey: ["Ctrl", "Shift", "Z"],
+    group: "general",
     icon: RedoIcon,
     execute: ({ $store }) => $store.dispatch("workflow/redo"),
     condition: ({ $store }) =>
@@ -85,6 +88,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     text: "Configure",
     hotkey: ["F6"],
     icon: OpenDialogIcon,
+    group: "execution",
     execute: ({ $store, payload = null }) => {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
@@ -110,6 +114,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   configureFlowVariables: {
     text: "Configure flow variables",
     hotkey: ["Shift", "F6"],
+    group: "execution",
     execute: ({ $store }) =>
       $store.dispatch(
         "workflow/openFlowVariableConfiguration",
@@ -132,35 +137,10 @@ const workflowShortcuts: WorkflowShortcuts = {
       return false;
     },
   },
-  editName: {
-    text: ({ $store }) =>
-      `Rename ${$store.getters["selection/singleSelectedNode"]?.kind}`,
-    hotkey: ["Shift", "F2"],
-    execute: ({ $store }) =>
-      $store.dispatch(
-        "workflow/openNameEditor",
-        $store.getters["selection/singleSelectedNode"].id,
-      ),
-    condition: ({ $store }) =>
-      ["metanode", "component"].includes(
-        $store.getters["selection/singleSelectedNode"]?.kind,
-      ) &&
-      !$store.getters["selection/singleSelectedNode"]?.link &&
-      $store.getters["workflow/isWritable"],
-  },
-  editNodeCommentOrAnnotation: {
-    text: ({ $store }) => {
-      if ($store.getters["selection/singleSelectedNode"]) {
-        return "Edit node comment";
-      }
-
-      if ($store.getters["selection/singleSelectedAnnotation"]) {
-        return "Edit annotation";
-      }
-
-      return "";
-    },
+  editNodeComment: {
+    text: "Edit node comment",
     hotkey: ["F2"],
+    group: "nodeLabels",
     execute: ({ $store }) => {
       if ($store.getters["selection/singleSelectedNode"]) {
         $store.dispatch(
@@ -168,7 +148,23 @@ const workflowShortcuts: WorkflowShortcuts = {
           $store.getters["selection/singleSelectedNode"].id,
         );
       }
-
+    },
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      const singleSelectedObject =
+        $store.getters["selection/singleSelectedObject"];
+      return (
+        singleSelectedObject &&
+        singleSelectedNode &&
+        $store.getters["workflow/isWritable"]
+      );
+    },
+  },
+  editAnnotation: {
+    text: "Edit annotation",
+    hotkey: ["F2"],
+    group: "workflowAnnotations",
+    execute: ({ $store }) => {
       if ($store.getters["selection/singleSelectedAnnotation"]) {
         $store.dispatch(
           "workflow/setEditableAnnotationId",
@@ -177,16 +173,23 @@ const workflowShortcuts: WorkflowShortcuts = {
       }
     },
     condition: ({ $store }) => {
+      const singleSelectedAnnotation =
+        $store.getters["selection/singleSelectedAnnotation"];
       const singleSelectedObject =
         $store.getters["selection/singleSelectedObject"];
 
-      return singleSelectedObject && $store.getters["workflow/isWritable"];
+      return (
+        singleSelectedObject &&
+        singleSelectedAnnotation &&
+        $store.getters["workflow/isWritable"]
+      );
     },
   },
   deleteSelected: {
     text: "Delete",
     title: "Delete selection",
     hotkey: ["Delete"],
+    group: "general",
     icon: DeleteIcon,
     execute: ({ $store }) => $store.dispatch("workflow/deleteSelectedObjects"),
     condition({ $store }) {
@@ -227,6 +230,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     text: "Copy",
     title: "Copy selection",
     hotkey: ["Ctrl", "C"],
+    group: "general",
     allowEventDefault: true,
     execute: ({ $store }) =>
       $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "copy" }),
@@ -258,6 +262,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     text: "Cut",
     title: "Cut selection",
     hotkey: ["Ctrl", "X"],
+    group: "general",
     execute: ({ $store }) =>
       $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "cut" }),
     condition: ({ $store }) => {
@@ -279,6 +284,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     text: "Paste",
     title: "Paste from clipboard",
     hotkey: ["Ctrl", "V"],
+    group: "general",
     execute: ({ $store, payload }) =>
       $store.dispatch("workflow/pasteWorkflowParts", {
         position: payload?.metadata?.position,
@@ -287,27 +293,31 @@ const workflowShortcuts: WorkflowShortcuts = {
       $store.getters["workflow/isWritable"] &&
       $store.state.application.hasClipboardSupport,
   },
+  switchToSelectionMode: {
+    hotkey: ["V"],
+    text: "Selection mode",
+    description: "Selection mode (default)",
+    group: "workflowEditorModes",
+    icon: SelectionModeIcon,
+    execute: ({ $store }) => {
+      $store.dispatch("application/switchCanvasMode", "selection");
+    },
+  },
   switchToPanMode: {
     hotkey: ["P"],
     text: "Pan mode",
+    group: "workflowEditorModes",
     icon: ArrowMoveIcon,
     execute: ({ $store }) => {
       $store.dispatch("application/switchCanvasMode", "pan");
     },
     condition: ({ $store }) => !$store.getters["workflow/isWorkflowEmpty"],
   },
-  switchToSelectionMode: {
-    hotkey: ["V"],
-    text: "Selection mode",
-    icon: SelectionModeIcon,
-    execute: ({ $store }) => {
-      $store.dispatch("application/switchCanvasMode", "selection");
-    },
-  },
   quickAddNode: {
     text: "Quick add node",
     title: "Add new node",
     hotkey: ["Ctrl", "."],
+    group: "workflowEditor",
     execute: ({ $store }) => {
       // destruct current state
       const { isOpen, props } = $store.state.workflow.quickAddNodeMenu;

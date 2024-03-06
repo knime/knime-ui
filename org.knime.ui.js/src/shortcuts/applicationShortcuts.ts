@@ -16,6 +16,7 @@ const applicationShortcuts: ApplicationShortcuts = {
   closeProject: {
     text: "Close workflow",
     hotkey: ["Ctrl", "W"],
+    group: "general",
     execute: ({ $store }) =>
       $store.dispatch(
         "workflow/closeProject",
@@ -27,6 +28,7 @@ const applicationShortcuts: ApplicationShortcuts = {
   createWorkflow: {
     text: "Create workflow",
     hotkey: ["Ctrl", "N"],
+    group: "general",
     execute: ({ $store }) => {
       const { activeProjectId } = $store.state.application;
       const { projectPath } = $store.state.spaces;

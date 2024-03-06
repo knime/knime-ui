@@ -4,7 +4,11 @@ import { useStore, type Store } from "vuex";
 import { useToasts, type ToastService } from "webapps-common/ui/services/toast";
 import { isMac } from "webapps-common/util/navigator";
 import shortcuts from "@/shortcuts";
-import type { ShortcutsService, FormattedShortcut } from "@/shortcuts/types";
+import type {
+  ShortcutsService,
+  FormattedShortcut,
+  Hotkeys,
+} from "@/shortcuts/types";
 import { formatHotkeys } from "@/util/formatHotkeys";
 import type { RootStoreState } from "@/store/types";
 import type { PluginInitFunction } from "./types";
@@ -13,9 +17,11 @@ import type { PluginInitFunction } from "./types";
 // - add string representation of hotkeys
 // - add shortcut name
 Object.entries(shortcuts).forEach(([name, shortcut]) => {
+  // @ts-ignore
   shortcut.name = name;
 
   if (shortcut.hotkey) {
+    // @ts-ignore
     shortcut.hotkeyText = formatHotkeys(shortcut.hotkey);
   }
 });
@@ -43,13 +49,9 @@ export const createShortcutsService = ({
     shiftKey,
     altKey,
   }) => {
-    for (const [shortcutName, { hotkey }] of Object.entries(shortcuts)) {
-      if (!hotkey) {
-        continue;
-      }
-
+    const checkHotkey = (hotkey: Hotkeys) => {
       const modifiers = [...hotkey];
-      const character = modifiers.pop();
+      const character = modifiers.pop() ?? "";
 
       // Ctrl-modifier has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems
       const ctrlMatches =
@@ -63,12 +65,27 @@ export const createShortcutsService = ({
         // on mac 'backspace' can be used instead of delete
         (isMac() && character === "Delete" && key === "Backspace");
 
-      if (ctrlMatches && shiftMatches && altMatches && keysMatch) {
-        consola.trace("Shortcut", hotkey, shortcutName);
-        return shortcutName;
-      }
-    }
-    return null;
+      return ctrlMatches && shiftMatches && altMatches && keysMatch;
+    };
+
+    return Object.entries(shortcuts).flatMap(
+      ([shortcutName, { hotkey, additionalHotkeys = [] }]) => {
+        if (!hotkey) {
+          return [];
+        }
+
+        const additionalKeys = additionalHotkeys.map(
+          (value: { key: Hotkeys }) => value.key,
+        );
+
+        // check for matching keys
+        if ([hotkey, ...additionalKeys].some(checkHotkey)) {
+          consola.trace("Shortcut", hotkey, shortcutName);
+          return [shortcutName];
+        }
+        return [];
+      },
+    );
   };
 
   // find out whether a specific shortcut is currently enabled

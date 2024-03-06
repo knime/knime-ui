@@ -22,6 +22,7 @@ declare module "./index" {
 const annotationShortcuts: AnnotationShortcuts = {
   switchToAnnotationMode: {
     hotkey: ["T"],
+    group: "workflowEditorModes",
     text: "Annotation mode",
     icon: AnnotationModeIcon,
     execute: ({ $store }) => {
@@ -52,6 +53,7 @@ const annotationShortcuts: AnnotationShortcuts = {
   bringAnnotationToFront: {
     text: "Bring to front",
     hotkey: ["Ctrl", "Shift", "PageUp"],
+    group: "workflowAnnotations",
     execute: ({ $store }) =>
       $store.dispatch("workflow/reorderWorkflowAnnotation", {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront,
@@ -63,6 +65,7 @@ const annotationShortcuts: AnnotationShortcuts = {
   bringAnnotationForward: {
     hotkey: ["Ctrl", "PageUp"],
     text: "Bring forward",
+    group: "workflowAnnotations",
     execute: ({ $store }) =>
       $store.dispatch("workflow/reorderWorkflowAnnotation", {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward,
@@ -74,6 +77,7 @@ const annotationShortcuts: AnnotationShortcuts = {
   sendAnnotationBackward: {
     hotkey: ["Ctrl", "PageDown"],
     text: "Send backward",
+    group: "workflowAnnotations",
     execute: ({ $store }) =>
       $store.dispatch("workflow/reorderWorkflowAnnotation", {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward,
@@ -85,6 +89,7 @@ const annotationShortcuts: AnnotationShortcuts = {
   sendAnnotationToBack: {
     hotkey: ["Ctrl", "Shift", "PageDown"],
     text: "Send to back",
+    group: "workflowAnnotations",
     execute: ({ $store }) =>
       $store.dispatch("workflow/reorderWorkflowAnnotation", {
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack,

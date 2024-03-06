@@ -11,6 +11,10 @@ import DocsIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import InfoIcon from "@/assets/info.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import { ref } from "vue";
+import { useStore } from "@/composables/useStore";
+import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
+
+const store = useStore();
 
 const buildExternalUrl = (url: string) => {
   return `${url}?src=knimeappmodernui`;
@@ -22,6 +26,16 @@ const helpMenuItem: MenuItem = {
   text: "Help",
   icon: HelpIcon,
   children: [
+    {
+      text: "Show keyboard shortcuts",
+      description: "",
+      separator: true,
+      icon: ShortcutsIcon,
+      metadata: {
+        handler: () =>
+          store.commit("application/setIsShortcutsOverviewDialogOpen", true),
+      },
+    },
     {
       text: "KNIME Getting started guide",
       icon: GettingStartedIcon,

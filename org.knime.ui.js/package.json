@@ -32,7 +32,7 @@
     "@knime/ui-extension-service": "0.27.0",
     "@open-rpc/client-js": "^1.8.1",
     "@types/kd-tree-javascript": "^1.0.3",
-    "@vueuse/core": "^9.13.0",
+    "@vueuse/core": "^10.9.0",
     "dompurify": "^3.0.6",
     "events": "^3.3.0",
     "fuse.js": "6.6.2",
@@ -42,10 +42,10 @@
     "mitt": "^3.0.1",
     "raf-throttle": "2.0.6",
     "splitpanes": "^3.1.5",
-    "vue": "^3.4.15",
+    "vue": "3.4.21",
     "vue-router": "^4.1.6",
-    "vuex": "^4.1.0",
     "vue3-click-away": "1.2.4",
+    "vuex": "^4.1.0",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
@@ -56,9 +56,9 @@
     "@types/lodash-es": "^4.17.12",
     "@types/markdown-it": "^13.0.7",
     "@types/node": "^20.11.6",
-    "@vitejs/plugin-vue": "^4.0.0",
+    "@vitejs/plugin-vue": "^5.0.4",
     "@vitest/coverage-v8": "^1.2.1",
-    "@vue/test-utils": "^2.1.0",
+    "@vue/test-utils": "^2.4.4",
     "@vue/tsconfig": "^0.5.1",
     "eslint": "8.56.0",
     "husky": "^8.0.3",
@@ -71,12 +71,13 @@
     "postcss-preset-env": "8.0.0",
     "prettier": "3.0.1",
     "stylelint": "^16.1.0",
+    "type-fest": "^4.11.1",
     "typescript": "^5.3.3",
-    "vite": "^4.1.4",
+    "vite": "^5.1.6",
     "vite-plugin-vue-devtools": "^7.0.14",
     "vite-svg-loader": "^4.0.0",
     "vitest": "^1.2.1",
-    "vue-tsc": "^1.8.27"
+    "vue-tsc": "2.0.6"
   },
   "engines": {
     "node": "20.x"
