@@ -211,7 +211,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     condition: ({ $store }) => {
       const nodeOutput = document.querySelector("#node-output");
 
-      if (nodeOutput.contains(document.activeElement)) {
+      if (nodeOutput && nodeOutput.contains(document.activeElement)) {
         return false;
       }
 
