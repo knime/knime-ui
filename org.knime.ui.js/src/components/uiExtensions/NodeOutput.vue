@@ -2,6 +2,8 @@
 import { defineComponent } from "vue";
 import { mapState, mapGetters } from "vuex";
 
+import type { Alert } from "@knime/ui-extension-service";
+
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 
 import type { ApplicationState } from "@/store/application";
@@ -9,6 +11,7 @@ import type { WorkflowState } from "@/store/workflow";
 import { compatibility } from "@/environment";
 
 import PortTabs from "./PortTabs.vue";
+import UIExtensionAlertsWrapper from "./UIExtensionAlertsWrapper.vue";
 import PortViewTabOutput from "./portViews/PortViewTabOutput.vue";
 import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
 
@@ -35,6 +38,7 @@ interface ComponentData {
 
   loadingState: UIExtensionLoadingState | null;
   currentValidationError: ValidationError | null;
+  currentNodeViewAlert: Alert | null;
 
   compatibility: typeof compatibility;
 }
@@ -50,6 +54,7 @@ export default defineComponent({
     NodeViewTabOutput,
     LoadingIndicator,
     ValidationInfo,
+    UIExtensionAlertsWrapper,
   },
   data(): ComponentData {
     return {
@@ -57,6 +62,7 @@ export default defineComponent({
       currentValidationError: null,
       loadingState: null,
       compatibility,
+      currentNodeViewAlert: null,
     };
   },
   computed: {
@@ -141,6 +147,11 @@ export default defineComponent({
       // and update the output state every time the validations retrigger
       deep: true,
     },
+    currentValidationError() {
+      // Validation takes precedence over any existing alert. So if a new
+      // validation error is added we must reset the alert
+      this.currentNodeViewAlert = null;
+    },
   },
   methods: {
     // select the first tab
@@ -179,7 +190,13 @@ export default defineComponent({
 
     <LoadingIndicator v-if="showLoadingIndicator" :message="loadingMessage" />
 
+    <UIExtensionAlertsWrapper
+      v-if="currentNodeViewAlert"
+      :alert="currentNodeViewAlert"
+    />
+
     <ValidationInfo
+      v-if="!currentNodeViewAlert"
       :validation-error="currentValidationError"
       :selected-node="singleSelectedNode"
       :selected-port-index="selectedPortIndex"
@@ -192,6 +209,7 @@ export default defineComponent({
         :workflow-id="workflowId"
         :selected-node="singleSelectedNode"
         :available-port-types="availablePortTypes"
+        @alert="currentNodeViewAlert = $event"
         @loading-state-change="loadingState = $event"
         @validation-error="currentValidationError = $event"
       />

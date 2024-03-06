@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, toRef, onUnmounted } from "vue";
+import { ref, watch, onUnmounted, computed } from "vue";
 
+import type { Alert } from "@knime/ui-extension-service";
 import {
   UIExtension,
   type UIExtensionAPILayer,
@@ -8,7 +9,6 @@ import {
 
 import { API } from "@api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
-import { getToastsProvider } from "@/plugins/toasts";
 
 import { useResourceLocation } from "../common/useResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
@@ -27,6 +27,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
+  alert: [value: Alert | null];
 }>();
 
 const error = ref<any>(null);
@@ -40,10 +41,6 @@ const { resourceLocation, resourceLocationResolver } = useResourceLocation({
 });
 
 const loadExtensionConfig = async () => {
-  if (!props.selectedNode) {
-    return;
-  }
-
   try {
     const nodeId = props.selectedNode.id;
 
@@ -72,16 +69,6 @@ const loadExtensionConfig = async () => {
 };
 
 const noop = () => {};
-
-const $toast = getToastsProvider();
-const activeToastId = ref<string | null>(null);
-
-const removeActiveToast = () => {
-  if (activeToastId.value) {
-    $toast.remove(activeToastId.value);
-    activeToastId.value = null;
-  }
-};
 
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
@@ -118,23 +105,9 @@ const apiLayer: UIExtensionAPILayer = {
     return { result };
   },
 
-  sendAlert: (alert, removeAlertButton) => {
-    removeActiveToast();
-
-    const headline = alert.nodeInfo
-      ? `${alert.nodeInfo?.nodeName} (${alert.nodeId})`
-      : `Warning (${alert.nodeId})`;
-
-    const toastType = alert.type === "warn" ? "warning" : "error";
-
-    removeAlertButton?.();
-
-    activeToastId.value = $toast.show({
-      headline,
-      message: alert.message,
-      type: toastType,
-      autoRemove: alert.type !== "error",
-    });
+  sendAlert: (alert) => {
+    consola.log("Alert received for NodeView :>> ", alert);
+    emit("alert", alert);
   },
 
   // NOOP - not required by this embedding context for this type of UI Extension
@@ -146,18 +119,25 @@ const apiLayer: UIExtensionAPILayer = {
   onApplied: noop,
 };
 
+const renderKey = computed(
+  () => `${props.selectedNode.id}_${props.selectedNode.state?.executionState}`,
+);
+
 watch(
-  toRef(props, "selectedNode"),
+  renderKey,
   async () => {
     try {
       error.value = null;
       isLoadingConfig.value = true;
+      // clear any existing alert emitted from a previous render or view
+      emit("alert", null);
 
       emit("loadingStateChange", { value: "loading", message: "Loading view" });
 
       await loadExtensionConfig();
 
       isLoadingConfig.value = false;
+
       emit("loadingStateChange", { value: "ready" });
     } catch (_error) {
       error.value = _error;
@@ -175,7 +155,6 @@ watch(
 
 onUnmounted(() => {
   deactivateDataServicesFn?.();
-  removeActiveToast();
 });
 </script>
 

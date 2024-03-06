@@ -4,7 +4,8 @@ import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "webapps-common/ui/uiExtensions";
-import { AlertType, type Alert } from "@knime/ui-extension-service";
+
+import { AlertType } from "@knime/ui-extension-service";
 
 import { API } from "@api";
 import type { KnimeNode } from "@/api/custom-types";
@@ -33,8 +34,7 @@ const emit = defineEmits<{
 
 const error = ref<any>(null);
 const extensionConfig = ref<ExtensionConfig | null>(null);
-const isConfigReady = ref(false);
-const isLoading = ref(false);
+const isLoadingConfig = ref(false);
 
 let deactivateDataServicesFn: () => void;
 
@@ -107,17 +107,14 @@ const apiLayer: UIExtensionAPILayer = {
     return { result };
   },
 
-  sendAlert: (alert: Alert, closeAlert?: () => void) => {
-    consola.warn("Alerts not yet implemented");
+  sendAlert: (alert) => {
+    consola.log("Alert received for PortView :>> ", alert);
 
     if (alert.type === AlertType.ERROR) {
       emit("loadingStateChange", {
         value: "error",
         message: alert.subtitle ?? "",
       });
-
-      // remove button if there is one
-      closeAlert?.();
     }
   },
 
@@ -133,24 +130,23 @@ const apiLayer: UIExtensionAPILayer = {
 watch(
   toRef(props, "uniquePortKey"),
   async () => {
-    error.value = null;
-    isLoading.value = true;
-    isConfigReady.value = false;
-
-    emit("loadingStateChange", {
-      value: "loading",
-      message: "Loading port view data",
-    });
-
     try {
+      error.value = null;
+      isLoadingConfig.value = true;
+
+      emit("loadingStateChange", {
+        value: "loading",
+        message: "Loading port view data",
+      });
+
       await loadExtensionConfig();
 
-      isConfigReady.value = true;
+      isLoadingConfig.value = false;
+
       emit("loadingStateChange", { value: "ready" });
-      isLoading.value = false;
     } catch (_error) {
       error.value = _error;
-      isLoading.value = false;
+      isLoadingConfig.value = false;
 
       emit("loadingStateChange", {
         value: "error",
@@ -169,7 +165,7 @@ onUnmounted(() => {
 
 <template>
   <UIExtension
-    v-if="!error && isConfigReady && !isLoading"
+    v-if="!error && !isLoadingConfig"
     :extension-config="extensionConfig!"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"

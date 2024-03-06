@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 
+import type { Alert } from "@knime/ui-extension-service";
 import OpenInNewWindowIcon from "webapps-common/ui/assets/img/icons/open-in-new-window.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
@@ -64,6 +65,7 @@ const store = useStore();
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
   validationError: [value: ValidationError | null];
+  alert: [value: Alert | null];
 }>();
 
 const nodeErrors = computed(() => {
@@ -104,17 +106,25 @@ const openInNewWindow = () => {
     </Button>
   </div>
 
-  <NodeViewLoader
-    v-if="!nodeErrors"
-    :project-id="projectId"
-    :workflow-id="workflowId"
-    :selected-node="selectedNode"
-    @loading-state-change="emit('loadingStateChange', $event)"
-  />
+  <div class="node-view-wrapper">
+    <NodeViewLoader
+      v-if="!nodeErrors"
+      :project-id="projectId"
+      :workflow-id="workflowId"
+      :selected-node="selectedNode"
+      @loading-state-change="emit('loadingStateChange', $event)"
+      @alert="emit('alert', $event)"
+    />
+  </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.node-view-wrapper {
+  height: 100%;
+  padding-top: 30px;
+}
 
 .detach-button-wrapper {
   display: flex;

@@ -2,23 +2,15 @@ import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import {
-  deepMocked,
-  mockDynamicImport,
-  mockVuexStore,
-  mockedObject,
-} from "@/test/utils";
+import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 import { UIExtension } from "webapps-common/ui/uiExtensions";
 import { API } from "@api";
-
-import { getToastsProvider } from "@/plugins/toasts";
 
 import * as applicationStore from "@/store/application";
 import NodeViewLoader from "../NodeViewLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 
 const dynamicImportMock = mockDynamicImport();
-const toast = mockedObject(getToastsProvider());
 
 vi.mock("webapps-common/ui/uiExtensions/useDynamicImport", () => ({
   useDynamicImport: vi.fn().mockImplementation(() => {
@@ -199,46 +191,22 @@ describe("NodeViewLoader.vue", () => {
       });
     });
 
-    it("should display toast when a view has a notification", async () => {
+    it("should emit an 'alert' event when a view has a notification", async () => {
       const { wrapper } = doMount();
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
       const apiLayer = uiExtension.props("apiLayer");
 
-      toast.show
-        .mockImplementationOnce(() => "toast1")
-        .mockImplementationOnce(() => "toast2");
-
-      apiLayer.sendAlert({
+      const alert1 = {
         nodeId: "root:1",
         type: "warn",
         nodeInfo: { nodeName: "The Node" },
         message: "There's an warning in this node",
-      });
+      };
+      apiLayer.sendAlert(alert1);
 
-      expect(toast.remove).not.toHaveBeenCalled();
-      expect(toast.show).toHaveBeenCalledWith({
-        headline: "The Node (root:1)",
-        message: "There's an warning in this node",
-        type: "warning",
-        autoRemove: true,
-      });
-
-      apiLayer.sendAlert({
-        nodeId: "root:1",
-        type: "error",
-        nodeInfo: { nodeName: "The Node" },
-        message: "There's an error in this node",
-      });
-
-      expect(toast.remove).toHaveBeenCalledWith("toast1");
-      expect(toast.show).toHaveBeenCalledWith({
-        headline: "The Node (root:1)",
-        message: "There's an error in this node",
-        type: "error",
-        autoRemove: false,
-      });
+      expect(wrapper.emitted("alert")![1][0]).toEqual(alert1);
     });
   });
 });

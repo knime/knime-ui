@@ -47,11 +47,7 @@ const fullPortObject = computed(() => {
 });
 
 const canExecute = computed(() => {
-  if (!permissions.value.canEditWorkflow) {
-    return false;
-  }
-
-  if (!props.selectedNode) {
+  if (!permissions.value.canEditWorkflow || !props.selectedNode) {
     return false;
   }
 
