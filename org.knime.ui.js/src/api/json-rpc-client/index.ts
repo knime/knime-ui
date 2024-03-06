@@ -73,7 +73,7 @@ const setupServerEventListener = (ws: WebSocket) => {
 
 const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   const CONNECTION_LOST_TOAST_ID = "__CONNECTION_LOST";
-  const onConnectionLost = (message: string) => {
+  const onConnectionLost = (headline: string, message: string) => {
     // add transparent overlay to prevent user interactions
     store.dispatch("application/updateGlobalLoader", {
       loading: true,
@@ -82,7 +82,7 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
 
     $toast.show({
       id: CONNECTION_LOST_TOAST_ID,
-      headline: "Connection lost",
+      headline,
       message,
       type: "error",
       autoRemove: false,
@@ -104,11 +104,20 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
 
   ws.addEventListener("close", (wsCloseEvent) => {
     consola.error("Websocket closed: ", wsCloseEvent);
-    onConnectionLost("Server is unreachable");
+    const isSessionExpired =
+      wsCloseEvent.reason?.toLowerCase() === "proxy close";
+
+    const headline = isSessionExpired ? "Session expired" : "Connection lost";
+    const message = isSessionExpired
+      ? "Refresh the page to reactivate the session"
+      : "Server is unreachable";
+
+    onConnectionLost(headline, message);
   });
 
   window.addEventListener("offline", () => {
     onConnectionLost(
+      "Connection lost",
       "Please, check your internet connection and try refreshing the page",
     );
   });
