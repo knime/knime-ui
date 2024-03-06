@@ -1379,7 +1379,7 @@ export interface KaiMessage {
      * @type {string}
      * @memberof KaiMessage
      */
-    role: string;
+    role: KaiMessage.RoleEnum;
     /**
      * Content of the message.
      * @type {string}
@@ -1390,6 +1390,20 @@ export interface KaiMessage {
 }
 
 
+/**
+ * @export
+ * @namespace KaiMessage
+ */
+export namespace KaiMessage {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum RoleEnum {
+        Assistant = 'assistant',
+        User = 'user'
+    }
+}
 /**
  * Encapsulates a request to K-AI which contains the entire conversation  as well as information on the open workflow, subworkflow and selected nodes. 
  * @export
