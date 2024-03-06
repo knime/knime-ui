@@ -3,6 +3,8 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import type { RootStoreState } from "./types";
 import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
+import type { KaiMessage } from "@/api/gateway-api/generated-api";
+
 
 const LOCAL_STORAGE_KEY = "aiAssistantState";
 
@@ -10,9 +12,7 @@ const LOCAL_STORAGE_KEY = "aiAssistantState";
  * This file contains the Vuex store module for the AI assistant.
  */
 
-export interface Message {
-  role: "assistant" | "user";
-  content: string;
+export interface Message extends KaiMessage {
   nodes?: NodeWithExtensionInfo[];
   references?: {
     [refName: string]: string[];
@@ -242,7 +242,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           projectId,
           workflowId,
           selectedNodes,
-          messages,
+          messages
         },
       });
     } catch (error) {
