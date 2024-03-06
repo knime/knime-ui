@@ -200,7 +200,9 @@ public final class DesktopAPUtil {
         final WorkflowContextV2 workflowContext) throws OperationCanceledException {
         final var wfmRef = new AtomicReference<WorkflowManager>();
 
-        final var fileUri = wfFile.toUri();
+        // The detour via `File` is needed to make Windows network mounts like `\\MyNAS\workspace\My Component` work,
+        // it creates `file:////MyNAS/workspace/My%20Component` instead of `file://MyNAS/workspace/My%20Component`.
+        final var fileUri = wfFile.toFile().toURI();
         final var runnable = new LoadMetaNodeTemplateRunnable(wfmRef::set, fileUri, workflowContext, false, true);
         runnable.run(monitor); // Sets the workflow reference using the callback as a side effect
         final var wfm = wfmRef.get();

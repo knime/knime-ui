@@ -114,10 +114,10 @@ final class Init {
     static LifeCycleStateInternal run(final boolean checkForUpdates) {
         // Create and set default service dependencies
         var projectManager = ProjectManager.getInstance();
-        var workflowMiddleware = new WorkflowMiddleware(ProjectManager.getInstance());
+        var spaceProviders = createSpaceProviders();
+        var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
         var appStateUpdater = new AppStateUpdater();
         var eventConsumer = createEventConsumer();
-        var spaceProviders = createSpaceProviders();
         var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,

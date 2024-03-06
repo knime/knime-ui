@@ -111,7 +111,7 @@ class ImportURITest {
             ProjectManager.getInstance().addProject(ProjectFactory.createProject(wfm,
                 "providerID", "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
-                new WorkflowMiddleware(ProjectManager.getInstance()));
+                new WorkflowMiddleware(ProjectManager.getInstance(), null));
             var nodeFactoryProvider = mock(NodeFactoryProvider.class);
             Class factoryClass = PortObjectInNodeFactory.class;
             when(nodeFactoryProvider.fromFileExtension(endsWith(".txt"))).thenReturn(factoryClass);

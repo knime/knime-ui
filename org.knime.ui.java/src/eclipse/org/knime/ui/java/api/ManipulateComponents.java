@@ -50,14 +50,18 @@ package org.knime.ui.java.api;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiPredicate;
 
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -69,14 +73,17 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.port.PortObject;
+import org.knime.core.node.util.ClassUtils;
 import org.knime.core.node.workflow.MetaNodeTemplateInformation.Role;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.SubNodeContainer;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.core.util.KnimeUrlType;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.HubItemVersion;
 import org.knime.core.util.urlresolve.KnimeUrlResolver;
+import org.knime.core.util.urlresolve.KnimeUrlResolver.IdAndPath;
+import org.knime.core.util.urlresolve.KnimeUrlResolver.KnimeUrlVariant;
 import org.knime.core.util.urlresolve.URLResolverUtil;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
@@ -86,7 +93,6 @@ import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.commands.UpdateComponentLinkInformation;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.workbench.editor2.actions.ChangeComponentHubVersionAction;
 import org.knime.workbench.editor2.actions.ChangeComponentHubVersionDialog;
 import org.knime.workbench.editor2.actions.ChangeSubNodeLinkAction;
 import org.knime.workbench.editor2.commands.ChangeSubNodeLinkCommand;
@@ -107,6 +113,7 @@ import org.knime.workbench.explorer.view.ContentObject;
  * @author Manuel Hotz, KNIME GmbH, Konstanz, Germany
  * @author Kai Franze, KNIME GmbH, Germany
  */
+@SuppressWarnings("restriction")
 final class ManipulateComponents {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(ManipulateComponents.class);
@@ -138,18 +145,19 @@ final class ManipulateComponents {
 
         final var templateInfo = component.getTemplateInformation();
         final var sourceURI = templateInfo.getSourceURI();
-        final var optLinkType = KnimeUrlType.getType(sourceURI);
-        if (optLinkType.isEmpty()) {
+        final var optLinkVariant = KnimeUrlVariant.getVariant(sourceURI);
+        if (optLinkVariant.isEmpty()) {
             throw new OperationNotAllowedException(
                 "Only the type of KNIME URLs can be changed, found '" + sourceURI + "'.");
         }
 
-        final var linkType = optLinkType.get();
-        final Map<KnimeUrlType, URL> changeOptions;
+        final var linkVariant = optLinkVariant.get();
+        final Map<KnimeUrlVariant, URL> changeOptions;
         try {
             final var context = CoreUtil.getProjectWorkflow(component).getContextV2();
-            changeOptions = KnimeUrlResolver.getResolver(context).changeLinkType(URLResolverUtil.toURL(sourceURI));
-            if (changeOptions.size() <= (changeOptions.containsKey(linkType) ? 1 : 0)) {
+            changeOptions = KnimeUrlResolver.getResolver(context) //
+                    .changeLinkType(URLResolverUtil.toURL(sourceURI), ManipulateComponents::translateHubUrl);
+            if (changeOptions.size() <= (changeOptions.containsKey(linkVariant) ? 1 : 0)) {
                 // there are no other options available
                 return;
             }
@@ -158,29 +166,38 @@ final class ManipulateComponents {
                     + sourceURI + "': " + e.getMessage(), e);
         }
 
-        final var linkTypeName = switch (linkType) {
-            case MOUNTPOINT_ABSOLUTE -> "mountpoint-absolute";
-            case HUB_SPACE_RELATIVE  -> "space-relative";
-            case MOUNTPOINT_RELATIVE -> "mountpoint-relative";
-            case NODE_RELATIVE       -> "node-relative";
-            case WORKFLOW_RELATIVE   -> "workflow-relative";
-        };
-
         final var msg = String.format("""
                 This is a linked (read-only) component. Only the link type can be changed.
                 Please select the new type of the link to the shared component.
                 (current type: %s, current link: %s)
                 The origin of the component will not be changed - just the way it is referenced.
-                """, linkTypeName, sourceURI);
+                """, linkVariant.getDescription(), sourceURI);
 
         final var shell = SWTUtilities.getActiveShell();
-        final var newUri = ChangeSubNodeLinkAction.showDialogAndGetUri(shell, sourceURI, linkType, msg, changeOptions);
+        final var newUri = ChangeSubNodeLinkAction.showDialogAndGetUri(shell, sourceURI, linkVariant, msg,
+            changeOptions);
         if (newUri.isPresent()) {
             final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
             final var cmd = workflowMiddleware.getCommands();
-            cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newUri.get()));
+            cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, sourceURI, newUri.get(), false));
             cmd.execute(wfKey, null);
         }
+    }
+
+    /**
+     * Requests the catalog path and ID of the given URL if it references an item in a Hub catalog.
+     *
+     * @param url KNIME URL to translate
+     * @return ID and path of the item if located on Hub, {@link Optional#empty()} otherwise
+     */
+    private static Optional<IdAndPath> translateHubUrl(final URL url) {
+        try {
+            return queryHubInfo(url.toURI()).map(loc -> new IdAndPath(loc.getWorkflowItemId(),
+                Path.forPosix(loc.getWorkflowPath()).makeRelative()));
+        } catch (URISyntaxException e) {
+            LOGGER.debug(e);
+        }
+        return Optional.empty();
     }
 
     /**
@@ -191,7 +208,7 @@ final class ManipulateComponents {
         assertLinkedComponent(component, true);
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
-        if (!isHubUri(srcUri)) {// TODO: This should not be called on non-Hub items, see NXT-2038
+        if (queryHubInfo(srcUri).isEmpty()) {
             throw new OperationNotAllowedException("""
                     Changing item version is not possible, since the source of this component is not located on a
                     mountpoint that supports item versioning.
@@ -211,9 +228,10 @@ final class ManipulateComponents {
             return;
         }
 
+        final var newSrcUri = targetVersion.applyTo(srcUri);
         final var workflowMiddleware = DesktopAPI.getDeps(WorkflowMiddleware.class);
         final var cmd = workflowMiddleware.getCommands();
-        cmd.setCommandToExecute(getUpdateComponentLinkInformationCommand(component));
+        cmd.setCommandToExecute(getChangeSubNodeLinkCommand(component, srcUri, newSrcUri, true));
         cmd.execute(wfKey, null);
 
         // ChangeComponentHubVersionCommand does not check canExecute of the actual update command
@@ -290,9 +308,11 @@ final class ManipulateComponents {
     }
 
     private static WorkflowCommandAdapter getChangeSubNodeLinkCommand(final SubNodeContainer component,
-        final URI oldLink, final URI newLink) {
+        final URI oldLink, final URI newLink, final boolean resetLastModified) {
         final var wfm = component.getParent();
-        final var linkCmd = new ChangeSubNodeLinkCommand(wfm, component, oldLink, null, newLink, null);
+        final var oldTimestamp = resetLastModified ? component.getTemplateInformation().getTimestampInstant() : null;
+        final var newTimestamp = resetLastModified ? Instant.EPOCH : null;
+        final var linkCmd = new ChangeSubNodeLinkCommand(wfm, component, oldLink, oldTimestamp, newLink, newTimestamp);
         return new WorkflowCommandAdapter(linkCmd, true);
     }
 
@@ -304,21 +324,16 @@ final class ManipulateComponents {
     }
 
     /**
-     * Copied from {@link ChangeComponentHubVersionAction}.
+     * Fetches information for the given KNIME URL if it is located on a Hub mountpoint. This may issue a REST request.
      *
-     * TODO: NXT-2038, Determine whether a Hub item version is changeable in advance
+     * @param uri KNIME URL
+     * @return location info if located on Hub, {@link Optional#empty()} otherwise
      */
-    private static boolean isHubUri(final URI uri) {
-        if (uri == null) {
-            return false;
-        }
-        final var explorerFileStore = ExplorerFileSystem.INSTANCE.getStore(uri);
-        if (explorerFileStore == null) {
-            return false;
-        }
-        final var fileStoreClassName = explorerFileStore.getClass().getName();
-        // NOSONAR: I don't want `instanceof` because it would force me to introduce a dependency to commercial code
-        return fileStoreClassName.equals("com.knime.explorer.server.hub.HubExplorerFileStore"); // NOSONAR
+    private static Optional<HubSpaceLocationInfo> queryHubInfo(final URI uri) {
+        return Optional.ofNullable(uri) //
+                .map(ExplorerFileSystem.INSTANCE::getStore) //
+                .flatMap(AbstractExplorerFileStore::locationInfo) //
+                .flatMap(info -> ClassUtils.castOptional(HubSpaceLocationInfo.class, info));
     }
 
     /**
