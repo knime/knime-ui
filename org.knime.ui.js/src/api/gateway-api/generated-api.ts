@@ -520,6 +520,12 @@ export interface AppState {
      * @memberof AppState
      */
     nodeRepositoryLoaded?: boolean;
+    /**
+     * Web URL to send the user to to download the desktop edition of the AP.
+     * @type {string}
+     * @memberof AppState
+     */
+    analyticsPlatformDownloadURL?: string;
 
 }
 
