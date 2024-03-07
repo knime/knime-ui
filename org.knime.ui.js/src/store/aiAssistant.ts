@@ -242,7 +242,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           projectId,
           workflowId,
           selectedNodes,
-          messages
+          messages,
         },
       });
     } catch (error) {
