@@ -17,7 +17,8 @@ export interface Message {
   references?: {
     [refName: string]: string[];
   };
-  isError: boolean;
+  isError?: boolean;
+  timestamp?: number;
 }
 
 interface ProjectAndWorkflowIds {
@@ -46,7 +47,6 @@ type PersistedConversationState = Pick<
   ConversationState,
   "conversationId" | "messages"
 >;
-type PersistedAiAssistantState = Record<ChainType, PersistedConversationState>;
 
 type AiAssistantEventPayload = {
   type: "token" | "result" | "error" | "status_update";
@@ -58,7 +58,7 @@ type AiAssistantEventPayload = {
   conversation_id: string;
 };
 
-function createEmptyConversationState(): ConversationState {
+const createEmptyConversationState = (): ConversationState => {
   return {
     conversationId: null,
     messages: [],
@@ -67,14 +67,15 @@ function createEmptyConversationState(): ConversationState {
     incomingTokens: "",
     projectAndWorkflowIds: null,
   };
-}
+};
 
 export const state = (): AiAssistantState => {
-  let persistedState: PersistedAiAssistantState | null;
+  let persistedState: PersistedConversationState | null;
   try {
-    persistedState = JSON.parse(
-      localStorage.getItem(LOCAL_STORAGE_KEY) || "{}",
-    );
+    const persistedStateString = localStorage.getItem(LOCAL_STORAGE_KEY);
+    persistedState = persistedStateString
+      ? JSON.parse(persistedStateString)
+      : {};
   } catch (error) {
     persistedState = null;
     consola.error("Error loading persisted AI Assistant state:", error);
@@ -84,12 +85,9 @@ export const state = (): AiAssistantState => {
     hubID: null,
     qa: {
       ...createEmptyConversationState(),
-      ...(persistedState?.qa || {}),
+      ...(persistedState || {}),
     },
-    build: {
-      ...createEmptyConversationState(),
-      ...(persistedState?.build || {}),
-    },
+    build: createEmptyConversationState(),
   };
 };
 
@@ -117,12 +115,15 @@ export const mutations: MutationTree<AiAssistantState> = {
       isError = false,
     } = payload;
 
+    const timestamp = Date.now();
+
     state[chainType].messages.push({
       role,
       content,
       nodes,
       references,
       isError,
+      timestamp,
     });
   },
   popUserQuery(state, { chainType }: { chainType: ChainType }) {
@@ -192,7 +193,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   async getHubID({ commit }) {
     commit("setHubID", await API.desktop.getHubID());
   },
-  async pushMessageAndPersistState(
+  pushMessage(
     { commit, dispatch },
     payload: {
       chainType: ChainType;
@@ -204,11 +205,14 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     },
   ) {
     commit("pushMessage", payload);
-    dispatch("persistStateToLocalStorage");
+
+    if (payload.chainType === "qa") {
+      dispatch("persistStateToLocalStorage");
+    }
   },
-  async clearConversationAndPersistState(
+  clearConversationAndPersistState(
     { commit, dispatch },
-    { chainType }: { chainType: ChainType }
+    { chainType }: { chainType: ChainType },
   ) {
     commit("clearConversation", { chainType });
     dispatch("persistStateToLocalStorage");
@@ -267,7 +271,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         commit("setConversationId", { chainType, conversationId });
 
         if (payload.message) {
-          dispatch("pushMessageAndPersistState", {
+          dispatch("pushMessage", {
             chainType,
             role: "assistant",
             content: payload.message,
@@ -280,7 +284,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         commit("clearChain", { chainType });
         commit("setConversationId", { chainType, conversationId });
 
-        dispatch("pushMessageAndPersistState", {
+        dispatch("pushMessage", {
           chainType,
           role: "assistant",
           content: payload.message,
@@ -308,16 +312,10 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     }
     commit("popUserQuery", { chainType });
   },
-  async persistStateToLocalStorage({ state }) {
-    const data: PersistedAiAssistantState = {
-      qa: {
-        conversationId: state.qa.conversationId,
-        messages: state.qa.messages,
-      },
-      build: {
-        conversationId: state.build.conversationId,
-        messages: state.build.messages,
-      },
+  persistStateToLocalStorage({ state }) {
+    const data: PersistedConversationState = {
+      conversationId: state.qa.conversationId,
+      messages: state.qa.messages,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   },

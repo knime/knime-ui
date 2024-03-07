@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, computed } from "vue";
+import { ref, watch, nextTick } from "vue";
 import Message from "./message/Message.vue";
+import MessageSeparatorComponent from "./MessageSeparator.vue";
 import ChatControls from "./ChatControls.vue";
-import { useKaiServer } from "../useKaiServer";
-import { useChat } from "./useChat";
+import { useChat, MessageSeparator } from "./useChat";
 import type { ChainType } from "../types";
 
 interface Props {
@@ -12,11 +12,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { uiStrings } = useKaiServer();
-const systemPrompt = computed(() => uiStrings.welcome_message[props.chainType]);
-
 const {
-  messages,
+  messagesWithSeparators,
   isProcessing,
   incomingTokens,
   statusUpdate,
@@ -35,26 +32,28 @@ const scrollToBottomAfterNextTick = () => {
     }
   });
 };
+
 watch(() => incomingTokens.value, scrollToBottomAfterNextTick);
-watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
+watch(() => messagesWithSeparators.value, scrollToBottomAfterNextTick, {
+  deep: true,
+});
 </script>
 
 <template>
   <div class="chat">
     <div ref="scrollableContainer" class="scrollable-container">
       <div class="message-area">
-        <Message
-          v-if="systemPrompt"
-          key="system_prompt"
-          role="assistant"
-          :content="systemPrompt"
-        />
-        <Message
-          v-for="(message, index) in messages"
-          :key="index"
-          v-bind="message"
-          @node-templates-loaded="scrollToBottomAfterNextTick"
-        />
+        <template v-for="(item, index) in messagesWithSeparators" :key="index">
+          <MessageSeparatorComponent
+            v-if="item instanceof MessageSeparator"
+            v-bind="item"
+          />
+          <Message
+            v-else
+            v-bind="item"
+            @node-templates-loaded="scrollToBottomAfterNextTick"
+          />
+        </template>
         <Message
           v-if="isProcessing"
           key="processing"
@@ -80,6 +79,7 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
   display: flex;
   flex-direction: column;
   min-height: 0;
+  position: relative;
 
   & .scrollable-container {
     width: calc(100% + 20px);
@@ -88,6 +88,9 @@ watch(() => messages.value, scrollToBottomAfterNextTick, { deep: true });
 
     & .message-area {
       width: calc(100% - 20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
   }
 

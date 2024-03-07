@@ -65,6 +65,7 @@ const htmlContent = computed(() => renderMarkdown(props.content));
 
 .message {
   position: relative;
+  width: 100%;
   margin-bottom: 20px;
   font-size: 13px;
   font-weight: 400;

@@ -3,11 +3,59 @@ import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
 import type { Message } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
+import { useKaiServer } from "../useKaiServer";
+import { isSameDay } from "./utils";
+
+class MessageSeparator {
+  timestamp: number;
+
+  constructor(timestamp: number) {
+    this.timestamp = timestamp;
+  }
+}
 
 const useChat = (chainType: ChainType) => {
+  const { uiStrings } = useKaiServer();
+
   const store = useStore();
 
-  const messages = computed(() => store.state.aiAssistant[chainType].messages);
+  const messagesWithSeparators = computed(() => {
+    // Computes an array of messages interlaced with day separators.
+
+    const now = Date.now();
+    const rawMessages = store.state.aiAssistant[chainType].messages;
+    const initialTimestamp = rawMessages[0]?.timestamp ?? now;
+    const welcomeMessage: Message = {
+      role: "assistant",
+      content: uiStrings.welcome_message[chainType],
+      timestamp: initialTimestamp,
+    };
+
+    // The first message is always a welcome message.
+    const allMessages: Message[] = [welcomeMessage, ...rawMessages];
+
+    // Initialize array for messages and separators.
+    const result: (Message | MessageSeparator)[] = [];
+
+    // Loop through messages, including an extra iteration for end-of-list processing.
+    for (let i = 0; i < allMessages.length + 1; i++) {
+      // Get current message or null for final loop iteration.
+      const currMsg = allMessages[i] ?? null;
+      const currMsgTimestamp = currMsg?.timestamp ?? now;
+      // Use previous message's timestamp or fallback to current date for first loop iteration.
+      const prevMsgTimestamp = allMessages[i - 1]?.timestamp ?? now;
+
+      // Add a separator when the day changes
+      if (!isSameDay(currMsgTimestamp, prevMsgTimestamp)) {
+        result.push(new MessageSeparator(currMsgTimestamp));
+      }
+
+      if (currMsg) {
+        result.push(currMsg);
+      }
+    }
+    return result;
+  });
 
   const isProcessing = computed(
     () => store.state.aiAssistant[chainType].isProcessing,
@@ -50,7 +98,7 @@ const useChat = (chainType: ChainType) => {
   };
 
   return {
-    messages,
+    messagesWithSeparators,
     isProcessing,
     incomingTokens,
     statusUpdate,
@@ -60,4 +108,4 @@ const useChat = (chainType: ChainType) => {
   };
 };
 
-export { useChat };
+export { useChat, MessageSeparator };
