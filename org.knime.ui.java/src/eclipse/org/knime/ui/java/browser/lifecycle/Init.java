@@ -80,6 +80,7 @@ import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
+import org.knime.gateway.impl.webui.kai.KaiHandlerFactoryRegistry;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -125,9 +126,11 @@ final class Init {
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
+        var kaiHandler = KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer)//
+                .orElse(null); // null if K-AI is not installed
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
-            createNodeFactoryProvider());
+            createNodeFactoryProvider(), kaiHandler);
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService);
