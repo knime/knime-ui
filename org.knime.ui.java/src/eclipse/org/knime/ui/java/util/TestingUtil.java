@@ -64,8 +64,8 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
-import org.knime.gateway.impl.webui.service.util.DefaultServicesUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -83,7 +83,7 @@ public final class TestingUtil {
     private static Set<String> loadedWorkflowsForTesting;
 
     /**
-     * @see DefaultServicesUtil#setDefaultServiceDependencies(AppStateUpdater, EventConsumer,
+     * @see ServiceDependencies#setDefaultServiceDependencies(AppStateUpdater, EventConsumer,
      *      org.knime.gateway.impl.webui.SpaceProviders, org.knime.gateway.impl.webui.UpdateStateProvider)
      */
     public static void initAppForTesting(final List<String> projectIds, final String activeProjectId) {

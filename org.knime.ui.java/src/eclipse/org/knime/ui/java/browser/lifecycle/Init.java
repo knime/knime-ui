@@ -76,8 +76,8 @@ import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
+import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
-import org.knime.gateway.impl.webui.service.util.DefaultServicesUtil;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -120,7 +120,7 @@ final class Init {
         var spaceProviders = createSpaceProviders();
         var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
-        DefaultServicesUtil.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
+        ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
             createNodeFactoryProvider());
 
