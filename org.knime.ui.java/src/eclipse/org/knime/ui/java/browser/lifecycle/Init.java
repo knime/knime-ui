@@ -67,6 +67,7 @@ import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
+import org.knime.core.util.auth.CouldNotAuthorizeException;
 import org.knime.gateway.api.util.ExtPointUtil;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
@@ -80,6 +81,8 @@ import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
+import org.knime.gateway.impl.webui.kai.KaiHandler;
+import org.knime.gateway.impl.webui.kai.KaiHandlerFactory.AuthTokenProvider;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactoryRegistry;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
@@ -126,8 +129,7 @@ final class Init {
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
-        var kaiHandler = KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer)//
-                .orElse(null); // null if K-AI is not installed
+        var kaiHandler = createKaiHandler(eventConsumer, spaceProviders);
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
             createNodeFactoryProvider(), kaiHandler);
@@ -391,6 +393,25 @@ final class Init {
             return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
         }
 
+    }
+
+    private static KaiHandler createKaiHandler(final EventConsumer eventConsumer, final SpaceProviders spaceProviders) {
+        AuthTokenProvider authTokenProvider = (projectId, hubId) -> {
+            var spaceProvider = spaceProviders.getProvidersMap().get(hubId);
+            if (spaceProvider == null) {
+                throw new CouldNotAuthorizeException(
+                    "Please add the %s to your hosted mountpoints and login to use K-AI.".formatted(hubId));
+            } else if (spaceProvider.getType() == TypeEnum.HUB) {
+                var connection = spaceProvider.getConnection(false).orElse(null);
+                if (connection != null) {
+                    return connection.getAuthorization();
+                }
+                throw new CouldNotAuthorizeException("Could not authorize. Please log into %s.".formatted(hubId));
+            }
+            throw new CouldNotAuthorizeException("Unexpected content provider for mount ID '%s'.".formatted(hubId));
+        };
+        return KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer, authTokenProvider)//
+            .orElse(null); // null if K-AI is not installed
     }
 
 }
