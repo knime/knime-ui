@@ -22,7 +22,6 @@
   & .header {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
 
     & h2 {
@@ -30,6 +29,7 @@
       font-weight: 400;
       font-size: 18px;
       line-height: 36px;
+      margin-right: auto;
     }
   }
 

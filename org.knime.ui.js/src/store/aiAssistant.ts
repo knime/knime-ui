@@ -43,10 +43,9 @@ export interface AiAssistantState {
 
 type ChainType = Exclude<keyof AiAssistantState, "hubID">;
 
-type PersistedConversationState = Pick<
-  ConversationState,
-  "conversationId" | "messages"
->;
+type PersistedConversationState = {
+  [K in ChainType]: Pick<ConversationState, "conversationId" | "messages">;
+};
 
 type AiAssistantEventPayload = {
   type: "token" | "result" | "error" | "status_update";
@@ -85,9 +84,12 @@ export const state = (): AiAssistantState => {
     hubID: null,
     qa: {
       ...createEmptyConversationState(),
-      ...(persistedState || {}),
+      ...(persistedState?.qa || {}),
     },
-    build: createEmptyConversationState(),
+    build: {
+      ...createEmptyConversationState(),
+      ...(persistedState?.build || {}),
+    },
   };
 };
 
@@ -205,10 +207,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     },
   ) {
     commit("pushMessage", payload);
-
-    if (payload.chainType === "qa") {
-      dispatch("persistStateToLocalStorage");
-    }
+    dispatch("persistStateToLocalStorage");
   },
   clearConversationAndPersistState(
     { commit, dispatch },
@@ -314,8 +313,14 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   persistStateToLocalStorage({ state }) {
     const data: PersistedConversationState = {
-      conversationId: state.qa.conversationId,
-      messages: state.qa.messages,
+      qa: {
+        conversationId: state.qa.conversationId,
+        messages: state.qa.messages,
+      },
+      build: {
+        conversationId: state.build.conversationId,
+        messages: state.build.messages,
+      },
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   },
