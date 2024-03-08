@@ -138,9 +138,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
     ),
 
     ...registerSidebarSection(
-      $features.isKaiPermitted() &&
-        compatibility.isKaiSupported() &&
-        permissions.value.canAccessKAIPanel,
+      $features.isKaiPermitted() && permissions.value.canAccessKAIPanel,
       {
         name: TABS.KAI,
         title: "K-AI AI assistant",

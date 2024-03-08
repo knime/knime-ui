@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
-import { runInEnvironment } from "@/environment";
+import { runInEnvironment, isBrowser } from "@/environment";
 
 let isHubIdFetched = false;
 
@@ -19,10 +19,13 @@ const useHubAuth = () => {
 
   const hubId = computed(() => store.state.aiAssistant.hubID);
 
-  const isHubConfigured = computed(() => Boolean(hubId.value));
+  const isHubConfigured = computed(() => Boolean(hubId.value) || isBrowser);
 
   const isAuthenticated = computed(() => {
-    return store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.connected;
+    return (
+      store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.connected ||
+      isBrowser
+    );
   });
 
   const authenticateWithHub = () => {
