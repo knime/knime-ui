@@ -112,8 +112,7 @@ const apiLayer: UIExtensionAPILayer = {
       projectId: props.projectId,
       workflowId: props.workflowId,
       nodeId: props.selectedNode.id,
-      // @ts-ignore
-      mode,
+      mode: mode as "add" | "remove" | "replace",
       selection,
     });
     return { result };

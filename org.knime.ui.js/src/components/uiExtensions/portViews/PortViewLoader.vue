@@ -101,8 +101,7 @@ const apiLayer: UIExtensionAPILayer = {
       nodeId: props.selectedNode.id,
       portIdx: props.selectedPortIndex,
       viewIdx: props.selectedViewIndex,
-      // @ts-ignore
-      mode,
+      mode: mode as "add" | "remove" | "replace",
       selection,
     });
     return { result };
