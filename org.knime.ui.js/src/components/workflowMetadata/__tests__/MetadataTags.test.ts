@@ -45,7 +45,7 @@ describe("MetadataTags.vue", () => {
     ]);
     expect(comboBox.props("modelValue")).toEqual(["tag1", "tag2"]);
 
-    comboBox.vm.$emit("change", [{ id: "tag3", text: "tag3" }]);
+    comboBox.vm.$emit("update:modelValue", ["tag3"]);
     expect(wrapper.emitted("update:modelValue")?.[0][0]).toEqual(["tag3"]);
   });
 });

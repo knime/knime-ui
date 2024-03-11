@@ -28,11 +28,8 @@ const currentTags = computed(() =>
 
 const selectedIds = computed(() => currentTags.value.map(({ id }) => id));
 
-const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
-  emit(
-    "update:modelValue",
-    tags.map(({ text }) => text),
-  );
+const onTagsChange = (tags: Array<string>) => {
+  emit("update:modelValue", tags);
 };
 </script>
 
@@ -52,7 +49,7 @@ const onTagsChange = (tags: Array<{ id: string; text: string }>) => {
         :size-visible-options="3"
         allow-new-values
         class="tag-editor"
-        @change="onTagsChange"
+        @update:model-value="onTagsChange"
       />
     </template>
   </div>
