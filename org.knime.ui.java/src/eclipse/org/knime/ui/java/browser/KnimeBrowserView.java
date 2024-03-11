@@ -47,9 +47,6 @@ package org.knime.ui.java.browser;
 
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.WindowEvent;
-
 import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
@@ -69,6 +66,9 @@ import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
+
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.WindowEvent;
 
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
@@ -160,6 +160,7 @@ public class KnimeBrowserView {
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
         browser.addOpenWindowListener(this::cancelAndOpenInBrowser);
         browser.setMenu(new Menu(browser.getShell()));
+        CEFUtils.registerNodeLogger(LOGGER, browser);
 
         LifeCycle.get().create((name, function) -> new KnimeBrowserFunction(browser, name, function));
 
