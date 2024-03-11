@@ -51,12 +51,15 @@ package org.knime.ui.java.browser.lifecycle;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -65,6 +68,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.gateway.api.util.ExtPointUtil;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -346,11 +351,15 @@ final class Init {
 
     private static final class UpdatableSpaceProviders implements SpaceProviders {
 
-        private final Map<String, SpaceProvider> m_providers = new LinkedHashMap<>();
-
         private final SpaceProvider m_localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
 
         private final List<SpaceProviders> m_spaceProvidersFromExtensionPoint = getSpaceProvidersFromExtensionPoint();
+
+        // thread-safe through synchronized access
+        private Map<String, SpaceProvider> m_providers = Map.of();
+
+        // thread-safe through synchronized access
+        private Map<String, SpaceProviderEnt.TypeEnum> m_providerTypes = Map.of();
 
         public UpdatableSpaceProviders() {
             update();
@@ -361,10 +370,18 @@ final class Init {
             return m_providers;
         }
 
+        @Override
+        public synchronized Map<String, TypeEnum> getProviderTypes() {
+            return m_providerTypes;
+        }
+
         synchronized void update() {
-            m_providers.clear();
-            m_providers.put(m_localWorkspaceProvider.getId(), m_localWorkspaceProvider);
-            m_spaceProvidersFromExtensionPoint.forEach(sp -> m_providers.putAll(sp.getProvidersMap()));
+            final var newProviders = new LinkedHashMap<String, SpaceProvider>();
+            newProviders.put(m_localWorkspaceProvider.getId(), m_localWorkspaceProvider);
+            m_spaceProvidersFromExtensionPoint.forEach(sp -> newProviders.putAll(sp.getProvidersMap()));
+            m_providers = Collections.unmodifiableMap(newProviders);
+            m_providerTypes = newProviders.entrySet().stream() //
+                    .collect(Collectors.toUnmodifiableMap(Entry::getKey, e -> e.getValue().getType()));
         }
 
         private static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
