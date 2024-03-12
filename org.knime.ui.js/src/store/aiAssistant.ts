@@ -5,7 +5,6 @@ import type { RootStoreState } from "./types";
 import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
 import type { KaiMessage } from "@/api/gateway-api/generated-api";
 
-
 const LOCAL_STORAGE_KEY = "aiAssistantState";
 
 /**
