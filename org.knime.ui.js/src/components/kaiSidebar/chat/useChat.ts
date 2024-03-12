@@ -5,6 +5,7 @@ import type { Message } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
 import { useKaiServer } from "../useKaiServer";
 import { isSameDay } from "./utils";
+import { KaiMessage } from "@/api/gateway-api/generated-api";
 
 class MessageSeparator {
   timestamp: number;
@@ -26,8 +27,8 @@ const useChat = (chainType: ChainType) => {
     const rawMessages = store.state.aiAssistant[chainType].messages;
     const initialTimestamp = rawMessages[0]?.timestamp ?? now;
     const welcomeMessage: Message = {
-      role: "assistant",
-      content: uiStrings.welcomeMessages[chainType],
+      role: KaiMessage.RoleEnum.Assistant,
+      content: uiStrings.welcomeMessages?.[chainType] ?? "",
       timestamp: initialTimestamp,
     };
 
