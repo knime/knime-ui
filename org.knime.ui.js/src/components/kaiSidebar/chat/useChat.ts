@@ -27,7 +27,7 @@ const useChat = (chainType: ChainType) => {
     const initialTimestamp = rawMessages[0]?.timestamp ?? now;
     const welcomeMessage: Message = {
       role: "assistant",
-      content: uiStrings.welcome_message[chainType],
+      content: uiStrings.welcomeMessages[chainType],
       timestamp: initialTimestamp,
     };
 
