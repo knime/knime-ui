@@ -17,7 +17,11 @@ try {
     node('maven && java17 && large') {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
 
+        def dockerFriendlyVersion = sh(returnStdout: true,
+            script: 'target/node/node buildtools/versionNumber.js --docker').trim()
+
         junit '**/test-results/junit.xml'
+        owasp.sendNodeJSSBOMs(dockerFriendlyVersion)
         // knimetools.processAuditResults()
 
         stage('Sonarqube analysis') {
@@ -37,6 +41,6 @@ try {
     currentBuild.result = 'FAILURE'
     throw ex
 } finally {
-    notifications.notifyBuild(currentBuild.result);
+    notifications.notifyBuild(currentBuild.result)
 }
 /* vim: set shiftwidth=4 expandtab smarttab: */
