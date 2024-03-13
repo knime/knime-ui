@@ -24,7 +24,8 @@
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
     "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
     "postinstall": "npm run opensourcecredits -- --no-overwrite",
-    "add-husky": "cd .. && husky install ./org.knime.ui.js/.husky"
+    "add-husky": "cd .. && husky install ./org.knime.ui.js/.husky",
+    "sbom": "npx @cyclonedx/cyclonedx-npm --output-file bom.json --ignore-npm-errors --omit dev"
   },
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",
@@ -44,11 +45,12 @@
     "splitpanes": "^3.1.5",
     "vue": "^3.4.15",
     "vue-router": "^4.1.6",
-    "vuex": "^4.1.0",
     "vue3-click-away": "1.2.4",
+    "vuex": "^4.1.0",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
+    "@cyclonedx/cyclonedx-npm": "^1.16.1",
     "@knime/eslint-config": "^8.0.10",
     "@tsconfig/node20": "^20.1.2",
     "@types/dompurify": "^3.0.5",
