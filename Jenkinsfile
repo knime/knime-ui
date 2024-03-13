@@ -17,11 +17,8 @@ try {
     node('maven && java17 && large') {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
 
-        def dockerFriendlyVersion = sh(returnStdout: true,
-            script: 'target/node/node buildtools/versionNumber.js --docker').trim()
-
         junit '**/test-results/junit.xml'
-        owasp.sendNodeJSSBOMs(dockerFriendlyVersion)
+        owasp.sendNodeJSSBOMs()
         // knimetools.processAuditResults()
 
         stage('Sonarqube analysis') {
