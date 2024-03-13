@@ -111,7 +111,7 @@
 
                     <execution>
                         <id>npm run sbom</id>
-                        <phase>package</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>
