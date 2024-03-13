@@ -111,3 +111,5 @@ launch.json
 **/.polyglot.feature.xml
 **/.polyglot.META-INF
 
+# SBOM
+bom.json
