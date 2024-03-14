@@ -503,6 +503,12 @@ export interface AppState {
      */
     hasNodeCollectionActive?: boolean;
     /**
+     * Display name of currently active node collection. Compatible with \&quot;Search in {activeNodeCollection} nodes\&quot;.
+     * @type {string}
+     * @memberof AppState
+     */
+    activeNodeCollection?: string;
+    /**
      * If true, dev mode specific buttons will be shown.
      * @type {boolean}
      * @memberof AppState
