@@ -9,7 +9,10 @@ import RightPanel from "../RightPanel.vue";
 import NodeDialogLoader from "@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue";
 
 describe("RightPanel", () => {
-  const doMount = ({ props = {}, singleSelectedNodeMock = vi.fn() } = {}) => {
+  const doMount = (
+    { props = {}, singleSelectedNodeMock = vi.fn() } = {},
+    component: typeof RightPanel | null = null,
+  ) => {
     const $store = mockVuexStore({
       workflow: {
         ...workflowStore,
@@ -33,7 +36,7 @@ describe("RightPanel", () => {
       },
     });
 
-    const wrapper = shallowMount(RightPanel, {
+    const wrapper = shallowMount(component ?? RightPanel, {
       props: {
         ...props,
       },
@@ -64,7 +67,38 @@ describe("RightPanel", () => {
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "Node dialog cannot be displayed. Please open the configuration from the action bar",
+      "The node can't be configured with a modern dialog",
+    );
+  });
+
+  it("shows download AP link for legacy dialogs in the browser", async () => {
+    vi.resetModules();
+    vi.doMock("@/environment", async () => {
+      const actual = await vi.importActual("@/environment");
+
+      return {
+        ...actual,
+        environment: "BROWSER",
+        isDesktop: false,
+        isBrowser: true,
+      };
+    });
+
+    const RightPanel = (await import("../RightPanel.vue")).default;
+
+    const { wrapper } = doMount(
+      {
+        singleSelectedNodeMock: vi.fn().mockReturnValue({
+          id: 2,
+          kind: "node",
+        }),
+      },
+      RightPanel,
+    );
+
+    expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
+    expect(wrapper.find(".placeholder-text").text()).toBe(
+      "To also configure nodes with a classic dialog, you have to download the KNIME Analytics Platform",
     );
   });
 

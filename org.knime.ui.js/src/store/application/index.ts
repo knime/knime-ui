@@ -78,6 +78,10 @@ export interface ApplicationState {
    * Show the shortcuts overview dialog
    */
   isShortcutsOverviewDialogOpen: boolean;
+  /**
+   * KNIME AP download link
+   */
+  analyticsPlatformDownloadURL: string | null;
 }
 
 /*
@@ -110,6 +114,7 @@ export const state = (): ApplicationState => ({
   nodeRepositoryLoaded: false,
   nodeRepositoryLoadingProgress: null,
   isShortcutsOverviewDialogOpen: false,
+  analyticsPlatformDownloadURL: null,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -160,6 +165,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setIsShortcutsOverviewDialogOpen(state, value) {
     state.isShortcutsOverviewDialogOpen = value;
+  },
+  setAnalyticsPlatformDownloadURL(state, analyticsPlatformDownloadURL) {
+    state.analyticsPlatformDownloadURL = analyticsPlatformDownloadURL;
   },
 };
 
@@ -257,6 +265,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
       commit("setNodeRepositoryLoaded", applicationState.nodeRepositoryLoaded);
+    }
+
+    if (applicationState.analyticsPlatformDownloadURL) {
+      commit(
+        "setAnalyticsPlatformDownloadURL",
+        applicationState.analyticsPlatformDownloadURL,
+      );
     }
   },
 
