@@ -20,7 +20,7 @@ const deleteChatMenuItem = {
   icon: TrashIcon,
   metadata: {
     handler: () =>
-      store.dispatch("chat/clearConversationAndPersistState", {
+      store.dispatch("aiAssistant/clearConversationAndPersistState", {
         chainType: chainType.value,
       }),
   },
