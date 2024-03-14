@@ -142,8 +142,7 @@ const apiLayer: UIExtensionAPILayer = {
   setReportingContent: noop,
   imageGenerated: noop,
   registerPushEventService: () => noop,
-  setSettingsWithCleanModelSettings: noop,
-  setDirtyModelSettings: noop,
+  onDirtyStateChange: noop,
   onApplied: noop,
 };
 

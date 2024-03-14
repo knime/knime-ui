@@ -89,8 +89,7 @@ const apiLayer: UIExtensionAPILayer = {
     return noop;
   },
   sendAlert: noop,
-  setSettingsWithCleanModelSettings: noop,
-  setDirtyModelSettings: noop,
+  onDirtyStateChange: noop,
   onApplied: noop,
 };
 
