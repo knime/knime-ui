@@ -44,8 +44,8 @@ const openNodeConfiguration = () => {
       <div class="placeholder">
         <template v-if="isBrowser">
           <span class="placeholder-text">
-            To also configure nodes with a classic dialog, you have to download
-            the KNIME Analytics Platform
+            To configure nodes with a classic dialog, download the KNIME
+            Analytics Platform.
           </span>
           <Button
             with-border
@@ -58,7 +58,7 @@ const openNodeConfiguration = () => {
         </template>
         <template v-else>
           <span class="placeholder-text">
-            The node can't be configured with a modern dialog
+            This node dialog is not supported here.
           </span>
           <Button with-border class="button" @click="openNodeConfiguration">
             <CogIcon />
@@ -68,7 +68,7 @@ const openNodeConfiguration = () => {
       </div>
     </template>
     <div v-else class="placeholder">
-      <span class="placeholder-text">Please select a node</span>
+      <span class="placeholder-text">Please select a node.</span>
     </div>
   </div>
 </template>

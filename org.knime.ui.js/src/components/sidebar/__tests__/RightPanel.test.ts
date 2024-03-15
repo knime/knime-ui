@@ -53,7 +53,7 @@ describe("RightPanel", () => {
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "Please select a node",
+      "Please select a node.",
     );
   });
 
@@ -67,7 +67,7 @@ describe("RightPanel", () => {
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "The node can't be configured with a modern dialog",
+      "This node dialog is not supported here.",
     );
   });
 
@@ -98,7 +98,7 @@ describe("RightPanel", () => {
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "To also configure nodes with a classic dialog, you have to download the KNIME Analytics Platform",
+      "To configure nodes with a classic dialog, download the KNIME Analytics Platform.",
     );
   });
 
