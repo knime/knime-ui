@@ -18,7 +18,7 @@ try {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
 
         junit '**/test-results/junit.xml'
-        owasp.sendNodeJSSBOMs('5.3.0-beta-0-c2c9a5d6')
+        owasp.sendNodeJSSBOMs(readMavenPom(file: 'pom.xml').properties['revision'])
         // knimetools.processAuditResults()
 
         stage('Sonarqube analysis') {
