@@ -99,6 +99,17 @@
                     </execution>
 
                     <execution>
+                        <id>npm run sbom</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run sbom</arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
                         <id>npm run coverage</id>
                         <phase>test</phase>
                         <goals>
@@ -106,17 +117,6 @@
                         </goals>
                         <configuration>
                             <arguments>run coverage</arguments>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>npm run sbom</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run sbom</arguments>
                         </configuration>
                     </execution>
 
