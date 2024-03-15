@@ -31,6 +31,17 @@ type Keys =
 
 type Modifiers = "Ctrl" | "Alt" | "Shift";
 
+export type ShortcutGroups =
+  | "general"
+  | "panelNavigation"
+  | "workflowEditorModes"
+  | "execution"
+  | "canvasNavigation"
+  | "componentAndMetanode"
+  | "nodeLabels"
+  | "workflowAnnotations"
+  | "workflowEditor";
+
 // creates loose autocomplete by using a union of the passed-in type
 // and the entire `string` set *except* the passed-in type
 type LooseAutoComplete<T extends string> = T | Omit<string, T>;
@@ -77,10 +88,26 @@ export type Shortcut = {
   hotkey?: Hotkeys;
 
   /**
+   * List of key combinations that also trigger the shortcut.
+   */
+  additionalHotkeys?: Array<{ key: Hotkeys; visible: boolean }>;
+
+  /**
    * Text to display for the shortcut or a function that returns dynamic text based on the condition of the shortcut
    * @param payload
    */
   text?: string | ((payload: ShortcutConditionContext) => string);
+
+  /**
+   * A description that will be used for the shortcuts overview, important if the text is a function that depends on
+   * some states or there is no text.
+   */
+  description?: string;
+
+  /**
+   * Group the shortcut for visual representation in the ShortcutOverviewDialog
+   */
+  group?: ShortcutGroups;
 
   /**
    * Tooltip to display for the shortcut (on mouse hover)
@@ -114,7 +141,7 @@ export type ShortcutsService = {
     payload?: ShortcutExecuteContext["payload"],
   ) => void;
   preventDefault: (shortcutName: ShortcutName) => boolean;
-  findByHotkey: (event: KeyboardEvent) => string | null;
+  findByHotkey: (event: KeyboardEvent) => string[];
   get: (shortcutName: ShortcutName) => FormattedShortcut;
 };
 

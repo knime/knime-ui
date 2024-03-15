@@ -52,13 +52,13 @@ describe("Shortcuts Plugin", () => {
     });
 
     describe("hotkeys", () => {
-      it("doesnt find Ctrl-A with [Ctrl-Key]", () => {
+      it("doesn't find Ctrl-A with [Ctrl-Key]", () => {
         expect(
           $shortcuts.findByHotkey({
             ctrlKey: true,
             key: "a",
           }),
-        ).toBeFalsy();
+        ).toStrictEqual([]);
       });
 
       it("find Ctrl-A with [Meta-Key]", () => {
@@ -67,7 +67,7 @@ describe("Shortcuts Plugin", () => {
             metaKey: true,
             key: "a",
           }),
-        ).toBe("selectAll");
+        ).toStrictEqual(["selectAll"]);
       });
 
       it("delete equals Backspace", () => {
@@ -78,7 +78,7 @@ describe("Shortcuts Plugin", () => {
             altKey: true,
             key: "Backspace",
           }),
-        ).toBe("crazyHotkey");
+        ).toStrictEqual(["crazyHotkey"]);
       });
     });
   });
@@ -146,7 +146,7 @@ describe("Shortcuts Plugin", () => {
             altKey: true,
             key: "Delete",
           }),
-        ).toBe("crazyHotkey");
+        ).toStrictEqual(["crazyHotkey"]);
       });
 
       it("find Ctrl-A with [Ctrl-Key]", () => {
@@ -155,16 +155,16 @@ describe("Shortcuts Plugin", () => {
             ctrlKey: true,
             key: "a",
           }),
-        ).toBe("selectAll");
+        ).toStrictEqual(["selectAll"]);
       });
 
-      it("doesnt find Ctrl-A with [Meta-Key]", () => {
+      it("doesn't find Ctrl-A with [Meta-Key]", () => {
         expect(
           $shortcuts.findByHotkey({
             metaKey: true,
             key: "a",
           }),
-        ).toBeFalsy();
+        ).toStrictEqual([]);
       });
     });
   });

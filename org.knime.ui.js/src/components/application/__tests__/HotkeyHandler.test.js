@@ -34,7 +34,7 @@ describe("HotKeys", () => {
 
   beforeEach(() => {
     $shortcuts = {
-      findByHotkey: vi.fn(),
+      findByHotkey: vi.fn().mockReturnValue([]),
       isEnabled: vi.fn(),
       preventDefault: vi.fn(),
       dispatch: vi.fn(),
@@ -85,7 +85,7 @@ describe("HotKeys", () => {
   });
 
   it("shortcut found and is enabled", () => {
-    $shortcuts.findByHotkey.mockReturnValue("shortcut");
+    $shortcuts.findByHotkey.mockReturnValue(["shortcut"]);
     $shortcuts.isEnabled.mockReturnValue(true);
     $shortcuts.preventDefault.mockReturnValue(false);
     doShallowMount();
@@ -103,7 +103,7 @@ describe("HotKeys", () => {
   });
 
   it("no matching shortcut found", () => {
-    $shortcuts.findByHotkey.mockReturnValue(null);
+    $shortcuts.findByHotkey.mockReturnValue([]);
     doShallowMount();
 
     // random key combination
@@ -126,7 +126,7 @@ describe("HotKeys", () => {
   );
 
   it("shortcut found but is not enabled", () => {
-    $shortcuts.findByHotkey.mockReturnValue("shortcut");
+    $shortcuts.findByHotkey.mockReturnValue(["shortcut"]);
     $shortcuts.isEnabled.mockReturnValue(false);
     $shortcuts.preventDefault.mockReturnValue(true);
     doShallowMount();
@@ -143,7 +143,7 @@ describe("HotKeys", () => {
   });
 
   it("shortcut allows event default action", () => {
-    $shortcuts.findByHotkey.mockReturnValue("shortcut");
+    $shortcuts.findByHotkey.mockReturnValue(["shortcut"]);
     $shortcuts.isEnabled.mockReturnValue(false);
     $shortcuts.preventDefault.mockReturnValue(false);
     doShallowMount();

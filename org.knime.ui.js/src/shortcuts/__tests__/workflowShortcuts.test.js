@@ -132,21 +132,23 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("editName", () => {
+    it("editNodeComment ", () => {
       const { $store, mockDispatch } = createStore();
-      workflowShortcuts.editName.execute({ $store });
+      workflowShortcuts.editNodeComment.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openNameEditor",
+        "workflow/openLabelEditor",
         "root:0",
       );
     });
 
-    it("editNodeCommentOrAnnotation", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.editNodeCommentOrAnnotation.execute({ $store });
+    it("editAnnotation ", () => {
+      const { $store, mockDispatch } = createStore({
+        singleSelectedAnnotation: { id: "annotationId1" },
+      });
+      workflowShortcuts.editAnnotation.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openLabelEditor",
-        "root:0",
+        "workflow/setEditableAnnotationId",
+        "annotationId1",
       );
     });
 
@@ -230,43 +232,7 @@ describe("workflowShortcuts", () => {
       ).toBe(true);
     });
 
-    describe("editName", () => {
-      it("cannot rename when workflow is not writable", () => {
-        const { $store } = createStore();
-        $store.getters["selection/singleSelectedNode"].kind = "component";
-        $store.getters["workflow/isWritable"] = false;
-
-        expect(workflowShortcuts.editName.condition({ $store })).toBe(false);
-      });
-
-      it.each([
-        ["component", true],
-        ["metanode", true],
-        ["node", false],
-      ])(
-        'for nodes of kind: "%s" the condition should be "%s"',
-        (kind, conditionValue) => {
-          const { $store } = createStore();
-          $store.getters["workflow/isWritable"] = true;
-          $store.getters["selection/singleSelectedNode"].kind = kind;
-
-          expect(workflowShortcuts.editName.condition({ $store })).toBe(
-            conditionValue,
-          );
-        },
-      );
-
-      it("cannot rename if the selected node is linked", () => {
-        const { $store } = createStore();
-        $store.getters["workflow/isWritable"] = true;
-        $store.getters["selection/singleSelectedNode"].kind = "component";
-        $store.getters["selection/singleSelectedNode"].link = true;
-
-        expect(workflowShortcuts.editName.condition({ $store })).toBe(false);
-      });
-    });
-
-    describe("editNodeCommentOrAnnotation", () => {
+    describe("editNodeComment", () => {
       it("cannot edit label if no node is selected", () => {
         const { $store } = createStore({
           isWorkflowWritable: true,
@@ -274,7 +240,7 @@ describe("workflowShortcuts", () => {
         });
 
         expect(
-          workflowShortcuts.editNodeCommentOrAnnotation.condition({ $store }),
+          workflowShortcuts.editNodeComment.condition({ $store }),
         ).toBeFalsy();
       });
 
@@ -287,9 +253,9 @@ describe("workflowShortcuts", () => {
           },
         });
 
-        expect(
-          workflowShortcuts.editNodeCommentOrAnnotation.condition({ $store }),
-        ).toBe(false);
+        expect(workflowShortcuts.editNodeComment.condition({ $store })).toBe(
+          false,
+        );
       });
     });
 

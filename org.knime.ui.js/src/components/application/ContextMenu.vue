@@ -137,6 +137,7 @@ export default defineComponent({
       "selectedConnections",
       "selectedBendpointIds",
       "singleSelectedNode",
+      "singleSelectedAnnotation",
       "singleSelectedObject",
       "isSelectionEmpty",
     ]),
@@ -461,8 +462,14 @@ export default defineComponent({
         .append(basicOperationsGroup)
         .append(
           this.mapToShortcut({
-            name: "editNodeCommentOrAnnotation",
-            isVisible: this.singleSelectedObject,
+            name: "editNodeComment",
+            isVisible: this.singleSelectedNode,
+          }),
+        )
+        .append(
+          this.mapToShortcut({
+            name: "editAnnotation",
+            isVisible: this.singleSelectedAnnotation,
           }),
         )
         .append(emptySelectionGroup)

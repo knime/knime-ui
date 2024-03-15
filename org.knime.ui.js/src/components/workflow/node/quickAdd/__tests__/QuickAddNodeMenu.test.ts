@@ -178,7 +178,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     const $shortcuts = {
       isEnabled: vi.fn().mockReturnValue(true),
-      findByHotkey: vi.fn().mockReturnValue("quickAddNode"),
+      findByHotkey: vi.fn().mockReturnValue(["quickAddNode"]),
       dispatch: vi.fn(),
     };
 

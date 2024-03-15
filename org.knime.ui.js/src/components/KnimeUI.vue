@@ -10,6 +10,7 @@ import Error from "@/components/application/Error.vue";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import BlockUi from "@/components/application/BlockUi.vue";
+import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 
 type ComponentData = {
   loaded: boolean;
@@ -34,6 +35,7 @@ export default defineComponent({
     CreateWorkflowModal,
     ToastStack,
     DynamicEnvRenderer,
+    ShortcutsOverviewDialog,
   },
 
   data(): ComponentData {
@@ -170,6 +172,8 @@ export default defineComponent({
     />
 
     <CreateWorkflowModal />
+
+    <ShortcutsOverviewDialog />
 
     <ToastStack class="toast-stack" />
 

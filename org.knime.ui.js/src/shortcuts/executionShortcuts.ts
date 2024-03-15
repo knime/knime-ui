@@ -43,7 +43,6 @@ type ExecutionShortcuts = UnionToShortcutRegistry<
   | "resetAll"
   | "executeSelected"
   | "executeAndOpenView"
-  | "executeAndOpenViewShortcutAlternative"
   | "cancelSelected"
   | "resetSelected"
   | "resumeLoopExecution"
@@ -60,6 +59,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Execute all",
     title: "Execute workflow",
     hotkey: ["Shift", "F7"],
+    group: "execution",
     icon: ExecuteAllIcon,
     execute: ({ $store }) => $store.dispatch("workflow/executeNodes", "all"),
     condition: ({ $store }) =>
@@ -69,6 +69,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Cancel all",
     title: "Cancel workflow execution",
     hotkey: ["Shift", "F9"],
+    group: "execution",
     icon: CancelAllIcon,
     execute: ({ $store }) =>
       $store.dispatch("workflow/cancelNodeExecution", "all"),
@@ -79,6 +80,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Reset all",
     title: "Reset executed nodes",
     hotkey: ["Shift", "F8"],
+    group: "execution",
     icon: ResetAllIcon,
     execute: ({ $store }) => $store.dispatch("workflow/resetNodes", "all"),
     condition: ({ $store }) =>
@@ -90,6 +92,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Execute",
     title: "Execute selected nodes",
     hotkey: ["F7"],
+    group: "execution",
     icon: ExecuteSelectedIcon,
     execute: ({ $store, payload = {} }) => {
       const selectedNodeId = payload?.metadata?.nodeId
@@ -107,18 +110,11 @@ const executionShortcuts: ExecutionShortcuts = {
       $store.getters["selection/singleSelectedNode"].allowedActions.canExecute
         ? "Execute and open view"
         : "Open view",
+    description: "Open view",
     hotkey: ["F10"],
+    group: "execution",
+    additionalHotkeys: [{ key: ["Shift", "F10"], visible: true }],
     icon: OpenViewIcon,
-    execute: executeAndOpenViewHelper,
-    condition: canExecuteAndOpenView,
-  },
-  /**
-   * (This shortcut should not be used anywhere, see executeAndOpenView)
-   *
-   * The only purpose of this is to add the second hotkey for executeAndOpenView.
-   */
-  executeAndOpenViewShortcutAlternative: {
-    hotkey: ["Shift", "F10"],
     execute: executeAndOpenViewHelper,
     condition: canExecuteAndOpenView,
   },
@@ -126,6 +122,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Cancel",
     title: "Cancel selected nodes",
     hotkey: ["F9"],
+    group: "execution",
     icon: CancelSelectedIcon,
     execute: ({ $store, payload = {} }) => {
       const selectedNodeId = payload?.metadata?.nodeId
@@ -142,6 +139,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Reset",
     title: "Reset selected nodes",
     hotkey: ["F8"],
+    group: "execution",
     icon: ResetSelectedIcon,
     execute: ({ $store, payload = {} }) => {
       const selectedNodeId = payload?.metadata?.nodeId
@@ -160,6 +158,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Resume loop",
     title: "Resume loop execution",
     hotkey: ["Ctrl", "Alt", "F8"],
+    group: "execution",
     icon: ResumeLoopIcon,
     execute: ({ $store, payload = {} }) => {
       const selectedNodeId =
@@ -175,6 +174,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Pause loop",
     title: "Pause loop execution",
     hotkey: ["Ctrl", "Alt", "F7"],
+    group: "execution",
     icon: PauseLoopIcon,
     execute: ({ $store, payload = {} }) => {
       const selectedNodeId =
@@ -190,6 +190,7 @@ const executionShortcuts: ExecutionShortcuts = {
     text: "Step loop",
     title: "Execute one loop step",
     hotkey: ["Ctrl", "Alt", "F6"],
+    group: "execution",
     icon: StepLoopIcon,
     execute: ({ $store, payload = {} }) => {
       const selectedNodeId =

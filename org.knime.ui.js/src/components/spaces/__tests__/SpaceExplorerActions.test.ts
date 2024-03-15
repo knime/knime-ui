@@ -45,7 +45,6 @@ describe("SpaceExplorerActions.vue", () => {
       global: {
         plugins: [store],
         mocks: { $shortcuts: { get: vi.fn(() => ({})) } },
-        stubs: { teleport: true },
       },
     });
 

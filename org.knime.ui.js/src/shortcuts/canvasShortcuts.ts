@@ -7,7 +7,6 @@ type CanvasShortcuts = UnionToShortcutRegistry<
   | "fitToScreen"
   | "fillScreen"
   | "zoomIn"
-  | "zoomInAlternative"
   | "zoomOut"
   | "zoomTo75"
   | "zoomTo100"
@@ -27,25 +26,26 @@ const canvasShortcuts: CanvasShortcuts = {
   fitToScreen: {
     text: "Fit to screen",
     hotkey: ["Ctrl", "2"],
+    group: "canvasNavigation",
     execute: ({ $store }) => $store.dispatch("canvas/fitToScreen"),
   },
   fillScreen: {
     text: "Fill entire screen",
     hotkey: ["Ctrl", "1"],
+    group: "canvasNavigation",
     execute: ({ $store }) => $store.dispatch("canvas/fillScreen"),
   },
   zoomIn: {
     text: "Zoom in",
     hotkey: ["Ctrl", "+"],
-    execute: zoomInHelper,
-  },
-  zoomInAlternative: {
-    hotkey: ["Shift", "Ctrl", "="],
+    group: "canvasNavigation",
+    additionalHotkeys: [{ key: ["Shift", "Ctrl", "="], visible: false }],
     execute: zoomInHelper,
   },
   zoomOut: {
     text: "Zoom out",
     hotkey: ["Ctrl", "-"],
+    group: "canvasNavigation",
     execute: throttle(({ $store }) => {
       $store.dispatch("canvas/zoomCentered", { delta: -1 });
     }),
@@ -58,6 +58,7 @@ const canvasShortcuts: CanvasShortcuts = {
   zoomTo100: {
     text: "Zoom to 100%",
     hotkey: ["Ctrl", "0"],
+    group: "canvasNavigation",
     execute: ({ $store }) =>
       $store.dispatch("canvas/zoomCentered", { factor: 1 }),
   },

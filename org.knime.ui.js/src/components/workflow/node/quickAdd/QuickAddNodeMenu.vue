@@ -242,7 +242,7 @@ export default defineComponent({
     },
     searchHandleShortcuts(e: KeyboardEvent) {
       // bypass disabled shortcuts for <input> elements only for the quick add node
-      let shortcut = this.$shortcuts.findByHotkey(e);
+      let [shortcut = null] = this.$shortcuts.findByHotkey(e);
       if (shortcut === "quickAddNode" && this.$shortcuts.isEnabled(shortcut)) {
         this.$shortcuts.dispatch(shortcut);
         e.preventDefault();

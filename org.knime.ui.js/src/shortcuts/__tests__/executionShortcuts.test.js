@@ -70,23 +70,6 @@ describe("executionShortcuts", () => {
         );
       });
 
-      it("executeAndOpenView alternate shortcut", async () => {
-        $store.getters["selection/singleSelectedNode"] = {
-          id: "root:0",
-          allowedActions: {
-            canExecute: true,
-            canOpenView: true,
-          },
-        };
-        await executionShortcuts.executeAndOpenViewShortcutAlternative.execute({
-          $store,
-        });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/executeNodeAndOpenView",
-          "root:0",
-        );
-      });
-
       it("executeAndOpenView with passed nodeId", async () => {
         $store.getters["selection/singleSelectedNode"] = {
           id: "root:0",

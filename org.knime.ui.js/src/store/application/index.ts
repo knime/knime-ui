@@ -73,6 +73,11 @@ export interface ApplicationState {
     progress: number;
     extensionName: string;
   } | null;
+
+  /**
+   * Show the shortcuts overview dialog
+   */
+  isShortcutsOverviewDialogOpen: boolean;
 }
 
 /*
@@ -104,6 +109,7 @@ export const state = (): ApplicationState => ({
 
   nodeRepositoryLoaded: false,
   nodeRepositoryLoadingProgress: null,
+  isShortcutsOverviewDialogOpen: false,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -151,6 +157,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setNodeRepositoryLoadingProgress(state, nodeRepositoryLoadingProgress) {
     state.nodeRepositoryLoadingProgress = nodeRepositoryLoadingProgress;
+  },
+  setIsShortcutsOverviewDialogOpen(state, value) {
+    state.isShortcutsOverviewDialogOpen = value;
   },
 };
 
