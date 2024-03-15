@@ -34,6 +34,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         id: spaceProviderId,
         value: { ...spaceProvider, ...spacesData },
       });
+      return spacesData;
     } catch (error) {
       consola.error("Error connecting to provider", { error });
       throw error;

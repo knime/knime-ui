@@ -40,20 +40,11 @@ const isProviderMetadata = (
   return "active" in metadata;
 };
 
-const onSpaceChange = async ({
-  metadata,
-}: MenuItemWithMetadata<SpaceMetadata>) => {
-  const { projectId } = props;
-
-  const { spaceId, spaceProviderId, requestSignIn = false } = metadata!;
-
-  // handle sign in request
-  if (requestSignIn) {
-    await store.dispatch("spaces/connectProvider", { spaceProviderId });
-    return;
-  }
-
-  // set project path and re-fetch content
+const setProjectPathAndLoadWorkflowGroupContent = async (
+  projectId: string,
+  spaceProviderId: string,
+  spaceId: string,
+) => {
   store.commit("spaces/setProjectPath", {
     projectId,
     value: {
@@ -62,8 +53,42 @@ const onSpaceChange = async ({
       itemId: "root",
     },
   });
-
   await store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
+};
+
+const onSpaceChange = async ({
+  metadata,
+}: MenuItemWithMetadata<SpaceMetadata>) => {
+  const { projectId } = props;
+
+  const { spaceId, spaceProviderId, requestSignIn = false } = metadata!;
+
+  // just load content if we are already connected
+  if (!requestSignIn) {
+    await setProjectPathAndLoadWorkflowGroupContent(
+      projectId,
+      spaceProviderId!,
+      spaceId!,
+    );
+    return;
+  }
+
+  // handle sign in request
+  const { spaces: [firstSpace = null] = [] } = await store.dispatch(
+    "spaces/connectProvider",
+    {
+      spaceProviderId,
+    },
+  );
+
+  // change to first space if we have one
+  if (firstSpace) {
+    await setProjectPathAndLoadWorkflowGroupContent(
+      projectId,
+      spaceProviderId!,
+      firstSpace.id,
+    );
+  }
 };
 
 const activeSpacePath = computed(
