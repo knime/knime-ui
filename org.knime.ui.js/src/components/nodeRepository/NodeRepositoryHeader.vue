@@ -13,6 +13,8 @@ import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
 import CloseableTagList from "./CloseableTagList.vue";
 
+import { isDesktop } from "@/environment";
+
 const store = useStore();
 
 const searchIsActive = computed(
@@ -25,6 +27,9 @@ const displayMode = computed(
 );
 const hasNodeCollectionActive = computed(
   () => store.state.application.hasNodeCollectionActive,
+);
+const activeNodeCollection = computed(
+  () => store.state.application.activeNodeCollection,
 );
 const nodeRepositoryLoaded = computed(
   () => store.state.application.nodeRepositoryLoaded,
@@ -84,6 +89,7 @@ const openKnimeUIPreferencePage = () => {
             <ListIconCheck v-else class="list-icon" />
           </FunctionButton>
           <FunctionButton
+            v-if="isDesktop"
             class="filter-button"
             title="Open search filters"
             :disabled="!nodeRepositoryLoaded"
@@ -101,7 +107,9 @@ const openKnimeUIPreferencePage = () => {
         :model-value="store.state.nodeRepository.query"
         :disabled="!nodeRepositoryLoaded"
         :placeholder="
-          hasNodeCollectionActive ? 'Search starter nodes' : 'Search all nodes'
+          hasNodeCollectionActive
+            ? `Search in ${activeNodeCollection} nodes`
+            : 'Search all nodes'
         "
         class="search-bar"
         @clear="store.dispatch('nodeRepository/clearSearchParams')"

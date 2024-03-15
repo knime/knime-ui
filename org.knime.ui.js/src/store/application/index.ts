@@ -251,6 +251,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       }
     }
 
+    if (applicationState.hasOwnProperty("activeNodeCollection")) {
+      commit("setActiveNodeCollection", applicationState.activeNodeCollection);
+    }
+
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
     if (applicationState.hasOwnProperty("devMode")) {
       commit("setDevMode", applicationState.devMode);

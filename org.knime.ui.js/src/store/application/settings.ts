@@ -17,6 +17,12 @@ interface State {
    */
   hasNodeCollectionActive: null;
   /**
+   * Name of the currently active node collection.
+   * @type {string}
+   * @memberof AppState
+   */
+  activeNodeCollection: string;
+  /**
    * If true, the mouse wheel should be used for zooming instead of scrolling
    */
   scrollToZoomEnabled: boolean;
@@ -34,6 +40,7 @@ export const state = (): State => ({
   hasClipboardSupport: false,
   hasNodeRecommendationsEnabled: false,
   hasNodeCollectionActive: null,
+  activeNodeCollection: "",
   scrollToZoomEnabled: false,
   devMode: false,
 });
@@ -50,6 +57,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setHasNodeCollectionActive(state, hasNodeCollectionActive) {
     state.hasNodeCollectionActive = hasNodeCollectionActive;
+  },
+  setActiveNodeCollection(state, activeNodeCollection) {
+    state.activeNodeCollection = activeNodeCollection;
   },
   setDevMode(state, devMode) {
     state.devMode = devMode;

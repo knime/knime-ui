@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRefs, nextTick } from "vue";
+import { useStore } from "vuex";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
+import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
@@ -10,6 +12,7 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { isDesktop } from "@/environment";
 
 export type SearchActions = {
   searchNodesNextPage: () => Promise<any>;
@@ -63,6 +66,10 @@ const searchHubLink = computed(
     `https://hub.knime.com/search?q=${encodeURIComponent(
       query.value,
     )}&type=all&src=knimeappmodernui`,
+);
+const store = useStore();
+const analyticsPlatformDownloadURL = computed(
+  () => store.state.application.analyticsPlatformDownloadURL,
 );
 
 const onSaveScrollPosition = (position: number) => {
@@ -124,18 +131,35 @@ defineExpose({ focusFirst });
       <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
         <CircleInfoIcon class="info-icon" />
         <div class="filtered-nodes-content">
-          <span
-            >Change filter settings to “All nodes“ to see more advanced nodes
-            matching your search criteria.</span
-          >
-          <Button
-            primary
-            compact
-            class="filtered-nodes-button"
-            @click="emit('openPreferences')"
-          >
-            <FilterCheckIcon />Change filter settings
-          </Button>
+          <template v-if="isDesktop">
+            <span
+              >Change filter settings to “All nodes“ to see more advanced nodes
+              matching your search criteria.</span
+            >
+            <Button
+              primary
+              compact
+              class="filtered-nodes-button"
+              @click="emit('openPreferences')"
+            >
+              <FilterCheckIcon />Change filter settings
+            </Button>
+          </template>
+          <template v-else>
+            <span>
+              If you want to work with more nodes, please download desktop
+              AP.</span
+            >
+            <Button
+              primary
+              compact
+              class="filtered-nodes-button"
+              :href="analyticsPlatformDownloadURL"
+              target="_blank"
+            >
+              <LinkExternalIcon />Go to download page
+            </Button>
+          </template>
         </div>
       </div>
       <div v-else-if="isNodeListEmpty" class="filtered-nodes-wrapper">
@@ -273,6 +297,7 @@ defineExpose({ focusFirst });
     }
 
     & .filtered-nodes-button {
+      text-decoration: none;
       margin-top: 15px;
       font-weight: 500;
     }
