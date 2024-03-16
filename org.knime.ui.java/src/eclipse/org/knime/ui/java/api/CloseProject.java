@@ -52,6 +52,8 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.ui.IPartListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -72,7 +74,32 @@ import org.knime.workbench.editor2.WorkflowEditor;
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class CloseProject {
+public final class CloseProject {
+
+    public static final IPartListener LISTENER = new IPartListener() {
+
+        @Override
+        public void partActivated(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partBroughtToTop(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partDeactivated(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partOpened(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partClosed(final IWorkbenchPart part) {
+            if (!PerspectiveUtil.isClassicPerspectiveActive() && part instanceof WorkflowEditor editor) {
+                editor.getWorkflowManager() //
+                    .map(WorkflowManager::getNameWithID) //
+                    .filter(id -> ProjectManager.getInstance().getProject(id).isPresent()) //
+                    .ifPresent(CloseProject::onProjectClosedInClassicUI);
+            }
+        }
+    };
 
     private CloseProject() {
         // utility
@@ -151,23 +178,31 @@ final class CloseProject {
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         // Since we are closing the editor of the root workflow manager, this will also close any editors
         //  of child workflow managers.
-        var wasClosed = page.closeEditor(editorToClose, save);
-        if (wasClosed) {
-            var wpm = ProjectManager.getInstance();
-            wpm.removeProject(projectIdToClose, w -> {});
 
+        // We can't rely on the return type of `IWorkbenchPage::closeEditor` because the `WorkflowEditor` returns
+        // `false` if an upload is triggered when saving. We close the project via event from the `WorkbenchPage`
+        // instead (happens during the `closeEditor` call) and only check the result here.
+        page.closeEditor(editorToClose, save);
+
+        var wpm = ProjectManager.getInstance();
+        final var wasClosed = wpm.getProject(projectIdToClose).isEmpty();
+        if (wasClosed && nextProjectId != null) {
             // Workaround for keeping the classic and Web UI's editors/tabs in sync
-            if (nextProjectId != null) {
-                wpm.openAndCacheProject(nextProjectId);
-                wpm.setProjectActive(nextProjectId);
-                ClassicWorkflowEditorUtil.setEditorPartActive(getEditorPart(nextProjectId));
-            }
-
-            // triggers sending event
+            wpm.openAndCacheProject(nextProjectId);
+            wpm.setProjectActive(nextProjectId);
+            ClassicWorkflowEditorUtil.setEditorPartActive(getEditorPart(nextProjectId));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
 
         return wasClosed;
+    }
+
+    private static void onProjectClosedInClassicUI(final String projectIdToClose) {
+        var wpm = ProjectManager.getInstance();
+        wpm.removeProject(projectIdToClose, w -> {});
+
+        // triggers sending event
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
     }
 
     private static WorkflowEditor getEditor(final String projectId) {

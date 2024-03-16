@@ -49,11 +49,13 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
+import org.knime.ui.java.api.CloseProject;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -77,6 +79,10 @@ final class Suspend {
         KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            final var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            page.removePartListener(CloseProject.LISTENER);
+        }
         return new LifeCycleStateInternalAdapter(state) {
 
             @Override

@@ -66,6 +66,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.util.auth.CouldNotAuthorizeException;
@@ -96,6 +97,7 @@ import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
+import org.knime.ui.java.api.CloseProject;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
@@ -103,6 +105,7 @@ import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.NodeCollectionUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
@@ -206,6 +209,10 @@ final class Init {
             spaceProviders.update();
             SpaceProvidersUtil.sendSpaceProvidersChangedEvent(spaceProviders, eventConsumer);
         });
+        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            final var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            page.addPartListener(CloseProject.LISTENER);
+        }
     }
 
     private static NodeRepository createNodeRepository(final NodeCollections nodeCollections) {
