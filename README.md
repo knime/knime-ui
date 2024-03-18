@@ -1,7 +1,7 @@
 # KNIME® UI
 
 [![Jenkins](https://jenkins.knime.com/buildStatus/icon?job=knime-ui%2Fmaster)](https://jenkins.knime.com/job/knime-ui/job/master/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=KNIME_knime-ui&metric=alert_status&token=55129ac721eacd76417f57921368ed587ad8339d)](https://sonarcloud.io/summary/new_code?id=KNIME_knime-ui)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=KNIME_knime-ui&metric=alert_status&token=6dd09ad12d87fcd2d43df6123ef188c3e034b984)](https://sonarcloud.io/summary/new_code?id=KNIME_knime-ui)
 
 This repository is maintained by the [KNIME UI Development Team](mailto:team-ap-next@knime.com).
 
