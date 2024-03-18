@@ -114,7 +114,14 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
     group: "workflowEditor",
   },
   {
-    hotkey: ["Shift", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"],
+    hotkey: [
+      "Shift",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+      "Enter",
+    ],
     description: "Select multiple elements",
     group: "workflowEditor",
   },

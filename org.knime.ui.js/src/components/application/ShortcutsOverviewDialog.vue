@@ -6,6 +6,7 @@ import Modal from "webapps-common/ui/components/Modal.vue";
 import shortcuts from "@/shortcuts";
 import type { FormattedShortcut, ShortcutGroups } from "@/shortcuts/types";
 import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
+import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
 import { groupBy } from "lodash-es";
 import otherHotkeys from "@/shortcuts/otherHotkeys";
@@ -92,7 +93,10 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
             :key="shortcutIndex"
             class="shortcut"
           >
-            <span>{{ getText(shortcut) }}</span>
+            <span>
+              <ArrowRightIcon class="arrow" />
+              {{ getText(shortcut) }}
+            </span>
 
             <div class="hotkeys">
               <div class="hotkey">
@@ -116,6 +120,8 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .modal {
   --modal-width: 900px;
 
@@ -165,8 +171,22 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
     grid-template-columns: auto max-content;
     align-items: center;
     padding: 0 5px;
+    position: relative;
+
+    & .arrow {
+      @mixin svg-icon-size 12;
+
+      display: none;
+      position: absolute;
+      left: -11px;
+      stroke: var(--knime-black);
+    }
 
     &:hover {
+      & .arrow {
+        display: block;
+      }
+
       & > span {
         color: var(--knime-black);
       }
