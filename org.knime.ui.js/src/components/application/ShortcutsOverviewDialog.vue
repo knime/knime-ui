@@ -202,9 +202,10 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
       display: flex;
       flex-direction: column;
       line-height: 30px;
-      white-space: nowrap;
+      white-space: pre-wrap;
 
       & .hotkey {
+        text-align: right;
         margin-left: auto;
       }
 

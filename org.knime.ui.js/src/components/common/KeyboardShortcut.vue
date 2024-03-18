@@ -6,13 +6,36 @@ interface Props {
   hotkey: Hotkeys | string[];
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const isText = (keyOrText: string) => {
+  return keyOrText.startsWith("[") && keyOrText.endsWith("]");
+};
+
+const asText = (text: string) => {
+  return text.substring(1, text.length - 1).replace("\n", "");
+};
+
+const nextItem = (index: number) => {
+  return (props.hotkey.at(index + 1) ?? "") as string;
+};
+
+const isLast = (index: number) => {
+  return index === props.hotkey.length - 1;
+};
 </script>
 
 <template>
-  <template v-for="(key, index) of mapKeyFormat(hotkey)" :key="index">
-    <kbd>{{ key }}</kbd>
-    <span v-if="index !== hotkey!.length - 1"> {{ getSeparator() }}</span>
+  <template v-for="(keyOrText, index) of mapKeyFormat(hotkey)" :key="index">
+    <template v-if="isText(keyOrText)">
+      <span class="text">{{ asText(keyOrText) }}</span>
+    </template>
+    <template v-else>
+      <kbd>{{ keyOrText }}</kbd>
+      <span v-if="!isLast(index) && !isText(nextItem(index))">
+        {{ getSeparator() }}
+      </span>
+    </template>
   </template>
 </template>
 
@@ -26,6 +49,10 @@ kbd {
   vertical-align: middle;
   font-size: inherit;
   font-family: Roboto, sans-serif;
+}
+
+.text {
+  padding: 0 3px;
 }
 
 span {
