@@ -16,6 +16,8 @@ describe("NodeRepositoryHeader", () => {
     selectedTags = null,
     query = null,
     nodeRepositoryLoadedMock = true,
+    hasNodeCollectionActiveMock = null,
+    activeNodeCollectionMock = "",
   } = {}) => {
     const searchNodesMock = vi.fn();
     const setSelectedTagsMock = vi.fn();
@@ -71,6 +73,8 @@ describe("NodeRepositoryHeader", () => {
         state: {
           activeProjectId: "project1",
           nodeRepositoryLoaded: nodeRepositoryLoadedMock,
+          hasNodeCollectionActive: hasNodeCollectionActiveMock,
+          activeNodeCollection: activeNodeCollectionMock,
         },
       },
     });
@@ -183,6 +187,17 @@ describe("NodeRepositoryHeader", () => {
         { id: "clear", text: "Nodes" },
         { text: "Results" },
       ]);
+    });
+
+    it("uses collection name when a collection is active", () => {
+      const activeNodeCollectionMock = "Test Collection";
+      const { wrapper } = doMount({
+        hasNodeCollectionActiveMock: "test",
+        activeNodeCollectionMock,
+      });
+      expect(wrapper.findComponent(SearchBar).props("placeholder")).includes(
+        activeNodeCollectionMock,
+      );
     });
   });
 });
