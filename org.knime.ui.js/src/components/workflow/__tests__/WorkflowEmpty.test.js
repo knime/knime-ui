@@ -1,5 +1,9 @@
 import { expect, describe, it } from "vitest";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
+
+import ArrowDownIcon from "webapps-common/ui/assets/img/icons/arrow-down.svg";
+import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import WorkflowEmpty from "../WorkflowEmpty.vue";
@@ -17,22 +21,42 @@ describe("WorkflowEmpty", () => {
           containerSize,
         },
       },
+      application: {
+        state: {
+          permissions: { canEditWorkflow: true },
+        },
+      },
     };
 
     const $store = mockVuexStore(storeConfig);
-    return shallowMount(WorkflowEmpty, { global: { plugins: [$store] } });
+    const wrapper = shallowMount(WorkflowEmpty, {
+      global: { plugins: [$store] },
+    });
+    return { wrapper, $store };
   };
 
-  it("renders text", () => {
-    const wrapper = doShallowMount();
+  it("renders correctly", () => {
+    const { wrapper } = doShallowMount();
 
     expect(wrapper.text()).toMatch(
       "Start building your workflow by dropping your data or nodes here.",
     );
+    expect(wrapper.findComponent(ArrowDownIcon).exists()).toBe(true);
+  });
+
+  it("renders correctly (job viewer)", async () => {
+    const { wrapper, $store } = doShallowMount();
+
+    $store.state.application.permissions.canEditWorkflow = false;
+
+    await nextTick();
+
+    expect(wrapper.text()).toMatch("This workflow is empty.");
+    expect(wrapper.findComponent(CircleInfoIcon).exists()).toBe(true);
   });
 
   it("calculates width and height of rect based on size of the viewBox", () => {
-    const wrapper = doShallowMount();
+    const { wrapper } = doShallowMount();
 
     let rectangleProps = wrapper.find("rect").attributes();
     expect(Number(rectangleProps.x)).toBe(-500 + 25);
