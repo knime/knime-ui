@@ -8,7 +8,24 @@ export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
   return {
-    plugins: [vue(), svgLoader()],
+    plugins: [
+      vue(),
+      svgLoader({
+        svgoConfig: {
+          plugins: [
+            {
+              name: "preset-default",
+              params: {
+                overrides: {
+                  // disable converting lines to paths as it breaks our 'dots' and might also introduce stroke-width attributes
+                  convertShapeToPath: false,
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ],
 
     build: {
       target: "esnext",
@@ -46,7 +63,7 @@ export default defineConfig(({ mode }) => {
       reporters: ["default", "junit"],
       alias: {
         "@api": fileURLToPath(
-          new URL("./src/api/__mocks__/index.ts", import.meta.url)
+          new URL("./src/api/__mocks__/index.ts", import.meta.url),
         ),
       },
       coverage: {

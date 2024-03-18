@@ -1,38 +1,40 @@
-<script>
-import { mapState } from "vuex";
-import ArrowDown from "webapps-common/ui/assets/img/icons/arrow-down.svg";
+<script setup lang="ts">
+import { computed } from "vue";
+import ArrowDownIcon from "webapps-common/ui/assets/img/icons/arrow-down.svg";
+import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
+
+import { useStore } from "@/composables/useStore";
 import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
-export default {
-  components: {
-    ArrowDown,
-    WorkflowPortalLayers,
-  },
-  computed: {
-    ...mapState("canvas", ["containerSize"]),
-    bounds() {
-      const { height, width } = this.containerSize;
+const store = useStore();
 
-      // When showing this empty workflow, the origin (0,0) is exactly in the center of the canvas
-      return {
-        left: -width / 2,
-        top: -height / 2,
-        width,
-        height,
-      };
-    },
-    rectangleBounds() {
-      const padding = 25;
+const canEditWorkflow = computed(
+  () => store.state.application.permissions.canEditWorkflow,
+);
 
-      return {
-        left: this.bounds.left + padding,
-        top: this.bounds.top + padding,
-        height: Math.max(this.bounds.height - 2 * padding, 0),
-        width: Math.max(this.bounds.width - 2 * padding, 0),
-      };
-    },
-  },
-};
+const bounds = computed(() => {
+  const { containerSize } = store.state.canvas;
+  const { height, width } = containerSize;
+
+  // When showing this empty workflow, the origin (0,0) is exactly in the center of the canvas
+  return {
+    left: -width / 2,
+    top: -height / 2,
+    width,
+    height,
+  };
+});
+
+const rectangleBounds = computed(() => {
+  const padding = 25;
+
+  return {
+    left: bounds.value.left + padding,
+    top: bounds.value.top + padding,
+    height: Math.max(bounds.value.height - 2 * padding, 0),
+    width: Math.max(bounds.value.width - 2 * padding, 0),
+  };
+});
 </script>
 
 <template>
@@ -42,23 +44,41 @@ export default {
       :y="rectangleBounds.top"
       :width="rectangleBounds.width"
       :height="rectangleBounds.height"
+      :class="{ dashed: canEditWorkflow }"
     />
-    <ArrowDown height="64" width="64" x="-32" y="-99" />
-    <text y="-9">Start building your workflow by dropping</text>
-    <text y="27"> your data or nodes here.</text>
+
+    <Component
+      :is="canEditWorkflow ? ArrowDownIcon : CircleInfoIcon"
+      height="64"
+      width="64"
+      x="-32"
+      y="-99"
+    />
+
+    <template v-if="canEditWorkflow">
+      <text y="-9">Start building your workflow by dropping</text>
+      <text y="27"> your data or nodes here.</text>
+    </template>
+
+    <template v-else>
+      <text y="0">This workflow is empty.</text>
+    </template>
 
     <!-- Define all Portals also for the empty workflow because some features rely on them -->
-    <WorkflowPortalLayers />
+    <WorkflowPortalLayers v-if="canEditWorkflow" />
   </g>
 </template>
 
 <style lang="postcss" scoped>
 rect {
   fill: none;
-  stroke-width: 3;
-  stroke: var(--knime-gray-dark-semi);
-  stroke-linecap: square;
-  stroke-dasharray: 9 19;
+
+  &.dashed {
+    stroke-width: 3;
+    stroke: var(--knime-gray-dark-semi);
+    stroke-linecap: square;
+    stroke-dasharray: 9 19;
+  }
 }
 
 svg {
