@@ -147,9 +147,9 @@ defineExpose({ focusFirst });
           </template>
           <template v-else>
             <span>
-              If you want to work with more nodes, please download desktop
-              AP.</span
-            >
+              There are no available matching nodes. To work with more nodes,
+              download the KNIME Analytics Platform.
+            </span>
             <Button
               primary
               compact
@@ -157,7 +157,7 @@ defineExpose({ focusFirst });
               :href="analyticsPlatformDownloadURL"
               target="_blank"
             >
-              <LinkExternalIcon />Go to download page
+              <LinkExternalIcon />Download KNIME Analytics Platform
             </Button>
           </template>
         </div>
