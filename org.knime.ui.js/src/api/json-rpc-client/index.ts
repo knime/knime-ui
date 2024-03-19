@@ -109,8 +109,8 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
 
     const headline = isSessionExpired ? "Session expired" : "Connection lost";
     const message = isSessionExpired
-      ? "Refresh the page to reactivate the session"
-      : "We lost connection and you need to try to open and inspect again.";
+      ? "Refresh the page to reactivate the session."
+      : "Connection lost. Try again later.";
 
     onConnectionLost(headline, message);
   });
