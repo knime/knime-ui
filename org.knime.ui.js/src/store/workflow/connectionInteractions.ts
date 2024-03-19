@@ -61,24 +61,25 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  async addBendpoint({ state, commit }, { connectionId, index, position }) {
+  async addBendpoint(
+    { state, commit, dispatch },
+    { connectionId, index, position },
+  ) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-
-    const translation = {
-      x: state.movePreviewDelta.x,
-      y: state.movePreviewDelta.y,
-    };
 
     await API.workflowCommand.AddBendpoint({
       projectId,
       workflowId,
       connectionId,
       position: {
-        x: position.x + translation.x,
-        y: position.y + translation.y,
+        x: position.x,
+        y: position.y,
       },
       index,
     });
+
+    // move new bendpoint
+    await dispatch("moveObjects");
 
     commit("removeVirtualBendpoint", { connectionId, index });
   },
