@@ -3,21 +3,22 @@ import type { HotkeyText, Hotkeys } from "@/shortcuts/types";
 import { mapKeyFormat, getSeparator } from "@/util/formatHotkeys";
 
 interface Props {
-  hotkey: Hotkeys | string[];
+  hotkey: Hotkeys;
 }
 
 const props = defineProps<Props>();
 
-const isText = (keyOrText: string | HotkeyText) => {
+const isText = (keyOrText: Hotkeys[number]): keyOrText is HotkeyText => {
   return typeof keyOrText !== "string" && keyOrText.hasOwnProperty("text");
 };
 
-const getText = (keyOrText: string | HotkeyText) => {
+const getText = (keyOrText: Hotkeys[number]) => {
   return (keyOrText as HotkeyText).text;
 };
 
-const nextItem = (index: number) => {
-  return (props.hotkey.at(index + 1) ?? "") as string;
+const isNextItemText = (index: number) => {
+  const item = props.hotkey.at(index + 1);
+  return item ? isText(item) : false;
 };
 
 const isLast = (index: number) => {
@@ -32,7 +33,7 @@ const isLast = (index: number) => {
     </template>
     <template v-else>
       <kbd>{{ keyOrText }}</kbd>
-      <span v-if="!isLast(index) && !isText(nextItem(index))">
+      <span v-if="!isLast(index) && !isNextItemText(index)">
         {{ getSeparator() }}
       </span>
     </template>
