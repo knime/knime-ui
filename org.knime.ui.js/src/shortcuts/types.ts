@@ -46,8 +46,9 @@ export type ShortcutGroups =
 // and the entire `string` set *except* the passed-in type
 type LooseAutoComplete<T extends string> = T | Omit<string, T>;
 
+export type HotkeyText = { text: string };
 export type Hotkey = Keys | Modifiers;
-export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers>>;
+export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers> | HotkeyText>;
 
 // export type Hotkey = LooseAutoComplete<Keys | Modifiers>;
 // export type Hotkeys = Array<Hotkey>;

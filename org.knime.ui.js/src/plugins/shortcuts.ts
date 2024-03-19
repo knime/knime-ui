@@ -8,6 +8,7 @@ import type {
   ShortcutsService,
   FormattedShortcut,
   Hotkeys,
+  Hotkey,
 } from "@/shortcuts/types";
 import { formatHotkeys } from "@/util/formatHotkeys";
 import type { RootStoreState } from "@/store/types";
@@ -50,7 +51,9 @@ export const createShortcutsService = ({
     altKey,
   }) => {
     const checkHotkey = (hotkey: Hotkeys) => {
-      const modifiers = [...hotkey];
+      const modifiers = hotkey.filter(
+        (key): key is Hotkey => typeof key === "string",
+      );
       const character = modifiers.pop() ?? "";
 
       // Ctrl-modifier has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems

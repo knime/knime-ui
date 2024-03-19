@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Hotkeys } from "@/shortcuts/types";
+import type { HotkeyText, Hotkeys } from "@/shortcuts/types";
 import { mapKeyFormat, getSeparator } from "@/util/formatHotkeys";
 
 interface Props {
@@ -8,12 +8,12 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const isText = (keyOrText: string) => {
-  return keyOrText.startsWith("[") && keyOrText.endsWith("]");
+const isText = (keyOrText: string | HotkeyText) => {
+  return typeof keyOrText !== "string" && keyOrText.hasOwnProperty("text");
 };
 
-const asText = (text: string) => {
-  return text.substring(1, text.length - 1).replace("\n", "");
+const getText = (keyOrText: string | HotkeyText) => {
+  return (keyOrText as HotkeyText).text;
 };
 
 const nextItem = (index: number) => {
@@ -28,7 +28,7 @@ const isLast = (index: number) => {
 <template>
   <template v-for="(keyOrText, index) of mapKeyFormat(hotkey)" :key="index">
     <template v-if="isText(keyOrText)">
-      <span class="text">{{ asText(keyOrText) }}</span>
+      <span class="text">{{ getText(keyOrText) }}</span>
     </template>
     <template v-else>
       <kbd>{{ keyOrText }}</kbd>

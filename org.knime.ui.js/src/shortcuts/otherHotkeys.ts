@@ -115,17 +115,17 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
   },
   {
     hotkey: [
-      "[hold]",
+      { text: "hold" },
       "Shift",
-      "[and press\n\n]",
+      { text: "and press\n" },
       "ArrowLeft",
-      "[/]",
+      { text: "/" },
       "ArrowRight",
-      "[/]",
+      { text: "/" },
       "ArrowUp",
-      "[/]",
+      { text: "/" },
       "ArrowDown",
-      "[\n\nthen select via]",
+      { text: "\nthen select via" },
       "Enter",
     ],
     description: "Select multiple elements",
@@ -165,7 +165,7 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
   },
   /** Canvas navigation */
   {
-    hotkey: ["[hold]", "Space", "[and drag]"],
+    hotkey: [{ text: "hold" }, "Space", { text: "and drag" }],
     description: "Pan",
     group: "canvasNavigation",
   },
