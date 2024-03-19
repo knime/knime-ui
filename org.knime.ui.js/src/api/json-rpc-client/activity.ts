@@ -16,3 +16,7 @@ self.addEventListener("message", (event) => {
     clearInterval(interval);
   }
 });
+
+// prevent TS from considering this a global file
+// due to the isolatedModules option
+export const noop = "noop";

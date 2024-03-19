@@ -15,6 +15,10 @@ const toast = mockedObject(getToastsProvider());
 
 const addEventListener = vi.fn();
 
+class MockWorker {}
+// @ts-expect-error
+window.Worker = MockWorker;
+
 vi.mock("@open-rpc/client-js", async () => {
   const actual = await vi.importActual("@open-rpc/client-js");
 
