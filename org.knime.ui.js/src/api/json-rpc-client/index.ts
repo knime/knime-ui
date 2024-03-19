@@ -111,7 +111,7 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
     const headline = isSessionExpired ? "Session expired" : "Connection lost";
     const message = isSessionExpired
       ? "Refresh the page to reactivate the session"
-      : "Server is unreachable";
+      : "We lost connection and you need to try to open and inspect again.";
 
     onConnectionLost(headline, message);
   });
@@ -129,25 +129,34 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
 };
 
 const setupActivityHeartbeat = (ws: WebSocket) => {
-  let interval: number;
+  // move sending hearbeats to the worker thread because timers will be
+  // throttled when the page is in the background
+  // see: https://developer.chrome.com/blog/timer-throttling-in-chrome-88/
+  const activityWorker = new Worker(new URL("./activity", import.meta.url), {
+    type: "module",
+  });
 
   const startHeartbeat = () => {
-    const PING_INTERVAL_MS = 30000;
-
-    interval = window.setInterval(() => {
-      consola.trace("Sending Heartbeat to Websocket at: ", new Date());
-      ws.send("");
-    }, PING_INTERVAL_MS);
+    activityWorker.addEventListener("message", ({ data }) => {
+      if (data?.type === "PING_COMPLETE") {
+        consola.log("Sending Heartbeat to Websocket at: :>> ", new Date());
+        ws.send("");
+      }
+    });
+    activityWorker.postMessage({ type: "PING_START" });
   };
 
   ws.addEventListener("open", () => {
     startHeartbeat();
   });
 
-  ws.addEventListener("close", () => {
-    if (interval) {
-      clearInterval(interval);
-    }
+  ws.addEventListener("error", (event) => {
+    consola.error("Websocket error :>> ", event);
+  });
+
+  ws.addEventListener("close", (event) => {
+    consola.log("Websocket closed :>>", event);
+    activityWorker.postMessage({ type: "PING_STOP" });
   });
 };
 
