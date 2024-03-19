@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KNIME Modern UI
 Bundle-SymbolicName: org.knime.ui.java;singleton:=true
-Bundle-Version: 5.1.1.qualifier
+Bundle-Version: 5.1.4.qualifier
 Export-Package: org.knime.ui.java.api,
  org.knime.ui.java.util
 Require-Bundle: com.github.briandilley.jsonrpc4j;bundle-version="[1.5.2,2.0.0)",
