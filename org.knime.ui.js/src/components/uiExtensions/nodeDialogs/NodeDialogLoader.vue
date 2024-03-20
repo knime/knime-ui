@@ -114,6 +114,6 @@ onUnmounted(() => {
     :extension-config="extensionConfig!"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
-    :shadow-app-style="{ width: '100%' }"
+    :shadow-app-style="{ width: '100%', zIndex: 0 }"
   />
 </template>

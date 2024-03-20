@@ -9,6 +9,7 @@ interface Props {
   direction?: "left" | "right" | "down" | "up";
   secondarySize?: number;
   secondaryMinSize?: number;
+  secondaryMaxSize?: number;
   mainMinSize?: number;
   withTransition?: boolean;
   showSecondaryPanel?: boolean;
@@ -18,6 +19,7 @@ const props = withDefaults(defineProps<Props>(), {
   direction: "left",
   secondarySize: 40,
   secondaryMinSize: 15,
+  secondaryMaxSize: 70,
   mainMinSize: 25,
   withTransition: false,
   showSecondaryPanel: true,
@@ -111,6 +113,7 @@ const onResize = ({ size }: { size: number }) => {
   >
     <pane
       v-if="isSecondaryReverse && showSecondaryPanel"
+      :max-size="secondaryMaxSize"
       :size="currentSecondarySize"
       :class="[
         'secondary-panel',
@@ -128,6 +131,7 @@ const onResize = ({ size }: { size: number }) => {
     <pane
       v-if="!isSecondaryReverse && showSecondaryPanel"
       :size="currentSecondarySize"
+      :max-size="secondaryMaxSize"
       :class="[
         'secondary-panel',
         {

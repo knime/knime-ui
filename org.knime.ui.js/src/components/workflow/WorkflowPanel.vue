@@ -109,6 +109,8 @@ const onContextMenu = (event: MouseEvent) => {
       v-model:secondary-size="nodeDialogSize"
       direction="right"
       :show-secondary-panel="$features.shouldDisplayEmbeddedDialogs()"
+      :secondary-min-size="30"
+      :secondary-max-size="50"
     >
       <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
