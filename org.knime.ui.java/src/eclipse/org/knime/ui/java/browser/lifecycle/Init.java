@@ -75,6 +75,7 @@ import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ExampleProjects;
+import org.knime.gateway.impl.webui.NodeCollections;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.ToastService;
@@ -130,9 +131,10 @@ final class Init {
         var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var kaiHandler = createKaiHandler(eventConsumer, spaceProviders);
+        var preferenceProvider = createPreferencesProvider();
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
-            eventConsumer, spaceProviders, updateStateProvider, createPreferencesProvider(), createExampleProjects(),
-            createNodeFactoryProvider(), kaiHandler);
+            eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createExampleProjects(),
+            createNodeFactoryProvider(), kaiHandler, new NodeCollections(preferenceProvider));
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService);
