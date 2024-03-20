@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRefs, nextTick } from "vue";
-import { useStore } from "vuex";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
-import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";
+import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { isDesktop } from "@/environment";
 
@@ -66,10 +65,6 @@ const searchHubLink = computed(
     `https://hub.knime.com/search?q=${encodeURIComponent(
       query.value,
     )}&type=all&src=knimeappmodernui`,
-);
-const store = useStore();
-const analyticsPlatformDownloadURL = computed(
-  () => store.state.application.analyticsPlatformDownloadURL,
 );
 
 const onSaveScrollPosition = (position: number) => {
@@ -150,15 +145,7 @@ defineExpose({ focusFirst });
               There are no available matching nodes. To work with more nodes,
               download the KNIME Analytics Platform.
             </span>
-            <Button
-              primary
-              compact
-              class="filtered-nodes-button"
-              :href="analyticsPlatformDownloadURL"
-              target="_blank"
-            >
-              <LinkExternalIcon />Download KNIME Analytics Platform
-            </Button>
+            <DownloadAPButton class="filtered-nodes-button" />
           </template>
         </div>
       </div>

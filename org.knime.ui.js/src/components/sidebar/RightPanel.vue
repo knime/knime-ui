@@ -2,9 +2,9 @@
 import { computed } from "vue";
 import { useStore } from "vuex";
 import NodeDialogLoader from "@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue";
+import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
-import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import { isBrowser } from "@/environment";
 
 const store = useStore();
@@ -20,9 +20,6 @@ const selectedNode = computed(
 const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
 const hasLegacyDialog = computed(() =>
   Boolean(selectedNode.value && !selectedNode.value.hasDialog),
-);
-const analyticsPlatformDownloadURL = computed(
-  () => store.state.application.analyticsPlatformDownloadURL,
 );
 
 // Callback methods
@@ -47,14 +44,7 @@ const openNodeConfiguration = () => {
             To configure nodes with a classic dialog, download the KNIME
             Analytics Platform.
           </span>
-          <Button
-            with-border
-            class="button"
-            :href="analyticsPlatformDownloadURL"
-          >
-            <LinkExternalIcon />
-            <span>Go to the download page</span>
-          </Button>
+          <DownloadAPButton />
         </template>
         <template v-else>
           <span class="placeholder-text">
@@ -93,10 +83,6 @@ const openNodeConfiguration = () => {
     & .placeholder-text {
       padding: 15px;
       text-align: center;
-    }
-
-    & .button {
-      margin: 0 15px;
     }
   }
 }

@@ -2,9 +2,6 @@ import { expect, describe, it, afterEach, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
-import * as applicationStore from "@/store/application";
-
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import SearchResults from "../SearchResults.vue";
@@ -26,13 +23,6 @@ describe("SearchResults", () => {
     component = SearchResults,
     useScrollViewContainerMock = false,
   } = {}) => {
-    const $store = mockVuexStore({
-      application: {
-        ...applicationStore,
-        analyticsPlatformDownloadURL: "testUrl.com",
-      },
-    });
-
     const searchActions = {
       searchNodesNextPage: vi
         .fn()
@@ -64,11 +54,11 @@ describe("SearchResults", () => {
     const wrapper = mount(component ?? SearchResults, {
       props,
       global: {
-        plugins: [$store],
         stubs: {
           ScrollViewContainer: useScrollViewContainerMock
             ? ScrollViewContainerMock
             : null,
+          DownloadAPButton: true,
         },
       },
     });
