@@ -33,7 +33,7 @@ const openNodeConfiguration = () => {
 </script>
 
 <template>
-  <div class="panel">
+  <div id="right-panel" class="panel">
     <NodeDialogLoader
       v-if="showNodeDialog"
       :project-id="projectId"
