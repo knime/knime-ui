@@ -50,7 +50,12 @@ const openNodeConfiguration = () => {
           <span class="placeholder-text">
             This node dialog is not supported here.
           </span>
-          <Button with-border class="button" @click="openNodeConfiguration">
+          <Button
+            with-border
+            compact
+            class="button"
+            @click="openNodeConfiguration"
+          >
             <CogIcon />
             <span>Open legacy dialog</span>
           </Button>
