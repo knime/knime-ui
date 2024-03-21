@@ -1,34 +1,5 @@
 import consola, { LogLevel } from "consola";
 
-const silentLogger = () => {
-  const noop = function () {
-    // In production, we disable all logging by providing a no-op function.
-    // In dev mode, this is overwritten, see plugin in internal project.
-  };
-
-  const methods = [
-    "debug",
-    "error",
-    "fatal",
-    "info",
-    "log",
-    "ready",
-    "start",
-    "success",
-    "trace",
-    "warn",
-  ] as const;
-
-  // @ts-expect-error
-  window.consola = methods.reduce(
-    (consola, method) => {
-      consola[method] = noop;
-      return consola;
-    },
-    {} as typeof consola,
-  );
-};
-
 const getLogLevelFromEnv = (): LogLevel => {
   const level = import.meta.env.VITE_LOG_LEVEL || "warn";
   const levelUppercased = level.charAt(0).toUpperCase().concat(level.slice(1));
@@ -41,7 +12,7 @@ const getLogLevelFromEnv = (): LogLevel => {
   return LogLevel[levelUppercased];
 };
 
-export const defaultLogger = () => {
+export const setupLogger = () => {
   const customConsola = consola.create({
     level: getLogLevelFromEnv(),
   });
@@ -51,12 +22,4 @@ export const defaultLogger = () => {
 
   // @ts-expect-error
   globalObject.consola = customConsola;
-};
-
-export const setupLogger = () => {
-  if (import.meta.env.DEV) {
-    defaultLogger();
-  } else {
-    silentLogger();
-  }
 };
