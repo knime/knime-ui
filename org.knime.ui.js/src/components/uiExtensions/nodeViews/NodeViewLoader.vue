@@ -1,7 +1,20 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted, computed } from "vue";
+import {
+  ref,
+  type Ref,
+  watch,
+  onUnmounted,
+  toRefs,
+  computed,
+  toRaw,
+} from "vue";
 
-import type { Alert } from "@knime/ui-extension-service";
+import {
+  UIExtensionPushEvents,
+  type Alert,
+  ViewState,
+} from "@knime/ui-extension-service";
+
 import {
   UIExtension,
   type UIExtensionAPILayer,
@@ -12,6 +25,9 @@ import type { NativeNode } from "@/api/gateway-api/generated-api";
 
 import { useResourceLocation } from "../common/useResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
+import { useNodeViewUniqueId } from "../common/useNodeViewUniqueId";
+import ExecuteButton from "../ExecuteButton.vue";
+import { useNodeDialogInteraction } from "../common/useNodeDialogInteraction";
 
 /**
  * Renders a node view
@@ -70,6 +86,8 @@ const loadExtensionConfig = async () => {
 
 const noop = () => {};
 
+let updateViewData: (data: Ref<any>) => void;
+
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
     return Promise.resolve(
@@ -110,21 +128,53 @@ const apiLayer: UIExtensionAPILayer = {
     emit("alert", alert);
   },
 
+  registerPushEventService: ({ dispatchPushEvent }) => {
+    // use the provided event dispatcher to initialize the
+    // function that updates the data of this UIExtension (NodeView in this case)
+    updateViewData = (data) =>
+      dispatchPushEvent({
+        eventType: UIExtensionPushEvents.EventTypes.DataEvent,
+        payload: toRaw(data.value),
+      });
+
+    // TODO: use?
+    return () => {};
+  },
+
   // NOOP - not required by this embedding context for this type of UI Extension
   publishData: noop,
   setReportingContent: noop,
   imageGenerated: noop,
-  registerPushEventService: () => noop,
   onDirtyStateChange: noop,
   onApplied: noop,
 };
 
-const renderKey = computed(
-  () => `${props.selectedNode.id}_${props.selectedNode.state?.executionState}`,
-);
+const { uniqueId } = useNodeViewUniqueId(toRefs(props));
+
+const { lastestPublishedData, dirtyState, applySettings } =
+  useNodeDialogInteraction(uniqueId.value);
 
 watch(
-  renderKey,
+  lastestPublishedData,
+  (data) => {
+    if (data.source === uniqueId.value) {
+      updateViewData?.(data.payload);
+    }
+  },
+  { deep: true },
+);
+
+const hasToReexecute = computed(() => {
+  // when receiving dirty state from the active dialog
+  // then we check whether the view can be displayed based on said dirty state
+  return (
+    dirtyState.value.source === uniqueId.value &&
+    dirtyState.value.payload.view === ViewState.CONFIG
+  );
+});
+
+watch(
+  uniqueId,
   async () => {
     try {
       error.value = null;
@@ -159,8 +209,15 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <ExecuteButton
+    v-if="!error && !isLoadingConfig && hasToReexecute"
+    message="To preview the node, please apply your changes and re-execute the node"
+    button-label="Apply & execute"
+    @execute-node="applySettings(selectedNode.id, true)"
+  />
+
   <UIExtension
-    v-if="!error && !isLoadingConfig"
+    v-if="!error && !isLoadingConfig && !hasToReexecute"
     :extension-config="extensionConfig!"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"

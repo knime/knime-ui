@@ -1,4 +1,7 @@
-import type { ExtensionConfig as BaseExtensionConfig } from "webapps-common/ui/uiExtensions";
+import type {
+  ExtensionConfig as BaseExtensionConfig,
+  UIExtensionAPILayer,
+} from "webapps-common/ui/uiExtensions";
 
 import type { ValidationResult } from "./output-validator";
 
@@ -16,3 +19,7 @@ export type UIExtensionLoadingState =
 export type ExtensionConfig = BaseExtensionConfig & {
   resourceInfo: { baseUrl?: string };
 };
+
+export type UIExtensionPushEventDispatcher = Parameters<
+  UIExtensionAPILayer["registerPushEventService"]
+>[0]["dispatchPushEvent"];

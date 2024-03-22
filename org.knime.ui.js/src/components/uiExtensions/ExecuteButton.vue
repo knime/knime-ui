@@ -40,6 +40,10 @@ const emit = defineEmits<{
   background: rgba(255 255 255 / 30%);
   backdrop-filter: blur(10px);
   z-index: 9;
+
+  & span {
+    text-align: center;
+  }
 }
 
 .action-button {
