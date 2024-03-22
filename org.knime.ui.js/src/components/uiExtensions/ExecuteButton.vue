@@ -1,41 +1,26 @@
 <script setup lang="ts">
-import type { KnimeNode } from "@/api/custom-types";
-import { isNativeNode } from "@/util/nodeUtil";
-import { computed } from "vue";
 import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 type Props = {
-  selectedNode: KnimeNode;
+  message: string;
+  buttonLabel?: string;
 };
-const props = defineProps<Props>();
-
-const isView = computed(() => {
-  if (!isNativeNode(props.selectedNode)) {
-    return false;
-  }
-
-  return props.selectedNode.hasView;
-});
-
-const message = computed(() => {
-  const messageTemplate = (kind: string) =>
-    `To show the ${kind}, please execute the selected node.`;
-
-  return messageTemplate(isView.value ? "view" : "port output");
+withDefaults(defineProps<Props>(), {
+  buttonLabel: "Execute",
 });
 
 const emit = defineEmits<{
-  executeNode: [];
+  click: [];
 }>();
 </script>
 
 <template>
   <div class="execute-node-action">
     <span>{{ message }}</span>
-    <Button class="action-button" primary compact @click="emit('executeNode')">
+    <Button class="action-button" primary compact @click="emit('click')">
       <PlayIcon />
-      Execute
+      {{ buttonLabel }}
     </Button>
   </div>
 </template>

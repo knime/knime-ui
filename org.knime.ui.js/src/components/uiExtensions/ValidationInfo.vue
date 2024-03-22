@@ -9,7 +9,7 @@ import { useStore } from "@/composables/useStore";
 
 import type { ValidationError } from "./common/types";
 import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";
-import ExecuteButtons from "./ExecuteButtons.vue";
+import ExecuteButton from "./ExecuteButton.vue";
 import LoadingIndicator from "./LoadingIndicator.vue";
 
 type Props = {
@@ -44,6 +44,25 @@ const fullPortObject = computed(() => {
   } catch (error) {
     return null;
   }
+});
+
+const isView = computed(() => {
+  if (!props.selectedNode) {
+    return false;
+  }
+
+  if (!nodeUtils.isNativeNode(props.selectedNode)) {
+    return false;
+  }
+
+  return Boolean(props.selectedNode.hasView);
+});
+
+const executeButtonMessage = computed(() => {
+  const messageTemplate = (kind: string) =>
+    `To show the ${kind}, please execute the selected node.`;
+
+  return messageTemplate(isView.value ? "view" : "port output");
 });
 
 const canExecute = computed(() => {
@@ -126,10 +145,10 @@ const openLegacyPortView = (executeNode: boolean) => {
     </template>
   </div>
 
-  <ExecuteButtons
+  <ExecuteButton
     v-if="canExecute && !isUnsupportedView"
-    :selected-node="selectedNode!"
-    @execute-node="onExecuteNode"
+    :message="executeButtonMessage"
+    @click="onExecuteNode"
   />
 </template>
 
