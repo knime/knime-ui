@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useStore } from "vuex";
-import NodeDialogLoader from "@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
+
+import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import { isBrowser } from "@/environment";
+import { useStore } from "@/composables/useStore";
+import type { KnimeNode } from "@/api/custom-types";
+
+import NodeDialogWrapper from "@/components/uiExtensions/nodeDialogs/NodeDialogWrapper.vue";
 
 const store = useStore();
 
 // Computed properties
-const projectId = computed(() => store.state.application.activeProjectId);
-const workflowId = computed(
-  () => store.state.workflow.activeWorkflow.info.containerId,
-);
-const selectedNode = computed(
+const selectedNode = computed<KnimeNode>(
   () => store.getters["selection/singleSelectedNode"],
 );
 const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
@@ -31,37 +30,34 @@ const openNodeConfiguration = () => {
 
 <template>
   <div id="right-panel" class="panel">
-    <NodeDialogLoader
-      v-if="showNodeDialog"
-      :project-id="projectId"
-      :workflow-id="workflowId"
-      :selected-node="selectedNode"
-    />
-    <template v-else-if="hasLegacyDialog">
-      <div class="placeholder">
-        <template v-if="isBrowser">
-          <span class="placeholder-text">
-            To configure nodes with a classic dialog, download the KNIME
-            Analytics Platform.
-          </span>
-          <DownloadAPButton compact src="node-configuration-panel" />
-        </template>
-        <template v-else>
-          <span class="placeholder-text">
-            This node dialog is not supported here.
-          </span>
-          <Button
-            with-border
-            compact
-            class="button"
-            @click="openNodeConfiguration"
-          >
-            <CogIcon />
-            <span>Open legacy dialog</span>
-          </Button>
-        </template>
-      </div>
-    </template>
+    <NodeDialogWrapper v-if="showNodeDialog" />
+
+    <!-- PLACEHOLDER - LEGACY DIALOGS -->
+    <div v-else-if="hasLegacyDialog" class="placeholder">
+      <template v-if="isBrowser">
+        <span class="placeholder-text">
+          To configure nodes with a classic dialog, download the KNIME Analytics
+          Platform.
+        </span>
+        <DownloadAPButton compact src="node-configuration-panel" />
+      </template>
+      <template v-else>
+        <span class="placeholder-text">
+          This node dialog is not supported here.
+        </span>
+        <Button
+          with-border
+          compact
+          class="button"
+          @click="openNodeConfiguration"
+        >
+          <CogIcon />
+          <span>Open legacy dialog</span>
+        </Button>
+      </template>
+    </div>
+
+    <!-- PLACEHOLDER - DEFAULT -->
     <div v-else class="placeholder">
       <span class="placeholder-text">Please select a node.</span>
     </div>

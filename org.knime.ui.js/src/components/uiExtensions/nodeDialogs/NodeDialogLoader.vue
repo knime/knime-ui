@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { API } from "@api";
-import { ref, toRefs, computed, watch, onUnmounted } from "vue";
-import type { KnimeNode } from "@/api/custom-types";
+import { ref, toRefs, watch, onUnmounted } from "vue";
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "webapps-common/ui/uiExtensions";
-import type { ExtensionConfig } from "../common/types";
+
+import { API } from "@api";
+import type { NativeNode } from "@/api/gateway-api/generated-api";
+
+import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
+import { useNodeViewUniqueId } from "../common/useNodeViewUniqueId";
+import { useNodeDialogInteraction } from "../common/useNodeDialogInteraction";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
@@ -15,7 +19,7 @@ import { useResourceLocation } from "../common/useResourceLocation";
 interface Props {
   projectId: string;
   workflowId: string;
-  selectedNode: KnimeNode;
+  selectedNode: NativeNode;
 }
 
 const props = defineProps<Props>();
@@ -24,18 +28,24 @@ const extensionConfig = ref<ExtensionConfig | null>(null);
 const isConfigReady = ref(false);
 let deactivateDataServicesFn: () => void;
 
+const emit = defineEmits<{
+  loadingStateChange: [value: UIExtensionLoadingState];
+}>();
+
 const { resourceLocation, resourceLocationResolver } = useResourceLocation({
   extensionConfig,
 });
 
 const loadExtensionConfig = async () => {
-  const nodeDialogView = await API.node.getNodeDialog({
+  const _extensionConfig = await API.node.getNodeDialog({
     projectId: projectId.value,
     workflowId: workflowId.value,
     nodeId: selectedNode.value.id,
   });
 
-  if (nodeDialogView.deactivationRequired) {
+  consola.trace("NodeDialog :: extensionConfig", _extensionConfig);
+
+  if (_extensionConfig.deactivationRequired) {
     deactivateDataServicesFn = () => {
       API.node.deactivateNodeDataServices({
         projectId: projectId.value,
@@ -46,15 +56,17 @@ const loadExtensionConfig = async () => {
     };
   }
 
-  extensionConfig.value = nodeDialogView;
+  extensionConfig.value = _extensionConfig;
 };
 
-const renderKey = computed(() => {
-  if (selectedNode.value.hasDialog) {
-    return [projectId, workflowId, selectedNode.value.id].join("/");
-  }
-  return "";
-});
+const { uniqueId } = useNodeViewUniqueId(toRefs(props));
+
+const {
+  setEventDispatcher,
+  setDirtyState,
+  setLatestPublishedData,
+  setApplyComplete,
+} = useNodeDialogInteraction(uniqueId.value);
 
 const noop = () => {};
 
@@ -67,8 +79,10 @@ const apiLayer: UIExtensionAPILayer = {
       ),
     );
   },
+
   callNodeDataService: async (params: any) => {
     const { serviceType, dataServiceRequest } = params;
+
     const result = await API.node.callNodeDataService({
       projectId: projectId.value,
       workflowId: workflowId.value,
@@ -77,28 +91,63 @@ const apiLayer: UIExtensionAPILayer = {
       serviceType,
       dataServiceRequest,
     });
+
+    consola.trace("NodeDialog :: callNodeDataService result", result);
+
     return { result };
   },
-  updateDataPointSelection: () => {
-    return Promise.resolve(null);
+
+  publishData: (data) => {
+    consola.trace("NodeDialog :: publishData", data);
+    setLatestPublishedData(data);
   },
-  publishData: noop,
-  setReportingContent: noop,
+
+  registerPushEventService: ({ dispatchPushEvent }) => {
+    setEventDispatcher(dispatchPushEvent);
+
+    // TODO: use?
+    return () => {};
+  },
+
+  onDirtyStateChange: (dirtyState) => {
+    setDirtyState(dirtyState);
+  },
+
+  onApplied: (payload) => {
+    setApplyComplete(payload.isApplied);
+  },
+
+  // NOOP - not required by this embedding context for this type of UI Extension
+  updateDataPointSelection: () => Promise.resolve(null),
   imageGenerated: noop,
-  registerPushEventService: () => {
-    return noop;
-  },
+  setReportingContent: noop,
   sendAlert: noop,
-  onDirtyStateChange: noop,
-  onApplied: noop,
 };
 
 watch(
-  renderKey,
+  uniqueId,
   async () => {
-    isConfigReady.value = false;
-    await loadExtensionConfig();
-    isConfigReady.value = true;
+    try {
+      isConfigReady.value = false;
+
+      emit("loadingStateChange", {
+        value: "loading",
+        message: "Loading dialog",
+      });
+
+      await loadExtensionConfig();
+
+      isConfigReady.value = true;
+      emit("loadingStateChange", { value: "ready" });
+    } catch (error) {
+      isConfigReady.value = false;
+
+      emit("loadingStateChange", {
+        value: "error",
+        message: error as string,
+        error,
+      });
+    }
   },
   { immediate: true },
 );
