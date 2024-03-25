@@ -7,10 +7,12 @@ import { useStore } from "@/composables/useStore";
 
 type Props = {
   utmSource?: string;
+  main?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   utmSource: "",
+  main: false,
 });
 
 const store = useStore();
@@ -19,14 +21,14 @@ const analyticsPlatformDownloadURL = computed(
 );
 
 const href = computed(() => {
-  const parameter = props.utmSource ? `?utm_source=${props.utmSource}` : "";
+  const parameter = props.utmSource ? `?src=${props.utmSource}` : "";
 
   return `${analyticsPlatformDownloadURL.value}${parameter}`;
 });
 </script>
 
 <template>
-  <Button with-border compact :href="href">
+  <Button primary :compact="main ? false : true" :href="href">
     <LinkExternalIcon />
     <span>Go to the download page</span>
   </Button>

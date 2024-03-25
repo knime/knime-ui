@@ -44,7 +44,7 @@ const openNodeConfiguration = () => {
             To configure nodes with a classic dialog, download the KNIME
             Analytics Platform.
           </span>
-          <DownloadAPButton />
+          <DownloadAPButton utm-source="node-configuration-panel" />
         </template>
         <template v-else>
           <span class="placeholder-text">

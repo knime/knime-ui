@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
+import { isBrowser } from "@/environment";
+
 import SplitPanel from "@/components/common/SplitPanel.vue";
+import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
-
 import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
-
 import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
 
 /**
@@ -34,6 +35,12 @@ const savedSecondarySize = computed({
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
+    <DownloadAPButton
+      v-if="isBrowser"
+      main
+      utm-source="floating-action-button"
+      class="floating-download-button"
+    />
 
     <main class="workflow-area">
       <SplitPanel
@@ -87,5 +94,13 @@ main {
 .workflow-area {
   grid-area: workflow;
   overflow: hidden;
+}
+
+.floating-download-button {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  z-index: 1;
+  box-shadow: var(--shadow-elevation-2);
 }
 </style>

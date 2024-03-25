@@ -145,7 +145,10 @@ defineExpose({ focusFirst });
               There are no available matching nodes. To work with more nodes,
               download the KNIME Analytics Platform.
             </span>
-            <DownloadAPButton class="filtered-nodes-button" />
+            <DownloadAPButton
+              utm-source="node-repository"
+              class="filtered-nodes-button"
+            />
           </template>
         </div>
       </div>
@@ -277,16 +280,8 @@ defineExpose({ focusFirst });
     font-style: italic;
     width: 100%;
 
-    & a {
-      color: var(--knime-dove-gray);
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
     & .filtered-nodes-button {
-      text-decoration: none;
       margin-top: 15px;
-      font-weight: 500;
     }
   }
 }
