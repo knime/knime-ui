@@ -1,12 +1,14 @@
 import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
+import { NodeState } from "@/api/gateway-api/generated-api";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as applicationStore from "@/store/application";
 import * as workflowStore from "@/store/workflow";
 
 import RightPanel from "../RightPanel.vue";
 import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 
 describe("RightPanel", () => {
   const doMount = (
@@ -113,5 +115,35 @@ describe("RightPanel", () => {
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.findComponent(NodeConfigWrapper).exists()).toBe(true);
+  });
+
+  describe("disables functions during node execution", () => {
+    it("disables NodeDialogLoader component", () => {
+      const { wrapper } = doMount({
+        singleSelectedNodeMock: vi.fn().mockReturnValue({
+          id: 1,
+          kind: "node",
+          hasDialog: true,
+          state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
+        }),
+      });
+
+      expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
+      expect(wrapper.findComponent(NodeConfigWrapper).exists()).toBe(true);
+      expect(wrapper.find(".panel-dialog-disabled").exists()).toBe(true);
+    });
+
+    it("disables open legacy dialog button", () => {
+      const { wrapper } = doMount({
+        singleSelectedNodeMock: vi.fn().mockReturnValue({
+          id: 2,
+          kind: "node",
+          state: { executionState: NodeState.ExecutionStateEnum.QUEUED },
+        }),
+      });
+
+      expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
+      expect(wrapper.findComponent(Button).props().disabled).toBe(true);
+    });
   });
 });
