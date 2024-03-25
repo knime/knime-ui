@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
+import { useStore } from "vuex";
+import { NodeState } from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
+import NodeDialogLoader from "@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue";
+import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 
@@ -15,8 +20,18 @@ const store = useStore();
 // Computed properties
 const selectedNode = computed<KnimeNode>(
   () => store.getters["selection/singleSelectedNode"],
-);
+) as Ref<KnimeNode>;
 const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
+
+const isNodeExecuting = computed(() =>
+  Boolean(
+    selectedNode.value?.state?.executionState ===
+      NodeState.ExecutionStateEnum.EXECUTING ||
+      selectedNode.value?.state?.executionState ===
+        NodeState.ExecutionStateEnum.QUEUED,
+  ),
+);
+
 const hasLegacyDialog = computed(() =>
   Boolean(selectedNode.value && !selectedNode.value.hasDialog),
 );
@@ -30,7 +45,12 @@ const openNodeConfiguration = () => {
 
 <template>
   <div id="right-panel" class="panel">
-    <NodeConfigWrapper v-if="showNodeDialog" />
+    <div
+      v-if="showNodeDialog"
+      :class="{ 'panel-dialog-disabled': isNodeExecuting }"
+    >
+      <NodeConfigWrapper />
+    </div>
 
     <!-- PLACEHOLDER - LEGACY DIALOGS -->
     <div v-else-if="hasLegacyDialog" class="placeholder">
@@ -49,6 +69,7 @@ const openNodeConfiguration = () => {
           with-border
           compact
           class="button"
+          :disabled="isNodeExecuting"
           @click="openNodeConfiguration"
         >
           <CogIcon />
@@ -85,6 +106,24 @@ const openNodeConfiguration = () => {
       padding: 15px;
       text-align: center;
     }
+
+    & .button {
+      margin: 0 15px;
+    }
+  }
+
+  & .panel-dialog-disabled {
+    cursor: not-allowed;
+  }
+}
+</style>
+
+<style lang="postcss">
+.panel {
+  & .dialog-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 150ms ease-out;
   }
 }
 </style>
