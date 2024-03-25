@@ -16,7 +16,7 @@ import {
 import ValidationInfo from "../ValidationInfo.vue";
 import { MetaNodePort, NodeState } from "@/api/gateway-api/generated-api";
 import LegacyPortViewButtons from "../LegacyPortViewButtons.vue";
-import ExecuteButtons from "../ExecuteButtons.vue";
+import ExecuteButton from "../ExecuteButton.vue";
 import LoadingIndicator from "../LoadingIndicator.vue";
 import { nextTick } from "vue";
 
@@ -80,7 +80,7 @@ describe("ValidationInfo.vue", () => {
 
     expect(wrapper.text()).toMatch("rendered message");
     expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
-    expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+    expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
   });
 
   describe("unsupported views", () => {
@@ -126,7 +126,7 @@ describe("ValidationInfo.vue", () => {
         const legacyButtons = wrapper.findComponent(LegacyPortViewButtons);
 
         expect(legacyButtons.exists()).toBe(true);
-        expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+        expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
 
         expect(legacyButtons.props("canExecute")).toBe(true);
 
@@ -179,7 +179,7 @@ describe("ValidationInfo.vue", () => {
         const legacyButtons = wrapper.findComponent(LegacyPortViewButtons);
 
         expect(legacyButtons.exists()).toBe(false);
-        expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+        expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
       });
     });
   });
@@ -215,7 +215,7 @@ describe("ValidationInfo.vue", () => {
       ],
     });
 
-    it("should not render if `canEditWorkflow` permission is false", async () => {
+    it("should NOT render if `canEditWorkflow` permission is false", async () => {
       const { wrapper, $store } = doMount({
         props: { selectedNode },
       });
@@ -224,12 +224,12 @@ describe("ValidationInfo.vue", () => {
 
       await nextTick();
 
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
     });
 
-    it("should not render if there is no selected node", () => {
+    it("should NOT render if there is no selected node", () => {
       const { wrapper } = doMount();
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
     });
 
     it("should render correctly for metanodes", async () => {
@@ -274,23 +274,26 @@ describe("ValidationInfo.vue", () => {
       });
 
       // first metanode - single configured port
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(true);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
+      expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
+        "To show the port output, please execute the selected node.",
+      );
 
       // second metanode - no ports
       await wrapper.setProps({ selectedNode: metanode2 });
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
 
       // third metanode, 3 ports - port 1 idle
       await wrapper.setProps({ selectedNode: metanode3, selectedPortIndex: 0 });
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
 
       // third metanode, 3 ports - port 2 configured
       await wrapper.setProps({ selectedNode: metanode3, selectedPortIndex: 1 });
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(true);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
 
       // third metanode, 3 ports - port 3 executed
       await wrapper.setProps({ selectedNode: metanode3, selectedPortIndex: 2 });
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
     });
 
     it("should render when a selectedPortIndex is present", () => {
@@ -298,7 +301,7 @@ describe("ValidationInfo.vue", () => {
         props: { selectedNode, selectedPortIndex: 1 },
       });
 
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(true);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
     });
 
     it("should render when there is no selectedPortIndex but the node can execute", () => {
@@ -306,7 +309,27 @@ describe("ValidationInfo.vue", () => {
         props: { selectedNode },
       });
 
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(true);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
+    });
+
+    it("should render correctly for node views", () => {
+      const selectedNode = createNativeNode({
+        state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+        allowedActions: { canExecute: true },
+        hasView: true,
+      });
+
+      const { wrapper } = doMount({
+        props: { selectedNode },
+      });
+
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
+      expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
+        "To show the view, please execute the selected node.",
+      );
+      expect(wrapper.findComponent(ExecuteButton).props("buttonLabel")).toBe(
+        "Execute",
+      );
     });
   });
 });

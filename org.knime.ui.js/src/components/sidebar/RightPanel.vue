@@ -8,7 +8,7 @@ import { isBrowser } from "@/environment";
 import { useStore } from "@/composables/useStore";
 import type { KnimeNode } from "@/api/custom-types";
 
-import NodeDialogWrapper from "@/components/uiExtensions/nodeDialogs/NodeDialogWrapper.vue";
+import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
 
 const store = useStore();
 
@@ -30,7 +30,7 @@ const openNodeConfiguration = () => {
 
 <template>
   <div id="right-panel" class="panel">
-    <NodeDialogWrapper v-if="showNodeDialog" />
+    <NodeConfigWrapper v-if="showNodeDialog" />
 
     <!-- PLACEHOLDER - LEGACY DIALOGS -->
     <div v-else-if="hasLegacyDialog" class="placeholder">

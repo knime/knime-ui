@@ -27,7 +27,7 @@ import PortTabs from "../PortTabs.vue";
 import PortViewTabOutput from "../portViews/PortViewTabOutput.vue";
 import ValidationInfo from "../ValidationInfo.vue";
 import LoadingIndicator from "../LoadingIndicator.vue";
-import ExecuteButtons from "../ExecuteButtons.vue";
+import ExecuteButton from "../ExecuteButton.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import NodeViewTabOutput from "../nodeViews/NodeViewTabOutput.vue";
 
@@ -124,7 +124,7 @@ describe("NodeOutput.vue", () => {
 
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
       expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
     });
 
     it("should render placeholder if more than one node is selected", () => {
@@ -141,7 +141,7 @@ describe("NodeOutput.vue", () => {
       );
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
       expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
-      expect(wrapper.findComponent(ExecuteButtons).exists()).toBe(false);
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
     });
   });
 

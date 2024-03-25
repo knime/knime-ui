@@ -29,15 +29,21 @@ const __dirtyState = ref<APILayerDirtyState>({
   view: ViewState.CLEAN,
 });
 const __latestPublishedData = ref<unknown | null>(null);
-const __pushEventDispatcher = ref<UIExtensionPushEventDispatcher>(() => {});
+let __pushEventDispatcher: UIExtensionPushEventDispatcher = () => {};
 
 const unwrappedPromise = ref<UnwrappedPromise<boolean>>(
   createUnwrappedPromise<boolean>(),
 );
 
-export const useNodeDialogInteraction = (uniqueNodeId: string) => {
+/**
+ * Composable used to synchronize / manage the shared state and methods
+ * required to interact with the "active" node configuration (the one displayed on the right panel).
+ * This composable will provide the necessary methods and state needed to make specific operations
+ * such as reading the dirty state, the published config data and applying settings
+ */
+export const useNodeConfigAPI = () => {
   const setEventDispatcher = (dispatcher: UIExtensionPushEventDispatcher) => {
-    __pushEventDispatcher.value = dispatcher;
+    __pushEventDispatcher = dispatcher;
   };
 
   const setLatestPublishedData = (data: unknown) => {
@@ -49,15 +55,18 @@ export const useNodeDialogInteraction = (uniqueNodeId: string) => {
   };
 
   const dispatchApplySettings = () => {
-    __pushEventDispatcher.value<UIExtensionPushEvents.EventTypes.ApplyDataEvent>(
-      {
-        eventType: UIExtensionPushEvents.EventTypes.ApplyDataEvent,
-      },
-    );
+    __pushEventDispatcher<UIExtensionPushEvents.EventTypes.ApplyDataEvent>({
+      eventType: UIExtensionPushEvents.EventTypes.ApplyDataEvent,
+    });
 
     return unwrappedPromise.value.promise;
   };
 
+  /**
+   * Sets the result of the latest `applySettings` call. Calling this function
+   * will essentially resolve the promise returned by `applySettings`
+   * @param isApplied
+   */
   const setApplyComplete = (isApplied: boolean) => {
     unwrappedPromise.value.resolve(isApplied);
     unwrappedPromise.value = createUnwrappedPromise();
@@ -65,6 +74,13 @@ export const useNodeDialogInteraction = (uniqueNodeId: string) => {
 
   const store = useStore();
 
+  /**
+   * Attempts to apply the changes to the node config of the given node (by id), and optionally
+   * execute the node afterwards. Returns a promise which will resolve once the configuration
+   * changes have been applied (when the api layer calls `setApplyComplete` in this composable)
+   * @param nodeId
+   * @param execute
+   */
   const applySettings = async (nodeId: string, execute = false) => {
     const isApplied = await dispatchApplySettings();
 
@@ -73,6 +89,9 @@ export const useNodeDialogInteraction = (uniqueNodeId: string) => {
     }
   };
 
+  /**
+   * Discard the changes made to the node configuration by resetting the dirty state back to CLEAN
+   */
   const discardSettings = () => {
     setDirtyState({
       apply: ApplyState.CLEAN,
@@ -90,14 +109,8 @@ export const useNodeDialogInteraction = (uniqueNodeId: string) => {
 
     setApplyComplete,
 
-    lastestPublishedData: computed(() => ({
-      source: uniqueNodeId,
-      payload: __latestPublishedData,
-    })),
+    lastestPublishedData: computed(() => __latestPublishedData.value),
 
-    dirtyState: computed(() => ({
-      source: uniqueNodeId,
-      payload: __dirtyState.value,
-    })),
+    dirtyState: computed(() => __dirtyState.value),
   };
 };

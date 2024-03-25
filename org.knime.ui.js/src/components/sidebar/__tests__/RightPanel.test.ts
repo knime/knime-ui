@@ -6,7 +6,7 @@ import * as applicationStore from "@/store/application";
 import * as workflowStore from "@/store/workflow";
 
 import RightPanel from "../RightPanel.vue";
-import NodeDialogLoader from "@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue";
+import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
 
 describe("RightPanel", () => {
   const doMount = (
@@ -102,7 +102,7 @@ describe("RightPanel", () => {
     );
   });
 
-  it("shows NodeDialogLoader component if selected node has dialog", () => {
+  it("shows NodeConfigWrapper component if selected node has dialog", () => {
     const { wrapper } = doMount({
       singleSelectedNodeMock: vi.fn().mockReturnValue({
         id: 1,
@@ -112,6 +112,6 @@ describe("RightPanel", () => {
     });
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
-    expect(wrapper.findComponent(NodeDialogLoader).exists()).toBe(true);
+    expect(wrapper.findComponent(NodeConfigWrapper).exists()).toBe(true);
   });
 });

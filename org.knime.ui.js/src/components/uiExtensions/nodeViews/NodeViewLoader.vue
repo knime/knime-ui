@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  ref,
-  type Ref,
-  watch,
-  onUnmounted,
-  toRefs,
-  computed,
-  toRaw,
-} from "vue";
+import { ref, watch, onUnmounted, toRefs, computed, toRaw } from "vue";
 
 import {
   UIExtensionPushEvents,
@@ -25,9 +17,9 @@ import type { NativeNode } from "@/api/gateway-api/generated-api";
 
 import { useResourceLocation } from "../common/useResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
-import { useNodeViewUniqueId } from "../common/useNodeViewUniqueId";
+import { useUniqueNodeConfigStateId } from "../common/useUniqueNodeConfigStateId";
 import ExecuteButton from "../ExecuteButton.vue";
-import { useNodeDialogInteraction } from "../common/useNodeDialogInteraction";
+import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 
 /**
  * Renders a node view
@@ -86,7 +78,7 @@ const loadExtensionConfig = async () => {
 
 const noop = () => {};
 
-let updateViewData: (data: Ref<any>) => void;
+let updateViewData: (data: any) => void;
 
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
@@ -134,10 +126,9 @@ const apiLayer: UIExtensionAPILayer = {
     updateViewData = (data) =>
       dispatchPushEvent({
         eventType: UIExtensionPushEvents.EventTypes.DataEvent,
-        payload: toRaw(data.value),
+        payload: toRaw(data),
       });
 
-    // TODO: use?
     return () => {};
   },
 
@@ -149,28 +140,22 @@ const apiLayer: UIExtensionAPILayer = {
   onApplied: noop,
 };
 
-const { uniqueId } = useNodeViewUniqueId(toRefs(props));
+const { uniqueId } = useUniqueNodeConfigStateId(toRefs(props));
 
-const { lastestPublishedData, dirtyState, applySettings } =
-  useNodeDialogInteraction(uniqueId.value);
+const { lastestPublishedData, dirtyState, applySettings } = useNodeConfigAPI();
 
 watch(
   lastestPublishedData,
   (data) => {
-    if (data.source === uniqueId.value) {
-      updateViewData?.(data.payload);
-    }
+    updateViewData?.(data);
   },
   { deep: true },
 );
 
 const hasToReexecute = computed(() => {
-  // when receiving dirty state from the active dialog
-  // then we check whether the view can be displayed based on said dirty state
-  return (
-    dirtyState.value.source === uniqueId.value &&
-    dirtyState.value.payload.view === ViewState.CONFIG
-  );
+  // when receiving dirty state we check whether
+  // the view can be displayed based on said dirty state
+  return dirtyState.value.view === ViewState.CONFIG;
 });
 
 watch(

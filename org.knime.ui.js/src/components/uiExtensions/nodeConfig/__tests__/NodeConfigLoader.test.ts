@@ -7,7 +7,7 @@ import { API } from "@api";
 
 import { UIExtension } from "webapps-common/ui/uiExtensions";
 import * as applicationStore from "@/store/application";
-import NodeDialogLoader from "../NodeDialogLoader.vue";
+import NodeConfigLoader from "../NodeConfigLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 
 const dynamicImportMock = mockDynamicImport();
@@ -31,7 +31,7 @@ const mockGetNodeDialog = (additionalMocks?: object) => {
   });
 };
 
-describe("NodeDialogLoader.vue", () => {
+describe("NodeConfigLoader.vue", () => {
   const dummyNode = {
     id: "node1",
     selected: true,
@@ -61,7 +61,7 @@ describe("NodeDialogLoader.vue", () => {
       application: applicationStore,
     });
 
-    const wrapper = mount(NodeDialogLoader, {
+    const wrapper = mount(NodeConfigLoader, {
       props,
       global: { plugins: [$store] },
     });

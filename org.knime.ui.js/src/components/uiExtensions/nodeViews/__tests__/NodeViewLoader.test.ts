@@ -9,6 +9,13 @@ import { API } from "@api";
 import * as applicationStore from "@/store/application";
 import NodeViewLoader from "../NodeViewLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
+import { useNodeConfigAPI } from "../../common/useNodeConfigAPI";
+import {
+  ApplyState,
+  UIExtensionPushEvents,
+  ViewState,
+} from "@knime/ui-extension-service";
+import ExecuteButton from "../../ExecuteButton.vue";
 
 const dynamicImportMock = mockDynamicImport();
 
@@ -207,6 +214,53 @@ describe("NodeViewLoader.vue", () => {
       apiLayer.sendAlert(alert1);
 
       expect(wrapper.emitted("alert")![1][0]).toEqual(alert1);
+    });
+  });
+
+  describe("nodeConfigAPI", () => {
+    it("should update view data when receiving published data from a node config", async () => {
+      mockGetNodeView();
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const apiLayer = uiExtension.props("apiLayer");
+
+      const dispatchPushEvent = vi.fn();
+      apiLayer.registerPushEventService({ dispatchPushEvent });
+
+      const { setLatestPublishedData } = useNodeConfigAPI();
+
+      setLatestPublishedData({ some: "new-data" });
+
+      await Vue.nextTick();
+      expect(dispatchPushEvent).toHaveBeenCalledWith({
+        eventType: UIExtensionPushEvents.EventTypes.DataEvent,
+        payload: { some: "new-data" },
+      });
+    });
+
+    it("should render execute button if view should re-execute based on node config dirty state", async () => {
+      mockGetNodeView();
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const { setDirtyState } = useNodeConfigAPI();
+
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
+      expect(wrapper.findComponent(UIExtension).exists()).toBe(true);
+
+      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
+      await Vue.nextTick();
+
+      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
+      expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
+        "To preview the node, please apply your changes and re-execute the node",
+      );
+      expect(wrapper.findComponent(ExecuteButton).props("buttonLabel")).toBe(
+        "Apply & execute",
+      );
+      expect(wrapper.findComponent(UIExtension).exists()).toBe(false);
     });
   });
 });

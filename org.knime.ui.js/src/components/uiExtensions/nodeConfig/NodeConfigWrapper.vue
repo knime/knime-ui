@@ -3,16 +3,12 @@ import { computed, ref } from "vue";
 
 import { ApplyState } from "@knime/ui-extension-service";
 import Button from "webapps-common/ui/components/Button.vue";
-import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
 
 import { useStore } from "@/composables/useStore";
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
 import type { UIExtensionLoadingState } from "../common/types";
-import { useNodeViewUniqueId } from "../common/useNodeViewUniqueId";
-import { useNodeDialogInteraction } from "../common/useNodeDialogInteraction";
-import NodeDialogLoader from "./NodeDialogLoader.vue";
+import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
+import NodeConfigLoader from "./NodeConfigLoader.vue";
 
 const store = useStore();
 
@@ -29,35 +25,27 @@ const selectedNode = computed<NativeNode>(
 
 const nodeState = computed(() => selectedNode.value.state!.executionState!);
 
-const { uniqueId } = useNodeViewUniqueId({
-  projectId,
-  workflowId,
-  selectedNode,
-});
-
-const { dirtyState, applySettings, discardSettings } = useNodeDialogInteraction(
-  uniqueId.value,
-);
+const { dirtyState, applySettings, discardSettings } = useNodeConfigAPI();
 
 const showExecuteOnlyButton = computed(
   () =>
     nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED &&
-    dirtyState.value.payload.apply === ApplyState.CLEAN,
+    dirtyState.value.apply === ApplyState.CLEAN,
 );
 
 const canApplyOrDiscard = computed(() => {
-  return dirtyState.value.payload.apply !== ApplyState.CLEAN;
+  return dirtyState.value.apply !== ApplyState.CLEAN;
 });
 
 const canApplyAndExecute = computed(() => {
   switch (nodeState.value) {
     case NodeState.ExecutionStateEnum.IDLE:
     case NodeState.ExecutionStateEnum.CONFIGURED: {
-      return dirtyState.value.payload.apply !== ApplyState.CLEAN;
+      return dirtyState.value.apply !== ApplyState.CLEAN;
     }
 
     case NodeState.ExecutionStateEnum.EXECUTED: {
-      return dirtyState.value.payload.apply === ApplyState.CONFIG;
+      return dirtyState.value.apply === ApplyState.CONFIG;
     }
 
     default: {
@@ -84,7 +72,7 @@ const onDiscard = () => {
 
 <template>
   <div class="wrapper">
-    <NodeDialogLoader
+    <NodeConfigLoader
       :key="mountKey"
       :project-id="projectId!"
       :workflow-id="workflowId"
@@ -100,7 +88,6 @@ const onDiscard = () => {
         :disabled="!canApplyOrDiscard"
         @click="onDiscard"
       >
-        <CloseIcon />
         <strong>Discard</strong>
       </Button>
 
@@ -110,10 +97,9 @@ const onDiscard = () => {
         compact
         class="button apply-execute"
         :disabled="!canApplyAndExecute"
-        @click="applySettings(selectedNode.id, false)"
+        @click="applySettings(selectedNode.id, true)"
       >
-        <PlayIcon />
-        <strong> Apply and Execute </strong>
+        <strong>Apply and Execute</strong>
       </Button>
 
       <Button
@@ -123,8 +109,7 @@ const onDiscard = () => {
         class="button execute"
         @click="executeNode"
       >
-        <PlayIcon />
-        <strong> Execute </strong>
+        <strong>Execute</strong>
       </Button>
 
       <Button
@@ -134,7 +119,6 @@ const onDiscard = () => {
         :disabled="!canApplyOrDiscard"
         @click="applySettings(selectedNode.id, false)"
       >
-        <CheckIcon />
         <strong>Apply</strong>
       </Button>
     </div>

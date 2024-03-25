@@ -1,13 +1,15 @@
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { computed, type Ref } from "vue";
 
-type UseNodeViewUniqueIdOptions = {
+type UseUniqueNodeConfigStateIdOptions = {
   projectId: Ref<string>;
   workflowId: Ref<string>;
   selectedNode: Ref<NativeNode>;
 };
 
-export const useNodeViewUniqueId = (options: UseNodeViewUniqueIdOptions) => {
+export const useUniqueNodeConfigStateId = (
+  options: UseUniqueNodeConfigStateIdOptions,
+) => {
   const { projectId, workflowId, selectedNode } = options;
 
   const uniqueId = computed(

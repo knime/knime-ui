@@ -10,8 +10,8 @@ import type { NativeNode } from "@/api/gateway-api/generated-api";
 
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
-import { useNodeViewUniqueId } from "../common/useNodeViewUniqueId";
-import { useNodeDialogInteraction } from "../common/useNodeDialogInteraction";
+import { useUniqueNodeConfigStateId } from "../common/useUniqueNodeConfigStateId";
+import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
@@ -59,14 +59,14 @@ const loadExtensionConfig = async () => {
   extensionConfig.value = _extensionConfig;
 };
 
-const { uniqueId } = useNodeViewUniqueId(toRefs(props));
+const { uniqueId } = useUniqueNodeConfigStateId(toRefs(props));
 
 const {
   setEventDispatcher,
   setDirtyState,
   setLatestPublishedData,
   setApplyComplete,
-} = useNodeDialogInteraction(uniqueId.value);
+} = useNodeConfigAPI();
 
 const noop = () => {};
 
@@ -105,17 +105,12 @@ const apiLayer: UIExtensionAPILayer = {
   registerPushEventService: ({ dispatchPushEvent }) => {
     setEventDispatcher(dispatchPushEvent);
 
-    // TODO: use?
     return () => {};
   },
 
-  onDirtyStateChange: (dirtyState) => {
-    setDirtyState(dirtyState);
-  },
+  onDirtyStateChange: setDirtyState,
 
-  onApplied: (payload) => {
-    setApplyComplete(payload.isApplied);
-  },
+  onApplied: (payload) => setApplyComplete(payload.isApplied),
 
   // NOOP - not required by this embedding context for this type of UI Extension
   updateDataPointSelection: () => Promise.resolve(null),
