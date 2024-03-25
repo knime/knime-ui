@@ -73,12 +73,20 @@ export const useNodeDialogInteraction = (uniqueNodeId: string) => {
     }
   };
 
+  const discardSettings = () => {
+    setDirtyState({
+      apply: ApplyState.CLEAN,
+      view: ViewState.CLEAN,
+    });
+  };
+
   return {
     setEventDispatcher,
     setLatestPublishedData,
     setDirtyState,
 
     applySettings,
+    discardSettings,
 
     setApplyComplete,
 

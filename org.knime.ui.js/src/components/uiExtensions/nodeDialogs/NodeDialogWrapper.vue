@@ -3,13 +3,16 @@ import { computed, ref } from "vue";
 
 import { ApplyState } from "@knime/ui-extension-service";
 import Button from "webapps-common/ui/components/Button.vue";
+import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
+import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
 
 import { useStore } from "@/composables/useStore";
-import type { UIExtensionLoadingState } from "../common/types";
-import NodeDialogLoader from "./NodeDialogLoader.vue";
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import type { UIExtensionLoadingState } from "../common/types";
 import { useNodeViewUniqueId } from "../common/useNodeViewUniqueId";
 import { useNodeDialogInteraction } from "../common/useNodeDialogInteraction";
+import NodeDialogLoader from "./NodeDialogLoader.vue";
 
 const store = useStore();
 
@@ -32,7 +35,15 @@ const { uniqueId } = useNodeViewUniqueId({
   selectedNode,
 });
 
-const { dirtyState, applySettings } = useNodeDialogInteraction(uniqueId.value);
+const { dirtyState, applySettings, discardSettings } = useNodeDialogInteraction(
+  uniqueId.value,
+);
+
+const showExecuteOnlyButton = computed(
+  () =>
+    nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED &&
+    dirtyState.value.payload.apply === ApplyState.CLEAN,
+);
 
 const canApplyOrDiscard = computed(() => {
   return dirtyState.value.payload.apply !== ApplyState.CLEAN;
@@ -54,38 +65,76 @@ const canApplyAndExecute = computed(() => {
     }
   }
 });
+
+const mountKey = ref(0);
+
+const executeNode = () => {
+  store.dispatch("workflow/executeNodes", [selectedNode.value.id]);
+};
+
+const onDiscard = () => {
+  // Currently there's no way to discard the node dialog internal state
+  // via the ui-extension service. So we just re-mount the component to force a clear
+  mountKey.value++;
+
+  // we also need to reset the value of the dirtyState reactive property
+  discardSettings();
+};
 </script>
 
 <template>
   <div class="wrapper">
     <NodeDialogLoader
+      :key="mountKey"
       :project-id="projectId!"
       :workflow-id="workflowId"
       :selected-node="selectedNode"
       @loading-state-change="loadingState = $event"
     />
 
-    <div v-if="loadingState?.value === 'ready'" class="buttons">
-      <Button with-border compact :disabled="!canApplyOrDiscard">
+    <div v-if="loadingState?.value === 'ready'" ref="buttons" class="buttons">
+      <Button
+        with-border
+        compact
+        class="button discard"
+        :disabled="!canApplyOrDiscard"
+        @click="onDiscard"
+      >
+        <CloseIcon />
         <strong>Discard</strong>
       </Button>
 
       <Button
+        v-if="!showExecuteOnlyButton"
         with-border
         compact
-        class="apply-execute"
+        class="button apply-execute"
         :disabled="!canApplyAndExecute"
-        @click="applySettings(selectedNode.id, true)"
+        @click="applySettings(selectedNode.id, false)"
       >
-        <strong>Apply and Execute</strong>
+        <PlayIcon />
+        <strong> Apply and Execute </strong>
+      </Button>
+
+      <Button
+        v-if="showExecuteOnlyButton"
+        with-border
+        compact
+        class="button execute"
+        @click="executeNode"
+      >
+        <PlayIcon />
+        <strong> Execute </strong>
       </Button>
 
       <Button
         primary
         compact
+        class="button apply"
         :disabled="!canApplyOrDiscard"
         @click="applySettings(selectedNode.id, false)"
       >
+        <CheckIcon />
         <strong>Apply</strong>
       </Button>
     </div>
@@ -106,7 +155,8 @@ const canApplyAndExecute = computed(() => {
     gap: 10px;
     justify-content: space-between;
 
-    & .apply-execute {
+    & .apply-execute,
+    & .execute {
       margin-left: auto;
     }
   }
