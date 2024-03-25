@@ -42,7 +42,7 @@ describe("Download AP Button", () => {
       propsOverrides: { utmSource },
     });
     expect(wrapper.attributes().href).toBe(
-      `${$store.state.application.analyticsPlatformDownloadURL}?utm_source=${utmSource}`,
+      `${$store.state.application.analyticsPlatformDownloadURL}?src=${utmSource}`,
     );
   });
 });
