@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, type Ref } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
 import { NodeState } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
@@ -20,7 +20,7 @@ const store = useStore();
 // Computed properties
 const selectedNode = computed<KnimeNode>(
   () => store.getters["selection/singleSelectedNode"],
-) as Ref<KnimeNode>;
+);
 const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
 
 const isNodeExecuting = computed(() =>
@@ -44,7 +44,11 @@ const openNodeConfiguration = () => {
 </script>
 
 <template>
-  <div id="right-panel" class="panel">
+  <div
+    id="right-panel"
+    class="panel"
+    :class="{ disabled: isNodeExecuting && !hasLegacyDialog }"
+  >
     <div
       v-if="showNodeDialog"
       :class="{ 'panel-dialog-disabled': isNodeExecuting }"
@@ -95,6 +99,17 @@ const openNodeConfiguration = () => {
   height: 100%;
   background-color: var(--knime-gray-ultra-light);
 
+  &.disabled {
+    cursor: not-allowed;
+  }
+
+  & .panel-dialog-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 150ms ease-out;
+    user-select: none;
+  }
+
   & .placeholder {
     display: flex;
     height: 100%;
@@ -110,20 +125,6 @@ const openNodeConfiguration = () => {
     & .button {
       margin: 0 15px;
     }
-  }
-
-  & .panel-dialog-disabled {
-    cursor: not-allowed;
-  }
-}
-</style>
-
-<style lang="postcss">
-.panel {
-  & .dialog-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    transition: opacity 150ms ease-out;
   }
 }
 </style>
