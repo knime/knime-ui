@@ -146,7 +146,8 @@ defineExpose({ focusFirst });
               download the KNIME Analytics Platform.
             </span>
             <DownloadAPButton
-              utm-source="node-repository"
+              compact
+              src="node-repository"
               class="filtered-nodes-button"
             />
           </template>

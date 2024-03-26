@@ -37,8 +37,7 @@ const savedSecondarySize = computed({
     <Sidebar id="sidebar" />
     <DownloadAPButton
       v-if="isBrowser"
-      main
-      utm-source="floating-action-button"
+      src="floating-action-button"
       class="floating-download-button"
     />
 
@@ -100,6 +99,7 @@ main {
   position: absolute;
   bottom: 30px;
   left: 50%;
+  transform: translateX(-50%);
   z-index: 1;
   box-shadow: var(--shadow-elevation-2);
 }

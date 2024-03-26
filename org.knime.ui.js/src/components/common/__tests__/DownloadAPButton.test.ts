@@ -37,12 +37,12 @@ describe("Download AP Button", () => {
   });
 
   it("includes utm parameter", () => {
-    const utmSource = "test_location";
+    const src = "test_location";
     const { wrapper, $store } = doMount({
-      propsOverrides: { utmSource },
+      propsOverrides: { src },
     });
     expect(wrapper.attributes().href).toBe(
-      `${$store.state.application.analyticsPlatformDownloadURL}?src=${utmSource}`,
+      `${$store.state.application.analyticsPlatformDownloadURL}?src=${src}`,
     );
   });
 });

@@ -6,13 +6,13 @@ import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.s
 import { useStore } from "@/composables/useStore";
 
 type Props = {
-  utmSource?: string;
-  main?: boolean;
+  src?: string;
+  compact?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  utmSource: "",
-  main: false,
+  src: "",
+  compact: false,
 });
 
 const store = useStore();
@@ -21,14 +21,14 @@ const analyticsPlatformDownloadURL = computed(
 );
 
 const href = computed(() => {
-  const parameter = props.utmSource ? `?src=${props.utmSource}` : "";
+  const parameter = props.src ? `?src=${props.src}` : "";
 
   return `${analyticsPlatformDownloadURL.value}${parameter}`;
 });
 </script>
 
 <template>
-  <Button primary :compact="main ? false : true" :href="href">
+  <Button primary :compact="compact" :href="href">
     <LinkExternalIcon />
     <span>Go to the download page</span>
   </Button>
