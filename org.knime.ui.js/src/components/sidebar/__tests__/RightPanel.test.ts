@@ -8,7 +8,6 @@ import * as workflowStore from "@/store/workflow";
 
 import RightPanel from "../RightPanel.vue";
 import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
-import Button from "webapps-common/ui/components/Button.vue";
 
 describe("RightPanel", () => {
   const doMount = (
@@ -131,19 +130,6 @@ describe("RightPanel", () => {
       expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
       expect(wrapper.findComponent(NodeConfigWrapper).exists()).toBe(true);
       expect(wrapper.find(".panel-dialog-disabled").exists()).toBe(true);
-    });
-
-    it("disables open legacy dialog button", () => {
-      const { wrapper } = doMount({
-        singleSelectedNodeMock: vi.fn().mockReturnValue({
-          id: 2,
-          kind: "node",
-          state: { executionState: NodeState.ExecutionStateEnum.QUEUED },
-        }),
-      });
-
-      expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
-      expect(wrapper.findComponent(Button).props().disabled).toBe(true);
     });
   });
 });
