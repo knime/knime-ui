@@ -3,15 +3,11 @@ import { computed } from "vue";
 import { useStore } from "vuex";
 import { NodeState } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
-import NodeDialogLoader from "@/components/uiExtensions/nodeDialogs/NodeDialogLoader.vue";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import { isBrowser } from "@/environment";
-import { useStore } from "@/composables/useStore";
-import type { KnimeNode } from "@/api/custom-types";
 
 import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
 
@@ -73,7 +69,6 @@ const openNodeConfiguration = () => {
           with-border
           compact
           class="button"
-          :disabled="isNodeExecuting"
           @click="openNodeConfiguration"
         >
           <CogIcon />
