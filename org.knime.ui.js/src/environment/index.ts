@@ -8,7 +8,7 @@ export type Environment = "DESKTOP" | "BROWSER";
 
 export const environment: Environment =
   // eslint-disable-next-line no-undefined
-  window.switchToJavaUI === undefined ? "BROWSER" : "DESKTOP";
+  window.EquoCommService === undefined ? "BROWSER" : "DESKTOP";
 
 export const isDesktop = environment === "DESKTOP";
 export const isBrowser = environment === "BROWSER";

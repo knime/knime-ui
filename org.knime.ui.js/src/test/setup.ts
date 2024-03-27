@@ -9,8 +9,11 @@ config.global.stubs = {
 };
 consola.level = LogLevel.Error;
 
-// mock presence of desktop function
-window.switchToJavaUI = () => {};
+// mock presence of 'EquoCommService' object
+window.EquoCommService = {
+  send: (_: any, __: any) => Promise.resolve(),
+  on: (_: any, __: any, ___: any) => {},
+};
 
 vi.mock("raf-throttle", () => ({
   default(func: (..._args: any) => any) {

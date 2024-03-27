@@ -51,6 +51,9 @@ describe("rpc client initialization", () => {
     it("should check for the EquoComm service", async () => {
       const { initJSONRPCClient } = await import("../index");
 
+      // @ts-ignore: We need 'undefined' to be allowed here
+      window.EquoCommService = undefined;
+
       expect(() => {
         return initJSONRPCClient(
           "DESKTOP",

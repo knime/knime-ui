@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const commServiceMock = {
+  send: (_: any, __: any) => Promise.resolve(),
+  on: (_: any, __: any, ___: any) => {},
+};
+
 describe("environment", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -7,15 +12,17 @@ describe("environment", () => {
 
   it.each([
     ["BROWSER", undefined],
-    ["DESKTOP", () => {}],
-  ])("should detect %s environment", async (env, desktopFn) => {
-    window.switchToJavaUI = desktopFn;
+    ["DESKTOP", commServiceMock],
+  ])("should detect %s environment", async (env, mock) => {
+    // @ts-ignore: We need 'undefined' to be allowed here
+    window.EquoCommService = mock;
     const module1 = await import("@/environment");
     expect(module1.environment).toBe(env);
   });
 
   it("should run code only in BROWSER environment via the `runInEnvironment` helper", async () => {
-    window.switchToJavaUI = undefined;
+    // @ts-ignore: We need 'undefined' to be allowed here
+    window.EquoCommService = undefined;
     const module1 = await import("@/environment");
 
     const runBrowser = vi.fn(() => Promise.resolve("some BROWSER result"));
@@ -32,7 +39,7 @@ describe("environment", () => {
   });
 
   it("should run code only in DESKTOP environment via the `runInEnvironment` helper", async () => {
-    window.switchToJavaUI = () => {};
+    window.EquoCommService = commServiceMock;
     const module1 = await import("@/environment");
 
     const runBrowser = vi.fn(() => Promise.resolve("some BROWSER result"));
