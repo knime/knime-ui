@@ -1,153 +1,181 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import { mapActions, mapState } from "vuex";
+<script setup lang="ts">
+import { ref, computed, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
+import MenuItems, {
+  type MenuItem,
+} from "webapps-common/ui/components/MenuItems.vue";
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Carousel from "webapps-common/ui/components/Carousel.vue";
-import HelpMenu from "./HelpMenu.vue";
-import AppMenu from "./AppMenu.vue";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CodeHtmlIcon from "webapps-common/ui/assets/img/icons/code-html.svg";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
 
+import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
+
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
+import HelpMenu from "./HelpMenu.vue";
+import AppMenu from "./AppMenu.vue";
 import AppHeaderTab from "./AppHeaderTab.vue";
-
-type ComponentData = {
-  windowWidth: number;
-  hoveredTab: string | null;
-  activeProjectTab: string | null;
-  lastActiveProject: string | null;
-};
+import { useStore } from "@/composables/useStore";
+import { useShortcuts } from "@/plugins/shortcuts";
 
 /**
  * Header Bar containing Logo, Open project tabs, and the 3 buttons Help, Preferences and Menu
  */
-export default defineComponent({
-  components: {
-    AppHeaderTab,
-    FunctionButton,
-    Carousel,
-    HelpMenu,
-    AppMenu,
-    HouseIcon,
-    ReloadIcon,
-    CodeHtmlIcon,
-    CogIcon,
-    PlusIcon,
-  },
-  data(): ComponentData {
-    return {
-      windowWidth: 0,
-      hoveredTab: null,
-      activeProjectTab: null,
-      lastActiveProject: null,
-    };
-  },
-  computed: {
-    ...mapState("application", [
-      "openProjects",
-      "activeProjectId",
-      "isLoadingWorkflow",
-      "devMode",
-      "dirtyProjectsMap",
-    ]),
 
-    isGetStartedPageActive() {
-      return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
-    },
+const windowWidth = ref(0);
+const hoveredTab = ref<string | null>(null);
+const activeProjectTab = ref<string | null>(null);
 
-    isLogoActive() {
-      return (
-        this.openProjects.length === 0 ||
-        (!this.activeProjectId && !this.isLoadingWorkflow) ||
-        this.isGetStartedPageActive
-      );
-    },
+const store = useStore();
+const $router = useRouter();
+const $route = useRoute();
+const $shortcuts = useShortcuts();
 
-    createWorkflowTitle() {
-      const shortcut = this.$shortcuts.get("createWorkflow");
-      return `${shortcut.text} (${shortcut.hotkeyText})`;
-    },
+const openProjects = computed(() => store.state.application.openProjects);
+const activeProjectId = computed(() => store.state.application.activeProjectId);
+const isLoadingWorkflow = computed(
+  () => store.state.application.isLoadingWorkflow,
+);
+const devMode = computed(() => store.state.application.devMode);
+const dirtyProjectsMap = computed(
+  () => store.state.application.dirtyProjectsMap,
+);
 
-    hasOpenProjects() {
-      return this.openProjects.length >= 1;
-    },
-  },
-  watch: {
-    activeProjectId: {
-      handler() {
-        // prevent tab color flashing when switching workflows
-        if (this.activeProjectId) {
-          this.activeProjectTab = this.activeProjectId;
-        }
-      },
-      immediate: true,
-    },
-  },
-  created() {
-    this.setupResizeListener();
-  },
-  methods: {
-    ...mapActions("workflow", ["closeProject"]),
-
-    setupResizeListener() {
-      const onResize = () => {
-        this.windowWidth = window.innerWidth;
-      };
-
-      window.addEventListener("resize", onResize);
-      onResize();
-    },
-
-    reloadApp() {
-      location.reload();
-    },
-
-    openInspector() {
-      const remoteDebuggingPort =
-        import.meta.env.KNIME_CEF_REMOTE_DEBUGGING_PORT || "8888";
-      window.open(`http://localhost:${remoteDebuggingPort}/`, "_blank");
-    },
-
-    setGetStartedPageTab() {
-      if (this.isLogoActive) {
-        return;
-      }
-      this.activeProjectTab = null;
-      this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
-    },
-
-    onProjectTabChange(projectId: string) {
-      this.$router.push({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId, workflowId: "root" },
-      });
-    },
-
-    openKnimeUIPreferencePage() {
-      API.desktop.openWebUIPreferencePage();
-    },
-
-    onWheelScroll(event: WheelEvent) {
-      event.preventDefault();
-      const delta = Math.abs(event.deltaX) === 0 ? event.deltaY : event.deltaX;
-      const carouselComponent = this.$refs.carousel as InstanceType<
-        typeof Carousel
-      >;
-      const scrollContainer = carouselComponent.$el.querySelector(".carousel");
-      scrollContainer.scrollLeft += delta;
-    },
-  },
+const isGetStartedPageActive = computed(() => {
+  return $route.name === APP_ROUTES.EntryPage.GetStartedPage;
 });
+
+const isLogoActive = computed(() => {
+  return (
+    openProjects.value.length === 0 ||
+    (!activeProjectId.value && !isLoadingWorkflow.value) ||
+    isGetStartedPageActive.value
+  );
+});
+
+const createWorkflowTitle = computed(() => {
+  const shortcut = $shortcuts.get("createWorkflow");
+  return `${shortcut.text} (${shortcut.hotkeyText})`;
+});
+
+const hasOpenProjects = computed(() => {
+  return openProjects.value.length >= 1;
+});
+
+watch(
+  activeProjectId,
+  () => {
+    // prevent tab color flashing when switching workflows
+    if (activeProjectId.value) {
+      activeProjectTab.value = activeProjectId.value;
+    }
+  },
+  { immediate: true },
+);
+
+const setupResizeListener = () => {
+  const onResize = () => {
+    windowWidth.value = window.innerWidth;
+  };
+
+  window.addEventListener("resize", onResize);
+  onResize();
+};
+
+setupResizeListener();
+
+const reloadApp = () => location.reload();
+
+const openInspector = () => {
+  const remoteDebuggingPort =
+    import.meta.env.KNIME_CEF_REMOTE_DEBUGGING_PORT || "8888";
+  window.open(`http://localhost:${remoteDebuggingPort}/`, "_blank");
+};
+
+const setGetStartedPageTab = () => {
+  if (isLogoActive.value) {
+    return;
+  }
+  activeProjectTab.value = null;
+  $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+};
+
+const onProjectTabChange = (projectId: string) => {
+  $router.push({
+    name: APP_ROUTES.WorkflowPage,
+    params: { projectId, workflowId: "root" },
+  });
+};
+
+const openKnimeUIPreferencePage = () => {
+  API.desktop.openWebUIPreferencePage();
+};
+
+const closeProject = (projectId: string) =>
+  store.dispatch("workflow/closeProject", projectId);
+
+const carousel = ref<InstanceType<typeof Carousel> | null>(null);
+const onWheelScroll = (event: WheelEvent) => {
+  event.preventDefault();
+  const delta = Math.abs(event.deltaX) === 0 ? event.deltaY : event.deltaX;
+  const scrollContainer = carousel.value!.$el.querySelector(".carousel");
+  scrollContainer.scrollLeft += delta;
+};
+
+const header = ref<HTMLElement | null>(null);
+const menuWrapper = ref<HTMLElement | null>(null);
+
+const { menuPosition, displayMenu, hideMenu, floatingStyles } =
+  useFloatingContextMenu({
+    anchorElement: computed(() => header.value!),
+    menuElement: computed(() => menuWrapper.value!),
+  });
+
+const contextMenuTab = ref<HTMLElement | null>(null);
+const onContextMenuClick = (event: MouseEvent) => {
+  const eventTarget = event.target as HTMLElement;
+  const closestTab = eventTarget.closest(".project-tab") as HTMLElement | null;
+
+  contextMenuTab.value = closestTab;
+
+  if (!closestTab) {
+    hideMenu();
+    return;
+  }
+
+  displayMenu({ x: event.clientX, y: event.clientY });
+};
+
+const contextMenuItems: MenuItem[] = [
+  { text: "Reveal in Space Explorer" },
+  {
+    text: "Close Project",
+    metadata: {
+      onClick: () => {
+        if (!contextMenuTab.value) {
+          return;
+        }
+
+        closeProject(contextMenuTab.value.dataset.projectId!);
+      },
+    },
+  },
+];
+
+const onMenuItemClick = (item: MenuItem) => {
+  item.metadata?.onClick();
+  hideMenu();
+};
 </script>
 
 <template>
-  <header>
+  <header ref="header" @contextmenu="onContextMenuClick">
     <div
       id="knime-logo"
       :class="[isLogoActive ? 'active-logo' : null]"
@@ -174,7 +202,9 @@ export default defineComponent({
                 origin = { providerId: '', projectType: null },
               } in openProjects"
               :key="projectId"
+              class="project-tab"
               :name="name"
+              :data-project-id="projectId"
               :project-id="projectId"
               :provider="origin.providerId"
               :project-type="origin.projectType"
@@ -188,6 +218,20 @@ export default defineComponent({
             />
           </div>
         </Carousel>
+
+        <div
+          v-show="menuPosition"
+          ref="menuWrapper"
+          :style="{ ...floatingStyles, zIndex: 3 }"
+        >
+          <MenuItems
+            v-if="menuPosition"
+            class="context-menu"
+            menu-aria-label="Tab context menu"
+            :items="contextMenuItems"
+            @item-click="(_, item) => onMenuItemClick(item)"
+          />
+        </div>
       </div>
 
       <div v-if="hasOpenProjects" class="create-worflow-container">
@@ -458,5 +502,9 @@ header {
       }
     }
   }
+}
+
+.context-menu {
+  position: absolute;
 }
 </style>

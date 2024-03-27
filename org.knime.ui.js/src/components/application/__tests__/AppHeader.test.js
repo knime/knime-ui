@@ -13,6 +13,28 @@ import CloseButton from "@/components/common/CloseButton.vue";
 
 const mockedAPI = deepMocked(API);
 
+const routerPush = vi.fn();
+
+vi.mock("vue-router", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    useRouter: vi.fn(() => ({ push: routerPush })),
+    useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage })),
+  };
+});
+
+const $shortcuts = {
+  get: () => ({}),
+  isEnabled: vi.fn(),
+  dispatch: vi.fn(),
+};
+
+vi.mock("@/plugins/shortcuts", () => ({
+  useShortcuts: () => $shortcuts,
+}));
+
 describe("AppHeader.vue", () => {
   const doMount = ({
     props = {},
@@ -45,23 +67,14 @@ describe("AppHeader.vue", () => {
         actions: { closeProject: vi.fn() },
       },
     };
-    const $router = {
-      currentRoute: {},
-      push: vi.fn(),
-    };
-
-    const $shortcuts = {
-      dispatch: vi.fn(),
-      get: () => ({}),
-    };
 
     const $store = mockVuexStore(storeConfig);
     const wrapper = mount(AppHeader, {
       props,
-      global: { plugins: [$store], mocks: { $router, $route, $shortcuts } },
+      global: { plugins: [$store] },
     });
 
-    return { storeConfig, wrapper, $store, $route, $router, $shortcuts };
+    return { storeConfig, wrapper, $store, $route, $shortcuts };
   };
 
   describe("tabs", () => {
@@ -84,22 +97,22 @@ describe("AppHeader.vue", () => {
     });
 
     it("should navigate to workflow", () => {
-      const { wrapper, storeConfig, $router } = doMount();
+      const { wrapper, storeConfig } = doMount();
       const projectId = storeConfig.application.state.openProjects[2].projectId;
 
       wrapper.findAll(".tab-item").at(2).trigger("click");
-      expect($router.push).toHaveBeenCalledWith({
+      expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId, workflowId: "root" },
       });
     });
 
     it("allows to click knime logo and navigate to entry page", () => {
-      const { wrapper, $router } = doMount();
+      const { wrapper } = doMount();
 
       wrapper.find("#knime-logo").trigger("click");
 
-      expect($router.push).toHaveBeenCalledWith({
+      expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.EntryPage.GetStartedPage,
       });
     });
