@@ -1,19 +1,27 @@
 <script lang="ts" setup>
+import { computed, onUnmounted } from "vue";
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
 import { useStore } from "@/composables/useStore";
-import { computed, ref } from "vue";
 
 const store = useStore();
 const activeProjectId = computed(() => store.state.application.activeProjectId);
+const currentSelectedItemIds = computed(
+  () => store.state.spaces.currentSelectedItemIds,
+);
 
-const selectedItemIds = ref<string[]>([]);
+onUnmounted(() => {
+  store.commit("spaces/setCurrentSelectedItemIds", []);
+});
 </script>
 
 <template>
   <SpaceExplorer
     v-if="activeProjectId"
-    v-model:selected-item-ids="selectedItemIds"
     mode="mini"
     :project-id="activeProjectId"
+    :selected-item-ids="currentSelectedItemIds"
+    @update:selected-item-ids="
+      store.commit('spaces/setCurrentSelectedItemIds', $event)
+    "
   />
 </template>

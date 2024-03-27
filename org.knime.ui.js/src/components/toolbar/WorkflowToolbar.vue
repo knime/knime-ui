@@ -28,7 +28,7 @@ export default {
   },
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
-    ...mapState("application", ["permissions"]),
+    ...mapState("application", ["permissions", "activeProjectId"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
     ...mapGetters("selection", ["selectedNodes"]),
     ...mapGetters("application", [
@@ -82,7 +82,7 @@ export default {
     toolbarDropdowns(): Partial<Record<ShortcutName, ShortcutName[]>> {
       // when the project is unknown we won't show the "save" action, and therefore
       // cannot show the dropdown
-      if (this.isUnknownProject) {
+      if (this.isUnknownProject(this.activeProjectId)) {
         return {};
       }
 
@@ -101,8 +101,8 @@ export default {
       }
 
       const visibleItems: Partial<Record<ShortcutName, boolean>> = {
-        save: !this.isUnknownProject && isDesktop,
-        saveAs: this.isUnknownProject && isDesktop,
+        save: !this.isUnknownProject(this.activeProjectId) && isDesktop,
+        saveAs: this.isUnknownProject(this.activeProjectId) && isDesktop,
 
         // Always visible
         undo: true,

@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { onClickOutside } from "@vueuse/core";
 
-import MenuItems, {
-  type MenuItem,
-} from "webapps-common/ui/components/MenuItems.vue";
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Carousel from "webapps-common/ui/components/Carousel.vue";
@@ -17,12 +15,13 @@ import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
 
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useStore } from "@/composables/useStore";
+import { useShortcuts } from "@/plugins/shortcuts";
 
 import HelpMenu from "./HelpMenu.vue";
 import AppMenu from "./AppMenu.vue";
 import AppHeaderTab from "./AppHeaderTab.vue";
-import { useStore } from "@/composables/useStore";
-import { useShortcuts } from "@/plugins/shortcuts";
+import AppHeaderContextMenu from "./AppHeaderContextMenu.vue";
 
 /**
  * Header Bar containing Logo, Open project tabs, and the 3 buttons Help, Preferences and Menu
@@ -137,12 +136,14 @@ const { menuPosition, displayMenu, hideMenu, floatingStyles } =
     menuElement: computed(() => menuWrapper.value!),
   });
 
-const contextMenuTab = ref<HTMLElement | null>(null);
+const contextMenuProjectId = ref<string | null>(null);
 const onContextMenuClick = (event: MouseEvent) => {
   const eventTarget = event.target as HTMLElement;
   const closestTab = eventTarget.closest(".project-tab") as HTMLElement | null;
 
-  contextMenuTab.value = closestTab;
+  contextMenuProjectId.value = closestTab
+    ? closestTab.dataset.projectId!
+    : null;
 
   if (!closestTab) {
     hideMenu();
@@ -152,26 +153,7 @@ const onContextMenuClick = (event: MouseEvent) => {
   displayMenu({ x: event.clientX, y: event.clientY });
 };
 
-const contextMenuItems: MenuItem[] = [
-  { text: "Reveal in Space Explorer" },
-  {
-    text: "Close Project",
-    metadata: {
-      onClick: () => {
-        if (!contextMenuTab.value) {
-          return;
-        }
-
-        closeProject(contextMenuTab.value.dataset.projectId!);
-      },
-    },
-  },
-];
-
-const onMenuItemClick = (item: MenuItem) => {
-  item.metadata?.onClick();
-  hideMenu();
-};
+onClickOutside(menuWrapper, hideMenu);
 </script>
 
 <template>
@@ -224,12 +206,10 @@ const onMenuItemClick = (item: MenuItem) => {
           ref="menuWrapper"
           :style="{ ...floatingStyles, zIndex: 3 }"
         >
-          <MenuItems
-            v-if="menuPosition"
-            class="context-menu"
-            menu-aria-label="Tab context menu"
-            :items="contextMenuItems"
-            @item-click="(_, item) => onMenuItemClick(item)"
+          <AppHeaderContextMenu
+            :position="menuPosition"
+            :project-id="contextMenuProjectId"
+            @item-click="hideMenu"
           />
         </div>
       </div>

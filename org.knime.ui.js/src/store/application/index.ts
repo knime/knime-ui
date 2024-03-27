@@ -365,22 +365,29 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
 
     return activeProject.origin ?? null;
   },
-  isUnknownProject(_state, getters, rootState) {
-    if (getters.activeProjectOrigin === null) {
-      return true;
-    }
-
-    const spaceProviders = rootState.spaces.spaceProviders ?? {};
-
-    // try to find a provider that contains the spaceId referenced
-    // by the activeProject's origin
-    return !Object.values(spaceProviders).find((provider) => {
-      const { spaces = [] } = provider;
-      return spaces.find(
-        (space) => space.id === getters.activeProjectOrigin.spaceId,
+  isUnknownProject({ openProjects }, _getters, rootState) {
+    return (projectId: string) => {
+      const foundProject = openProjects.find(
+        (project) => project.projectId === projectId,
       );
-    });
+
+      if (!foundProject || !foundProject.origin) {
+        return true;
+      }
+
+      const spaceProviders = rootState.spaces.spaceProviders ?? {};
+
+      // try to find a provider that contains the spaceId referenced
+      // by the activeProject's origin
+      return !Object.values(spaceProviders).find((provider) => {
+        const { spaces = [] } = provider;
+        return spaces.find(
+          (space) => space.id === foundProject.origin!.spaceId,
+        );
+      });
+    };
   },
+
   isDirtyActiveProject({ dirtyProjectsMap, activeProjectId }) {
     if (!activeProjectId) {
       return false;

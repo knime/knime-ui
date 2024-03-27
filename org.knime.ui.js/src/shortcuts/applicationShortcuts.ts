@@ -39,7 +39,8 @@ const applicationShortcuts: ApplicationShortcuts = {
       const localSpaceProject =
         projectPath[cachedLocalSpaceProjectId] && cachedLocalSpaceProjectId;
 
-      const isUnknownProject = $store.getters["application/isUnknownProject"];
+      const isUnknownProject =
+        $store.getters["application/isUnknownProject"](activeProjectId);
 
       const projectId = isUnknownProject
         ? localSpaceProject

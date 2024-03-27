@@ -7,7 +7,7 @@ import * as $colors from "@/style/colors.mjs";
 import { isBrowser } from "@/environment";
 
 const store = useStore();
-const isUnknownProject = computed<boolean>(
+const isUnknownProject = computed<(projectId: string) => boolean>(
   () => store.getters["application/isUnknownProject"],
 );
 const permissions = computed(() => store.state.application.permissions);
@@ -20,7 +20,7 @@ const activeProjectId = computed(() => store.state.application.activeProjectId);
 
 const isServerSpace = computed(
   () =>
-    !isUnknownProject.value &&
+    !isUnknownProject.value(activeProjectId.value ?? "") &&
     activeProjectProvider.value?.type === SpaceProviderNS.TypeEnum.SERVER,
 );
 
@@ -30,7 +30,8 @@ const shouldShow = computed(() => {
   }
 
   return (
-    activeProjectId.value && (isUnknownProject.value || isServerSpace.value)
+    activeProjectId.value &&
+    (isUnknownProject.value(activeProjectId.value) || isServerSpace.value)
   );
 });
 </script>

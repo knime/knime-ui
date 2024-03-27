@@ -170,8 +170,11 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       return state.spaceProviders[spaceProviderId] || {};
     },
 
-  activeProjectProvider: (state, _getters, _rootState, rootGetters) => {
-    if (rootGetters["application/isUnknownProject"]) {
+  activeProjectProvider: (state, _getters, rootState, rootGetters) => {
+    const isUnknownProject: (projectId: string) => boolean =
+      rootGetters["application/isUnknownProject"];
+
+    if (isUnknownProject(rootState.application.activeProjectId ?? "")) {
       return null;
     }
 

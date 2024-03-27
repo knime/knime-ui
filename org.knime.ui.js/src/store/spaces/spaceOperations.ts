@@ -22,6 +22,7 @@ export interface PathTriplet {
 interface State {
   isLoadingContent: boolean;
   activeRenamedItemId: string;
+  currentSelectedItemIds: string[];
 }
 
 declare module "./index" {
@@ -31,6 +32,7 @@ declare module "./index" {
 export const state = (): State => ({
   isLoadingContent: false,
   activeRenamedItemId: "",
+  currentSelectedItemIds: [],
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -40,6 +42,10 @@ export const mutations: MutationTree<SpacesState> = {
 
   setActiveRenamedItemId(state, value: string) {
     state.activeRenamedItemId = value;
+  },
+
+  setCurrentSelectedItemIds(state, itemIds) {
+    state.currentSelectedItemIds = itemIds;
   },
 };
 
