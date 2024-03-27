@@ -45,12 +45,10 @@ const openNodeConfiguration = () => {
     class="panel"
     :class="{ disabled: isNodeExecuting && !hasLegacyDialog }"
   >
-    <div
+    <NodeConfigWrapper
       v-if="showNodeDialog"
       :class="{ 'panel-dialog-disabled': isNodeExecuting }"
-    >
-      <NodeConfigWrapper />
-    </div>
+    />
 
     <!-- PLACEHOLDER - LEGACY DIALOGS -->
     <div v-else-if="hasLegacyDialog" class="placeholder">
