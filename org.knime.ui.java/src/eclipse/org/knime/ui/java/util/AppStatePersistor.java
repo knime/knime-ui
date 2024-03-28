@@ -155,8 +155,7 @@ public final class AppStatePersistor {
     }
 
     /**
-     * Loads the app state from a file and registers the opened workflow projects with the
-     * {@link ProjectManager}.
+     * Loads the app state from a file and registers the opened workflow projects with the {@link ProjectManager}.
      */
     public static void loadAppState() {
         if (!Files.exists(APP_STATE_FILE)) {
@@ -172,6 +171,9 @@ public final class AppStatePersistor {
         var projectsJson = (ArrayNode)appStateJson.get(PROJECTS);
         var wpm = ProjectManager.getInstance();
         for (var projectJson : projectsJson) {
+            if (!hasOriginAndRelativePath(projectJson)) {
+                continue; // Skips the project if no origin or relative path were persisted
+            }
             var project = createWorkflowProject(projectJson);
             var projectId = project.getID();
             wpm.addProject(project);
@@ -185,6 +187,13 @@ public final class AppStatePersistor {
                 }
             }
         }
+    }
+
+    private static boolean hasOriginAndRelativePath(final JsonNode projectJson) {
+        if (!projectJson.has(ORIGIN)) {
+            return false;
+        }
+        return projectJson.get(ORIGIN).has(RELATIVE_PATH);
     }
 
     private static Project createWorkflowProject(final JsonNode projectJson) {

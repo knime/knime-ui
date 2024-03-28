@@ -74,19 +74,81 @@ import org.knime.testing.util.WorkflowManagerUtil;
  */
 public class AppStatePersistorTest {
 
+    private static final String VALID_APP_STATE_WITH_PROJECT = """
+            {
+              "version" : "%s",
+              "projects" : [ {
+                "name" : "Test Project",
+                "active" : false,
+                "origin" : {
+                  "providerId" : "local",
+                  "spaceId" : "test_space_id",
+                  "relativePath" : "a/relative/path"
+                }
+              } ]
+            }""".formatted(KNIMEConstants.VERSION);
+
+    private static final String VALID_APP_STATE_WITHOUT_PROJECT = """
+            {
+              "version" : "%s",
+              "projects" : [ ]
+            }""".formatted(KNIMEConstants.VERSION);
+
+    private static final String INVALID_APP_STATE_NO_RELATIVE_PATH = """
+            {
+              "version" : "%s",
+              "projects" : [ {
+                "name" : "Test Project",
+                "active" : false,
+                "origin" : {
+                  "providerId" : "local",
+                  "spaceId" : "test_space_id"
+                }
+              } ]
+            }""".formatted(KNIMEConstants.VERSION);
+
+    private static final String INVALID_APP_STATE_NO_ORIGIN = """
+            {
+              "version" : "%s",
+              "projects" : [ {
+                "name" : "Test Project",
+                "active" : false
+              } ]
+            }""".formatted(KNIMEConstants.VERSION);
+
     @Test
     void testSaveAndLoadAppState() throws IOException {
         openWorkflowProject();
         var appStateString = AppStatePersistor.serializeAppState();
         AppStatePersistor.saveAppState(appStateString);
-        assertAppStateFile();
+        assertAppStateFile(VALID_APP_STATE_WITH_PROJECT);
 
         var wpm = ProjectManager.getInstance();
         wpm.getProjectIds().forEach(id -> wpm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
 
         AppStatePersistor.loadAppState();
         var appStateStringNew = AppStatePersistor.serializeAppState();
-        assertThat(appStateStringNew).isEqualTo(appStateString);
+        assertThat(appStateStringNew).as("Assert the valid app state was saved and loaded").isEqualTo(appStateString);
+    }
+
+    @Test
+    void testInvalidAppStateNoRelativePath() throws IOException {
+        AppStatePersistor.saveAppState(INVALID_APP_STATE_NO_RELATIVE_PATH);
+        assertAppStateFile(INVALID_APP_STATE_NO_RELATIVE_PATH);
+
+        AppStatePersistor.loadAppState();
+        var appStateString = AppStatePersistor.serializeAppState();
+        assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
+    }
+
+    @Test
+    void testInvalidAppStateNoOrigin() throws IOException {
+        AppStatePersistor.saveAppState(INVALID_APP_STATE_NO_ORIGIN);
+        assertAppStateFile(INVALID_APP_STATE_NO_ORIGIN);
+
+        AppStatePersistor.loadAppState();
+        var appStateString = AppStatePersistor.serializeAppState();
+        assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
     }
 
     @AfterEach
@@ -111,21 +173,13 @@ public class AppStatePersistorTest {
 
     @SuppressWarnings("javadoc")
     public static void assertAppStateFile() throws IOException {
+        assertAppStateFile(VALID_APP_STATE_WITH_PROJECT);
+    }
+
+    private static void assertAppStateFile(final String appStateString) throws IOException {
         var appStateJson = new String(Files.readAllBytes(Paths.get(KNIMEConstants.getKNIMEHomeDir(), "app_state.json")),
             StandardCharsets.UTF_8);
-        assertThat(appStateJson).isEqualTo("""
-                {
-                  "version" : "%s",
-                  "projects" : [ {
-                    "name" : "Test Project",
-                    "active" : false,
-                    "origin" : {
-                      "providerId" : "local",
-                      "spaceId" : "test_space_id",
-                      "relativePath" : "a/relative/path"
-                    }
-                  } ]
-                }""", KNIMEConstants.VERSION);
+        assertThat(appStateJson).as("Assert app state file as expected").isEqualTo(appStateString);
     }
 
 }
