@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 import MenuItems, {
   type MenuItem,
@@ -9,6 +10,8 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useStore } from "@/composables/useStore";
 import { TABS } from "@/store/panel";
+import { globalSpaceBrowserProjectId } from "@/store/spaces";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 type Props = {
   projectId: string | null;
@@ -27,12 +30,16 @@ const emit = defineEmits<{
 
 const store = useStore();
 const $toast = getToastsProvider();
+const $router = useRouter();
 
 const openProjects = computed(() => store.state.application.openProjects);
+const activeProjectId = computed(() => store.state.application.activeProjectId);
 
 const isUnknownProject = computed<(projectId: string) => boolean>(
   () => store.getters["application/isUnknownProject"],
 );
+
+let previousToastId: string;
 
 const contextMenuItems: AppHeaderContextMenuItem[] = [
   {
@@ -42,7 +49,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
         const showError = () => {
           store.commit("spaces/setCurrentSelectedItemIds", []);
 
-          $toast.show({
+          previousToastId = $toast.show({
             type: "error",
             headline: "Project not found",
             message: "Could not reveal project in Space Explorer.",
@@ -65,25 +72,37 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
             return;
           }
 
+          // remove any "active" previous toast to avoid confusing the user
+          $toast.remove(previousToastId);
+
           const { spaceId, providerId, itemId, ancestorItemIds } =
             project.origin;
 
+          // if we have no active project then we're on the home page, which means
+          // we reveal the project in the SpaceBrowsingPage instead
+          const projectPathToReload =
+            activeProjectId.value ?? globalSpaceBrowserProjectId;
+
+          if (activeProjectId.value) {
+            await store.dispatch(
+              "panel/setCurrentProjectActiveTab",
+              TABS.SPACE_EXPLORER,
+            );
+          } else {
+            $router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+          }
+
           store.commit("spaces/setProjectPath", {
-            projectId: props.projectId,
+            projectId: projectPathToReload,
             value: {
               spaceId,
               spaceProviderId: providerId,
-              itemId: ancestorItemIds?.length === 0 ? "root" : itemId,
+              itemId: ancestorItemIds?.at(0) ?? "root",
             },
           });
 
-          await store.dispatch(
-            "panel/setCurrentProjectActiveTab",
-            TABS.SPACE_EXPLORER,
-          );
-
           await store.dispatch("spaces/fetchWorkflowGroupContent", {
-            projectId: props.projectId,
+            projectId: projectPathToReload,
           });
 
           store.commit("spaces/setCurrentSelectedItemIds", [itemId]);

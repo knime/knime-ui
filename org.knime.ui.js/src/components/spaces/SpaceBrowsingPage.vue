@@ -32,14 +32,8 @@ export default defineComponent({
     };
   },
 
-  data() {
-    return {
-      selectedItemIds: [],
-    };
-  },
-
   computed: {
-    ...mapState("spaces", ["spaceProviders"]),
+    ...mapState("spaces", ["spaceProviders", "currentSelectedItemIds"]),
     ...mapGetters("spaces", [
       "getSpaceInfo",
       "hasActiveHubSession",
@@ -79,7 +73,16 @@ export default defineComponent({
       };
     },
   },
+
+  beforeUnmount() {
+    this.setCurrentSelectedItemIds([]);
+  },
+
   methods: {
+    setCurrentSelectedItemIds(items: string[]) {
+      this.$store.commit("spaces/setCurrentSelectedItemIds", items);
+    },
+
     onBackButtonClick() {
       // TODO: NXT-1461 go back to the Entry page itself
       this.$store.commit(
@@ -111,8 +114,8 @@ export default defineComponent({
           <div class="toolbar">
             <SpaceExplorerActions
               :project-id="globalSpaceBrowserProjectId"
-              :selected-item-ids="selectedItemIds"
-              @imported-item-ids="selectedItemIds = $event"
+              :selected-item-ids="currentSelectedItemIds"
+              @imported-item-ids="setCurrentSelectedItemIds($event)"
             />
           </div>
         </div>
@@ -123,8 +126,9 @@ export default defineComponent({
       <div class="grid-container">
         <div class="grid-item-12">
           <SpaceExplorer
-            v-model:selected-item-ids="selectedItemIds"
             :project-id="globalSpaceBrowserProjectId"
+            :selected-item-ids="currentSelectedItemIds"
+            @update:selected-item-ids="setCurrentSelectedItemIds($event)"
           />
         </div>
       </div>
