@@ -28,7 +28,7 @@ describe("applicationShortcuts", () => {
         },
       },
       getters: {
-        "application/isUnknownProject": false,
+        "application/isUnknownProject": () => false,
       },
     };
   });
@@ -47,7 +47,7 @@ describe("applicationShortcuts", () => {
 
     it("should work when project is from unknown origin", () => {
       $store.state.spaces.projectPath = { [cachedLocalSpaceProjectId]: {} };
-      $store.getters["application/isUnknownProject"] = true;
+      $store.getters["application/isUnknownProject"] = () => true;
       applicationShortcuts.createWorkflow.execute({ $store });
       expect(mockCommit).toHaveBeenCalledWith(
         "spaces/setCreateWorkflowModalConfig",

@@ -39,7 +39,7 @@ const shouldShow = computed(() => {
 <template>
   <div v-if="shouldShow" class="banner">
     <span>
-      <template v-if="isUnknownProject">
+      <template v-if="isUnknownProject(activeProjectId ?? '')">
         You have opened a workflow that is not part of your spaces. “Save” a
         local copy to keep your changes.
       </template>

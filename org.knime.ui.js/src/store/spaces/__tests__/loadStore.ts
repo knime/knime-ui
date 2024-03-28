@@ -109,7 +109,7 @@ export const loadStore = ({
     application: {
       state: { openProjects, activeProjectId },
       getters: {
-        isUnknownProject: () => isUnknownProject,
+        isUnknownProject: () => () => isUnknownProject,
         activeProjectOrigin: () => activeProjectOrigin,
       },
       actions: { updateGlobalLoader: () => {}, forceCloseProjects },

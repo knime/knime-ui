@@ -10,6 +10,7 @@ import AppHeader from "../AppHeader.vue";
 import AppHeaderTab from "../AppHeaderTab.vue";
 import { APP_ROUTES } from "@/router";
 import CloseButton from "@/components/common/CloseButton.vue";
+import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
 
 const mockedAPI = deepMocked(API);
 
@@ -190,6 +191,33 @@ describe("AppHeader.vue", () => {
       expect(
         wrapper.find('[data-testid="dev-mode-only"]').exists(),
       ).toBeTruthy();
+    });
+  });
+
+  describe("context menu", () => {
+    it("should display context menu", async () => {
+      const { wrapper } = doMount();
+
+      HTMLElement.prototype.closest = () =>
+        wrapper.findAllComponents(AppHeaderTab).at(0).element;
+
+      expect(wrapper.findComponent(AppHeaderContextMenu).exists()).toBe(false);
+
+      await wrapper
+        .find("header")
+        .trigger("contextmenu", { clientX: 218, clientY: 15 });
+
+      expect(wrapper.findComponent(AppHeaderContextMenu).exists()).toBe(true);
+      expect(
+        wrapper.findComponent(AppHeaderContextMenu).props("projectId"),
+      ).toBe("1");
+      expect(
+        wrapper.findComponent(AppHeaderContextMenu).props("position"),
+      ).toEqual({ x: 218, y: 15 });
+
+      wrapper.findComponent(AppHeaderContextMenu).vm.$emit("itemClick");
+      await Vue.nextTick();
+      expect(wrapper.findComponent(AppHeaderContextMenu).exists()).toBe(false);
     });
   });
 });

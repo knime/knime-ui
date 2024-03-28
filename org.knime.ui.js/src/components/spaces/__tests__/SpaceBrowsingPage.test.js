@@ -267,4 +267,29 @@ describe("SpaceBrowsingPage", () => {
       itemIds: ["1", "2"],
     });
   });
+
+  it("should handle `currentSelectedItemIds`", async () => {
+    const { wrapper, $store } = doMount();
+
+    expect(
+      wrapper.findComponent(SpaceExplorer).props("selectedItemIds"),
+    ).toEqual([]);
+
+    $store.commit("spaces/setCurrentSelectedItemIds", ["1"]);
+    await nextTick();
+
+    expect(
+      wrapper.findComponent(SpaceExplorer).props("selectedItemIds"),
+    ).toEqual(["1"]);
+
+    wrapper
+      .findComponent(SpaceExplorer)
+      .vm.$emit("update:selectedItemIds", ["2"]);
+
+    await nextTick();
+    expect($store.state.spaces.currentSelectedItemIds).toEqual(["2"]);
+
+    wrapper.unmount();
+    expect($store.state.spaces.currentSelectedItemIds).toEqual([]);
+  });
 });

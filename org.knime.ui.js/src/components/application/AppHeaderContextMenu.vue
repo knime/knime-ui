@@ -58,14 +58,14 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
         };
 
         try {
-          const project = openProjects.value.find(
+          const foundProject = openProjects.value.find(
             ({ projectId }) => projectId === props.projectId,
           );
 
           if (
-            !project ||
-            !project.origin ||
-            isUnknownProject.value(project.projectId)
+            !foundProject ||
+            !foundProject.origin ||
+            isUnknownProject.value(foundProject.projectId)
           ) {
             showError();
 
@@ -76,7 +76,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
           $toast.remove(previousToastId);
 
           const { spaceId, providerId, itemId, ancestorItemIds } =
-            project.origin;
+            foundProject.origin;
 
           // if we have no active project then we're on the home page, which means
           // we reveal the project in the SpaceBrowsingPage instead

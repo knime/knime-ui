@@ -75,12 +75,15 @@ describe("application::index", () => {
       }),
     });
 
-    store.commit("application/setActiveProjectId", "project1");
-    expect(store.getters["application/isUnknownProject"]).toBe(true);
-    store.commit("application/setActiveProjectId", "project2");
-    expect(store.getters["application/isUnknownProject"]).toBe(false);
-    store.commit("application/setActiveProjectId", "project3");
-    expect(store.getters["application/isUnknownProject"]).toBe(true);
+    expect(store.getters["application/isUnknownProject"]("project1")).toBe(
+      true,
+    );
+    expect(store.getters["application/isUnknownProject"]("project2")).toBe(
+      false,
+    );
+    expect(store.getters["application/isUnknownProject"]("project3")).toBe(
+      true,
+    );
   });
 
   describe("replace application State", () => {

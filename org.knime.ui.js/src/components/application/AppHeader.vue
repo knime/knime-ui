@@ -137,7 +137,7 @@ const { menuPosition, displayMenu, hideMenu, floatingStyles } =
   });
 
 const contextMenuProjectId = ref<string | null>(null);
-const onContextMenuClick = (event: MouseEvent) => {
+const displayContextMenu = (event: MouseEvent) => {
   const eventTarget = event.target as HTMLElement;
   const closestTab = eventTarget.closest(".project-tab") as HTMLElement | null;
 
@@ -157,7 +157,7 @@ onClickOutside(menuWrapper, hideMenu);
 </script>
 
 <template>
-  <header ref="header" @contextmenu="onContextMenuClick">
+  <header ref="header" @contextmenu="displayContextMenu">
     <div
       id="knime-logo"
       :class="[isLogoActive ? 'active-logo' : null]"
@@ -207,6 +207,7 @@ onClickOutside(menuWrapper, hideMenu);
           :style="{ ...floatingStyles, zIndex: 3 }"
         >
           <AppHeaderContextMenu
+            v-if="menuPosition"
             :position="menuPosition"
             :project-id="contextMenuProjectId"
             @item-click="hideMenu"
@@ -482,9 +483,5 @@ header {
       }
     }
   }
-}
-
-.context-menu {
-  position: absolute;
 }
 </style>
