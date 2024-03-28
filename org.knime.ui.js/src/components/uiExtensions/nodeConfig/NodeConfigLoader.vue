@@ -117,6 +117,7 @@ const apiLayer: UIExtensionAPILayer = {
   imageGenerated: noop,
   setReportingContent: noop,
   sendAlert: noop,
+  setControlsVisibility: noop,
 };
 
 watch(

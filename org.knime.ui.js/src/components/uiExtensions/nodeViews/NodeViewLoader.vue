@@ -138,6 +138,7 @@ const apiLayer: UIExtensionAPILayer = {
   imageGenerated: noop,
   onDirtyStateChange: noop,
   onApplied: noop,
+  setControlsVisibility: noop,
 };
 
 const { uniqueId } = useUniqueNodeConfigStateId(toRefs(props));
@@ -204,7 +205,7 @@ onUnmounted(() => {
   <UIExtension
     v-if="!error && !isLoadingConfig && !hasToReexecute"
     :extension-config="extensionConfig!"
-    :settings-on-clean="lastestPublishedData"
+    :initial-shared-data="lastestPublishedData"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"

@@ -125,6 +125,7 @@ const apiLayer: UIExtensionAPILayer = {
   registerPushEventService: () => noop,
   onDirtyStateChange: noop,
   onApplied: noop,
+  setControlsVisibility: noop,
 };
 
 watch(

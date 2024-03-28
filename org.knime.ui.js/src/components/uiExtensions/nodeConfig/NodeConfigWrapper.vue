@@ -138,6 +138,7 @@ const onDiscard = () => {
     padding: 10px 20px;
     gap: 10px;
     justify-content: space-between;
+    margin-top: auto;
 
     & .apply-execute,
     & .execute {

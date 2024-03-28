@@ -28,7 +28,7 @@ const __dirtyState = ref<APILayerDirtyState>({
   apply: ApplyState.CLEAN,
   view: ViewState.CLEAN,
 });
-const __latestPublishedData = ref<Record<string, unknown> | null>(null);
+const __latestPublishedData = ref<unknown | null>(null);
 let __pushEventDispatcher: UIExtensionPushEventDispatcher = () => {};
 
 const unwrappedPromise = ref<UnwrappedPromise<boolean>>(
@@ -46,7 +46,7 @@ export const useNodeConfigAPI = () => {
     __pushEventDispatcher = dispatcher;
   };
 
-  const setLatestPublishedData = (data: Record<string, unknown> | null) => {
+  const setLatestPublishedData = (data: unknown | null) => {
     __latestPublishedData.value = data;
   };
 
