@@ -242,7 +242,7 @@ describe("AppHeaderContextMenu.vue", () => {
       },
     );
 
-    it("should reveal project in SpaceBrowsingPage when there's no activr project", async () => {
+    it("should reveal project in SpaceBrowsingPage when there's no active project", async () => {
       const project = openProjects.at(3)!;
       const { wrapper, $store, dispatchSpy } = doMountWithProjects({
         props: { projectId: project.projectId },

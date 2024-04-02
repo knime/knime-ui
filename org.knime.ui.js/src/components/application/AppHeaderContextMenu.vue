@@ -57,14 +57,31 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
           });
         };
 
+        const displayExplorer = () => {
+          if (!activeProjectId.value) {
+            return $router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+          }
+
+          if (
+            store.state.panel.activeTab[activeProjectId.value] !==
+            TABS.SPACE_EXPLORER
+          ) {
+            return store.dispatch(
+              "panel/setCurrentProjectActiveTab",
+              TABS.SPACE_EXPLORER,
+            );
+          }
+
+          return Promise.resolve();
+        };
+
         try {
           const foundProject = openProjects.value.find(
             ({ projectId }) => projectId === props.projectId,
           );
 
           if (
-            !foundProject ||
-            !foundProject.origin ||
+            !foundProject?.origin ||
             isUnknownProject.value(foundProject.projectId)
           ) {
             showError();
@@ -83,27 +100,30 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
           const projectPathToReload =
             activeProjectId.value ?? globalSpaceBrowserProjectId;
 
-          if (activeProjectId.value) {
-            await store.dispatch(
-              "panel/setCurrentProjectActiveTab",
-              TABS.SPACE_EXPLORER,
-            );
-          } else {
-            $router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+          await displayExplorer();
+
+          const currentPath =
+            store.state.spaces.projectPath[projectPathToReload];
+          const nextItemId = ancestorItemIds?.at(0) ?? "root";
+
+          if (
+            currentPath?.itemId !== nextItemId ||
+            currentPath?.spaceId !== spaceId ||
+            currentPath?.spaceProviderId !== providerId
+          ) {
+            store.commit("spaces/setProjectPath", {
+              projectId: projectPathToReload,
+              value: {
+                spaceId,
+                spaceProviderId: providerId,
+                itemId: nextItemId,
+              },
+            });
+
+            await store.dispatch("spaces/fetchWorkflowGroupContent", {
+              projectId: projectPathToReload,
+            });
           }
-
-          store.commit("spaces/setProjectPath", {
-            projectId: projectPathToReload,
-            value: {
-              spaceId,
-              spaceProviderId: providerId,
-              itemId: ancestorItemIds?.at(0) ?? "root",
-            },
-          });
-
-          await store.dispatch("spaces/fetchWorkflowGroupContent", {
-            projectId: projectPathToReload,
-          });
 
           store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
         } catch (error) {

@@ -50,9 +50,6 @@ export type HotkeyText = { text: string };
 export type Hotkey = Keys | Modifiers;
 export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers> | HotkeyText>;
 
-// export type Hotkey = LooseAutoComplete<Keys | Modifiers>;
-// export type Hotkeys = Array<Hotkey>;
-
 export type ShortcutExecuteContext = {
   $store: Store<RootStoreState>;
   $router: Router;
