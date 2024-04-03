@@ -23,6 +23,8 @@ interface State {
    * Tracks loading state while switching workflows
    */
   isLoadingWorkflow: boolean;
+
+  isLoadingApp: boolean;
 }
 
 declare module "./index" {
@@ -31,19 +33,24 @@ declare module "./index" {
 
 export const state = (): State => ({
   isLoadingWorkflow: false,
+  isLoadingApp: false,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
   setIsLoadingWorkflow(state, value) {
     state.isLoadingWorkflow = value;
   },
+  setIsLoadingApp(state, value) {
+    state.isLoadingApp = value;
+  },
 };
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
   async initializeApplication(
-    { state, dispatch },
+    { state, commit, dispatch },
     { $router }: { $router: Router },
   ) {
+    commit("setIsLoadingApp", true);
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
     await runInEnvironment({
       DESKTOP: async () => {
@@ -85,6 +92,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     const applicationState = await API.application.getState({});
     await dispatch("replaceApplicationState", applicationState);
     await dispatch("setActiveProject", { $router });
+
     await runInEnvironment({
       DESKTOP: () =>
         Promise.all([
@@ -157,6 +165,9 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await dispatch("updatePreviewSnapshot", { isChangingProject, newWorkflow });
 
     commit("setIsLoadingWorkflow", true);
+    // small wait time to improve visual feedback of app skeleton loader
+    await new Promise((r) => setTimeout(r, 300));
+
     if (rootState.workflow?.activeWorkflow) {
       dispatch("saveCanvasState");
 
@@ -188,7 +199,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     commit("setIsLoadingWorkflow", false);
   },
 
-  async loadWorkflow({ dispatch }, { projectId, workflowId = "root" }) {
+  async loadWorkflow({ commit, dispatch }, { projectId, workflowId = "root" }) {
     // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
     await API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
 
@@ -210,6 +221,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       snapshotId: project.snapshotId,
     });
 
+    commit("setIsLoadingApp", false);
     await dispatch("afterSetActivateWorkflow");
   },
 

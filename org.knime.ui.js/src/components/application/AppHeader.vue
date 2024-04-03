@@ -106,6 +106,7 @@ const setGetStartedPageTab = () => {
 };
 
 const onProjectTabChange = (projectId: string) => {
+  activeProjectTab.value = projectId;
   $router.push({
     name: APP_ROUTES.WorkflowPage,
     params: { projectId, workflowId: "root" },
@@ -185,7 +186,7 @@ onClickOutside(menuWrapper, hideMenu);
                 origin = { providerId: '', projectType: null },
               } in openProjects"
               :key="projectId"
-              class="project-tab"
+              :class="['project-tab', { loading: isLoadingWorkflow }]"
               :name="name"
               :data-project-id="projectId"
               :project-id="projectId"
@@ -193,6 +194,7 @@ onClickOutside(menuWrapper, hideMenu);
               :project-type="origin.projectType"
               :window-width="windowWidth"
               :is-active="activeProjectTab === projectId"
+              :disabled="isLoadingWorkflow"
               :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
               :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"
@@ -357,6 +359,10 @@ header {
 
       & .wrapper {
         display: inline-flex;
+      }
+
+      & .project-tab.loading {
+        cursor: progress;
       }
     }
 

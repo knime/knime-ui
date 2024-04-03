@@ -11,6 +11,7 @@ import SmartLoader from "@/components/common/SmartLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import BlockUi from "@/components/application/BlockUi.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
+import AppSkeletonLoader from "./application/AppSkeletonLoader.vue";
 
 type ComponentData = {
   loaded: boolean;
@@ -27,6 +28,7 @@ export default defineComponent({
     AppHeader: defineAsyncComponent(
       () => import("@/components/application/AppHeader.vue"),
     ),
+    AppSkeletonLoader,
     UpdateBanner,
     HotkeyHandler,
     Error,
@@ -146,6 +148,8 @@ export default defineComponent({
     </DynamicEnvRenderer>
 
     <HotkeyHandler />
+
+    <AppSkeletonLoader />
 
     <template v-if="loaded">
       <div

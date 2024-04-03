@@ -226,8 +226,6 @@ const hasSection = (name: TabValues) => {
 @import url("@/assets/mixins.css");
 
 .sidebar-wrapper {
-  --sidebar-background-color: var(--knime-porcelain);
-
   display: flex;
   height: 100%;
   overflow: auto;

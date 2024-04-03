@@ -8,16 +8,6 @@
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-@keyframes knight-rider {
-  0% {
-    background-position: -200px 0;
-  }
-
-  100% {
-    background-position: 200px 0;
-  }
-}
-
 @keyframes rotate-animation {
   0% {
     transform: rotate(360deg);

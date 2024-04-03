@@ -27,11 +27,12 @@ const maxCharFunction = (windowWidth: number) => {
 type Props = {
   name: string;
   projectId: string;
+  provider: string;
   projectType?: string | null;
   isActive?: boolean;
   hasUnsavedChanges?: boolean;
   windowWidth?: number;
-  provider: string;
+  disabled?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -39,6 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
   isActive: false,
   hasUnsavedChanges: false,
   windowWidth: 0,
+  disabled: false,
 });
 
 const emit = defineEmits<{
@@ -67,7 +69,11 @@ const isLocal = computed(
 );
 
 const activateTab = () => {
-  return props.isActive ? null : emit("switchWorkflow", props.projectId);
+  if (props.disabled || props.isActive) {
+    return;
+  }
+
+  emit("switchWorkflow", props.projectId);
 };
 </script>
 
@@ -77,9 +83,10 @@ const activateTab = () => {
     :class="{ active: isActive }"
     :title="shouldTruncateName ? name : undefined"
     tabindex="0"
+    :aria-disabled="disabled"
     @click.stop="activateTab"
     @keydown.enter="activateTab"
-    @click.middle.stop="emit('closeProject', projectId)"
+    @click.middle.stop="!disabled && emit('closeProject', projectId)"
   >
     <!-- There are different icons for local workflows and for components -->
     <template v-if="isLocal">
@@ -93,6 +100,7 @@ const activateTab = () => {
 
     <span class="text">{{ truncatedProjectName }}</span>
     <CloseButton
+      :disabled="disabled"
       class="close-icon"
       :has-unsaved-changes="hasUnsavedChanges"
       @close.stop="emit('closeProject', projectId)"
@@ -128,7 +136,7 @@ const activateTab = () => {
     @mixin svg-icon-size 18;
   }
 
-  &:hover {
+  &:hover:not([aria-disabled="true"]) {
     background-color: hsl(0deg 3% 12% / 30%);
   }
 
@@ -156,7 +164,11 @@ const activateTab = () => {
     }
   }
 
-  &:focus-visible {
+  &:focus-visible:not([aria-disabled="false"]) {
+    outline: none;
+  }
+
+  &:focus-visible:not([aria-disabled="true"]) {
     outline: none;
     text-decoration: underline;
     background-color: hsl(0deg 3% 12% / 30%);
@@ -176,7 +188,7 @@ const activateTab = () => {
     stroke: var(--knime-black);
   }
 
-  & .close-icon {
+  &:not([aria-disabled="true"]) .close-icon {
     & :deep(svg) {
       stroke: var(--knime-black);
 
@@ -187,8 +199,8 @@ const activateTab = () => {
     }
   }
 
-  &:hover,
-  &:focus {
+  &:hover:not([aria-disabled="true"]),
+  &:focus:not([aria-disabled="true"]) {
     cursor: inherit;
     background-color: var(--knime-yellow);
   }

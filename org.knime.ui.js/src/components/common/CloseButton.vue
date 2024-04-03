@@ -41,7 +41,7 @@ button {
   align-items: center;
   background-color: transparent;
 
-  & svg {
+  &:not([disabled]) svg {
     border: 0;
     border-radius: 50%;
     stroke: var(--knime-dove-gray);
