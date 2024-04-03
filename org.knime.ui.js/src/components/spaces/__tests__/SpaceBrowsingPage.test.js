@@ -155,7 +155,7 @@ describe("SpaceBrowsingPage", () => {
 
   it("routes back to space selection page when back button is clicked and clears state", async () => {
     const { wrapper, $router, commitSpy } = doMount();
-    await wrapper.findComponent(ArrowLeftIcon).vm.$emit("click");
+    await wrapper.find('button[title="Back"]').trigger("click");
 
     expect(commitSpy).toHaveBeenCalledWith(
       "spaces/removeProjectPath",

@@ -66,7 +66,11 @@ describe("Sidebar", () => {
       },
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy };
+    const activateTab = async (tabName: string) => {
+      await wrapper.find(`[title="${tabName}"] > input`).trigger("change");
+    };
+
+    return { wrapper, $store, dispatchSpy, commitSpy, activateTab };
   };
 
   it("renders default", () => {
@@ -84,50 +88,50 @@ describe("Sidebar", () => {
 
   it("expands and activates tab", async () => {
     const tabName = "Nodes";
-    const { wrapper } = doMount();
+    const { wrapper, activateTab } = doMount();
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(true);
 
-    await wrapper.find(`[title="${tabName}"]`).trigger("click");
+    await activateTab(tabName);
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(true);
     expect(wrapper.find(`[title="${tabName}"]`).classes("active")).toBe(true);
   });
 
   it("clicking on open tab should close it", async () => {
     const tabName = "Description";
-    const { wrapper } = doMount();
-    await wrapper.find(`[title="${tabName}"]`).trigger("click");
+    const { wrapper, activateTab } = doMount();
+    await activateTab(tabName);
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(
       false,
     );
 
-    await wrapper.find(`[title="${tabName}"]`).trigger("click");
+    await activateTab(tabName);
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(true);
   });
 
   it("click on node repository icon when description panel is open closes both panels", async () => {
-    const { wrapper, $store } = doMount();
+    const { $store, activateTab } = doMount();
     // open node repository
-    await wrapper.find('[title="Nodes"]').trigger("click");
+    await activateTab("Nodes");
     // emulate opening the description panel
     await $store.dispatch("panel/openExtensionPanel");
     expect($store.state.panel.isExtensionPanelOpen).toBe(true);
 
-    await wrapper.find('[title="Nodes"]').trigger("click");
+    await activateTab("Nodes");
     expect($store.state.panel.isExtensionPanelOpen).toBe(false);
   });
 
   it("click on a different tab when extension panel is open, closes the extension panel", async () => {
-    const { wrapper, $store } = doMount();
+    const { $store, activateTab } = doMount();
 
-    await wrapper.find('[title="Nodes"]').trigger("click");
+    await activateTab("Nodes");
     // emulate opening the description panel
     await $store.dispatch("panel/openExtensionPanel");
 
     // back to Description
-    await wrapper.find('[title="Description"]').trigger("click");
+    await activateTab("Description");
 
     // back to node repository
-    await wrapper.find('[title="Nodes"]').trigger("click");
+    await activateTab("Nodes");
 
     expect($store.state.panel.isExtensionPanelOpen).toBe(false);
   });

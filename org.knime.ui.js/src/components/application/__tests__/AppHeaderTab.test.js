@@ -14,7 +14,6 @@ describe("AppHeaderTab.vue", () => {
       name: "MockTab",
       projectId: "1",
       isActive: false,
-      isHoveredOver: false,
       windowWidth: 1024,
       projectType: "Workflow",
       provider: "local",
@@ -22,23 +21,6 @@ describe("AppHeaderTab.vue", () => {
 
     return shallowMount(AppHeaderTab, { props: { ...defaultProps, ...props } });
   };
-
-  describe("hover", () => {
-    it('should set the "hovered" class when `isHoveredOver` prop is true', () => {
-      const wrapper = doMount({ isHoveredOver: true });
-      expect(wrapper.find(".tab-item").classes()).toContain("hovered");
-    });
-
-    it("should emit hover event", async () => {
-      const wrapper = doMount({ projectId: "2" });
-
-      await wrapper.find(".tab-item").trigger("mouseover");
-      expect(wrapper.emitted("hover")[0][0]).toBe("2");
-
-      await wrapper.find(".tab-item").trigger("mouseleave");
-      expect(wrapper.emitted("hover")[1][0]).toBeNull();
-    });
-  });
 
   it('should set the "active" class when the `isActive` prop is true', () => {
     const wrapper = doMount({ isActive: true });

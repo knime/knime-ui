@@ -15,7 +15,10 @@ describe("Card.vue", () => {
       },
       global: {
         stubs: {
-          RouterLink: { name: "RouterLink", template: "<a></a>" },
+          RouterLink: {
+            name: "RouterLink",
+            template: "<router-link-stub></router-link-stub>",
+          },
         },
       },
     });
@@ -37,10 +40,10 @@ describe("Card.vue", () => {
     expect(wrapper.find(".card-footer").exists()).toBe(true);
   });
 
-  it("should behave as a button when `link` prop is not specified", () => {
+  it("should behave as <a> tag when `link` prop is not specified", () => {
     const { wrapper } = doMount();
 
-    expect(wrapper.attributes("role")).toBe("button");
+    expect(wrapper.element.tagName).toBe("BUTTON");
 
     wrapper.trigger("click");
     expect(wrapper.emitted("click")).toBeDefined();
@@ -51,7 +54,7 @@ describe("Card.vue", () => {
       props: { link: true, href: "http://example.com" },
     });
 
-    expect(wrapper.find("router-link").attributes("to")).toBe(
+    expect(wrapper.find("router-link-stub").attributes("to")).toBe(
       "http://example.com",
     );
   });

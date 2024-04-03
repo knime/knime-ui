@@ -20,9 +20,9 @@ defineEmits<{
   <Component :is="routerLink" v-if="link" :to="href" class="card" tabindex="0">
     <slot />
   </Component>
-  <a v-else class="card" :href="href" @click.prevent="$emit('click')">
+  <button v-else class="card" @click.prevent="$emit('click')">
     <slot />
-  </a>
+  </button>
 </template>
 
 <style lang="postcss" scoped>
@@ -37,6 +37,10 @@ defineEmits<{
   box-shadow: var(--shadow-elevation-1);
   transition: all 150ms ease-out;
   height: 100%;
+
+  &:focus-visible {
+    outline: revert;
+  }
 
   &:hover {
     box-shadow: var(--shadow-elevation-2);

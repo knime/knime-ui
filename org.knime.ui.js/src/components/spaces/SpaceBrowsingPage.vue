@@ -99,9 +99,13 @@ export default defineComponent({
   <main ref="main">
     <PageHeader :title="spaceInfo.title" :subtitle="spaceInfo.subtitle">
       <template #button>
-        <a title="Back" href="" @click.prevent="onBackButtonClick">
-          <ArrowLeftIcon class="back-button" />
-        </a>
+        <button
+          class="back-button"
+          title="Back"
+          @click.prevent="onBackButtonClick"
+        >
+          <ArrowLeftIcon class="back-icon" />
+        </button>
       </template>
       <template #icon>
         <Component :is="spaceInfo.icon" />
@@ -172,16 +176,27 @@ main {
 }
 
 .back-button {
-  @mixin svg-icon-size 30;
-
-  stroke: var(--knime-dove-gray);
+  background-color: transparent;
+  border: none;
   border-right: 1px solid var(--knime-silver-sand);
-  padding-right: 10px;
-  width: 40px;
+  width: 50px;
   height: 60px;
 
   &:hover {
     cursor: pointer;
+  }
+
+  &:focus-visible {
+    outline: revert;
+  }
+}
+
+.back-icon {
+  @mixin svg-icon-size 30;
+
+  stroke: var(--knime-dove-gray);
+
+  &:hover {
     stroke: var(--knime-masala);
   }
 }

@@ -108,10 +108,10 @@ describe("AppHeader.vue", () => {
       });
     });
 
-    it("allows to click knime logo and navigate to entry page", () => {
+    it("allows to click home button and navigate to entry page", () => {
       const { wrapper } = doMount();
 
-      wrapper.find("#knime-logo").trigger("click");
+      wrapper.find(".home-button").trigger("click");
 
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.EntryPage.GetStartedPage,
@@ -127,7 +127,9 @@ describe("AppHeader.vue", () => {
 
     it("sets the entry tab at startup when there are no open projects", () => {
       const { wrapper } = doMount({ customOpenProjects: [] });
-      expect(wrapper.find("#knime-logo").classes()).toContain("active-logo");
+      expect(wrapper.findComponent(".home-button").props()).toMatchObject({
+        active: true,
+      });
     });
 
     it("updates the active tab when the activeProject changes", async () => {
@@ -138,16 +140,6 @@ describe("AppHeader.vue", () => {
 
       await Vue.nextTick();
       expect(secondTab.props("isActive")).toBe(true);
-    });
-
-    it("updates the hoveredTab state", async () => {
-      const { wrapper } = doMount();
-      const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1);
-      expect(secondTab.props("isHoveredOver")).toBe(false);
-
-      secondTab.vm.$emit("hover", "2");
-      await Vue.nextTick();
-      expect(secondTab.props("isHoveredOver")).toBe(true);
     });
   });
 
