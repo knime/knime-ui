@@ -9,6 +9,7 @@ interface Permissions {
   canAccessNodeRepository: boolean;
   canAccessKAIPanel: boolean;
   canAccessSpaceExplorer: boolean;
+  showRemoteWorkflowInfo: boolean;
 }
 
 interface State {
@@ -30,6 +31,7 @@ export const state = (): State => ({
     canAccessNodeRepository: true,
     canAccessKAIPanel: true,
     canAccessSpaceExplorer: true,
+    showRemoteWorkflowInfo: true,
   },
 });
 

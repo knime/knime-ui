@@ -55,19 +55,20 @@ If you want to load KNIME UI in an iframe by means of the AP-loader, in addition
 
 ### Modes
 
-With AP running in the browser there is the concept of modes. A mode define the set of features a user has access, and it may change the features enabled in the UI. The available modes are `JOB-VIEWER`.
+The Analytics Platform can be started under a _mode_. It is used to specify a broad use-case. 
+The mode determines the _permissions_ which, in a granular manner, control what functionality of the AP is available.
 
-To enable a mode add the following property when starting AP either in `knime.ini` or in the `VM Arguments`.
+To configure a mode, set the following Java system property (i.e., add to `knime.ini` or in the "VM Arguments" section in the Eclipse launch configuration).
 
-```sh
--Dorg.knime.ui.mode=JOB-VIEWER
+```
+-Dorg.knime.ui.mode=<mode>
 ```
 
 ## Git hooks
 
 To set up hooks via [husky] on the repository (recommended for a frontend-focused development setup) you can run the following npm script:
 
-```
+```sh
 npm run add-husky
 ```
 

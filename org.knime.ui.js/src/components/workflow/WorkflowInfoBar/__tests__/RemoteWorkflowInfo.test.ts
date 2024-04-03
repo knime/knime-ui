@@ -187,7 +187,7 @@ describe("RemoteWorkflowInfo.vue", () => {
       component: RemoteWorkflowInfo,
     });
 
-    $store.state.application.permissions.canEditWorkflow = false;
+    $store.state.application.permissions.showRemoteWorkflowInfo = false;
     await nextTick();
 
     expect(wrapper.find(".banner").exists()).toBe(false);

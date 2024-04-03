@@ -527,7 +527,7 @@ export interface AppState {
      */
     nodeRepositoryLoaded?: boolean;
     /**
-     * Web URL to send the user to to download the desktop edition of the AP.
+     * Web URL to send the user to to download the desktop edition of the Analytics Platform.
      * @type {string}
      * @memberof AppState
      */
@@ -2706,6 +2706,12 @@ export interface Permissions {
      * @memberof Permissions
      */
     canAccessSpaceExplorer: boolean;
+    /**
+     * Whether an indicator for certain kinds of remote workflows (\&quot;yellow bar\&quot;) should be shown
+     * @type {boolean}
+     * @memberof Permissions
+     */
+    showRemoteWorkflowInfo: boolean;
 
 }
 

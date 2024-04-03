@@ -25,7 +25,7 @@ const isServerSpace = computed(
 );
 
 const shouldShow = computed(() => {
-  if (isBrowser && !permissions.value.canEditWorkflow) {
+  if (!permissions.value.showRemoteWorkflowInfo) {
     return false;
   }
 
