@@ -3,6 +3,7 @@
 @import "webapps-common/ui/css/grid";
 @import "./fonts";
 @import "./variables";
+@import "./mixins";
 
 /* prevent "bounce" effect when scrolling with touch pad */
 body {
@@ -12,4 +13,8 @@ body {
 
 button {
   outline: none;
+}
+
+.tab-bar input:focus-visible + span {
+  @mixin focus-style 1, 0;
 }

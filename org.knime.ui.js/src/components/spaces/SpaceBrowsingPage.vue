@@ -99,9 +99,9 @@ export default defineComponent({
   <main ref="main">
     <PageHeader :title="spaceInfo.title" :subtitle="spaceInfo.subtitle">
       <template #button>
-        <span title="Back">
-          <ArrowLeftIcon class="back-button" @click="onBackButtonClick" />
-        </span>
+        <a title="Back" href="" @click.prevent="onBackButtonClick">
+          <ArrowLeftIcon class="back-button" />
+        </a>
       </template>
       <template #icon>
         <Component :is="spaceInfo.icon" />

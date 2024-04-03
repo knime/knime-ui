@@ -54,5 +54,14 @@ button {
       stroke: var(--knime-masala);
     }
   }
+
+  &:focus-visible {
+    outline: none;
+
+    & svg {
+      background-color: var(--knime-silver-sand-semi);
+      stroke: var(--knime-masala);
+    }
+  }
 }
 </style>

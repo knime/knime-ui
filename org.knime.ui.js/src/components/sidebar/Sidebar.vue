@@ -157,19 +157,27 @@ const hasSection = (name: TabValues) => {
 </script>
 
 <template>
-  <div class="sidebar-wrapper">
+  <div id="sidebar" class="sidebar-wrapper">
     <nav>
-      <ul>
-        <li
+      <div>
+        <label
           v-for="section in sidebarSections"
           :key="section.title"
           :title="section.title"
           :class="{ active: section.isActive, expanded: section.isExpanded }"
-          @click="section.onClick"
         >
-          <Component :is="section.icon" />
-        </li>
-      </ul>
+          <input
+            name="sidebar-tabs"
+            :value="section.name"
+            type="radio"
+            :checked="section.isActive"
+            @change="section.onClick"
+          />
+          <span>
+            <Component :is="section.icon" />
+          </span>
+        </label>
+      </div>
     </nav>
 
     <LeftCollapsiblePanel
@@ -229,10 +237,12 @@ nav {
   width: var(--app-side-bar-buttons-width);
   background-color: var(--knime-black);
 
-  & ul {
-    display: contents;
+  & > div {
+    &:focus-within:has(:focus-visible) {
+      @mixin focus-style 1, 1;
+    }
 
-    & li {
+    & label {
       height: 50px;
       width: 40px;
       display: flex;
@@ -263,6 +273,20 @@ nav {
           stroke: var(--knime-masala);
         }
       }
+    }
+
+    & input[type="radio"] {
+      /* https://accessibility.18f.gov/hidden-content/ */
+      border: 0;
+      clip: rect(0 0 0 0);
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
+      top: 0; /* top/left prevent right margin mobile safari */
+      left: 0;
     }
   }
 }

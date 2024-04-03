@@ -14,7 +14,7 @@ const distance = function (pt1: XY, pt2: XY) {
   const { x: x1, y: y1 } = pt1;
   const { x: x2, y: y2 } = pt2;
 
-  // use Manhattan distance instead of Euclidian distance
+  // use Manhattan distance instead of Euclidean distance
   return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 };
 

@@ -30,7 +30,6 @@ type Props = {
   projectType?: string | null;
   isActive?: boolean;
   hasUnsavedChanges?: boolean;
-  isHoveredOver?: boolean;
   windowWidth?: number;
   provider: string;
 };
@@ -39,7 +38,6 @@ const props = withDefaults(defineProps<Props>(), {
   projectType: null,
   isActive: false,
   hasUnsavedChanges: false,
-  isHoveredOver: false,
   windowWidth: 0,
 });
 
@@ -68,19 +66,19 @@ const isLocal = computed(
   () => provider.value.toUpperCase() === SpaceProviderNS.TypeEnum.LOCAL,
 );
 
-const onHover = (hoverValue: string | null) => {
-  emit("hover", hoverValue);
+const activateTab = () => {
+  return props.isActive ? null : emit("switchWorkflow", props.projectId);
 };
 </script>
 
 <template>
   <div
     class="tab-item"
-    :class="{ active: isActive, hovered: isHoveredOver }"
+    :class="{ active: isActive }"
     :title="shouldTruncateName ? name : undefined"
-    @click.stop="isActive ? null : emit('switchWorkflow', projectId)"
-    @mouseover="onHover(projectId)"
-    @mouseleave="onHover(null)"
+    tabindex="0"
+    @click.stop="activateTab"
+    @keydown.enter="activateTab"
     @click.middle.stop="emit('closeProject', projectId)"
   >
     <!-- There are different icons for local workflows and for components -->
@@ -156,6 +154,12 @@ const onHover = (hoverValue: string | null) => {
 
       @mixin svg-icon-size 20;
     }
+  }
+
+  &:focus-visible {
+    outline: none;
+    text-decoration: underline;
+    background-color: hsl(0deg 3% 12% / 30%);
   }
 }
 

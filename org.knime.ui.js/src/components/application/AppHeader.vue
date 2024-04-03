@@ -24,7 +24,7 @@ import AppHeaderTab from "./AppHeaderTab.vue";
 import AppHeaderContextMenu from "./AppHeaderContextMenu.vue";
 
 /**
- * Header Bar containing Logo, Open project tabs, and the 3 buttons Help, Preferences and Menu
+ * Header Bar containing Home, Open project tabs, and the 3 buttons Help, Preferences and Menu
  */
 
 const windowWidth = ref(0);
@@ -50,7 +50,7 @@ const isGetStartedPageActive = computed(() => {
   return $route.name === APP_ROUTES.EntryPage.GetStartedPage;
 });
 
-const isLogoActive = computed(() => {
+const isHomeActive = computed(() => {
   return (
     openProjects.value.length === 0 ||
     (!activeProjectId.value && !isLoadingWorkflow.value) ||
@@ -98,7 +98,7 @@ const openInspector = () => {
 };
 
 const setGetStartedPageTab = () => {
-  if (isLogoActive.value) {
+  if (isHomeActive.value) {
     return;
   }
   activeProjectTab.value = null;
@@ -158,13 +158,14 @@ onClickOutside(menuWrapper, hideMenu);
 
 <template>
   <header ref="header" @contextmenu="displayContextMenu">
-    <div
-      id="knime-logo"
-      :class="[isLogoActive ? 'active-logo' : null]"
+    <FunctionButton
+      class="home-button"
+      title="Home"
+      :active="isHomeActive"
       @click="setGetStartedPageTab()"
     >
-      <div class="text"><HouseIcon /> Home</div>
-    </div>
+      <HouseIcon /> Home
+    </FunctionButton>
     <div
       :class="[
         'toolbar',
@@ -215,7 +216,7 @@ onClickOutside(menuWrapper, hideMenu);
         </div>
       </div>
 
-      <div v-if="hasOpenProjects" class="create-worflow-container">
+      <div v-if="hasOpenProjects" class="create-workflow-container">
         <button
           class="create-workflow-btn"
           :title="createWorkflowTitle"
@@ -272,6 +273,8 @@ onClickOutside(menuWrapper, hideMenu);
 @import url("@/assets/mixins.css");
 
 header {
+  --header-button-height: 24px;
+
   display: flex;
   height: var(--app-header-height);
   background-color: var(--knime-masala);
@@ -289,6 +292,32 @@ header {
     width: 100%;
     height: 1px;
     background: v-bind("$colors.darkeningMask");
+  }
+
+  & .home-button {
+    --theme-button-function-foreground-color-active: var(--knime-masala);
+    --theme-button-function-background-color-active: var(--knime-yellow);
+    --theme-button-function-foreground-color-focus: var(--knime-masala);
+    --theme-button-function-background-color-focus: var(--knime-yellow);
+    --theme-button-function-foreground-color-hover: var(--knime-masala);
+    --theme-button-function-background-color-hover: var(--knime-yellow);
+
+    border: 1px solid var(--knime-dove-gray);
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    align-self: center;
+    color: var(--knime-white);
+    height: var(--header-button-height);
+    padding: 10px;
+    margin: 0 35px 0 10px;
+
+    & svg {
+      @mixin svg-icon-size 16;
+
+      margin-right: 5px;
+      stroke: var(--knime-white);
+    }
   }
 
   & .toolbar {
@@ -331,7 +360,7 @@ header {
       }
     }
 
-    & .create-worflow-container {
+    & .create-workflow-container {
       height: 100%;
       display: flex;
 
@@ -353,6 +382,11 @@ header {
         height: 100%;
 
         &:hover {
+          outline: none;
+          background: var(--knime-black-semi);
+        }
+
+        &:focus-visible {
           outline: none;
           background: var(--knime-black-semi);
         }
@@ -383,11 +417,11 @@ header {
         align-items: center;
         justify-content: center;
         color: var(--knime-white);
-        height: 26px;
+        height: var(--header-button-height);
         padding: 10px;
 
         & svg {
-          @mixin svg-icon-size 18;
+          @mixin svg-icon-size 16;
 
           margin-right: 5px;
           stroke: var(--knime-white);

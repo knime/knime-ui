@@ -29,7 +29,7 @@ const sendMessage = <TResponse, TPayload = Record<string, any>>(
   });
 
 /**
- * Find the nearest obeject (node or annotation) in the workflow with respect
+ * Find the nearest object (node or annotation) in the workflow with respect
  * to the given reference object and the given (general) direction. This direction
  * will be treated as a kind of cone of action that starts (and grows) from the
  * reference object and points to the corresponding direction.

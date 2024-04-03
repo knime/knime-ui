@@ -17,6 +17,8 @@ import { usePanning } from "./usePanning";
 import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
 import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 import { RESIZE_DEBOUNCE } from "./constants";
+import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { capitalize } from "webapps-common/util/capitalize";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
@@ -76,7 +78,10 @@ onMounted(() => {
   store.dispatch("canvas/initScrollContainerElement", rootEl.value);
   initResizeObserver();
 
-  rootEl.value!.focus();
+  // focus kanvas only if do not have an active element or its the body (which is the default)
+  if (!document?.activeElement || document?.activeElement?.tagName === "BODY") {
+    rootEl.value!.focus();
+  }
 });
 
 onBeforeUnmount(() => {
@@ -107,6 +112,31 @@ const startRectangleSelection = (event: PointerEvent) => {
     $bus.emit("selection-pointerdown", event);
   }
 };
+
+const selectFirstObject = async () => {
+  // we only select something if we don't have a selection yet
+  const selectedObjects = store.getters["selection/selectedObjects"];
+  if (selectedObjects.length !== 0) {
+    return;
+  }
+
+  // look for the "first" object
+  const firstObject = await workflowNavigationService.nearestObject({
+    objects: store.getters["workflow/workflowObjects"],
+    reference: {
+      x: 0,
+      y: 0,
+      id: "",
+    },
+    direction: "left",
+  });
+  if (firstObject) {
+    store.dispatch(
+      `selection/select${capitalize(firstObject.type)}`,
+      firstObject.id,
+    );
+  }
+};
 </script>
 
 <template>
@@ -129,6 +159,10 @@ const startRectangleSelection = (event: PointerEvent) => {
     @pointerup.left="stopPan"
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
+    @keydown.left="selectFirstObject"
+    @keydown.right="selectFirstObject"
+    @keydown.up="selectFirstObject"
+    @keydown.down="selectFirstObject"
   >
     <svg
       ref="svg"
@@ -147,6 +181,8 @@ const startRectangleSelection = (event: PointerEvent) => {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 svg {
   position: relative;
 
@@ -171,6 +207,15 @@ svg {
 
   &:focus {
     outline: none;
+  }
+
+  &:focus-visible {
+    /** TODO: check if we can make this the default */
+    & > svg {
+      background-color: transparent !important;
+    }
+
+    @mixin focus-style 1, 0;
   }
 
   &.empty {

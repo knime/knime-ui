@@ -1,44 +1,34 @@
-<script>
-import { h as createElement } from "vue";
-import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
+<script lang="ts" setup>
+interface Props {
+  link?: boolean;
+  href?: string;
+}
 
-export default {
-  components: {
-    WorkflowIcon,
-  },
+withDefaults(defineProps<Props>(), {
+  link: false,
+  href: "",
+});
 
-  props: {
-    link: {
-      type: Boolean,
-      default: false,
-    },
+const routerLink = "router-link";
 
-    href: {
-      type: String,
-      default: "",
-    },
-  },
-
-  emits: ["click"],
-
-  render() {
-    const element = this.link ? "router-link" : "div";
-
-    const attrs = this.link ? { to: this.href } : { role: "button" };
-
-    const handlers = this.link ? {} : { onClick: () => this.$emit("click") };
-
-    return createElement(
-      element,
-      { class: "card", ...attrs, ...handlers },
-      this.$slots.default(),
-    );
-  },
-};
+defineEmits<{
+  (e: "click"): void;
+}>();
 </script>
+
+<template>
+  <Component :is="routerLink" v-if="link" :to="href" class="card" tabindex="0">
+    <slot />
+  </Component>
+  <a v-else class="card" :href="href" @click.prevent="$emit('click')">
+    <slot />
+  </a>
+</template>
 
 <style lang="postcss" scoped>
 .card {
+  display: block;
+  text-decoration: none;
   min-width: 300px;
   min-height: 150px;
   padding: 0;

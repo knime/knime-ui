@@ -72,7 +72,8 @@ button {
   background-color: var(--sidebar-background-color);
   cursor: pointer;
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     background-color: var(--knime-silver-sand-semi);
   }
 

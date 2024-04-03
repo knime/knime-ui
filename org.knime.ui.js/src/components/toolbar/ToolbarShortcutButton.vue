@@ -75,7 +75,7 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       ref="submenu"
       :teleport-to-body="false"
       :items="subMenuItems"
-      tabindex="1"
+      tabindex="0"
       orientation="left"
       @item-click="(_, item) => $shortcuts.dispatch(item.name)"
       @keydown.enter.stop.prevent="
