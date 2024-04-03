@@ -171,7 +171,7 @@ export default defineComponent({
         configureNode:
           this.canOpenDialog !== null &&
           this.permissions.canConfigureNodes &&
-          compatibility.canConfigureNodes(this.nodeKind),
+          compatibility.canConfigureNodes(),
 
         // plain execution
         execute: !this.canPause && !this.canResume,

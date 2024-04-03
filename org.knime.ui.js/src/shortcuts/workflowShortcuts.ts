@@ -103,7 +103,7 @@ const workflowShortcuts: WorkflowShortcuts = {
 
         return (
           canOpenDialog &&
-          compatibility.canConfigureNodes(singleSelectedNode.kind) &&
+          compatibility.canConfigureNodes() &&
           $store.state.application.permissions.canConfigureNodes
         );
       }

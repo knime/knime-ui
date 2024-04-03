@@ -1,4 +1,3 @@
-import { Node } from "@/api/gateway-api/generated-api";
 import { isDesktop } from "./index";
 
 /**
@@ -11,9 +10,7 @@ import { isDesktop } from "./index";
  * use the variables exported from the `index` file
  */
 
-export const canConfigureNodes = (nodeKind: Node.KindEnum) => {
-  return isDesktop ? true : nodeKind === Node.KindEnum.Node;
-};
+export const canConfigureNodes = () => isDesktop;
 
 export const canConfigureFlowVariables = () => isDesktop;
 
