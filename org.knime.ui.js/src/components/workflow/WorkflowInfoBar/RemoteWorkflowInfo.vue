@@ -4,7 +4,6 @@ import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
 import { SpaceProviderNS } from "@/api/custom-types";
 import * as $colors from "@/style/colors.mjs";
-import { isBrowser } from "@/environment";
 
 const store = useStore();
 const isUnknownProject = computed<(projectId: string) => boolean>(
