@@ -2,8 +2,13 @@
 <!-- eslint-disable no-use-before-define -->
 <!-- eslint-disable func-style -->
 <script setup lang="ts">
-// Simple 2 panel splitter component that works with pixels or percent
+// A Simple 2 panel splitter component that works with pixels or percent
 // based on vue-splitter: https://github.com/rmp135/vue-splitter
+// some modifications have been done:
+// * add pixel mode
+// * added events (drag-start drag-end)
+// * added splitterSize prop
+// * added ability to define the panel for which the size will be set (important for pixel mode)
 import { computed, ref } from "vue";
 
 const props = withDefaults(
@@ -16,6 +21,7 @@ const props = withDefaults(
     initialPercent?: number | string;
     initialPixel?: number | string;
     splitterSize?: number;
+    splitterTitle?: string | null;
   }>(),
   {
     percent: null,
@@ -26,12 +32,15 @@ const props = withDefaults(
     initialPercent: 50,
     initialPixel: 250,
     splitterSize: 8,
+    splitterTitle: null,
   },
 );
 
 const emit = defineEmits<{
   (event: "update:percent", value: number): void;
   (event: "update:pixel", value: number): void;
+  (event: "drag-start", value: number): void;
+  (event: "drag-end", value: number): void;
   (event: "splitter-click"): void;
 }>();
 
@@ -99,6 +108,7 @@ function addBodyListeners() {
 }
 
 function onSplitterDown() {
+  emit("drag-start");
   isActive.value = true;
   hasMoved.value = false;
   addBodyListeners();
@@ -180,6 +190,7 @@ function removeBodyListeners() {
 }
 
 function onBodyUp() {
+  emit("drag-end");
   isActive.value = false;
   removeBodyListeners();
 }
@@ -199,6 +210,7 @@ function onBodyUp() {
     <div
       class="splitter"
       :class="{ active: isActive }"
+      :title="splitterTitle"
       @mousedown="onSplitterMouseDown"
       @touchstart.passive="onSplitterTouchDown"
       @click="onSplitterClick"

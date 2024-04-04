@@ -9,6 +9,7 @@ interface Props {
   isHorizontal: boolean;
   secondarySize?: number;
   secondaryMinSize?: number;
+  secondarySnapSize?: number;
   secondaryMaxSize?: number;
   usePixel?: boolean;
   showSecondaryPanel?: boolean;
@@ -16,6 +17,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   secondarySize: 40,
+  secondarySnapSize: 0,
   secondaryMinSize: 15,
   secondaryMaxSize: 70,
   usePixel: false,
@@ -49,15 +51,22 @@ watch(
   { immediate: true },
 );
 
+const willSnap = computed(() => {
+  if (props.usePixel) {
+    return props.secondarySnapSize > pixelSize.value;
+  }
+  return props.secondarySnapSize > percentSize.value;
+});
+
 const modelPercentSize = computed({
   get() {
     return percentSize.value;
   },
   set(size) {
-    const value = minMax(size);
-    percentSize.value = value;
+    const adjustedSize = minMax(size);
+    percentSize.value = adjustedSize;
     if (!props.usePixel) {
-      emit("update:secondarySize", value);
+      emit("update:secondarySize", adjustedSize);
     }
   },
 });
@@ -67,10 +76,10 @@ const modelPixelSize = computed({
     return pixelSize.value;
   },
   set(size) {
-    const value = minMax(size);
-    pixelSize.value = minMax(size);
+    const adjustedSize = minMax(size);
+    pixelSize.value = adjustedSize;
     if (props.usePixel) {
-      emit("update:secondarySize", value);
+      emit("update:secondarySize", adjustedSize);
     }
   },
 });
@@ -108,6 +117,16 @@ const showPanel = () => {
   );
 };
 
+const onDragEnd = () => {
+  if (willSnap.value) {
+    pixelSize.value = 0;
+    percentSize.value = 0;
+  } else {
+    // remember last size if we did not snap
+    previousSecondarySize.value = currentSecondarySize.value;
+  }
+};
+
 // hide or show on click
 const onSplitterClick = () => {
   if (isClosed.value) {
@@ -126,7 +145,11 @@ const onSplitterClick = () => {
     size-pane="right"
     :is-horizontal="isHorizontal"
     :splitter-size="10"
+    :class="{ 'will-snap': willSnap }"
+    :splitter-title="`Click to ${isClosed ? 'open' : 'close'}`"
     @splitter-click="onSplitterClick"
+    @drag-end="onDragEnd"
+    @drag-start="onDragStart"
   >
     <template #left-pane>
       <slot />
@@ -142,13 +165,20 @@ const onSplitterClick = () => {
       />
     </template>
     <template #right-pane>
-      <slot v-if="!isClosed" name="secondary" />
+      <div class="secondary-wrapper" :class="{ 'will-snap': willSnap }">
+        <slot v-if="!isClosed" name="secondary" />
+      </div>
     </template>
   </Splitter>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.secondary-wrapper {
+  width: 100%;
+  height: 100%;
+}
 
 .switch-icon {
   @mixin svg-icon-size 10;
@@ -172,6 +202,30 @@ const onSplitterClick = () => {
     &.closed {
       transform: rotate(-90deg);
     }
+  }
+}
+
+/* snap overlay and message */
+.will-snap {
+  --will-snap-background-color: var(--knime-porcelain);
+  --splitter-background-color: var(--will-snap-background-color);
+}
+
+.secondary-wrapper.will-snap {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: "Release to hide panel.";
+    display: flex;
+    font-style: italic;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--will-snap-background-color);
   }
 }
 </style>
