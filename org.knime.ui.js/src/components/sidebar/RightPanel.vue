@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useStore } from "vuex";
+import { useStore } from "@/composables/useStore";
 import { NodeState } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 import Button from "webapps-common/ui/components/Button.vue";

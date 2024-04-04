@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 
 import { ApplyState } from "@knime/ui-extension-service";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { useStore } from "@/composables/useStore";
+import { isBrowser } from "@/environment";
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
 import type { UIExtensionLoadingState } from "../common/types";
 import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
@@ -51,6 +52,27 @@ const canApplyAndExecute = computed(() => {
     default: {
       return false;
     }
+  }
+});
+
+const permissions = computed(() => store.state.application.permissions);
+
+const lastSelectedNodeId = ref(selectedNode.value?.id);
+
+watch(selectedNode, (selection, oldSelection) => {
+  if (
+    isBrowser &&
+    permissions.value.canConfigureNodes &&
+    dirtyState.value.apply === ApplyState.CONFIG
+  ) {
+    applySettings(oldSelection.id, false);
+  }
+  lastSelectedNodeId.value = selection.id;
+});
+
+onBeforeUnmount(() => {
+  if (isBrowser && dirtyState.value.apply === ApplyState.CONFIG) {
+    applySettings(lastSelectedNodeId.value, false);
   }
 });
 
