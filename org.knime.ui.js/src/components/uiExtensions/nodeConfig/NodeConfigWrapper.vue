@@ -7,6 +7,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import { useStore } from "@/composables/useStore";
 import { isBrowser } from "@/environment";
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import type { UIExtensionLoadingState } from "../common/types";
 import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 import NodeConfigLoader from "./NodeConfigLoader.vue";
@@ -23,10 +24,13 @@ const workflowId = computed(
 const selectedNode = computed<NativeNode>(
   () => store.getters["selection/singleSelectedNode"],
 );
+const permissions = computed(() => store.state.application.permissions);
 
 const nodeState = computed(() => selectedNode.value.state!.executionState!);
 
 const { dirtyState, applySettings, discardSettings } = useNodeConfigAPI();
+
+const $toast = getToastsProvider();
 
 const showExecuteOnlyButton = computed(
   () =>
@@ -55,24 +59,46 @@ const canApplyAndExecute = computed(() => {
   }
 });
 
-const permissions = computed(() => store.state.application.permissions);
+const applySettingsOnSelectionChange = (node: NativeNode) => {
+  if (
+    !permissions.value.canConfigureNodes ||
+    dirtyState.value.apply === ApplyState.CLEAN
+  ) {
+    return;
+  }
 
-const lastSelectedNodeId = ref(selectedNode.value?.id);
+  if (
+    node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED ||
+    node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
+    node.state?.executionState === NodeState.ExecutionStateEnum.QUEUED
+  ) {
+    // TODO NXT-2522 Add here a check of user preferences and/or show a proper dialog that set that preference
+    $toast.show({
+      type: "warning",
+      headline: "Node configuration was not saved",
+      message:
+        "The changes on the node configuration were not saved automatically. Apply manually the changes or reset the node.",
+    });
+    return;
+  }
+
+  if (dirtyState.value.apply === ApplyState.CONFIG) {
+    applySettings(node.id, false);
+  }
+};
+
+const lastSelectedNode = ref(selectedNode.value);
 
 watch(selectedNode, (selection, oldSelection) => {
-  if (
-    isBrowser &&
-    permissions.value.canConfigureNodes &&
-    dirtyState.value.apply === ApplyState.CONFIG
-  ) {
-    applySettings(oldSelection.id, false);
+  if (isBrowser) {
+    applySettingsOnSelectionChange(oldSelection);
+    lastSelectedNode.value = selection;
   }
-  lastSelectedNodeId.value = selection.id;
 });
 
 onBeforeUnmount(() => {
-  if (isBrowser && dirtyState.value.apply === ApplyState.CONFIG) {
-    applySettings(lastSelectedNodeId.value, false);
+  if (isBrowser) {
+    applySettingsOnSelectionChange(lastSelectedNode.value);
   }
 });
 
@@ -90,6 +116,20 @@ const onDiscard = () => {
   // we also need to reset the value of the dirtyState reactive property
   discardSettings();
 };
+
+const updateLoadingState = (state: UIExtensionLoadingState) => {
+  loadingState.value = state;
+
+  // TODO Related to UIEXT-1787. Delete this when no longer needed.
+  // if dirtyState comes dirty after just loading, we save inmmediately, this is a bug related to twinlist with missing values
+  if (state.value === "ready") {
+    setTimeout(() => {
+      if (dirtyState.value.apply === ApplyState.CONFIG) {
+        applySettings(selectedNode.value.id, false);
+      }
+    }, 150);
+  }
+};
 </script>
 
 <template>
@@ -99,7 +139,7 @@ const onDiscard = () => {
       :project-id="projectId!"
       :workflow-id="workflowId"
       :selected-node="selectedNode"
-      @loading-state-change="loadingState = $event"
+      @loading-state-change="updateLoadingState"
     />
 
     <div v-if="loadingState?.value === 'ready'" ref="buttons" class="buttons">
