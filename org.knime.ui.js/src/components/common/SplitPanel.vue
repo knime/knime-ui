@@ -1,27 +1,24 @@
 <script setup lang="ts">
-// @ts-ignore
-import { Splitpanes, Pane } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
-import { computed, ref } from "vue";
+// Offers a primary and a secondary slot that are split horizontal or vertical. Percent or pixel based sizes
+// which can be limited. Click to the splitter will hide the secondary panel.
+import { computed, ref, toRef, watch } from "vue";
+import Splitter from "./Splitter.vue";
 
 interface Props {
-  id: string;
-  direction?: "left" | "right" | "down" | "up";
+  isHorizontal: boolean;
   secondarySize?: number;
   secondaryMinSize?: number;
   secondaryMaxSize?: number;
-  mainMinSize?: number;
-  withTransition?: boolean;
+  usePixel?: boolean;
   showSecondaryPanel?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  direction: "left",
   secondarySize: 40,
   secondaryMinSize: 15,
   secondaryMaxSize: 70,
-  mainMinSize: 25,
-  withTransition: false,
+  usePixel: false,
+  isHorizontal: false,
   showSecondaryPanel: true,
 });
 
@@ -30,24 +27,72 @@ interface Emits {
 }
 const emit = defineEmits<Emits>();
 
+// min max to bounds given by props, but allow 0 (hide)
+const minMax = (value: number) =>
+  value === 0
+    ? value
+    : Math.max(props.secondaryMinSize, Math.min(props.secondaryMaxSize, value));
+
 // current size live updated while resize
-const currentSecondarySize = ref(props.secondarySize);
+const percentSize = ref(props.secondarySize);
+const pixelSize = ref(props.secondarySize);
+
+watch(
+  toRef(props, "showSecondaryPanel"),
+  (show) => {
+    if (!show) {
+      percentSize.value = 0;
+      pixelSize.value = 0;
+    }
+  },
+  { immediate: true },
+);
+
+const modelPercentSize = computed({
+  get() {
+    return percentSize.value;
+  },
+  set(size) {
+    const value = minMax(size);
+    percentSize.value = value;
+    if (!props.usePixel) {
+      emit("update:secondarySize", value);
+    }
+  },
+});
+
+const modelPixelSize = computed({
+  get() {
+    return pixelSize.value;
+  },
+  set(size) {
+    const value = minMax(size);
+    pixelSize.value = minMax(size);
+    if (props.usePixel) {
+      emit("update:secondarySize", value);
+    }
+  },
+});
+
+const currentSecondarySize = computed({
+  get() {
+    return props.usePixel ? modelPixelSize.value : modelPercentSize.value;
+  },
+  set(size) {
+    if (props.usePixel) {
+      modelPixelSize.value = size;
+    } else {
+      modelPercentSize.value = size;
+    }
+  },
+});
 
 // the last really defined size (which is never 0 for hidden)
 // start with secondary size to ensure that we open closed ones to a nice size
 const previousSecondarySize = ref(props.secondarySize);
 
 // computed states
-const mainSize = computed(() => 100 - currentSecondarySize.value);
-const isClosed = computed(() => mainSize.value === 100);
-
-const isSecondaryReverse = computed(
-  () => props.direction === "left" || props.direction === "up",
-);
-
-const isHorizontal = computed(
-  () => props.direction === "up" || props.direction === "down",
-);
+const isClosed = computed(() => currentSecondarySize.value === 0);
 
 const closePanel = () => {
   // remember current size on a regular close
@@ -70,251 +115,26 @@ const onSplitterClick = () => {
     closePanel();
   }
 };
-
-const isResizing = ref(false);
-
-const onResized = ({ size }: { size: number }) => {
-  // snapping on release of mouse (resize is done)
-  if (size < props.secondaryMinSize && size > 0) {
-    // just set to zero on a snapping close (we want to keep the prev value)
-    currentSecondarySize.value = 0;
-    return;
-  }
-  // update prev size if it did not snap
-  previousSecondarySize.value = size;
-  emit("update:secondarySize", size);
-  isResizing.value = false;
-};
-
-// update our current size on every resize
-const onResize = ({ size }: { size: number }) => {
-  isResizing.value = true;
-  currentSecondarySize.value = size;
-};
 </script>
 
 <template>
-  <splitpanes
-    :id="id"
-    class="split-panel"
-    :dbl-click-splitter="false"
-    :horizontal="isHorizontal"
-    :class="{
-      'is-closed': isClosed,
-      'unset-transition': !withTransition,
-      'left-facing-splitter': direction === 'left',
-      'right-facing-splitter': direction === 'right',
-      'down-facing-splitter': direction === 'down',
-      'up-facing-splitter': direction === 'up',
-    }"
+  <Splitter
+    v-model:percent="modelPercentSize"
+    v-model:pixel="modelPixelSize"
+    :use-pixel="usePixel"
+    size-pane="right"
+    :is-horizontal="isHorizontal"
     @splitter-click="onSplitterClick"
-    @resized="onResized($event[isSecondaryReverse ? 0 : 1])"
-    @resize="onResize($event[isSecondaryReverse ? 0 : 1])"
   >
-    <pane
-      v-if="isSecondaryReverse && showSecondaryPanel"
-      :max-size="secondaryMaxSize"
-      :size="currentSecondarySize"
-      :class="[
-        'secondary-panel',
-        {
-          'is-resizing': isResizing,
-          'will-snap': currentSecondarySize < secondaryMinSize,
-        },
-      ]"
-    >
-      <slot v-if="!isClosed" name="secondary" />
-    </pane>
-    <pane :size="mainSize" :min-size="mainMinSize" class="main-panel">
+    <template #left-pane>
       <slot />
-    </pane>
-    <pane
-      v-if="!isSecondaryReverse && showSecondaryPanel"
-      :size="currentSecondarySize"
-      :max-size="secondaryMaxSize"
-      :class="[
-        'secondary-panel',
-        {
-          'is-resizing': isResizing,
-          'will-snap': currentSecondarySize < secondaryMinSize,
-        },
-      ]"
-    >
+    </template>
+    <template #right-pane>
       <slot v-if="!isClosed" name="secondary" />
-    </pane>
-  </splitpanes>
+    </template>
+  </Splitter>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
-
-/* NB: we disable the rule because of classes defined by the splitpanes package */
-/* stylelint-disable selector-class-pattern */
-/* stylelint-disable no-descending-specificity */
-.split-panel {
-  /* drag area for splitter */
-  & :deep(> .splitpanes__splitter) {
-    position: relative;
-
-    &::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      z-index: 1;
-    }
-
-    &:hover::after {
-      opacity: 1;
-    }
-  }
-
-  &.splitpanes--vertical :deep(> .splitpanes__splitter)::after {
-    left: -5px;
-    right: -5px;
-    height: 100%;
-  }
-
-  &.splitpanes--horizontal :deep(> .splitpanes__splitter)::after {
-    top: -5px;
-    bottom: -5px;
-    width: 100%;
-  }
-
-  & .is-resizing {
-    /** if the content is an iframe it might steal our mousemove and we want to prevent that */
-    pointer-events: none;
-  }
-
-  /* snap overlay and message */
-  & .will-snap {
-    position: relative;
-
-    &::after {
-      position: absolute;
-      content: "Release to hide panel.";
-      display: flex;
-      font-style: italic;
-      justify-content: center;
-      align-items: center;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--knime-porcelain);
-    }
-  }
-
-  /* style open state and some defaults */
-  & :deep(.splitpanes__splitter) {
-    min-width: 1px;
-    min-height: 1px;
-    background-color: var(--knime-porcelain);
-    border-color: var(--knime-silver-sand);
-    border-style: solid;
-
-    &:hover {
-      background-color: var(--knime-silver-sand-semi);
-    }
-
-    &::before {
-      width: 10px;
-      height: 10px;
-      line-height: 10px;
-      display: none;
-
-      /* down arrow: embedded svg as it needs to have the correct color and size because it is used as image */
-      content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='none'%3E%3Cpath stroke='%233E3A39' stroke-linejoin='round' stroke-miterlimit='10' d='M9.125 2.938 5 7.061.875 2.938'/%3E%3C/svg%3E");
-    }
-  }
-
-  &.is-closed {
-    & :deep(> .splitpanes__splitter) {
-      min-width: 11px;
-      min-height: 11px;
-
-      &::before {
-        display: block;
-      }
-    }
-  }
-
-  &.splitpanes--vertical {
-    & :deep(> .splitpanes__splitter) {
-      &::before {
-        position: relative;
-        top: calc(50% - 5px);
-      }
-    }
-  }
-
-  &.splitpanes--horizontal {
-    & :deep(> .splitpanes__splitter) {
-      &::before {
-        margin: auto;
-      }
-    }
-  }
-
-  &.left-facing-splitter {
-    & :deep(> .splitpanes__splitter) {
-      border-width: 0 1px 0 0;
-    }
-
-    &.is-closed {
-      & :deep(> .splitpanes__splitter) {
-        &::before {
-          transform: rotate(-90deg);
-        }
-      }
-    }
-  }
-
-  &.right-facing-splitter {
-    & :deep(> .splitpanes__splitter) {
-      border-width: 0 0 0 1px;
-    }
-
-    &.is-closed {
-      & :deep(> .splitpanes__splitter) {
-        &::before {
-          transform: rotate(90deg);
-        }
-      }
-    }
-  }
-
-  &.down-facing-splitter {
-    & :deep(> .splitpanes__splitter) {
-      border-width: 1px 0 0;
-    }
-
-    &.is-closed {
-      & :deep(> .splitpanes__splitter) {
-        &::before {
-          transform: scaleY(-1);
-        }
-      }
-    }
-  }
-
-  &.up-facing-splitter {
-    & :deep(> .splitpanes__splitter) {
-      border-width: 0 0 1px;
-    }
-
-    &.is-closed {
-      & :deep(> .splitpanes__splitter) {
-        &::before {
-          transform: scaleY(1);
-        }
-      }
-    }
-  }
-
-  &.unset-transition .splitpanes__pane {
-    transition: unset;
-  }
-}
 </style>

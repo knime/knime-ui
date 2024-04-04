@@ -43,9 +43,10 @@ const savedSecondarySize = computed({
 
     <main class="workflow-area">
       <SplitPanel
-        id="kanvasOutputSplitter"
         v-model:secondary-size="savedSecondarySize"
-        direction="down"
+        :is-horizontal="true"
+        :secondary-min-size="10"
+        :secondary-max-size="80"
       >
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>

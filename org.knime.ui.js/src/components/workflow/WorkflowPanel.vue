@@ -105,12 +105,12 @@ const onContextMenu = (event: MouseEvent) => {
     <WorkflowInfoBar />
 
     <SplitPanel
-      id="kanvasOutputSplitter"
       v-model:secondary-size="nodeDialogSize"
-      direction="right"
       :show-secondary-panel="$features.shouldDisplayEmbeddedDialogs()"
-      :secondary-min-size="30"
-      :secondary-max-size="50"
+      use-pixel
+      :secondary-min-size="360"
+      :secondary-max-size="900"
+      style="--splitter-background-color: var(--knime-gray-ultra-light)"
     >
       <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
