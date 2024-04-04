@@ -239,7 +239,7 @@ nav {
 
   & > div {
     &:focus-within:has(:focus-visible) {
-      @mixin focus-style 1, 1;
+      @mixin focus-style;
     }
 
     & label {

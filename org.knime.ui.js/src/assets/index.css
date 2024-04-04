@@ -15,6 +15,10 @@ button {
   outline: none;
 }
 
+a:focus-visible {
+  @mixin focus-style;
+}
+
 .tab-bar input:focus-visible + span {
-  @mixin focus-style 1, 0;
+  @mixin focus-style;
 }

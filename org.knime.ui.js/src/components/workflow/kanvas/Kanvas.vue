@@ -120,16 +120,28 @@ const selectFirstObject = async () => {
     return;
   }
 
-  // look for the "first" object
+  const kanvas = store.state.canvas.getScrollContainerElement();
+
+  const centerX = kanvas.offsetLeft + kanvas.clientWidth / 2;
+  const centerY = kanvas.offsetTop + kanvas.clientHeight / 2;
+
+  const [x, y] = store.getters["canvas/screenToCanvasCoordinates"]([
+    centerX,
+    centerY,
+  ]);
+
+  // look for the "first" object, just use one if we can't find a near one at the center
+  const objects = store.getters["workflow/workflowObjects"];
   const firstObject = await workflowNavigationService.nearestObject({
-    objects: store.getters["workflow/workflowObjects"],
+    objects,
     reference: {
-      x: 0,
-      y: 0,
+      x,
+      y,
       id: "",
     },
     direction: "left",
   });
+
   if (firstObject) {
     store.dispatch(
       `selection/select${capitalize(firstObject.type)}`,
@@ -210,12 +222,11 @@ svg {
   }
 
   &:focus-visible {
-    /** TODO: check if we can make this the default */
     & > svg {
       background-color: transparent !important;
     }
 
-    @mixin focus-style 1, 0;
+    @mixin focus-style;
   }
 
   &.empty {

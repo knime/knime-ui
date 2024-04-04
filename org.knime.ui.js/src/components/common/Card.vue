@@ -26,6 +26,8 @@ defineEmits<{
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .card {
   display: block;
   text-decoration: none;
@@ -39,7 +41,7 @@ defineEmits<{
   height: 100%;
 
   &:focus-visible {
-    outline: revert;
+    @mixin focus-style;
   }
 
   &:hover {

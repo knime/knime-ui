@@ -187,7 +187,7 @@ main {
   }
 
   &:focus-visible {
-    outline: revert;
+    @mixin focus-style;
   }
 }
 
