@@ -3,6 +3,7 @@
 // which can be limited. Click to the splitter will hide the secondary panel.
 import { computed, ref, toRef, watch } from "vue";
 import Splitter from "./Splitter.vue";
+import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-next.svg";
 
 interface Props {
   isHorizontal: boolean;
@@ -124,10 +125,21 @@ const onSplitterClick = () => {
     :use-pixel="usePixel"
     size-pane="right"
     :is-horizontal="isHorizontal"
+    :splitter-size="10"
     @splitter-click="onSplitterClick"
   >
     <template #left-pane>
       <slot />
+    </template>
+    <template #splitter>
+      <SwitchIcon
+        class="switch-icon"
+        :class="{
+          closed: isClosed,
+          horizontal: isHorizontal,
+          vertical: !isHorizontal,
+        }"
+      />
     </template>
     <template #right-pane>
       <slot v-if="!isClosed" name="secondary" />
@@ -137,4 +149,29 @@ const onSplitterClick = () => {
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.switch-icon {
+  @mixin svg-icon-size 10;
+
+  stroke: var(--knime-masala);
+  position: relative;
+
+  &:not(.closed) {
+    visibility: hidden;
+  }
+
+  &.vertical {
+    &.closed {
+      transform: scaleX(-1);
+    }
+  }
+
+  &.horizontal {
+    transform: rotate(90deg);
+
+    &.closed {
+      transform: rotate(-90deg);
+    }
+  }
+}
 </style>

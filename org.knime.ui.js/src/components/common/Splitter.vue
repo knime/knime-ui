@@ -2,7 +2,8 @@
 <!-- eslint-disable no-use-before-define -->
 <!-- eslint-disable func-style -->
 <script setup lang="ts">
-// based on vue-splitter: https://github.com/rmp135/vue-splitter but added pixels in addition to percent
+// Simple 2 panel splitter component that works with pixels or percent
+// based on vue-splitter: https://github.com/rmp135/vue-splitter
 import { computed, ref } from "vue";
 
 const props = withDefaults(
@@ -14,6 +15,7 @@ const props = withDefaults(
     pixel?: number | null;
     initialPercent?: number | string;
     initialPixel?: number | string;
+    splitterSize?: number;
   }>(),
   {
     percent: null,
@@ -23,6 +25,7 @@ const props = withDefaults(
     isHorizontal: false,
     initialPercent: 50,
     initialPixel: 250,
+    splitterSize: 8,
   },
 );
 
@@ -140,11 +143,17 @@ function calculateSplitterPercent(e: MouseEvent | Touch) {
     containerOffset = containerRef.value!.offsetWidth;
   }
   const percent = Math.floor((pixel / containerOffset) * 10000) / 100;
+  const splitterSizeInPercent =
+    Math.floor((props.splitterSize / containerOffset) * 10000) / 100;
 
   if (percent > 0 && percent < 100) {
     const sizeLastPane = ["bottom", "right"].includes(props.sizePane);
-    modelPercent.value = sizeLastPane ? 100 - percent : percent;
-    modelPixel.value = sizeLastPane ? containerOffset - pixel : pixel;
+    modelPercent.value = sizeLastPane
+      ? 100 - percent - splitterSizeInPercent
+      : percent;
+    modelPixel.value = sizeLastPane
+      ? containerOffset - pixel - props.splitterSize
+      : pixel;
     hasMoved.value = true;
   }
 }
@@ -193,7 +202,9 @@ function onBodyUp() {
       @mousedown="onSplitterMouseDown"
       @touchstart.passive="onSplitterTouchDown"
       @click="onSplitterClick"
-    />
+    >
+      <slot name="splitter" />
+    </div>
     <div class="splitter-pane" :class="rightPaneClass">
       <slot name="right-pane" />
       <slot name="bottom-pane" />
@@ -203,7 +214,6 @@ function onBodyUp() {
 
 <style lang="postcss" scoped>
 .vue-splitter {
-  --splitter-size: 8px;
   --splitter-background-color: transparent;
   --splitter-border: 1px solid var(--knime-silver-sand);
 
@@ -211,6 +221,9 @@ function onBodyUp() {
   height: inherit;
 
   & .splitter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: var(--splitter-background-color);
   }
 
@@ -223,7 +236,7 @@ function onBodyUp() {
 
     & > .splitter {
       cursor: ew-resize;
-      width: var(--splitter-size);
+      width: calc(v-bind(splitterSize) * 1px);
       border-left: var(--splitter-border);
     }
   }
@@ -233,7 +246,7 @@ function onBodyUp() {
 
     & > .splitter {
       cursor: ns-resize;
-      height: var(--splitter-size);
+      height: calc(v-bind(splitterSize) * 1px);
       border-top: var(--splitter-border);
     }
   }
