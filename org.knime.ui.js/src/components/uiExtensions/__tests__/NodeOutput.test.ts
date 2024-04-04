@@ -362,6 +362,7 @@ describe("NodeOutput.vue", () => {
 
       const nodeWithManyPorts = createNativeNode({
         id: "2",
+        state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
         outPorts: [
           ...defaultPorts,
           createPort({
@@ -440,6 +441,63 @@ describe("NodeOutput.vue", () => {
         expect(
           wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
         ).toBe(expectedPort);
+      });
+
+      it("selects port when node changes", async () => {
+        const store = createStore({
+          nodes: {
+            [nodeWithPorts.id]: nodeWithPorts,
+            [nodeWithManyPorts.id]: nodeWithManyPorts,
+          },
+          selectedNodeIds: [nodeWithPorts.id],
+        });
+
+        const { wrapper } = doMount(store);
+        await Vue.nextTick();
+
+        // first port is selected by default
+        expect(
+          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
+        ).toBe(1);
+
+        // select nodeWithPorts's port at index 0
+        wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "0");
+        await Vue.nextTick();
+
+        // port got selected correctly
+        expect(
+          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
+        ).toBe(0);
+
+        // change selection to nodeWithManyPorts
+        await store.dispatch("selection/deselectAllObjects");
+        await store.dispatch("selection/selectNode", nodeWithManyPorts.id);
+
+        // default port was selected after node changed
+        expect(
+          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
+        ).toBe(1);
+
+        // select a different port
+        wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "0");
+        await Vue.nextTick();
+
+        expect(
+          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
+        ).toBe(0);
+
+        // only modify state of the selected node w/o changing to another node
+        store.state.workflow.activeWorkflow.nodes[nodeWithManyPorts.id] = {
+          ...nodeWithManyPorts,
+          state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
+        } satisfies KnimeNode;
+
+        await Vue.nextTick();
+
+        // same port remains active
+        expect(
+          wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
+        ).toBe(0);
       });
 
       it.each([

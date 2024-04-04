@@ -125,8 +125,9 @@ export default defineComponent({
   },
   watch: {
     singleSelectedNode: {
-      handler() {
-        if (!this.selectionValidationError) {
+      handler(next, prev) {
+        const isDifferentNode = next?.id !== prev?.id;
+        if (!this.selectionValidationError && isDifferentNode) {
           this.selectPort();
         }
       },
