@@ -2,7 +2,6 @@ import { expect, describe, it, afterEach, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import SearchResults from "../SearchResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
@@ -132,13 +131,13 @@ describe("SearchResults", () => {
     });
   });
 
-  it("displays icon if loading is true", async () => {
+  it("displays node list skeleton when loading", async () => {
     const { wrapper } = doMount();
 
     wrapper.vm.isLoading = true;
-    await wrapper.vm.$nextTick();
-    const loadingIcon = wrapper.findComponent(ReloadIcon);
-    expect(loadingIcon.exists()).toBe(true);
+    await Vue.nextTick();
+    const nodeListSkeleton = wrapper.find(".node-list-skeleton");
+    expect(nodeListSkeleton.exists()).toBe(true);
   });
 
   it("renders nodes", () => {
@@ -183,17 +182,17 @@ describe("SearchResults", () => {
 
       const scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
 
-      expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
+      expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
 
       scrollViewContainer.vm.$emit("scrollBottom");
       await Vue.nextTick();
 
       expect(searchActions.searchNodesNextPage).toHaveBeenCalled();
 
-      expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
+      expect(wrapper.find(".node-list-skeleton").exists()).toBe(true);
       await vi.runAllTimersAsync();
       await Vue.nextTick();
-      expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
+      expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
     });
   });
 });
