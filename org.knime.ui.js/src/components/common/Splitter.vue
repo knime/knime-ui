@@ -2,8 +2,8 @@
 <!-- eslint-disable no-use-before-define -->
 <!-- eslint-disable func-style -->
 <script setup lang="ts">
-// A Simple 2 panel splitter component that works with pixels or percent
-// based on vue-splitter: https://github.com/rmp135/vue-splitter
+// A simple 2 panel splitter component that works with pixels or percent
+// based on vue-splitter: https://github.com/rmp135/vue-splitter (MIT)
 // some modifications have been done:
 // * add pixel mode
 // * added events (drag-start drag-end)
@@ -45,10 +45,8 @@ const emit = defineEmits<{
 }>();
 
 const isActive = ref(false);
-// eslint-disable-next-line no-magic-numbers
-const currentPercent = ref(50);
-// eslint-disable-next-line no-magic-numbers
-const currentPixel = ref(250);
+const currentPercent = ref(Number(props.initialPercent));
+const currentPixel = ref(Number(props.initialPixel));
 const hasMoved = ref(false);
 const dragOffset = ref(0);
 
@@ -64,8 +62,6 @@ const modelPercent = computed<number>({
   },
 });
 
-modelPercent.value = Number(props.initialPercent);
-
 const modelPixel = computed<number>({
   get() {
     return props.pixel ?? currentPixel.value;
@@ -75,8 +71,6 @@ const modelPixel = computed<number>({
     currentPixel.value = value;
   },
 });
-
-modelPixel.value = Number(props.initialPixel);
 
 const templateSizes = computed<string>(() => {
   const size = props.usePixel
@@ -226,8 +220,7 @@ function onBodyUp() {
 
 <style lang="postcss" scoped>
 .vue-splitter {
-  --splitter-background-color: transparent;
-  --splitter-border: 1px solid var(--knime-silver-sand);
+  --splitter-background-color: var(--knime-silver-sand-semi);
 
   display: grid;
   height: inherit;
@@ -249,7 +242,6 @@ function onBodyUp() {
     & > .splitter {
       cursor: ew-resize;
       width: calc(v-bind(splitterSize) * 1px);
-      border-left: var(--splitter-border);
     }
   }
 
@@ -259,7 +251,6 @@ function onBodyUp() {
     & > .splitter {
       cursor: ns-resize;
       height: calc(v-bind(splitterSize) * 1px);
-      border-top: var(--splitter-border);
     }
   }
 }

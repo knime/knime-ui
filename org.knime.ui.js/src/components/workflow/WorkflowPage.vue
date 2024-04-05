@@ -44,7 +44,7 @@ const savedSecondarySize = computed({
     <main class="workflow-area">
       <SplitPanel
         v-model:secondary-size="savedSecondarySize"
-        :is-horizontal="true"
+        direction="down"
         :secondary-min-size="2"
         :secondary-max-size="90"
         :secondary-snap-size="15"

@@ -3,10 +3,10 @@
 // which can be limited. Click to the splitter will hide the secondary panel.
 import { computed, ref, toRef, watch } from "vue";
 import Splitter from "./Splitter.vue";
-import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-next.svg";
+import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
 
 interface Props {
-  isHorizontal: boolean;
+  direction?: "left" | "right" | "down" | "up";
   secondarySize?: number;
   secondaryMinSize?: number;
   secondarySnapSize?: number;
@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
   secondaryMinSize: 15,
   secondaryMaxSize: 70,
   usePixel: false,
-  isHorizontal: false,
+  direction: "left",
   showSecondaryPanel: true,
 });
 
@@ -40,12 +40,33 @@ const minMax = (value: number) =>
 const percentSize = ref(props.secondarySize);
 const pixelSize = ref(props.secondarySize);
 
+// mapping of direction
+const isHorizontal = computed(() => ["down", "up"].includes(props.direction));
+const directionSizePaneMap = {
+  left: "left",
+  right: "right",
+  down: "bottom",
+  up: "top",
+};
+const sizePane = computed(() => directionSizePaneMap[props.direction]);
+const isSecondaryReverse = computed(() =>
+  ["left", "up"].includes(props.direction),
+);
+
+// the last really defined size (which is never 0 for hidden)
+// start with secondary size to ensure that we open closed ones to a nice size
+const previousSecondarySize = ref(props.secondarySize);
+
 watch(
   toRef(props, "showSecondaryPanel"),
   (show) => {
     if (!show) {
       percentSize.value = 0;
       pixelSize.value = 0;
+    } else if (props.usePixel) {
+      pixelSize.value = previousSecondarySize.value;
+    } else {
+      percentSize.value = previousSecondarySize.value;
     }
   },
   { immediate: true },
@@ -97,10 +118,6 @@ const currentSecondarySize = computed({
   },
 });
 
-// the last really defined size (which is never 0 for hidden)
-// start with secondary size to ensure that we open closed ones to a nice size
-const previousSecondarySize = ref(props.secondarySize);
-
 // computed states
 const isClosed = computed(() => currentSecondarySize.value === 0);
 
@@ -142,29 +159,36 @@ const onSplitterClick = () => {
     v-model:percent="modelPercentSize"
     v-model:pixel="modelPixelSize"
     :use-pixel="usePixel"
-    size-pane="right"
+    :size-pane="sizePane"
     :is-horizontal="isHorizontal"
     :splitter-size="10"
-    :class="{ 'will-snap': willSnap }"
+    :class="[
+      'splitter-root',
+      `direction-${direction}`,
+      { 'will-snap': willSnap },
+    ]"
     :splitter-title="`Click to ${isClosed ? 'open' : 'close'}`"
     @splitter-click="onSplitterClick"
     @drag-end="onDragEnd"
-    @drag-start="onDragStart"
   >
-    <template #left-pane>
+    <template v-if="isSecondaryReverse" #left-pane>
+      <div class="secondary-wrapper" :class="{ 'will-snap': willSnap }">
+        <slot v-if="!isClosed" name="secondary" />
+      </div>
+    </template>
+    <template v-else #left-pane>
       <slot />
     </template>
     <template #splitter>
       <SwitchIcon
         class="switch-icon"
-        :class="{
-          closed: isClosed,
-          horizontal: isHorizontal,
-          vertical: !isHorizontal,
-        }"
+        :class="[`direction-${direction}`, { closed: isClosed }]"
       />
     </template>
-    <template #right-pane>
+    <template v-if="isSecondaryReverse" #right-pane>
+      <slot />
+    </template>
+    <template v-else #right-pane>
       <div class="secondary-wrapper" :class="{ 'will-snap': willSnap }">
         <slot v-if="!isClosed" name="secondary" />
       </div>
@@ -174,6 +198,35 @@ const onSplitterClick = () => {
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
+.splitter-root {
+  --splitter-background-color: transparent;
+  --splitter-border: 1px solid var(--knime-silver-sand);
+
+  &.direction-up {
+    & :deep(> .splitter) {
+      border-bottom: var(--splitter-border);
+    }
+  }
+
+  &.direction-down {
+    & :deep(> .splitter) {
+      border-top: var(--splitter-border);
+    }
+  }
+
+  &.direction-left {
+    & :deep(> .splitter) {
+      border-right: var(--splitter-border);
+    }
+  }
+
+  &.direction-right {
+    & :deep(> .splitter) {
+      border-left: var(--splitter-border);
+    }
+  }
+}
 
 .secondary-wrapper {
   width: 100%;
@@ -190,17 +243,31 @@ const onSplitterClick = () => {
     visibility: hidden;
   }
 
-  &.vertical {
+  &.direction-left {
     &.closed {
       transform: scaleX(-1);
     }
   }
 
-  &.horizontal {
+  &.direction-right {
+    &:not(.closed) {
+      transform: scaleX(-1);
+    }
+  }
+
+  &.direction-up {
     transform: rotate(90deg);
 
     &.closed {
       transform: rotate(-90deg);
+    }
+  }
+
+  &.direction-down {
+    transform: rotate(-90deg);
+
+    &.closed {
+      transform: rotate(90deg);
     }
   }
 }
