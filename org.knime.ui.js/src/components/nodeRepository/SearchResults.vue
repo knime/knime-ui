@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRefs, nextTick } from "vue";
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import Button from "webapps-common/ui/components/Button.vue";
@@ -10,6 +9,7 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import SkeletonNodes from "@/components/skeleton/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { isDesktop } from "@/environment";
 
@@ -124,7 +124,9 @@ defineExpose({ focusFirst });
             <slot name="nodesTemplate" v-bind="slotProps" />
           </template>
         </NodeList>
-        <ReloadIcon v-if="isLoading" class="loading-indicator" />
+        <div v-if="isLoading" class="node-list-skeleton">
+          <SkeletonNodes :number-of-nodes="9" />
+        </div>
       </div>
       <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
         <CircleInfoIcon class="info-icon" />
@@ -257,6 +259,14 @@ defineExpose({ focusFirst });
       &::after {
         margin-left: 10px;
       }
+    }
+
+    & .node-list-skeleton {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 20px 50px;
     }
   }
 }
