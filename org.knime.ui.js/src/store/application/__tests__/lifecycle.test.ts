@@ -23,12 +23,17 @@ describe("application::lifecycle", () => {
     it("initialization (DESKTOP)", async () => {
       // @ts-ignore
       // eslint-disable-next-line new-cap
-      runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP());
-      const { store, dispatchSpy, subscribeEvent } = loadStore();
+      runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
+      const { store, dispatchSpy, commitSpy, subscribeEvent } = loadStore();
       await store.dispatch("application/initializeApplication", {
         $router: router,
       });
 
+      expect(commitSpy).not.toHaveBeenCalledWith(
+        "application/setIsLoadingApp",
+        expect.anything(),
+        undefined,
+      );
       expect(subscribeEvent).toHaveBeenCalled();
       expect(API.application.getState).toHaveBeenCalled();
       expect(dispatchSpy).toHaveBeenCalledWith(
@@ -50,10 +55,20 @@ describe("application::lifecycle", () => {
     });
 
     it("initialization (BROWSER)", async () => {
-      const { store, dispatchSpy, subscribeEvent } = loadStore();
+      // @ts-ignore
+      // eslint-disable-next-line new-cap
+      runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
+
+      const { store, dispatchSpy, commitSpy, subscribeEvent } = loadStore();
       await store.dispatch("application/initializeApplication", {
         $router: router,
       });
+
+      expect(commitSpy).toHaveBeenCalledWith(
+        "application/setIsLoadingApp",
+        true,
+        undefined,
+      );
 
       expect(subscribeEvent).toHaveBeenCalled();
       expect(API.application.getState).toHaveBeenCalled();
@@ -208,7 +223,7 @@ describe("application::lifecycle", () => {
     });
 
     it("switches from nothing to workflow", async () => {
-      const { store, dispatchSpy } = loadStore();
+      const { store, dispatchSpy, commitSpy } = loadStore();
       store.state.workflow.activeWorkflow = null;
 
       store.commit("application/setSavedCanvasStates", {
@@ -220,6 +235,11 @@ describe("application::lifecycle", () => {
         newWorkflow: { projectId: "1", workflowId: "root" },
       });
 
+      expect(commitSpy).toHaveBeenCalledWith(
+        "application/setIsLoadingWorkflow",
+        true,
+        undefined,
+      );
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "application/saveCanvasState",
       );
@@ -241,7 +261,7 @@ describe("application::lifecycle", () => {
 
   describe("load workflows on navigation", () => {
     it("should unload workflows when leaving the worklow page", async () => {
-      const { store, dispatchSpy } = await loadStore();
+      const { store, dispatchSpy, commitSpy } = await loadStore();
 
       await store.dispatch("application/initializeApplication", {
         $router: router,
@@ -252,11 +272,18 @@ describe("application::lifecycle", () => {
         params: { projectId: "foo", workflowId: "bar" },
       });
 
+      commitSpy.mockClear();
       await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
 
       expect(dispatchSpy).toHaveBeenCalledWith("application/switchWorkflow", {
         newWorkflow: null,
       });
+
+      expect(commitSpy).not.toHaveBeenCalledWith(
+        "application/setIsLoadingWorkflow",
+        true,
+        undefined,
+      );
 
       expect(router.currentRoute.value.name).toBe(
         APP_ROUTES.EntryPage.GetStartedPage,

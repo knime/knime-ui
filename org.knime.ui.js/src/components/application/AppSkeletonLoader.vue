@@ -1,92 +1,128 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import PortIcon from "webapps-common/ui/components/node/PortIcon.vue";
-
+import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import { useStore } from "@/composables/useStore";
-import connectorPath from "@/util/connectorPath";
-import Skeleton from "@/components/common/Skeleton.vue";
+import SkeletonItem from "@/components/common/SkeletonItem.vue";
+import { isBrowser } from "@/environment";
 
 const store = useStore();
 
+const activeProjectId = computed(() => store.state.application.activeProjectId);
 const isLoadingApp = computed(() => store.state.application.isLoadingApp);
 const isLoadingWorkflow = computed(
   () => store.state.application.isLoadingWorkflow,
 );
+const bottomPanelHeight = computed(
+  () => store.state.settings.settings.nodeOutputSize,
+);
+const rightPanelWidth = computed(() =>
+  isBrowser ? store.state.settings.settings.nodeDialogSize : 0,
+);
 
 const isLoading = computed(() => isLoadingApp.value || isLoadingWorkflow.value);
 
-const isPartial = computed(
-  () => isLoadingWorkflow.value && !isLoadingApp.value,
-);
-
-const x1 = 150;
-const y1 = 80;
-const x2 = 550;
-const y2 = 200;
-const size = 80;
-const verticalOffset = 10;
-
-const path = computed(() =>
-  connectorPath(x1 + size, y1 + verticalOffset, x2, y2 + verticalOffset),
-);
+const isChangingBetweenWorkflows = computed(() => {
+  return (
+    isLoadingWorkflow.value && activeProjectId.value && !isLoadingApp.value
+  );
+});
 </script>
 
 <template>
   <div
     v-if="isLoading"
-    :class="['main-content', 'skeleton', { transparent: isPartial }]"
+    :class="[
+      'main-content',
+      'skeleton',
+      { transparent: isChangingBetweenWorkflows },
+    ]"
   >
-    <div class="toolbar-skeleton" :class="{ transparent: isPartial }">
-      <template v-if="!isPartial">
-        <Skeleton class="button-skeleton-small" />
-        <Skeleton class="button-skeleton-small" />
-        <Skeleton class="button-skeleton-normal" />
-        <Skeleton class="button-skeleton-normal" />
+    <div
+      class="toolbar-skeleton"
+      :class="{ transparent: isChangingBetweenWorkflows }"
+    >
+      <template v-if="!isChangingBetweenWorkflows">
+        <SkeletonItem
+          width="30px"
+          height="30px"
+          type="icon-button"
+          :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        />
+        <SkeletonItem
+          width="30px"
+          height="30px"
+          type="icon-button"
+          :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        />
+        <SkeletonItem
+          width="100px"
+          type="button"
+          class="button-skeleton-normal"
+          :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        />
+        <SkeletonItem
+          width="100px"
+          type="button"
+          class="button-skeleton-normal"
+          :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        />
       </template>
     </div>
 
-    <div :class="{ transparent: isPartial }" class="sidebar-tabs-skeleton">
-      <template v-if="!isPartial">
-        <Skeleton class="tab-skeleton" />
-        <Skeleton class="tab-skeleton" />
-        <Skeleton class="tab-skeleton" />
+    <div
+      :class="{ transparent: isChangingBetweenWorkflows }"
+      class="sidebar-tabs-skeleton"
+    >
+      <template v-if="!isChangingBetweenWorkflows">
+        <SkeletonItem
+          width="40px"
+          height="50px"
+          :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        />
+        <SkeletonItem
+          width="40px"
+          height="50px"
+          :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        />
+        <SkeletonItem
+          width="40px"
+          height="50px"
+          :style="{ border: '1px solid var(--knime-silver-sand)' }"
+        />
       </template>
     </div>
 
     <div class="sidebar-content-skeleton">
-      <Skeleton class="text-skeleton" />
-      <Skeleton class="text-skeleton" />
-      <Skeleton class="text-skeleton" />
-      <Skeleton class="text-skeleton" />
+      <SkeletonItem height="16px" width="70%" />
+      <SkeletonItem height="16px" />
+      <SkeletonItem height="16px" />
+      <SkeletonItem height="16px" width="30%" />
     </div>
 
-    <div class="content-skeleton">
-      <div class="svg-wrapper">
-        <Skeleton
-          :color1="$colors.SilverSand"
-          :color2="$colors.GrayDarkSemi"
-          class="node-skeleton"
-        />
-        <Skeleton
-          :color1="$colors.SilverSand"
-          :color2="$colors.GrayDarkSemi"
-          class="node-skeleton"
-        />
-        <svg width="800" height="400">
-          <path :d="path" fill="none" class="connector" />
-          <g transform="translate(119.6, 45.5)" class="port">
-            <PortIcon type="table" :filled="true" />
-          </g>
-          <g transform="translate(270, 105)" class="port">
-            <PortIcon type="table" :filled="true" />
-          </g>
-        </svg>
+    <div class="workflow-skeleton">
+      <div class="top-panel-skeleton">
+        <div class="canvas-skeleton">
+          <KnimeIcon class="elastic-spin" />
+        </div>
+        <div v-if="isBrowser" class="right-panel-skeleton">
+          <SkeletonItem height="32px" />
+
+          <div class="form-skeleton">
+            <SkeletonItem width="50%" />
+            <SkeletonItem width="50%" />
+          </div>
+
+          <div class="buttons-skeleton">
+            <SkeletonItem width="100px" type="button" />
+            <SkeletonItem width="100px" type="button" />
+          </div>
+        </div>
       </div>
 
       <div class="bottom-panel-skeleton">
-        <Skeleton class="text-skeleton" />
-        <Skeleton class="text-skeleton" />
+        <SkeletonItem width="50%" height="16px" />
+        <SkeletonItem width="50%" height="16px" />
       </div>
     </div>
   </div>
@@ -109,12 +145,6 @@ const path = computed(() =>
   z-index: calc(infinity);
 }
 
-& .text-skeleton {
-  height: 16px;
-  border-radius: 9999px;
-  width: 100%;
-}
-
 .skeleton {
   background: var(--knime-white);
   display: grid;
@@ -131,76 +161,73 @@ const path = computed(() =>
     gap: 10px;
     padding: 10px;
     align-items: center;
-
-    & .button-skeleton-small {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      border: 1px solid var(--knime-silver-sand);
-    }
-
-    & .button-skeleton-normal {
-      width: 100px;
-      height: 100%;
-      border-radius: 9999px;
-      border: 1px solid var(--knime-silver-sand);
-    }
   }
 
-  & .content-skeleton {
+  & .workflow-skeleton {
     grid-area: workflow;
     display: flex;
     flex-direction: column;
     background: var(--knime-white);
 
+    & .top-panel-skeleton {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+
+      & .canvas-skeleton {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+
+        & svg {
+          @mixin svg-icon-size 50;
+        }
+
+        & .elastic-spin {
+          transform-origin: 50% 65%;
+          animation: elastic-spin 3.8s infinite ease;
+        }
+      }
+
+      & .right-panel-skeleton {
+        background: var(--sidebar-background-color);
+        border-left: 1px solid var(--knime-silver-sand);
+        height: 100%;
+        margin-left: auto;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: calc(calc(v-bind("rightPanelWidth + 12") * 1px));
+
+        & .form-skeleton {
+          display: flex;
+          height: 150px;
+          gap: 8px;
+          margin-top: 12px;
+        }
+
+        & .buttons-skeleton {
+          margin-top: auto;
+          height: 40px;
+          display: flex;
+          justify-content: space-between;
+        }
+      }
+    }
+
     & .bottom-panel-skeleton {
       margin-top: auto;
-      min-height: 28%;
+      min-height: calc(
+        calc(v-bind("bottomPanelHeight") * 1%) + var(--app-toolbar-height)
+      );
       border-top: 3px solid var(--knime-silver-sand);
       display: flex;
       flex-direction: column;
       gap: 4px;
       justify-content: center;
       align-items: center;
-
-      & .text-skeleton {
-        width: 50%;
-      }
-    }
-
-    & .svg-wrapper {
-      position: relative;
-      margin: 50% auto auto;
-      transform: translateY(-50%);
-
-      & .node-skeleton {
-        width: 80px;
-        height: 80px;
-        border-radius: 4px;
-      }
-
-      & .node-skeleton:first-child {
-        position: absolute;
-        top: 80px;
-        left: 151px;
-      }
-
-      & .node-skeleton:nth-child(2) {
-        position: absolute;
-        top: 195px;
-        left: 550px;
-      }
-
-      & svg {
-        & .connector {
-          stroke-width: 4;
-          stroke: var(--knime-stone-gray);
-        }
-
-        & .port {
-          scale: 2;
-        }
-      }
     }
   }
 
@@ -211,12 +238,6 @@ const path = computed(() =>
     height: 100vh;
     display: flex;
     flex-direction: column;
-
-    & .tab-skeleton {
-      width: 40px;
-      height: 50px;
-      border: 1px solid var(--knime-silver-sand);
-    }
   }
 
   & .sidebar-content-skeleton {
@@ -227,14 +248,6 @@ const path = computed(() =>
     padding: 20px;
     border-right: 1px solid var(--knime-silver-sand);
     background: var(--sidebar-background-color);
-
-    & .text-skeleton:nth-child(1) {
-      width: 70%;
-    }
-
-    & .text-skeleton:nth-child(4) {
-      width: 30%;
-    }
   }
 }
 </style>

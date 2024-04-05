@@ -8,6 +8,7 @@ import {
   createSpaceProvider,
   createProject,
 } from "@/test/factories";
+import { flushPromises } from "@vue/test-utils";
 
 describe("application::index", () => {
   it("calls setExampleProjects", async () => {
@@ -122,6 +123,7 @@ describe("application::index", () => {
     });
 
     it("loads the proper (lastActive) workflow when the activeProject has an existing saved state", async () => {
+      vi.useFakeTimers();
       const applicationState = {
         openProjects: [
           { projectId: "foo", name: "bar" },
@@ -143,10 +145,15 @@ describe("application::index", () => {
       );
       await store.dispatch("application/setActiveProject", { $router: router });
 
+      vi.runAllTimers();
+      await flushPromises();
+
       expect(dispatchSpy).toHaveBeenCalledWith("application/loadWorkflow", {
         projectId: "baz",
         workflowId: "root:2",
       });
+
+      vi.useRealTimers();
     });
 
     it("replaces hasNodeCollectionActive", async () => {

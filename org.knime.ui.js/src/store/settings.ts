@@ -7,6 +7,7 @@ import type { ActionTree, MutationTree } from "vuex";
 export type NodeRepositoryDisplayModesType = "icon" | "list";
 
 const SETTINGS_KEY = "knime-ui-settings";
+
 export interface SettingsState {
   settings: {
     nodeOutputSize: number;
@@ -14,6 +15,12 @@ export interface SettingsState {
     nodeDialogSize: number;
   };
 }
+
+const defaults: SettingsState["settings"] = {
+  nodeOutputSize: 40, // %
+  nodeDialogSize: 400, // px
+  nodeRepositoryDisplayMode: "icon",
+};
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T => {
   const item = window?.localStorage?.getItem(key);
@@ -25,11 +32,7 @@ const saveItem = (key: string, value: any) => {
 };
 
 export const state = (): SettingsState => ({
-  settings: {
-    nodeRepositoryDisplayMode: "icon",
-    nodeOutputSize: 40, // %
-    nodeDialogSize: 400, // px
-  },
+  settings: defaults,
 });
 
 export const mutations: MutationTree<SettingsState> = {
@@ -41,9 +44,8 @@ export const mutations: MutationTree<SettingsState> = {
 export const actions: ActionTree<SettingsState, RootStoreState> = {
   fetchSettings({ commit }) {
     const settings = loadItem(SETTINGS_KEY);
-    if (settings !== null) {
-      commit("updateAllSettings", settings);
-    }
+
+    commit("updateAllSettings", { ...defaults, ...(settings ?? {}) });
   },
 
   updateSetting({ state, commit }, payload: { key: string; value: any }) {

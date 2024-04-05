@@ -1,6 +1,7 @@
 @import "modern-normalize/modern-normalize.css";
 @import "webapps-common/ui/css/basics";
 @import "webapps-common/ui/css/grid";
+@import "./animation";
 @import "./fonts";
 @import "./variables";
 @import "./mixins";
@@ -21,10 +22,4 @@ a:focus-visible {
 
 .tab-bar input:focus-visible + span {
   @mixin focus-style;
-}
-
-@keyframes knight-rider {
-  to {
-    background-position-x: -200%;
-  }
 }

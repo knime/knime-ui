@@ -1,0 +1,15 @@
+@keyframes elastic-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(720deg);
+  }
+}
+
+@keyframes knight-rider {
+  to {
+    background-position-x: -200%;
+  }
+}

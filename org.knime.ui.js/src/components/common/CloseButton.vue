@@ -41,6 +41,15 @@ button {
   align-items: center;
   background-color: transparent;
 
+  &:focus-visible {
+    outline: none;
+
+    & svg {
+      background-color: var(--knime-silver-sand-semi);
+      stroke: var(--knime-masala);
+    }
+  }
+
   &:not([disabled]) svg {
     border: 0;
     border-radius: 50%;
@@ -50,15 +59,6 @@ button {
 
     &:hover {
       cursor: pointer;
-      background-color: var(--knime-silver-sand-semi);
-      stroke: var(--knime-masala);
-    }
-  }
-
-  &:focus-visible {
-    outline: none;
-
-    & svg {
       background-color: var(--knime-silver-sand-semi);
       stroke: var(--knime-masala);
     }

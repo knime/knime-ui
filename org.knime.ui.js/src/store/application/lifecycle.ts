@@ -50,7 +50,17 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     { state, commit, dispatch },
     { $router }: { $router: Router },
   ) {
-    commit("setIsLoadingApp", true);
+    // read settings saved in local storage
+    await dispatch("settings/fetchSettings", {}, { root: true });
+
+    // On desktop, the application state will load rather quick, so we don't
+    // need to set this
+    runInEnvironment({
+      BROWSER: () => {
+        commit("setIsLoadingApp", true);
+      },
+    });
+
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
     await runInEnvironment({
       DESKTOP: async () => {
@@ -88,7 +98,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       next();
     });
 
-    await dispatch("settings/fetchSettings", {}, { root: true });
     const applicationState = await API.application.getState({});
     await dispatch("replaceApplicationState", applicationState);
     await dispatch("setActiveProject", { $router });
@@ -164,9 +173,15 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
     await dispatch("updatePreviewSnapshot", { isChangingProject, newWorkflow });
 
-    commit("setIsLoadingWorkflow", true);
+    // only activate the app loader if we're going to switch to a workflow; skip it
+    // when showing the home page
+    if (newWorkflow) {
+      commit("setIsLoadingWorkflow", true);
+    }
+
     // small wait time to improve visual feedback of app skeleton loader
-    await new Promise((r) => setTimeout(r, 300));
+    const RENDER_DELAY_MS = 300;
+    await new Promise((r) => setTimeout(r, RENDER_DELAY_MS));
 
     if (rootState.workflow?.activeWorkflow) {
       dispatch("saveCanvasState");

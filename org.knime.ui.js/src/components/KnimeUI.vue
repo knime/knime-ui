@@ -12,6 +12,7 @@ import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vu
 import BlockUi from "@/components/application/BlockUi.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader.vue";
+import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 
 type ComponentData = {
   loaded: boolean;
@@ -25,9 +26,10 @@ type ComponentData = {
  */
 export default defineComponent({
   components: {
-    AppHeader: defineAsyncComponent(
-      () => import("@/components/application/AppHeader.vue"),
-    ),
+    AppHeader: defineAsyncComponent({
+      loadingComponent: AppHeaderSkeleton,
+      loader: () => import("@/components/application/AppHeader.vue"),
+    }),
     AppSkeletonLoader,
     UpdateBanner,
     HotkeyHandler,
