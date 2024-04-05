@@ -113,7 +113,7 @@ const startRectangleSelection = (event: PointerEvent) => {
   }
 };
 
-const selectFirstObject = async () => {
+const selectFirstObject = async (event: KeyboardEvent) => {
   // we only select something if we don't have a selection yet
   const selectedObjects = store.getters["selection/selectedObjects"];
   if (selectedObjects.length !== 0) {
@@ -147,6 +147,7 @@ const selectFirstObject = async () => {
       `selection/select${capitalize(firstObject.type)}`,
       firstObject.id,
     );
+    event.stopPropagation();
   }
 };
 </script>

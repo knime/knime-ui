@@ -115,6 +115,7 @@ describe("Kanvas", () => {
           canvasSize: () => ({ width: 30, height: 300 }),
           screenFromCanvasCoordinates: () =>
             vi.fn(() => ({ x: 1000, y: 1000 })),
+          screenToCanvasCoordinates: () => vi.fn(() => [1000, 1000]),
         },
         actions: actions.canvas,
         mutations: {
@@ -1054,6 +1055,76 @@ describe("Kanvas", () => {
 
         wrapperRef = wrapper;
       });
+    });
+  });
+
+  describe("initial focus", () => {
+    const mocked = mockedObject(workflowNavigationService);
+
+    const mockNearestObject = (value) => {
+      mocked.nearestObject.mockResolvedValueOnce(value);
+    };
+
+    const mountWithWorkflow = () => {
+      const mountResult = doShallowMount();
+
+      const node1 = createNativeNode({
+        id: "root:1",
+        position: { x: 10, y: 10 },
+      });
+      const node2 = createNativeNode({
+        id: "root:2",
+        position: { x: 20, y: 10 },
+      });
+      const annotation1 = createWorkflowAnnotation({
+        id: "annotation:1",
+        bounds: { x: 40, y: 10, width: 20, height: 20 },
+      });
+      const workflow = createWorkflow({
+        nodes: {
+          [node1.id]: node1,
+          [node2.id]: node2,
+        },
+        workflowAnnotations: [annotation1],
+      });
+      mountResult.$store.commit("workflow/setActiveWorkflow", workflow);
+
+      return { ...mountResult, workflow, node1, node2, annotation1 };
+    };
+
+    it("should select first object when pressing arrow key after canvas receives focus", async () => {
+      const { node1, wrapper, dispatchSpy } = mountWithWorkflow();
+      const firstNodeObject = createWorkflowObject(node1);
+
+      mockNearestObject(firstNodeObject);
+
+      const stopPropagation = vi.fn();
+
+      await wrapper.trigger("keydown.left", { stopPropagation });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "selection/selectNode",
+        firstNodeObject.id,
+      );
+      expect(stopPropagation).toHaveBeenCalled();
+    });
+
+    it("should not select anything if something is already selected", async () => {
+      const { node1, node2, $store, wrapper, dispatchSpy } =
+        mountWithWorkflow();
+      const firstNodeObject = createWorkflowObject(node1);
+
+      await $store.dispatch("selection/selectNode", node2.id);
+      mockNearestObject(firstNodeObject);
+
+      const stopPropagation = vi.fn();
+
+      dispatchSpy.mockClear();
+
+      await wrapper.trigger("keydown.left", { stopPropagation });
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+      expect(stopPropagation).not.toHaveBeenCalled();
     });
   });
 });
