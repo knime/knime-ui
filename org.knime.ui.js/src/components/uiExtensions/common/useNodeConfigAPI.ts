@@ -112,5 +112,6 @@ export const useNodeConfigAPI = () => {
     lastestPublishedData: computed(() => __latestPublishedData.value),
 
     dirtyState: computed(() => __dirtyState.value),
+    resetDirtyState: discardSettings,
   };
 };

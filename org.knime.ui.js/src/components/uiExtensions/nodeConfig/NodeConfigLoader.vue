@@ -12,6 +12,7 @@ import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useUniqueNodeConfigStateId } from "../common/useUniqueNodeConfigStateId";
 import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
+import { useNotifyUIExtensionAlert } from "../common/useNotifyUIExtensionAlert";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
@@ -26,6 +27,7 @@ const props = defineProps<Props>();
 const { projectId, workflowId, selectedNode } = toRefs(props);
 const extensionConfig = ref<ExtensionConfig | null>(null);
 const isConfigReady = ref(false);
+const { notify, removeActiveToast } = useNotifyUIExtensionAlert();
 let deactivateDataServicesFn: () => void;
 
 const emit = defineEmits<{
@@ -66,6 +68,7 @@ const {
   setDirtyState,
   setLatestPublishedData,
   setApplyComplete,
+  resetDirtyState,
 } = useNodeConfigAPI();
 
 const noop = () => {};
@@ -116,7 +119,7 @@ const apiLayer: UIExtensionAPILayer = {
   updateDataPointSelection: () => Promise.resolve(null),
   imageGenerated: noop,
   setReportingContent: noop,
-  sendAlert: noop,
+  sendAlert: notify,
   setControlsVisibility: noop,
 };
 
@@ -125,6 +128,8 @@ watch(
   async () => {
     try {
       isConfigReady.value = false;
+      removeActiveToast();
+      resetDirtyState();
 
       emit("loadingStateChange", {
         value: "loading",

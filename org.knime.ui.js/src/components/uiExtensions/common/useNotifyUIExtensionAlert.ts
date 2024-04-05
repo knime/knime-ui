@@ -36,5 +36,5 @@ export const useNotifyUIExtensionAlert = () => {
     removeActiveToast();
   });
 
-  return { notify };
+  return { notify, removeActiveToast };
 };
