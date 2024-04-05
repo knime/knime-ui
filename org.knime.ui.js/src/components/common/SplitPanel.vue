@@ -47,7 +47,7 @@ const directionSizePaneMap = {
   right: "right",
   down: "bottom",
   up: "top",
-};
+} as const;
 const sizePane = computed(() => directionSizePaneMap[props.direction]);
 const isSecondaryReverse = computed(() =>
   ["left", "up"].includes(props.direction),

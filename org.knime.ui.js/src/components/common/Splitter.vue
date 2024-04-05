@@ -21,7 +21,7 @@ const props = withDefaults(
     initialPercent?: number | string;
     initialPixel?: number | string;
     splitterSize?: number;
-    splitterTitle?: string | null;
+    splitterTitle?: string;
   }>(),
   {
     percent: null,
@@ -32,15 +32,15 @@ const props = withDefaults(
     initialPercent: 50,
     initialPixel: 250,
     splitterSize: 8,
-    splitterTitle: null,
+    splitterTitle: "",
   },
 );
 
 const emit = defineEmits<{
   (event: "update:percent", value: number): void;
   (event: "update:pixel", value: number): void;
-  (event: "drag-start", value: number): void;
-  (event: "drag-end", value: number): void;
+  (event: "drag-start"): void;
+  (event: "drag-end"): void;
   (event: "splitter-click"): void;
 }>();
 
@@ -146,6 +146,7 @@ function calculateSplitterPercent(e: MouseEvent | Touch) {
     pixel = e.pageX - offset;
     containerOffset = containerRef.value!.offsetWidth;
   }
+
   const percent = Math.floor((pixel / containerOffset) * 10000) / 100;
   const splitterSizeInPercent =
     Math.floor((props.splitterSize / containerOffset) * 10000) / 100;
