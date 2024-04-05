@@ -124,8 +124,12 @@ defineExpose({ focusFirst });
             <slot name="nodesTemplate" v-bind="slotProps" />
           </template>
         </NodeList>
-        <div v-if="isLoading" class="node-list-skeleton">
-          <SkeletonNodes :number-of-nodes="9" />
+        <div
+          v-if="isLoading"
+          class="node-list-skeleton"
+          :style="{ gap: displayMode === 'icon' ? '20px 50px' : '1px' }"
+        >
+          <SkeletonNodes :number-of-nodes="9" :display-mode="displayMode" />
         </div>
       </div>
       <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
@@ -266,7 +270,8 @@ defineExpose({ focusFirst });
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      gap: 20px 50px;
+      margin-top: -15px;
+      padding: 0 2px;
     }
   }
 }

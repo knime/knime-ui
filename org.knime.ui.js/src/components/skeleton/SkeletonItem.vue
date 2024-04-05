@@ -33,6 +33,5 @@ defineProps<Props>();
   );
   background-size: 200% 100%;
   animation: 1.5s shine linear infinite;
-  border-radius: 5px;
 }
 </style>
