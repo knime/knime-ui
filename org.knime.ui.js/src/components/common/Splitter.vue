@@ -95,10 +95,10 @@ const gridTemplate = computed(() =>
 const userSelect = computed(() => (isActive.value ? "none" : "auto"));
 
 function addBodyListeners() {
-  document.body.addEventListener("mousemove", onBodyMouseMove);
-  document.body.addEventListener("touchmove", onBodyTouchMove);
-  document.body.addEventListener("touchend", onBodyUp, { once: true });
-  document.body.addEventListener("mouseup", onBodyUp, { once: true });
+  window.addEventListener("mousemove", onBodyMouseMove);
+  window.addEventListener("touchmove", onBodyTouchMove);
+  window.addEventListener("touchend", onBodyUp, { once: true });
+  window.addEventListener("mouseup", onBodyUp, { once: true });
 }
 
 function onSplitterDown() {
@@ -179,8 +179,8 @@ function onBodyMouseMove(e: MouseEvent) {
 }
 
 function removeBodyListeners() {
-  document.body.removeEventListener("touchmove", onBodyTouchMove);
-  document.body.removeEventListener("mousemove", onBodyMouseMove);
+  window.removeEventListener("touchmove", onBodyTouchMove);
+  window.removeEventListener("mousemove", onBodyMouseMove);
 }
 
 function onBodyUp() {
