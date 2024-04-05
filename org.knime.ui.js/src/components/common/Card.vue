@@ -9,17 +9,15 @@ withDefaults(defineProps<Props>(), {
   href: "",
 });
 
-const routerLink = "router-link";
-
 defineEmits<{
   (e: "click"): void;
 }>();
 </script>
 
 <template>
-  <Component :is="routerLink" v-if="link" :to="href" class="card" tabindex="0">
+  <RouterLink v-if="link" :to="href" class="card" tabindex="0">
     <slot />
-  </Component>
+  </RouterLink>
   <button v-else class="card" @click.prevent="$emit('click')">
     <slot />
   </button>
