@@ -87,18 +87,18 @@ const applySettingsOnSelectionChange = (node: NativeNode) => {
   }
 };
 
-const lastSelectedNode = ref(selectedNode.value);
+let lastSelectedNode = selectedNode.value;
 
-watch(selectedNode, (selection, oldSelection) => {
+watch(selectedNode, (nextNode, prevNode) => {
   if (isBrowser) {
-    applySettingsOnSelectionChange(oldSelection);
-    lastSelectedNode.value = selection;
+    applySettingsOnSelectionChange(prevNode);
+    lastSelectedNode = nextNode;
   }
 });
 
 onBeforeUnmount(() => {
   if (isBrowser) {
-    applySettingsOnSelectionChange(lastSelectedNode.value);
+    applySettingsOnSelectionChange(lastSelectedNode);
   }
 });
 
