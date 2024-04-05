@@ -1,7 +1,7 @@
 <script setup lang="ts">
 type Props = {
-  width: number;
-  height: number;
+  width: number | "fill";
+  height: number | "fill";
 };
 
 defineProps<Props>();
@@ -10,7 +10,10 @@ defineProps<Props>();
 <template>
   <div
     class="skeleton-item"
-    :style="{ width: `${width}px`, height: `${height}px` }"
+    :style="{
+      width: width === 'fill' ? '100%' : `${width}px`,
+      height: height === 'fill' ? '100%' : `${height}px`,
+    }"
   />
 </template>
 
@@ -30,5 +33,6 @@ defineProps<Props>();
   );
   background-size: 200% 100%;
   animation: 1.5s shine linear infinite;
+  border-radius: 5px;
 }
 </style>

@@ -18,12 +18,6 @@ withDefaults(defineProps<Props>(), {
 </template>
 
 <style lang="postcss" scoped>
-@keyframes shine {
-  to {
-    background-position-x: -200%;
-  }
-}
-
 .skeleton-node {
   display: flex;
   flex-direction: column;

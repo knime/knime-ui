@@ -10,6 +10,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import GridOutbreaker from "@/components/common/GridOutbreaker.vue";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
+import SkeletonItem from "@/components/skeleton/SkeletonItem.vue";
 
 import {
   globalSpaceBrowserProjectId,
@@ -26,6 +27,7 @@ export default {
     Button,
     Card,
     CardContent,
+    SkeletonItem,
   },
 
   data() {
@@ -246,11 +248,10 @@ export default {
       v-if="isLoadingProvider && !isConnectingToProvider"
       class="skeletons"
     >
-      <div class="skeleton-text" />
-
-      <div class="cards">
-        <div class="skeleton-card" />
-        <div class="skeleton-card" />
+      <SkeletonItem :height="48" width="fill" />
+      <div class="skeleton-cards">
+        <SkeletonItem :height="230" width="fill" />
+        <SkeletonItem :height="230" width="fill" />
       </div>
     </section>
   </GridOutbreaker>
@@ -326,31 +327,14 @@ section.space-provider {
   }
 }
 
-@keyframes shine {
-  to {
-    background-position-x: -200%;
+.skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px 50px;
+
+  & .skeleton-cards {
+    display: flex;
+    gap: 24px;
   }
-}
-
-.skeleton-card,
-.skeleton-text {
-  background: linear-gradient(
-    110deg,
-    var(--knime-white) 8%,
-    var(--knime-porcelain) 18%,
-    var(--knime-white) 33%
-  );
-  border-radius: 5px;
-  background-size: 200% 100%;
-  animation: 1.5s shine linear infinite;
-}
-
-.skeleton-text {
-  min-height: 48px;
-  margin: 10px 0 25px;
-}
-
-.skeleton-card {
-  min-height: 230px;
 }
 </style>
