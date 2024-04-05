@@ -109,7 +109,7 @@ const onContextMenu = (event: MouseEvent) => {
       :show-secondary-panel="$features.shouldDisplayEmbeddedDialogs()"
       direction="right"
       use-pixel
-      :secondary-min-size="360"
+      :secondary-snap-size="360"
       :secondary-max-size="900"
       style="--splitter-background-color: var(--knime-gray-ultra-light)"
     >

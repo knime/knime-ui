@@ -18,8 +18,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   secondarySize: 40,
   secondarySnapSize: 0,
-  secondaryMinSize: 15,
-  secondaryMaxSize: 70,
+  secondaryMinSize: 0,
+  secondaryMaxSize: Infinity,
   usePixel: false,
   direction: "left",
   showSecondaryPanel: true,
@@ -56,21 +56,6 @@ const isSecondaryReverse = computed(() =>
 // the last really defined size (which is never 0 for hidden)
 // start with secondary size to ensure that we open closed ones to a nice size
 const previousSecondarySize = ref(props.secondarySize);
-
-watch(
-  toRef(props, "showSecondaryPanel"),
-  (show) => {
-    if (!show) {
-      percentSize.value = 0;
-      pixelSize.value = 0;
-    } else if (props.usePixel) {
-      pixelSize.value = previousSecondarySize.value;
-    } else {
-      percentSize.value = previousSecondarySize.value;
-    }
-  },
-  { immediate: true },
-);
 
 const willSnap = computed(() => {
   if (props.usePixel) {
@@ -131,6 +116,7 @@ const showPanel = () => {
   currentSecondarySize.value = Math.max(
     props.secondaryMinSize,
     previousSecondarySize.value,
+    props.secondarySnapSize,
   );
 };
 
@@ -152,6 +138,18 @@ const onSplitterClick = () => {
     closePanel();
   }
 };
+
+watch(
+  toRef(props, "showSecondaryPanel"),
+  (show) => {
+    if (show) {
+      showPanel();
+    } else {
+      closePanel();
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -199,40 +197,6 @@ const onSplitterClick = () => {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.splitter-root {
-  --splitter-background-color: transparent;
-  --splitter-border: 1px solid var(--knime-silver-sand);
-
-  &.direction-up {
-    & :deep(> .splitter) {
-      border-bottom: var(--splitter-border);
-    }
-  }
-
-  &.direction-down {
-    & :deep(> .splitter) {
-      border-top: var(--splitter-border);
-    }
-  }
-
-  &.direction-left {
-    & :deep(> .splitter) {
-      border-right: var(--splitter-border);
-    }
-  }
-
-  &.direction-right {
-    & :deep(> .splitter) {
-      border-left: var(--splitter-border);
-    }
-  }
-}
-
-.secondary-wrapper {
-  width: 100%;
-  height: 100%;
-}
-
 .switch-icon {
   @mixin svg-icon-size 10;
 
@@ -272,10 +236,50 @@ const onSplitterClick = () => {
   }
 }
 
+.splitter-root {
+  --splitter-background-color: transparent;
+  --splitter-border: 1px solid var(--knime-silver-sand);
+
+  &.direction-up {
+    & :deep(> .splitter) {
+      border-bottom: var(--splitter-border);
+    }
+  }
+
+  &.direction-down {
+    & :deep(> .splitter) {
+      border-top: var(--splitter-border);
+    }
+  }
+
+  &.direction-left {
+    & :deep(> .splitter) {
+      border-right: var(--splitter-border);
+    }
+  }
+
+  &.direction-right {
+    & :deep(> .splitter) {
+      border-left: var(--splitter-border);
+    }
+  }
+
+  & :deep(> .splitter:hover) {
+    & .switch-icon {
+      visibility: visible;
+    }
+  }
+}
+
+.secondary-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
 /* snap overlay and message */
 .will-snap {
   --will-snap-background-color: var(--knime-porcelain);
-  --splitter-background-color: var(--will-snap-background-color);
+  --splitter-background-color: var(--will-snap-background-color) !important;
 }
 
 .secondary-wrapper.will-snap {
@@ -293,6 +297,9 @@ const onSplitterClick = () => {
     width: 100%;
     height: 100%;
     background-color: var(--will-snap-background-color);
+    z-index: 15;
+    overflow: hidden;
+    white-space: nowrap;
   }
 }
 </style>

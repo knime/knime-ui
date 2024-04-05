@@ -27,8 +27,8 @@ const saveItem = (key: string, value: any) => {
 export const state = (): SettingsState => ({
   settings: {
     nodeRepositoryDisplayMode: "icon",
-    nodeOutputSize: 40,
-    nodeDialogSize: 30,
+    nodeOutputSize: 40, // %
+    nodeDialogSize: 400, // px
   },
 });
 

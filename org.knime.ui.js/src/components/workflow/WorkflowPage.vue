@@ -45,7 +45,6 @@ const savedSecondarySize = computed({
       <SplitPanel
         v-model:secondary-size="savedSecondarySize"
         direction="down"
-        :secondary-min-size="2"
         :secondary-max-size="90"
         :secondary-snap-size="15"
       >
