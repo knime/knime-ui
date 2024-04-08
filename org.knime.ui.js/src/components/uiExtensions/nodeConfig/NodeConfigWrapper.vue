@@ -116,20 +116,6 @@ const onDiscard = () => {
   // we also need to reset the value of the dirtyState reactive property
   discardSettings();
 };
-
-const updateLoadingState = (state: UIExtensionLoadingState) => {
-  loadingState.value = state;
-
-  // TODO Related to UIEXT-1787. Delete this when no longer needed.
-  // if dirtyState comes dirty after just loading, we save inmmediately, this is a bug related to twinlist with missing values
-  if (state.value === "ready") {
-    setTimeout(() => {
-      if (dirtyState.value.apply === ApplyState.CONFIG) {
-        applySettings(selectedNode.value.id, false);
-      }
-    }, 150);
-  }
-};
 </script>
 
 <template>
@@ -139,7 +125,7 @@ const updateLoadingState = (state: UIExtensionLoadingState) => {
       :project-id="projectId!"
       :workflow-id="workflowId"
       :selected-node="selectedNode"
-      @loading-state-change="updateLoadingState"
+      @loading-state-change="loadingState = $event"
     />
 
     <div v-if="loadingState?.value === 'ready'" ref="buttons" class="buttons">
