@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import { useStore } from "@/composables/useStore";
 import SkeletonItem from "@/components/common/SkeletonItem.vue";
 import { isBrowser } from "@/environment";
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { TABS } from "@/store/panel";
 
 const store = useStore();
 
@@ -16,6 +18,7 @@ const isLoadingWorkflow = computed(
 const bottomPanelHeight = computed(
   () => store.state.settings.settings.nodeOutputSize,
 );
+const topPanelHeight = computed(() => 100 - bottomPanelHeight.value);
 const rightPanelWidth = computed(() =>
   isBrowser ? store.state.settings.settings.nodeDialogSize : 0,
 );
@@ -26,6 +29,29 @@ const isChangingBetweenWorkflows = computed(() => {
   return (
     isLoadingWorkflow.value && activeProjectId.value && !isLoadingApp.value
   );
+});
+
+// If the node repository is visible we don't show the skeleton over it
+// when changing between workflows
+const isSidebarVisible = computed(() => {
+  return (
+    isChangingBetweenWorkflows.value &&
+    store.state.panel.activeTab[activeProjectId.value!] === TABS.NODE_REPOSITORY
+  );
+});
+
+const isLogoShown = ref(false);
+const setLogoVisible = createStaggeredLoader({
+  firstStageCallback: () => {
+    isLogoShown.value = true;
+  },
+  resetCallback: () => {
+    isLogoShown.value = false;
+  },
+});
+
+watch(isLoading, (value) => {
+  setLogoVisible(value);
 });
 </script>
 
@@ -93,17 +119,22 @@ const isChangingBetweenWorkflows = computed(() => {
       </template>
     </div>
 
-    <div class="sidebar-content-skeleton">
-      <SkeletonItem height="16px" width="70%" />
-      <SkeletonItem height="16px" />
-      <SkeletonItem height="16px" />
-      <SkeletonItem height="16px" width="30%" />
+    <div
+      class="sidebar-content-skeleton"
+      :class="{ transparent: isSidebarVisible }"
+    >
+      <template v-if="!isSidebarVisible">
+        <SkeletonItem height="16px" width="70%" />
+        <SkeletonItem height="16px" />
+        <SkeletonItem height="16px" />
+        <SkeletonItem height="16px" width="30%" />
+      </template>
     </div>
 
     <div class="workflow-skeleton">
       <div class="top-panel-skeleton">
         <div class="canvas-skeleton">
-          <KnimeIcon class="elastic-spin" />
+          <KnimeIcon v-if="isLogoShown" class="elastic-spin" />
         </div>
         <div v-if="isBrowser" class="right-panel-skeleton">
           <SkeletonItem height="32px" />
@@ -165,15 +196,14 @@ const isChangingBetweenWorkflows = computed(() => {
 
   & .workflow-skeleton {
     grid-area: workflow;
-    display: flex;
-    flex-direction: column;
     background: var(--knime-white);
 
     & .top-panel-skeleton {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100%;
+      height: calc(50% - var(--app-toolbar-height));
+      height: calc(v-bind("`${topPanelHeight}%`") - var(--app-toolbar-height));
 
       & .canvas-skeleton {
         display: flex;
@@ -218,9 +248,8 @@ const isChangingBetweenWorkflows = computed(() => {
     }
 
     & .bottom-panel-skeleton {
-      margin-top: auto;
-      min-height: calc(
-        calc(v-bind("bottomPanelHeight") * 1%) + var(--app-toolbar-height)
+      height: calc(
+        v-bind("`${bottomPanelHeight}%`") - var(--app-toolbar-height)
       );
       border-top: 3px solid var(--knime-silver-sand);
       display: flex;

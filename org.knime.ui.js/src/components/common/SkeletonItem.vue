@@ -41,5 +41,5 @@ const styles = computed(() => {
 </script>
 
 <template>
-  <div class="skeleton" :style="styles" />
+  <div :style="styles" />
 </template>

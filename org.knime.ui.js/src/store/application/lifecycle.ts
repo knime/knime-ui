@@ -180,7 +180,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     }
 
     // small wait time to improve visual feedback of app skeleton loader
-    const RENDER_DELAY_MS = 300;
+    const RENDER_DELAY_MS = 100;
     await new Promise((r) => setTimeout(r, RENDER_DELAY_MS));
 
     if (rootState.workflow?.activeWorkflow) {

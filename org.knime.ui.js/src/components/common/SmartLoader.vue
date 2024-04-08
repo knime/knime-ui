@@ -1,82 +1,9 @@
 <script lang="ts">
-import { defineComponent } from "vue";
-import type { PropType, CSSProperties } from "vue";
+import { defineComponent, type PropType, type CSSProperties } from "vue";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import type { GlobalLoaderConfig } from "@/store/application/globalLoader";
-
-type StaggeredLoadedParams = {
-  /**
-   * callback fn that executes without delay at the start
-   */
-  initialCallback?: () => any;
-  /**
-   * callback fn that executes after the 1st stage's delay
-   */
-  firstStageCallback?: () => any;
-  /**
-   * callback fn that executes after the 1st callback and the 2nd stage's delay
-   */
-  secondStageCallback?: () => any;
-  /**
-   * callback fn that executes when the loader's value is false. It clears the internal timer
-   */
-  resetCallback?: () => any;
-  options?: {
-    stage1Delay?: number;
-    stage2Delay?: number;
-  };
-};
-
-/**
- * Returns function that when called will execute the given callbacks
- * after a specified delay. The calls are staggered, meaning the second callback will be
- * executed only after the 1st one has been called and the corresponding delay has passed
- *
- * @param {Object} arg
- * @param {Function} arg.initialCallback callback fn that executes without delay at the start
- * @param {Function} arg.firstStageCallback callback fn that executes after the 1st stage's delay
- * @param {Function} arg.secondStageCallback callback fn that executes after the 1st callback and the 2nd stage's delay
- * @param {Function} arg.resetCallback callback fn that executes when the loader's value is false. It clears the
- * internal timer
- *
- * @returns {Function} The function to start the staggered call
- */
-const createStaggeredLoader = ({
-  initialCallback = () => {},
-  firstStageCallback = () => {},
-  secondStageCallback = () => {},
-  resetCallback = () => {},
-  options = {},
-}: StaggeredLoadedParams) => {
-  const DEFAULT_STAGE1_DELAY = 1000;
-  const DEFAULT_STAGE2_DELAY = 2500;
-
-  const stage1Delay = options.stage1Delay || DEFAULT_STAGE1_DELAY;
-  const stage2Delay = options.stage2Delay || DEFAULT_STAGE2_DELAY;
-
-  let internalTimer: NodeJS.Timeout;
-
-  const startLoader = (value: boolean) => {
-    if (!value) {
-      clearTimeout(internalTimer);
-      resetCallback();
-      return;
-    }
-
-    initialCallback();
-
-    internalTimer = setTimeout(() => {
-      firstStageCallback();
-
-      internalTimer = setTimeout(() => {
-        secondStageCallback();
-      }, stage2Delay);
-    }, stage1Delay);
-  };
-
-  return startLoader;
-};
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 const DISPLAY_MODES = Object.freeze({
   fullscreen: "fullscreen",
