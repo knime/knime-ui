@@ -29,6 +29,7 @@ export default defineComponent({
       "nodes",
       "query",
       "totalNumFilteredNodesFound",
+      "isLoadingSearchResults",
     ]),
 
     searchActions() {
@@ -60,6 +61,7 @@ export default defineComponent({
     :show-download-button="
       $store.state.application.permissions.showFloatingDownloadButton
     "
+    :is-loading-search-results="isLoadingSearchResults"
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >

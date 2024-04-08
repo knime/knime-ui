@@ -28,6 +28,7 @@ export interface CommonNodeSearchState {
   nodesTags: string[];
 
   abortController: AbortController;
+  isLoadingSearchResults: boolean;
 }
 
 export const state = (): CommonNodeSearchState => ({
@@ -46,6 +47,7 @@ export const state = (): CommonNodeSearchState => ({
   nodesTags: [],
 
   abortController: new AbortController(),
+  isLoadingSearchResults: false,
 });
 
 export const mutations: MutationTree<CommonNodeSearchState> = {
@@ -95,6 +97,10 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
 
   setAbortController(state, abortController) {
     state.abortController = abortController;
+  },
+
+  setLoadingSearchResults(state, isLoadingSearchResults) {
+    state.isLoadingSearchResults = isLoadingSearchResults;
   },
 };
 
@@ -184,9 +190,11 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @param {*} context - Vuex context.
    * @returns {Promise<void>}
    */
-  searchStarterOrAllNodes: debounce(async ({ dispatch, rootState }) => {
+  searchStarterOrAllNodes: debounce(async ({ dispatch, rootState, commit }) => {
+    commit("setLoadingSearchResults", true);
     const searchAllNodes = !rootState.application.hasNodeCollectionActive;
     await dispatch("searchNodes", { all: searchAllNodes });
+    commit("setLoadingSearchResults", false);
   }, searchNodesDebounceWait),
 
   /**

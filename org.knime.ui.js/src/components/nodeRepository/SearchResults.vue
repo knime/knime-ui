@@ -31,6 +31,7 @@ type Props = {
   highlightFirst?: boolean;
   displayMode: NodeRepositoryDisplayModesType;
   showDownloadButton?: boolean;
+  isLoadingSearchResults: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,9 +50,14 @@ const emit = defineEmits<{
   (e: "openPreferences"): void;
 }>();
 
-const { nodes, selectedNode, query, selectedTags, searchActions } =
-  toRefs(props);
-
+const {
+  nodes,
+  selectedNode,
+  query,
+  selectedTags,
+  searchActions,
+  isLoadingSearchResults,
+} = toRefs(props);
 let isLoading = ref(false);
 
 const isNodeListEmpty = computed(() => nodes.value?.length === 0);
@@ -114,6 +120,7 @@ defineExpose({ focusFirst });
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNodeModel"
+          class="node-list"
           :nodes="nodes!"
           :highlight-first="highlightFirst"
           :display-mode="displayMode"
@@ -131,6 +138,13 @@ defineExpose({ focusFirst });
         >
           <SkeletonNodes :number-of-nodes="9" :display-mode="displayMode" />
         </div>
+      </div>
+      <div
+        v-if="isLoadingSearchResults"
+        class="node-list-skeleton"
+        :style="{ gap: displayMode === 'icon' ? '20px 50px' : '1px' }"
+      >
+        <SkeletonNodes :number-of-nodes="9" :display-mode="displayMode" />
       </div>
       <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
         <CircleInfoIcon class="info-icon" />
@@ -190,14 +204,6 @@ defineExpose({ focusFirst });
 .results {
   & .content {
     padding: 0 10px 10px;
-
-    & .loading-indicator {
-      @mixin svg-icon-size 40;
-
-      animation: spin 2s linear infinite;
-      stroke: var(--knime-masala);
-      align-self: center;
-    }
 
     & .advanced-buttons {
       width: 100%;
@@ -265,12 +271,15 @@ defineExpose({ focusFirst });
       }
     }
 
+    & .node-list {
+      margin-bottom: -1px;
+    }
+
     & .node-list-skeleton {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      margin-top: -15px;
       padding: 0 2px;
     }
   }

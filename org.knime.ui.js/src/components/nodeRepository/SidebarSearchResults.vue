@@ -28,6 +28,7 @@ export default defineComponent({
       "selectedTags",
       "selectedNode",
       "totalNumFilteredNodesFound",
+      "isLoadingSearchResults",
     ]),
 
     searchScrollPosition: {
@@ -64,6 +65,7 @@ export default defineComponent({
     :show-download-button="
       $store.state.application.permissions.showFloatingDownloadButton
     "
+    :is-loading-search-results="isLoadingSearchResults"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

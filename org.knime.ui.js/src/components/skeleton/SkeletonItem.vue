@@ -1,20 +1,33 @@
 <script setup lang="ts">
+import { computed, toRefs } from "vue";
+import * as $colors from "@/style/colors.mjs";
+
 type Props = {
   width: number | "fill";
   height: number | "fill";
+  color1?: string;
+  color2?: string;
 };
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  color1: $colors.GrayUltraLight,
+  color2: $colors.Porcelain,
+});
+
+const { width, height } = toRefs(props);
+
+const styles = computed(() => {
+  return {
+    background: `linear-gradient(to right, ${props.color1} 0%, ${props.color2} 25%, ${props.color1} 50%)`,
+    backgroundSize: "200% 100%",
+    width: width.value === "fill" ? "100%" : `${width.value}px`,
+    height: height.value === "fill" ? "100%" : `${height.value}px`,
+  };
+});
 </script>
 
 <template>
-  <div
-    class="skeleton-item"
-    :style="{
-      width: width === 'fill' ? '100%' : `${width}px`,
-      height: height === 'fill' ? '100%' : `${height}px`,
-    }"
-  />
+  <div class="skeleton-item" :style="styles" />
 </template>
 
 <style lang="postcss" scoped>
@@ -25,13 +38,6 @@ defineProps<Props>();
 }
 
 .skeleton-item {
-  background: linear-gradient(
-    90deg,
-    var(--knime-white) 8%,
-    var(--knime-porcelain) 18%,
-    var(--knime-white) 33%
-  );
-  background-size: 200% 100%;
   animation: 1.5s shine linear infinite;
 }
 </style>
