@@ -77,11 +77,6 @@ const initResizeObserver = () => {
 onMounted(() => {
   store.dispatch("canvas/initScrollContainerElement", rootEl.value);
   initResizeObserver();
-
-  // focus kanvas only if do not have an active element or its the body (which is the default)
-  if (!document?.activeElement || document?.activeElement?.tagName === "BODY") {
-    rootEl.value!.focus();
-  }
 });
 
 onBeforeUnmount(() => {
