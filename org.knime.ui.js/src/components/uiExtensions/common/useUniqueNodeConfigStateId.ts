@@ -14,7 +14,7 @@ export const useUniqueNodeConfigStateId = (
 
   const uniqueId = computed(
     () =>
-      `${projectId.value}__${workflowId.value}::${selectedNode.value.id}_${selectedNode.value.state?.executionState}`,
+      `${projectId.value}__${workflowId.value}::${selectedNode.value.id}_${selectedNode.value.inputContentVersion}`,
   );
 
   return { uniqueId };

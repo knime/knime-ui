@@ -11,11 +11,11 @@ describe("useUniqueNodeConfigStateId", () => {
       workflowId: ref("workflow1"),
       selectedNode: ref(
         createNativeNode({
-          state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
+          inputContentVersion: 13
         }),
       ),
     });
 
-    expect(uniqueId.value).toMatch("project1__workflow1::root:1_EXECUTED");
+    expect(uniqueId.value).toMatch("project1__workflow1::root:1_13");
   });
 });
