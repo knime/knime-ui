@@ -195,6 +195,12 @@ describe("Node search partial store", () => {
       store.commit("nodeSearch/setSearchScrollPosition", 22);
       expect(store.state.nodeSearch.searchScrollPosition).toBe(22);
     });
+
+    it("sets loading of search results", async () => {
+      const { store } = await createStore();
+      store.commit("nodeSearch/setLoadingSearchResults", true);
+      expect(store.state.nodeSearch.isLoadingSearchResults).toBe(true);
+    });
   });
 
   describe("actions", () => {

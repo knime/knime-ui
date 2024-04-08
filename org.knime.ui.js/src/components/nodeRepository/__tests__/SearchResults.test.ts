@@ -47,6 +47,7 @@ describe("SearchResults", () => {
       numFilteredOutNodes,
       highlightFirst: false,
       displayMode: "icon",
+      isLoadingSearchResults: false,
       ...propsOverrides,
     };
 
@@ -135,6 +136,18 @@ describe("SearchResults", () => {
     const { wrapper } = doMount();
 
     wrapper.vm.isLoading = true;
+    await Vue.nextTick();
+    const nodeListSkeleton = wrapper.find(".node-list-skeleton");
+    expect(nodeListSkeleton.exists()).toBe(true);
+  });
+
+  it("displays node list skeleton when isLoadingSearchResults is true", async () => {
+    const { wrapper } = doMount({
+      propsOverrides: {
+        isLoadingSearchResults: true,
+      },
+    });
+
     await Vue.nextTick();
     const nodeListSkeleton = wrapper.find(".node-list-skeleton");
     expect(nodeListSkeleton.exists()).toBe(true);
