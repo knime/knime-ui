@@ -264,10 +264,14 @@ watch(
     }
   }
 
-  & :deep(> .splitter:hover) {
-    & .switch-icon {
-      visibility: visible;
-    }
+  & :deep(> .splitter.active),
+  :deep(.splitter:hover) {
+    border-color: var(--knime-masala);
+  }
+
+  & :deep(.splitter:hover) {
+    transition: border-color 500ms 300ms ease-in;
+    border-color: var(--knime-masala);
   }
 }
 
