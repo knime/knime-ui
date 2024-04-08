@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 
-import { ApplyState } from "@knime/ui-extension-service";
+import { ApplyState, ViewState } from "@knime/ui-extension-service";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { useStore } from "@/composables/useStore";
@@ -62,15 +62,17 @@ const canApplyAndExecute = computed(() => {
 const applySettingsOnSelectionChange = (node: NativeNode) => {
   if (
     !permissions.value.canConfigureNodes ||
-    dirtyState.value.apply === ApplyState.CLEAN
+    (dirtyState.value.apply === ApplyState.CLEAN &&
+      dirtyState.value.view === ViewState.CLEAN)
   ) {
     return;
   }
 
   if (
-    node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED ||
-    node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
-    node.state?.executionState === NodeState.ExecutionStateEnum.QUEUED
+    dirtyState.value.apply === ApplyState.CONFIG &&
+    (node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED ||
+      node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
+      node.state?.executionState === NodeState.ExecutionStateEnum.QUEUED)
   ) {
     // TODO NXT-2522 Add here a check of user preferences and/or show a proper dialog that set that preference
     $toast.show({
@@ -82,7 +84,7 @@ const applySettingsOnSelectionChange = (node: NativeNode) => {
     return;
   }
 
-  if (dirtyState.value.apply === ApplyState.CONFIG) {
+  if (canApplyOrDiscard.value) {
     applySettings(node.id, false);
   }
 };
