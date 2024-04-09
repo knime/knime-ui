@@ -12,6 +12,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["close"],
   data() {
@@ -23,10 +27,10 @@ export default {
 </script>
 
 <template>
-  <button @click="$emit('close', $event)">
+  <button :disabled="disabled" @click="$emit('close', $event)">
     <DotIcon
       v-if="hasUnsavedChanges && !isHovered"
-      @mouseover="isHovered = true"
+      @mouseover="isHovered = !disabled"
     />
     <CloseIcon v-else @mouseleave="isHovered = false" />
   </button>
@@ -41,6 +45,14 @@ button {
   align-items: center;
   background-color: transparent;
 
+  & svg {
+    border: 0;
+    border-radius: 50%;
+    stroke: var(--knime-dove-gray);
+
+    @mixin svg-icon-size 28;
+  }
+
   &:focus-visible {
     outline: none;
 
@@ -50,18 +62,10 @@ button {
     }
   }
 
-  &:not([disabled]) svg {
-    border: 0;
-    border-radius: 50%;
-    stroke: var(--knime-dove-gray);
-
-    @mixin svg-icon-size 28;
-
-    &:hover {
-      cursor: pointer;
-      background-color: var(--knime-silver-sand-semi);
-      stroke: var(--knime-masala);
-    }
+  &:not(:disabled) svg:hover {
+    cursor: pointer;
+    background-color: var(--knime-silver-sand-semi);
+    stroke: var(--knime-masala);
   }
 }
 </style>

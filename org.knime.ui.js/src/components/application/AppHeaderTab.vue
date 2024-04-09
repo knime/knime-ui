@@ -188,10 +188,14 @@ const activateTab = () => {
     stroke: var(--knime-black);
   }
 
-  &:not([aria-disabled="true"]) .close-icon {
+  & .close-icon {
     & :deep(svg) {
       stroke: var(--knime-black);
+    }
+  }
 
+  &:not([aria-disabled="true"]) .close-icon {
+    & :deep(svg) {
       &:hover {
         stroke: var(--knime-white);
         background: var(--knime-masala-semi);
