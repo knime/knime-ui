@@ -2707,11 +2707,17 @@ export interface Permissions {
      */
     canAccessSpaceExplorer: boolean;
     /**
-     * Whether an indicator for certain kinds of remote workflows (\&quot;yellow bar\&quot;) should be shown
+     * Whether an indicator for certain kinds of remote workflows (\&quot;yellow bar\&quot;) should be shown in some contexts
      * @type {boolean}
      * @memberof Permissions
      */
     showRemoteWorkflowInfo: boolean;
+    /**
+     * Whether to show a floating download button above the entire app.
+     * @type {boolean}
+     * @memberof Permissions
+     */
+    showFloatingDownloadButton: boolean;
 
 }
 
