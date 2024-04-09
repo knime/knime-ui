@@ -43,7 +43,7 @@ let previousToastId: string;
 
 const contextMenuItems: AppHeaderContextMenuItem[] = [
   {
-    text: "Reveal in Space Explorer",
+    text: "Reveal in space explorer",
     metadata: {
       onClick: async () => {
         const showError = () => {
@@ -134,7 +134,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
     },
   },
   {
-    text: "Close Project",
+    text: "Close project",
     metadata: {
       onClick: () => {
         store.dispatch("workflow/closeProject", props.projectId);
