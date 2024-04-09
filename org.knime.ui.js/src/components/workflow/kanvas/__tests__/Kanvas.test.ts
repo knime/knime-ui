@@ -1092,21 +1092,55 @@ describe("Kanvas", () => {
       return { ...mountResult, workflow, node1, node2, annotation1 };
     };
 
-    it("should select first object when pressing arrow key after canvas receives focus", async () => {
+    it("should select first object on keyboard focus", async () => {
       const { node1, wrapper, dispatchSpy } = mountWithWorkflow();
       const firstNodeObject = createWorkflowObject(node1);
 
       mockNearestObject(firstNodeObject);
 
-      const stopPropagation = vi.fn();
+      dispatchSpy.mockClear();
 
-      await wrapper.trigger("keydown.left", { stopPropagation });
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
+      await wrapper.trigger("focusin");
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectNode",
         firstNodeObject.id,
       );
-      expect(stopPropagation).toHaveBeenCalled();
+    });
+
+    it("should not select first object on mouse focus", async () => {
+      const { node1, wrapper, dispatchSpy } = mountWithWorkflow();
+      const firstNodeObject = createWorkflowObject(node1);
+
+      mockNearestObject(firstNodeObject);
+
+      dispatchSpy.mockClear();
+
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
+      await Vue.nextTick();
+
+      document.dispatchEvent(new Event("mousedown"));
+      await Vue.nextTick();
+
+      await wrapper.trigger("focusin");
+
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "selection/selectNode",
+        firstNodeObject.id,
+      );
+    });
+
+    it("should deselect all objects on escape", async () => {
+      const { node1, wrapper, dispatchSpy, $store } = mountWithWorkflow();
+
+      await $store.dispatch("selection/selectNode", node1.id);
+
+      dispatchSpy.mockClear();
+
+      await wrapper.trigger("keydown.esc");
+
+      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
     });
 
     it("should not select anything if something is already selected", async () => {
@@ -1117,14 +1151,11 @@ describe("Kanvas", () => {
       await $store.dispatch("selection/selectNode", node2.id);
       mockNearestObject(firstNodeObject);
 
-      const stopPropagation = vi.fn();
-
       dispatchSpy.mockClear();
 
-      await wrapper.trigger("keydown.left", { stopPropagation });
+      await wrapper.trigger("focusin");
 
       expect(dispatchSpy).not.toHaveBeenCalled();
-      expect(stopPropagation).not.toHaveBeenCalled();
     });
   });
 });

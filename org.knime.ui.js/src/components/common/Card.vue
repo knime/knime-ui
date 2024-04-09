@@ -27,7 +27,8 @@ defineEmits<{
 @import url("@/assets/mixins.css");
 
 .card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   text-decoration: none;
   min-width: 300px;
   min-height: 150px;

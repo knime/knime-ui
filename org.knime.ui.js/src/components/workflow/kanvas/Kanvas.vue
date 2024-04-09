@@ -19,6 +19,7 @@ import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 import { RESIZE_DEBOUNCE } from "./constants";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { capitalize } from "webapps-common/util/capitalize";
+import useKeyboardFocus from "@/composables/useKeyboardFocus";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
@@ -108,7 +109,12 @@ const startRectangleSelection = (event: PointerEvent) => {
   }
 };
 
-const selectFirstObject = async (event: KeyboardEvent) => {
+const hasKeyboardFocus = useKeyboardFocus(["Tab"]);
+
+const selectObjectOnKeyboardFocus = async () => {
+  if (!hasKeyboardFocus.value) {
+    return;
+  }
   // we only select something if we don't have a selection yet
   const selectedObjects = store.getters["selection/selectedObjects"];
   if (selectedObjects.length !== 0) {
@@ -142,8 +148,11 @@ const selectFirstObject = async (event: KeyboardEvent) => {
       `selection/select${capitalize(firstObject.type)}`,
       firstObject.id,
     );
-    event.stopPropagation();
   }
+};
+
+const deselectAllObjects = () => {
+  store.dispatch("selection/deselectAllObjects");
 };
 </script>
 
@@ -167,10 +176,8 @@ const selectFirstObject = async (event: KeyboardEvent) => {
     @pointerup.left="stopPan"
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
-    @keydown.left="selectFirstObject"
-    @keydown.right="selectFirstObject"
-    @keydown.up="selectFirstObject"
-    @keydown.down="selectFirstObject"
+    @focusin="selectObjectOnKeyboardFocus"
+    @keydown.esc.stop="deselectAllObjects"
   >
     <svg
       ref="svg"
@@ -215,14 +222,6 @@ svg {
 
   &:focus {
     outline: none;
-  }
-
-  &:focus-visible {
-    & > svg {
-      background-color: transparent !important;
-    }
-
-    @mixin focus-style;
   }
 
   &.empty {
