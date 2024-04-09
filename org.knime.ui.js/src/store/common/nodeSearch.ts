@@ -191,7 +191,6 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @returns {Promise<void>}
    */
   searchStarterOrAllNodes: debounce(async ({ dispatch, rootState, commit }) => {
-    commit("setLoadingSearchResults", true);
     const searchAllNodes = !rootState.application.hasNodeCollectionActive;
     await dispatch("searchNodes", { all: searchAllNodes });
     commit("setLoadingSearchResults", false);
@@ -229,6 +228,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @returns {undefined}
    */
   async setSelectedTags({ dispatch, commit }, tags) {
+    commit("setLoadingSearchResults", true);
     commit("setSelectedTags", tags);
     await dispatch("searchStarterOrAllNodes");
   },
@@ -241,6 +241,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @returns {undefined}
    */
   async updateQuery({ commit, dispatch }, value) {
+    commit("setLoadingSearchResults", true);
     commit("setQuery", value);
     await dispatch("searchStarterOrAllNodes");
   },

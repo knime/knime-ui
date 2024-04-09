@@ -2,6 +2,7 @@ import { expect, describe, it, afterEach, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
+import * as $colors from "@/style/colors.mjs";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import SearchResults from "../SearchResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
@@ -60,6 +61,7 @@ describe("SearchResults", () => {
             : null,
           DownloadAPButton: true,
         },
+        mocks: { $colors },
       },
     });
 

@@ -116,7 +116,10 @@ defineExpose({ focusFirst });
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <div v-if="!isNodeListEmpty" class="node-list-wrapper">
+      <div
+        v-if="!isNodeListEmpty && !isLoadingSearchResults"
+        class="node-list-wrapper"
+      >
         <NodeList
           ref="nodeList"
           v-model:selected-node="selectedNodeModel"
@@ -146,48 +149,50 @@ defineExpose({ focusFirst });
       >
         <SkeletonNodes :number-of-nodes="9" :display-mode="displayMode" />
       </div>
-      <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
-        <CircleInfoIcon class="info-icon" />
-        <div class="filtered-nodes-content">
-          <template v-if="isDesktop">
-            <span>
-              Change filter settings to “All nodes“ to see more advanced nodes
-              matching your search criteria.
-            </span>
-            <Button
-              primary
-              compact
-              class="filtered-nodes-button"
-              @click="emit('openPreferences')"
+      <template v-if="!isLoadingSearchResults">
+        <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
+          <CircleInfoIcon class="info-icon" />
+          <div class="filtered-nodes-content">
+            <template v-if="isDesktop">
+              <span>
+                Change filter settings to “All nodes“ to see more advanced nodes
+                matching your search criteria.
+              </span>
+              <Button
+                primary
+                compact
+                class="filtered-nodes-button"
+                @click="emit('openPreferences')"
+              >
+                <FilterCheckIcon />Change filter settings
+              </Button>
+            </template>
+            <template v-else>
+              <span>
+                There are no available matching nodes. To work with more nodes,
+                download the KNIME Analytics Platform.
+              </span>
+              <DownloadAPButton
+                v-if="showDownloadButton"
+                compact
+                src="node-repository"
+                class="filtered-nodes-button"
+              />
+            </template>
+          </div>
+        </div>
+        <div v-else-if="isNodeListEmpty" class="filtered-nodes-wrapper">
+          <CircleInfoIcon class="info-icon" />
+          <div class="filtered-nodes-content">
+            <span>There are no matching nodes.</span>
+            <span
+              >Search the
+              <a :href="searchHubLink">KNIME Community Hub</a>
+              to find more nodes and extensions.</span
             >
-              <FilterCheckIcon />Change filter settings
-            </Button>
-          </template>
-          <template v-else>
-            <span>
-              There are no available matching nodes. To work with more nodes,
-              download the KNIME Analytics Platform.
-            </span>
-            <DownloadAPButton
-              v-if="showDownloadButton"
-              compact
-              src="node-repository"
-              class="filtered-nodes-button"
-            />
-          </template>
+          </div>
         </div>
-      </div>
-      <div v-else-if="isNodeListEmpty" class="filtered-nodes-wrapper">
-        <CircleInfoIcon class="info-icon" />
-        <div class="filtered-nodes-content">
-          <span>There are no matching nodes.</span>
-          <span
-            >Search the
-            <a :href="searchHubLink">KNIME Community Hub</a>
-            to find more nodes and extensions.</span
-          >
-        </div>
-      </div>
+      </template>
     </div>
   </ScrollViewContainer>
 </template>
@@ -272,7 +277,7 @@ defineExpose({ focusFirst });
     }
 
     & .node-list {
-      margin-bottom: -1px;
+      margin-bottom: -10px;
     }
 
     & .node-list-skeleton {
@@ -280,7 +285,7 @@ defineExpose({ focusFirst });
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      padding: 0 2px;
+      padding: 10px 2px;
     }
   }
 }
