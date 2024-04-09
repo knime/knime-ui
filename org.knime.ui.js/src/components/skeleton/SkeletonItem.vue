@@ -7,14 +7,16 @@ type Props = {
   height: number | "fill";
   color1?: string;
   color2?: string;
+  borderRadius?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   color1: $colors.GrayUltraLight,
   color2: $colors.Porcelain,
+  borderRadius: 0,
 });
 
-const { width, height } = toRefs(props);
+const { width, height, borderRadius } = toRefs(props);
 
 const styles = computed(() => {
   return {
@@ -22,6 +24,7 @@ const styles = computed(() => {
     backgroundSize: "200% 100%",
     width: width.value === "fill" ? "100%" : `${width.value}px`,
     height: height.value === "fill" ? "100%" : `${height.value}px`,
+    borderRadius: `${borderRadius.value}px`,
   };
 });
 </script>

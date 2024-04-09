@@ -56,6 +56,7 @@ const {
   query,
   selectedTags,
   searchActions,
+  displayMode,
   isLoadingSearchResults,
 } = toRefs(props);
 let isLoading = ref(false);
@@ -75,6 +76,19 @@ const searchHubLink = computed(
       query.value,
     )}&type=all&src=knimeappmodernui`,
 );
+const skeletonNodeListStyles = computed(() => {
+  return displayMode.value === "icon"
+    ? {
+        gap: "30px 50px",
+        marginLeft: "22px",
+        padding: "20px 2px",
+      }
+    : {
+        gap: "2px",
+        marginLeft: "0",
+        padding: "10px 2px",
+      };
+});
 
 const onSaveScrollPosition = (position: number) => {
   emit("update:searchScrollPosition", position);
@@ -137,17 +151,17 @@ defineExpose({ focusFirst });
         <div
           v-if="isLoading"
           class="node-list-skeleton"
-          :style="{ gap: displayMode === 'icon' ? '20px 50px' : '1px' }"
+          :style="skeletonNodeListStyles"
         >
-          <SkeletonNodes :number-of-nodes="9" :display-mode="displayMode" />
+          <SkeletonNodes :number-of-nodes="5" :display-mode="displayMode" />
         </div>
       </div>
       <div
         v-if="isLoadingSearchResults"
         class="node-list-skeleton"
-        :style="{ gap: displayMode === 'icon' ? '20px 50px' : '1px' }"
+        :style="skeletonNodeListStyles"
       >
-        <SkeletonNodes :number-of-nodes="9" :display-mode="displayMode" />
+        <SkeletonNodes :number-of-nodes="5" :display-mode="displayMode" />
       </div>
       <template v-if="!isLoadingSearchResults">
         <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
@@ -277,15 +291,14 @@ defineExpose({ focusFirst });
     }
 
     & .node-list {
-      margin-bottom: -10px;
+      margin-bottom: -11px;
     }
 
     & .node-list-skeleton {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: center;
-      padding: 10px 2px;
+      justify-content: flex-start;
     }
   }
 }

@@ -19,12 +19,23 @@ withDefaults(defineProps<Props>(), {
     :class="`skeleton-node-${displayMode}`"
   >
     <template v-if="displayMode === 'icon'">
-      <SkeletonItem :color1="$colors.SilverSandSemi" :width="30" :height="10" />
-      <SkeletonItem :color1="$colors.SilverSandSemi" :width="60" :height="50" />
+      <SkeletonItem
+        :color1="$colors.SilverSandSemi"
+        :width="60"
+        :height="10"
+        :border-radius="2"
+      />
+      <SkeletonItem
+        :color1="$colors.SilverSandSemi"
+        :width="35"
+        :height="35"
+        :border-radius="3"
+      />
     </template>
     <template v-else>
       <SkeletonItem
-        :color1="$colors.SilverSandSemi"
+        :color1="$colors.White"
+        :color2="$colors.Porcelain"
         :height="25"
         width="fill"
       />
