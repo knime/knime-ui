@@ -25,7 +25,6 @@ export default defineComponent({
   emits: ["update:selectedNode", "addNode"],
   expose: ["focusFirst"],
   computed: {
-    ...mapState("application", ["permissions"]),
     ...mapState("quickAddNodes", [
       "nodes",
       "query",
@@ -58,7 +57,9 @@ export default defineComponent({
     :display-mode="displayMode"
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
-    :show-download-button="permissions.showDownloadAPButton"
+    :show-download-button="
+      $store.state.application.permissions.showFloatingDownloadButton
+    "
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >

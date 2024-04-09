@@ -81,7 +81,7 @@ describe("RightPanel", () => {
       }),
     });
 
-    $store.state.application.permissions.showDownloadAPButton = true;
+    $store.state.application.permissions.showFloatingDownloadButton = true;
     await nextTick();
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);

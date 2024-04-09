@@ -1,26 +1,27 @@
-<script>
+<script lang="ts">
+import { defineComponent, type PropType } from "vue";
 import { mapState, mapActions } from "vuex";
 
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
-export default {
+export default defineComponent({
   components: {
     DraggableNodeTemplate,
     SearchResults,
   },
   props: {
     displayMode: {
-      type: String,
+      type: String as PropType<NodeRepositoryDisplayModesType>,
       default: "icon",
     },
   },
   emits: ["showNodeDescription"],
   computed: {
-    ...mapState("application", ["permissions"]),
     ...mapState("nodeRepository", [
       "nodes",
       "query",
@@ -33,7 +34,7 @@ export default {
       get() {
         return this.$store.state.nodeRepository.searchScrollPosition;
       },
-      set(value) {
+      set(value: number) {
         this.$store.commit("nodeRepository/setSearchScrollPosition", value);
       },
     },
@@ -46,7 +47,7 @@ export default {
   methods: {
     ...mapActions("nodeRepository", ["searchNodesNextPage"]),
   },
-};
+});
 </script>
 
 <template>
@@ -60,7 +61,9 @@ export default {
     :query="query"
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
-    :show-download-button="permissions.showDownloadAPButton"
+    :show-download-button="
+      $store.state.application.permissions.showFloatingDownloadButton
+    "
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

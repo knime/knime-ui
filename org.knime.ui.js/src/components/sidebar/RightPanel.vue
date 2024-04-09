@@ -18,7 +18,7 @@ const selectedNode = computed<KnimeNode>(
 );
 const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
 const showDownloadButton = computed(
-  () => store.state.application.permissions.showDownloadAPButton,
+  () => store.state.application.permissions.showFloatingDownloadButton,
 );
 
 const isNodeExecuting = computed(() =>

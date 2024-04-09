@@ -139,7 +139,7 @@ describe("QuickAddNodeMenu.vue", () => {
           hasNodeRecommendationsEnabled: true,
           nodeRepositoryLoaded: nodeRepositoryLoadedMock,
           permissions: {
-            showDownloadAPButton: false,
+            showFloatingDownloadButton: false,
           },
         },
         actions: {
