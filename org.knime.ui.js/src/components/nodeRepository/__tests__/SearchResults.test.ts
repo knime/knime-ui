@@ -83,7 +83,7 @@ describe("SearchResults", () => {
       expect(wrapper.findComponent(NodeList).exists()).toBe(false);
     });
 
-    it("shows placeholder for empty result if numFilteredOutNodes is a positive value and in browser", async () => {
+    it("shows download AP button and message for an empty search result in the browser", async () => {
       vi.resetModules();
       vi.doMock("@/environment", async (importOriginal) => {
         const actual = await importOriginal<typeof import("@/environment")>();
@@ -100,11 +100,13 @@ describe("SearchResults", () => {
         propsOverrides: {
           query: "xxx",
           nodes: [],
+          showDownloadButton: true,
         },
         component: SearchResults,
         useScrollViewContainerMock: true,
       });
 
+      expect(wrapper.find("download-a-p-button-stub").exists()).toBe(true);
       expect(wrapper.text()).toMatch(
         "There are no available matching nodes. To work with more nodes, download the KNIME Analytics Platform.",
       );

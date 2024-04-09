@@ -20,6 +20,7 @@ export default {
   },
   emits: ["showNodeDescription"],
   computed: {
+    ...mapState("application", ["permissions"]),
     ...mapState("nodeRepository", [
       "nodes",
       "query",
@@ -59,6 +60,7 @@ export default {
     :query="query"
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
+    :show-download-button="permissions.showDownloadAPButton"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

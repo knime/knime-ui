@@ -30,6 +30,7 @@ type Props = {
   numFilteredOutNodes: number;
   highlightFirst?: boolean;
   displayMode: NodeRepositoryDisplayModesType;
+  showDownloadButton?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,6 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
   searchScrollPosition: 0,
   highlightFirst: false,
   displayMode: "icon",
+  showDownloadButton: false,
 });
 
 const emit = defineEmits<{
@@ -49,6 +51,7 @@ const emit = defineEmits<{
 
 const { nodes, selectedNode, query, selectedTags, searchActions } =
   toRefs(props);
+
 let isLoading = ref(false);
 
 const isNodeListEmpty = computed(() => nodes.value?.length === 0);
@@ -127,10 +130,10 @@ defineExpose({ focusFirst });
         <CircleInfoIcon class="info-icon" />
         <div class="filtered-nodes-content">
           <template v-if="isDesktop">
-            <span
-              >Change filter settings to “All nodes“ to see more advanced nodes
-              matching your search criteria.</span
-            >
+            <span>
+              Change filter settings to “All nodes“ to see more advanced nodes
+              matching your search criteria.
+            </span>
             <Button
               primary
               compact
@@ -146,6 +149,7 @@ defineExpose({ focusFirst });
               download the KNIME Analytics Platform.
             </span>
             <DownloadAPButton
+              v-if="showDownloadButton"
               compact
               src="node-repository"
               class="filtered-nodes-button"

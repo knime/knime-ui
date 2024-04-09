@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
-import { isBrowser } from "@/environment";
 
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
@@ -15,6 +14,10 @@ import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
  * Component that acts as a router page to render the workflow
  */
 const store = useStore();
+
+const showDownloadButton = computed(
+  () => store.state.application.permissions.showDownloadAPButton,
+);
 
 const workflow = computed(() => store.state.workflow.activeWorkflow);
 const savedSecondarySize = computed({
@@ -36,7 +39,7 @@ const savedSecondarySize = computed({
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
     <DownloadAPButton
-      v-if="isBrowser"
+      v-if="showDownloadButton"
       src="floating-action-button"
       class="floating-download-button"
     />

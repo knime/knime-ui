@@ -6,12 +6,11 @@ import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.s
 import { useStore } from "@/composables/useStore";
 
 type Props = {
-  src?: string;
+  src: string;
   compact?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  src: "",
   compact: false,
 });
 
@@ -21,7 +20,7 @@ const analyticsPlatformDownloadURL = computed(
 );
 
 const href = computed(() => {
-  const parameter = props.src ? `?src=${props.src}` : "";
+  const parameter = `?src=${props.src}`;
 
   return `${analyticsPlatformDownloadURL.value}${parameter}`;
 });
@@ -30,6 +29,6 @@ const href = computed(() => {
 <template>
   <Button primary :compact="compact" :href="href">
     <LinkExternalIcon />
-    <span>Go to the download page</span>
+    <span>Get KNIME Analytics Platform</span>
   </Button>
 </template>

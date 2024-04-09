@@ -7,7 +7,13 @@ import * as applicationStore from "@/store/application";
 import DownloadAPButton from "../DownloadAPButton.vue";
 
 describe("Download AP Button", () => {
-  const doMount = ({ propsOverrides = {} } = {}) => {
+  type MountOptions = { propsOverrides?: { src?: string } };
+
+  const defaultProps = {
+    src: "something",
+  };
+
+  const doMount = ({ propsOverrides = {} }: MountOptions = {}) => {
     const $store = mockVuexStore({
       application: {
         ...applicationStore,
@@ -16,6 +22,7 @@ describe("Download AP Button", () => {
     });
 
     const props = {
+      ...defaultProps,
       ...propsOverrides,
     };
 
@@ -28,13 +35,6 @@ describe("Download AP Button", () => {
 
     return { wrapper, props, $store };
   };
-
-  it("default empty utm parameter", () => {
-    const { wrapper, $store } = doMount();
-    expect(wrapper.attributes().href).toBe(
-      `${$store.state.application.analyticsPlatformDownloadURL}`,
-    );
-  });
 
   it("includes utm parameter", () => {
     const src = "test_location";

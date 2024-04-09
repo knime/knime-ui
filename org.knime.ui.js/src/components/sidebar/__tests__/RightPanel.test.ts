@@ -8,6 +8,7 @@ import * as workflowStore from "@/store/workflow";
 
 import RightPanel from "../RightPanel.vue";
 import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
+import { nextTick } from "vue";
 
 describe("RightPanel", () => {
   const doMount = (
@@ -72,30 +73,16 @@ describe("RightPanel", () => {
     );
   });
 
-  it("shows download AP link for legacy dialogs in the browser", async () => {
-    vi.resetModules();
-    vi.doMock("@/environment", async () => {
-      const actual = await vi.importActual("@/environment");
-
-      return {
-        ...actual,
-        environment: "BROWSER",
-        isDesktop: false,
-        isBrowser: true,
-      };
+  it("shows download AP link for legacy dialogs when permission is set", async () => {
+    const { wrapper, $store } = doMount({
+      singleSelectedNodeMock: vi.fn().mockReturnValue({
+        id: 2,
+        kind: "node",
+      }),
     });
 
-    const RightPanel = (await import("../RightPanel.vue")).default;
-
-    const { wrapper } = doMount(
-      {
-        singleSelectedNodeMock: vi.fn().mockReturnValue({
-          id: 2,
-          kind: "node",
-        }),
-      },
-      RightPanel,
-    );
+    $store.state.application.permissions.showDownloadAPButton = true;
+    await nextTick();
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(

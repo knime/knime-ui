@@ -7,7 +7,6 @@ import Button from "webapps-common/ui/components/Button.vue";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
-import { isBrowser } from "@/environment";
 
 import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
 
@@ -18,6 +17,9 @@ const selectedNode = computed<KnimeNode>(
   () => store.getters["selection/singleSelectedNode"],
 );
 const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
+const showDownloadButton = computed(
+  () => store.state.application.permissions.showDownloadAPButton,
+);
 
 const isNodeExecuting = computed(() =>
   Boolean(
@@ -52,7 +54,7 @@ const openNodeConfiguration = () => {
 
     <!-- PLACEHOLDER - LEGACY DIALOGS -->
     <div v-else-if="hasLegacyDialog" class="placeholder">
-      <template v-if="isBrowser">
+      <template v-if="showDownloadButton">
         <span class="placeholder-text">
           To configure nodes with a classic dialog, download the KNIME Analytics
           Platform.
