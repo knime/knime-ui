@@ -17,7 +17,7 @@ import type { NativeNode } from "@/api/gateway-api/generated-api";
 
 import { useResourceLocation } from "../common/useResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
-import { useUniqueNodeConfigStateId } from "../common/useUniqueNodeConfigStateId";
+import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 import ExecuteButton from "../ExecuteButton.vue";
 import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 
@@ -141,7 +141,7 @@ const apiLayer: UIExtensionAPILayer = {
   setControlsVisibility: noop,
 };
 
-const { uniqueId } = useUniqueNodeConfigStateId(toRefs(props));
+const { uniqueNodeConfigStateId } = useUniqueNodeStateId(toRefs(props));
 
 const { lastestPublishedData, dirtyState, applySettings } = useNodeConfigAPI();
 
@@ -160,7 +160,7 @@ const hasToReexecute = computed(() => {
 });
 
 watch(
-  uniqueId,
+  uniqueNodeConfigStateId,
   async () => {
     try {
       error.value = null;

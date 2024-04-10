@@ -10,7 +10,7 @@ import type { NativeNode } from "@/api/gateway-api/generated-api";
 
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
-import { useUniqueNodeConfigStateId } from "../common/useUniqueNodeConfigStateId";
+import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 
 /**
@@ -59,7 +59,7 @@ const loadExtensionConfig = async () => {
   extensionConfig.value = _extensionConfig;
 };
 
-const { uniqueId } = useUniqueNodeConfigStateId(toRefs(props));
+const { uniqueNodeInputStateId } = useUniqueNodeStateId(toRefs(props));
 
 const {
   setEventDispatcher,
@@ -122,7 +122,7 @@ const apiLayer: UIExtensionAPILayer = {
 };
 
 watch(
-  uniqueId,
+  uniqueNodeInputStateId,
   async () => {
     try {
       isConfigReady.value = false;
