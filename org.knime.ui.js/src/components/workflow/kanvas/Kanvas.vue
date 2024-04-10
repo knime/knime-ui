@@ -20,6 +20,7 @@ import { RESIZE_DEBOUNCE } from "./constants";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { capitalize } from "webapps-common/util/capitalize";
 import useKeyboardFocus from "@/composables/useKeyboardFocus";
+import { useMoveObjectIntoView } from "./useArrowKeyNavigation/useMoveObjectIntoView";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
@@ -110,6 +111,7 @@ const startRectangleSelection = (event: PointerEvent) => {
 };
 
 const hasKeyboardFocus = useKeyboardFocus(["Tab"]);
+const moveObjectIntoView = useMoveObjectIntoView();
 
 const selectObjectOnKeyboardFocus = async () => {
   if (!hasKeyboardFocus.value) {
@@ -144,10 +146,11 @@ const selectObjectOnKeyboardFocus = async () => {
   });
 
   if (firstObject) {
-    store.dispatch(
+    await store.dispatch(
       `selection/select${capitalize(firstObject.type)}`,
       firstObject.id,
     );
+    await moveObjectIntoView(firstObject);
   }
 };
 

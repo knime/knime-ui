@@ -2,7 +2,6 @@ import { computed, onBeforeUnmount, onMounted } from "vue";
 
 import { capitalize } from "webapps-common/util/capitalize";
 import type { WorkflowObject } from "@/api/custom-types";
-import type { XY } from "@/api/gateway-api/generated-api";
 
 import { useStore } from "@/composables/useStore";
 import {
@@ -11,29 +10,7 @@ import {
 } from "@/util/workflowNavigationService";
 import { isInputElement } from "@/util/isInputElement";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-
-const isOutsideKanvasView = (
-  kanvas: HTMLElement,
-  referenceObjectCoords: XY,
-) => {
-  const DISTANCE_THRESHOLD = 25;
-
-  const isNearLeft =
-    referenceObjectCoords.x - kanvas.offsetLeft <= DISTANCE_THRESHOLD;
-
-  const isNearTop =
-    referenceObjectCoords.y - kanvas.offsetTop <= DISTANCE_THRESHOLD;
-
-  const isNearRight =
-    kanvas.offsetWidth - (referenceObjectCoords.x - kanvas.offsetLeft) <=
-    DISTANCE_THRESHOLD;
-
-  const isNearBottom =
-    kanvas.offsetHeight - (referenceObjectCoords.y - kanvas.offsetTop) <=
-    DISTANCE_THRESHOLD;
-
-  return isNearLeft || isNearTop || isNearRight || isNearBottom;
-};
+import { useMoveObjectIntoView } from "./useMoveObjectIntoView";
 
 const getFurthestObjectByDirection = (
   selectedObjects: Array<WorkflowObject>,
@@ -88,6 +65,7 @@ const getDirection = (event: KeyboardEvent): Direction => {
 };
 
 export const useArrowKeySelection = () => {
+  const moveObjectIntoView = useMoveObjectIntoView();
   const store = useStore();
   const workflowObjects = computed<WorkflowObject[]>(
     () => store.getters["workflow/workflowObjects"],
@@ -111,29 +89,6 @@ export const useArrowKeySelection = () => {
   const selectedObjects = computed<Array<WorkflowObject>>(
     () => store.getters["selection/selectedObjects"],
   );
-
-  const zoomFactor = computed(() => store.state.canvas.zoomFactor);
-  const getScrollContainerElement = computed(
-    () => store.state.canvas.getScrollContainerElement,
-  );
-
-  const moveObjectIntoView = async (workflowObject: WorkflowObject) => {
-    const kanvas = getScrollContainerElement.value();
-    const objectScreenCoordinates =
-      store.getters["canvas/screenFromCanvasCoordinates"](workflowObject);
-
-    if (isOutsideKanvasView(kanvas, objectScreenCoordinates)) {
-      const halfX = kanvas.clientWidth / 2 / zoomFactor.value;
-      const halfY = kanvas.clientHeight / 2 / zoomFactor.value;
-
-      // scroll object into canvas center
-      await store.dispatch("canvas/scroll", {
-        canvasX: workflowObject.x - halfX,
-        canvasY: workflowObject.y - halfY,
-        smooth: true,
-      });
-    }
-  };
 
   const handleSelection = async (event: KeyboardEvent) => {
     const isMultiselect = event.shiftKey;
