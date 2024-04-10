@@ -112,6 +112,8 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
       ? "Refresh the page to reactivate the session."
       : "Connection lost. Try again later.";
 
+    store.commit("application/setIsLoadingApp", false);
+    store.commit("application/setIsLoadingWorkflow", false);
     onConnectionLost(headline, message);
   });
 
