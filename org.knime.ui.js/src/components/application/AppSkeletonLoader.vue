@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import { useStore } from "@/composables/useStore";
-import SkeletonItem from "@/components/common/SkeletonItem.vue";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { isBrowser } from "@/environment";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { TABS } from "@/store/panel";

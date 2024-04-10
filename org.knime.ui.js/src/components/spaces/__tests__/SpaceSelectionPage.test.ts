@@ -15,6 +15,7 @@ import {
   globalSpaceBrowserProjectId,
 } from "@/store/spaces";
 
+import * as $colors from "@/style/colors.mjs";
 import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 import SpaceCard from "../SpaceCard.vue";
 
@@ -57,7 +58,7 @@ describe("SpaceSelectionPage.vue", () => {
     const wrapper = mount(SpaceSelectionPage, {
       global: {
         plugins: [$store],
-        mocks: { $router: mockRouter },
+        mocks: { $router: mockRouter, $colors },
       },
     });
 

@@ -3,7 +3,6 @@ import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
 import * as $colors from "@/style/colors.mjs";
-import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import SearchResults from "../SearchResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
 import NodeList from "../NodeList.vue";
@@ -67,72 +66,6 @@ describe("SearchResults", () => {
 
     return { wrapper, searchActions, props };
   };
-
-  describe("placeholders", () => {
-    it("shows placeholder for empty result if numFilteredOutNodes is a positive value", async () => {
-      const { wrapper } = doMount({
-        propsOverrides: {
-          query: "xxx",
-          nodes: [],
-        },
-      });
-
-      expect(wrapper.text()).toMatch(
-        "Change filter settings to “All nodes“ to see more advanced nodes matching your search criteria.",
-      );
-      await wrapper.findComponent(FilterCheckIcon).trigger("click");
-      expect(wrapper.emitted("openPreferences")).toBeTruthy();
-      expect(wrapper.findComponent(NodeList).exists()).toBe(false);
-    });
-
-    it("shows download AP button and message for an empty search result in the browser", async () => {
-      vi.resetModules();
-      vi.doMock("@/environment", async (importOriginal) => {
-        const actual = await importOriginal<typeof import("@/environment")>();
-
-        return {
-          ...actual,
-          environment: "BROWSER",
-          isDesktop: false,
-          isBrowser: true,
-        };
-      });
-      const SearchResults = (await import("../SearchResults.vue")).default;
-      const { wrapper } = doMount({
-        propsOverrides: {
-          query: "xxx",
-          nodes: [],
-          showDownloadButton: true,
-        },
-        component: SearchResults,
-        useScrollViewContainerMock: true,
-      });
-
-      expect(wrapper.find("download-a-p-button-stub").exists()).toBe(true);
-      expect(wrapper.text()).toMatch(
-        "There are no available matching nodes. To work with more nodes, download the KNIME Analytics Platform.",
-      );
-    });
-
-    it("shows placeholder for empty result if numFilteredOutNodes is 0", () => {
-      const query = "xxx xxx";
-      const { wrapper } = doMount({
-        propsOverrides: {
-          query,
-          nodes: [],
-        },
-        numFilteredOutNodes: 0,
-      });
-      const encodedQuery = encodeURIComponent(query);
-
-      expect(wrapper.text()).toMatch("There are no matching nodes.");
-      expect(wrapper.text()).toMatch("Search the KNIME Community Hub");
-      expect(wrapper.find("a").attributes("href")).toBe(
-        `https://hub.knime.com/search?q=${encodedQuery}&type=all&src=knimeappmodernui`,
-      );
-      expect(wrapper.findComponent(NodeList).exists()).toBe(false);
-    });
-  });
 
   it("displays node list skeleton when loading", async () => {
     const { wrapper } = doMount();

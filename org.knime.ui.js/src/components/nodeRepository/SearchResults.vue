@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRefs, nextTick } from "vue";
-import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
-import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
-import Button from "webapps-common/ui/components/Button.vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import NodeList from "./NodeList.vue";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
-import SkeletonNodes from "@/components/skeleton/SkeletonNodes.vue";
+import SearchResultsInfo from "./SearchResultsInfo.vue";
+import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import { isDesktop } from "@/environment";
 
 export type SearchActions = {
   searchNodesNextPage: () => Promise<any>;
@@ -47,7 +43,6 @@ const emit = defineEmits<{
   (e: "update:searchScrollPosition", position: number): void;
   (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts | null): void;
   (e: "itemEnterKey", event: KeyboardEvent): void;
-  (e: "openPreferences"): void;
 }>();
 
 const {
@@ -80,7 +75,7 @@ const skeletonNodeListStyles = computed(() => {
   return displayMode.value === "icon"
     ? {
         gap: "30px 50px",
-        marginLeft: "22px",
+        marginLeft: "23px",
         padding: "20px 2px",
       }
     : {
@@ -148,65 +143,31 @@ defineExpose({ focusFirst });
             <slot name="nodesTemplate" v-bind="slotProps" />
           </template>
         </NodeList>
-        <div
+
+        <SkeletonNodes
           v-if="isLoading"
           class="node-list-skeleton"
           :style="skeletonNodeListStyles"
-        >
-          <SkeletonNodes :number-of-nodes="5" :display-mode="displayMode" />
-        </div>
+          :number-of-nodes="5"
+          :display-mode="displayMode"
+        />
       </div>
-      <div
+
+      <SkeletonNodes
         v-if="isLoadingSearchResults"
         class="node-list-skeleton"
         :style="skeletonNodeListStyles"
-      >
-        <SkeletonNodes :number-of-nodes="5" :display-mode="displayMode" />
-      </div>
-      <template v-if="!isLoadingSearchResults">
-        <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
-          <CircleInfoIcon class="info-icon" />
-          <div class="filtered-nodes-content">
-            <template v-if="isDesktop">
-              <span>
-                Change filter settings to “All nodes“ to see more advanced nodes
-                matching your search criteria.
-              </span>
-              <Button
-                primary
-                compact
-                class="filtered-nodes-button"
-                @click="emit('openPreferences')"
-              >
-                <FilterCheckIcon />Change filter settings
-              </Button>
-            </template>
-            <template v-else>
-              <span>
-                There are no available matching nodes. To work with more nodes,
-                download the KNIME Analytics Platform.
-              </span>
-              <DownloadAPButton
-                v-if="showDownloadButton"
-                compact
-                src="node-repository"
-                class="filtered-nodes-button"
-              />
-            </template>
-          </div>
-        </div>
-        <div v-else-if="isNodeListEmpty" class="filtered-nodes-wrapper">
-          <CircleInfoIcon class="info-icon" />
-          <div class="filtered-nodes-content">
-            <span>There are no matching nodes.</span>
-            <span
-              >Search the
-              <a :href="searchHubLink">KNIME Community Hub</a>
-              to find more nodes and extensions.</span
-            >
-          </div>
-        </div>
-      </template>
+        :number-of-nodes="5"
+        :display-mode="displayMode"
+      />
+
+      <SearchResultsInfo
+        v-if="!isLoadingSearchResults"
+        :num-filtered-out-nodes="numFilteredOutNodes"
+        :is-node-list-empty="isNodeListEmpty"
+        :show-download-button="showDownloadButton"
+        :search-hub-link="searchHubLink"
+      />
     </div>
   </ScrollViewContainer>
 </template>
@@ -214,81 +175,9 @@ defineExpose({ focusFirst });
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-@keyframes spin {
-  100% {
-    transform: rotate(-360deg);
-  }
-}
-
 .results {
   & .content {
     padding: 0 10px 10px;
-
-    & .advanced-buttons {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-
-      & .more-nodes-button {
-        border: 0;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        & .more-nodes-dropdown {
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-
-          & .dropdown-icon {
-            margin: auto;
-            width: 18px;
-            height: 18px;
-            stroke-width: calc(32px / 18);
-            stroke: var(--knime-masala);
-
-            &.flip {
-              transform: scaleY(-1);
-            }
-          }
-
-          &:hover {
-            background-color: var(
-              --theme-button-function-background-color-hover
-            );
-          }
-        }
-      }
-
-      & .preferences-button {
-        width: 30px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        & svg {
-          @mixin svg-icon-size 18;
-
-          stroke: var(--knime-masala);
-        }
-      }
-
-      &::after,
-      &::before {
-        content: "";
-        flex: 1 1;
-        border-bottom: 1px solid var(--knime-silver-sand);
-        transform: translateY(-50%);
-      }
-
-      &::after {
-        margin-left: 10px;
-      }
-    }
 
     & .node-list {
       margin-bottom: -11px;
@@ -299,36 +188,6 @@ defineExpose({ focusFirst });
       flex-wrap: wrap;
       align-items: center;
       justify-content: flex-start;
-    }
-  }
-}
-
-.filtered-nodes-wrapper {
-  border-top: 1px solid var(--knime-silver-sand);
-  padding-top: 20px;
-  display: flex;
-  align-items: center;
-  margin: 0 10px;
-
-  & .info-icon {
-    @mixin svg-icon-size 20;
-
-    stroke: var(--knime-masala);
-    min-width: 20px;
-    margin-right: 10px;
-  }
-
-  & .filtered-nodes-content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font-weight: 500;
-    font-size: 13px;
-    font-style: italic;
-    width: 100%;
-
-    & .filtered-nodes-button {
-      margin-top: 15px;
     }
   }
 }

@@ -10,7 +10,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import GridOutbreaker from "@/components/common/GridOutbreaker.vue";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
-import SkeletonItem from "@/components/skeleton/SkeletonItem.vue";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 
 import {
   globalSpaceBrowserProjectId,
@@ -248,10 +248,10 @@ export default {
       v-if="isLoadingProvider && !isConnectingToProvider"
       class="skeletons"
     >
-      <SkeletonItem :height="48" width="fill" />
+      <SkeletonItem :color1="$colors.SilverSandSemi" height="48px" />
       <div class="skeleton-cards">
-        <SkeletonItem :height="230" width="fill" />
-        <SkeletonItem :height="230" width="fill" />
+        <SkeletonItem :color1="$colors.SilverSandSemi" height="230px" />
+        <SkeletonItem :color1="$colors.SilverSandSemi" height="230px" />
       </div>
     </section>
   </GridOutbreaker>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRefs } from "vue";
 import * as $colors from "@/style/colors.mjs";
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
   height?: `${number}px` | `${number}%`;
   color1?: string;
   color2?: string;
-  type?: "generic" | "button" | "icon-button";
+  type?: "generic" | "button" | "icon-button" | "rounded";
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -18,10 +18,13 @@ const props = withDefaults(defineProps<Props>(), {
   type: "generic",
 });
 
+const { color1, color2, width, height } = toRefs(props);
+
 const borderRadius = computed(() => {
   const valueMap: Partial<Record<Required<Props>["type"], string>> = {
     button: "9999px",
     "icon-button": "50%",
+    rounded: "3px",
   };
 
   return valueMap[props.type] ?? "initial";
@@ -29,12 +32,12 @@ const borderRadius = computed(() => {
 
 const styles = computed(() => {
   return {
-    background: `linear-gradient(to right, ${props.color1} 0%, ${props.color2} 25%, ${props.color1} 50%)`,
+    background: `linear-gradient(to right, ${color1.value} 0%, ${color2.value} 25%, ${color1.value} 50%)`,
     backgroundSize: "200% 100%",
     // animation is defined as a global style in index.css
     animation: "2s knight-rider linear infinite",
-    width: props.width,
-    height: props.height,
+    width: width.value,
+    height: height.value,
     borderRadius: borderRadius.value,
   };
 });

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, onMounted } from "vue";
 
-import { API } from "@api";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
@@ -87,10 +86,6 @@ const toggleNodeDescription = ({
 
   store.dispatch("panel/closeExtensionPanel");
 };
-
-const openKnimeUIPreferencePage = () => {
-  API.desktop.openWebUIPreferencePage();
-};
 </script>
 
 <template>
@@ -103,7 +98,6 @@ const openKnimeUIPreferencePage = () => {
         ref="searchResults"
         :display-mode="displayMode"
         @show-node-description="toggleNodeDescription"
-        @open-preferences="openKnimeUIPreferencePage"
       />
       <CategoryResults
         v-else
