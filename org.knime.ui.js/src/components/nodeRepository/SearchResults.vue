@@ -71,19 +71,6 @@ const searchHubLink = computed(
       query.value,
     )}&type=all&src=knimeappmodernui`,
 );
-const skeletonNodeListStyles = computed(() => {
-  return displayMode.value === "icon"
-    ? {
-        gap: "30px 50px",
-        marginLeft: "23px",
-        padding: "20px 2px",
-      }
-    : {
-        gap: "2px",
-        marginLeft: "0",
-        padding: "10px 2px",
-      };
-});
 
 const onSaveScrollPosition = (position: number) => {
   emit("update:searchScrollPosition", position);
@@ -147,7 +134,6 @@ defineExpose({ focusFirst });
         <SkeletonNodes
           v-if="isLoading"
           class="node-list-skeleton"
-          :style="skeletonNodeListStyles"
           :number-of-nodes="5"
           :display-mode="displayMode"
         />
@@ -156,7 +142,6 @@ defineExpose({ focusFirst });
       <SkeletonNodes
         v-if="isLoadingSearchResults"
         class="node-list-skeleton"
-        :style="skeletonNodeListStyles"
         :number-of-nodes="5"
         :display-mode="displayMode"
       />
