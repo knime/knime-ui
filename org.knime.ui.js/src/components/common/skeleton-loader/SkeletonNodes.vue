@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import SkeletonItem from "./SkeletonItem.vue";
 
 type Props = {
@@ -7,28 +6,14 @@ type Props = {
   displayMode?: string;
 };
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   numberOfNodes: 1,
   displayMode: "icon",
-});
-
-const skeletonNodeListStyles = computed(() => {
-  return props.displayMode === "icon"
-    ? {
-        gap: "30px 50px",
-        marginLeft: "23px",
-        padding: "20px 2px",
-      }
-    : {
-        gap: "2px",
-        marginLeft: "0",
-        padding: "10px 2px",
-      };
 });
 </script>
 
 <template>
-  <div :style="skeletonNodeListStyles">
+  <div :class="`skeleton-nodes-${displayMode}`">
     <div
       v-for="index in numberOfNodes"
       :key="index"
@@ -60,6 +45,18 @@ const skeletonNodeListStyles = computed(() => {
 </template>
 
 <style lang="postcss" scoped>
+.skeleton-nodes-icon {
+  gap: 30px 50px;
+  margin-left: 23px;
+  padding: 20px 2px;
+}
+
+.skeleton-nodes-list {
+  gap: 2px;
+  margin-left: 0;
+  padding: 10px 2px;
+}
+
 .skeleton-node-icon {
   display: flex;
   flex-direction: column;
