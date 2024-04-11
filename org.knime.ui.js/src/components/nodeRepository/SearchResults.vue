@@ -8,6 +8,7 @@ import NodeList from "./NodeList.vue";
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 export type SearchActions = {
   searchNodesNextPage: () => Promise<any>;
@@ -54,7 +55,35 @@ const {
   displayMode,
   isLoadingSearchResults,
 } = toRefs(props);
-let isLoading = ref(false);
+
+const isLoadingNextPage = ref(false);
+const isLoadingSearchResultsDeferred = ref(false);
+
+const setIsLoadingNextPage = createStaggeredLoader({
+  firstStageCallback: () => {
+    isLoadingNextPage.value = true;
+  },
+  resetCallback: () => {
+    isLoadingNextPage.value = false;
+  },
+});
+
+const setIsLoadingSearchResultsDeferred = createStaggeredLoader({
+  firstStageCallback: () => {
+    isLoadingSearchResultsDeferred.value = true;
+  },
+  resetCallback: () => {
+    isLoadingSearchResultsDeferred.value = false;
+  },
+});
+
+watch(
+  isLoadingSearchResults,
+  (value) => {
+    setIsLoadingSearchResultsDeferred(value);
+  },
+  { immediate: true },
+);
 
 const isNodeListEmpty = computed(() => nodes.value?.length === 0);
 const selectedNodeModel = computed({
@@ -86,9 +115,9 @@ const onSearchChanged = async () => {
 };
 
 const loadMoreSearchResults = () => {
-  isLoading.value = true;
+  setIsLoadingNextPage(true);
   searchActions.value.searchNodesNextPage().then(() => {
-    isLoading.value = false;
+    setIsLoadingNextPage(false);
   });
 };
 
@@ -132,7 +161,7 @@ defineExpose({ focusFirst });
         </NodeList>
 
         <SkeletonNodes
-          v-if="isLoading"
+          v-if="isLoadingNextPage"
           class="node-list-skeleton"
           :number-of-nodes="5"
           :display-mode="displayMode"
@@ -140,7 +169,7 @@ defineExpose({ focusFirst });
       </div>
 
       <SkeletonNodes
-        v-if="isLoadingSearchResults"
+        v-if="isLoadingSearchResultsDeferred"
         class="node-list-skeleton"
         :number-of-nodes="5"
         :display-mode="displayMode"

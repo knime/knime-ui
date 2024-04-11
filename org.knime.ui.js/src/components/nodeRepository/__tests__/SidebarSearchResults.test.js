@@ -25,6 +25,7 @@ describe("SidebarSearchResults", () => {
           searchScrollPosition: 100,
           selectedNode: { id: "some-node" },
           totalNumFilteredNodesFound: 0,
+          isLoadingSearchResults: false,
         },
         actions: {
           searchNodesNextPage: vi.fn(),

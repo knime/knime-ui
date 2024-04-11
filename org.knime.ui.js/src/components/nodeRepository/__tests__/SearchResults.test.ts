@@ -1,6 +1,6 @@
 import { expect, describe, it, afterEach, vi } from "vitest";
 import * as Vue from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import * as $colors from "@/style/colors.mjs";
 import SearchResults from "../SearchResults.vue";
@@ -67,25 +67,22 @@ describe("SearchResults", () => {
     return { wrapper, searchActions, props };
   };
 
-  it("displays node list skeleton when loading", async () => {
+  it("displays node list skeleton when isLoadingSearchResults is true", async () => {
+    vi.useFakeTimers();
+
     const { wrapper } = doMount();
 
-    wrapper.vm.isLoading = true;
-    await Vue.nextTick();
-    const nodeListSkeleton = wrapper.find(".node-list-skeleton");
-    expect(nodeListSkeleton.exists()).toBe(true);
-  });
+    expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
 
-  it("displays node list skeleton when isLoadingSearchResults is true", async () => {
-    const { wrapper } = doMount({
-      propsOverrides: {
-        isLoadingSearchResults: true,
-      },
-    });
-
+    await wrapper.setProps({ isLoadingSearchResults: true });
     await Vue.nextTick();
-    const nodeListSkeleton = wrapper.find(".node-list-skeleton");
-    expect(nodeListSkeleton.exists()).toBe(true);
+
+    expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
+
+    vi.advanceTimersByTime(2000);
+    await Vue.nextTick();
+
+    expect(wrapper.find(".node-list-skeleton").exists()).toBe(true);
   });
 
   it("renders nodes", () => {
@@ -124,9 +121,8 @@ describe("SearchResults", () => {
     });
 
     it("scrolling to bottom load more results", async () => {
-      const { wrapper, searchActions } = doMount();
-
       vi.useFakeTimers();
+      const { wrapper, searchActions } = doMount();
 
       const scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
 
@@ -137,9 +133,13 @@ describe("SearchResults", () => {
 
       expect(searchActions.searchNodesNextPage).toHaveBeenCalled();
 
-      expect(wrapper.find(".node-list-skeleton").exists()).toBe(true);
-      await vi.runAllTimersAsync();
+      expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
+
+      vi.advanceTimersByTime(1000);
       await Vue.nextTick();
+      expect(wrapper.find(".node-list-skeleton").exists()).toBe(true);
+
+      await flushPromises();
       expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
     });
   });
