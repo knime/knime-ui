@@ -26,7 +26,7 @@ const selectedNode = computed<NativeNode>(
 );
 const permissions = computed(() => store.state.application.permissions);
 
-const nodeState = computed(() => selectedNode.value.state?.executionState);
+const nodeState = computed(() => selectedNode.value?.state?.executionState);
 
 const { dirtyState, applySettings, discardSettings } = useNodeConfigAPI();
 
@@ -34,7 +34,6 @@ const $toast = getToastsProvider();
 
 const showExecuteOnlyButton = computed(
   () =>
-    nodeState.value &&
     nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED &&
     dirtyState.value.apply === ApplyState.CLEAN,
 );
