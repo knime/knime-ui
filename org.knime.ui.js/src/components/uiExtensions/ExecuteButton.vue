@@ -27,7 +27,6 @@ const emit = defineEmits<{
 
 <style lang="postcss" scoped>
 .execute-node-action {
-  position: absolute;
   display: flex;
   flex-direction: column;
   justify-content: center;

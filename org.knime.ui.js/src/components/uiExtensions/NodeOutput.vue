@@ -181,20 +181,46 @@ export default defineComponent({
 
 <template>
   <div id="node-output" class="output-container">
-    <PortTabs
-      v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
-      v-model="selectedTab"
-      :has-view-tab="singleSelectedNode.hasView"
-      :node="singleSelectedNode"
-      :disabled="!canSelectTabs"
-    />
+    <div class="node-output-content">
+      <PortTabs
+        v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
+        v-model="selectedTab"
+        :has-view-tab="singleSelectedNode.hasView"
+        :node="singleSelectedNode"
+        :disabled="!canSelectTabs"
+      />
 
-    <LoadingIndicator v-if="showLoadingIndicator" :message="loadingMessage" />
+      <LoadingIndicator v-if="showLoadingIndicator" :message="loadingMessage" />
 
-    <UIExtensionAlertsWrapper
-      v-if="currentNodeViewAlert"
-      :alert="currentNodeViewAlert"
-    />
+      <UIExtensionAlertsWrapper
+        v-if="currentNodeViewAlert"
+        :alert="currentNodeViewAlert"
+      />
+
+      <template v-if="!selectionValidationError">
+        <NodeViewTabOutput
+          v-if="isViewTabSelected"
+          :project-id="projectId!"
+          :workflow-id="workflowId"
+          :selected-node="singleSelectedNode"
+          :available-port-types="availablePortTypes"
+          @alert="currentNodeViewAlert = $event"
+          @loading-state-change="loadingState = $event"
+          @validation-error="currentValidationError = $event"
+        />
+
+        <PortViewTabOutput
+          v-if="!isViewTabSelected"
+          :project-id="projectId!"
+          :workflow-id="workflowId"
+          :selected-node="singleSelectedNode"
+          :selected-port-index="selectedPortIndex!"
+          :available-port-types="availablePortTypes"
+          @loading-state-change="loadingState = $event"
+          @validation-error="currentValidationError = $event"
+        />
+      </template>
+    </div>
 
     <ValidationInfo
       v-if="!currentNodeViewAlert"
@@ -202,30 +228,6 @@ export default defineComponent({
       :selected-node="singleSelectedNode"
       :selected-port-index="selectedPortIndex"
     />
-
-    <template v-if="!selectionValidationError">
-      <NodeViewTabOutput
-        v-if="isViewTabSelected"
-        :project-id="projectId!"
-        :workflow-id="workflowId"
-        :selected-node="singleSelectedNode"
-        :available-port-types="availablePortTypes"
-        @alert="currentNodeViewAlert = $event"
-        @loading-state-change="loadingState = $event"
-        @validation-error="currentValidationError = $event"
-      />
-
-      <PortViewTabOutput
-        v-if="!isViewTabSelected"
-        :project-id="projectId!"
-        :workflow-id="workflowId"
-        :selected-node="singleSelectedNode"
-        :selected-port-index="selectedPortIndex!"
-        :available-port-types="availablePortTypes"
-        @loading-state-change="loadingState = $event"
-        @validation-error="currentValidationError = $event"
-      />
-    </template>
   </div>
 </template>
 
@@ -263,6 +265,10 @@ export default defineComponent({
       padding-left: 10px;
       margin-left: 0;
     }
+  }
+
+  & .node-output-content {
+    height: 100%;
   }
 }
 </style>
