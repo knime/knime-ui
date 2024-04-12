@@ -5,8 +5,8 @@ import { NodeState } from "@/api/gateway-api/generated-api";
 import { useUniqueNodeStateId } from "../useUniqueNodeStateId";
 
 describe("useUniqueNodeStateId", () => {
-  it("generates the correct input state id", () => {
-    const { uniqueNodeInputStateId } = useUniqueNodeStateId({
+  it("generates the correct node config id", () => {
+    const { uniqueNodeConfigId } = useUniqueNodeStateId({
       projectId: ref("project1"),
       workflowId: ref("workflow1"),
       selectedNode: ref(
@@ -16,13 +16,11 @@ describe("useUniqueNodeStateId", () => {
       ),
     });
 
-    expect(uniqueNodeInputStateId.value).toMatch(
-      "project1__workflow1::root:1_13",
-    );
+    expect(uniqueNodeConfigId.value).toMatch("project1__workflow1::root:1_13");
   });
 
-  it("generates the correct config state id", () => {
-    const { uniqueNodeConfigStateId } = useUniqueNodeStateId({
+  it("generates the correct node view id", () => {
+    const { uniqueNodeViewId } = useUniqueNodeStateId({
       projectId: ref("project1"),
       workflowId: ref("workflow1"),
       selectedNode: ref(
@@ -32,7 +30,7 @@ describe("useUniqueNodeStateId", () => {
       ),
     });
 
-    expect(uniqueNodeConfigStateId.value).toMatch(
+    expect(uniqueNodeViewId.value).toMatch(
       "project1__workflow1::root:1_EXECUTED",
     );
   });

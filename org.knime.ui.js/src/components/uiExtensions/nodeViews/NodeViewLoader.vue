@@ -141,7 +141,7 @@ const apiLayer: UIExtensionAPILayer = {
   setControlsVisibility: noop,
 };
 
-const { uniqueNodeConfigStateId } = useUniqueNodeStateId(toRefs(props));
+const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
 
 const { lastestPublishedData, dirtyState, applySettings } = useNodeConfigAPI();
 
@@ -160,7 +160,7 @@ const hasToReexecute = computed(() => {
 });
 
 watch(
-  uniqueNodeConfigStateId,
+  uniqueNodeViewId,
   async () => {
     try {
       error.value = null;

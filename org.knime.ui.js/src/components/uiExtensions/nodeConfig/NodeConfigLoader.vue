@@ -59,7 +59,7 @@ const loadExtensionConfig = async () => {
   extensionConfig.value = _extensionConfig;
 };
 
-const { uniqueNodeInputStateId } = useUniqueNodeStateId(toRefs(props));
+const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
 
 const {
   setEventDispatcher,
@@ -122,7 +122,7 @@ const apiLayer: UIExtensionAPILayer = {
 };
 
 watch(
-  uniqueNodeInputStateId,
+  uniqueNodeConfigId,
   async () => {
     try {
       isConfigReady.value = false;

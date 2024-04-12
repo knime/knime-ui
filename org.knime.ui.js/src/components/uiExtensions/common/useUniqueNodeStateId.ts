@@ -10,15 +10,15 @@ type UseUniqueNodeStateIdOptions = {
 export const useUniqueNodeStateId = (options: UseUniqueNodeStateIdOptions) => {
   const { projectId, workflowId, selectedNode } = options;
 
-  const uniqueNodeInputStateId = computed(
+  const uniqueNodeConfigId = computed(
     () =>
       `${projectId.value}__${workflowId.value}::${selectedNode.value.id}_${selectedNode.value.inputContentVersion}`,
   );
 
-  const uniqueNodeConfigStateId = computed(
+  const uniqueNodeViewId = computed(
     () =>
       `${projectId.value}__${workflowId.value}::${selectedNode.value.id}_${selectedNode.value.state?.executionState}`,
   );
 
-  return { uniqueNodeInputStateId, uniqueNodeConfigStateId };
+  return { uniqueNodeConfigId, uniqueNodeViewId };
 };
