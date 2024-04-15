@@ -106,9 +106,8 @@ const openInNewWindow = () => {
     </Button>
   </div>
 
-  <div class="node-view-wrapper">
+  <div v-if="!nodeErrors" class="node-view-wrapper">
     <NodeViewLoader
-      v-if="!nodeErrors"
       :project-id="projectId"
       :workflow-id="workflowId"
       :selected-node="selectedNode"

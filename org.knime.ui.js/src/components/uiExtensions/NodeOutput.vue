@@ -181,20 +181,27 @@ export default defineComponent({
 
 <template>
   <div id="node-output" class="output-container">
-    <div class="node-output-content">
-      <PortTabs
-        v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
-        v-model="selectedTab"
-        :has-view-tab="singleSelectedNode.hasView"
-        :node="singleSelectedNode"
-        :disabled="!canSelectTabs"
-      />
+    <PortTabs
+      v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
+      v-model="selectedTab"
+      :has-view-tab="singleSelectedNode.hasView"
+      :node="singleSelectedNode"
+      :disabled="!canSelectTabs"
+    />
 
+    <div class="node-output-content">
       <LoadingIndicator v-if="showLoadingIndicator" :message="loadingMessage" />
 
       <UIExtensionAlertsWrapper
         v-if="currentNodeViewAlert"
         :alert="currentNodeViewAlert"
+      />
+
+      <ValidationInfo
+        v-if="!currentNodeViewAlert"
+        :validation-error="currentValidationError"
+        :selected-node="singleSelectedNode"
+        :selected-port-index="selectedPortIndex"
       />
 
       <template v-if="!selectionValidationError">
@@ -221,13 +228,6 @@ export default defineComponent({
         />
       </template>
     </div>
-
-    <ValidationInfo
-      v-if="!currentNodeViewAlert"
-      :validation-error="currentValidationError"
-      :selected-node="singleSelectedNode"
-      :selected-port-index="selectedPortIndex"
-    />
   </div>
 </template>
 
@@ -268,6 +268,7 @@ export default defineComponent({
   }
 
   & .node-output-content {
+    position: relative;
     height: 100%;
   }
 }

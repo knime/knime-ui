@@ -104,7 +104,7 @@ const openInNewWindow = (item: { id: string } | null = null) => {
   width: max-content;
   height: min-content;
   position: absolute;
-  inset: 50px 0 0;
+  inset: 6px 0 0;
   margin: 0 auto;
   z-index: 3;
 

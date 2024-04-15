@@ -49,7 +49,7 @@ const savedSecondarySize = computed({
         v-model:secondary-size="savedSecondarySize"
         direction="down"
         :secondary-max-size="90"
-        :secondary-snap-size="15"
+        :secondary-snap-size="20"
       >
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>
