@@ -33,12 +33,14 @@ const isChangingBetweenWorkflows = computed(() => {
 
 // If the node repository is visible we don't show the skeleton over it
 // when changing between workflows
-const isSidebarVisible = computed(() => {
+const isSidebarTransparent = computed(() => {
   return (
     isChangingBetweenWorkflows.value &&
     store.state.panel.activeTab[activeProjectId.value!] === TABS.NODE_REPOSITORY
   );
 });
+
+const isLeftPanelOpen = computed(() => store.state.panel.expanded);
 
 const isLogoShown = ref(false);
 const setLogoVisible = createStaggeredLoader({
@@ -59,9 +61,12 @@ watch(isLoading, (value) => {
   <div
     v-if="isLoading"
     :class="[
-      'main-content',
-      'skeleton',
-      { transparent: isChangingBetweenWorkflows },
+      'app-skeleton',
+      {
+        transparent: isChangingBetweenWorkflows,
+        'with-left-panel': isLeftPanelOpen,
+        'no-left-panel': !isLeftPanelOpen,
+      },
     ]"
   >
     <div
@@ -120,10 +125,11 @@ watch(isLoading, (value) => {
     </div>
 
     <div
+      v-if="isLeftPanelOpen"
       class="sidebar-content-skeleton"
-      :class="{ transparent: isSidebarVisible }"
+      :class="{ transparent: isSidebarTransparent }"
     >
-      <template v-if="!isSidebarVisible">
+      <template v-if="!isSidebarTransparent">
         <SkeletonItem height="16px" width="70%" />
         <SkeletonItem height="16px" />
         <SkeletonItem height="16px" />
@@ -166,7 +172,7 @@ watch(isLoading, (value) => {
   background: transparent !important;
 }
 
-.main-content {
+.app-skeleton {
   grid-area: workflow;
   width: 100vw;
   height: 100vh;
@@ -174,14 +180,20 @@ watch(isLoading, (value) => {
 
   /* Make sure nothing will be on top of this skeleton */
   z-index: calc(infinity);
-}
-
-.skeleton {
   background: var(--knime-white);
   display: grid;
-  grid-template:
-    "toolbar toolbar toolbar" min-content
-    "tabs sidebar workflow" auto / min-content min-content auto;
+
+  &.no-left-panel {
+    grid-template:
+      "toolbar toolbar" min-content
+      "tabs workflow" auto / 40px auto;
+  }
+
+  &.with-left-panel {
+    grid-template:
+      "toolbar toolbar toolbar" min-content
+      "tabs sidebar workflow" auto / min-content min-content auto;
+  }
 
   & .toolbar-skeleton {
     grid-area: toolbar;
