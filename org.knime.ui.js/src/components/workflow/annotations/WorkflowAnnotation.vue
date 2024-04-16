@@ -243,7 +243,12 @@ useMagicKeys({
       event.key === "ArrowRight",
     ];
 
-    if (event.type !== "keydown" || !event.altKey || !keys.includes(true)) {
+    if (
+      event.type !== "keydown" ||
+      !event.altKey ||
+      !keys.includes(true) ||
+      isEditing.value
+    ) {
       return;
     }
 
