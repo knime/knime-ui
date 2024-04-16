@@ -1,42 +1,41 @@
-<script>
+<script lang="ts" setup>
 import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import LensIcon from "webapps-common/ui/assets/img/icons/lens.svg";
-
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 /**
  * Search input box for searches of nodes in the NodeRepository view of the sidebar.
  * Implements the v-model pattern.
  */
-export default {
-  components: {
-    FunctionButton,
-    CloseIcon,
-    LensIcon,
-  },
-  props: {
-    modelValue: {
-      type: String,
-      default: "",
-    },
-    placeholder: {
-      type: String,
-      default: null,
-    },
-  },
-  emits: ["clear", "update:modelValue"],
-  expose: ["focus"],
-  methods: {
-    clearSearch() {
-      this.$emit("clear");
-      this.$emit("update:modelValue", "");
-      this.$refs.searchInput.focus();
-    },
-    focus() {
-      this.$refs.searchInput.focus();
-    },
-  },
+
+interface Props {
+  modelValue: string;
+  placeholder: string;
+}
+
+withDefaults(defineProps<Props>(), {
+  modelValue: "",
+  placeholder: "",
+});
+
+const emit = defineEmits<{
+  (e: "clear"): void;
+  (e: "update:modelValue", value: string): void;
+}>();
+
+const searchInput = ref<HTMLElement>();
+
+const focus = () => {
+  searchInput.value?.focus();
 };
+
+const clearSearch = () => {
+  emit("clear");
+  emit("update:modelValue", "");
+  focus();
+};
+
+defineExpose({ focus });
 </script>
 
 <template>

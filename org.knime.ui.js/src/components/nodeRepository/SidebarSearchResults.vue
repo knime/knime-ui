@@ -1,80 +1,87 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
-import { mapState, mapActions } from "vuex";
-
+<script lang="ts" setup>
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
-
+import { useStore } from "@/composables/useStore";
+import { computed, ref } from "vue";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
-export default defineComponent({
-  components: {
-    DraggableNodeTemplate,
-    SearchResults,
-  },
-  props: {
-    displayMode: {
-      type: String as PropType<NodeRepositoryDisplayModesType>,
-      default: "icon",
-    },
-  },
-  emits: ["showNodeDescription", "navReachedTop"],
-  setup() {
-    const addNodeToWorkflow = useAddNodeToWorkflow();
-    return { addNodeToWorkflow };
-  },
-  expose: ["focusFirst"],
-  computed: {
-    ...mapState("nodeRepository", [
-      "nodes",
-      "query",
-      "selectedNode",
-      "showDescriptionForNode",
-      "selectedTags",
-      "totalNumFilteredNodesFound",
-      "isLoadingSearchResults",
-    ]),
 
-    searchScrollPosition: {
-      get() {
-        return this.$store.state.nodeRepository.searchScrollPosition;
-      },
-      set(value: number) {
-        this.$store.commit("nodeRepository/setSearchScrollPosition", value);
-      },
+interface Props {
+  displayMode: NodeRepositoryDisplayModesType;
+}
+
+withDefaults(defineProps<Props>(), {
+  displayMode: "icon",
+});
+
+const emit = defineEmits<{
+  (
+    e: "showNodeDescription",
+    params: {
+      isDescriptionActive: boolean;
+      nodeTemplate: NodeTemplateWithExtendedPorts;
     },
-    selectedNode: {
-      get() {
-        return this.$store.state.nodeRepository.selectedNode;
-      },
-      set(value: NodeTemplateWithExtendedPorts) {
-        this.$store.commit("nodeRepository/setSelectedNode", value);
-      },
-    },
-    searchActions() {
-      return {
-        searchNodesNextPage: this.searchNodesNextPage,
-      };
-    },
+  ): void;
+  (e: "navReachedTop"): void;
+}>();
+
+const store = useStore();
+
+const nodes = computed(() => store.state.nodeRepository.nodes);
+const query = computed(() => store.state.nodeRepository.query);
+const showDescriptionForNode = computed(
+  () => store.state.nodeRepository.showDescriptionForNode,
+);
+const selectedTags = computed(() => store.state.nodeRepository.selectedTags);
+const totalNumFilteredNodesFound = computed(
+  () => store.state.nodeRepository.totalNumFilteredNodesFound,
+);
+const isLoadingSearchResults = computed(
+  () => store.state.nodeRepository.isLoadingSearchResults,
+);
+
+const addNodeToWorkflow = useAddNodeToWorkflow();
+
+const searchScrollPosition = computed({
+  get() {
+    return store.state.nodeRepository.searchScrollPosition;
   },
-  methods: {
-    ...mapActions("nodeRepository", ["searchNodesNextPage"]),
-    focusFirst() {
-      // @ts-ignore
-      this.$refs.searchResults?.focusFirst();
-    },
-    onHelpKey(node: NodeTemplateWithExtendedPorts) {
-      this.$emit("showNodeDescription", {
-        nodeTemplate: node,
-        isDescriptionActive: this.showDescriptionForNode?.id === node.id,
-      });
-    },
+  set(value) {
+    store.commit("nodeRepository/setSearchScrollPosition", value);
   },
 });
+const selectedNode = computed({
+  get() {
+    return store.state.nodeRepository.selectedNode;
+  },
+  set(value) {
+    store.commit("nodeRepository/setSelectedNode", value);
+  },
+});
+
+const searchActions = {
+  searchNodesNextPage: () =>
+    store.dispatch("nodeRepository/searchNodesNextPage"),
+};
+
+const searchResults = ref<InstanceType<typeof SearchResults>>();
+
+const focusFirst = () => {
+  searchResults.value?.focusFirst();
+};
+
+const onHelpKey = (node: NodeTemplateWithExtendedPorts) => {
+  emit("showNodeDescription", {
+    nodeTemplate: node,
+    isDescriptionActive: showDescriptionForNode.value?.id === node.id,
+  });
+};
+
+defineExpose({ focusFirst });
 </script>
 
 <template>
