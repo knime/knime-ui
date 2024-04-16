@@ -2,8 +2,7 @@
 import { mapActions, mapGetters, mapState } from "vuex";
 import { KnimeMIME } from "@/mixins/dropNode";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
-import { geometry } from "@/util/geometry";
-
+import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 /**
  * This component was ripped out of NodeTemplate to make NodeTemplate re-useable. This makes still heavy use of the
  * store and might be further improved by emitting events and let the parents handle the store actions.
@@ -29,8 +28,16 @@ export default {
       type: Boolean,
       default: false,
     },
+    isDescriptionActive: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["showNodeDescription"],
+  setup() {
+    const addNodeToWorkflow = useAddNodeToWorkflow();
+    return { addNodeToWorkflow };
+  },
   data() {
     return {
       dragGhost: null,
@@ -46,7 +53,6 @@ export default {
   },
   methods: {
     ...mapActions("nodeRepository", ["setDraggingNodeTemplate"]),
-    ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
 
     onDragStart(e) {
       // close description panel
@@ -110,26 +116,7 @@ export default {
       }
     },
     onDoubleClick() {
-      if (!this.isWritable) {
-        return; // end here
-      }
-
-      const isSingleNodeSelected = this.selectedNodes.length === 1;
-      const position = isSingleNodeSelected
-        ? {
-            x: this.selectedNodes[0].position.x + 120,
-            y: this.selectedNodes[0].position.y,
-          }
-        : geometry.findFreeSpaceAroundCenterWithFallback({
-            visibleFrame: this.getVisibleFrame(),
-            nodes: this.workflow.nodes,
-          });
-      const sourceNodeId = isSingleNodeSelected
-        ? this.selectedNodes[0].id
-        : null;
-
-      const nodeFactory = this.nodeTemplate.nodeFactory;
-      this.addNodeToWorkflow({ position, nodeFactory, sourceNodeId });
+      this.addNodeToWorkflow(this.nodeTemplate);
     },
     onDrag(e) {
       if (!this.isWritable) {
@@ -148,6 +135,7 @@ export default {
     :display-mode="displayMode"
     :is-selected="isSelected"
     :is-highlighted="isHighlighted"
+    :is-description-active="isDescriptionActive"
     :show-floating-help-icon="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"

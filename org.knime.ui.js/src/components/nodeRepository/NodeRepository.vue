@@ -16,12 +16,16 @@ const store = useStore();
 const nodesPerCategory = computed(
   () => store.state.nodeRepository.nodesPerCategory,
 );
-const selectedNode = computed(() => store.state.nodeRepository.selectedNode);
+const showDescriptionForNode = computed(
+  () => store.state.nodeRepository.showDescriptionForNode,
+);
 const searchIsActive = computed(
   () => store.getters["nodeRepository/searchIsActive"],
 );
-const isSelectedNodeVisible = computed(
-  () => store.getters["nodeRepository/isSelectedNodeVisible"],
+const isNodeVisible = computed(() =>
+  store.getters["nodeRepository/isNodeVisible"](
+    showDescriptionForNode.value?.id,
+  ),
 );
 const displayMode = computed(
   () => store.state.settings.settings.nodeRepositoryDisplayMode,
@@ -47,7 +51,7 @@ const isExtensionPanelOpen = computed(
 watch(isExtensionPanelOpen, (isOpen) => {
   if (!isOpen) {
     setTimeout(() => {
-      store.commit("nodeRepository/setSelectedNode", null);
+      store.commit("nodeRepository/setShowDescriptionForNode", null);
     }, DESELECT_NODE_DELAY);
   }
 });
@@ -80,7 +84,7 @@ const toggleNodeDescription = ({
 }) => {
   if (!isSelected || !isExtensionPanelOpen.value) {
     store.dispatch("panel/openExtensionPanel");
-    store.commit("nodeRepository/setSelectedNode", nodeTemplate);
+    store.commit("nodeRepository/setShowDescriptionForNode", nodeTemplate);
     return;
   }
 
@@ -120,7 +124,7 @@ const toggleNodeDescription = ({
       <Transition name="extension-panel">
         <NodeDescription
           show-close-button
-          :selected-node="isSelectedNodeVisible ? selectedNode : null"
+          :selected-node="isNodeVisible ? showDescriptionForNode : null"
           @close="store.dispatch('panel/closeExtensionPanel')"
         />
       </Transition>

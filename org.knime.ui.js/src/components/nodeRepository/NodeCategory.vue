@@ -1,11 +1,14 @@
-<script>
+<script lang="ts">
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 
 import NodeList from "./NodeList.vue";
+import { defineComponent, type PropType } from "vue";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 const CATEGORY_LIMIT = 8;
 
-export default {
+export default defineComponent({
   components: {
     DraggableNodeTemplate,
     NodeList,
@@ -16,25 +19,34 @@ export default {
       required: true,
     },
     nodes: {
-      type: Array,
+      type: Array as PropType<NodeTemplateWithExtendedPorts[]>,
       default: () => [],
     },
     displayMode: {
-      type: String,
+      type: String as PropType<NodeRepositoryDisplayModesType>,
       default: "icon",
     },
     selectedNode: {
-      type: [Object, null],
+      type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
       required: true,
     },
+    showDescriptionForNode: {
+      type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
+      default: null,
+    },
   },
-  emits: ["selectTag", "showNodeDescription"],
+  emits: [
+    "selectTag",
+    "showNodeDescription",
+    "update:selectedNode",
+    "itemEnterKey",
+  ],
   computed: {
     hasMoreNodes() {
       return this.nodes.length >= CATEGORY_LIMIT;
     },
   },
-};
+});
 </script>
 
 <template>
@@ -50,8 +62,11 @@ export default {
       class="category-node-list"
       :has-more-nodes="hasMoreNodes"
       :selected-node="selectedNode"
+      :show-description-for-node="showDescriptionForNode"
       :display-mode="displayMode"
       @show-more="$emit('selectTag', tag)"
+      @update:selected-node="$emit('update:selectedNode', $event)"
+      @enter-key="$emit('itemEnterKey', $event)"
     >
       <template #item="itemProps">
         <DraggableNodeTemplate

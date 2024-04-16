@@ -32,13 +32,17 @@ export default defineComponent({
       type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
       default: null,
     },
+    showDescriptionForNode: {
+      type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
+      default: null,
+    },
     highlightFirst: {
       type: Boolean,
       default: false,
     },
   },
   emits: [
-    "enter-key",
+    "enterKey",
     "showMore",
     "update:selectedNode",
     "navReachedTop",
@@ -75,6 +79,7 @@ export default defineComponent({
         isHighlighted:
           this.selectedNode === null && index === 0 && this.highlightFirst,
         isSelected: this.selectedNode?.id === node.id,
+        isDescriptionActive: this.showDescriptionForNode?.id === node.id,
         displayMode: this.displayMode,
       };
     },
@@ -165,7 +170,7 @@ export default defineComponent({
     <ul
       ref="list"
       :class="['nodes', `display-${displayMode}`]"
-      tabindex="-1"
+      tabindex="0"
       @keydown.left.stop="onKeyDown('left')"
       @keydown.up.stop.prevent="onKeyDown('up')"
       @keydown.down.stop.prevent="onKeyDown('down')"
@@ -176,7 +181,7 @@ export default defineComponent({
         :key="node.id"
         tabindex="-1"
         :data-index="index"
-        @keydown.enter.stop.prevent="$emit('enter-key', node)"
+        @keydown.enter.stop.prevent="$emit('enterKey', node)"
       >
         <slot name="item" v-bind="nodeTemplateProps(node, index)">
           <NodeTemplate v-bind="nodeTemplateProps(node, index)" />
@@ -199,6 +204,8 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .nodes-container {
   margin-bottom: 13px;
 
@@ -215,6 +222,10 @@ export default defineComponent({
 
     &:focus {
       outline: none;
+    }
+
+    &:focus-visible {
+      @mixin focus-style;
     }
 
     & .show-more {

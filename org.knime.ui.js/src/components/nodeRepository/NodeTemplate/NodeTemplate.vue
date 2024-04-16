@@ -18,6 +18,7 @@ export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
   displayMode?: NodeRepositoryDisplayModesType;
   isSelected?: boolean;
+  isDescriptionActive: boolean;
   isHighlighted?: boolean;
   showFloatingHelpIcon?: boolean;
 };
@@ -26,6 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
   displayMode: "icon",
   isSelected: false,
   isHighlighted: false,
+  isDescriptionActive: false,
   showFloatingHelpIcon: false,
 });
 
@@ -58,15 +60,15 @@ defineExpose({ getNodePreview });
     :class="[
       'node',
       {
-        selected: isSelected && !showFloatingHelpIcon,
+        selected: isSelected,
         highlighted: isHighlighted,
-        grabbable: showFloatingHelpIcon,
       },
     ]"
     :node-template="nodeTemplate"
     :is-hovered="nodeHovered"
     :display-mode="displayMode"
     :is-highlighted="isHighlighted"
+    :is-description-active="isDescriptionActive"
     :show-floating-help-icon="showFloatingHelpIcon"
     :is-selected="isSelected"
     @pointerenter="onPointerEnter"
@@ -98,7 +100,7 @@ defineExpose({ getNodePreview });
     cursor: pointer;
   }
 
-  &.grabbable:hover {
+  &[draggable="true"]:hover {
     cursor: grab;
   }
 }

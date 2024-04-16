@@ -33,6 +33,7 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
   categoryScrollPosition: number;
 
   selectedNode: NodeTemplateWithExtendedPorts | null;
+  showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
   isDraggingNode: boolean;
   draggedNodeData: NodeTemplateWithExtendedPorts | null;
 
@@ -50,6 +51,7 @@ export const state = (): NodeRepositoryState => ({
 
   /* node interaction */
   selectedNode: null,
+  showDescriptionForNode: null,
   isDraggingNode: false,
   draggedNodeData: null,
 
@@ -80,6 +82,10 @@ export const mutations: MutationTree<NodeRepositoryState> = {
 
   setSelectedNode(state, node) {
     state.selectedNode = node;
+  },
+
+  setShowDescriptionForNode(state, node) {
+    state.showDescriptionForNode = node;
   },
 
   setDraggingNode(state, value) {
@@ -194,13 +200,15 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
 export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.getters,
 
-  nodesPerCategoryContainSelectedNode(state) {
-    return state.nodesPerCategory.some((category) =>
-      category.nodes.some((node) => node.id === state.selectedNode?.id),
-    );
+  nodesPerCategoryContainNode(state) {
+    return (nodeId: string) =>
+      state.nodesPerCategory.some((category) =>
+        category.nodes.some((node) => node.id === nodeId),
+      );
   },
-  isSelectedNodeVisible: (state, getters) =>
+
+  isNodeVisible: (state, getters) => (nodeId: string) =>
     getters.searchIsActive
-      ? getters.searchResultsContainNodeId(state.selectedNode?.id)
-      : getters.nodesPerCategoryContainSelectedNode,
+      ? getters.searchResultsContainNodeId(nodeId)
+      : getters.nodesPerCategoryContainNode(nodeId),
 };

@@ -23,6 +23,7 @@ type Props = {
   selectedTags?: string[];
   searchScrollPosition?: number;
   selectedNode: NodeTemplateWithExtendedPorts | null;
+  showDescriptionForNode?: NodeTemplateWithExtendedPorts | null;
   searchActions: SearchActions;
   numFilteredOutNodes: number;
   highlightFirst?: boolean;
@@ -39,13 +40,14 @@ const props = withDefaults(defineProps<Props>(), {
   displayMode: "icon",
   showDownloadButton: false,
   isQuickAddNodeMenu: false,
+  showDescriptionForNode: null,
 });
 
 const emit = defineEmits<{
   (e: "navReachedTop"): void;
   (e: "update:searchScrollPosition", position: number): void;
   (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts | null): void;
-  (e: "itemEnterKey", event: KeyboardEvent): void;
+  (e: "itemEnterKey", node: NodeTemplateWithExtendedPorts): void;
 }>();
 
 const {
@@ -154,6 +156,7 @@ defineExpose({ focusFirst });
           :nodes="nodes!"
           :highlight-first="highlightFirst"
           :display-mode="displayMode"
+          :show-description-for-node="showDescriptionForNode"
           @nav-reached-top="emit('navReachedTop')"
           @enter-key="emit('itemEnterKey', $event)"
         >

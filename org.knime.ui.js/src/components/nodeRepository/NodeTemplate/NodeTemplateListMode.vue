@@ -10,10 +10,12 @@ export type Props = {
   displayMode?: NodeRepositoryDisplayModesType;
   showFloatingHelpIcon?: boolean;
   isSelected?: boolean;
+  isDescriptionActive: boolean;
 };
 
 withDefaults(defineProps<Props>(), {
   isSelected: false,
+  isDescriptionActive: false,
   showFloatingHelpIcon: false,
   displayMode: "icon",
 });
@@ -48,7 +50,7 @@ const emit = defineEmits(["helpIconClick"]);
     <NodeTemplateHelpIcon
       v-if="showFloatingHelpIcon"
       class="help-icon"
-      :is-selected="isSelected"
+      :is-selected="isDescriptionActive"
       :is-hovered="isHovered"
       @help-icon-click="emit('helpIconClick')"
     />

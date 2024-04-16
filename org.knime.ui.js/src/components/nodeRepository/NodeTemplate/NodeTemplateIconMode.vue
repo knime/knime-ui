@@ -9,6 +9,7 @@ import { computed } from "vue";
 export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
   isHovered: boolean;
+  isDescriptionActive: boolean;
   displayMode?: NodeRepositoryDisplayModesType;
   showFloatingHelpIcon?: boolean;
   isSelected?: boolean;
@@ -16,6 +17,7 @@ export type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
+  isDescriptionActive: false,
   showFloatingHelpIcon: false,
   displayMode: "icon",
 });
@@ -43,7 +45,7 @@ const extensionText = computed(() => {
     <NodeTemplateHelpIcon
       v-if="showFloatingHelpIcon"
       class="help-icon"
-      :is-selected="isSelected"
+      :is-selected="isDescriptionActive"
       :is-hovered="isHovered"
       @help-icon-click="emit('helpIconClick')"
     />

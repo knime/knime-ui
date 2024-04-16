@@ -5,6 +5,8 @@ import { mapState, mapActions } from "vuex";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
@@ -20,13 +22,18 @@ export default defineComponent({
       default: "icon",
     },
   },
-  emits: ["showNodeDescription"],
+  emits: ["showNodeDescription", "navReachedTop"],
+  setup() {
+    const addNodeToWorkflow = useAddNodeToWorkflow();
+    return { addNodeToWorkflow };
+  },
   computed: {
     ...mapState("nodeRepository", [
       "nodes",
       "query",
-      "selectedTags",
       "selectedNode",
+      "showDescriptionForNode",
+      "selectedTags",
       "totalNumFilteredNodesFound",
       "isLoadingSearchResults",
     ]),
@@ -37,6 +44,14 @@ export default defineComponent({
       },
       set(value: number) {
         this.$store.commit("nodeRepository/setSearchScrollPosition", value);
+      },
+    },
+    selectedNode: {
+      get() {
+        return this.$store.state.nodeRepository.selectedNode;
+      },
+      set(value: NodeTemplateWithExtendedPorts) {
+        this.$store.commit("nodeRepository/setSelectedNode", value);
       },
     },
     searchActions() {
@@ -55,9 +70,10 @@ export default defineComponent({
   <SearchResults
     ref="searchResults"
     v-model:search-scroll-position="searchScrollPosition"
-    :selected-node="selectedNode"
+    v-model:selected-node="selectedNode"
     :search-actions="searchActions"
     :selected-tags="selectedTags"
+    :show-description-for-node="showDescriptionForNode"
     :display-mode="displayMode"
     :query="query"
     :nodes="nodes"
@@ -66,6 +82,8 @@ export default defineComponent({
       $store.state.application.permissions.showFloatingDownloadButton
     "
     :is-loading-search-results="isLoadingSearchResults"
+    @item-enter-key="addNodeToWorkflow"
+    @nav-reached-top="$emit('navReachedTop')"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate
