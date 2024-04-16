@@ -40,6 +40,7 @@ defineEmits<Emits>();
     <button
       :title="expanded ? undefined : title ?? undefined"
       :disabled="disabled"
+      data-test-id="left-panel-handler"
       @click="$emit('toggleExpand')"
     >
       <SwitchIcon :style="{ transform: expanded ? undefined : 'scaleX(-1)' }" />

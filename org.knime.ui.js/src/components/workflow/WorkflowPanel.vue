@@ -107,6 +107,7 @@ const onContextMenu = (event: MouseEvent) => {
     <SplitPanel
       v-model:secondary-size="nodeDialogSize"
       :show-secondary-panel="$features.shouldDisplayEmbeddedDialogs()"
+      data-test-id="node-config-split-panel"
       direction="right"
       use-pixel
       :secondary-snap-size="360"
