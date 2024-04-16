@@ -1,12 +1,17 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
-import { flushPromises, mount } from "@vue/test-utils";
+import {
+  flushPromises,
+  mount,
+  type ComponentMountingOptions,
+} from "@vue/test-utils";
 
 import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 import { API } from "@api";
 
 import { UIExtension } from "webapps-common/ui/uiExtensions";
 import * as applicationStore from "@/store/application";
+import { createNativeNode } from "@/test/factories";
 import NodeConfigLoader from "../NodeConfigLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 
@@ -32,38 +37,39 @@ const mockGetNodeDialog = (additionalMocks?: object) => {
 };
 
 describe("NodeConfigLoader.vue", () => {
-  const dummyNode = {
+  const dummyNode = createNativeNode({
     id: "node1",
-    selected: true,
     outPorts: [],
-    isLoaded: false,
-    state: {
-      executionState: "UNSET",
-    },
     allowedActions: {
       canExecute: false,
     },
     hasDialog: true,
-  };
-
-  const props = {
-    projectId: "project-id",
-    workflowId: "workflow-id",
-    selectedNode: dummyNode,
-  };
+  });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  const doMount = () => {
+  type MountOpts = Pick<
+    ComponentMountingOptions<typeof NodeConfigLoader>,
+    "props" | "slots"
+  >;
+
+  const defaultProps: MountOpts["props"] = {
+    projectId: "project-id",
+    workflowId: "workflow-id",
+    selectedNode: dummyNode,
+  };
+
+  const doMount = ({ props, slots }: MountOpts = {}) => {
     const $store = mockVuexStore({
       application: applicationStore,
     });
 
     const wrapper = mount(NodeConfigLoader, {
-      props,
+      props: { ...defaultProps, props },
       global: { plugins: [$store] },
+      slots,
     });
 
     return { wrapper, $store };
@@ -75,9 +81,9 @@ describe("NodeConfigLoader.vue", () => {
 
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith(
       expect.objectContaining({
-        projectId: props.projectId,
-        workflowId: props.workflowId,
-        nodeId: props.selectedNode.id,
+        projectId: defaultProps.projectId,
+        workflowId: defaultProps.workflowId,
+        nodeId: defaultProps.selectedNode.id,
       }),
     );
   });
@@ -113,9 +119,9 @@ describe("NodeConfigLoader.vue", () => {
     await flushPromises();
     wrapper2.unmount();
     expect(mockedAPI.node.deactivateNodeDataServices).toHaveBeenCalledWith({
-      projectId: props.projectId,
-      workflowId: props.workflowId,
-      nodeId: props.selectedNode.id,
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
+      nodeId: defaultProps.selectedNode.id,
       extensionType: "dialog",
     });
   });
@@ -168,9 +174,7 @@ describe("NodeConfigLoader.vue", () => {
       await flushPromises();
 
       const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = uiExtension.props("apiLayer");
 
       const result = await apiLayer.callNodeDataService({
         serviceType: "data",
@@ -187,6 +191,25 @@ describe("NodeConfigLoader.vue", () => {
         serviceType: "data",
         workflowId: "workflow-id",
       });
+    });
+
+    it("controls", async () => {
+      mockGetNodeDialog();
+      const { wrapper } = doMount({
+        slots: { controls: { template: '<div id="slotted-ctrls" />' } },
+      });
+      await flushPromises();
+
+      expect(wrapper.find("#slotted-ctrls").exists()).toBe(true);
+
+      const uiExtension = wrapper.findComponent(UIExtension);
+      const apiLayer = uiExtension.props("apiLayer");
+
+      apiLayer.setControlsVisibility({ shouldBeVisible: false });
+
+      await Vue.nextTick();
+
+      expect(wrapper.find("#slotted-ctrls").exists()).toBe(false);
     });
   });
 });

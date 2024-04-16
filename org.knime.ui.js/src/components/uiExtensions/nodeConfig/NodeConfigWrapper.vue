@@ -32,6 +32,8 @@ const { dirtyState, applySettings, discardSettings } = useNodeConfigAPI();
 
 const $toast = getToastsProvider();
 
+const isLoadingReady = computed(() => loadingState.value?.value === "ready");
+
 const showExecuteOnlyButton = computed(
   () =>
     nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED &&
@@ -128,50 +130,52 @@ const onDiscard = () => {
       :workflow-id="workflowId"
       :selected-node="selectedNode"
       @loading-state-change="loadingState = $event"
-    />
+    >
+      <template #controls>
+        <div v-if="isLoadingReady" ref="buttons" class="buttons">
+          <Button
+            with-border
+            compact
+            class="button discard"
+            :disabled="!canApplyOrDiscard"
+            @click="onDiscard"
+          >
+            <strong>Discard</strong>
+          </Button>
 
-    <div v-if="loadingState?.value === 'ready'" ref="buttons" class="buttons">
-      <Button
-        with-border
-        compact
-        class="button discard"
-        :disabled="!canApplyOrDiscard"
-        @click="onDiscard"
-      >
-        <strong>Discard</strong>
-      </Button>
+          <Button
+            v-if="!showExecuteOnlyButton"
+            with-border
+            compact
+            class="button apply-execute"
+            :disabled="!canApplyAndExecute"
+            @click="applySettings(selectedNode.id, true)"
+          >
+            <strong>Apply and Execute</strong>
+          </Button>
 
-      <Button
-        v-if="!showExecuteOnlyButton"
-        with-border
-        compact
-        class="button apply-execute"
-        :disabled="!canApplyAndExecute"
-        @click="applySettings(selectedNode.id, true)"
-      >
-        <strong>Apply and Execute</strong>
-      </Button>
+          <Button
+            v-if="showExecuteOnlyButton"
+            with-border
+            compact
+            class="button execute"
+            @click="executeNode"
+          >
+            <strong>Execute</strong>
+          </Button>
 
-      <Button
-        v-if="showExecuteOnlyButton"
-        with-border
-        compact
-        class="button execute"
-        @click="executeNode"
-      >
-        <strong>Execute</strong>
-      </Button>
-
-      <Button
-        primary
-        compact
-        class="button apply"
-        :disabled="!canApplyOrDiscard"
-        @click="applySettings(selectedNode.id, false)"
-      >
-        <strong>Apply</strong>
-      </Button>
-    </div>
+          <Button
+            primary
+            compact
+            class="button apply"
+            :disabled="!canApplyOrDiscard"
+            @click="applySettings(selectedNode.id, false)"
+          >
+            <strong>Apply</strong>
+          </Button>
+        </div>
+      </template>
+    </NodeConfigLoader>
   </div>
 </template>
 

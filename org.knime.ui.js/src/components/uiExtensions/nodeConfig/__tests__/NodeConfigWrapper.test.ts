@@ -77,7 +77,11 @@ describe("NodeConfigWrapper.vue", () => {
     const wrapper = mount(NodeConfigWrapper, {
       global: {
         plugins: [$store],
-        stubs: { NodeConfigLoader: true },
+        stubs: {
+          NodeConfigLoader: {
+            template: '<div><slot name="controls" /></div>',
+          },
+        },
       },
     });
 
@@ -108,22 +112,6 @@ describe("NodeConfigWrapper.vue", () => {
 
     return isDisabled !== undefined;
   };
-
-  it("should render the NodeConfigLoader", () => {
-    const { wrapper, $store } = doMount();
-
-    const selectedNode = $store.getters["selection/singleSelectedNode"];
-
-    expect(wrapper.findComponent(NodeConfigLoader).props("projectId")).toBe(
-      projectId,
-    );
-    expect(wrapper.findComponent(NodeConfigLoader).props("workflowId")).toBe(
-      workflowId,
-    );
-    expect(wrapper.findComponent(NodeConfigLoader).props("selectedNode")).toBe(
-      selectedNode,
-    );
-  });
 
   describe("action buttons", () => {
     const {

@@ -36,6 +36,8 @@ const { resourceLocation, resourceLocationResolver } = useResourceLocation({
   extensionConfig,
 });
 
+const areControlsVisible = ref(true);
+
 const loadExtensionConfig = async () => {
   const _extensionConfig = await API.node.getNodeDialog({
     projectId: projectId.value,
@@ -113,12 +115,15 @@ const apiLayer: UIExtensionAPILayer = {
 
   onApplied: (payload) => setApplyComplete(payload.isApplied),
 
+  setControlsVisibility: ({ shouldBeVisible }) => {
+    areControlsVisible.value = shouldBeVisible;
+  },
+
   // NOOP - not required by this embedding context for this type of UI Extension
   updateDataPointSelection: () => Promise.resolve(null),
   imageGenerated: noop,
   setReportingContent: noop,
   sendAlert: noop,
-  setControlsVisibility: noop,
 };
 
 watch(
@@ -163,4 +168,5 @@ onUnmounted(() => {
     :api-layer="apiLayer!"
     :shadow-app-style="{ width: '100%', zIndex: 0, height: '100%' }"
   />
+  <slot v-if="areControlsVisible" name="controls" />
 </template>
