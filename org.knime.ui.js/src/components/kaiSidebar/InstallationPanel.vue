@@ -28,9 +28,7 @@ const installKai = API.desktop.installKAI;
       >
       <template v-else>
         <div class="slogan">
-          Currently, the KNIME AI Assistant is not accessible via browser. To
-          experience its full capabilities, please download and install the
-          KNIME desktop application.
+          The KNIME AI Assistant is not available in the playground. To try its capabilites, get the free and open source KNIME Analytics Platform.
         </div>
         <DownloadAPButton compact src="k-ai-panel" />
       </template>
