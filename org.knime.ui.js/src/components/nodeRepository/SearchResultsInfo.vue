@@ -61,6 +61,12 @@ const openKnimeUIPreferencePage = () => {
         <a :href="searchHubLink">KNIME Community Hub</a>
         to find more nodes and extensions.</span
       >
+      <DownloadAPButton
+        v-if="showDownloadButton"
+        compact
+        src="node-repository"
+        class="filtered-nodes-button"
+      />
     </div>
   </div>
 </template>
