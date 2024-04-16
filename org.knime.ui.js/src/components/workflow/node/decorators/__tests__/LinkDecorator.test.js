@@ -14,18 +14,18 @@ describe("LinkDecorator.vue", () => {
 
   it("shows/hides link icon for different statuses", async () => {
     const wrapper = doShallowMount("Manipulator");
-    expect(wrapper.find("path").attributes()["data-testid"]).toBe("arrow");
+    expect(wrapper.find("path").attributes()["data-test-id"]).toBe("arrow");
 
     await wrapper.setProps({ updateStatus: "UP_TO_DATE" });
-    expect(wrapper.find("path").attributes()["data-testid"]).toBe("arrow");
+    expect(wrapper.find("path").attributes()["data-test-id"]).toBe("arrow");
 
     await wrapper.setProps({ updateStatus: "HAS_UPDATE" });
-    expect(wrapper.find("path").attributes()["data-testid"]).toBe(
+    expect(wrapper.find("path").attributes()["data-test-id"]).toBe(
       "dotted-arrow",
     );
 
     await wrapper.setProps({ updateStatus: "ERROR" });
-    expect(wrapper.find("path").attributes()["data-testid"]).toBe("cross");
+    expect(wrapper.find("path").attributes()["data-test-id"]).toBe("cross");
 
     await wrapper.setProps({ updateStatus: "InvalidLinkStatus" });
     expect(wrapper.find("path").exists()).toBeFalsy();

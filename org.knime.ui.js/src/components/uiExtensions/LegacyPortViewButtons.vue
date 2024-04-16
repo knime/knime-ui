@@ -15,7 +15,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div data-testid="execute-open-legacy-view-action">
+  <div data-test-id="execute-open-legacy-view-action">
     <Button
       v-if="!isExecuted"
       class="action-button action-execute"

@@ -49,15 +49,17 @@ describe("NodeSlectionPlane.vue", () => {
   it("renders selection plane", () => {
     const wrapper = doShallowMount();
     expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(true);
-    expect(wrapper.find('[data-testid="focus-plane"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="selection-plane"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test-id="focus-plane"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test-id="selection-plane"]').exists()).toBe(
+      true,
+    );
   });
 
   it("renders focus plane", () => {
     const wrapper = doShallowMount({ showFocus: true, showSelection: false });
     expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(true);
-    expect(wrapper.find('[data-testid="focus-plane"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="selection-plane"]').exists()).toBe(
+    expect(wrapper.find('[data-test-id="focus-plane"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test-id="selection-plane"]').exists()).toBe(
       false,
     );
   });

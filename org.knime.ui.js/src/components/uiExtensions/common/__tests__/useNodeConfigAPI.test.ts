@@ -85,13 +85,13 @@ describe("useNodeConfigAPI", () => {
     it("should resolve `applySettings` after a call to `setApplyComplete`", async () => {
       const { testWrapper, executeNodes } = await doMountTestComponent();
 
-      await testWrapper.find('[data-testid="applySettings"]').trigger("click");
+      await testWrapper.find('[data-test-id="applySettings"]').trigger("click");
 
       await flushPromises();
       expect(executeNodes).not.toHaveBeenCalled();
 
       await testWrapper
-        .find('[data-testid="setApplyComplete"]')
+        .find('[data-test-id="setApplyComplete"]')
         .trigger("click", { dataSet: { isApplied: true } });
 
       expect(executeNodes).toHaveBeenCalled();
@@ -100,13 +100,13 @@ describe("useNodeConfigAPI", () => {
     it("should not execute nodes after applying settings", async () => {
       const { testWrapper, executeNodes } = await doMountTestComponent();
 
-      await testWrapper.find('[data-testid="applySettings"]').trigger("click");
+      await testWrapper.find('[data-test-id="applySettings"]').trigger("click");
 
       await flushPromises();
       expect(executeNodes).not.toHaveBeenCalled();
 
       await testWrapper
-        .find('[data-testid="setApplyComplete"]')
+        .find('[data-test-id="setApplyComplete"]')
         .trigger("click", { dataSet: { isApplied: false } });
 
       expect(executeNodes).not.toHaveBeenCalled();
@@ -119,13 +119,13 @@ describe("useNodeConfigAPI", () => {
       const { testWrapper: testWrapper1 } = await doMountTestComponent();
       const { testWrapper: testWrapper2 } = await doMountTestComponent();
 
-      expect(testWrapper1.find('[data-testid="dirtyState"]').text()).toEqual(
+      expect(testWrapper1.find('[data-test-id="dirtyState"]').text()).toEqual(
         JSON.stringify({
           apply: ApplyState.CLEAN,
           view: ViewState.CLEAN,
         }),
       );
-      expect(testWrapper2.find('[data-testid="dirtyState"]').text()).toEqual(
+      expect(testWrapper2.find('[data-test-id="dirtyState"]').text()).toEqual(
         JSON.stringify({
           apply: ApplyState.CLEAN,
           view: ViewState.CLEAN,
@@ -136,13 +136,13 @@ describe("useNodeConfigAPI", () => {
 
       await nextTick();
 
-      expect(testWrapper1.find('[data-testid="dirtyState"]').text()).toEqual(
+      expect(testWrapper1.find('[data-test-id="dirtyState"]').text()).toEqual(
         JSON.stringify({
           apply: ApplyState.CONFIG,
           view: ViewState.EXEC,
         }),
       );
-      expect(testWrapper2.find('[data-testid="dirtyState"]').text()).toEqual(
+      expect(testWrapper2.find('[data-test-id="dirtyState"]').text()).toEqual(
         JSON.stringify({
           apply: ApplyState.CONFIG,
           view: ViewState.EXEC,
@@ -156,11 +156,11 @@ describe("useNodeConfigAPI", () => {
       const { testWrapper: testWrapper2 } = await doMountTestComponent();
 
       expect(
-        testWrapper1.find('[data-testid="lastestPublishedData"]').text(),
+        testWrapper1.find('[data-test-id="lastestPublishedData"]').text(),
       ).toBe("null");
 
       expect(
-        testWrapper2.find('[data-testid="lastestPublishedData"]').text(),
+        testWrapper2.find('[data-test-id="lastestPublishedData"]').text(),
       ).toBe("null");
 
       setLatestPublishedData({ some: "data" });
@@ -168,11 +168,11 @@ describe("useNodeConfigAPI", () => {
       await nextTick();
 
       expect(
-        testWrapper1.find('[data-testid="lastestPublishedData"]').text(),
+        testWrapper1.find('[data-test-id="lastestPublishedData"]').text(),
       ).toBe(JSON.stringify({ some: "data" }));
 
       expect(
-        testWrapper2.find('[data-testid="lastestPublishedData"]').text(),
+        testWrapper2.find('[data-test-id="lastestPublishedData"]').text(),
       ).toBe(JSON.stringify({ some: "data" }));
     });
   });

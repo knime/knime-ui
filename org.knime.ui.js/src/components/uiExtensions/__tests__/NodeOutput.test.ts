@@ -302,7 +302,7 @@ describe("NodeOutput.vue", () => {
         await nextTick();
 
         const button = wrapper
-          .find('[data-testid="execute-open-legacy-view-action"]')
+          .find('[data-test-id="execute-open-legacy-view-action"]')
           .findComponent(Button);
 
         expect(button.exists()).toBe(true);
@@ -334,7 +334,7 @@ describe("NodeOutput.vue", () => {
         await nextTick();
 
         const buttonWrapper = wrapper.find(
-          '[data-testid="execute-open-legacy-view-action"]',
+          '[data-test-id="execute-open-legacy-view-action"]',
         );
 
         expect(buttonWrapper.text()).toMatch(expectedText);

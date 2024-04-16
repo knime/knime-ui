@@ -9,19 +9,22 @@ const { dirtyState, lastestPublishedData, applySettings, setApplyComplete } =
 
 <template>
   <div>
-    <button data-testid="applySettings" @click="applySettings(nodeId, execute)">
+    <button
+      data-test-id="applySettings"
+      @click="applySettings(nodeId, execute)"
+    >
       Apply
     </button>
 
     <button
-      data-testid="setApplyComplete"
+      data-test-id="setApplyComplete"
       @click="setApplyComplete(($event as any).dataSet.isApplied)"
     >
       Set apply complete
     </button>
 
-    <div data-testid="dirtyState">{{ JSON.stringify(dirtyState) }}</div>
-    <div data-testid="lastestPublishedData">
+    <div data-test-id="dirtyState">{{ JSON.stringify(dirtyState) }}</div>
+    <div data-test-id="lastestPublishedData">
       {{ JSON.stringify(lastestPublishedData) }}
     </div>
   </div>

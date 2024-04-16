@@ -90,7 +90,7 @@ export default defineComponent({
   <g :transform="`translate(${position.x}, ${position.y})`">
     <rect
       v-if="showFocus"
-      data-testid="focus-plane"
+      data-test-id="focus-plane"
       :x="nodeSelectionMeasures.x - 4"
       :y="nodeSelectionMeasures.y - 4"
       :width="nodeSelectionMeasures.width + 8"
@@ -104,7 +104,7 @@ export default defineComponent({
 
     <rect
       v-if="showSelection"
-      data-testid="selection-plane"
+      data-test-id="selection-plane"
       :x="nodeSelectionMeasures.x"
       :y="nodeSelectionMeasures.y"
       :width="nodeSelectionMeasures.width"

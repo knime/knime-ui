@@ -167,21 +167,21 @@ describe("AppHeader.vue", () => {
   describe("right side buttons", () => {
     it("allows opens preferences", async () => {
       const { wrapper } = doMount();
-      await wrapper.find('[data-testid="open-preferences"]').trigger("click");
+      await wrapper.find('[data-test-id="open-preferences"]').trigger("click");
       expect(mockedAPI.desktop.openWebUIPreferencePage).toHaveBeenCalled();
     });
 
     it("hides all dev mode buttons if dev mode is disabled", async () => {
       const { wrapper, $store } = doMount();
       expect(
-        wrapper.find('[data-testid="dev-mode-only"]').exists(),
+        wrapper.find('[data-test-id="dev-mode-only"]').exists(),
       ).toBeFalsy();
 
       $store.state.application.devMode = true;
       await wrapper.vm.$nextTick();
 
       expect(
-        wrapper.find('[data-testid="dev-mode-only"]').exists(),
+        wrapper.find('[data-test-id="dev-mode-only"]').exists(),
       ).toBeTruthy();
     });
   });

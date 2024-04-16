@@ -236,7 +236,7 @@ onClickOutside(menuWrapper, hideMenu);
         <FunctionButton
           v-if="devMode"
           class="header-button no-text"
-          data-testid="dev-mode-only"
+          data-test-id="dev-mode-only"
           title="Inspect Code (DEV MODE ONLY)"
           @click="openInspector()"
         >
@@ -246,26 +246,26 @@ onClickOutside(menuWrapper, hideMenu);
         <FunctionButton
           v-if="devMode"
           class="header-button no-text"
-          data-testid="dev-mode-only"
+          data-test-id="dev-mode-only"
           title="Reload App (DEV MODE ONLY)"
           @click="reloadApp()"
         >
           <ReloadIcon />
         </FunctionButton>
 
-        <HelpMenu data-testid="app-header-help-menu" />
+        <HelpMenu data-test-id="app-header-help-menu" />
 
         <FunctionButton
           class="header-button"
           title="Open preferences"
-          data-testid="open-preferences"
+          data-test-id="open-preferences"
           @click="openKnimeUIPreferencePage"
         >
           <CogIcon />
           Preferences
         </FunctionButton>
 
-        <AppMenu data-testid="app-header-app-menu" />
+        <AppMenu data-test-id="app-header-app-menu" />
       </div>
     </div>
   </header>
