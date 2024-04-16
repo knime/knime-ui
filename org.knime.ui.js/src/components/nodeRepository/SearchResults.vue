@@ -48,6 +48,7 @@ const emit = defineEmits<{
   (e: "update:searchScrollPosition", position: number): void;
   (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts | null): void;
   (e: "itemEnterKey", node: NodeTemplateWithExtendedPorts): void;
+  (e: "helpKey", node: NodeTemplateWithExtendedPorts): void;
 }>();
 
 const {
@@ -159,6 +160,7 @@ defineExpose({ focusFirst });
           :show-description-for-node="showDescriptionForNode"
           @nav-reached-top="emit('navReachedTop')"
           @enter-key="emit('itemEnterKey', $event)"
+          @help-key="emit('helpKey', $event)"
         >
           <template #item="slotProps">
             <slot name="nodesTemplate" v-bind="slotProps" />

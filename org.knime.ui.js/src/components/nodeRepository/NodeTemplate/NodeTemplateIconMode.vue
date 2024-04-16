@@ -96,8 +96,8 @@ const extensionText = computed(() => {
   & .help-icon {
     padding: 0;
     position: absolute;
-    top: -3px;
-    right: 0;
+    top: -5px;
+    right: -5px;
   }
 
   & .extension-info {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, onMounted } from "vue";
+import { computed, watch, onMounted, ref } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
@@ -48,6 +48,10 @@ const isExtensionPanelOpen = computed(
   () => store.state.panel.isExtensionPanelOpen,
 );
 
+defineEmits<{
+  (e: "navReachedTop"): void;
+}>();
+
 watch(isExtensionPanelOpen, (isOpen) => {
   if (!isOpen) {
     setTimeout(() => {
@@ -76,13 +80,13 @@ onMounted(() => {
 });
 
 const toggleNodeDescription = ({
-  isSelected,
+  isDescriptionActive,
   nodeTemplate,
 }: {
-  isSelected: boolean;
+  isDescriptionActive: boolean;
   nodeTemplate: NodeTemplateWithExtendedPorts;
 }) => {
-  if (!isSelected || !isExtensionPanelOpen.value) {
+  if (!isDescriptionActive || !isExtensionPanelOpen.value) {
     store.dispatch("panel/openExtensionPanel");
     store.commit("nodeRepository/setShowDescriptionForNode", nodeTemplate);
     return;
@@ -90,22 +94,41 @@ const toggleNodeDescription = ({
 
   store.dispatch("panel/closeExtensionPanel");
 };
+
+const header = ref<InstanceType<typeof NodeRepositoryHeader>>();
+
+const searchResults = ref<InstanceType<typeof SidebarSearchResults>>();
+const categoryResults = ref<InstanceType<typeof CategoryResults>>();
+
+const onSearchBarDownKey = () => {
+  if (searchIsActive.value) {
+    searchResults.value?.focusFirst();
+  } else {
+    categoryResults.value?.focusFirst();
+  }
+};
 </script>
 
 <template>
   <div class="node-repo">
-    <NodeRepositoryHeader />
+    <NodeRepositoryHeader
+      ref="header"
+      @search-bar-down-key="onSearchBarDownKey"
+    />
 
     <template v-if="nodeRepositoryLoaded">
       <SidebarSearchResults
         v-if="searchIsActive"
         ref="searchResults"
         :display-mode="displayMode"
+        @nav-reached-top="header?.focusSearchInput()"
         @show-node-description="toggleNodeDescription"
       />
       <CategoryResults
         v-else
+        ref="categoryResults"
         :display-mode="displayMode"
+        @nav-reached-top="header?.focusSearchInput()"
         @show-node-description="toggleNodeDescription"
       />
     </template>

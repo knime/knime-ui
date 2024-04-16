@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
@@ -67,6 +67,14 @@ const toggleListView = () => {
 const openKnimeUIPreferencePage = () => {
   API.desktop.openWebUIPreferencePage();
 };
+
+defineEmits<{ (e: "searchBarDownKey"): void }>();
+
+const searchBar = ref<InstanceType<typeof SearchBar>>();
+const focusSearchInput = () => {
+  searchBar.value?.focus();
+};
+defineExpose({ focusSearchInput });
 </script>
 
 <template>
@@ -104,6 +112,7 @@ const openKnimeUIPreferencePage = () => {
         </div>
       </div>
       <SearchBar
+        ref="searchBar"
         :model-value="store.state.nodeRepository.query"
         :disabled="!nodeRepositoryLoaded"
         :placeholder="
@@ -112,6 +121,8 @@ const openKnimeUIPreferencePage = () => {
             : 'Search all nodes'
         "
         class="search-bar"
+        tabindex="-1"
+        @keydown.down.prevent.stop="$emit('searchBarDownKey')"
         @clear="store.dispatch('nodeRepository/clearSearchParams')"
         @update:model-value="
           store.dispatch('nodeRepository/updateQuery', $event)

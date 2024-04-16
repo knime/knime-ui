@@ -28,22 +28,36 @@ export default defineComponent({
     },
     selectedNode: {
       type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
-      required: true,
+      default: null,
     },
     showDescriptionForNode: {
       type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
       default: null,
     },
   },
+  expose: ["focusFirst", "focusLast"],
   emits: [
     "selectTag",
     "showNodeDescription",
     "update:selectedNode",
     "itemEnterKey",
+    "helpKey",
+    "navReachedEnd",
+    "navReachedTop",
   ],
   computed: {
     hasMoreNodes() {
       return this.nodes.length >= CATEGORY_LIMIT;
+    },
+  },
+  methods: {
+    focusFirst() {
+      // @ts-ignore
+      this.$refs.nodeList?.focusFirst();
+    },
+    focusLast() {
+      // @ts-ignore
+      this.$refs.nodeList?.focusLast();
     },
   },
 });
@@ -58,6 +72,7 @@ export default defineComponent({
       <hr />
     </div>
     <NodeList
+      ref="nodeList"
       :nodes="nodes"
       class="category-node-list"
       :has-more-nodes="hasMoreNodes"
@@ -67,6 +82,9 @@ export default defineComponent({
       @show-more="$emit('selectTag', tag)"
       @update:selected-node="$emit('update:selectedNode', $event)"
       @enter-key="$emit('itemEnterKey', $event)"
+      @help-key="$emit('helpKey', $event)"
+      @nav-reached-top="$emit('navReachedTop')"
+      @nav-reached-end="$emit('navReachedEnd')"
     >
       <template #item="itemProps">
         <DraggableNodeTemplate

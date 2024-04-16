@@ -19,7 +19,7 @@ export default defineComponent({
       default: "icon",
     },
   },
-  emits: ["showNodeDescription"],
+  emits: ["showNodeDescription", "navReachedTop"],
   setup() {
     const addNodeToWorkflow = useAddNodeToWorkflow();
     return { addNodeToWorkflow };
@@ -34,11 +34,12 @@ export default defineComponent({
       get() {
         return this.$store.state.nodeRepository.selectedNode;
       },
-      set(value: NodeTemplateWithExtendedPorts) {
+      set(value: NodeTemplateWithExtendedPorts | null) {
         this.$store.commit("nodeRepository/setSelectedNode", value);
       },
     },
   },
+  expose: ["focusFirst"],
   methods: {
     ...mapActions("nodeRepository", ["getAllNodes", "setSelectedTags"]),
     ...mapMutations("nodeRepository", ["setCategoryScrollPosition"]),
@@ -52,6 +53,34 @@ export default defineComponent({
     onSelectTag(tag: string) {
       this.setSelectedTags([tag]);
     },
+    onNavReachedEnd(index: number) {
+      // @ts-ignore
+      const category = this.$refs.categories?.[index + 1];
+      if (category) {
+        category.focusFirst();
+      }
+    },
+    onNavReachedTop(index: number) {
+      if (index === 0) {
+        this.$emit("navReachedTop");
+      } else {
+        // @ts-ignore
+        const category = this.$refs.categories?.[index - 1];
+        if (category) {
+          category.focusLast();
+        }
+      }
+    },
+    onHelpKey(node: NodeTemplateWithExtendedPorts) {
+      this.$emit("showNodeDescription", {
+        nodeTemplate: node,
+        isDescriptionActive: this.showDescriptionForNode?.id === node.id,
+      });
+    },
+    focusFirst() {
+      // @ts-ignore
+      this.$refs.categories?.[0].focusFirst();
+    },
   },
 });
 </script>
@@ -64,8 +93,12 @@ export default defineComponent({
     @save-position="onSaveScrollPosition"
   >
     <div class="content">
-      <template v-for="{ tag, nodes } in nodesPerCategory" :key="`tag-${tag}`">
+      <template
+        v-for="({ tag, nodes }, index) in nodesPerCategory"
+        :key="`tag-${tag}`"
+      >
         <NodeCategory
+          ref="categories"
           v-model:selected-node="selectedNode"
           class="category"
           :tag="tag"
@@ -74,6 +107,9 @@ export default defineComponent({
           :display-mode="displayMode"
           @item-enter-key="addNodeToWorkflow"
           @select-tag="onSelectTag"
+          @help-key="onHelpKey"
+          @nav-reached-end="onNavReachedEnd(index)"
+          @nav-reached-top="onNavReachedTop(index)"
           @show-node-description="$emit('showNodeDescription', $event)"
         />
       </template>

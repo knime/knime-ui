@@ -27,6 +27,7 @@ export default defineComponent({
     const addNodeToWorkflow = useAddNodeToWorkflow();
     return { addNodeToWorkflow };
   },
+  expose: ["focusFirst"],
   computed: {
     ...mapState("nodeRepository", [
       "nodes",
@@ -62,6 +63,16 @@ export default defineComponent({
   },
   methods: {
     ...mapActions("nodeRepository", ["searchNodesNextPage"]),
+    focusFirst() {
+      // @ts-ignore
+      this.$refs.searchResults?.focusFirst();
+    },
+    onHelpKey(node: NodeTemplateWithExtendedPorts) {
+      this.$emit("showNodeDescription", {
+        nodeTemplate: node,
+        isDescriptionActive: this.showDescriptionForNode?.id === node.id,
+      });
+    },
   },
 });
 </script>
@@ -83,6 +94,7 @@ export default defineComponent({
     "
     :is-loading-search-results="isLoadingSearchResults"
     @item-enter-key="addNodeToWorkflow"
+    @help-key="onHelpKey"
     @nav-reached-top="$emit('navReachedTop')"
   >
     <template #nodesTemplate="slotProps">
