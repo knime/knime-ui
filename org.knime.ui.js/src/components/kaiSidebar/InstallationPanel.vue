@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { API } from "@api";
-import { isBrowser } from "@/environment";
+import { compatibility } from "@/environment";
 import Button from "webapps-common/ui/components/Button.vue";
 import BasePanel from "./BasePanel.vue";
 import InstallAiIllustration from "@/assets/install-ai-illustration.svg";
+import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 
 const installKai = API.desktop.installKAI;
 </script>
@@ -18,17 +19,21 @@ const installKai = API.desktop.installKAI;
         workflows.
       </div>
 
-      <template v-if="isBrowser">
-        <div class="slogan">
-          Currently, the KNIME AI Assistant is not accessible via browser. To experience its full capabilities, please download and install the KNIME desktop application.
-        </div>
-        <Button primary compact href="https://www.knime.com/downloads"
-          >Download KNIME</Button
-        >
-      </template>
-      <Button v-else primary compact @click="installKai"
+      <Button
+        v-if="compatibility.isAiAssistantSupported()"
+        primary
+        compact
+        @click="installKai"
         >Install AI Assistant</Button
       >
+      <template v-else>
+        <div class="slogan">
+          Currently, the KNIME AI Assistant is not accessible via browser. To
+          experience its full capabilities, please download and install the
+          KNIME desktop application.
+        </div>
+        <DownloadAPButton compact src="k-ai-panel" />
+      </template>
     </div>
   </BasePanel>
 </template>
