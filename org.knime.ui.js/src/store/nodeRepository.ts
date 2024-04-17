@@ -200,7 +200,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
 export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.getters,
 
-  nodesPerCategoryContainNode(state) {
+  nodesPerCategoryContainNodeId(state) {
     return (nodeId: string) =>
       state.nodesPerCategory.some((category) =>
         category.nodes.some((node) => node.id === nodeId),
@@ -210,5 +210,5 @@ export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
   isNodeVisible: (state, getters) => (nodeId: string) =>
     getters.searchIsActive
       ? getters.searchResultsContainNodeId(nodeId)
-      : getters.nodesPerCategoryContainNode(nodeId),
+      : getters.nodesPerCategoryContainNodeId(nodeId),
 };

@@ -100,7 +100,7 @@ defineExpose({ focusFirst });
       $store.state.application.permissions.showFloatingDownloadButton
     "
     :is-loading-search-results="isLoadingSearchResults"
-    @item-enter-key="addNodeToWorkflow"
+    @item-enter-key="addNodeToWorkflow({ nodeFactory: $event.nodeFactory! })"
     @help-key="onHelpKey"
     @nav-reached-top="$emit('navReachedTop')"
   >

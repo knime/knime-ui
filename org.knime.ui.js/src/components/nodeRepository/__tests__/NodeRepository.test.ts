@@ -31,6 +31,7 @@ describe("NodeRepository", () => {
     const searchNodesMock = vi.fn();
     const getAllNodesMock = vi.fn();
     const setSelectedNodeMock = vi.fn();
+    const setShowDescriptionForNodeMock = vi.fn();
     const subscribeToNodeRepositoryLoadingEventMock = vi.fn();
 
     const $store = mockVuexStore({
@@ -72,9 +73,11 @@ describe("NodeRepository", () => {
           tagsOfVisibleNodes() {
             return ["myTag1", "myTag2"];
           },
+          isNodeVisible: () => vi.fn().mockReturnValue(true),
         },
         mutations: {
           setSelectedNode: setSelectedNodeMock,
+          setShowDescriptionForNode: setShowDescriptionForNodeMock,
         },
       },
       panel: panelStore,
@@ -103,6 +106,7 @@ describe("NodeRepository", () => {
       searchNodesMock,
       getAllNodesMock,
       setSelectedNodeMock,
+      setShowDescriptionForNodeMock,
       subscribeToNodeRepositoryLoadingEventMock,
     };
   };
@@ -158,20 +162,23 @@ describe("NodeRepository", () => {
       expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
     });
 
-    it("de-selectes node on close of description panel", async () => {
+    it("resets description node on close of description panel", async () => {
       // @ts-ignore
       window.setTimeout = vi.fn().mockImplementation((fn) => {
         fn();
         return 0;
       });
-      const { wrapper, $store, setSelectedNodeMock } = doMount();
+      const { wrapper, $store, setShowDescriptionForNodeMock } = doMount();
       $store.state.panel.isExtensionPanelOpen = true;
       await wrapper.vm.$nextTick();
 
       $store.state.panel.isExtensionPanelOpen = false;
       await wrapper.vm.$nextTick();
 
-      expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), null);
+      expect(setShowDescriptionForNodeMock).toHaveBeenCalledWith(
+        expect.anything(),
+        null,
+      );
     });
 
     it("shows loader if node repository is not loaded", () => {

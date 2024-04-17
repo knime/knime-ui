@@ -87,7 +87,7 @@ describe("SelectableTagList.vue", () => {
 
   describe("expands list", () => {
     it("emits show-more", async () => {
-      const wrapper = shallowMount(SelectableTagList, {
+      const wrapper = mount(SelectableTagList, {
         props: { tags: sevenTags },
       });
 

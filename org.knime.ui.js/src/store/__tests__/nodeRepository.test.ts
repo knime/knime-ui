@@ -164,6 +164,7 @@ describe("Node Repository store", () => {
       categoryPage: 0,
       categoryScrollPosition: 0,
       selectedNode: null,
+      showDescriptionForNode: null,
       isDraggingNode: false,
       draggedNodeData: null,
       nodeTemplates: {},
@@ -172,19 +173,19 @@ describe("Node Repository store", () => {
 
   describe("getters", () => {
     it("returns proper value for nodesPerCategoryContainSelectedNode", async () => {
+      const nodeId = 1;
       const { store } = await createStore();
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"],
+        store.getters["nodeRepository/nodesPerCategoryContainNodeId"](nodeId),
       ).toBe(false);
       store.state.nodeRepository.nodesPerCategory = [
         { tag: "tag:1", nodes: [{ id: 1 }, { id: 2 }] },
       ];
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"],
+        store.getters["nodeRepository/nodesPerCategoryContainNodeId"](3),
       ).toBe(false);
-      store.state.nodeRepository.selectedNode = { id: 1, name: "Node" };
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainSelectedNode"],
+        store.getters["nodeRepository/nodesPerCategoryContainNodeId"](nodeId),
       ).toBe(true);
     });
 
@@ -192,20 +193,17 @@ describe("Node Repository store", () => {
       const { store } = await createStore();
       store.state.nodeRepository.nodes = [{ id: 1, name: "Node" }];
       store.state.nodeRepository.query = "value";
-      store.state.nodeRepository.selectedNode = { id: 3, name: "Node 3" };
-      expect(store.getters["nodeRepository/isSelectedNodeVisible"]).toBe(false);
-      store.state.nodeRepository.selectedNode = { id: 1, name: "Node" };
-      expect(store.getters["nodeRepository/isSelectedNodeVisible"]).toBe(true);
+      expect(store.getters["nodeRepository/isNodeVisible"](3)).toBe(false);
+      expect(store.getters["nodeRepository/isNodeVisible"](1)).toBe(true);
     });
 
     it("returns proper value for isSelectedNodeVisible for categories", async () => {
       const { store } = await createStore();
-      expect(store.getters["nodeRepository/isSelectedNodeVisible"]).toBe(false);
+      expect(store.getters["nodeRepository/isNodeVisible"](0)).toBe(false);
       store.state.nodeRepository.nodesPerCategory = [
         { tag: "tag:1", nodes: [{ id: 1 }, { id: 2 }] },
       ];
-      store.state.nodeRepository.selectedNode = { id: 2, name: "Node" };
-      expect(store.getters["nodeRepository/isSelectedNodeVisible"]).toBe(true);
+      expect(store.getters["nodeRepository/isNodeVisible"](2)).toBe(true);
     });
   });
 

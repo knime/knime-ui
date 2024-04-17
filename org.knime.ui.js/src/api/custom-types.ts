@@ -142,7 +142,7 @@ export type NodeTemplateWithExtendedPorts = NodeTemplate & {
   inPorts: ExtendedPortType[];
   outPorts: ExtendedPortType[];
   // TODO: fix generated type?
-  nodeFactory: NodeFactoryKey;
+  nodeFactory?: NodeFactoryKey;
 };
 
 export type WorkflowObject = XY & { id: string; type: "node" | "annotation" };

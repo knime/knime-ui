@@ -5,7 +5,7 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import SearchBar from "@/components/common/SearchBar.vue";
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
@@ -170,12 +170,14 @@ describe("PortTypeMenu.vue", () => {
       });
     });
 
-    describe("search bar", () => {
-      it("focus searchbar on mount", () => {
+    describe("search input", () => {
+      it("focus search input on mount", () => {
         const { wrapper } = doMount();
 
-        let searchBar = wrapper.findComponent(SearchBar).find("input").element;
-        expect(document.activeElement).toBe(searchBar);
+        let searchInput = wrapper
+          .findComponent(SearchInput)
+          .find("input").element;
+        expect(document.activeElement).toStrictEqual(searchInput);
       });
 
       it.each([
@@ -184,11 +186,13 @@ describe("PortTypeMenu.vue", () => {
       ])("keyboard navigation: %s", async (code, expectedTypeId) => {
         const { wrapper } = doMount();
 
-        const searchBar = wrapper.findComponent(SearchBar);
-        searchBar.trigger("keydown", { code });
+        const searchInput = wrapper.findComponent(SearchInput);
+        searchInput.vm.$emit("keydown", new KeyboardEvent("keydown", { code }));
         await wrapper.vm.$nextTick();
 
-        expect(searchBar.attributes("aria-activedescendant")).toBeDefined();
+        expect(
+          searchInput.find("input").attributes("aria-activedescendant"),
+        ).toBeDefined();
         expect(wrapper.emitted("itemActive").at(-1)[0]).toEqual(
           expect.objectContaining({
             port: { typeId: expectedTypeId },
@@ -301,7 +305,7 @@ describe("PortTypeMenu.vue", () => {
         };
 
         const { wrapper } = doMount({ props: { portGroups } });
-        expect(wrapper.findComponent(SearchBar).exists()).toBe(false);
+        expect(wrapper.findComponent(SearchInput).exists()).toBe(false);
       });
 
       it('should unselect the port group when clicking on the "back" button', async () => {
@@ -360,7 +364,7 @@ describe("PortTypeMenu.vue", () => {
 
     describe("search results", () => {
       const doSearch = async (wrapper, query = "") => {
-        wrapper.findComponent(SearchBar).vm.$emit("update:modelValue", query);
+        wrapper.findComponent(SearchInput).vm.$emit("update:modelValue", query);
         await nextTick();
       };
 

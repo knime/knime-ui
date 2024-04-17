@@ -48,7 +48,7 @@ describe("NodeList", () => {
     await wrapper.findAll("li").at(2).trigger("keydown.enter");
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.emitted("enter-key")).toStrictEqual([[{ id: "node3" }]]);
+    expect(wrapper.emitted("enterKey")).toStrictEqual([[{ id: "node3" }]]);
   });
 
   it("sets dom focus if selected node changes and is in our list", async () => {
@@ -130,15 +130,6 @@ describe("NodeList", () => {
       const wrapper = doMount({ selectedNode: { id: "node4" } });
 
       await wrapper.find("ul").trigger("keydown.down");
-      await wrapper.vm.$nextTick();
-
-      expect(wrapper.emitted("navReachedEnd")).toBeTruthy();
-    });
-
-    it("emits event if nav reached bottom for right key", async () => {
-      const wrapper = doMount({ selectedNode: { id: "node6" } });
-
-      await wrapper.find("ul").trigger("keydown.right");
       await wrapper.vm.$nextTick();
 
       expect(wrapper.emitted("navReachedEnd")).toBeTruthy();

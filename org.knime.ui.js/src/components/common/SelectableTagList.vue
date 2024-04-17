@@ -107,7 +107,7 @@ export default defineComponent({
       await this.$nextTick();
       (this.$refs.tags as InstanceType<typeof Tag>[])?.[
         nextTagIndex
-      ].$el.focus();
+      ]?.$el.focus();
     },
   },
 });
