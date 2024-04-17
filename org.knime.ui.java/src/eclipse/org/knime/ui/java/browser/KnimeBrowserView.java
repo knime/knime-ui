@@ -258,4 +258,11 @@ public class KnimeBrowserView {
 		}
 	}
 
+    /**
+     * @return the underlying browser instance being used
+     */
+    public static Browser getBrowser() {
+        return browser;
+    }
+
 }
