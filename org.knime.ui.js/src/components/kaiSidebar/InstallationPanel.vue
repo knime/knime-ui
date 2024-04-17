@@ -31,7 +31,11 @@ const installKai = API.desktop.installKAI;
           The KNIME AI Assistant is not available in the playground. To try its
           capabilites, get the free and open source KNIME Analytics Platform.
         </div>
-        <DownloadAPButton compact src="k-ai-panel" />
+        <DownloadAPButton
+          v-if="$store.state.application.permissions.showFloatingDownloadButton"
+          compact
+          src="k-ai-panel"
+        />
       </template>
     </div>
   </BasePanel>

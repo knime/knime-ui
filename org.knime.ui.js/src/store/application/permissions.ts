@@ -30,7 +30,12 @@ export const state = (): State => ({
 
 export const mutations: MutationTree<ApplicationState> = {
   setPermissions(state, value: Permissions) {
-    state.permissions = value;
+    state.permissions = {
+      ...value,
+      showFloatingDownloadButton:
+        value.showFloatingDownloadButton &&
+        Boolean(state.analyticsPlatformDownloadURL),
+    };
   },
 };
 

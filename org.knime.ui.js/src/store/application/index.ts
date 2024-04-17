@@ -210,6 +210,14 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       commit("setFeatureFlags", applicationState.featureFlags);
     }
 
+    // needs to be assigned before the permissions
+    if (applicationState.analyticsPlatformDownloadURL) {
+      commit(
+        "setAnalyticsPlatformDownloadURL",
+        applicationState.analyticsPlatformDownloadURL,
+      );
+    }
+
     if (applicationState.permissions) {
       commit("setPermissions", applicationState.permissions);
     }
@@ -269,13 +277,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
       commit("setNodeRepositoryLoaded", applicationState.nodeRepositoryLoaded);
-    }
-
-    if (applicationState.analyticsPlatformDownloadURL) {
-      commit(
-        "setAnalyticsPlatformDownloadURL",
-        applicationState.analyticsPlatformDownloadURL,
-      );
     }
   },
 
