@@ -62,6 +62,7 @@ export default defineComponent({
       $store.state.application.permissions.showFloatingDownloadButton
     "
     :is-loading-search-results="isLoadingSearchResults"
+    :is-quick-add-node-menu="true"
     @update:selected-node="$emit('update:selectedNode', $event)"
     @item-enter-key="$emit('addNode', $event)"
   >

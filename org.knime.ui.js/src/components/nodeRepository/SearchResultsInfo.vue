@@ -3,14 +3,16 @@ import { API } from "@api";
 import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import Button from "webapps-common/ui/components/Button.vue";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import MoreNodeIllustration from "@/assets/more-nodes-illustration.svg";
 import { isDesktop } from "@/environment";
+import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 
 type Props = {
   numFilteredOutNodes: number;
   isNodeListEmpty: boolean;
   showDownloadButton: boolean;
   searchHubLink: string;
+  isQuickAddNodeMenu: boolean;
 };
 
 defineProps<Props>();
@@ -21,7 +23,11 @@ const openKnimeUIPreferencePage = () => {
 </script>
 
 <template>
-  <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
+  <div
+    v-if="numFilteredOutNodes > 0"
+    class="filtered-nodes-wrapper"
+    :class="{ mini: isQuickAddNodeMenu }"
+  >
     <CircleInfoIcon class="info-icon" />
     <div class="filtered-nodes-content">
       <template v-if="isDesktop">
@@ -53,16 +59,34 @@ const openKnimeUIPreferencePage = () => {
     </div>
   </div>
   <div v-else-if="isNodeListEmpty" class="filtered-nodes-wrapper">
-    <CircleInfoIcon class="info-icon" />
-    <div class="filtered-nodes-content">
-      <span>There are no matching nodes.</span>
-      <span
-        >Search the
-        <a :href="searchHubLink">KNIME Community Hub</a>
-        to find more nodes and extensions.</span
-      >
+    <template v-if="isDesktop">
+      <CircleInfoIcon class="info-icon" />
+      <div class="filtered-nodes-content">
+        <span>There are no matching nodes.</span>
+        <span
+          >Search the
+          <a :href="searchHubLink">KNIME Community Hub</a>
+          to find more nodes and extensions.</span
+        >
+      </div>
+    </template>
+    <div
+      v-else
+      class="filtered-nodes-content filtered-nodes-empty"
+      :class="{ mini: isQuickAddNodeMenu }"
+    >
+      <MoreNodeIllustration />
+      <span>
+        There are more open source extensions and nodes available in the full
+        version of the KNIME Analytics Platform.
+      </span>
+      <br />
+      <span v-if="!isQuickAddNodeMenu">
+        For example, such as reporting, access to and processing of complex data
+        types, as well as the addition of advanced machine learning algorithms
+        and much more.
+      </span>
       <DownloadAPButton
-        v-if="showDownloadButton"
         compact
         src="node-repository"
         class="filtered-nodes-button"
@@ -80,6 +104,10 @@ const openKnimeUIPreferencePage = () => {
   display: flex;
   align-items: center;
   margin: 20px 10px;
+
+  &.mini {
+    padding-top: 0;
+  }
 
   & .info-icon {
     @mixin svg-icon-size 20;
@@ -100,6 +128,25 @@ const openKnimeUIPreferencePage = () => {
 
     & .filtered-nodes-button {
       margin-top: 15px;
+    }
+  }
+
+  & .filtered-nodes-empty {
+    align-items: center;
+    font-style: normal;
+
+    & svg {
+      margin: 0 45px 45px;
+    }
+
+    & span {
+      text-align: center;
+    }
+
+    &.mini {
+      & svg {
+        margin: 0 70px 45px;
+      }
     }
   }
 }

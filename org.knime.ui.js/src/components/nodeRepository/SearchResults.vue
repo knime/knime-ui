@@ -29,6 +29,7 @@ type Props = {
   displayMode: NodeRepositoryDisplayModesType;
   showDownloadButton?: boolean;
   isLoadingSearchResults: boolean;
+  isQuickAddNodeMenu: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,6 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
   highlightFirst: false,
   displayMode: "icon",
   showDownloadButton: false,
+  isQuickAddNodeMenu: false,
 });
 
 const emit = defineEmits<{
@@ -181,6 +183,7 @@ defineExpose({ focusFirst });
         :is-node-list-empty="isNodeListEmpty"
         :show-download-button="showDownloadButton"
         :search-hub-link="searchHubLink"
+        :is-quick-add-node-menu="isQuickAddNodeMenu"
       />
     </div>
   </ScrollViewContainer>

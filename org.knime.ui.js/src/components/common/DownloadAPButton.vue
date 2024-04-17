@@ -29,6 +29,6 @@ const href = computed(() => {
 <template>
   <Button primary :compact="compact" :href="href">
     <LinkExternalIcon />
-    <span>Get KNIME Analytics Platform</span>
+    <span><b>Get KNIME Analytics Platform</b></span>
   </Button>
 </template>
