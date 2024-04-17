@@ -298,8 +298,13 @@ defineExpose({ focusFirst, focusLast });
       gap: 4px 0;
 
       & .show-more {
-        margin: 20px auto 0;
-        display: block;
+        display: flex;
+        margin: 0 2px;
+        width: calc(100% - 4px);
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
 
         & .icon {
           margin: 0;
