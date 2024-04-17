@@ -41,6 +41,17 @@ const emit = defineEmits<Emits>();
 
 const root = ref<HTMLElement>();
 
+const moreButton = ref<InstanceType<typeof WacButton>>();
+
+const activeElement = useActiveElement();
+const hasKeyboardFocus = useKeyboardFocus([
+  "Tab",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+]);
+
 const nodesPerRow = computed(() => {
   return props.displayMode === "icon"
     ? NODES_PER_ROW_ICON_MODE
@@ -71,7 +82,15 @@ const focusItem = (focusNode: NodeTemplateWithExtendedPorts | undefined) => {
   }
 };
 
+const focusMoreButton = () => {
+  moreButton.value?.$el.focus();
+};
+
 const focusLast = () => {
+  if (props.hasMoreNodes) {
+    focusMoreButton();
+    return;
+  }
   focusItem(props.nodes?.at(-1));
 };
 const focusFirst = () => {
@@ -91,12 +110,22 @@ const onKeyDown = (key: string) => {
     return;
   }
 
-  const activeItemIndex = props.nodes.findIndex(
+  let activeItemIndex = props.nodes.findIndex(
     (node) => node.id === props.selectedNode?.id,
   );
 
+  if (props.hasMoreNodes && activeElement.value === moreButton.value?.$el) {
+    activeItemIndex = props.nodes.length;
+  }
+
   const selectNextNode = (indexOffset: number) => {
     const nextIndex = activeItemIndex + indexOffset;
+
+    // handle show more button as fake item
+    if (props.hasMoreNodes && nextIndex === props.nodes.length) {
+      focusMoreButton();
+      return;
+    }
 
     if (nextIndex >= props.nodes.length && key === "down") {
       emit("navReachedEnd");
@@ -151,16 +180,6 @@ watch(
   { immediate: false },
 );
 
-const activeElement = useActiveElement();
-const hasKeyboardFocus = useKeyboardFocus([
-  "Tab",
-  "ArrowUp",
-  "ArrowDown",
-  "ArrowLeft",
-  "ArrowRight",
-]);
-
-const moreButton = ref<InstanceType<typeof WacButton>>();
 watch(activeElement, (el) => {
   // focus within (useFocusWithin does not work)
   const focused = el ? root.value?.contains(el) : false;

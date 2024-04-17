@@ -6,7 +6,7 @@ import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";
@@ -65,7 +65,7 @@ export default defineComponent({
     QuickAddNodeDisabledWorkflowCoach,
     QuickAddNodeRecommendations,
     QuickAddNodeSearchResults,
-    SearchBar,
+    SearchInput,
     NodePortActiveConnector,
     FloatingMenu,
     NodeRepositoryLoader,
@@ -180,7 +180,6 @@ export default defineComponent({
     if (this.port) {
       this.$store.commit("quickAddNodes/setPortTypeId", this.port.typeId);
     }
-    (this.$refs.search as HTMLElement)?.focus();
 
     this.$store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
   },
@@ -275,12 +274,13 @@ export default defineComponent({
     />
     <div class="wrapper">
       <div class="header">
-        <SearchBar
+        <SearchInput
           ref="search"
           :disabled="!nodeRepositoryLoaded"
           :model-value="$store.state.quickAddNodes.query"
           placeholder="Search compatible nodes"
           class="search-bar"
+          focus-on-mount
           tabindex="-1"
           @update:model-value="
             $store.dispatch('quickAddNodes/updateQuery', $event)

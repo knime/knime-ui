@@ -188,7 +188,7 @@ const hasSection = (name: TabValues) => {
       :disabled="isExtensionPanelOpen"
       @toggle-expand="store.commit('panel/toggleExpanded')"
     >
-      <TransitionGroup name="tab" tag="span">
+      <span>
         <ContextAwareDescription
           v-if="hasSection(TABS.CONTEXT_AWARE_DESCRIPTION)"
           v-show="isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
@@ -215,7 +215,7 @@ const hasSection = (name: TabValues) => {
           v-show="isTabActive(TABS.KAI)"
           key="ai-chat"
         />
-      </TransitionGroup>
+      </span>
     </LeftCollapsiblePanel>
 
     <SidebarExtensionPanel />
@@ -297,18 +297,5 @@ nav {
     /* prevent scrollbar jump when switching between tabs in the LeftCollapsiblePanel */
     overflow-y: hidden;
   }
-}
-
-.tab-enter-active {
-  transition: all 150ms ease-in;
-}
-
-.tab-leave-active {
-  transition: all 150ms ease-out;
-}
-
-.tab-enter,
-.tab-leave-to {
-  opacity: 0;
 }
 </style>

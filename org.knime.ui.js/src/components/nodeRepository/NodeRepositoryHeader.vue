@@ -10,7 +10,7 @@ import ListIcon from "webapps-common/ui/assets/img/icons/view-cards.svg";
 import { API } from "@api";
 import { useStore } from "@/composables/useStore";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 import CloseableTagList from "./CloseableTagList.vue";
 
 import { isDesktop } from "@/environment";
@@ -70,7 +70,7 @@ const openKnimeUIPreferencePage = () => {
 
 defineEmits<{ (e: "searchBarDownKey"): void }>();
 
-const searchBar = ref<InstanceType<typeof SearchBar>>();
+const searchBar = ref<InstanceType<typeof SearchInput>>();
 const focusSearchInput = () => {
   searchBar.value?.focus();
 };
@@ -111,7 +111,7 @@ defineExpose({ focusSearchInput });
           </FunctionButton>
         </div>
       </div>
-      <SearchBar
+      <SearchInput
         ref="searchBar"
         :model-value="store.state.nodeRepository.query"
         :disabled="!nodeRepositoryLoaded"

@@ -11,7 +11,7 @@ import type { NodePortGroups } from "@/api/custom-types";
 import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
-import SearchBar from "@/components/common/SearchBar.vue";
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
 const isPortGroupWithSinglePort = (
   portGroups: NodePortGroups,
@@ -32,7 +32,7 @@ export default defineComponent({
   components: {
     FloatingMenu,
     MenuItems,
-    SearchBar,
+    SearchInput,
     ReturnIcon,
   },
   props: {
@@ -173,9 +173,6 @@ export default defineComponent({
       },
     },
   },
-  mounted() {
-    (this.$refs.searchBar as HTMLElement)?.focus();
-  },
   methods: {
     emitPortClick({
       typeId,
@@ -250,12 +247,12 @@ export default defineComponent({
     </div>
 
     <div class="search">
-      <SearchBar
+      <SearchInput
         v-if="shouldDisplaySearchBar"
-        ref="searchBar"
         v-model="searchQuery"
         placeholder="Search port type"
         class="search-bar"
+        focus-on-mount
         :aria-owns="ariaActiveDescendant"
         :aria-activedescendant="ariaActiveDescendant"
         @keydown="onSearchBarKeyDown"
