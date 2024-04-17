@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import Button from "webapps-common/ui/components/Button.vue";
+import WacButton from "webapps-common/ui/components/Button.vue";
 import CircleArrowIcon from "webapps-common/ui/assets/img/icons/circle-arrow-right.svg";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { ref, watch, computed, toRef } from "vue";
@@ -160,13 +160,15 @@ const hasKeyboardFocus = useKeyboardFocus([
   "ArrowRight",
 ]);
 
+const moreButton = ref<InstanceType<typeof WacButton>>();
 watch(activeElement, (el) => {
   // focus within (useFocusWithin does not work)
   const focused = el ? root.value?.contains(el) : false;
+  const moreButtonFocused = el && moreButton.value?.$el === el;
 
   // deselect item if its in our list and we loose focus
   if (
-    !focused &&
+    (!focused || moreButtonFocused) &&
     props.selectedNode &&
     props.nodes.find((node) => node.id === props.selectedNode!.id)
   ) {
@@ -211,8 +213,9 @@ defineExpose({ focusFirst, focusLast });
         </slot>
       </li>
       <li>
-        <Button
+        <WacButton
           v-if="hasMoreNodes"
+          ref="moreButton"
           compact
           without-border
           class="show-more"
@@ -220,7 +223,7 @@ defineExpose({ focusFirst, focusLast });
         >
           <slot name="more-button" /><br />
           <CircleArrowIcon class="icon" />
-        </Button>
+        </WacButton>
       </li>
     </ul>
   </div>
@@ -251,6 +254,13 @@ defineExpose({ focusFirst, focusLast });
     & .show-more {
       color: var(--knime-masala);
       font-weight: 400;
+
+      &:focus-visible {
+        outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid
+          v-bind("$colors.selection.activeBorder");
+        border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
+        background-color: v-bind("$colors.selection.activeBackground");
+      }
     }
 
     & li {
@@ -263,13 +273,15 @@ defineExpose({ focusFirst, focusLast });
       flex-grow: 1;
 
       & .show-more {
-        margin: 0;
         display: flex;
         flex-direction: row-reverse;
         align-items: center;
-        border-radius: 0;
-        width: 100%;
+        width: calc(100% - 4px);
         justify-content: center;
+        border-radius: 0;
+        height: 27px;
+        padding: 4px;
+        margin: 1px 2px;
 
         & .icon {
           margin: 0 5px 0 0;

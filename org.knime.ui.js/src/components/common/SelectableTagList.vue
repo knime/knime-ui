@@ -101,8 +101,13 @@ export default defineComponent({
       }
     },
 
-    onShowMore() {
+    async onShowMore(nextTagIndex: number) {
       this.$emit("showMore");
+      // this assumes we get more items and puts the focus on the next one
+      await this.$nextTick();
+      (this.$refs.tags as InstanceType<typeof Tag>[])?.[
+        nextTagIndex
+      ].$el.focus();
     },
   },
 });
@@ -112,10 +117,13 @@ export default defineComponent({
   <div v-if="shownTags.length" :class="['wrapper', { 'show-all': showAll }]">
     <Tag
       v-for="tag in shownTags"
+      ref="tags"
       :key="tag.text"
       clickable
+      tabindex="0"
       :class="{ selected: tag.selected }"
       @click.prevent="onClick(tag)"
+      @keydown.enter.stop.prevent="onClick(tag)"
     >
       {{ tag.text }}
       <slot name="icon" />
@@ -123,7 +131,9 @@ export default defineComponent({
     <Tag
       v-if="hasMoreTags"
       class="more-tags clickable"
-      @click.prevent.stop="onShowMore"
+      tabindex="0"
+      @click.prevent.stop="onShowMore(shownTags.length)"
+      @keydown.enter.stop.prevent="onShowMore(shownTags.length)"
     >
       {{ moreDisplayText }}
     </Tag>
@@ -143,25 +153,39 @@ export default defineComponent({
     & svg {
       stroke: var(--knime-white);
     }
+  }
 
-    &.clickable {
-      &:hover {
-        text-decoration: line-through;
+  & .tag {
+    &:focus-visible {
+      color: var(--knime-white);
+      background-color: var(--knime-dove-gray);
+      border-color: var(--knime-dove-gray);
+      text-decoration: underline;
+      outline: none;
 
-        & svg {
-          stroke: var(--knime-dove-gray);
-        }
+      & > svg {
+        stroke: var(--knime-white);
       }
+    }
+  }
 
-      &:active {
-        color: var(--knime-masala);
-        background-color: transparent;
-        text-decoration: line-through;
-        border-color: var(--knime-masala);
+  &.selected.clickable {
+    &:hover {
+      text-decoration: line-through;
 
-        & svg {
-          stroke: var(--knime-masala);
-        }
+      & svg {
+        stroke: var(--knime-dove-gray);
+      }
+    }
+
+    &:active {
+      color: var(--knime-masala);
+      background-color: transparent;
+      text-decoration: line-through;
+      border-color: var(--knime-masala);
+
+      & svg {
+        stroke: var(--knime-masala);
       }
     }
   }

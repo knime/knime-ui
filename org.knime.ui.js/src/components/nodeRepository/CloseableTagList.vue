@@ -176,7 +176,8 @@ onClickOutside(closeableTagsRef, () => {
       background-color: var(--knime-porcelain);
     }
 
-    &:hover::before {
+    &:hover::before,
+    &:focus-visible::before {
       background-color: var(--knime-silver-sand-semi);
     }
 

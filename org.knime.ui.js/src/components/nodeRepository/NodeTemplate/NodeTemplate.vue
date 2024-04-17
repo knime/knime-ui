@@ -60,6 +60,7 @@ defineExpose({ getNodePreview });
     :class="[
       'node',
       {
+        'list-mode': displayMode === 'list',
         selected: isSelected,
         highlighted: isHighlighted,
       },
@@ -110,6 +111,10 @@ defineExpose({ getNodePreview });
     var(--knime-dove-gray);
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
   background-color: var(--knime-porcelain);
+
+  &.list-mode {
+    border-radius: 0;
+  }
 }
 
 /* selected needs to come after highlighted */
@@ -118,5 +123,9 @@ defineExpose({ getNodePreview });
     v-bind("$colors.selection.activeBorder");
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
   background-color: v-bind("$colors.selection.activeBackground");
+
+  &.list-mode {
+    border-radius: 0;
+  }
 }
 </style>

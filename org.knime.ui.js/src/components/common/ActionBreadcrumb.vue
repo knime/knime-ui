@@ -58,8 +58,19 @@ export default {
 
 <template>
   <Breadcrumb
+    class="action-breadcrumb"
     v-bind="$attrs"
     :items="breadcrumbItems"
     @click.capture.prevent.stop="onClick"
   />
 </template>
+
+<style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
+.action-breadcrumb {
+  & :deep(a):focus-visible {
+    @mixin focus-style;
+  }
+}
+</style>
