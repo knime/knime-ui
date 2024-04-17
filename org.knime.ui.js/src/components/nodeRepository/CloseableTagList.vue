@@ -108,6 +108,8 @@ onClickOutside(closeableTagsRef, () => {
   }
 
   & .wrapper {
+    /* prevents wrapping due to small fails in the size heuristic */
+    flex-wrap: nowrap;
     padding: 0 20px 13px;
 
     /* limit tag length to a maximum */
@@ -142,6 +144,8 @@ onClickOutside(closeableTagsRef, () => {
     }
 
     &.show-all {
+      /* if all items are shown we need to wrap */
+      flex-wrap: wrap;
       padding-bottom: 13px;
 
       /* The 230px is the fixed part of the apps header that has a fixed size. */
