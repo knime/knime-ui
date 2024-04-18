@@ -52,12 +52,12 @@ export default defineComponent({
   },
   methods: {
     focusFirst(navReached?: NavReachedEvent) {
-      // @ts-ignore
-      this.$refs.nodeList?.focusFirst(navReached);
+      const nodeList = this.$refs.nodeList as InstanceType<typeof NodeList>;
+      nodeList?.focusFirst(navReached);
     },
     focusLast(navReached?: NavReachedEvent) {
-      // @ts-ignore
-      this.$refs.nodeList?.focusLast(navReached);
+      const nodeList = this.$refs.nodeList as InstanceType<typeof NodeList>;
+      nodeList?.focusLast(navReached);
     },
   },
 });

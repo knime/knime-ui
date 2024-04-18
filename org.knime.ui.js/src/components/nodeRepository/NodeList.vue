@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import WacButton from "webapps-common/ui/components/Button.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 import CircleArrowIcon from "webapps-common/ui/assets/img/icons/circle-arrow-right.svg";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { ref, watch, computed, toRef } from "vue";
@@ -30,15 +30,6 @@ const navigationKeys = [
 export type NavigationKey = (typeof navigationKeys)[number];
 export type NavReachedEvent = { key: NavigationKey; startIndex: number };
 
-interface Emits {
-  (e: "enterKey", node: NodeTemplateWithExtendedPorts): void;
-  (e: "helpKey", node: NodeTemplateWithExtendedPorts): void;
-  (e: "showMore"): void;
-  (e: "update:selectedNode", node: NodeTemplateWithExtendedPorts | null): void;
-  (e: "navReachedTop", event: NavReachedEvent): void;
-  (e: "navReachedEnd", event: NavReachedEvent): void;
-}
-
 const props = withDefaults(defineProps<Props>(), {
   hasMoreNodes: false,
   displayMode: "icon",
@@ -47,11 +38,18 @@ const props = withDefaults(defineProps<Props>(), {
   highlightFirst: false,
 });
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  enterKey: [node: NodeTemplateWithExtendedPorts];
+  helpKey: [node: NodeTemplateWithExtendedPorts];
+  showMore: [];
+  "update:selectedNode": [node: NodeTemplateWithExtendedPorts | null];
+  navReachedTop: [event: NavReachedEvent];
+  navReachedEnd: [event: NavReachedEvent];
+}>();
 
 const root = ref<HTMLElement>();
 
-const moreButton = ref<InstanceType<typeof WacButton>>();
+const moreButton = ref<InstanceType<typeof Button>>();
 
 const activeElement = useActiveElement();
 const hasKeyboardFocus = useKeyboardFocus(["Tab", ...navigationKeys]);
@@ -264,7 +262,7 @@ defineExpose({ focusFirst, focusLast });
         </slot>
       </li>
       <li>
-        <WacButton
+        <Button
           v-if="hasMoreNodes"
           ref="moreButton"
           compact
@@ -274,7 +272,7 @@ defineExpose({ focusFirst, focusLast });
         >
           <slot name="more-button" /><br />
           <CircleArrowIcon class="icon" />
-        </WacButton>
+        </Button>
       </li>
     </ul>
   </div>

@@ -155,17 +155,15 @@ export default defineComponent({
     }
   }
 
-  & .tag {
-    &:focus-visible {
-      color: var(--knime-white);
-      background-color: var(--knime-dove-gray);
-      border-color: var(--knime-dove-gray);
-      text-decoration: underline;
-      outline: none;
+  & .tag:focus-visible {
+    color: var(--knime-white);
+    background-color: var(--knime-dove-gray);
+    border-color: var(--knime-dove-gray);
+    text-decoration: underline;
+    outline: none;
 
-      & > svg {
-        stroke: var(--knime-white);
-      }
+    & > svg {
+      stroke: var(--knime-white);
     }
   }
 

@@ -9,6 +9,8 @@ import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 import type { NavReachedEvent } from "./NodeList.vue";
 
+type NodeCategoriesComponentRef = Array<InstanceType<typeof NodeCategory>>;
+
 export default defineComponent({
   components: {
     NodeCategory,
@@ -55,8 +57,8 @@ export default defineComponent({
       this.setSelectedTags([tag]);
     },
     onNavReachedEnd(index: number, event: NavReachedEvent) {
-      // @ts-ignore
-      const category = this.$refs.categories?.[index + 1];
+      const categories = this.$refs.categories as NodeCategoriesComponentRef;
+      const category = categories?.[index + 1];
       if (category) {
         category.focusFirst(event);
       }
@@ -65,8 +67,8 @@ export default defineComponent({
       if (index === 0) {
         this.$emit("navReachedTop", event);
       } else {
-        // @ts-ignore
-        const category = this.$refs.categories?.[index - 1];
+        const categories = this.$refs.categories as NodeCategoriesComponentRef;
+        const category = categories?.[index - 1];
         if (category) {
           category.focusLast(event);
         }
@@ -79,8 +81,8 @@ export default defineComponent({
       });
     },
     focusFirst() {
-      // @ts-ignore
-      this.$refs.categories?.[0].focusFirst();
+      const categories = this.$refs.categories as NodeCategoriesComponentRef;
+      categories?.[0].focusFirst();
     },
   },
 });

@@ -141,7 +141,7 @@ export type ExtendedPortType = PortType & {
 export type NodeTemplateWithExtendedPorts = NodeTemplate & {
   inPorts: ExtendedPortType[];
   outPorts: ExtendedPortType[];
-  // TODO: fix generated type?
+  // TODO NXT-2023 fix generated type
   nodeFactory?: NodeFactoryKey;
 };
 
