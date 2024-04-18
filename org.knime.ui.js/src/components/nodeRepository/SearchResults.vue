@@ -4,7 +4,7 @@ import { ref, computed, watch, toRefs, nextTick } from "vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 import ScrollViewContainer from "./ScrollViewContainer.vue";
-import NodeList from "./NodeList.vue";
+import NodeList, { type NavReachedEvent } from "./NodeList.vue";
 import SearchResultsInfo from "./SearchResultsInfo.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
@@ -44,7 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: "navReachedTop"): void;
+  (e: "navReachedTop", event: NavReachedEvent): void;
   (e: "update:searchScrollPosition", position: number): void;
   (e: "update:selectedNode", value: NodeTemplateWithExtendedPorts | null): void;
   (e: "itemEnterKey", node: NodeTemplateWithExtendedPorts): void;
@@ -158,7 +158,7 @@ defineExpose({ focusFirst });
           :highlight-first="highlightFirst"
           :display-mode="displayMode"
           :show-description-for-node="showDescriptionForNode"
-          @nav-reached-top="emit('navReachedTop')"
+          @nav-reached-top="emit('navReachedTop', $event)"
           @enter-key="emit('itemEnterKey', $event)"
           @help-key="emit('helpKey', $event)"
         >

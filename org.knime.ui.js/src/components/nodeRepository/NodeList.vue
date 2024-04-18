@@ -20,13 +20,23 @@ interface Props {
   highlightFirst?: boolean;
 }
 
+const navigationKeys = [
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+] as const;
+
+export type NavigationKey = (typeof navigationKeys)[number];
+export type NavReachedEvent = { key: NavigationKey; startIndex: number };
+
 interface Emits {
   (e: "enterKey", node: NodeTemplateWithExtendedPorts): void;
   (e: "helpKey", node: NodeTemplateWithExtendedPorts): void;
   (e: "showMore"): void;
   (e: "update:selectedNode", node: NodeTemplateWithExtendedPorts | null): void;
-  (e: "navReachedTop"): void;
-  (e: "navReachedEnd"): void;
+  (e: "navReachedTop", event: NavReachedEvent): void;
+  (e: "navReachedEnd", event: NavReachedEvent): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -44,13 +54,7 @@ const root = ref<HTMLElement>();
 const moreButton = ref<InstanceType<typeof WacButton>>();
 
 const activeElement = useActiveElement();
-const hasKeyboardFocus = useKeyboardFocus([
-  "Tab",
-  "ArrowUp",
-  "ArrowDown",
-  "ArrowLeft",
-  "ArrowRight",
-]);
+const hasKeyboardFocus = useKeyboardFocus(["Tab", ...navigationKeys]);
 
 const nodesPerRow = computed(() => {
   return props.displayMode === "icon"
@@ -86,15 +90,37 @@ const focusMoreButton = () => {
   moreButton.value?.$el.focus();
 };
 
-const focusLast = () => {
-  if (props.hasMoreNodes) {
+const navReachedFocusOffset = (navReached?: NavReachedEvent) => {
+  // no offset for left/right
+  if (!navReached) {
+    return 0;
+  }
+
+  const { key, startIndex } = navReached;
+
+  switch (key) {
+    case "ArrowDown":
+      return startIndex % nodesPerRow.value;
+    case "ArrowUp":
+      return nodesPerRow.value - 1 - startIndex;
+  }
+
+  return 0;
+};
+
+const focusLast = (navReached?: NavReachedEvent) => {
+  const offset = navReachedFocusOffset(navReached);
+  if (props.hasMoreNodes && offset === 0) {
     focusMoreButton();
     return;
   }
-  focusItem(props.nodes?.at(-1));
+
+  const index = offset === 0 ? -1 : offset * -1;
+  focusItem(props.nodes?.at(index));
 };
-const focusFirst = () => {
-  focusItem(props.nodes?.at(0));
+const focusFirst = (navReached?: NavReachedEvent) => {
+  const offset = navReachedFocusOffset(navReached);
+  focusItem(props.nodes?.at(0 + offset));
 };
 
 const domFocusNode = (nodeIndex: number) => {
@@ -104,16 +130,29 @@ const domFocusNode = (nodeIndex: number) => {
   nodeListElement?.focus();
 };
 
-const onKeyDown = (key: string) => {
+const onKeyDown = (event: KeyboardEvent) => {
+  const { key } = event;
+
+  const isNavigationKey = (key: string): key is NavigationKey =>
+    navigationKeys.includes(key as any);
+  if (!isNavigationKey(key)) {
+    return;
+  }
+
+  event.stopPropagation();
+  event.preventDefault();
+
   // no navigation for empty nodes
   if (props.nodes.length < 1) {
     return;
   }
 
+  // find active item index
   let activeItemIndex = props.nodes.findIndex(
     (node) => node.id === props.selectedNode?.id,
   );
 
+  // special handling of show more nodes if we have that
   if (props.hasMoreNodes && activeElement.value === moreButton.value?.$el) {
     activeItemIndex = props.nodes.length;
   }
@@ -127,13 +166,13 @@ const onKeyDown = (key: string) => {
       return;
     }
 
-    if (nextIndex >= props.nodes.length && key === "down") {
-      emit("navReachedEnd");
+    if (nextIndex >= props.nodes.length) {
+      emit("navReachedEnd", { key, startIndex: activeItemIndex });
       return;
     }
 
-    if (nextIndex < 0 && key === "up") {
-      emit("navReachedTop");
+    if (nextIndex < 0) {
+      emit("navReachedTop", { key, startIndex: activeItemIndex });
       return;
     }
 
@@ -144,23 +183,19 @@ const onKeyDown = (key: string) => {
   };
 
   // items navigation
-  if (key === "up") {
-    selectNextNode(nodesPerRow.value * -1);
-    return;
-  }
-
-  if (key === "down") {
-    selectNextNode(nodesPerRow.value);
-    return;
-  }
-
-  if (key === "left") {
-    selectNextNode(-1);
-    return;
-  }
-
-  if (key === "right") {
-    selectNextNode(+1);
+  switch (key) {
+    case "ArrowUp":
+      selectNextNode(nodesPerRow.value * -1);
+      break;
+    case "ArrowDown":
+      selectNextNode(nodesPerRow.value);
+      break;
+    case "ArrowLeft":
+      selectNextNode(-1);
+      break;
+    case "ArrowRight":
+      selectNextNode(+1);
+      break;
   }
 };
 
@@ -214,10 +249,7 @@ defineExpose({ focusFirst, focusLast });
     <ul
       :class="['nodes', `display-${displayMode}`]"
       tabindex="0"
-      @keydown.left.stop="onKeyDown('left')"
-      @keydown.up.stop.prevent="onKeyDown('up')"
-      @keydown.down.stop.prevent="onKeyDown('down')"
-      @keydown.right.stop="onKeyDown('right')"
+      @keydown="onKeyDown"
     >
       <li
         v-for="(node, index) in nodes"

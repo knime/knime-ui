@@ -7,6 +7,7 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { defineComponent, type PropType } from "vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
+import type { NavReachedEvent } from "./NodeList.vue";
 
 export default defineComponent({
   components: {
@@ -53,21 +54,21 @@ export default defineComponent({
     onSelectTag(tag: string) {
       this.setSelectedTags([tag]);
     },
-    onNavReachedEnd(index: number) {
+    onNavReachedEnd(index: number, event: NavReachedEvent) {
       // @ts-ignore
       const category = this.$refs.categories?.[index + 1];
       if (category) {
-        category.focusFirst();
+        category.focusFirst(event);
       }
     },
-    onNavReachedTop(index: number) {
+    onNavReachedTop(index: number, event: NavReachedEvent) {
       if (index === 0) {
-        this.$emit("navReachedTop");
+        this.$emit("navReachedTop", event);
       } else {
         // @ts-ignore
         const category = this.$refs.categories?.[index - 1];
         if (category) {
-          category.focusLast();
+          category.focusLast(event);
         }
       }
     },
@@ -108,8 +109,8 @@ export default defineComponent({
           @item-enter-key="addNodeToWorkflow"
           @select-tag="onSelectTag"
           @help-key="onHelpKey"
-          @nav-reached-end="onNavReachedEnd(index)"
-          @nav-reached-top="onNavReachedTop(index)"
+          @nav-reached-end="onNavReachedEnd(index, $event)"
+          @nav-reached-top="onNavReachedTop(index, $event)"
           @show-node-description="$emit('showNodeDescription', $event)"
         />
       </template>

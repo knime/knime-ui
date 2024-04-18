@@ -1,7 +1,7 @@
 <script lang="ts">
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 
-import NodeList from "./NodeList.vue";
+import NodeList, { type NavReachedEvent } from "./NodeList.vue";
 import { defineComponent, type PropType } from "vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
@@ -51,13 +51,13 @@ export default defineComponent({
     },
   },
   methods: {
-    focusFirst() {
+    focusFirst(navReached?: NavReachedEvent) {
       // @ts-ignore
-      this.$refs.nodeList?.focusFirst();
+      this.$refs.nodeList?.focusFirst(navReached);
     },
-    focusLast() {
+    focusLast(navReached?: NavReachedEvent) {
       // @ts-ignore
-      this.$refs.nodeList?.focusLast();
+      this.$refs.nodeList?.focusLast(navReached);
     },
   },
 });
@@ -83,8 +83,8 @@ export default defineComponent({
       @update:selected-node="$emit('update:selectedNode', $event)"
       @enter-key="$emit('itemEnterKey', $event)"
       @help-key="$emit('helpKey', $event)"
-      @nav-reached-top="$emit('navReachedTop')"
-      @nav-reached-end="$emit('navReachedEnd')"
+      @nav-reached-top="$emit('navReachedTop', $event)"
+      @nav-reached-end="$emit('navReachedEnd', $event)"
     >
       <template #item="itemProps">
         <DraggableNodeTemplate

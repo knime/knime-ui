@@ -73,63 +73,41 @@ describe("NodeList", () => {
   });
 
   describe("keyboard navigation", () => {
-    it("navigates down", async () => {
-      const wrapper = doMount();
+    it.each([
+      ["down", "ArrowDown", "node1", "node4"],
+      ["up", "ArrowUp", "node6", "node3"],
+      ["left", "ArrowLeft", "node5", "node4"],
+      ["right", "ArrowRight", "node3", "node4"],
+    ])("navigates %s", async (_name, key, startId, id) => {
+      const wrapper = doMount({ selectedNode: { id: startId } });
 
-      await wrapper.find("ul").trigger("keydown.down");
+      await wrapper.find("ul").trigger("keydown", { key });
       await wrapper.vm.$nextTick();
 
-      expect(wrapper.emitted("update:selectedNode")).toStrictEqual([
-        [{ id: "node4" }],
-      ]);
+      expect(wrapper.emitted("update:selectedNode")).toStrictEqual([[{ id }]]);
     });
 
-    it("navigates up", async () => {
-      const wrapper = doMount({ selectedNode: { id: "node6" } });
+    it.each([
+      ["ArrowUp", "node2"],
+      ["ArrowLeft", "node1"],
+    ])("emits event if nav reached top for %s key", async (key, id) => {
+      const wrapper = doMount({
+        selectedNode: { id },
+      });
 
-      await wrapper.find("ul").trigger("keydown.up");
-      await wrapper.vm.$nextTick();
-
-      expect(wrapper.emitted("update:selectedNode")).toStrictEqual([
-        [{ id: "node3" }],
-      ]);
-    });
-
-    it("navigates left", async () => {
-      const wrapper = doMount({ selectedNode: { id: "node5" } });
-
-      await wrapper.find("ul").trigger("keydown.left");
-      await wrapper.vm.$nextTick();
-
-      expect(wrapper.emitted("update:selectedNode")).toStrictEqual([
-        [{ id: "node4" }],
-      ]);
-    });
-
-    it("navigates right", async () => {
-      const wrapper = doMount({ selectedNode: { id: "node3" } });
-
-      await wrapper.find("ul").trigger("keydown.left");
-      await wrapper.vm.$nextTick();
-
-      expect(wrapper.emitted("update:selectedNode")).toStrictEqual([
-        [{ id: "node2" }],
-      ]);
-    });
-
-    it("emits event if nav reached top for up key", async () => {
-      const wrapper = doMount({ selectedNode: { id: "node2" } });
-
-      await wrapper.find("ul").trigger("keydown.up");
+      await wrapper.find("ul").trigger("keydown", { key });
       await wrapper.vm.$nextTick();
 
       expect(wrapper.emitted("navReachedTop")).toBeTruthy();
     });
 
-    it("emits event if nav reached bottom for down key", async () => {
-      const wrapper = doMount({ selectedNode: { id: "node4" } });
+    it.each([
+      ["ArrowDown", "node4"],
+      ["ArrowRight", "node6"],
+    ])("emits event if nav reached bottom for %s key", async (key, id) => {
+      const wrapper = doMount({ selectedNode: { id } });
 
-      await wrapper.find("ul").trigger("keydown.down");
+      await wrapper.find("ul").trigger("keydown", { key });
       await wrapper.vm.$nextTick();
 
       expect(wrapper.emitted("navReachedEnd")).toBeTruthy();

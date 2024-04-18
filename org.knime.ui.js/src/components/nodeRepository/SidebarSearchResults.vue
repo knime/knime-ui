@@ -6,6 +6,7 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 import { useStore } from "@/composables/useStore";
 import { computed, ref } from "vue";
+import type { NavReachedEvent } from "./NodeList.vue";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)
  */
@@ -26,7 +27,7 @@ const emit = defineEmits<{
       nodeTemplate: NodeTemplateWithExtendedPorts;
     },
   ): void;
-  (e: "navReachedTop"): void;
+  (e: "navReachedTop", event: NavReachedEvent): void;
 }>();
 
 const store = useStore();
@@ -102,7 +103,7 @@ defineExpose({ focusFirst });
     :is-loading-search-results="isLoadingSearchResults"
     @item-enter-key="addNodeToWorkflow({ nodeFactory: $event.nodeFactory! })"
     @help-key="onHelpKey"
-    @nav-reached-top="$emit('navReachedTop')"
+    @nav-reached-top="$emit('navReachedTop', $event)"
   >
     <template #nodesTemplate="slotProps">
       <DraggableNodeTemplate

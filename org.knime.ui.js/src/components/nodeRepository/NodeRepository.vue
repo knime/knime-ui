@@ -9,6 +9,7 @@ import { TABS } from "@/store/panel";
 import CategoryResults from "./CategoryResults.vue";
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
+import type { NavigationKey } from "./NodeList.vue";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
@@ -107,6 +108,12 @@ const onSearchBarDownKey = () => {
     categoryResults.value?.focusFirst();
   }
 };
+
+const handleNavReachedTop = (event: { key: NavigationKey }) => {
+  if (event.key === "ArrowUp") {
+    header.value?.focusSearchInput();
+  }
+};
 </script>
 
 <template>
@@ -121,14 +128,14 @@ const onSearchBarDownKey = () => {
         v-if="searchIsActive"
         ref="searchResults"
         :display-mode="displayMode"
-        @nav-reached-top="header?.focusSearchInput()"
+        @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
       <CategoryResults
         v-else
         ref="categoryResults"
         :display-mode="displayMode"
-        @nav-reached-top="header?.focusSearchInput()"
+        @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
     </template>
