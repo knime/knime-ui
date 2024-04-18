@@ -3,12 +3,12 @@ import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
 
 import SplitPanel from "@/components/common/SplitPanel.vue";
-import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
 import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
+import DownloadBanner from "./DownloadBanner.vue";
 
 /**
  * Component that acts as a router page to render the workflow
@@ -38,11 +38,8 @@ const savedSecondarySize = computed({
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
-    <DownloadAPButton
-      v-if="showDownloadButton"
-      src="floating-action-button"
-      class="floating-download-button"
-    />
+
+    <DownloadBanner />
 
     <main class="workflow-area">
       <SplitPanel
