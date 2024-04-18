@@ -8,21 +8,10 @@ import {
   UIExtensionPushEvents,
 } from "@knime/ui-extension-service";
 import { useStore } from "@/composables/useStore";
-
-type UnwrappedPromise<T = any> = {
-  resolve: (value: T | PromiseLike<T>) => void;
-  reject: (reason?: any) => void;
-  promise: Promise<T>;
-};
-const createUnwrappedPromise = <T>(): UnwrappedPromise<T> => {
-  let resolve: (value: T | PromiseLike<T>) => void = () => {};
-  let reject: (reason?: any) => void = () => {};
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return { resolve, reject, promise };
-};
+import {
+  createUnwrappedPromise,
+  type UnwrappedPromise,
+} from "@/util/createUnwrappedPromise";
 
 const __dirtyState = ref<APILayerDirtyState>({
   apply: ApplyState.CLEAN,
@@ -34,6 +23,8 @@ let __pushEventDispatcher: UIExtensionPushEventDispatcher = () => {};
 const unwrappedPromise = ref<UnwrappedPromise<boolean>>(
   createUnwrappedPromise<boolean>(),
 );
+
+const activeNodeId = ref<string | null>(null);
 
 /**
  * Composable used to synchronize / manage the shared state and methods
@@ -113,5 +104,7 @@ export const useNodeConfigAPI = () => {
 
     dirtyState: computed(() => __dirtyState.value),
     resetDirtyState: discardSettings,
+
+    activeNodeId,
   };
 };

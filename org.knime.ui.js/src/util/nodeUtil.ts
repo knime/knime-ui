@@ -5,6 +5,7 @@ import {
   type MetaNode,
   type ComponentNode,
   type NativeNode,
+  NodeState,
 } from "@/api/gateway-api/generated-api";
 
 export const isNativeNode = (node: KnimeNode): node is NativeNode =>
@@ -33,4 +34,11 @@ export const getNodeState = (node: KnimeNode, portIndex: number) => {
   return isNodeMetaNode(node)
     ? node.outPorts[portIndex]?.nodeState
     : node.state?.executionState;
+};
+
+export const isNodeExecuting = (node: KnimeNode) => {
+  return (
+    node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
+    node.state?.executionState === NodeState.ExecutionStateEnum.QUEUED
+  );
 };

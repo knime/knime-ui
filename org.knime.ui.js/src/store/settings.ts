@@ -23,6 +23,7 @@ export interface SettingsState {
     nodeRepositoryDisplayMode: NodeRepositoryDisplayModesType;
     nodeDialogSize: number;
     uiScale: number;
+    askBeforeAutoApplyNodeConfigChanges: boolean;
   };
 }
 
@@ -31,6 +32,7 @@ const defaults: SettingsState["settings"] = {
   nodeDialogSize: 400, // px
   nodeRepositoryDisplayMode: "icon",
   uiScale: 1.0,
+  askBeforeAutoApplyNodeConfigChanges: true,
 };
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T => {

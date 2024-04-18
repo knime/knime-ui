@@ -1,203 +1,110 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, watch } from "vue";
 
-import { ApplyState, ViewState } from "@knime/ui-extension-service";
-import Button from "webapps-common/ui/components/Button.vue";
-
+import type { KnimeNode } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
-import { isBrowser } from "@/environment";
-import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
-import { getToastsProvider } from "@/plugins/toasts";
-import type { UIExtensionLoadingState } from "../common/types";
 import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
-import NodeConfigLoader from "./NodeConfigLoader.vue";
+import { useConfirmModal } from "@/composables/useConfirmDialog";
+import NodeConfigLayout from "./NodeConfigLayout.vue";
+import { ApplyState } from "@knime/ui-extension-service";
+import { isNativeNode } from "@/util/nodeUtil";
 
 const store = useStore();
 
-const loadingState = ref<UIExtensionLoadingState | null>(null);
-
-// Computed properties
 const projectId = computed(() => store.state.application.activeProjectId!);
 const workflowId = computed(
   () => store.state.workflow.activeWorkflow!.info.containerId,
 );
-const selectedNode = computed<NativeNode>(
+const selectedNode = computed<KnimeNode | null>(
   () => store.getters["selection/singleSelectedNode"],
 );
-const permissions = computed(() => store.state.application.permissions);
-
-const nodeState = computed(() => selectedNode.value?.state?.executionState);
-
-const { dirtyState, applySettings, discardSettings } = useNodeConfigAPI();
-
-const $toast = getToastsProvider();
-
-const isLoadingReady = computed(() => loadingState.value?.value === "ready");
-
-const showExecuteOnlyButton = computed(
-  () =>
-    nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED &&
-    dirtyState.value.apply === ApplyState.CLEAN,
+const askBeforeAutoApplyNodeConfigChanges = computed(
+  () => store.state.settings.settings.askBeforeAutoApplyNodeConfigChanges,
 );
 
-const canApplyOrDiscard = computed(() => {
-  return dirtyState.value.apply !== ApplyState.CLEAN;
-});
+const { activeNodeId, applySettings, dirtyState, resetDirtyState } =
+  useNodeConfigAPI();
 
-const canApplyAndExecute = computed(() => {
-  switch (nodeState.value) {
-    case NodeState.ExecutionStateEnum.IDLE:
-    case NodeState.ExecutionStateEnum.CONFIGURED: {
-      return dirtyState.value.apply !== ApplyState.CLEAN;
-    }
+const { isActive: isConfirmModalActive, show: showConfirmModal } =
+  useConfirmModal();
 
-    case NodeState.ExecutionStateEnum.EXECUTED: {
-      return dirtyState.value.apply === ApplyState.CONFIG;
-    }
+// const lastSelectedNodeId = ref<string | null>(null);
 
-    default: {
-      return false;
-    }
-  }
-});
+const promptApplyConfirmation = async () => {
+  const prompt = () =>
+    showConfirmModal({
+      title: "Apply node configuration changes",
+      message: "Do you want to apply your changes?",
+      dontAskAgainText:
+        "Do not ask again (You can revert this decision in the preferences)",
 
-const applySettingsOnSelectionChange = (node: NativeNode) => {
-  if (
-    !permissions.value.canConfigureNodes ||
-    (dirtyState.value.apply === ApplyState.CLEAN &&
-      dirtyState.value.view === ViewState.CLEAN)
-  ) {
-    return;
-  }
-
-  if (
-    dirtyState.value.apply === ApplyState.CONFIG &&
-    (node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED ||
-      node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTING ||
-      node.state?.executionState === NodeState.ExecutionStateEnum.QUEUED)
-  ) {
-    // TODO NXT-2522 Add here a check of user preferences and/or show a proper dialog that set that preference
-    $toast.show({
-      type: "warning",
-      headline: "Node configuration was not saved",
-      message:
-        "The changes on the node configuration were not saved automatically. Apply manually the changes or reset the node.",
+      cancelButtonText: "No",
+      confirmButtonText: "Yes, apply",
     });
+
+  const { confirmed, dontAskAgain } = askBeforeAutoApplyNodeConfigChanges.value
+    ? await prompt()
+    : { confirmed: true, dontAskAgain: true };
+
+  // box was checked and setting was set to "ask"
+  if (dontAskAgain && askBeforeAutoApplyNodeConfigChanges.value) {
+    store.dispatch("settings/updateSetting", {
+      key: "askBeforeAutoApplyNodeConfigChanges",
+      value: false,
+    });
+  }
+
+  return confirmed;
+};
+
+const activeNode = computed(() => {
+  if (!activeNodeId.value) {
+    return null;
+  }
+
+  const node = store.state.workflow.activeWorkflow?.nodes[activeNodeId.value];
+
+  return node && isNativeNode(node) && node.hasDialog ? node : null;
+});
+
+watch(selectedNode, async (nextNode, prevNode) => {
+  const setActiveNodeId = () => {
+    activeNodeId.value = nextNode?.id ?? null;
+  };
+
+  // skip selection to already active node
+  if (activeNodeId?.value === nextNode?.id) {
     return;
   }
 
-  if (canApplyOrDiscard.value) {
-    applySettings(node.id, false);
-  }
-};
+  if (dirtyState.value.apply !== ApplyState.CLEAN) {
+    const shouldApply = await promptApplyConfirmation();
 
-let lastSelectedNode = selectedNode.value;
+    // if user cancelled then keep the selection on the same node
+    if (!shouldApply) {
+      store.dispatch("selection/deselectAllObjects");
+      store.dispatch("selection/selectNode", prevNode!.id);
+      return;
+    }
 
-watch(selectedNode, (nextNode, prevNode) => {
-  if (isBrowser) {
-    applySettingsOnSelectionChange(prevNode);
-    lastSelectedNode = nextNode;
+    applySettings(prevNode!.id);
   }
+
+  // set the active node to be the next selected native node
+  setActiveNodeId();
 });
-
-onBeforeUnmount(() => {
-  if (isBrowser) {
-    applySettingsOnSelectionChange(lastSelectedNode);
-  }
-});
-
-const mountKey = ref(0);
-
-const executeNode = () => {
-  store.dispatch("workflow/executeNodes", [selectedNode.value.id]);
-};
-
-const onDiscard = () => {
-  // Currently there's no way to discard the node dialog internal state
-  // via the ui-extension service. So we just re-mount the component to force a clear
-  mountKey.value++;
-
-  // we also need to reset the value of the dirtyState reactive property
-  discardSettings();
-};
 </script>
 
 <template>
-  <div class="wrapper">
-    <NodeConfigLoader
-      :key="mountKey"
-      :project-id="projectId!"
+  <div>
+    <NodeConfigLayout
+      v-if="activeNode"
+      :active-node="activeNode"
+      :project-id="projectId"
       :workflow-id="workflowId"
-      :selected-node="selectedNode"
-      @loading-state-change="loadingState = $event"
-    >
-      <template #controls>
-        <div v-if="isLoadingReady" ref="buttons" class="buttons">
-          <Button
-            with-border
-            compact
-            class="button discard"
-            :disabled="!canApplyOrDiscard"
-            @click="onDiscard"
-          >
-            <strong>Discard</strong>
-          </Button>
-
-          <Button
-            v-if="!showExecuteOnlyButton"
-            with-border
-            compact
-            class="button apply-execute"
-            :disabled="!canApplyAndExecute"
-            @click="applySettings(selectedNode.id, true)"
-          >
-            <strong>Apply and Execute</strong>
-          </Button>
-
-          <Button
-            v-if="showExecuteOnlyButton"
-            with-border
-            compact
-            class="button execute"
-            @click="executeNode"
-          >
-            <strong>Execute</strong>
-          </Button>
-
-          <Button
-            primary
-            compact
-            class="button apply"
-            :disabled="!canApplyOrDiscard"
-            @click="applySettings(selectedNode.id, false)"
-          >
-            <strong>Apply</strong>
-          </Button>
-        </div>
-      </template>
-    </NodeConfigLoader>
+    />
+    <slot v-if="!activeNode" name="inactive" />
   </div>
 </template>
 
-<style lang="postcss" scoped>
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-
-  & .buttons {
-    border-top: 1px solid var(--knime-silver-sand);
-    display: flex;
-    padding: 10px 20px;
-    gap: 10px;
-    justify-content: space-between;
-    margin-top: auto;
-
-    & .apply-execute,
-    & .execute {
-      margin-left: auto;
-    }
-  }
-}
-</style>
+<style lang="postcss" scoped></style>

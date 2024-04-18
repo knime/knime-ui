@@ -8,6 +8,8 @@ import { isBrowser } from "@/environment";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { TABS } from "@/store/panel";
 
+import AppRightPanelSkeleton from "./AppRightPanelSkeleton.vue";
+
 const store = useStore();
 
 const activeProjectId = computed(() => store.state.application.activeProjectId);
@@ -142,19 +144,12 @@ watch(isLoading, (value) => {
         <div class="canvas-skeleton">
           <KnimeIcon v-if="isLogoShown" class="elastic-spin" />
         </div>
-        <div v-if="isBrowser" class="right-panel-skeleton">
-          <SkeletonItem height="32px" />
 
-          <div class="form-skeleton">
-            <SkeletonItem width="50%" />
-            <SkeletonItem width="50%" />
-          </div>
-
-          <div class="buttons-skeleton">
-            <SkeletonItem width="100px" type="button" />
-            <SkeletonItem width="100px" type="button" />
-          </div>
-        </div>
+        <AppRightPanelSkeleton
+          v-if="isBrowser"
+          :width="rightPanelWidth"
+          with-border
+        />
       </div>
 
       <div class="bottom-panel-skeleton">
@@ -229,32 +224,6 @@ watch(isLoading, (value) => {
         & .elastic-spin {
           transform-origin: 50% 65%;
           animation: elastic-spin 3.8s infinite ease;
-        }
-      }
-
-      & .right-panel-skeleton {
-        background: var(--sidebar-background-color);
-        border-left: 1px solid var(--knime-silver-sand);
-        height: 100%;
-        margin-left: auto;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: calc(calc(v-bind("rightPanelWidth + 12") * 1px));
-
-        & .form-skeleton {
-          display: flex;
-          height: 150px;
-          gap: 8px;
-          margin-top: 12px;
-        }
-
-        & .buttons-skeleton {
-          margin-top: auto;
-          height: 40px;
-          display: flex;
-          justify-content: space-between;
         }
       }
     }

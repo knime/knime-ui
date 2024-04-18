@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
-import { NodeState } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 import Button from "webapps-common/ui/components/Button.vue";
 import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
@@ -9,27 +8,25 @@ import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 
 import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
+import { useConfirmModal } from "@/composables/useConfirmDialog";
+import { useNodeConfigAPI } from "../uiExtensions/common/useNodeConfigAPI";
 
 const store = useStore();
+
+const { activeNodeId } = useNodeConfigAPI();
 
 // Computed properties
 const selectedNode = computed<KnimeNode>(
   () => store.getters["selection/singleSelectedNode"],
 );
-const showNodeDialog = computed(() => Boolean(selectedNode.value?.hasDialog));
+
+const { isActive: isConfirmModalActive } = useConfirmModal();
+const showNodeDialog = computed(
+  () => Boolean(selectedNode.value?.hasDialog) || isConfirmModalActive.value,
+);
 const showDownloadButton = computed(
   () => store.state.application.permissions.showFloatingDownloadButton,
 );
-
-const isNodeExecuting = computed(() =>
-  Boolean(
-    selectedNode.value?.state?.executionState ===
-      NodeState.ExecutionStateEnum.EXECUTING ||
-      selectedNode.value?.state?.executionState ===
-        NodeState.ExecutionStateEnum.QUEUED,
-  ),
-);
-
 const hasLegacyDialog = computed(() =>
   Boolean(selectedNode.value && !selectedNode.value.hasDialog),
 );
@@ -44,77 +41,62 @@ const openNodeConfiguration = () => {
 </script>
 
 <template>
-  <div
-    id="right-panel"
-    class="panel"
-    :class="{ disabled: isNodeExecuting && !hasLegacyDialog }"
-  >
-    <NodeConfigWrapper
-      v-if="showNodeDialog"
-      :class="{ 'panel-dialog-disabled': isNodeExecuting }"
-    />
+  <div id="right-panel" class="panel full-height">
+    <NodeConfigWrapper class="full-height">
+      <template #inactive>
+        <div v-if="hasLegacyDialog" class="placeholder full-height">
+          <template v-if="showDownloadButton">
+            <span v-if="isMetanode" class="placeholder-text">
+              Please select a node.
+            </span>
+            <template v-else>
+              <span class="placeholder-text">
+                To configure nodes with a classic dialog, download the KNIME
+                Analytics Platform.
+              </span>
+              <DownloadAPButton compact src="node-configuration-panel" />
+            </template>
+          </template>
+          <template v-else>
+            <span class="placeholder-text">
+              This node dialog is not supported here.
+            </span>
+            <Button
+              with-border
+              compact
+              class="button"
+              @click="openNodeConfiguration"
+            >
+              <CogIcon />
+              <span>Open legacy dialog</span>
+            </Button>
+          </template>
+        </div>
 
-    <!-- PLACEHOLDER - LEGACY DIALOGS -->
-    <div v-else-if="hasLegacyDialog" class="placeholder">
-      <template v-if="showDownloadButton">
-        <span v-if="isMetanode" class="placeholder-text"
-          >Please select a node.</span
-        >
-        <template v-else>
-          <span class="placeholder-text">
-            To configure nodes with a classic dialog, download the KNIME
-            Analytics Platform.
-          </span>
-          <DownloadAPButton compact src="node-configuration-panel" />
-        </template>
+        <!-- PLACEHOLDER - DEFAULT -->
+        <div v-if="!selectedNode" class="placeholder full-height">
+          <span class="placeholder-text">Please select a node.</span>
+        </div>
       </template>
-      <template v-else>
-        <span class="placeholder-text">
-          This node dialog is not supported here.
-        </span>
-        <Button
-          with-border
-          compact
-          class="button"
-          @click="openNodeConfiguration"
-        >
-          <CogIcon />
-          <span>Open legacy dialog</span>
-        </Button>
-      </template>
-    </div>
-
-    <!-- PLACEHOLDER - DEFAULT -->
-    <div v-else class="placeholder">
-      <span class="placeholder-text">Please select a node.</span>
-    </div>
+    </NodeConfigWrapper>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
+.full-height {
+  height: 100%;
+}
+
 .panel {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
   background-color: var(--knime-gray-ultra-light);
-
-  &.disabled {
-    cursor: not-allowed;
-  }
-
-  & .panel-dialog-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    transition: opacity 150ms ease-out;
-    user-select: none;
-  }
 
   & .placeholder {
     display: flex;
-    height: 100%;
     align-items: center;
     justify-content: center;
     flex-direction: column;

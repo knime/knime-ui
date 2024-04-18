@@ -14,6 +14,7 @@ import BlockUi from "@/components/application/BlockUi.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader.vue";
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
+import ConfirmDialog from "./application/ConfirmDialog.vue";
 
 type ComponentData = {
   loaded: boolean;
@@ -42,6 +43,7 @@ export default defineComponent({
     ToastStack,
     DynamicEnvRenderer,
     ShortcutsOverviewDialog,
+    ConfirmDialog,
   },
 
   data(): ComponentData {
@@ -203,6 +205,8 @@ export default defineComponent({
       v-if="$route.meta.showUpdateBanner"
       :available-updates="availableUpdates"
     />
+
+    <ConfirmDialog />
 
     <CreateWorkflowModal />
 
