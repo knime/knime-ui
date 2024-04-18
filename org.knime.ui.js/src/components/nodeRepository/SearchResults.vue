@@ -29,7 +29,7 @@ type Props = {
   displayMode: NodeRepositoryDisplayModesType;
   showDownloadButton?: boolean;
   isLoadingSearchResults: boolean;
-  isQuickAddNodeMenu: boolean;
+  isQuickAddNodeMenu?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {

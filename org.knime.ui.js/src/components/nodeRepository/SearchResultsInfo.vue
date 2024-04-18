@@ -3,7 +3,7 @@ import { API } from "@api";
 import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import Button from "webapps-common/ui/components/Button.vue";
-import MoreNodeIllustration from "@/assets/more-nodes-illustration.svg";
+import MoreNodesIllustration from "@/assets/more-nodes-illustration.svg";
 import { isDesktop } from "@/environment";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 
@@ -23,11 +23,7 @@ const openKnimeUIPreferencePage = () => {
 </script>
 
 <template>
-  <div
-    v-if="numFilteredOutNodes > 0"
-    class="filtered-nodes-wrapper"
-    :class="{ mini: isQuickAddNodeMenu }"
-  >
+  <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
     <CircleInfoIcon class="info-icon" />
     <div class="filtered-nodes-content">
       <template v-if="isDesktop">
@@ -58,7 +54,11 @@ const openKnimeUIPreferencePage = () => {
       </template>
     </div>
   </div>
-  <div v-else-if="isNodeListEmpty" class="filtered-nodes-wrapper">
+  <div
+    v-else-if="isNodeListEmpty"
+    class="filtered-nodes-wrapper"
+    :class="{ mini: isQuickAddNodeMenu }"
+  >
     <template v-if="isDesktop">
       <CircleInfoIcon class="info-icon" />
       <div class="filtered-nodes-content">
@@ -75,7 +75,7 @@ const openKnimeUIPreferencePage = () => {
       class="filtered-nodes-content filtered-nodes-empty"
       :class="{ mini: isQuickAddNodeMenu }"
     >
-      <MoreNodeIllustration />
+      <MoreNodesIllustration />
       <span>
         There are more open source extensions and nodes available in the full
         version of the KNIME Analytics Platform.
