@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { ApplyState } from "@knime/ui-extension-service";
+import {
+  ApplyState,
+  type APILayerDirtyState,
+} from "@knime/ui-extension-service";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
-import { isNodeExecuting } from "@/util/nodeUtil";
 
 import type { UIExtensionLoadingState } from "../common/types";
-import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 import NodeConfigLoader from "./NodeConfigLoader.vue";
 
 type Props = {
   activeNode: NativeNode;
   projectId: string;
   workflowId: string;
-  canConfigure: boolean;
+  disabled: boolean;
+  dirtyState: APILayerDirtyState;
 };
 
 const props = defineProps<Props>();
@@ -23,37 +25,34 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   apply: [execute: boolean];
   execute: [];
+  discard: [];
 }>();
 
 const loadingState = ref<UIExtensionLoadingState | null>(null);
 
-const isActiveNodeExecuting = computed(() => isNodeExecuting(props.activeNode));
-
 const nodeState = computed(() => props.activeNode.state?.executionState);
-
-const { dirtyState, discardSettings } = useNodeConfigAPI();
 
 const isLoadingReady = computed(() => loadingState.value?.value === "ready");
 
 const showExecuteOnlyButton = computed(
   () =>
     nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED &&
-    dirtyState.value.apply === ApplyState.CLEAN,
+    props.dirtyState.apply === ApplyState.CLEAN,
 );
 
 const canApplyOrDiscard = computed(() => {
-  return dirtyState.value.apply !== ApplyState.CLEAN;
+  return props.dirtyState.apply !== ApplyState.CLEAN;
 });
 
 const canApplyAndExecute = computed(() => {
   switch (nodeState.value) {
     case NodeState.ExecutionStateEnum.IDLE:
     case NodeState.ExecutionStateEnum.CONFIGURED: {
-      return dirtyState.value.apply !== ApplyState.CLEAN;
+      return props.dirtyState.apply !== ApplyState.CLEAN;
     }
 
     case NodeState.ExecutionStateEnum.EXECUTED: {
-      return dirtyState.value.apply === ApplyState.CONFIG;
+      return props.dirtyState.apply === ApplyState.CONFIG;
     }
 
     default: {
@@ -69,17 +68,13 @@ const onDiscard = () => {
   // via the ui-extension service. So we just re-mount the component to force a clear
   mountKey.value++;
 
-  discardSettings();
+  emit("discard");
 };
 </script>
 
 <template>
   <slot v-if="loadingState?.value === 'loading'" name="loading-skeleton" />
-  <div
-    v-show="isLoadingReady"
-    class="wrapper"
-    :aria-disabled="isActiveNodeExecuting || !canConfigure"
-  >
+  <div v-show="isLoadingReady" class="wrapper" :aria-disabled="disabled">
     <NodeConfigLoader
       :key="mountKey"
       :project-id="projectId!"

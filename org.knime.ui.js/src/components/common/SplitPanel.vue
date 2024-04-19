@@ -13,6 +13,7 @@ interface Props {
   secondaryMaxSize?: number;
   usePixel?: boolean;
   showSecondaryPanel?: boolean;
+  removeElementOnClose?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -23,6 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
   usePixel: false,
   direction: "left",
   showSecondaryPanel: true,
+  removeElementOnClose: true,
 });
 
 interface Emits {
@@ -171,7 +173,7 @@ watch(
   >
     <template v-if="isSecondaryReverse" #left-pane>
       <div class="secondary-wrapper" :class="{ 'will-snap': willSnap }">
-        <slot v-if="!isClosed" name="secondary" />
+        <slot v-if="isClosed ? !removeElementOnClose : true" name="secondary" />
       </div>
     </template>
     <template v-else #left-pane>
@@ -188,7 +190,7 @@ watch(
     </template>
     <template v-else #right-pane>
       <div class="secondary-wrapper" :class="{ 'will-snap': willSnap }">
-        <slot v-if="!isClosed" name="secondary" />
+        <slot v-if="isClosed ? !removeElementOnClose : true" name="secondary" />
       </div>
     </template>
   </Splitter>

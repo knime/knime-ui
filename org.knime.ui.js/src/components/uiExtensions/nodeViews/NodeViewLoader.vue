@@ -14,12 +14,12 @@ import {
 
 import { API } from "@api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
 
 import { useResourceLocation } from "../common/useResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 import ExecuteButton from "../ExecuteButton.vue";
-import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 
 /**
  * Renders a node view
@@ -32,6 +32,10 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+
+// Even though there's a store usage, this component should be limited to
+// using only the nodeConfiguration store, to keep it as context-less as possible
+const store = useStore();
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
@@ -143,10 +147,17 @@ const apiLayer: UIExtensionAPILayer = {
 
 const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
 
-const { lastestPublishedData, dirtyState, applySettings } = useNodeConfigAPI();
+const latestPublishedData = computed(
+  () => store.state.nodeConfiguration.latestPublishedData,
+);
+const dirtyState = computed(() => store.state.nodeConfiguration.dirtyState);
+
+const applySettings = (nodeId: string, execute?: boolean) => {
+  store.dispatch("nodeConfiguration/applySettings", { nodeId, execute });
+};
 
 watch(
-  lastestPublishedData,
+  latestPublishedData,
   (data) => {
     updateViewData?.(data);
   },
@@ -205,7 +216,7 @@ onUnmounted(() => {
   <UIExtension
     v-if="!error && !isLoadingConfig && !hasToReexecute"
     :extension-config="extensionConfig!"
-    :initial-shared-data="lastestPublishedData"
+    :initial-shared-data="latestPublishedData"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"

@@ -25,7 +25,7 @@ const isActive = ref(false);
 const activeModalConfig = ref<ModalConfig | null>(null);
 const unwrappedPromise = ref(createUnwrappedPromise<ConfirmResult>());
 
-export const useConfirmModal = () => {
+export const useConfirmDialog = () => {
   const show = (config: ModalConfig): Promise<ConfirmResult> => {
     activeModalConfig.value = { buttons: defaultButtons, ...config };
     isActive.value = true;
@@ -54,6 +54,6 @@ export const useConfirmModal = () => {
     cancel,
     config: computed(() => activeModalConfig.value),
     isActive: computed(() => isActive.value),
-    active: unwrappedPromise.value.promise,
+    dialogResult: computed(() => unwrappedPromise.value.promise),
   };
 };

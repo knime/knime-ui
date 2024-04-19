@@ -37,6 +37,16 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       closingProjectIds: [closingProjectId],
     });
 
+    const canContinue = await dispatch(
+      "nodeConfiguration/autoApplySettings",
+      { nextNode: null },
+      { root: true },
+    );
+
+    if (!canContinue) {
+      return;
+    }
+
     const didClose = await API.desktop.closeProject({
       closingProjectId,
       nextProjectId,

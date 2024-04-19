@@ -8,6 +8,7 @@ import type { NodeRepositoryState } from "./nodeRepository";
 import type { QuickAddNodesState } from "./quickAddNodes";
 import type { CanvasState } from "./canvas";
 import type { SettingsState } from "./settings";
+import type { NodeConfigurationState } from "./nodeConfiguration";
 
 export interface RootStoreState {
   application: ApplicationState;
@@ -20,4 +21,5 @@ export interface RootStoreState {
   quickAddNodes: QuickAddNodesState;
   aiAssistant: AiAssistantState;
   settings: SettingsState;
+  nodeConfiguration: NodeConfigurationState;
 }

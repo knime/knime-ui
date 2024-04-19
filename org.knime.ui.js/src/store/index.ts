@@ -11,6 +11,7 @@ import * as spaces from "./spaces";
 import * as quickAddNodes from "./quickAddNodes";
 import * as aiAssistant from "./aiAssistant";
 import * as settings from "./settings";
+import * as nodeConfiguration from "./nodeConfiguration";
 
 export const initStore = () => {
   return createStore<RootStoreState>({
@@ -25,6 +26,7 @@ export const initStore = () => {
       quickAddNodes: { namespaced: true, ...quickAddNodes },
       settings: { namespaced: true, ...settings },
       aiAssistant: { namespaced: true, ...aiAssistant },
+      nodeConfiguration: { namespaced: true, ...nodeConfiguration },
     },
   });
 };

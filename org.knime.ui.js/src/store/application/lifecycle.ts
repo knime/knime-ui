@@ -89,6 +89,22 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
       const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
 
+      if (isLeavingWorkflow) {
+        // before leaving a workflow check attempt to auto-apply pending
+        // node configuration changes (if any)
+        const canContinue = await dispatch(
+          "nodeConfiguration/autoApplySettings",
+          { nextNode: null },
+          { root: true },
+        );
+
+        if (!canContinue) {
+          // cancel the navigation if the user cancelled on the auto-apply prompt
+          next(false);
+          return;
+        }
+      }
+
       if (isLeavingWorkflow && !isEnteringWorkflow) {
         // when leaving workflow we should dispatch to the store to run the switching logic
         // before destroying the route (aka navigating away)

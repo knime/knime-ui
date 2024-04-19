@@ -8,10 +8,10 @@ import {
 import { API } from "@api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 
+import { useStore } from "@/composables/useStore";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
-import { useNodeConfigAPI } from "../common/useNodeConfigAPI";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
@@ -23,6 +23,11 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Even though there's a store usage, this component should be limited to
+// using only the nodeConfiguration store, to keep it as context-less as possible
+const store = useStore();
+
 const { projectId, workflowId, selectedNode } = toRefs(props);
 const extensionConfig = ref<ExtensionConfig | null>(null);
 const isConfigReady = ref(false);
@@ -63,14 +68,6 @@ const loadExtensionConfig = async () => {
 
 const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
 
-const {
-  setEventDispatcher,
-  setDirtyState,
-  setLatestPublishedData,
-  setApplyComplete,
-  resetDirtyState,
-} = useNodeConfigAPI();
-
 const noop = () => {};
 
 const apiLayer: UIExtensionAPILayer = {
@@ -102,18 +99,20 @@ const apiLayer: UIExtensionAPILayer = {
 
   publishData: (data) => {
     consola.trace("NodeDialog :: publishData", data);
-    setLatestPublishedData(data);
+    store.commit("nodeConfiguration/setLatestPublishedData", data);
   },
 
   registerPushEventService: ({ dispatchPushEvent }) => {
-    setEventDispatcher(dispatchPushEvent);
+    store.commit("nodeConfiguration/setPushEventDispatcher", dispatchPushEvent);
 
     return () => {};
   },
 
-  onDirtyStateChange: setDirtyState,
+  onDirtyStateChange: (dirtyState) =>
+    store.commit("nodeConfiguration/setDirtyState", dirtyState),
 
-  onApplied: (payload) => setApplyComplete(payload.isApplied),
+  onApplied: (payload) =>
+    store.dispatch("nodeConfiguration/setApplyComplete", payload.isApplied),
 
   setControlsVisibility: ({ shouldBeVisible }) => {
     areControlsVisible.value = shouldBeVisible;
@@ -131,7 +130,7 @@ watch(
   async () => {
     try {
       isConfigReady.value = false;
-      resetDirtyState();
+      store.dispatch("nodeConfiguration/resetDirtyState");
 
       emit("loadingStateChange", {
         value: "loading",

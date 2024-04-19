@@ -6,12 +6,12 @@ import Button from "webapps-common/ui/components/Button.vue";
 import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 
 import {
-  useConfirmModal,
+  useConfirmDialog,
   type ConfirmDialogButton,
 } from "@/composables/useConfirmDialog";
 
 const askAgain = ref(false);
-const { config, isActive, confirm, cancel } = useConfirmModal();
+const { config, isActive, confirm, cancel } = useConfirmDialog();
 
 const reset = () => {
   askAgain.value = false;

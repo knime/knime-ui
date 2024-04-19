@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { isNavigationFailure, useRoute, useRouter } from "vue-router";
 import { onClickOutside } from "@vueuse/core";
 
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
@@ -105,12 +105,15 @@ const setGetStartedPageTab = () => {
   $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
 };
 
-const onProjectTabChange = (projectId: string) => {
-  activeProjectTab.value = projectId;
-  $router.push({
+const onProjectTabChange = async (projectId: string) => {
+  const navigationResult = await $router.push({
     name: APP_ROUTES.WorkflowPage,
     params: { projectId, workflowId: "root" },
   });
+
+  if (!isNavigationFailure(navigationResult)) {
+    activeProjectTab.value = projectId;
+  }
 };
 
 const openKnimeUIPreferencePage = () => {
