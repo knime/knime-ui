@@ -192,3 +192,5 @@ declare function editSchedule(
 ): string;
 
 declare function openWorkflowConfiguration(projectId: string): void;
+
+declare function setZoomLevel(zoomLevel: number): void;

@@ -725,3 +725,13 @@ export const openWorkflowConfiguration = (projectId: string) => {
     { block: true },
   );
 };
+
+export const setZoomLevel = (zoomLevel: number) => {
+  return callBrowserFunction(
+    window.setZoomLevel,
+    [zoomLevel],
+    "Could not set zoom level",
+    false,
+    { block: false },
+  );
+};

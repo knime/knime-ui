@@ -142,6 +142,13 @@ describe("Kanvas", () => {
         },
       },
       selection: selectionStore,
+      settings: {
+        state: {
+          settings: {
+            uiScale: 1.0,
+          },
+        },
+      },
     };
 
     const $store = mockVuexStore(storeConfig);

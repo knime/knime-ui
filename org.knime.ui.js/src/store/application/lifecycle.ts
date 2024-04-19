@@ -15,6 +15,7 @@ import type {
 import { runInEnvironment } from "@/environment";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
 import { features } from "@/plugins/feature-flags";
+import { ratioToZoomLevel } from "@/store/settings";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -47,13 +48,22 @@ export const mutations: MutationTree<ApplicationState> = {
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
   async initializeApplication(
-    { state, commit, dispatch },
+    { state, rootState, commit, dispatch },
     { $router }: { $router: Router },
   ) {
     // read settings saved in local storage
     await dispatch("settings/fetchSettings", {}, { root: true });
 
-    // On desktop, the application state will load rather quick, so we don't
+    // On desktop apply fetched zoom level at this point
+    runInEnvironment({
+      DESKTOP: () => {
+        API.desktop.setZoomLevel(
+          ratioToZoomLevel(rootState.settings.settings.uiScale),
+        );
+      },
+    });
+
+    // On desktop, the application state will load rather quickly, so we don't
     // need to set this
     runInEnvironment({
       BROWSER: () => {

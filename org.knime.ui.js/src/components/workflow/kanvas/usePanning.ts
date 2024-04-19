@@ -94,6 +94,7 @@ export const usePanning = (options: UsePanningOptions) => {
   const panningOffset = ref<[number, number]>([0, 0]);
   let maybePanning = false;
   let initialRightClickPosition: [number, number] = [0, 0];
+  let elemScroll: [number, number] = [0, 0];
 
   const store = useStore();
 
@@ -129,6 +130,10 @@ export const usePanning = (options: UsePanningOptions) => {
       shouldShowMoveCursor.value = true;
       panningOffset.value = [event.screenX, event.screenY];
       options.rootEl.value.setPointerCapture(event.pointerId);
+      elemScroll = [
+        options.rootEl.value.scrollLeft,
+        options.rootEl.value.scrollTop,
+      ];
     }
 
     // possibly will pan, but we need to wait further for the user to move
@@ -145,8 +150,21 @@ export const usePanning = (options: UsePanningOptions) => {
         event.screenY - panningOffset.value[1],
       ];
       panningOffset.value = [event.screenX, event.screenY];
-      options.rootEl.value.scrollLeft -= delta[0];
-      options.rootEl.value.scrollTop -= delta[1];
+
+      // in Firefox the browser zoom scales screen coordinates already
+      if (navigator.userAgent.indexOf("Firefox") === -1) {
+        // correct the delta values on other browsers
+        delta[0] /= window.devicePixelRatio;
+        delta[1] /= window.devicePixelRatio;
+      }
+
+      // with fractional scaling, elemScroll can retain floating-point precision,
+      // allowing fractions to accumulate and thereby preventing cursor drift
+      elemScroll[0] -= delta[0];
+      elemScroll[1] -= delta[1];
+
+      options.rootEl.value.scrollLeft = elemScroll[0];
+      options.rootEl.value.scrollTop = elemScroll[1];
     }
 
     // user could potentially be wanting to pan via right-click
@@ -161,6 +179,10 @@ export const usePanning = (options: UsePanningOptions) => {
         shouldShowMoveCursor.value = true;
         panningOffset.value = [event.screenX, event.screenY];
         options.rootEl.value.setPointerCapture(event.pointerId);
+        elemScroll = [
+          options.rootEl.value.scrollLeft,
+          options.rootEl.value.scrollTop,
+        ];
 
         // clear right-click state
         maybePanning = false;
