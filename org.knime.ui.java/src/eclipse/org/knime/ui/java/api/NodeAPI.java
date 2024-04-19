@@ -66,6 +66,7 @@ import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.js.cef.nodeview.CEFNodeView;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
 import org.knime.workbench.editor2.actions.OpenNodeViewAction;
 import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
@@ -95,6 +96,15 @@ final class NodeAPI {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
         NodeContainerEditPart.openNodeDialog(wrap(nc));
+    }
+
+    /**
+     * @param confirmNodeConfigChanges whether to always confirm node configuration changes (e.g. when selecting another
+     *            node)
+     */
+    @API
+    static void setConfirmNodeConfigChangesPreference(final boolean confirmNodeConfigChanges) {
+        KnimeUIPreferences.confirmNodeConfigChanges(confirmNodeConfigChanges);
     }
 
     /**

@@ -170,6 +170,13 @@ public final class KnimeUIPreferences {
     }
 
     /**
+     * @param confirmNodeConfigChanges whether to always confirm node configuration changes or not
+     */
+    public static void confirmNodeConfigChanges(final boolean confirmNodeConfigChanges) {
+        PREF_STORE.setValue(CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, confirmNodeConfigChanges);
+    }
+
+    /**
      * Set a listener that is called whenever the desired mouse wheel action changes. If a listener was set already it
      * is replaced.
      *
