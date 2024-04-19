@@ -509,6 +509,12 @@ export interface AppState {
      */
     activeNodeCollection?: string;
     /**
+     * Whether to always confirm node config changes or apply them automatically when de-selecting a node.
+     * @type {boolean}
+     * @memberof AppState
+     */
+    confirmNodeConfigChanges?: boolean;
+    /**
      * If true, dev mode specific buttons will be shown.
      * @type {boolean}
      * @memberof AppState
