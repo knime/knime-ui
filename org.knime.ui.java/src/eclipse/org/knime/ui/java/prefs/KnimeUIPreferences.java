@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.prefs;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
@@ -74,7 +75,11 @@ public final class KnimeUIPreferences {
 
     private static Runnable explorerMountPointChangeListener;
 
+    private static Runnable confirmNodeConfigChangesPrefChangeListener;
+
     static final String MOUSE_WHEEL_ACTION_PREF_KEY = "mouseWheelAction";
+
+    static final String CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY = "confirmNodeConfigChanges";
 
     static final IPreferenceStore PREF_STORE =
         new ScopedPreferenceStore(InstanceScope.INSTANCE, UIPlugin.getContext().getBundle().getSymbolicName());
@@ -83,11 +88,16 @@ public final class KnimeUIPreferences {
         PREF_STORE.addPropertyChangeListener(event -> {
             if (SELECTED_NODE_COLLECTION_PREF_KEY.equals(event.getProperty())) {
                 updateLastUsedPerspectiveAndNotifyListener(event);
-          }
+            }
             if (MOUSE_WHEEL_ACTION_PREF_KEY.equals(event.getProperty()) && mouseWheelActionChangeListener != null) {
                 final var oldValue = (String)event.getOldValue();
                 final var newValue = (String)event.getNewValue();
                 mouseWheelActionChangeListener.accept(oldValue, newValue);
+            }
+            if (confirmNodeConfigChangesPrefChangeListener != null
+                && CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY.equals(event.getProperty())
+                && !Objects.equals(event.getOldValue(), event.getNewValue())) {
+                confirmNodeConfigChangesPrefChangeListener.run();
             }
         });
 
@@ -153,6 +163,13 @@ public final class KnimeUIPreferences {
     }
 
     /**
+     * @return whether to always confirm node configuration changes or not
+     */
+    public static boolean confirmNodeConfigChanges() {
+        return PREF_STORE.getBoolean(CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY);
+    }
+
+    /**
      * Set a listener that is called whenever the desired mouse wheel action changes. If a listener was set already it
      * is replaced.
      *
@@ -160,6 +177,15 @@ public final class KnimeUIPreferences {
      */
     public static void setMouseWheelActionChangeListener(final BiConsumer<String, String> listener) {
         mouseWheelActionChangeListener = listener;
+    }
+
+    /**
+     * Changes listener for the {@link #confirmNodeConfigChanges()} preference.
+     *
+     * @param listener
+     */
+    public static void setConfirmNodeConfigChangesPrefChangeListener(final Runnable listener) {
+        confirmNodeConfigChangesPrefChangeListener = listener;
     }
 
     /**

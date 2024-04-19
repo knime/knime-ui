@@ -68,5 +68,7 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
         // Set scroll-to-scroll as default option
         store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
             KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL);
+
+        store.setDefault(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, true);
     }
 }

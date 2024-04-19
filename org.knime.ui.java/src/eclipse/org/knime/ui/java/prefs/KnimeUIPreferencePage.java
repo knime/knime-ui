@@ -48,10 +48,13 @@
  */
 package org.knime.ui.java.prefs;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.knime.gateway.impl.webui.featureflags.FeatureFlags;
+import org.knime.workbench.ui.preferences.HorizontalLineField;
 
 /**
  * The preference page for the modern UI.
@@ -89,6 +92,8 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
             SELECTED_NODE_COLLECTION_LABEL, 1, nodeRepoFilterOptions, getFieldEditorParent());
         addField(nodeRepoFilterEditor);
 
+        addField(new HorizontalLineField(getFieldEditorParent()));
+
         final var scrollToZoomOptions = new String[][]{ //
             new String[]{MOUSE_WHEEL_TO_ZOOM_OPTION, KnimeUIPreferences.MOUSE_WHEEL_ACTION_ZOOM}, //
             new String[]{MOUSE_WHEEL_TO_SCROLL_OPTION, KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL} //
@@ -96,6 +101,12 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         final var scrollToZoomEditor = new RadioGroupFieldEditor(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
             MOUSE_WHEEL_ACTION_LABEL, 1, scrollToZoomOptions, getFieldEditorParent());
         addField(scrollToZoomEditor);
+
+        if (FeatureFlags.embedDialogs()) {
+            addField(new HorizontalLineField(getFieldEditorParent()));
+            addField(new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY,
+                "Always confirm node configuration changes", getFieldEditorParent()));
+        }
     }
 
     @Override

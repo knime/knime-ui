@@ -178,6 +178,7 @@ final class Init {
                 appStateUpdater.updateAppState();
             }
         });
+        KnimeUIPreferences.setConfirmNodeConfigChangesPrefChangeListener(appStateUpdater::updateAppState);
         KnimeUIPreferences.setExplorerMointPointChangeListener(() -> {
             spaceProviders.update();
             SpaceProvidersUtil.sendSpaceProvidersChangedEvent(spaceProviders, eventConsumer);
@@ -211,6 +212,11 @@ final class Init {
             @Override
             public boolean hasNodeRecommendationsEnabled() {
                 return NodeRecommendationManager.isEnabled();
+            }
+
+            @Override
+            public boolean confirmNodeConfigChanges() {
+                return KnimeUIPreferences.confirmNodeConfigChanges();
             }
         };
     }
