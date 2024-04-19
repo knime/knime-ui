@@ -105,8 +105,8 @@ const onContextMenu = (event: MouseEvent) => {
     <WorkflowInfoBar />
 
     <SplitPanel
+      v-if="$features.shouldDisplayEmbeddedDialogs()"
       v-model:secondary-size="nodeDialogSize"
-      :show-secondary-panel="$features.shouldDisplayEmbeddedDialogs()"
       data-test-id="node-config-split-panel"
       direction="right"
       use-pixel
@@ -123,6 +123,11 @@ const onContextMenu = (event: MouseEvent) => {
         <RightPanel id="right-panel" />
       </template>
     </SplitPanel>
+
+    <WorkflowCanvas
+      v-else
+      :key="`${workflow!.projectId}-${activeWorkflowId}`"
+    />
   </div>
 </template>
 
