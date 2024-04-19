@@ -5,7 +5,6 @@ import { ApplyState } from "@knime/ui-extension-service";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import { isNodeExecuting } from "@/util/nodeUtil";
 
 import type { UIExtensionLoadingState } from "../common/types";
@@ -16,6 +15,7 @@ type Props = {
   activeNode: NativeNode;
   projectId: string;
   workflowId: string;
+  canConfigure: boolean;
 };
 
 const props = defineProps<Props>();
@@ -23,27 +23,15 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   apply: [execute: boolean];
   execute: [];
-  discard: [];
 }>();
-
-const store = useStore();
 
 const loadingState = ref<UIExtensionLoadingState | null>(null);
 
-// Computed properties
-const permissions = computed(() => store.state.application.permissions);
-
-const isSelectedNodeExecuting = computed(() =>
-  isNodeExecuting(props.activeNode),
-);
-
-const isDisabled = computed(
-  () => isSelectedNodeExecuting.value || !permissions.value.canConfigureNodes,
-);
+const isActiveNodeExecuting = computed(() => isNodeExecuting(props.activeNode));
 
 const nodeState = computed(() => props.activeNode.state?.executionState);
 
-const { dirtyState } = useNodeConfigAPI();
+const { dirtyState, discardSettings } = useNodeConfigAPI();
 
 const isLoadingReady = computed(() => loadingState.value?.value === "ready");
 
@@ -81,12 +69,17 @@ const onDiscard = () => {
   // via the ui-extension service. So we just re-mount the component to force a clear
   mountKey.value++;
 
-  emit("discard");
+  discardSettings();
 };
 </script>
 
 <template>
-  <div class="wrapper" :aria-disabled="isDisabled">
+  <slot v-if="loadingState?.value === 'loading'" name="loading-skeleton" />
+  <div
+    v-show="isLoadingReady"
+    class="wrapper"
+    :aria-disabled="isActiveNodeExecuting || !canConfigure"
+  >
     <NodeConfigLoader
       :key="mountKey"
       :project-id="projectId!"

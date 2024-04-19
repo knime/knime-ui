@@ -8,22 +8,14 @@ import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 
 import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
-import { useConfirmModal } from "@/composables/useConfirmDialog";
-import { useNodeConfigAPI } from "../uiExtensions/common/useNodeConfigAPI";
 
 const store = useStore();
-
-const { activeNodeId } = useNodeConfigAPI();
 
 // Computed properties
 const selectedNode = computed<KnimeNode>(
   () => store.getters["selection/singleSelectedNode"],
 );
 
-const { isActive: isConfirmModalActive } = useConfirmModal();
-const showNodeDialog = computed(
-  () => Boolean(selectedNode.value?.hasDialog) || isConfirmModalActive.value,
-);
 const showDownloadButton = computed(
   () => store.state.application.permissions.showFloatingDownloadButton,
 );
@@ -44,6 +36,7 @@ const openNodeConfiguration = () => {
   <div id="right-panel" class="panel full-height">
     <NodeConfigWrapper class="full-height">
       <template #inactive>
+        <!-- PLACEHOLDER - LEGACY DIALOGS -->
         <div v-if="hasLegacyDialog" class="placeholder full-height">
           <template v-if="showDownloadButton">
             <span v-if="isMetanode" class="placeholder-text">

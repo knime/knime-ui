@@ -5,10 +5,13 @@ import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
 
-import { useConfirmModal } from "@/composables/useConfirmDialog";
+import {
+  useConfirmModal,
+  type ConfirmDialogButton,
+} from "@/composables/useConfirmDialog";
 
 const askAgain = ref(false);
-const { state, confirm, cancel } = useConfirmModal();
+const { config, isActive, confirm, cancel } = useConfirmModal();
 
 const reset = () => {
   askAgain.value = false;
@@ -23,13 +26,18 @@ const onCancel = () => {
   cancel();
   reset();
 };
+
+const handleButtonClick = (button: ConfirmDialogButton) => {
+  const handler = button.type === "confirm" ? onConfirm : onCancel;
+  handler();
+};
 </script>
 
 <template>
   <Modal
-    v-show="state.isActive"
-    :active="state.isActive"
-    :title="state.config?.title"
+    v-show="isActive"
+    :active="isActive"
+    :title="config?.title"
     :implicit-dismiss="false"
     style-type="info"
     class="modal"
@@ -37,22 +45,26 @@ const onCancel = () => {
   >
     <template #confirmation>
       <div class="confirmation">
-        <div class="message">{{ state.config?.message }}</div>
-        <div v-if="state.config?.dontAskAgainText" class="ask-again">
+        <div class="message">{{ config?.message }}</div>
+        <div v-if="config?.dontAskAgainText" class="ask-again">
           <Checkbox v-model="askAgain">
-            {{ state.config.dontAskAgainText }}
+            {{ config.dontAskAgainText }}
           </Checkbox>
         </div>
       </div>
     </template>
 
-    <template #controls>
-      <Button with-border @click="onCancel">
-        <strong>{{ state.config?.cancelButtonText ?? "Cancel" }}</strong>
-      </Button>
-
-      <Button primary class="submit-button" @click="onConfirm">
-        <strong>{{ state.config?.confirmButtonText ?? "OK" }}</strong>
+    <template v-if="config" #controls>
+      <Button
+        v-for="(button, index) in config.buttons"
+        :key="index"
+        compact
+        :with-border="button.type === 'cancel'"
+        :primary="button.type === 'confirm'"
+        :class="['button', { 'flush-right': button.flushRight }]"
+        @click="handleButtonClick(button)"
+      >
+        <strong>{{ button.label }}</strong>
       </Button>
     </template>
   </Modal>
@@ -60,7 +72,7 @@ const onCancel = () => {
 
 <style lang="postcss" scoped>
 .modal {
-  --modal-width: 400px;
+  --modal-width: 450px;
 
   & :deep(.overlay) {
     background: white;
@@ -69,6 +81,18 @@ const onCancel = () => {
 
   & :deep(.wrapper .inner) {
     box-shadow: var(--shadow-elevation-2);
+  }
+
+  & :deep(.controls) {
+    gap: 4px;
+  }
+
+  & .flush-right {
+    margin-left: auto;
+  }
+
+  & .flush-right ~ .flush-right {
+    margin-left: initial;
   }
 }
 

@@ -6,6 +6,7 @@ import type {
   UpdateAvailableEvent,
   Project,
   XY,
+  AppState,
 } from "@/api/gateway-api/generated-api";
 import { API } from "@api";
 
@@ -82,6 +83,7 @@ export interface ApplicationState {
    * KNIME AP download link
    */
   analyticsPlatformDownloadURL: string | null;
+  askToConfirmNodeConfigChanges: boolean;
 }
 
 /*
@@ -115,6 +117,7 @@ export const state = (): ApplicationState => ({
   nodeRepositoryLoadingProgress: null,
   isShortcutsOverviewDialogOpen: false,
   analyticsPlatformDownloadURL: null,
+  askToConfirmNodeConfigChanges: true,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -169,6 +172,9 @@ export const mutations: MutationTree<ApplicationState> = {
   setAnalyticsPlatformDownloadURL(state, analyticsPlatformDownloadURL) {
     state.analyticsPlatformDownloadURL = analyticsPlatformDownloadURL;
   },
+  setAskToConfirmNodeConfigChanges(state, value) {
+    state.askToConfirmNodeConfigChanges = value;
+  },
 };
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
@@ -181,7 +187,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   ...canvasModes.actions,
 
   // ----------------------------------------------------------------------------------------- //
-  replaceApplicationState({ commit, dispatch, state }, applicationState) {
+  replaceApplicationState(
+    { commit, dispatch, state },
+    applicationState: AppState,
+  ) {
     // Only set application state properties present in the received object
     if (applicationState.availablePortTypes) {
       commit("setAvailablePortTypes", applicationState.availablePortTypes);
@@ -209,7 +218,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
     if (applicationState.hasOwnProperty("confirmNodeConfigChanges")) {
       commit(
-        "setConfirmNodeConfigChanges",
+        "setAskToConfirmNodeConfigChanges",
         applicationState.confirmNodeConfigChanges,
       );
     }
@@ -285,6 +294,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
       commit("setNodeRepositoryLoaded", applicationState.nodeRepositoryLoaded);
+    }
+
+    if (applicationState.hasOwnProperty("confirmNodeConfigChanges")) {
+      commit(
+        "setAskToConfirmNodeConfigChanges",
+        applicationState.confirmNodeConfigChanges,
+      );
     }
   },
 

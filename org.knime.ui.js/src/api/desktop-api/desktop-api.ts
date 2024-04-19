@@ -735,3 +735,13 @@ export const setZoomLevel = (zoomLevel: number) => {
     { block: false },
   );
 };
+
+export const setConfirmNodeConfigChangesPreference = (value: boolean) => {
+  return callBrowserFunction(
+    window.setConfirmNodeConfigChangesPreference,
+    [value],
+    "Could not set preference",
+    true,
+    { block: false },
+  );
+};
