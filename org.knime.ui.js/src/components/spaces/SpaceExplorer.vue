@@ -306,6 +306,12 @@ const miniActions = ref<HTMLElement | null>(null);
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
+.space-explorer {
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .mini-actions-wrapper {
   position: sticky;
   top: 0;
@@ -335,5 +341,7 @@ const miniActions = ref<HTMLElement | null>(null);
   --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
   --smartloader-z-index: 2;
+
+  overflow-y: auto;
 }
 </style>

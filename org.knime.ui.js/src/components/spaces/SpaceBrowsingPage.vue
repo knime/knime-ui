@@ -97,36 +97,34 @@ export default defineComponent({
 
 <template>
   <main ref="main">
-    <div class="sticky-area">
-      <PageHeader :title="spaceInfo.title" :subtitle="spaceInfo.subtitle">
-        <template #button>
-          <button
-            class="back-button"
-            title="Back"
-            @click.prevent="onBackButtonClick"
-          >
-            <ArrowLeftIcon class="back-icon" />
-          </button>
-        </template>
-        <template #icon>
-          <Component :is="spaceInfo.icon" />
-        </template>
-      </PageHeader>
+    <PageHeader :title="spaceInfo.title" :subtitle="spaceInfo.subtitle">
+      <template #button>
+        <button
+          class="back-button"
+          title="Back"
+          @click.prevent="onBackButtonClick"
+        >
+          <ArrowLeftIcon class="back-icon" />
+        </button>
+      </template>
+      <template #icon>
+        <Component :is="spaceInfo.icon" />
+      </template>
+    </PageHeader>
 
-      <section class="toolbar-wrapper">
-        <div class="grid-container">
-          <div class="grid-item-12">
-            <div class="toolbar">
-              <SpaceExplorerActions
-                :project-id="globalSpaceBrowserProjectId"
-                :selected-item-ids="currentSelectedItemIds"
-                @imported-item-ids="setCurrentSelectedItemIds($event)"
-              />
-            </div>
+    <section class="toolbar-wrapper">
+      <div class="grid-container">
+        <div class="grid-item-12">
+          <div class="toolbar">
+            <SpaceExplorerActions
+              :project-id="globalSpaceBrowserProjectId"
+              :selected-item-ids="currentSelectedItemIds"
+              @imported-item-ids="setCurrentSelectedItemIds($event)"
+            />
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
 
     <section class="space-explorer-wrapper">
       <div class="grid-container">
@@ -149,7 +147,7 @@ main {
   display: flex;
   flex-direction: column;
   background-color: var(--knime-white);
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
 }
 
@@ -179,13 +177,23 @@ main {
     align-items: center;
     justify-content: flex-end;
   }
+
+  box-shadow: var(--shadow-elevation-1);
+  z-index: 1;
 }
 
 .space-explorer-wrapper {
   background: var(--knime-porcelain);
   padding-top: 50px;
   padding-bottom: 80px;
-  flex: 1;
+  width: 100%;
+  min-height: 250px;
+  height: 100%;
+
+  & > .grid-container {
+    width: 100%;
+    max-height: 100%;
+  }
 }
 
 .back-button {
