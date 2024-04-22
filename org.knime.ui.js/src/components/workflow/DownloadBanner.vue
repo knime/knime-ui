@@ -15,15 +15,12 @@ import DownloadAPButton from "../common/DownloadAPButton.vue";
 
 <style lang="postcss" scoped>
 .download-banner {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   z-index: 1;
   background: var(--knime-masala);
   color: var(--knime-white);
   display: flex;
-  padding: 20px 40px;
+  height: var(--app-download-banner-height);
+  padding: 0 var(--app-side-bar-buttons-width);
   align-items: center;
 
   & .download-button {

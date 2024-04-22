@@ -7,6 +7,7 @@ import { DynamicEnvRenderer, environment, isDesktop } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import Error from "@/components/application/Error.vue";
+import DownloadBanner from "./workflow/DownloadBanner.vue";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import BlockUi from "@/components/application/BlockUi.vue";
@@ -35,6 +36,7 @@ export default defineComponent({
     HotkeyHandler,
     Error,
     BlockUi,
+    DownloadBanner,
     SmartLoader,
     CreateWorkflowModal,
     ToastStack,
@@ -166,6 +168,10 @@ export default defineComponent({
       </div>
     </template>
 
+    <DynamicEnvRenderer value="BROWSER">
+      <DownloadBanner class="download-banner" />
+    </DynamicEnvRenderer>
+
     <SmartLoader
       :loading="globalLoader.loading"
       :text="globalLoader.text"
@@ -192,7 +198,8 @@ export default defineComponent({
   display: grid;
   grid-template:
     "header" min-content
-    "workflow" auto;
+    "workflow" auto
+    "download-banner" min-content;
 }
 
 #header {
@@ -208,7 +215,7 @@ export default defineComponent({
   }
 
   &.browser {
-    height: 100vh;
+    height: calc(100vh - var(--app-download-banner-height));
   }
 }
 
@@ -216,6 +223,10 @@ export default defineComponent({
   height: calc(
     100vh - var(--app-header-height) - var(--app-update-banner-height)
   );
+}
+
+.download-banner {
+  grid-area: download-banner;
 }
 
 .toast-stack {
