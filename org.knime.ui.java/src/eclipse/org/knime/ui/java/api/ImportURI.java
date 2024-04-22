@@ -255,12 +255,18 @@ public final class ImportURI {
         entityImportInProgress = null;
 
         if (entityImport instanceof NodeImport nodeImport) {
-            if (!isNodeInstalled(nodeImport)) {
-                askToInstallExtension(nodeImport);
-                return false;
+            switch (checkNodeAvailable(nodeImport)) {
+                case AVAILABLE:
+                    var key = getNodeFactoryKey(nodeImport.getFactoryId());
+                    return importNode(key, null, projectId, workflowId, canvasX, canvasY);
+                case NOT_INSTALLED:
+                    askToInstallExtension(nodeImport);
+                    return false;
+                case FORBIDDEN:
+                    MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Usage of node is restricted",
+                        "Usage of this node is restricted in this installation.");
+                    return false;
             }
-            var key = getNodeFactoryKey(nodeImport.getFactoryId());
-            return importNode(key, null, projectId, workflowId, canvasX, canvasY);
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.WorkflowTemplate) {
             ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
@@ -275,11 +281,21 @@ public final class ImportURI {
         return false;
     }
 
-    private static boolean isNodeInstalled(final NodeImport nodeImport) {
-        var factoryId = nodeImport.getFactoryId();
-        var nodeTemplate = DefaultNodeRepositoryService.getInstance()
-            .getNodeTemplates(Collections.singletonList(factoryId)).get(factoryId);
-        return nodeTemplate != null;
+    private enum NodeAvailability {
+        AVAILABLE, NOT_INSTALLED, FORBIDDEN
+    }
+
+    private static NodeAvailability checkNodeAvailable(final NodeImport nodeImport) {
+        final var factoryId = nodeImport.getFactoryId();
+        final var repoService = DefaultNodeRepositoryService.getInstance();
+        final var nodeTemplate = repoService.getNodeTemplates(Collections.singletonList(factoryId)).get(factoryId);
+        if (nodeTemplate != null) {
+            return NodeAvailability.AVAILABLE;
+        }
+        if (repoService.isUsageForbidden(factoryId)) {
+            return NodeAvailability.FORBIDDEN;
+        }
+        return NodeAvailability.NOT_INSTALLED;
     }
 
     private static void askToInstallExtension(final NodeImport nodeImport) {
