@@ -84,6 +84,7 @@ import org.knime.gateway.api.webui.entity.XYEnt.XYEntBuilder;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.impl.webui.NodeRepository;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
@@ -287,12 +288,12 @@ public final class ImportURI {
 
     private static NodeAvailability checkNodeAvailable(final NodeImport nodeImport) {
         final var factoryId = nodeImport.getFactoryId();
-        final var repoService = DefaultNodeRepositoryService.getInstance();
-        final var nodeTemplate = repoService.getNodeTemplates(Collections.singletonList(factoryId)).get(factoryId);
+        final var nodeRepo = DesktopAPI.getDeps(NodeRepository.class);
+        final var nodeTemplate = nodeRepo.getNodeTemplates(Collections.singletonList(factoryId), true).get(factoryId);
         if (nodeTemplate != null) {
             return NodeAvailability.AVAILABLE;
         }
-        if (repoService.isUsageForbidden(factoryId)) {
+        if (NodeRepository.isNodeUsageForbidden(factoryId)) {
             return NodeAvailability.FORBIDDEN;
         }
         return NodeAvailability.NOT_INSTALLED;

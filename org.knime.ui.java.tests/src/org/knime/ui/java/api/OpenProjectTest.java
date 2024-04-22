@@ -96,7 +96,7 @@ class OpenProjectTest {
         var appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         DesktopAPI.injectDependencies(ProjectManager.getInstance(), appStateUpdater, spaceProviders, null,
-            eventConsumer, null, null);
+            eventConsumer, null, null, null);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
         OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());

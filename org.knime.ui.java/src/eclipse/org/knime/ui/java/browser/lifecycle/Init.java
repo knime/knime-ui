@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -77,6 +78,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ExampleProjects;
 import org.knime.gateway.impl.webui.NodeCollections;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
+import org.knime.gateway.impl.webui.NodeRepository;
 import org.knime.gateway.impl.webui.PreferencesProvider;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
@@ -85,7 +87,6 @@ import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactory.AuthTokenProvider;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactoryRegistry;
-import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -132,16 +133,19 @@ final class Init {
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var kaiHandler = createKaiHandler(eventConsumer, spaceProviders);
         var preferenceProvider = createPreferencesProvider();
+        var nodeCollections = new NodeCollections(preferenceProvider);
+        var nodeRepo = createNodeRepository(nodeCollections);
+
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createExampleProjects(),
-            createNodeFactoryProvider(), kaiHandler, new NodeCollections(preferenceProvider));
+            createNodeFactoryProvider(), kaiHandler, nodeCollections, nodeRepo);
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
-            eventConsumer, workflowMiddleware, toastService);
+            eventConsumer, workflowMiddleware, toastService, nodeRepo);
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 
-        registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer);
+        registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer, nodeCollections, nodeRepo);
 
         return new LifeCycleStateInternal() {
 
@@ -163,12 +167,17 @@ final class Init {
     }
 
     private static void registerPreferenceListeners(final AppStateUpdater appStateUpdater,
-        final UpdatableSpaceProviders spaceProviders, final EventConsumer eventConsumer) {
+        final UpdatableSpaceProviders spaceProviders, final EventConsumer eventConsumer,
+        final NodeCollections nodeCollections, final NodeRepository nodeRepo) {
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
                 // Reset the node repository such that it uses the newly configured collection
-                DefaultNodeRepositoryService.getInstance().resetNodeRepository();
+                var activeCollection = //
+                    Optional.ofNullable(nodeCollections) //
+                        .flatMap(NodeCollections::getActiveCollection) //
+                        .map(NodeCollections.NodeCollection::nodeFilter);
+                nodeRepo.resetIsInCollection(activeCollection.orElse(null));
                 appStateUpdater.updateAppState();
             }
         });
@@ -183,6 +192,14 @@ final class Init {
             spaceProviders.update();
             SpaceProvidersUtil.sendSpaceProvidersChangedEvent(spaceProviders, eventConsumer);
         });
+    }
+
+    private static NodeRepository createNodeRepository(final NodeCollections nodeCollections) {
+        var activeCollection = //
+            Optional.ofNullable(nodeCollections) //
+                .flatMap(NodeCollections::getActiveCollection) //
+                .map(NodeCollections.NodeCollection::nodeFilter);
+        return new NodeRepository(activeCollection.orElse(null));
     }
 
     /**

@@ -135,7 +135,7 @@ class SpaceAPITest {
         var exception = new IllegalStateException("mock exception message");
         when(spaceProviders.getProvidersMap()).thenThrow(exception);
         var eventConsumer = mock(EventConsumer.class);
-        DesktopAPI.injectDependencies(null, null, spaceProviders, null, eventConsumer, null, null);
+        DesktopAPI.injectDependencies(null, null, spaceProviders, null, eventConsumer, null, null, null);
         SpaceAPI.getSpaceProviders();
         var expected = MAPPER.createObjectNode();
         expected.put("error", exception.getMessage());
@@ -184,7 +184,7 @@ class SpaceAPITest {
         var spaceProviders = mock(SpaceProviders.class);
         when(spaceProviders.getProvidersMap()).thenReturn(Map.of("1", connectedSpaceProvider));
 
-        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null, null);
+        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null, null, null);
         SpaceAPI.disconnectSpaceProvider("1");
 
         verify(connection).disconnect();
