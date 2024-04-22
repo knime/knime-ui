@@ -14,10 +14,6 @@ import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
  */
 const store = useStore();
 
-const showDownloadButton = computed(
-  () => store.state.application.permissions.showFloatingDownloadButton,
-);
-
 const workflow = computed(() => store.state.workflow.activeWorkflow);
 const savedSecondarySize = computed({
   get() {

@@ -7,7 +7,7 @@ import { DynamicEnvRenderer, environment, isDesktop } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import Error from "@/components/application/Error.vue";
-import DownloadBanner from "./workflow/DownloadBanner.vue";
+import DownloadBanner from "@/components/application/DownloadBanner.vue";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import BlockUi from "@/components/application/BlockUi.vue";

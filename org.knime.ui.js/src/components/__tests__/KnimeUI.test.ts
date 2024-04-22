@@ -13,9 +13,10 @@ describe("KnimeUI.vue", () => {
   const doShallowMount = async ({
     environment = "BROWSER",
     routeMeta = { showUpdateBanner: false },
-    initializeApplication = vi.fn().mockResolvedValue(),
+    initializeApplication = vi.fn().mockResolvedValue({}) as any,
     destroyApplication = vi.fn(),
     setHasClipboardSupport = vi.fn(),
+    showFloatingDownloadButton = false,
   } = {}) => {
     vi.doMock("@/environment", async () => {
       const actual = await vi.importActual("@/environment");
@@ -29,6 +30,7 @@ describe("KnimeUI.vue", () => {
       };
     });
 
+    // @ts-ignore: assign read-only property
     document.fonts = {
       load: vi.fn(() => Promise.resolve("dummy")),
     };
@@ -52,6 +54,9 @@ describe("KnimeUI.vue", () => {
               },
             ],
             bugfixes: ["Update1", "Update2"],
+          },
+          permissions: {
+            showFloatingDownloadButton,
           },
           globalLoader: {},
         },
@@ -146,6 +151,14 @@ describe("KnimeUI.vue", () => {
     await wrapper.unmount();
 
     expect(destroyApplication).toHaveBeenCalled();
+  });
+
+  it("shows download banner when required", async () => {
+    const { wrapper } = await doShallowMount({
+      showFloatingDownloadButton: true,
+    });
+
+    expect(wrapper.findComponent(".download-banner").exists()).toBe(true);
   });
 
   describe("clipboard support", () => {
