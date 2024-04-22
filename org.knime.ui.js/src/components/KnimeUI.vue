@@ -53,7 +53,12 @@ export default defineComponent({
 
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
-    ...mapState("application", ["availableUpdates", "globalLoader", "devMode"]),
+    ...mapState("application", [
+      "availableUpdates",
+      "globalLoader",
+      "devMode",
+      "permissions",
+    ]),
 
     environment() {
       return environment;
@@ -162,15 +167,17 @@ export default defineComponent({
             ? 'main-content-with-banner'
             : 'main-content',
           environment.toLowerCase(),
+          { 'with-download-banner': permissions.showFloatingDownloadButton },
         ]"
       >
         <RouterView />
       </div>
     </template>
 
-    <DynamicEnvRenderer value="BROWSER">
-      <DownloadBanner class="download-banner" />
-    </DynamicEnvRenderer>
+    <DownloadBanner
+      v-if="permissions.showFloatingDownloadButton"
+      class="download-banner"
+    />
 
     <SmartLoader
       :loading="globalLoader.loading"
@@ -215,7 +222,11 @@ export default defineComponent({
   }
 
   &.browser {
-    height: calc(100vh - var(--app-download-banner-height));
+    height: 100vh;
+
+    &.with-download-banner {
+      height: calc(100vh - var(--app-download-banner-height));
+    }
   }
 }
 
