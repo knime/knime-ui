@@ -8,13 +8,14 @@ import {
 import type { UIExtensionAPILayer } from "webapps-common/ui/uiExtensions";
 
 import { API } from "@/api";
+import { NodeState, type NativeNode } from "@/api/gateway-api/generated-api";
+import type { KnimeNode } from "@/api/custom-types";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { isNativeNode, isNodeExecuting } from "@/util/nodeUtil";
-import { NodeState, type NativeNode } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "./types";
 import { runInEnvironment } from "@/environment";
-import type { KnimeNode } from "@/api/custom-types";
+
+import type { RootStoreState } from "../types";
 
 export type UIExtensionPushEventDispatcher = Parameters<
   UIExtensionAPILayer["registerPushEventService"]
@@ -55,7 +56,7 @@ const promptApplyConfirmation = async (askToConfirm: boolean) => {
       message:
         "You have unsaved changes in your node configuration. Do you want to apply them?",
       dontAskAgainText:
-        "Always apply and don't ask again. (You can still change this in the preferences)",
+        "Always apply and do not ask again. (You can still change this in the preferences)",
 
       buttons: [
         {
@@ -115,7 +116,6 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
       // changes have been applied (when `setApplyComplete` is called)
       return unwrappedPromise.promise;
     };
-
     const isApplied = await dispatchApplySettings();
 
     if (isApplied && execute) {
@@ -199,7 +199,6 @@ export const getters: GetterTree<NodeConfigurationState, RootStoreState> = {
     }
 
     const node = rootState.workflow.activeWorkflow?.nodes[activeNodeId];
-
     return node && isNativeNode(node) && node.hasDialog ? node : null;
   },
 

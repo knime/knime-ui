@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createRouter, createWebHistory } from "vue-router";
 
-import { APP_ROUTES, router } from "@/router";
+import { APP_ROUTES, routes } from "@/router";
 import { API } from "@api";
 import { deepMocked } from "@/test/utils";
 import { applicationState, loadStore } from "./loadStore";
@@ -14,13 +15,20 @@ const mockedAPI = deepMocked(API);
 vi.mock("@/environment");
 
 describe("application::lifecycle", () => {
+  const getRouter = () => {
+    return createRouter({
+      history: createWebHistory(),
+      routes,
+    });
+  };
+
   afterEach(() => {
     vi.clearAllMocks();
-    vi.resetAllMocks();
   });
 
   describe("application Lifecycle", () => {
     it("initialization (DESKTOP)", async () => {
+      const router = getRouter();
       // @ts-ignore
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
@@ -55,6 +63,7 @@ describe("application::lifecycle", () => {
     });
 
     it("initialization (BROWSER)", async () => {
+      const router = getRouter();
       // @ts-ignore
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
@@ -261,7 +270,8 @@ describe("application::lifecycle", () => {
 
   describe("load workflows on navigation", () => {
     it("should unload workflows when leaving the worklow page", async () => {
-      const { store, dispatchSpy, commitSpy } = await loadStore();
+      const router = getRouter();
+      const { store, dispatchSpy, commitSpy } = loadStore();
 
       await store.dispatch("application/initializeApplication", {
         $router: router,
@@ -290,8 +300,41 @@ describe("application::lifecycle", () => {
       );
     });
 
-    it("should load aworkflow when entering the worklow page", async () => {
-      const { store, dispatchSpy } = await loadStore();
+    it("should prevent navigation when auto-apply node configuration is cancelled", async () => {
+      const router = getRouter();
+      const { store, dispatchSpy, commitSpy } = loadStore({
+        autoApplySettingsMock: vi.fn(() => false),
+      });
+
+      await store.dispatch("application/initializeApplication", {
+        $router: router,
+      });
+
+      await router.push({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "foo", workflowId: "bar" },
+      });
+
+      commitSpy.mockClear();
+      await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "application/switchWorkflow",
+        {
+          newWorkflow: null,
+        },
+      );
+
+      expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
+    });
+
+    it("should load a workflow when entering the worklow page", async () => {
+      const router = getRouter();
+      await router.push({
+        name: APP_ROUTES.EntryPage.GetStartedPage,
+      });
+
+      const { store, dispatchSpy } = loadStore();
 
       await store.dispatch("application/initializeApplication", {
         $router: router,
@@ -306,25 +349,6 @@ describe("application::lifecycle", () => {
         newWorkflow: { projectId: "foo", workflowId: "bar" },
       });
 
-      expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
-    });
-
-    it("should skip the navigation guards", async () => {
-      const { store, dispatchSpy } = await loadStore();
-
-      await store.dispatch("application/initializeApplication", {
-        $router: router,
-      });
-
-      await router.push({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId: "foo", workflowId: "bar" },
-        query: { skipGuards: "true" },
-      });
-
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "application/switchWorkflow",
-      );
       expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
     });
   });

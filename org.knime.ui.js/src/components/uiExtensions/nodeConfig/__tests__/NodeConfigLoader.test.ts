@@ -4,6 +4,7 @@ import {
   flushPromises,
   mount,
   type ComponentMountingOptions,
+  VueWrapper,
 } from "@vue/test-utils";
 
 import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
@@ -11,9 +12,15 @@ import { API } from "@api";
 
 import { UIExtension } from "webapps-common/ui/uiExtensions";
 import * as applicationStore from "@/store/application";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
 import NodeConfigLoader from "../NodeConfigLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
+import {
+  ApplyState,
+  DataServiceType,
+  ViewState,
+} from "@knime/ui-extension-service";
 
 const dynamicImportMock = mockDynamicImport();
 
@@ -64,10 +71,11 @@ describe("NodeConfigLoader.vue", () => {
   const doMount = ({ props, slots }: MountOpts = {}) => {
     const $store = mockVuexStore({
       application: applicationStore,
+      nodeConfiguration: nodeConfigurationStore,
     });
 
     const wrapper = mount(NodeConfigLoader, {
-      props: { ...defaultProps, props },
+      props: { ...defaultProps, ...props },
       global: { plugins: [$store] },
       slots,
     });
@@ -127,22 +135,24 @@ describe("NodeConfigLoader.vue", () => {
   });
 
   describe("apiLayer", () => {
-    it("implements getResourceLocation in apiLayer", async () => {
+    const getApiLayer = (wrapper: VueWrapper<any>) => {
+      const uiExtension = wrapper.findComponent(UIExtension);
+      return uiExtension.props("apiLayer");
+    };
+
+    it("implements getResourceLocation", async () => {
       mockGetNodeDialog();
       const { wrapper } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const location = await apiLayer.getResourceLocation("path1");
 
       expect(location).toBe("baseUrl/path1");
     });
 
-    it("implements getResourceLocation in apiLayer (when rest api base url is defined)", async () => {
+    it("implements getResourceLocation (when rest api base url is defined)", async () => {
       mockedAPI.node.getNodeDialog.mockResolvedValueOnce({
         resourceInfo: {
           type: "SHADOW_APP",
@@ -155,10 +165,7 @@ describe("NodeConfigLoader.vue", () => {
       await flushPromises();
       $store.commit("application/setActiveProjectId", "project1");
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const location = await apiLayer.getResourceLocation("path1");
 
@@ -167,17 +174,20 @@ describe("NodeConfigLoader.vue", () => {
       );
     });
 
-    it("implements callNodeDataService in apiLayer", async () => {
+    it("implements callNodeDataService", async () => {
       mockGetNodeDialog();
       mockedAPI.node.callNodeDataService.mockResolvedValue({ something: true });
       const { wrapper } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const apiLayer = uiExtension.props("apiLayer");
+      const apiLayer = getApiLayer(wrapper);
 
       const result = await apiLayer.callNodeDataService({
-        serviceType: "data",
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        extensionType: "",
+        serviceType: DataServiceType.DATA,
         dataServiceRequest: "request",
       });
 
@@ -193,7 +203,73 @@ describe("NodeConfigLoader.vue", () => {
       });
     });
 
-    it("controls", async () => {
+    it("implements publishData", async () => {
+      mockGetNodeDialog();
+      const { wrapper, $store } = doMount();
+      await flushPromises();
+      expect($store.state.nodeConfiguration.latestPublishedData).toBeNull();
+
+      const apiLayer = getApiLayer(wrapper);
+      apiLayer.publishData({ mock: "data" });
+      expect($store.state.nodeConfiguration.latestPublishedData).toEqual({
+        mock: "data",
+      });
+    });
+
+    it("implements registerPushEventService", async () => {
+      mockGetNodeDialog();
+      const { wrapper, $store } = doMount();
+      await flushPromises();
+
+      const dispatcher = () => {};
+
+      expect($store.state.nodeConfiguration.pushEventDispatcher).not.toBe(
+        dispatcher,
+      );
+
+      const apiLayer = getApiLayer(wrapper);
+      apiLayer.registerPushEventService({ dispatchPushEvent: dispatcher });
+      expect($store.state.nodeConfiguration.pushEventDispatcher).toBe(
+        dispatcher,
+      );
+    });
+
+    it("implements onDirtyStateChange", async () => {
+      mockGetNodeDialog();
+      const { wrapper, $store } = doMount();
+      await flushPromises();
+
+      expect($store.state.nodeConfiguration.dirtyState).toEqual({
+        apply: ApplyState.CLEAN,
+        view: ViewState.CLEAN,
+      });
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const newState = {
+        apply: ApplyState.CONFIG,
+        view: ViewState.CONFIG,
+      };
+      apiLayer.onDirtyStateChange(newState);
+
+      expect($store.state.nodeConfiguration.dirtyState).toEqual(newState);
+    });
+
+    it("implements onApplied", async () => {
+      mockGetNodeDialog();
+      const { wrapper, $store } = doMount();
+      await flushPromises();
+      const dispatchSpy = vi.spyOn($store, "dispatch");
+      const apiLayer = getApiLayer(wrapper);
+      apiLayer.onApplied({ isApplied: true });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "nodeConfiguration/setApplyComplete",
+        true,
+      );
+    });
+
+    it("implements setControlsVisibility", async () => {
       mockGetNodeDialog();
       const { wrapper } = doMount({
         slots: { controls: { template: '<div id="slotted-ctrls" />' } },
@@ -202,8 +278,7 @@ describe("NodeConfigLoader.vue", () => {
 
       expect(wrapper.find("#slotted-ctrls").exists()).toBe(true);
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const apiLayer = uiExtension.props("apiLayer");
+      const apiLayer = getApiLayer(wrapper);
 
       apiLayer.setControlsVisibility({ shouldBeVisible: false });
 

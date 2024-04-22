@@ -1,7 +1,6 @@
 import { expect, describe, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 
-import { NodeState } from "@/api/gateway-api/generated-api";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as applicationStore from "@/store/application";
 import * as workflowStore from "@/store/workflow";
@@ -38,7 +37,7 @@ describe("RightPanel", () => {
       },
     });
 
-    const wrapper = shallowMount(component ?? RightPanel, {
+    const wrapper = mount(component ?? RightPanel, {
       props: {
         ...props,
       },
@@ -55,7 +54,7 @@ describe("RightPanel", () => {
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "Please select a node.",
+      "Please select one node.",
     );
   });
 
@@ -101,23 +100,6 @@ describe("RightPanel", () => {
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.findComponent(NodeConfigWrapper).exists()).toBe(true);
-  });
-
-  describe("disables functions during node execution", () => {
-    it("disables NodeDialogLoader component", () => {
-      const { wrapper } = doMount({
-        singleSelectedNodeMock: vi.fn().mockReturnValue({
-          id: 1,
-          kind: "node",
-          hasDialog: true,
-          state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
-        }),
-      });
-
-      expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
-      expect(wrapper.findComponent(NodeConfigWrapper).exists()).toBe(true);
-      expect(wrapper.find(".panel-dialog-disabled").exists()).toBe(true);
-    });
   });
 
   it("shows a message if selected node is a metanode in a browser", async () => {

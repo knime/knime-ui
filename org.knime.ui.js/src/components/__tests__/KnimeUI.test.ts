@@ -18,8 +18,8 @@ describe("KnimeUI.vue", () => {
     setHasClipboardSupport = vi.fn(),
     showFloatingDownloadButton = false,
   } = {}) => {
-    vi.doMock("@/environment", async () => {
-      const actual = await vi.importActual("@/environment");
+    vi.doMock("@/environment", async (importOriginal) => {
+      const actual = await importOriginal();
 
       return {
         ...actual,

@@ -5,6 +5,7 @@ import {
   vi,
   afterEach,
   type MockedFunction,
+  type Mock,
 } from "vitest";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
@@ -14,7 +15,7 @@ import { createWorkflow } from "@/test/factories";
 
 vi.mock("@/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({
-  encodeString: (value) => value,
+  encodeString: (value: string) => value,
 }));
 
 // mock the router import (which is a dependency of the application store) to prevent the test runner
@@ -33,10 +34,15 @@ describe("workflow store: desktop interactions", () => {
     vi.clearAllMocks();
   });
 
-  const loadStore = async () => {
+  type Options = { autoApplySettingsMock?: Mock<[], boolean> };
+
+  const loadStore = async (options: Options = {}) => {
     const mockCanvasWrapperEl = document.createElement("div");
     const mockCanvasEl = document.createElement("div");
     mockCanvasWrapperEl.appendChild(mockCanvasEl);
+
+    const autoApplySettingsMock =
+      options.autoApplySettingsMock ?? vi.fn(() => true);
 
     const store = mockVuexStore({
       workflow: await import("@/store/workflow"),
@@ -51,10 +57,15 @@ describe("workflow store: desktop interactions", () => {
           fetchWorkflowGroupContent: () => null,
         },
       },
+      nodeConfiguration: {
+        actions: {
+          autoApplySettings: autoApplySettingsMock,
+        },
+      },
     });
     const dispatchSpy = vi.spyOn(store, "dispatch");
 
-    return { store, dispatchSpy, mockCanvasEl };
+    return { store, dispatchSpy, mockCanvasEl, autoApplySettingsMock };
   };
 
   describe("actions", () => {
@@ -255,6 +266,45 @@ describe("workflow store: desktop interactions", () => {
           closingProjectId,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
+          "workflow/clearProcessedUpdateNotification",
+          { projectId: closingProjectId },
+        );
+      });
+
+      it("should prevent closing when auto-apply node configuration cancels", async () => {
+        mockedAPI.desktop.closeProject.mockImplementation(() => true);
+
+        const openProjects = [
+          { name: "Mock project 1", projectId: "Mock project 1" },
+        ];
+        const { projectId: activeProjectId } = openProjects[0];
+        const { projectId: closingProjectId } = openProjects[0];
+
+        // setup
+        const { store, dispatchSpy } = await loadStore({
+          autoApplySettingsMock: vi.fn(() => false),
+        });
+        store.commit("application/setOpenProjects", openProjects);
+        store.commit("application/setActiveProjectId", activeProjectId);
+        store.commit(
+          "workflow/setActiveWorkflow",
+          createWorkflow({
+            projectId: "foo",
+            info: { containerId: "root" },
+          }),
+        );
+
+        await store.dispatch("workflow/closeProject", closingProjectId);
+        expect(mockedAPI.desktop.closeProject).not.toHaveBeenCalled();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "nodeConfiguration/autoApplySettings",
+          expect.anything(),
+        );
+        expect(dispatchSpy).not.toHaveBeenCalledWith(
+          "application/removeCanvasState",
+          closingProjectId,
+        );
+        expect(dispatchSpy).not.toHaveBeenCalledWith(
           "workflow/clearProcessedUpdateNotification",
           { projectId: closingProjectId },
         );

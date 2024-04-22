@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi, type Mock } from "vitest";
 
 import { API } from "@api";
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -16,10 +16,14 @@ export const applicationState = {
   openProjects: [{ projectId: "foo", name: "bar" }],
 };
 
-export const loadStore = () => {
+type Options = { autoApplySettingsMock?: Mock<[], boolean> };
+export const loadStore = (options: Options = {}) => {
   mockedAPI.application.getState.mockReturnValue(applicationState);
   const loadWorkflow = deepMocked(API).workflow.getWorkflow;
   loadWorkflow.mockResolvedValue({ workflow: { info: { containerId: "" } } });
+
+  const autoApplySettingsMock =
+    options.autoApplySettingsMock ?? vi.fn(() => true);
 
   const actions = {
     canvas: {
@@ -28,12 +32,18 @@ export const loadStore = () => {
     spaces: {
       fetchAllSpaceProviders: vi.fn(),
     },
+    nodeConfiguration: {
+      autoApplySettings: autoApplySettingsMock,
+    },
   };
 
   const getters = {
     canvas: {
       getCanvasScrollState: vi.fn(() => () => ({ mockCanvasState: true })),
-      screenToCanvasCoordinates: vi.fn(() => ([x, y]) => [x, y]),
+      screenToCanvasCoordinates: vi.fn(() => ([x, y]: [number, number]) => [
+        x,
+        y,
+      ]),
     },
   };
 
@@ -74,11 +84,16 @@ export const loadStore = () => {
         },
       },
     },
+    nodeConfiguration: {
+      actions: actions.nodeConfiguration,
+    },
   };
 
   const store = mockVuexStore<RootStoreState>(storeConfig);
-  store.commit("workflow/setActiveWorkflow", createWorkflow());
-  store.state.workflow.activeWorkflow.projectId = "foo";
+  store.commit(
+    "workflow/setActiveWorkflow",
+    createWorkflow({ projectId: "foo" }),
+  );
 
   const dispatchSpy = vi.spyOn(store, "dispatch");
   const commitSpy = vi.spyOn(store, "commit");

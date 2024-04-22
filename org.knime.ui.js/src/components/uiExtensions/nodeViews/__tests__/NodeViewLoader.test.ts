@@ -1,20 +1,25 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
-import { flushPromises, mount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
 import { UIExtension } from "webapps-common/ui/uiExtensions";
 import { API } from "@api";
 
 import * as applicationStore from "@/store/application";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import NodeViewLoader from "../NodeViewLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
-import { useNodeConfigAPI } from "../../common/useNodeConfigAPI";
+
 import {
-  ApplyState,
+  DataServiceType,
+  type Alert,
+  AlertType,
   UIExtensionPushEvents,
+  ApplyState,
   ViewState,
 } from "@knime/ui-extension-service";
+import { createNativeNode } from "@/test/factories";
 import ExecuteButton from "../../ExecuteButton.vue";
 
 const dynamicImportMock = mockDynamicImport();
@@ -40,19 +45,14 @@ const mockGetNodeView = (additionalMocks?: object) => {
 };
 
 describe("NodeViewLoader.vue", () => {
-  const dummyNode = {
+  const dummyNode = createNativeNode({
     id: "node1",
-    selected: true,
     outPorts: [],
-    isLoaded: false,
-    state: {
-      executionState: "UNSET",
-    },
     allowedActions: {
       canExecute: false,
     },
     hasView: true,
-  };
+  });
 
   const props = {
     projectId: "project-id",
@@ -67,6 +67,7 @@ describe("NodeViewLoader.vue", () => {
   const doMount = () => {
     const $store = mockVuexStore({
       application: applicationStore,
+      nodeConfiguration: nodeConfigurationStore,
     });
 
     const wrapper = mount(NodeViewLoader, {
@@ -129,15 +130,17 @@ describe("NodeViewLoader.vue", () => {
   });
 
   describe("apiLayer", () => {
-    it("implements getResourceLocation in apiLayer", async () => {
+    const getApiLayer = (wrapper: VueWrapper<any>) => {
+      const uiExtension = wrapper.findComponent(UIExtension);
+      return uiExtension.props("apiLayer");
+    };
+
+    it("implements getResourceLocation", async () => {
       mockGetNodeView();
       const { wrapper } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const location = await apiLayer.getResourceLocation("path1");
 
@@ -158,10 +161,7 @@ describe("NodeViewLoader.vue", () => {
       await flushPromises();
       $store.commit("application/setActiveProjectId", "project1");
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const location = await apiLayer.getResourceLocation("path1");
 
@@ -170,19 +170,20 @@ describe("NodeViewLoader.vue", () => {
       );
     });
 
-    it("implements callNodeDataService in apiLayer", async () => {
+    it("implements callNodeDataService", async () => {
       mockGetNodeView();
       mockedAPI.node.callNodeDataService.mockResolvedValue({ something: true });
       const { wrapper } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const result = await apiLayer.callNodeDataService({
-        serviceType: "data",
+        nodeId: "",
+        projectId: "",
+        workflowId: "",
+        extensionType: "",
+        serviceType: DataServiceType.DATA,
         dataServiceRequest: "request",
       });
 
@@ -198,69 +199,67 @@ describe("NodeViewLoader.vue", () => {
       });
     });
 
-    it("should emit an 'alert' event when a view has a notification", async () => {
+    it("implements sendAlert", async () => {
       const { wrapper } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const apiLayer = uiExtension.props("apiLayer");
+      const apiLayer = getApiLayer(wrapper);
 
-      const alert1 = {
+      const alert1: Alert = {
         nodeId: "root:1",
-        type: "warn",
-        nodeInfo: { nodeName: "The Node" },
+        type: AlertType.WARN,
+        nodeInfo: { nodeName: "The Node", nodeState: "" },
         message: "There's an warning in this node",
       };
       apiLayer.sendAlert(alert1);
 
       expect(wrapper.emitted("alert")![1][0]).toEqual(alert1);
     });
-  });
 
-  describe("nodeConfigAPI", () => {
-    it("should update view data when receiving published data from a node config", async () => {
+    it("implements registerPushEventService", async () => {
       mockGetNodeView();
-      const { wrapper } = doMount();
+      const { wrapper, $store } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const apiLayer = uiExtension.props("apiLayer");
+      const apiLayer = getApiLayer(wrapper);
+      const pushEventDispatcher = vi.fn();
+      apiLayer.registerPushEventService({
+        dispatchPushEvent: pushEventDispatcher,
+      });
 
-      const dispatchPushEvent = vi.fn();
-      apiLayer.registerPushEventService({ dispatchPushEvent });
-
-      const { setLatestPublishedData } = useNodeConfigAPI();
-
-      setLatestPublishedData({ some: "new-data" });
+      $store.commit("nodeConfiguration/setLatestPublishedData", {
+        mock: "new-data",
+      });
 
       await Vue.nextTick();
-      expect(dispatchPushEvent).toHaveBeenCalledWith({
+      expect(pushEventDispatcher).toHaveBeenCalledWith({
         eventType: UIExtensionPushEvents.EventTypes.DataEvent,
-        payload: { some: "new-data" },
+        payload: { mock: "new-data" },
       });
     });
+  });
 
-    it("should render execute button if view should re-execute based on node config dirty state", async () => {
-      mockGetNodeView();
-      const { wrapper } = doMount();
-      await flushPromises();
+  it("should render execute button if view should re-execute based on node config dirty state", async () => {
+    mockGetNodeView();
+    const { wrapper, $store } = doMount();
+    await flushPromises();
 
-      const { setDirtyState } = useNodeConfigAPI();
+    expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
+    expect(wrapper.findComponent(UIExtension).exists()).toBe(true);
 
-      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
-      expect(wrapper.findComponent(UIExtension).exists()).toBe(true);
-
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await Vue.nextTick();
-
-      expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
-      expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
-        "To preview the node, please apply your changes and re-execute the node",
-      );
-      expect(wrapper.findComponent(ExecuteButton).props("buttonLabel")).toBe(
-        "Apply & execute",
-      );
-      expect(wrapper.findComponent(UIExtension).exists()).toBe(false);
+    $store.commit("nodeConfiguration/setDirtyState", {
+      apply: ApplyState.CONFIG,
+      view: ViewState.CONFIG,
     });
+    await Vue.nextTick();
+
+    expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
+    expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
+      "To preview the node, please apply your changes and re-execute the node",
+    );
+    expect(wrapper.findComponent(ExecuteButton).props("buttonLabel")).toBe(
+      "Apply & execute",
+    );
+    expect(wrapper.findComponent(UIExtension).exists()).toBe(false);
   });
 });

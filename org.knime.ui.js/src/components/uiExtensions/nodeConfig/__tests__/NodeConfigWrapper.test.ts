@@ -1,53 +1,51 @@
-import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { mockVuexStore, mockedObject } from "@/test/utils";
+import { flushPromises, mount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
+
+import { mockVuexStore } from "@/test/utils";
 import * as applicationStore from "@/store/application";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
-import { getToastsProvider } from "@/plugins/toasts";
-
-import NodeConfigWrapper from "../NodeConfigWrapper.vue";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { NodeState } from "@/api/gateway-api/generated-api";
-import NodeConfigLoader from "../NodeConfigLoader.vue";
-import { nextTick } from "vue";
-import { useNodeConfigAPI } from "../../common/useNodeConfigAPI";
+
+import NodeConfigWrapper from "../NodeConfigWrapper.vue";
+import NodeConfigLayout from "../NodeConfigLayout.vue";
+import type { Store } from "vuex";
 import { ApplyState, ViewState } from "@knime/ui-extension-service";
 
-const toast = mockedObject(getToastsProvider());
-
-vi.mock("@/environment", async () => {
-  const actual = await vi.importActual("@/environment");
-  return {
-    ...actual,
-    environment: "BROWSER",
-    isDesktop: false,
-    isBrowser: true,
-  };
-});
-
-describe("NodeConfigWrapper.vue", () => {
+describe("NodeConfigLayout.vue", () => {
   const projectId = "project1";
   const workflowId = "workflow1";
 
   const idleNode = createNativeNode({
     id: "root:1",
+    hasDialog: true,
     state: { executionState: NodeState.ExecutionStateEnum.IDLE },
   });
   const configuredNode = createNativeNode({
     id: "root:2",
+    hasDialog: true,
     state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
   });
   const executedNode = createNativeNode({
     id: "root:3",
+    hasDialog: true,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
   });
+  const executingNode = createNativeNode({
+    id: "root:4",
+    hasDialog: true,
+    state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
+  });
 
-  const createStore = () => {
+  const createStore = (initiallySelectedNode?: string) => {
     const $store = mockVuexStore({
       application: applicationStore,
       selection: selectionStore,
       workflow: workflowStore,
+      nodeConfiguration: nodeConfigurationStore,
+      settings: { state: { settings: { nodeDialogSize: 200 } } },
     });
 
     const workflow = createWorkflow({
@@ -59,12 +57,20 @@ describe("NodeConfigWrapper.vue", () => {
         [idleNode.id]: idleNode,
         [configuredNode.id]: configuredNode,
         [executedNode.id]: executedNode,
+        [executingNode.id]: executingNode,
       },
     });
 
     $store.commit("application/setActiveProjectId", projectId);
     $store.commit("workflow/setActiveWorkflow", workflow);
-    $store.dispatch("selection/selectNode", idleNode.id);
+    $store.dispatch(
+      "selection/selectNode",
+      initiallySelectedNode ?? idleNode.id,
+    );
+    $store.commit(
+      "nodeConfiguration/setActiveNodeId",
+      initiallySelectedNode ?? idleNode.id,
+    );
 
     return $store;
   };
@@ -77,336 +83,160 @@ describe("NodeConfigWrapper.vue", () => {
     const wrapper = mount(NodeConfigWrapper, {
       global: {
         plugins: [$store],
-        stubs: {
-          NodeConfigLoader: {
-            template: '<div><slot name="controls" /></div>',
-          },
-        },
       },
     });
 
+    const commitSpy = vi.spyOn($store, "commit");
     const dispatchSpy = vi.spyOn($store, "dispatch");
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, $store, dispatchSpy, commitSpy };
   };
 
-  const setLoadingDone = async (wrapper: VueWrapper<any>) => {
-    wrapper.findComponent(NodeConfigLoader).vm.$emit("loadingStateChange", {
-      value: "ready",
-    });
-    await nextTick();
+  const selectNextNode = async ($store: Store<any>, nodeId: string) => {
+    $store.dispatch("selection/deselectAllObjects");
+    $store.dispatch("selection/selectNode", nodeId);
+    await flushPromises();
   };
 
-  const getButton = (
-    wrapper: VueWrapper<any>,
-    buttonName: "apply" | "apply-execute" | "execute" | "discard",
-  ) => {
-    return wrapper.find(`button.${buttonName}`);
-  };
+  it("sets NodeConfigLayout props", () => {
+    const { wrapper } = doMount();
 
-  const isButtonDisabled = (
-    wrapper: VueWrapper<any>,
-    buttonName: "apply" | "apply-execute" | "execute" | "discard",
-  ) => {
-    const isDisabled = getButton(wrapper, buttonName).attributes("disabled");
-
-    return isDisabled !== undefined;
-  };
-
-  describe("action buttons", () => {
-    const {
-      dirtyState,
-      setDirtyState,
-      resetDirtyState,
-      setApplyComplete,
-      setEventDispatcher,
-    } = useNodeConfigAPI();
-
-    afterEach(() => {
-      resetDirtyState();
-    });
-
-    it("should render correctly", async () => {
-      const { wrapper } = doMount();
-
-      expect(wrapper.find(".buttons").exists()).toBe(false);
-      await setLoadingDone(wrapper);
-      expect(wrapper.find(".buttons").exists()).toBe(true);
-    });
-
-    it("should handle button states for IDLE node", async () => {
-      const { wrapper, $store } = doMount();
-
-      await setLoadingDone(wrapper);
-
-      await $store.dispatch("selection/selectNode", idleNode.id);
-
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(isButtonDisabled(wrapper, "discard")).toBe(true);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(true);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(true);
-
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
-    });
-
-    it("should handle button states for CONFIGURED node", async () => {
-      const { wrapper, $store } = doMount();
-
-      await setLoadingDone(wrapper);
-
-      await $store.dispatch("selection/deselectAllObjects");
-      await $store.dispatch("selection/selectNode", configuredNode.id);
-
-      expect(wrapper.find("button.execute").exists()).toBe(true);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(false);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(true);
-      expect(isButtonDisabled(wrapper, "execute")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(true);
-
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
-    });
-
-    it("should handle button states for EXECUTED node", async () => {
-      const { wrapper, $store } = doMount();
-
-      await setLoadingDone(wrapper);
-
-      await $store.dispatch("selection/deselectAllObjects");
-      await $store.dispatch("selection/selectNode", executedNode.id);
-
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(true);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(true);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(true);
-
-      setDirtyState({ apply: ApplyState.EXEC, view: ViewState.EXEC });
-
-      await nextTick();
-
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(true);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
-
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-
-      await nextTick();
-
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
-    });
-
-    it("should handle discard", async () => {
-      const { wrapper, $store } = doMount();
-
-      await setLoadingDone(wrapper);
-
-      await $store.dispatch("selection/deselectAllObjects");
-      await $store.dispatch("selection/selectNode", configuredNode.id);
-
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      const discardButton = getButton(wrapper, "discard");
-      await discardButton.trigger("click");
-
-      expect(dirtyState.value).toEqual({
-        apply: ApplyState.CLEAN,
-        view: ViewState.CLEAN,
-      });
-    });
-
-    it("should handle apply & execute", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount();
-
-      const mockDispatcher = vi.fn();
-      setEventDispatcher(mockDispatcher);
-
-      await setLoadingDone(wrapper);
-
-      await $store.dispatch("selection/deselectAllObjects");
-      await $store.dispatch("selection/selectNode", executedNode.id);
-
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      const applyAndExecuteButton = getButton(wrapper, "apply-execute");
-      await applyAndExecuteButton.trigger("click");
-      setApplyComplete(true);
-      await flushPromises();
-      expect(mockDispatcher).toHaveBeenCalled();
-
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/executeNodes", [
-        executedNode.id,
-      ]);
-    });
-
-    it("should handle execute", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount();
-
-      await setLoadingDone(wrapper);
-
-      await $store.dispatch("selection/deselectAllObjects");
-      await $store.dispatch("selection/selectNode", configuredNode.id);
-
-      const executeButton = getButton(wrapper, "execute");
-      await executeButton.trigger("click");
-      expect(wrapper.find("button.execute").exists()).toBe(true);
-
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/executeNodes", [
-        configuredNode.id,
-      ]);
-    });
-
-    it("should handle apply", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount();
-
-      const mockDispatcher = vi.fn();
-      setEventDispatcher(mockDispatcher);
-
-      await setLoadingDone(wrapper);
-
-      await $store.dispatch("selection/deselectAllObjects");
-      await $store.dispatch("selection/selectNode", configuredNode.id);
-
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      const applyButton = getButton(wrapper, "apply");
-      await applyButton.trigger("click");
-      setApplyComplete(true);
-      await flushPromises();
-      expect(mockDispatcher).toHaveBeenCalled();
-
-      expect(dispatchSpy).not.toHaveBeenCalledWith("workflow/executeNodes", [
-        executedNode.id,
-      ]);
-    });
+    expect(wrapper.findComponent(NodeConfigLayout).exists()).toBe(true);
+    expect(wrapper.findComponent(NodeConfigLayout).props("projectId")).toBe(
+      projectId,
+    );
+    expect(wrapper.findComponent(NodeConfigLayout).props("workflowId")).toBe(
+      workflowId,
+    );
+    expect(wrapper.findComponent(NodeConfigLayout).props("disabled")).toBe(
+      false,
+    );
   });
 
-  describe("apply on clickaway", () => {
-    const { setDirtyState, resetDirtyState, setEventDispatcher } =
-      useNodeConfigAPI();
+  it("should set the next active node when there is no dirty config state", async () => {
+    const { wrapper, $store } = doMount();
 
-    afterEach(() => {
-      resetDirtyState();
-      vi.clearAllMocks();
+    expect(wrapper.findComponent(NodeConfigLayout).props("dirtyState")).toEqual(
+      $store.state.nodeConfiguration.dirtyState,
+    );
+
+    await selectNextNode($store, configuredNode.id);
+    expect($store.state.nodeConfiguration.activeNodeId).toBe(configuredNode.id);
+  });
+
+  it("should set the next active node event when there's dirty config state but node config is disabled", async () => {
+    const { wrapper, $store } = doMount({
+      $store: createStore(executingNode.id),
     });
 
-    it("should apply changes when selected node changes", async () => {
-      const { wrapper, $store } = doMount();
-
-      const mockDispatcher = vi.fn();
-      setEventDispatcher(mockDispatcher);
-      $store.commit("application/setPermissions", { canConfigureNodes: true });
-      await setLoadingDone(wrapper);
-
-      // make some changes that require saving
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      // change to another node
-      $store.dispatch("selection/deselectAllObjects");
-      $store.dispatch("selection/selectNode", configuredNode.id);
-      await flushPromises();
-
-      expect(toast.show).not.toHaveBeenCalled();
-      expect(mockDispatcher).toHaveBeenCalled();
+    $store.commit("nodeConfiguration/setDirtyState", {
+      apply: ApplyState.CONFIG,
+      view: ViewState.CONFIG,
     });
 
-    it("should not apply changes when permissions don't allow it", async () => {
-      const { wrapper, $store } = doMount();
+    expect(wrapper.findComponent(NodeConfigLayout).props("disabled")).toBe(
+      true,
+    );
 
-      const mockDispatcher = vi.fn();
-      setEventDispatcher(mockDispatcher);
-      $store.commit("application/setPermissions", { canConfigureNodes: false });
-      await setLoadingDone(wrapper);
+    await selectNextNode($store, configuredNode.id);
+    expect($store.state.nodeConfiguration.activeNodeId).toBe(configuredNode.id);
+  });
 
-      // make some changes that require saving
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      // change to another node
-      $store.dispatch("selection/deselectAllObjects");
-      $store.dispatch("selection/selectNode", configuredNode.id);
-      await flushPromises();
-
-      expect(toast.show).not.toHaveBeenCalled();
-      expect(mockDispatcher).not.toHaveBeenCalled();
+  it("should skip selection to same node", async () => {
+    const { $store, commitSpy } = doMount({
+      $store: createStore(configuredNode.id),
     });
 
-    it("should show warning toast when node is executed", async () => {
-      const { wrapper, $store } = doMount();
+    expect(commitSpy).not.toHaveBeenCalledWith(
+      "nodeConfiguration/setActiveNodeId",
+    );
 
-      const mockDispatcher = vi.fn();
-      setEventDispatcher(mockDispatcher);
-      $store.commit("application/setPermissions", { canConfigureNodes: true });
-      await setLoadingDone(wrapper);
+    await selectNextNode($store, configuredNode.id);
 
-      // set the executedNode as the selected one
-      $store.dispatch("selection/deselectAllObjects");
-      $store.dispatch("selection/selectNode", executedNode.id);
-      await flushPromises();
+    expect(commitSpy).not.toHaveBeenCalledWith(
+      "nodeConfiguration/setActiveNodeId",
+    );
+  });
 
-      // make some changes that require saving
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      // change to another node
-      $store.dispatch("selection/deselectAllObjects");
-      $store.dispatch("selection/selectNode", configuredNode.id);
-      await flushPromises();
-
-      expect(toast.show).toHaveBeenCalledWith(
-        expect.objectContaining({
-          headline: "Node configuration was not saved",
-        }),
-      );
-      expect(mockDispatcher).not.toHaveBeenCalled();
+  it("should call autoApplySettings when changing nodes and there's a dirty state", async () => {
+    const { wrapper, $store, dispatchSpy, commitSpy } = doMount({
+      $store: createStore(configuredNode.id),
     });
 
-    it("should apply changes when component is unmounted", async () => {
-      const { wrapper, $store } = doMount();
+    expect(wrapper.findComponent(NodeConfigLayout).props("dirtyState")).toEqual(
+      $store.state.nodeConfiguration.dirtyState,
+    );
 
-      const mockDispatcher = vi.fn();
-      setEventDispatcher(mockDispatcher);
-      $store.commit("application/setPermissions", { canConfigureNodes: false });
-      await setLoadingDone(wrapper);
-
-      // make some changes that require saving
-      setDirtyState({ apply: ApplyState.CONFIG, view: ViewState.CONFIG });
-      await nextTick();
-
-      // change to another node
-      wrapper.unmount();
-
-      expect(toast.show).not.toHaveBeenCalled();
-      expect(mockDispatcher).not.toHaveBeenCalled();
+    $store.commit("nodeConfiguration/setDirtyState", {
+      apply: ApplyState.CONFIG,
+      view: ViewState.CONFIG,
     });
+
+    await selectNextNode($store, executedNode.id);
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      "nodeConfiguration/autoApplySettings",
+      { nextNode: executedNode },
+    );
+    expect(commitSpy).not.toHaveBeenCalledWith(
+      "nodeConfiguration/setActiveNode",
+      executedNode.id,
+    );
+    expect($store.state.nodeConfiguration.activeNodeId).toBe(configuredNode.id);
+  });
+
+  it("handles apply", () => {
+    const { wrapper, dispatchSpy } = doMount({
+      $store: createStore(configuredNode.id),
+    });
+
+    wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", false);
+
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      "nodeConfiguration/applySettings",
+      {
+        nodeId: configuredNode.id,
+        execute: false,
+      },
+    );
+  });
+
+  it("handles apply and execute", () => {
+    const { wrapper, dispatchSpy } = doMount({
+      $store: createStore(configuredNode.id),
+    });
+
+    wrapper.findComponent(NodeConfigLayout).vm.$emit("apply", true);
+
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      "nodeConfiguration/applySettings",
+      {
+        nodeId: configuredNode.id,
+        execute: true,
+      },
+    );
+  });
+
+  it("handles execute", () => {
+    const { wrapper, dispatchSpy } = doMount({
+      $store: createStore(configuredNode.id),
+    });
+
+    wrapper.findComponent(NodeConfigLayout).vm.$emit("execute");
+
+    expect(dispatchSpy).toHaveBeenCalledWith("workflow/executeNodes", [
+      configuredNode.id,
+    ]);
+  });
+
+  it("handles discard", () => {
+    const { wrapper, dispatchSpy } = doMount({
+      $store: createStore(configuredNode.id),
+    });
+
+    wrapper.findComponent(NodeConfigLayout).vm.$emit("discard");
+
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      "nodeConfiguration/discardSettings",
+    );
   });
 });

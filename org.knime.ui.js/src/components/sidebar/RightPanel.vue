@@ -68,7 +68,7 @@ const openNodeConfiguration = () => {
 
         <!-- PLACEHOLDER - DEFAULT -->
         <div v-if="!selectedNode" class="placeholder full-height">
-          <span class="placeholder-text">Please select a node.</span>
+          <span class="placeholder-text">Please select one node.</span>
         </div>
       </template>
     </NodeConfigWrapper>
