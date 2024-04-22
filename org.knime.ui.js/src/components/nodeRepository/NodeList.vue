@@ -215,12 +215,12 @@ watch(
 
 watch(activeElement, (el) => {
   // focus within (useFocusWithin does not work)
-  const focused = el ? root.value?.contains(el) : false;
-  const moreButtonFocused = el && moreButton.value?.$el === el;
+  const isFocused = el ? root.value?.contains(el) : false;
+  const isShowMoreButtonFocused = el && moreButton.value?.$el === el;
 
   // deselect item if its in our list and we loose focus
   if (
-    (!focused || moreButtonFocused) &&
+    (!isFocused || isShowMoreButtonFocused) &&
     props.selectedNode &&
     props.nodes.find((node) => node.id === props.selectedNode!.id)
   ) {
@@ -231,7 +231,7 @@ watch(activeElement, (el) => {
   // select first item on focus if there is no selection
   if (
     hasKeyboardFocus.value &&
-    focused &&
+    isFocused &&
     !props.selectedNode &&
     props.nodes.length > 0
   ) {
@@ -279,8 +279,6 @@ defineExpose({ focusFirst, focusLast });
 </template>
 
 <style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
 .nodes-container {
   margin-bottom: 13px;
 
