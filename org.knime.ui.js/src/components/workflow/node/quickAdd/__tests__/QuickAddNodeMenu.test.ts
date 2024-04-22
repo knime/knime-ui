@@ -24,7 +24,6 @@ import * as selectionStore from "@/store/selection";
 import * as settingsStore from "@/store/settings";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import QuickAddNodeRecommendations from "@/components/workflow/node/quickAdd/QuickAddNodeRecommendations.vue";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 
 import {
@@ -397,24 +396,6 @@ describe("QuickAddNodeMenu.vue", () => {
 
       expect(wrapper.find(".no-recommendations-message").exists()).toBe(true);
     });
-
-    it.each([["metanode"], ["component"]])(
-      "disable recommendations if node kind is %s",
-      async (nodeKind) => {
-        const { wrapper } = doMount({
-          getNodeByIdMock: vi.fn().mockReturnValue({ kind: nodeKind }),
-        });
-        const recommendations = wrapper.findComponent(
-          QuickAddNodeRecommendations,
-        );
-        expect(recommendations.props("disableRecommendations")).toBe(true);
-        expect(wrapper.find(".no-recommendations-message").exists()).toBe(true);
-        await Vue.nextTick();
-        expect(API.noderepository.getNodeRecommendations).toHaveBeenCalledTimes(
-          0,
-        );
-      },
-    );
   });
 
   describe("search", () => {

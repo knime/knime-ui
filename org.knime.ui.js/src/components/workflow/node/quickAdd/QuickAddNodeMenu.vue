@@ -116,11 +116,6 @@ export default defineComponent({
 
       return pos;
     },
-    isContainerNode() {
-      return ["metanode", "component"].includes(
-        this.getNodeById(this.nodeId)?.kind,
-      );
-    },
     fakePortConnector(): DragConnector {
       // port can be null for the so called global mode
       const portType = this.port
@@ -190,10 +185,8 @@ export default defineComponent({
     ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
     ...mapActions("quickAddNodes", ["searchNodesNextPage"]),
     async fetchNodeRecommendations() {
-      if (this.isContainerNode) {
-        return;
-      }
       const { nodeId, portIndex: portIdx } = this;
+
       await this.$store.dispatch("quickAddNodes/getNodeRecommendations", {
         nodeId,
         portIdx,
@@ -294,11 +287,7 @@ export default defineComponent({
       <hr />
       <template v-if="nodeRepositoryLoaded">
         <QuickAddNodeDisabledWorkflowCoach
-          v-if="
-            !hasNodeRecommendationsEnabled &&
-            !searchIsActive &&
-            !isContainerNode
-          "
+          v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
         />
         <template v-else>
           <QuickAddNodeSearchResults
@@ -314,7 +303,6 @@ export default defineComponent({
             v-else
             ref="recommendationResults"
             v-model:selected-node="selectedNode"
-            :disable-recommendations="isContainerNode"
             :display-mode="displayMode"
             @nav-reached-top="($refs.search as any).focus()"
             @add-node="addNode($event)"
