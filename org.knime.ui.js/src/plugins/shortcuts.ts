@@ -41,8 +41,7 @@ export const createShortcutsService = ({
   const get: ShortcutsService["get"] = (shortcutName) =>
     ({ ...shortcuts[shortcutName] }) as FormattedShortcut;
 
-  // find the name of the matching shortcut
-  // currently only the first match is returned, assuming no two shortcuts share the same hotkey
+  // find the names of the matching shortcuts
   const findByHotkey: ShortcutsService["findByHotkey"] = ({
     key,
     metaKey,
@@ -56,11 +55,19 @@ export const createShortcutsService = ({
       );
       const character = modifiers.pop() ?? "";
 
-      // Ctrl-modifier has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems
+      // our special CtrlOrCmd has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems
+      const ctrlOrMeta = isMac() ? "Meta" : "Ctrl";
+      const platformModifiers = modifiers.map((modifier) =>
+        modifier === "CtrlOrCmd" ? ctrlOrMeta : modifier,
+      );
+
+      const metaMatches =
+        Boolean(metaKey) === platformModifiers.includes("Meta");
       const ctrlMatches =
-        modifiers.includes("Ctrl") === (isMac() ? metaKey : ctrlKey);
-      const shiftMatches = Boolean(shiftKey) === modifiers.includes("Shift");
-      const altMatches = Boolean(altKey) === modifiers.includes("Alt");
+        Boolean(ctrlKey) === platformModifiers.includes("Ctrl");
+      const shiftMatches =
+        Boolean(shiftKey) === platformModifiers.includes("Shift");
+      const altMatches = Boolean(altKey) === platformModifiers.includes("Alt");
 
       const keysMatch =
         // keys are matched case insensitively
@@ -68,7 +75,9 @@ export const createShortcutsService = ({
         // on mac 'backspace' can be used instead of delete
         (isMac() && character === "Delete" && key === "Backspace");
 
-      return ctrlMatches && shiftMatches && altMatches && keysMatch;
+      return (
+        metaMatches && ctrlMatches && shiftMatches && altMatches && keysMatch
+      );
     };
 
     return Object.entries(shortcuts).flatMap(

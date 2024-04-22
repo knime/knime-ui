@@ -44,7 +44,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   save: {
     title: "Save workflow",
     text: "Save",
-    hotkey: ["Ctrl", "S"],
+    hotkey: ["CtrlOrCmd", "S"],
     group: "general",
     icon: SaveIcon,
     execute: ({ $store }) => {
@@ -68,7 +68,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   undo: {
     title: "Undo",
-    hotkey: ["Ctrl", "Z"],
+    hotkey: ["CtrlOrCmd", "Z"],
     group: "general",
     icon: UndoIcon,
     execute: ({ $store }) => $store.dispatch("workflow/undo"),
@@ -77,7 +77,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   },
   redo: {
     title: "Redo",
-    hotkey: ["Ctrl", "Shift", "Z"],
+    hotkey: ["CtrlOrCmd", "Shift", "Z"],
     group: "general",
     icon: RedoIcon,
     execute: ({ $store }) => $store.dispatch("workflow/redo"),
@@ -229,7 +229,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   copy: {
     text: "Copy",
     title: "Copy selection",
-    hotkey: ["Ctrl", "C"],
+    hotkey: ["CtrlOrCmd", "C"],
     group: "general",
     allowEventDefault: true,
     execute: ({ $store }) =>
@@ -261,7 +261,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   cut: {
     text: "Cut",
     title: "Cut selection",
-    hotkey: ["Ctrl", "X"],
+    hotkey: ["CtrlOrCmd", "X"],
     group: "general",
     execute: ({ $store }) =>
       $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "cut" }),
@@ -283,7 +283,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   paste: {
     text: "Paste",
     title: "Paste from clipboard",
-    hotkey: ["Ctrl", "V"],
+    hotkey: ["CtrlOrCmd", "V"],
     group: "general",
     execute: ({ $store, payload }) =>
       $store.dispatch("workflow/pasteWorkflowParts", {
@@ -316,7 +316,8 @@ const workflowShortcuts: WorkflowShortcuts = {
   quickAddNode: {
     text: "Quick add node",
     title: "Add new node",
-    hotkey: ["Ctrl", "."],
+    hotkey: ["CtrlOrCmd", "."],
+    additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
     execute: ({ $store }) => {
       // destruct current state

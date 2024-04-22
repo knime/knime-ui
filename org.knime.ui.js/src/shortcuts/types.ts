@@ -27,9 +27,10 @@ type Keys =
   | "ArrowLeft"
   | "Delete"
   | "Enter"
+  | " "
   | "Backspace";
 
-type Modifiers = "Ctrl" | "Alt" | "Shift";
+type Modifiers = "CtrlOrCmd" | "Ctrl" | "Alt" | "Shift";
 
 export type ShortcutGroups =
   | "general"

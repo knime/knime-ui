@@ -52,7 +52,7 @@ const annotationShortcuts: AnnotationShortcuts = {
   },
   bringAnnotationToFront: {
     text: "Bring to front",
-    hotkey: ["Ctrl", "Shift", "PageUp"],
+    hotkey: ["CtrlOrCmd", "Shift", "PageUp"],
     group: "workflowAnnotations",
     execute: ({ $store }) =>
       $store.dispatch("workflow/reorderWorkflowAnnotation", {
@@ -63,7 +63,7 @@ const annotationShortcuts: AnnotationShortcuts = {
       $store.getters["workflow/isWritable"],
   },
   bringAnnotationForward: {
-    hotkey: ["Ctrl", "PageUp"],
+    hotkey: ["CtrlOrCmd", "PageUp"],
     text: "Bring forward",
     group: "workflowAnnotations",
     execute: ({ $store }) =>
@@ -75,7 +75,7 @@ const annotationShortcuts: AnnotationShortcuts = {
       $store.getters["workflow/isWritable"],
   },
   sendAnnotationBackward: {
-    hotkey: ["Ctrl", "PageDown"],
+    hotkey: ["CtrlOrCmd", "PageDown"],
     text: "Send backward",
     group: "workflowAnnotations",
     execute: ({ $store }) =>
@@ -87,7 +87,7 @@ const annotationShortcuts: AnnotationShortcuts = {
       $store.getters["workflow/isWritable"],
   },
   sendAnnotationToBack: {
-    hotkey: ["Ctrl", "Shift", "PageDown"],
+    hotkey: ["CtrlOrCmd", "Shift", "PageDown"],
     text: "Send to back",
     group: "workflowAnnotations",
     execute: ({ $store }) =>

@@ -12,12 +12,15 @@ export const mapKeyFormat = (hotkeys: Hotkeys) => {
     ArrowLeft: "←",
     ArrowRight: "→",
     Enter: "↵",
+    " ": "Space", // we use event.key and there space is an actual space not the code "Space"
+    CtrlOrCmd: "Ctrl",
   };
 
   const MacOSkeyMap: KeyFormatMap = {
     Shift: "⇧",
     Delete: "⌫",
-    Ctrl: "⌘",
+    CtrlOrCmd: "⌘",
+    Ctrl: "⌃",
     Alt: "⌥",
     Enter: "↩",
   };

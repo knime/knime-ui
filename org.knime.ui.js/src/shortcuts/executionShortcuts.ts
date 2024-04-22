@@ -157,7 +157,7 @@ const executionShortcuts: ExecutionShortcuts = {
   resumeLoopExecution: {
     text: "Resume loop",
     title: "Resume loop execution",
-    hotkey: ["Ctrl", "Alt", "F8"],
+    hotkey: ["CtrlOrCmd", "Alt", "F8"],
     group: "execution",
     icon: ResumeLoopIcon,
     execute: ({ $store, payload = {} }) => {
@@ -173,7 +173,7 @@ const executionShortcuts: ExecutionShortcuts = {
   pauseLoopExecution: {
     text: "Pause loop",
     title: "Pause loop execution",
-    hotkey: ["Ctrl", "Alt", "F7"],
+    hotkey: ["CtrlOrCmd", "Alt", "F7"],
     group: "execution",
     icon: PauseLoopIcon,
     execute: ({ $store, payload = {} }) => {
@@ -189,7 +189,7 @@ const executionShortcuts: ExecutionShortcuts = {
   stepLoopExecution: {
     text: "Step loop",
     title: "Execute one loop step",
-    hotkey: ["Ctrl", "Alt", "F6"],
+    hotkey: ["CtrlOrCmd", "Alt", "F6"],
     group: "execution",
     icon: StepLoopIcon,
     execute: ({ $store, payload = {} }) => {

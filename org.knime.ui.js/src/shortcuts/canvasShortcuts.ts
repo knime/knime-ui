@@ -25,26 +25,26 @@ const zoomInHelper = throttle(({ $store }) => {
 const canvasShortcuts: CanvasShortcuts = {
   fitToScreen: {
     text: "Fit to screen",
-    hotkey: ["Ctrl", "2"],
+    hotkey: ["CtrlOrCmd", "2"],
     group: "canvasNavigation",
     execute: ({ $store }) => $store.dispatch("canvas/fitToScreen"),
   },
   fillScreen: {
     text: "Fill entire screen",
-    hotkey: ["Ctrl", "1"],
+    hotkey: ["CtrlOrCmd", "1"],
     group: "canvasNavigation",
     execute: ({ $store }) => $store.dispatch("canvas/fillScreen"),
   },
   zoomIn: {
     text: "Zoom in",
-    hotkey: ["Ctrl", "+"],
+    hotkey: ["CtrlOrCmd", "+"],
     group: "canvasNavigation",
-    additionalHotkeys: [{ key: ["Shift", "Ctrl", "="], visible: false }],
+    additionalHotkeys: [{ key: ["Shift", "CtrlOrCmd", "="], visible: false }],
     execute: zoomInHelper,
   },
   zoomOut: {
     text: "Zoom out",
-    hotkey: ["Ctrl", "-"],
+    hotkey: ["CtrlOrCmd", "-"],
     group: "canvasNavigation",
     execute: throttle(({ $store }) => {
       $store.dispatch("canvas/zoomCentered", { delta: -1 });
@@ -57,7 +57,7 @@ const canvasShortcuts: CanvasShortcuts = {
   },
   zoomTo100: {
     text: "Zoom to 100%",
-    hotkey: ["Ctrl", "0"],
+    hotkey: ["CtrlOrCmd", "0"],
     group: "canvasNavigation",
     execute: ({ $store }) =>
       $store.dispatch("canvas/zoomCentered", { factor: 1 }),

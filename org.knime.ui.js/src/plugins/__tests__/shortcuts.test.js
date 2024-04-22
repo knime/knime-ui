@@ -15,15 +15,15 @@ describe("Shortcuts Plugin", () => {
       vi.mock("@/shortcuts", () => ({
         default: {
           crazyHotkey: {
-            hotkey: ["Ctrl", "Alt", "Shift", "Delete"],
+            hotkey: ["CtrlOrCmd", "Alt", "Shift", "Delete"],
             execute: vi.fn(),
             condition: vi.fn(),
           },
           selectAll: {
-            hotkey: ["Ctrl", "A"],
+            hotkey: ["CtrlOrCmd", "A"],
           },
           copy: {
-            hotkey: ["Ctrl", "C"],
+            hotkey: ["CtrlOrCmd", "C"],
             allowEventDefault: true,
           },
         },

@@ -21,7 +21,8 @@ const usePanningWithSpace = (options: UsePanningWithSpaceOptions) => {
       return;
     }
 
-    if (event.code !== "Space") {
+    // do not handle space if a modifier is used
+    if (event.code !== "Space" || event.ctrlKey || event.metaKey) {
       return;
     }
 

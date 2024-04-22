@@ -10,12 +10,12 @@ import type { Shortcut } from "./types";
 const otherHotkeys: Array<Partial<Shortcut>> = [
   /** UI-Extensions Node Output */
   {
-    hotkey: ["Ctrl", "C"],
+    hotkey: ["CtrlOrCmd", "C"],
     description: "Copy selected table cells",
     group: "general",
   },
   {
-    hotkey: ["Ctrl", "Shift", "C"],
+    hotkey: ["CtrlOrCmd", "Shift", "C"],
     description: "Copy selected table cells and corresponding header",
     group: "general",
   },
@@ -33,47 +33,47 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
   },
   /** Annotations */
   {
-    hotkey: ["Ctrl", "0"],
+    hotkey: ["CtrlOrCmd", "0"],
     description: "Normal text",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "ALT", "1 - 6"],
+    hotkey: ["CtrlOrCmd", "ALT", "1 - 6"],
     description: "Headline 1 - 6",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "B"],
+    hotkey: ["CtrlOrCmd", "B"],
     description: "Bold",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "I"],
+    hotkey: ["CtrlOrCmd", "I"],
     description: "Italic",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "U"],
+    hotkey: ["CtrlOrCmd", "U"],
     description: "Underline",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "Shift", "X"],
+    hotkey: ["CtrlOrCmd", "Shift", "X"],
     description: "Strikethrough",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "Shift", "7"],
+    hotkey: ["CtrlOrCmd", "Shift", "7"],
     description: "Ordered list",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "Shift", "8"],
+    hotkey: ["CtrlOrCmd", "Shift", "8"],
     description: "Bullet list",
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["Ctrl", "K"],
+    hotkey: ["CtrlOrCmd", "K"],
     description: "Add or edit link",
     group: "workflowAnnotations",
   },
@@ -132,34 +132,34 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
     group: "workflowEditor",
   },
   {
-    hotkey: ["Ctrl", "Shift", "ArrowUp"],
+    hotkey: ["CtrlOrCmd", "Shift", "ArrowUp"],
     description: "Move selected elements up",
     group: "workflowEditor",
   },
   {
-    hotkey: ["Ctrl", "Shift", "ArrowDown"],
+    hotkey: ["CtrlOrCmd", "Shift", "ArrowDown"],
     description: "Move selected elements down",
     group: "workflowEditor",
   },
   {
-    hotkey: ["Ctrl", "Shift", "ArrowRight"],
+    hotkey: ["CtrlOrCmd", "Shift", "ArrowRight"],
     description: "Move selected elements right",
     group: "workflowEditor",
   },
   {
-    hotkey: ["Ctrl", "Shift", "ArrowLeft"],
+    hotkey: ["CtrlOrCmd", "Shift", "ArrowLeft"],
     description: "Move selected elements left",
     group: "workflowEditor",
   },
   /** Execution */
   {
-    hotkey: ["Ctrl", "Enter"],
+    hotkey: ["CtrlOrCmd", "Enter"],
     description: "Close dialog and execute node",
     group: "execution",
   },
   /** Node labels */
   {
-    hotkey: ["Ctrl", "Enter"],
+    hotkey: ["CtrlOrCmd", "Enter"],
     description: "Apply changes and leave edit mode",
     group: "nodeLabels",
   },

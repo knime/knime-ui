@@ -15,7 +15,7 @@ declare module "./index" {
 const applicationShortcuts: ApplicationShortcuts = {
   closeProject: {
     text: "Close workflow",
-    hotkey: ["Ctrl", "W"],
+    hotkey: ["CtrlOrCmd", "W"],
     group: "general",
     execute: ({ $store }) =>
       $store.dispatch(
@@ -27,7 +27,7 @@ const applicationShortcuts: ApplicationShortcuts = {
   },
   createWorkflow: {
     text: "Create workflow",
-    hotkey: ["Ctrl", "N"],
+    hotkey: ["CtrlOrCmd", "N"],
     group: "general",
     execute: ({ $store }) => {
       const { activeProjectId } = $store.state.application;

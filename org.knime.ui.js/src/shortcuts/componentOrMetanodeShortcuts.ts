@@ -63,7 +63,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   createMetanode: {
     text: "Create metanode",
     title: "Create metanode",
-    hotkey: ["Ctrl", "G"],
+    hotkey: ["CtrlOrCmd", "G"],
     group: "componentAndMetanode",
     icon: CreateMetanode,
     execute: ({ $store }) =>
@@ -87,7 +87,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   createComponent: {
     text: "Create component",
     title: "Create component",
-    hotkey: ["Ctrl", "J"],
+    hotkey: ["CtrlOrCmd", "J"],
     group: "componentAndMetanode",
     icon: CreateComponent,
     execute: ({ $store }) =>
@@ -114,7 +114,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   openComponentOrMetanode: {
     text: ({ $store }) =>
       `Open ${$store.getters["selection/singleSelectedNode"]?.kind}`,
-    hotkey: ["Ctrl", "Alt", "Enter"],
+    hotkey: ["CtrlOrCmd", "Alt", "Enter"],
     group: "componentAndMetanode",
     description: "Open Component or Metanode",
     execute: ({ $store, $router }) => {
@@ -132,7 +132,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
   },
   openParentWorkflow: {
-    hotkey: ["Ctrl", "Alt", "Shift", "Enter"],
+    hotkey: ["CtrlOrCmd", "Alt", "Shift", "Enter"],
     text: "Open parent workflow",
     group: "componentAndMetanode",
     execute: ({ $store, $router }) => {
@@ -159,7 +159,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   expandMetanode: {
     text: "Expand metanode",
     title: "Expand metanode",
-    hotkey: ["Ctrl", "Shift", "G"],
+    hotkey: ["CtrlOrCmd", "Shift", "G"],
     group: "componentAndMetanode",
     execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
     condition: canExpand("metanode"),
@@ -167,7 +167,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   expandComponent: {
     text: "Expand component",
     title: "Expand component",
-    hotkey: ["Ctrl", "Shift", "J"],
+    hotkey: ["CtrlOrCmd", "Shift", "J"],
     group: "componentAndMetanode",
     execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
     condition: canExpand("component"),
@@ -267,7 +267,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   openLayoutEditor: {
     text: "Open layout editor",
     title: "Open layout editor",
-    hotkey: ["Ctrl", "D"],
+    hotkey: ["CtrlOrCmd", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
     execute: ({ $store }) => $store.dispatch("workflow/openLayoutEditor"),
@@ -279,7 +279,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     text: "Open layout editor",
     title: "Open layout editor",
     description: "Open layout editor of selected component",
-    hotkey: ["Ctrl", "Shift", "D"],
+    hotkey: ["CtrlOrCmd", "Shift", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
     execute: ({ $store }) => {
