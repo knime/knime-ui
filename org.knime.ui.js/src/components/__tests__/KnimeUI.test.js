@@ -22,6 +22,7 @@ describe("KnimeUI.vue", () => {
 
       return {
         ...actual,
+        DynamicEnvRenderer: {},
         environment,
         isDesktop: environment === "DESKTOP",
         isBrowser: environment === "BROWSER",
