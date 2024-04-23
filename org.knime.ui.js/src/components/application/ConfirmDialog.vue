@@ -41,6 +41,7 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
     :implicit-dismiss="false"
     style-type="info"
     class="modal"
+    :animate="false"
     @cancel="onCancel"
   >
     <template #confirmation>
