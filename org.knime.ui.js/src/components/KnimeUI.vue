@@ -96,6 +96,9 @@ export default defineComponent({
           document.fonts.load("700 1em Roboto Condensed"),
         ]);
 
+        // calculate content height based on running environment
+        this.setContentHeight();
+
         // render the application
         this.loaded = true;
         // @ts-ignore
@@ -103,6 +106,19 @@ export default defineComponent({
         // @ts-ignore
         this.error = { message, stack };
       }
+    },
+
+    setContentHeight() {
+      let mainContentHeight = "100vh";
+      if (isDesktop) {
+        mainContentHeight = "calc(100vh - var(--app-header-height))";
+      } else if (this.permissions.showFloatingDownloadButton) {
+        mainContentHeight = "calc(100vh - var(--app-download-banner-height))";
+      }
+      document.documentElement.style.setProperty(
+        "--app-main-content-height",
+        mainContentHeight,
+      );
     },
 
     async checkClipboardSupport() {
@@ -166,8 +182,6 @@ export default defineComponent({
           $route.meta.showUpdateBanner && availableUpdates
             ? 'main-content-with-banner'
             : 'main-content',
-          environment.toLowerCase(),
-          { 'with-download-banner': permissions.showFloatingDownloadButton },
         ]"
       >
         <RouterView />
@@ -216,23 +230,12 @@ export default defineComponent({
 .main-content {
   width: 100vw;
   grid-area: workflow;
-
-  &.desktop {
-    height: calc(100vh - var(--app-header-height));
-  }
-
-  &.browser {
-    height: 100vh;
-
-    &.with-download-banner {
-      height: calc(100vh - var(--app-download-banner-height));
-    }
-  }
+  height: var(--app-main-content-height);
 }
 
 .main-content-with-banner {
   height: calc(
-    100vh - var(--app-header-height) - var(--app-update-banner-height)
+    var(--app-main-content-height) - var(--app-update-banner-height)
   );
 }
 
