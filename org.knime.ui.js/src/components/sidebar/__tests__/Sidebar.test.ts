@@ -67,7 +67,7 @@ describe("Sidebar", () => {
     });
 
     const activateTab = async (tabName: string) => {
-      await wrapper.find(`[title="${tabName}"] > input`).trigger("change");
+      await wrapper.find(`[title="${tabName}"] > input`).trigger("click");
     };
 
     return { wrapper, $store, dispatchSpy, commitSpy, activateTab };
