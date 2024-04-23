@@ -12,6 +12,7 @@ import { useStore } from "@/composables/useStore";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
+import { gatewayRpcClient } from "@/api/gateway-api";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
@@ -68,7 +69,7 @@ const loadExtensionConfig = async () => {
 
 const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
 
-const noop = () => {};
+const noop = () => {}; // NOSONAR
 
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
@@ -95,6 +96,16 @@ const apiLayer: UIExtensionAPILayer = {
     consola.trace("NodeDialog :: callNodeDataService result", result);
 
     return { result };
+  },
+
+  callKnimeUiApi: async (method: string, params: any) => {
+    const response = await gatewayRpcClient.call(method, {
+      projectId: projectId.value,
+      workflowId: workflowId.value,
+      nodeId: selectedNode.value.id,
+      ...params,
+    });
+    return { isSome: true, result: response };
   },
 
   publishData: (data) => {

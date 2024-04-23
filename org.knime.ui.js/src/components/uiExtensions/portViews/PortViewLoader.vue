@@ -66,7 +66,7 @@ const loadExtensionConfig = async () => {
   extensionConfig.value = portView;
 };
 
-const noop = () => {};
+const noop = () => {}; // NOSONAR
 
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
