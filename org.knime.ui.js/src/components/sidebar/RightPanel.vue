@@ -34,6 +34,8 @@ const hasLegacyDialog = computed(() =>
   Boolean(selectedNode.value && !selectedNode.value.hasDialog),
 );
 
+const isMetanode = computed(() => selectedNode.value.kind === "metanode");
+
 // Callback methods
 const openNodeConfiguration = () => {
   const nodeId = selectedNode.value.id;
@@ -55,11 +57,16 @@ const openNodeConfiguration = () => {
     <!-- PLACEHOLDER - LEGACY DIALOGS -->
     <div v-else-if="hasLegacyDialog" class="placeholder">
       <template v-if="showDownloadButton">
-        <span class="placeholder-text">
-          To configure nodes with a classic dialog, download the KNIME Analytics
-          Platform.
-        </span>
-        <DownloadAPButton compact src="node-configuration-panel" />
+        <span v-if="isMetanode" class="placeholder-text"
+          >Please select a node.</span
+        >
+        <template v-else>
+          <span class="placeholder-text">
+            To configure nodes with a classic dialog, download the KNIME
+            Analytics Platform.
+          </span>
+          <DownloadAPButton compact src="node-configuration-panel" />
+        </template>
       </template>
       <template v-else>
         <span class="placeholder-text">

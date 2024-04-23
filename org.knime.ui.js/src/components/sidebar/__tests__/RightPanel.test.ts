@@ -119,4 +119,21 @@ describe("RightPanel", () => {
       expect(wrapper.find(".panel-dialog-disabled").exists()).toBe(true);
     });
   });
+
+  it("shows a message if selected node is a metanode in a browser", async () => {
+    const { wrapper, $store } = doMount({
+      singleSelectedNodeMock: vi.fn().mockReturnValue({
+        id: 2,
+        kind: "metanode",
+      }),
+    });
+
+    $store.state.application.permissions.showFloatingDownloadButton = true;
+    await nextTick();
+
+    expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
+    expect(wrapper.find(".placeholder-text").text()).toBe(
+      "Please select a node.",
+    );
+  });
 });
