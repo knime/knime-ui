@@ -84,7 +84,10 @@ describe("KnimeUI.vue", () => {
       global: {
         plugins: [$store],
         mocks: { $router, $route, $bus },
-        stubs: { RouterView: true, HotkeyHandler: true },
+        stubs: {
+          RouterView: true,
+          HotkeyHandler: true,
+        },
       },
     });
 
@@ -159,6 +162,49 @@ describe("KnimeUI.vue", () => {
     });
 
     expect(wrapper.findComponent(".download-banner").exists()).toBe(true);
+  });
+
+  it("sets CSS variable --app-main-content-height in desktop correctly", async () => {
+    const { wrapper } = await doShallowMount({
+      environment: "DESKTOP",
+    });
+
+    await wrapper.vm.$nextTick();
+
+    const style = getComputedStyle(document.documentElement);
+    const appHeight = style
+      .getPropertyValue("--app-main-content-height")
+      .trim();
+
+    expect(appHeight).toBe("calc(100vh - var(--app-header-height))");
+  });
+
+  it("sets CSS variable --app-main-content-height in browser correctly", async () => {
+    const { wrapper } = await doShallowMount();
+
+    await wrapper.vm.$nextTick();
+
+    const style = getComputedStyle(document.documentElement);
+    const appHeight = style
+      .getPropertyValue("--app-main-content-height")
+      .trim();
+
+    expect(appHeight).toBe("100vh");
+  });
+
+  it("sets CSS variable --app-main-content-height with download banner correctly", async () => {
+    const { wrapper } = await doShallowMount({
+      showFloatingDownloadButton: true,
+    });
+
+    await wrapper.vm.$nextTick();
+
+    const style = getComputedStyle(document.documentElement);
+    const appHeight = style
+      .getPropertyValue("--app-main-content-height")
+      .trim();
+
+    expect(appHeight).toBe("calc(100vh - var(--app-download-banner-height))");
   });
 
   describe("clipboard support", () => {
