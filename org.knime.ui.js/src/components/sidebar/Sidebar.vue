@@ -171,7 +171,7 @@ const hasSection = (name: TabValues) => {
             :value="section.name"
             type="radio"
             :checked="section.isActive"
-            @change="section.onClick"
+            @click="section.onClick"
           />
           <span>
             <Component :is="section.icon" />
