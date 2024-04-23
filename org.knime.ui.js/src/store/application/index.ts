@@ -295,13 +295,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
       commit("setNodeRepositoryLoaded", applicationState.nodeRepositoryLoaded);
     }
-
-    if (applicationState.hasOwnProperty("confirmNodeConfigChanges")) {
-      commit(
-        "setAskToConfirmNodeConfigChanges",
-        applicationState.confirmNodeConfigChanges,
-      );
-    }
   },
 
   async forceCloseProjects({ state }, { projectIds }) {

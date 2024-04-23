@@ -28,6 +28,11 @@ const onCancel = () => {
 };
 
 const handleButtonClick = (button: ConfirmDialogButton) => {
+  if (button.customHandler) {
+    button.customHandler({ confirm: onConfirm, cancel: onCancel });
+    return;
+  }
+
   const handler = button.type === "confirm" ? onConfirm : onCancel;
   handler();
 };
@@ -47,9 +52,10 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
     <template #confirmation>
       <div class="confirmation">
         <div class="message">{{ config?.message }}</div>
-        <div v-if="config?.dontAskAgainText" class="ask-again">
+        <div v-if="config?.doNotAskAgainText" class="ask-again">
           <Checkbox v-model="askAgain">
-            {{ config.dontAskAgainText }}
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <span v-html="config.doNotAskAgainText" />
           </Checkbox>
         </div>
       </div>
@@ -60,6 +66,7 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
         v-for="(button, index) in config.buttons"
         :key="index"
         compact
+        :data-test-id="`${button.type}-button`"
         :with-border="button.type === 'cancel'"
         :primary="button.type === 'confirm'"
         :class="['button', { 'flush-right': button.flushRight }]"

@@ -5,12 +5,16 @@ export type ConfirmDialogButton = {
   type: "confirm" | "cancel";
   label: string;
   flushRight?: boolean;
+  customHandler?: (actions: {
+    confirm: () => void;
+    cancel: () => void;
+  }) => void;
 };
 
 type ModalConfig = {
   title: string;
   message: string;
-  dontAskAgainText?: string;
+  doNotAskAgainText?: string;
   buttons?: Array<ConfirmDialogButton>;
 };
 
@@ -19,7 +23,7 @@ const defaultButtons: [ConfirmDialogButton, ConfirmDialogButton] = [
   { type: "confirm", label: "Yes", flushRight: true },
 ];
 
-type ConfirmResult = { confirmed: boolean; dontAskAgain?: boolean };
+type ConfirmResult = { confirmed: boolean; doNotAskAgain?: boolean };
 
 const isActive = ref(false);
 const activeModalConfig = ref<ModalConfig | null>(null);
@@ -38,8 +42,11 @@ export const useConfirmDialog = () => {
     unwrappedPromise.value = createUnwrappedPromise();
   };
 
-  const confirm = (dontAskAgain = false) => {
-    unwrappedPromise.value.resolve({ confirmed: true, dontAskAgain });
+  const confirm = (doNotAskAgain = false) => {
+    unwrappedPromise.value.resolve({
+      confirmed: true,
+      doNotAskAgain,
+    });
     close();
   };
 

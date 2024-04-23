@@ -113,7 +113,7 @@ const onContextMenu = (event: MouseEvent) => {
       :secondary-snap-size="360"
       :secondary-max-size="900"
       style="--splitter-background-color: var(--knime-gray-ultra-light)"
-      :remove-element-on-close="false"
+      keep-element-on-close
     >
       <!--
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,

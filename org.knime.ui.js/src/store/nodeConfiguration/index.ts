@@ -49,19 +49,32 @@ let unwrappedPromise = createUnwrappedPromise<boolean>();
 
 const { show: showConfirmDialog } = useConfirmDialog();
 
-const promptApplyConfirmation = async (askToConfirm: boolean) => {
+const promptApplyConfirmation = async (
+  askToConfirm: boolean,
+): Promise<"apply" | "discard" | "cancel"> => {
+  let wasDiscarded = false;
+
   const prompt = () =>
     showConfirmDialog({
       title: "Unsaved configuration changes",
       message:
         "You have unsaved changes in your node configuration. Do you want to apply them?",
-      dontAskAgainText:
-        "Always apply and do not ask again. (You can still change this in the preferences)",
+      doNotAskAgainText:
+        "Always apply and do not ask again. <br/> (You can still change this in the preferences)",
 
       buttons: [
         {
           type: "cancel",
           label: "Cancel",
+        },
+        {
+          type: "cancel",
+          label: "Discard",
+          flushRight: true,
+          customHandler: ({ cancel }) => {
+            wasDiscarded = true;
+            cancel();
+          },
         },
         {
           type: "confirm",
@@ -71,16 +84,20 @@ const promptApplyConfirmation = async (askToConfirm: boolean) => {
       ],
     });
 
-  const { confirmed, dontAskAgain } = askToConfirm
+  const { confirmed, doNotAskAgain } = askToConfirm
     ? await prompt()
-    : { confirmed: true, dontAskAgain: true };
+    : { confirmed: true, doNotAskAgain: true };
 
   // box was checked and setting is set to "ask"
-  if (dontAskAgain && askToConfirm) {
+  if (doNotAskAgain && askToConfirm) {
     await API.desktop.setConfirmNodeConfigChangesPreference(false);
   }
 
-  return confirmed;
+  if (wasDiscarded) {
+    return "discard";
+  }
+
+  return confirmed ? "apply" : "cancel";
 };
 
 export const mutations: MutationTree<NodeConfigurationState> = {
@@ -137,18 +154,23 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
 
     const canContinue = await runInEnvironment({
       DESKTOP: async () => {
-        const shouldApply = await promptApplyConfirmation(
+        const modalResult = await promptApplyConfirmation(
           rootState.application.askToConfirmNodeConfigChanges,
         );
 
         // if user cancelled then re-select the same node
-        if (!shouldApply) {
+        if (modalResult === "cancel") {
           dispatch("selection/deselectAllObjects", null, { root: true });
           dispatch("selection/selectNode", activeNode.id, { root: true });
           return false;
         }
 
-        dispatch("applySettings", { nodeId: activeNode.id });
+        if (modalResult === "apply") {
+          dispatch("applySettings", { nodeId: activeNode.id });
+        } else {
+          dispatch("discardSettings");
+        }
+
         commit("setActiveNodeId", nextNode?.id ?? null);
         return true;
       },
