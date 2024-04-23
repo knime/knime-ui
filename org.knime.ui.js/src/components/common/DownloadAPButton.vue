@@ -8,10 +8,12 @@ import { useStore } from "@/composables/useStore";
 type Props = {
   src: string;
   compact?: boolean;
+  onDark?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   compact: false,
+  onDark: false,
 });
 
 const store = useStore();
@@ -27,7 +29,7 @@ const href = computed(() => {
 </script>
 
 <template>
-  <Button primary :compact="compact" :href="href">
+  <Button primary :on-dark="onDark" :compact="compact" :href="href">
     <LinkExternalIcon />
     <span><b>Get KNIME Analytics Platform</b></span>
   </Button>

@@ -9,7 +9,11 @@ import DownloadAPButton from "../common/DownloadAPButton.vue";
       make use of the full potential
     </span>
 
-    <DownloadAPButton class="download-button" src="floating-action-button" />
+    <DownloadAPButton
+      class="download-button"
+      src="floating-action-button"
+      on-dark
+    />
   </div>
 </template>
 
