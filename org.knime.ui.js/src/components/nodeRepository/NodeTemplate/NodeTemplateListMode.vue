@@ -31,13 +31,14 @@ const emit = defineEmits(["helpIconClick"]);
         ? `${nodeTemplate.extension.name} \nby “${nodeTemplate.extension.vendor.name}”`
         : undefined
     "
+    data-test-id="node-template"
   >
     <div class="node-preview">
       <slot name="node-preview" />
     </div>
 
     <div class="content">
-      <span class="node-name">
+      <span class="node-name" data-test-id="node-template-name">
         {{ nodeTemplate.name }}
       </span>
     </div>

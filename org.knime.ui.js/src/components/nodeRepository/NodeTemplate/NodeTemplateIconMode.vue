@@ -31,9 +31,13 @@ const extensionText = computed(() => {
 </script>
 
 <template>
-  <div class="display-icon" :title="`${nodeTemplate.name}${extensionText}`">
+  <div
+    class="display-icon"
+    :title="`${nodeTemplate.name}${extensionText}`"
+    data-test-id="node-template"
+  >
     <div class="name-icon-wrapper">
-      <span class="name">
+      <span class="name" data-test-id="node-template-name">
         {{ nodeTemplate.name }}
       </span>
 
