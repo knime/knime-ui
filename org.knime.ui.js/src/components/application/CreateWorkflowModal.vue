@@ -143,10 +143,11 @@ watch(
       </Label>
     </template>
     <template #controls>
-      <Button with-border :disabled="isSubmitted" @click="closeModal">
+      <Button compact with-border :disabled="isSubmitted" @click="closeModal">
         <strong>Cancel</strong>
       </Button>
       <Button
+        compact
         primary
         class="submit-button"
         :disabled="!isValid || isSubmitted"

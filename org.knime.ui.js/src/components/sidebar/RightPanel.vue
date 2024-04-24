@@ -40,7 +40,7 @@ const openNodeConfiguration = () => {
         <div v-if="hasLegacyDialog" class="placeholder full-height">
           <template v-if="showDownloadButton">
             <span v-if="isMetanode" class="placeholder-text">
-              Please select a node.
+              Please select one node.
             </span>
             <template v-else>
               <span class="placeholder-text">

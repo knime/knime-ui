@@ -115,7 +115,7 @@ describe("RightPanel", () => {
 
     expect(wrapper.findComponent(RightPanel).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "Please select a node.",
+      "Please select one node.",
     );
   });
 });

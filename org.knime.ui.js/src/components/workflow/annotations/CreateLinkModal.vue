@@ -109,14 +109,14 @@ const onkeyup = (keyupEvent: KeyboardEvent) => {
       </Label>
     </template>
     <template #controls>
-      <Button with-border @click="closeModal">
+      <Button compact with-border @click="closeModal">
         <strong>Cancel</strong>
       </Button>
       <div class="controls-apply-group">
-        <Button v-if="isEdit" with-border @click="emit('removeLink')">
+        <Button v-if="isEdit" compact with-border @click="emit('removeLink')">
           <strong>Remove URL</strong>
         </Button>
-        <Button primary :disabled="!isValid" @click="onSubmit">
+        <Button compact primary :disabled="!isValid" @click="onSubmit">
           <strong>{{ isEdit ? "Apply" : "Add link" }}</strong>
         </Button>
       </div>

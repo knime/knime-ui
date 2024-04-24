@@ -39,8 +39,8 @@ const emit = defineEmits(["accept", "cancel"]);
       </div>
     </template>
     <template #controls>
-      <Button with-border @click="emit('cancel')"> Cancel </Button>
-      <Button primary @click="emit('accept')"> Ok </Button>
+      <Button compact with-border @click="emit('cancel')"> Cancel </Button>
+      <Button compact primary @click="emit('accept')"> Ok </Button>
     </template>
   </Modal>
 </template>
