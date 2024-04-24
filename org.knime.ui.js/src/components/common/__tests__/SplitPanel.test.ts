@@ -137,7 +137,7 @@ describe("SplitPanel", () => {
     const { dragSplitter, checkSecondarySize } = doMount();
 
     await dragSplitter(300, 400);
-    checkSecondarySize(33.34);
+    checkSecondarySize(34.84);
   });
 
   it.each(["down", "up", "left", "right"])(

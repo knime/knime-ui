@@ -159,11 +159,11 @@ watch(
     :use-pixel="usePixel"
     :size-pane="sizePane"
     :is-horizontal="isHorizontal"
-    :splitter-size="10"
+    :splitter-size="1"
     :class="[
       'splitter-root',
       `direction-${direction}`,
-      { 'will-snap': willSnap },
+      { 'will-snap': willSnap, closed: isClosed },
     ]"
     :splitter-title="`Click to ${isClosed ? 'open' : 'close'}`"
     @splitter-click="onSplitterClick"
@@ -239,28 +239,75 @@ watch(
 .splitter-root {
   --splitter-background-color: transparent;
   --splitter-border: 1px solid var(--knime-silver-sand);
+  --splitter-touch-zone: -8px;
+  --splitter-closed-size: 10px;
+
+  /** different size for closed splitters */
+  &.closed {
+    &.vertical :deep(> .splitter) {
+      width: var(--splitter-closed-size);
+    }
+
+    &.horizontal :deep(> .splitter) {
+      height: var(--splitter-closed-size);
+    }
+  }
+
+  /** touch zone / hover area */
+  & :deep(> .splitter) {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+  }
 
   &.direction-up {
     & :deep(> .splitter) {
       border-bottom: var(--splitter-border);
+
+      &::before {
+        top: var(--splitter-touch-zone);
+        width: 100%;
+      }
     }
   }
 
   &.direction-down {
     & :deep(> .splitter) {
       border-top: var(--splitter-border);
+
+      &::before {
+        bottom: var(--splitter-touch-zone);
+        width: 100%;
+      }
     }
   }
 
   &.direction-left {
     & :deep(> .splitter) {
       border-right: var(--splitter-border);
+
+      &::before {
+        left: var(--splitter-touch-zone);
+        height: 100%;
+      }
     }
   }
 
   &.direction-right {
     & :deep(> .splitter) {
       border-left: var(--splitter-border);
+
+      &::before {
+        right: var(--splitter-touch-zone);
+        height: 100%;
+      }
     }
   }
 
