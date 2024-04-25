@@ -29,6 +29,7 @@ export default {
     background: var(--knime-white);
     display: flex;
     flex-direction: column;
+    max-width: 100%;
 
     &.centered {
       justify-content: center;

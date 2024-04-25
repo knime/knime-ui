@@ -13,3 +13,15 @@
 
   @mixin-content;
 }
+
+@define-mixin multi-line-truncate $line-clamp: 2 {
+  text-overflow: ellipsis;
+  /* stylelint-disable-next-line value-no-vendor-prefix */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $line-clamp;
+  overflow: hidden;
+  overflow-wrap: break-word;
+
+  @mixin-content;
+}

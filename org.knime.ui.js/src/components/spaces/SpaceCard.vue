@@ -99,6 +99,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .kudos {
   display: flex;
   align-items: center;
@@ -119,8 +121,10 @@ export default {
     font-size: 19px;
     font-weight: 700;
     line-height: 24px;
-    overflow-wrap: break-word;
     max-width: 100%;
+    text-align: left;
+
+    @mixin multi-line-truncate 2;
   }
 
   & p {
@@ -128,8 +132,10 @@ export default {
     margin: 5px 0;
     font-weight: 300;
     line-height: 24px;
-    overflow-wrap: break-word;
     max-width: 100%;
+    text-align: left;
+
+    @mixin multi-line-truncate 4;
   }
 
   & span {

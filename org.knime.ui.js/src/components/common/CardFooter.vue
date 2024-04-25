@@ -36,6 +36,7 @@ export default {
     padding: 0 30px 20px;
     display: flex;
     align-items: center;
+    margin-top: auto;
 
     & .icon {
       display: flex;
