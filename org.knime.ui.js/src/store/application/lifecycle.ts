@@ -16,6 +16,7 @@ import { runInEnvironment } from "@/environment";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
 import { features } from "@/plugins/feature-flags";
 import { ratioToZoomLevel } from "@/store/settings";
+import sleep from "webapps-common/util/sleep";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
@@ -55,11 +56,22 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await dispatch("settings/fetchSettings", {}, { root: true });
 
     // On desktop apply fetched zoom level at this point
-    runInEnvironment({
-      DESKTOP: () => {
-        API.desktop.setZoomLevel(
-          ratioToZoomLevel(rootState.settings.settings.uiScale),
-        );
+    await runInEnvironment({
+      DESKTOP: async () => {
+        const RETRY_DELAY_MS = 50;
+        const retry = async (retryCount: number) => {
+          try {
+            await API.desktop.setZoomLevel(
+              ratioToZoomLevel(rootState.settings.settings.uiScale),
+            );
+          } catch (e) {
+            if (retryCount > 0) {
+              await sleep(RETRY_DELAY_MS);
+              await retry(retryCount - 1);
+            }
+          }
+        };
+        await retry(100);
       },
     });
 
