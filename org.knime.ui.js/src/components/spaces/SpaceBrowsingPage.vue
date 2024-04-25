@@ -118,6 +118,7 @@ export default defineComponent({
           <div class="grid-item-12">
             <div class="toolbar">
               <SpaceExplorerActions
+                ref="actions"
                 :project-id="globalSpaceBrowserProjectId"
                 :selected-item-ids="currentSelectedItemIds"
                 @imported-item-ids="setCurrentSelectedItemIds($event)"
@@ -134,6 +135,7 @@ export default defineComponent({
           <SpaceExplorer
             :project-id="globalSpaceBrowserProjectId"
             :selected-item-ids="currentSelectedItemIds"
+            :click-outside-exception="$refs.actions as HTMLElement"
             @update:selected-item-ids="setCurrentSelectedItemIds($event)"
           />
         </div>

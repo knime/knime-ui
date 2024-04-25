@@ -1,8 +1,11 @@
+<script setup lang="ts">
+import { SIDEBAR_PANEL_PADDING } from "./config";
+</script>
+
 <template>
-  <div class="kai-base-panel">
-    <div class="header">
-      <h2>KNIME AI Assistant</h2>
-      <slot name="headerControls" />
+  <div class="panel-layout">
+    <div class="panel-header">
+      <slot name="header" />
     </div>
     <hr />
     <slot />
@@ -10,21 +13,24 @@
 </template>
 
 <style lang="postcss" scoped>
-.kai-base-panel {
+.panel-layout {
+  --padding: calc(v-bind(SIDEBAR_PANEL_PADDING) * 1px);
+
   font-family: Roboto, sans-serif;
   font-size: 13px;
   line-height: 150%;
   display: flex;
   flex-direction: column;
-  padding: 8px 20px 20px;
+  padding: 8px var(--padding) var(--padding);
   height: 100%;
 
-  & .header {
+  & .panel-header {
     display: flex;
     flex-direction: row;
     align-items: center;
+    min-height: 36px;
 
-    & h2 {
+    & :slotted(h2) {
       margin: 0;
       font-weight: 400;
       font-size: 18px;

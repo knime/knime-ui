@@ -2,15 +2,20 @@
 import { API } from "@api";
 import { compatibility } from "@/environment";
 import Button from "webapps-common/ui/components/Button.vue";
-import BasePanel from "./BasePanel.vue";
+
 import InstallAiIllustration from "@/assets/install-ai-illustration.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 
 const installKai = API.desktop.installKAI;
 </script>
 
 <template>
-  <BasePanel>
+  <SidebarPanelLayout>
+    <template #header>
+      <h2>KNIME AI Assistant</h2>
+    </template>
+
     <div class="installation-panel">
       <InstallAiIllustration />
       <div class="slogan">
@@ -38,7 +43,7 @@ const installKai = API.desktop.installKAI;
         />
       </template>
     </div>
-  </BasePanel>
+  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>

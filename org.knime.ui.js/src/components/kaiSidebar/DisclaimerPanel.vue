@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
+import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
+
 import { useKaiServer } from "./useKaiServer";
-import BasePanel from "./BasePanel.vue";
 
 const { uiStrings } = useKaiServer();
 
@@ -9,7 +10,11 @@ const emit = defineEmits(["close"]);
 </script>
 
 <template>
-  <BasePanel>
+  <SidebarPanelLayout>
+    <template #header>
+      <h2>KNIME AI Assistant</h2>
+    </template>
+
     <div class="disclaimer">
       <div class="title">Disclaimer</div>
       <p class="content">
@@ -19,7 +24,7 @@ const emit = defineEmits(["close"]);
     <Button primary compact class="close-button" @click="emit('close')">
       Accept and close
     </Button>
-  </BasePanel>
+  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>

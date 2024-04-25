@@ -17,7 +17,6 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import SpaceExplorer from "../SpaceExplorer.vue";
-import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
@@ -595,22 +594,6 @@ describe("SpaceExplorer.vue", () => {
       expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/deleteItems", {
         itemIds: ["item0"],
       });
-    });
-  });
-
-  describe("mini mode", () => {
-    it("should show action menu", async () => {
-      const { wrapper } = await doMountAndLoad({
-        props: { projectId: "someProjectId", mode: "mini" },
-      });
-
-      expect(wrapper.findComponent(SpaceExplorerActions).props()).toStrictEqual(
-        {
-          projectId: "someProjectId",
-          mode: "mini",
-          selectedItemIds: [],
-        },
-      );
     });
   });
 

@@ -5,9 +5,11 @@ import MenuIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+
+import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import { useStore } from "@/composables/useStore";
+
 import Chat from "./chat/Chat.vue";
-import BasePanel from "./BasePanel.vue";
 import type { ChainType } from "./types";
 import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
 
@@ -29,8 +31,9 @@ const onItemClick = (_: any, item: MenuItem) => item.metadata?.handler?.();
 </script>
 
 <template>
-  <BasePanel class="chat-panel">
-    <template #headerControls>
+  <SidebarPanelLayout class="chat-panel">
+    <template #header>
+      <h2>KNIME AI Assistant</h2>
       <ValueSwitch
         v-model="chainType"
         compact
@@ -52,7 +55,7 @@ const onItemClick = (_: any, item: MenuItem) => item.metadata?.handler?.();
     <Chat v-show="chainType === 'qa'" chain-type="qa" />
     <Chat v-show="chainType === 'build'" chain-type="build" />
     <NodeDescriptionPortal />
-  </BasePanel>
+  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>

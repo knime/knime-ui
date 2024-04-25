@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
-import BasePanel from "./BasePanel.vue";
+
 import { API } from "@api";
+import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 
 const openPreferencePage = API.desktop.openAiAssistantPreferencePage;
 </script>
 
 <template>
-  <BasePanel>
+  <SidebarPanelLayout>
+    <template #header>
+      <h2>KNIME AI Assistant</h2>
+    </template>
+
     <div class="login-panel">
       <div class="slogan">
         Please select a Hub to which K-AI should connect.
@@ -16,7 +21,7 @@ const openPreferencePage = API.desktop.openAiAssistantPreferencePage;
         >Open Preferences</Button
       >
     </div>
-  </BasePanel>
+  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>

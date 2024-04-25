@@ -20,8 +20,6 @@ import { useStore } from "@/composables/useStore";
 import SmartLoader from "@/components/common/SmartLoader.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 
-import SpaceSelectionDropdown from "./SpaceSelectionDropdown.vue";
-import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
 import SpaceExplorerDeleteItemModal from "./SpaceExplorerDeleteItemModal.vue";
@@ -46,9 +44,13 @@ interface Props {
   projectId: string;
   mode?: "normal" | "mini";
   selectedItemIds: string[];
+  clickOutsideException?: HTMLElement | null;
 }
 
-const props = withDefaults(defineProps<Props>(), { mode: "normal" });
+const props = withDefaults(defineProps<Props>(), {
+  mode: "normal",
+  clickOutsideException: null,
+});
 const $emit = defineEmits(["itemChanged", "update:selectedItemIds"]);
 const store = useStore();
 const $router = useRouter();
@@ -201,26 +203,10 @@ const { onMoveItems, onDuplicateItems } = useMovingItems({ projectId });
 
 const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
   useCustomDragPreview({ projectId });
-
-const miniActions = ref<HTMLElement | null>(null);
 </script>
 
 <template>
   <div :class="mode" class="space-explorer">
-    <div v-if="mode === 'mini'" class="mini-actions-wrapper">
-      <div class="mini-actions">
-        <SpaceSelectionDropdown :project-id="projectId" />
-
-        <SpaceExplorerActions
-          ref="miniActions"
-          mode="mini"
-          :project-id="projectId"
-          :selected-item-ids="selectedItemIds"
-          @imported-item-ids="$emit('update:selectedItemIds', $event)"
-        />
-      </div>
-    </div>
-
     <SpaceExplorerBreadcrumbs
       :active-workflow-group="activeWorkflowGroup"
       @click="onChangeDirectory"
@@ -243,7 +229,7 @@ const miniActions = ref<HTMLElement | null>(null);
         :full-path="fullPath"
         :item-icon-renderer="itemIconRenderer"
         :active-renamed-item-id="activeRenamedItemId"
-        :click-outside-exception="miniActions"
+        :click-outside-exception="clickOutsideException"
         dragging-animation-mode="manual"
         @update:selected-item-ids="$emit('update:selectedItemIds', $event)"
         @change-directory="onChangeDirectory"
@@ -306,29 +292,8 @@ const miniActions = ref<HTMLElement | null>(null);
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.mini-actions-wrapper {
-  position: sticky;
-  top: 0;
-
-  /* add a slight negative margin to add box-shadows behind this sticky element */
-  margin: 0 -2px;
-  background-color: var(--sidebar-background-color);
-  z-index: 5;
-}
-
-.mini-actions {
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 7px;
-  padding-top: 10px;
-  margin-bottom: 5px;
-  border-bottom: 1px solid var(--knime-silver-sand);
-}
-
-.mini {
-  padding: 0 20px 20px;
-  height: 100%;
-  overflow: hidden auto;
+.space-explorer {
+  width: 100%;
 }
 
 .smart-loader {

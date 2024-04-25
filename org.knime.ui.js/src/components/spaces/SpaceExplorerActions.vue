@@ -321,10 +321,6 @@ export default defineComponent({
     display: flex;
     position: relative;
 
-    & .more-actions {
-      margin-right: 5px;
-    }
-
     /* Aligning text in the submenu */
     & :deep(button) {
       align-items: center;

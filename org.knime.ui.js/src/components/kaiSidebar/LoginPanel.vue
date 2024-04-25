@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
-import BasePanel from "./BasePanel.vue";
+
+import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
+
 import { useHubAuth } from "./useHubAuth";
 
 const { authenticateWithHub, hubId } = useHubAuth();
 </script>
 
 <template>
-  <BasePanel>
+  <SidebarPanelLayout>
+    <template #header>
+      <h2>KNIME AI Assistant</h2>
+    </template>
+
     <div class="login-panel">
       <div class="slogan">
         Log in to your KNIME Hub account<br />
@@ -17,7 +23,7 @@ const { authenticateWithHub, hubId } = useHubAuth();
         >Login to {{ hubId }}</Button
       >
     </div>
-  </BasePanel>
+  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>
