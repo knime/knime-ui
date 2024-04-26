@@ -19,7 +19,7 @@ import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 import { RESIZE_DEBOUNCE } from "./constants";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { capitalize } from "webapps-common/util/capitalize";
-import useKeyboardFocus from "@/composables/useKeyboardFocus";
+import useKeyPressedUntilMouseClick from "webapps-common/ui/composables/useKeyPressedUntilMouseClick";
 import { useMoveObjectIntoView } from "./useArrowKeyNavigation/useMoveObjectIntoView";
 
 const emit = defineEmits(["containerSizeChanged"]);
@@ -110,7 +110,7 @@ const startRectangleSelection = (event: PointerEvent) => {
   }
 };
 
-const hasKeyboardFocus = useKeyboardFocus(["Tab"]);
+const hasKeyboardFocus = useKeyPressedUntilMouseClick(["Tab"]);
 const moveObjectIntoView = useMoveObjectIntoView();
 
 const selectObjectOnKeyboardFocus = async () => {

@@ -257,7 +257,9 @@ const fileExplorerContextMenuItems = computed(() => {
     id="space-explorer-context-menu"
     menu-aria-label="Space explorer context menu"
     class="menu-items"
+    register-keydown
     :items="fileExplorerContextMenuItems"
+    @close="closeContextMenu"
     @item-click="(_, item) => handleItemClick(item)"
   />
 </template>

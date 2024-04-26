@@ -222,6 +222,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
     >
       <FileExplorer
         v-if="activeWorkflowGroup"
+        aria-label="Current workflow group in Space Explorer"
         :selected-item-ids="selectedItemIds"
         :mode="mode"
         :items="fileExplorerItems"

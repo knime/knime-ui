@@ -6,7 +6,7 @@ import { ref, watch, computed, toRef } from "vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useActiveElement } from "@vueuse/core";
-import useKeyboardFocus from "@/composables/useKeyboardFocus";
+import useKeyPressedUntilMouseClick from "webapps-common/ui/composables/useKeyPressedUntilMouseClick";
 
 const NODES_PER_ROW_ICON_MODE = 3;
 const NODES_PER_ROW_LIST_MODE = 1;
@@ -52,7 +52,10 @@ const root = ref<HTMLElement>();
 const moreButton = ref<InstanceType<typeof Button>>();
 
 const activeElement = useActiveElement();
-const hasKeyboardFocus = useKeyboardFocus(["Tab", ...navigationKeys]);
+const hasKeyboardFocus = useKeyPressedUntilMouseClick([
+  "Tab",
+  ...navigationKeys,
+]);
 
 const nodesPerRow = computed(() => {
   return props.displayMode === "icon"
