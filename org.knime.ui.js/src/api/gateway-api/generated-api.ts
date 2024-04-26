@@ -509,12 +509,6 @@ export interface AppState {
      */
     activeNodeCollection?: string;
     /**
-     * Whether to always confirm node config changes or apply them automatically when de-selecting a node.
-     * @type {boolean}
-     * @memberof AppState
-     */
-    confirmNodeConfigChanges?: boolean;
-    /**
      * If true, dev mode specific buttons will be shown.
      * @type {boolean}
      * @memberof AppState
@@ -2199,6 +2193,47 @@ export interface NodeIdAndIsExecuted {
      * @memberof NodeIdAndIsExecuted
      */
     isExecuted: boolean;
+
+}
+
+
+/**
+ * TODO
+ * @export
+ * @interface NodeInfo
+ */
+export interface NodeInfo {
+
+    /**
+     *
+     * @type {string}
+     * @memberof NodeInfo
+     */
+    templateId?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof NodeInfo
+     */
+    workflowId?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof NodeInfo
+     */
+    nodeId?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof NodeInfo
+     */
+    name?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof NodeInfo
+     */
+    message?: string;
 
 }
 
@@ -4350,6 +4385,46 @@ export namespace WorkflowInfo {
     }
 }
 /**
+ * TODO
+ * @export
+ * @interface WorkflowMonitorState
+ */
+export interface WorkflowMonitorState {
+
+    /**
+     *
+     * @type {Array<NodeInfo>}
+     * @memberof WorkflowMonitorState
+     */
+    errors?: Array<NodeInfo>;
+    /**
+     *
+     * @type {Array<NodeInfo>}
+     * @memberof WorkflowMonitorState
+     */
+    warnings?: Array<NodeInfo>;
+
+}
+
+
+/**
+ * TODO
+ * @export
+ * @interface WorkflowMonitorStateChangeEvent
+ */
+export interface WorkflowMonitorStateChangeEvent extends Event {
+
+    /**
+     *
+     * @type {Patch}
+     * @memberof WorkflowMonitorStateChangeEvent
+     */
+    patch?: Patch;
+
+}
+
+
+/**
  * A workflow with an additional snapshot id.
  * @export
  * @interface WorkflowSnapshot
@@ -5535,6 +5610,7 @@ export interface EventHandlers {
     NodeRepositoryLoadingProgressEvent?(payload: NodeRepositoryLoadingProgressEvent): void;
     ShowToastEvent?(payload: ShowToastEvent): void;
     ProjectDisposedEvent?(payload: ProjectDisposedEvent): void;
+    WorkflowMonitorStateChangeEvent?(payload: WorkflowMonitorStateChangeEvent): void;
 }
 
 const EventApiWrapper = function (rpcClient: RPCClient) {
