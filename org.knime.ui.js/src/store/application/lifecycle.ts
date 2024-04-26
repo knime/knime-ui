@@ -59,6 +59,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await runInEnvironment({
       DESKTOP: async () => {
         const RETRY_DELAY_MS = 50;
+        // TODO: NXT-989 remove this delay once desktop calls are made via the
+        // EquoComm service
         const retry = async (retryCount: number) => {
           try {
             await API.desktop.setZoomLevel(
