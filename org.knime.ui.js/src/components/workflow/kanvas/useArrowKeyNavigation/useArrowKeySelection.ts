@@ -10,7 +10,6 @@ import {
 } from "@/util/workflowNavigationService";
 import { isInputElement } from "@/util/isInputElement";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { useMoveObjectIntoView } from "./useMoveObjectIntoView";
 
 const getFurthestObjectByDirection = (
   selectedObjects: Array<WorkflowObject>,
@@ -65,7 +64,6 @@ const getDirection = (event: KeyboardEvent): Direction => {
 };
 
 export const useArrowKeySelection = () => {
-  const moveObjectIntoView = useMoveObjectIntoView();
   const store = useStore();
   const workflowObjects = computed<WorkflowObject[]>(
     () => store.getters["workflow/workflowObjects"],
@@ -121,7 +119,7 @@ export const useArrowKeySelection = () => {
       }
 
       store.commit("selection/focusObject", nearestObject);
-      await moveObjectIntoView(nearestObject);
+      await store.dispatch("canvas/moveObjectIntoView", nearestObject);
 
       return;
     }
@@ -144,7 +142,7 @@ export const useArrowKeySelection = () => {
 
       store.commit("selection/focusObject", objectToFocus);
 
-      await moveObjectIntoView(objectToFocus);
+      await store.dispatch("canvas/moveObjectIntoView", objectToFocus);
 
       return;
     }
@@ -178,7 +176,7 @@ export const useArrowKeySelection = () => {
       await store.dispatch("selection/deselectAllObjects");
       await store.dispatch(`selection/${selectionAction}`, nearestObject.id);
 
-      await moveObjectIntoView(nearestObject);
+      await store.dispatch("canvas/moveObjectIntoView", nearestObject);
 
       return;
     }

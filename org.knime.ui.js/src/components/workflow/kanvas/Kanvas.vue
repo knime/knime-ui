@@ -9,7 +9,11 @@ import {
   onBeforeUnmount,
 } from "vue";
 import { debounce } from "lodash-es";
+
+import { capitalize } from "webapps-common/util/capitalize";
+import useKeyPressedUntilMouseClick from "webapps-common/ui/composables/useKeyPressedUntilMouseClick";
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+
 import { useStore } from "@/composables/useStore";
 import { $bus } from "@/plugins/event-bus";
 import { useMouseWheelZooming } from "./useMouseWheelZooming";
@@ -18,9 +22,6 @@ import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
 import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 import { RESIZE_DEBOUNCE } from "./constants";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
-import { capitalize } from "webapps-common/util/capitalize";
-import useKeyPressedUntilMouseClick from "webapps-common/ui/composables/useKeyPressedUntilMouseClick";
-import { useMoveObjectIntoView } from "./useArrowKeyNavigation/useMoveObjectIntoView";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
@@ -111,7 +112,6 @@ const startRectangleSelection = (event: PointerEvent) => {
 };
 
 const hasKeyboardFocus = useKeyPressedUntilMouseClick(["Tab"]);
-const moveObjectIntoView = useMoveObjectIntoView();
 
 const selectObjectOnKeyboardFocus = async () => {
   if (!hasKeyboardFocus.value) {
@@ -150,7 +150,7 @@ const selectObjectOnKeyboardFocus = async () => {
       `selection/select${capitalize(firstObject.type)}`,
       firstObject.id,
     );
-    await moveObjectIntoView(firstObject);
+    await store.dispatch("canvas/moveObjectIntoView", firstObject);
   }
 };
 

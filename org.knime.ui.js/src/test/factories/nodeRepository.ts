@@ -2,10 +2,14 @@ import { merge } from "lodash-es";
 
 import {
   NativeNodeInvariants,
+  PortType,
   type NodePortTemplate,
   type NodeTemplate,
 } from "@/api/gateway-api/generated-api";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
+import { createAvailablePortTypes } from "./ports";
 
 export const createNodePortTemplate = (
   data: Partial<NodePortTemplate & { typeId: PortTypeId }> = {},
@@ -40,4 +44,19 @@ export const createNodeTemplate = (
     },
     data,
   );
+};
+
+export const createNodeTemplateWithExtendedPorts = (
+  data: Partial<NodeTemplateWithExtendedPorts> = {},
+): NodeTemplateWithExtendedPorts => {
+  const availablePortTypes = createAvailablePortTypes({
+    "org.some.otherPorType": {
+      kind: PortType.KindEnum.Other,
+      name: "some other port",
+    },
+  });
+
+  const template = createNodeTemplate(data);
+
+  return toNodeTemplateWithExtendedPorts(availablePortTypes)(template);
 };

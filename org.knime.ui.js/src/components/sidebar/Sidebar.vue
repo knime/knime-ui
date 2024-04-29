@@ -6,6 +6,7 @@ import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
 import AiIcon from "webapps-common/ui/assets/img/icons/ai-general.svg";
 
+import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import MetainfoIcon from "@/assets/metainfo.svg";
 import { compatibility } from "@/environment";
 import { TABS, type TabValues } from "@/store/panel";
@@ -52,15 +53,18 @@ const KaiSidebar = defineAsyncComponent({
   loadingComponent: SidebarContentLoading,
 });
 
+const WorkflowMonitor = defineAsyncComponent({
+  loader: () => import("@/components/workflowMonitor/WorkflowMonitor.vue"),
+  loadingComponent: SidebarContentLoading,
+});
+
 const $features = useFeatures();
 const store = useStore();
-const activeTab = computed(() => store.state.panel.activeTab);
 const expanded = computed(() => store.state.panel.expanded);
 const isExtensionPanelOpen = computed(
   () => store.state.panel.isExtensionPanelOpen,
 );
 
-const activeProjectId = computed(() => store.state.application.activeProjectId);
 const permissions = computed(() => store.state.application.permissions);
 
 const isWorkflowEmpty = computed(
@@ -77,24 +81,12 @@ watch(
   { immediate: true },
 );
 
-const isTabActive = (tabName: TabValues) => {
-  const getDefaultTab = () => {
-    return isWorkflowEmpty.value
-      ? TABS.NODE_REPOSITORY
-      : TABS.CONTEXT_AWARE_DESCRIPTION;
-  };
-
-  if (!activeProjectId.value) {
-    return false;
-  }
-
-  const _activeTab = activeTab.value[activeProjectId.value] || getDefaultTab();
-
-  return _activeTab === tabName;
-};
+const isTabActive = computed<(tabName: TabValues) => boolean>(
+  () => store.getters["panel/isTabActive"],
+);
 
 const activateSection = (tabName: TabValues) => {
-  const isAlreadyActive = isTabActive(tabName);
+  const isAlreadyActive = isTabActive.value(tabName);
   if (isAlreadyActive && expanded.value) {
     store.commit("panel/closePanel");
   } else {
@@ -110,7 +102,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       name: TABS.CONTEXT_AWARE_DESCRIPTION,
       title: "Description",
       icon: MetainfoIcon,
-      isActive: isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
+      isActive: isTabActive.value(TABS.CONTEXT_AWARE_DESCRIPTION),
       isExpanded: expanded.value,
       onClick: () => activateSection(TABS.CONTEXT_AWARE_DESCRIPTION),
     },
@@ -119,7 +111,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       name: TABS.NODE_REPOSITORY,
       title: "Nodes",
       icon: PlusIcon,
-      isActive: isTabActive(TABS.NODE_REPOSITORY),
+      isActive: isTabActive.value(TABS.NODE_REPOSITORY),
       isExpanded: expanded.value,
       onClick: () => activateSection(TABS.NODE_REPOSITORY),
     }),
@@ -131,7 +123,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         name: TABS.SPACE_EXPLORER,
         title: "Space explorer",
         icon: CubeIcon,
-        isActive: isTabActive(TABS.SPACE_EXPLORER),
+        isActive: isTabActive.value(TABS.SPACE_EXPLORER),
         isExpanded: expanded.value,
         onClick: () => activateSection(TABS.SPACE_EXPLORER),
       },
@@ -143,11 +135,20 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         name: TABS.KAI,
         title: "K-AI AI assistant",
         icon: AiIcon,
-        isActive: isTabActive(TABS.KAI),
+        isActive: isTabActive.value(TABS.KAI),
         isExpanded: expanded.value,
         onClick: () => activateSection(TABS.KAI),
       },
     ),
+
+    {
+      name: TABS.WORKFLOW_MONITOR,
+      title: "Workflow monitor",
+      icon: WorkflowMonitorIcon,
+      isActive: isTabActive.value(TABS.WORKFLOW_MONITOR),
+      isExpanded: expanded.value,
+      onClick: () => activateSection(TABS.WORKFLOW_MONITOR),
+    },
   ];
 });
 
@@ -192,7 +193,6 @@ const hasSection = (name: TabValues) => {
         <ContextAwareDescription
           v-if="hasSection(TABS.CONTEXT_AWARE_DESCRIPTION)"
           v-show="isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
-          key="context-aware-description"
         />
 
         <NodeRepository
@@ -201,19 +201,21 @@ const hasSection = (name: TabValues) => {
             isTabActive(TABS.NODE_REPOSITORY)
           "
           v-show="isTabActive(TABS.NODE_REPOSITORY)"
-          key="node-repository"
         />
 
         <SidebarSpaceExplorer
           v-if="hasSection(TABS.SPACE_EXPLORER)"
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
-          key="space-explorer"
         />
 
         <KaiSidebar
           v-if="hasSection(TABS.KAI)"
           v-show="isTabActive(TABS.KAI)"
-          key="ai-chat"
+        />
+
+        <WorkflowMonitor
+          v-if="hasSection(TABS.WORKFLOW_MONITOR)"
+          v-show="isTabActive(TABS.WORKFLOW_MONITOR)"
         />
       </span>
     </LeftCollapsiblePanel>

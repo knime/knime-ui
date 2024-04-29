@@ -40,6 +40,27 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     },
 
     /**
+     * Is triggered by the backend, whenever a new state update of the workflow monitor is made
+     * Sends a list of json-patch operations to update the frontend's state
+     */
+    async WorkflowMonitorStateChangeEvent({ patch }) {
+      if (!$store.state.workflowMonitor.isActive) {
+        // ignore events that could be lagging behind and are not needed anymore
+        return;
+      }
+
+      const ops = patch?.ops ?? [];
+
+      // for all patch ops rewrite their path such that they are applied to the 'currentState' property
+      ops.forEach((op) => {
+        op.path = `/currentState${op.path}`;
+      });
+
+      await $store.dispatch("workflowMonitor/patch.apply", ops);
+      $store.dispatch("workflowMonitor/updateMessagesNodeTemplates");
+    },
+
+    /**
      * Is triggered by the backend, whenever a change to the workflow has been made/requested or the AppState changes
      * Sends a map with all open project ids and their dirty flag
      */

@@ -12,6 +12,7 @@ import * as quickAddNodes from "./quickAddNodes";
 import * as aiAssistant from "./aiAssistant";
 import * as settings from "./settings";
 import * as nodeConfiguration from "./nodeConfiguration";
+import * as workflowMonitor from "./workflowMonitor";
 
 export const initStore = () => {
   return createStore<RootStoreState>({
@@ -27,6 +28,7 @@ export const initStore = () => {
       settings: { namespaced: true, ...settings },
       aiAssistant: { namespaced: true, ...aiAssistant },
       nodeConfiguration: { namespaced: true, ...nodeConfiguration },
+      workflowMonitor: { namespaced: true, ...workflowMonitor },
     },
   });
 };

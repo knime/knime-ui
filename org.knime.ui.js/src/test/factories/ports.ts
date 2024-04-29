@@ -72,6 +72,11 @@ export const createAvailablePortTypes = (
       color: "#FF4B4B",
       compatibleTypes: [PORT_TYPE_IDS.DatabasePortObject],
     }),
+    "org.some.otherPorType": createPortType({
+      kind: PortType.KindEnum.Other,
+      name: "Some other port type",
+      color: "#FF4B4B",
+    }),
   };
 
   return merge(base, data);

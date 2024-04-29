@@ -9,3 +9,4 @@ export * from "./ports";
 export * from "./workflow";
 export * from "./spaces";
 export * from "./deployments";
+export * from "./workflowMonitor";

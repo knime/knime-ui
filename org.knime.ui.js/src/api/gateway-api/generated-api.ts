@@ -509,6 +509,12 @@ export interface AppState {
      */
     activeNodeCollection?: string;
     /**
+     * Whether to always confirm node config changes or apply them automatically when de-selecting a node.
+     * @type {boolean}
+     * @memberof AppState
+     */
+    confirmNodeConfigChanges?: boolean;
+    /**
      * If true, dev mode specific buttons will be shown.
      * @type {boolean}
      * @memberof AppState
@@ -2193,47 +2199,6 @@ export interface NodeIdAndIsExecuted {
      * @memberof NodeIdAndIsExecuted
      */
     isExecuted: boolean;
-
-}
-
-
-/**
- * TODO
- * @export
- * @interface NodeInfo
- */
-export interface NodeInfo {
-
-    /**
-     *
-     * @type {string}
-     * @memberof NodeInfo
-     */
-    templateId?: string;
-    /**
-     *
-     * @type {string}
-     * @memberof NodeInfo
-     */
-    workflowId?: string;
-    /**
-     *
-     * @type {string}
-     * @memberof NodeInfo
-     */
-    nodeId?: string;
-    /**
-     *
-     * @type {string}
-     * @memberof NodeInfo
-     */
-    name?: string;
-    /**
-     *
-     * @type {string}
-     * @memberof NodeInfo
-     */
-    message?: string;
 
 }
 
@@ -4387,22 +4352,63 @@ export namespace WorkflowInfo {
 /**
  * TODO
  * @export
+ * @interface WorkflowMonitorMessage
+ */
+export interface WorkflowMonitorMessage {
+
+    /**
+     *
+     * @type {string}
+     * @memberof WorkflowMonitorMessage
+     */
+    templateId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof WorkflowMonitorMessage
+     */
+    workflowId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof WorkflowMonitorMessage
+     */
+    nodeId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof WorkflowMonitorMessage
+     */
+    name: string;
+    /**
+     *
+     * @type {string}
+     * @memberof WorkflowMonitorMessage
+     */
+    message: string;
+
+}
+
+
+/**
+ * TODO
+ * @export
  * @interface WorkflowMonitorState
  */
 export interface WorkflowMonitorState {
 
     /**
      *
-     * @type {Array<NodeInfo>}
+     * @type {Array<WorkflowMonitorMessage>}
      * @memberof WorkflowMonitorState
      */
-    errors?: Array<NodeInfo>;
+    errors: Array<WorkflowMonitorMessage>;
     /**
      *
-     * @type {Array<NodeInfo>}
+     * @type {Array<WorkflowMonitorMessage>}
      * @memberof WorkflowMonitorState
      */
-    warnings?: Array<NodeInfo>;
+    warnings: Array<WorkflowMonitorMessage>;
 
 }
 
@@ -4419,7 +4425,53 @@ export interface WorkflowMonitorStateChangeEvent extends Event {
      * @type {Patch}
      * @memberof WorkflowMonitorStateChangeEvent
      */
-    patch?: Patch;
+    patch: Patch;
+
+}
+
+
+/**
+ * TODO
+ * @export
+ * @interface WorkflowMonitorStateChangeEventType
+ */
+export interface WorkflowMonitorStateChangeEventType extends EventType {
+
+    /**
+     * TODO
+     * @type {string}
+     * @memberof WorkflowMonitorStateChangeEventType
+     */
+    projectId: string;
+    /**
+     * TODO
+     * @type {string}
+     * @memberof WorkflowMonitorStateChangeEventType
+     */
+    snapshotId: string;
+
+}
+
+
+/**
+ * TODO
+ * @export
+ * @interface WorkflowMonitorStateSnapshot
+ */
+export interface WorkflowMonitorStateSnapshot {
+
+    /**
+     *
+     * @type {WorkflowMonitorState}
+     * @memberof WorkflowMonitorStateSnapshot
+     */
+    state: WorkflowMonitorState;
+    /**
+     *
+     * @type {string}
+     * @memberof WorkflowMonitorStateSnapshot
+     */
+    snapshotId: string;
 
 }
 
@@ -5176,6 +5228,20 @@ const workflow = function(rpcClient: RPCClient) {
            return rpcClient.call('WorkflowService.getWorkflow', { ...defaultParams, ...params });
         },
         /**
+         * TODO
+         * @param {string} projectId ID of the workflow-project.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getWorkflowMonitorState(
+        	params: { projectId: string  }
+        ): Promise<WorkflowMonitorStateSnapshot> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('WorkflowService.getWorkflowMonitorState', { ...defaultParams, ...params });
+        },
+        /**
          * Re-does the last command from the redo-stack.
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
@@ -5599,6 +5665,7 @@ export type EventParams =
     | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
     | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
     | (ProjectDisposedEventType & { typeId: 'ProjectDisposedEventType' })
+    | (WorkflowMonitorStateChangeEventType & { typeId: 'WorkflowMonitorStateChangeEventType' })
 ;
 
 export interface EventHandlers {

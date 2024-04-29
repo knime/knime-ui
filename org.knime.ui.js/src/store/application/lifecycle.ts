@@ -18,6 +18,8 @@ import { features } from "@/plugins/feature-flags";
 import { ratioToZoomLevel } from "@/store/settings";
 import sleep from "webapps-common/util/sleep";
 
+import { lifecycleBus } from "./lifecycle-events";
+
 const getCanvasStateKey = (input: string) => encodeString(input);
 
 interface State {
@@ -25,6 +27,8 @@ interface State {
    * Tracks loading state while switching workflows
    */
   isLoadingWorkflow: boolean;
+
+  isChangingProject: boolean;
 
   isLoadingApp: boolean;
 }
@@ -35,12 +39,16 @@ declare module "./index" {
 
 export const state = (): State => ({
   isLoadingWorkflow: false,
+  isChangingProject: false,
   isLoadingApp: false,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
   setIsLoadingWorkflow(state, value) {
     state.isLoadingWorkflow = value;
+  },
+  setIsChangingProject(state, value) {
+    state.isChangingProject = value;
   },
   setIsLoadingApp(state, value) {
     state.isLoadingApp = value;
@@ -213,6 +221,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
     await dispatch("updatePreviewSnapshot", { isChangingProject, newWorkflow });
 
+    commit("setIsChangingProject", isChangingProject);
+
     // only activate the app loader if we're going to switch to a workflow; skip it
     // when showing the home page
     if (newWorkflow) {
@@ -225,6 +235,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     if (rootState.workflow?.activeWorkflow) {
       dispatch("saveCanvasState");
+      lifecycleBus.emit("beforeUnloadWorkflow");
 
       // unload current workflow
       await dispatch("unloadActiveWorkflow", { clearWorkflow: !newWorkflow });
@@ -235,6 +246,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     // only continue if the new workflow exists
     if (newWorkflow) {
+      lifecycleBus.emit("beforeLoadWorkflow");
+
       const { projectId, workflowId = "root" } = newWorkflow;
 
       // check if project is being changed and if there is already active workflow
@@ -278,6 +291,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     commit("setIsLoadingApp", false);
     await dispatch("afterSetActivateWorkflow");
+    lifecycleBus.emit("onWorkflowLoaded");
   },
 
   beforeSetActivateWorkflow(

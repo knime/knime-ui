@@ -6,7 +6,7 @@ import { useStore } from "@/composables/useStore";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { isBrowser } from "@/environment";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { TABS } from "@/store/panel";
+import { TABS, type TabValues } from "@/store/panel";
 
 import AppRightPanelSkeleton from "./AppRightPanelSkeleton.vue";
 
@@ -16,6 +16,9 @@ const activeProjectId = computed(() => store.state.application.activeProjectId);
 const isLoadingApp = computed(() => store.state.application.isLoadingApp);
 const isLoadingWorkflow = computed(
   () => store.state.application.isLoadingWorkflow,
+);
+const isChangingProject = computed(
+  () => store.state.application.isChangingProject,
 );
 const bottomPanelHeight = computed(
   () => store.state.settings.settings.nodeOutputSize,
@@ -33,12 +36,26 @@ const isChangingBetweenWorkflows = computed(() => {
   );
 });
 
-// If the node repository is visible we don't show the skeleton over it
-// when changing between workflows
+const isSkeletonTransparentForTab = (currentTab: TabValues) => {
+  if (currentTab === TABS.NODE_REPOSITORY) {
+    return true;
+  }
+
+  // make it transparent when switching across projects (tabs)
+  // but not when switching in the same workflow (eg: enter/exit components)
+  if (currentTab === TABS.WORKFLOW_MONITOR) {
+    return !isChangingProject.value;
+  }
+
+  return false;
+};
+
 const isSidebarTransparent = computed(() => {
   return (
     isChangingBetweenWorkflows.value &&
-    store.state.panel.activeTab[activeProjectId.value!] === TABS.NODE_REPOSITORY
+    isSkeletonTransparentForTab(
+      store.state.panel.activeTab[activeProjectId.value!],
+    )
   );
 });
 

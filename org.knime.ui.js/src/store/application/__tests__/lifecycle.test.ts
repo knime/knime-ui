@@ -8,6 +8,7 @@ import { applicationState, loadStore } from "./loadStore";
 
 import { runInEnvironment } from "@/environment";
 import { createWorkflow } from "@/test/factories";
+import { lifecycleBus } from "../lifecycle-events";
 
 vi.mock("@/util/generateWorkflowPreview");
 const mockedAPI = deepMocked(API);
@@ -114,8 +115,15 @@ describe("application::lifecycle", () => {
 
   describe("workflow Lifecycle", () => {
     it("loads root workflow successfully", async () => {
+      const onWorkflowLoaded = vi.fn();
+
+      lifecycleBus.once("onWorkflowLoaded", onWorkflowLoaded);
+
       const mockWorkflow = createWorkflow();
       const { store, loadWorkflow, subscribeEvent, dispatchSpy } = loadStore();
+
+      expect(onWorkflowLoaded).not.toHaveBeenCalled();
+
       loadWorkflow.mockResolvedValue({
         workflow: mockWorkflow,
         snapshotId: "snap",
@@ -124,6 +132,8 @@ describe("application::lifecycle", () => {
       await store.dispatch("application/loadWorkflow", {
         projectId: mockWorkflow.projectId,
       });
+
+      expect(onWorkflowLoaded).toHaveBeenCalled();
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/beforeSetActivateWorkflow",
@@ -232,6 +242,13 @@ describe("application::lifecycle", () => {
     });
 
     it("switches from nothing to workflow", async () => {
+      const busSpy = vi.fn();
+
+      lifecycleBus.once("beforeLoadWorkflow", () =>
+        busSpy("beforeLoadWorkflow"),
+      );
+      lifecycleBus.once("onWorkflowLoaded", () => busSpy("onWorkflowLoaded"));
+
       const { store, dispatchSpy, commitSpy } = loadStore();
       store.state.workflow.activeWorkflow = null;
 
@@ -243,6 +260,9 @@ describe("application::lifecycle", () => {
       await store.dispatch("application/switchWorkflow", {
         newWorkflow: { projectId: "1", workflowId: "root" },
       });
+
+      expect(busSpy).toHaveBeenNthCalledWith(1, "beforeLoadWorkflow");
+      expect(busSpy).toHaveBeenNthCalledWith(2, "onWorkflowLoaded");
 
       expect(commitSpy).toHaveBeenCalledWith(
         "application/setIsLoadingWorkflow",

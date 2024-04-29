@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
+
+import Pill from "webapps-common/ui/components/Pill.vue";
 import { formatDateString } from "webapps-common/util/format";
 import { isToday, isYesterday } from "./utils";
 
@@ -22,16 +24,13 @@ const label = computed(() => {
 </script>
 
 <template>
-  <div class="message-separator">
+  <Pill color="white" class="message-separator">
     {{ label }}
-  </div>
+  </Pill>
 </template>
 
 <style lang="postcss" scoped>
 & .message-separator {
-  background-color: var(--knime-white);
-  padding: 2px 10px;
-  border-radius: 10px;
   margin: 30px 0;
 
   &:first-child {

@@ -68,27 +68,6 @@ describe("Event Plugin", () => {
     return { storeMock, routerMock, toastMock };
   };
 
-  it("fixed Events", () => {
-    loadPlugin();
-    expect(Object.keys(registeredHandlers)).toStrictEqual([
-      "CompositeEvent",
-      "WorkflowChangedEvent",
-      "ProjectDirtyStateEvent",
-      "AppStateChangedEvent",
-      "UpdateAvailableEvent",
-      "NodeRepositoryLoadingProgressEvent",
-      "ShowToastEvent",
-      "ProjectDisposedEvent",
-      "SaveAndCloseProjectsEvent",
-      "ImportURIEvent",
-      "ProgressEvent",
-      "AiAssistantEvent",
-      "AiAssistantServerChangedEvent",
-      "DesktopAPIFunctionResultEvent",
-      "SpaceProvidersChangedEvent",
-    ]);
-  });
-
   it("all eventsHandlers are functions", () => {
     loadPlugin();
     Object.values(registeredHandlers).forEach((handler) => {

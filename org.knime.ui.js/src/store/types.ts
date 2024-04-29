@@ -9,6 +9,7 @@ import type { QuickAddNodesState } from "./quickAddNodes";
 import type { CanvasState } from "./canvas";
 import type { SettingsState } from "./settings";
 import type { NodeConfigurationState } from "./nodeConfiguration";
+import type { WorkflowMonitorState } from "./workflowMonitor";
 
 export interface RootStoreState {
   application: ApplicationState;
@@ -22,4 +23,5 @@ export interface RootStoreState {
   aiAssistant: AiAssistantState;
   settings: SettingsState;
   nodeConfiguration: NodeConfigurationState;
+  workflowMonitor: WorkflowMonitorState;
 }

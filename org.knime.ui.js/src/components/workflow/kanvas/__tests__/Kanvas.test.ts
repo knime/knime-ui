@@ -11,6 +11,7 @@ import { workflowNavigationService } from "@/util/workflowNavigationService";
 
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
+import * as canvasStore from "@/store/canvas";
 
 import Kanvas from "../Kanvas.vue";
 import {
@@ -76,6 +77,7 @@ describe("Kanvas", () => {
 
     const actions = {
       canvas: {
+        ...canvasStore.actions,
         zoomAroundPointer: vi.fn(),
         updateContainerSize: vi.fn(),
         contentBoundsChanged: vi.fn(),

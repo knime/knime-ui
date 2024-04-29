@@ -8,6 +8,7 @@ type Props = {
   color1?: string;
   color2?: string;
   type?: "generic" | "button" | "icon-button" | "rounded";
+  loading?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
   color1: $colors.GrayUltraLight,
   color2: $colors.Porcelain,
   type: "generic",
+  loading: true,
 });
 
 const { color1, color2, width, height } = toRefs(props);
@@ -44,5 +46,6 @@ const styles = computed(() => {
 </script>
 
 <template>
-  <div :style="styles" />
+  <div v-if="loading" v-bind="$attrs" :style="styles" />
+  <slot v-else v-bind="$attrs" />
 </template>

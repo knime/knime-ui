@@ -7,6 +7,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { RootStoreState } from "./types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import type { WorkflowObject } from "@/api/custom-types";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -70,6 +71,29 @@ export const mutations: MutationTree<CanvasState> = {
   setIsMoveLocked(state, value) {
     state.isMoveLocked = value;
   },
+};
+
+const isOutsideKanvasView = (
+  kanvas: HTMLElement,
+  referenceObjectCoords: XY,
+) => {
+  const DISTANCE_THRESHOLD = 25;
+
+  const isNearLeft =
+    referenceObjectCoords.x - kanvas.offsetLeft <= DISTANCE_THRESHOLD;
+
+  const isNearTop =
+    referenceObjectCoords.y - kanvas.offsetTop <= DISTANCE_THRESHOLD;
+
+  const isNearRight =
+    kanvas.offsetWidth - (referenceObjectCoords.x - kanvas.offsetLeft) <=
+    DISTANCE_THRESHOLD;
+
+  const isNearBottom =
+    kanvas.offsetHeight - (referenceObjectCoords.y - kanvas.offsetTop) <=
+    DISTANCE_THRESHOLD;
+
+  return isNearLeft || isNearTop || isNearRight || isNearBottom;
 };
 
 export const actions: ActionTree<CanvasState, RootStoreState> = {
@@ -305,6 +329,28 @@ export const actions: ActionTree<CanvasState, RootStoreState> = {
       left: widthRatioAfter,
       behavior: "auto",
     });
+  },
+
+  async moveObjectIntoView(
+    { state, getters, dispatch },
+    workflowObject: WorkflowObject,
+  ) {
+    const kanvas = state.getScrollContainerElement();
+    const { zoomFactor } = state;
+    const objectScreenCoordinates =
+      getters.screenFromCanvasCoordinates(workflowObject);
+
+    if (isOutsideKanvasView(kanvas, objectScreenCoordinates)) {
+      const halfX = kanvas.clientWidth / 2 / zoomFactor;
+      const halfY = kanvas.clientHeight / 2 / zoomFactor;
+
+      // scroll object into canvas center
+      await dispatch("scroll", {
+        canvasX: workflowObject.x - halfX,
+        canvasY: workflowObject.y - halfY,
+        smooth: true,
+      });
+    }
   },
 };
 
