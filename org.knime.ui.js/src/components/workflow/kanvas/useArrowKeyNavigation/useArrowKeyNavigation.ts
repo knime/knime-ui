@@ -33,10 +33,9 @@ export const useArrowKeyNavigation = (
   const shouldNavigate = (event: KeyboardEvent) => {
     const isKanvasFocused =
       document.activeElement === getScrollContainerElement.value();
-    const isBodyFocused = document.activeElement === document.body;
 
     return (
-      (isKanvasFocused || isBodyFocused) &&
+      isKanvasFocused &&
       !isInputElement(event.target as HTMLElement) &&
       !event.altKey
     );
@@ -45,7 +44,6 @@ export const useArrowKeyNavigation = (
   // prevent native events
   const preventNativeEvents = function (event: KeyboardEvent) {
     const isScrollingKey = [
-      "Space",
       "ArrowUp",
       "ArrowDown",
       "ArrowLeft",

@@ -40,6 +40,7 @@ export const loadStore = (options: Options = {}) => {
   const getters = {
     canvas: {
       getCanvasScrollState: vi.fn(() => () => ({ mockCanvasState: true })),
+      getCenterOfScrollContainer: vi.fn(() => () => ({ x: 10, y: 10 })),
       screenToCanvasCoordinates: vi.fn(() => ([x, y]: [number, number]) => [
         x,
         y,

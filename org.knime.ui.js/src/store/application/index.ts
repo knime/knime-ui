@@ -21,6 +21,9 @@ import * as globalLoader from "./globalLoader";
 import * as dirtyProjectTracking from "./dirtyProjectsTracking";
 import * as canvasModes from "./canvasModes";
 import * as permissions from "./permissions";
+import type { WorkflowObject } from "@/api/custom-types";
+import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { nodeSize } from "@/style/shapes.mjs";
 
 export interface ApplicationState {
   /**
@@ -328,6 +331,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       // e.g. the menu is getting closed by right-clicking again
       event?.preventDefault();
       commit("setContextMenu", { isOpen: false, position: null });
+      dispatch("canvas/focusScrollContainerElement", null, { root: true });
       return;
     }
 
@@ -347,14 +351,66 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // reset to selection mode
     await dispatch("resetCanvasMode");
 
-    const { clientX, clientY } = event;
-    const screenToCanvasCoordinates =
-      rootGetters["canvas/screenToCanvasCoordinates"];
-    const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
+    const eventBasedPosition = () => {
+      const { clientX, clientY } = event;
+      if (!clientX && !clientY) {
+        return null;
+      }
+
+      const screenToCanvasCoordinates =
+        rootGetters["canvas/screenToCanvasCoordinates"];
+      const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
+
+      return { x, y };
+    };
+
+    // the node offset is also fine for annotations so we use it all the time
+    const extractXYWithOffset = ({ x, y }: XY) => ({
+      x: x + nodeSize / 2,
+      y: y + nodeSize / 2,
+    });
+
+    const centerOfVisibleArea =
+      rootGetters["canvas/getCenterOfScrollContainer"];
+
+    // fallback position for keyboard shortcut to open context menu
+    const selectionBasedPosition = async () => {
+      const selectedObjects: WorkflowObject[] =
+        rootGetters["selection/selectedObjects"];
+      if (selectedObjects.length === 0) {
+        return null;
+      }
+
+      // use position of object if we only have one selected
+      if (selectedObjects.length === 1) {
+        return extractXYWithOffset(selectedObjects[0]);
+      }
+
+      // try to find the object that is nearest going left from the right border (y-centered) of the visible area
+      const mostRightObject = await workflowNavigationService.nearestObject({
+        objects: selectedObjects,
+        reference: {
+          ...centerOfVisibleArea("right"),
+          id: "",
+        },
+        direction: "left",
+      });
+
+      // the nearestObject uses some max distances so it can happen that there is nothing "found"
+      if (!mostRightObject) {
+        return null;
+      }
+      return extractXYWithOffset(mostRightObject);
+    };
+
+    const position =
+      eventBasedPosition() ??
+      (await selectionBasedPosition()) ??
+      centerOfVisibleArea();
 
     state.contextMenu = {
       isOpen: true,
-      position: { x, y },
+      position,
     };
   },
 };

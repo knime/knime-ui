@@ -84,7 +84,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  closePortTypeMenu({ commit }) {
+  closePortTypeMenu({ commit, dispatch }) {
     commit("setPortTypeMenu", {
       isOpen: false,
       nodeId: null,
@@ -92,6 +92,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       props: {},
       events: {},
     });
+    dispatch("canvas/focusScrollContainerElement", null, { root: true });
   },
 
   openQuickAddNodeMenu({ commit, dispatch }, { props, events }) {
@@ -104,12 +105,13 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  closeQuickAddNodeMenu({ commit }) {
+  closeQuickAddNodeMenu({ commit, dispatch }) {
     commit("setQuickAddNodeMenu", {
       isOpen: false,
       props: {},
       events: {},
     });
+    dispatch("canvas/focusScrollContainerElement", null, { root: true });
   },
 };
 

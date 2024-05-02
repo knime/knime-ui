@@ -90,6 +90,7 @@ export default {
       // to allow styles to apply properly when editor is destroyed
       setTimeout(() => {
         this.closeLabelEditor();
+        this.$store.dispatch("canvas/focusScrollContainerElement");
       }, 100);
     },
     onCancel() {

@@ -21,9 +21,7 @@ const portTypeMenu = computed(() => store.state.workflow.portTypeMenu);
 const quickAddNodeMenu = computed(() => store.state.workflow.quickAddNodeMenu);
 const contextMenu = computed(() => store.state.application.contextMenu);
 const isWritable = computed(() => store.getters["workflow/isWritable"]);
-const isWorkflowEmpty = computed(
-  () => store.getters["workflow/isWorkflowEmpty"],
-);
+
 const selectedNodeIds = computed(
   () => store.getters["selection/selectedNodeIds"],
 );
@@ -48,26 +46,9 @@ watch(selectedNodeIds, () => {
   }
 });
 
-const toggleContextMenu = (event: unknown) => {
-  // this is not the only place where it is activated, look into Kanvas (usePanning.stopPan)
-  // where an unsuccessful pan by right click also opens it
-  store.dispatch("application/toggleContextMenu", { event });
-};
-
-const onContextMenu = (event: MouseEvent) => {
-  // this is the only place where we handle native context menu events
-  if (
-    event.target &&
-    (event.target as HTMLElement).classList.contains("native-context-menu")
-  ) {
-    return;
-  }
-  // prevent native context menus to appear
-  event.preventDefault();
-
-  // trigger it for empty workflows as we don't have a pan there
-  if (isWorkflowEmpty.value) {
-    toggleContextMenu(event);
+const closeContextMenu = (event: unknown) => {
+  if (contextMenu.value.isOpen) {
+    store.dispatch("application/toggleContextMenu", { event });
   }
 };
 </script>
@@ -79,13 +60,12 @@ const onContextMenu = (event: MouseEvent) => {
       { 'read-only': !isWritable },
       { 'annotation-cursor': hasAnnotationModeEnabled },
     ]"
-    @contextmenu.stop="onContextMenu"
-    @pointerdown.right="contextMenu.isOpen && toggleContextMenu($event)"
+    @pointerdown.right="closeContextMenu($event)"
   >
     <ContextMenu
       v-if="contextMenu.isOpen"
       :position="contextMenu.position!"
-      @menu-close="toggleContextMenu"
+      @menu-close="closeContextMenu"
     />
 
     <PortTypeMenu

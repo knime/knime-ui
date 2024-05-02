@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { expect, describe, beforeEach, it, vi } from "vitest";
 import * as Vue from "vue";
 
@@ -632,6 +633,27 @@ describe("canvas store", () => {
         bottom: -20,
         width: 300,
         height: 300,
+      });
+    });
+
+    it.each([
+      ["center", -170, -170],
+      ["left", -320, -170],
+      ["top", -170, -320],
+      ["right", -20, -170],
+      ["bottom", -170, -20],
+    ])("center with anchor '%s' of scroll container", (anchor, x, y) => {
+      store.dispatch("canvas/initScrollContainerElement", {
+        ...scrollContainer,
+        offsetLeft: 10,
+        offsetTop: 10,
+      });
+
+      expect(
+        store.getters["canvas/getCenterOfScrollContainer"](anchor),
+      ).toStrictEqual({
+        x,
+        y,
       });
     });
   });

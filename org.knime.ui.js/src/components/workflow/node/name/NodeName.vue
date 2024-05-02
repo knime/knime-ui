@@ -74,6 +74,7 @@ export default {
       // to allow styles to apply properly when editor is destroyed
       setTimeout(() => {
         this.closeNameEditor();
+        this.$store.dispatch("canvas/focusScrollContainerElement");
       }, 100);
     },
     onCancel() {

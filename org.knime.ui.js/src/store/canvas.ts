@@ -97,6 +97,10 @@ const isOutsideKanvasView = (
 };
 
 export const actions: ActionTree<CanvasState, RootStoreState> = {
+  focusScrollContainerElement({ state }) {
+    state.getScrollContainerElement()?.focus();
+  },
+
   initScrollContainerElement({ commit }, kanvas) {
     commit("setScrollContainerElement", kanvas);
     commit("setContainerSize", {
@@ -557,6 +561,55 @@ export const getters: GetterTree<CanvasState, RootStoreState> = {
         width: right - left,
         height: bottom - top,
       };
+    };
+  },
+
+  /**
+   * Helper to get one of this 5 points in canvas coordinates. Default is center.
+   * |-----x-----|
+   * |           |
+   * |           |
+   * x     x     x
+   * |           |
+   * |           |
+   * |-----x-----|
+   */
+  getCenterOfScrollContainer(
+    { getScrollContainerElement },
+    { screenToCanvasCoordinates },
+  ) {
+    return (
+      anchor: "center" | "left" | "top" | "right" | "bottom" = "center",
+    ) => {
+      const kanvas = getScrollContainerElement();
+
+      let screenX = kanvas.offsetLeft;
+      let screenY = kanvas.offsetTop;
+
+      switch (anchor) {
+        case "center":
+          screenX += kanvas.clientWidth / 2;
+          screenY += kanvas.clientHeight / 2;
+          break;
+        case "left":
+          screenY += kanvas.clientHeight / 2;
+          break;
+        case "right":
+          screenX += kanvas.clientWidth;
+          screenY += kanvas.clientHeight / 2;
+          break;
+        case "top":
+          screenX += kanvas.clientWidth / 2;
+          break;
+        case "bottom":
+          screenX += kanvas.clientWidth / 2;
+          screenY += kanvas.clientHeight;
+          break;
+      }
+
+      const [x, y] = screenToCanvasCoordinates([screenX, screenY]);
+
+      return { x, y };
     };
   },
 };

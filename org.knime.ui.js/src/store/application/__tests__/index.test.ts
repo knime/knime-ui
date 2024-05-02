@@ -7,8 +7,24 @@ import {
   createSpace,
   createSpaceProvider,
   createProject,
+  createNativeNode,
+  createWorkflowAnnotation,
+  createWorkflow,
 } from "@/test/factories";
 import { flushPromises } from "@vue/test-utils";
+import type { RootStoreState } from "@/store/types";
+import type { Store } from "vuex";
+import { nodeSize } from "@/style/shapes.mjs";
+import { mockedObject } from "@/test/utils";
+import { workflowNavigationService } from "@/util/workflowNavigationService";
+
+vi.mock("@/util/workflowNavigationService", () => {
+  return {
+    workflowNavigationService: {
+      nearestObject: vi.fn(),
+    },
+  };
+});
 
 describe("application::index", () => {
   it("calls setExampleProjects", async () => {
@@ -230,7 +246,7 @@ describe("application::index", () => {
         clientY: y,
         srcElement: {
           classList: {
-            contains: (className) => srcElemClasses.includes(className),
+            contains: (className: string) => srcElemClasses.includes(className),
           },
         },
         preventDefault,
@@ -257,6 +273,100 @@ describe("application::index", () => {
       expect(store.state.application.contextMenu.position).toEqual({
         x: 200,
         y: 200,
+      });
+      expect(preventDefault).toHaveBeenCalled();
+      expect(stopPropagation).toHaveBeenCalled();
+    });
+
+    const createAndSetWorkflow = (store: Store<RootStoreState>) => {
+      const node1 = createNativeNode({
+        id: "root:1",
+        position: { x: 25, y: 25 },
+      });
+      const node2 = createNativeNode({
+        id: "root:2",
+        position: { x: 20, y: 10 },
+      });
+      const annotation1 = createWorkflowAnnotation({
+        id: "annotation:1",
+        bounds: { x: 40, y: 10, width: 20, height: 20 },
+      });
+      const workflow = createWorkflow({
+        nodes: {
+          [node1.id]: node1,
+          [node2.id]: node2,
+        },
+        workflowAnnotations: [annotation1],
+      });
+      store.commit("workflow/setActiveWorkflow", workflow);
+      return { node1, node2, annotation1, workflow };
+    };
+
+    it("should use the selected nodes as position if event has none (e.g. KeyboardEvent)", async () => {
+      const { event, preventDefault, stopPropagation } = createEvent();
+      const { store, dispatchSpy } = loadStore();
+
+      const { node1, node2 } = createAndSetWorkflow(store);
+      store.commit("selection/addNodesToSelection", [node1.id, node2.id]);
+
+      const mocked = mockedObject(workflowNavigationService);
+      mocked.nearestObject.mockResolvedValueOnce({
+        type: "node",
+        id: node2.id,
+        ...node2.position,
+      });
+
+      await store.dispatch("application/toggleContextMenu", { event });
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "selection/deselectAllObjects",
+        null,
+      );
+      expect(store.state.application.contextMenu.isOpen).toBe(true);
+      expect(store.state.application.contextMenu.position).toEqual({
+        x: 36,
+        y: 26,
+      });
+      expect(preventDefault).toHaveBeenCalled();
+      expect(stopPropagation).toHaveBeenCalled();
+    });
+
+    it("should use the single (!) selected node as position if event has none (e.g. KeyboardEvent)", async () => {
+      const { event, preventDefault, stopPropagation } = createEvent();
+      const { store, dispatchSpy } = loadStore();
+
+      const { node1 } = createAndSetWorkflow(store);
+      store.commit("selection/addNodesToSelection", [node1.id]);
+
+      await store.dispatch("application/toggleContextMenu", { event });
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "selection/deselectAllObjects",
+        null,
+      );
+      expect(store.state.application.contextMenu.isOpen).toBe(true);
+      // offset of a half node size
+      const x = node1.position.x + nodeSize / 2;
+      const y = node1.position.y + nodeSize / 2;
+      expect(store.state.application.contextMenu.position).toEqual({
+        x,
+        y,
+      });
+      expect(preventDefault).toHaveBeenCalled();
+      expect(stopPropagation).toHaveBeenCalled();
+    });
+
+    it("should use center as fallback if event has no position and no nodes are selected", async () => {
+      const { event, preventDefault, stopPropagation } = createEvent();
+      const { store, dispatchSpy } = loadStore();
+
+      await store.dispatch("application/toggleContextMenu", { event });
+      expect(dispatchSpy).not.toHaveBeenCalledWith(
+        "selection/deselectAllObjects",
+        null,
+      );
+      expect(store.state.application.contextMenu.isOpen).toBe(true);
+      expect(store.state.application.contextMenu.position).toEqual({
+        x: 10,
+        y: 10,
       });
       expect(preventDefault).toHaveBeenCalled();
       expect(stopPropagation).toHaveBeenCalled();

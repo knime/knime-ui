@@ -501,6 +501,7 @@ export default defineComponent({
       menu-aria-label="Context Menu"
       @item-click="onItemClick"
       @item-focused="setActiveDescendant"
+      @close="$emit('menuClose')"
     />
   </FloatingMenu>
 </template>

@@ -113,48 +113,6 @@ describe("WorkflowPanel", () => {
       await wrapper.vm.$nextTick();
       expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
     });
-
-    it("prevents native context menu by default", async () => {
-      const { wrapper } = doShallowMount();
-      const preventDefault = vi.fn();
-      await wrapper.trigger("contextmenu", { preventDefault });
-      expect(preventDefault).toHaveBeenCalled();
-    });
-
-    it("allows native context menu if source element allows it", async () => {
-      const { wrapper } = doShallowMount();
-      const preventDefault = vi.fn();
-      wrapper.element.classList.add("native-context-menu");
-      await wrapper.trigger("contextmenu", { preventDefault });
-      expect(preventDefault).not.toHaveBeenCalled();
-    });
-
-    it("does not open contextmenu if workflow is not empty", async () => {
-      const { wrapper, dispatchSpy, $store } = doShallowMount();
-      expect($store.getters["application/hasAnnotationModeEnabled"]).toBe(
-        false,
-      );
-      await wrapper.trigger("contextmenu");
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
-    });
-
-    it("opens contextmenu if, and only if the workflow is empty", async () => {
-      const { wrapper, dispatchSpy, $store } = doShallowMount({
-        workflow: {
-          nodes: Object.create({}),
-          workflowAnnotations: Object.create({}),
-        },
-      });
-      expect($store.getters["workflow/isWorkflowEmpty"]).toBe(true);
-      await wrapper.trigger("contextmenu");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
-    });
   });
 
   describe("port Type menu", () => {

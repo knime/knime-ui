@@ -113,7 +113,6 @@ const executionShortcuts: ExecutionShortcuts = {
     description: "Open view",
     hotkey: ["F10"],
     group: "execution",
-    additionalHotkeys: [{ key: ["Shift", "F10"], visible: true }],
     icon: OpenViewIcon,
     execute: executeAndOpenViewHelper,
     condition: canExecuteAndOpenView,

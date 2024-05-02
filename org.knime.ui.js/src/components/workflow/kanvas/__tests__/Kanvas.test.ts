@@ -118,6 +118,7 @@ describe("Kanvas", () => {
           screenFromCanvasCoordinates: () =>
             vi.fn(() => ({ x: 1000, y: 1000 })),
           screenToCanvasCoordinates: () => vi.fn(() => [1000, 1000]),
+          getCenterOfScrollContainer: () => vi.fn(() => ({ x: 10, y: 10 })),
         },
         actions: actions.canvas,
         mutations: {
@@ -641,6 +642,45 @@ describe("Kanvas", () => {
         }),
       );
     });
+
+    it("allows native context menu if source element allows it", async () => {
+      const { wrapper } = doShallowMount();
+      const preventDefault = vi.fn();
+      wrapper.element.classList.add("native-context-menu");
+      await wrapper.trigger("contextmenu", { preventDefault });
+      expect(preventDefault).not.toHaveBeenCalled();
+    });
+
+    it("opens contextmenu (via native event) if the workflow is empty", async () => {
+      const { wrapper, dispatchSpy, $store } = doShallowMount({
+        isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+      });
+      expect($store.getters["workflow/isWorkflowEmpty"]).toBe(true);
+      await wrapper.trigger("contextmenu");
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
+    });
+
+    it("opens contextmenu with SHIFT+F10", async () => {
+      const { wrapper, dispatchSpy } = doShallowMount();
+      await wrapper.trigger("keydown", { key: "F10", shiftKey: true });
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
+    });
+
+    it("opens contextmenu via context menu key (regardless of empty state)", async () => {
+      const { wrapper, dispatchSpy } = doShallowMount();
+      dispatchSpy.mockClear();
+      await wrapper.trigger("keydown", { key: "ContextMenu" });
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
+    });
   });
 
   describe("container Resize", () => {
@@ -791,6 +831,14 @@ describe("Kanvas", () => {
         workflowAnnotations: [annotation1],
       });
       mountResult.$store.commit("workflow/setActiveWorkflow", workflow);
+
+      // focus scroll container
+      const element =
+        mountResult.$store.state.canvas.getScrollContainerElement();
+      Object.defineProperty(document, "activeElement", {
+        value: element,
+        writable: true,
+      });
 
       return { ...mountResult, workflow, node1, node2, annotation1 };
     };
@@ -1147,7 +1195,7 @@ describe("Kanvas", () => {
 
       dispatchSpy.mockClear();
 
-      await wrapper.trigger("keydown.esc");
+      await wrapper.trigger("keydown", { key: "Escape" });
 
       expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
     });
@@ -1166,5 +1214,18 @@ describe("Kanvas", () => {
 
       expect(dispatchSpy).not.toHaveBeenCalled();
     });
+
+    it.each(["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"])(
+      "should select an objects on %s key",
+      async (key) => {
+        const { wrapper, dispatchSpy } = mountWithWorkflow();
+
+        await wrapper.trigger("keydown", { key });
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "selection/selectNode",
+          "root:1",
+        );
+      },
+    );
   });
 });
