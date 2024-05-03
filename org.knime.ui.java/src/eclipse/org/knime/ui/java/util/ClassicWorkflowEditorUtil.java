@@ -234,8 +234,10 @@ public final class ClassicWorkflowEditorUtil {
                     // we assume that we are on a local AP executor
                     final var locationInfo = context.getLocationInfo();
 
-                    if (locationInfo instanceof HubSpaceLocationInfo) {
+                    if (locationInfo instanceof HubSpaceLocationInfo || context.isTemporyWorkflowCopyMode()) {
                         // This is to avoid inconsistencies until we properly handle versioning, see NXT-140.
+                        // Workflows opened from `*.knwf` files are not in the local workspace, treat them like temp
+                        // copies from Hub (see NXT-2607).
                         return Optional.empty();
                     } else {
                         final var path = context.getExecutorInfo().getLocalWorkflowPath();
