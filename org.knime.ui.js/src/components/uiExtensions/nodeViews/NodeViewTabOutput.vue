@@ -122,7 +122,6 @@ const openInNewWindow = () => {
 
 .node-view-wrapper {
   height: 100%;
-  padding-top: 30px;
 }
 
 .detach-button-wrapper {
@@ -130,7 +129,7 @@ const openInNewWindow = () => {
   width: max-content;
   height: min-content;
   position: absolute;
-  inset: 50px 0 0;
+  inset: 10px 0 0;
   margin: 0 auto;
   z-index: 3;
 
