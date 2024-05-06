@@ -124,7 +124,8 @@ final class Create {
         // Initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
 
-        // Initialize the workflow manager class -> mainly helps to indirectly trigger IEarlyStartup.executeEarlyStartup
+        // Initialize the workflow manager class -> mainly helps to indirectly trigger
+        // `IEarlyStartup#runBeforeWFMClassLoaded()`
         WorkflowManager.ROOT.getClass();
 
         // Disable Classic UI key bindings to avoid conflict with Modern UI key bindings
