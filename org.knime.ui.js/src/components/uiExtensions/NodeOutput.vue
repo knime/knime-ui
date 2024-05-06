@@ -33,9 +33,6 @@ export const runValidationChecks = ({
 };
 
 interface ComponentData {
-  // either 'view' or the number of the port as string
-  selectedTab: "view" | Omit<string, "view"> | null;
-
   loadingState: UIExtensionLoadingState | null;
   currentValidationError: ValidationError | null;
   currentNodeViewAlert: Alert | null;
@@ -58,7 +55,6 @@ export default defineComponent({
   },
   data(): ComponentData {
     return {
-      selectedTab: null,
       currentValidationError: null,
       loadingState: null,
       compatibility,
@@ -78,6 +74,14 @@ export default defineComponent({
     }),
     ...mapGetters("selection", ["selectedNodes", "singleSelectedNode"]),
 
+    selectedTab: {
+      get() {
+        return this.$store.state.selection.selectedPort;
+      },
+      set(val: "view" | Omit<string, "view"> | null) {
+        this.$store.commit("selection/setSelectedPort", val);
+      },
+    },
     canSelectTabs() {
       // allow selecting tabs when:
       return (

@@ -39,7 +39,7 @@ export type ShortcutGroups =
   | "execution"
   | "canvasNavigation"
   | "componentAndMetanode"
-  | "nodeLabels"
+  | "selectedNode"
   | "workflowAnnotations"
   | "workflowEditor";
 
@@ -47,8 +47,9 @@ export type ShortcutGroups =
 // and the entire `string` set *except* the passed-in type
 type LooseAutoComplete<T extends string> = T | Omit<string, T>;
 
+export type NumberRange = `${number}-${number}`;
 export type HotkeyText = { text: string };
-export type Hotkey = Keys | Modifiers;
+export type Hotkey = Keys | Modifiers | NumberRange;
 export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers> | HotkeyText>;
 
 export type ShortcutExecuteContext = {

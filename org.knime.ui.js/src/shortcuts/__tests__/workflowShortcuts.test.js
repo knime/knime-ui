@@ -2,9 +2,12 @@
 import { expect, describe, it, vi } from "vitest";
 import * as applicationStore from "@/store/application";
 import workflowShortcuts from "../workflowShortcuts";
+import { deepMocked } from "@/test/utils";
+import { API } from "@api";
 
 describe("workflowShortcuts", () => {
   const mockSelectedNode = { id: "root:0", allowedActions: {} };
+  const mockedAPI = deepMocked(API);
 
   const createStore = ({
     containerType = "project",
@@ -21,7 +24,9 @@ describe("workflowShortcuts", () => {
       .mockReturnValue({ left: -500, top: -500, width: 1000, height: 1000 }),
   } = {}) => {
     const mockDispatch = vi.fn();
+    const mockCommit = vi.fn();
     const $store = {
+      commit: mockCommit,
       dispatch: mockDispatch,
       state: {
         application: {
@@ -62,6 +67,9 @@ describe("workflowShortcuts", () => {
         canvas: {
           getScrollContainerElement,
         },
+        selection: {
+          selectedPort: null,
+        },
       },
       getters: {
         "selection/selectedNodes": selectedNodes,
@@ -83,7 +91,7 @@ describe("workflowShortcuts", () => {
       },
     };
 
-    return { mockDispatch, $store };
+    return { mockCommit, mockDispatch, $store };
   };
 
   describe("execute", () => {
@@ -130,6 +138,192 @@ describe("workflowShortcuts", () => {
         "workflow/openFlowVariableConfiguration",
         "root:0",
       );
+    });
+
+    describe("openOutputPort", () => {
+      const eventDigit1 = new KeyboardEvent("keydown", {
+        key: "1",
+        code: "Digit1",
+        shiftKey: true,
+      });
+      const eventDigit3 = new KeyboardEvent("keydown", {
+        key: "3",
+        code: "Digit3",
+        shiftKey: true,
+      });
+
+      const eventShiftDigit1 = new KeyboardEvent("keydown", {
+        key: "1",
+        code: "Digit1",
+        shiftKey: true,
+        altKey: true,
+      });
+      const eventShiftDigit3 = new KeyboardEvent("keydown", {
+        key: "3",
+        code: "Digit3",
+        shiftKey: true,
+        altKey: true,
+      });
+
+      it("shortcuts mutate selectedPort", () => {
+        // selected node with 4 dummy ports
+        const { $store, mockCommit } = createStore({
+          singleSelectedNode: {
+            ...mockSelectedNode,
+            outPorts: [{}, {}, {}, {}],
+          },
+        });
+
+        workflowShortcuts.openOutputPort.execute({
+          $store,
+          payload: { event: eventDigit1 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "1",
+        );
+
+        workflowShortcuts.openOutputPort.execute({
+          $store,
+          payload: { event: eventDigit3 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "3",
+        );
+
+        // too few outPorts
+        mockCommit.mockClear();
+        $store.getters["selection/singleSelectedNode"].outPorts = [{}, {}];
+        workflowShortcuts.openOutputPort.execute({
+          $store,
+          payload: { event: eventDigit3 },
+        });
+        expect(mockCommit).not.toBeCalled();
+      });
+
+      it("digit1 key is also used for 'view' tabs", () => {
+        const { $store, mockCommit } = createStore({
+          singleSelectedNode: {
+            ...mockSelectedNode,
+            hasView: true,
+            outPorts: [{}, {}],
+          },
+        });
+
+        workflowShortcuts.openOutputPort.execute({
+          $store,
+          payload: { event: eventDigit1 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "view",
+        );
+      });
+
+      it("shortcuts open detached port views", () => {
+        const { $store } = createStore({
+          singleSelectedNode: {
+            ...mockSelectedNode,
+            outPorts: [{}, {}, {}, {}],
+          },
+        });
+        mockedAPI.desktop.openPortView.mockClear();
+
+        const validationResult = vi.hoisted(() => ({
+          error: {
+            message: "some test error occured",
+          },
+        }));
+        vi.mock(
+          "@/components/uiExtensions/common/output-validator",
+          async (importOriginal) => ({
+            ...(await importOriginal()),
+            buildMiddleware: () => () => () => ({
+              ...validationResult,
+            }),
+          }),
+        );
+
+        // validation error prevents detaching
+        workflowShortcuts.openOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit1 },
+        });
+        expect(mockedAPI.desktop.openPortView).not.toBeCalled();
+
+        validationResult.error = undefined;
+
+        workflowShortcuts.openOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit1 },
+        });
+        expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
+          projectId: "activeTestProjectId",
+          nodeId: mockSelectedNode.id,
+          viewIndex: 1,
+          portIndex: 1,
+        });
+
+        workflowShortcuts.openOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit3 },
+        });
+        expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
+          projectId: "activeTestProjectId",
+          nodeId: mockSelectedNode.id,
+          viewIndex: 1,
+          portIndex: 3,
+        });
+      });
+    });
+
+    it("detachCurrentOutputPort", () => {
+      const { $store } = createStore();
+      const event = new KeyboardEvent("keydown", {
+        key: "Enter",
+        altKey: true,
+        shiftKey: true,
+      });
+
+      mockedAPI.desktop.openPortView.mockClear();
+
+      workflowShortcuts.detachCurrentOutputPort.execute({
+        $store,
+        payload: { event },
+      });
+      expect(mockedAPI.desktop.openPortView).toHaveBeenCalledTimes(0);
+
+      $store.state.selection.selectedPort = "view";
+      workflowShortcuts.detachCurrentOutputPort.execute({
+        $store,
+        payload: { event },
+      });
+      expect(mockedAPI.desktop.openPortView).toHaveBeenCalledTimes(0);
+
+      $store.state.selection.selectedPort = "1";
+      workflowShortcuts.detachCurrentOutputPort.execute({
+        $store,
+        payload: { event },
+      });
+      expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
+        projectId: "activeTestProjectId",
+        nodeId: mockSelectedNode.id,
+        viewIndex: 1,
+        portIndex: 1,
+      });
+
+      $store.state.selection.selectedPort = "3";
+      workflowShortcuts.detachCurrentOutputPort.execute({
+        $store,
+        payload: { event },
+      });
+      expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
+        projectId: "activeTestProjectId",
+        nodeId: mockSelectedNode.id,
+        viewIndex: 1,
+        portIndex: 3,
+      });
     });
 
     it("editNodeComment ", () => {
@@ -230,6 +424,39 @@ describe("workflowShortcuts", () => {
       expect(
         workflowShortcuts.configureFlowVariables.condition({ $store }),
       ).toBe(true);
+    });
+
+    it("openOutputPort", () => {
+      const { $store } = createStore({ singleSelectedNode: null });
+      expect(
+        workflowShortcuts.openOutputPort.condition({ $store }),
+      ).toBeFalsy();
+      $store.getters["selection/singleSelectedNode"] = {
+        ...mockSelectedNode,
+        outPorts: [],
+      };
+      expect(
+        workflowShortcuts.openOutputPort.condition({ $store }),
+      ).toBeFalsy();
+      // selected node has outPort
+      $store.getters["selection/singleSelectedNode"] = {
+        ...mockSelectedNode,
+        outPorts: [{}],
+      };
+      expect(
+        workflowShortcuts.openOutputPort.condition({ $store }),
+      ).toBeTruthy();
+    });
+
+    it("detachCurrentOutputPort", () => {
+      const { $store } = createStore({ singleSelectedNode: null });
+      expect(
+        workflowShortcuts.detachCurrentOutputPort.condition({ $store }),
+      ).toBeFalsy();
+      $store.getters["selection/singleSelectedNode"] = mockSelectedNode;
+      expect(
+        workflowShortcuts.detachCurrentOutputPort.condition({ $store }),
+      ).toBeTruthy();
     });
 
     describe("editNodeComment", () => {
@@ -342,7 +569,10 @@ describe("workflowShortcuts", () => {
     it("copy", () => {
       const nodeOutputEl = document.createElement("div");
       nodeOutputEl.id = "node-output";
-      nodeOutputEl.setAttribute("tabIndex", "0");
+      const nodeOutputContentEl = document.createElement("div");
+      nodeOutputContentEl.classList.add("node-output-content");
+      nodeOutputContentEl.setAttribute("tabIndex", "0");
+      nodeOutputEl.appendChild(nodeOutputContentEl);
       document.body.appendChild(nodeOutputEl);
 
       // mock kanvas element and make it the activeElement
@@ -362,7 +592,7 @@ describe("workflowShortcuts", () => {
       $store.getters["selection/selectedNodes"] = [{ allowedActions: {} }];
       expect(workflowShortcuts.copy.condition({ $store })).toBe(true);
 
-      nodeOutputEl.focus();
+      nodeOutputContentEl.focus();
       expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
 
       kanvasElement.focus();

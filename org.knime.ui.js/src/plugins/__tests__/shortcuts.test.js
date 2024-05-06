@@ -19,6 +19,11 @@ describe("Shortcuts Plugin", () => {
             execute: vi.fn(),
             condition: vi.fn(),
           },
+          digitRangeHotkey: {
+            hotkey: ["CtrlOrCmd", "Alt", "Shift", "1-6"],
+            execute: vi.fn(),
+            condition: vi.fn(),
+          },
           selectAll: {
             hotkey: ["CtrlOrCmd", "A"],
           },
@@ -166,6 +171,36 @@ describe("Shortcuts Plugin", () => {
           }),
         ).toStrictEqual([]);
       });
+
+      it.each(["Digit1", "Digit2", "Digit6"])(
+        "find digitRangeHotkey '1-6' with key %s",
+        (code) => {
+          expect(
+            $shortcuts.findByHotkey({
+              ctrlKey: true,
+              shiftKey: true,
+              altKey: true,
+              key: "someKeyMaybeFromAnotherLayer",
+              code,
+            }),
+          ).toStrictEqual(["digitRangeHotkey"]);
+        },
+      );
+
+      it.each(["Digit0", "Digit7", "Digit9"])(
+        "doesn't find digitRangeHotkey '1-6' with key %s",
+        (code) => {
+          expect(
+            $shortcuts.findByHotkey({
+              ctrlKey: true,
+              shiftKey: true,
+              altKey: true,
+              key: "someKeyMaybeFromAnotherModifierLayer",
+              code,
+            }),
+          ).toStrictEqual([]);
+        },
+      );
     });
   });
 });

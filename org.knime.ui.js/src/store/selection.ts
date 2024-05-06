@@ -7,6 +7,7 @@ import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
 
 export interface SelectionState {
   selectedNodes: Record<string, boolean>;
+  selectedPort: "view" | Omit<string, "view"> | null;
   selectedConnections: Record<string, boolean>;
   selectedAnnotations: Record<string, boolean>;
   selectedBendpoints: Record<string, boolean>;
@@ -26,6 +27,7 @@ export interface SelectionState {
 // WARNING: Do not use this state directly. Use getters that filter non existent workflow objects.
 export const state = (): SelectionState => ({
   selectedNodes: {},
+  selectedPort: null,
   selectedConnections: {},
   selectedAnnotations: {},
   selectedMetanodePortBars: {},
@@ -151,6 +153,10 @@ export const mutations: MutationTree<SelectionState> = {
 
   setShouldHideSelection(state, value) {
     state.shouldHideSelection = value;
+  },
+
+  setSelectedPort(state, value) {
+    state.selectedPort = value;
   },
 };
 

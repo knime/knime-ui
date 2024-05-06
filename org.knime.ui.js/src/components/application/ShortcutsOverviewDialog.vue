@@ -34,7 +34,7 @@ const groupNamesMap: Record<ShortcutGroupsWithOthers, string> = {
   execution: "Execution",
   canvasNavigation: "Zooming, panning and navigating inside the canvas",
   componentAndMetanode: "Component and metanode building",
-  nodeLabels: "Node labels",
+  selectedNode: "Selected node actions",
   workflowAnnotations: "Workflow annotations",
   workflowEditor: "Workflow editor actions",
   others: "Others",

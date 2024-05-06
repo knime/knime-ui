@@ -5,6 +5,7 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { escapePressed as escapePressedMock } from "@/mixins/escapeStack";
 
 import HotkeyHandler from "../HotkeyHandler.vue";
+import { isUIExtensionFocused } from "@/components/uiExtensions";
 
 vi.mock("@/mixins/escapeStack", () => ({
   escapePressed: vi.fn(),
@@ -91,12 +92,11 @@ describe("HotKeys", () => {
     doShallowMount();
 
     // random key combination
-    document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
-    );
+    const e = new KeyboardEvent("keydown", { key: "b", ctrlKey: true });
+    document.dispatchEvent(e);
 
     expect($shortcuts.isEnabled).toHaveBeenCalledWith("shortcut");
-    expect($shortcuts.dispatch).toHaveBeenCalledWith("shortcut");
+    expect($shortcuts.dispatch).toHaveBeenCalledWith("shortcut", { event: e });
     expectEventHandled();
     // enabled shortcuts always prevent even if the config says other
     expectPreventDefaultHandled();
@@ -158,5 +158,39 @@ describe("HotKeys", () => {
 
     expectEventHandled();
     expectPreventDefaultNotHandled();
+  });
+
+  describe("prevent shortcuts depending on focus", () => {
+    it("input element focused (with exceptions)", () => {
+      doShallowMount();
+      const inputEl = document.createElement("input");
+      document.body.appendChild(inputEl);
+
+      const e = { target: null };
+      expect(wrapper.vm.preventShortcuts(e)).toBeFalsy();
+      e.target = inputEl;
+      expect(wrapper.vm.preventShortcuts(e)).toBeTruthy();
+      // exception for port tabbar
+      inputEl.setAttribute("name", "output-port");
+      expect(wrapper.vm.preventShortcuts(e)).toBeFalsy();
+    });
+
+    it("ui extension focused", () => {
+      vi.mock("@/components/uiExtensions");
+      doShallowMount();
+
+      vi.mocked(isUIExtensionFocused).mockReturnValueOnce(false);
+      expect(
+        wrapper.vm.preventShortcuts(
+          new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
+        ),
+      ).toBeFalsy();
+      vi.mocked(isUIExtensionFocused).mockReturnValueOnce(true);
+      expect(
+        wrapper.vm.preventShortcuts(
+          new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
+        ),
+      ).toBeTruthy();
+    });
   });
 });

@@ -1,10 +1,12 @@
 export const isUIExtensionFocused = () => {
   // refers to the id used by NodeOutput.vue
-  const nodeOutput = document.querySelector("#node-output");
+  const nodeOutputContent = document.querySelector(
+    "#node-output > .node-output-content",
+  );
   const rightPanel = document.querySelector("#right-panel");
 
   return (
-    (nodeOutput && nodeOutput.contains(document.activeElement)) ||
-    (rightPanel && rightPanel.contains(document.activeElement))
+    nodeOutputContent?.contains(document.activeElement) ||
+    rightPanel?.contains(document.activeElement)
   );
 };

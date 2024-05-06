@@ -12,11 +12,18 @@ import { nodeSize } from "@/style/shapes.mjs";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import type { Connection, XY } from "@/api/gateway-api/generated-api";
-import { compatibility } from "@/environment";
+import { compatibility, isDesktop } from "@/environment";
 
 import type { UnionToShortcutRegistry } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { API } from "@api";
+import {
+  buildMiddleware,
+  validateNodeExecuted,
+  validatePortSupport,
+} from "@/components/uiExtensions/common/output-validator";
+import { getToastsProvider } from "@/plugins/toasts";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -25,6 +32,8 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "redo"
   | "configureNode"
   | "configureFlowVariables"
+  | "openOutputPort"
+  | "detachCurrentOutputPort"
   | "editAnnotation"
   | "editNodeComment"
   | "deleteSelected"
@@ -137,10 +146,110 @@ const workflowShortcuts: WorkflowShortcuts = {
       return false;
     },
   },
+  openOutputPort: {
+    text: "Switch to or detach n-th output port view",
+    hotkey: ["Shift", "0-9"],
+    additionalHotkeys: [{ key: ["Shift", "Alt", "0-9"], visible: true }],
+    icon: OpenDialogIcon,
+    group: "selectedNode",
+    execute: ({ $store, payload }) => {
+      const event = payload.event! as KeyboardEvent;
+      const node = $store.getters["selection/singleSelectedNode"];
+      const detach = event.altKey;
+      let port = event.code.slice("Digit".length);
+
+      if (port === "1" && node.hasView) {
+        port = "view";
+      }
+
+      if (isNodeMetaNode(node)) {
+        // Metanodes don't have a flowvariable port and their port tabs are 0-indexed
+        // eslint-disable-next-line no-magic-numbers
+        port = String(Number(port) === 0 ? 9 : Number(port) - 1);
+      }
+
+      if (Number(port) >= node.outPorts.length) {
+        return;
+      }
+
+      if (detach) {
+        if (!isDesktop || port === "view") {
+          return;
+        }
+
+        const portTypes = $store.state.application.availablePortTypes;
+        const selectedPortIndex = Number(port);
+        const selectedPort = node.outPorts[selectedPortIndex];
+        const validationResult = buildMiddleware(
+          validatePortSupport,
+          validateNodeExecuted,
+        )({
+          selectedNode: node,
+          selectedPort,
+          selectedPortIndex,
+          portTypes,
+        })();
+
+        if (validationResult?.error) {
+          const $toast = getToastsProvider();
+          const PORT_DETACH_VALIDATION_FAILED_ID =
+            "__PORT_DETACH_VALIDATION_FAILED";
+
+          $toast.show({
+            id: PORT_DETACH_VALIDATION_FAILED_ID,
+            headline: "Error opening output port view:",
+            message:
+              validationResult.error.message ||
+              "Please check the output port view for details",
+            type: "error",
+          });
+
+          // switch to port for related information/action items
+          $store.commit("selection/setSelectedPort", port);
+        } else {
+          API.desktop.openPortView({
+            projectId: $store.state.application.activeProjectId!,
+            nodeId: node.id,
+            viewIndex: 1, // only first for now, i.e. ignore statistics
+            portIndex: selectedPortIndex,
+          });
+        }
+      } else {
+        $store.commit("selection/setSelectedPort", port);
+      }
+    },
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      return singleSelectedNode && singleSelectedNode.outPorts.length > 0;
+    },
+  },
+  detachCurrentOutputPort: {
+    text: "Detach active output port view",
+    hotkey: ["Shift", "Alt", "Enter"],
+    icon: OpenDialogIcon,
+    group: "selectedNode",
+    execute: ({ $store }) => {
+      const port = $store.state.selection.selectedPort;
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+
+      if (port && port !== "view") {
+        API.desktop.openPortView({
+          projectId: $store.state.application.activeProjectId!,
+          nodeId: singleSelectedNode.id,
+          viewIndex: 1, // only first for now, i.e. ignore statistics
+          portIndex: Number(port),
+        });
+      }
+    },
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      return isDesktop && singleSelectedNode;
+    },
+  },
   editNodeComment: {
     text: "Edit node comment",
     hotkey: ["F2"],
-    group: "nodeLabels",
+    group: "selectedNode",
     execute: ({ $store }) => {
       if ($store.getters["selection/singleSelectedNode"]) {
         $store.dispatch(

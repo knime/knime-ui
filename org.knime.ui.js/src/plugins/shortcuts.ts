@@ -28,6 +28,24 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 });
 Object.freeze(shortcuts);
 
+const isDigitKeyInRange = (keyCode: string, hotkey: Hotkey | ""): boolean => {
+  // Digit keys exist from 0 to 9, so valid ranges always have length 3
+  const digitRangeLength = 3;
+  if (hotkey.length !== digitRangeLength || !keyCode?.startsWith("Digit")) {
+    return false;
+  }
+
+  const keyNumber = Number(keyCode.slice("Digit".length));
+  const [lower, upper] = hotkey.split("-");
+
+  return (
+    Boolean(lower) &&
+    Boolean(upper) &&
+    parseInt(lower, 10) <= keyNumber &&
+    keyNumber <= parseInt(upper, 10)
+  );
+};
+
 export const createShortcutsService = ({
   $store,
   $router,
@@ -44,6 +62,7 @@ export const createShortcutsService = ({
   // find the names of the matching shortcuts
   const findByHotkey: ShortcutsService["findByHotkey"] = ({
     key,
+    code,
     metaKey,
     ctrlKey,
     shiftKey,
@@ -72,6 +91,7 @@ export const createShortcutsService = ({
       const keysMatch =
         // keys are matched case insensitively
         key.toUpperCase() === character.toUpperCase() ||
+        (character.includes("-") && isDigitKeyInRange(code, character)) ||
         // on mac 'backspace' can be used instead of delete
         (isMac() && character === "Delete" && key === "Backspace");
 

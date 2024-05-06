@@ -160,8 +160,8 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
   /** Node labels */
   {
     hotkey: ["CtrlOrCmd", "Enter"],
-    description: "Apply changes and leave edit mode",
-    group: "nodeLabels",
+    description: "Apply label changes and leave edit mode",
+    group: "selectedNode",
   },
   /** Canvas navigation */
   {

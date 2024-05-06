@@ -17,6 +17,21 @@ export default {
     document.removeEventListener("keydown", this.onKeydown);
   },
   methods: {
+    preventShortcuts(e) {
+      if (isUIExtensionFocused()) {
+        return true;
+      }
+
+      if (isInputElement(e.target)) {
+        // allow shortcuts when output-port tabs (<input type="radio">) are selected
+        const isOutputPortTabbar =
+          e.target?.attributes.getNamedItem("name")?.value === "output-port";
+        return !isOutputPortTabbar;
+      }
+
+      return false;
+    },
+
     onKeydown(e) {
       // Pressed key is just a modifier
       if (e.key === "Control" || e.key === "Shift" || e.key === "Meta") {
@@ -28,7 +43,7 @@ export default {
         escapePressed();
       }
 
-      if (isInputElement(e.target) || isUIExtensionFocused()) {
+      if (this.preventShortcuts(e)) {
         return;
       }
 
@@ -47,7 +62,7 @@ export default {
       for (const shortcut of shortcuts) {
         const isEnabled = this.$shortcuts.isEnabled(shortcut);
         if (isEnabled) {
-          this.$shortcuts.dispatch(shortcut);
+          this.$shortcuts.dispatch(shortcut, { event: e });
         }
         // prevent default if shortcut did not allow it (like copy text via CTRL+C)
         if (isEnabled || this.$shortcuts.preventDefault(shortcut)) {
