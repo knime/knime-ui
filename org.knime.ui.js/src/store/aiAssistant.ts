@@ -1,6 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
+import { omit } from "lodash-es";
 import type { RootStoreState } from "./types";
 import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
 import type { KaiMessage } from "@/api/gateway-api/generated-api";
@@ -16,6 +17,7 @@ export interface Message extends KaiMessage {
   references?: {
     [refName: string]: string[];
   };
+  feedbackId?: string;
   isError?: boolean;
   timestamp?: number;
 }
@@ -40,6 +42,11 @@ export interface AiAssistantState {
   build: ConversationState;
 }
 
+export interface Feedback {
+  isPositive: boolean;
+  comment: string;
+}
+
 type ChainType = Exclude<keyof AiAssistantState, "hubID">;
 
 type PersistedConversationState = {
@@ -52,6 +59,7 @@ type AiAssistantEventPayload = {
     message: Message;
     references: unknown;
     nodes: NodeWithExtensionInfo[];
+    interactionId: string;
   };
   conversation_id: string;
 };
@@ -104,6 +112,7 @@ export const mutations: MutationTree<AiAssistantState> = {
       content: string;
       nodes: Message["nodes"];
       references: Message["references"];
+      feedbackId?: string;
       isError?: boolean;
     },
   ) {
@@ -113,6 +122,7 @@ export const mutations: MutationTree<AiAssistantState> = {
       content,
       nodes,
       references,
+      feedbackId = "",
       isError = false,
     } = payload;
 
@@ -123,6 +133,7 @@ export const mutations: MutationTree<AiAssistantState> = {
       content,
       nodes,
       references,
+      feedbackId,
       isError,
       timestamp,
     });
@@ -255,6 +266,30 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       });
     }
   },
+  async submitFeedback(
+    { state },
+    {
+      chainType,
+      idx,
+      feedback,
+    }: { chainType: ChainType; idx: number; feedback: Feedback },
+  ) {
+    const feedbackId = state[chainType].messages[idx].feedbackId;
+    if (!feedbackId) {
+      return;
+    }
+    delete state[chainType].messages[idx].feedbackId;
+    try {
+      // @ts-ignore
+      await API.kai.submitFeedback({
+        chainType,
+        feedbackId,
+        feedback,
+      });
+    } catch (error) {
+      consola.error("submitFeedback", error);
+    }
+  },
   handleAiAssistantEvent(
     { commit, dispatch },
     {
@@ -277,6 +312,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
             content: payload.message,
             nodes: payload.nodes,
             references: payload.references,
+            feedbackId: payload.interactionId,
           });
         }
         break;
@@ -312,11 +348,15 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     const data: PersistedConversationState = {
       qa: {
         conversationId: state.qa.conversationId,
-        messages: state.qa.messages,
+        messages: state.qa.messages.map((message) =>
+          omit(message, "feedbackId"),
+        ),
       },
       build: {
         conversationId: state.build.conversationId,
-        messages: state.build.messages,
+        messages: state.build.messages.map((message) =>
+          omit(message, "feedbackId"),
+        ),
       },
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));

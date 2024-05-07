@@ -47,7 +47,10 @@ const handleClick = () => {
   }
 };
 
-const disabled = computed(() => !input.value && !props.isProcessing);
+const isInputValid = computed(
+  () => input.value && input.value.trim().length > 0,
+);
+const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 </script>
 
 <template>

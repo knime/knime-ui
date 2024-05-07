@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import { useElementHover } from "@vueuse/core";
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
 import { renderMarkdown } from "./markdown";
@@ -8,6 +9,7 @@ import KaiStatus from "./KaiStatus.vue";
 import KaiReferences from "./KaiReferences.vue";
 import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
+import FeedbackControls from "./FeedbackControls.vue";
 import { useNodeTemplates } from "./useNodeTemplates";
 import type { NodeWithExtensionInfo, References } from "../../types";
 
@@ -19,6 +21,7 @@ interface Props {
   nodes?: NodeWithExtensionInfo[];
   references?: References;
   statusUpdate?: string;
+  submitFeedback?: CallableFunction | null;
   isError?: boolean;
 }
 
@@ -27,8 +30,12 @@ const props = withDefaults(defineProps<Props>(), {
   nodes: () => [],
   references: () => ({}),
   statusUpdate: "",
+  submitFeedback: null,
   isError: false,
 });
+
+const messageElement = ref<HTMLElement | null>(null);
+const isHovered = useElementHover(messageElement);
 
 const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
   role: props.role,
@@ -38,10 +45,11 @@ const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
 
 const isUser = computed(() => props.role === "user");
 const htmlContent = computed(() => renderMarkdown(props.content));
+const showFeedbackControls = computed(() => !isUser.value && !props.isError);
 </script>
 
 <template>
-  <div class="message">
+  <div ref="messageElement" class="message">
     <div class="header">
       <div class="icon" :class="{ user: isUser }">
         <UserIcon v-if="isUser" />
@@ -57,6 +65,14 @@ const htmlContent = computed(() => renderMarkdown(props.content));
       <SuggestedExtensions :extensions="uninstalledExtensions" />
       <KaiStatus :status="statusUpdate" />
     </div>
+    <div class="footer">
+      <FeedbackControls
+        v-if="showFeedbackControls"
+        class="feedback-controls"
+        :submit-feedback="submitFeedback"
+        :show-controls="isHovered"
+      />
+    </div>
   </div>
 </template>
 
@@ -66,12 +82,19 @@ const htmlContent = computed(() => renderMarkdown(props.content));
 .message {
   position: relative;
   width: 100%;
-  margin-bottom: 20px;
   font-size: 13px;
   font-weight: 400;
 
+  &:first-child {
+    margin-top: 21px;
+  }
+
   & .header {
+    position: absolute;
+    left: 0;
+    top: -21px;
     height: 21px;
+    width: 100%;
     display: flex;
     justify-content: flex-end;
 
@@ -181,6 +204,10 @@ const htmlContent = computed(() => renderMarkdown(props.content));
         }
       }
     }
+  }
+
+  & .footer {
+    height: 41px;
   }
 }
 </style>

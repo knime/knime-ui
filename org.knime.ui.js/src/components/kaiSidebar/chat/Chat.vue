@@ -35,9 +35,17 @@ const scrollOnNewMessages = () => {
 };
 
 watch(() => incomingTokens.value, scrollOnNewMessages);
-watch(() => messagesWithSeparators.value, scrollOnNewMessages, {
-  deep: true,
-});
+watch(
+  messagesWithSeparators,
+  (newValue, oldValue) => {
+    if (newValue.length > oldValue.length) {
+      scrollOnNewMessages();
+    }
+  },
+  {
+    deep: true,
+  },
+);
 </script>
 
 <template>
