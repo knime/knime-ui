@@ -50,7 +50,6 @@ import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 
 import javax.inject.Inject;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
@@ -66,6 +65,7 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
+import org.knime.js.cef.CEFSystemProperties;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -163,7 +163,7 @@ public final class PerspectiveSwitchAddon {
         KnimeBrowserView.activateViewInitializer(false);
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
         switchToWebUITheme();
-        ChromiumExternalMessagePump.updateChromiumExternalMessagePumpSystemProperty();
+        CEFSystemProperties.setExternalMessagePump();
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
     }
 
@@ -194,9 +194,7 @@ public final class PerspectiveSwitchAddon {
         // Keeps Classic UI in sync with the file system
         PerspectiveUtil.refreshLocalWorkspaceContentProvider();
 
-        if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
-            System.clearProperty(ChromiumExternalMessagePump.PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
-        }
+        CEFSystemProperties.clearExternalMessagePump();
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = true;
     }
