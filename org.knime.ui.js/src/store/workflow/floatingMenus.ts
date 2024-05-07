@@ -105,13 +105,14 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  closeQuickAddNodeMenu({ commit, dispatch }) {
+  async closeQuickAddNodeMenu({ commit, dispatch }) {
     commit("setQuickAddNodeMenu", {
       isOpen: false,
       props: {},
       events: {},
     });
-    dispatch("canvas/focus", null, { root: true });
+
+    await dispatch("canvas/focus", null, { root: true });
   },
 };
 

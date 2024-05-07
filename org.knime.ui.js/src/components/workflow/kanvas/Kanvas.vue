@@ -10,7 +10,6 @@ import {
 } from "vue";
 import { debounce } from "lodash-es";
 
-import { capitalize } from "webapps-common/util/capitalize";
 import useKeyPressedUntilMouseClick from "webapps-common/ui/composables/useKeyPressedUntilMouseClick";
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
@@ -21,10 +20,8 @@ import { usePanning } from "./usePanning";
 import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
 import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 import { RESIZE_DEBOUNCE } from "./constants";
-import {
-  workflowNavigationService,
-  type Direction,
-} from "@/util/workflowNavigationService";
+
+import { useKanvasContextMenu } from "./useKanvasContextMenu";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
@@ -104,7 +101,13 @@ const { shouldShowMoveCursor, beginPan, movePan, stopPan, isHoldingDownSpace } =
     rootEl: rootEl as Ref<HTMLElement>,
   });
 
-useArrowKeyNavigation({ isHoldingDownSpace });
+const hasKeyboardFocus = useKeyPressedUntilMouseClick(["Tab"]);
+
+const { doInitialSelection } = useArrowKeyNavigation({
+  isHoldingDownSpace,
+  rootEl: rootEl as Ref<HTMLElement>,
+});
+useKanvasContextMenu({ rootEl: rootEl as Ref<HTMLElement> });
 
 const startRectangleSelection = (event: PointerEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
@@ -114,126 +117,8 @@ const startRectangleSelection = (event: PointerEvent) => {
   }
 };
 
-const hasKeyboardFocus = useKeyPressedUntilMouseClick(["Tab"]);
-
-const hasSelectedObjects = () => {
-  const selectedObjects = store.getters["selection/selectedObjects"];
-  return selectedObjects.length > 0;
-};
-
-const selectObjectInKanvas = async (event?: KeyboardEvent) => {
-  // we only select something if we don't have a selection yet
-  if (hasSelectedObjects()) {
-    return;
-  }
-
-  const directionMap: Record<string, Direction> = {
-    ArrowLeft: "left",
-    ArrowRight: "right",
-    ArrowUp: "top",
-    ArrowDown: "bottom",
-  } as const;
-
-  // do we have some objects?
-  const objects = store.getters["workflow/workflowObjects"];
-  if (objects.length === 0) {
-    return;
-  }
-
-  const referencePoint = store.getters["canvas/getCenterOfScrollContainer"](
-    event ? "center" : "left",
-  );
-
-  // look for the "first" object, just use one if we can't find a near one at the center
-  const mostCenterObject = await workflowNavigationService.nearestObject({
-    objects,
-    reference: {
-      ...referencePoint,
-      id: "",
-    },
-    direction: event ? directionMap[event.key] : "right",
-  });
-
-  // the nearestObject uses some max distances so it can happen that there is nothing "found", just use any object
-  const objectToSelect = mostCenterObject ?? objects.at(0);
-
-  await store.dispatch(
-    `selection/select${capitalize(objectToSelect.type)}`,
-    objectToSelect.id,
-  );
-  await store.dispatch("canvas/moveObjectIntoView", objectToSelect);
-};
-
-const toggleContextMenu = (event: unknown) => {
-  // this is not the only place where it is activated, look into Kanvas (usePanning.stopPan)
-  // where an unsuccessful pan by right click also opens it
-  store.dispatch("application/toggleContextMenu", { event });
-};
-
-const onContextMenu = (event: MouseEvent | KeyboardEvent) => {
-  if (
-    event.target &&
-    (event.target as HTMLElement).classList.contains("native-context-menu")
-  ) {
-    return;
-  }
-  // prevent native context menus to appear
-  event.preventDefault();
-
-  // trigger it for empty workflows as we don't have a pan there
-  if (store.getters["workflow/isWorkflowEmpty"]) {
-    toggleContextMenu(event);
-  }
-};
-
 const deselectAllObjects = () => {
   store.dispatch("selection/deselectAllObjects");
-};
-const preventContextMenuKey = (event: KeyboardEvent) => {
-  // we prevent that key because it will issue a PointerEvent and calculate the position to the center of the
-  // focused element which in our case is just the canvas and not the selected nodes. The fallback position will be
-  // used if we supply a KeyboardEvent (or any Event without clientX/Y) to the toggleContextMenu.
-  if (event.key === "ContextMenu") {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-};
-
-const onKeydown = (event: KeyboardEvent) => {
-  const _toggleContextMenu = () => {
-    toggleContextMenu(event);
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  switch (event.key) {
-    // handle key with KeyboardEvent to get our fallback position (based on the selection)
-    case "ContextMenu":
-      _toggleContextMenu();
-      break;
-    case "Escape":
-      deselectAllObjects();
-      event.stopPropagation();
-      break;
-    // Shift+F10 is used as cross platform context menu key (linux/windows support that anyway but Equo/CEF does not)
-    case "F10":
-      if (event.shiftKey) {
-        _toggleContextMenu();
-      }
-      break;
-    // select the first item if non is selected (for example after pressing the DELETE button)
-    case "ArrowLeft":
-    case "ArrowRight":
-    case "ArrowUp":
-    case "ArrowDown":
-      if (!hasSelectedObjects()) {
-        event.stopPropagation();
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        selectObjectInKanvas(event);
-      }
-      break;
-  }
 };
 </script>
 
@@ -257,10 +142,8 @@ const onKeydown = (event: KeyboardEvent) => {
     @pointerup.left="stopPan"
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
-    @focusin="() => hasKeyboardFocus && selectObjectInKanvas()"
-    @contextmenu.stop="onContextMenu"
-    @keyup="preventContextMenuKey"
-    @keydown="onKeydown"
+    @focusin="hasKeyboardFocus && doInitialSelection($event)"
+    @keydown.esc.stop="deselectAllObjects"
   >
     <svg
       ref="svg"

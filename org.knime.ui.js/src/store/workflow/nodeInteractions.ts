@@ -157,10 +157,14 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     if (selectionMode !== "none") {
       if (selectionMode === "new-only") {
-        await dispatch("selection/deselectAllObjects", null, { root: true });
+        await dispatch(
+          "selection/selectSingleObject",
+          { type: "node", id: newNodeId },
+          { root: true },
+        );
+      } else {
+        await dispatch("selection/selectNode", newNodeId, { root: true });
       }
-
-      await dispatch("selection/selectNode", newNodeId, { root: true });
     }
 
     return response;

@@ -1,14 +1,14 @@
-import { computed, onBeforeUnmount, onMounted, type ComputedRef } from "vue";
+import { onBeforeUnmount, onMounted, type ComputedRef, type Ref } from "vue";
 import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
-
-import { useStore } from "@/composables/useStore";
 
 import { isInputElement } from "@/util/isInputElement";
 
 import { useArrowKeySelection } from "./useArrowKeySelection";
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
+import { useInitialSelection } from "../useInitialSelection";
+import { useStore } from "@/composables/useStore";
 
 const isMovementEvent = (event: KeyboardEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
@@ -17,6 +17,7 @@ const isMovementEvent = (event: KeyboardEvent) => {
 
 type UseArrowKeyNavigationOptions = {
   isHoldingDownSpace: ComputedRef<boolean>;
+  rootEl: Ref<HTMLElement>;
 };
 
 export const useArrowKeyNavigation = (
@@ -24,21 +25,17 @@ export const useArrowKeyNavigation = (
 ) => {
   const { handleSelection } = useArrowKeySelection();
   const { handleMovement } = useArrowKeyMoving();
+  const { handleInitialSelection } = useInitialSelection();
 
   const store = useStore();
-  const getScrollContainerElement = computed(
-    () => store.state.canvas.getScrollContainerElement,
-  );
+
+  const hasSelectedObjects = () => {
+    const selectedObjects = store.getters["selection/selectedObjects"];
+    return selectedObjects.length > 0;
+  };
 
   const shouldNavigate = (event: KeyboardEvent) => {
-    const isKanvasFocused =
-      document.activeElement === getScrollContainerElement.value();
-
-    return (
-      isKanvasFocused &&
-      !isInputElement(event.target as HTMLElement) &&
-      !event.altKey
-    );
+    return !isInputElement(event.target as HTMLElement) && !event.altKey;
   };
 
   // prevent native events
@@ -72,6 +69,11 @@ export const useArrowKeyNavigation = (
     ].includes(event.key);
 
     if (isArrowKey && shouldNavigate(event)) {
+      if (!hasSelectedObjects) {
+        handleInitialSelection(event);
+        return;
+      }
+
       const handler = isMovementEvent(event) ? handleMovement : handleSelection;
 
       handler(event);
@@ -79,12 +81,16 @@ export const useArrowKeyNavigation = (
   });
 
   onMounted(() => {
-    window.addEventListener("keydown", preventNativeEvents);
-    document.addEventListener("keydown", keyboardNavHandler);
+    options.rootEl.value.addEventListener("keydown", preventNativeEvents);
+    options.rootEl.value.addEventListener("keydown", keyboardNavHandler);
   });
 
   onBeforeUnmount(() => {
-    window.removeEventListener("keydown", preventNativeEvents);
-    document.removeEventListener("keydown", keyboardNavHandler);
+    options.rootEl.value.removeEventListener("keydown", preventNativeEvents);
+    options.rootEl.value.removeEventListener("keydown", keyboardNavHandler);
   });
+
+  return {
+    doInitialSelection: handleInitialSelection,
+  };
 };

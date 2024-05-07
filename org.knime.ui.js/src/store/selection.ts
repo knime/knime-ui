@@ -1,9 +1,9 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import type { ActionTree, Commit, GetterTree, MutationTree } from "vuex";
 
 import type { RootStoreState } from "./types";
 import { parseBendpointId } from "@/util/connectorUtil";
 import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
-import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
+import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
 
 export interface SelectionState {
   selectedNodes: Record<string, boolean>;
@@ -160,10 +160,14 @@ export const mutations: MutationTree<SelectionState> = {
   },
 };
 
+const doDeselect = (commit: Commit) => {
+  commit("clearSelection");
+  commit("unfocusObject");
+};
+
 export const actions: ActionTree<SelectionState, RootStoreState> = {
   deselectAllObjects({ commit }) {
-    commit("clearSelection");
-    commit("unfocusObject");
+    doDeselect(commit);
   },
 
   selectAllObjects({ commit, rootState }) {
@@ -181,6 +185,19 @@ export const actions: ActionTree<SelectionState, RootStoreState> = {
 
   selectNode({ commit }, nodeId) {
     commit("addNodesToSelection", [nodeId]);
+  },
+
+  selectSingleObject({ commit }, object: Omit<WorkflowObject, keyof XY>) {
+    doDeselect(commit);
+
+    switch (object.type) {
+      case "node":
+        commit("addNodesToSelection", [object.id]);
+        break;
+      case "annotation":
+        commit("addAnnotationToSelection", [object.id]);
+        break;
+    }
   },
 
   selectNodes({ commit }, nodeIds) {

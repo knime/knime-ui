@@ -212,6 +212,7 @@ const saveContent = async () => {
     await updateAnnotation();
   }
 
+  store.dispatch("canvas/focus");
   toggleEdit();
 };
 
