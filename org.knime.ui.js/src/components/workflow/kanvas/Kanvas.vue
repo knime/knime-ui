@@ -200,7 +200,7 @@ const preventContextMenuKey = (event: KeyboardEvent) => {
 };
 
 const onKeydown = (event: KeyboardEvent) => {
-  const contextMenu = () => {
+  const _toggleContextMenu = () => {
     toggleContextMenu(event);
     event.preventDefault();
     event.stopPropagation();
@@ -209,7 +209,7 @@ const onKeydown = (event: KeyboardEvent) => {
   switch (event.key) {
     // handle key with KeyboardEvent to get our fallback position (based on the selection)
     case "ContextMenu":
-      contextMenu();
+      _toggleContextMenu();
       break;
     case "Escape":
       deselectAllObjects();
@@ -218,7 +218,7 @@ const onKeydown = (event: KeyboardEvent) => {
     // Shift+F10 is used as cross platform context menu key (linux/windows support that anyway but Equo/CEF does not)
     case "F10":
       if (event.shiftKey) {
-        contextMenu();
+        _toggleContextMenu();
       }
       break;
     // select the first item if non is selected (for example after pressing the DELETE button)

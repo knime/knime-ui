@@ -331,7 +331,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       // e.g. the menu is getting closed by right-clicking again
       event?.preventDefault();
       commit("setContextMenu", { isOpen: false, position: null });
-      dispatch("canvas/focusScrollContainerElement", null, { root: true });
+      dispatch("canvas/focus", null, { root: true });
       return;
     }
 

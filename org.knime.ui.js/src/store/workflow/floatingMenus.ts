@@ -92,7 +92,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       props: {},
       events: {},
     });
-    dispatch("canvas/focusScrollContainerElement", null, { root: true });
+    dispatch("canvas/focus", null, { root: true });
   },
 
   openQuickAddNodeMenu({ commit, dispatch }, { props, events }) {
@@ -111,7 +111,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       props: {},
       events: {},
     });
-    dispatch("canvas/focusScrollContainerElement", null, { root: true });
+    dispatch("canvas/focus", null, { root: true });
   },
 };
 

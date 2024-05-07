@@ -97,7 +97,7 @@ const isOutsideKanvasView = (
 };
 
 export const actions: ActionTree<CanvasState, RootStoreState> = {
-  focusScrollContainerElement({ state }) {
+  focus({ state }) {
     state.getScrollContainerElement()?.focus();
   },
 
