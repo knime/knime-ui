@@ -23,8 +23,12 @@ type UseArrowKeyNavigationOptions = {
 export const useArrowKeyNavigation = (
   options: UseArrowKeyNavigationOptions,
 ) => {
-  const { handleSelection } = useArrowKeySelection();
-  const { handleMovement } = useArrowKeyMoving();
+  const { handleSelection } = useArrowKeySelection({
+    rootEl: options.rootEl,
+  });
+  const { handleMovement } = useArrowKeyMoving({
+    rootEl: options.rootEl,
+  });
   const { handleInitialSelection } = useInitialSelection();
 
   const store = useStore();
@@ -32,6 +36,15 @@ export const useArrowKeyNavigation = (
   const hasSelectedObjects = () => {
     const selectedObjects = store.getters["selection/selectedObjects"];
     return selectedObjects.length > 0;
+  };
+
+  const isInitialSelectionEvent = (event: KeyboardEvent) => {
+    return (
+      !hasSelectedObjects() &&
+      !event.shiftKey &&
+      !event[getMetaOrCtrlKey()] &&
+      store.state.selection.focusedObject === null
+    );
   };
 
   const shouldNavigate = (event: KeyboardEvent) => {
@@ -69,14 +82,19 @@ export const useArrowKeyNavigation = (
     ].includes(event.key);
 
     if (isArrowKey && shouldNavigate(event)) {
-      if (!hasSelectedObjects) {
+      // no objects are selected and no modifiers are used and nothing is focused -> initial selection
+      if (isInitialSelectionEvent(event)) {
         handleInitialSelection(event);
         return;
       }
 
-      const handler = isMovementEvent(event) ? handleMovement : handleSelection;
+      // movements
+      if (isMovementEvent(event)) {
+        handleMovement(event);
+        return;
+      }
 
-      handler(event);
+      handleSelection(event);
     }
   });
 

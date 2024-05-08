@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, type Ref } from "vue";
 
 import { capitalize } from "webapps-common/util/capitalize";
 import type { WorkflowObject } from "@/api/custom-types";
@@ -63,7 +63,11 @@ const getDirection = (event: KeyboardEvent): Direction => {
   )[event.key]!;
 };
 
-export const useArrowKeySelection = () => {
+type UseArrowKeySelectionOptions = {
+  rootEl: Ref<HTMLElement>;
+};
+
+export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
   const store = useStore();
   const workflowObjects = computed<WorkflowObject[]>(
     () => store.getters["workflow/workflowObjects"],
@@ -228,11 +232,11 @@ export const useArrowKeySelection = () => {
   };
 
   onMounted(() => {
-    window.addEventListener("keydown", selectOnEnter);
+    options.rootEl.value.addEventListener("keydown", selectOnEnter);
   });
 
   onBeforeUnmount(() => {
-    window.removeEventListener("keydown", selectOnEnter);
+    options.rootEl.value.removeEventListener("keydown", selectOnEnter);
   });
 
   return { handleSelection };

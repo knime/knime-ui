@@ -58,14 +58,14 @@ export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
   };
 
   onMounted(() => {
-    options.rootEl.value.addEventListener("contextmenu", onContextMenu);
-    options.rootEl.value.addEventListener("keydown", onKeydown);
-    options.rootEl.value.addEventListener("keyup", preventContextMenuKey);
+    options.rootEl.value?.addEventListener("contextmenu", onContextMenu);
+    options.rootEl.value?.addEventListener("keydown", onKeydown);
+    options.rootEl.value?.addEventListener("keyup", preventContextMenuKey);
   });
 
   onUnmounted(() => {
-    options.rootEl.value.removeEventListener("contextmenu", onContextMenu);
-    options.rootEl.value.removeEventListener("keydown", onKeydown);
-    options.rootEl.value.removeEventListener("keyup", preventContextMenuKey);
+    options.rootEl.value?.removeEventListener("contextmenu", onContextMenu);
+    options.rootEl.value?.removeEventListener("keydown", onKeydown);
+    options.rootEl.value?.removeEventListener("keyup", preventContextMenuKey);
   });
 };

@@ -20,7 +20,7 @@ export const useInitialSelection = () => {
     return selectedObjects.value.length > 0;
   };
 
-  const handleInitialSelection = async (event?: KeyboardEvent | FocusEvent) => {
+  const handleInitialSelection = async (event?: KeyboardEvent) => {
     // we only select something if we don't have a selection yet
     if (hasSelectedObjects()) {
       return;

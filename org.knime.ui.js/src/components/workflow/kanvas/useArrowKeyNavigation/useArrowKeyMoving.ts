@@ -1,22 +1,26 @@
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 
 import { isMac } from "webapps-common/util/navigator";
 import { useStore } from "@/composables/useStore";
 import { gridSize } from "@/style/shapes.mjs";
 
-export const useArrowKeyMoving = () => {
+type UseArrowKeyMovingOptions = {
+  rootEl: Ref<HTMLElement>;
+};
+
+export const useArrowKeyMoving = (options: UseArrowKeyMovingOptions) => {
   const store = useStore();
   const isDragging = computed(() => store.state.workflow.isDragging);
   const isWritable = computed(() => store.getters["workflow/isWritable"]);
 
-  let isKeupHandlerAttached = false;
+  let isKeyupHandlerAttached = false;
 
   const doMove = async (event: KeyboardEvent) => {
     const modifiers = [isMac() ? "Meta" : "Control", "Shift"];
     if (modifiers.includes(event.key)) {
       await store.dispatch("workflow/moveObjects");
-      window.removeEventListener("keyup", doMove);
-      isKeupHandlerAttached = false;
+      options.rootEl.value.removeEventListener("keyup", doMove);
+      isKeyupHandlerAttached = false;
     }
   };
 
@@ -48,9 +52,9 @@ export const useArrowKeyMoving = () => {
       deltaY: (deltaY ?? 0) + y,
     });
 
-    if (!isKeupHandlerAttached) {
-      window.addEventListener("keyup", doMove);
-      isKeupHandlerAttached = true;
+    if (!isKeyupHandlerAttached) {
+      options.rootEl.value.addEventListener("keyup", doMove);
+      isKeyupHandlerAttached = true;
     }
   };
 

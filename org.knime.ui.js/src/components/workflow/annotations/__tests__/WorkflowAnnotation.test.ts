@@ -56,6 +56,9 @@ describe("WorkflowAnnotation.vue", () => {
       },
     });
 
+    const div = document.createElement("div");
+    $store.commit("canvas/setScrollContainerElement", div);
+
     $store.commit(
       "workflow/setActiveWorkflow",
       createWorkflow({
