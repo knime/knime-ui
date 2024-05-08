@@ -1,16 +1,15 @@
+import { computed } from "vue";
+
 import { capitalize } from "webapps-common/util/capitalize";
+
 import { useStore } from "@/composables/useStore";
 import {
   workflowNavigationService,
   type Direction,
 } from "@/util/workflowNavigationService";
-import { useMoveObjectIntoView } from "./useArrowKeyNavigation/useMoveObjectIntoView";
-import { computed } from "vue";
 
 export const useInitialSelection = () => {
   const store = useStore();
-
-  const moveObjectIntoView = useMoveObjectIntoView();
 
   const selectedObjects = computed(
     () => store.getters["selection/selectedObjects"],
@@ -62,7 +61,8 @@ export const useInitialSelection = () => {
       `selection/select${capitalize(objectToSelect.type)}`,
       objectToSelect.id,
     );
-    await moveObjectIntoView(objectToSelect);
+
+    await store.dispatch("canvas/moveObjectIntoView", objectToSelect);
   };
 
   return {

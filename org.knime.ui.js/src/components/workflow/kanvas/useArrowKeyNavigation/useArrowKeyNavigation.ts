@@ -1,14 +1,15 @@
-import { onBeforeUnmount, onMounted, type ComputedRef, type Ref } from "vue";
+import { onMounted, type ComputedRef, type Ref } from "vue";
 import throttle from "raf-throttle";
+import { useEventListener } from "@vueuse/core";
 
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
+import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
 
 import { useArrowKeySelection } from "./useArrowKeySelection";
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
-import { useInitialSelection } from "../useInitialSelection";
-import { useStore } from "@/composables/useStore";
+import { useInitialSelection } from "./useInitialSelection";
 
 const isMovementEvent = (event: KeyboardEvent) => {
   const metaOrCtrlKey = getMetaOrCtrlKey();
@@ -99,13 +100,8 @@ export const useArrowKeyNavigation = (
   });
 
   onMounted(() => {
-    options.rootEl.value.addEventListener("keydown", preventNativeEvents);
-    options.rootEl.value.addEventListener("keydown", keyboardNavHandler);
-  });
-
-  onBeforeUnmount(() => {
-    options.rootEl.value.removeEventListener("keydown", preventNativeEvents);
-    options.rootEl.value.removeEventListener("keydown", keyboardNavHandler);
+    useEventListener(options.rootEl, "keydown", preventNativeEvents);
+    useEventListener(options.rootEl, "keydown", keyboardNavHandler);
   });
 
   return {

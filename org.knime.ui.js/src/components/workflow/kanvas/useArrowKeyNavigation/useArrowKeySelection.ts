@@ -1,4 +1,5 @@
-import { computed, onBeforeUnmount, onMounted, type Ref } from "vue";
+import { computed, onMounted, type Ref } from "vue";
+import { useEventListener } from "@vueuse/core";
 
 import { capitalize } from "webapps-common/util/capitalize";
 import type { WorkflowObject } from "@/api/custom-types";
@@ -232,11 +233,7 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
   };
 
   onMounted(() => {
-    options.rootEl.value.addEventListener("keydown", selectOnEnter);
-  });
-
-  onBeforeUnmount(() => {
-    options.rootEl.value.removeEventListener("keydown", selectOnEnter);
+    useEventListener(options.rootEl, "keydown", selectOnEnter);
   });
 
   return { handleSelection };

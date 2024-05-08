@@ -3,6 +3,7 @@ import { computed, type Ref } from "vue";
 import { isMac } from "webapps-common/util/navigator";
 import { useStore } from "@/composables/useStore";
 import { gridSize } from "@/style/shapes.mjs";
+import { useEventListener, type Fn } from "@vueuse/core";
 
 type UseArrowKeyMovingOptions = {
   rootEl: Ref<HTMLElement>;
@@ -13,14 +14,16 @@ export const useArrowKeyMoving = (options: UseArrowKeyMovingOptions) => {
   const isDragging = computed(() => store.state.workflow.isDragging);
   const isWritable = computed(() => store.getters["workflow/isWritable"]);
 
-  let isKeyupHandlerAttached = false;
+  let cleanupKeyupHandler: Fn | null = null;
 
   const doMove = async (event: KeyboardEvent) => {
     const modifiers = [isMac() ? "Meta" : "Control", "Shift"];
     if (modifiers.includes(event.key)) {
       await store.dispatch("workflow/moveObjects");
-      options.rootEl.value.removeEventListener("keyup", doMove);
-      isKeyupHandlerAttached = false;
+      if (cleanupKeyupHandler !== null) {
+        cleanupKeyupHandler();
+        cleanupKeyupHandler = null;
+      }
     }
   };
 
@@ -52,9 +55,8 @@ export const useArrowKeyMoving = (options: UseArrowKeyMovingOptions) => {
       deltaY: (deltaY ?? 0) + y,
     });
 
-    if (!isKeyupHandlerAttached) {
-      options.rootEl.value.addEventListener("keyup", doMove);
-      isKeyupHandlerAttached = true;
+    if (!cleanupKeyupHandler) {
+      cleanupKeyupHandler = useEventListener(options.rootEl, "keyup", doMove);
     }
   };
 
