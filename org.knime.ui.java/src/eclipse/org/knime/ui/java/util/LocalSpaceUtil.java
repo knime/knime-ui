@@ -53,11 +53,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.knime.gateway.api.webui.entity.SpaceGroupEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.SpaceGroup;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 
@@ -101,7 +104,7 @@ public final class LocalSpaceUtil {
             @Override
             public SpaceProviderEnt toEntity() {
                 return EntityFactory.Space.buildSpaceProviderEnt(SpaceProviderEnt.TypeEnum.LOCAL,
-                    List.of(localSpace.toEntity()));
+                    List.of(getLocalSpaceGroup(localSpace).toEntity()));
             }
 
             @Override
@@ -122,14 +125,13 @@ public final class LocalSpaceUtil {
             @Override
             public Optional<SpaceAndItemId> resolveSpaceAndItemId(final URI uri) {
                 return getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID).getItemIdByURI(uri) //
-                        .map(itemId -> new SpaceAndItemId(LocalWorkspace.LOCAL_WORKSPACE_ID, itemId));
+                    .map(itemId -> new SpaceAndItemId(LocalWorkspace.LOCAL_WORKSPACE_ID, itemId));
             }
         };
     }
 
     /**
-     * Obtain the {@link org.knime.gateway.impl.project.Project.Origin} of a workflow project on the local file
-     * system
+     * Obtain the {@link org.knime.gateway.impl.project.Project.Origin} of a workflow project on the local file system
      *
      * @param absolutePath The path of the workflow project
      * @return The {@link org.knime.gateway.impl.project.Project.Origin} of the workflow project.
@@ -189,5 +191,36 @@ public final class LocalSpaceUtil {
      */
     public static String getUniqueProjectId(final String projectName) {
         return projectName + "_" + UUID.randomUUID();
+    }
+
+    /**
+     * Creates a Space Group for the local environment
+     * @param localspace
+     * @return a SpaceGroup that represents the local group
+     */
+    public static SpaceGroup getLocalSpaceGroup(final LocalWorkspace localSpace) {
+        return new SpaceGroup() {
+
+            final String id = "Local-space-id";
+
+            final String name = "Local Group";
+
+            @Override
+            public SpaceGroupEnt toEntity() {
+                return EntityFactory.Space.buildSpaceGroupEnt(id, name, SpaceGroupEnt.TypeEnum.USER,
+                    List.of(localSpace.toEntity()));
+            }
+
+            @Override
+            public SpaceGroupType getType() {
+                return SpaceGroupType.USER;
+            }
+
+            @Override
+            public List<Space> getSpaces() {
+                return List.of(localSpace);
+            }
+
+        };
     }
 }
