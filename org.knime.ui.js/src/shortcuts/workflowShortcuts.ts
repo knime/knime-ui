@@ -12,12 +12,13 @@ import { nodeSize } from "@/style/shapes.mjs";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import type { Connection, XY } from "@/api/gateway-api/generated-api";
+import { getProjectAndWorkflowIds } from "../store/workflow/util";
+import { API } from "@api";
 import { compatibility, isDesktop } from "@/environment";
 
 import type { UnionToShortcutRegistry } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { API } from "@api";
 import {
   buildMiddleware,
   validateNodeExecuted,
@@ -43,6 +44,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "switchToPanMode"
   | "switchToSelectionMode"
   | "quickAddNode"
+  | "autoConnectNodes"
 >;
 
 declare module "./index" {
@@ -498,6 +500,35 @@ const workflowShortcuts: WorkflowShortcuts = {
       });
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
+  },
+
+  autoConnectNodes: {
+    text: "Auto connect nodes",
+    title: "Auto connect nodes",
+    hotkey: ["Ctrl", "L"],
+    group: "workflowEditor",
+    execute: ({ $store }) => {
+      const { projectId, workflowId } = getProjectAndWorkflowIds(
+        $store.state.workflow,
+      );
+
+      const selectedNodes: string[] =
+        $store.getters["selection/selectedNodeIds"];
+
+      const selectedPortBars: Array<"out" | "in"> =
+        $store.getters["selection/selectedMetanodePortBars"];
+
+      API.workflowCommand.AutoConnect({
+        projectId,
+        workflowId,
+        selectedNodes,
+        workflowInPortsBarSelected: selectedPortBars.includes("in"),
+        workflowOutPortsBarSelected: selectedPortBars.includes("out"),
+      });
+    },
+
+    condition: ({ $store }) =>
+      $store.getters["selection/selectedNodes"].length > 1,
   },
 };
 
