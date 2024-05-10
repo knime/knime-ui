@@ -5,6 +5,7 @@ import { isMac } from "webapps-common/util/navigator";
 import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { runInEnvironment } from "@/environment";
 
 type UsePanningWithSpaceOptions = {
   shouldShowMoveCursor: Ref<boolean>;
@@ -151,12 +152,14 @@ export const usePanning = (options: UsePanningOptions) => {
       ];
       panningOffset.value = [event.screenX, event.screenY];
 
-      // in Firefox the browser zoom scales screen coordinates already
-      if (navigator.userAgent.indexOf("Firefox") === -1) {
-        // correct the delta values on other browsers
-        delta[0] /= window.devicePixelRatio;
-        delta[1] /= window.devicePixelRatio;
-      }
+      // adjust the delta values for the current zoomlevel
+      // the factor is currently only known in desktop mode
+      runInEnvironment({
+        DESKTOP: () => {
+          delta[0] /= store.state.settings.settings.uiScale;
+          delta[1] /= store.state.settings.settings.uiScale;
+        },
+      });
 
       // with fractional scaling, elemScroll can retain floating-point precision,
       // allowing fractions to accumulate and thereby preventing cursor drift
