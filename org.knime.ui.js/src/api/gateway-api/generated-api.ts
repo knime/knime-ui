@@ -571,6 +571,41 @@ export interface AppStateChangedEventType extends EventType {
 
 
 /**
+ * Automatically connects all the nodes / port bars selected.
+ * @export
+ * @interface AutoConnectCommand
+ */
+export interface AutoConnectCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {boolean}
+     * @memberof AutoConnectCommand
+     */
+    workflowInPortsBarSelected?: boolean;
+    /**
+     *
+     * @type {boolean}
+     * @memberof AutoConnectCommand
+     */
+    workflowOutPortsBarSelected?: boolean;
+    /**
+     *
+     * @type {Array<any>}
+     * @memberof AutoConnectCommand
+     */
+    selectedNodes: Array<any>;
+
+}
+
+
+/**
+ * @export
+ * @namespace AutoConnectCommand
+ */
+export namespace AutoConnectCommand {
+}
+/**
  *
  * @export
  * @interface Bounds
@@ -4225,6 +4260,7 @@ export namespace WorkflowCommand {
         Translate = 'translate',
         Delete = 'delete',
         Connect = 'connect',
+        AutoConnect = 'auto_connect',
         AddNode = 'add_node',
         ReplaceNode = 'replace_node',
         InsertNode = 'insert_node',
@@ -4350,38 +4386,38 @@ export namespace WorkflowInfo {
     }
 }
 /**
- * TODO
+ * A message in the workflow monitor.
  * @export
  * @interface WorkflowMonitorMessage
  */
 export interface WorkflowMonitorMessage {
 
     /**
-     *
+     * The template id of the node the message is associated with.
      * @type {string}
      * @memberof WorkflowMonitorMessage
      */
     templateId: string;
     /**
-     *
+     * The id of the worklfow the node is contained in.
      * @type {string}
      * @memberof WorkflowMonitorMessage
      */
     workflowId: string;
     /**
-     *
+     * The id of the node the message is associated with.
      * @type {string}
      * @memberof WorkflowMonitorMessage
      */
     nodeId: string;
     /**
-     *
+     * The name of the node the message is associated with.
      * @type {string}
      * @memberof WorkflowMonitorMessage
      */
     name: string;
     /**
-     *
+     * The actual message.
      * @type {string}
      * @memberof WorkflowMonitorMessage
      */
@@ -4391,20 +4427,20 @@ export interface WorkflowMonitorMessage {
 
 
 /**
- * TODO
+ * The state of the workflow monitor.
  * @export
  * @interface WorkflowMonitorState
  */
 export interface WorkflowMonitorState {
 
     /**
-     *
+     * All the error messages in the entire workflow.
      * @type {Array<WorkflowMonitorMessage>}
      * @memberof WorkflowMonitorState
      */
     errors: Array<WorkflowMonitorMessage>;
     /**
-     *
+     * All the warning messages in the entire workflow.
      * @type {Array<WorkflowMonitorMessage>}
      * @memberof WorkflowMonitorState
      */
@@ -4414,7 +4450,7 @@ export interface WorkflowMonitorState {
 
 
 /**
- * TODO
+ * Event for changes to the workflow monitor state.
  * @export
  * @interface WorkflowMonitorStateChangeEvent
  */
@@ -4431,20 +4467,20 @@ export interface WorkflowMonitorStateChangeEvent extends Event {
 
 
 /**
- * TODO
+ * The event type to register for the respective event.
  * @export
  * @interface WorkflowMonitorStateChangeEventType
  */
 export interface WorkflowMonitorStateChangeEventType extends EventType {
 
     /**
-     * TODO
+     * The workflow project id to get the change-events for.
      * @type {string}
      * @memberof WorkflowMonitorStateChangeEventType
      */
     projectId: string;
     /**
-     * TODO
+     * The initial snapshot id of the workflow monitor state version known to the client/ui.
      * @type {string}
      * @memberof WorkflowMonitorStateChangeEventType
      */
@@ -4454,7 +4490,7 @@ export interface WorkflowMonitorStateChangeEventType extends EventType {
 
 
 /**
- * TODO
+ * Snapshot of the workflow monitor state.
  * @export
  * @interface WorkflowMonitorStateSnapshot
  */
@@ -4467,7 +4503,7 @@ export interface WorkflowMonitorStateSnapshot {
      */
     state: WorkflowMonitorState;
     /**
-     *
+     * A unique identifier for the version of the workflow monitor state.
      * @type {string}
      * @memberof WorkflowMonitorStateSnapshot
      */
@@ -5228,7 +5264,7 @@ const workflow = function(rpcClient: RPCClient) {
            return rpcClient.call('WorkflowService.getWorkflow', { ...defaultParams, ...params });
         },
         /**
-         * TODO
+         * Returns the current state of the workflow monitor.
          * @param {string} projectId ID of the workflow-project.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -5321,6 +5357,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             projectId: params.projectId,
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.Connect }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Automatically connects all the nodes / port bars selected.
+     */
+	AutoConnect(
+		params: { projectId: string, workflowId: string } & Omit<AutoConnectCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AutoConnect }
 		});
 		return postProcessCommandResponse(commandResponse);
 	},	
