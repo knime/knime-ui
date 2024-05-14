@@ -4,6 +4,7 @@ import { nextTick } from "vue";
 import type { Store } from "vuex";
 import { mockVuexStore } from "@/test/utils";
 
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as workflowMonitorStore from "@/store/workflowMonitor";
 import type { WorkflowMonitorState } from "@/api/gateway-api/generated-api";
 import { createWorkflowMonitorMessage } from "@/test/factories";
@@ -15,6 +16,7 @@ describe("WorkflowMonitorContent.vue", () => {
     const $store = mockVuexStore({
       workflow: { activeWorkflow: null },
       workflowMonitor: workflowMonitorStore,
+      nodeTemplates: nodeTemplatesStore,
     });
 
     $store.commit("workflowMonitor/setHasLoaded", true);

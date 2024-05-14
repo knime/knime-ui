@@ -127,9 +127,9 @@ describe("SpaceExplorer.vue", () => {
             .mockReturnValue({ contains: vi.fn().mockReturnValue(true) }),
         },
       },
-      nodeRepository: {
+      nodeTemplates: {
         actions: {
-          getNodeTemplate: vi.fn().mockReturnValue({
+          getSingleNodeTemplate: vi.fn().mockReturnValue({
             id: "test.id",
             name: "test.test",
             type: "type",

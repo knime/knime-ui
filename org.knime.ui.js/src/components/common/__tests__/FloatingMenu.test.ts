@@ -33,7 +33,7 @@ describe("FloatingMenu.vue", () => {
     contentHeight = 10,
     contentWidth = 10,
     isDraggingNodeInCanvas = false,
-    isDraggingNodeFromRepository = false,
+    isDraggingNodeTemplate = false,
     screenFromCanvasCoordinatesMock = null,
   } = {}) => {
     const defaultProps = {
@@ -94,9 +94,9 @@ describe("FloatingMenu.vue", () => {
         },
         mutations: mutations.canvas,
       },
-      nodeRepository: {
+      nodeTemplates: {
         state: {
-          isDraggingNode: isDraggingNodeFromRepository,
+          isDraggingNodeTemplate,
         },
       },
       workflow: {
@@ -146,8 +146,8 @@ describe("FloatingMenu.vue", () => {
       expect(wrapper.emitted("menuClose")).toBeDefined();
     });
 
-    it("closes menu if node from repository is being dragged", async () => {
-      const { wrapper } = doMount({ isDraggingNodeFromRepository: true });
+    it("closes menu if a node template is being dragged", async () => {
+      const { wrapper } = doMount({ isDraggingNodeTemplate: true });
       await Vue.nextTick();
 
       expect(wrapper.emitted("menuClose")).toBeDefined();

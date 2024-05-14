@@ -3,6 +3,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@api";
 import * as workflowMonitorStore from "@/store/workflowMonitor";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as panelStore from "@/store/panel";
 import * as applicationStore from "@/store/application";
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -56,6 +57,7 @@ describe("WorkflowMonitor.vue", () => {
   const doMount = () => {
     const $store = mockVuexStore({
       workflowMonitor: workflowMonitorStore,
+      nodeTemplates: nodeTemplatesStore,
       panel: panelStore,
       application: applicationStore,
     });
@@ -87,7 +89,7 @@ describe("WorkflowMonitor.vue", () => {
     expect(dispatchSpy).not.toHaveBeenCalledWith(
       "workflowMonitor/deactivateWorkflowMonitor",
     );
-    expect($store.state.workflowMonitor.nodeTemplates).toEqual({});
+    expect($store.state.nodeTemplates.cache).toEqual({});
 
     await $store.dispatch(
       "panel/setCurrentProjectActiveTab",
@@ -111,7 +113,7 @@ describe("WorkflowMonitor.vue", () => {
       snapshotId: "snapshot1",
     });
 
-    expect($store.state.workflowMonitor.nodeTemplates).toEqual({
+    expect($store.state.nodeTemplates.cache).toEqual({
       [nodeTemplate1.id]: expect.objectContaining({ id: nodeTemplate1.id }),
       [nodeTemplate2.id]: expect.objectContaining({ id: nodeTemplate2.id }),
     });

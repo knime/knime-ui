@@ -14,7 +14,7 @@ import { API } from "@api";
 
 import * as panelStore from "@/store/panel";
 import * as worflowStore from "@/store/workflow";
-import * as nodeRepositoryStore from "@/store/nodeRepository";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as selectionStore from "@/store/selection";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 
@@ -75,7 +75,7 @@ describe("DraggableNodeTemplate", () => {
             }),
         },
       },
-      nodeRepository: nodeRepositoryStore,
+      nodeTemplates: nodeTemplatesStore,
       selection: selectionStore,
     });
 
@@ -312,17 +312,17 @@ describe("DraggableNodeTemplate", () => {
 
     it("sets isDraggingNode as true when dragging starts", async () => {
       const { wrapper, $store } = doMount();
-      expect($store.state.nodeRepository.draggedNodeData).toBeNull();
+      expect($store.state.nodeTemplates.draggedTemplateData).toBeNull();
       await wrapper.trigger("dragstart", testEvent);
 
-      expect($store.state.nodeRepository.draggedNodeData).not.toBeNull();
+      expect($store.state.nodeTemplates.draggedTemplateData).not.toBeNull();
     });
 
     it("sets isDraggingNode as false when dragging ends", async () => {
       const { wrapper, $store } = doMount();
       await wrapper.trigger("dragend", { dataTransfer: { dropEffect: "" } });
 
-      expect($store.state.nodeRepository.draggedNodeData).toBeNull();
+      expect($store.state.nodeTemplates.draggedTemplateData).toBeNull();
     });
   });
 });

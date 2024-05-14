@@ -29,3 +29,26 @@ export const PORT_TYPE_IDS = {
 type DefinedTypeId = (typeof PORT_TYPE_IDS)[keyof typeof PORT_TYPE_IDS];
 
 export type PortTypeId = DefinedTypeId | Omit<string, DefinedTypeId>;
+
+export const NODE_FACTORIES = {
+  ExcelTableReaderNodeFactory:
+    "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory",
+  ExcelTableWriterNodeFactory:
+    "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory",
+  MicrosoftAuthenticatorNodeFactory:
+    "org.knime.ext.microsoft.authentication.node.MicrosoftAuthenticatorNodeFactory",
+  GoogleAuthenticatorNodeFactory:
+    "org.knime.google.api.nodes.authenticator.GoogleAuthenticatorNodeFactory",
+  GoogleSheetsReaderFactory:
+    "org.knime.google.api.sheets.nodes.reader.GoogleSheetsReaderFactory",
+  GoogleSpreadsheetWriterFactory:
+    "org.knime.google.api.sheets.nodes.spreadsheetwriter.GoogleSpreadsheetWriterFactory",
+  CSVTableReaderNodeFactory:
+    "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory",
+  CSVWriter2NodeFactory:
+    "org.knime.base.node.io.filehandling.csv.writer.CSVWriter2NodeFactory",
+  RowFilterNodeFactory:
+    "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
+  DataColumnSpecFilterNodeFactory:
+    "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
+} as const;

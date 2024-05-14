@@ -569,10 +569,10 @@ describe("Connector.vue", () => {
     it("highlights if dragged object is type and port compatible", async () => {
       const { $store, connection } = createStore({
         extraModules: {
-          nodeRepository: {
+          nodeTemplates: {
             state: {
-              isDraggingNode: true,
-              draggedNodeData: {
+              isDraggingNodeTemplate: true,
+              draggedTemplateData: {
                 inPorts: [portMock],
                 outPorts: [portMock],
               },
@@ -598,10 +598,10 @@ describe("Connector.vue", () => {
     it("ignores dragged repository node without compatible ports", async () => {
       const { $store, connection } = createStore({
         extraModules: {
-          nodeRepository: {
+          nodeTemplates: {
             state: {
-              isDraggingNode: true,
-              draggedNodeData: {
+              isDraggingNodeTemplate: true,
+              draggedTemplateData: {
                 inPorts: [{ ...portMock, typeId: "portType2" }],
                 outPorts: [{ ...portMock, typeId: "portType2" }],
               },
@@ -623,10 +623,10 @@ describe("Connector.vue", () => {
     it("ignores dragged repository node if workflow is not writable", async () => {
       const { $store, connection } = createStore({
         extraModules: {
-          nodeRepository: {
+          nodeTemplates: {
             state: {
-              isDraggingNode: true,
-              draggedNodeData: {
+              isDraggingNodeTemplate: true,
+              draggedTemplateData: {
                 inPorts: [portMock],
                 outPorts: [portMock],
               },
@@ -700,10 +700,10 @@ describe("Connector.vue", () => {
     it("ignores dragged workflow node without compatible ports", () => {
       const { $store, connection } = createStore({
         extraModules: {
-          nodeRepository: {
+          nodeTemplates: {
             state: {
-              isDraggingNode: true,
-              draggedNodeData: {
+              isDraggingNodeTemplate: true,
+              draggedTemplateData: {
                 inPorts: [{ ...portMock, typeId: "portType2" }],
                 outPorts: [{ ...portMock, typeId: "portType2" }],
               },

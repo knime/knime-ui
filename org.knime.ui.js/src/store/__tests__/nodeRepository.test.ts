@@ -165,9 +165,6 @@ describe("Node Repository store", () => {
       categoryScrollPosition: 0,
       selectedNode: null,
       showDescriptionForNode: null,
-      isDraggingNode: false,
-      draggedNodeData: null,
-      nodeTemplates: {},
     });
   });
 
@@ -260,13 +257,6 @@ describe("Node Repository store", () => {
       const node = { id: "node1" };
       store.commit("nodeRepository/setSelectedNode", { id: "node1" });
       expect(store.state.nodeRepository.selectedNode).toEqual(node);
-    });
-
-    it("sets isDraggingNode", async () => {
-      const { store } = await createStore();
-      expect(store.state.nodeRepository.isDraggingNode).toBe(false);
-      store.commit("nodeRepository/setDraggingNode", true);
-      expect(store.state.nodeRepository.isDraggingNode).toBe(true);
     });
   });
 
@@ -441,42 +431,6 @@ describe("Node Repository store", () => {
         expect(store.state.nodeRepository.categoryPage).toBe(0);
         expect(store.state.nodeRepository.categoryScrollPosition).toBe(0);
       });
-    });
-
-    it("fetches and caches nodeTemplates based on id", async () => {
-      const { store } = await createStore();
-      const nodeTemplate = await store.dispatch(
-        "nodeRepository/getNodeTemplate",
-        "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory",
-      );
-
-      expect(nodeTemplate).toEqual(
-        getNodeTemplatesResponse[
-          "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory"
-        ],
-      );
-      expect(store.state.nodeRepository.nodeTemplates).toEqual(
-        getNodeTemplatesResponse,
-      );
-    });
-
-    it("updates the current dragged repository node", async () => {
-      const { store } = await createStore();
-      const mockNodeTemplate = { factory: "testFactory" };
-      await store.dispatch(
-        "nodeRepository/setDraggingNodeTemplate",
-        mockNodeTemplate,
-      );
-
-      expect(store.state.nodeRepository.isDraggingNode).toBeTruthy();
-      expect(store.state.nodeRepository.draggedNodeData).toEqual(
-        mockNodeTemplate,
-      );
-
-      await store.dispatch("nodeRepository/setDraggingNodeTemplate", null);
-
-      expect(store.state.nodeRepository.isDraggingNode).toBeFalsy();
-      expect(store.state.nodeRepository.draggedNodeData).toBeNull();
     });
   });
 });
