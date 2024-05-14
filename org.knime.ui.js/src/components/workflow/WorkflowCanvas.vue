@@ -26,9 +26,7 @@ export default {
     ]),
     ...mapGetters("canvas", ["contentBounds"]),
     ...mapGetters("workflow", ["isWorkflowEmpty"]),
-    ...mapState("nodeRepository", {
-      isDraggingNodeFromRepository: "isDraggingNode",
-    }),
+    ...mapState("nodeTemplates", ["isDraggingNodeTemplate"]),
     ...mapState("canvas", ["zoomFactor"]),
     ...mapState("workflow", ["activeWorkflow"]),
   },
@@ -82,7 +80,7 @@ export default {
     id="kanvas"
     ref="kanvas"
     :class="{
-      'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository,
+      'indicate-node-drag': isWorkflowEmpty && isDraggingNodeTemplate,
     }"
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"

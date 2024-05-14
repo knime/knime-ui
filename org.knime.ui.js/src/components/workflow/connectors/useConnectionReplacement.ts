@@ -41,7 +41,7 @@ export const useConnectionReplacement = (
   const store = useStore();
 
   const draggedNodeTemplate = computed(
-    () => store.state.nodeRepository.draggedNodeData,
+    () => store.state.nodeTemplates.draggedTemplateData,
   );
 
   const isWorkflowWritable = computed(

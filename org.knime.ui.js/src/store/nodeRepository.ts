@@ -1,7 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
-import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type {
   ComponentMetadata,
   NodeTemplateWithExtendedPorts,
@@ -34,10 +33,6 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
 
   selectedNode: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
-  isDraggingNode: boolean;
-  draggedNodeData: NodeTemplateWithExtendedPorts | null;
-
-  nodeTemplates: Record<string, NodeTemplate>;
 }
 
 export const state = (): NodeRepositoryState => ({
@@ -52,11 +47,6 @@ export const state = (): NodeRepositoryState => ({
   /* node interaction */
   selectedNode: null,
   showDescriptionForNode: null,
-  isDraggingNode: false,
-  draggedNodeData: null,
-
-  /* node templates */
-  nodeTemplates: {},
 });
 
 export const mutations: MutationTree<NodeRepositoryState> = {
@@ -87,20 +77,12 @@ export const mutations: MutationTree<NodeRepositoryState> = {
   setShowDescriptionForNode(state, node) {
     state.showDescriptionForNode = node;
   },
-
-  setDraggingNode(state, value) {
-    state.isDraggingNode = value;
-  },
-
-  setDraggedNodeData(state, value) {
-    state.draggedNodeData = value;
-  },
 };
 
 export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.actions,
 
-  async getAllNodes({ commit, state, rootState }, { append }) {
+  async getAllNodes({ commit, dispatch, state, rootState }, { append }) {
     if (state.nodesPerCategory.length === state.totalNumCategories) {
       return;
     }
@@ -129,6 +111,13 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
       nodes: nodes.map(toNodeTemplateWithExtendedPorts(availablePortTypes)),
       tag,
     }));
+
+    // contribute to the node templates cache
+    dispatch(
+      "nodeTemplates/updateCacheFromSearchResults",
+      { nodeTemplates: withMappedPorts.flatMap(({ nodes }) => nodes) },
+      { root: true },
+    );
 
     commit("setTotalNumCategories", totalNumGroups);
     commit("setNodesPerCategories", { groupedNodes: withMappedPorts, append });
@@ -175,25 +164,6 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     // Always clear the category results
     await dispatch("clearCategoryResults");
     await dispatch("getAllNodes", { append: false });
-  },
-
-  async getNodeTemplate({ state }, nodeTemplateId) {
-    if (state.nodeTemplates?.nodeTemplateId) {
-      return state.nodeTemplates?.nodeTemplateId;
-    } else {
-      const nodeTemplates = await API.noderepository.getNodeTemplates({
-        nodeTemplateIds: [nodeTemplateId],
-      });
-
-      // cache results
-      state.nodeTemplates[nodeTemplateId] = nodeTemplates[nodeTemplateId];
-      return nodeTemplates[nodeTemplateId];
-    }
-  },
-
-  setDraggingNodeTemplate({ commit }, nodeTemplate) {
-    commit("setDraggingNode", Boolean(nodeTemplate));
-    commit("setDraggedNodeData", nodeTemplate);
   },
 };
 

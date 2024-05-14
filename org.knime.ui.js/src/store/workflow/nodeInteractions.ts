@@ -237,6 +237,10 @@ const getNodeTemplateProperty = (params: {
   const { activeWorkflow, nodeId, property } = params;
 
   const node = activeWorkflow!.nodes[nodeId];
+
+  // These nodeTemplates are not to be confused with the ones from the
+  // `nodeTemplates` store module. Because these do not contain port information
+  // and also only refer to the data of the current workflow level
   const nodeTemplates = activeWorkflow!.nodeTemplates;
 
   if (isNativeNode(node)) {

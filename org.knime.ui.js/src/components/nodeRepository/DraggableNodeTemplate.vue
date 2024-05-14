@@ -52,7 +52,7 @@ export default {
     ...mapGetters("selection", ["selectedNodes"]),
   },
   methods: {
-    ...mapActions("nodeRepository", ["setDraggingNodeTemplate"]),
+    ...mapActions("nodeTemplates", ["setDraggingNodeTemplate"]),
 
     onDragStart(e) {
       // close description panel

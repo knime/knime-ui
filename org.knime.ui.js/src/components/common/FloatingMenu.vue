@@ -64,8 +64,8 @@ const screenFromCanvasCoordinates = computed(
 );
 
 const zoomFactor = computed(() => store.state.canvas.zoomFactor);
-const isDraggingNodeFromRepository = computed(
-  () => store.state.nodeRepository.isDraggingNode,
+const isDraggingNodeTemplate = computed(
+  () => store.state.nodeTemplates.isDraggingNodeTemplate,
 );
 const isDraggingNodeInCanvas = computed(() => store.state.workflow.isDragging);
 
@@ -167,9 +167,9 @@ watch(isDraggingNodeInCanvas, () => {
 });
 
 watch(
-  isDraggingNodeFromRepository,
+  isDraggingNodeTemplate,
   () => {
-    if (isDraggingNodeFromRepository.value) {
+    if (isDraggingNodeTemplate.value) {
       emit("menuClose");
     }
   },
