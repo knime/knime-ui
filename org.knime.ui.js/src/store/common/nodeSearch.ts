@@ -166,6 +166,13 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
         toNodeTemplateWithExtendedPorts(availablePortTypes),
       );
 
+      // contribute to the node templates cache
+      dispatch(
+        "nodeTemplates/updateCacheFromSearchResults",
+        { nodeTemplates: withMappedPorts },
+        { root: true },
+      );
+
       commit("setTotalNumNodesFound", totalNumNodesFound);
       commit("setTotalNumFilteredNodesFound", totalNumFilteredNodesFound);
       commit(append ? "addNodes" : "setNodes", withMappedPorts);
