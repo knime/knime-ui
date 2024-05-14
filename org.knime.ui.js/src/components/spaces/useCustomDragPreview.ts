@@ -19,6 +19,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   const isAboveCanvas = ref(false);
   const hasDragEnded = ref(false);
   const nodeTemplate = ref<NodeTemplate | null>(null);
+  const isFetchingTemplate = ref(false);
 
   const $route = useRoute();
   const store = useStore();
@@ -52,6 +53,26 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     return fileExtensionToNodeTemplateId.value[sourceFileExtension ?? ""];
   };
 
+  const createNodeTemplatePreview = (
+    item: FileExplorerItem,
+    isComponent: boolean,
+  ) => {
+    if (isComponent) {
+      return {
+        isComponent: true,
+        inPorts: [],
+        outPorts: [],
+        type: item.meta?.type,
+      };
+    }
+
+    const nodeTemplateId = getNodeTemplateId(item);
+
+    return store.dispatch("nodeTemplates/getSingleNodeTemplate", {
+      nodeTemplateId,
+    });
+  };
+
   const onDrag = async ({
     event,
     item,
@@ -64,6 +85,8 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     const nodeTemplateId = getNodeTemplateId(item);
     const isItemAComponent = isComponent(nodeTemplateId, item);
 
+    // when it doesn't have a template id and it's not a component
+    // then it's just a random item that shouldn't have a preview
     if (!nodeTemplateId && !isItemAComponent) {
       return;
     }
@@ -74,17 +97,16 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
 
     const el = document.elementFromPoint(screenX, screenY);
     const kanvas = getScrollContainerElement.value();
-
-    nodeTemplate.value = isItemAComponent
-      ? {
-          isComponent: true,
-          inPorts: [],
-          outPorts: [],
-          type: item.meta?.type,
-        }
-      : await store.dispatch("nodeRepository/getNodeTemplate", nodeTemplateId);
-
     isAboveCanvas.value = kanvas.contains(el);
+
+    // make sure the preview is only fetched once for this current drag interaction
+    if (!isFetchingTemplate.value) {
+      isFetchingTemplate.value = true;
+      nodeTemplate.value = await createNodeTemplatePreview(
+        item,
+        isItemAComponent,
+      );
+    }
   };
 
   const onDragEnd = async ({
@@ -99,6 +121,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     hasDragEnded.value = true;
     isAboveCanvas.value = false;
     nodeTemplate.value = null;
+    isFetchingTemplate.value = false;
 
     const screenX = event.clientX - $shapes.nodeSize / 2;
     const screenY = event.clientY - $shapes.nodeSize / 2;
