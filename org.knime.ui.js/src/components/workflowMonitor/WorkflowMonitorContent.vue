@@ -45,7 +45,7 @@ const shouldDisplayEmptyMessage = computed(() => {
 });
 
 const getTemplate = (templateId: string) => {
-  return store.state.workflowMonitor.nodeTemplates[templateId];
+  return store.state.nodeTemplates.cache[templateId];
 };
 
 const navigateToIssue = async (message: WorkflowMonitorMessageType) => {

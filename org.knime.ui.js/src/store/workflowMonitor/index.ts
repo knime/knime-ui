@@ -6,10 +6,7 @@ import {
   type WorkflowMonitorMessage,
   type WorkflowMonitorState as WorkflowMonitorAPIState,
 } from "@/api/gateway-api/generated-api";
-import type {
-  NodeTemplateWithExtendedPorts,
-  WorkflowObject,
-} from "@/api/custom-types";
+import type { WorkflowObject } from "@/api/custom-types";
 
 import {
   actions as jsonPatchActions,
@@ -20,13 +17,10 @@ import { router } from "@/router/router";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import type { RootStoreState } from "../types";
 import { lifecycleBus } from "../application/lifecycle-events";
-
-const uniqueStrings = (input: string[]) => [...new Set(input)];
 
 export type Filter = "SHOW_ERRORS" | "SHOW_ALL";
 
@@ -52,10 +46,6 @@ export interface WorkflowMonitorState {
    * The Workflow Manager data
    */
   currentState: WorkflowMonitorAPIState;
-  /**
-   * Cache of node templates. Used to render the node icon previews
-   */
-  nodeTemplates: Record<string, NodeTemplateWithExtendedPorts>;
 }
 
 export const state = (): WorkflowMonitorState => ({
@@ -67,7 +57,6 @@ export const state = (): WorkflowMonitorState => ({
     errors: [],
     warnings: [],
   },
-  nodeTemplates: {},
 });
 
 export const mutations: MutationTree<WorkflowMonitorState> = {
@@ -87,12 +76,6 @@ export const mutations: MutationTree<WorkflowMonitorState> = {
   },
   setCurrentState(state, value) {
     state.currentState = value;
-  },
-  updateNodeTemplates(state, newValues) {
-    state.nodeTemplates = {
-      ...state.nodeTemplates,
-      ...newValues,
-    };
   },
 };
 
@@ -142,7 +125,11 @@ export const actions: ActionTree<WorkflowMonitorState, RootStoreState> = {
       value.templateId ?? "";
     const nodeTemplateIds = errors.concat(warnings).map(toTemplateId);
 
-    dispatch("getTemplatesInfo", { nodeTemplateIds });
+    dispatch(
+      "nodeTemplates/getNodeTemplates",
+      { nodeTemplateIds },
+      { root: true },
+    );
   },
 
   deactivateWorkflowMonitor({ dispatch, rootState }) {
@@ -221,39 +208,6 @@ export const actions: ActionTree<WorkflowMonitorState, RootStoreState> = {
     });
 
     return promise;
-  },
-
-  async getTemplatesInfo(
-    { state, commit, rootState },
-    { nodeTemplateIds }: { nodeTemplateIds: string[] },
-  ) {
-    // remove possibly repeated values
-    const uniqueNodeTemplateIds = uniqueStrings(nodeTemplateIds);
-
-    const uncachedIds = uniqueNodeTemplateIds.filter(
-      (id) => !state.nodeTemplates[id],
-    );
-
-    if (uncachedIds.length === 0) {
-      return;
-    }
-
-    const nodeTemplates = await API.noderepository.getNodeTemplates({
-      nodeTemplateIds: uncachedIds,
-    });
-
-    const { availablePortTypes } = rootState.application;
-
-    const nodeTemplateDictionary = Object.fromEntries(
-      // get values -> `NodeTemplate`
-      Object.values(nodeTemplates)
-        // add expanded port information
-        .map(toNodeTemplateWithExtendedPorts(availablePortTypes))
-        // map to key-value pairs, to pass it to `fromEntries
-        .map((value) => [value.id, value]),
-    );
-
-    commit("updateNodeTemplates", nodeTemplateDictionary);
   },
 };
 
