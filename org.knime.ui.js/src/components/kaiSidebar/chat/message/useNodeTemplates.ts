@@ -1,9 +1,7 @@
 import { ref, watchEffect } from "vue";
 import { useStore } from "@/composables/useStore";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
 import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../../types";
-import type { NodeTemplate } from "@/api/gateway-api/generated-api";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 /**
@@ -35,35 +33,44 @@ const useNodeTemplates = ({
       return;
     }
 
-    // Temporary variables to hold the values for this effect run.
-    const _nodeTemplates: NodeTemplate[] = [];
+    // Temporary variable to hold the values for this effect run.
     const _uninstalledExtensions: { [key: string]: ExtensionWithNodes } = {};
 
-    // Fetching node templates concurrently.
-    await Promise.all(
-      nodes.map(async (node) => {
-        // Dispatching a Vuex action to get a node template.
-        const nodeTemplate: NodeTemplate = await store.dispatch(
-          "nodeRepository/getNodeTemplate",
-          node.factoryId,
-        );
+    const getUninstalledExtension = (
+      node: NodeWithExtensionInfo,
+    ): ExtensionWithNodes => {
+      let extension = _uninstalledExtensions[node.featureSymbolicName];
 
-        if (nodeTemplate) {
-          // If nodeTemplate exists, add it to the list.
-          _nodeTemplates.push(nodeTemplate);
-        } else {
-          // If the nodeTemplate doesn't exist, consider it as an uninstalled extension.
-          let extension = _uninstalledExtensions[node.featureSymbolicName];
-          if (!extension) {
-            // Create a new extension object if it doesn't already exist.
-            extension = {
-              featureSymbolicName: node.featureSymbolicName,
-              featureName: node.featureName,
-              owner: node.owner,
-              nodes: [],
-            };
-            _uninstalledExtensions[node.featureSymbolicName] = extension;
-          }
+      if (!extension) {
+        // Create a new extension object if it doesn't already exist.
+        extension = {
+          featureSymbolicName: node.featureSymbolicName,
+          featureName: node.featureName,
+          owner: node.owner,
+          nodes: [],
+        };
+
+        _uninstalledExtensions[node.featureSymbolicName] = extension;
+      }
+
+      return extension;
+    };
+
+    const nodeTemplateIds = nodes.map(({ factoryId }) => factoryId);
+
+    const { found, missing } = (await store.dispatch(
+      "nodeTemplates/getNodeTemplates",
+      { nodeTemplateIds },
+    )) as {
+      found: Record<string, NodeTemplateWithExtendedPorts>;
+      missing: string[];
+    };
+
+    if (missing.length > 0) {
+      nodes
+        .filter(({ factoryId }) => missing.includes(factoryId))
+        .forEach((node) => {
+          const extension = getUninstalledExtension(node);
 
           // Append the node details to the extension.
           extension.nodes.push({
@@ -71,16 +78,10 @@ const useNodeTemplates = ({
             factoryName: node.factoryName,
             title: node.title,
           });
-        }
-      }),
-    );
+        });
+    }
 
-    // Updating the reactive refs with the new values.
-    nodeTemplates.value = _nodeTemplates.map(
-      toNodeTemplateWithExtendedPorts(
-        store.state.application.availablePortTypes,
-      ),
-    );
+    nodeTemplates.value = Object.values(found);
     uninstalledExtensions.value = _uninstalledExtensions;
     callback();
   });
