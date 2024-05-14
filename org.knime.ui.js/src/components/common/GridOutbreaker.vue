@@ -12,6 +12,10 @@ export default {
       type: String,
       default: "transparent",
     },
+    border: {
+      type: String,
+      default: null,
+    },
   },
 
   computed: {
@@ -25,6 +29,7 @@ export default {
           columns - 1
         })) / ${columns})`,
         "--outbreaker-background-color": this.color,
+        "--outbreaker-border": this.border,
       };
     },
   },
@@ -64,6 +69,7 @@ export default {
     &::before {
       width: var(--grid-gap-plus-half-column);
       left: calc(-1 * var(--grid-gap-plus-half-column));
+      border-left: var(--outbreaker-border);
 
       @media only screen and (max-width: 1180px) {
         display: none;

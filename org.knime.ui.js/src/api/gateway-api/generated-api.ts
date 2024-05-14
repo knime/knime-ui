@@ -3354,6 +3354,55 @@ export interface Space {
 
 
 /**
+ * Defines a group of spaces, could be an user or a team.
+ * @export
+ * @interface SpaceGroup
+ */
+export interface SpaceGroup {
+
+    /**
+     * Identifier of the group
+     * @type {string}
+     * @memberof SpaceGroup
+     */
+    id: string;
+    /**
+     * The group name
+     * @type {string}
+     * @memberof SpaceGroup
+     */
+    name: string;
+    /**
+     * The type of the group.
+     * @type {string}
+     * @memberof SpaceGroup
+     */
+    type: SpaceGroup.TypeEnum;
+    /**
+     * The spaces contained in the group.
+     * @type {Array<Space>}
+     * @memberof SpaceGroup
+     */
+    spaces: Array<Space>;
+
+}
+
+
+/**
+ * @export
+ * @namespace SpaceGroup
+ */
+export namespace SpaceGroup {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        TEAM = 'TEAM',
+        USER = 'USER'
+    }
+}
+/**
  * A single item in a space (local workspace or hub space).
  * @export
  * @interface SpaceItem
@@ -3485,11 +3534,11 @@ export interface SpacePathSegment {
 export interface SpaceProvider {
 
     /**
-     *
-     * @type {Array<Space>}
+     * The groups contained in this provider to which the user have access to.
+     * @type {Array<SpaceGroup>}
      * @memberof SpaceProvider
      */
-    spaces: Array<Space>;
+    spaceGroups: Array<SpaceGroup>;
     /**
      * Type of the space provider.
      * @type {string}

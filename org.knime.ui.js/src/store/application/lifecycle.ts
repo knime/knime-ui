@@ -175,8 +175,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     if (openProjects.length === 0) {
       consola.info("No workflows opened");
       await runInEnvironment({
-        DESKTOP: () =>
-          $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage }),
+        DESKTOP: () => $router.push({ name: APP_ROUTES.EntryPage.HomePage }),
       });
       return;
     }
@@ -186,8 +185,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // No active project is set -> stay on entry page (aka: null project)
     if (!activeProject) {
       await runInEnvironment({
-        DESKTOP: () =>
-          $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage }),
+        DESKTOP: () => $router.push({ name: APP_ROUTES.EntryPage.HomePage }),
       });
       return;
     }

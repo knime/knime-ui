@@ -10,6 +10,7 @@ import { localRootProjectPath } from "./caching";
 
 export interface State {
   spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
+  activeSpaceProvider: SpaceProviderNS.SpaceProvider | null;
   isLoadingProvider: boolean;
   hasLoadedProviders: boolean;
 }
@@ -21,6 +22,7 @@ declare module "./index" {
 export const state = (): State => ({
   // metadata of all available space providers and their spaces (including local)
   spaceProviders: null,
+  activeSpaceProvider: null,
 
   isLoadingProvider: false,
   hasLoadedProviders: false,
@@ -53,6 +55,10 @@ export const mutations: MutationTree<SpacesState> = {
     value: Record<string, SpaceProviderNS.SpaceProvider>,
   ) {
     state.spaceProviders = value;
+  },
+
+  setActiveSpaceProvider(state, value: SpaceProviderNS.SpaceProvider) {
+    state.activeSpaceProvider = value;
   },
 };
 

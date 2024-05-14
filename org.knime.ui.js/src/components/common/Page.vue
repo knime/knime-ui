@@ -36,13 +36,6 @@ main {
   overflow-x: hidden;
   height: 100%;
 
-  &.with-background {
-    background-image: url("@/assets/workflow-entry-page-background.webp");
-    background-repeat: no-repeat;
-    background-position: bottom right;
-    background-size: 100%;
-  }
-
   &.scroll-auto {
     overflow-y: auto;
   }

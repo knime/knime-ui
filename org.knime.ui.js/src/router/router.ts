@@ -29,25 +29,17 @@ export const routes: Array<RouteRecordRaw> = [
     component: () => import("@/components/entryPage/EntryPageLayout.vue"),
     children: [
       {
-        name: APP_ROUTES.EntryPage.GetStartedPage,
-        path: "/get-started",
-        component: () => import("@/components/entryPage/GetStartedPage.vue"),
+        name: APP_ROUTES.EntryPage.HomePage,
+        path: "/home",
+        component: () => import("@/components/entryPage/HomePage.vue"),
         meta: { showUpdateBanner: true },
       },
-      // TODO: NXT-1461 enable again when we have a dedicated stand alone SpaceSelection page again
-      // {
-      //    name: APP_ROUTES.EntryPage.SpaceSelectionPage,
-      //    path: '/space-selection',
-      //    component: SpaceSelectionPage,
-      //    meta: { showUpdateBanner: true }
-      // }
+      {
+        name: APP_ROUTES.EntryPage.SpaceProviderPage,
+        path: "/space-provider",
+        component: () => import("@/components/spaces/SpaceProviderPage.vue"),
+      },
     ],
-  }),
-
-  ...registerRoute("DESKTOP", {
-    name: APP_ROUTES.SpaceBrowsingPage,
-    path: "/space-browsing",
-    component: () => import("@/components/spaces/SpaceBrowsingPage.vue"),
   }),
 ];
 

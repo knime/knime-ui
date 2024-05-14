@@ -47,7 +47,7 @@ const dirtyProjectsMap = computed(
 );
 
 const isGetStartedPageActive = computed(() => {
-  return $route.name === APP_ROUTES.EntryPage.GetStartedPage;
+  return $route.name === APP_ROUTES.EntryPage.HomePage;
 });
 
 const isHomeActive = computed(() => {
@@ -98,11 +98,11 @@ const openInspector = () => {
 };
 
 const setGetStartedPageTab = () => {
-  if (isHomeActive.value) {
-    return;
-  }
+  // if (isHomeActive.value) {
+  //   return;
+  // }
   activeProjectTab.value = null;
-  $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+  $router.push({ name: APP_ROUTES.EntryPage.HomePage });
 };
 
 const onProjectTabChange = async (projectId: string) => {
