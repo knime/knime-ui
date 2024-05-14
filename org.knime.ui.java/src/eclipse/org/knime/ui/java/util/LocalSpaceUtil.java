@@ -59,7 +59,6 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.Project;
-import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceGroup;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -195,11 +194,12 @@ public final class LocalSpaceUtil {
 
     /**
      * Creates a Space Group for the local environment
-     * @param localspace
+     * 
+     * @param localSpace
      * @return a SpaceGroup that represents the local group
      */
-    public static SpaceGroup getLocalSpaceGroup(final LocalWorkspace localSpace) {
-        return new SpaceGroup() {
+    public static SpaceGroup<LocalWorkspace> getLocalSpaceGroup(final LocalWorkspace localSpace) {
+        return new SpaceGroup<>() {
 
             final String id = "Local-space-id";
 
@@ -217,7 +217,7 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public List<Space> getSpaces() {
+            public List<LocalWorkspace> getSpaces() {
                 return List.of(localSpace);
             }
 
