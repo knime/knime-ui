@@ -527,8 +527,21 @@ const workflowShortcuts: WorkflowShortcuts = {
       });
     },
 
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedNodes"].length > 1,
+    condition: ({ $store }) => {
+      const selectedNodes: Array<KnimeNode> =
+        $store.getters["selection/selectedNodes"];
+
+      const selectedPortBars: Array<"out" | "in"> =
+        $store.getters["selection/selectedMetanodePortBars"];
+
+      const isSingleNodeSelected = selectedNodes.length === 1;
+      const isAnyPortBarSelected = selectedPortBars.length !== 0;
+      const isMultipleNodesSelected = selectedNodes.length > 1;
+
+      return isSingleNodeSelected
+        ? isAnyPortBarSelected
+        : isMultipleNodesSelected;
+    },
   },
 };
 
