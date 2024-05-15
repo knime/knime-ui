@@ -595,6 +595,12 @@ export interface AutoConnectCommand extends WorkflowCommand {
      * @memberof AutoConnectCommand
      */
     selectedNodes: Array<any>;
+    /**
+     * Consider implicit flow variable ports.
+     * @type {boolean}
+     * @memberof AutoConnectCommand
+     */
+    flowVariablePortsOnly?: boolean;
 
 }
 
@@ -5272,7 +5278,7 @@ const workflow = function(rpcClient: RPCClient) {
         getWorkflowMonitorState(
         	params: { projectId: string  }
         ): Promise<WorkflowMonitorStateSnapshot> {
-           const defaultParams = { 
+           const defaultParams = {
            }
 
            return rpcClient.call('WorkflowService.getWorkflowMonitorState', { ...defaultParams, ...params });
@@ -5374,7 +5380,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AutoConnect }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},	
+	},
 
  	/**
      * Adds a new node to the workflow.
