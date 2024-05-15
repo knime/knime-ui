@@ -15,6 +15,7 @@ import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
 
 const store = useStore();
 
+const selectedNodes = computed(() => store.state.selection.selectedNodes);
 const workflowMonitorState = computed(
   () => store.state.workflowMonitor.currentState,
 );
@@ -62,6 +63,10 @@ const emptyMessage = computed(() => {
 const isFromNestedNode = (message: WorkflowMonitorMessageType) => {
   return message.workflowId !== "root";
 };
+
+const isHighlighted = (message: WorkflowMonitorMessageType) => {
+  return selectedNodes.value[message.nodeId];
+};
 </script>
 
 <template>
@@ -77,6 +82,7 @@ const isFromNestedNode = (message: WorkflowMonitorMessageType) => {
         :message="error"
         :node-template="getTemplate(error.templateId!)"
         :nested="isFromNestedNode(error)"
+        :is-highlighted="isHighlighted(error)"
         @show-issue="navigateToIssue(error)"
       />
     </TransitionGroup>
@@ -96,6 +102,7 @@ const isFromNestedNode = (message: WorkflowMonitorMessageType) => {
         :message="warning"
         :node-template="getTemplate(warning.templateId!)"
         :nested="isFromNestedNode(warning)"
+        :is-highlighted="isHighlighted(warning)"
         @show-issue="navigateToIssue(warning)"
       />
     </TransitionGroup>

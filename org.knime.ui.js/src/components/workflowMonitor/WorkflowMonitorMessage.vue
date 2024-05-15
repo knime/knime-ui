@@ -16,6 +16,7 @@ type Props = {
   nodeTemplate?: NodeTemplateWithExtendedPorts | null;
   skeleton?: boolean;
   nested?: boolean;
+  isHighlighted?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -23,6 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
   nodeTemplate: null,
   skeleton: false,
   nested: false,
+  isHighlighted: false,
 });
 
 const emit = defineEmits<{
@@ -40,7 +42,7 @@ const isLoadingNodePreview = computed(
 </script>
 
 <template>
-  <div class="issue-message">
+  <div :class="['issue-message', { highlighted: isHighlighted }]">
     <div class="title">
       <span v-if="nested" class="nested-indicator"
         >… <ArrowNextIcon class="arrow"
@@ -99,6 +101,11 @@ const isLoadingNodePreview = computed(
   background: var(--knime-white);
   border-radius: 5px;
   width: 100%;
+  border: 1px solid transparent;
+
+  &.highlighted {
+    border-color: v-bind("$colors.selection.activeBorder");
+  }
 
   --padding: 12px;
 

@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@api";
+import * as selectionStore from "@/store/selection";
+import * as workflowStore from "@/store/workflow";
 import * as workflowMonitorStore from "@/store/workflowMonitor";
 import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as panelStore from "@/store/panel";
@@ -13,6 +15,7 @@ import type { WorkflowMonitorState } from "@/api/gateway-api/generated-api";
 import {
   createAvailablePortTypes,
   createNodeTemplate,
+  createWorkflow,
   createWorkflowMonitorMessage,
 } from "@/test/factories";
 
@@ -56,12 +59,15 @@ describe("WorkflowMonitor.vue", () => {
 
   const doMount = () => {
     const $store = mockVuexStore({
+      workflow: workflowStore,
       workflowMonitor: workflowMonitorStore,
       nodeTemplates: nodeTemplatesStore,
+      selection: selectionStore,
       panel: panelStore,
       application: applicationStore,
     });
 
+    $store.commit("workflow/setActiveWorkflow", createWorkflow());
     $store.commit("application/setActiveProjectId", "project1");
     const availablePortTypes = createAvailablePortTypes();
     $store.commit("application/setAvailablePortTypes", availablePortTypes);

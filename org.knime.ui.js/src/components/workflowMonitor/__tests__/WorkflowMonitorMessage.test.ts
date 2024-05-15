@@ -100,4 +100,18 @@ describe("WorkflowMonitorMessage.vue", () => {
 
     expect(wrapper.emitted("showIssue")).toBeDefined();
   });
+
+  it("should highlight a message", async () => {
+    const { wrapper } = doMount({
+      props: {
+        isHighlighted: false,
+      },
+    });
+
+    expect(wrapper.classes()).not.toContain("highlighted");
+
+    await wrapper.setProps({ isHighlighted: true });
+
+    expect(wrapper.classes()).toContain("highlighted");
+  });
 });
