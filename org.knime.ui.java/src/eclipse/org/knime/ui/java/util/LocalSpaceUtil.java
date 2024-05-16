@@ -194,20 +194,20 @@ public final class LocalSpaceUtil {
 
     /**
      * Creates a Space Group for the local environment
-     * 
+     *
      * @param localSpace
      * @return a SpaceGroup that represents the local group
      */
     public static SpaceGroup<LocalWorkspace> getLocalSpaceGroup(final LocalWorkspace localSpace) {
         return new SpaceGroup<>() {
 
-            final String id = "Local-space-id";
+            static final String ID = "Local-space-id";
 
-            final String name = "Local Group";
+            static final String NAME = "local";
 
             @Override
             public SpaceGroupEnt toEntity() {
-                return EntityFactory.Space.buildSpaceGroupEnt(id, name, SpaceGroupEnt.TypeEnum.USER,
+                return EntityFactory.Space.buildSpaceGroupEnt(ID, NAME, SpaceGroupEnt.TypeEnum.USER,
                     List.of(localSpace.toEntity()));
             }
 
