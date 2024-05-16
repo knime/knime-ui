@@ -222,8 +222,10 @@ public final class PerspectiveSwitchAddon {
         final MApplication app) {
         modelService.find("org.eclipse.ui.trim.status", app).setVisible(visible);
         modelService.find("org.eclipse.ui.main.toolbar", app).setVisible(visible);
-        MTrimmedWindow window = (MTrimmedWindow)app.getChildren().get(0);
-        window.getMainMenu().setToBeRendered(visible);
+        if (!Boolean.getBoolean("org.knime.ui.dev.showMenu")) {
+            MTrimmedWindow window = (MTrimmedWindow)app.getChildren().get(0);
+            window.getMainMenu().setToBeRendered(visible);
+        }
     }
 
     /**
