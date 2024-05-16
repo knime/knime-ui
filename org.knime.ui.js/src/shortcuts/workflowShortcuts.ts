@@ -1,3 +1,5 @@
+// TODO: NXT-2627 split this file
+/* eslint-disable max-lines */
 import RedoIcon from "webapps-common/ui/assets/img/icons/redo.svg";
 import UndoIcon from "webapps-common/ui/assets/img/icons/undo.svg";
 import DeleteIcon from "@/assets/delete.svg";
@@ -16,7 +18,6 @@ import { getProjectAndWorkflowIds } from "../store/workflow/util";
 import { API } from "@api";
 import { compatibility, isDesktop } from "@/environment";
 
-import type { UnionToShortcutRegistry } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import {
@@ -25,6 +26,12 @@ import {
   validatePortSupport,
 } from "@/components/uiExtensions/common/output-validator";
 import { getToastsProvider } from "@/plugins/toasts";
+
+import type {
+  ShortcutConditionContext,
+  ShortcutExecuteContext,
+  UnionToShortcutRegistry,
+} from "./types";
 
 type WorkflowShortcuts = UnionToShortcutRegistry<
   | "save"
@@ -44,12 +51,53 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "switchToPanMode"
   | "switchToSelectionMode"
   | "quickAddNode"
-  | "autoConnectNodes"
+  | "autoConnectNodesDefault"
+  | "autoConnectNodesFlowVar"
 >;
 
 declare module "./index" {
   interface ShortcutsRegistry extends WorkflowShortcuts {}
 }
+
+const autoConnectNodes = ({
+  $store,
+  payload: { event },
+}: ShortcutExecuteContext) => {
+  const { projectId, workflowId } = getProjectAndWorkflowIds(
+    $store.state.workflow,
+  );
+
+  const flowVariablePortsOnly =
+    (event as KeyboardEvent).key.toLowerCase() === "k";
+
+  const selectedNodes: string[] = $store.getters["selection/selectedNodeIds"];
+
+  const selectedPortBars: Array<"out" | "in"> =
+    $store.getters["selection/selectedMetanodePortBars"];
+
+  API.workflowCommand.AutoConnect({
+    projectId,
+    workflowId,
+    selectedNodes,
+    workflowInPortsBarSelected: selectedPortBars.includes("in"),
+    workflowOutPortsBarSelected: selectedPortBars.includes("out"),
+    flowVariablePortsOnly,
+  });
+};
+
+const canAutoConnect = ({ $store }: ShortcutConditionContext) => {
+  const selectedNodes: Array<KnimeNode> =
+    $store.getters["selection/selectedNodes"];
+
+  const selectedPortBars: Array<"out" | "in"> =
+    $store.getters["selection/selectedMetanodePortBars"];
+
+  const isSingleNodeSelected = selectedNodes.length === 1;
+  const isAnyPortBarSelected = selectedPortBars.length !== 0;
+  const isMultipleNodesSelected = selectedNodes.length > 1;
+
+  return isSingleNodeSelected ? isAnyPortBarSelected : isMultipleNodesSelected;
+};
 
 const workflowShortcuts: WorkflowShortcuts = {
   save: {
@@ -501,47 +549,21 @@ const workflowShortcuts: WorkflowShortcuts = {
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
   },
-
-  autoConnectNodes: {
-    text: "Auto connect nodes",
-    title: "Auto connect nodes",
-    hotkey: ["Ctrl", "L"],
+  autoConnectNodesDefault: {
+    text: "Connect nodes",
+    title: "Connect nodes",
+    hotkey: ["CtrlOrCmd", "L"],
     group: "workflowEditor",
-    execute: ({ $store }) => {
-      const { projectId, workflowId } = getProjectAndWorkflowIds(
-        $store.state.workflow,
-      );
-
-      const selectedNodes: string[] =
-        $store.getters["selection/selectedNodeIds"];
-
-      const selectedPortBars: Array<"out" | "in"> =
-        $store.getters["selection/selectedMetanodePortBars"];
-
-      API.workflowCommand.AutoConnect({
-        projectId,
-        workflowId,
-        selectedNodes,
-        workflowInPortsBarSelected: selectedPortBars.includes("in"),
-        workflowOutPortsBarSelected: selectedPortBars.includes("out"),
-      });
-    },
-
-    condition: ({ $store }) => {
-      const selectedNodes: Array<KnimeNode> =
-        $store.getters["selection/selectedNodes"];
-
-      const selectedPortBars: Array<"out" | "in"> =
-        $store.getters["selection/selectedMetanodePortBars"];
-
-      const isSingleNodeSelected = selectedNodes.length === 1;
-      const isAnyPortBarSelected = selectedPortBars.length !== 0;
-      const isMultipleNodesSelected = selectedNodes.length > 1;
-
-      return isSingleNodeSelected
-        ? isAnyPortBarSelected
-        : isMultipleNodesSelected;
-    },
+    execute: autoConnectNodes,
+    condition: canAutoConnect,
+  },
+  autoConnectNodesFlowVar: {
+    text: "Connect nodes by flow variable port",
+    title: "Connect nodes by flow variable port",
+    hotkey: ["CtrlOrCmd", "K"],
+    group: "workflowEditor",
+    execute: autoConnectNodes,
+    condition: canAutoConnect,
   },
 };
 
