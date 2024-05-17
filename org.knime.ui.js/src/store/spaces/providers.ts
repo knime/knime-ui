@@ -143,9 +143,20 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async fetchProviderSpaces(_, { id }) {
     try {
-      return await API.space.getSpaceProvider({
+      // TODO this is an intermediate fix to keep the FE working,
+      // delete before merging https://knime-com.atlassian.net/browse/NXT-2596 original state is
+      // return await API.space.getSpaceProvider({
+      //   spaceProviderId: id,
+      // });
+      const spaceProvider = (await API.space.getSpaceProvider({
         spaceProviderId: id,
-      });
+      })) as any;
+      return {
+        spaces: spaceProvider?.spaceGroups?.flatMap(
+          (group: any) => group.spaces,
+        ),
+        ...spaceProvider,
+      };
     } catch (error) {
       consola.error("Error fetching provider spaces", { error });
       throw error;
