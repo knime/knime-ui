@@ -13,15 +13,15 @@
     <packaging>eclipse-plugin</packaging>
 
     <properties>
-        <sonar.sources></sonar.sources>
-        <sonar.tests></sonar.tests>
+        <sonar.sources/>
+        <sonar.tests/>
         <sonar.exclusions>src/**,node_modules/**/*,dist/**/*,.nyc_output/**/*,test-results/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,webapps-common/**,src/test/**</sonar.exclusions>
         <sonar.javascript.lcov.reportPaths>test-results/lcov.info</sonar.javascript.lcov.reportPaths>
         <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
         <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
         <node.version>v18.14.2</node.version>
         <npm.version>9.5.0</npm.version>
-		<revision>5.2.3</revision>
+		<revision>5.2.4</revision>
     </properties>
 
     <build>
