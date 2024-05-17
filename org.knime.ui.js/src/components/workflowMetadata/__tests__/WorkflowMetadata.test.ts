@@ -17,6 +17,7 @@ import {
   WorkflowInfo,
   type Workflow,
 } from "@/api/gateway-api/generated-api";
+import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
 
@@ -31,9 +32,12 @@ import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue"
 vi.mock("@/environment");
 
 describe("WorkflowMetadata.vue", () => {
-  const doMount = ({ workflow = null }: { workflow?: Workflow } = {}) => {
+  const doMount = ({
+    workflow = null,
+  }: { workflow?: Workflow | null } = {}) => {
     const availablePortTypes = createAvailablePortTypes();
     const $store = mockVuexStore({
+      selection: selectionStore,
       workflow: workflowStore,
 
       application: {
@@ -113,28 +117,29 @@ describe("WorkflowMetadata.vue", () => {
       expect(wrapper.findComponent(TagList).exists()).toBe(true);
       const tags = wrapper.findAllComponents(Tag);
       expect(tags.length).toBe(1);
-      expect(tags.at(0).text()).toBe("tag1");
+      expect(tags.at(0)!.text()).toBe("tag1");
     });
   });
 
   describe("component", () => {
-    // eslint-disable-next-line vitest/no-disabled-tests
-    it.skip("displays component metadata", async () => {
+    it("displays component metadata", async () => {
       const { wrapper, $store } = doMount();
 
       const workflow = createWorkflow({
         info: {
           containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
+        // @ts-ignore
+        projectMetadata: null,
         componentMetadata: {
           name: "name",
           // @ts-ignore
           inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
           outPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
-          description: "Description",
+          description: { value: "Description" },
           type: ComponentNodeAndDescription.TypeEnum.Source,
           views: [{ name: "view", description: "description" }],
-          options: ["options"],
+          options: [],
         },
       });
 
@@ -143,9 +148,8 @@ describe("WorkflowMetadata.vue", () => {
 
       expect(wrapper.findComponent(NodePreview).exists()).toBe(true);
 
-      expect(wrapper.findComponent(MetadataDescription).text()).toMatch(
-        "Description",
-      );
+      const description = wrapper.findComponent(MetadataDescription);
+      expect(description.props("modelValue")).toMatch("Description");
 
       expect(
         wrapper.findComponent(ComponentMetadataNodeFeatures).exists(),
@@ -159,6 +163,7 @@ describe("WorkflowMetadata.vue", () => {
         info: {
           containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
+        // @ts-ignore
         projectMetadata: null,
         componentMetadata: {
           name: "name",
@@ -176,7 +181,7 @@ describe("WorkflowMetadata.vue", () => {
           },
           type: ComponentNodeAndDescription.TypeEnum.Source,
           views: [{ name: "view", description: "description" }],
-          options: ["options"],
+          options: [],
         },
       });
 
@@ -226,6 +231,7 @@ describe("WorkflowMetadata.vue", () => {
         info: {
           containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
+        // @ts-ignore
         projectMetadata: null,
         componentMetadata: {
           name: "name",
@@ -243,7 +249,7 @@ describe("WorkflowMetadata.vue", () => {
           },
           type: ComponentNodeAndDescription.TypeEnum.Source,
           views: [{ name: "view", description: "description" }],
-          options: ["options"],
+          options: [],
         },
       });
       const savedComponent = {
@@ -316,6 +322,7 @@ describe("WorkflowMetadata.vue", () => {
       info: {
         containerType: WorkflowInfo.ContainerTypeEnum.Project,
       },
+      // @ts-ignore
       projectMetadata: null,
       componentMetadata: {
         name: "name",
@@ -333,7 +340,7 @@ describe("WorkflowMetadata.vue", () => {
         },
         type: ComponentNodeAndDescription.TypeEnum.Source,
         views: [{ name: "view", description: "description" }],
-        options: ["options"],
+        options: [],
       },
     });
 

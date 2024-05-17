@@ -76,10 +76,12 @@ export namespace SpaceProviderNS {
 export type ComponentMetadata = ComponentNodeAndDescription &
   NodeDescription &
   EditableProjectMetadata;
+
 // TODO: NXT-2023 remove once API codegen properly types the workflow nodes
-export type Workflow = Omit<_Workflow, "nodes"> & {
+export type Workflow = Omit<_Workflow, "nodes" | "componentMetadata"> & {
   projectId: string;
   nodes: Record<string, KnimeNode>;
+  componentMetadata?: ComponentMetadata;
 };
 
 export interface Job {

@@ -1,12 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { describe, expect, it } from "vitest";
+import { VueWrapper, mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
 import { createWorkflow } from "@/test/factories";
-import { TypedText, type Workflow } from "@/api/gateway-api/generated-api";
-import * as workflowStore from "@/store/workflow";
-import * as applicationStore from "@/store/application";
+import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -14,57 +10,56 @@ import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue
 import ProjectMetadata from "../ProjectMetadata.vue";
 import MetadataDescription from "../MetadataDescription.vue";
 import MetadataTags from "../MetadataTags.vue";
+import { nextTick } from "vue";
 
 describe("ProjectMetadata.vue", () => {
-  const doMount = ({
-    customWorkflow = null,
-  }: { customWorkflow?: Workflow } = {}) => {
-    const baseWorkflow = createWorkflow({
-      projectMetadata: {
-        description: {
-          value: "This is a dummy description",
-          contentType: TypedText.ContentTypeEnum.Plain,
-        },
-        links: [
-          { text: "link1", url: "http://link1.com" },
-          { text: "link2", url: "http://link2.com" },
-        ],
-        tags: ["tag1", "tag2"],
+  type ComponentProps = InstanceType<typeof ProjectMetadata>["$props"];
+
+  const workflow = createWorkflow({
+    projectMetadata: {
+      description: {
+        value: "This is a dummy description",
+        contentType: TypedText.ContentTypeEnum.Plain,
       },
-      // @ts-ignore
-      projectId: "project1",
-    });
+      links: [
+        { text: "link1", url: "http://link1.com" },
+        { text: "link2", url: "http://link2.com" },
+      ],
+      tags: ["tag1", "tag2"],
+    },
+    projectId: "project1",
+  });
 
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      application: applicationStore,
-    });
+  const defaultProps: ComponentProps = {
+    projectId: workflow.projectId,
+    workflowId: workflow.info.containerId,
+    isWorkflowWritable: true,
+    projectMetadata: workflow.projectMetadata!,
+    singleMetanodeSelectedId: null,
+  };
 
-    const workflow = customWorkflow || baseWorkflow;
-
-    $store.commit("workflow/setActiveWorkflow", workflow);
-
+  const doMount = ({ props }: { props?: Partial<ComponentProps> } = {}) => {
     const wrapper = mount(ProjectMetadata, {
+      props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
         stubs: { RichTextEditor: true },
       },
     });
 
-    return { wrapper, workflow, $store };
+    return { wrapper, workflow };
   };
 
   it("should render content", () => {
     const { wrapper, workflow } = doMount();
 
-    const { description, links, tags } = workflow.projectMetadata;
+    const { description, links, tags } = workflow.projectMetadata!;
 
     expect(wrapper.findAllComponents(FunctionButton).length).toBe(2);
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
       false,
     );
     expect(wrapper.findComponent(MetadataDescription).props("modelValue")).toBe(
-      description.value,
+      description!.value,
     );
 
     expect(wrapper.findComponent(ExternalResourcesList).props("editable")).toBe(
@@ -96,45 +91,62 @@ describe("ProjectMetadata.vue", () => {
     expect(wrapper.findComponent(MetadataTags).props("editable")).toBe(true);
   });
 
-  // eslint-disable-next-line vitest/no-disabled-tests
-  it.skip("should update metadata", async () => {
-    const { wrapper } = doMount();
+  const startEdit = async (wrapper: VueWrapper<any>) => {
+    await wrapper.find("[data-test-id='edit-button']").trigger("click");
+  };
 
-    await wrapper.findComponent(FunctionButton).find("button").trigger("click");
+  const triggerSave = async (wrapper: VueWrapper<any>) => {
+    await wrapper.find("[data-test-id='save-button']").trigger("click");
+  };
 
+  const cancelEdit = async (wrapper: VueWrapper<any>) => {
+    await wrapper.find("[data-test-id='cancel-edit-button']").trigger("click");
+  };
+
+  const modifyContent = (
+    wrapper: VueWrapper<any>,
+    {
+      description = "<p>This is a new description</>",
+      links = [{ text: "link3", url: "://link3.com" }],
+      tags = ["new tag"],
+    }: { description?: string; links?: Link[]; tags?: string[] } = {},
+  ) => {
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
     const tagsComponent = wrapper.findComponent(MetadataTags);
 
-    descriptionComponent.vm.$emit(
-      "update:modelValue",
-      "<p>This is a new description</>",
-    );
+    descriptionComponent.vm.$emit("update:modelValue", description);
 
-    linksComponent.vm.$emit("update:modelValue", [
-      { text: "link3", url: "://link1.com" },
-    ]);
+    linksComponent.vm.$emit("update:modelValue", links);
 
-    tagsComponent.vm.$emit("update:modelValue", ["new tag"]);
+    tagsComponent.vm.$emit("update:modelValue", tags);
+  };
 
-    await wrapper.findComponent(FunctionButton).find("button").trigger("click");
+  it("should update metadata", async () => {
+    const { wrapper } = doMount();
 
-    expect(wrapper.emitted("save")[0][0]).toEqual({
+    await startEdit(wrapper);
+
+    modifyContent(wrapper);
+
+    await triggerSave(wrapper);
+
+    expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Html,
+        contentType: TypedText.ContentTypeEnum.Plain,
         value: "<p>This is a new description</>",
       },
-      links: [{ text: "link3", url: "://link1.com" }],
+      links: [{ text: "link3", url: "://link3.com" }],
       tags: ["new tag"],
-      projectId: "project1",
-      workflowId: "root",
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
     });
   });
 
   it("should disable saving if data is invalid", async () => {
     const { wrapper } = doMount();
 
-    await wrapper.find("[data-test-id='edit-button']").trigger("click");
+    await startEdit(wrapper);
 
     expect(
       wrapper.find("[data-test-id='save-button']").attributes("disabled"),
@@ -152,48 +164,28 @@ describe("ProjectMetadata.vue", () => {
   it("should cancel an edit", async () => {
     const { wrapper, workflow } = doMount();
 
-    await wrapper.find("[data-test-id='edit-button']").trigger("click");
+    await startEdit(wrapper);
 
-    const { description, links, tags } = workflow.projectMetadata;
+    const { description, links, tags } = workflow.projectMetadata!;
 
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
     const tagsComponent = wrapper.findComponent(MetadataTags);
 
-    descriptionComponent.vm.$emit(
-      "update:modelValue",
-      "<p>This is a new description</>",
-    );
+    modifyContent(wrapper);
 
-    linksComponent.vm.$emit("update:modelValue", [
-      { text: "link3", url: "://link1.com" },
-    ]);
-
-    tagsComponent.vm.$emit("update:modelValue", ["new tag"]);
-
-    await wrapper.find("[data-test-id='cancel-edit-button']").trigger("click");
+    await cancelEdit(wrapper);
 
     // values are reset
-    expect(descriptionComponent.props("modelValue")).toBe(description.value);
+    expect(descriptionComponent.props("modelValue")).toBe(description!.value);
     expect(linksComponent.props("modelValue")).toEqual(links);
     expect(tagsComponent.props("modelValue")).toEqual(tags);
   });
 
-  it("should hold different metadata draft states for multiple projects", async () => {
-    const customWorkflow1 = createWorkflow({
-      projectMetadata: {
-        description: {
-          value: "This is the description of the 1st workflow",
-          contentType: TypedText.ContentTypeEnum.Plain,
-        },
-        links: [{ text: "WF1 link1", url: "http://link1.com" }],
-        tags: ["tag1", "tag2"],
-      },
-      // @ts-ignore
-      projectId: "project1",
-    });
+  it("should reset internal state when metadata changes", async () => {
+    const { wrapper } = doMount();
 
-    const customWorkflow2 = createWorkflow({
+    const workflow2 = createWorkflow({
       projectMetadata: {
         description: {
           value: "This is the description of the 2nd workflow",
@@ -202,225 +194,211 @@ describe("ProjectMetadata.vue", () => {
         links: [{ text: "WF2 link1", url: "http://link2.com" }],
         tags: ["tag3", "tag4"],
       },
-      // @ts-ignore
       projectId: "project2",
     });
 
-    const { wrapper, $store } = doMount({ customWorkflow: customWorkflow1 });
+    await startEdit(wrapper); // but don't make any changes
 
-    await wrapper.find("[data-test-id='edit-button']").trigger("click");
+    // simulate clicking away and switching to another workflow
+    window.dispatchEvent(new Event("click"));
+    await wrapper.setProps({
+      projectId: workflow2.projectId,
+      workflowId: workflow2.info.containerId,
+      projectMetadata: workflow2.projectMetadata!,
+    });
 
-    const descriptionComponent = wrapper.findComponent(MetadataDescription);
-    const linksComponent = wrapper.findComponent(ExternalResourcesList);
-    const tagsComponent = wrapper.findComponent(MetadataTags);
+    expect(wrapper.emitted("save")).toBeUndefined();
 
-    expect(descriptionComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.description.value,
+    const { projectMetadata: projectMetadata2 } = workflow2;
+    expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
+      false,
     );
-    expect(linksComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.links,
-    );
-    expect(tagsComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.tags,
-    );
-
-    // switch to workflow 2
-    $store.commit("workflow/setActiveWorkflow", customWorkflow2);
-    await nextTick();
-
-    expect(descriptionComponent.props("modelValue")).toEqual(
-      customWorkflow2.projectMetadata.description.value,
-    );
-    expect(linksComponent.props("modelValue")).toEqual(
-      customWorkflow2.projectMetadata.links,
-    );
-    expect(tagsComponent.props("modelValue")).toEqual(
-      customWorkflow2.projectMetadata.tags,
+    expect(wrapper.findComponent(MetadataDescription).props("modelValue")).toBe(
+      projectMetadata2!.description!.value,
     );
 
-    // switch back to workflow 1
-    $store.commit("workflow/setActiveWorkflow", customWorkflow1);
-    await nextTick();
+    expect(wrapper.findComponent(ExternalResourcesList).props("editable")).toBe(
+      false,
+    );
+    expect(
+      wrapper.findComponent(ExternalResourcesList).props("modelValue"),
+    ).toEqual(projectMetadata2!.links);
 
-    expect(descriptionComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.description.value,
-    );
-    expect(linksComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.links,
-    );
-    expect(tagsComponent.props("modelValue")).toEqual(
-      customWorkflow1.projectMetadata.tags,
+    expect(wrapper.findComponent(MetadataTags).props("editable")).toBe(false);
+    expect(wrapper.findComponent(MetadataTags).props("modelValue")).toEqual(
+      projectMetadata2!.tags,
     );
   });
 
-  describe("prompt user before leaving edited metadata", () => {
-    // eslint-disable-next-line vitest/no-disabled-tests
-    it.skip("should save changes if user confirms", async () => {
-      window.confirm = vi.fn(() => true);
+  it("should save content on click away", async () => {
+    const { wrapper } = doMount();
 
-      const customWorkflow1 = createWorkflow({
-        projectMetadata: {
-          description: {
-            value: "This is the description of the 1st workflow",
-            contentType: TypedText.ContentTypeEnum.Plain,
-          },
-          links: [{ text: "WF1 link1", url: "http://link1.com" }],
-          tags: ["tag1", "tag2"],
-        },
-        // @ts-ignore
-        projectId: "project1",
-      });
-
-      const customWorkflow2 = createWorkflow({
-        projectMetadata: {
-          description: {
-            value: "This is the description of the 2nd workflow",
-            contentType: TypedText.ContentTypeEnum.Plain,
-          },
-          links: [{ text: "WF2 link1", url: "http://link2.com" }],
-          tags: ["tag3", "tag4"],
-        },
-        // @ts-ignore
-        projectId: "project2",
-      });
-
-      const { wrapper, $store } = doMount({ customWorkflow: customWorkflow1 });
-
-      await wrapper
-        .findComponent(FunctionButton)
-        .find("button")
-        .trigger("click");
-
-      const descriptionComponent = wrapper.findComponent(MetadataDescription);
-      const linksComponent = wrapper.findComponent(ExternalResourcesList);
-      const tagsComponent = wrapper.findComponent(MetadataTags);
-
-      expect(descriptionComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.description.value,
-      );
-      expect(linksComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.links,
-      );
-      expect(tagsComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.tags,
-      );
-
-      // update description
-      descriptionComponent.vm.$emit(
-        "update:modelValue",
-        "<p>This is an updated description for workflow1</>",
-      );
-
-      // update links
-      linksComponent.vm.$emit("update:modelValue", [
-        { text: "link3", url: "://link3.com" },
-      ]);
-
-      // update tags
-      tagsComponent.vm.$emit("update:modelValue", ["new tag"]);
-
-      // switch to workflow 2
-      $store.commit("workflow/setActiveWorkflow", customWorkflow2);
-      await nextTick();
-
-      expect(window.confirm).toHaveBeenCalled();
-      expect(wrapper.emitted("save")[0][0]).toEqual({
+    const workflow2 = createWorkflow({
+      projectMetadata: {
         description: {
-          contentType: TypedText.ContentTypeEnum.Html,
-          value: "<p>This is an updated description for workflow1</>",
+          value: "This is the description of the 2nd workflow",
+          contentType: TypedText.ContentTypeEnum.Plain,
         },
-        links: [{ text: "link3", url: "://link3.com" }],
-        tags: ["new tag"],
-        projectId: "project1",
-        workflowId: "root",
-      });
-
-      // switch back to workflow 1
-      $store.commit("workflow/setActiveWorkflow", customWorkflow1);
-      await nextTick();
-
-      expect(wrapper.find('button[title="Edit metadata"]').exists()).toBe(true);
-      expect(wrapper.find('button[title="Save metadata"]').exists()).toBe(
-        false,
-      );
+        links: [{ text: "WF2 link1", url: "http://link2.com" }],
+        tags: ["tag3", "tag4"],
+      },
+      projectId: "project2",
     });
 
-    it("should discard changes if user cancels", async () => {
-      window.confirm = vi.fn(() => false);
+    await startEdit(wrapper);
 
-      const customWorkflow1 = createWorkflow({
-        projectMetadata: {
-          description: {
-            value: "This is the description of the 1st workflow",
-            contentType: TypedText.ContentTypeEnum.Plain,
-          },
-          links: [{ text: "WF1 link1", url: "http://link1.com" }],
-          tags: ["tag1", "tag2"],
+    modifyContent(wrapper, {
+      description: "<p>This is an updated description for workflow1</>",
+    });
+
+    expect(wrapper.emitted("save")).toBeUndefined();
+
+    // simulate clicking away and switching to another workflow
+    window.dispatchEvent(new Event("click"));
+    await wrapper.setProps({
+      projectId: workflow2.projectId,
+      workflowId: workflow2.info.containerId,
+      projectMetadata: workflow2.projectMetadata!,
+    });
+
+    expect(wrapper.emitted("save")![0][0]).toEqual({
+      description: {
+        contentType: TypedText.ContentTypeEnum.Plain,
+        value: "<p>This is an updated description for workflow1</>",
+      },
+      links: [{ text: "link3", url: "://link3.com" }],
+      tags: ["new tag"],
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
+    });
+
+    const { projectMetadata: projectMetadata2 } = workflow2;
+    expect(wrapper.findAllComponents(FunctionButton).length).toBe(2);
+    expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
+      false,
+    );
+    expect(wrapper.findComponent(MetadataDescription).props("modelValue")).toBe(
+      projectMetadata2!.description!.value,
+    );
+
+    expect(wrapper.findComponent(ExternalResourcesList).props("editable")).toBe(
+      false,
+    );
+    expect(
+      wrapper.findComponent(ExternalResourcesList).props("modelValue"),
+    ).toEqual(projectMetadata2!.links);
+
+    expect(wrapper.findComponent(MetadataTags).props("editable")).toBe(false);
+    expect(wrapper.findComponent(MetadataTags).props("modelValue")).toEqual(
+      projectMetadata2!.tags,
+    );
+  });
+
+  it("should save content before unmount", async () => {
+    const { wrapper } = doMount();
+
+    await startEdit(wrapper);
+
+    modifyContent(wrapper);
+
+    expect(wrapper.emitted("save")).toBeUndefined();
+
+    wrapper.unmount();
+
+    expect(wrapper.emitted("save")![0][0]).toEqual({
+      description: {
+        contentType: TypedText.ContentTypeEnum.Plain,
+        value: "<p>This is a new description</>",
+      },
+      links: [{ text: "link3", url: "://link3.com" }],
+      tags: ["new tag"],
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
+    });
+  });
+
+  it("should not allow edit if workflow is not writable", () => {
+    const { wrapper } = doMount({ props: { isWorkflowWritable: false } });
+
+    expect(wrapper.find("[data-test-id='edit-button']").exists()).toBe(false);
+  });
+
+  it("should exit edit when a single metanode gets selected and there are no changes", async () => {
+    const { wrapper } = doMount();
+
+    await startEdit(wrapper);
+
+    expect(wrapper.find("[data-test-id='cancel-edit-button']").exists()).toBe(
+      true,
+    );
+
+    await wrapper.setProps({ singleMetanodeSelectedId: "root:something" });
+    expect(wrapper.find("[data-test-id='cancel-edit-button']").exists()).toBe(
+      false,
+    );
+    expect(wrapper.emitted("save")).toBeUndefined();
+  });
+
+  it("should save content when a single metanode gets selected", async () => {
+    const { wrapper } = doMount();
+
+    await startEdit(wrapper);
+
+    modifyContent(wrapper);
+
+    await wrapper.setProps({ singleMetanodeSelectedId: "root:something" });
+
+    expect(wrapper.emitted("save")![0][0]).toEqual({
+      description: {
+        contentType: TypedText.ContentTypeEnum.Plain,
+        value: "<p>This is a new description</>",
+      },
+      links: [{ text: "link3", url: "://link3.com" }],
+      tags: ["new tag"],
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
+    });
+  });
+
+  it("should save only valid data on click-away", async () => {
+    const workflow2 = createWorkflow({
+      projectMetadata: {
+        description: {
+          value: "This is the description of the 2nd workflow",
+          contentType: TypedText.ContentTypeEnum.Plain,
         },
-        // @ts-ignore
-        projectId: "project1",
-      });
+        links: [{ text: "WF2 link1", url: "http://link2.com" }],
+        tags: ["tag3", "tag4"],
+      },
+      projectId: "project2",
+    });
 
-      const customWorkflow2 = createWorkflow({
-        projectMetadata: {
-          description: {
-            value: "This is the description of the 2nd workflow",
-            contentType: TypedText.ContentTypeEnum.Plain,
-          },
-          links: [{ text: "WF2 link1", url: "http://link2.com" }],
-          tags: ["tag3", "tag4"],
-        },
-        // @ts-ignore
-        projectId: "project2",
-      });
+    const { wrapper } = doMount();
 
-      const { wrapper, $store } = doMount({ customWorkflow: customWorkflow1 });
+    await startEdit(wrapper);
 
-      await wrapper.find("[data-test-id='edit-button']").trigger("click");
+    modifyContent(wrapper, {
+      links: [{ text: "invalid", url: "somethinginvalid" }],
+    });
+    wrapper.findComponent(ExternalResourcesList).vm.$emit("valid", false);
 
-      const descriptionComponent = wrapper.findComponent(MetadataDescription);
-      const linksComponent = wrapper.findComponent(ExternalResourcesList);
-      const tagsComponent = wrapper.findComponent(MetadataTags);
+    // simulate clicking away and switching to another workflow
+    window.dispatchEvent(new Event("click"));
+    await wrapper.setProps({
+      projectId: workflow2.projectId,
+      workflowId: workflow2.info.containerId,
+      projectMetadata: workflow2.projectMetadata!,
+    });
 
-      expect(descriptionComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.description.value,
-      );
-      expect(linksComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.links,
-      );
-      expect(tagsComponent.props("modelValue")).toEqual(
-        customWorkflow1.projectMetadata.tags,
-      );
-
-      // update description
-      descriptionComponent.vm.$emit(
-        "update:modelValue",
-        "<p>This is an updated description for workflow1</>",
-      );
-
-      // update links
-      linksComponent.vm.$emit("update:modelValue", [
-        { text: "link3", url: "://link3.com" },
-      ]);
-
-      // update tags
-      tagsComponent.vm.$emit("update:modelValue", ["new tag"]);
-
-      // switch to workflow 2
-      $store.commit("workflow/setActiveWorkflow", customWorkflow2);
-      await nextTick();
-
-      expect(window.confirm).toHaveBeenCalled();
-      expect(wrapper.emitted("save")).toBeUndefined();
-
-      // switch back to workflow 1
-      $store.commit("workflow/setActiveWorkflow", customWorkflow1);
-      await nextTick();
-
-      expect(wrapper.find('button[title="Edit metadata"]').exists()).toBe(true);
-      expect(wrapper.find('button[title="Save metadata"]').exists()).toBe(
-        false,
-      );
+    expect(wrapper.emitted("save")![0][0]).toEqual({
+      description: {
+        contentType: TypedText.ContentTypeEnum.Plain,
+        value: "<p>This is a new description</>",
+      },
+      links: defaultProps.projectMetadata.links,
+      tags: ["new tag"],
+      projectId: defaultProps.projectId,
+      workflowId: defaultProps.workflowId,
     });
   });
 });
