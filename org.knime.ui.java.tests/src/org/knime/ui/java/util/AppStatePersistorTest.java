@@ -49,13 +49,16 @@
 package org.knime.ui.java.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.knime.ui.java.util.MostRecentlyUsedProjectsTest.createOrigin;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
@@ -66,6 +69,7 @@ import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
 /**
  * Tests methods in {@link AppStatePersistor}.
@@ -87,6 +91,29 @@ public class AppStatePersistorTest {
                 }
               } ]
             }""".formatted(KNIMEConstants.VERSION);
+
+    private static final String VALID_APP_STATE_WITH_RECENTLY_USED_PROJECTS = """
+            {
+              "version" : "%s",
+              "projects" : [ ],
+              "mostRecentlyUsedProjects" : [ {
+                "name" : "name1",
+                "timeUsed" : "%s",
+                "origin" : {
+                  "providerId" : "pid",
+                  "spaceId" : "sid",
+                  "relativePath" : "relPath"
+                }
+              }, {
+                "name" : "name2",
+                "timeUsed" : "%s",
+                "origin" : {
+                  "providerId" : "pid",
+                  "spaceId" : "sid",
+                  "itemId" : "iid2"
+                }
+              } ]
+            }""".formatted(KNIMEConstants.VERSION, OffsetDateTime.MAX, OffsetDateTime.MAX);
 
     private static final String VALID_APP_STATE_WITHOUT_PROJECT = """
             {
@@ -119,15 +146,16 @@ public class AppStatePersistorTest {
     @Test
     void testSaveAndLoadAppState() throws IOException {
         openWorkflowProject();
-        var appStateString = AppStatePersistor.serializeAppState();
+        var pm = ProjectManager.getInstance();
+        var mruProjects = new MostRecentlyUsedProjects();
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects);
         AppStatePersistor.saveAppState(appStateString);
         assertAppStateFile(VALID_APP_STATE_WITH_PROJECT);
 
-        var wpm = ProjectManager.getInstance();
-        wpm.getProjectIds().forEach(id -> wpm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
 
-        AppStatePersistor.loadAppState();
-        var appStateStringNew = AppStatePersistor.serializeAppState();
+        AppStatePersistor.loadAppState(pm, mruProjects);
+        var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects);
         assertThat(appStateStringNew).as("Assert the valid app state was saved and loaded").isEqualTo(appStateString);
     }
 
@@ -136,8 +164,10 @@ public class AppStatePersistorTest {
         AppStatePersistor.saveAppState(INVALID_APP_STATE_NO_RELATIVE_PATH);
         assertAppStateFile(INVALID_APP_STATE_NO_RELATIVE_PATH);
 
-        AppStatePersistor.loadAppState();
-        var appStateString = AppStatePersistor.serializeAppState();
+        var pm = ProjectManager.getInstance();
+        var mruProjcts = new MostRecentlyUsedProjects();
+        AppStatePersistor.loadAppState(pm, mruProjcts);
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjcts);
         assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
     }
 
@@ -146,20 +176,49 @@ public class AppStatePersistorTest {
         AppStatePersistor.saveAppState(INVALID_APP_STATE_NO_ORIGIN);
         assertAppStateFile(INVALID_APP_STATE_NO_ORIGIN);
 
-        AppStatePersistor.loadAppState();
-        var appStateString = AppStatePersistor.serializeAppState();
+        var pm = ProjectManager.getInstance();
+        var mruProjects = new MostRecentlyUsedProjects();
+        AppStatePersistor.loadAppState(pm, mruProjects);
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects);
         assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
+    }
+
+    @Test
+    void testSaveAndLoadAppStateWithMostRecentlyUsedProjects() throws IOException {
+        var pm = ProjectManager.getInstance();
+        var mruProjects = new MostRecentlyUsedProjects();
+        var proj1 = new RecentlyUsedProject("name1", createOrigin("pid", "sid", "iid", "relPath"), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+        mruProjects.add(proj1);
+        mruProjects.add(proj2);
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects);
+        AppStatePersistor.saveAppState(appStateString);
+        assertAppStateFile(VALID_APP_STATE_WITH_RECENTLY_USED_PROJECTS);
+
+        var loadedMrulProjects = new MostRecentlyUsedProjects();
+        AppStatePersistor.loadAppState(pm, loadedMrulProjects);
+        var localSpace = LocalSpaceUtil.getLocalWorkspace();
+        assertThat(loadedMrulProjects.get()).hasSize(2);
+        var loadedProj1 = loadedMrulProjects.get().get(0);
+        assertThat(loadedProj1.name()).isEqualTo("name1");
+        assertThat(loadedProj1.origin().getItemId())
+            .isEqualTo(localSpace.getItemId(localSpace.getLocalRootPath().resolve(Path.of("relPath"))));
+        assertThat(loadedProj1.origin().getRelativePath().get()).isEqualTo("relPath");
+        var loadedProj2 = loadedMrulProjects.get().get(1);
+        assertThat(loadedProj2.name()).isEqualTo("name2");
+        assertThat(loadedProj2.origin().getItemId()).isEqualTo("iid2");
+
     }
 
     @AfterEach
     void cleanUp() {
-        var wpm = ProjectManager.getInstance();
-        wpm.getProjectIds().forEach(id -> wpm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        var pm = ProjectManager.getInstance();
+        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
     }
 
     @SuppressWarnings("javadoc")
     public static void openWorkflowProject() {
-        var wpm = ProjectManager.getInstance();
+        var pm = ProjectManager.getInstance();
         var project = mock(Project.class);
         when(project.getID()).thenReturn("test_id");
         when(project.getName()).thenReturn("Test Project");
@@ -168,7 +227,7 @@ public class AppStatePersistorTest {
         when(origin.getProviderId()).thenReturn(SpaceProvider.LOCAL_SPACE_PROVIDER_ID);
         when(origin.getRelativePath()).thenReturn(Optional.of("a/relative/path"));
         when(project.getOrigin()).thenReturn(Optional.of(origin));
-        wpm.addProject(project);
+        pm.addProject(project);
     }
 
     @SuppressWarnings("javadoc")

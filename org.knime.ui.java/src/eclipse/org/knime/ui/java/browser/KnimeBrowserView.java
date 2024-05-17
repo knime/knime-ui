@@ -64,8 +64,6 @@ import org.knime.core.webui.WebUIUtil;
 import org.knime.js.cef.CEFUtils;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
-import org.knime.ui.java.util.AppStatePersistor;
-import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.WindowEvent;
@@ -165,12 +163,7 @@ public class KnimeBrowserView {
         LifeCycle.get().create((name, function) -> new KnimeBrowserFunction(browser, name, function));
 
         if (viewInitializer == null) {
-            viewInitializer = () -> { // NOSONAR
-                if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-                    AppStatePersistor.loadAppState();
-                }
-                initView(false, true);
-            };
+            viewInitializer = () -> initView(false, true);
         }
     }
 

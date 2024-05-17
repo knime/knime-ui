@@ -73,12 +73,15 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.EclipseUtil;
 import org.knime.core.util.HubStatistics;
 import org.knime.core.util.proxy.URLConnectionFactory;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.product.rcp.KNIMEApplication;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
+import org.knime.ui.java.util.AppStatePersistor;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
@@ -97,7 +100,7 @@ final class Create {
         //
     }
 
-    static void run(final BiConsumer<String, Consumer<Object[]>> apiFunctionCaller) {
+    static LifeCycleStateInternal run(final BiConsumer<String, Consumer<Object[]>> apiFunctionCaller) {
         // In order for the mechanism to block external requests to work (see CEFPlugin-class)
         // the resource handlers must be registered before the browser initialization
         initializeResourceHandlers();
@@ -135,9 +138,31 @@ final class Create {
         NodeRecommendationUpdater.checkForStatisticUpdates(false);
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
+
+        var projectManager = ProjectManager.getInstance();
+        var mostRecentlyUsedProjects = new MostRecentlyUsedProjects();
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             ProjectWorkflowMap.isActive = false;
+            AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects);
+        } else {
+            // only load the most recently used projects in case the classic UI is active
+            // since the project-manager itself is updated on switch
+            AppStatePersistor.loadAppState(null, mostRecentlyUsedProjects);
         }
+
+        return new LifeCycleStateInternal() {
+
+            @Override
+            public ProjectManager getProjectManager() {
+                return projectManager;
+            }
+
+            @Override
+            public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
+                return mostRecentlyUsedProjects;
+            }
+
+        };
     }
 
     private static void callWelcomeAPEndpoint() {

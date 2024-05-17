@@ -71,6 +71,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.ProjectFactory;
 import org.knime.workbench.core.imports.RepoObjectImport;
@@ -180,13 +181,14 @@ final class OpenProject {
             return;
         }
 
+        DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(projectAndWfm.project);
         registerProjectAndSetActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }
 
     private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
         final WorkflowType wfType) {
-        var pm = ProjectManager.getInstance();
+        var pm = DesktopAPI.getDeps(ProjectManager.class);
         pm.addProject(project);
         pm.setProjectActive(project.getID());
         // instrumentation
@@ -205,7 +207,7 @@ final class OpenProject {
     private static ProjectAndWorkflowManager getAndUpdateWorkflowServiceProject(final Space space,
         final String spaceProviderId, final String spaceId, final String itemId, final ProjectTypeEnum projectType) {
         if (space instanceof LocalWorkspace localSpace) {
-            var pm = ProjectManager.getInstance();
+            var pm = DesktopAPI.getDeps(ProjectManager.class);
             var path = localSpace.toLocalAbsolutePath(new ExecutionMonitor(), itemId).orElse(null);
             var project = WorkflowServiceProjects.getProject(path).flatMap(pm::getProject).orElse(null);
             if (project != null) {

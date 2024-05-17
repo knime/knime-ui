@@ -44,86 +44,53 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 16, 2023 (hornm): created
+ *   Jan 26, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.lifecycle;
 
 import java.util.function.IntSupplier;
 
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.Workbench;
-import org.knime.ui.java.util.AppStatePersistor;
-import org.knime.ui.java.util.PerspectiveUtil;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 /**
- * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
+ * Implementation of {@link LifeCycleStateInternal} that 'adapts' the wrapped life-cycle-state and delegates the calls
+ * to it. Allows subclasses to just selectively overwrite respective methods.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-@SuppressWarnings("restriction")
-final class SaveState {
+class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
 
-    private SaveState() {
-        //
+    private final LifeCycleStateInternal m_lifeCycleStateInternal;
+
+    LifeCycleStateInternalAdapter(final LifeCycleStateInternal lifeCycleStateInternal) {
+        m_lifeCycleStateInternal = lifeCycleStateInternal;
     }
 
-    static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean forShutdown)
-        throws StateTransitionAbortedException {
-        IntSupplier saveAndCloseAllWorkflows;
-        boolean workflowsSaved;
-        var serializedAppState = // NOSONAR
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            saveAndCloseAllWorkflows = null;
-            workflowsSaved = !forShutdown || saveAndCloseClassicWorkbenchEditors();
-        } else {
-            saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-            final var saveState = saveAndCloseAllWorkflows.getAsInt();
-            if (saveState == 0) {
-                // saving has been cancelled
-                throw new StateTransitionAbortedException();
-            }
-            workflowsSaved = saveState == 1;
-        }
-
-        return new LifeCycleStateInternalAdapter(state) {
-
-            @Override
-            public boolean workflowsSaved() {
-                return workflowsSaved;
-            }
-
-            @Override
-            public IntSupplier saveAndCloseAllWorkflows() {
-                return saveAndCloseAllWorkflows;
-            }
-
-            @Override
-            public String serializedAppState() {
-                return serializedAppState;
-            }
-
-        };
+    @Override
+    public IntSupplier saveAndCloseAllWorkflows() {
+        return m_lifeCycleStateInternal.saveAndCloseAllWorkflows();
     }
 
-    /**
-     * Tries to close all editors in the Classic perspective, asking the user to save them if applicable.
-     *
-     * @return {@code true} if all editors have been closed, {@code false} otherwise
-     */
-    private static boolean saveAndCloseClassicWorkbenchEditors() {
-        final var workbench = (Workbench)PlatformUI.getWorkbench();
-        final var window = workbench.getActiveWorkbenchWindow();
+    @Override
+    public String serializedAppState() {
+        return m_lifeCycleStateInternal.serializedAppState();
+    }
 
-        var allEditorsClosed = true;
-        if (window != null) {
-            for (var page : window.getPages()) {
-                if (!page.closeAllEditors(true)) {
-                    allEditorsClosed = false;
-                }
-            }
-        }
-        return allEditorsClosed;
+    @Override
+    public IJobChangeListener getJobChangeListener() {
+        return m_lifeCycleStateInternal.getJobChangeListener();
+    }
+
+    @Override
+    public ProjectManager getProjectManager() {
+        return m_lifeCycleStateInternal.getProjectManager();
+    }
+
+    @Override
+    public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
+        return m_lifeCycleStateInternal.getMostRecentlyUsedProjects();
     }
 
 }

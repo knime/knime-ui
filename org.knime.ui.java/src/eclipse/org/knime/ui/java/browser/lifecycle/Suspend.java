@@ -77,7 +77,7 @@ final class Suspend {
         KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
-        return new LifeCycleStateInternal() {
+        return new LifeCycleStateInternalAdapter(state) {
 
             @Override
             public String serializedAppState() {

@@ -52,6 +52,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collector;
@@ -63,8 +65,10 @@ import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,7 +97,11 @@ public final class AppStatePersistor {
 
     private static final String PROJECTS = "projects";
 
+    private static final String MRU_PROJECTS = "mostRecentlyUsedProjects";
+
     private static final String ORIGIN = "origin";
+
+    private static final String ITEM_ID = "itemId";
 
     private static final String SPACE_ID = "spaceId";
 
@@ -103,40 +111,71 @@ public final class AppStatePersistor {
 
     private static final String NAME = "name";
 
+    private static final String TIME_USED = "timeUsed";
+
     private AppStatePersistor() {
         // utility
     }
 
     /**
+     * @param pm supplies the projects to serialize
+     * @param mruProjects supplies the recently used projects to serialize
      * @return a string representing the app state
      */
-    public static String serializeAppState() {
-        var wpm = ProjectManager.getInstance();
-        var projectsJson =
-            wpm.getProjectIds().stream().map(id -> wpm.getProject(id).orElse(null)).filter(Objects::nonNull) //
-                // only persist local workflow projects
-                .filter(wp -> wp.getOrigin().map(o -> o.getProviderId().equals(SpaceProvider.LOCAL_SPACE_PROVIDER_ID))
-                    .orElse(Boolean.FALSE)) //
-                .map(wp -> serializeWorkflowProject(wpm, wp)) //
-                .collect(Collector.of(MAPPER::createArrayNode, (n, j) -> n.addPOJO(j), (n1, n2) -> {
-                    throw new UnsupportedOperationException();
-                }));
-        return MAPPER.createObjectNode().put(VERSION, KNIMEConstants.VERSION).set(PROJECTS, projectsJson)
-            .toPrettyString();
+    public static String serializeAppState(final ProjectManager pm, final MostRecentlyUsedProjects mruProjects) {
+        var projectsJson = serializeProjects(pm);
+        var mruProjectsJson = serializeMRUProjects(mruProjects);
+        var res = MAPPER.createObjectNode().put(VERSION, KNIMEConstants.VERSION);
+        res.set(PROJECTS, projectsJson);
+        if (!mruProjectsJson.isEmpty()) {
+            res.set(MRU_PROJECTS, mruProjectsJson);
+        }
+        return res.toPrettyString();
     }
 
-    private static ObjectNode serializeWorkflowProject(final ProjectManager wpm, final Project wp) {
+    private static ArrayNode serializeProjects(final ProjectManager pm) {
+        return pm.getProjectIds().stream().map(id -> pm.getProject(id).orElse(null)).filter(Objects::nonNull) //
+            // only persist local workflow projects
+            .filter(wp -> wp.getOrigin().map(o -> o.getProviderId().equals(SpaceProvider.LOCAL_SPACE_PROVIDER_ID))
+                .orElse(Boolean.FALSE)) //
+            .map(wp -> serializeProject(pm, wp)) //
+            .collect(arrayNodeCollector());
+    }
+
+    private static ObjectNode serializeProject(final ProjectManager pm, final Project wp) {
         var projectJson = MAPPER.createObjectNode() //
             .put(NAME, wp.getName()) //
-            .put(ACTIVE, wpm.isActiveProject(wp.getID()));
-        wp.getOrigin().ifPresent(origin -> {
-            var originJson = MAPPER.createObjectNode() //
-                .put(PROVIDER_ID, origin.getProviderId()) //
-                .put(SPACE_ID, origin.getSpaceId());
-            origin.getRelativePath().ifPresent(p -> originJson.put(RELATIVE_PATH, p));
-            projectJson.set(ORIGIN, originJson);
-        });
+            .put(ACTIVE, pm.isActiveProject(wp.getID()));
+        wp.getOrigin().ifPresent(origin -> projectJson.set(ORIGIN, serializeOrigin(origin)));
         return projectJson;
+    }
+
+    private static ArrayNode serializeMRUProjects(final MostRecentlyUsedProjects mruProjects) {
+        return mruProjects.get().stream().map(AppStatePersistor::serializeRUProject) //
+            .collect(arrayNodeCollector());
+    }
+
+    private static ObjectNode serializeRUProject(final RecentlyUsedProject project) {
+        var projectJson = MAPPER.createObjectNode() //
+            .put(NAME, project.name()) //
+            .put(TIME_USED, project.timeUsed().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        projectJson.set(ORIGIN, serializeOrigin(project.origin()));
+        return projectJson;
+    }
+
+    private static JsonNode serializeOrigin(final Origin origin) {
+        var originJson = MAPPER.createObjectNode() //
+            .put(PROVIDER_ID, origin.getProviderId()) //
+            .put(SPACE_ID, origin.getSpaceId());
+        origin.getRelativePath().ifPresentOrElse(p -> originJson.put(RELATIVE_PATH, p),
+            () -> originJson.put(ITEM_ID, origin.getItemId()));
+        return originJson;
+    }
+
+    private static Collector<Object, ArrayNode, ArrayNode> arrayNodeCollector() {
+        return Collector.of(MAPPER::createArrayNode, ArrayNode::addPOJO, (n1, n2) -> {
+            throw new UnsupportedOperationException();
+        });
     }
 
     /**
@@ -156,8 +195,11 @@ public final class AppStatePersistor {
 
     /**
      * Loads the app state from a file and registers the opened workflow projects with the {@link ProjectManager}.
+     *
+     * @param pm
+     * @param mruProjects
      */
-    public static void loadAppState() {
+    public static void loadAppState(final ProjectManager pm, final MostRecentlyUsedProjects mruProjects) {
         if (!Files.exists(APP_STATE_FILE)) {
             return;
         }
@@ -168,42 +210,45 @@ public final class AppStatePersistor {
             LOGGER.error("Failed to load the app state", e);
             return;
         }
+        if (pm != null) {
+            deserializeProjects(appStateJson, pm);
+        }
+        if (mruProjects != null) {
+            deserializeMRUProjects(appStateJson, mruProjects);
+        }
+    }
+
+    /**
+     * @param appStateJson
+     */
+    private static void deserializeProjects(final JsonNode appStateJson, final ProjectManager pm) {
         var projectsJson = (ArrayNode)appStateJson.get(PROJECTS);
-        var wpm = ProjectManager.getInstance();
         for (var projectJson : projectsJson) {
             if (!hasOriginAndRelativePath(projectJson)) {
                 continue; // Skips the project if no origin or relative path were persisted
             }
-            var project = createWorkflowProject(projectJson);
+            var project = deserializeProject(projectJson);
             var projectId = project.getID();
-            wpm.addProject(project);
+            pm.addProject(project);
             if (projectJson.get(ACTIVE).asBoolean()) {
-                var wfm = wpm.openAndCacheProject(projectId).orElse(null);
+                var wfm = pm.openAndCacheProject(projectId).orElse(null);
                 if (wfm != null) {
-                    wpm.setProjectActive(projectId);
+                    pm.setProjectActive(projectId);
                     NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
                 } else {
-                    wpm.removeProject(projectId, w -> {});
+                    pm.removeProject(projectId, w -> {
+                    });
                 }
             }
         }
     }
 
-    private static boolean hasOriginAndRelativePath(final JsonNode projectJson) {
-        if (!projectJson.has(ORIGIN)) {
-            return false;
-        }
-        return projectJson.get(ORIGIN).has(RELATIVE_PATH);
-    }
-
-    private static Project createWorkflowProject(final JsonNode projectJson) {
-        var relativePath = Path.of(projectJson.get(ORIGIN).get(RELATIVE_PATH).asText());
-        assert !relativePath.isAbsolute();
-        var localSpace = LocalSpaceUtil.getLocalWorkspace();
-        var absolutePath = localSpace.getLocalRootPath().resolve(relativePath);
+    private static Project deserializeProject(final JsonNode projectJson) {
         var name = projectJson.get(NAME).asText();
         var projectId = LocalSpaceUtil.getUniqueProjectId(name);
-        var itemId = localSpace.getItemId(absolutePath);
+        var origin = deserializeOrigin(projectJson.get(ORIGIN));
+        var localSpace = LocalSpaceUtil.getLocalWorkspace();
+        var absolutePath = localSpace.getLocalRootPath().resolve(origin.getRelativePath().orElseThrow());
         return new Project() { // NOSONAR
 
             @Override
@@ -218,36 +263,7 @@ public final class AppStatePersistor {
 
             @Override
             public Optional<Origin> getOrigin() {
-                var originJson = projectJson.get(ORIGIN);
-                return Optional.of(new Origin() { // NOSONAR
-
-                    @Override
-                    public String getSpaceId() {
-                        return originJson.get(SPACE_ID).asText();
-                    }
-
-                    @Override
-                    public String getProviderId() {
-                        return originJson.get(PROVIDER_ID).asText();
-                    }
-
-                    @Override
-                    public String getItemId() {
-                        return itemId;
-                    }
-
-                    @Override
-                    public Optional<String> getRelativePath() {
-                        return Optional.of(originJson.get(RELATIVE_PATH).asText());
-                    }
-
-                    @Override
-                    public ProjectTypeEnum getProjectType() {
-                        // project type might not be available in the rare case that the workflow at the
-                        // given absolute path doesn't exist anymore
-                        return localSpace.getProjectType(itemId).orElse(null);
-                    }
-                });
+                return Optional.of(origin);
             }
 
             @Override
@@ -258,13 +274,83 @@ public final class AppStatePersistor {
                     return null;
                 }
                 return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
-                    var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, itemId, monitor);
+                    var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.getItemId(), monitor);
                     if (wfm == null) {
                         DesktopAPUtil.showWarning("Failed to load workflow",
                             "The workflow at '" + absolutePath + "' couldn't be loaded.");
                     }
                     return wfm;
                 }).orElse(null);
+            }
+        };
+    }
+
+    private static boolean hasOriginAndRelativePath(final JsonNode projectJson) {
+        if (!projectJson.has(ORIGIN)) {
+            return false;
+        }
+        return projectJson.get(ORIGIN).has(RELATIVE_PATH);
+    }
+
+    private static void deserializeMRUProjects(final JsonNode appStateJson,
+        final MostRecentlyUsedProjects mruProjects) {
+        var projectsJson = (ArrayNode)appStateJson.get(MRU_PROJECTS);
+        if (projectsJson == null) {
+            return;
+        }
+        for (var projectJson : projectsJson) {
+            mruProjects.add(deserializeMRUProject(projectJson));
+        }
+    }
+
+    private static RecentlyUsedProject deserializeMRUProject(final JsonNode projectJson) {
+        return new RecentlyUsedProject(projectJson.get(NAME).asText(), deserializeOrigin(projectJson.get(ORIGIN)),
+            OffsetDateTime.parse(projectJson.get(TIME_USED).asText(), DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+    }
+
+    private static Origin deserializeOrigin(final JsonNode originJson) {
+        String itemId;
+        var relativePath = Optional.ofNullable(originJson.get(RELATIVE_PATH)).map(JsonNode::asText);
+        var isLocal = relativePath.isPresent();
+        if (isLocal) {
+            // relative path only given for local projects
+            var localSpace = LocalSpaceUtil.getLocalWorkspace();
+            var absolutePath = localSpace.getLocalRootPath().resolve(Path.of(relativePath.get()));
+            itemId = localSpace.getItemId(absolutePath);
+        } else {
+            itemId = originJson.get(ITEM_ID).asText();
+        }
+        return new Origin() { // NOSONAR
+
+            @Override
+            public String getSpaceId() {
+                return originJson.get(SPACE_ID).asText();
+            }
+
+            @Override
+            public String getProviderId() {
+                return originJson.get(PROVIDER_ID).asText();
+            }
+
+            @Override
+            public String getItemId() {
+                return itemId;
+            }
+
+            @Override
+            public Optional<String> getRelativePath() {
+                return relativePath;
+            }
+
+            @Override
+            public ProjectTypeEnum getProjectType() {
+                // project type might not be available in the rare case that the workflow at the
+                // given absolute path doesn't exist anymore
+                if (isLocal) {
+                    return LocalSpaceUtil.getLocalWorkspace().getProjectType(itemId).orElse(null);
+                } else {
+                    return null;
+                }
             }
         };
     }

@@ -72,6 +72,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProjectFactory;
 
 /**
@@ -95,8 +96,9 @@ class OpenProjectTest {
         var appStateUpdater = new AppStateUpdater();
         var appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
+        var mruProjects = new MostRecentlyUsedProjects();
         DesktopAPI.injectDependencies(ProjectManager.getInstance(), appStateUpdater, spaceProviders, null,
-            eventConsumer, null, null, null);
+            eventConsumer, null, null, null, mruProjects);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
         OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
@@ -109,6 +111,8 @@ class OpenProjectTest {
         m_wfm = project.loadWorkflowManager();
         assertThat(m_wfm).isNotNull();
         assertThat(m_wfm.getName()).startsWith("simple");
+        assertThat(mruProjects.get()).hasSize(1);
+        assertThat(mruProjects.get().get(0).name()).isEqualTo("simple");
 
         verify(appStateUpdateListener).run();;
     }

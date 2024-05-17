@@ -49,8 +49,10 @@
 package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.knime.ui.java.util.MostRecentlyUsedProjectsTest.createOrigin;
 
 import java.io.IOException;
+import java.time.OffsetDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +60,8 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 import org.knime.ui.java.util.ProjectFactory;
 
 /**
@@ -82,9 +86,57 @@ class ProjectAPITest {
         assertThat(wpm.isActiveProject("projectId")).isTrue();
     }
 
+    @Test
+    void testUpdateAndGetMostRecentlyUsedProjects() {
+        var mruProjects = new MostRecentlyUsedProjects();
+        var proj1 =
+            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid", "relPath"), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+        var proj3 =
+            new RecentlyUsedProject("name2", createOrigin("local", "local", "iid3", "relPath2"), OffsetDateTime.MAX);
+        mruProjects.add(proj1);
+        mruProjects.add(proj2);
+        mruProjects.add(proj3);
+
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects);
+
+        var res = ProjectAPI.updateAndGetMostRecentlyUsedProjects();
+        assertThat(res).isEqualTo(String.format("""
+                [ {
+                  "name" : "name2",
+                  "timeUsed" : "%s",
+                  "origin" : {
+                    "providerId" : "pid",
+                    "spaceId" : "sid",
+                    "itemId" : "iid2"
+                  }
+                } ]""", OffsetDateTime.MAX));
+        assertThat(mruProjects.get()).hasSize(1);
+    }
+
+    @Test
+    void testRemoveMostRecentlyUsedProject() {
+        var mruProjects = new MostRecentlyUsedProjects();
+        var proj1 =
+            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid", "relPath"), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+        mruProjects.add(proj1);
+        mruProjects.add(proj2);
+
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects);
+
+        ProjectAPI.removeMostRecentlyUsedProject("pidblub", "sid", "iid2");
+        assertThat(mruProjects.get()).hasSize(2);
+
+        ProjectAPI.removeMostRecentlyUsedProject("pid", "sid", "iid2");
+        assertThat(mruProjects.get()).hasSize(1);
+        assertThat(mruProjects.get().get(0).name()).isEqualTo("name1");
+    }
+
     @AfterEach
     void cleanUp() {
         ProjectManager.getInstance().removeProject("projectId", WorkflowManagerUtil::disposeWorkflow);
+        DesktopAPI.disposeDependencies();
     }
 
 }

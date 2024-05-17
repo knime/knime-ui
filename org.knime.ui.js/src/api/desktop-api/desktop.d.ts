@@ -196,3 +196,11 @@ declare function openWorkflowConfiguration(projectId: string): void;
 declare function setZoomLevel(zoomLevel: number): void;
 
 declare function setConfirmNodeConfigChangesPreference(value: boolean): void;
+
+declare function updateAndGetMostRecentlyUsedProjects(): string;
+
+declare function removeMostRecentlyUsedProject(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+): void;

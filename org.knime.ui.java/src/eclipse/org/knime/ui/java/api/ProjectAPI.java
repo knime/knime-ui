@@ -48,8 +48,13 @@
  */
 package org.knime.ui.java.api;
 
+import static org.knime.ui.java.api.DesktopAPI.MAPPER;
+
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.stream.Collector;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -59,12 +64,18 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
+import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
@@ -209,17 +220,75 @@ final class ProjectAPI {
      */
     @API
     static void openWorkflowConfiguration(final String projectId) {
-        final var projectWfm = ProjectManager.getInstance().openAndCacheProject(projectId).orElseThrow();
+        final var projectWfm = DesktopAPI.getDeps(ProjectManager.class).openAndCacheProject(projectId).orElseThrow();
         try {
             var dialog = new WrappedNodeDialog(Display.getDefault().getActiveShell(),
-                    WorkflowManagerWrapper.wrap(projectWfm), null, null);
+                WorkflowManagerWrapper.wrap(projectWfm), null, null);
             dialog.setBlockOnOpen(true);
             dialog.open();
         } catch (final NotConfigurableException exception) {
             MessageDialog.openError( //
-                    Display.getDefault().getActiveShell(), //
-                    "Workflow not configurable", //
-                    "This workflow cannot be configured: " + exception.getMessage());
+                Display.getDefault().getActiveShell(), //
+                "Workflow not configurable", //
+                "This workflow cannot be configured: " + exception.getMessage());
         }
     }
+
+    /**
+     * Updates the list of most recently used projects (i.e. removes non-existing ones, at least for the local space)
+     * and returns the updated list.
+     *
+     * @return json-serialized list of the recently used projects with the most recently used one at the bottom
+     */
+    @API
+    static String updateAndGetMostRecentlyUsedProjects() {
+        var mruProjects = DesktopAPI.getDeps(MostRecentlyUsedProjects.class);
+        var localSpace = LocalSpaceUtil.getLocalWorkspace();
+        mruProjects.removeIf(p -> wasRemovedFromLocalSpace(p.origin(), localSpace));
+        return mruProjects.get().stream() //
+            .map(p -> MAPPER.createObjectNode() //
+                .put("name", p.name()) //
+                .put("timeUsed", p.timeUsed().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)) //
+                .set("origin", MAPPER.createObjectNode() //
+                    .put("providerId", p.origin().getProviderId()) //
+                    .put("spaceId", p.origin().getSpaceId()) //
+                    .put("itemId", p.origin().getItemId()))) //
+            .collect(arrayNodeCollector()).toPrettyString();
+    }
+
+    private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalWorkspace localSpace) {
+        if (LocalSpaceUtil.isLocalSpace(origin.getProviderId(), origin.getSpaceId())) {
+            try {
+                localSpace.getItemName(origin.getItemId());
+                return false;
+            } catch (NoSuchElementException e) { // NOSONAR
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Removes the project with the given origin from the list of most recently used projects.
+     *
+     * @param spacePoviderId
+     * @param spaceId
+     * @param itemId
+     */
+    @API
+    static void removeMostRecentlyUsedProject(final String spacePoviderId, final String spaceId, final String itemId) {
+        DesktopAPI.getDeps(MostRecentlyUsedProjects.class).removeIf(p -> {
+            var origin = p.origin();
+            return origin.getItemId().equals(itemId) && origin.getSpaceId().equals(spaceId)
+                && origin.getProviderId().equals(spacePoviderId);
+        });
+    }
+
+    private static Collector<Object, ArrayNode, ArrayNode> arrayNodeCollector() {
+        return Collector.of(MAPPER::createArrayNode, ArrayNode::addPOJO, (n1, n2) -> {
+            throw new UnsupportedOperationException();
+        });
+    }
+
 }

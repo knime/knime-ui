@@ -73,7 +73,6 @@ import org.knime.gateway.api.util.ExtPointUtil;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ExampleProjects;
 import org.knime.gateway.impl.webui.NodeCollections;
@@ -122,9 +121,9 @@ final class Init {
         //
     }
 
-    static LifeCycleStateInternal run(final boolean checkForUpdates) {
+    static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
         // Create and set default service dependencies
-        var projectManager = ProjectManager.getInstance();
+        var projectManager = state.getProjectManager();
         var spaceProviders = createSpaceProviders();
         var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
         var appStateUpdater = new AppStateUpdater();
@@ -141,18 +140,18 @@ final class Init {
             createNodeFactoryProvider(), kaiHandler, nodeCollections, nodeRepo);
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
-            eventConsumer, workflowMiddleware, toastService, nodeRepo);
+            eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects());
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 
         registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer, nodeCollections, nodeRepo);
 
-        return new LifeCycleStateInternal() {
+        return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
             @Override
             public IntSupplier saveAndCloseAllWorkflows() {
                 return () -> {
-                    var projectIds = ProjectManager.getInstance().getProjectIds();
+                    var projectIds = projectManager.getProjectIds();
                     return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer,
                         PostProjectCloseAction.SHUTDOWN);
                 };
@@ -162,6 +161,7 @@ final class Init {
             public IJobChangeListener getJobChangeListener() {
                 return listener;
             }
+
         };
 
     }

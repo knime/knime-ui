@@ -52,7 +52,9 @@ import java.util.function.IntSupplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
+import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 /**
  * Life-cycle-state only available to the state-transitions (within this package).
@@ -83,5 +85,15 @@ public interface LifeCycleStateInternal extends LifeCycleState {
     default IJobChangeListener getJobChangeListener() {
         return null;
     }
+
+    /**
+     * @return project manager instance to be passed between life cycle phases
+     */
+    ProjectManager getProjectManager();
+
+    /**
+     * @return most recently used projects to be passed between life cycle phases
+     */
+    MostRecentlyUsedProjects getMostRecentlyUsedProjects();
 
 }

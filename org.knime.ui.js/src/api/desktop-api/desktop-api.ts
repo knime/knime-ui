@@ -2,11 +2,11 @@
 import { isBrowser } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 
-import type {
-  SpaceProviderId,
-  SpaceId,
-  FullSpacePath,
-  SpaceItemId,
+import {
+  type SpaceProviderId,
+  type SpaceId,
+  type FullSpacePath,
+  type SpaceItemId,
   SpaceProviderNS,
 } from "../custom-types";
 
@@ -742,6 +742,30 @@ export const setConfirmNodeConfigChangesPreference = (value: boolean) => {
     [value],
     "Could not set preference",
     true,
+    { block: false },
+  );
+};
+
+export const updateAndGetMostRecentlyUsedProjects = () => {
+  return callBrowserFunction(
+    window.updateAndGetMostRecentlyUsedProjects,
+    [],
+    "Failed to fetch most recently used projects",
+    true,
+    { block: false },
+  );
+};
+
+export const removeMostRecentlyUsedProject = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+}: SpaceProviderId & SpaceId & SpaceItemId) => {
+  return callBrowserFunction(
+    window.removeMostRecentlyUsedProject,
+    [spaceProviderId, spaceId, itemId],
+    "Failed to remove most recently used project",
+    false,
     { block: false },
   );
 };

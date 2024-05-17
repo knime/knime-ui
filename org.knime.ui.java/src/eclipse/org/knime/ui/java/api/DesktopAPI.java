@@ -68,6 +68,7 @@ import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -187,12 +188,14 @@ public final class DesktopAPI {
      * @param workflowMiddleware
      * @param toastService
      * @param nodeRepo
+     * @param mruProjects
      * @throws IllegalStateException if the dependencies have been already injected
      */
     public static void injectDependencies(final ProjectManager workflowProjectManager,
         final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
-        final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo) {
+        final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
+        final MostRecentlyUsedProjects mruProjects) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -207,6 +210,7 @@ public final class DesktopAPI {
         if (updateStateProvider != null) {
             dependencies.put(UpdateStateProvider.class, updateStateProvider);
         }
+        dependencies.put(MostRecentlyUsedProjects.class, mruProjects);
     }
 
     /**

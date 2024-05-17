@@ -99,7 +99,7 @@ public final class LifeCycle {
         }
     }
 
-    private static LifeCycle instance = null;
+    private static LifeCycle instance;
 
     /**
      * @return the singleton lifecycle-instance
@@ -121,9 +121,9 @@ public final class LifeCycle {
         }
     };
 
-    private LifeCycleStateInternal m_state = null;
+    private LifeCycleStateInternal m_state;
 
-    private StateTransition m_lastStateTransition = null;
+    private StateTransition m_lastStateTransition;
 
     private LifeCycle() {
         // singleton
@@ -142,7 +142,8 @@ public final class LifeCycle {
      * @param apiFunctionCaller consumer that takes care of calling the API-functions
      */
     public void create(final BiConsumer<String, Consumer<Object[]>> apiFunctionCaller) {
-        doStateTransition(StateTransition.CREATE, () -> Create.run(apiFunctionCaller), StateTransition.STARTUP);
+        doStateTransition(StateTransition.CREATE, () -> m_state = Create.run(apiFunctionCaller),
+            StateTransition.STARTUP);
     }
 
     /**
@@ -160,7 +161,7 @@ public final class LifeCycle {
      * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
     public void init(final boolean checkForUpdates) {
-        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(checkForUpdates),
+        doStateTransition(StateTransition.INIT, () -> m_state = Init.run(m_state, checkForUpdates),
             StateTransition.CREATE, StateTransition.SUSPEND);
     }
 

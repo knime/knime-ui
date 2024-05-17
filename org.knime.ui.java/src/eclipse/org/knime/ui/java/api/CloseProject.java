@@ -91,9 +91,9 @@ final class CloseProject {
             return closeProjectViaClassicUI(projectIdToClose, nextProjectId, true);
         } else {
             if (nextProjectId != null) {
-                var wpm = DesktopAPI.getDeps(ProjectManager.class);
-                wpm.openAndCacheProject(nextProjectId);
-                wpm.setProjectActive(nextProjectId);
+                var pm = DesktopAPI.getDeps(ProjectManager.class);
+                pm.openAndCacheProject(nextProjectId);
+                pm.setProjectActive(nextProjectId);
             }
             var success =
                 SaveAndCloseProjects.saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose),
