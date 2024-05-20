@@ -575,32 +575,8 @@ export interface AppStateChangedEventType extends EventType {
  * @export
  * @interface AutoConnectCommand
  */
-export interface AutoConnectCommand extends WorkflowCommand {
+export interface AutoConnectCommand extends ConnectablesBasedCommand {
 
-    /**
-     *
-     * @type {boolean}
-     * @memberof AutoConnectCommand
-     */
-    workflowInPortsBarSelected?: boolean;
-    /**
-     *
-     * @type {boolean}
-     * @memberof AutoConnectCommand
-     */
-    workflowOutPortsBarSelected?: boolean;
-    /**
-     *
-     * @type {Array<any>}
-     * @memberof AutoConnectCommand
-     */
-    selectedNodes: Array<any>;
-    /**
-     * Consider implicit flow variable ports.
-     * @type {boolean}
-     * @memberof AutoConnectCommand
-     */
-    flowVariablePortsOnly?: boolean;
 
 }
 
@@ -610,6 +586,23 @@ export interface AutoConnectCommand extends WorkflowCommand {
  * @namespace AutoConnectCommand
  */
 export namespace AutoConnectCommand {
+}
+/**
+ * Remove all connections among the selected workflow parts.
+ * @export
+ * @interface AutoDisconnectCommand
+ */
+export interface AutoDisconnectCommand extends ConnectablesBasedCommand {
+
+
+}
+
+
+/**
+ * @export
+ * @namespace AutoDisconnectCommand
+ */
+export namespace AutoDisconnectCommand {
 }
 /**
  *
@@ -924,6 +917,47 @@ export interface ConnectCommand extends WorkflowCommand {
  * @namespace ConnectCommand
  */
 export namespace ConnectCommand {
+}
+/**
+ * A selection of connectable workflow parts
+ * @export
+ * @interface ConnectablesBasedCommand
+ */
+export interface ConnectablesBasedCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {boolean}
+     * @memberof ConnectablesBasedCommand
+     */
+    workflowInPortsBarSelected?: boolean;
+    /**
+     *
+     * @type {boolean}
+     * @memberof ConnectablesBasedCommand
+     */
+    workflowOutPortsBarSelected?: boolean;
+    /**
+     *
+     * @type {Array<any>}
+     * @memberof ConnectablesBasedCommand
+     */
+    selectedNodes: Array<any>;
+    /**
+     * Consider only flow variable ports (including hidden/implicit).
+     * @type {boolean}
+     * @memberof ConnectablesBasedCommand
+     */
+    flowVariablePortsOnly?: boolean;
+
+}
+
+
+/**
+ * @export
+ * @namespace ConnectablesBasedCommand
+ */
+export namespace ConnectablesBasedCommand {
 }
 /**
  * A single connection between two nodes.
@@ -4267,6 +4301,7 @@ export namespace WorkflowCommand {
         Delete = 'delete',
         Connect = 'connect',
         AutoConnect = 'auto_connect',
+        AutoDisconnect = 'auto_disconnect',
         AddNode = 'add_node',
         ReplaceNode = 'replace_node',
         InsertNode = 'insert_node',
@@ -5278,7 +5313,7 @@ const workflow = function(rpcClient: RPCClient) {
         getWorkflowMonitorState(
         	params: { projectId: string  }
         ): Promise<WorkflowMonitorStateSnapshot> {
-           const defaultParams = {
+           const defaultParams = { 
            }
 
            return rpcClient.call('WorkflowService.getWorkflowMonitorState', { ...defaultParams, ...params });
@@ -5368,6 +5403,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 	},	
 
  	/**
+     * Remove all connections among the selected workflow parts.
+     */
+	AutoDisconnect(
+		params: { projectId: string, workflowId: string } & Omit<AutoDisconnectCommand, 'kind'>
+    ): Promise<unknown> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AutoDisconnect }
+		});
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
      * Automatically connects all the nodes / port bars selected.
      */
 	AutoConnect(
@@ -5380,7 +5430,7 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AutoConnect }
 		});
 		return postProcessCommandResponse(commandResponse);
-	},
+	},	
 
  	/**
      * Adds a new node to the workflow.
