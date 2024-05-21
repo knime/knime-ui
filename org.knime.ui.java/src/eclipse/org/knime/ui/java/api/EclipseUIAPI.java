@@ -51,6 +51,7 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -191,6 +192,7 @@ final class EclipseUIAPI {
     static void openWorkflowCoachPreferencePage() {
         var displayedIds = NodeRecommendationManager.getNodeTripleProviderFactories().stream()//
             .map(NodeTripleProviderFactory::getPreferencePageID)//
+            .filter(Objects::nonNull) //
             .filter(Predicate.not(String::isBlank))//
             .toArray(String[]::new);
         var dialog =
