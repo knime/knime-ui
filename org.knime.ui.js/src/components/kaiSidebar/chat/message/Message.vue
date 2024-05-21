@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, toRef } from "vue";
 import { useElementHover } from "@vueuse/core";
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+
+import { KaiMessage } from "@/api/gateway-api/generated-api";
+import type { NodeWithExtensionInfo, References } from "../../types";
 import { renderMarkdown } from "./markdown";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
 import KaiStatus from "./KaiStatus.vue";
@@ -11,12 +14,11 @@ import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
 import FeedbackControls from "./FeedbackControls.vue";
 import { useNodeTemplates } from "./useNodeTemplates";
-import type { NodeWithExtensionInfo, References } from "../../types";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
 
 interface Props {
-  role: string;
+  role: KaiMessage.RoleEnum;
   content?: string;
   nodes?: NodeWithExtensionInfo[];
   references?: References;
@@ -39,11 +41,11 @@ const isHovered = useElementHover(messageElement);
 
 const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
   role: props.role,
-  nodes: props.nodes,
+  nodes: toRef(props, "nodes"),
   callback: () => emit("nodeTemplatesLoaded"),
 });
 
-const isUser = computed(() => props.role === "user");
+const isUser = computed(() => props.role === KaiMessage.RoleEnum.User);
 const htmlContent = computed(() => renderMarkdown(props.content));
 const showFeedbackControls = computed(() => !isUser.value && !props.isError);
 </script>

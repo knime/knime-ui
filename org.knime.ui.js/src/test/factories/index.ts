@@ -1,4 +1,5 @@
 export * from "./annotations";
+export * from "./aiAssistant";
 export * from "./application";
 export * from "./common";
 export * from "./connections";

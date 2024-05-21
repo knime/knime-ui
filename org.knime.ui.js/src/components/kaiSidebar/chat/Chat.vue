@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
+import { KaiMessage } from "@/api/gateway-api/generated-api";
 
 import Message from "./message/Message.vue";
 import MessageSeparatorComponent from "./MessageSeparator.vue";
@@ -65,7 +66,7 @@ watch(
       <Message
         v-if="isProcessing"
         key="processing"
-        role="assistant"
+        :role="KaiMessage.RoleEnum.Assistant"
         :content="incomingTokens"
         :status-update="statusUpdate ?? ''"
       />

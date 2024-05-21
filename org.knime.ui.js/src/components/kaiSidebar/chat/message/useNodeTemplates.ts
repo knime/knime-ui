@@ -1,8 +1,9 @@
-import { ref, watchEffect } from "vue";
+import { ref, watch, type Ref } from "vue";
 import { useStore } from "@/composables/useStore";
 
-import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../../types";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import { KaiMessage } from "@/api/gateway-api/generated-api";
+import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../../types";
 
 /**
  * A Vue composition function that provides node templates based on given role and nodes.
@@ -17,8 +18,8 @@ const useNodeTemplates = ({
   nodes,
   callback,
 }: {
-  role: string;
-  nodes: NodeWithExtensionInfo[];
+  role: KaiMessage.RoleEnum;
+  nodes: Ref<NodeWithExtensionInfo[]>;
   callback: () => void;
 }) => {
   // Reactive references to hold the node templates.
@@ -27,64 +28,67 @@ const useNodeTemplates = ({
 
   const store = useStore();
 
-  watchEffect(async () => {
-    // If the role is not "assistant", exit early.
-    if (role !== "assistant") {
-      return;
-    }
-
-    // Temporary variable to hold the values for this effect run.
-    const _uninstalledExtensions: { [key: string]: ExtensionWithNodes } = {};
-
-    const getUninstalledExtension = (
-      node: NodeWithExtensionInfo,
-    ): ExtensionWithNodes => {
-      let extension = _uninstalledExtensions[node.featureSymbolicName];
-
-      if (!extension) {
-        // Create a new extension object if it doesn't already exist.
-        extension = {
-          featureSymbolicName: node.featureSymbolicName,
-          featureName: node.featureName,
-          owner: node.owner,
-          nodes: [],
-        };
-
-        _uninstalledExtensions[node.featureSymbolicName] = extension;
+  watch(
+    nodes,
+    async () => {
+      // If the role is not "assistant", exit early.
+      if (role !== KaiMessage.RoleEnum.Assistant) {
+        return;
       }
 
-      return extension;
-    };
+      const _uninstalledExtensions: { [key: string]: ExtensionWithNodes } = {};
 
-    const nodeTemplateIds = nodes.map(({ factoryId }) => factoryId);
+      const getUninstalledExtension = (
+        node: NodeWithExtensionInfo,
+      ): ExtensionWithNodes => {
+        let extension = _uninstalledExtensions[node.featureSymbolicName];
 
-    const { found, missing } = (await store.dispatch(
-      "nodeTemplates/getNodeTemplates",
-      { nodeTemplateIds },
-    )) as {
-      found: Record<string, NodeTemplateWithExtendedPorts>;
-      missing: string[];
-    };
+        if (!extension) {
+          // Create a new extension object if it doesn't already exist.
+          extension = {
+            featureSymbolicName: node.featureSymbolicName,
+            featureName: node.featureName,
+            owner: node.owner,
+            nodes: [],
+          };
 
-    if (missing.length > 0) {
-      nodes
-        .filter(({ factoryId }) => missing.includes(factoryId))
-        .forEach((node) => {
-          const extension = getUninstalledExtension(node);
+          _uninstalledExtensions[node.featureSymbolicName] = extension;
+        }
 
-          // Append the node details to the extension.
-          extension.nodes.push({
-            factoryId: node.factoryId,
-            factoryName: node.factoryName,
-            title: node.title,
+        return extension;
+      };
+
+      const nodeTemplateIds = nodes.value.map(({ factoryId }) => factoryId);
+
+      const { found, missing } = (await store.dispatch(
+        "nodeTemplates/getNodeTemplates",
+        { nodeTemplateIds },
+      )) as {
+        found: Record<string, NodeTemplateWithExtendedPorts>;
+        missing: string[];
+      };
+
+      if (missing.length > 0) {
+        nodes.value
+          .filter(({ factoryId }) => missing.includes(factoryId))
+          .forEach((node) => {
+            const extension = getUninstalledExtension(node);
+
+            // Append the node details to the extension.
+            extension.nodes.push({
+              factoryId: node.factoryId,
+              factoryName: node.factoryName,
+              title: node.title,
+            });
           });
-        });
-    }
+      }
 
-    nodeTemplates.value = Object.values(found);
-    uninstalledExtensions.value = _uninstalledExtensions;
-    callback();
-  });
+      nodeTemplates.value = Object.values(found);
+      uninstalledExtensions.value = _uninstalledExtensions;
+      callback();
+    },
+    { immediate: true },
+  );
 
   return {
     nodeTemplates,
