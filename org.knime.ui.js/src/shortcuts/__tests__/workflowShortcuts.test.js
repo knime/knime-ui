@@ -872,4 +872,101 @@ describe("workflowShortcuts", () => {
       ).toBe(true);
     });
   });
+
+  describe("autoDisconnectNodes", () => {
+    it("should execute for regular ports", () => {
+      const selectedNodes = [createNativeNode(), createNativeNode()];
+      const { $store } = createStore({
+        selectedNodes,
+        selectedMetanodePortBars: ["in"],
+      });
+
+      workflowShortcuts.autoDisconnectNodesDefault.execute({
+        $store,
+        payload: { event: { key: "l" } },
+      });
+      expect(mockedAPI.workflowCommand.AutoDisconnect).toHaveBeenCalledWith({
+        projectId: "activeTestProjectId",
+        workflowId: "testWorkflow",
+        selectedNodes: selectedNodes.map(({ id }) => id),
+        workflowInPortsBarSelected: true,
+        workflowOutPortsBarSelected: false,
+        flowVariablePortsOnly: false,
+      });
+    });
+
+    it("should execute for flow variable ports", () => {
+      const selectedNodes = [createNativeNode(), createNativeNode()];
+      const { $store } = createStore({
+        selectedNodes,
+        selectedMetanodePortBars: ["in"],
+      });
+
+      workflowShortcuts.autoDisconnectNodesDefault.execute({
+        $store,
+        payload: { event: { key: "k" } },
+      });
+      expect(mockedAPI.workflowCommand.AutoDisconnect).toHaveBeenCalledWith({
+        projectId: "activeTestProjectId",
+        workflowId: "testWorkflow",
+        selectedNodes: selectedNodes.map(({ id }) => id),
+        workflowInPortsBarSelected: true,
+        workflowOutPortsBarSelected: false,
+        flowVariablePortsOnly: true,
+      });
+    });
+
+    it("should not work when no node is selected", () => {
+      const { $store } = createStore({
+        selectedNodes: [],
+      });
+
+      expect(
+        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
+      ).toBe(false);
+      expect(
+        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
+      ).toBe(false);
+    });
+
+    it("should not work when only single node is selected", () => {
+      const { $store } = createStore({
+        selectedNodes: [createNativeNode()],
+      });
+
+      expect(
+        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
+      ).toBe(false);
+      expect(
+        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
+      ).toBe(false);
+    });
+
+    it("should work when single node is selected and a port bar is selected", () => {
+      const { $store } = createStore({
+        selectedNodes: [createNativeNode()],
+        selectedMetanodePortBars: ["in"],
+      });
+
+      expect(
+        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
+      ).toBe(true);
+      expect(
+        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
+      ).toBe(true);
+    });
+
+    it("should work when multiple nodes are selected", () => {
+      const { $store } = createStore({
+        selectedNodes: [createNativeNode(), createNativeNode()],
+      });
+
+      expect(
+        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
+      ).toBe(true);
+      expect(
+        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
+      ).toBe(true);
+    });
+  });
 });

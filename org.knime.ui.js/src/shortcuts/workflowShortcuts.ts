@@ -53,39 +53,44 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "quickAddNode"
   | "autoConnectNodesDefault"
   | "autoConnectNodesFlowVar"
+  | "autoDisconnectNodesDefault"
+  | "autoDisconnectNodesFlowVar"
 >;
 
 declare module "./index" {
   interface ShortcutsRegistry extends WorkflowShortcuts {}
 }
 
-const autoConnectNodes = ({
-  $store,
-  payload: { event },
-}: ShortcutExecuteContext) => {
-  const { projectId, workflowId } = getProjectAndWorkflowIds(
-    $store.state.workflow,
-  );
+const createAutoConnectionHandler =
+  (
+    command:
+      | typeof API.workflowCommand.AutoConnect
+      | typeof API.workflowCommand.AutoDisconnect,
+  ) =>
+  ({ $store, payload: { event } }: ShortcutExecuteContext) => {
+    const { projectId, workflowId } = getProjectAndWorkflowIds(
+      $store.state.workflow,
+    );
 
-  const flowVariablePortsOnly =
-    (event as KeyboardEvent).key.toLowerCase() === "k";
+    const flowVariablePortsOnly =
+      (event as KeyboardEvent).key.toLowerCase() === "k";
 
-  const selectedNodes: string[] = $store.getters["selection/selectedNodeIds"];
+    const selectedNodes: string[] = $store.getters["selection/selectedNodeIds"];
 
-  const selectedPortBars: Array<"out" | "in"> =
-    $store.getters["selection/selectedMetanodePortBars"];
+    const selectedPortBars: Array<"out" | "in"> =
+      $store.getters["selection/selectedMetanodePortBars"];
 
-  API.workflowCommand.AutoConnect({
-    projectId,
-    workflowId,
-    selectedNodes,
-    workflowInPortsBarSelected: selectedPortBars.includes("in"),
-    workflowOutPortsBarSelected: selectedPortBars.includes("out"),
-    flowVariablePortsOnly,
-  });
-};
+    command({
+      projectId,
+      workflowId,
+      selectedNodes,
+      workflowInPortsBarSelected: selectedPortBars.includes("in"),
+      workflowOutPortsBarSelected: selectedPortBars.includes("out"),
+      flowVariablePortsOnly,
+    });
+  };
 
-const canAutoConnect = ({ $store }: ShortcutConditionContext) => {
+const canAutoConnectOrDisconnect = ({ $store }: ShortcutConditionContext) => {
   const selectedNodes: Array<KnimeNode> =
     $store.getters["selection/selectedNodes"];
 
@@ -554,16 +559,32 @@ const workflowShortcuts: WorkflowShortcuts = {
     title: "Connect nodes",
     hotkey: ["CtrlOrCmd", "L"],
     group: "workflowEditor",
-    execute: autoConnectNodes,
-    condition: canAutoConnect,
+    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect),
+    condition: canAutoConnectOrDisconnect,
   },
   autoConnectNodesFlowVar: {
     text: "Connect nodes by flow variable port",
     title: "Connect nodes by flow variable port",
     hotkey: ["CtrlOrCmd", "K"],
     group: "workflowEditor",
-    execute: autoConnectNodes,
-    condition: canAutoConnect,
+    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect),
+    condition: canAutoConnectOrDisconnect,
+  },
+  autoDisconnectNodesDefault: {
+    text: "Disconnect nodes",
+    title: "Disconnect nodes",
+    hotkey: ["CtrlOrCmd", "Shift", "L"],
+    group: "workflowEditor",
+    execute: createAutoConnectionHandler(API.workflowCommand.AutoDisconnect),
+    condition: canAutoConnectOrDisconnect,
+  },
+  autoDisconnectNodesFlowVar: {
+    text: "Disconnect nodes's flow variable ports",
+    title: "Disconnect nodes's flow variable ports",
+    hotkey: ["CtrlOrCmd", "Shift", "K"],
+    group: "workflowEditor",
+    execute: createAutoConnectionHandler(API.workflowCommand.AutoDisconnect),
+    condition: canAutoConnectOrDisconnect,
   },
 };
 
