@@ -303,7 +303,7 @@ describe("application::lifecycle", () => {
       });
 
       commitSpy.mockClear();
-      await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+      await router.push({ name: APP_ROUTES.Home.GetStartedPage });
 
       expect(dispatchSpy).toHaveBeenCalledWith("application/switchWorkflow", {
         newWorkflow: null,
@@ -316,7 +316,7 @@ describe("application::lifecycle", () => {
       );
 
       expect(router.currentRoute.value.name).toBe(
-        APP_ROUTES.EntryPage.GetStartedPage,
+        APP_ROUTES.Home.GetStartedPage,
       );
     });
 
@@ -336,7 +336,7 @@ describe("application::lifecycle", () => {
       });
 
       commitSpy.mockClear();
-      await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+      await router.push({ name: APP_ROUTES.Home.GetStartedPage });
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "application/switchWorkflow",
@@ -351,7 +351,7 @@ describe("application::lifecycle", () => {
     it("should load a workflow when entering the worklow page", async () => {
       const router = getRouter();
       await router.push({
-        name: APP_ROUTES.EntryPage.GetStartedPage,
+        name: APP_ROUTES.Home.GetStartedPage,
       });
 
       const { store, dispatchSpy } = loadStore();

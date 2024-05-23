@@ -121,7 +121,7 @@ describe("AppHeader.vue", () => {
       wrapper.find(".home-button").trigger("click");
 
       expect(routerPush).toHaveBeenCalledWith({
-        name: APP_ROUTES.EntryPage.GetStartedPage,
+        name: APP_ROUTES.Home.GetStartedPage,
       });
     });
 

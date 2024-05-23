@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import EntryPageHeader from "./EntryPageHeader.vue";
-import RecentWorkflows from "./RecentWorkflows.vue";
+import GetStartedPageHeader from "./GetStartedPageHeader.vue";
+import RecentWorkflowsList from "@/components/recentWorkflows/RecentWorkflowsList.vue";
 </script>
 
 <template>
-  <div class="home-page">
-    <div class="header"><EntryPageHeader /></div>
+  <div class="get-started">
+    <div class="header"><GetStartedPageHeader /></div>
     <div class="recent">
-      <RecentWorkflows />
+      <RecentWorkflowsList />
     </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-& .home-page {
+.get-started {
   display: flex;
   flex-direction: column;
   height: 100%;

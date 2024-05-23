@@ -298,22 +298,10 @@ export default defineComponent({
     --theme-button-function-background-color-hover: var(--knime-masala);
 
     & .create-workflow-btn {
-      position: absolute;
+      position: fixed;
       z-index: 2;
-      top: 105px;
-      right: 0;
-    }
-
-    @media screen and (min-width: 900px) {
-      & .create-workflow-btn {
-        right: -20px;
-      }
-    }
-
-    @media screen and (min-width: 1180px) {
-      & .create-workflow-btn {
-        right: -70px;
-      }
+      top: 265px;
+      right: 32px;
     }
   }
 

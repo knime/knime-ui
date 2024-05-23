@@ -46,15 +46,15 @@ const dirtyProjectsMap = computed(
   () => store.state.application.dirtyProjectsMap,
 );
 
-const isGetStartedPageActive = computed(() => {
-  return $route.name === APP_ROUTES.EntryPage.HomePage;
+const isHomePageActive = computed(() => {
+  return $route.name !== APP_ROUTES.WorkflowPage;
 });
 
-const isHomeActive = computed(() => {
+const isHomeButtonActive = computed(() => {
   return (
     openProjects.value.length === 0 ||
     (!activeProjectId.value && !isLoadingWorkflow.value) ||
-    isGetStartedPageActive.value
+    isHomePageActive.value
   );
 });
 
@@ -102,7 +102,7 @@ const setGetStartedPageTab = () => {
   //   return;
   // }
   activeProjectTab.value = null;
-  $router.push({ name: APP_ROUTES.EntryPage.HomePage });
+  $router.push({ name: APP_ROUTES.Home.GetStarted });
 };
 
 const onProjectTabChange = async (projectId: string) => {
@@ -165,7 +165,7 @@ onClickOutside(menuWrapper, hideMenu);
     <FunctionButton
       class="home-button"
       title="Home"
-      :active="isHomeActive"
+      :active="isHomeButtonActive"
       @click="setGetStartedPageTab()"
     >
       <HouseIcon /> Home

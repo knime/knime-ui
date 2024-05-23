@@ -14,6 +14,14 @@
   @mixin-content;
 }
 
+@define-mixin truncate {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+
+  @mixin-content;
+}
+
 @define-mixin multi-line-truncate $line-clamp: 2 {
   text-overflow: ellipsis;
   /* stylelint-disable-next-line value-no-vendor-prefix */

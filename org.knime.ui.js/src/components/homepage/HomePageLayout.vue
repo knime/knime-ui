@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import PageSideMenu from "@/components/common/PageSideMenu.vue";
+import HomePageSidebar from "./HomePageSidebar.vue";
 </script>
 
 <template>
   <section class="main-content-wrapper">
     <div class="flex-container">
       <div class="sidebar">
-        <PageSideMenu />
+        <HomePageSidebar />
       </div>
 
       <div class="main-content">
@@ -21,35 +21,31 @@ import PageSideMenu from "@/components/common/PageSideMenu.vue";
 
 section.main-content-wrapper {
   display: flex;
-  /* flex-direction: column; */
   flex-direction: row;
   background-color: var(--knime-white);
   color: var(--knime-masala);
   height: 100%;
   width: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
   gap: 20px;
   justify-content: space-around;
   padding: 0;
 
+  --sidebar-width: 420px;
+
   & .flex-container {
     display: flex;
-    width: 100%;
-    gap: 50px;
-  }
-
-  & .grid-container {
-    height: 100%;
     width: 100%;
   }
 
   & .sidebar {
-    padding: 100px 30px 0px 50px;
+    padding: 40px;
+    width: var(--sidebar-width);
   }
 
   & .main-content {
     flex: 1;
+    width: calc(100% - var(--sidebar-width));
   }
 }
 </style>

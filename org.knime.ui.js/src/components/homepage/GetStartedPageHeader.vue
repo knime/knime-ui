@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useStore } from "@/composables/useStore";
-import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
+import { useRouter } from "vue-router";
 import Button from "webapps-common/ui/components/Button.vue";
 import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
+import { cachedLocalSpaceProjectId } from "@/store/spaces";
+import { useStore } from "@/composables/useStore";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
-import { cachedLocalSpaceProjectId } from "@/store/spaces";
+import type { ExampleProject } from "@/api/gateway-api/generated-api";
 
 const store = useStore();
+const $router = useRouter();
 
 const exampleProjects = computed(() => store.state.application.exampleProjects);
 const areExampleProjectsAvailable = computed(
@@ -26,17 +29,19 @@ const createWorkflowLocally = async () => {
   });
 };
 
-const onCommunityHubCardClick = () => {
-  window.open(
-    "https://knime.com/modern-ui-hub-home-link?src=knimeappmodernui",
-    "_blank",
-  );
+const onExampleClick = async (example: ExampleProject) => {
+  await store.dispatch("spaces/openProject", {
+    projectId: cachedLocalSpaceProjectId,
+    workflowItemId: example.origin!.itemId,
+    $router,
+  });
 };
 </script>
 
 <template>
   <div class="entry-page-header">
     <span class="header-text">Create and explorer workflows</span>
+
     <div class="cards">
       <Card class="create-workflow" @click="createWorkflowLocally">
         <CardContent padded>
@@ -47,24 +52,40 @@ const onCommunityHubCardClick = () => {
           <p>Start with an empty workflow</p>
         </CardContent>
       </Card>
-      <div v-if="!areExampleProjectsAvailable">
-        <Card class="community-hub-card" @click="onCommunityHubCardClick">
-          <div class="community-hub-content">
-            <LinkExternalIcon />
-            <p>Find more resources on the KNIME Community Hub</p>
-          </div>
-        </Card>
-      </div>
-    </div>
-    <div v-if="areExampleProjectsAvailable" class="community-hub-button">
-      <Button with-border href="https://hub.knime.com/">
-        <LinkExternalIcon />
-        <span
-          >Find more resources for spreadsheet automation on the KNIME Community
-          Hub</span
+
+      <template v-if="areExampleProjectsAvailable">
+        <Card
+          v-for="(example, index) in exampleProjects"
+          :key="index"
+          class="create-workflow"
+          @click="onExampleClick(example)"
         >
-      </Button>
+          <CardContent padded>
+            <img
+              class="card-img"
+              :src="`data:image/svg+xml;base64,${example.svg}`"
+              :alt="`Preview image of ${example.name}`"
+            />
+            <span>{{ example.name }}</span>
+          </CardContent>
+        </Card>
+      </template>
     </div>
+  </div>
+
+  <div class="call-to-action">
+    Find more resources for spreadsheet automation on the KNIME Community Hub
+
+    <Button
+      class="action-btn"
+      compact
+      with-border
+      on-dark
+      href="https://knime.com/modern-ui-hub-home-link?src=knimeappmodernui"
+    >
+      <LinkExternalIcon />
+      <span> Take me there </span>
+    </Button>
   </div>
 </template>
 
@@ -88,6 +109,12 @@ const onCommunityHubCardClick = () => {
     grid-auto-flow: column;
     gap: 24px;
     width: 75px;
+
+    & .card-img {
+      width: 100%;
+      max-height: 140px;
+      object-fit: contain;
+    }
 
     & span {
       text-align: center;
@@ -144,6 +171,19 @@ const onCommunityHubCardClick = () => {
 
   & .community-hub-button {
     padding-top: 40px;
+  }
+}
+
+.call-to-action {
+  background: var(--knime-aquamarine-dark);
+  color: var(--knime-white);
+  padding: 10px 30px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+
+  & .action-btn {
+    margin-left: auto;
   }
 }
 </style>

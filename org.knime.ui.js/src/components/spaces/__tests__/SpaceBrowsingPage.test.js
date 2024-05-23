@@ -163,7 +163,7 @@ describe("SpaceBrowsingPage", () => {
     );
 
     expect($router.push).toHaveBeenCalledWith({
-      name: APP_ROUTES.EntryPage.GetStartedPage,
+      name: APP_ROUTES.Home.GetStartedPage,
     });
   });
 

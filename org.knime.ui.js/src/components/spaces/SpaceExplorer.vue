@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRef } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
@@ -54,6 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
 const $emit = defineEmits(["itemChanged", "update:selectedItemIds"]);
 const store = useStore();
 const $router = useRouter();
+const $route = useRoute();
 const $toast = useToasts();
 
 const projectId = toRef(props, "projectId");
@@ -135,7 +136,7 @@ const fetchWorkflowGroupContent = async () => {
 };
 
 watch(
-  projectId,
+  [projectId, () => $route.params.spaceId],
   async () => {
     await fetchWorkflowGroupContent();
   },

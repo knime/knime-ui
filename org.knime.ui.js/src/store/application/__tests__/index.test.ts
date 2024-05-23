@@ -232,7 +232,7 @@ describe("application::index", () => {
       });
 
       expect(mockRouter.push).toHaveBeenCalledWith({
-        name: APP_ROUTES.EntryPage.GetStartedPage,
+        name: APP_ROUTES.Home.GetStartedPage,
       });
     });
   });
@@ -429,7 +429,7 @@ describe("application::index", () => {
         params: { projectId: "foo", workflowId: "bar" },
       });
 
-      await router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
+      await router.push({ name: APP_ROUTES.Home.GetStartedPage });
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",

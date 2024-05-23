@@ -49,6 +49,7 @@ export const mutations: MutationTree<SpacesState> = {
   },
 };
 
+// #region:actions
 export const actions: ActionTree<SpacesState, RootStoreState> = {
   async fetchWorkflowGroupContentByIdTriplet(
     { commit, dispatch },
@@ -376,6 +377,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 };
 
+// #region:getters
 export const getters: GetterTree<SpacesState, RootStoreState> = {
   pathToItemId: (_, getters) => (projectId: string, pathId: string) => {
     // going back

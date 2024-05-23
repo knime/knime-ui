@@ -175,17 +175,17 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     if (openProjects.length === 0) {
       consola.info("No workflows opened");
       await runInEnvironment({
-        DESKTOP: () => $router.push({ name: APP_ROUTES.EntryPage.HomePage }),
+        DESKTOP: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
       });
       return;
     }
 
     const activeProject = openProjects.find((item) => item.activeWorkflowId);
 
-    // No active project is set -> stay on entry page (aka: null project)
+    // No active project is set -> stay on home page (aka: null project)
     if (!activeProject) {
       await runInEnvironment({
-        DESKTOP: () => $router.push({ name: APP_ROUTES.EntryPage.HomePage }),
+        DESKTOP: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
       });
       return;
     }

@@ -26,20 +26,25 @@ export const routes: Array<RouteRecordRaw> = [
 
   ...registerRoute("DESKTOP", {
     path: "/",
-    component: () => import("@/components/entryPage/EntryPageLayout.vue"),
+    component: () => import("@/components/homepage/HomePageLayout.vue"),
     children: [
       {
-        name: APP_ROUTES.EntryPage.HomePage,
-        path: "/home",
-        component: () => import("@/components/entryPage/HomePage.vue"),
-        meta: { showUpdateBanner: true },
+        name: APP_ROUTES.Home.GetStarted,
+        path: "/get-started",
+        component: () => import("@/components/homepage/GetStartedPage.vue"),
       },
       {
-        name: APP_ROUTES.EntryPage.SpaceProviderPage,
-        path: "/space-provider",
-        component: () => import("@/components/spaces/SpaceProviderPage.vue"),
+        name: APP_ROUTES.Home.SpaceSelectionPage,
+        path: "/space-selection/:spaceProviderId/:groupId",
+        component: () => import("@/components/spaces/SpaceSelectionPage.vue"),
+      },
+      {
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        path: "/space-browsing/:spaceProviderId/:groupId/:spaceId",
+        component: () => import("@/components/spaces/SpaceBrowsingPage.vue"),
       },
     ],
+    meta: { showUpdateBanner: true },
   }),
 ];
 

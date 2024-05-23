@@ -1,7 +1,9 @@
 export const APP_ROUTES = {
   WorkflowPage: "WorkflowPage",
-  EntryPage: {
-    HomePage: "HomePage",
-    SpaceProviderPage: "SpaceProviderPage",
+  Home: {
+    GetStarted: "GetStarted",
+    RecentWorkflowsPage: "RecentWorkflowsPage",
+    SpaceSelectionPage: "SpaceSelectionPage",
+    SpaceBrowsingPage: "SpaceBrowsingPage",
   },
 } as const;

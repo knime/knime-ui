@@ -5,6 +5,7 @@ import type {
   PortGroup,
   PortType,
   Space as _Space,
+  SpaceGroup as _SpaceGroup,
   ComponentNodeAndDescription,
   NodeDescription,
   SpaceProvider as _SpaceProvider,
@@ -14,7 +15,10 @@ import type {
   XY,
 } from "./gateway-api/generated-api";
 
-import { SpaceProvider as _SpaceProviderNS } from "./gateway-api/generated-api";
+import {
+  SpaceProvider as _SpaceProviderNS,
+  SpaceGroup as _SpaceGroupNS,
+} from "./gateway-api/generated-api";
 
 /**
  * Dictionary of all available port types that are installed in the AP for the use.
@@ -61,13 +65,19 @@ export namespace SpaceProviderNS {
     private: boolean;
   }
 
+  export interface SpaceGroup extends _SpaceGroup {
+    spaces: Array<Space>;
+  }
+
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  export import UserTypeEnum = _SpaceGroupNS.TypeEnum;
+
   export interface SpaceProvider extends _SpaceProvider {
     id: string;
     name: string;
     connected: boolean;
     connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
-    spaces: Array<Space>;
-    user?: SpaceUser;
+    spaceGroups: Array<SpaceGroup>;
   }
 }
 
