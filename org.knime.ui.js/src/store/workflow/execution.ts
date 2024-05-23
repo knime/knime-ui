@@ -5,6 +5,13 @@ import { API } from "@api";
 import type { WorkflowState } from ".";
 import type { RootStoreState } from "../types";
 import { getProjectAndWorkflowIds } from "./util";
+import {
+  buildMiddleware,
+  validateNodeExecuted,
+  validatePortSupport,
+} from "@/components/uiExtensions/common/output-validator";
+import { getToastsProvider } from "@/plugins/toasts";
+import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -92,6 +99,78 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       projectId: state.activeWorkflow!.projectId,
       nodeId,
     });
+  },
+
+  openPortView({ dispatch, rootState }, { node, port }) {
+    if (port === "view") {
+      dispatch("executeNodeAndOpenView", node.id);
+      return;
+    }
+
+    const portTypes = rootState.application.availablePortTypes;
+    const selectedPortIndex = Number(port);
+    const selectedPort = node.outPorts[selectedPortIndex];
+    const validationResult = buildMiddleware(
+      validateNodeExecuted,
+      validatePortSupport,
+    )({
+      selectedNode: node,
+      selectedPort,
+      selectedPortIndex,
+      portTypes,
+    })();
+
+    const PORT_DETACH_SHORTCUT_FAILED_ID = "__PORT_DETACH_SHORTCUT_FAILED";
+    const showDetachErrorToast = (message: string) => {
+      getToastsProvider().show({
+        id: PORT_DETACH_SHORTCUT_FAILED_ID,
+        headline: "Error detaching output port view",
+        message,
+        type: "error",
+      });
+    };
+
+    if (validationResult?.error?.code === "UNSUPPORTED_PORT_VIEW") {
+      dispatch("openLegacyPortView", {
+        nodeId: node.id,
+        portIndex: selectedPortIndex,
+      });
+      return;
+    }
+
+    if (validationResult?.error) {
+      showDetachErrorToast(
+        validationResult.error.message ||
+          "Please check the output port view for details",
+      );
+      return;
+    }
+
+    const portViews =
+      rootState.application.availablePortTypes[
+        node.outPorts[selectedPortIndex].typeId
+      ].views;
+
+    if (!portViews) {
+      return;
+    }
+
+    const firstDetachableView = getPortViewByViewDescriptors(
+      portViews,
+      node,
+      selectedPortIndex,
+    ).find((v) => v.canDetach);
+
+    if (firstDetachableView) {
+      API.desktop.openPortView({
+        projectId: rootState.application.activeProjectId!,
+        nodeId: node.id,
+        viewIndex: Number(firstDetachableView.id),
+        portIndex: selectedPortIndex,
+      });
+    } else {
+      showDetachErrorToast("Port has no detachable view");
+    }
   },
 
   resetNodes({ dispatch }, nodes) {

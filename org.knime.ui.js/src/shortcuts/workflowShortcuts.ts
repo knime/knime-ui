@@ -20,11 +20,6 @@ import { compatibility, isDesktop } from "@/environment";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import {
-  buildMiddleware,
-  validateNodeExecuted,
-  validatePortSupport,
-} from "@/components/uiExtensions/common/output-validator";
 import { getToastsProvider } from "@/plugins/toasts";
 
 import type {
@@ -40,8 +35,11 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "redo"
   | "configureNode"
   | "configureFlowVariables"
-  | "openOutputPort"
-  | "detachCurrentOutputPort"
+  | "activateOutputPort"
+  | "activateFlowVarPort"
+  | "detachOutputPort"
+  | "detachFlowVarPort"
+  | "detachActiveOutputPort"
   | "editAnnotation"
   | "editNodeComment"
   | "deleteSelected"
@@ -201,104 +199,136 @@ const workflowShortcuts: WorkflowShortcuts = {
       return false;
     },
   },
-  openOutputPort: {
-    text: "Switch to or detach n-th output port view",
-    hotkey: ["Shift", "0-9"],
-    additionalHotkeys: [{ key: ["Shift", "Alt", "0-9"], visible: true }],
+  activateOutputPort: {
+    text: "Activate the n-th output port view",
+    hotkey: ["Shift", "1-9"],
     icon: OpenDialogIcon,
     group: "selectedNode",
     execute: ({ $store, payload }) => {
       const event = payload.event! as KeyboardEvent;
       const node = $store.getters["selection/singleSelectedNode"];
-      const detach = event.altKey;
       let port = event.code.slice("Digit".length);
 
       if (port === "1" && node.hasView) {
         port = "view";
-      }
-
-      if (isNodeMetaNode(node)) {
+      } else if (isNodeMetaNode(node)) {
         // Metanodes don't have a flowvariable port and their port tabs are 0-indexed
         // eslint-disable-next-line no-magic-numbers
-        port = String(Number(port) === 0 ? 9 : Number(port) - 1);
+        port = String(Number(port) - 1);
       }
 
       if (Number(port) >= node.outPorts.length) {
         return;
       }
 
-      if (detach) {
-        if (!isDesktop || port === "view") {
-          return;
-        }
-
-        const portTypes = $store.state.application.availablePortTypes;
-        const selectedPortIndex = Number(port);
-        const selectedPort = node.outPorts[selectedPortIndex];
-        const validationResult = buildMiddleware(
-          validatePortSupport,
-          validateNodeExecuted,
-        )({
-          selectedNode: node,
-          selectedPort,
-          selectedPortIndex,
-          portTypes,
-        })();
-
-        if (validationResult?.error) {
-          const $toast = getToastsProvider();
-          const PORT_DETACH_VALIDATION_FAILED_ID =
-            "__PORT_DETACH_VALIDATION_FAILED";
-
-          $toast.show({
-            id: PORT_DETACH_VALIDATION_FAILED_ID,
-            headline: "Error opening output port view:",
-            message:
-              validationResult.error.message ||
-              "Please check the output port view for details",
-            type: "error",
-          });
-
-          // switch to port for related information/action items
-          $store.commit("selection/setSelectedPort", port);
-        } else {
-          API.desktop.openPortView({
-            projectId: $store.state.application.activeProjectId!,
-            nodeId: node.id,
-            viewIndex: 1, // only first for now, i.e. ignore statistics
-            portIndex: selectedPortIndex,
-          });
-        }
-      } else {
-        $store.commit("selection/setSelectedPort", port);
-      }
+      $store.commit("selection/setSelectedPort", port);
     },
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
       return singleSelectedNode && singleSelectedNode.outPorts.length > 0;
     },
   },
-  detachCurrentOutputPort: {
+  activateFlowVarPort: {
+    text: "Activate flow variable view",
+    hotkey: ["Shift", "0"],
+    additionalHotkeys: [{ key: ["Shift", "0-0"], visible: false }], // range matches Digit0 Key even with shift
+    icon: OpenDialogIcon,
+    group: "selectedNode",
+    execute: ({ $store }) => {
+      $store.commit("selection/setSelectedPort", "0");
+    },
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      const portTypes = $store.state.application.availablePortTypes;
+      const hasFlowVarPort =
+        portTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
+        "flowVariable";
+
+      return singleSelectedNode && hasFlowVarPort;
+    },
+  },
+  detachOutputPort: {
+    text: "Detach the n-th output port view",
+    hotkey: ["Shift", "Alt", "1-9"],
+    icon: OpenDialogIcon,
+    group: "selectedNode",
+    execute: ({ $store, payload }) => {
+      const event = payload.event! as KeyboardEvent;
+      const node = $store.getters["selection/singleSelectedNode"];
+
+      let port = event.code.slice("Digit".length);
+
+      if (port === "1" && node.hasView) {
+        port = "view";
+      } else if (isNodeMetaNode(node)) {
+        // Metanodes don't have a flowvariable port and their port tabs are 0-indexed
+        // eslint-disable-next-line no-magic-numbers
+        port = String(Number(port) - 1);
+      }
+
+      if (Number(port) >= node.outPorts.length) {
+        return;
+      }
+
+      $store.dispatch("workflow/openPortView", { node, port });
+    },
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      return (
+        isDesktop &&
+        singleSelectedNode &&
+        singleSelectedNode.outPorts.length > 0
+      );
+    },
+  },
+
+  detachFlowVarPort: {
+    text: "Detach flow variable view",
+    hotkey: ["Shift", "Alt", "0"],
+    additionalHotkeys: [{ key: ["Shift", "Alt", "0-0"], visible: false }], // range matches Digit0 Key even with shift
+    icon: OpenDialogIcon,
+    group: "selectedNode",
+    execute: ({ $store }) => {
+      const node: KnimeNode = $store.getters["selection/singleSelectedNode"];
+
+      if (node.state?.executionState === "EXECUTED") {
+        $store.dispatch("workflow/openPortView", { node, port: "0" });
+      } else {
+        // TODO: NXT-2024 remove this condition once flowvars can be detached in 'configured' state
+        getToastsProvider().show({
+          id: "__FLOWVAR_DETACH_SHORTCUT_FAILED",
+          headline: "Error detaching flow variable view",
+          message: "Please execute the node.",
+          type: "error",
+        });
+      }
+    },
+    condition: ({ $store }) => {
+      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      const portTypes = $store.state.application.availablePortTypes;
+      const hasFlowVarPort =
+        portTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
+        "flowVariable";
+
+      return isDesktop && singleSelectedNode && hasFlowVarPort;
+    },
+  },
+
+  detachActiveOutputPort: {
     text: "Detach active output port view",
     hotkey: ["Shift", "Alt", "Enter"],
     icon: OpenDialogIcon,
     group: "selectedNode",
     execute: ({ $store }) => {
       const port = $store.state.selection.selectedPort;
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      const node = $store.getters["selection/singleSelectedNode"];
 
-      if (port && port !== "view") {
-        API.desktop.openPortView({
-          projectId: $store.state.application.activeProjectId!,
-          nodeId: singleSelectedNode.id,
-          viewIndex: 1, // only first for now, i.e. ignore statistics
-          portIndex: Number(port),
-        });
-      }
+      $store.dispatch("workflow/openPortView", { node, port });
     },
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      return isDesktop && singleSelectedNode;
+      const port = $store.state.selection.selectedPort;
+      return isDesktop && singleSelectedNode && port;
     },
   },
   editNodeComment: {

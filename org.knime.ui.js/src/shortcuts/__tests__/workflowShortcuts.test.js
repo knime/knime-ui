@@ -5,10 +5,17 @@ import workflowShortcuts from "../workflowShortcuts";
 import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 import { createNativeNode } from "@/test/factories";
+import { Node } from "@/api/gateway-api/generated-api";
 
 describe("workflowShortcuts", () => {
   const mockSelectedNode = { id: "root:0", allowedActions: {} };
   const mockedAPI = deepMocked(API);
+
+  let mockEnvironment = vi.hoisted(() => ({}));
+  vi.mock("@/environment", async (importOriginal) => {
+    Object.assign(mockEnvironment, await importOriginal());
+    return mockEnvironment;
+  });
 
   const createStore = ({
     containerType = "project",
@@ -196,224 +203,419 @@ describe("workflowShortcuts", () => {
     });
   });
 
-  describe("openOutputPort", () => {
-    const eventDigit1 = new KeyboardEvent("keydown", {
-      key: "1",
-      code: "Digit1",
-      shiftKey: true,
-    });
-    const eventDigit3 = new KeyboardEvent("keydown", {
-      key: "3",
-      code: "Digit3",
-      shiftKey: true,
-    });
-
+  describe("portview shortcuts", () => {
     const eventShiftDigit1 = new KeyboardEvent("keydown", {
       key: "1",
       code: "Digit1",
       shiftKey: true,
-      altKey: true,
     });
     const eventShiftDigit3 = new KeyboardEvent("keydown", {
       key: "3",
       code: "Digit3",
       shiftKey: true,
+    });
+
+    const eventShiftAltDigit1 = new KeyboardEvent("keydown", {
+      key: "1",
+      code: "Digit1",
+      shiftKey: true,
+      altKey: true,
+    });
+    const eventShiftAltDigit3 = new KeyboardEvent("keydown", {
+      key: "3",
+      code: "Digit3",
+      shiftKey: true,
       altKey: true,
     });
 
-    it("shortcuts mutate selectedPort", () => {
-      // selected node with 4 dummy ports
-      const { $store, mockCommit } = createStore({
-        singleSelectedNode: {
+    describe("activateOutputPort", () => {
+      it("executes", () => {
+        // mock selected node with 4 dummy ports
+        const { $store, mockCommit } = createStore({
+          singleSelectedNode: {
+            ...mockSelectedNode,
+            outPorts: [{}, {}, {}, {}],
+          },
+        });
+
+        workflowShortcuts.activateOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit1 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "1",
+        );
+
+        workflowShortcuts.activateOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit3 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "3",
+        );
+
+        // handle metanodes
+        $store.getters["selection/singleSelectedNode"].kind =
+          Node.KindEnum.Metanode;
+
+        workflowShortcuts.activateOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit1 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "0",
+        );
+
+        workflowShortcuts.activateOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit3 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "2",
+        );
+
+        // handle too few outPorts
+        mockCommit.mockClear();
+        $store.getters["selection/singleSelectedNode"].outPorts = [{}, {}];
+        workflowShortcuts.activateOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit3 },
+        });
+        expect(mockCommit).not.toBeCalled();
+      });
+
+      it("handles views", () => {
+        const { $store, mockCommit } = createStore({
+          singleSelectedNode: {
+            ...mockSelectedNode,
+            hasView: true,
+            outPorts: [{}, {}],
+          },
+        });
+
+        workflowShortcuts.activateOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit1 },
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "view",
+        );
+      });
+
+      it("checks condition", () => {
+        const { $store } = createStore({ singleSelectedNode: null });
+        expect(
+          workflowShortcuts.activateOutputPort.condition({ $store }),
+        ).toBeFalsy(); // no selected node
+        $store.getters["selection/singleSelectedNode"] = {
+          ...mockSelectedNode,
+          outPorts: [],
+        };
+        expect(
+          workflowShortcuts.activateOutputPort.condition({ $store }),
+        ).toBeFalsy(); // no output port
+        $store.getters["selection/singleSelectedNode"] = {
+          ...mockSelectedNode,
+          outPorts: [{}],
+        };
+        expect(
+          workflowShortcuts.activateOutputPort.condition({ $store }),
+        ).toBeTruthy();
+      });
+    });
+
+    describe("activateFlowVarPort", () => {
+      it("executes", () => {
+        const { $store, mockCommit } = createStore();
+
+        workflowShortcuts.activateFlowVarPort.execute({
+          $store,
+        });
+        expect(mockCommit).toHaveBeenLastCalledWith(
+          "selection/setSelectedPort",
+          "0",
+        );
+      });
+
+      it("checks condition", () => {
+        const { $store } = createStore({ singleSelectedNode: null });
+        $store.state.application.availablePortTypes = {
+          mockTypeId: { kind: "not a flowvar" },
+        };
+
+        expect(
+          workflowShortcuts.activateFlowVarPort.condition({ $store }),
+        ).toBeFalsy(); // no node selected
+        $store.getters["selection/singleSelectedNode"] = {
+          ...mockSelectedNode,
+          outPorts: [{ typeId: "mockTypeId" }],
+        };
+        expect(
+          workflowShortcuts.activateFlowVarPort.condition({ $store }),
+        ).toBeFalsy(); // not a flowvar port
+        $store.state.application.availablePortTypes = {
+          mockTypeId: { kind: "flowVariable" },
+        };
+        expect(
+          workflowShortcuts.activateFlowVarPort.condition({ $store }),
+        ).toBeTruthy();
+      });
+    });
+
+    describe("detachOutputPort", () => {
+      it("executes", () => {
+        const node = {
           ...mockSelectedNode,
           outPorts: [{}, {}, {}, {}],
-        },
+        };
+        const { $store, mockDispatch } = createStore({
+          singleSelectedNode: node,
+        });
+
+        workflowShortcuts.detachOutputPort.execute({
+          $store,
+          payload: { event: eventShiftAltDigit1 },
+        });
+        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+          node,
+          port: "1",
+        });
+
+        workflowShortcuts.detachOutputPort.execute({
+          $store,
+          payload: { event: eventShiftAltDigit3 },
+        });
+        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+          node,
+          port: "3",
+        });
+
+        $store.getters["selection/singleSelectedNode"].hasView = true;
+        workflowShortcuts.detachOutputPort.execute({
+          $store,
+          payload: { event: eventShiftAltDigit1 },
+        });
+
+        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+          node,
+          port: "view",
+        });
+
+        // handle metanodes
+        $store.getters["selection/singleSelectedNode"].hasView = false;
+        $store.getters["selection/singleSelectedNode"].kind =
+          Node.KindEnum.Metanode;
+
+        workflowShortcuts.detachOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit1 },
+        });
+        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+          node,
+          port: "0",
+        });
+
+        workflowShortcuts.detachOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit3 },
+        });
+        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+          node,
+          port: "2",
+        });
+
+        // handle too few outPorts
+        mockDispatch.mockClear();
+        $store.getters["selection/singleSelectedNode"].outPorts = [{}, {}];
+        workflowShortcuts.detachOutputPort.execute({
+          $store,
+          payload: { event: eventShiftDigit3 },
+        });
+        expect(mockDispatch).not.toBeCalled();
       });
 
-      workflowShortcuts.openOutputPort.execute({
-        $store,
-        payload: { event: eventDigit1 },
-      });
-      expect(mockCommit).toHaveBeenLastCalledWith(
-        "selection/setSelectedPort",
-        "1",
-      );
+      it("checks condition", () => {
+        const createFailureCondition = ({
+          isDesktop = true,
+          selectedNode = {
+            ...mockSelectedNode,
+            outPorts: [{}],
+          },
+        } = {}) => {
+          mockEnvironment.isDesktop = isDesktop;
+          return {
+            ...createStore({ singleSelectedNode: selectedNode }),
+          };
+        };
 
-      workflowShortcuts.openOutputPort.execute({
-        $store,
-        payload: { event: eventDigit3 },
-      });
-      expect(mockCommit).toHaveBeenLastCalledWith(
-        "selection/setSelectedPort",
-        "3",
-      );
+        {
+          const { $store } = createFailureCondition(undefined);
+          expect(
+            workflowShortcuts.detachOutputPort.condition({ $store }),
+          ).toBeTruthy();
+        }
 
-      // too few outPorts
-      mockCommit.mockClear();
-      $store.getters["selection/singleSelectedNode"].outPorts = [{}, {}];
-      workflowShortcuts.openOutputPort.execute({
-        $store,
-        payload: { event: eventDigit3 },
+        {
+          // detach only on desktop
+          const { $store } = createFailureCondition({ isDesktop: false });
+          expect(
+            workflowShortcuts.detachOutputPort.condition({ $store }),
+          ).toBeFalsy();
+        }
+
+        {
+          // no selected node
+          const { $store } = createFailureCondition({ selectedNode: null });
+          expect(
+            workflowShortcuts.detachOutputPort.condition({ $store }),
+          ).toBeFalsy();
+        }
+
+        {
+          // no output ports
+          const { $store } = createFailureCondition({
+            selectedNode: {
+              ...mockSelectedNode,
+              outPorts: [],
+            },
+          });
+          expect(
+            workflowShortcuts.detachOutputPort.condition({ $store }),
+          ).toBeFalsy();
+        }
+
+        mockEnvironment.isDesktop = true;
       });
-      expect(mockCommit).not.toBeCalled();
     });
 
-    it("digit1 key is also used for 'view' tabs", () => {
-      const { $store, mockCommit } = createStore({
-        singleSelectedNode: {
-          ...mockSelectedNode,
-          hasView: true,
-          outPorts: [{}, {}],
-        },
-      });
-
-      workflowShortcuts.openOutputPort.execute({
-        $store,
-        payload: { event: eventDigit1 },
-      });
-      expect(mockCommit).toHaveBeenLastCalledWith(
-        "selection/setSelectedPort",
-        "view",
-      );
-    });
-
-    it("shortcuts open detached port views", () => {
-      const { $store } = createStore({
-        singleSelectedNode: {
+    describe("detachFlowVarPort", () => {
+      it("executes", () => {
+        const node = {
           ...mockSelectedNode,
           outPorts: [{}, {}, {}, {}],
-        },
-      });
-      mockedAPI.desktop.openPortView.mockClear();
+          state: {
+            executionState: "IDLE",
+          },
+        };
+        const { $store, mockDispatch } = createStore({
+          singleSelectedNode: node,
+        });
 
-      const validationResult = vi.hoisted(() => ({
-        error: {
-          message: "some test error occured",
-        },
-      }));
-      vi.mock(
-        "@/components/uiExtensions/common/output-validator",
-        async (importOriginal) => ({
-          ...(await importOriginal()),
-          buildMiddleware: () => () => () => ({
-            ...validationResult,
-          }),
-        }),
-      );
+        workflowShortcuts.detachFlowVarPort.execute({
+          $store,
+        });
+        expect(mockDispatch).not.toBeCalled();
 
-      // validation error prevents detaching
-      workflowShortcuts.openOutputPort.execute({
-        $store,
-        payload: { event: eventShiftDigit1 },
-      });
-      expect(mockedAPI.desktop.openPortView).not.toBeCalled();
-
-      validationResult.error = undefined;
-
-      workflowShortcuts.openOutputPort.execute({
-        $store,
-        payload: { event: eventShiftDigit1 },
-      });
-      expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
-        projectId: "activeTestProjectId",
-        nodeId: mockSelectedNode.id,
-        viewIndex: 1,
-        portIndex: 1,
+        node.state.executionState = "EXECUTED";
+        workflowShortcuts.detachFlowVarPort.execute({
+          $store,
+        });
+        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+          node,
+          port: "0",
+        });
       });
 
-      workflowShortcuts.openOutputPort.execute({
-        $store,
-        payload: { event: eventShiftDigit3 },
-      });
-      expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
-        projectId: "activeTestProjectId",
-        nodeId: mockSelectedNode.id,
-        viewIndex: 1,
-        portIndex: 3,
-      });
-    });
+      it("checks condition", () => {
+        const createFailureCondition = ({
+          isDesktop = true,
+          selectedNode = {
+            ...mockSelectedNode,
+            outPorts: [{ typeId: "mockTypeId" }],
+          },
+          hasFlowVarPort = true,
+        } = {}) => {
+          mockEnvironment.isDesktop = isDesktop;
 
-    it("checks condition", () => {
-      const { $store } = createStore({ singleSelectedNode: null });
-      expect(
-        workflowShortcuts.openOutputPort.condition({ $store }),
-      ).toBeFalsy();
-      $store.getters["selection/singleSelectedNode"] = {
-        ...mockSelectedNode,
-        outPorts: [],
-      };
-      expect(
-        workflowShortcuts.openOutputPort.condition({ $store }),
-      ).toBeFalsy();
-      // selected node has outPort
-      $store.getters["selection/singleSelectedNode"] = {
-        ...mockSelectedNode,
-        outPorts: [{}],
-      };
-      expect(
-        workflowShortcuts.openOutputPort.condition({ $store }),
-      ).toBeTruthy();
-    });
-  });
+          const { $store } = createStore({ singleSelectedNode: selectedNode });
+          $store.state.application.availablePortTypes = {
+            mockTypeId: {
+              // eslint-disable-next-line vitest/no-conditional-tests
+              kind: hasFlowVarPort ? "flowVariable" : "not a flowVariable",
+            },
+          };
+          return {
+            $store,
+          };
+        };
 
-  describe("detachCurrentOutputPort", () => {
-    it("executes", () => {
-      const { $store } = createStore();
-      const event = new KeyboardEvent("keydown", {
-        key: "Enter",
-        altKey: true,
-        shiftKey: true,
-      });
+        {
+          const { $store } = createFailureCondition(undefined);
+          expect(
+            workflowShortcuts.detachFlowVarPort.condition({ $store }),
+          ).toBeTruthy();
+        }
 
-      mockedAPI.desktop.openPortView.mockClear();
+        {
+          // detach only on desktop
+          const { $store } = createFailureCondition({ isDesktop: false });
+          expect(
+            workflowShortcuts.detachFlowVarPort.condition({ $store }),
+          ).toBeFalsy();
+        }
 
-      workflowShortcuts.detachCurrentOutputPort.execute({
-        $store,
-        payload: { event },
-      });
-      expect(mockedAPI.desktop.openPortView).toHaveBeenCalledTimes(0);
+        {
+          // no selected node
+          const { $store } = createFailureCondition({ selectedNode: null });
+          expect(
+            workflowShortcuts.detachFlowVarPort.condition({ $store }),
+          ).toBeFalsy();
+        }
 
-      $store.state.selection.selectedPort = "view";
-      workflowShortcuts.detachCurrentOutputPort.execute({
-        $store,
-        payload: { event },
-      });
-      expect(mockedAPI.desktop.openPortView).toHaveBeenCalledTimes(0);
+        {
+          // no flowVariable port
+          const { $store } = createFailureCondition({
+            hasFlowVarPort: false,
+          });
+          expect(
+            workflowShortcuts.detachFlowVarPort.condition({ $store }),
+          ).toBeFalsy();
+        }
 
-      $store.state.selection.selectedPort = "1";
-      workflowShortcuts.detachCurrentOutputPort.execute({
-        $store,
-        payload: { event },
-      });
-      expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
-        projectId: "activeTestProjectId",
-        nodeId: mockSelectedNode.id,
-        viewIndex: 1,
-        portIndex: 1,
-      });
-
-      $store.state.selection.selectedPort = "3";
-      workflowShortcuts.detachCurrentOutputPort.execute({
-        $store,
-        payload: { event },
-      });
-      expect(mockedAPI.desktop.openPortView).toHaveBeenLastCalledWith({
-        projectId: "activeTestProjectId",
-        nodeId: mockSelectedNode.id,
-        viewIndex: 1,
-        portIndex: 3,
+        mockEnvironment.isDesktop = true;
       });
     });
 
-    it("checks condition", () => {
-      const { $store } = createStore({ singleSelectedNode: null });
-      expect(
-        workflowShortcuts.detachCurrentOutputPort.condition({ $store }),
-      ).toBeFalsy();
-      $store.getters["selection/singleSelectedNode"] = mockSelectedNode;
-      expect(
-        workflowShortcuts.detachCurrentOutputPort.condition({ $store }),
-      ).toBeTruthy();
+    describe("detachActiveOutputPort", () => {
+      it("executes", () => {
+        const { $store, mockDispatch } = createStore();
+
+        $store.state.selection.selectedPort = "42";
+        const node = $store.getters["selection/singleSelectedNode"];
+
+        workflowShortcuts.detachActiveOutputPort.execute({
+          $store,
+        });
+        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+          node,
+          port: "42",
+        });
+      });
+
+      it("checks condition", () => {
+        const { $store } = createStore({ singleSelectedNode: null });
+        expect(
+          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+        ).toBeFalsy();
+        $store.getters["selection/singleSelectedNode"] = mockSelectedNode;
+        mockEnvironment.isDesktop = false;
+        expect(
+          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+        ).toBeFalsy();
+        mockEnvironment.isDesktop = true;
+        expect(
+          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+        ).toBeFalsy();
+        $store.state.selection.selectedPort = "1";
+        expect(
+          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+        ).toBeTruthy();
+      });
     });
   });
 
