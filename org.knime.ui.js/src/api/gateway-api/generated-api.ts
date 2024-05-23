@@ -1825,12 +1825,6 @@ export interface NativeNode extends Node {
      * @memberof NativeNode
      */
     isReexecutable?: boolean;
-    /**
-     * Only present for missing nodes.
-     * @type {string}
-     * @memberof NativeNode
-     */
-    missingReason?: NativeNode.MissingReasonEnum;
 
 }
 
@@ -1840,14 +1834,6 @@ export interface NativeNode extends Node {
  * @namespace NativeNode
  */
 export namespace NativeNode {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum MissingReasonEnum {
-        FORBIDDEN = 'FORBIDDEN',
-        MISSING = 'MISSING'
-    }
 }
 /**
  * Description of certain aspects of a native node.
@@ -1968,6 +1954,7 @@ export namespace NativeNodeInvariants {
         Configuration = 'Configuration',
         Other = 'Other',
         Missing = 'Missing',
+        Forbidden = 'Forbidden',
         Unknown = 'Unknown',
         Subnode = 'Subnode',
         VirtualIn = 'VirtualIn',
