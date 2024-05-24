@@ -60,6 +60,7 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.LocalSpaceUtilTest;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 import org.knime.ui.java.util.ProjectFactory;
@@ -87,7 +88,7 @@ class ProjectAPITest {
     }
 
     @Test
-    void testUpdateAndGetMostRecentlyUsedProjects() {
+    void testUpdateAndGetMostRecentlyUsedProjects() throws IOException {
         var mruProjects = new MostRecentlyUsedProjects();
         var proj1 =
             new RecentlyUsedProject("name1", createOrigin("local", "local", "iid", "relPath"), OffsetDateTime.MAX);
@@ -98,7 +99,8 @@ class ProjectAPITest {
         mruProjects.add(proj2);
         mruProjects.add(proj3);
 
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects);
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects,
+            LocalSpaceUtilTest.createLocalWorkspace());
 
         var res = ProjectAPI.updateAndGetMostRecentlyUsedProjects();
         assertThat(res).isEqualTo(String.format("""
@@ -123,7 +125,7 @@ class ProjectAPITest {
         mruProjects.add(proj1);
         mruProjects.add(proj2);
 
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects);
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, null);
 
         ProjectAPI.removeMostRecentlyUsedProject("pidblub", "sid", "iid2");
         assertThat(mruProjects.get()).hasSize(2);

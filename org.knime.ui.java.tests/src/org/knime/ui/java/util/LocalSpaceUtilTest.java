@@ -50,26 +50,39 @@ package org.knime.ui.java.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
+import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 
 /**
  * Tests methods in {@link LocalSpaceUtil}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-class LocalSpaceUtilTest {
+public class LocalSpaceUtilTest {
 
     @Test
-    void testGetLocalOrigin() {
-        var root = LocalSpaceUtil.getLocalWorkspace().getLocalRootPath();
+    void testGetLocalOrigin() throws IOException {
+        var localSpace = createLocalWorkspace();
+        var root = localSpace.getLocalRootPath();
 
-        var origin = LocalSpaceUtil.getLocalOrigin(root.resolve("test"));
+        var origin = LocalSpaceUtil.getLocalOrigin(root.resolve("test"), localSpace);
         assertThat(origin.getItemId()).isNotNull();
         assertThat(origin.getSpaceId()).isEqualTo("local");
         assertThat(origin.getProviderId()).isEqualTo("local");
         assertThat(origin.getRelativePath().get()).hasToString("test");
 
         assertThat(LocalSpaceUtil.isLocalSpace("local", "local")).isTrue();
+    }
+
+    /**
+     * @return a local workspace instance for testing purposes
+     * @throws IOException
+     */
+    public static LocalWorkspace createLocalWorkspace() throws IOException {
+        return new LocalWorkspace(CoreUtil.resolveToFile("/files/test_workspace", LocalSpaceUtilTest.class).toPath());
     }
 
 }

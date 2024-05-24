@@ -76,10 +76,10 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.ProjectFactory;
 
@@ -131,10 +131,11 @@ final class SaveProjectCopy {
                 return;
             }
 
+            var localSpace = DesktopAPI.getDeps(LocalWorkspace.class);
             if (wfm.isComponentProjectWFM()) {
-                saveAndReplaceComponentProject(oldContext, newContext, wfm, projectId);
+                saveAndReplaceComponentProject(oldContext, newContext, wfm, projectId, localSpace);
             } else {
-                saveAndReplaceWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG);
+                saveAndReplaceWorkflowProject(oldContext, newContext, wfm, projectId, projectSVG, localSpace);
             }
         } catch (Exception ex) {
             LOGGER.error(ex);
@@ -165,32 +166,32 @@ final class SaveProjectCopy {
             return null;
         }
 
-        final var destWorkflowGroupItemId = LocalSpaceUtil.getLocalWorkspace().getItemId(destWorkflowGroupPath);
+        var localSpace = DesktopAPI.getDeps(LocalWorkspace.class);
+        final var destWorkflowGroupItemId = localSpace.getItemId(destWorkflowGroupPath);
         var fileName = destPicker.getTextInput();
-        final var collisionHandling = getNameCollisionStrategy(fileName, destWorkflowGroupItemId);
+        final var collisionHandling = getNameCollisionStrategy(fileName, destWorkflowGroupItemId, localSpace);
         if (collisionHandling == null) {
             LOGGER.error("Name collision handling failed");
             return null;
         }
 
-        final var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
         if (collisionHandling == NameCollisionHandling.OVERWRITE) {
             final var path = destWorkflowGroupPath.resolve(fileName);
             if (path.equals(srcPath)) {
                 return oldContext; // Simply overwrite the current location,
             }
-            final var relativePath = localWorkspace.getLocalRootPath().relativize(path);
-            if (ProjectManager.getInstance().getLocalProject(relativePath).isPresent()) {
+            final var relativePath = localSpace.getLocalRootPath().relativize(path);
+            if (DesktopAPI.getDeps(ProjectManager.class).getLocalProject(relativePath).isPresent()) {
                 throw new IOException("Project <%s> is opened and can't be overwritten.".formatted(fileName));
             }
         }
 
-        final var newPath = localWorkspace.createWorkflowDir(destWorkflowGroupItemId, fileName, collisionHandling);
+        final var newPath = localSpace.createWorkflowDir(destWorkflowGroupItemId, fileName, collisionHandling);
         return WorkflowContextV2.builder() //
             .withAnalyticsPlatformExecutor(exec -> exec //
                 .withCurrentUserAsUserId() //
                 .withLocalWorkflowPath(newPath) //
-                .withMountpoint(localWorkspace.getId().toUpperCase(Locale.US), localWorkspace.getLocalRootPath()) //
+                .withMountpoint(localSpace.getId().toUpperCase(Locale.US), localSpace.getLocalRootPath()) //
                 .withTempFolder(oldContext.getExecutorInfo().getTempFolder())) //
             .withLocalLocation() //
             .build();
@@ -212,8 +213,7 @@ final class SaveProjectCopy {
     }
 
     private static NameCollisionHandling getNameCollisionStrategy(final String fileName,
-        final String workflowGroupItemId) {
-        var localWorkspace = LocalSpaceUtil.getLocalWorkspace();
+        final String workflowGroupItemId, final LocalWorkspace localWorkspace) {
         var nameCollisions = NameCollisionChecker//
             .checkForNameCollisionInDir(localWorkspace, fileName, workflowGroupItemId)//
             .stream()//
@@ -227,16 +227,19 @@ final class SaveProjectCopy {
     }
 
     private static void saveAndReplaceWorkflowProject(final WorkflowContextV2 oldContext,
-        final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
-        final String projectSVG) {
-        final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId);
+        final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId, final String projectSVG,
+        final LocalWorkspace localSpace) {
+        final var project =
+            ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, project,
             monitor -> saveWorkflowCopy(newContext, monitor, wfm, projectSVG));
     }
 
     private static void saveAndReplaceComponentProject(final WorkflowContextV2 oldContext,
-        final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId) {
-        final var project = ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId);
+        final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
+        final LocalWorkspace localSpace) {
+        final var project =
+            ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, project, monitor -> saveComponentCopy(monitor, wfm, newContext));
     }
 
@@ -312,7 +315,8 @@ final class SaveProjectCopy {
 
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) { // To sync the classic perspective
             final var wfm = project.loadWorkflowManager();
-            project.getOrigin().ifPresent(origin -> ClassicWorkflowEditorUtil.updateInputForOpenEditors(origin, wfm));
+            project.getOrigin().ifPresent(origin -> ClassicWorkflowEditorUtil.updateInputForOpenEditors(origin, wfm,
+                DesktopAPI.getDeps(LocalWorkspace.class)));
         }
     }
 }

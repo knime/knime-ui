@@ -86,6 +86,8 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Version;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 
@@ -110,11 +112,12 @@ public final class ClassicWorkflowEditorUtil {
 
     /**
      * Describe the current application state based on the state of the Eclipse UI.
+     * @param localSpace
      */
-    public static void updateWorkflowProjectsFromOpenedWorkflowEditors() {
+    public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final LocalWorkspace localSpace) {
         var workbench = (Workbench)PlatformUI.getWorkbench();
         updateWorkflowProjectsFromOpenedWorkflowEditors(workbench.getService(EModelService.class),
-            workbench.getApplication());
+            workbench.getApplication(), localSpace);
     }
 
     /**
@@ -122,13 +125,14 @@ public final class ClassicWorkflowEditorUtil {
      *
      * @param modelService
      * @param app
+     * @param localSpace
      */
     public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
-        final MApplication app) {
+        final MApplication app, final LocalWorkspace localSpace) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
         var activeProjectId = new AtomicReference<String>();
         var workflowProjects = editorParts.stream().map(part -> {
-            var wp = getOrCreateWorkflowProject(part);
+            var wp = getOrCreateWorkflowProject(part, localSpace);
             if (wp != null && isEditorPartSelectedElement(part)) {
                 activeProjectId.set(wp.getID());
             }
@@ -161,18 +165,17 @@ public final class ClassicWorkflowEditorUtil {
         }
     }
 
-    private static Project getOrCreateWorkflowProject(final MPart editorPart) {
+    private static Project getOrCreateWorkflowProject(final MPart editorPart, final LocalWorkspace localSpace) {
         var wfm = getWorkflowManager(editorPart);
         var projectWfm = wfm.flatMap(ClassicWorkflowEditorUtil::getProjectManager);
-        return projectWfm.map(pw -> getOrCreateWorkflowProject(pw, editorPart)).orElse(null);
+        return projectWfm.map(pw -> getOrCreateWorkflowProject(pw, editorPart, localSpace)).orElse(null);
     }
 
-    private static Project getOrCreateWorkflowProject(final WorkflowManager projWfm,
-        final MPart editorPart) {
-        Project wp =
-            ProjectManager.getInstance().getProject(projWfm.getNameWithID()).orElse(null);
+    private static Project getOrCreateWorkflowProject(final WorkflowManager projWfm, final MPart editorPart,
+        final LocalWorkspace localSpace) {
+        Project wp = ProjectManager.getInstance().getProject(projWfm.getNameWithID()).orElse(null);
         if (wp == null) {
-            return createWorkflowProject(editorPart, projWfm);
+            return createWorkflowProject(editorPart, projWfm, localSpace);
         }
         return wp;
     }
@@ -212,7 +215,8 @@ public final class ClassicWorkflowEditorUtil {
         editorPart.getParent().setSelectedElement(editorPart);
     }
 
-    private static Project createWorkflowProject(final MPart editorPart, final WorkflowManager wfm) {
+    private static Project createWorkflowProject(final MPart editorPart, final WorkflowManager wfm,
+        final LocalWorkspace localSpace) {
         if (editorPart.getObject() instanceof CompatibilityPart) {
             // Editors with no workflow loaded (i.e. opened tabs after
             // the KNIME start which haven't been touched, yet) are ignored atm
@@ -252,7 +256,7 @@ public final class ClassicWorkflowEditorUtil {
                         }
 
                         final var path = context.getExecutorInfo().getLocalWorkflowPath();
-                        return Optional.of(LocalSpaceUtil.getLocalOrigin(path));
+                        return Optional.of(LocalSpaceUtil.getLocalOrigin(path, localSpace));
                     } else if (locationInfo instanceof HubSpaceLocationInfo hubSpaceLocationInfo) {
                         return ProjectFactory.getOriginFromHubSpaceLocationInfo(hubSpaceLocationInfo, wfm);
                     } else {
@@ -401,11 +405,13 @@ public final class ClassicWorkflowEditorUtil {
      *
      * @param origin
      * @param wfm
+     * @param localSpace
      */
-    public static void updateInputForOpenEditors(final Project.Origin origin, final WorkflowManager wfm) {
+    public static void updateInputForOpenEditors(final Project.Origin origin, final WorkflowManager wfm,
+        final Space localSpace) {
         ClassicWorkflowEditorUtil.getOpenWorkflowEditor(wfm).ifPresent(e -> {
             final var itemId = origin.getItemId();
-            final var knimeUrl = LocalSpaceUtil.getLocalWorkspace().toKnimeUrl(itemId);
+            final var knimeUrl = localSpace.toKnimeUrl(itemId);
             final var fileStore = ExplorerFileSystem.INSTANCE.getStore(knimeUrl)//
                 .getChild(WorkflowPersistor.WORKFLOW_FILE);
             final var input = new FileStoreEditorInput(fileStore);

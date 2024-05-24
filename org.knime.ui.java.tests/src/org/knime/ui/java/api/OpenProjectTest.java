@@ -54,7 +54,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -62,7 +61,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -70,8 +68,8 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.LocalSpaceUtilTest;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProjectFactory;
 
@@ -87,7 +85,7 @@ class OpenProjectTest {
     @Test
     @DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
     void testOpenWorkflowInWebUIOnly() throws IOException {
-        var localWorkspace = new LocalWorkspace(getTestWorkspacePath("test_workspace"));
+        var localWorkspace = LocalSpaceUtilTest.createLocalWorkspace();
         var spaceProvider = mock(SpaceProvider.class);
         when(spaceProvider.getSpace("local")).thenReturn(localWorkspace);
         var spaceProviders = mock(SpaceProviders.class);
@@ -97,13 +95,13 @@ class OpenProjectTest {
         var appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         var mruProjects = new MostRecentlyUsedProjects();
-        DesktopAPI.injectDependencies(ProjectManager.getInstance(), appStateUpdater, spaceProviders, null,
-            eventConsumer, null, null, null, mruProjects);
+        var pm = ProjectManager.getInstance();
+        DesktopAPI.injectDependencies(pm, appStateUpdater, spaceProviders, null,
+            eventConsumer, null, null, null, mruProjects, localWorkspace);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
         OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
 
-        var pm = ProjectManager.getInstance();
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);
         var project = pm.getProject(projectIds.iterator().next()).get();
@@ -130,10 +128,6 @@ class OpenProjectTest {
         assertThat(origin.getSpaceId()).isEqualTo("spaceId");
         assertThat(origin.getProviderId()).isEqualTo("providerId");
         assertThat(origin.getRelativePath().orElseThrow()).hasToString("relativePath");
-    }
-
-    private static Path getTestWorkspacePath(final String name) throws IOException {
-        return CoreUtil.resolveToFile("/files/" + name, OpenProjectTest.class).toPath();
     }
 
     @AfterEach

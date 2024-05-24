@@ -52,6 +52,7 @@ import java.util.function.IntSupplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 /**
@@ -91,6 +92,11 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     @Override
     public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
         return m_lifeCycleStateInternal.getMostRecentlyUsedProjects();
+    }
+
+    @Override
+    public LocalWorkspace getLocalWorkspace() {
+        return m_lifeCycleStateInternal.getLocalWorkspace();
     }
 
 }

@@ -66,6 +66,7 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -86,9 +87,10 @@ public final class TestingUtil {
      * @see ServiceDependencies#setDefaultServiceDependencies(AppStateUpdater, EventConsumer,
      *      org.knime.gateway.impl.webui.SpaceProviders, org.knime.gateway.impl.webui.UpdateStateProvider)
      */
-    public static void initAppForTesting(final List<String> projectIds, final String activeProjectId) {
+    public static void initAppForTesting(final List<String> projectIds, final String activeProjectId,
+        final LocalWorkspace localSpace) {
         clearAppForTesting();
-        TestingUtil.addToProjectManagerForTesting(projectIds, activeProjectId);
+        TestingUtil.addToProjectManagerForTesting(projectIds, activeProjectId, localSpace);
         KnimeBrowserView.initViewForTesting();
     }
 
@@ -105,7 +107,8 @@ public final class TestingUtil {
         disposeLoadedWorkflowsForTesting();
     }
 
-    private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId) {
+    private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId,
+        final LocalWorkspace localSpace) {
         var wpm = ProjectManager.getInstance();
         projectIds.stream().forEach(projectId -> wpm.addProject(new Project() { // NOSONAR
 
@@ -126,7 +129,7 @@ public final class TestingUtil {
 
             @Override
             public Optional<Origin> getOrigin() {
-                return Optional.of(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath()));
+                return Optional.of(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpace));
             }
         }));
         if (activeProjectId != null) {

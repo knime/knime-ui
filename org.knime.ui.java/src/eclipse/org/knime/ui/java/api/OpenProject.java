@@ -150,7 +150,8 @@ final class OpenProject {
         try {
             DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo);
             hideSharedEditorArea();
-            ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors();
+            ClassicWorkflowEditorUtil
+                .updateWorkflowProjectsFromOpenedWorkflowEditors(DesktopAPI.getDeps(LocalWorkspace.class));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
             LOGGER.warn("Could not open editor", e);

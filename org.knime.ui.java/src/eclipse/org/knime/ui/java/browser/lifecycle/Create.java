@@ -61,6 +61,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorReference;
@@ -74,6 +75,7 @@ import org.knime.core.util.EclipseUtil;
 import org.knime.core.util.HubStatistics;
 import org.knime.core.util.proxy.URLConnectionFactory;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.product.rcp.KNIMEApplication;
@@ -141,13 +143,14 @@ final class Create {
 
         var projectManager = ProjectManager.getInstance();
         var mostRecentlyUsedProjects = new MostRecentlyUsedProjects();
+        var localWorkspace = createLocalWorkspace();
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             ProjectWorkflowMap.isActive = false;
-            AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects);
+            AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localWorkspace);
         } else {
             // only load the most recently used projects in case the classic UI is active
             // since the project-manager itself is updated on switch
-            AppStatePersistor.loadAppState(null, mostRecentlyUsedProjects);
+            AppStatePersistor.loadAppState(null, mostRecentlyUsedProjects, localWorkspace);
         }
 
         return new LifeCycleStateInternal() {
@@ -160,6 +163,11 @@ final class Create {
             @Override
             public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
                 return mostRecentlyUsedProjects;
+            }
+
+            @Override
+            public LocalWorkspace getLocalWorkspace() {
+                return localWorkspace;
             }
 
         };
@@ -259,6 +267,11 @@ final class Create {
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("Not a valid URL");
         }
+    }
+
+    private static LocalWorkspace createLocalWorkspace() {
+        var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
+        return new LocalWorkspace(localWorkspaceRootPath);
     }
 
 }

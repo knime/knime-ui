@@ -53,6 +53,7 @@ import java.util.function.IntSupplier;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
@@ -95,5 +96,10 @@ public interface LifeCycleStateInternal extends LifeCycleState {
      * @return most recently used projects to be passed between life cycle phases
      */
     MostRecentlyUsedProjects getMostRecentlyUsedProjects();
+
+    /**
+     * @return the local workspace instance to be passed between life cycle phases
+     */
+    LocalWorkspace getLocalWorkspace();
 
 }

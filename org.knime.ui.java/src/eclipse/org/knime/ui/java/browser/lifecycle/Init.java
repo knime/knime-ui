@@ -124,7 +124,8 @@ final class Init {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
         // Create and set default service dependencies
         var projectManager = state.getProjectManager();
-        var spaceProviders = createSpaceProviders();
+        var localSpace = state.getLocalWorkspace();
+        var spaceProviders = createSpaceProviders(localSpace);
         var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
         var appStateUpdater = new AppStateUpdater();
         var eventConsumer = createEventConsumer();
@@ -136,11 +137,12 @@ final class Init {
         var nodeRepo = createNodeRepository(nodeCollections);
 
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
-            eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createExampleProjects(),
+            eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createExampleProjects(localSpace),
             createNodeFactoryProvider(), kaiHandler, nodeCollections, nodeRepo);
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
-            eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects());
+            eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
+            state.getLocalWorkspace());
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 
@@ -210,8 +212,8 @@ final class Init {
             SharedConstants.EVENT_ACTION_ID);
     }
 
-    private static UpdatableSpaceProviders createSpaceProviders() {
-        return new UpdatableSpaceProviders();
+    private static UpdatableSpaceProviders createSpaceProviders(final LocalWorkspace localSpace) {
+        return new UpdatableSpaceProviders(localSpace);
     }
 
     private static PreferencesProvider createPreferencesProvider() {
@@ -238,12 +240,12 @@ final class Init {
         };
     }
 
-    private static ExampleProjects createExampleProjects() {
+    private static ExampleProjects createExampleProjects(final LocalWorkspace localSpace) {
         return new ExampleProjects() {
 
             @Override
             public LocalWorkspace getLocalWorkspace() {
-                return LocalSpaceUtil.getLocalWorkspace();
+                return localSpace;
             }
 
             @Override
@@ -381,7 +383,7 @@ final class Init {
 
     private static final class UpdatableSpaceProviders implements SpaceProviders {
 
-        private final SpaceProvider m_localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
+        private final SpaceProvider m_localWorkspaceProvider;
 
         private final List<SpaceProviders> m_spaceProvidersFromExtensionPoint = getSpaceProvidersFromExtensionPoint();
 
@@ -391,7 +393,8 @@ final class Init {
         // thread-safe through synchronized access
         private Map<String, SpaceProviderEnt.TypeEnum> m_providerTypes = Map.of();
 
-        public UpdatableSpaceProviders() {
+        public UpdatableSpaceProviders(final LocalWorkspace localSpace) {
+            m_localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider(localSpace);
             update();
         }
 

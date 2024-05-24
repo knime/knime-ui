@@ -214,7 +214,7 @@ final class SpaceAPI {
         final var targetMountId = destinationStore.getMountID();
         final SpaceProvider targetSpaceProvider;
         if (targetMountId.equalsIgnoreCase(LocalWorkspace.LOCAL_WORKSPACE_ID)) {
-            targetSpaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
+            targetSpaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider(DesktopAPI.getDeps(LocalWorkspace.class));
         } else {
             targetSpaceProvider = getSpaceProvider(targetMountId);
         }

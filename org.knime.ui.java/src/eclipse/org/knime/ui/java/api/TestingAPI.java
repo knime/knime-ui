@@ -59,6 +59,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.TestingUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -101,8 +102,8 @@ final class TestingAPI {
                     activeProjectId.set(projectId);
                 }
                 return projectId;
-            }).collect(Collectors.toList());
-        TestingUtil.initAppForTesting(projectIds, activeProjectId.get());
+            }).toList();
+        TestingUtil.initAppForTesting(projectIds, activeProjectId.get(), DesktopAPI.getDeps(LocalWorkspace.class));
     }
 
     /**

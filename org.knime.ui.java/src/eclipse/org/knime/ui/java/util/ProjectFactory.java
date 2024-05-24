@@ -115,13 +115,14 @@ public final class ProjectFactory {
      * @param context
      * @param projectType
      * @param customProjectId
+     * @param localSpace
      * @return The newly created project
      */
     public static Project createProject(final WorkflowManager wfm, final WorkflowContextV2 context,
-        final ProjectTypeEnum projectType, final String customProjectId) {
+        final ProjectTypeEnum projectType, final String customProjectId, final LocalWorkspace localSpace) {
         final var path = context.getExecutorInfo().getLocalWorkflowPath();
-        final var itemId = LocalSpaceUtil.getLocalWorkspace().getItemId(path);
-        final var relativePath = LocalSpaceUtil.getLocalWorkspace().getLocalRootPath().relativize(path).toString();
+        final var itemId = localSpace.getItemId(path);
+        final var relativePath = localSpace.getLocalRootPath().relativize(path).toString();
         final var origin = getOrigin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalWorkspace.LOCAL_WORKSPACE_ID, itemId,
             relativePath, projectType);
         final var projectName = path.toFile().getName();

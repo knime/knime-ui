@@ -49,6 +49,7 @@
 package org.knime.ui.java.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.knime.ui.java.util.LocalSpaceUtilTest.createLocalWorkspace;
 import static org.knime.ui.java.util.MostRecentlyUsedProjectsTest.createOrigin;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -154,7 +155,7 @@ public class AppStatePersistorTest {
 
         pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
 
-        AppStatePersistor.loadAppState(pm, mruProjects);
+        AppStatePersistor.loadAppState(pm, mruProjects, createLocalWorkspace());
         var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects);
         assertThat(appStateStringNew).as("Assert the valid app state was saved and loaded").isEqualTo(appStateString);
     }
@@ -166,7 +167,7 @@ public class AppStatePersistorTest {
 
         var pm = ProjectManager.getInstance();
         var mruProjcts = new MostRecentlyUsedProjects();
-        AppStatePersistor.loadAppState(pm, mruProjcts);
+        AppStatePersistor.loadAppState(pm, mruProjcts, createLocalWorkspace());
         var appStateString = AppStatePersistor.serializeAppState(pm, mruProjcts);
         assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
     }
@@ -178,7 +179,7 @@ public class AppStatePersistorTest {
 
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
-        AppStatePersistor.loadAppState(pm, mruProjects);
+        AppStatePersistor.loadAppState(pm, mruProjects, createLocalWorkspace());
         var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects);
         assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
     }
@@ -196,8 +197,8 @@ public class AppStatePersistorTest {
         assertAppStateFile(VALID_APP_STATE_WITH_RECENTLY_USED_PROJECTS);
 
         var loadedMrulProjects = new MostRecentlyUsedProjects();
-        AppStatePersistor.loadAppState(pm, loadedMrulProjects);
-        var localSpace = LocalSpaceUtil.getLocalWorkspace();
+        var localSpace = createLocalWorkspace();
+        AppStatePersistor.loadAppState(pm, loadedMrulProjects, localSpace);
         assertThat(loadedMrulProjects.get()).hasSize(2);
         var loadedProj1 = loadedMrulProjects.get().get(0);
         assertThat(loadedProj1.name()).isEqualTo("name1");

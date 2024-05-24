@@ -243,7 +243,7 @@ final class ProjectAPI {
     @API
     static String updateAndGetMostRecentlyUsedProjects() {
         var mruProjects = DesktopAPI.getDeps(MostRecentlyUsedProjects.class);
-        var localSpace = LocalSpaceUtil.getLocalWorkspace();
+        var localSpace = DesktopAPI.getDeps(LocalWorkspace.class);
         mruProjects.removeIf(p -> wasRemovedFromLocalSpace(p.origin(), localSpace));
         return mruProjects.get().stream() //
             .map(p -> MAPPER.createObjectNode() //
