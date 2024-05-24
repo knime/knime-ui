@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
 import { APP_ROUTES } from "@/router";
 import { useStore } from "@/composables/useStore";
@@ -40,6 +43,19 @@ const onSpaceCardClick = (space: SpaceProviderNS.Space) => {
     },
   });
 };
+
+const query = ref("");
+
+const matchesQuery = (input: string) =>
+  input.toLowerCase().includes(query.value.toLowerCase());
+
+const filteredSpaces = computed(
+  () =>
+    activeSpaceGroup.value?.spaces.filter(
+      ({ name, description }) =>
+        matchesQuery(name) || matchesQuery(description ?? ""),
+    ),
+);
 </script>
 
 <template>
@@ -52,10 +68,19 @@ const onSpaceCardClick = (space: SpaceProviderNS.Space) => {
       <Component :is="getSpaceGroupIcon(activeSpaceGroup)" />
     </template>
 
+    <template #toolbar>
+      <SearchInput
+        v-model="query"
+        placeholder="Search"
+        class="search-bar"
+        tabindex="-1"
+      />
+    </template>
+
     <template #content>
       <div class="cards">
         <SpaceCard
-          v-for="(space, id) of activeSpaceGroup.spaces"
+          v-for="(space, id) of filteredSpaces"
           :key="id"
           :space="space"
           @click="onSpaceCardClick(space)"
