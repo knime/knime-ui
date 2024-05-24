@@ -92,7 +92,7 @@ class CloseProjectTest {
         appStateUpdater.addAppStateChangedListener(m_appStateUpdateListener);
         var pm = ProjectManager.getInstance();
         DesktopAPI.injectDependencies(pm, appStateUpdater, null, null, eventConsumer, null, null, null, null, null,
-                null);
+            null, null);
 
         var workflowDir = CoreUtil.resolveToFile("/files/test_workspace/simple", OpenProjectTest.class);
 

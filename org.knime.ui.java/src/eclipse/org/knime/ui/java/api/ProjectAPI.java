@@ -51,11 +51,15 @@ package org.knime.ui.java.api;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collector;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -65,19 +69,24 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
+import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
+import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
@@ -300,6 +309,48 @@ final class ProjectAPI {
         final String newName) {
         DesktopAPI.getDeps(MostRecentlyUsedProjects.class).updateOriginAndName(providerId, spaceId, itemId, newName,
             DesktopAPI.getDeps(LocalWorkspace.class));
+    }
+
+    /**
+     * @return example project as json-formatted string
+     */
+    @API
+    static String getExampleProjects() {
+        var localWorkspace = DesktopAPI.getDeps(LocalWorkspace.class);
+        var exampleProjects = DesktopAPI.getDeps(ExampleProjects.class);
+        return exampleProjects.getRelativeExampleProjectPaths().stream() //
+            .map(s -> localWorkspace.getLocalRootPath().resolve(Path.of(s))) //
+            .filter(Files::exists) //
+            .map(f -> createExampleProjectJson(f, localWorkspace)) //
+            .filter(Objects::nonNull) //
+            .collect(arrayNodeCollector()).toPrettyString();
+    }
+
+    private static JsonNode createExampleProjectJson(final Path workflowDir, final LocalWorkspace localWorkspace) {
+        var svgFile = workflowDir.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE);
+        byte[] svg;
+        try {
+            svg = Files.readAllBytes(svgFile);
+        } catch (IOException ex) {
+            NodeLogger.getLogger(AppStateEntityFactory.class)
+                .error("Svg for workflow '" + workflowDir + "' could not be read", ex);
+            return null;
+        }
+        var name = workflowDir.getFileName().toString();
+        var svgEncoded = Base64.getEncoder().encodeToString(svg);
+        var itemId = localWorkspace.getItemId(workflowDir);
+        return createExampleProjectJson(name, svgEncoded, itemId);
+    }
+
+    private static JsonNode createExampleProjectJson(final String name, final String svg, final String itemId) {
+        return MAPPER.createObjectNode() //
+            .put("name", name) //
+            .put("svg", svg) //
+            .set("origin", MAPPER.createObjectNode() //
+                .put("itemId", itemId) //
+                .put("spaceId", LocalWorkspace.LOCAL_WORKSPACE_ID) //
+                .put("providerId", SpaceProvider.LOCAL_SPACE_PROVIDER_ID) //
+            );
     }
 
     private static Collector<Object, ArrayNode, ArrayNode> arrayNodeCollector() {

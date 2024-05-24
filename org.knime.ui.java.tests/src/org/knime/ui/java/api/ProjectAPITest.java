@@ -52,18 +52,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.knime.ui.java.util.MostRecentlyUsedProjectsTest.createOrigin;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
+import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtilTest;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 import org.knime.ui.java.util.ProjectFactory;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Tests some methods in {@link ProjectAPI}.
@@ -90,21 +97,31 @@ class ProjectAPITest {
     @Test
     void testUpdateAndGetMostRecentlyUsedProjects() throws IOException {
         var mruProjects = new MostRecentlyUsedProjects();
+        var localSpace = LocalSpaceUtilTest.createLocalWorkspace();
         var proj1 =
             new RecentlyUsedProject("name1", createOrigin("local", "local", "iid", "relPath"), OffsetDateTime.MAX);
         var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
-        var proj3 =
-            new RecentlyUsedProject("name2", createOrigin("local", "local", "iid3", "relPath2"), OffsetDateTime.MAX);
+        var itemId = localSpace.getItemId(localSpace.getLocalRootPath().resolve("simple"));
+        var proj3 = new RecentlyUsedProject("name3", createOrigin("local", "local", itemId, null), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
         mruProjects.add(proj3);
 
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects,
-            LocalSpaceUtilTest.createLocalWorkspace(), null);
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, localSpace, null,
+            null);
 
         var res = ProjectAPI.updateAndGetMostRecentlyUsedProjects();
         assertThat(res).isEqualTo(String.format("""
                 [ {
+                  "name" : "name3",
+                  "timeUsed" : "%s",
+                  "origin" : {
+                    "providerId" : "local",
+                    "spaceId" : "local",
+                    "itemId" : "%s",
+                    "projectType" : "Workflow"
+                  }
+                }, {
                   "name" : "name2",
                   "timeUsed" : "%s",
                   "origin" : {
@@ -113,8 +130,8 @@ class ProjectAPITest {
                     "itemId" : "iid2",
                     "projectType" : "Workflow"
                   }
-                } ]""", OffsetDateTime.MAX));
-        assertThat(mruProjects.get()).hasSize(1);
+                } ]""", OffsetDateTime.MAX, itemId, OffsetDateTime.MAX));
+        assertThat(mruProjects.get()).hasSize(2);
     }
 
     @Test
@@ -126,7 +143,7 @@ class ProjectAPITest {
         mruProjects.add(proj1);
         mruProjects.add(proj2);
 
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, null, null);
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, null, null, null);
 
         ProjectAPI.removeMostRecentlyUsedProject("pidblub", "sid", "iid2");
         assertThat(mruProjects.get()).hasSize(2);
@@ -134,6 +151,35 @@ class ProjectAPITest {
         ProjectAPI.removeMostRecentlyUsedProject("pid", "sid", "iid2");
         assertThat(mruProjects.get()).hasSize(1);
         assertThat(mruProjects.get().get(0).name()).isEqualTo("name1");
+    }
+
+    @Test
+    void testGetExampleProjects() throws IOException {
+        ExampleProjects exampleProjects = () -> List.of("wfDir1", "wfDir2");
+        var localSpace = mockLocalWorkspace();
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, null, localSpace, null,
+            exampleProjects);
+
+        var res = (ArrayNode)DesktopAPI.MAPPER.readTree(ProjectAPI.getExampleProjects());
+        assertThat(res.size()).isEqualTo(2);
+        assertThat(res.get(0).get("name").asText()).isEqualTo("wfDir1");
+        assertThat(res.get(1).get("name").asText()).isEqualTo("wfDir2");
+        assertThat(res.get(0).has("svg"));
+        assertThat(res.get(0).has("origin"));
+        assertThat(res.get(0).get("origin").has("itemId"));
+        assertThat(res.get(0).get("origin").has("spaceId"));
+        assertThat(res.get(0).get("origin").has("providerId"));
+    }
+
+    private static LocalWorkspace mockLocalWorkspace() throws IOException {
+        var root = Files.createTempDirectory("application_service_test");
+        var wfDir1 = root.resolve("wfDir1");
+        Files.createDirectory(wfDir1);
+        Files.writeString(wfDir1.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), "svg file content");
+        var wfDir2 = root.resolve("wfDir2");
+        Files.createDirectory(wfDir2);
+        Files.writeString(wfDir2.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), "svg file content 2");
+        return new LocalWorkspace(root);
     }
 
     @AfterEach

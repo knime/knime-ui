@@ -74,7 +74,6 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.ExampleProjects;
 import org.knime.gateway.impl.webui.NodeCollections;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.NodeRepository;
@@ -102,6 +101,7 @@ import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.NodeCollectionUtil;
 import org.knime.ui.java.util.SpaceProvidersUtil;
@@ -142,12 +142,12 @@ final class Init {
         var selectionEventBus = createSelectionEventBus(eventConsumer);
 
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
-            eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createExampleProjects(localSpace),
-            createNodeFactoryProvider(), kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
+            eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
+            kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
-            state.getLocalWorkspace(), state.getWelcomeApEndpoint());
+            state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects());
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 
@@ -253,23 +253,12 @@ final class Init {
         };
     }
 
-    private static ExampleProjects createExampleProjects(final LocalWorkspace localSpace) {
-        return new ExampleProjects() {
-
-            @Override
-            public LocalWorkspace getLocalWorkspace() {
-                return localSpace;
-            }
-
-            @Override
-            public List<String> getRelativeExampleProjectPaths() {
-                return List.of( //
-                    "Example Workflows/Basic Examples/Combine Clean and Summarize Spreadsheet Data", //
-                    "Example Workflows/Basic Examples/CountIf and SumIf", //
-                    "Example Workflows/Basic Examples/Non-standard format Spreadsheets" //
-                );
-            }
-        };
+    private static ExampleProjects createExampleProjects() {
+        return () -> List.of( //
+            "Example Workflows/Basic Examples/Combine Clean and Summarize Spreadsheet Data", //
+            "Example Workflows/Basic Examples/CountIf and SumIf", //
+            "Example Workflows/Basic Examples/Non-standard format Spreadsheets" //
+        );
     }
 
     private static NodeFactoryProvider createNodeFactoryProvider() {
