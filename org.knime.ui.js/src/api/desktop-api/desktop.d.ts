@@ -220,3 +220,5 @@ declare function openLockSubnodeDialog(projectId: string, nodeId: string): void;
 declare function unlockSubnode(projectId: string, nodeId: string): boolean;
 
 declare function getHomePageTile(): Record<string, string>;
+
+declare function getExampleProjects(): string;

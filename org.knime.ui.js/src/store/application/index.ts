@@ -1,7 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type {
-  ExampleProject,
   PortType,
   UpdateAvailableEvent,
   Project,
@@ -21,7 +20,7 @@ import * as globalLoader from "./globalLoader";
 import * as dirtyProjectTracking from "./dirtyProjectsTracking";
 import * as canvasModes from "./canvasModes";
 import * as permissions from "./permissions";
-import type { WorkflowObject } from "@/api/custom-types";
+import type { WorkflowObject, ExampleProject } from "@/api/custom-types";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { nodeSize } from "@/style/shapes.mjs";
 import { findSpaceById } from "@/store/spaces/util";
@@ -147,7 +146,7 @@ export const mutations: MutationTree<ApplicationState> = {
   setOpenProjects(state, projects) {
     state.openProjects = projects;
   },
-  setExampleProjects(state, examples) {
+  setExampleProjects(state, examples: ExampleProject[]) {
     state.exampleProjects = examples;
   },
   setAvailablePortTypes(state, availablePortTypes) {
@@ -260,10 +259,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         { openProjects: applicationState.openProjects },
         { root: true },
       );
-    }
-
-    if (applicationState.exampleProjects) {
-      commit("setExampleProjects", applicationState.exampleProjects);
     }
 
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

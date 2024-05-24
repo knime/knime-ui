@@ -35,6 +35,8 @@ describe("application::lifecycle", () => {
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
       const { store, dispatchSpy, commitSpy, subscribeEvent } = loadStore();
+      const exampleProjects = [{ name: "test" }];
+      mockedAPI.desktop.getExampleProjects.mockResolvedValue(exampleProjects);
       await store.dispatch("application/initializeApplication", {
         $router: router,
       });
@@ -46,6 +48,12 @@ describe("application::lifecycle", () => {
       );
       expect(subscribeEvent).toHaveBeenCalled();
       expect(API.application.getState).toHaveBeenCalled();
+      expect(API.desktop.getExampleProjects).toHaveBeenCalled();
+      expect(commitSpy).toHaveBeenCalledWith(
+        "application/setExampleProjects",
+        exampleProjects,
+        undefined,
+      );
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/replaceApplicationState",
         applicationState,

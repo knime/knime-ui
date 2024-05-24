@@ -165,3 +165,9 @@ export type RecentWorkflow = {
 };
 
 export type WorkflowOrigin = Omit<SpaceItemReference, "ancestorItemIds">;
+
+export type ExampleProject = {
+  name: string;
+  svg: string;
+  origin: SpaceItemReference;
+};

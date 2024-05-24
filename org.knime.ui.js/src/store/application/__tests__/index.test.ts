@@ -29,31 +29,6 @@ vi.mock("@/util/workflowNavigationService", () => {
 });
 
 describe("application::index", () => {
-  it("calls setExampleProjects", async () => {
-    const { store, commitSpy } = loadStore();
-
-    const exampleProjects = [
-      {
-        name: "Example 1",
-        svg: "svg",
-        origin: {
-          spaceId: "local",
-          providerId: "local",
-          itemId: "item1",
-        },
-      },
-    ];
-    await store.dispatch("application/replaceApplicationState", {
-      exampleProjects,
-    });
-
-    expect(commitSpy).toHaveBeenCalledWith(
-      "application/setExampleProjects",
-      exampleProjects,
-      undefined,
-    );
-  });
-
   it("returns the active project's origin", () => {
     const { store } = loadStore();
     store.commit("application/setOpenProjects", [

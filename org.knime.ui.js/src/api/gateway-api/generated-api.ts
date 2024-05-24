@@ -449,12 +449,6 @@ export interface AppState {
      */
     openProjects?: Array<Project>;
     /**
-     * List of example projects, e.g., to be shown on and opened from the &#39;get started&#39; page.
-     * @type {Array<ExampleProject>}
-     * @memberof AppState
-     */
-    exampleProjects?: Array<ExampleProject>;
-    /**
      * All port types available in this installation. Map from port type ID to port type entity.
      * @type {{ [key: string]: PortType; }}
      * @memberof AppState
@@ -1274,35 +1268,6 @@ export interface EventType {
      * @memberof EventType
      */
     typeId?: string;
-
-}
-
-
-/**
- * Represents an example project.
- * @export
- * @interface ExampleProject
- */
-export interface ExampleProject {
-
-    /**
-     * The example project name.
-     * @type {string}
-     * @memberof ExampleProject
-     */
-    name?: string;
-    /**
-     * Base-64 encoded string representing the workflow-svg.
-     * @type {string}
-     * @memberof ExampleProject
-     */
-    svg?: string;
-    /**
-     *
-     * @type {SpaceItemReference}
-     * @memberof ExampleProject
-     */
-    origin?: SpaceItemReference;
 
 }
 

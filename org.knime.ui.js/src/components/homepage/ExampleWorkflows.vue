@@ -9,7 +9,7 @@ import Button from "webapps-common/ui/components/Button.vue";
 import { useStore } from "@/composables/useStore";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
-import type { ExampleProject } from "@/api/gateway-api/generated-api";
+import type { ExampleProject } from "@/api/custom-types.ts";
 import { getToastsProvider } from "@/plugins/toasts";
 import PageTitle from "./PageTitle.vue";
 

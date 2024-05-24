@@ -9,6 +9,7 @@ import {
   type SpaceItemId,
   SpaceProviderNS,
   type RecentWorkflow,
+  type ExampleProject,
 } from "../custom-types";
 
 const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
@@ -865,4 +866,15 @@ export const getHomePageTile = async () => {
   );
 
   return data as HomePageTileResponse;
+};
+
+export const getExampleProjects = async () => {
+  const data = await callBrowserFunction(
+    window.getExampleProjects,
+    [],
+    "Failed to fetch example projects",
+    true,
+    { block: false },
+  );
+  return (data ? JSON.parse(data) : []) as Array<ExampleProject>;
 };
