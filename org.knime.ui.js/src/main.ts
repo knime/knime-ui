@@ -3,7 +3,7 @@ import KnimeUI from "./components/KnimeUI.vue";
 
 import { initJSONRPCClient, type ConnectionInfo } from "./api/json-rpc-client";
 import { setupLogger } from "./plugins/logger";
-import { initStore } from "./store";
+import { store } from "./store";
 import { router } from "./router";
 import { initPlugins } from "./plugins";
 import {
@@ -90,8 +90,6 @@ const apiURLResolver = () =>
   });
 
 try {
-  const store = initStore();
-
   const toastServiceProvider = getToastsProvider();
   const toastPlugin = toastServiceProvider.getToastServicePlugin();
 

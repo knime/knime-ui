@@ -98,9 +98,6 @@ const openInspector = () => {
 };
 
 const setGetStartedPageTab = () => {
-  // if (isHomeActive.value) {
-  //   return;
-  // }
   activeProjectTab.value = null;
   $router.push({ name: APP_ROUTES.Home.GetStarted });
 };

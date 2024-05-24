@@ -6,12 +6,13 @@ import MenuItems, {
   type MenuItem,
 } from "webapps-common/ui/components/MenuItems.vue";
 
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { SpaceItemReference, XY } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useStore } from "@/composables/useStore";
 import { TABS } from "@/store/panel";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { findSpaceGroupFromSpaceId } from "@/store/spaces/util";
 
 type Props = {
   projectId: string | null;
@@ -57,9 +58,21 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
           });
         };
 
-        const displayExplorer = () => {
+        const displayExplorer = (origin: SpaceItemReference) => {
           if (!activeProjectId.value) {
-            return $router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+            const group = findSpaceGroupFromSpaceId(
+              store.state.spaces.spaceProviders ?? {},
+              origin.spaceId,
+            );
+
+            return $router.push({
+              name: APP_ROUTES.Home.SpaceBrowsingPage,
+              params: {
+                spaceProviderId: origin.providerId,
+                spaceId: origin.spaceId,
+                groupId: group?.id,
+              },
+            });
           }
 
           if (
@@ -100,7 +113,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
           const projectPathToReload =
             activeProjectId.value ?? globalSpaceBrowserProjectId;
 
-          await displayExplorer();
+          await displayExplorer(foundProject.origin);
 
           const currentPath =
             store.state.spaces.projectPath[projectPathToReload];

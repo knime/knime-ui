@@ -24,6 +24,7 @@ import * as permissions from "./permissions";
 import type { WorkflowObject } from "@/api/custom-types";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { nodeSize } from "@/style/shapes.mjs";
+import { findSpaceById } from "@/store/spaces/util";
 
 export interface ApplicationState {
   /**
@@ -453,12 +454,7 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
 
       // try to find a provider that contains the spaceId referenced
       // by the activeProject's origin
-      return !Object.values(spaceProviders).find((provider) => {
-        const { spaces = [] } = provider;
-        return spaces.find(
-          (space) => space.id === foundProject.origin!.spaceId,
-        );
-      });
+      return !findSpaceById(spaceProviders, foundProject.origin!.spaceId);
     };
   },
 

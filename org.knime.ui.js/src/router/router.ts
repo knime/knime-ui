@@ -7,6 +7,9 @@ import {
 import { environment } from "@/environment";
 
 import WorkflowPage from "@/components/workflow/WorkflowPage.vue";
+import { store } from "@/store";
+import { globalSpaceBrowserProjectId } from "@/store/spaces";
+import { findSpaceGroupFromSpaceId } from "@/store/spaces/util";
 
 import { APP_ROUTES } from "./appRoutes";
 
@@ -32,6 +35,34 @@ export const routes: Array<RouteRecordRaw> = [
         name: APP_ROUTES.Home.GetStarted,
         path: "/get-started",
         component: () => import("@/components/homepage/GetStartedPage.vue"),
+        beforeEnter: (_, from, next) => {
+          const { projectPath, spaceProviders } = store.state.spaces;
+
+          const hasGlobalState = projectPath[globalSpaceBrowserProjectId];
+          const isComingFromWorflow = from.name === APP_ROUTES.WorkflowPage;
+
+          if (hasGlobalState && isComingFromWorflow) {
+            const { spaceId, spaceProviderId } =
+              projectPath[globalSpaceBrowserProjectId];
+
+            const group = findSpaceGroupFromSpaceId(
+              spaceProviders ?? {},
+              spaceId,
+            );
+
+            const params = { spaceProviderId, groupId: group?.id, spaceId };
+
+            next({
+              name: APP_ROUTES.Home.SpaceBrowsingPage,
+              params,
+            });
+
+            return; // make sure `next` is only called once
+          }
+
+          store.commit("spaces/removeProjectPath", globalSpaceBrowserProjectId);
+          next();
+        },
       },
       {
         name: APP_ROUTES.Home.SpaceSelectionPage,

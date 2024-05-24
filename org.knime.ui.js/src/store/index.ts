@@ -34,3 +34,5 @@ export const initStore = () => {
     },
   });
 };
+
+export const store = initStore();

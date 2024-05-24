@@ -12,6 +12,7 @@ import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
+import { useIcons } from "./useIcons";
 
 interface Props {
   showText?: boolean;
@@ -21,23 +22,53 @@ interface Props {
 const store = useStore();
 const props = withDefaults(defineProps<Props>(), { showText: true });
 
-type ProviderMetadata = { active: boolean };
+const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } = useIcons();
+
+type SingleSpaceProviderMetadata = {
+  type: "single-space-provider";
+  spaceProviderId: string;
+  space: SpaceProviderNS.Space;
+};
+type SignInMetadata = {
+  type: "sign-in";
+  spaceProviderId: string;
+};
+type SpaceGroupMetadata = {
+  type: "space-group";
+  active: boolean;
+};
 type SpaceMetadata = {
-  id: string;
-  spaceId?: string;
-  spaceProviderId?: string;
-  requestSignIn?: boolean;
-  space?: SpaceProviderNS.Space;
+  type: "space";
+  spaceProviderId: string;
+  space: SpaceProviderNS.Space;
 };
 
-type MenuItemWithMetadata<T> = Omit<MenuItem, "metadata"> & {
-  metadata?: T;
+type AllMetadata =
+  | SingleSpaceProviderMetadata
+  | SignInMetadata
+  | SpaceGroupMetadata
+  | SpaceMetadata;
+
+// groups and headlines are not clickable
+type ClickableItemsMetadata =
+  | SpaceMetadata
+  | SignInMetadata
+  | SingleSpaceProviderMetadata;
+
+const isSignInItem = (metadata: AllMetadata): metadata is SignInMetadata => {
+  return metadata.type === "sign-in";
 };
 
-const isProviderMetadata = (
-  metadata: ProviderMetadata | SpaceMetadata,
-): metadata is ProviderMetadata => {
-  return "active" in metadata;
+const isSpaceGroupItem = (
+  metadata: AllMetadata,
+): metadata is SpaceGroupMetadata => {
+  return metadata.type === "space-group";
+};
+
+const isClickableItem = (
+  metadata: AllMetadata,
+): metadata is ClickableItemsMetadata => {
+  return ["space", "sign-in", "single-space-provider"].includes(metadata.type);
 };
 
 const setProjectPathAndLoadWorkflowGroupContent = async (
@@ -58,27 +89,29 @@ const setProjectPathAndLoadWorkflowGroupContent = async (
 
 const onSpaceChange = async ({
   metadata,
-}: MenuItemWithMetadata<SpaceMetadata>) => {
+}: MenuItem<ClickableItemsMetadata>) => {
   const { projectId } = props;
 
-  const { spaceId, spaceProviderId, requestSignIn = false } = metadata!;
+  if (!metadata) {
+    return;
+  }
 
   // just load content if we are already connected
-  if (!requestSignIn) {
+  if (!isSignInItem(metadata!)) {
     await setProjectPathAndLoadWorkflowGroupContent(
       projectId,
-      spaceProviderId!,
-      spaceId!,
+      metadata.spaceProviderId,
+      metadata.space.id,
     );
     return;
   }
 
+  const { spaceProviderId } = metadata;
+
   // handle sign in request
   const { spaces: [firstSpace = null] = [] } = await store.dispatch(
     "spaces/connectProvider",
-    {
-      spaceProviderId,
-    },
+    { spaceProviderId },
   );
 
   // change to first space if we have one
@@ -98,124 +131,94 @@ const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 
 const createProviderHeadlineMenuItem = (
   provider: SpaceProviderNS.SpaceProvider,
-): [MenuItemWithMetadata<SpaceMetadata>] | [] => {
-  return provider.type === SpaceProviderNS.TypeEnum.LOCAL
-    ? []
-    : [
-        {
-          text: provider.name,
-          selected: false,
-          sectionHeadline: true,
-          separator: true,
-          metadata: {
-            id: provider.id,
-          },
-        },
-      ];
-};
-
-const createSpaceMenuItem = (
-  provider: SpaceProviderNS.SpaceProvider,
-  space: SpaceProviderNS.Space,
-): MenuItemWithMetadata<SpaceMetadata> => ({
-  text: space.name,
-
-  selected:
-    provider.id === activeSpacePath.value?.spaceProviderId &&
-    space.id === activeSpacePath.value?.spaceId,
-
-  icon: space.private ? PrivateSpaceIcon : CubeIcon,
-
-  sectionHeadline: false,
-  separator: false,
-  metadata: {
-    id: `${provider.id}__${space.id}`,
-    spaceId: space.id,
-    spaceProviderId: provider.id,
-    requestSignIn: false,
-    space,
-  },
+): MenuItem => ({
+  text: provider.name,
+  icon: getSpaceProviderIcon(provider),
+  selected: false,
+  sectionHeadline: true,
+  separator: true,
 });
 
 const createSignInMenuItem = (
   provider: SpaceProviderNS.SpaceProvider,
-): MenuItemWithMetadata<SpaceMetadata> => ({
+): MenuItem<SignInMetadata> => ({
   text: "Sign in",
   selected: false,
   sectionHeadline: false,
   separator: false,
   metadata: {
-    id: `${provider.id}__SIGN_IN`,
+    type: "sign-in",
     spaceProviderId: provider.id,
-    requestSignIn: true,
   },
 });
 
-const groupSpacesByOwner = (
-  provider: SpaceProviderNS.SpaceProvider,
-  spaces: SpaceProviderNS.Space[],
-) => {
-  return spaces.reduce<Record<string, MenuItemWithMetadata<SpaceMetadata>[]>>(
-    (groups, space) => {
-      groups[space.owner] = (groups[space.owner] ?? []).concat(
-        createSpaceMenuItem(provider, space),
-      );
-      return groups;
-    },
-    {},
-  );
-};
+const spaceToMenuItem =
+  (provider: SpaceProviderNS.SpaceProvider) =>
+  (space: SpaceProviderNS.Space): MenuItem<SpaceMetadata> => {
+    const getIcon = () => {
+      if (provider.type !== SpaceProviderNS.TypeEnum.HUB) {
+        return null;
+      }
 
-const mapGroupsToMenuItems = (groups: {
-  provider: SpaceProviderNS.SpaceProvider;
-  spaces: ReturnType<typeof groupSpacesByOwner>;
-}): MenuItemWithMetadata<ProviderMetadata | SpaceMetadata>[] => {
-  const { spaces, provider } = groups;
-  const groupNames = Object.keys(spaces);
+      return getSpaceIcon(space);
+    };
 
-  // local and server always have a single space, so no need to show a nested menu
-  const shouldHaveChildren = (provider: SpaceProviderNS.SpaceProvider) =>
-    provider.type === SpaceProviderNS.TypeEnum.HUB;
-
-  const getIcon = (
-    provider: SpaceProviderNS.SpaceProvider,
-    space: SpaceProviderNS.Space,
-  ) => {
-    if (provider.type !== SpaceProviderNS.TypeEnum.HUB) {
-      return null;
-    }
-
-    return space.private ? PrivateSpaceIcon : CubeIcon;
+    return {
+      text: space.name,
+      // eslint-disable-next-line no-undefined
+      icon: getIcon() ?? undefined,
+      selected:
+        provider.id === activeSpacePath.value?.spaceProviderId &&
+        space.id === activeSpacePath.value?.spaceId,
+      metadata: {
+        type: "space",
+        spaceProviderId: provider.id,
+        space,
+      },
+    };
   };
 
-  return groupNames.map((groupName) => {
+const createMenuEntries = (
+  groups: SpaceProviderNS.SpaceGroup[],
+  provider: SpaceProviderNS.SpaceProvider,
+): MenuItem<
+  SpaceGroupMetadata | SpaceMetadata | SingleSpaceProviderMetadata
+>[] => {
+  // local and server always have a single space, so no need to show a nested menu
+  const shouldHaveChildren = () =>
+    provider.type === SpaceProviderNS.TypeEnum.HUB;
+
+  return groups.map((group) => {
     const isActiveProvider =
       provider.id === activeSpacePath.value?.spaceProviderId;
 
-    if (shouldHaveChildren(provider)) {
-      const containsActiveSpace = spaces[groupName].find(
-        (item) => item.metadata!.space!.id === activeSpacePath.value?.spaceId,
+    if (shouldHaveChildren()) {
+      const isActiveSpaceInGroup = group.spaces.some(
+        (space) => space.id === activeSpacePath.value?.spaceId,
       );
 
       return {
-        text: groupName,
-        children: spaces[groupName],
-        // cannot use the `selected` property because this is a parent item (which spawns  a submenu)
+        text: group.name,
+        children: group.spaces.map(spaceToMenuItem(provider)),
+        icon: getSpaceGroupIcon(group),
+        // cannot use the `selected` property because this is a parent item (which spawns a submenu)
         // and the `selected` property on these type of items messes up the styles (hover, focused, etc)
-        metadata: { active: Boolean(containsActiveSpace) },
-      } satisfies MenuItemWithMetadata<ProviderMetadata>;
+        metadata: { type: "space-group", active: isActiveSpaceInGroup },
+      } satisfies MenuItem<SpaceGroupMetadata | SpaceMetadata>;
     }
 
-    const space = spaces[groupName].at(0)!.metadata!.space!;
+    const space = group.spaces.at(0)!;
 
-    const item: MenuItemWithMetadata<SpaceMetadata> = {
+    // item without children, refers to the main group of a single-group provider
+    // e.g: local space and server space
+    const item: MenuItem<SingleSpaceProviderMetadata> = {
       text: space.name,
       selected: isActiveProvider,
-      // @ts-expect-error
-      icon: getIcon(provider, space),
+      icon: getSpaceProviderIcon(provider),
+      separator: true,
       metadata: {
-        id: `${provider.id}__${space.id}`,
-        spaceId: space.id,
+        type: "single-space-provider",
+        space,
         spaceProviderId: provider.id,
       },
     };
@@ -224,41 +227,45 @@ const mapGroupsToMenuItems = (groups: {
   });
 };
 
-const spacesDropdownData = computed(
-  (): Array<MenuItemWithMetadata<ProviderMetadata | SpaceMetadata>> => {
-    if (store.state.spaces.isLoadingProvider) {
-      // @ts-ignore
-      return [{ text: "Loading…", disabled: true, icon: LoadingIcon }];
+const spacesDropdownData = computed((): Array<MenuItem<AllMetadata>> => {
+  if (store.state.spaces.isLoadingProvider) {
+    // @ts-ignore
+    return [{ text: "Loading…", disabled: true, icon: LoadingIcon }];
+  }
+
+  const providers = Object.values(spaceProviders.value ?? {});
+
+  const getHeadline = (
+    provider: SpaceProviderNS.SpaceProvider,
+  ): MenuItem | null => {
+    if (provider.type === SpaceProviderNS.TypeEnum.LOCAL) {
+      return null;
     }
 
-    const providers = spaceProviders.value
-      ? Object.values(spaceProviders.value)
-      : [];
+    if (provider.type === SpaceProviderNS.TypeEnum.SERVER) {
+      return provider.connected
+        ? null
+        : createProviderHeadlineMenuItem(provider);
+    }
 
-    const groupedByOwner = providers.map((provider) =>
-      provider.spaces
-        ? { provider, spaces: groupSpacesByOwner(provider, provider.spaces) }
-        : { provider, spaces: {} },
+    return createProviderHeadlineMenuItem(provider);
+  };
+
+  return providers.flatMap((provider) => {
+    const base: Array<MenuItem<AllMetadata>> = [];
+
+    return base.concat(getHeadline(provider) ?? []).concat(
+      provider.connected
+        ? createMenuEntries(provider.spaceGroups, provider)
+        : // only add sign-in option for disconnected providers
+          [createSignInMenuItem(provider)],
     );
-
-    return groupedByOwner.flatMap(({ provider, spaces }) => {
-      const withHeadline = createProviderHeadlineMenuItem(provider);
-
-      const items = mapGroupsToMenuItems({ provider, spaces });
-
-      return (
-        ([] as Array<MenuItemWithMetadata<ProviderMetadata | SpaceMetadata>>)
-          .concat(withHeadline)
-          // only add sign-in option for disconnected providers
-          .concat(provider.connected ? items : [createSignInMenuItem(provider)])
-      );
-    });
-  },
-);
+  });
+});
 
 const selectedText = computed(() => {
   const selectedRootItem = spacesDropdownData.value.find((item) =>
-    item.metadata && isProviderMetadata(item.metadata)
+    item.metadata && isSpaceGroupItem(item.metadata)
       ? item.metadata.active
       : item.selected,
   );
@@ -275,7 +282,11 @@ const selectedText = computed(() => {
     (item) => item.selected,
   );
 
-  if (!selectedChildItem) {
+  if (
+    !selectedChildItem ||
+    !isClickableItem(selectedChildItem.metadata!) ||
+    isSignInItem(selectedChildItem.metadata!)
+  ) {
     return "";
   }
 
@@ -350,11 +361,21 @@ const spaceIcon = computed(() => {
   }
 
   & :deep(.menu-items) {
-    & .list-item:not(.section-headline) {
-      padding-left: 28px;
+    & .list-item.section-headline {
+      margin-left: -2px;
+
+      & svg {
+        margin-right: 4px;
+
+        @mixin svg-icon-size 16;
+      }
     }
 
-    & li:first-of-type .list-item {
+    & .list-item:not(.section-headline) {
+      padding-left: 32px;
+    }
+
+    & .separator:has(.clickable-item) > .list-item:has(svg) {
       padding-left: 10px;
     }
   }

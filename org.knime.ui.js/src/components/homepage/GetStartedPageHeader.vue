@@ -39,7 +39,7 @@ const onExampleClick = async (example: ExampleProject) => {
 </script>
 
 <template>
-  <div class="entry-page-header">
+  <div class="get-started-page-header">
     <span class="header-text">Create and explorer workflows</span>
 
     <div class="cards">
@@ -92,7 +92,7 @@ const onExampleClick = async (example: ExampleProject) => {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.entry-page-header {
+.get-started-page-header {
   display: flex;
   flex-direction: column;
   padding: 30px 50px;

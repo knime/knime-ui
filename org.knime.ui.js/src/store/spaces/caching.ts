@@ -12,9 +12,10 @@ import {
   globalSpaceBrowserProjectId,
 } from "./common";
 import type { PathTriplet } from "./types";
+import { findSpaceById } from "./util";
 
 interface State {
-  workflowGroupCache: WeakMap<PathTriplet, WorkflowGroupContent>;
+  workflowGroupCache: Map<string, WorkflowGroupContent>;
   projectPath: Record<string, PathTriplet>;
 }
 
@@ -35,7 +36,7 @@ const specialProjectIds = [
 
 export const state = (): State => ({
   // current content of active browser (files and folders)
-  workflowGroupCache: new WeakMap(),
+  workflowGroupCache: new Map(),
   // triplet data to remember current "path" of any SpaceExplorer component
   projectPath: {
     [cachedLocalSpaceProjectId]: localRootProjectPath,
@@ -87,7 +88,7 @@ export const mutations: MutationTree<SpacesState> = {
     }: { projectId: string; content: WorkflowGroupContent },
   ) {
     const key = state.projectPath[projectId];
-    state.workflowGroupCache.set(key, content);
+    state.workflowGroupCache.set(JSON.stringify(key), content);
   },
 };
 
@@ -98,17 +99,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       openProjects,
     }: { openProjects: { projectId: string; origin: SpaceItemReference }[] },
   ) {
-    const findSpaceById = (spaceId: string) => {
-      const spaceProviders = state.spaceProviders ?? {};
-
-      const foundSpace = Object.values(spaceProviders).find((provider) => {
-        const { spaces = [] } = provider;
-        return spaces.find((space) => space.id === spaceId);
-      });
-
-      return Boolean(foundSpace);
-    };
-
     // add
     openProjects.forEach(({ projectId, origin }) => {
       // skip already existing paths
@@ -116,7 +106,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         return;
       }
 
-      const isKnownSpace = origin && findSpaceById(origin.spaceId);
+      const isKnownSpace =
+        origin &&
+        Boolean(findSpaceById(state.spaceProviders ?? {}, origin.spaceId));
 
       const projectPath = isKnownSpace
         ? {
@@ -151,10 +143,11 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     (state) =>
     (projectId: string): WorkflowGroupContent | null => {
       const pathTriplet = state.projectPath[projectId];
-      if (!state.workflowGroupCache.has(pathTriplet)) {
+      const cacheKey = JSON.stringify(pathTriplet);
+      if (!state.workflowGroupCache.has(cacheKey)) {
         return null;
       }
 
-      return state.workflowGroupCache.get(pathTriplet)!;
+      return state.workflowGroupCache.get(cacheKey)!;
     },
 };

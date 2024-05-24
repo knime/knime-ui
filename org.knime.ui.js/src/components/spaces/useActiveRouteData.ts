@@ -13,10 +13,9 @@ export const useActiveRouteData = () => {
 
   const activeSpaceGroup = computed(() => {
     const { groupId } = $route.params;
+    const groups = activeSpaceProvider.value.spaceGroups ?? [];
 
-    return activeSpaceProvider.value.spaceGroups.find(
-      ({ id }) => id === groupId,
-    );
+    return groups.find(({ id }) => id === groupId);
   });
 
   const activeSpace = computed(() => {

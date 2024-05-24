@@ -7,6 +7,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import type { RootStoreState } from "../types";
 import type { SpacesState } from "./index";
 import { localRootProjectPath } from "./caching";
+import { findSpaceById } from "./util";
 
 export interface State {
   spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
@@ -143,20 +144,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async fetchProviderSpaces(_, { id }) {
     try {
-      // TODO this is an intermediate fix to keep the FE working,
-      // delete before merging https://knime-com.atlassian.net/browse/NXT-2596 original state is
-      // return await API.space.getSpaceProvider({
-      //   spaceProviderId: id,
-      // });
-      const spaceProvider = (await API.space.getSpaceProvider({
-        spaceProviderId: id,
-      })) as any;
-      return {
-        spaces: spaceProvider?.spaceGroups?.flatMap(
-          (group: any) => group.spaces,
-        ),
-        ...spaceProvider,
-      };
+      return await API.space.getSpaceProvider({ spaceProviderId: id });
     } catch (error) {
       consola.error("Error fetching provider spaces", { error });
       throw error;
@@ -228,7 +216,10 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       const spaceProvider: SpaceProviderNS.SpaceProvider =
         getters.getProviderInfo(projectId);
 
-      const space = spaceProvider.spaces?.find(({ id }) => id === spaceId);
+      const space = findSpaceById(
+        { [spaceProvider.id]: spaceProvider },
+        spaceId,
+      );
 
       return space ?? {};
     },

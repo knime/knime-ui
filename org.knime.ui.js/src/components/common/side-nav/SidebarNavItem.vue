@@ -112,7 +112,7 @@ defineProps<Props>();
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 0 4px 32px;
+    padding: 4px 0 4px 24px;
 
     &.active {
       font-weight: 700;

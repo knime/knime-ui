@@ -41,6 +41,8 @@ section.main-content-wrapper {
   & .sidebar {
     padding: 40px;
     width: var(--sidebar-width);
+    max-height: calc(100vh - var(--app-header-height));
+    overflow-y: auto;
   }
 
   & .main-content {
