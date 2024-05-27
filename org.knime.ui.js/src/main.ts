@@ -26,14 +26,6 @@ const AWAITING_CONNECTION_INFO_MESSAGE = "KNIME_UI__AWAITING_CONNECTION_INFO";
 const CONNECTION_INFO_MESSAGE = "KNIME_UI__CONNECTION_INFO";
 const CONNECTION_FAIL_MESSAGE = "KNIME_UI__CONNECTION_FAIL";
 
-const isValidOrigin = (origin: string) => {
-  if (import.meta.env.DEV) {
-    return true;
-  }
-
-  return origin.includes("knime.com");
-};
-
 const apiURLResolver = () =>
   new Promise<ConnectionInfo | null>((resolve, reject) => {
     // immediately resolve for desktop environment
@@ -60,11 +52,6 @@ const apiURLResolver = () =>
     window.addEventListener(
       "message",
       (event) => {
-        if (!isValidOrigin(event.origin)) {
-          consola.error(`invalid origin received: ${event.origin}`);
-          return;
-        }
-
         if (event.data.type !== CONNECTION_INFO_MESSAGE) {
           return;
         }
