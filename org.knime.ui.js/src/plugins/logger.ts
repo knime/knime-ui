@@ -29,7 +29,8 @@ const silentLogger = () => {
 };
 
 const getLogLevelFromEnv = (): LogLevel => {
-  const level = import.meta.env.VITE_LOG_LEVEL || "warn";
+  const fromStorage = localStorage.getItem("KNIME_LOG_LEVEL");
+  const level = fromStorage ?? import.meta.env.VITE_LOG_LEVEL ?? "warn";
   const levelUppercased = level.charAt(0).toUpperCase().concat(level.slice(1));
 
   if (!LogLevel[levelUppercased]) {
