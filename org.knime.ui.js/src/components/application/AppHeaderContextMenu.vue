@@ -42,52 +42,52 @@ const isUnknownProject = computed<(projectId: string) => boolean>(
 
 let previousToastId: string;
 
+const showErrorToast = () => {
+  store.commit("spaces/setCurrentSelectedItemIds", []);
+
+  previousToastId = $toast.show({
+    type: "error",
+    headline: "Project not found",
+    message: "Could not reveal project in Space Explorer.",
+    autoRemove: true,
+  });
+};
+
+const displayExplorer = (origin: SpaceItemReference) => {
+  if (!activeProjectId.value) {
+    const group = findSpaceGroupFromSpaceId(
+      store.state.spaces.spaceProviders ?? {},
+      origin.spaceId,
+    );
+
+    return $router.push({
+      name: APP_ROUTES.Home.SpaceBrowsingPage,
+      params: {
+        spaceProviderId: origin.providerId,
+        spaceId: origin.spaceId,
+        groupId: group?.id,
+      },
+      query: { skipProjectPathUpdate: "true" },
+    });
+  }
+
+  if (
+    store.state.panel.activeTab[activeProjectId.value] !== TABS.SPACE_EXPLORER
+  ) {
+    return store.dispatch(
+      "panel/setCurrentProjectActiveTab",
+      TABS.SPACE_EXPLORER,
+    );
+  }
+
+  return Promise.resolve();
+};
+
 const contextMenuItems: AppHeaderContextMenuItem[] = [
   {
     text: "Reveal in space explorer",
     metadata: {
       onClick: async () => {
-        const showError = () => {
-          store.commit("spaces/setCurrentSelectedItemIds", []);
-
-          previousToastId = $toast.show({
-            type: "error",
-            headline: "Project not found",
-            message: "Could not reveal project in Space Explorer.",
-            autoRemove: true,
-          });
-        };
-
-        const displayExplorer = (origin: SpaceItemReference) => {
-          if (!activeProjectId.value) {
-            const group = findSpaceGroupFromSpaceId(
-              store.state.spaces.spaceProviders ?? {},
-              origin.spaceId,
-            );
-
-            return $router.push({
-              name: APP_ROUTES.Home.SpaceBrowsingPage,
-              params: {
-                spaceProviderId: origin.providerId,
-                spaceId: origin.spaceId,
-                groupId: group?.id,
-              },
-            });
-          }
-
-          if (
-            store.state.panel.activeTab[activeProjectId.value] !==
-            TABS.SPACE_EXPLORER
-          ) {
-            return store.dispatch(
-              "panel/setCurrentProjectActiveTab",
-              TABS.SPACE_EXPLORER,
-            );
-          }
-
-          return Promise.resolve();
-        };
-
         try {
           const foundProject = openProjects.value.find(
             ({ projectId }) => projectId === props.projectId,
@@ -97,7 +97,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
             !foundProject?.origin ||
             isUnknownProject.value(foundProject.projectId)
           ) {
-            showError();
+            showErrorToast();
 
             return;
           }
@@ -141,7 +141,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
           store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
         } catch (error) {
           consola.error("Error revealing project in Space Explorer", error);
-          showError();
+          showErrorToast();
         }
       },
     },

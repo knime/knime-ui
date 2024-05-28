@@ -39,9 +39,9 @@ export const routes: Array<RouteRecordRaw> = [
           const { projectPath, spaceProviders } = store.state.spaces;
 
           const hasGlobalState = projectPath[globalSpaceBrowserProjectId];
-          const isComingFromWorflow = from.name === APP_ROUTES.WorkflowPage;
+          const isComingFromWorkflow = from.name === APP_ROUTES.WorkflowPage;
 
-          if (hasGlobalState && isComingFromWorflow) {
+          if (hasGlobalState && isComingFromWorkflow) {
             const { spaceId, spaceProviderId } =
               projectPath[globalSpaceBrowserProjectId];
 

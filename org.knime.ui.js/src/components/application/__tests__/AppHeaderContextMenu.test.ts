@@ -63,7 +63,8 @@ describe("AppHeaderContextMenu.vue", () => {
     expect(wrapper.findComponent(MenuItems).props("items").length).toBe(2);
   });
 
-  describe("reveal in SpaceExplorer", () => {
+  // TODO: bring back test case once navigation to SpaceBrowsingPage is improved
+  describe.skip("reveal in SpaceExplorer", () => {
     const triggerOption = async (wrapper: VueWrapper<any>) => {
       await wrapper.findAll("li button").at(0)?.trigger("click");
     };

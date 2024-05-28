@@ -303,7 +303,7 @@ describe("application::lifecycle", () => {
       });
 
       commitSpy.mockClear();
-      await router.push({ name: APP_ROUTES.Home.GetStartedPage });
+      await router.push({ name: APP_ROUTES.Home.GetStarted });
 
       expect(dispatchSpy).toHaveBeenCalledWith("application/switchWorkflow", {
         newWorkflow: null,
@@ -315,9 +315,7 @@ describe("application::lifecycle", () => {
         undefined,
       );
 
-      expect(router.currentRoute.value.name).toBe(
-        APP_ROUTES.Home.GetStartedPage,
-      );
+      expect(router.currentRoute.value.name).toBe(APP_ROUTES.Home.GetStarted);
     });
 
     it("should prevent navigation when auto-apply node configuration is cancelled", async () => {
@@ -336,7 +334,7 @@ describe("application::lifecycle", () => {
       });
 
       commitSpy.mockClear();
-      await router.push({ name: APP_ROUTES.Home.GetStartedPage });
+      await router.push({ name: APP_ROUTES.Home.GetStarted });
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
         "application/switchWorkflow",
@@ -351,7 +349,7 @@ describe("application::lifecycle", () => {
     it("should load a workflow when entering the worklow page", async () => {
       const router = getRouter();
       await router.push({
-        name: APP_ROUTES.Home.GetStartedPage,
+        name: APP_ROUTES.Home.GetStarted,
       });
 
       const { store, dispatchSpy } = loadStore();

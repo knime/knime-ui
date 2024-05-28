@@ -78,6 +78,7 @@ export namespace SpaceProviderNS {
     connected: boolean;
     connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
     spaceGroups: Array<SpaceGroup>;
+    user?: { name: string };
   }
 }
 

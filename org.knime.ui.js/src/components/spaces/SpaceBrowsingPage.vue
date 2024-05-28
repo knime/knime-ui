@@ -9,10 +9,11 @@ import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
-import { useIcons } from "./useIcons";
+import { useSpaceIcons } from "./useSpaceIcons";
 import { useRoute } from "vue-router";
 
 const store = useStore();
+const $route = useRoute();
 
 const currentSelectedItemIds = computed(
   () => store.state.spaces.currentSelectedItemIds,
@@ -25,7 +26,6 @@ const setCurrentSelectedItemIds = (items: string[]) => {
 const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
   useActiveRouteData();
 
-const $route = useRoute();
 watch(
   () => $route.params.spaceId,
   () => {
@@ -44,7 +44,7 @@ watch(
 
 const { breadcrumbs } = usePageBreadcrumbs();
 
-const { getSpaceIcon } = useIcons();
+const { getSpaceIcon } = useSpaceIcons();
 
 const isHubProvider = computed<boolean>(() =>
   store.getters["spaces/isHubProvider"](globalSpaceBrowserProjectId),

@@ -11,6 +11,9 @@ import AppHeaderTab from "../AppHeaderTab.vue";
 import { APP_ROUTES } from "@/router";
 import CloseButton from "@/components/common/CloseButton.vue";
 import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
+import { createProject } from "@/test/factories";
+import type { Project } from "@/api/gateway-api/generated-api";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 const mockedAPI = deepMocked(API);
 
@@ -37,17 +40,38 @@ vi.mock("@/plugins/shortcuts", () => ({
 }));
 
 describe("AppHeader.vue", () => {
+  type ComponentProps = InstanceType<typeof AppHeader>["$props"];
+  type MountOpts = {
+    props?: Partial<ComponentProps>;
+    customOpenProjects?: Project[] | null;
+    $route?: { name: string };
+    isLoadingWorkflow?: boolean;
+  };
+
   const doMount = ({
     props = {},
     customOpenProjects = null,
     $route = { name: "" },
     isLoadingWorkflow = false,
-  } = {}) => {
+  }: MountOpts = {}) => {
     const openProjects = customOpenProjects || [
-      { projectId: "1", name: "Test1", origin: { providerId: "local" } },
-      { projectId: "2", name: "Test2", origin: { providerId: "local" } },
-      { projectId: "3", name: "Test3", origin: { providerId: "local" } },
+      createProject({
+        projectId: "1",
+        name: "Test1",
+        origin: { providerId: "local" },
+      }),
+      createProject({
+        projectId: "2",
+        name: "Test2",
+        origin: { providerId: "local" },
+      }),
+      createProject({
+        projectId: "3",
+        name: "Test3",
+        origin: { providerId: "local" },
+      }),
     ];
+
     const dirtyProjectsMap = {
       1: false,
       2: true,
@@ -97,7 +121,7 @@ describe("AppHeader.vue", () => {
       const { wrapper, storeConfig } = doMount();
 
       expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
-      wrapper.findAllComponents(CloseButton).at(1).trigger("click");
+      wrapper.findAllComponents(CloseButton).at(1)!.trigger("click");
       expect(storeConfig.workflow.actions.closeProject).toHaveBeenCalledWith(
         expect.anything(),
         "2",
@@ -108,20 +132,20 @@ describe("AppHeader.vue", () => {
       const { wrapper, storeConfig } = doMount();
       const projectId = storeConfig.application.state.openProjects[2].projectId;
 
-      wrapper.findAll(".tab-item").at(2).trigger("click");
+      wrapper.findAll(".tab-item").at(2)!.trigger("click");
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId, workflowId: "root" },
       });
     });
 
-    it("allows to click home button and navigate to entry page", () => {
+    it("allows to click home button and navigate to home page", () => {
       const { wrapper } = doMount();
 
       wrapper.find(".home-button").trigger("click");
 
       expect(routerPush).toHaveBeenCalledWith({
-        name: APP_ROUTES.Home.GetStartedPage,
+        name: APP_ROUTES.Home.GetStarted,
       });
     });
 
@@ -132,9 +156,11 @@ describe("AppHeader.vue", () => {
       expect(title.text()).toBe("KNIME Analytics Platform 5");
     });
 
-    it("sets the entry tab at startup when there are no open projects", () => {
+    it("navigates to homepage during startup when there are no open projects", () => {
       const { wrapper } = doMount({ customOpenProjects: [] });
-      expect(wrapper.findComponent(".home-button").props()).toMatchObject({
+      expect(
+        wrapper.find(".home-button").findComponent(FunctionButton).props(),
+      ).toMatchObject({
         active: true,
       });
     });
@@ -143,7 +169,7 @@ describe("AppHeader.vue", () => {
       const { wrapper, $store } = doMount();
 
       $store.state.application.activeProjectId = "2";
-      const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1);
+      const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1)!;
 
       await Vue.nextTick();
       expect(secondTab.props("isActive")).toBe(true);
@@ -157,7 +183,7 @@ describe("AppHeader.vue", () => {
 
     await Vue.nextTick();
     expect(
-      wrapper.findAllComponents(AppHeaderTab).at(0).props("windowWidth"),
+      wrapper.findAllComponents(AppHeaderTab).at(0)!.props("windowWidth"),
     ).toBe(100);
   });
 
@@ -198,7 +224,7 @@ describe("AppHeader.vue", () => {
       const { wrapper } = doMount();
 
       HTMLElement.prototype.closest = () =>
-        wrapper.findAllComponents(AppHeaderTab).at(0).element;
+        wrapper.findAllComponents(AppHeaderTab).at(0)!.element;
 
       expect(wrapper.findComponent(AppHeaderContextMenu).exists()).toBe(false);
 

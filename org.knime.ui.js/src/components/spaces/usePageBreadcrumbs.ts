@@ -1,12 +1,11 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { APP_ROUTES } from "@/router";
-import { useStore } from "@/composables/useStore";
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 import { useActiveRouteData } from "./useActiveRouteData";
-import { useIcons } from "./useIcons";
+import { useSpaceIcons } from "./useSpaceIcons";
 
 export type BreadcrumbItem = {
   text: string;
@@ -18,17 +17,15 @@ export type BreadcrumbItem = {
 export const usePageBreadcrumbs = () => {
   const $router = useRouter();
   const $route = useRoute();
-  const store = useStore();
 
   const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
     useActiveRouteData();
 
-  const { getSpaceProviderIcon, getSpaceGroupIcon } = useIcons();
+  const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
-  const isHubProvider = computed<boolean>(() =>
-    store.getters["spaces/isHubProvider"](globalSpaceBrowserProjectId),
+  const isHubProvider = computed<boolean>(
+    () => activeSpaceProvider.value.type === SpaceProviderNS.TypeEnum.HUB,
   );
-
   const breadcrumbs = computed<Array<BreadcrumbItem>>(() => {
     const spaceProviderBreadcrumbItem: BreadcrumbItem = {
       text: activeSpaceProvider.value.name,

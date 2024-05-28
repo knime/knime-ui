@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { loadStore } from "./loadStore";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
-import { createSpace, createSpaceProvider } from "@/test/factories";
+import {
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
 
 describe("spaces::caching", () => {
@@ -12,7 +16,11 @@ describe("spaces::caching", () => {
       const hub4 = createSpaceProvider({
         id: "hub4",
         type: SpaceProviderNS.TypeEnum.HUB,
-        spaces: [createSpace({ id: "space6" })],
+        spaceGroups: [
+          createSpaceGroup({
+            spaces: [createSpace({ id: "space6" })],
+          }),
+        ],
       });
 
       store.commit("spaces/setSpaceProviders", {

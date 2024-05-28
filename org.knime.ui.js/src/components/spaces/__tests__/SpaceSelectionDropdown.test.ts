@@ -3,7 +3,7 @@ import { mockVuexStore } from "@/test/utils";
 import { mount } from "@vue/test-utils";
 
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import { createSpaceProvider } from "@/test/factories";
+import { createSpaceGroup, createSpaceProvider } from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
 import * as spacesStore from "@/store/spaces";
 
@@ -16,13 +16,17 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connectionMode: "AUTOMATIC",
     name: "Local Space",
     type: SpaceProviderNS.TypeEnum.LOCAL,
-    spaces: [
-      {
-        id: "local",
-        name: "Local Space",
-        owner: "local",
-        private: false,
-      },
+    spaceGroups: [
+      createSpaceGroup({
+        spaces: [
+          {
+            id: "local",
+            name: "Local Space",
+            owner: "local",
+            private: false,
+          },
+        ],
+      }),
     ],
   }),
   hub1: createSpaceProvider({
@@ -31,31 +35,43 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connectionMode: "AUTOMATIC",
     name: "Hub 1",
     type: SpaceProviderNS.TypeEnum.HUB,
-    spaces: [
-      {
-        id: "hub1space1",
-        name: "Space 1 on Hub 1",
-        owner: "someUser",
-        private: false,
-      },
-      {
-        id: "hub1space2",
-        name: "Private space of someUser",
-        owner: "someUser",
-        private: true,
-      },
+    spaceGroups: [
+      createSpaceGroup({
+        name: "Group 1",
+        spaces: [
+          {
+            id: "hub1space1",
+            name: "Space 1 on Hub 1",
+            owner: "someUser",
+            private: false,
+          },
+          {
+            id: "hub1space2",
+            name: "Private space of someUser",
+            owner: "someUser",
+            private: true,
+          },
+        ],
+      }),
     ],
   }),
 };
 
 describe("SpaceSelectionDropdown.vue", () => {
-  const doMount = ({ props = {}, spaceProviders = null } = {}) => {
+  type ComponentProps = InstanceType<typeof SpaceSelectionDropdown>["$props"];
+
+  type MountOps = {
+    props?: Partial<ComponentProps>;
+    spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
+  };
+
+  const doMount = ({ props = {}, spaceProviders = null }: MountOps = {}) => {
     const $store = mockVuexStore({
       spaces: {
         ...spacesStore,
         ...{
           state: {
-            workflowGroupCache: new WeakMap(),
+            workflowGroupCache: new Map(),
             projectPath: {
               someProjectId: {
                 spaceId: "local",
@@ -126,7 +142,7 @@ describe("SpaceSelectionDropdown.vue", () => {
     );
     expect(menuItems[2]).toStrictEqual(
       expect.objectContaining({
-        text: "someUser",
+        text: "Group 1",
         children: expect.any(Array),
       }),
     );
@@ -147,7 +163,7 @@ describe("SpaceSelectionDropdown.vue", () => {
 
     wrapper
       .findComponent(SubMenu)
-      .vm.$emit("item-click", null, menuItems.at(2).children.at(0));
+      .vm.$emit("item-click", null, menuItems.at(2)!.children!.at(0));
 
     expect(commitSpy).toHaveBeenCalledWith("spaces/setProjectPath", {
       projectId: "someProjectId",
@@ -176,18 +192,18 @@ describe("SpaceSelectionDropdown.vue", () => {
     const { wrapper, dispatchSpy } = doMount({
       spaceProviders: {
         local: startSpaceProviders.local,
-        hub2: {
+        hub2: createSpaceProvider({
           id: "hub2",
           connected: false,
           connectionMode: "AUTHENTICATED",
           name: "Hub 2",
-        },
+        }),
       },
     });
 
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
-    expect(menuItems.at(-1).text).toBe("Sign in");
+    expect(menuItems.at(-1)!.text).toBe("Sign in");
 
     // click on sign in
     wrapper

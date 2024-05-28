@@ -270,7 +270,7 @@ describe("Event Plugin", () => {
         });
 
         expect(storeMock.commit).toBeCalledWith(
-          "spaces/setIsLoadingProvider",
+          "spaces/setIsLoadingProviders",
           false,
         );
 

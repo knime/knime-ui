@@ -5,7 +5,7 @@ import { API } from "@api";
 import { fetchAllSpaceProvidersResponse, loadStore } from "./loadStore";
 import { flushPromises } from "@vue/test-utils";
 import { SpaceProviderNS } from "@/api/custom-types";
-import { createSpaceProvider } from "@/test/factories";
+import { createSpaceGroup, createSpaceProvider } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -135,8 +135,12 @@ describe("spaces::providers", () => {
           connected: true,
           connectionMode: "AUTOMATIC",
           name: "",
-          spaces: [
-            { id: "local", name: "Local space", private: false, owner: "" },
+          spaceGroups: [
+            createSpaceGroup({
+              spaces: [
+                { id: "local", name: "Local space", private: false, owner: "" },
+              ],
+            }),
           ],
         },
       };
@@ -165,29 +169,35 @@ describe("spaces::providers", () => {
           id: "",
           name: "",
           connectionMode: "AUTHENTICATED",
-          spaces: [
-            {
-              id: "privateSpace",
-              name: "Private space",
-              private: true,
-              owner: "",
-            },
-            {
-              id: "publicSpace",
-              name: "Public space",
-              private: false,
-              owner: "",
-            },
+          spaceGroups: [
+            createSpaceGroup({
+              spaces: [
+                {
+                  id: "privateSpace",
+                  name: "Private space",
+                  private: true,
+                  owner: "",
+                },
+                {
+                  id: "publicSpace",
+                  name: "Public space",
+                  private: false,
+                  owner: "",
+                },
+              ],
+            }),
           ],
         },
       };
 
-      expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual({
-        id: "privateSpace",
-        name: "Private space",
-        private: true,
-        owner: "",
-      });
+      expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual(
+        expect.objectContaining({
+          id: "privateSpace",
+          name: "Private space",
+          private: true,
+          owner: "",
+        }),
+      );
     });
   });
 

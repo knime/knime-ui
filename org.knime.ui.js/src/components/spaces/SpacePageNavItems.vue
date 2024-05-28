@@ -12,7 +12,7 @@ import {
   type SidebarNavItemType,
 } from "@/components/common/side-nav";
 
-import { useIcons } from "./useIcons";
+import { useSpaceIcons } from "./useSpaceIcons";
 import SpacePageNavItemsAuthButtons from "./SpacePageNavItemsAuthButtons.vue";
 
 const store = useStore();
@@ -76,7 +76,7 @@ const isSpaceProviderActive = (spaceProviderId: string) =>
 const isSpaceGroupActive = (groupId: string) =>
   groupId === $route.params.groupId;
 
-const { getSpaceProviderIcon, getSpaceGroupIcon } = useIcons();
+const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
 const isLoggedInHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
   isHubProvider(spaceProvider) && spaceProvider.spaceGroups;

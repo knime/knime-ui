@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { nextTick, type ExtractPropTypes } from "vue";
+import { nextTick } from "vue";
 import { useRoute } from "vue-router";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -73,12 +73,12 @@ const fetchWorkflowGroupContentResponse = {
 vi.mock("webapps-common/ui/services/toast");
 vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: () => {} })),
-  useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage })),
+  useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage, params: {} })),
 }));
 
 describe("SpaceExplorer.vue", () => {
   const doMount = ({
-    props = { projectId: null } as ExtractPropTypes<typeof SpaceExplorer>,
+    props = {} as Partial<InstanceType<typeof SpaceExplorer>["$props"]>,
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
     openProjects = [],
@@ -750,7 +750,8 @@ describe("SpaceExplorer.vue", () => {
     it("should not attempt to add a node to canvas when the workflow is not displayed", async () => {
       // @ts-ignore
       useRoute.mockImplementationOnce(() => ({
-        name: APP_ROUTES.SpaceBrowsingPage,
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        params: {},
       }));
       document.elementFromPoint = vi.fn().mockReturnValue(null);
       const { wrapper, dispatchSpy } = await doMountAndLoad();

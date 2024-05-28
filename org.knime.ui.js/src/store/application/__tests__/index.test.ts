@@ -10,6 +10,7 @@ import {
   createNativeNode,
   createWorkflowAnnotation,
   createWorkflow,
+  createSpaceGroup,
 } from "@/test/factories";
 import { flushPromises } from "@vue/test-utils";
 import type { RootStoreState } from "@/store/types";
@@ -88,7 +89,9 @@ describe("application::index", () => {
     store.commit("spaces/setSpaceProviders", {
       provider1: createSpaceProvider({
         id: "provider1",
-        spaces: [createSpace({ id: "known-space" })],
+        spaceGroups: [
+          createSpaceGroup({ spaces: [createSpace({ id: "known-space" })] }),
+        ],
       }),
     });
 
@@ -232,23 +235,18 @@ describe("application::index", () => {
       });
 
       expect(mockRouter.push).toHaveBeenCalledWith({
-        name: APP_ROUTES.Home.GetStartedPage,
+        name: APP_ROUTES.Home.GetStarted,
       });
     });
   });
 
   describe("context Menu", () => {
-    const createEvent = ({ x = 0, y = 0, srcElemClasses = [] } = {}) => {
+    const createEvent = ({ x = 0, y = 0 } = {}) => {
       const preventDefault = vi.fn();
       const stopPropagation = vi.fn();
       const eventMock = {
         clientX: x,
         clientY: y,
-        srcElement: {
-          classList: {
-            contains: (className: string) => srcElemClasses.includes(className),
-          },
-        },
         preventDefault,
         stopPropagation,
       };
@@ -429,7 +427,7 @@ describe("application::index", () => {
         params: { projectId: "foo", workflowId: "bar" },
       });
 
-      await router.push({ name: APP_ROUTES.Home.GetStartedPage });
+      await router.push({ name: APP_ROUTES.Home.GetStarted });
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
@@ -445,6 +443,7 @@ describe("application::index", () => {
       async (_, stateMenuKey) => {
         const { store } = loadStore();
         const menuCloseMock = vi.fn();
+        // @ts-ignore
         store.state.workflow[stateMenuKey] = {
           isOpen: true,
           events: {

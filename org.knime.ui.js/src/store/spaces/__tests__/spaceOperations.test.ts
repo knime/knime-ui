@@ -34,7 +34,7 @@ describe("spaces::spaceOperations", () => {
 
       expect(
         store.state.spaces.workflowGroupCache.get(
-          store.state.spaces.projectPath.myProject1,
+          JSON.stringify(store.state.spaces.projectPath.myProject1),
         ),
       ).toEqual(fetchWorkflowGroupContentResponse);
     });
@@ -71,7 +71,7 @@ describe("spaces::spaceOperations", () => {
 
       expect(
         store.state.spaces.workflowGroupCache.get(
-          store.state.spaces.projectPath.myProject1,
+          JSON.stringify(store.state.spaces.projectPath.myProject1),
         ),
       ).toEqual(fetchWorkflowGroupContentResponse);
     });
@@ -123,7 +123,7 @@ describe("spaces::spaceOperations", () => {
       // updated cache (was not set before)
       expect(
         store.state.spaces.workflowGroupCache.has(
-          store.state.spaces.projectPath.myProject1,
+          JSON.stringify(store.state.spaces.projectPath.myProject1),
         ),
       ).toBeTruthy();
 
@@ -136,7 +136,7 @@ describe("spaces::spaceOperations", () => {
       const { store } = loadStore();
 
       store.state.spaces.workflowGroupCache.set(
-        store.state.spaces.projectPath.myProject1,
+        JSON.stringify(store.state.spaces.projectPath.myProject1),
         // @ts-ignore
         { path: [{ id: "level1" }, { id: "level2" }] },
       );
@@ -525,7 +525,7 @@ describe("spaces::spaceOperations", () => {
           itemId: "level2",
         };
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "level1" }, { id: "level2" }] },
         );
@@ -614,7 +614,7 @@ describe("spaces::spaceOperations", () => {
           itemId: "level2",
         };
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           { path: [] },
         );
@@ -633,7 +633,7 @@ describe("spaces::spaceOperations", () => {
           itemId: "level2",
         };
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "path1" }] },
         );
@@ -652,7 +652,7 @@ describe("spaces::spaceOperations", () => {
           itemId: "level2",
         };
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "path1" }, { id: "path2" }] },
         );
@@ -673,7 +673,7 @@ describe("spaces::spaceOperations", () => {
           itemId: "level2",
         };
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           { path: [] },
         );
@@ -692,7 +692,7 @@ describe("spaces::spaceOperations", () => {
           itemId: "level2",
         };
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "path1" }] },
         );
@@ -719,7 +719,7 @@ describe("spaces::spaceOperations", () => {
         };
 
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           fetchWorkflowGroupContentResponse,
         );
@@ -777,7 +777,7 @@ describe("spaces::spaceOperations", () => {
           itemId: "level2",
         };
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           activeWorkflowGroup,
         );
 
@@ -821,7 +821,7 @@ describe("spaces::spaceOperations", () => {
         };
 
         store.state.spaces.workflowGroupCache.set(
-          store.state.spaces.projectPath[projectId],
+          JSON.stringify(store.state.spaces.projectPath[projectId]),
           // @ts-ignore
           activeWorkflowGroup,
         );

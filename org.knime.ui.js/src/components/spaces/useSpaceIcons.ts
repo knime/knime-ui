@@ -8,7 +8,7 @@ import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.s
 
 import { SpaceProviderNS } from "@/api/custom-types";
 
-export const useIcons = () => {
+export const useSpaceIcons = () => {
   const getSpaceProviderIcon = (
     spaceProvider: SpaceProviderNS.SpaceProvider,
   ) => {

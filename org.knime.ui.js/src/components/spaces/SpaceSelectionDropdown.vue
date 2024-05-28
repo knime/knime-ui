@@ -12,7 +12,7 @@ import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
-import { useIcons } from "./useIcons";
+import { useSpaceIcons } from "./useSpaceIcons";
 
 interface Props {
   showText?: boolean;
@@ -22,7 +22,8 @@ interface Props {
 const store = useStore();
 const props = withDefaults(defineProps<Props>(), { showText: true });
 
-const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } = useIcons();
+const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } =
+  useSpaceIcons();
 
 type SingleSpaceProviderMetadata = {
   type: "single-space-provider";

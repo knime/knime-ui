@@ -3,8 +3,12 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 
 import { loadStore } from "./loadStore";
-import type { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import {
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -21,7 +25,11 @@ describe("spaces::auth", () => {
         connected: true,
         user: { name: "John Doe" },
       };
-      const mockSpaces = { spaces: [{ name: "test" }] };
+      const mockSpaces = createSpaceProvider({
+        spaceGroups: [
+          createSpaceGroup({ spaces: [createSpace({ name: "test" })] }),
+        ],
+      });
 
       store.state.spaces.spaceProviders = {
         // @ts-ignore
@@ -39,11 +47,11 @@ describe("spaces::auth", () => {
       expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
-      expect(store.state.spaces.spaceProviders.hub1.user).toEqual(
+      expect(store.state.spaces.spaceProviders!.hub1.user).toEqual(
         mockSpaceProvider.user,
       );
-      expect(store.state.spaces.spaceProviders.hub1.spaces).toEqual(
-        mockSpaces.spaces,
+      expect(store.state.spaces.spaceProviders!.hub1.spaceGroups).toEqual(
+        mockSpaces.spaceGroups,
       );
     });
 
@@ -74,17 +82,21 @@ describe("spaces::auth", () => {
     it("should disconnect provider and clear spaces and user data", async () => {
       const { store } = loadStore();
 
-      const fullProvider: SpaceProviderNS.SpaceProvider = {
+      const fullProvider = createSpaceProvider({
         name: "Hub 1",
         id: "hub1",
         type: BaseSpaceProvider.TypeEnum.HUB,
         connected: true,
         connectionMode: "AUTHENTICATED",
         user: { name: "John Doe" },
-        spaces: [
-          { id: "mock", name: "mock space", private: false, owner: "John" },
+        spaceGroups: [
+          createSpaceGroup({
+            spaces: [
+              { id: "mock", name: "mock space", private: false, owner: "John" },
+            ],
+          }),
         ],
-      };
+      });
 
       store.state.spaces.projectPath.projectInHub1 = {
         spaceId: "mock space",
@@ -96,7 +108,7 @@ describe("spaces::auth", () => {
         hub1: fullProvider,
       };
 
-      const { spaces: _, user: __, ...otherProperties } = fullProvider;
+      const { spaceGroups, ...otherProperties } = fullProvider;
       const expectedProvider = {
         ...otherProperties,
         connected: false,
@@ -106,6 +118,9 @@ describe("spaces::auth", () => {
         spaceProviderId: "hub1",
       });
       expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
+      expect(
+        store.state.spaces.spaceProviders.hub1.spaceGroups,
+      ).toBeUndefined();
 
       // reset projects that were connected to that hub to local
       expect(store.state.spaces.projectPath.projectInHub1).toStrictEqual({

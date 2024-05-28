@@ -4,14 +4,14 @@ import { useRoute, useRouter } from "vue-router";
 
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
-import { APP_ROUTES } from "@/router";
+import { APP_ROUTES } from "@/router/appRoutes";
 import type { SpaceProviderNS } from "@/api/custom-types";
 
 import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceCard from "./SpaceCard.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
-import { useIcons } from "./useIcons";
+import { useSpaceIcons } from "./useSpaceIcons";
 
 const $router = useRouter();
 const $route = useRoute();
@@ -19,7 +19,7 @@ const $route = useRoute();
 const { activeSpaceProvider, activeSpaceGroup } = useActiveRouteData();
 
 const { breadcrumbs } = usePageBreadcrumbs();
-const { getSpaceGroupIcon } = useIcons();
+const { getSpaceGroupIcon } = useSpaceIcons();
 
 const onSpaceCardClick = (space: SpaceProviderNS.Space) => {
   $router.push({

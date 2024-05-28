@@ -88,6 +88,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async fetchWorkflowGroupContent({ commit, state, dispatch }, { projectId }) {
     const pathTriplet = state.projectPath[projectId];
+    if (!pathTriplet) {
+      return [];
+    }
+
     const { spaceId, spaceProviderId, itemId } = pathTriplet;
 
     const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
