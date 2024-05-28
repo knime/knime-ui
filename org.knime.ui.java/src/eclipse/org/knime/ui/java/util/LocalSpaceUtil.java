@@ -49,6 +49,7 @@ package org.knime.ui.java.util;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -107,6 +108,15 @@ public final class LocalSpaceUtil {
             public Optional<SpaceAndItemId> resolveSpaceAndItemId(final URI uri) {
                 return getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID).getItemIdByURI(uri) //
                     .map(itemId -> new SpaceAndItemId(LocalWorkspace.LOCAL_WORKSPACE_ID, itemId));
+            }
+
+            @Override
+            public SpaceGroup<?> getSpaceGroup(final String spaceGroupName) {
+                var localGroup = getLocalSpaceGroup(localSpace);
+                if(!spaceGroupName.equals(localGroup.getName())) {
+                    throw new NoSuchElementException("No group found with name " + spaceGroupName);
+                }
+                return localGroup;
             }
         };
     }
@@ -188,6 +198,11 @@ public final class LocalSpaceUtil {
             public SpaceGroupEnt toEntity() {
                 return EntityFactory.Space.buildSpaceGroupEnt(ID, NAME, SpaceGroupEnt.TypeEnum.USER,
                     List.of(localSpace.toEntity()));
+            }
+
+            @Override
+            public String getName() {
+                return NAME;
             }
 
             @Override
