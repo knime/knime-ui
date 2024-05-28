@@ -6,7 +6,6 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceGroup } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useStore } from "@/composables/useStore";
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
 
 import {
   SidebarNavItem,
@@ -49,15 +48,6 @@ const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   // local and server providers have a single group with a single space
   const spaceGroup = spaceProvider.spaceGroups.at(0)!;
   const spaceId = spaceGroup.spaces.at(0)!.id;
-
-  store.commit("spaces/setProjectPath", {
-    projectId: globalSpaceBrowserProjectId,
-    value: {
-      spaceId,
-      spaceProviderId: spaceProvider.id,
-      itemId: "root",
-    },
-  });
 
   $router.push({
     name: APP_ROUTES.Home.SpaceBrowsingPage,

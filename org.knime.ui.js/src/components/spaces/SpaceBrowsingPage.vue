@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onBeforeMount } from "vue";
 
 import { useStore } from "@/composables/useStore";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
@@ -23,6 +23,18 @@ const setCurrentSelectedItemIds = (items: string[]) => {
 
 const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
   useActiveRouteData();
+
+onBeforeMount(() => {
+  // This is required to sync between route params and store state
+  store.commit("spaces/setProjectPath", {
+    projectId: globalSpaceBrowserProjectId,
+    value: {
+      spaceId: activeSpace.value!.id,
+      spaceProviderId: activeSpaceProvider.value!.id,
+      itemId: "root",
+    },
+  });
+});
 
 const { breadcrumbs } = usePageBreadcrumbs();
 

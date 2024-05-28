@@ -5,9 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
 import { APP_ROUTES } from "@/router";
-import { useStore } from "@/composables/useStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
 
 import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceCard from "./SpaceCard.vue";
@@ -15,7 +13,6 @@ import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useIcons } from "./useIcons";
 
-const store = useStore();
 const $router = useRouter();
 const $route = useRoute();
 
@@ -25,15 +22,6 @@ const { breadcrumbs } = usePageBreadcrumbs();
 const { getSpaceGroupIcon } = useIcons();
 
 const onSpaceCardClick = (space: SpaceProviderNS.Space) => {
-  store.commit("spaces/setProjectPath", {
-    projectId: globalSpaceBrowserProjectId,
-    value: {
-      spaceId: space.id,
-      spaceProviderId: activeSpaceProvider.value!.id,
-      itemId: "root",
-    },
-  });
-
   $router.push({
     name: APP_ROUTES.Home.SpaceBrowsingPage,
     params: {
