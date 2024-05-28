@@ -20,7 +20,7 @@ describe("spaces::providers", () => {
 
       await store.dispatch("spaces/fetchAllSpaceProviders");
 
-      expect(store.state.spaces.isLoadingProvider).toBe(true);
+      expect(store.state.spaces.isLoadingProviders).toBe(true);
       expect(mockedAPI.desktop.getSpaceProviders).toHaveBeenCalled();
     });
   });
@@ -42,11 +42,11 @@ describe("spaces::providers", () => {
       const { store } = loadStore({ mockFetchAllProvidersResponse });
 
       await store.dispatch("spaces/fetchAllSpaceProviders");
-      expect(store.state.spaces.isLoadingProvider).toBe(true);
+      expect(store.state.spaces.isLoadingProviders).toBe(true);
 
       await flushPromises();
 
-      expect(store.state.spaces.isLoadingProvider).toBe(false);
+      expect(store.state.spaces.isLoadingProviders).toBe(false);
       expect(store.state.spaces.spaceProviders).toEqual(
         mockFetchAllProvidersResponse,
       );

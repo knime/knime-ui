@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
@@ -25,13 +25,14 @@ const emit = defineEmits<{
 
 const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 
-const isConnectingToProvider = ref(false);
-const isLoadingProvider = computed(() => store.state.spaces.isLoadingProvider);
+const isLoadingProviders = computed(
+  () => store.state.spaces.isLoadingProviders,
+);
 
 watch(
-  [isConnectingToProvider, isLoadingProvider],
+  isLoadingProviders,
   () => {
-    emit("loading", isLoadingProvider.value && !isConnectingToProvider.value);
+    emit("loading", isLoadingProviders.value);
   },
   { immediate: true },
 );
@@ -125,10 +126,7 @@ const items = computed<SpaceNavItem[]>(() =>
 <template>
   <SidebarNavItem v-for="item in items" :key="item.id" :item="item">
     <template #append>
-      <SpacePageNavItemsAuthButtons
-        :item="item"
-        @connecting="isConnectingToProvider = Boolean($event)"
-      />
+      <SpacePageNavItemsAuthButtons :item="item" />
     </template>
   </SidebarNavItem>
 </template>

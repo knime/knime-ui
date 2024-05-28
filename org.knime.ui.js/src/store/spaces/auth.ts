@@ -19,7 +19,7 @@ export const mutations: MutationTree<SpacesState> = {};
 export const actions: ActionTree<SpacesState, RootStoreState> = {
   async connectProvider({ dispatch, commit }, { spaceProviderId }) {
     try {
-      commit("setIsLoadingProvider", true);
+      commit("setIsConnectingToProvider", spaceProviderId);
       // returns the provider metadata (but no spaces)
       const spaceProvider = await API.desktop.connectSpaceProvider({
         spaceProviderId,
@@ -39,7 +39,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       consola.error("Error connecting to provider", { error });
       throw error;
     } finally {
-      commit("setIsLoadingProvider", false);
+      commit("setIsConnectingToProvider", null);
     }
   },
 

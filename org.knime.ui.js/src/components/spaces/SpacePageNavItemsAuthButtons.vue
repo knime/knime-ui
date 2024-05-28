@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import Button from "webapps-common/ui/components/Button.vue";
@@ -15,25 +15,21 @@ type Props = {
 
 defineProps<Props>();
 
-const emit = defineEmits<{
-  connecting: [value: string | null];
-}>();
-
 const store = useStore();
-const isLoadingProvider = computed(() => store.state.spaces.isLoadingProvider);
-
-const connectingProviderId = ref<string | null>(null);
+const isConnectingToProvider = computed(
+  () => store.state.spaces.isConnectingToProvider,
+);
+const isLoadingProviders = computed(
+  () => store.state.spaces.isLoadingProviders,
+);
+const disabled = computed(
+  () => isLoadingProviders.value || Boolean(isConnectingToProvider.value),
+);
 
 const onLogin = async (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   const spaceProviderId = spaceProvider.id;
 
-  connectingProviderId.value = spaceProviderId;
-  emit("connecting", connectingProviderId.value);
-
   await store.dispatch("spaces/connectProvider", { spaceProviderId });
-
-  connectingProviderId.value = null;
-  emit("connecting", connectingProviderId.value);
 };
 
 const onLogout = async (spaceProviderId: string) => {
@@ -67,11 +63,11 @@ const shouldDisplayLogoutButton = (
     "
     with-border
     compact
-    :disabled="isLoadingProvider"
+    :disabled="disabled"
     class="login"
     @click.stop="onLogin(item.metadata.spaceProvider)"
   >
-    <template v-if="connectingProviderId === item.metadata.spaceProvider.id">
+    <template v-if="isConnectingToProvider === item.metadata.spaceProvider.id">
       <LoadingIcon />
     </template>
     <template v-else> Login </template>
@@ -84,7 +80,7 @@ const shouldDisplayLogoutButton = (
     "
     with-border
     compact
-    :disabled="isLoadingProvider"
+    :disabled="disabled"
     class="logout"
     @click.stop="onLogout(item.metadata.spaceProvider.id)"
   >

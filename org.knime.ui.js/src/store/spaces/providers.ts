@@ -11,7 +11,8 @@ import { findSpaceById } from "./util";
 
 export interface State {
   spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
-  isLoadingProvider: boolean;
+  isLoadingProviders: boolean;
+  isConnectingToProvider: string | null;
   hasLoadedProviders: boolean;
 }
 
@@ -23,13 +24,18 @@ export const state = (): State => ({
   // metadata of all available space providers and their spaces (including local)
   spaceProviders: null,
 
-  isLoadingProvider: false,
+  isLoadingProviders: false,
+  isConnectingToProvider: null,
   hasLoadedProviders: false,
 });
 
 export const mutations: MutationTree<SpacesState> = {
-  setIsLoadingProvider(state, value: boolean) {
-    state.isLoadingProvider = value;
+  setIsLoadingProviders(state, value: boolean) {
+    state.isLoadingProviders = value;
+  },
+
+  setIsConnectingToProvider(state, value: string | null) {
+    state.isConnectingToProvider = value;
   },
 
   setHasLoadedProviders(state, value: boolean) {
@@ -81,7 +87,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     { state, commit, dispatch },
     { keepLocalSpace = true } = {},
   ) {
-    if (state.isLoadingProvider) {
+    if (state.isLoadingProviders) {
       return;
     }
 
@@ -100,11 +106,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   fetchAllSpaceProviders({ commit, state }) {
-    if (state.isLoadingProvider) {
+    if (state.isLoadingProviders) {
       return;
     }
 
-    commit("setIsLoadingProvider", true);
+    commit("setIsLoadingProviders", true);
 
     // provider fetch happens async, so the payload will be received via a
     // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
@@ -138,7 +144,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       consola.error("Error fetching providers", { error });
       throw error;
     } finally {
-      commit("setIsLoadingProvider", false);
+      commit("setIsLoadingProviders", false);
     }
   },
 

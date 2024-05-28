@@ -228,7 +228,11 @@ const createMenuEntries = (
 };
 
 const spacesDropdownData = computed((): Array<MenuItem<AllMetadata>> => {
-  if (store.state.spaces.isLoadingProvider) {
+  const isLoading =
+    store.state.spaces.isLoadingProviders ||
+    store.state.spaces.isConnectingToProvider;
+
+  if (isLoading) {
     // @ts-ignore
     return [{ text: "Loading…", disabled: true, icon: LoadingIcon }];
   }

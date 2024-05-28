@@ -269,7 +269,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       if ("error" in payload) {
         consola.error("Error fetching space providers", payload.error);
 
-        $store.commit("spaces/setIsLoadingProvider", false);
+        $store.commit("spaces/setIsLoadingProviders", false);
         $store.commit("setHasLoadedProviders", false);
         return;
       }
