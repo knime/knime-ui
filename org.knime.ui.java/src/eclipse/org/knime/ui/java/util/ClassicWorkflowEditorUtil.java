@@ -112,11 +112,13 @@ public final class ClassicWorkflowEditorUtil {
 
     /**
      * Describe the current application state based on the state of the Eclipse UI.
+     *
      * @param localSpace
+     * @return the id of the currently active project or {@code null} if none is active
      */
-    public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final LocalWorkspace localSpace) {
+    public static String updateWorkflowProjectsFromOpenedWorkflowEditors(final LocalWorkspace localSpace) {
         var workbench = (Workbench)PlatformUI.getWorkbench();
-        updateWorkflowProjectsFromOpenedWorkflowEditors(workbench.getService(EModelService.class),
+        return updateWorkflowProjectsFromOpenedWorkflowEditors(workbench.getService(EModelService.class),
             workbench.getApplication(), localSpace);
     }
 
@@ -126,15 +128,16 @@ public final class ClassicWorkflowEditorUtil {
      * @param modelService
      * @param app
      * @param localSpace
+     * @return the id of the currently active project or {@code null} if none is active
      */
-    public static void updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
+    public static String updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
         final MApplication app, final LocalWorkspace localSpace) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        var activeProjectId = new AtomicReference<String>();
+        var activeProjectIdRef = new AtomicReference<String>();
         var workflowProjects = editorParts.stream().map(part -> {
             var wp = getOrCreateWorkflowProject(part, localSpace);
             if (wp != null && isEditorPartSelectedElement(part)) {
-                activeProjectId.set(wp.getID());
+                activeProjectIdRef.set(wp.getID());
             }
             return wp;
         }) //
@@ -160,9 +163,12 @@ public final class ClassicWorkflowEditorUtil {
             pm.addProject(p);
             pm.openAndCacheProject(p.getID());
         });
-        if (activeProjectId.get() != null) {
-            pm.setProjectActive(activeProjectId.get());
+
+        String activeProjectId = null;
+        if ((activeProjectId = activeProjectIdRef.get()) != null) {
+            pm.setProjectActive(activeProjectId);
         }
+        return activeProjectId;
     }
 
     private static Project getOrCreateWorkflowProject(final MPart editorPart, final LocalWorkspace localSpace) {

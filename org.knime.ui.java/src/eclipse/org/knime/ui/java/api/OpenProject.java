@@ -150,8 +150,12 @@ final class OpenProject {
         try {
             DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo);
             hideSharedEditorArea();
-            ClassicWorkflowEditorUtil
+            var activeProjectId = ClassicWorkflowEditorUtil
                 .updateWorkflowProjectsFromOpenedWorkflowEditors(DesktopAPI.getDeps(LocalWorkspace.class));
+            if (activeProjectId != null) {
+                DesktopAPI.getDeps(ProjectManager.class).getProject(activeProjectId)
+                    .ifPresent(p -> DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(p));
+            }
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
             LOGGER.warn("Could not open editor", e);
