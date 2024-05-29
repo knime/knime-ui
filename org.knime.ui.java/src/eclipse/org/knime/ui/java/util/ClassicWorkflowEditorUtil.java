@@ -114,9 +114,9 @@ public final class ClassicWorkflowEditorUtil {
      * Describe the current application state based on the state of the Eclipse UI.
      *
      * @param localSpace
-     * @return the id of the currently active project or {@code null} if none is active
+     * @return the id of the currently active project or an empty Optional if none is active
      */
-    public static String updateWorkflowProjectsFromOpenedWorkflowEditors(final LocalWorkspace localSpace) {
+    public static Optional<String> updateWorkflowProjectsFromOpenedWorkflowEditors(final LocalWorkspace localSpace) {
         var workbench = (Workbench)PlatformUI.getWorkbench();
         return updateWorkflowProjectsFromOpenedWorkflowEditors(workbench.getService(EModelService.class),
             workbench.getApplication(), localSpace);
@@ -128,29 +128,25 @@ public final class ClassicWorkflowEditorUtil {
      * @param modelService
      * @param app
      * @param localSpace
-     * @return the id of the currently active project or {@code null} if none is active
+     * @return the id of the currently active project or an empty Optional if none is active
      */
-    public static String updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
+    public static Optional<String> updateWorkflowProjectsFromOpenedWorkflowEditors(final EModelService modelService,
         final MApplication app, final LocalWorkspace localSpace) {
+        var projectManager = ProjectManager.getInstance();
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        var activeProjectIdRef = new AtomicReference<String>();
-        var workflowProjects = editorParts.stream().map(part -> {
-            var wp = getOrCreateWorkflowProject(part, localSpace);
-            if (wp != null && isEditorPartSelectedElement(part)) {
-                activeProjectIdRef.set(wp.getID());
-            }
-            return wp;
-        }) //
-            .filter(Objects::nonNull);
 
-        var pm = ProjectManager.getInstance();
-        var resolved = resolveDuplicates(workflowProjects,
+        var projectsFromParts = editorParts.stream() //
+            .map(part -> getOrCreateWorkflowProject(part, localSpace)) //
+            .filter(Optional::isPresent).map(Optional::get);
+
+        var openProjects = resolveDuplicates( //
+            projectsFromParts,
             // Determine duplicates by project ID
             Project::getID,
             // Among duplicates, prefer picking one that is not visible
             group -> group.stream().min( //
-                (p1, p2) -> Boolean.compare(!pm.isActiveProject(p1.getID()),
-                    !pm.isActiveProject(p2.getID())) //
+                (proj1, proj2) -> Boolean.compare(!projectManager.isActiveProject(proj1.getID()),
+                    !projectManager.isActiveProject(proj2.getID())) //
             ).get() // NOSONAR: group is never empty (result of groupBy)
         );
 
@@ -158,32 +154,32 @@ public final class ClassicWorkflowEditorUtil {
         // Because it can contain projects whose id does _not_ equal WorkflowManager.getNameWithId anymore
         // due to a 'save-as' in which case it wouldn't be replaced even though it represents
         // the same workflow.
-        pm.getProjectIds().forEach(id -> pm.removeProject(id, wfm -> {}));
-        resolved.forEach(p -> {
-            pm.addProject(p);
-            pm.openAndCacheProject(p.getID());
+        projectManager.getProjectIds().forEach(id -> projectManager.removeProject(id, wfm -> {
+        }));
+        openProjects.forEach(p -> {
+            projectManager.addProject(p);
+            projectManager.openAndCacheProject(p.getID());
         });
 
-        String activeProjectId = null;
-        if ((activeProjectId = activeProjectIdRef.get()) != null) {
-            pm.setProjectActive(activeProjectId);
-        }
+        var activeProjectId = editorParts.stream() //
+            .filter(ClassicWorkflowEditorUtil::isEditorPartSelectedElement) //
+            .findFirst() //
+            .flatMap(selectedPart -> getOrCreateWorkflowProject(selectedPart, localSpace)) //
+            .map(Project::getID);
+        activeProjectId.ifPresent(projectManager::setProjectActive);
         return activeProjectId;
     }
 
-    private static Project getOrCreateWorkflowProject(final MPart editorPart, final LocalWorkspace localSpace) {
-        var wfm = getWorkflowManager(editorPart);
-        var projectWfm = wfm.flatMap(ClassicWorkflowEditorUtil::getProjectManager);
-        return projectWfm.map(pw -> getOrCreateWorkflowProject(pw, editorPart, localSpace)).orElse(null);
+    private static Optional<Project> getOrCreateWorkflowProject(final MPart editorPart,
+        final LocalWorkspace localSpace) {
+        return getWorkflowManager(editorPart).flatMap(ClassicWorkflowEditorUtil::getProjectManager)
+            .map(projWfm -> getOrCreateWorkflowProject(projWfm, editorPart, localSpace));
     }
 
     private static Project getOrCreateWorkflowProject(final WorkflowManager projWfm, final MPart editorPart,
         final LocalWorkspace localSpace) {
-        Project wp = ProjectManager.getInstance().getProject(projWfm.getNameWithID()).orElse(null);
-        if (wp == null) {
-            return createWorkflowProject(editorPart, projWfm, localSpace);
-        }
-        return wp;
+        return ProjectManager.getInstance().getProject(projWfm.getNameWithID()) //
+            .orElse(createWorkflowProject(editorPart, projWfm, localSpace));
     }
 
     /**

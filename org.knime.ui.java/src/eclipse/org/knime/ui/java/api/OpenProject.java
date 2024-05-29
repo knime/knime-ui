@@ -90,7 +90,7 @@ final class OpenProject {
     private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenProject.class);
 
     private OpenProject() {
-       // utility
+        // utility
     }
 
     /**
@@ -117,16 +117,16 @@ final class OpenProject {
     /**
      * Fetch and open a local copy of a project sourced from the given import (e.g. by dropping an URI)
      *
-     * @apiNote While opening a project from a mounted remote space may also open them as local copies, the behavior
-     *          of these two cases is different w.r.t. interaction with the space explorer, opening and saving.
+     * @apiNote While opening a project from a mounted remote space may also open them as local copies, the behavior of
+     *          these two cases is different w.r.t. interaction with the space explorer, opening and saving.
      * @param repoObjectImport The source of the project
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport) {
         final var locationInfo = repoObjectImport.locationInfo()//
-                .filter(HubSpaceLocationInfo.class::isInstance)//
-                .map(HubSpaceLocationInfo.class::cast)//
-                .orElse(null);
+            .filter(HubSpaceLocationInfo.class::isInstance)//
+            .map(HubSpaceLocationInfo.class::cast)//
+            .orElse(null);
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             openProjectInClassicAndWebUI(repoObjectImport.getKnimeURI(), locationInfo);
         } else {
@@ -152,10 +152,8 @@ final class OpenProject {
             hideSharedEditorArea();
             var activeProjectId = ClassicWorkflowEditorUtil
                 .updateWorkflowProjectsFromOpenedWorkflowEditors(DesktopAPI.getDeps(LocalWorkspace.class));
-            if (activeProjectId != null) {
-                DesktopAPI.getDeps(ProjectManager.class).getProject(activeProjectId)
-                    .ifPresent(p -> DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(p));
-            }
+            activeProjectId.flatMap(id -> DesktopAPI.getDeps(ProjectManager.class).getProject(id)) //
+                .ifPresent(p -> DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(p));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
             LOGGER.warn("Could not open editor", e);
