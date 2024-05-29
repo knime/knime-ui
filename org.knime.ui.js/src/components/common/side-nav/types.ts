@@ -5,7 +5,7 @@ export type SidebarNavItem<TMetadata = any> = {
   hoverable?: boolean;
   active?: boolean;
   clickable?: boolean;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent) => void;
   children?: Array<Omit<SidebarNavItem<TMetadata>, "children" | "hoverable">>;
   metadata?: TMetadata;
 };

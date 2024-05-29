@@ -5,7 +5,7 @@ import { mount } from "@vue/test-utils";
 
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
-import { router } from "@/router";
+import { router } from "@/router/router";
 import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
 import * as workflowStore from "@/store/workflow";

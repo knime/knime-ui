@@ -1,5 +1,6 @@
 import { describe, beforeEach, it, vi, expect } from "vitest";
 import { nextTick } from "vue";
+import { useRoute } from "vue-router";
 import { mount } from "@vue/test-utils";
 
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
@@ -17,11 +18,17 @@ import { SpaceProviderNS } from "@/api/custom-types";
 
 import SpaceCard from "../SpaceCard.vue";
 import SpacePageLayout from "../SpacePageLayout.vue";
+import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 
 const routerPush = vi.fn();
 
+vi.mock("vue-router", () => ({
+  useRouter: vi.fn(() => ({ push: routerPush })),
+  useRoute: vi.fn(),
+}));
+
 describe("SpaceSelectionPage.vue", () => {
-  const spaceGroup = createSpaceGroup({
+  const spaceGroup1 = createSpaceGroup({
     id: "group1",
     spaces: [
       createSpace({ id: "space1", name: "SPACE 1" }),
@@ -29,25 +36,23 @@ describe("SpaceSelectionPage.vue", () => {
       createSpace({ id: "space3", name: "SPACE 3" }),
     ],
   });
+  const spaceGroup2 = createSpaceGroup({
+    id: "group2",
+    spaces: [
+      createSpace({ id: "space4", name: "SPACE 4" }),
+      createSpace({ id: "space5", name: "SPACE 5" }),
+      createSpace({ id: "space6", name: "SPACE 6" }),
+    ],
+  });
 
   const spaceProvider = createSpaceProvider({
     id: "provider1",
     name: "Some hub space",
     type: SpaceProviderNS.TypeEnum.HUB,
-    spaceGroups: [spaceGroup],
+    spaceGroups: [spaceGroup1, spaceGroup2],
   });
 
-  const doMount = async () => {
-    vi.doMock("vue-router", () => ({
-      useRouter: vi.fn(() => ({ push: routerPush })),
-      useRoute: vi.fn(() => ({
-        params: {
-          spaceProviderId: spaceProvider.id,
-          groupId: spaceGroup.id,
-        },
-      })),
-    }));
-
+  const doMount = () => {
     const $store = mockVuexStore({
       spaces: spacesStore,
     });
@@ -61,9 +66,6 @@ describe("SpaceSelectionPage.vue", () => {
 
     const mockRouter = { push: vi.fn() };
 
-    const SpaceSelectionPage = (await import("../SpaceSelectionPage.vue"))
-      .default;
-
     const wrapper = mount(SpaceSelectionPage, {
       global: {
         plugins: [$store],
@@ -76,47 +78,117 @@ describe("SpaceSelectionPage.vue", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
-  it("should render correctly", async () => {
-    const { wrapper } = await doMount();
+  describe("for page with known space group", () => {
+    beforeEach(() => {
+      // @ts-ignore
+      useRoute.mockImplementation(() => ({
+        name: APP_ROUTES.Home.SpaceSelectionPage,
+        params: {
+          spaceProviderId: spaceProvider.id,
+          groupId: spaceGroup1.id,
+        },
+      }));
+    });
 
-    expect(wrapper.findComponent(SpacePageLayout).props("title")).toBe(
-      spaceGroup.name,
-    );
-    expect(wrapper.findAllComponents(SpaceCard).length).toBe(3);
-  });
+    it("should render correctly", () => {
+      const { wrapper } = doMount();
 
-  it("should render correct breadcrumb", async () => {
-    const { wrapper } = await doMount();
+      expect(wrapper.findComponent(SpacePageLayout).props("title")).toBe(
+        spaceGroup1.name,
+      );
+      expect(wrapper.findAllComponents(SpaceCard).length).toBe(3);
+    });
 
-    expect(wrapper.findComponent(SpacePageLayout).props("breadcrumbs")).toEqual(
-      [
+    it("should render correct breadcrumb", () => {
+      const { wrapper } = doMount();
+
+      expect(
+        wrapper.findComponent(SpacePageLayout).props("breadcrumbs"),
+      ).toEqual([
         expect.objectContaining({ text: spaceProvider.name }),
-        expect.objectContaining({ text: spaceGroup.name }),
-      ],
-    );
+        expect.objectContaining({ text: spaceGroup1.name }),
+      ]);
+    });
+
+    it("should filter spaces when search fields is used", async () => {
+      const { wrapper } = doMount();
+
+      wrapper
+        .findComponent(SearchInput)
+        .vm.$emit("update:modelValue", "space 2");
+      await nextTick();
+      expect(wrapper.findAllComponents(SpaceCard).length).toBe(1);
+    });
+
+    it("should navigate to space", async () => {
+      const { wrapper } = doMount();
+
+      await wrapper.findAllComponents(SpaceCard).at(0)!.vm.$emit("click");
+      expect(routerPush).toHaveBeenCalledWith({
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        params: {
+          spaceProviderId: spaceProvider.id,
+          groupId: spaceGroup1.id,
+          spaceId: "space1",
+        },
+      });
+    });
   });
 
-  it("should filter spaces when search fields is used", async () => {
-    const { wrapper } = await doMount();
+  describe("for page with all space groups", () => {
+    beforeEach(() => {
+      // @ts-ignore
+      useRoute.mockImplementation(() => ({
+        name: APP_ROUTES.Home.SpaceSelectionPage,
+        params: {
+          spaceProviderId: spaceProvider.id,
+          groupId: "all",
+        },
+      }));
+    });
 
-    wrapper.findComponent(SearchInput).vm.$emit("update:modelValue", "space 2");
-    await nextTick();
-    expect(wrapper.findAllComponents(SpaceCard).length).toBe(1);
-  });
+    it("should render correctly", () => {
+      const { wrapper } = doMount();
 
-  it("should navigate to space", async () => {
-    const { wrapper } = await doMount();
+      expect(wrapper.findComponent(SpacePageLayout).props("title")).toBe(
+        `Spaces of ${spaceProvider.name}`,
+      );
+      expect(wrapper.findAllComponents(SpaceCard).length).toBe(6);
+    });
 
-    await wrapper.findAllComponents(SpaceCard).at(0)!.vm.$emit("click");
-    expect(routerPush).toHaveBeenCalledWith({
-      name: APP_ROUTES.Home.SpaceBrowsingPage,
-      params: {
-        spaceProviderId: spaceProvider.id,
-        groupId: spaceGroup.id,
-        spaceId: "space1",
-      },
+    it("should render correct breadcrumb", () => {
+      const { wrapper } = doMount();
+
+      expect(
+        wrapper.findComponent(SpacePageLayout).props("breadcrumbs"),
+      ).toEqual([expect.objectContaining({ text: spaceProvider.name })]);
+    });
+
+    it("should filter spaces when search fields is used", async () => {
+      const { wrapper } = doMount();
+
+      wrapper
+        .findComponent(SearchInput)
+        .vm.$emit("update:modelValue", "space 6");
+      await nextTick();
+      expect(wrapper.findAllComponents(SpaceCard).length).toBe(1);
+    });
+
+    it("should navigate to space", async () => {
+      const { wrapper } = doMount();
+
+      await wrapper.findAllComponents(SpaceCard).at(-1)!.vm.$emit("click");
+      expect(routerPush).toHaveBeenCalledWith({
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        params: {
+          spaceProviderId: spaceProvider.id,
+          groupId: spaceGroup2.id,
+          spaceId: "space6",
+        },
+      });
     });
   });
 });

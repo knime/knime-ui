@@ -12,6 +12,7 @@ import {
 } from "@/components/common/side-nav";
 
 import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
+import CommunityHubPromoCard from "@/components/spaces/CommunityHubPromoCard.vue";
 
 const isSkeletonShown = ref(true);
 
@@ -39,4 +40,6 @@ const recent = computed<SidebarNavItemType>(() => ({
 
     <SpacePageNavItems @loading="isSkeletonShown = $event" />
   </SidebarNav>
+
+  <CommunityHubPromoCard />
 </template>

@@ -89,9 +89,7 @@ describe("SpacePageNavItems.vue", () => {
       onClick: expect.any(Function),
       hoverable: true,
       icon: expect.anything(),
-      metadata: {
-        spaceProvider: spaceProvider1,
-      },
+      metadata: { spaceProvider: spaceProvider1 },
       children: [],
     });
 
@@ -99,13 +97,11 @@ describe("SpacePageNavItems.vue", () => {
       id: spaceProvider2.id,
       text: spaceProvider2.name,
       active: true,
-      clickable: false,
+      clickable: true,
       onClick: expect.any(Function),
-      hoverable: false,
+      hoverable: true,
       icon: expect.anything(),
-      metadata: {
-        spaceProvider: spaceProvider2,
-      },
+      metadata: { spaceProvider: spaceProvider2 },
       children: [
         {
           id: spaceGroup.id,
@@ -114,10 +110,7 @@ describe("SpacePageNavItems.vue", () => {
           icon: expect.anything(),
           clickable: true,
           onClick: expect.any(Function),
-          metadata: {
-            spaceProvider: spaceProvider2,
-            spaceGroup,
-          },
+          metadata: { spaceProvider: spaceProvider2, spaceGroup },
         },
       ],
     });

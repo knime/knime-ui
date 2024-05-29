@@ -66,6 +66,11 @@ export const routes: Array<RouteRecordRaw> = [
       },
       {
         name: APP_ROUTES.Home.SpaceSelectionPage,
+        path: "/space-selection/:spaceProviderId/all",
+        component: () => import("@/components/spaces/SpaceSelectionPage.vue"),
+      },
+      {
+        name: APP_ROUTES.Home.SpaceSelectionPage,
         path: "/space-selection/:spaceProviderId/:groupId",
         component: () => import("@/components/spaces/SpaceSelectionPage.vue"),
       },

@@ -1,3 +1,4 @@
+/* eslint-disable new-cap */
 import {
   expect,
   describe,
@@ -7,7 +8,6 @@ import {
   beforeAll,
   type Mock,
 } from "vitest";
-/* eslint-disable new-cap */
 import { notifyPatch } from "@/util/event-syncer";
 import { deepMocked } from "@/test/utils";
 
@@ -22,8 +22,6 @@ import type { SpaceProviderNS } from "@/api/custom-types";
 import eventsPlugin from "../events";
 
 vi.mock("@/util/event-syncer");
-
-vi.mock("@/router");
 
 const registeredHandlers: Partial<EventHandlers & DesktopEventHandlers> = {};
 

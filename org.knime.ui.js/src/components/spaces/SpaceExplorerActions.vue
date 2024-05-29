@@ -15,7 +15,6 @@ import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildMoveToSpaceMenuItem,
-  buildOpenInBrowserMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
@@ -120,24 +119,13 @@ export default defineComponent({
           this.selectedItemIds,
         );
 
-        const openInBrowser = buildOpenInBrowserMenuItem(
-          this.$store.dispatch,
-          this.projectId,
-          this.selectedItemIds,
-          this.getProviderInfo(projectId),
-        );
-
         const moveToSpace = buildMoveToSpaceMenuItem(
           this.$store.dispatch,
           this.projectId,
           this.selectedItemIds,
         );
 
-        const baseActions = [downloadToLocalSpace, moveToSpace];
-
-        return this.isFileSelected
-          ? baseActions
-          : baseActions.concat(openInBrowser);
+        return [downloadToLocalSpace, moveToSpace];
       };
 
       const getServerActions = () => {

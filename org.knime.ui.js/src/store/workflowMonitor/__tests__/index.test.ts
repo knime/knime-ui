@@ -9,7 +9,7 @@ import * as workflowMonitorStore from "../index";
 import { flushPromises } from "@vue/test-utils";
 import { router } from "@/router/router";
 import { lifecycleBus } from "@/store/application/lifecycle-events";
-import { APP_ROUTES } from "@/router";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 vi.mock("@/router/router", () => {
   return {

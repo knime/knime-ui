@@ -20,7 +20,7 @@ vi.mock("@/util/encodeString", () => ({
 
 // mock the router import (which is a dependency of the application store) to prevent the test runner
 // from creating a real router
-vi.mock("@/router", () => ({
+vi.mock("@/router/appRoutes", () => ({
   APP_ROUTES: {},
 }));
 

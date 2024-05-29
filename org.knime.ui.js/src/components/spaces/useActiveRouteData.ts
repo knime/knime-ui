@@ -1,6 +1,7 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "@/composables/useStore";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 export const useActiveRouteData = () => {
   const $route = useRoute();
@@ -20,8 +21,20 @@ export const useActiveRouteData = () => {
 
   const activeSpace = computed(() => {
     const { spaceId } = $route.params;
+
     return activeSpaceGroup.value?.spaces.find(({ id }) => id === spaceId);
   });
 
-  return { activeSpaceProvider, activeSpaceGroup, activeSpace };
+  const isShowingAllSpaces = computed(
+    () =>
+      $route.name === APP_ROUTES.Home.SpaceSelectionPage &&
+      $route.params.groupId === "all",
+  );
+
+  return {
+    activeSpaceProvider,
+    activeSpaceGroup,
+    activeSpace,
+    isShowingAllSpaces,
+  };
 };

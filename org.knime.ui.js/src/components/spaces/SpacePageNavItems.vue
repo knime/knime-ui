@@ -43,6 +43,14 @@ const isHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
 
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   if (isHubProvider(spaceProvider) || !spaceProvider.connected) {
+    $router.push({
+      name: APP_ROUTES.Home.SpaceSelectionPage,
+      params: {
+        spaceProviderId: spaceProvider.id,
+        groupId: "all",
+      },
+    });
+
     return;
   }
 
@@ -92,14 +100,12 @@ const items = computed<SpaceNavItem[]>(() =>
       id: spaceProvider.id,
       text: spaceProvider.name,
       active: isSpaceProviderActive(spaceProvider.id),
-      clickable: !isHubProvider(spaceProvider),
+      clickable: spaceProvider.connected,
       onClick: () => onProviderClick(spaceProvider),
-      hoverable: !isHubProvider(spaceProvider) && spaceProvider.connected,
+      hoverable: spaceProvider.connected,
       icon: getSpaceProviderIcon(spaceProvider),
 
-      metadata: {
-        spaceProvider,
-      },
+      metadata: { spaceProvider },
 
       children: isLoggedInHubProvider(spaceProvider)
         ? spaceProvider.spaceGroups.map((group) => ({
@@ -108,12 +114,12 @@ const items = computed<SpaceNavItem[]>(() =>
             active: isSpaceGroupActive(group.id),
             icon: getSpaceGroupIcon(group),
             clickable: true,
-            onClick: () => onSpaceGroupClick(group, spaceProvider),
-
-            metadata: {
-              spaceProvider,
-              spaceGroup: group,
+            onClick: (event) => {
+              event.stopPropagation();
+              onSpaceGroupClick(group, spaceProvider);
             },
+
+            metadata: { spaceProvider, spaceGroup: group },
           }))
         : [],
     };

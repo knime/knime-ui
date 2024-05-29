@@ -18,22 +18,36 @@ export const usePageBreadcrumbs = () => {
   const $router = useRouter();
   const $route = useRoute();
 
-  const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
-    useActiveRouteData();
+  const {
+    activeSpaceProvider,
+    activeSpaceGroup,
+    activeSpace,
+    isShowingAllSpaces,
+  } = useActiveRouteData();
 
   const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
   const isHubProvider = computed<boolean>(
     () => activeSpaceProvider.value.type === SpaceProviderNS.TypeEnum.HUB,
   );
+
   const breadcrumbs = computed<Array<BreadcrumbItem>>(() => {
     const spaceProviderBreadcrumbItem: BreadcrumbItem = {
       text: activeSpaceProvider.value.name,
       icon: getSpaceProviderIcon(activeSpaceProvider.value),
-      clickable: false,
+      clickable: true,
+      onClick: () => {
+        $router.push({
+          name: APP_ROUTES.Home.SpaceSelectionPage,
+          params: {
+            spaceProviderId: activeSpaceProvider.value.id,
+            groupId: "all",
+          },
+        });
+      },
     };
 
-    if (!isHubProvider.value) {
+    if (!isHubProvider.value || isShowingAllSpaces.value) {
       return [spaceProviderBreadcrumbItem];
     }
 

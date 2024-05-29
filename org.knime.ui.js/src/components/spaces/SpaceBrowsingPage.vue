@@ -27,7 +27,7 @@ const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
   useActiveRouteData();
 
 watch(
-  () => $route.params.spaceId,
+  [() => $route.params.spaceId, () => $route.params.spaceProviderId],
   () => {
     // This is required to sync between route params and store state
     store.commit("spaces/setProjectPath", {

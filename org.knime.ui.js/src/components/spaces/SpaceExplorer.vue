@@ -136,7 +136,7 @@ const fetchWorkflowGroupContent = async () => {
 };
 
 watch(
-  [projectId, () => $route.params.spaceId],
+  [projectId, () => $route.params.spaceId, () => $route.params.spaceProviderId],
   async () => {
     await fetchWorkflowGroupContent();
   },

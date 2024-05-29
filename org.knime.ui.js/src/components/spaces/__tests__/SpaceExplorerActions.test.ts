@@ -120,7 +120,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.findComponent(PlusButton).exists()).toBe(true);
       expect(
         wrapper.findAllComponents(OptionalSubMenuActionButton).length,
-      ).toBe(7);
+      ).toBe(6);
     });
 
     it("should disable actions that require selected items", () => {
@@ -144,31 +144,27 @@ describe("SpaceExplorerActions.vue", () => {
         "spaces/copyBetweenSpaces",
         { itemIds: ["934383"] },
       ],
-      ["openInBrowser", "spaces/openInBrowser", { itemId: "934383" }],
       ["importFiles", "spaces/importToWorkflowGroup", { importType: "FILES" }],
       [
         "importWorkflow",
         "spaces/importToWorkflowGroup",
         { importType: "WORKFLOW" },
       ],
-    ])(
-      "should call store actions on the action",
-      async (actionId, storeAction, params) => {
-        const { wrapper, store, dispatchSpy, projectId } = doMount();
+    ])("should call %s store action", async (actionId, storeAction, params) => {
+      const { wrapper, store, dispatchSpy, projectId } = doMount();
 
-        await setupStoreWithProvider(
-          store,
-          projectId,
-          SpaceProviderNS.TypeEnum.HUB,
-        );
+      await setupStoreWithProvider(
+        store,
+        projectId,
+        SpaceProviderNS.TypeEnum.HUB,
+      );
 
-        wrapper.find(`#${actionId}`).trigger("click");
-        expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
-          projectId: "someProjectId",
-          ...params,
-        });
-      },
-    );
+      wrapper.find(`#${actionId}`).trigger("click");
+      expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
+        projectId: "someProjectId",
+        ...params,
+      });
+    });
 
     it("should open create workflow dialog  when clicking on the relevant action", () => {
       const { wrapper, commitSpy } = doMount();
@@ -241,7 +237,6 @@ describe("SpaceExplorerActions.vue", () => {
 
       const allItems = items.map((item) => item.text).join("\n");
 
-      expect(allItems).toMatch("Open in Hub");
       expect(allItems).toMatch("Download to local space");
       expect(allItems).toMatch("Move to...");
       expect(allItems).toMatch("Create folder");
@@ -249,7 +244,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(allItems).toMatch("Import workflow");
       expect(allItems).toMatch("Add files");
 
-      expect(items.length).toBe(7);
+      expect(items.length).toBe(6);
     });
 
     it("shows multiple hubs to connect to in a sub menu", async () => {
@@ -364,7 +359,7 @@ describe("SpaceExplorerActions.vue", () => {
       );
     });
 
-    it("should disable actions that require selected items (download and openInBrowser)", () => {
+    it("should disable download action because it requires selected items", () => {
       const { wrapper } = doMount({
         props: {
           mode: "mini",
@@ -376,10 +371,6 @@ describe("SpaceExplorerActions.vue", () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: "downloadToLocalSpace",
-            disabled: true,
-          }),
-          expect.objectContaining({
-            id: "openInBrowser",
             disabled: true,
           }),
         ]),

@@ -22,3 +22,11 @@ export const findSpaceGroupFromSpaceId = (
     (group.spaces ?? []).some((space) => space.id === spaceId),
   );
 };
+
+export const COMMUNITY_HUB_ID = "My-KNIME-Hub";
+export const isCommunityHub = (
+  spaceProvider: SpaceProviderNS.SpaceProvider,
+) => {
+  // this is the official community hub that is automatically created
+  return spaceProvider.id === COMMUNITY_HUB_ID;
+};

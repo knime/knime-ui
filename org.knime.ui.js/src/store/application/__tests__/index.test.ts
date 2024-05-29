@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { APP_ROUTES, router } from "@/router";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { router } from "@/router/router";
 
 import { applicationState, loadStore } from "./loadStore";
 import {

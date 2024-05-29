@@ -17,7 +17,7 @@ defineProps<Props>();
         clickable: item.clickable,
       },
     ]"
-    @click="item.clickable && item.onClick?.()"
+    @click="item.clickable && item.onClick?.($event)"
   >
     <div :class="['menu-item-main']">
       <div :class="['name', { hoverable: item.hoverable }]" :title="item.text">
@@ -38,7 +38,7 @@ defineProps<Props>();
         v-for="child of item.children"
         :key="child.id"
         :class="['menu-item-children', { active: child.active }]"
-        @click="child.clickable && child.onClick?.()"
+        @click="child.clickable && child.onClick?.($event)"
       >
         <div class="name hoverable" :title="child.text">
           <Component :is="child.icon" />

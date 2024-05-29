@@ -1,7 +1,9 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import type { Router } from "vue-router";
 
 import { API } from "@api";
 import { SpaceProviderNS } from "@/api/custom-types";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 import type { RootStoreState } from "../types";
 import type { SpacesState } from "./index";
@@ -43,7 +45,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async disconnectProvider({ commit, state }, { spaceProviderId }) {
+  async disconnectProvider(
+    { commit, state },
+    { spaceProviderId, $router }: { spaceProviderId: string; $router: Router },
+  ) {
     try {
       await API.desktop.disconnectSpaceProvider({ spaceProviderId });
 
@@ -82,6 +87,23 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
           connected: false,
         },
       });
+
+      const { currentRoute } = $router;
+
+      const regex = new RegExp(
+        `${APP_ROUTES.Home.SpaceBrowsingPage}|${APP_ROUTES.Home.SpaceSelectionPage}`,
+      );
+
+      const isProviderRelatedPage = regex.test(
+        currentRoute.value.name as string,
+      );
+
+      if (
+        isProviderRelatedPage &&
+        currentRoute.value.params?.spaceProviderId === spaceProviderId
+      ) {
+        $router.push({ name: APP_ROUTES.Home.GetStarted });
+      }
 
       return spaceProviderId;
     } catch (error) {

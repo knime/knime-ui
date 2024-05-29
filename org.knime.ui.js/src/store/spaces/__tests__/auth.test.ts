@@ -9,6 +9,7 @@ import {
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 const mockedAPI = deepMocked(API);
 
@@ -116,11 +117,81 @@ describe("spaces::auth", () => {
 
       await store.dispatch("spaces/disconnectProvider", {
         spaceProviderId: "hub1",
+        $router: { push: vi.fn(), currentRoute: { value: { name: "" } } },
       });
       expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
       expect(
         store.state.spaces.spaceProviders.hub1.spaceGroups,
       ).toBeUndefined();
+
+      // reset projects that were connected to that hub to local
+      expect(store.state.spaces.projectPath.projectInHub1).toStrictEqual({
+        spaceId: "local",
+        spaceProviderId: "local",
+        itemId: "root",
+      });
+
+      // but keep others
+      expect(store.state.spaces.projectPath.myProject1.spaceId).toBe(
+        "mockSpaceId",
+      );
+    });
+
+    it("should navigate to get started page when currently displayed provider gets disconnected", async () => {
+      const { store } = loadStore();
+
+      const fullProvider = createSpaceProvider({
+        name: "Hub 1",
+        id: "hub1",
+        type: BaseSpaceProvider.TypeEnum.HUB,
+        connected: true,
+        connectionMode: "AUTHENTICATED",
+        user: { name: "John Doe" },
+        spaceGroups: [
+          createSpaceGroup({
+            spaces: [
+              { id: "mock", name: "mock space", private: false, owner: "John" },
+            ],
+          }),
+        ],
+      });
+
+      store.state.spaces.projectPath.projectInHub1 = {
+        spaceId: "mock space",
+        spaceProviderId: "hub1",
+        itemId: "someFolderX",
+      };
+
+      store.state.spaces.spaceProviders = {
+        hub1: fullProvider,
+      };
+
+      const { spaceGroups, ...otherProperties } = fullProvider;
+      const expectedProvider = {
+        ...otherProperties,
+        connected: false,
+      };
+
+      const routerPush = vi.fn();
+      await store.dispatch("spaces/disconnectProvider", {
+        spaceProviderId: "hub1",
+        $router: {
+          push: routerPush,
+          currentRoute: {
+            value: {
+              name: APP_ROUTES.Home.SpaceBrowsingPage,
+              params: { spaceProviderId: "hub1" },
+            },
+          },
+        },
+      });
+      expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
+      expect(
+        store.state.spaces.spaceProviders.hub1.spaceGroups,
+      ).toBeUndefined();
+      expect(routerPush).toHaveBeenCalledWith({
+        name: APP_ROUTES.Home.GetStarted,
+      });
 
       // reset projects that were connected to that hub to local
       expect(store.state.spaces.projectPath.projectInHub1).toStrictEqual({

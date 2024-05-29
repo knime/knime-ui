@@ -1,13 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 
+import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import * as spacesStore from "@/store/spaces";
-import SpacePageNavItemsAuthButtons from "../SpacePageNavItemsAuthButtons.vue";
 import { createSpaceProvider } from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
-import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
-import { nextTick } from "vue";
+import SpacePageNavItemsAuthButtons from "../SpacePageNavItemsAuthButtons.vue";
+
+vi.mock("vue-router", () => ({
+  useRouter: vi.fn(() => ({})),
+}));
 
 describe("SpacePageNavItemAuthButtons.vue", () => {
   type ComponentProps = InstanceType<
@@ -138,6 +142,7 @@ describe("SpacePageNavItemAuthButtons.vue", () => {
     wrapper.find(".logout").trigger("click");
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/disconnectProvider", {
       spaceProviderId: hubProvider.id,
+      $router: expect.anything(),
     });
   });
 });

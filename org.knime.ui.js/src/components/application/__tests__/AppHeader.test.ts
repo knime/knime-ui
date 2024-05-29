@@ -8,7 +8,7 @@ import { API } from "@api";
 import CloseIcon from "@/assets/cancel.svg";
 import AppHeader from "../AppHeader.vue";
 import AppHeaderTab from "../AppHeaderTab.vue";
-import { APP_ROUTES } from "@/router";
+import { APP_ROUTES } from "@/router/appRoutes";
 import CloseButton from "@/components/common/CloseButton.vue";
 import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
 import { createProject } from "@/test/factories";

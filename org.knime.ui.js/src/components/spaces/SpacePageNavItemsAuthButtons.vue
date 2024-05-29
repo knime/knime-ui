@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import Button from "webapps-common/ui/components/Button.vue";
@@ -16,6 +17,8 @@ type Props = {
 defineProps<Props>();
 
 const store = useStore();
+const $router = useRouter();
+
 const isConnectingToProvider = computed(
   () => store.state.spaces.isConnectingToProvider,
 );
@@ -35,6 +38,7 @@ const onLogin = async (spaceProvider: SpaceProviderNS.SpaceProvider) => {
 const onLogout = async (spaceProviderId: string) => {
   await store.dispatch("spaces/disconnectProvider", {
     spaceProviderId,
+    $router,
   });
 };
 

@@ -4,7 +4,7 @@ import KnimeUI from "./components/KnimeUI.vue";
 import { initJSONRPCClient, type ConnectionInfo } from "./api/json-rpc-client";
 import { setupLogger } from "./plugins/logger";
 import { store } from "./store";
-import { router } from "./router";
+import { router } from "./router/router";
 import { initPlugins } from "./plugins";
 import {
   environment,

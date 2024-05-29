@@ -40,7 +40,7 @@ const onExampleClick = async (example: ExampleProject) => {
 
 <template>
   <div class="get-started-page-header">
-    <span class="header-text">Create and explorer workflows</span>
+    <span class="header-text">Create and explore workflows</span>
 
     <div class="cards">
       <Card class="create-workflow" @click="createWorkflowLocally">
