@@ -72,7 +72,7 @@ const isClickableItem = (
   return ["space", "sign-in", "single-space-provider"].includes(metadata.type);
 };
 
-const setProjectPathAndLoadWorkflowGroupContent = async (
+const setProjectPath = (
   projectId: string,
   spaceProviderId: string,
   spaceId: string,
@@ -85,7 +85,6 @@ const setProjectPathAndLoadWorkflowGroupContent = async (
       itemId: "root",
     },
   });
-  await store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
 };
 
 const onSpaceChange = async ({
@@ -99,11 +98,7 @@ const onSpaceChange = async ({
 
   // just load content if we are already connected
   if (!isSignInItem(metadata!)) {
-    await setProjectPathAndLoadWorkflowGroupContent(
-      projectId,
-      metadata.spaceProviderId,
-      metadata.space.id,
-    );
+    setProjectPath(projectId, metadata.spaceProviderId, metadata.space.id);
     return;
   }
 
@@ -117,11 +112,7 @@ const onSpaceChange = async ({
 
   // change to first space if we have one
   if (firstSpace) {
-    await setProjectPathAndLoadWorkflowGroupContent(
-      projectId,
-      spaceProviderId!,
-      firstSpace.id,
-    );
+    setProjectPath(projectId, spaceProviderId!, firstSpace.id);
   }
 };
 

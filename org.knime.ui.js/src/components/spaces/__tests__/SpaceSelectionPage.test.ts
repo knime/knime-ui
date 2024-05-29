@@ -133,6 +133,7 @@ describe("SpaceSelectionPage.vue", () => {
           spaceProviderId: spaceProvider.id,
           groupId: spaceGroup1.id,
           spaceId: "space1",
+          itemId: "root",
         },
       });
     });
@@ -187,6 +188,7 @@ describe("SpaceSelectionPage.vue", () => {
           spaceProviderId: spaceProvider.id,
           groupId: spaceGroup2.id,
           spaceId: "space6",
+          itemId: "root",
         },
       });
     });

@@ -7,9 +7,6 @@ import {
 import { environment } from "@/environment";
 
 import WorkflowPage from "@/components/workflow/WorkflowPage.vue";
-import { store } from "@/store";
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
-import { findSpaceGroupFromSpaceId } from "@/store/spaces/util";
 
 import { APP_ROUTES } from "./appRoutes";
 
@@ -20,6 +17,9 @@ const registerRoute = (
   return env === environment ? [route] : [];
 };
 
+const Home = "Home";
+let lastHomePath = "";
+
 export const routes: Array<RouteRecordRaw> = [
   {
     name: APP_ROUTES.WorkflowPage,
@@ -28,6 +28,7 @@ export const routes: Array<RouteRecordRaw> = [
   },
 
   ...registerRoute("DESKTOP", {
+    name: Home,
     path: "/",
     component: () => import("@/components/homepage/HomePageLayout.vue"),
     children: [
@@ -36,31 +37,15 @@ export const routes: Array<RouteRecordRaw> = [
         path: "/get-started",
         component: () => import("@/components/homepage/GetStartedPage.vue"),
         beforeEnter: (_, from, next) => {
-          const { projectPath, spaceProviders } = store.state.spaces;
-
-          const hasGlobalState = projectPath[globalSpaceBrowserProjectId];
           const isComingFromWorkflow = from.name === APP_ROUTES.WorkflowPage;
-
-          if (hasGlobalState && isComingFromWorkflow) {
-            const { spaceId, spaceProviderId } =
-              projectPath[globalSpaceBrowserProjectId];
-
-            const group = findSpaceGroupFromSpaceId(
-              spaceProviders ?? {},
-              spaceId,
-            );
-
-            const params = { spaceProviderId, groupId: group?.id, spaceId };
-
-            next({
-              name: APP_ROUTES.Home.SpaceBrowsingPage,
-              params,
-            });
-
-            return; // make sure `next` is only called once
+          if (
+            isComingFromWorkflow &&
+            lastHomePath &&
+            lastHomePath !== "/get-started"
+          ) {
+            next(lastHomePath);
+            return;
           }
-
-          store.commit("spaces/removeProjectPath", globalSpaceBrowserProjectId);
           next();
         },
       },
@@ -76,7 +61,7 @@ export const routes: Array<RouteRecordRaw> = [
       },
       {
         name: APP_ROUTES.Home.SpaceBrowsingPage,
-        path: "/space-browsing/:spaceProviderId/:groupId/:spaceId",
+        path: "/space-browsing/:spaceProviderId/:groupId/:spaceId/:itemId",
         component: () => import("@/components/spaces/SpaceBrowsingPage.vue"),
       },
     ],
@@ -115,6 +100,12 @@ export const getPathFromRouteName = (name: string) => {
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.afterEach((to, from) => {
+  if (to.name === APP_ROUTES.WorkflowPage && from.matched[0]?.name === Home) {
+    lastHomePath = from.fullPath;
+  }
 });
 
 export { router };

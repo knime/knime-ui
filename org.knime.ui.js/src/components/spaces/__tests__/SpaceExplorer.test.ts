@@ -262,21 +262,42 @@ describe("SpaceExplorer.vue", () => {
     });
   });
 
-  describe("navigate", () => {
-    it("should load data when navigating to a directory", async () => {
-      const { wrapper } = await doMountAndLoad();
+  it.each([
+    ["itemId", "someItem"],
+    ["spaceId", "anotherSpaceId"],
+    ["spaceProviderId", "anotherProvider"],
+  ])(
+    "should load data on changes to the current projectPath values %s",
+    async (projectPathKey, projectPathValue) => {
+      const { store } = await doMountAndLoad();
 
+      // initial fetch of root has happened
       mockedAPI.space.listWorkflowGroup.mockReset();
 
-      wrapper.findComponent(FileExplorer).vm.$emit("changeDirectory", "1234");
-      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
-        spaceProviderId: "local",
-        spaceId: "local",
-        itemId: "1234",
+      store.commit("spaces/setProjectPath", {
+        projectId: "someProjectId",
+        value: {
+          ...store.state.spaces.projectPath.someProjectId,
+          [projectPathKey]: projectPathValue,
+        },
       });
 
+      await nextTick();
+
+      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
+        expect.objectContaining({ [projectPathKey]: projectPathValue }),
+      );
+    },
+  );
+
+  describe("navigate", () => {
+    it("emits event to request a change of the directory", async () => {
+      const { wrapper } = await doMountAndLoad();
+
+      wrapper.findComponent(FileExplorer).vm.$emit("changeDirectory", "1234");
+
       await new Promise((r) => setTimeout(r, 0));
-      expect(wrapper.emitted("itemChanged")[0][0]).toBe("1234");
+      expect(wrapper.emitted("changeDirectory")[0][0]).toBe("1234");
     });
 
     it("should navigate via the breadcrumb", async () => {
@@ -293,62 +314,9 @@ describe("SpaceExplorer.vue", () => {
       wrapper
         .findComponent(Breadcrumb)
         .vm.$emit("click-item", { id: "parentId" });
-      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
-        spaceProviderId: "local",
-        spaceId: "local",
-        itemId: "parentId",
-      });
+
       await flushPromises();
-      expect(wrapper.emitted("itemChanged")[0][0]).toBe("parentId");
-    });
-
-    it("should load data when navigating back to the parent directory", async () => {
-      const { wrapper, store } = doMount({
-        mockResponse: {
-          ...fetchWorkflowGroupContentResponse,
-          path: [
-            { id: "parentId", name: "Parent Directory" },
-            { id: "currentDirectoryId", name: "Current Directory" },
-          ],
-        },
-      });
-
-      // make sure the content is loaded and cached by the correct projectId (we load on mount and on projectId change)
-      store.state.spaces.projectPath = {
-        differentProjectId: {
-          spaceProviderId: "someProviderId",
-          spaceId: "someSpace",
-          itemId: "currentDirectoryId",
-        },
-      };
-
-      await wrapper.setProps({ projectId: "differentProjectId" });
-      await new Promise((r) => setTimeout(r, 0));
-
-      mockedAPI.space.listWorkflowGroup.mockReset();
-      wrapper.findComponent(FileExplorer).vm.$emit("changeDirectory", "..");
-      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
-        spaceProviderId: "someProviderId",
-        spaceId: "someSpace",
-        itemId: "parentId",
-      });
-    });
-
-    it('should navigate to "root" when going back from 1 level below the root directory', async () => {
-      const { wrapper } = await doMountAndLoad({
-        mockResponse: {
-          ...fetchWorkflowGroupContentResponse,
-          path: [{ id: "currentDirectoryId", name: "Current Directory" }],
-        },
-      });
-
-      mockedAPI.space.listWorkflowGroup.mockReset();
-      wrapper.findComponent(FileExplorer).vm.$emit("changeDirectory", "..");
-      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
-        spaceProviderId: "local",
-        spaceId: "local",
-        itemId: "root",
-      });
+      expect(wrapper.emitted("changeDirectory")[0][0]).toBe("parentId");
     });
   });
 

@@ -64,6 +64,7 @@ const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
       spaceProviderId: spaceProvider.id,
       groupId: spaceGroup.id,
       spaceId,
+      itemId: "root",
     },
   });
 };

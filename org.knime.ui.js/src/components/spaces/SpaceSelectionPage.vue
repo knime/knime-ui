@@ -30,6 +30,7 @@ const onSpaceCardClick = (space: SpaceWithGroupId) => {
       spaceProviderId: activeSpaceProvider.value.id,
       groupId: space.groupId,
       spaceId: space.id,
+      itemId: "root",
     },
   });
 };

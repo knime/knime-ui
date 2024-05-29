@@ -18,6 +18,13 @@ const currentSelectedItemIds = computed(
 onUnmounted(() => {
   store.commit("spaces/setCurrentSelectedItemIds", []);
 });
+
+const changeDirectory = async (pathId: string) => {
+  await store.dispatch("spaces/changeDirectory", {
+    projectId: activeProjectId.value,
+    pathId,
+  });
+};
 </script>
 
 <template>
@@ -43,6 +50,7 @@ onUnmounted(() => {
         :project-id="activeProjectId"
         :selected-item-ids="currentSelectedItemIds"
         :click-outside-exception="$refs.actions as HTMLElement"
+        @change-directory="changeDirectory"
         @update:selected-item-ids="
           store.commit('spaces/setCurrentSelectedItemIds', $event)
         "

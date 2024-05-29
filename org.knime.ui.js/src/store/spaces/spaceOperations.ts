@@ -105,21 +105,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     return content;
   },
 
-  async changeDirectory(
-    { dispatch, getters, commit, state },
-    { projectId, pathId },
-  ) {
+  changeDirectory({ getters, commit }, { projectId, pathId }) {
     const itemId = getters.pathToItemId(projectId, pathId);
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
-      spaceId,
-      spaceProviderId,
-      itemId,
-    });
-
     commit("updateProjectPath", { projectId, value: { itemId } });
-    commit("setWorkflowGroupContent", { projectId, content });
-
     return { itemId };
   },
 

@@ -63,8 +63,7 @@ describe("AppHeaderContextMenu.vue", () => {
     expect(wrapper.findComponent(MenuItems).props("items").length).toBe(2);
   });
 
-  // TODO: bring back test case once navigation to SpaceBrowsingPage is improved
-  describe.skip("reveal in SpaceExplorer", () => {
+  describe("reveal in SpaceExplorer", () => {
     const triggerOption = async (wrapper: VueWrapper<any>) => {
       await wrapper.findAll("li button").at(0)?.trigger("click");
     };
@@ -133,25 +132,46 @@ describe("AppHeaderContextMenu.vue", () => {
           connectionMode: "AUTOMATIC",
           name: "Local Space",
           type: SpaceProviderNS.TypeEnum.LOCAL,
-          spaces: [
-            createSpace({
-              id: "local",
-              name: "Local Space",
-              owner: "local",
-            }),
+          spaceGroups: [
+            {
+              id: "group1",
+              name: "some user group",
+              type: SpaceProviderNS.UserTypeEnum.USER,
+              spaces: [
+                createSpace({
+                  id: "local",
+                  name: "Local Space",
+                  owner: "local",
+                }),
+              ],
+            },
           ],
         }),
         [openProjects.at(4)!.origin!.providerId]: createSpaceProvider({
           id: "hub-provider1",
           name: "Hub space",
           type: SpaceProviderNS.TypeEnum.HUB,
-          spaces: [createSpace({ id: "space1" })],
+          spaceGroups: [
+            {
+              id: "group2",
+              name: "some other user group",
+              type: SpaceProviderNS.UserTypeEnum.USER,
+              spaces: [createSpace({ id: "space1" })],
+            },
+          ],
         }),
         [openProjects.at(5)!.origin!.providerId]: createSpaceProvider({
           id: "server-provider1",
           name: "Server space",
           type: SpaceProviderNS.TypeEnum.SERVER,
-          spaces: [createSpace()],
+          spaceGroups: [
+            {
+              id: "group2",
+              name: "some other user group",
+              type: SpaceProviderNS.UserTypeEnum.USER,
+              spaces: [createSpace()],
+            },
+          ],
         }),
       };
 
@@ -212,7 +232,7 @@ describe("AppHeaderContextMenu.vue", () => {
     ])(
       "should reveal project in sidepanel for -> %s",
       async (_, project, expectedPath) => {
-        const { wrapper, $store, dispatchSpy } = doMountWithProjects({
+        const { wrapper, $store } = doMountWithProjects({
           props: { projectId: project.projectId },
         });
 
@@ -232,10 +252,8 @@ describe("AppHeaderContextMenu.vue", () => {
             [project.projectId]: expectedPath,
           }),
         );
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "spaces/fetchWorkflowGroupContent",
-          { projectId: project.projectId },
-        );
+
+        // fetch is done in SpaceExplorer on change of ProjectPath
 
         expect($store.state.spaces.currentSelectedItemIds).toEqual([
           project.origin?.itemId,
@@ -262,22 +280,14 @@ describe("AppHeaderContextMenu.vue", () => {
         panelStore.TABS.SPACE_EXPLORER,
       );
       expect(routerPush).toHaveBeenCalledWith({
-        name: APP_ROUTES.SpaceBrowsingPage,
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        params: {
+          groupId: "group1",
+          itemId: "2",
+          spaceId: "local",
+          spaceProviderId: "local",
+        },
       });
-      expect($store.state.spaces.projectPath).toEqual(
-        expect.objectContaining({
-          [spacesStore.globalSpaceBrowserProjectId]: {
-            itemId: project!.origin?.ancestorItemIds?.at(0),
-            spaceId: project!.origin?.spaceId,
-            spaceProviderId: project!.origin?.providerId,
-          },
-        }),
-      );
-
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "spaces/fetchWorkflowGroupContent",
-        { projectId: spacesStore.globalSpaceBrowserProjectId },
-      );
 
       expect($store.state.spaces.currentSelectedItemIds).toEqual([
         project.origin?.itemId,

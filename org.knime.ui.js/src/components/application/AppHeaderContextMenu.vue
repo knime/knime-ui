@@ -10,7 +10,6 @@ import type { SpaceItemReference, XY } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
 import { useStore } from "@/composables/useStore";
 import { TABS } from "@/store/panel";
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { findSpaceGroupFromSpaceId } from "@/store/spaces/util";
 
@@ -40,6 +39,62 @@ const isUnknownProject = computed<(projectId: string) => boolean>(
   () => store.getters["application/isUnknownProject"],
 );
 
+const navigateToSpaceBrowsingPage = async (origin: SpaceItemReference) => {
+  const group = findSpaceGroupFromSpaceId(
+    store.state.spaces.spaceProviders ?? {},
+    origin.spaceId,
+  );
+
+  store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
+
+  await $router.push({
+    name: APP_ROUTES.Home.SpaceBrowsingPage,
+    params: {
+      spaceProviderId: origin.providerId,
+      spaceId: origin.spaceId,
+      groupId: group?.id,
+      itemId: origin.ancestorItemIds?.at(0) ?? "root",
+    },
+  });
+};
+
+const displaySpaceExplorerSidebar = async (origin: SpaceItemReference) => {
+  if (!activeProjectId.value) {
+    return;
+  }
+
+  if (
+    store.state.panel.activeTab[activeProjectId.value] !== TABS.SPACE_EXPLORER
+  ) {
+    await store.dispatch(
+      "panel/setCurrentProjectActiveTab",
+      TABS.SPACE_EXPLORER,
+    );
+  }
+
+  const { spaceId, providerId, itemId, ancestorItemIds } = origin;
+
+  const currentPath = store.state.spaces.projectPath[activeProjectId.value];
+  const nextItemId = ancestorItemIds?.at(0) ?? "root";
+
+  if (
+    currentPath?.itemId !== nextItemId ||
+    currentPath?.spaceId !== spaceId ||
+    currentPath?.spaceProviderId !== providerId
+  ) {
+    store.commit("spaces/setProjectPath", {
+      projectId: activeProjectId.value,
+      value: {
+        spaceId,
+        spaceProviderId: providerId,
+        itemId: nextItemId,
+      },
+    });
+  }
+
+  store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+};
+
 let previousToastId: string;
 
 const showErrorToast = () => {
@@ -51,36 +106,6 @@ const showErrorToast = () => {
     message: "Could not reveal project in Space Explorer.",
     autoRemove: true,
   });
-};
-
-const displayExplorer = (origin: SpaceItemReference) => {
-  if (!activeProjectId.value) {
-    const group = findSpaceGroupFromSpaceId(
-      store.state.spaces.spaceProviders ?? {},
-      origin.spaceId,
-    );
-
-    return $router.push({
-      name: APP_ROUTES.Home.SpaceBrowsingPage,
-      params: {
-        spaceProviderId: origin.providerId,
-        spaceId: origin.spaceId,
-        groupId: group?.id,
-      },
-      query: { skipProjectPathUpdate: "true" },
-    });
-  }
-
-  if (
-    store.state.panel.activeTab[activeProjectId.value] !== TABS.SPACE_EXPLORER
-  ) {
-    return store.dispatch(
-      "panel/setCurrentProjectActiveTab",
-      TABS.SPACE_EXPLORER,
-    );
-  }
-
-  return Promise.resolve();
 };
 
 const contextMenuItems: AppHeaderContextMenuItem[] = [
@@ -105,40 +130,12 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
           // remove any "active" previous toast to avoid confusing the user
           $toast.remove(previousToastId);
 
-          const { spaceId, providerId, itemId, ancestorItemIds } =
-            foundProject.origin;
-
-          // if we have no active project then we're on the home page, which means
-          // we reveal the project in the SpaceBrowsingPage instead
-          const projectPathToReload =
-            activeProjectId.value ?? globalSpaceBrowserProjectId;
-
-          await displayExplorer(foundProject.origin);
-
-          const currentPath =
-            store.state.spaces.projectPath[projectPathToReload];
-          const nextItemId = ancestorItemIds?.at(0) ?? "root";
-
-          if (
-            currentPath?.itemId !== nextItemId ||
-            currentPath?.spaceId !== spaceId ||
-            currentPath?.spaceProviderId !== providerId
-          ) {
-            store.commit("spaces/setProjectPath", {
-              projectId: projectPathToReload,
-              value: {
-                spaceId,
-                spaceProviderId: providerId,
-                itemId: nextItemId,
-              },
-            });
-
-            await store.dispatch("spaces/fetchWorkflowGroupContent", {
-              projectId: projectPathToReload,
-            });
+          if (!activeProjectId.value) {
+            await navigateToSpaceBrowsingPage(foundProject.origin);
+            return;
           }
 
-          store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+          await displaySpaceExplorerSidebar(foundProject.origin);
         } catch (error) {
           consola.error("Error revealing project in Space Explorer", error);
           showErrorToast();

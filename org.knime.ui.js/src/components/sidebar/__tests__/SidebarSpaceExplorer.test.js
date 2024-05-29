@@ -1,4 +1,4 @@
-import { expect, describe, it } from "vitest";
+import { expect, describe, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -61,5 +61,20 @@ describe("SidebarSpaceExplorer.vue", () => {
 
     wrapper.unmount();
     expect($store.state.spaces.currentSelectedItemIds).toEqual([]);
+  });
+
+  it("handle change of directory", async () => {
+    const { wrapper, $store } = doMount();
+    $store.dispatch = vi.fn();
+
+    wrapper
+      .findComponent(SpaceExplorer)
+      .vm.$emit("changeDirectory", ["item33"]);
+    await nextTick();
+
+    expect($store.dispatch).toHaveBeenCalledWith("spaces/changeDirectory", {
+      pathId: ["item33"],
+      projectId: "proj1",
+    });
   });
 });

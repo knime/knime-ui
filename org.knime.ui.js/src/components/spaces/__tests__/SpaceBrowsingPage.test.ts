@@ -17,10 +17,47 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import SpacePageLayout from "../SpacePageLayout.vue";
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
+import SpaceExplorer from "../SpaceExplorer.vue";
+import { router } from "@/router/router";
 
 const mockedAPI = deepMocked(API);
 mockedAPI.desktop.importWorkflows.mockResolvedValue([]);
 mockedAPI.desktop.importFiles.mockResolvedValue([]);
+
+const spaceGroup = createSpaceGroup({
+  id: "group1",
+  spaces: [
+    createSpace({ id: "space1", name: "SPACE 1" }),
+    createSpace({ id: "space2", name: "SPACE 2" }),
+    createSpace({ id: "space3", name: "SPACE 3" }),
+  ],
+});
+
+const spaceProvider = createSpaceProvider({
+  id: "provider1",
+  name: "Some hub space",
+  type: SpaceProviderNS.TypeEnum.HUB,
+  spaceGroups: [spaceGroup],
+});
+
+const routerPush = vi.fn();
+
+vi.mock("vue-router", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useRouter: vi.fn(() => ({ push: routerPush })),
+    useRoute: vi.fn(() => ({
+      params: {
+        spaceProviderId: spaceProvider.id,
+        groupId: spaceGroup.id,
+        spaceId: spaceGroup.spaces.at(0)!.id,
+      },
+    })),
+  };
+});
 
 const mockSpaceItems: SpaceItem[] = [
   {
@@ -53,34 +90,7 @@ mockedAPI.space.listWorkflowGroup.mockResolvedValue({
 vi.mock("webapps-common/ui/services/toast");
 
 describe("SpaceBrowsingPage.vue", () => {
-  const spaceGroup = createSpaceGroup({
-    id: "group1",
-    spaces: [
-      createSpace({ id: "space1", name: "SPACE 1" }),
-      createSpace({ id: "space2", name: "SPACE 2" }),
-      createSpace({ id: "space3", name: "SPACE 3" }),
-    ],
-  });
-
-  const spaceProvider = createSpaceProvider({
-    id: "provider1",
-    name: "Some hub space",
-    type: SpaceProviderNS.TypeEnum.HUB,
-    spaceGroups: [spaceGroup],
-  });
-
   const doMount = async ({ initialStoreState = {} } = {}) => {
-    vi.doMock("vue-router", () => ({
-      useRouter: vi.fn(() => ({ push: () => {} })),
-      useRoute: vi.fn(() => ({
-        params: {
-          spaceProviderId: spaceProvider.id,
-          groupId: spaceGroup.id,
-          spaceId: spaceGroup.spaces.at(0)!.id,
-        },
-      })),
-    }));
-
     const $store = mockVuexStore({
       spaces: spacesStore,
       application: applicationStore,
@@ -109,7 +119,7 @@ describe("SpaceBrowsingPage.vue", () => {
 
     const wrapper = mount(SpaceBrowsingPage, {
       global: {
-        plugins: [$store],
+        plugins: [$store, router],
         mocks: { $shortcuts: { get: vi.fn(() => ({})) } },
       },
     });
@@ -141,5 +151,25 @@ describe("SpaceBrowsingPage.vue", () => {
         expect.objectContaining({ text: spaceGroup.spaces.at(0)!.name }),
       ],
     );
+  });
+
+  it("should change directory", async () => {
+    const { wrapper } = await doMount();
+
+    wrapper
+      .findComponent(SpaceExplorer)
+      .vm.$emit("changeDirectory", ["item1123"]);
+
+    await flushPromises();
+
+    expect(routerPush).toHaveBeenCalledWith({
+      name: "SpaceBrowsingPage",
+      params: {
+        groupId: "group1",
+        itemId: ["item1123"],
+        spaceId: "space1",
+        spaceProviderId: "provider1",
+      },
+    });
   });
 });

@@ -10,10 +10,12 @@ import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 const store = useStore();
 const $route = useRoute();
+const $router = useRouter();
 
 const currentSelectedItemIds = computed(
   () => store.state.spaces.currentSelectedItemIds,
@@ -27,7 +29,11 @@ const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
   useActiveRouteData();
 
 watch(
-  [() => $route.params.spaceId, () => $route.params.spaceProviderId],
+  [
+    () => $route.params.spaceId,
+    () => $route.params.spaceProviderId,
+    () => $route.params.itemId,
+  ],
   () => {
     // This is required to sync between route params and store state
     store.commit("spaces/setProjectPath", {
@@ -35,12 +41,32 @@ watch(
       value: {
         spaceId: activeSpace.value!.id,
         spaceProviderId: activeSpaceProvider.value!.id,
-        itemId: "root",
+        itemId: $route.params.itemId,
       },
     });
   },
   { immediate: true },
 );
+
+const changeDirectory = async (pathId: string) => {
+  const itemId = store.getters["spaces/pathToItemId"](
+    globalSpaceBrowserProjectId,
+    pathId,
+  );
+
+  // this synced from changes to route
+  const { spaceProviderId, spaceId, groupId } = $route.params;
+
+  await $router.push({
+    name: APP_ROUTES.Home.SpaceBrowsingPage,
+    params: {
+      spaceProviderId,
+      spaceId,
+      groupId,
+      itemId,
+    },
+  });
+};
 
 const { breadcrumbs } = usePageBreadcrumbs();
 
@@ -93,6 +119,7 @@ const hubSpaceIcon = computed(() => {
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
         :click-outside-exception="$refs.actions as HTMLElement"
+        @change-directory="changeDirectory"
         @update:selected-item-ids="setCurrentSelectedItemIds($event)"
       />
     </template>

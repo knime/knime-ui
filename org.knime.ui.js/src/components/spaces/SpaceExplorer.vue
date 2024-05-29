@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRef } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
@@ -51,10 +51,14 @@ const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
   clickOutsideException: null,
 });
-const $emit = defineEmits(["itemChanged", "update:selectedItemIds"]);
+
+const $emit = defineEmits<{
+  changeDirectory: [pathId: string];
+  "update:selectedItemIds": [selectedItemIds: string[]];
+}>();
+
 const store = useStore();
 const $router = useRouter();
-const $route = useRoute();
 const $toast = useToasts();
 
 const projectId = toRef(props, "projectId");
@@ -135,21 +139,17 @@ const fetchWorkflowGroupContent = async () => {
   });
 };
 
+// spaceId and itemId (folder) are based on the projectId but might change even with the same projectId (change dir)
 watch(
-  [projectId, () => $route.params.spaceId, () => $route.params.spaceProviderId],
+  computed(() => store.state.spaces.projectPath[props.projectId]),
   async () => {
     await fetchWorkflowGroupContent();
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 );
 
-const onChangeDirectory = async (pathId: string) => {
-  const { itemId } = await store.dispatch("spaces/changeDirectory", {
-    projectId: props.projectId,
-    pathId,
-  });
-
-  $emit("itemChanged", itemId);
+const onChangeDirectory = (pathId: string) => {
+  $emit("changeDirectory", pathId);
 };
 
 const onOpenFile = async ({ id }: FileExplorerItem) => {

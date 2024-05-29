@@ -119,17 +119,6 @@ describe("spaces::spaceOperations", () => {
 
       // changed project path itemId
       expect(store.state.spaces.projectPath.myProject1.itemId).toBe("baz");
-
-      // updated cache (was not set before)
-      expect(
-        store.state.spaces.workflowGroupCache.has(
-          JSON.stringify(store.state.spaces.projectPath.myProject1),
-        ),
-      ).toBeTruthy();
-
-      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: "baz" }),
-      );
     });
 
     it("should change to a parent directory", async () => {
@@ -146,9 +135,7 @@ describe("spaces::spaceOperations", () => {
         pathId: "..",
       });
 
-      expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
-        expect.objectContaining({ itemId: "level1" }),
-      );
+      expect(store.state.spaces.projectPath.myProject1.itemId).toBe("level1");
     });
   });
 
