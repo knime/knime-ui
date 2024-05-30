@@ -17,7 +17,8 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import SpaceExplorer from "../SpaceExplorer.vue";
-import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { SpaceItem, type Project } from "@/api/gateway-api/generated-api";
+import { createProject, createSpaceProvider } from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -48,8 +49,9 @@ const createMockComponent = (
   data: Partial<FileExplorerItem> = {},
 ): FileExplorerItem => createMockItem(data, SpaceItem.TypeEnum.Component);
 
-const fetchWorkflowGroupContentResponse = {
-  id: "root",
+const fetchWorkflowGroupContentResponse: Awaited<
+  ReturnType<typeof API.space.listWorkflowGroup>
+> = {
   path: [],
   items: [
     {
@@ -81,14 +83,10 @@ describe("SpaceExplorer.vue", () => {
     props = {} as Partial<InstanceType<typeof SpaceExplorer>["$props"]>,
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
-    openProjects = [],
+    openProjects = [] as Project[],
     fileExtensionToNodeTemplateId = {},
     isWriteableMock = vi.fn().mockReturnValue(true),
   } = {}) => {
-    // add selected item ids is not supplied as its required now
-    if (!props.selectedItemIds) {
-      props.selectedItemIds = [];
-    }
     if (mockGetSpaceItems) {
       mockedAPI.space.listWorkflowGroup.mockImplementation(mockGetSpaceItems);
     } else {
@@ -150,19 +148,14 @@ describe("SpaceExplorer.vue", () => {
       },
     };
 
-    store.state.spaces.spaceProviders = {
-      space: {
-        spaceId: "space",
-        spaceProviderId: "provider",
-        itemId: "root",
-      },
-      local: {
-        spaceId: "local",
-        spaceProviderId: "provider",
-        itemId: "root",
-        type: "LOCAL",
-      },
-    };
+    const local = createSpaceProvider();
+    const other = createSpaceProvider({
+      id: "provider",
+    });
+    store.commit("spaces/setSpaceProviders", {
+      [local.id]: local,
+      [other.id]: other,
+    });
 
     const dispatchSpy = vi.spyOn(store, "dispatch");
     const commitSpy = vi.spyOn(store, "commit");
@@ -175,7 +168,7 @@ describe("SpaceExplorer.vue", () => {
     };
 
     const wrapper = mount(SpaceExplorer, {
-      props,
+      props: { selectedItemIds: [], projectId: "", ...props },
       global: {
         plugins: [store],
         stubs: { NuxtLink: true, FocusTrap: true, NodePreview: true },
@@ -192,11 +185,11 @@ describe("SpaceExplorer.vue", () => {
   const doMountAndLoad = async ({
     props = {
       projectId: "someProjectId",
-      mode: "normal",
+      mode: "normal" as const,
     },
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
-    openProjects = [],
+    openProjects = [] as Project[],
     fileExtensionToNodeTemplateId = {},
     isWriteableMock = vi.fn().mockReturnValue(true),
   } = {}) => {
@@ -297,7 +290,7 @@ describe("SpaceExplorer.vue", () => {
       wrapper.findComponent(FileExplorer).vm.$emit("changeDirectory", "1234");
 
       await new Promise((r) => setTimeout(r, 0));
-      expect(wrapper.emitted("changeDirectory")[0][0]).toBe("1234");
+      expect(wrapper.emitted("changeDirectory")![0][0]).toBe("1234");
     });
 
     it("should navigate via the breadcrumb", async () => {
@@ -316,22 +309,23 @@ describe("SpaceExplorer.vue", () => {
         .vm.$emit("click-item", { id: "parentId" });
 
       await flushPromises();
-      expect(wrapper.emitted("changeDirectory")[0][0]).toBe("parentId");
+      expect(wrapper.emitted("changeDirectory")![0][0]).toBe("parentId");
     });
   });
 
   describe("open indicator", () => {
     it("should set the openIndicator for open workflows", async () => {
       const openProjects = [
-        {
+        createProject({
           origin: {
             providerId: "local",
             spaceId: "local",
             itemId: fetchWorkflowGroupContentResponse.items[2].id,
           },
-        },
+        }),
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
+
       expect(wrapper.findComponent(FileExplorer).props("items")[2]).toEqual(
         expect.objectContaining({ isOpen: true }),
       );
@@ -339,14 +333,14 @@ describe("SpaceExplorer.vue", () => {
 
     it("should set the openIndicator for folders with open workflows", async () => {
       const openProjects = [
-        {
+        createProject({
           origin: {
             providerId: "local",
             spaceId: "local",
             itemId: "8",
             ancestorItemIds: ["1", "7"],
           },
-        },
+        }),
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
       expect(wrapper.findComponent(FileExplorer).props("items")[0]).toEqual(
@@ -365,8 +359,9 @@ describe("SpaceExplorer.vue", () => {
     await nextTick();
 
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
-      projectId: "someProjectId",
-      workflowItemId: "dummy",
+      providerId: "local",
+      spaceId: "local",
+      itemId: "dummy",
       $router: expect.anything(),
     });
   });
@@ -381,8 +376,9 @@ describe("SpaceExplorer.vue", () => {
     await nextTick();
 
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
-      projectId: "someProjectId",
-      workflowItemId: "dummy",
+      providerId: "local",
+      spaceId: "local",
+      itemId: "dummy",
       $router: expect.anything(),
     });
   });
@@ -404,21 +400,21 @@ describe("SpaceExplorer.vue", () => {
 
     it("should not allow renaming open workflows or folders with open workflows", async () => {
       const openProjects = [
-        {
+        createProject({
           origin: {
             providerId: "local",
             spaceId: "local",
             itemId: "8",
             ancestorItemIds: ["1", "7"],
           },
-        },
-        {
+        }),
+        createProject({
           origin: {
             providerId: "local",
             spaceId: "local",
             itemId: "4",
           },
-        },
+        }),
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
       expect(wrapper.findComponent(FileExplorer).props("items")[0]).toEqual(
@@ -461,14 +457,14 @@ describe("SpaceExplorer.vue", () => {
   describe("deleting", () => {
     it("should not allow deleting folders with open workflows", async () => {
       const openProjects = [
-        {
+        createProject({
           origin: {
             providerId: "local",
             spaceId: "local",
             itemId: "8",
             ancestorItemIds: ["1", "7"],
           },
-        },
+        }),
       ];
       const { wrapper } = await doMountAndLoad({ openProjects });
       expect(wrapper.findComponent(FileExplorer).props("items")[0]).toEqual(
@@ -682,14 +678,14 @@ describe("SpaceExplorer.vue", () => {
 
     it("should show alert if at least one of the moved workflows is opened", async () => {
       const openProjects = [
-        {
+        createProject({
           origin: {
             spaceId: "local",
             itemId: "id2",
             ancestorItemIds: ["1", "7"],
           },
           name: "test2",
-        },
+        }),
       ];
       const { wrapper } = doMount({
         openProjects,
@@ -756,7 +752,6 @@ describe("SpaceExplorer.vue", () => {
           test: "org.knime.test.test.nodeFactory",
         },
         mockResponse: {
-          id: "test.id",
           path: [],
           items: [
             {
@@ -802,7 +797,6 @@ describe("SpaceExplorer.vue", () => {
           test: "org.knime.test.test.nodeFactory",
         },
         mockResponse: {
-          id: "test.id",
           path: [],
           items: [
             {
@@ -855,7 +849,6 @@ describe("SpaceExplorer.vue", () => {
         // components don't have an extenssion associated to them
         fileExtensionToNodeTemplateId: {},
         mockResponse: {
-          id: "test.id",
           path: [],
           items: [
             {
@@ -910,7 +903,6 @@ describe("SpaceExplorer.vue", () => {
           test: "org.knime.test.test.nodeFactory",
         },
         mockResponse: {
-          id: "test.id",
           path: [],
           items: [
             {

@@ -153,9 +153,13 @@ const onChangeDirectory = (pathId: string) => {
 };
 
 const onOpenFile = async ({ id }: FileExplorerItem) => {
+  const { spaceProviderId, spaceId } =
+    store.state.spaces.projectPath[props.projectId];
+
   await store.dispatch("spaces/openProject", {
-    projectId: props.projectId,
-    workflowItemId: id,
+    providerId: spaceProviderId,
+    spaceId,
+    itemId: id,
     // send in router, so it can be used to navigate to an already open workflow
     $router,
   });

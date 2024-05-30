@@ -5,14 +5,15 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import {
   SpaceItem,
-  type Project,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 
 import type { SpacesState } from "./index";
-import { isLocalProvider } from "./util";
+import { isProjectOpen } from "./util";
+import type { Router } from "vue-router";
+import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
 
 export interface PathTriplet {
   spaceId: string;
@@ -175,23 +176,27 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async openProject(
-    { rootState, state, dispatch, getters },
-    { workflowItemId, $router, projectId },
+    { rootState, state, dispatch },
+    {
+      providerId,
+      spaceId,
+      itemId,
+      $router,
+    }: WorkflowOrigin & { $router?: Router },
   ) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const provider = (state.spaceProviders ?? {})[providerId];
     const { openProjects } = rootState.application;
 
-    const foundOpenProject = openProjects.find(
-      (openProject) =>
-        getters.isProjectInProjectPath(openProject, projectId) &&
-        openProject?.origin?.itemId === workflowItemId,
+    const foundOpenProject = openProjects.find((project) =>
+      isProjectOpen(project, { spaceId, providerId, itemId }, provider),
     );
 
     if (foundOpenProject) {
-      $router.push({
+      $router?.push({
         name: APP_ROUTES.WorkflowPage,
         params: { workflowId: "root", projectId: foundOpenProject.projectId },
       });
+
       return;
     }
 
@@ -203,16 +208,22 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       { loading: true, config: { displayMode: "transparent" } },
       { root: true },
     );
-    await API.desktop.openProject({
-      spaceProviderId,
-      spaceId,
-      itemId: workflowItemId,
-    });
-    await dispatch(
-      "application/updateGlobalLoader",
-      { loading: false },
-      { root: true },
-    );
+
+    try {
+      await API.desktop.openProject({
+        spaceProviderId: providerId,
+        spaceId,
+        itemId,
+      });
+    } catch (error) {
+      throw error;
+    } finally {
+      await dispatch(
+        "application/updateGlobalLoader",
+        { loading: false },
+        { root: true },
+      );
+    }
   },
 
   async importToWorkflowGroup({ state, dispatch }, { projectId, importType }) {
@@ -271,18 +282,28 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async deleteItems(
     { dispatch, commit, state, rootState, getters },
-    { projectId, itemIds, $router },
+    {
+      projectId,
+      itemIds,
+      $router,
+    }: { projectId: string; itemIds: string[]; $router: Router },
   ) {
     try {
       const { spaceId, spaceProviderId } = state.projectPath[projectId];
+      const provider: SpaceProviderNS.SpaceProvider =
+        getters.getProviderInfoFromProjectPath(projectId);
       const { openProjects } = rootState.application;
+
+      const origins = itemIds.map<WorkflowOrigin>((itemId) => ({
+        providerId: provider.id,
+        spaceId,
+        itemId,
+      }));
 
       // find if among the items being deleted some pertain to currently open projects
       const openProjectIds = openProjects
-        .filter(
-          (openProject) =>
-            getters.isProjectInProjectPath(openProject, projectId) &&
-            itemIds.includes(openProject?.origin?.itemId),
+        .filter((project) =>
+          origins.some((origin) => isProjectOpen(project, origin, provider)),
         )
         .map(({ projectId }) => projectId);
 
@@ -385,28 +406,6 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     return pathId;
   },
 
-  isProjectInProjectPath: (state, getters) => {
-    return (project: Project, pathKey: string) => {
-      if (!state.projectPath.hasOwnProperty(pathKey)) {
-        return false;
-      }
-
-      const { spaceProviderId, spaceId } = state.projectPath[pathKey];
-
-      if (!project.origin) {
-        return false;
-      }
-
-      const provider = getters.getProviderInfoFromProjectPath(pathKey);
-
-      return (
-        project.origin.providerId === spaceProviderId &&
-        project.origin.spaceId === spaceId &&
-        isLocalProvider(provider)
-      );
-    };
-  },
-
   parentWorkflowGroupId:
     (state, getters) =>
     (projectId: string): string | null => {
@@ -440,45 +439,63 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
   getOpenedWorkflowItems:
     (state, getters, { application }) =>
-    (projectId: string) => {
+    (pathKey: string) => {
       const { openProjects } = application;
       const workflowGroupContent: WorkflowGroupContent =
-        getters.getWorkflowGroupContent(projectId);
+        getters.getWorkflowGroupContent(pathKey);
 
       if (workflowGroupContent === null) {
         return [];
       }
 
-      const projectItemIds = workflowGroupContent.items
-        .filter((item) =>
-          [ITEM_TYPES.Workflow, ITEM_TYPES.Component].includes(item.type),
-        )
-        .map((item) => item.id);
+      // provider and spaceId must be derived from the given path key
+      const { spaceId } = state.projectPath[pathKey];
+      const provider: SpaceProviderNS.SpaceProvider =
+        getters.getProviderInfoFromProjectPath(pathKey);
 
       return openProjects
-        .filter(
-          (openProject) =>
-            getters.isProjectInProjectPath(openProject, projectId) &&
-            projectItemIds.includes(openProject?.origin?.itemId ?? ""),
+        .filter((project) =>
+          isProjectOpen(
+            project,
+            {
+              providerId: provider.id,
+              spaceId,
+              itemId: project.origin?.itemId ?? "",
+            },
+            provider,
+          ),
         )
         .map(({ origin }) => origin?.itemId);
     },
 
   getOpenedFolderItems:
     (state, getters, { application }) =>
-    (projectId: string) => {
+    (pathKey: string) => {
       const { openProjects } = application;
 
       const workflowGroupContent: WorkflowGroupContent =
-        getters.getWorkflowGroupContent(projectId);
+        getters.getWorkflowGroupContent(pathKey);
 
       if (workflowGroupContent === null) {
         return [];
       }
 
+      // provider and spaceId must be derived from the given path key
+      const { spaceId } = state.projectPath[pathKey];
+      const provider: SpaceProviderNS.SpaceProvider =
+        getters.getProviderInfoFromProjectPath(pathKey);
+
       const openProjectsFolders = openProjects
-        .filter((openProject) =>
-          getters.isProjectInProjectPath(openProject, projectId),
+        .filter((project) =>
+          isProjectOpen(
+            project,
+            {
+              providerId: provider.id,
+              spaceId,
+              itemId: project.origin?.itemId ?? "",
+            },
+            provider,
+          ),
         )
         .flatMap(({ origin }) => origin?.ancestorItemIds ?? []);
 

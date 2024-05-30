@@ -13,17 +13,6 @@ import { API } from "@api";
 
 const mockedAPI = deepMocked(API);
 
-vi.mock("@/mixins/escapeStack", () => {
-  function escapeStack({ onEscape }) {
-    // eslint-disable-line func-style
-    escapeStack.onEscape = onEscape;
-    return {
-      /* empty mixin */
-    };
-  }
-  return { escapeStack };
-});
-
 describe("CreateWorkflowModal.vue", () => {
   afterEach(() => {
     vi.clearAllMocks();
@@ -130,7 +119,7 @@ describe("CreateWorkflowModal.vue", () => {
       input.element.value = newName;
       input.trigger("input");
 
-      const submitButton = wrapper.findAll("button").at(-1);
+      const submitButton = wrapper.findAll("button").at(-1)!;
       expect(submitButton.attributes("disabled")).toBeUndefined();
 
       await submitButton.trigger("click");
@@ -149,8 +138,9 @@ describe("CreateWorkflowModal.vue", () => {
       );
 
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
-        projectId: "someProject",
-        workflowItemId: "new-wf",
+        providerId: "provider",
+        spaceId: "space",
+        itemId: "new-wf",
       });
     });
 

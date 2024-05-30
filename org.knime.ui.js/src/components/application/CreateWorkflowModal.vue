@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useStore } from "vuex";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
 import Button from "webapps-common/ui/components/Button.vue";
@@ -10,6 +9,7 @@ import Label from "webapps-common/ui/components/forms/Label.vue";
 import { useNameValidator } from "webapps-common/ui/components/FileExplorer/useNameValidator";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
 
 const NAME_TEMPLATE = "KNIME_project";
 
@@ -56,7 +56,16 @@ const onSubmit = async () => {
   isSubmitted.value = true;
   try {
     const { projectId } = store.state.spaces.createWorkflowModalConfig;
-    const workflowItem = await store.dispatch("spaces/createWorkflow", {
+
+    if (!projectId) {
+      consola.error("project id not found. cannot create workflow");
+      return;
+    }
+
+    const { spaceProviderId, spaceId } =
+      store.state.spaces.projectPath[projectId];
+
+    const { id: itemId } = await store.dispatch("spaces/createWorkflow", {
       projectId,
       workflowName: cleanedName.value,
     });
@@ -65,12 +74,13 @@ const onSubmit = async () => {
     closeModal();
 
     await store.dispatch("spaces/openProject", {
-      projectId,
-      workflowItemId: workflowItem.id,
+      providerId: spaceProviderId,
+      spaceId,
+      itemId,
     });
   } catch (error) {
     isSubmitted.value = false;
-    consola.log("There was an error creating the workflow", error);
+    consola.error("There was an error creating the workflow", error);
   }
 };
 

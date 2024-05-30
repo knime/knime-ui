@@ -10,7 +10,6 @@ import {
   createSpaceProvider,
   createProject,
 } from "@/test/factories";
-import { SpaceProviderNS } from "@/api/custom-types";
 
 const mockedAPI = deepMocked(API);
 
@@ -217,51 +216,34 @@ describe("spaces::spaceOperations", () => {
       };
 
       await store.dispatch("spaces/openProject", {
-        projectId: "project2",
-        workflowItemId: "foobar",
+        providerId: "local",
+        spaceId: "local",
+        itemId: "foobar",
       });
+
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/updateGlobalLoader",
         { loading: true, config: { displayMode: "transparent" } },
       );
+
       expect(mockedAPI.desktop.openProject).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "local",
         itemId: "foobar",
       });
+
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/updateGlobalLoader",
         { loading: false },
       );
     });
 
-    it("should open workflow from a different space", async () => {
-      const { store } = loadStore();
-
-      store.state.spaces.projectPath.project3 = {
-        spaceProviderId: "knime1",
-        spaceId: "remote1",
-        itemId: "folder1",
-      };
-
-      await store.dispatch("spaces/openProject", {
-        workflowItemId: "foobar",
-        projectId: "project3",
-      });
-
-      expect(mockedAPI.desktop.openProject).toHaveBeenCalledWith({
-        spaceId: "remote1",
-        spaceProviderId: "knime1",
-        itemId: "foobar",
-      });
-    });
-
     it("should navigate to already open workflow", async () => {
       const openProjects = [
-        {
+        createProject({
           projectId: "dummyProject",
           origin: { providerId: "local", spaceId: "local", itemId: "dummy" },
-        },
+        }),
       ];
       const { store } = loadStore({ openProjects });
 
@@ -277,8 +259,9 @@ describe("spaces::spaceOperations", () => {
 
       const mockRouter = { push: vi.fn() };
       await store.dispatch("spaces/openProject", {
-        projectId: "project2",
-        workflowItemId: "dummy",
+        providerId: "local",
+        spaceId: "local",
+        itemId: "dummy",
         $router: mockRouter,
       });
 
@@ -519,75 +502,6 @@ describe("spaces::spaceOperations", () => {
 
         const result = store.getters["spaces/pathToItemId"](projectId, "..");
         expect(result).toBe("level1");
-      });
-    });
-
-    describe("isProjectInProjectPath", () => {
-      it("should determine whether the given workflow project is loaded in path", () => {
-        const { store } = loadStore();
-        const projectId1 = "project1";
-        const projectId2 = "project2";
-
-        store.state.spaces.projectPath[projectId1] = {
-          spaceProviderId: "local",
-          spaceId: "local",
-          itemId: "itemId",
-        };
-
-        store.commit("spaces/setSpaceProviders", {
-          local: createSpaceProvider(),
-        });
-
-        const project = createProject({
-          projectId: projectId1,
-          origin: { spaceId: "local", providerId: "local" },
-        });
-
-        expect(
-          store.getters["spaces/isProjectInProjectPath"](project, projectId1),
-        ).toBe(true);
-        expect(
-          store.getters["spaces/isProjectInProjectPath"](project, projectId2),
-        ).toBe(false);
-      });
-
-      it("should return false for projects without origin", () => {
-        const { store } = loadStore();
-        const projectId = "some-project-id";
-
-        const project = createProject({ projectId });
-
-        expect(
-          store.getters["spaces/isProjectInProjectPath"](project, projectId),
-        ).toBe(false);
-      });
-
-      it("should return false for non-local projects", () => {
-        const { store } = loadStore();
-        const projectId = "project1";
-
-        store.state.spaces.projectPath[projectId] = {
-          spaceProviderId: "provider1",
-          spaceId: "space1",
-          itemId: "itemId",
-        };
-
-        store.commit("spaces/setSpaceProviders", {
-          provider1: createSpaceProvider({
-            id: "provider1",
-            type: SpaceProviderNS.TypeEnum.HUB,
-            spaces: [createSpace({ id: "space1" })],
-          }),
-        });
-
-        const project = createProject({
-          projectId,
-          origin: { spaceId: "space1", providerId: "provider1" },
-        });
-
-        expect(
-          store.getters["spaces/isProjectInProjectPath"](project, projectId),
-        ).toBe(false);
       });
     });
 

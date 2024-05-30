@@ -1,4 +1,5 @@
-import { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceProviderNS, type WorkflowOrigin } from "@/api/custom-types";
+import type { Project } from "@/api/gateway-api/generated-api";
 
 export const findSpaceById = (
   spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
@@ -40,3 +41,16 @@ export const isHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
 export const isServerProvider = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ) => spaceProvider.type === SpaceProviderNS.TypeEnum.SERVER;
+
+export const isProjectOpen = (
+  project: Project,
+  referenceOrigin: WorkflowOrigin,
+  spaceProvider: SpaceProviderNS.SpaceProvider,
+) => {
+  return (
+    project.origin?.providerId === referenceOrigin.providerId &&
+    project.origin?.spaceId === referenceOrigin.spaceId &&
+    project.origin?.itemId === referenceOrigin.itemId &&
+    isLocalProvider(spaceProvider)
+  );
+};
