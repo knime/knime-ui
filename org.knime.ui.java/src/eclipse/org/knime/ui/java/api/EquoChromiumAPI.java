@@ -48,15 +48,14 @@
  */
 package org.knime.ui.java.api;
 
-import org.knime.ui.java.browser.KnimeBrowserView;
-
-import com.equo.chromium.ChromiumBrowser;
+import org.knime.js.cef.CEFZoomSync;
 
 /**
  * API functions concerning the Equo Chromium browser.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings("restriction")
 public final class EquoChromiumAPI {
 
     private EquoChromiumAPI() {
@@ -64,13 +63,11 @@ public final class EquoChromiumAPI {
     }
 
     /**
-     * @param zoomLevel the browser zoom level; {@code negative} to zoom out, {@code 0.0} to reset the zoom,
-     *            {@code positive} to zoom in
+     * @see CEFZoomSync#set(double)
      */
     @API
     static void setZoomLevel(final double zoomLevel) {
-        var chromiumBrowser = (ChromiumBrowser)KnimeBrowserView.getBrowser().getWebBrowser();
-        chromiumBrowser.zoom(zoomLevel);
+        CEFZoomSync.set(zoomLevel);
     }
 
 }

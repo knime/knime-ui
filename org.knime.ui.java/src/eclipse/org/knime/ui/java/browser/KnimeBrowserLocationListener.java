@@ -56,7 +56,7 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.webui.WebUIUtil;
-import org.knime.js.cef.CEFUtils;
+import org.knime.js.cef.CEFZoomSync;
 import org.knime.ui.java.api.ImportURI;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -109,7 +109,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
         var url = event.location;
         if (KnimeBrowserView.isInitialized && (isAppPage(url) || isDevPage(url))) {
             LifeCycle.get().webAppLoaded();
-            CEFUtils.setZoomFactorFromSystemProperty(m_browser);
+            CEFZoomSync.subscribeAndUpdateZoom(m_browser);
         }
     }
 
@@ -123,7 +123,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
 
     private static boolean isDevPage(final String url) {
         var devUrl = System.getProperty(KnimeBrowserView.DEV_URL_PROP);
-        return devUrl == null ? false : url.startsWith(devUrl);
+        return devUrl != null && url.startsWith(devUrl);
     }
 
 }
