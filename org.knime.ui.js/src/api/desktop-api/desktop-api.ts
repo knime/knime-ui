@@ -8,6 +8,7 @@ import {
   type FullSpacePath,
   type SpaceItemId,
   SpaceProviderNS,
+  type RecentWorkflow,
 } from "../custom-types";
 
 const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
@@ -746,14 +747,18 @@ export const setConfirmNodeConfigChangesPreference = (value: boolean) => {
   );
 };
 
-export const updateAndGetMostRecentlyUsedProjects = () => {
-  return callBrowserFunction(
+export const updateAndGetMostRecentlyUsedProjects = async (): Promise<
+  RecentWorkflow[]
+> => {
+  const response = await callBrowserFunction(
     window.updateAndGetMostRecentlyUsedProjects,
     [],
     "Failed to fetch most recently used projects",
     true,
     { block: false },
   );
+
+  return JSON.parse(response ?? "[]");
 };
 
 export const removeMostRecentlyUsedProject = ({

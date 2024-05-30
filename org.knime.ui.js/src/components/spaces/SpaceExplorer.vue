@@ -242,6 +242,10 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
         @drag="onDrag"
         @dragend="onDragEnd"
       >
+        <template #itemIcon="{ item }">
+          <Component :is="itemIconRenderer(item)" />
+        </template>
+
         <template
           v-if="shouldShowCustomPreview && nodeTemplate"
           #customDragPreview

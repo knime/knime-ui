@@ -13,6 +13,7 @@ import type {
   EditableProjectMetadata,
   NodeTemplate,
   XY,
+  SpaceItemReference,
 } from "./gateway-api/generated-api";
 
 import {
@@ -156,3 +157,9 @@ export type NodeTemplateWithExtendedPorts = NodeTemplate & {
 };
 
 export type WorkflowObject = XY & { id: string; type: "node" | "annotation" };
+
+export type RecentWorkflow = {
+  name: string;
+  timeUsed: string;
+  origin: SpaceItemReference;
+};
