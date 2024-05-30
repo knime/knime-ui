@@ -12,6 +12,7 @@ import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 
 import type { SpacesState } from "./index";
+import { isLocalProvider } from "./util";
 
 export interface PathTriplet {
   spaceId: string;
@@ -396,10 +397,12 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
         return false;
       }
 
+      const provider = getters.getProviderInfoFromProjectPath(pathKey);
+
       return (
         project.origin.providerId === spaceProviderId &&
         project.origin.spaceId === spaceId &&
-        getters.isLocalProvider(pathKey)
+        isLocalProvider(provider)
       );
     };
   },

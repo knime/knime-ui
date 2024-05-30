@@ -21,6 +21,7 @@ import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import { defineComponent, type PropType } from "vue";
 import type { ActionMenuItem } from "@/components/spaces/remoteMenuItems";
+import { isLocalProvider } from "@/store/spaces/util";
 
 type DisplayModes = "normal" | "mini";
 
@@ -54,8 +55,7 @@ export default defineComponent({
   computed: {
     ...mapGetters("spaces", [
       "getSpaceInfo",
-      "getProviderInfo",
-      "isLocalProvider",
+      "getProviderInfoFromProjectPath",
       "hasActiveHubSession",
       "selectionContainsFile",
       "selectionContainsWorkflow",
@@ -63,7 +63,9 @@ export default defineComponent({
     ...mapState("spaces", ["spaceProviders", "isLoadingContent"]),
 
     isLocal() {
-      return this.isLocalProvider(this.projectId);
+      return isLocalProvider(
+        this.getProviderInfoFromProjectPath(this.projectId),
+      );
     },
     isFileSelected() {
       return this.selectionContainsFile(this.projectId, this.selectedItemIds);
@@ -130,7 +132,7 @@ export default defineComponent({
 
       const getServerActions = () => {
         if (
-          this.getProviderInfo(projectId).type !==
+          this.getProviderInfoFromProjectPath(projectId).type !==
           BaseSpaceProvider.TypeEnum.SERVER
         ) {
           return [];

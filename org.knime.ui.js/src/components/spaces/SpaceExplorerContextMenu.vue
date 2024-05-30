@@ -12,10 +12,7 @@ import RenameIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
 import ExportIcon from "webapps-common/ui/assets/img/icons/export.svg";
 import type { FileExplorerContextMenu } from "webapps-common/ui/components/FileExplorer/types";
 
-import {
-  SpaceItem,
-  SpaceProvider as BaseSpaceProvider,
-} from "@/api/gateway-api/generated-api";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import {
   buildHubDownloadMenuItem,
   buildMoveToSpaceMenuItem,
@@ -26,10 +23,13 @@ import {
   buildDisplayDeploymentsMenuItem,
   buildExecuteWorkflowMenuItem,
 } from "@/components/spaces/remoteMenuItems";
+import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 const store = useStore();
 
-const getProviderInfo = computed(() => store.getters["spaces/getProviderInfo"]);
+const getProviderInfoFromProjectPath = computed(
+  () => store.getters["spaces/getProviderInfoFromProjectPath"],
+);
 
 interface Props {
   createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption;
@@ -63,10 +63,6 @@ const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
 const valueOrEmpty = <T,>(condition: boolean, value: T) =>
   condition ? [value] : [];
 
-const isLocal = computed(() =>
-  store.getters["spaces/isLocalProvider"](props.projectId),
-);
-
 const fileExplorerContextMenuItems = computed(() => {
   const {
     createRenameOption,
@@ -75,9 +71,13 @@ const fileExplorerContextMenuItems = computed(() => {
     isMultipleSelectionActive,
   } = props;
 
-  const isServer =
-    getProviderInfo.value(props.projectId).type ===
-    BaseSpaceProvider.TypeEnum.SERVER;
+  const isLocal = isLocalProvider(
+    getProviderInfoFromProjectPath.value(props.projectId),
+  );
+
+  const isServer = isServerProvider(
+    getProviderInfoFromProjectPath.value(props.projectId),
+  );
 
   const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
     props.projectId,
@@ -105,7 +105,7 @@ const fileExplorerContextMenuItems = computed(() => {
     store.dispatch,
     props.projectId,
     props.selectedItemIds,
-    getProviderInfo.value(props.projectId),
+    getProviderInfoFromProjectPath.value(props.projectId),
   );
 
   const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
@@ -123,7 +123,7 @@ const fileExplorerContextMenuItems = computed(() => {
   );
 
   const getHubActions = () => {
-    if (isLocal.value) {
+    if (isLocal) {
       return uploadAndConnectToHub;
     }
 
@@ -236,7 +236,7 @@ const fileExplorerContextMenuItems = computed(() => {
     createDuplicateItemOption(),
 
     ...valueOrEmpty(
-      isLocal.value,
+      isLocal,
       createExportItemOption(
         store.dispatch,
         props.projectId,

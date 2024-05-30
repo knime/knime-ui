@@ -40,15 +40,15 @@ export const fetchWorkflowGroupContentResponse = {
   ],
 };
 
-type WithOptionalProviderSpaces = Omit<
+type WithOptionalProviderSpaceGroups = Omit<
   SpaceProviderNS.SpaceProvider,
-  "spaces"
+  "spaceGroups"
 > &
-  Partial<Pick<SpaceProviderNS.SpaceProvider, "spaces">>;
+  Partial<Pick<SpaceProviderNS.SpaceProvider, "spaceGroups">>;
 
 export const fetchAllSpaceProvidersResponse: Record<
   string,
-  WithOptionalProviderSpaces
+  WithOptionalProviderSpaceGroups
 > = {
   local: {
     id: "local",

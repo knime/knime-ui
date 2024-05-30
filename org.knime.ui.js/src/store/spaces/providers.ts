@@ -159,7 +159,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 };
 
 export const getters: GetterTree<SpacesState, RootStoreState> = {
-  getProviderInfo:
+  getProviderInfoFromProjectPath:
     (state) =>
     (projectId: string): SpaceProviderNS.SpaceProvider | {} => {
       // spaces data has not been cached or providers are not yet loaded
@@ -192,21 +192,6 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
     return activeProjectProvider ?? null;
   },
 
-  isLocalProvider: (_, getters) => (projectId: string) => {
-    const provider = getters.getProviderInfo(projectId);
-    return provider.type === SpaceProviderNS.TypeEnum.LOCAL;
-  },
-
-  isHubProvider: (_, getters) => (projectId: string) => {
-    const provider = getters.getProviderInfo(projectId);
-    return provider.type === SpaceProviderNS.TypeEnum.HUB;
-  },
-
-  isServerProvider: (_, getters) => (projectId: string) => {
-    const provider = getters.getProviderInfo(projectId);
-    return provider.type === SpaceProviderNS.TypeEnum.SERVER;
-  },
-
   getSpaceInfo:
     (state, getters) =>
     (projectId: string): SpaceProviderNS.Space | {} => {
@@ -220,7 +205,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
       const { spaceId } = state.projectPath[projectId];
       const spaceProvider: SpaceProviderNS.SpaceProvider =
-        getters.getProviderInfo(projectId);
+        getters.getProviderInfoFromProjectPath(projectId);
 
       const space = findSpaceById(
         { [spaceProvider.id]: spaceProvider },

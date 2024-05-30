@@ -13,6 +13,7 @@ import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
 import { useSpaceIcons } from "./useSpaceIcons";
+import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 interface Props {
   showText?: boolean;
@@ -290,9 +291,12 @@ const selectedText = computed(() => {
 });
 
 const spaceIcon = computed(() => {
+  const provider = store.getters["spaces/getProviderInfoFromProjectPath"](
+    props.projectId,
+  );
   const activeSpaceInfo = store.getters["spaces/getSpaceInfo"](props.projectId);
-  const isLocal = store.getters["spaces/isLocalProvider"](props.projectId);
-  const isServer = store.getters["spaces/isServerProvider"](props.projectId);
+  const isLocal = isLocalProvider(provider);
+  const isServer = isServerProvider(provider);
 
   if (isLocal) {
     return ComputerDesktopIcon;

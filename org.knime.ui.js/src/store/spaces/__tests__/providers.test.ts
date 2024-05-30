@@ -201,7 +201,7 @@ describe("spaces::providers", () => {
     });
   });
 
-  describe("getProviderInfo", () => {
+  describe("getProviderInfoFromProjectPath", () => {
     it("should return the information about provider based on the projectPath", () => {
       const { store } = loadStore();
 
@@ -211,7 +211,7 @@ describe("spaces::providers", () => {
         id: "knime1",
         name: "blah",
         connectionMode: "AUTHENTICATED",
-        spaces: [],
+        spaceGroups: [],
       });
 
       store.state.spaces.spaceProviders = {
@@ -226,15 +226,17 @@ describe("spaces::providers", () => {
       };
 
       store.state.spaces.projectPath[projectId] = data;
-      expect(store.getters["spaces/getProviderInfo"](projectId)).toEqual(
-        provider,
-      );
+      expect(
+        store.getters["spaces/getProviderInfoFromProjectPath"](projectId),
+      ).toEqual(provider);
     });
 
     it("should return empty object if the projectPath is empty", () => {
       const { store } = loadStore();
       store.state.spaces.projectPath = {};
-      expect(store.getters["spaces/getProviderInfo"]("anything")).toEqual({});
+      expect(
+        store.getters["spaces/getProviderInfoFromProjectPath"]("anything"),
+      ).toEqual({});
     });
 
     it("should return empty object if the provider is not found in spaceProviders", () => {
@@ -246,7 +248,7 @@ describe("spaces::providers", () => {
         id: "knime1",
         name: "blah",
         connectionMode: "AUTHENTICATED",
-        spaces: [],
+        spaceGroups: [],
       });
 
       store.state.spaces.spaceProviders = {
@@ -262,7 +264,9 @@ describe("spaces::providers", () => {
       };
 
       store.state.spaces.projectPath[projectId] = data;
-      expect(store.getters["spaces/getProviderInfo"](projectId)).toEqual({});
+      expect(
+        store.getters["spaces/getProviderInfoFromProjectPath"](projectId),
+      ).toEqual({});
     });
   });
 
