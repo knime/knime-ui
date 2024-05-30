@@ -2,7 +2,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
-import { SpaceProviderNS } from "@/api/custom-types";
+import { isHubProvider } from "@/store/spaces/util";
 
 import { useActiveRouteData } from "./useActiveRouteData";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -27,10 +27,6 @@ export const usePageBreadcrumbs = () => {
 
   const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
-  const isHubProvider = computed<boolean>(
-    () => activeSpaceProvider.value.type === SpaceProviderNS.TypeEnum.HUB,
-  );
-
   const breadcrumbs = computed<Array<BreadcrumbItem>>(() => {
     const spaceProviderBreadcrumbItem: BreadcrumbItem = {
       text: activeSpaceProvider.value.name,
@@ -47,7 +43,7 @@ export const usePageBreadcrumbs = () => {
       },
     };
 
-    if (!isHubProvider.value || isShowingAllSpaces.value) {
+    if (!isHubProvider(activeSpaceProvider.value) || isShowingAllSpaces.value) {
       return [spaceProviderBreadcrumbItem];
     }
 

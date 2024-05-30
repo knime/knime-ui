@@ -7,6 +7,7 @@ import type { SpaceGroup } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useStore } from "@/composables/useStore";
 
+import { isHubProvider } from "@/store/spaces/util";
 import {
   SidebarNavItem,
   type SidebarNavItemType,
@@ -36,10 +37,6 @@ watch(
   },
   { immediate: true },
 );
-
-const isHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
-  return spaceProvider.type === SpaceProviderNS.TypeEnum.HUB;
-};
 
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   if (isHubProvider(spaceProvider) || !spaceProvider.connected) {

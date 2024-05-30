@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import { useStore } from "@/composables/useStore";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
+import { isHubProvider } from "@/store/spaces/util";
 
+import { APP_ROUTES } from "@/router/appRoutes";
 import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
-import { useRoute, useRouter } from "vue-router";
-import { APP_ROUTES } from "@/router/appRoutes";
 
 const store = useStore();
 const $route = useRoute();
@@ -72,13 +73,9 @@ const { breadcrumbs } = usePageBreadcrumbs();
 
 const { getSpaceIcon } = useSpaceIcons();
 
-const isHubProvider = computed<boolean>(() =>
-  store.getters["spaces/isHubProvider"](globalSpaceBrowserProjectId),
-);
-
 const title = computed(() => {
   // for Hub providers return the name of the space
-  if (isHubProvider.value) {
+  if (isHubProvider(activeSpaceProvider.value)) {
     return activeSpace.value?.name ?? "";
   }
 
@@ -87,7 +84,7 @@ const title = computed(() => {
 });
 
 const hubSpaceIcon = computed(() => {
-  if (!isHubProvider.value) {
+  if (!isHubProvider(activeSpaceProvider.value)) {
     return null;
   }
 

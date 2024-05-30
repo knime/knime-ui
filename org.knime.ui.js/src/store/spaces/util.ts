@@ -1,4 +1,4 @@
-import type { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceProviderNS } from "@/api/custom-types";
 
 export const findSpaceById = (
   spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
@@ -30,3 +30,13 @@ export const isCommunityHub = (
   // this is the official community hub that is automatically created
   return spaceProvider.id === COMMUNITY_HUB_ID;
 };
+
+export const isLocalProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
+  spaceProvider.type === SpaceProviderNS.TypeEnum.LOCAL;
+
+export const isHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
+  spaceProvider.type === SpaceProviderNS.TypeEnum.HUB;
+
+export const isServerProvider = (
+  spaceProvider: SpaceProviderNS.SpaceProvider,
+) => spaceProvider.type === SpaceProviderNS.TypeEnum.SERVER;
