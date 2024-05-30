@@ -233,7 +233,6 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
         :items="fileExplorerItems"
         :is-root-folder="activeWorkflowGroup.path.length === 0"
         :full-path="fullPath"
-        :item-icon-renderer="itemIconRenderer"
         :active-renamed-item-id="activeRenamedItemId"
         :click-outside-exception="clickOutsideException"
         dragging-animation-mode="manual"
