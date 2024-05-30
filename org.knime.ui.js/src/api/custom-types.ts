@@ -163,3 +163,5 @@ export type RecentWorkflow = {
   timeUsed: string;
   origin: SpaceItemReference;
 };
+
+export type WorkflowOrigin = Omit<SpaceItemReference, "ancestorItemIds">;
