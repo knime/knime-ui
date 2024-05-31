@@ -773,7 +773,7 @@ export interface ComponentNode extends Node {
 export namespace ComponentNode {
 }
 /**
- * Properties common to ComponentNode and ComponentNodeDescription. Only purpose is to avoid &#39;code&#39; duplication. Never directly returned or used in another schema.
+ * Basic information about a component node.
  * @export
  * @interface ComponentNodeAndDescription
  */
@@ -4477,18 +4477,24 @@ export namespace WorkflowInfo {
     }
 }
 /**
- * A message in the workflow monitor.
+ * A message in the workflow monitor. &#x60;templateId&#x60; is only present if the node is a native node. &#x60;componentInfo&#x60; is only present if the node is a component node.
  * @export
  * @interface WorkflowMonitorMessage
  */
 export interface WorkflowMonitorMessage {
 
     /**
-     * The template id of the node the message is associated with.
+     * The template id of the native node the message is associated with. Only present if the node is a native node.
      * @type {string}
      * @memberof WorkflowMonitorMessage
      */
-    templateId: string;
+    templateId?: string;
+    /**
+     *
+     * @type {ComponentNodeAndDescription}
+     * @memberof WorkflowMonitorMessage
+     */
+    componentInfo?: ComponentNodeAndDescription;
     /**
      * The id of the worklfow the node is contained in.
      * @type {string}
