@@ -1,7 +1,12 @@
-<script>
-import { mapGetters } from "vuex";
-
+<script setup lang="ts">
+import { computed } from "vue";
 import NodeTorsoNormal from "webapps-common/ui/components/node/NodeTorsoNormal.vue";
+import type {
+  NativeNodeInvariants,
+  Node,
+} from "@/api/gateway-api/generated-api";
+import * as $colors from "@/style/colors.mjs";
+
 import NodeTorsoMissing from "./NodeTorsoMissing.vue";
 import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
@@ -13,68 +18,29 @@ import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
  * Mostly a rounded square (or for some special nodes like loop nodes, a dedicated shape).
  * Must be embedded in an <svg> element.
  */
-export default {
-  components: {
-    NodeTorsoMissing,
-    NodeTorsoMetanode,
-    NodeTorsoUnknown,
-    NodeTorsoNormal,
-    NodeTorsoReplace,
-    NodeTorsoForbidden,
-  },
-  props: {
-    /**
-     * Node type, e.g. "Learner", "Visualizer"
-     * Is undefined for MetaNodes
-     */
-    type: { type: String, default: null },
-
-    /**
-     * Node variation.
-     * @values 'node', 'metanode', 'component'
-     */
-    kind: {
-      type: String,
-      required: true,
-      validator: (kind) => ["node", "metanode", "component"].includes(kind),
-    },
-    /**
-     * data-url containing Base64-encoded icon. Passed through to NodeTorsoNormal
-     */
-    icon: {
-      type: String,
-      default: null,
-      validator: (url) => url.startsWith("data:image/"),
-    },
-    /**
-     * Execution state (only for meta nodes). Passed through to NodeTorsoMetanode
-     */
-    executionState: {
-      type: String,
-      default: null,
-    },
-    isDraggedOver: {
-      type: Boolean,
-      defaut: false,
-    },
-  },
-  computed: {
-    ...mapGetters("workflow", ["isWritable"]),
-    // Returns false for broken nodes, which can occur during development, but should not occur in production.
-    isKnownNode() {
-      if (this.kind === "component") {
-        return (
-          !this.type ||
-          Reflect.has(this.$colors.nodeBackgroundColors, this.type)
-        );
-      }
-      return (
-        this.kind === "metanode" ||
-        Reflect.has(this.$colors.nodeBackgroundColors, this.type)
-      );
-    },
-  },
+type Props = {
+  type: NativeNodeInvariants.TypeEnum;
+  kind: Node.KindEnum;
+  icon?: string | null;
+  executionState?: string | null;
+  isDraggedOver?: boolean;
 };
+
+const props = withDefaults(defineProps<Props>(), {
+  icon: null,
+  executionState: null,
+  isDraggedOver: false,
+});
+
+const isKnownNode = computed(() => {
+  if (props.kind === "component") {
+    return !props.type || Reflect.has($colors.nodeBackgroundColors, props.type);
+  }
+  return (
+    props.kind === "metanode" ||
+    Reflect.has($colors.nodeBackgroundColors, props.type)
+  );
+});
 </script>
 
 <template>
