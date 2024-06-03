@@ -6,6 +6,11 @@ type Props = {
 };
 
 defineProps<Props>();
+
+const itemOnClickHandler = (
+  item: SidebarNavItem,
+  event: KeyboardEvent | MouseEvent,
+) => item.clickable && item.onClick?.(event);
 </script>
 
 <template>
@@ -17,10 +22,20 @@ defineProps<Props>();
         clickable: item.clickable,
       },
     ]"
-    @click="item.clickable && item.onClick?.($event)"
   >
     <div :class="['menu-item-main']">
-      <div :class="['name', { hoverable: item.hoverable }]" :title="item.text">
+      <div
+        :class="[
+          'name',
+          { hoverable: item.hoverable, clickable: item.clickable },
+        ]"
+        :title="item.text"
+        :role="item.clickable ? 'button' : undefined"
+        :tabindex="item.clickable ? 0 : undefined"
+        @click="itemOnClickHandler(item, $event)"
+        @keydown.enter="itemOnClickHandler(item, $event)"
+        @keydown.space="itemOnClickHandler(item, $event)"
+      >
         <Component :is="item.icon" />
         <span>{{ item.text }}</span>
       </div>
@@ -38,9 +53,17 @@ defineProps<Props>();
         v-for="child of item.children"
         :key="child.id"
         :class="['menu-item-children', { active: child.active }]"
-        @click="child.clickable && child.onClick?.($event)"
       >
-        <div class="name hoverable" :title="child.text">
+        <div
+          class="name hoverable"
+          :class="{ clickable: item.clickable }"
+          :title="child.text"
+          :role="child.clickable ? 'button' : undefined"
+          :tabindex="child.clickable ? 0 : undefined"
+          @click="itemOnClickHandler(child, $event)"
+          @keydown.enter="itemOnClickHandler(child, $event)"
+          @keydown.space="itemOnClickHandler(child, $event)"
+        >
           <Component :is="child.icon" />
           <span>{{ child.text }}</span>
         </div>
@@ -80,6 +103,16 @@ defineProps<Props>();
       min-width: calc(var(--size) * 1px);
 
       @mixin svg-icon-size var(--size);
+    }
+  }
+
+  & .clickable {
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      @mixin focus-style;
     }
   }
 

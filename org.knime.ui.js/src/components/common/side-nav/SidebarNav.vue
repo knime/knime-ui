@@ -9,7 +9,7 @@ withDefaults(defineProps<Props>(), { showSkeleton: false });
 </script>
 
 <template>
-  <ul v-bind="$attrs" class="sidebar-nav" tabindex="0">
+  <ul v-bind="$attrs" class="sidebar-nav">
     <slot />
   </ul>
 
