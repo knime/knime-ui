@@ -6,6 +6,7 @@ import NodeTorsoMissing from "./NodeTorsoMissing.vue";
 import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
 import NodeTorsoReplace from "./NodeTorsoReplace.vue";
+import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 
 /**
  * Main part of the node icon.
@@ -19,6 +20,7 @@ export default {
     NodeTorsoUnknown,
     NodeTorsoNormal,
     NodeTorsoReplace,
+    NodeTorsoForbidden,
   },
   props: {
     /**
@@ -78,6 +80,7 @@ export default {
 <template>
   <g>
     <NodeTorsoMissing v-if="type === 'Missing'" />
+    <NodeTorsoForbidden v-if="type === 'Forbidden'" />
     <NodeTorsoMetanode
       v-else-if="kind === 'metanode'"
       :execution-state="executionState"

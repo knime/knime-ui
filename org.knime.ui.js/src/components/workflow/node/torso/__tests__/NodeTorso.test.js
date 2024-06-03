@@ -12,6 +12,7 @@ import NodeTorso from "../NodeTorso.vue";
 import NodeTorsoMissing from "../NodeTorsoMissing.vue";
 import NodeTorsoUnknown from "../NodeTorsoUnknown.vue";
 import NodeTorsoMetanode from "../NodeTorsoMetanode.vue";
+import NodeTorsoForbidden from "../NodeTorsoForbidden.vue";
 
 describe("NodeTorso.vue", () => {
   const doShallowMount = (props, { writable = true } = {}) => {
@@ -86,6 +87,15 @@ describe("NodeTorso.vue", () => {
       kind,
     });
     expect(wrapper.findComponent(NodeTorsoMissing).exists()).toBeTruthy();
+    expect(wrapper.findComponent(NodeTorsoNormal).exists()).toBeFalsy();
+  });
+
+  it.each(["node", "component"])("renders forbidden %s", (kind) => {
+    let wrapper = doShallowMount({
+      type: "Forbidden",
+      kind,
+    });
+    expect(wrapper.findComponent(NodeTorsoForbidden).exists()).toBeTruthy();
     expect(wrapper.findComponent(NodeTorsoNormal).exists()).toBeFalsy();
   });
 
