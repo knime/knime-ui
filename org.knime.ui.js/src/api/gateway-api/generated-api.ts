@@ -5123,6 +5123,21 @@ const port = function(rpcClient: RPCClient) {
 const space = function(rpcClient: RPCClient) {
     return {
         /**
+         * Create a new space within a given space provider.
+         * @param {string} spaceProviderId Identifies a space-provider.
+         * @param {string} spaceGroupName Identifier name of a space-group.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createSpace(
+        	params: { spaceProviderId: string,  spaceGroupName: string  }
+        ): Promise<Space> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('SpaceService.createSpace', { ...defaultParams, ...params });
+        },
+        /**
          * Create a new workflow within a given workflow group.
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
