@@ -111,7 +111,7 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public SpaceGroup<?> getSpaceGroup(final String spaceGroupName) {
+            public SpaceGroup<LocalWorkspace> getSpaceGroup(final String spaceGroupName) {
                 var localGroup = getLocalSpaceGroup(localSpace);
                 if(!spaceGroupName.equals(localGroup.getName())) {
                     throw new NoSuchElementException("No group found with name " + spaceGroupName);
