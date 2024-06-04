@@ -100,15 +100,14 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
 
 <template>
   <div class="recent-workflows">
-    <div class="title">Recent used workflows and components</div>
+    <div class="title">Recently used workflows and components</div>
 
     <div class="list" data-test-id="recent-workflows">
       <FileExplorer
         :items="items"
         disable-context-menu
-        disable-multi-select
+        disable-selection
         disable-dragging
-        empty-folder-message="No recent workflows to display"
         @open-file="openRecentWorkflow"
       >
         <template #emptyFolder> There are no recent workflows </template>
@@ -122,7 +121,10 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
             <span data-test-id="recent-workflow-name">{{ item.name }}</span>
 
             <div class="item-meta">
-              <span data-test-id="recent-workflow-provider">
+              <span
+                class="provider-name"
+                data-test-id="recent-workflow-provider"
+              >
                 {{ getSpaceProviderName(item.meta!.recentWorkflow) }}
               </span>
               <span data-test-id="recent-workflow-time">
@@ -139,6 +141,8 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .recent-workflows {
   padding: 30px 50px;
 
@@ -158,6 +162,10 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
       display: flex;
       gap: 20px;
       justify-content: space-between;
+
+      & .provider-name {
+        @mixin truncate;
+      }
     }
   }
 }
