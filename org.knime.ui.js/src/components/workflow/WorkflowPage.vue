@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
+import SideDrawer from "webapps-common/ui/components/SideDrawer.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
@@ -26,6 +28,11 @@ const savedSecondarySize = computed({
     });
   },
 });
+
+const isExpanded = computed(() => store.state.embeddedFeature.isExpanded);
+const closeDrawer = () => {
+  store.commit("embeddedFeature/setIsExpanded", false);
+};
 </script>
 
 <template>
@@ -33,6 +40,14 @@ const savedSecondarySize = computed({
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
+
+    <SideDrawer class="side-drawer" :is-expanded="isExpanded">
+      <iframe
+        src="http://192.168.10.143:3000/development%20team/spaces/Jakobs%20space/Client-side%20code%20injection~fL5xvS5rFHouT_QV/current-state?embed=adhoc"
+        class="iframe"
+      />
+      <Button with-border @click="closeDrawer"> Close me! </Button>
+    </SideDrawer>
 
     <main class="workflow-area">
       <SplitPanel
@@ -97,5 +112,12 @@ main {
   transform: translateX(-50%);
   z-index: 1;
   box-shadow: var(--shadow-elevation-2);
+}
+
+.iframe {
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  border: none;
 }
 </style>

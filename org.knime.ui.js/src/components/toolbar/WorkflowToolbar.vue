@@ -142,6 +142,10 @@ export default {
     ) {
       this.$store.dispatch("application/switchCanvasMode", id);
     },
+
+    openDrawer() {
+      this.$store.commit("embeddedFeature/setIsExpanded", true);
+    },
   },
 };
 </script>
@@ -162,6 +166,8 @@ export default {
           :with-text="!hideText[button]"
           :dropdown="toolbarDropdowns[button] ?? []"
         />
+
+        <button @click="openDrawer">Embed</button>
       </div>
     </transition-group>
 

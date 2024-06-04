@@ -11,6 +11,7 @@ import type { SettingsState } from "./settings";
 import type { NodeConfigurationState } from "./nodeConfiguration";
 import type { WorkflowMonitorState } from "./workflowMonitor";
 import type { NodeTemplatesState } from "./nodeTemplates";
+import type { EmbeddedFeatureState } from "./embeddedFeature";
 
 export interface RootStoreState {
   application: ApplicationState;
@@ -26,4 +27,5 @@ export interface RootStoreState {
   nodeConfiguration: NodeConfigurationState;
   workflowMonitor: WorkflowMonitorState;
   nodeTemplates: NodeTemplatesState;
+  embeddedFeature: EmbeddedFeatureState;
 }
