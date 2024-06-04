@@ -49,6 +49,7 @@
 package org.knime.ui.java.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 
@@ -61,10 +62,11 @@ import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings("javadoc")
 public class LocalSpaceUtilTest {
 
     @Test
-    void testGetLocalOrigin() throws IOException {
+    public void testGetLocalOrigin() throws IOException {
         var localSpace = createLocalWorkspace();
         var root = localSpace.getLocalRootPath();
 
@@ -75,6 +77,13 @@ public class LocalSpaceUtilTest {
         assertThat(origin.getRelativePath().get()).hasToString("test");
 
         assertThat(LocalSpaceUtil.isLocalSpace("local", "local")).isTrue();
+    }
+
+
+    @Test
+    public void createSpaceIsNotSupported() throws IOException {
+        var group = LocalSpaceUtil.getLocalSpaceGroup(createLocalWorkspace());
+        assertThatThrownBy(group::createSpace).isInstanceOf(UnsupportedOperationException.class);
     }
 
     /**
