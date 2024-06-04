@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    base: "./",
+    base: "/_/ap/",
 
     resolve: {
       alias: {

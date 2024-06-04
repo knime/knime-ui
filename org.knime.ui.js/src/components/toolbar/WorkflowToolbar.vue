@@ -167,7 +167,7 @@ export default {
           :dropdown="toolbarDropdowns[button] ?? []"
         />
 
-        <button @click="openDrawer">Embed</button>
+        <button @click="openDrawer">Ad hoc execution</button>
       </div>
     </transition-group>
 

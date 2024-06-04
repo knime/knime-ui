@@ -113,7 +113,7 @@ export const getPathFromRouteName = (name: string) => {
 };
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory("/_/ap/"),
   routes,
 });
 

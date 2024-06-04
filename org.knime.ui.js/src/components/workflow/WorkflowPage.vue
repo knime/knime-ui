@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed , onMounted } from "vue";
 import { useStore } from "@/composables/useStore";
 import SideDrawer from "webapps-common/ui/components/SideDrawer.vue";
 import Button from "webapps-common/ui/components/Button.vue";
@@ -33,6 +33,16 @@ const isExpanded = computed(() => store.state.embeddedFeature.isExpanded);
 const closeDrawer = () => {
   store.commit("embeddedFeature/setIsExpanded", false);
 };
+
+onMounted(() => {
+  window.addEventListener("message", (event) => {
+    console.log("postmessage", event);
+    if (event.data === "close") {
+      closeDrawer();
+    }
+
+  })
+});
 </script>
 
 <template>
@@ -43,10 +53,9 @@ const closeDrawer = () => {
 
     <SideDrawer class="side-drawer" :is-expanded="isExpanded">
       <iframe
-        src="http://localhost:3000/development%20team/spaces/Helian's%20space/Sample%20WF~zKtID6oOJwEyDyZY/current-state"
+        src="http://localhost:3000/development%20team/spaces/Helian's%20space/Sample%20WF~zKtID6oOJwEyDyZY/current-state?embed=adhoc"
         class="iframe"
       />
-      <!-- http://localhost:3000/development%20team/spaces/Jakobs%20space/Client-side%20code%20injection~fL5xvS5rFHouT_QV/current-state?embed=adhoc -->
       <Button with-border @click="closeDrawer"> Close me! </Button>
     </SideDrawer>
 
