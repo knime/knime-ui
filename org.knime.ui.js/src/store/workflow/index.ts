@@ -419,7 +419,7 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
     { isLinked, isInsideLinked, projectAndWorkflowIds },
     rootState,
   ) {
-    if (!rootState.application.permissions.canEditWorkflow || rootState.embeddedFeature.isExpanded) {
+    if (!rootState.application.permissions.canEditWorkflow || rootState.embeddedFeature.url) {
       return false;
     }
 

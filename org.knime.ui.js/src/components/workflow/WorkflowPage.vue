@@ -30,16 +30,15 @@ const savedSecondarySize = computed({
   },
 });
 
-const isExpanded = computed(() => store.state.embeddedFeature.isExpanded);
+const featureUrl = computed(() => store.state.embeddedFeature.url);
 const closeDrawer = () => {
-  store.commit("embeddedFeature/setIsExpanded", false);
+  store.commit("embeddedFeature/setUrl", null);
 };
 
 onMounted(() => {
   const toasts = getToastsProvider();
 
   window.addEventListener("message", (event) => {
-    console.log("postmessage", event);
     if (event?.data?.action === "close") {
       closeDrawer();
     }
@@ -56,9 +55,9 @@ onMounted(() => {
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
 
-    <SideDrawer class="side-drawer" :is-expanded="isExpanded">
+    <SideDrawer class="side-drawer" :is-expanded="Boolean(featureUrl)">
       <iframe
-        src="http://localhost:3000/development%20team/spaces/Helian's%20space/Sample%20WF~zKtID6oOJwEyDyZY/current-state?embed=adhoc"
+        :src="featureUrl"
         class="iframe"
       />
       <Button with-border @click="closeDrawer"> Close me! </Button>

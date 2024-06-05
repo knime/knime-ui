@@ -1,15 +1,15 @@
 import type { MutationTree } from "vuex";
 
 export interface EmbeddedFeatureState {
-  isExpanded: boolean;
+  url: string | null;
 }
 
 export const state = (): EmbeddedFeatureState => ({
-  isExpanded: false,
+  url: null,
 });
 
 export const mutations: MutationTree<EmbeddedFeatureState> = {
-  setIsExpanded(state, value) {
-    state.isExpanded = value;
+  setUrl(state, value) {
+    state.url = value;
   },
 };

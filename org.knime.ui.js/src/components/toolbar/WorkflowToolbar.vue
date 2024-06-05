@@ -10,6 +10,7 @@ import type { ShortcutName } from "@/shortcuts";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
+import ToolbarButton from "@/components/common/ToolbarButton.vue";
 import { compatibility, isDesktop } from "@/environment";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
@@ -20,6 +21,7 @@ export default {
   components: {
     WorkflowBreadcrumb,
     ZoomMenu,
+    ToolbarButton,
     ToolbarShortcutButton,
     SubMenu,
     SelectionModeIcon,
@@ -143,8 +145,8 @@ export default {
       this.$store.dispatch("application/switchCanvasMode", id);
     },
 
-    openDrawer() {
-      this.$store.commit("embeddedFeature/setIsExpanded", true);
+    openFeature(feature: string) {
+      this.$store.commit("embeddedFeature/setUrl", `http://localhost:3000/development%20team/spaces/Helian's%20space/Sample%20WF~zKtID6oOJwEyDyZY/current-state?embed=${  feature}`);
     },
   },
 };
@@ -167,7 +169,11 @@ export default {
           :dropdown="toolbarDropdowns[button] ?? []"
         />
 
-        <button @click="openDrawer">Ad hoc execution</button>
+        <ToolbarButton @click="openFeature('versions')">Versions</ToolbarButton>
+        <ToolbarButton @click="openFeature('adhoc')">Ad hoc execution</ToolbarButton>
+        <ToolbarButton @click="openFeature('dataapp')">Deploy Data App</ToolbarButton>
+        <ToolbarButton @click="openFeature('schedule')">Deploy Schedule</ToolbarButton>
+        <ToolbarButton @click="openFeature('rest')">Deploy REST</ToolbarButton>
       </div>
     </transition-group>
 
