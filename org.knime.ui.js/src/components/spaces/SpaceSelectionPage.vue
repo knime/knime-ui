@@ -108,6 +108,6 @@ const icon = computed(() =>
 .cards {
   display: grid;
   gap: 24px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 </style>

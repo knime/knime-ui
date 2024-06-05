@@ -95,7 +95,7 @@ const onExampleClick = async (example: ExampleProject) => {
 .get-started-page-header {
   display: flex;
   flex-direction: column;
-  padding: 30px 50px;
+  padding: 30px 5px 30px 50px;
 
   & .header-text {
     font-weight: 700;
@@ -106,9 +106,17 @@ const onExampleClick = async (example: ExampleProject) => {
 
   & .cards {
     display: grid;
-    grid-auto-flow: column;
+    grid-template-columns: repeat(auto-fit, 250px);
+    max-height: 200px;
+    padding: 10px;
+    margin-left: -10px;
+    overflow: hidden;
     gap: 24px;
-    width: 75px;
+
+    & .card {
+      min-width: 250px;
+      max-height: 180px;
+    }
 
     & .card-img {
       width: 100%;
@@ -118,13 +126,13 @@ const onExampleClick = async (example: ExampleProject) => {
 
     & span {
       text-align: center;
-      font-size: 16px;
+      font-size: 13px;
       margin-top: 20px;
       font-weight: 700;
     }
 
     & p {
-      font-size: 16px;
+      font-size: 13px;
     }
 
     & .create-workflow {

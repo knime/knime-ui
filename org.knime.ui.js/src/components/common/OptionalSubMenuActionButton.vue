@@ -36,7 +36,7 @@ withDefaults(defineProps<Props>(), {
   >
     <template #default="{ expanded }">
       <Component :is="item.icon" class="icon" />
-      {{ item.text }}
+      <span class="text">{{ item.text }}</span>
       <DropdownIcon
         v-if="!hideDropdown"
         class="dropdown-icon"
@@ -47,14 +47,14 @@ withDefaults(defineProps<Props>(), {
   <Button
     v-else
     v-bind="$attrs"
-    :title="item.title"
+    :title="item.title ?? item.text"
     class="item-button"
     compact
     :aria-disabled="item.disabled || null"
     @click="item.disabled ? null : $emit('click', item)"
   >
     <Component :is="item.icon" class="icon" />
-    {{ item.text }}
+    <span class="text">{{ item.text }}</span>
   </Button>
 </template>
 

@@ -23,7 +23,7 @@ import { defineComponent, type PropType } from "vue";
 import type { ActionMenuItem } from "@/components/spaces/remoteMenuItems";
 import { isLocalProvider } from "@/store/spaces/util";
 
-type DisplayModes = "normal" | "mini";
+type DisplayModes = "normal" | "mini" | "compact";
 
 export default defineComponent({
   components: {
@@ -152,7 +152,7 @@ export default defineComponent({
       };
 
       return [
-        ...(this.mode === "mini" ? [this.createWorkflowAction] : []),
+        this.createWorkflowAction,
         {
           id: "createFolder",
           text: "Create folder",
@@ -207,9 +207,6 @@ export default defineComponent({
           text: "Reload",
           icon: ReloadIcon,
           execute: () => this.reload(),
-          metadata: {
-            hideInMiniMode: true,
-          },
         },
       ];
     },
@@ -220,6 +217,9 @@ export default defineComponent({
     },
   },
   methods: {
+    filteredActions(hideItems: string[]) {
+      return this.actions.filter((item) => !hideItems.includes(item.id));
+    },
     reload() {
       const { projectId } = this;
       if (projectId === null) {
@@ -238,7 +238,7 @@ export default defineComponent({
     <template v-if="mode === 'normal'">
       <div class="toolbar-actions-normal">
         <OptionalSubMenuActionButton
-          v-for="action in actions"
+          v-for="action in filteredActions(['createWorkflow', 'connectToHub'])"
           :id="action.id"
           :key="action.id"
           :disabled="isLoadingContent"
@@ -257,13 +257,28 @@ export default defineComponent({
       </div>
     </template>
 
+    <template v-if="mode === 'compact' && false">
+      <div class="toolbar-actions-mini">
+        <FunctionButton
+          v-for="action in filteredActions(['createWorkflow'])"
+          :id="action.id"
+          :key="action.id"
+          class="reload-button"
+          :title="action.text"
+          @click="(item: ActionMenuItem) => item.execute?.()"
+        >
+          <Component :is="action.icon" />
+        </FunctionButton>
+      </div>
+    </template>
+
     <template v-if="mode === 'mini'">
       <div class="toolbar-actions-mini">
         <FunctionButton class="reload-button" @click="reload">
           <ReloadIcon />
         </FunctionButton>
         <SubMenu
-          :items="actions.filter((item) => !item?.metadata?.hideInMiniMode)"
+          :items="filteredActions(['reload'])"
           :disabled="isLoadingContent"
           :teleport-to-body="false"
           class="more-actions"

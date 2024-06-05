@@ -105,6 +105,7 @@ const hubSpaceIcon = computed(() => {
     <template #toolbar>
       <SpaceExplorerActions
         ref="actions"
+        class="space-explorer-actions"
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
         @imported-item-ids="setCurrentSelectedItemIds($event)"
@@ -122,3 +123,27 @@ const hubSpaceIcon = computed(() => {
     </template>
   </SpacePageLayout>
 </template>
+
+<style lang="postcss" scoped>
+@media only screen and (max-width: 1280px) {
+  .space-explorer-actions {
+    & :deep(.toolbar-actions-normal) {
+      & .text {
+        display: none;
+      }
+
+      & .button {
+        & svg {
+          margin-right: 0;
+          top: 0;
+        }
+
+        &.compact {
+          min-width: auto;
+          padding: 5px;
+        }
+      }
+    }
+  }
+}
+</style>
