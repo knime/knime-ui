@@ -22,6 +22,14 @@ export default defineConfig(({ mode }) => {
       watch: {
         ignored: ["**/test-results/**"],
       },
+
+      proxy: {
+        "/_/embed": {
+          target: "http://localhost:8080",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/_\/embed/, ""),
+        },
+      },
     },
 
     base: "./",

@@ -769,3 +769,8 @@ export const removeMostRecentlyUsedProject = ({
     { block: false },
   );
 };
+
+export const proxyRequestToHub = (options): Promise<unknown> => {
+  console.log("Proxy called with options :>> ", options);
+  return Promise.resolve("THE RESPONSE");
+};
