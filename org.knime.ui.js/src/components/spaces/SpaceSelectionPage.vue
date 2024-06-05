@@ -110,4 +110,8 @@ const icon = computed(() =>
   gap: 24px;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
+
+.search-bar {
+  min-width: 300px;
+}
 </style>
