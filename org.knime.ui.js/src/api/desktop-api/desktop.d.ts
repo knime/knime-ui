@@ -204,3 +204,5 @@ declare function removeMostRecentlyUsedProject(
   spaceId: string,
   itemId: string,
 ): void;
+
+declare function getCustomHelpMenuEntries(): Record<string, string>;

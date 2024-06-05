@@ -9,16 +9,27 @@ import GettingStartedIcon from "webapps-common/ui/assets/img/icons/rocket.svg";
 import CheatSheetsIcon from "webapps-common/ui/assets/img/icons/speedo.svg";
 import DocsIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import InfoIcon from "@/assets/info.svg";
+import LinkExteranlIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "@/composables/useStore";
 import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
-
-const store = useStore();
 
 const buildExternalUrl = (url: string) => {
   return `${url}?src=knimeappmodernui`;
 };
+
+const store = useStore();
+
+const customHelpMenuEntries = computed(() => {
+  const records = store.state.application.customHelpMenuEntries;
+  return Object.keys(records).map((key, idx) => ({
+    text: key,
+    separator: idx === Object.keys(records).length - 1,
+    icon: LinkExteranlIcon,
+    href: buildExternalUrl(records[key]),
+  }));
+});
 
 const creditsModalActive = ref(false);
 
@@ -57,6 +68,10 @@ const helpMenuItem: MenuItem = {
       icon: ForumIcon,
       href: buildExternalUrl("https://forum.knime.com/"),
     },
+
+    // Add custom help menu entries if present
+    ...customHelpMenuEntries.value,
+
     {
       text: "About KNIME Analytics Platform",
       icon: InfoIcon,

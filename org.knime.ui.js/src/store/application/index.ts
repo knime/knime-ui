@@ -78,7 +78,6 @@ export interface ApplicationState {
     progress: number;
     extensionName: string;
   } | null;
-
   /**
    * Show the shortcuts overview dialog
    */
@@ -87,7 +86,14 @@ export interface ApplicationState {
    * KNIME AP download link
    */
   analyticsPlatformDownloadURL: string | null;
+  /**
+   * If 'true', node dialog changes are persisted on click-away without confirmation
+   */
   askToConfirmNodeConfigChanges: boolean;
+  /**
+   * Custom help menu entries, if present
+   */
+  customHelpMenuEntries: Record<string, string>;
 }
 
 /*
@@ -122,6 +128,7 @@ export const state = (): ApplicationState => ({
   isShortcutsOverviewDialogOpen: false,
   analyticsPlatformDownloadURL: null,
   askToConfirmNodeConfigChanges: true,
+  customHelpMenuEntries: {},
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -178,6 +185,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setAskToConfirmNodeConfigChanges(state, value) {
     state.askToConfirmNodeConfigChanges = value;
+  },
+  setCustomHelpMenuEntries(state, customHelpMenuEntries) {
+    state.customHelpMenuEntries = customHelpMenuEntries;
   },
 };
 

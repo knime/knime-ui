@@ -63,6 +63,15 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // read settings saved in local storage
     await dispatch("settings/fetchSettings", {}, { root: true });
 
+    // Get custom help menu entries very early
+    await runInEnvironment({
+      DESKTOP: async () => {
+        const customHelpMenuEntries =
+          await API.desktop.getCustomHelpMenuEntries();
+        commit("setCustomHelpMenuEntries", customHelpMenuEntries);
+      },
+    });
+
     // On desktop apply fetched zoom level at this point
     await runInEnvironment({
       DESKTOP: async () => {

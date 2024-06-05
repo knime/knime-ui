@@ -85,6 +85,7 @@ describe("AppHeader.vue", () => {
           devMode: false,
           isLoadingWorkflow,
           dirtyProjectsMap,
+          customHelpMenuEntries: {},
         },
         actions: { switchWorkflow: vi.fn() },
       },

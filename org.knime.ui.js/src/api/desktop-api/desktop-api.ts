@@ -774,3 +774,13 @@ export const removeMostRecentlyUsedProject = ({
     { block: false },
   );
 };
+
+export const getCustomHelpMenuEntries = () => {
+  return callBrowserFunction(
+    window.getCustomHelpMenuEntries,
+    [],
+    "Failed to fetch custom help menu entries",
+    true,
+    { block: true },
+  );
+};
