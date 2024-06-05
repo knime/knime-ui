@@ -110,7 +110,8 @@ class ProjectAPITest {
                   "origin" : {
                     "providerId" : "pid",
                     "spaceId" : "sid",
-                    "itemId" : "iid2"
+                    "itemId" : "iid2",
+                    "projectType" : "Workflow"
                   }
                 } ]""", OffsetDateTime.MAX));
         assertThat(mruProjects.get()).hasSize(1);

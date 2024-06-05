@@ -152,8 +152,8 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public ProjectTypeEnum getProjectType() {
-                return localSpace.getProjectType(getItemId()).orElseThrow();
+            public Optional<ProjectTypeEnum> getProjectType() {
+                return localSpace.getProjectType(getItemId());
             }
         };
     }

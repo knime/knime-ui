@@ -108,6 +108,8 @@ public final class AppStatePersistor {
 
     private static final String PROVIDER_ID = "providerId";
 
+    private static final String PROJECT_TYPE = "projectType";
+
     private static final String ACTIVE = "active";
 
     private static final String NAME = "name";
@@ -147,7 +149,7 @@ public final class AppStatePersistor {
         var projectJson = MAPPER.createObjectNode() //
             .put(NAME, wp.getName()) //
             .put(ACTIVE, pm.isActiveProject(wp.getID()));
-        wp.getOrigin().ifPresent(origin -> projectJson.set(ORIGIN, serializeOrigin(origin)));
+        wp.getOrigin().ifPresent(origin -> projectJson.set(ORIGIN, serializeOrigin(origin, false)));
         return projectJson;
     }
 
@@ -160,14 +162,17 @@ public final class AppStatePersistor {
         var projectJson = MAPPER.createObjectNode() //
             .put(NAME, project.name()) //
             .put(TIME_USED, project.timeUsed().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        projectJson.set(ORIGIN, serializeOrigin(project.origin()));
+        projectJson.set(ORIGIN, serializeOrigin(project.origin(), true));
         return projectJson;
     }
 
-    private static JsonNode serializeOrigin(final Origin origin) {
+    private static JsonNode serializeOrigin(final Origin origin, final boolean addProjectTypeIfPresent) {
         var originJson = MAPPER.createObjectNode() //
             .put(PROVIDER_ID, origin.getProviderId()) //
             .put(SPACE_ID, origin.getSpaceId());
+        if (addProjectTypeIfPresent) {
+            origin.getProjectType().map(ProjectTypeEnum::name).ifPresent(t -> originJson.put(PROJECT_TYPE, t));
+        }
         origin.getRelativePath().ifPresentOrElse(p -> originJson.put(RELATIVE_PATH, p),
             () -> originJson.put(ITEM_ID, origin.getItemId()));
         return originJson;
@@ -303,7 +308,8 @@ public final class AppStatePersistor {
         }
     }
 
-    private static RecentlyUsedProject deserializeMRUProject(final JsonNode projectJson, final LocalWorkspace localSpace) {
+    private static RecentlyUsedProject deserializeMRUProject(final JsonNode projectJson,
+        final LocalWorkspace localSpace) {
         return new RecentlyUsedProject(projectJson.get(NAME).asText(),
             deserializeOrigin(projectJson.get(ORIGIN), localSpace),
             OffsetDateTime.parse(projectJson.get(TIME_USED).asText(), DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -320,6 +326,8 @@ public final class AppStatePersistor {
         } else {
             itemId = originJson.get(ITEM_ID).asText();
         }
+        var projectType =
+            Optional.ofNullable(originJson.get(PROJECT_TYPE)).map(JsonNode::asText).map(ProjectTypeEnum::valueOf);
         return new Origin() { // NOSONAR
 
             @Override
@@ -343,13 +351,13 @@ public final class AppStatePersistor {
             }
 
             @Override
-            public ProjectTypeEnum getProjectType() {
+            public Optional<ProjectTypeEnum> getProjectType() {
                 // project type might not be available in the rare case that the workflow at the
                 // given absolute path doesn't exist anymore
-                if (isLocal) {
-                    return localSpace.getProjectType(itemId).orElse(null);
+                if (projectType.isEmpty() && isLocal) {
+                    return Optional.of(localSpace.getProjectType(itemId).orElse(null));
                 } else {
-                    return null;
+                    return projectType;
                 }
             }
         };

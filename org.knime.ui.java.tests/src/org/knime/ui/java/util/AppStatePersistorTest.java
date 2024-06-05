@@ -103,6 +103,7 @@ public class AppStatePersistorTest {
                 "origin" : {
                   "providerId" : "pid",
                   "spaceId" : "sid",
+                  "projectType" : "WORKFLOW",
                   "relativePath" : "relPath"
                 }
               }, {
@@ -111,6 +112,7 @@ public class AppStatePersistorTest {
                 "origin" : {
                   "providerId" : "pid",
                   "spaceId" : "sid",
+                  "projectType" : "WORKFLOW",
                   "itemId" : "iid2"
                 }
               } ]

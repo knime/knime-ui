@@ -64,6 +64,7 @@ import org.knime.core.node.NotConfigurableException;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
+import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
@@ -252,7 +253,8 @@ final class ProjectAPI {
                 .set("origin", MAPPER.createObjectNode() //
                     .put("providerId", p.origin().getProviderId()) //
                     .put("spaceId", p.origin().getSpaceId()) //
-                    .put("itemId", p.origin().getItemId()))) //
+                    .put("itemId", p.origin().getItemId()) //
+                    .put("projectType", p.origin().getProjectType().orElse(ProjectTypeEnum.WORKFLOW).toString()))) //
             .collect(arrayNodeCollector()).toPrettyString();
     }
 

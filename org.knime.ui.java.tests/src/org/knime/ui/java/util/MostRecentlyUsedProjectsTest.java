@@ -155,8 +155,8 @@ public class MostRecentlyUsedProjectsTest {
             }
 
             @Override
-            public ProjectTypeEnum getProjectType() {
-                return null;
+            public Optional<ProjectTypeEnum> getProjectType() {
+                return Optional.of(ProjectTypeEnum.WORKFLOW);
             }
 
             @Override

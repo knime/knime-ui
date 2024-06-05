@@ -173,8 +173,8 @@ public final class ProjectFactory {
             }
 
             @Override
-            public ProjectTypeEnum getProjectType() {
-                return projectType;
+            public Optional<ProjectTypeEnum> getProjectType() {
+                return Optional.ofNullable(projectType);
             }
         };
     }
@@ -212,8 +212,8 @@ public final class ProjectFactory {
             }
 
             @Override
-            public ProjectTypeEnum getProjectType() {
-                return wfm.isComponentProjectWFM()? ProjectTypeEnum.COMPONENT: ProjectTypeEnum.WORKFLOW;
+            public Optional<ProjectTypeEnum> getProjectType() {
+                return Optional.of(wfm.isComponentProjectWFM() ? ProjectTypeEnum.COMPONENT : ProjectTypeEnum.WORKFLOW);
             }
         });
     }
