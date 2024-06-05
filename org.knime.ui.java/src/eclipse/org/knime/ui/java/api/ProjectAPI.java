@@ -52,7 +52,10 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collector;
 
@@ -246,7 +249,7 @@ final class ProjectAPI {
         var mruProjects = DesktopAPI.getDeps(MostRecentlyUsedProjects.class);
         var localSpace = DesktopAPI.getDeps(LocalWorkspace.class);
         mruProjects.removeIf(p -> wasRemovedFromLocalSpace(p.origin(), localSpace));
-        return mruProjects.get().stream() //
+        return reverseList(mruProjects.get()).stream() //
             .map(p -> MAPPER.createObjectNode() //
                 .put("name", p.name()) //
                 .put("timeUsed", p.timeUsed().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)) //
@@ -256,6 +259,12 @@ final class ProjectAPI {
                     .put("itemId", p.origin().getItemId()) //
                     .put("projectType", p.origin().getProjectType().orElse(ProjectTypeEnum.WORKFLOW).toString()))) //
             .collect(arrayNodeCollector()).toPrettyString();
+    }
+
+    private static <T> List<T> reverseList(final List<T> list) {
+        var res = new ArrayList<T>(list);
+        Collections.reverse(res);
+        return res;
     }
 
     private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalWorkspace localSpace) {
