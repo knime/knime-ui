@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import Button from "webapps-common/ui/components/Button.vue";
-import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
 import { useStore } from "@/composables/useStore";
@@ -71,21 +69,6 @@ const onExampleClick = async (example: ExampleProject) => {
         </Card>
       </template>
     </div>
-  </div>
-
-  <div class="call-to-action">
-    Find more resources for spreadsheet automation on the KNIME Community Hub
-
-    <Button
-      class="action-btn"
-      compact
-      with-border
-      on-dark
-      href="https://knime.com/modern-ui-hub-home-link?src=knimeappmodernui"
-    >
-      <LinkExternalIcon />
-      <span> Take me there </span>
-    </Button>
   </div>
 </template>
 
@@ -179,19 +162,6 @@ const onExampleClick = async (example: ExampleProject) => {
 
   & .community-hub-button {
     padding-top: 40px;
-  }
-}
-
-.call-to-action {
-  background: var(--knime-aquamarine-dark);
-  color: var(--knime-white);
-  padding: 10px 30px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-
-  & .action-btn {
-    margin-left: auto;
   }
 }
 </style>
