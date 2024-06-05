@@ -98,7 +98,8 @@ public final class DesktopAPI {
         EclipseUIAPI.class, //
         ChatAPI.class, //
         ComponentAPI.class, //
-        EquoChromiumAPI.class //
+        EquoChromiumAPI.class, //
+        GovernanceAPI.class //
     );
 
     // API endpoints which are only being registered when the AP is run for testing purposes.
