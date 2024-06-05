@@ -10,6 +10,7 @@ import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
 import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
+import { getToastsProvider } from "@/plugins/toasts";
 
 /**
  * Component that acts as a router page to render the workflow
@@ -35,12 +36,16 @@ const closeDrawer = () => {
 };
 
 onMounted(() => {
+  const toasts = getToastsProvider();
+
   window.addEventListener("message", (event) => {
     console.log("postmessage", event);
-    if (event.data === "close") {
+    if (event?.data?.action === "close") {
       closeDrawer();
     }
-
+    if (event?.data?.action === "toast") {
+      toasts.show(event.data.toast);
+    }
   })
 });
 </script>
@@ -129,5 +134,6 @@ main {
   width: 100%;
   overflow: hidden;
   border: none;
+  background-color: white;
 }
 </style>
