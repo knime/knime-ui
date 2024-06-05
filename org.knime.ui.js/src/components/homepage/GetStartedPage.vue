@@ -16,7 +16,7 @@ import RecentWorkflowsList from "@/components/recentWorkflows/RecentWorkflowsLis
 .get-started {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100%;
   background-color: var(--knime-gray-ultra-light);
   border-left: 1px solid var(--knime-silver-sand);
 

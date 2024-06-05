@@ -26,7 +26,6 @@ section.main-content-wrapper {
   color: var(--knime-masala);
   height: 100%;
   width: 100%;
-  overflow: hidden auto;
   gap: 20px;
   justify-content: space-around;
   padding: 0;
@@ -48,6 +47,7 @@ section.main-content-wrapper {
   & .main-content {
     flex: 1;
     width: calc(100% - var(--sidebar-width));
+    overflow: hidden auto;
   }
 }
 </style>
