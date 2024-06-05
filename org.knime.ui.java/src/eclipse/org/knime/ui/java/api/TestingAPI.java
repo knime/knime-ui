@@ -103,7 +103,11 @@ final class TestingAPI {
                 }
                 return projectId;
             }).toList();
-        TestingUtil.initAppForTesting(projectIds, activeProjectId.get(), DesktopAPI.getDeps(LocalWorkspace.class));
+        TestingUtil.initAppForTesting(projectIds, activeProjectId.get(),
+            // the workspace is lazily supplied since it's not available, yet,
+            // when this desktop API function is being called
+            // -> it will become available as soon as LifeCycle.init is called
+            () -> DesktopAPI.getDeps(LocalWorkspace.class));
     }
 
     /**

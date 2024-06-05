@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.core.node.CanceledExecutionException;
@@ -63,9 +64,6 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.service.ServiceDependencies;
-import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
@@ -84,13 +82,17 @@ public final class TestingUtil {
     private static Set<String> loadedWorkflowsForTesting;
 
     /**
-     * @see ServiceDependencies#setDefaultServiceDependencies(AppStateUpdater, EventConsumer,
-     *      org.knime.gateway.impl.webui.SpaceProviders, org.knime.gateway.impl.webui.UpdateStateProvider)
+     * Initializes the app for testing and 'opens' the passed projects.
+     *
+     * @param projectIds projects to be available as tabs
+     * @param activeProjectId the active tab
+     * @param localSpaceSupplier the lazily supplied local workspace (might not be available at the time this method is
+     *            called)
      */
     public static void initAppForTesting(final List<String> projectIds, final String activeProjectId,
-        final LocalWorkspace localSpace) {
+        final Supplier<LocalWorkspace> localSpaceSupplier) {
         clearAppForTesting();
-        TestingUtil.addToProjectManagerForTesting(projectIds, activeProjectId, localSpace);
+        TestingUtil.addToProjectManagerForTesting(projectIds, activeProjectId, localSpaceSupplier);
         KnimeBrowserView.initViewForTesting();
     }
 
@@ -108,7 +110,7 @@ public final class TestingUtil {
     }
 
     private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId,
-        final LocalWorkspace localSpace) {
+        final Supplier<LocalWorkspace> localSpaceSupplier) {
         var wpm = ProjectManager.getInstance();
         projectIds.stream().forEach(projectId -> wpm.addProject(new Project() { // NOSONAR
 
@@ -129,7 +131,8 @@ public final class TestingUtil {
 
             @Override
             public Optional<Origin> getOrigin() {
-                return Optional.of(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpace));
+                return Optional
+                    .of(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpaceSupplier.get()));
             }
         }));
         if (activeProjectId != null) {
