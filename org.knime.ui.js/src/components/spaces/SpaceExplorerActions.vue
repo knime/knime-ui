@@ -23,7 +23,7 @@ import { defineComponent, type PropType } from "vue";
 import type { ActionMenuItem } from "@/components/spaces/remoteMenuItems";
 import { isLocalProvider } from "@/store/spaces/util";
 
-type DisplayModes = "normal" | "mini" | "compact";
+type DisplayModes = "normal" | "mini";
 
 export default defineComponent({
   components: {
@@ -254,21 +254,6 @@ export default defineComponent({
             @click="createWorkflowAction.execute()"
           />
         </div>
-      </div>
-    </template>
-
-    <template v-if="mode === 'compact' && false">
-      <div class="toolbar-actions-mini">
-        <FunctionButton
-          v-for="action in filteredActions(['createWorkflow'])"
-          :id="action.id"
-          :key="action.id"
-          class="reload-button"
-          :title="action.text"
-          @click="(item: ActionMenuItem) => item.execute?.()"
-        >
-          <Component :is="action.icon" />
-        </FunctionButton>
       </div>
     </template>
 
