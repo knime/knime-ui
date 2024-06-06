@@ -7,9 +7,11 @@ import Dropdown from '../../../../org.knime.ui.js/webapps-common/ui/components/f
 // @ts-ignore
 import type * as generated from '../../../../org.knime.ui.js/src/embeddedFeatures/hub-api/generated'
 
+type DropdownItem = { id: string; text: string }
 const props = defineProps<{ workflowId: any }>()
 const selectedVersion = ref('latest')
-const versions = ref<{ id: string; text: string }[]>([{ id: 'latest', text: 'latest' }])
+const versions = ref<DropdownItem[]>([{ id: 'latest', text: 'latest' }])
+const executionContexts = ref<DropdownItem[]>([])
 
 const api = inject<typeof generated>('hubApi')!
 
@@ -17,19 +19,25 @@ const fetchVersions = async () => {
   const { versions: _versions } = await api.getWorkflowVersions(props.workflowId)
   console.log('_versions :>> ', _versions)
   versions.value = [{ id: 'latest', text: 'latest' }].concat(
-    _versions.map(({ version, title }) => ({
+    (_versions ?? []).map(({ version, title }) => ({
       id: version.toString(),
       text: title
     }))
   )
 }
 
-onMounted(async () => {
+const getExecutionContexts = async () => {
   const repositoryItem = await api.getRepositoryItem(props.workflowId)
-  const test2 = await api.getExecutionContextsByScope(repositoryItem.ownerAccountId)
-  console.log('repositoryItem :>> ', repositoryItem)
-  console.log('test2 :>> ', test2)
+
+  const { executionContexts: _executionContexts } = await api.getExecutionContextsByScope(
+    repositoryItem.ownerAccountId
+  )
+  executionContexts.value = (_executionContexts ?? []).map(({ id, name }) => ({ id, text: name }))
+}
+
+onMounted(async () => {
   fetchVersions()
+  getExecutionContexts()
 })
 </script>
 
@@ -44,7 +52,14 @@ onMounted(async () => {
       :possible-values="versions"
     />
 
-    <Button compact with-border>Cancel</Button>
+    <Dropdown
+      v-model="selectedVersion"
+      aria-label="Execution contexts"
+      size="3"
+      :possible-values="executionContexts"
+    />
+
+    <Button compact with-border @click="api.exit()">Cancel</Button>
     <Button compact primary>Run</Button>
   </div>
 </template>

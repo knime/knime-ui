@@ -11,7 +11,6 @@ import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
 import UIExtShadowApp from "@/embeddedFeatures/UIExtShadowApp.vue";
 import { createApi } from "@/embeddedFeatures/hub-api";
-import { API } from "@api";
 
 // API.desktop.proxy();
 
@@ -44,17 +43,43 @@ const origin = computed(() => {
 const providerId = computed(() => origin.value?.origin?.providerId);
 const workflowId = computed(() => origin.value?.origin?.itemId);
 
+const urlRegex = /(https?:\/\/[^\s)]+)/g;
+const providerUrl = computed(() => {
+  const provider = (store.state.spaces.spaceProviders ?? {})[
+    providerId.value ?? ""
+  ];
+  return provider?.name?.match(urlRegex)?.at(0);
+});
+
 const hubApi = createApi({
   // @ts-ignore
-  makeRequest: async (options) => {
-    const params = JSON.stringify(options);
-    const response = await API.desktop.proxyRequest(providerId.value!, params);
-    return JSON.parse(response || "{}");
+  makeRequest: (options) => {
+    // console.log("options :>> ", options);
+    // const params = JSON.stringify(options);
+    // const response = await API.desktop.proxyRequest(providerId.value!, params);
+    // console.log("response :>> ", JSON.parse(response));
+    // return JSON.parse(response || "{}");
+
+    // const request = new Request({
+    //   method: "GET",
+    //   url: `${providerUrl.value!}/counts`,
+    //   // body: JSON.stringify("{}"),
+    // });
+
+    // const t = fetch(request).then((res) => res.json());
+
+    const noLeadingSlashUrl = options.url.startsWith("/")
+      ? options.url.slice(1)
+      : options.url;
+
+    return fetch(`${providerUrl.value!}/${noLeadingSlashUrl}`, {
+      method: "GET",
+    }).then((res) => res.json());
   },
 
-  // exit: () => {
-  //   store.commit("embeddedFeature/setIsExpanded", false);
-  // },
+  exit: () => {
+    store.commit("embeddedFeature/setIsExpanded", false);
+  },
 });
 </script>
 
@@ -66,7 +91,7 @@ const hubApi = createApi({
 
     <SideDrawer class="side-drawer" :is-expanded="isExpanded">
       <UIExtShadowApp
-        v-if="workflowId"
+        v-if="workflowId && providerUrl"
         resource-location="/_/embed/HelloWorld.js"
         :hub-api="hubApi"
         :initial-data="{ workflowId }"

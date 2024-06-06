@@ -33,22 +33,10 @@ export const getWorkflowVersions = (
   return getClient().get(`/repository/${workflowId}/versions`);
 };
 
-export const executeWorkflow = (
-  workflowId: string,
-  executionContextId: string,
-): Promise<Version[]> => {
-  console.log("calling executeWorkflow :>> ", {
-    workflowId,
-    executionContextId,
-  });
-
-  return getClient().post(`/execution/workflow/${workflowId}`, {
-    executionContextId,
-  });
-};
-
 export const getExecutionContextsByScope = (
   scope: string,
-): Promise<Array<{ id: string; name: string }>> => {
+): Promise<{
+  executionContexts: Array<{ id: string; name: string }>;
+}> => {
   return getClient().get(`/execution-contexts/${scope}`);
 };
