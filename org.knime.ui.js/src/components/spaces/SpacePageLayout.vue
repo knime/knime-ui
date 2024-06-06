@@ -91,7 +91,7 @@ main {
 
   & .content-wrapper {
     padding: var(--padding);
-    overflow: hidden scroll;
+    overflow: hidden auto;
     height: 100%;
   }
 }
