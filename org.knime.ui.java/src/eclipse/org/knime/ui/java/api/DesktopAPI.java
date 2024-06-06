@@ -99,7 +99,7 @@ public final class DesktopAPI {
         ChatAPI.class, //
         ComponentAPI.class, //
         EquoChromiumAPI.class, //
-        GovernanceAPI.class //
+        CustomizationAPI.class //
     );
 
     // API endpoints which are only being registered when the AP is run for testing purposes.

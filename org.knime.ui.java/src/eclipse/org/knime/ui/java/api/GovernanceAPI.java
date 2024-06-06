@@ -51,15 +51,20 @@ package org.knime.ui.java.api;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.knime.core.customization.APCustomization;
 import org.knime.core.customization.ui.actions.MenuEntry;
 import org.knime.gateway.impl.GatewayImplPlugin;
 
 /**
- * Function related to KNIME AP governance features
+ * Function related to AP Customizations, see {@link APCustomization}.
  *
  * @author Kai Franze, KNIME GmbH, Germany
  */
-final class GovernanceAPI {
+final class CustomizationAPI {
+
+    private CustomizationAPI() {
+        // Stateless
+    }
 
     /**
      * @return A map of custom help menu entries mapping menu text to external links
