@@ -7,6 +7,7 @@ interface Props {
   hubApi: any;
   resourceLocation: string;
   style?: StyleValue;
+  initialData: any
 }
 const props = withDefaults(defineProps<Props>(), {
   style: null,
@@ -30,8 +31,10 @@ const loadView = async () => {
     ? container.value!.shadowRoot
     : container.value!.attachShadow({ mode: "open" });
 
+    console.log("UIExtShadowApp", props)
+
   // call module default exported function to load the view
-  activeShadowApp.value = shadowApp.default(shadowRoot, props.hubApi);
+  activeShadowApp.value = shadowApp.default(shadowRoot, props.hubApi, props.initialData);
 };
 
 onMounted(async () => {

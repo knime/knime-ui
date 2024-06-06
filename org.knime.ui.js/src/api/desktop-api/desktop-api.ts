@@ -770,7 +770,12 @@ export const removeMostRecentlyUsedProject = ({
   );
 };
 
-export const proxyRequestToHub = (options): Promise<unknown> => {
-  console.log("Proxy called with options :>> ", options);
-  return Promise.resolve("THE RESPONSE");
-};
+export const proxyRequest = (providerId: string, requestOptions: string) => {
+  return callBrowserFunction(
+    window.proxyRequest,
+    [providerId, requestOptions],
+    "Failed to remove most recently used project",
+    true,
+    { block: false },
+  );
+}

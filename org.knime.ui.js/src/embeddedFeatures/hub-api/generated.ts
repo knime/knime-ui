@@ -4,9 +4,9 @@ export interface Version {}
 
 export interface Workflow {}
 
-export const getWorkflowVersions = (workflowId: string): Promise<Version[]> => {
+export const getRepositoryItem = (workflowId: string): Promise<Version[]> => {
   console.log("calling getWorkflowVersions :>> ", { workflowId });
-  return getClient().get(`/execution/workflow/${workflowId}`);
+  return getClient().get(`/repository/${workflowId}`);
 };
 
 export const executeWorkflow = (

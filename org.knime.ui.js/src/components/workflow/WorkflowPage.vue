@@ -12,14 +12,16 @@ import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
 import UIExtShadowApp from "@/embeddedFeatures/UIExtShadowApp.vue";
 import { createApi } from "@/embeddedFeatures/hub-api";
-import { API } from "@/api";
+import { API } from "@api";
+
+// API.desktop.proxy();
 
 /**
  * Component that acts as a router page to render the workflow
  */
 const store = useStore();
 
-const workflow = computed(() => store.state.workflow.activeWorkflow);
+const workflow = computed(() => store.state.workflow.activeWorkflow!);
 const savedSecondarySize = computed({
   get() {
     return store.state.settings.settings.nodeOutputSize;
@@ -33,6 +35,17 @@ const savedSecondarySize = computed({
 });
 
 const isExpanded = computed(() => store.state.embeddedFeature.isExpanded);
+const openProjects = computed(() => store.state.application.openProjects);
+const activeProjectId = computed(() => store.state.application.activeProjectId);
+
+const origin = computed(() => {
+  return openProjects.value.find(p => p.projectId === activeProjectId.value)
+})
+
+const providerId = computed(() => origin.value?.origin?.providerId)
+const workflowId = computed(() => origin.value?.origin?.itemId)
+
+
 const closeDrawer = () => {
   store.commit("embeddedFeature/setIsExpanded", false);
 };
@@ -40,7 +53,7 @@ const closeDrawer = () => {
 const hubApi = createApi({
   // @ts-ignore
   makeRequest: (options) => {
-    return API.desktop.proxyRequestToHub(options);
+    return API.desktop.proxyRequest(providerId.value, JSON.stringify(options));
   },
 });
 </script>
@@ -52,9 +65,12 @@ const hubApi = createApi({
     <Sidebar id="sidebar" />
 
     <SideDrawer class="side-drawer" :is-expanded="isExpanded">
+      {{ workflowId }}
       <UIExtShadowApp
+        v-if="workflowId"
         resource-location="/_/embed/HelloWorld.js"
         :hub-api="hubApi"
+        :initial-data="{ workflowId }"
       />
       <Button with-border @click="closeDrawer"> Close me! </Button>
     </SideDrawer>

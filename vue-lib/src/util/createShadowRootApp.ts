@@ -17,6 +17,9 @@ export default (component: Component) => {
     shadowRoot.appendChild(style)
     shadowRoot.appendChild(holder)
 
+    console.log("create shadow app", rootProps)
+
+
     const app = createApp(component, rootProps)
     app.provide('hubApi', api)
     app.provide('shadowRoot', shadowRoot)

@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { inject, ref } from 'vue'
 
+const props = defineProps<{ workflowId: any }>()
 const data = ref()
 
 const api = inject('hubApi')
 const callApi = async () => {
+  console.log(props)
   // @ts-ignore
-  const res = await api.getWorkflowVersions('workflowWithVersions')
+  const res = await api.getRepositoryItem(props.workflowId)
   console.log('res :>> ', res)
-  // @ts-ignore
-  api.getWorkflowVersions('workflowToExecute', 'executionContextId')
+  // // @ts-ignore
+  // api.getWorkflowVersions('workflowToExecute', 'executionContextId')
 }
 </script>
 

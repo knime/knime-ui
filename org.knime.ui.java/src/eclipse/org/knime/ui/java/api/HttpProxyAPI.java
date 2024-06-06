@@ -60,6 +60,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  */
@@ -71,7 +72,7 @@ final class HttpProxyAPI {
 
     private final static ObjectMapper MAPPER = new ObjectMapper();
 
-    private record ProxyRequestOptions(String url, String method, String body) {
+    private record ProxyRequestOptions(String url, String method, ObjectNode body) {
     }
 
     private static String getAuthHeaderValue(final SpaceProvider spaceProvider) {
@@ -92,6 +93,16 @@ final class HttpProxyAPI {
         }
     }
 
+    public static void main(final String[] args) {
+        var txt = "{\"url\":\"/repository/Users/*CmCSVm8ZTZsP9aCW\",\"method\":\"GET\",\"body\":{}}";
+        try {
+            var json = new ObjectMapper().readValue(txt, ProxyRequestOptions.class);
+            System.out.println(json);
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+        }
+    }
+
     /**
      * Opens the swing dialog or CEF-based dialog of a node.
      *
@@ -109,12 +120,12 @@ final class HttpProxyAPI {
         var authHeader = getAuthHeaderValue(spaceProvider);
         var requestOptions = deserialize(requestOptionsString);
 
-        var baseUrl = spaceProvider.getServerAddress();
+        var baseUrl = spaceProvider.getServerAddress().get();
         var requestUri = URI.create("%s/%s".formatted(baseUrl, requestOptions.url));
         var requestBody = requestOptions.body;
 
         var httpRequest = HttpRequest.newBuilder(requestUri).method(requestOptions.method, requestBody == null
-            ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(requestBody))
+            ? HttpRequest.BodyPublishers.noBody() : HttpRequest.BodyPublishers.ofString(requestBody.toString()))
                 .header("Authentication", authHeader)
                 .build();
 

@@ -204,3 +204,5 @@ declare function removeMostRecentlyUsedProject(
   spaceId: string,
   itemId: string,
 ): void;
+
+declare function proxyRequest(arg1: string, arg2: string): string;
