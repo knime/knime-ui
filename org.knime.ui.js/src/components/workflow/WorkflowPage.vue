@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
 import SideDrawer from "webapps-common/ui/components/SideDrawer.vue";
-import Button from "webapps-common/ui/components/Button.vue";
 
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
@@ -39,22 +38,23 @@ const openProjects = computed(() => store.state.application.openProjects);
 const activeProjectId = computed(() => store.state.application.activeProjectId);
 
 const origin = computed(() => {
-  return openProjects.value.find(p => p.projectId === activeProjectId.value)
-})
+  return openProjects.value.find((p) => p.projectId === activeProjectId.value);
+});
 
-const providerId = computed(() => origin.value?.origin?.providerId)
-const workflowId = computed(() => origin.value?.origin?.itemId)
-
-
-const closeDrawer = () => {
-  store.commit("embeddedFeature/setIsExpanded", false);
-};
+const providerId = computed(() => origin.value?.origin?.providerId);
+const workflowId = computed(() => origin.value?.origin?.itemId);
 
 const hubApi = createApi({
   // @ts-ignore
-  makeRequest: (options) => {
-    return API.desktop.proxyRequest(providerId.value, JSON.stringify(options));
+  makeRequest: async (options) => {
+    const params = JSON.stringify(options);
+    const response = await API.desktop.proxyRequest(providerId.value!, params);
+    return JSON.parse(response || "{}");
   },
+
+  // exit: () => {
+  //   store.commit("embeddedFeature/setIsExpanded", false);
+  // },
 });
 </script>
 
@@ -65,14 +65,14 @@ const hubApi = createApi({
     <Sidebar id="sidebar" />
 
     <SideDrawer class="side-drawer" :is-expanded="isExpanded">
-      {{ workflowId }}
       <UIExtShadowApp
         v-if="workflowId"
         resource-location="/_/embed/HelloWorld.js"
         :hub-api="hubApi"
         :initial-data="{ workflowId }"
+        :style="{ height: '100%' }"
       />
-      <Button with-border @click="closeDrawer"> Close me! </Button>
+      <!-- <Button with-border compact @click="closeDrawer"> Close me! </Button> -->
     </SideDrawer>
 
     <main class="workflow-area">

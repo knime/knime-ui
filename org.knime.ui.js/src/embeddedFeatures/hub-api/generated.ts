@@ -1,12 +1,36 @@
 import { getClient } from "./client";
 
-export interface Version {}
+export interface Version {
+  author: string;
+  authorAccountId: string;
+  createdOn: string;
+  description: string;
+  title: string;
+  version: number;
+}
 
-export interface Workflow {}
+export interface RepositoryItem {
+  id: string;
+  itemVersion: number;
+  itemVersionCreatedOn: string;
+  kudosCount: number;
+  lastEditedOn: string;
+  lastUploadedOn: string;
+  owner: string;
+  ownerAccountId: string;
+  path: string;
+}
 
-export const getRepositoryItem = (workflowId: string): Promise<Version[]> => {
-  console.log("calling getWorkflowVersions :>> ", { workflowId });
+export const getRepositoryItem = (
+  workflowId: string,
+): Promise<RepositoryItem> => {
   return getClient().get(`/repository/${workflowId}`);
+};
+
+export const getWorkflowVersions = (
+  workflowId: string,
+): Promise<{ totalCount: number; versions: Version[] }> => {
+  return getClient().get(`/repository/${workflowId}/versions`);
 };
 
 export const executeWorkflow = (
@@ -21,4 +45,10 @@ export const executeWorkflow = (
   return getClient().post(`/execution/workflow/${workflowId}`, {
     executionContextId,
   });
+};
+
+export const getExecutionContextsByScope = (
+  scope: string,
+): Promise<Array<{ id: string; name: string }>> => {
+  return getClient().get(`/execution-contexts/${scope}`);
 };
