@@ -29,8 +29,7 @@ const createWorkflowLocally = async () => {
 
 const onExampleClick = async (example: ExampleProject) => {
   await store.dispatch("spaces/openProject", {
-    projectId: cachedLocalSpaceProjectId,
-    workflowItemId: example.origin!.itemId,
+    ...example.origin,
     $router,
   });
 };
