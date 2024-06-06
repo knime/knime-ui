@@ -4,10 +4,19 @@ import DownloadAPButton from "../common/DownloadAPButton.vue";
 
 <template>
   <div class="download-banner">
-    <span>
-      This is only a demo of the KNIME Analytics Platform. Download for free to
-      make use of the full potential
-    </span>
+    <div class="info-text">
+      <span>
+        This is only a demo of the KNIME Analytics Platform. Download for free
+        to make use of the full potential
+      </span>
+      <div class="links">
+        <a href="https://www.knime.com/imprint" target="_blank">Imprint</a
+        >&nbsp;
+        <a href="https://www.knime.com/legal" target="_blank">Terms of use</a
+        >&nbsp;
+        <a href="https://www.knime.com/privacy" target="_blank">Privacy</a>
+      </div>
+    </div>
 
     <DownloadAPButton
       class="download-button"
@@ -26,6 +35,24 @@ import DownloadAPButton from "../common/DownloadAPButton.vue";
   height: var(--app-download-banner-height);
   padding: 0 var(--app-side-bar-buttons-width);
   align-items: center;
+
+  & .info-text {
+    display: flex;
+    flex-direction: column;
+
+    & .links {
+      font-size: 11px;
+      padding-top: 5px;
+
+      & a {
+        color: var(--knime-silver-sand);
+
+        &:hover {
+          color: var(--knime-white);
+        }
+      }
+    }
+  }
 
   & .download-button {
     margin-left: auto;
