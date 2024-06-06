@@ -3,7 +3,7 @@ import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
 import HeartIcon from "webapps-common/ui/assets/img/icons/heart.svg";
-import ComputerDesktopIcon from "@/assets/computer-desktop.svg";
+import ComputerDesktopIcon from "webapps-common/ui/assets/img/icons/computer-desktop.svg";
 import ServerIcon from "webapps-common/ui/assets/img/icons/server-racks.svg";
 
 import Avatar from "@/components/common/Avatar.vue";
