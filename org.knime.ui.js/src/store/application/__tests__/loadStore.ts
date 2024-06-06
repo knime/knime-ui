@@ -19,6 +19,9 @@ export const applicationState = {
 type Options = { autoApplySettingsMock?: Mock<[], boolean> };
 export const loadStore = (options: Options = {}) => {
   mockedAPI.application.getState.mockReturnValue(applicationState);
+  mockedAPI.desktop.getCustomHelpMenuEntries.mockResolvedValue({});
+  mockedAPI.event.subscribeEvent.mockResolvedValue({});
+
   const loadWorkflow = deepMocked(API).workflow.getWorkflow;
   loadWorkflow.mockResolvedValue({ workflow: { info: { containerId: "" } } });
 

@@ -60,19 +60,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     { state, rootState, commit, dispatch },
     { $router }: { $router: Router },
   ) {
-    // read settings saved in local storage
+    // Read settings saved in local storage
     await dispatch("settings/fetchSettings", {}, { root: true });
 
-    // Get custom help menu entries very early
-    await runInEnvironment({
-      DESKTOP: async () => {
-        const customHelpMenuEntries =
-          await API.desktop.getCustomHelpMenuEntries();
-        commit("setCustomHelpMenuEntries", customHelpMenuEntries);
-      },
-    });
-
-    // On desktop apply fetched zoom level at this point
+    // Set zoom level and retry until the 'API.desktop' functions are available
     await runInEnvironment({
       DESKTOP: async () => {
         const RETRY_DELAY_MS = 50;
@@ -103,16 +94,23 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     });
 
     await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
+
     await runInEnvironment({
       DESKTOP: async () => {
-        try {
-          await API.event.subscribeEvent({
-            typeId: "UpdateAvailableEventType",
-          });
-          API.desktop.checkForUpdates();
-        } catch (error) {
-          consola.log(error);
-        }
+        // Get custom help menu entries
+        const p1 = API.desktop
+          .getCustomHelpMenuEntries()
+          .then((customHelpMenuEntries) =>
+            commit("setCustomHelpMenuEntries", customHelpMenuEntries),
+          );
+
+        // Subscribe to update available event
+        const p2 = API.event
+          .subscribeEvent({ typeId: "UpdateAvailableEventType" })
+          .then(() => API.desktop.checkForUpdates())
+          .catch((error) => consola.error(error));
+
+        await Promise.all([p1, p2]);
       },
     });
 
