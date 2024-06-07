@@ -102,7 +102,7 @@ const onExampleClick = async (example: ExampleProject) => {
 
     & .card-img {
       width: 100%;
-      max-height: 140px;
+      max-height: 77px;
       object-fit: contain;
     }
 
