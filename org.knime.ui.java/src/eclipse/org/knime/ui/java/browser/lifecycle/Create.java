@@ -49,9 +49,16 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -73,9 +80,13 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.EclipseUtil;
 import org.knime.core.util.HubStatistics;
+import org.knime.core.util.auth.CouldNotAuthorizeException;
 import org.knime.core.util.proxy.URLConnectionFactory;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.js.cef.CEFPlugin;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.product.rcp.KNIMEApplication;
@@ -88,6 +99,8 @@ import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
+
+import com.equo.middleware.api.handler.IResponseHandler;
 
 /**
  * The 'create' lifecycle-phase for the KNIME-UI. Only called exactly once at the beginning.
@@ -259,6 +272,69 @@ final class Create {
             PageResourceHandler.NODE_VIEW, //
             PageResourceHandler.NODE_DIALOG //
         );
+
+        IResponseHandler resourceHandler = (request, headers) -> {
+            var requestUri = URI.create(request.getUrl());
+
+            var spaceProvider =
+                DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().entrySet().stream().filter(entry -> {
+                    var provider = entry.getValue();
+                    if (provider.getServerAddress().isEmpty()) {
+                        return false;
+                    }
+                    var serverAddress = URI.create(provider.getServerAddress().get());
+                    return serverAddress.getHost().equals(requestUri.getHost());
+                }).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                        "Could not find space providerwhich matches host '%s'".formatted(requestUri.getHost())))
+                    .getValue();
+
+            var authHeader = getAuthHeaderValue(spaceProvider);
+            var httpRequest =
+                HttpRequest.newBuilder(requestUri).method(request.getMethod(), HttpRequest.BodyPublishers.noBody())
+                   .header("Authorization", authHeader).build();
+
+            // "Basic a25pbWU6a25pbWVodWJwYXNzd29yZA=="
+
+            try {
+                HttpResponse<InputStream> response =
+                    HttpClient.newHttpClient().send(httpRequest, BodyHandlers.ofInputStream());
+
+//                response.headers().map().forEach((responseHeaderKey, responseHeaders) -> {
+//                    headers.put(responseHeaderKey, responseHeaders.get(0));
+//                });
+//                headers.remove("Content-Security-Policy");
+                headers.put("Access-Control-Allow-Origin", "*");
+//                headers.put(IResponseConstants.STATUS_CODE, response.statusCode() + "");
+
+                var resStream = response.body();
+                return resStream;
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        CEFPlugin.getMiddlewareService().addResourceHandler("https", "api.hubdev.knime.com", resourceHandler);
+        CEFPlugin.getMiddlewareService().addResourceHandler("https", "hubdev.knime.com", resourceHandler);
+        CEFPlugin.getMiddlewareService().addResourceHandler("https", "api.hub.knime.com", resourceHandler);
+        CEFPlugin.getMiddlewareService().addResourceHandler("https", "hub.knime.com", resourceHandler);
+    }
+
+    private static String getAuthHeaderValue(final SpaceProvider spaceProvider) {
+        var connection = spaceProvider.getConnection(true)
+            .orElseThrow(() -> new IllegalStateException("Space provider needs to be connect but was not."));
+        try {
+            return connection.getAuthorization();
+        } catch (CouldNotAuthorizeException e) {
+            throw new RuntimeException("Could not get auth from space connection.", e);
+        }
+    }
+
+    private static String normalizeLeadingSlash(final String uri) {
+        if (uri.startsWith("/")) {
+            return uri;
+        }
+        return "/" + uri;
     }
 
     private static URL stringToURL(final String url) {

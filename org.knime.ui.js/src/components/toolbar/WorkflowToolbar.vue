@@ -145,7 +145,7 @@ export default {
 
     openDrawer() {
       this.$store.commit("embeddedFeature/setIsExpanded", true);
-    },
+    }
   },
 };
 </script>

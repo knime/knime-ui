@@ -73,7 +73,7 @@ const hubApi = createApi({
       : options.url;
 
     return fetch(`${providerUrl.value!}/${noLeadingSlashUrl}`, {
-      method: "GET",
+      method: "GET"
     }).then((res) => res.json());
   },
 

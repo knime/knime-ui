@@ -79,13 +79,14 @@ public class KnimeBrowserLocationListener implements LocationListener {
 
     @Override
     public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
+        var url = event.location;
+        if (isAppPage(url) || isEmptyPage(url) || isDevPage(url)) {
             // Allow location change, but run the reload life-cycle state transition
             if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
                 LifeCycle.get().reload();
             }
+        } else if (isCEFMiddlewareResource(url) || isLocalhost(url)) {
+            // Allow location change to middleware resources, these are handled by resource handlers.
         } else if (ImportURI.importURI(createCursorLocationSupplier(m_browser), event.location)) {
             // Don't change the location but import the URI instead
             event.doit = false;
@@ -124,6 +125,11 @@ public class KnimeBrowserLocationListener implements LocationListener {
     private static boolean isDevPage(final String url) {
         var devUrl = System.getProperty(KnimeBrowserView.DEV_URL_PROP);
         return devUrl == null ? false : url.startsWith(devUrl);
+    }
+
+    private static boolean isLocalhost(final String url) {
+        return url.startsWith("https://hubdev.knime.com") || url.startsWith("https://api.hubdev.knime.com") ||
+                url.startsWith("https://hub.knime.com") || url.startsWith("https://api.hub.knime.com");
     }
 
 }

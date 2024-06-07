@@ -109,6 +109,7 @@ final class HttpProxyAPI {
      */
     @API
     static String proxyRequest(final String providerId, final String requestOptionsString) {
+        System.out.println(providerId);
         var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(providerId);
         if (spaceProvider == null) {
             throw new IllegalArgumentException(

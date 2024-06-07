@@ -261,7 +261,7 @@ public final class DesktopAPI {
      * @return the dependency-instance or {@code null} if there is none for the given class
      */
     @SuppressWarnings("unchecked")
-    static <T> T getDeps(final Class<T> clazz) {
+    public static <T> T getDeps(final Class<T> clazz) {
         return dependencies == null ? null : (T)dependencies.get(clazz);
     }
 
