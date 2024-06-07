@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -10,9 +10,7 @@ import SpaceCard from "./SpaceCard.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import LensIcon from "webapps-common/ui/assets/img/icons/lens.svg";
+import SearchButton from "../common/SearchButton.vue";
 
 type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 
@@ -75,19 +73,6 @@ const icon = computed(() =>
     ? getSpaceProviderIcon(activeSpaceProvider.value)
     : getSpaceGroupIcon(activeSpaceGroup.value!),
 );
-
-const filterInput = ref<HTMLElement>();
-const showFilter = ref(false);
-const toggleFilterInput = async () => {
-  if (showFilter.value) {
-    showFilter.value = false;
-    query.value = "";
-    return;
-  }
-  showFilter.value = true;
-  await nextTick();
-  filterInput.value?.focus();
-};
 </script>
 
 <template>
@@ -97,21 +82,7 @@ const toggleFilterInput = async () => {
     </template>
 
     <template #toolbar>
-      <InputField
-        v-if="showFilter"
-        ref="filterInput"
-        v-model="query"
-        placeholder="Search"
-        class="filter-input"
-        tabindex="-1"
-      />
-      <FunctionButton
-        class="filter-button"
-        :active="showFilter"
-        @click="toggleFilterInput"
-      >
-        <LensIcon />
-      </FunctionButton>
+      <SearchButton v-model="query" />
     </template>
 
     <template #content>
@@ -134,11 +105,7 @@ const toggleFilterInput = async () => {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
 
-.filter-input {
-  height: 30px;
-  margin-right: 5px;
-  width: 30%;
-  min-width: 150px;
-  max-width: 350px;
+:deep(.search-button-input) {
+  width: 300px;
 }
 </style>

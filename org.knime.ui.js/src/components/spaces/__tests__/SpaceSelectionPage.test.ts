@@ -3,7 +3,7 @@ import { nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { mount } from "@vue/test-utils";
 
-import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
+import SearchButton from "@/components/common/SearchButton.vue";
 import { mockVuexStore } from "@/test/utils";
 import {
   createSpace,
@@ -117,7 +117,7 @@ describe("SpaceSelectionPage.vue", () => {
       const { wrapper } = doMount();
 
       wrapper
-        .findComponent(SearchInput)
+        .findComponent(SearchButton)
         .vm.$emit("update:modelValue", "space 2");
       await nextTick();
       expect(wrapper.findAllComponents(SpaceCard).length).toBe(1);
@@ -172,7 +172,7 @@ describe("SpaceSelectionPage.vue", () => {
       const { wrapper } = doMount();
 
       wrapper
-        .findComponent(SearchInput)
+        .findComponent(SearchButton)
         .vm.$emit("update:modelValue", "space 6");
       await nextTick();
       expect(wrapper.findAllComponents(SpaceCard).length).toBe(1);

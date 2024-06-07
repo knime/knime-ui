@@ -35,15 +35,13 @@ withDefaults(defineProps<Props>(), {
     @item-click="(_, item) => (item.disabled ? null : $emit('click', item))"
   >
     <template #default="{ expanded }">
-      <slot :item="item" :expanded="expanded">
-        <Component :is="item.icon" class="icon" />
-        <span class="text">{{ item.text }}</span>
-        <DropdownIcon
-          v-if="!hideDropdown"
-          class="dropdown-icon"
-          :class="{ flip: expanded }"
-        />
-      </slot>
+      <Component :is="item.icon" class="icon" />
+      <span class="text">{{ item.text }}</span>
+      <DropdownIcon
+        v-if="!hideDropdown"
+        class="dropdown-icon"
+        :class="{ flip: expanded }"
+      />
     </template>
   </SubMenu>
   <Button
@@ -55,10 +53,8 @@ withDefaults(defineProps<Props>(), {
     :aria-disabled="item.disabled || null"
     @click="item.disabled ? null : $emit('click', item)"
   >
-    <slot :item="item">
-      <Component :is="item.icon" class="icon" />
-      <span class="text">{{ item.text }}</span>
-    </slot>
+    <Component :is="item.icon" class="icon" />
+    <span class="text">{{ item.text }}</span>
   </Button>
 </template>
 
@@ -97,7 +93,6 @@ withDefaults(defineProps<Props>(), {
   &:hover,
   &:active,
   &:focus,
-  &.active,
   &.expanded {
     cursor: pointer;
     border-color: var(--theme-button-function-background-color-hover);
@@ -115,7 +110,6 @@ withDefaults(defineProps<Props>(), {
 
     &:hover,
     &:active,
-    &.active,
     &:focus {
       border-color: var(--knime-silver-sand-semi);
       color: var(--knime-masala);
