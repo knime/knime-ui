@@ -10,7 +10,8 @@ import SpaceCard from "./SpaceCard.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
-import SearchButton from "../common/SearchButton.vue";
+import SearchButton from "@/components/common/SearchButton.vue";
+import { matchesQuery } from "@/util/matchesQuery";
 
 type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 
@@ -36,9 +37,6 @@ const onSpaceCardClick = (space: SpaceWithGroupId) => {
 
 const query = ref("");
 
-const matchesQuery = (input: string) =>
-  new RegExp(query.value, "i").test(input);
-
 const toSpaceWithGroupId =
   (groupId: string) =>
   (space: SpaceProviderNS.Space): SpaceWithGroupId => ({ ...space, groupId });
@@ -58,7 +56,8 @@ const allSpaces = computed<Array<SpaceWithGroupId>>(() => {
 const filteredSpaces = computed(() =>
   allSpaces.value.filter(
     ({ name, description }) =>
-      matchesQuery(name) || matchesQuery(description ?? ""),
+      matchesQuery(query.value, name) ||
+      matchesQuery(query.value, description ?? ""),
   ),
 );
 

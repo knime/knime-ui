@@ -11,7 +11,7 @@ import WorkflowNodeStackIcon from "webapps-common/ui/assets/img/icons/workflow-n
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
 import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
 import { useToasts } from "webapps-common/ui/services/toast";
-
+import { matchesQuery } from "@/util/matchesQuery";
 import {
   SpaceItem,
   type WorkflowGroupContent,
@@ -123,13 +123,10 @@ const fileExplorerItems = computed<Array<FileExplorerItemWithMeta>>(() => {
   });
 });
 
-const filterQuery = toRef(props, "filterQuery");
-
-const matchesQuery = (input: string) =>
-  new RegExp(filterQuery.value, "i").test(input);
-
 const filteredFileExplorerItems = computed(() => {
-  return fileExplorerItems.value.filter(({ name }) => matchesQuery(name));
+  return fileExplorerItems.value.filter(({ name }) =>
+    matchesQuery(props.filterQuery, name),
+  );
 });
 
 const fullPath = computed(() => {

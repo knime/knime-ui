@@ -7,7 +7,7 @@ import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 
-import SearchButton from "../common/SearchButton.vue";
+import SearchButton from "@/components/common/SearchButton.vue";
 
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import PlusIcon from "@/assets/plus.svg";

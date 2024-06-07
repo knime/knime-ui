@@ -20,15 +20,15 @@ const emit = defineEmits<{
 }>();
 
 const inputField = ref<HTMLElement>();
-const showInputField = ref(false);
+const isInputFieldShown = ref(false);
 
 const toggleInput = async () => {
-  if (showInputField.value) {
-    showInputField.value = false;
+  if (isInputFieldShown.value) {
+    isInputFieldShown.value = false;
     emit("update:modelValue", "");
     return;
   }
-  showInputField.value = true;
+  isInputFieldShown.value = true;
   await nextTick();
   inputField.value?.focus();
 };
@@ -36,7 +36,7 @@ const toggleInput = async () => {
 
 <template>
   <InputField
-    v-if="showInputField"
+    v-if="isInputFieldShown"
     ref="inputField"
     v-bind="$attrs"
     :model-value="modelValue"
@@ -47,7 +47,7 @@ const toggleInput = async () => {
   />
   <FunctionButton
     class="search-button"
-    :active="showInputField"
+    :active="isInputFieldShown"
     @click="toggleInput"
   >
     <LensIcon />
