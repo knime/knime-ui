@@ -106,7 +106,7 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
       <FileExplorer
         :items="items"
         disable-context-menu
-        disable-selection
+        disable-multi-select
         disable-dragging
         @open-file="openRecentWorkflow"
       >

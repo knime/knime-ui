@@ -28,6 +28,7 @@ import { SIDEBAR_PANEL_PADDING } from "./config";
     display: flex;
     flex-direction: row;
     align-items: center;
+    position: relative;
     min-height: 36px;
 
     & :slotted(h2) {

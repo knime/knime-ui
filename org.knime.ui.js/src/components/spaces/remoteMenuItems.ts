@@ -27,12 +27,12 @@ export const buildHubDownloadMenuItem = (
 
   return {
     id: "downloadToLocalSpace",
-    text: "Download to local space",
+    text: "Download",
     icon: CloudDownloadIcon,
     disabled: isSelectionEmpty,
     title: isSelectionEmpty
-      ? "Select at least one file to download."
-      : undefined,
+      ? "Select at least one file to download to local space."
+      : "Download to local space",
     separator: true,
     execute: () => {
       dispatch("spaces/copyBetweenSpaces", {

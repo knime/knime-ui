@@ -45,11 +45,13 @@ interface Props {
   mode?: "normal" | "mini";
   selectedItemIds: string[];
   clickOutsideException?: HTMLElement | null;
+  filterQuery?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
   clickOutsideException: null,
+  filterQuery: "",
 });
 
 const $emit = defineEmits<{
@@ -119,6 +121,15 @@ const fileExplorerItems = computed<Array<FileExplorerItemWithMeta>>(() => {
       },
     };
   });
+});
+
+const filterQuery = toRef(props, "filterQuery");
+
+const matchesQuery = (input: string) =>
+  new RegExp(filterQuery.value, "i").test(input);
+
+const filteredFileExplorerItems = computed(() => {
+  return fileExplorerItems.value.filter(({ name }) => matchesQuery(name));
 });
 
 const fullPath = computed(() => {
@@ -230,7 +241,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
         aria-label="Current workflow group in Space Explorer"
         :selected-item-ids="selectedItemIds"
         :mode="mode"
-        :items="fileExplorerItems"
+        :items="filteredFileExplorerItems"
         :is-root-folder="activeWorkflowGroup.path.length === 0"
         :full-path="fullPath"
         :active-renamed-item-id="activeRenamedItemId"

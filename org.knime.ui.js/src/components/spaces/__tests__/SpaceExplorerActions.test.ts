@@ -68,7 +68,14 @@ describe("SpaceExplorerActions.vue", () => {
     const provider = createSpaceProvider({
       id: "provider1",
       type: providerType,
-      spaces: [createSpace({ id: "space1" })],
+      spaceGroups: [
+        {
+          id: "group1",
+          name: "Group 1",
+          type: SpaceProviderNS.UserTypeEnum.USER,
+          spaces: [createSpace({ id: "space1" })],
+        },
+      ],
     });
 
     store.commit("spaces/setSpaceProviders", {
@@ -112,7 +119,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.text()).toMatch("Create folder");
       expect(wrapper.text()).toMatch("Import workflow");
       expect(wrapper.text()).toMatch("Add files");
-      expect(wrapper.text()).toMatch("Download to local space");
+      expect(wrapper.text()).toMatch("Download");
       expect(wrapper.text()).toMatch("Import workflow");
       expect(wrapper.text()).toMatch("Add files");
       expect(wrapper.text()).toMatch("Reload");
@@ -237,7 +244,7 @@ describe("SpaceExplorerActions.vue", () => {
 
       const allItems = items.map((item) => item.text).join("\n");
 
-      expect(allItems).toMatch("Download to local space");
+      expect(allItems).toMatch("Download");
       expect(allItems).toMatch("Move to...");
       expect(allItems).toMatch("Create folder");
       expect(allItems).toMatch("Create workflow");

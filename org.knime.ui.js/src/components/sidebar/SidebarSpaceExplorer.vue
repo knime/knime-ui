@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onUnmounted } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
@@ -19,11 +19,14 @@ onUnmounted(() => {
   store.commit("spaces/setCurrentSelectedItemIds", []);
 });
 
+const filterQuery = ref("");
+
 const changeDirectory = async (pathId: string) => {
   await store.dispatch("spaces/changeDirectory", {
     projectId: activeProjectId.value,
     pathId,
   });
+  filterQuery.value = "";
 };
 </script>
 
@@ -34,6 +37,7 @@ const changeDirectory = async (pathId: string) => {
 
       <SpaceExplorerActions
         ref="actions"
+        v-model:filter-query="filterQuery"
         mode="mini"
         class="actions"
         :project-id="activeProjectId!"
@@ -47,6 +51,7 @@ const changeDirectory = async (pathId: string) => {
       <SpaceExplorer
         v-if="activeProjectId"
         mode="mini"
+        :filter-query="filterQuery"
         :project-id="activeProjectId"
         :selected-item-ids="currentSelectedItemIds"
         :click-outside-exception="$refs.actions as HTMLElement"

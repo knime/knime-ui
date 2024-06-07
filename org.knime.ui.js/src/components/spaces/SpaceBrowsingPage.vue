@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useStore } from "@/composables/useStore";
@@ -49,11 +49,15 @@ watch(
   { immediate: true },
 );
 
+const filterQuery = ref("");
+
 const changeDirectory = async (pathId: string) => {
   const itemId = store.getters["spaces/pathToItemId"](
     globalSpaceBrowserProjectId,
     pathId,
   );
+
+  filterQuery.value = "";
 
   // this synced from changes to route
   const { spaceProviderId, spaceId, groupId } = $route.params;
@@ -105,6 +109,7 @@ const hubSpaceIcon = computed(() => {
     <template #toolbar>
       <SpaceExplorerActions
         ref="actions"
+        v-model:filter-query="filterQuery"
         class="space-explorer-actions"
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
@@ -116,6 +121,7 @@ const hubSpaceIcon = computed(() => {
       <SpaceExplorer
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
+        :filter-query="filterQuery"
         :click-outside-exception="$refs.actions as HTMLElement"
         @change-directory="changeDirectory"
         @update:selected-item-ids="setCurrentSelectedItemIds($event)"
@@ -125,7 +131,7 @@ const hubSpaceIcon = computed(() => {
 </template>
 
 <style lang="postcss" scoped>
-@media only screen and (max-width: 1280px) {
+@media only screen and (max-width: 1420px) {
   .space-explorer-actions {
     & :deep(.toolbar-actions-normal) {
       & .text {

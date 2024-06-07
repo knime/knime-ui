@@ -6,6 +6,7 @@ import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import LensIcon from "webapps-common/ui/assets/img/icons/lens.svg";
 
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import PlusIcon from "@/assets/plus.svg";
@@ -19,9 +20,12 @@ import {
 } from "@/components/spaces/remoteMenuItems";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+// import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
+import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import { defineComponent, type PropType } from "vue";
 import type { ActionMenuItem } from "@/components/spaces/remoteMenuItems";
 import { isLocalProvider } from "@/store/spaces/util";
+import { nextTick } from "vue";
 
 type DisplayModes = "normal" | "mini";
 
@@ -29,9 +33,12 @@ export default defineComponent({
   components: {
     OptionalSubMenuActionButton,
     PlusButton,
+    // SearchInput,
+    InputField,
     SubMenu,
     MenuOptionsIcon,
     ReloadIcon,
+    LensIcon,
     FunctionButton,
   },
 
@@ -48,9 +55,19 @@ export default defineComponent({
       type: String as PropType<string>,
       required: true,
     },
+    filterQuery: {
+      type: String,
+      default: "",
+    },
   },
 
-  emits: ["importedItemIds"],
+  emits: ["importedItemIds", "update:filterQuery"],
+
+  data() {
+    return {
+      showFilter: false,
+    };
+  },
 
   computed: {
     ...mapGetters("spaces", [
@@ -211,6 +228,15 @@ export default defineComponent({
       ];
     },
 
+    filterItem() {
+      return {
+        id: "filter",
+        text: "Filter",
+        icon: LensIcon,
+        execute: () => this.toggleFilterInput(),
+      };
+    },
+
     createWorkflowButtonTitle() {
       const { text, hotkeyText } = this.$shortcuts.get("createWorkflow");
       return `${text} (${hotkeyText})`;
@@ -219,6 +245,19 @@ export default defineComponent({
   methods: {
     filteredActions(hideItems: string[]) {
       return this.actions.filter((item) => !hideItems.includes(item.id));
+    },
+    async toggleFilterInput() {
+      // hide
+      if (this.showFilter) {
+        this.showFilter = false;
+        this.$emit("update:filterQuery", "");
+        return;
+      }
+      // show
+      this.showFilter = true;
+      // focus
+      await nextTick();
+      (this.$refs.filter as HTMLElement)?.focus();
     },
     reload() {
       const { projectId } = this;
@@ -237,6 +276,22 @@ export default defineComponent({
   <div class="toolbar-buttons">
     <template v-if="mode === 'normal'">
       <div class="toolbar-actions-normal">
+        <InputField
+          v-if="showFilter"
+          ref="filter"
+          :model-value="filterQuery"
+          placeholder="Filter current level"
+          class="filter-input"
+          @keydown.esc="toggleFilterInput"
+          @update:model-value="$emit('update:filterQuery', $event)"
+        />
+        <FunctionButton
+          class="filter-button"
+          :active="showFilter"
+          @click="toggleFilterInput"
+        >
+          <LensIcon />
+        </FunctionButton>
         <OptionalSubMenuActionButton
           v-for="action in filteredActions(['createWorkflow', 'connectToHub'])"
           :id="action.id"
@@ -259,6 +314,22 @@ export default defineComponent({
 
     <template v-if="mode === 'mini'">
       <div class="toolbar-actions-mini">
+        <InputField
+          v-if="showFilter"
+          ref="filter"
+          :model-value="filterQuery"
+          placeholder="Filter current level"
+          class="filter-input-mini"
+          @keydown.esc="toggleFilterInput"
+          @update:model-value="$emit('update:filterQuery', $event)"
+        />
+        <FunctionButton
+          class="filter-button"
+          :active="showFilter"
+          @click="toggleFilterInput"
+        >
+          <LensIcon />
+        </FunctionButton>
         <FunctionButton class="reload-button" @click="reload">
           <ReloadIcon />
         </FunctionButton>
@@ -293,11 +364,27 @@ export default defineComponent({
       top: 265px;
       right: 32px;
     }
+
+    & .filter-input {
+      height: auto;
+      right: 5px;
+    }
   }
 
   & .toolbar-actions-mini {
     display: flex;
-    position: relative;
+
+    /* the position root (relative) is the .sidebar-header */
+
+    & .filter-input-mini {
+      --theme-input-field-background-color-focus: var(--knime-stone-light);
+
+      position: absolute;
+      left: 0;
+      right: 105px;
+      z-index: 1;
+      height: 30px;
+    }
 
     /* Aligning text in the submenu */
     & :deep(button) {
@@ -305,7 +392,8 @@ export default defineComponent({
     }
   }
 
-  & .reload-button {
+  & .reload-button,
+  & .filter-button {
     margin-right: 5px;
   }
 }
