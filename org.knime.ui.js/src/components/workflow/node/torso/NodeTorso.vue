@@ -19,7 +19,7 @@ import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
  * Must be embedded in an <svg> element.
  */
 type Props = {
-  type: NativeNodeInvariants.TypeEnum;
+  type?: NativeNodeInvariants.TypeEnum | null;
   kind: Node.KindEnum;
   icon?: string | null;
   executionState?: string | null;
@@ -27,6 +27,7 @@ type Props = {
 };
 
 const props = withDefaults(defineProps<Props>(), {
+  type: null,
   icon: null,
   executionState: null,
   isDraggedOver: false,
@@ -38,7 +39,7 @@ const isKnownNode = computed(() => {
   }
   return (
     props.kind === "metanode" ||
-    Reflect.has($colors.nodeBackgroundColors, props.type)
+    (props.type ?? "") in $colors.nodeBackgroundColors
   );
 });
 </script>
