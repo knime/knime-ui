@@ -10,6 +10,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
+import SpaceExplorerHeader from "./SpaceExplorerHeader.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -97,13 +98,12 @@ const hubSpaceIcon = computed(() => {
 </script>
 
 <template>
-  <SpacePageLayout
-    v-if="activeSpaceProvider && activeSpaceGroup"
-    :title="title"
-    :breadcrumbs="breadcrumbs"
-  >
-    <template v-if="hubSpaceIcon" #icon>
-      <Component :is="hubSpaceIcon" />
+  <SpacePageLayout v-if="activeSpaceProvider && activeSpaceGroup">
+    <template #header>
+      <SpaceExplorerHeader :title="title" :breadcrumbs="breadcrumbs">
+        <template v-if="hubSpaceIcon" #icon>
+          <Component :is="hubSpaceIcon" /> </template
+      ></SpaceExplorerHeader>
     </template>
 
     <template #toolbar>

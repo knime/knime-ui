@@ -162,6 +162,25 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
+  async renameSpace(_, { spaceProviderId, spaceId, spaceName }) {
+    try {
+      await API.space.renameSpace({
+        spaceProviderId,
+        spaceId,
+        spaceName,
+      });
+    } catch (error) {
+      $toast.show({
+        type: "error",
+        headline: "Error while creating space",
+        // @ts-ignore
+        message: error.message,
+        autoRemove: true,
+      });
+      consola.log("Error while creating space", { error });
+    }
+  },
+
   async createWorkflow({ state, dispatch }, { projectId, workflowName }) {
     const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
 

@@ -1,30 +1,9 @@
-<script setup lang="ts">
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
-import type { BreadcrumbItem } from "./usePageBreadcrumbs";
-
-type Props = {
-  title: string;
-  breadcrumbs: Array<BreadcrumbItem>;
-};
-
-defineProps<Props>();
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <main ref="main">
-    <div class="title-wrapper">
-      <Breadcrumb
-        class="breadcrumbs"
-        :items="breadcrumbs"
-        @click-item="(item: BreadcrumbItem) => item.onClick?.()"
-      />
-
-      <h2 class="title">
-        <slot v-if="$slots.icon" name="icon" class="icon" />
-        <span :title="title">
-          {{ title }}
-        </span>
-      </h2>
+    <div class="header-wrapper">
+      <slot name="header" />
     </div>
 
     <div class="toolbar-wrapper">
@@ -49,33 +28,8 @@ main {
   background-color: var(--knime-porcelain);
   border-left: 1px solid var(--knime-silver-sand);
 
-  & .title-wrapper {
+  & .header-wrapper {
     padding: var(--padding) var(--padding) 10px;
-
-    & .breadcrumbs {
-      margin-left: -4px;
-    }
-
-    & .title {
-      display: flex;
-      align-items: center;
-      font-size: 24px;
-      line-height: 28px;
-      gap: 8px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-
-      & span {
-        width: calc(100vw - 500px);
-
-        @mixin truncate;
-      }
-
-      & :slotted(svg) {
-        @mixin svg-icon-size 24;
-      }
-    }
   }
 
   & .toolbar-wrapper {

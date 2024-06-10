@@ -10,6 +10,7 @@ import { useStore } from "@/composables/useStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
 
 import SpacePageLayout from "./SpacePageLayout.vue";
+import SpaceExplorerHeader from "./SpaceExplorerHeader.vue";
 import SpaceCard from "./SpaceCard.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
@@ -87,9 +88,13 @@ const createSpace = () =>
 </script>
 
 <template>
-  <SpacePageLayout :title="title" :breadcrumbs="breadcrumbs">
-    <template #icon>
-      <Component :is="icon" />
+  <SpacePageLayout>
+    <template #header>
+      <SpaceExplorerHeader :title="title" :breadcrumbs="breadcrumbs">
+        <template #icon>
+          <Component :is="icon" />
+        </template>
+      </SpaceExplorerHeader>
     </template>
 
     <template #toolbar>
