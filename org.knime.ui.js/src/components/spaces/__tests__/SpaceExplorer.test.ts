@@ -383,6 +383,16 @@ describe("SpaceExplorer.vue", () => {
     });
   });
 
+  it("should filter items when filter field is used", async () => {
+    const { wrapper } = await doMountAndLoad();
+
+    wrapper.setProps({ filterQuery: "folder 2" });
+    await nextTick();
+    expect(wrapper.findComponent(FileExplorer).props("items")[0].name).toBe(
+      "Folder 2",
+    );
+  });
+
   describe("renaming", () => {
     it("should rename items", async () => {
       const { wrapper, dispatchSpy } = await doMountAndLoad();

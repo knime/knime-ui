@@ -332,8 +332,11 @@ export default defineComponent({
     }
   }
 
-  & .reload-button,
   & :deep(.search-button) {
+    margin: 0 5px;
+  }
+
+  & .reload-button {
     margin-right: 5px;
   }
 }
