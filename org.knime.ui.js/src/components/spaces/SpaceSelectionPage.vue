@@ -2,7 +2,11 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
+import PlusButton from "webapps-common/ui/components/PlusButton.vue";
+
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useStore } from "@/composables/useStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
 
 import SpacePageLayout from "./SpacePageLayout.vue";
@@ -16,6 +20,7 @@ import { matchesQuery } from "@/util/matchesQuery";
 type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 
 const $router = useRouter();
+const store = useStore();
 
 const { activeSpaceProvider, activeSpaceGroup, isShowingAllSpaces } =
   useActiveRouteData();
@@ -72,6 +77,13 @@ const icon = computed(() =>
     ? getSpaceProviderIcon(activeSpaceProvider.value)
     : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value),
 );
+
+const createSpace = () =>
+  store.dispatch("spaces/createSpace", {
+    spaceProviderId: activeSpaceProvider.value.id,
+    spaceGroup: activeSpaceGroup.value,
+    $router,
+  });
 </script>
 
 <template>
@@ -82,6 +94,9 @@ const icon = computed(() =>
 
     <template #toolbar>
       <SearchButton v-model="query" />
+      <div class="create-space-btn">
+        <PlusButton title="Create new space" primary @click="createSpace" />
+      </div>
     </template>
 
     <template #content>
@@ -106,5 +121,11 @@ const icon = computed(() =>
 
 :deep(.search-button-input) {
   width: 300px;
+}
+
+.create-space-btn {
+  position: fixed;
+  top: 265px;
+  right: 32px;
 }
 </style>

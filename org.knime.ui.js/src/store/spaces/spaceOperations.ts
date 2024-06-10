@@ -4,9 +4,11 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import {
+  SpaceGroup,
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 
@@ -14,6 +16,8 @@ import type { SpacesState } from "./index";
 import { isProjectOpen } from "./util";
 import type { Router } from "vue-router";
 import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
+
+const $toast = getToastsProvider();
 
 export interface PathTriplet {
   spaceId: string;
@@ -111,6 +115,51 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const itemId = getters.pathToItemId(projectId, pathId);
     commit("updateProjectPath", { projectId, value: { itemId } });
     return { itemId };
+  },
+
+  async createSpace(
+    { commit, dispatch, state },
+    {
+      spaceProviderId,
+      spaceGroup,
+      $router,
+    }: { spaceProviderId: string; spaceGroup: SpaceGroup; $router: Router },
+  ) {
+    try {
+      const newSpace = await API.space.createSpace({
+        spaceProviderId,
+        spaceGroupName: spaceGroup.name,
+      });
+      if (state.spaceProviders) {
+        const provider = state.spaceProviders[spaceProviderId];
+        const spacesData = await dispatch("fetchProviderSpaces", {
+          id: spaceProviderId,
+        });
+        commit("updateSpaceProvider", {
+          id: spaceProviderId,
+          value: { ...provider, ...spacesData },
+        });
+
+        $router.push({
+          name: APP_ROUTES.Home.SpaceBrowsingPage,
+          params: {
+            spaceProviderId,
+            groupId: spaceGroup.id,
+            spaceId: newSpace.id,
+            itemId: "root",
+          },
+        });
+      }
+    } catch (error) {
+      $toast.show({
+        type: "error",
+        headline: "Error while creating space",
+        // @ts-ignore
+        message: error.message,
+        autoRemove: true,
+      });
+      consola.log("Error while creating space", { error });
+    }
   },
 
   async createWorkflow({ state, dispatch }, { projectId, workflowName }) {
