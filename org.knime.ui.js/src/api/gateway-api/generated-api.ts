@@ -5362,6 +5362,22 @@ const space = function(rpcClient: RPCClient) {
 
            return rpcClient.call('SpaceService.renameItem', { ...defaultParams, ...params });
         },
+        /**
+         * Rename a space
+         * @param {string} spaceProviderId Identifies a space-provider.
+         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} spaceName Name given to a space.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        renameSpace(
+        	params: { spaceProviderId: string,  spaceId: string,  spaceName: string  }
+        ): Promise<Space> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('SpaceService.renameSpace', { ...defaultParams, ...params });
+        },
     }
 };
 
