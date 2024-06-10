@@ -1455,6 +1455,35 @@ export namespace JobManager {
     }
 }
 /**
+ * Encapsulates user feedback to K-AI.
+ * @export
+ * @interface KaiFeedback
+ */
+export interface KaiFeedback {
+
+    /**
+     * True if the feedback is positive, false if it is negative.
+     * @type {boolean}
+     * @memberof KaiFeedback
+     */
+    isPositive: boolean;
+    /**
+     * A comment provided by the user.
+     * @type {string}
+     * @memberof KaiFeedback
+     */
+    comment: string;
+    /**
+     * Identifies the top-level workflow.
+     * @type {string}
+     * @memberof KaiFeedback
+     */
+    projectId: string;
+
+}
+
+
+/**
  * A message send to K-AI. Consists of the role (user or AI) and a message content.
  * @export
  * @interface KaiMessage
@@ -4764,6 +4793,21 @@ const kai = function(rpcClient: RPCClient) {
            }
 
            return rpcClient.call('KaiService.makeAiRequest', { ...defaultParams, ...params });
+        },
+        /**
+         * Submits feedback for a chain.
+         * @param {string} kaiFeedbackId Id of the K-AI feedback
+         * @param {KaiFeedback} kaiFeedback 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        submitFeedback(
+        	params: { kaiFeedbackId: string,  kaiFeedback: KaiFeedback  }
+        ): Promise<Response> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('KaiService.submitFeedback', { ...defaultParams, ...params });
         },
     }
 };
