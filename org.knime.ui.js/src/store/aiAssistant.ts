@@ -267,24 +267,30 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     }
   },
   async submitFeedback(
-    { state },
+    { state, rootGetters },
     {
       chainType,
       idx,
       feedback,
     }: { chainType: ChainType; idx: number; feedback: Feedback },
   ) {
+    const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
+    const { projectId } = projectAndWorkflowIds;
+
     const feedbackId = state[chainType].messages[idx].feedbackId;
     if (!feedbackId) {
       return;
     }
     delete state[chainType].messages[idx].feedbackId;
+
     try {
-      // @ts-ignore
       await API.kai.submitFeedback({
-        chainType,
-        feedbackId,
-        feedback,
+        kaiFeedbackId: feedbackId,
+        kaiFeedback: {
+          projectId,
+          isPositive: feedback.isPositive,
+          comment: feedback.comment,
+        }
       });
     } catch (error) {
       consola.error("submitFeedback", error);
