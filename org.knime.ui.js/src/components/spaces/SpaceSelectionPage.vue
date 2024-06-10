@@ -44,6 +44,8 @@ const onSpaceCardClick = (space: SpaceWithGroupId) => {
 
 const query = ref("");
 
+const disableCreateSpace = ref(false);
+
 const toSpaceWithGroupId =
   (groupId: string) =>
   (space: SpaceProviderNS.Space): SpaceWithGroupId => ({ ...space, groupId });
@@ -80,18 +82,24 @@ const icon = computed(() =>
     : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value),
 );
 
-const createSpace = () =>
+const createSpace = () => {
+  disableCreateSpace.value = true;
   store.dispatch("spaces/createSpace", {
     spaceProviderId: activeSpaceProvider.value.id,
     spaceGroup: activeSpaceGroup.value,
     $router,
   });
+};
 </script>
 
 <template>
   <SpacePageLayout>
     <template #header>
-      <SpaceExplorerHeader :title="title" :breadcrumbs="breadcrumbs">
+      <SpaceExplorerHeader
+        :title="title"
+        :breadcrumbs="breadcrumbs"
+        :is-editable="false"
+      >
         <template #icon>
           <Component :is="icon" />
         </template>
@@ -101,6 +109,8 @@ const createSpace = () =>
     <template #toolbar>
       <SearchButton v-model="query" />
       <SpaceExplorerFloatingButton
+        v-if="!isShowingAllSpaces"
+        :disabled="disableCreateSpace"
         title="Create new space"
         @click="createSpace"
       />

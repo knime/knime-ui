@@ -1,41 +1,34 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 import SaveIcon from "webapps-common/ui/assets/img/icons/check.svg";
 import CancelIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import { useStore } from "@/composables/useStore";
 
 import type { BreadcrumbItem } from "./usePageBreadcrumbs";
-import { useActiveRouteData } from "./useActiveRouteData";
 
 type Props = {
   title: string;
   breadcrumbs: Array<BreadcrumbItem>;
+  isEditable: boolean;
 };
 const props = defineProps<Props>();
-const store = useStore();
-
-const { activeSpaceProvider, activeSpace } = useActiveRouteData();
+const emit = defineEmits<{
+  (e: "submit", name: string): void;
+}>();
 
 const spaceName = ref(props.title);
 const editing = ref(false);
 const titleRef = ref<HTMLElement | null>(null);
 
-const canEdit = computed(() => {
-  return typeof activeSpace.value !== "undefined";
-});
-
 const onFocus = () => {
   editing.value = true;
 };
 
-const onRename = () => {
-  store.dispatch("spaces/renameSpace", {
-    spaceProviderId: activeSpaceProvider.value.id,
-    spaceId: activeSpace.value?.id,
-    spaceName: spaceName.value,
-  });
+const onSubmit = () => {
+  emit("submit", spaceName.value);
+  titleRef.value?.blur();
+  editing.value = false;
 };
 
 const onCancel = () => {
@@ -54,7 +47,7 @@ const onCancel = () => {
 
   <h2 class="title">
     <slot v-if="$slots.icon" name="icon" class="icon" />
-    <span v-if="!canEdit" :title="title">{{ title }}</span>
+    <span v-if="!isEditable" :title="title">{{ title }}</span>
     <div v-else>
       <textarea
         ref="titleRef"
@@ -68,7 +61,7 @@ const onCancel = () => {
         :class="{ hidden: !editing }"
         title="Save"
         primary
-        @click="onRename"
+        @click="onSubmit"
       >
         <SaveIcon />
       </FunctionButton>

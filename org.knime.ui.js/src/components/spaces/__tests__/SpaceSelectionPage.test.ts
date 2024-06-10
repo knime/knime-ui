@@ -19,6 +19,8 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import SpaceCard from "../SpaceCard.vue";
 import SpacePageLayout from "../SpacePageLayout.vue";
 import SpaceSelectionPage from "../SpaceSelectionPage.vue";
+import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
+import SpaceExplorerHeader from "../SpaceExplorerHeader.vue";
 
 const routerPush = vi.fn();
 
@@ -96,7 +98,7 @@ describe("SpaceSelectionPage.vue", () => {
     it("should render correctly", () => {
       const { wrapper } = doMount();
 
-      expect(wrapper.findComponent(SpacePageLayout).props("title")).toBe(
+      expect(wrapper.findComponent(SpaceExplorerHeader).props("title")).toBe(
         spaceGroup1.name,
       );
       expect(wrapper.findAllComponents(SpaceCard).length).toBe(3);
@@ -106,7 +108,7 @@ describe("SpaceSelectionPage.vue", () => {
       const { wrapper } = doMount();
 
       expect(
-        wrapper.findComponent(SpacePageLayout).props("breadcrumbs"),
+        wrapper.findComponent(SpaceExplorerHeader).props("breadcrumbs"),
       ).toEqual([
         expect.objectContaining({ text: spaceProvider.name }),
         expect.objectContaining({ text: spaceGroup1.name }),
@@ -135,6 +137,20 @@ describe("SpaceSelectionPage.vue", () => {
           spaceId: "space1",
           itemId: "root",
         },
+      });
+    });
+
+    it("should create a new space", async () => {
+      const { wrapper, $store } = doMount();
+
+      await wrapper
+        .findAllComponents(SpaceExplorerFloatingButton)
+        .at(0)!
+        .vm.$emit("click");
+      expect($store.dispatch).toHaveBeenCalledWith("spaces/createSpace", {
+        spaceProviderId: spaceProvider.id,
+        spaceGroup: spaceGroup1,
+        $router: expect.anything(),
       });
     });
   });

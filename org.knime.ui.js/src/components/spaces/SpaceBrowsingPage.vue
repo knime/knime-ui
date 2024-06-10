@@ -95,12 +95,25 @@ const hubSpaceIcon = computed(() => {
 
   return getSpaceIcon(activeSpace.value!);
 });
+
+const onRenameSpace = (name: String) => {
+  store.dispatch("spaces/renameSpace", {
+    spaceProviderId: activeSpaceProvider.value.id,
+    spaceId: activeSpace.value.id,
+    spaceName: name,
+  });
+};
 </script>
 
 <template>
   <SpacePageLayout v-if="activeSpaceProvider && activeSpaceGroup">
     <template #header>
-      <SpaceExplorerHeader :title="title" :breadcrumbs="breadcrumbs">
+      <SpaceExplorerHeader
+        :title="title"
+        :breadcrumbs="breadcrumbs"
+        is-editable
+        @submit="onRenameSpace"
+      >
         <template v-if="hubSpaceIcon" #icon>
           <Component :is="hubSpaceIcon" /> </template
       ></SpaceExplorerHeader>
