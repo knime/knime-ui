@@ -54,29 +54,32 @@ const onCancel = () => {
 
   <h2 class="title">
     <slot v-if="$slots.icon" name="icon" class="icon" />
-    <textarea
-      ref="titleRef"
-      v-model="spaceName"
-      :title="title"
-      rows="1"
-      :class="{ editable: canEdit, editing }"
-      @focus="onFocus"
-    />
-    <FunctionButton
-      :class="{ hidden: !canEdit || !editing }"
-      title="Save"
-      primary
-      @click="onRename"
-    >
-      <SaveIcon />
-    </FunctionButton>
-    <FunctionButton
-      :class="{ hidden: !canEdit || !editing }"
-      title="Cancel"
-      @click="onCancel"
-    >
-      <CancelIcon />
-    </FunctionButton>
+    <span v-if="!canEdit" :title="title">{{ title }}</span>
+    <div v-else>
+      <textarea
+        ref="titleRef"
+        v-model="spaceName"
+        :title="title"
+        rows="1"
+        :class="{ editing }"
+        @focus="onFocus"
+      />
+      <FunctionButton
+        :class="{ hidden: !editing }"
+        title="Save"
+        primary
+        @click="onRename"
+      >
+        <SaveIcon />
+      </FunctionButton>
+      <FunctionButton
+        :class="{ hidden: !editing }"
+        title="Cancel"
+        @click="onCancel"
+      >
+        <CancelIcon />
+      </FunctionButton>
+    </div>
   </h2>
 </template>
 
@@ -86,7 +89,7 @@ const onCancel = () => {
   margin-left: -4px;
 }
 
-& .title {
+.title {
   display: flex;
   align-items: center;
   font-size: 24px;
@@ -95,21 +98,27 @@ const onCancel = () => {
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  & textarea {
-    display: block;
-    width: 100%;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    resize: none;
-    background-color: transparent;
-    font: inherit;
-    letter-spacing: inherit;
-    overflow: hidden;
-    color: inherit;
-    outline: none;
+  & div {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    gap: 8px;
 
-    &.editable {
+    textarea {
+      display: block;
+      width: 100%;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      resize: none;
+      background-color: transparent;
+      font: inherit;
+      letter-spacing: inherit;
+      overflow: hidden;
+      white-space: inherit;
+      color: inherit;
+      outline: none;
+
       &:hover {
         outline: 1px solid var(--knime-silver-sand);
       }

@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
-import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useStore } from "@/composables/useStore";
@@ -12,6 +11,8 @@ import type { SpaceProviderNS } from "@/api/custom-types";
 import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceExplorerHeader from "./SpaceExplorerHeader.vue";
 import SpaceCard from "./SpaceCard.vue";
+import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
+
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -99,9 +100,10 @@ const createSpace = () =>
 
     <template #toolbar>
       <SearchButton v-model="query" />
-      <div class="create-space-btn">
-        <PlusButton title="Create new space" primary @click="createSpace" />
-      </div>
+      <SpaceExplorerFloatingButton
+        title="Create new space"
+        @click="createSpace"
+      />
     </template>
 
     <template #content>
@@ -126,11 +128,5 @@ const createSpace = () =>
 
 :deep(.search-button-input) {
   width: 300px;
-}
-
-.create-space-btn {
-  position: fixed;
-  top: 265px;
-  right: 32px;
 }
 </style>
