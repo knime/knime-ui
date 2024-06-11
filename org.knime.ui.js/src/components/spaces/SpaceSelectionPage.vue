@@ -9,7 +9,7 @@ import { useStore } from "@/composables/useStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
 
 import SpacePageLayout from "./SpacePageLayout.vue";
-import SpaceExplorerHeader from "./SpaceExplorerHeader.vue";
+import SpacePageHeader from "./SpacePageHeader.vue";
 import SpaceCard from "./SpaceCard.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 
@@ -44,7 +44,7 @@ const onSpaceCardClick = (space: SpaceWithGroupId) => {
 
 const query = ref("");
 
-const disableCreateSpace = ref(false);
+const isCreateSpaceDisabled = ref(false);
 
 const toSpaceWithGroupId =
   (groupId: string) =>
@@ -83,7 +83,7 @@ const icon = computed(() =>
 );
 
 const createSpace = () => {
-  disableCreateSpace.value = true;
+  isCreateSpaceDisabled.value = true;
   store.dispatch("spaces/createSpace", {
     spaceProviderId: activeSpaceProvider.value.id,
     spaceGroup: activeSpaceGroup.value,
@@ -95,7 +95,7 @@ const createSpace = () => {
 <template>
   <SpacePageLayout>
     <template #header>
-      <SpaceExplorerHeader
+      <SpacePageHeader
         :title="title"
         :breadcrumbs="breadcrumbs"
         :is-editable="false"
@@ -103,14 +103,14 @@ const createSpace = () => {
         <template #icon>
           <Component :is="icon" />
         </template>
-      </SpaceExplorerHeader>
+      </SpacePageHeader>
     </template>
 
     <template #toolbar>
       <SearchButton v-model="query" />
       <SpaceExplorerFloatingButton
         v-if="!isShowingAllSpaces"
-        :disabled="disableCreateSpace"
+        :disabled="isCreateSpaceDisabled"
         title="Create new space"
         @click="createSpace"
       />

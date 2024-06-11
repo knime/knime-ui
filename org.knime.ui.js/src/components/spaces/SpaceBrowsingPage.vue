@@ -10,7 +10,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
-import SpaceExplorerHeader from "./SpaceExplorerHeader.vue";
+import SpacePageHeader from "./SpacePageHeader.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -99,7 +99,7 @@ const hubSpaceIcon = computed(() => {
 const onRenameSpace = (name: String) => {
   store.dispatch("spaces/renameSpace", {
     spaceProviderId: activeSpaceProvider.value.id,
-    spaceId: activeSpace.value.id,
+    spaceId: activeSpace.value!.id,
     spaceName: name,
   });
 };
@@ -108,15 +108,16 @@ const onRenameSpace = (name: String) => {
 <template>
   <SpacePageLayout v-if="activeSpaceProvider && activeSpaceGroup">
     <template #header>
-      <SpaceExplorerHeader
+      <SpacePageHeader
         :title="title"
         :breadcrumbs="breadcrumbs"
         is-editable
         @submit="onRenameSpace"
       >
         <template v-if="hubSpaceIcon" #icon>
-          <Component :is="hubSpaceIcon" /> </template
-      ></SpaceExplorerHeader>
+          <Component :is="hubSpaceIcon" />
+        </template>
+      </SpacePageHeader>
     </template>
 
     <template #toolbar>
