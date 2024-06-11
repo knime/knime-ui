@@ -8,12 +8,16 @@ import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 
-import type { WorkflowMonitorMessage } from "@/api/gateway-api/generated-api";
+import type {
+  ComponentNodeAndDescription,
+  WorkflowMonitorMessage,
+} from "@/api/gateway-api/generated-api";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
 type Props = {
   message?: WorkflowMonitorMessage | null;
   nodeTemplate?: NodeTemplateWithExtendedPorts | null;
+  componentInfo?: ComponentNodeAndDescription | null;
   skeleton?: boolean;
   nested?: boolean;
   isHighlighted?: boolean;
@@ -22,6 +26,7 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   message: null,
   nodeTemplate: null,
+  componentInfo: null,
   skeleton: false,
   nested: false,
   isHighlighted: false,
@@ -31,13 +36,27 @@ const emit = defineEmits<{
   showIssue: [];
 }>();
 
+const nodePreviewProps = computed(() => {
+  if (props.componentInfo) {
+    return {
+      ...props.componentInfo,
+      inPorts: [],
+      outPorts: [],
+      isComponent: true,
+    };
+  } else if (props.nodeTemplate) {
+    return { ...props.nodeTemplate, isComponent: false };
+  }
+  return null;
+});
+
 const NODE_PREVIEW_SIZE_PX = 36;
 const NODE_TEMPLATE_SKELETON_PADDING_PX = 8;
 const NODE_TEMPLATE_SKELETON_SIZE_PX =
   NODE_PREVIEW_SIZE_PX - NODE_TEMPLATE_SKELETON_PADDING_PX * 2;
 
 const isLoadingNodePreview = computed(
-  () => !props.nodeTemplate || props.skeleton,
+  () => !nodePreviewProps.value || props.skeleton,
 );
 </script>
 
@@ -59,11 +78,12 @@ const isLoadingNodePreview = computed(
           :loading="isLoadingNodePreview"
         >
           <NodePreview
-            v-if="nodeTemplate"
-            :type="nodeTemplate.type"
-            :in-ports="nodeTemplate.inPorts"
-            :out-ports="nodeTemplate.outPorts"
-            :icon="nodeTemplate.icon"
+            v-if="nodePreviewProps"
+            :type="nodePreviewProps.type"
+            :is-component="nodePreviewProps.isComponent"
+            :in-ports="nodePreviewProps.inPorts"
+            :out-ports="nodePreviewProps.outPorts"
+            :icon="nodePreviewProps.icon"
           />
         </SkeletonItem>
       </div>

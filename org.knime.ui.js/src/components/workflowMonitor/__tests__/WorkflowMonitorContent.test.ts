@@ -8,8 +8,12 @@ import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as workflowStore from "@/store/workflow";
 import * as workflowMonitorStore from "@/store/workflowMonitor";
 import * as selectionStore from "@/store/selection";
-import type { WorkflowMonitorState } from "@/api/gateway-api/generated-api";
 import {
+  ComponentNodeAndDescription,
+  type WorkflowMonitorState,
+} from "@/api/gateway-api/generated-api";
+import {
+  createComponentNode,
   createNativeNode,
   createWorkflow,
   createWorkflowMonitorMessage,
@@ -63,6 +67,47 @@ describe("WorkflowMonitorContent.vue", () => {
     await nextTick();
   };
 
+  const initStateComponent = async ($store: Store<any>) => {
+    const component1 = createComponentNode({ id: "root:1" });
+
+    const workflowMonitorState: WorkflowMonitorState = {
+      errors: [
+        {
+          name: "Some component",
+          nodeId: "root:1:1",
+          message: "error on this node inside the shared component",
+          workflowId: "root",
+          componentInfo: {
+            name: "The Component",
+            type: ComponentNodeAndDescription.TypeEnum.Manipulator,
+            icon: "data:image/error-icon",
+          },
+        },
+      ],
+      warnings: [
+        {
+          name: "Some component",
+          nodeId: "root:1:2",
+          message:
+            "something is ok-ish with this node inside the shared component",
+          workflowId: "root",
+          componentInfo: {
+            name: "The Component",
+            type: ComponentNodeAndDescription.TypeEnum.Manipulator,
+            icon: "data:image/warn-icon",
+          },
+        },
+      ],
+    };
+    const workflow = createWorkflow({
+      nodes: { [component1.id]: component1 },
+    });
+
+    $store.commit("workflowMonitor/setCurrentState", workflowMonitorState);
+    $store.commit("workflow/setActiveWorkflow", workflow);
+    await nextTick();
+  };
+
   it("should render", async () => {
     const { wrapper, $store } = doMount();
 
@@ -81,6 +126,29 @@ describe("WorkflowMonitorContent.vue", () => {
 
     expect(wrapper.find("[data-test-id='errors']").isVisible()).toBe(true);
     expect(wrapper.find("[data-test-id='warnings']").isVisible()).toBe(true);
+  });
+
+  it("should show component info", async () => {
+    const { wrapper, $store } = doMount();
+
+    await initStateComponent($store);
+
+    $store.commit("workflowMonitor/setActiveFilter", "SHOW_ALL");
+    await nextTick();
+
+    const errors = wrapper.find("[data-test-id='errors']");
+    const warnings = wrapper.find("[data-test-id='warnings']");
+
+    expect(errors.isVisible()).toBe(true);
+    expect(warnings.isVisible()).toBe(true);
+
+    expect(errors.find("image").attributes("href")).toBe(
+      "data:image/error-icon",
+    );
+
+    expect(warnings.find("image").attributes("href")).toBe(
+      "data:image/warn-icon",
+    );
   });
 
   it("should call action to navigate to issue", async () => {
