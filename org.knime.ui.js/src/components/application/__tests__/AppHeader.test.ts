@@ -85,7 +85,7 @@ describe("AppHeader.vue", () => {
           devMode: false,
           isLoadingWorkflow,
           dirtyProjectsMap,
-          customHelpMenuEntries: {},
+          customHelpMenuEntries: {}, // To enable mounting the help menu
         },
         actions: { switchWorkflow: vi.fn() },
       },

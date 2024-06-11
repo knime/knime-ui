@@ -98,19 +98,19 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await runInEnvironment({
       DESKTOP: async () => {
         // Get custom help menu entries
-        const p1 = API.desktop
+        const checkForCustomMenuEntries = API.desktop
           .getCustomHelpMenuEntries()
           .then((customHelpMenuEntries) =>
             commit("setCustomHelpMenuEntries", customHelpMenuEntries),
           );
 
         // Subscribe to update available event
-        const p2 = API.event
+        const checkForUpdates = API.event
           .subscribeEvent({ typeId: "UpdateAvailableEventType" })
           .then(() => API.desktop.checkForUpdates())
           .catch((error) => consola.error(error));
 
-        await Promise.all([p1, p2]);
+        await Promise.all([checkForCustomMenuEntries, checkForUpdates]);
       },
     });
 
