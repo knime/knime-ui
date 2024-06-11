@@ -5,20 +5,19 @@ import { mockVuexStore } from "@/test/utils";
 
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import SaveIcon from "webapps-common/ui/assets/img/icons/check.svg";
 
 import * as spacesStore from "@/store/spaces";
 
-import SpaceExplorerHeader from "../SpaceExplorerHeader.vue";
+import SpacePageHeader from "../SpacePageHeader.vue";
 
-describe("SpaceExplorerHeader.vue", () => {
+describe("SpacePageHeader.vue", () => {
   const title = "title test";
   const doMount = (isEditable: boolean) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
     });
 
-    const wrapper = mount(SpaceExplorerHeader, {
+    const wrapper = mount(SpacePageHeader, {
       props: {
         title,
         breadcrumbs: [{ text: "item 1" }, { text: "item 2" }],
@@ -32,7 +31,7 @@ describe("SpaceExplorerHeader.vue", () => {
   it("should render an editable title", () => {
     const { wrapper } = doMount(true);
 
-    expect(wrapper.find("textarea").text()).toBe(title);
+    expect(wrapper.find("textarea").element.value).toBe(title);
   });
 
   it("should render an non editable title", () => {
@@ -50,13 +49,14 @@ describe("SpaceExplorerHeader.vue", () => {
     ]);
   });
 
-  it("should submit on click", async () => {
+  it("should submit on click", () => {
     const { wrapper } = doMount(true);
+    const textArea = wrapper.find("textarea");
 
-    wrapper.find("textarea").setValue("new name");
-    await wrapper.findAllComponents(FunctionButton).at(0)!.vm.$emit("click");
-    await wrapper.vm.$nextTick();
+    textArea.element.value = "new name";
+    textArea.trigger("input");
+    wrapper.findAllComponents(FunctionButton).at(0)!.vm.$emit("click");
 
-    expect(wrapper.emitted("submit")![1]).toEqual(["new name"]);
+    expect(wrapper.emitted("submit")![0]).toEqual(["new name"]);
   });
 });

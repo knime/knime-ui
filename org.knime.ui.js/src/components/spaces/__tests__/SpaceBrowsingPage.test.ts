@@ -15,7 +15,7 @@ import {
 } from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import SpaceExplorerHeader from "../SpaceExplorerHeader.vue";
+import SpacePageHeader from "../SpacePageHeader.vue";
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
 import SpaceExplorer from "../SpaceExplorer.vue";
 import { router } from "@/router/router";
@@ -114,6 +114,8 @@ describe("SpaceBrowsingPage.vue", () => {
       ...initialStoreState,
     };
 
+    const dispatchSpy = vi.spyOn($store, "dispatch");
+
     const SpaceBrowsingPage = (await import("../SpaceBrowsingPage.vue"))
       .default;
 
@@ -124,7 +126,7 @@ describe("SpaceBrowsingPage.vue", () => {
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, $store, dispatchSpy };
   };
 
   it("should render correctly", async () => {
@@ -132,7 +134,7 @@ describe("SpaceBrowsingPage.vue", () => {
 
     await flushPromises();
 
-    expect(wrapper.findComponent(SpaceExplorerHeader).props("title")).toBe(
+    expect(wrapper.findComponent(SpacePageHeader).props("title")).toBe(
       spaceGroup.spaces.at(0)!.name,
     );
 
@@ -144,13 +146,13 @@ describe("SpaceBrowsingPage.vue", () => {
   it("should display breadcrumbs", async () => {
     const { wrapper } = await doMount();
 
-    expect(
-      wrapper.findComponent(SpaceExplorerHeader).props("breadcrumbs"),
-    ).toEqual([
-      expect.objectContaining({ text: spaceProvider.name }),
-      expect.objectContaining({ text: spaceGroup.name }),
-      expect.objectContaining({ text: spaceGroup.spaces.at(0)!.name }),
-    ]);
+    expect(wrapper.findComponent(SpacePageHeader).props("breadcrumbs")).toEqual(
+      [
+        expect.objectContaining({ text: spaceProvider.name }),
+        expect.objectContaining({ text: spaceGroup.name }),
+        expect.objectContaining({ text: spaceGroup.spaces.at(0)!.name }),
+      ],
+    );
   });
 
   it("should change directory", async () => {
@@ -174,15 +176,15 @@ describe("SpaceBrowsingPage.vue", () => {
   });
 
   it("should rename a space", async () => {
-    const { wrapper, $store } = await doMount();
+    const { wrapper, dispatchSpy } = await doMount();
 
     await wrapper
-      .findAllComponents(SpaceExplorerHeader)
+      .findAllComponents(SpacePageHeader)
       .at(0)!
       .vm.$emit("submit", "testName");
-    expect($store.dispatch).toHaveBeenCalledWith("spaces/renameSpace", {
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/renameSpace", {
       spaceProviderId: spaceProvider.id,
-      spaceGroup,
+      spaceId: spaceGroup.spaces.at(0)!.id,
       spaceName: "testName",
     });
   });
