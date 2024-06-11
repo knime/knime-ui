@@ -73,6 +73,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.EclipseUtil;
 import org.knime.core.util.HubStatistics;
+import org.knime.core.util.ThreadLocalHTTPAuthenticator;
 import org.knime.core.util.proxy.URLConnectionFactory;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -177,7 +178,7 @@ final class Create {
         if (EclipseUtil.isRunFromSDK()) {
             return;
         }
-        try {
+        try (final var suppression = ThreadLocalHTTPAuthenticator.suppressAuthenticationPopups()) {
             final var baseUrl = "https://tips-and-tricks.knime.com/welcome-ap";
             var builder = new StringBuilder(baseUrl);
             builder.append("?knid=" + KNIMEConstants.getKNID());
