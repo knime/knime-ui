@@ -162,12 +162,22 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async renameSpace(_, { spaceProviderId, spaceId, spaceName }) {
+  async renameSpace(
+    { commit, dispatch },
+    { spaceProviderId, spaceId, spaceName },
+  ) {
     try {
       await API.space.renameSpace({
         spaceProviderId,
         spaceId,
         spaceName,
+      });
+      const spacesData = await dispatch("fetchProviderSpaces", {
+        id: spaceProviderId,
+      });
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { ...spacesData },
       });
     } catch (error) {
       $toast.show({
