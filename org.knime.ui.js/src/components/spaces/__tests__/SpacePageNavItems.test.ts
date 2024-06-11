@@ -9,7 +9,7 @@ import {
   createSpaceProvider,
 } from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
-import { SidebarNavItem } from "@/components/common/side-nav";
+import { NavMenuItem } from "@/components/common/side-nav";
 
 describe("SpacePageNavItems.vue", () => {
   const spaceGroup = createSpaceGroup({
@@ -65,19 +65,26 @@ describe("SpacePageNavItems.vue", () => {
     const { wrapper } = await doMount();
 
     // @ts-ignore
-    expect(wrapper.findAllComponents(SidebarNavItem).length).toBe(2);
+    expect(wrapper.findAllComponents(NavMenuItem).length).toBe(3);
 
     const firstItem = wrapper
       // @ts-ignore
-      .findAllComponents(SidebarNavItem)
+      .findAllComponents(NavMenuItem)
       .at(0)!
       // @ts-ignore
       .props("item");
 
     const secondItem = wrapper
       // @ts-ignore
-      .findAllComponents(SidebarNavItem)
+      .findAllComponents(NavMenuItem)
       .at(1)!
+      // @ts-ignore
+      .props("item");
+
+    const thirdItem = wrapper
+      // @ts-ignore
+      .findAllComponents(NavMenuItem)
+      .at(2)!
       // @ts-ignore
       .props("item");
 
@@ -85,34 +92,24 @@ describe("SpacePageNavItems.vue", () => {
       id: spaceProvider1.id,
       text: spaceProvider1.name,
       active: false,
-      clickable: true,
       onClick: expect.any(Function),
-      hoverable: true,
-      icon: expect.anything(),
       metadata: { spaceProvider: spaceProvider1 },
-      children: [],
     });
 
     expect(secondItem).toEqual({
       id: spaceProvider2.id,
       text: spaceProvider2.name,
       active: true,
-      clickable: true,
       onClick: expect.any(Function),
-      hoverable: true,
-      icon: expect.anything(),
       metadata: { spaceProvider: spaceProvider2 },
-      children: [
-        {
-          id: spaceGroup.id,
-          text: spaceGroup.name,
-          active: true,
-          icon: expect.anything(),
-          clickable: true,
-          onClick: expect.any(Function),
-          metadata: { spaceProvider: spaceProvider2, spaceGroup },
-        },
-      ],
+    });
+
+    expect(thirdItem).toEqual({
+      id: spaceGroup.id,
+      text: spaceGroup.name,
+      active: true,
+      onClick: expect.any(Function),
+      metadata: { spaceGroup },
     });
   });
 });

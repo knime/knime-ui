@@ -1,11 +1,11 @@
-export type SidebarNavItem<TMetadata = any> = {
+export type NavMenuItem<TMetadata = any> = {
   id: string;
   text: string;
-  icon?: any;
-  hoverable?: boolean;
   active?: boolean;
-  clickable?: boolean;
-  onClick?: (event: MouseEvent | KeyboardEvent) => void;
-  children?: Array<Omit<SidebarNavItem<TMetadata>, "children" | "hoverable">>;
+  href?: string;
+  onClick?: (
+    event: MouseEvent | KeyboardEvent,
+    item: NavMenuItem<TMetadata>,
+  ) => void;
   metadata?: TMetadata;
 };

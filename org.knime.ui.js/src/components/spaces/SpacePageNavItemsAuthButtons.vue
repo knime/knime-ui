@@ -5,13 +5,13 @@ import { useRouter } from "vue-router";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 
-import { type SidebarNavItemType } from "@/components/common/side-nav";
+import { type NavMenuItemType } from "@/components/common/side-nav";
 import { SpaceProviderNS } from "@/api/custom-types";
 
 import { useStore } from "@/composables/useStore";
 
 type Props = {
-  item: SidebarNavItemType;
+  item: NavMenuItemType;
 };
 
 defineProps<Props>();
@@ -96,6 +96,10 @@ const shouldDisplayLogoutButton = (
 & .login,
 & .logout {
   min-width: 70px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 & .login:deep(svg) {
