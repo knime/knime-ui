@@ -132,12 +132,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       });
       if (state.spaceProviders) {
         const provider = state.spaceProviders[spaceProviderId];
-        const spacesData = await dispatch("fetchProviderSpaces", {
-          id: spaceProviderId,
-        });
+        const updatedGroups = provider.spaceGroups.map((group) =>
+          group.id === spaceGroup.id
+            ? { ...group, spaces: [...group.spaces, newSpace] }
+            : group,
+        );
         commit("updateSpaceProvider", {
           id: spaceProviderId,
-          value: { ...provider, ...spacesData },
+          value: { ...provider, spaceGroups: updatedGroups },
         });
 
         $router.push({
@@ -149,6 +151,16 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
             itemId: "root",
           },
         });
+
+        // Update providers in the background
+        dispatch("fetchProviderSpaces", {
+          id: spaceProviderId,
+        }).then((spacesData) => {
+          commit("updateSpaceProvider", {
+            id: spaceProviderId,
+            value: { ...provider, ...spacesData },
+          });
+        });
       }
     } catch (error) {
       $toast.show({
@@ -158,36 +170,55 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         message: error.message,
         autoRemove: true,
       });
-      consola.log("Error while creating space", { error });
+      consola.error("Error while creating space", { error });
     }
   },
 
-  async renameSpace(
-    { commit, dispatch },
+  renameSpace(
+    { commit, dispatch, state },
     { spaceProviderId, spaceId, spaceName },
   ) {
     try {
-      await API.space.renameSpace({
+      // Update optimistically
+      if (state.spaceProviders) {
+        const provider = state.spaceProviders[spaceProviderId];
+        const updatedGroups = provider.spaceGroups.map((group) => ({
+          ...group,
+          spaces: group.spaces.map((space) =>
+            space.id === spaceId ? { ...space, name: spaceName } : space,
+          ),
+        }));
+
+        commit("updateSpaceProvider", {
+          id: spaceProviderId,
+          value: { spaceGroups: updatedGroups },
+        });
+      }
+
+      API.space.renameSpace({
         spaceProviderId,
         spaceId,
         spaceName,
       });
-      const spacesData = await dispatch("fetchProviderSpaces", {
+
+      // fetch providers
+      dispatch("fetchProviderSpaces", {
         id: spaceProviderId,
-      });
-      commit("updateSpaceProvider", {
-        id: spaceProviderId,
-        value: { ...spacesData },
-      });
+      }).then((spacesData) =>
+        commit("updateSpaceProvider", {
+          id: spaceProviderId,
+          value: { ...spacesData },
+        }),
+      );
     } catch (error) {
       $toast.show({
         type: "error",
-        headline: "Error while creating space",
+        headline: "Error while renaming space",
         // @ts-ignore
         message: error.message,
         autoRemove: true,
       });
-      consola.log("Error while creating space", { error });
+      consola.error("Error while renaming space", { error });
     }
   },
 

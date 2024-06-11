@@ -78,6 +78,7 @@ const onCancel = () => {
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
+
 & .breadcrumbs {
   margin-left: -4px;
 }
@@ -97,7 +98,7 @@ const onCancel = () => {
     flex-grow: 1;
     gap: 8px;
 
-    textarea {
+    & textarea {
       display: block;
       width: 100%;
       border: 0;

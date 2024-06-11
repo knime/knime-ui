@@ -3,7 +3,6 @@ import { nextTick } from "vue";
 import type { Store } from "vuex";
 import { mount } from "@vue/test-utils";
 
-import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 import { createSpace, createSpaceProvider } from "@/test/factories";

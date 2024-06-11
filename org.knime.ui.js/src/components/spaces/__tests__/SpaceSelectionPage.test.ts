@@ -17,7 +17,6 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { SpaceProviderNS } from "@/api/custom-types";
 
 import SpaceCard from "../SpaceCard.vue";
-import SpacePageLayout from "../SpacePageLayout.vue";
 import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";

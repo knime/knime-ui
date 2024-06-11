@@ -2,8 +2,6 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
-
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useStore } from "@/composables/useStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
