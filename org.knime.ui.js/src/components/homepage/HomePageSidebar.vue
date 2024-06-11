@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 import TimeIcon from "webapps-common/ui/assets/img/icons/time.svg";
@@ -13,8 +13,6 @@ import {
 
 import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
 import CommunityHubPromoCard from "@/components/spaces/CommunityHubPromoCard.vue";
-
-const isSkeletonShown = ref(false);
 
 const $router = useRouter();
 const $route = useRoute();
@@ -35,14 +33,14 @@ const recent = computed<NavMenuItemType>(() => ({
 </script>
 
 <template>
-  <NavMenu :show-skeleton="isSkeletonShown">
+  <NavMenu>
     <NavMenuItem :item="recent">
       <template #prepend>
         <TimeIcon />
       </template>
     </NavMenuItem>
 
-    <SpacePageNavItems @loading="isSkeletonShown = $event" />
+    <SpacePageNavItems />
   </NavMenu>
 
   <CommunityHubPromoCard />

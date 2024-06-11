@@ -24,6 +24,7 @@ export interface SettingsState {
     nodeDialogSize: number;
     uiScale: number;
     askBeforeAutoApplyNodeConfigChanges: boolean;
+    shouldShowExampleWorkflows: boolean;
   };
 }
 
@@ -33,6 +34,7 @@ const defaults: SettingsState["settings"] = {
   nodeRepositoryDisplayMode: "icon",
   uiScale: 1.0,
   askBeforeAutoApplyNodeConfigChanges: true,
+  shouldShowExampleWorkflows: true,
 };
 
 const loadItem = <T>(key: string, defaultValue: T | null = null): T => {

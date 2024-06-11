@@ -19,7 +19,9 @@ const shouldDisplayPromo = computed(() => {
     store.state.spaces.isConnectingToProvider === COMMUNITY_HUB_ID;
 
   return (
-    !spaceProviders[COMMUNITY_HUB_ID]?.connected && !isConnectingToCommunityHub
+    spaceProviders[COMMUNITY_HUB_ID] &&
+    !spaceProviders[COMMUNITY_HUB_ID].connected &&
+    !isConnectingToCommunityHub
   );
 });
 </script>

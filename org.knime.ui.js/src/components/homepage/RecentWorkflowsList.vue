@@ -4,6 +4,8 @@ import { useRouter } from "vue-router";
 import { formatTimeAgo } from "@vueuse/core";
 import { isEqual } from "lodash-es";
 
+import Button from "webapps-common/ui/components/Button.vue";
+import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
@@ -14,6 +16,8 @@ import type { RecentWorkflow } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
+import PageTitle from "./PageTitle.vue";
+import { cachedLocalSpaceProjectId } from "@/store/spaces";
 
 type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 
@@ -108,11 +112,35 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
     ? icons[recentWorkflow.origin.projectType]
     : WorkflowIcon;
 };
+
+const createWorkflowLocally = async () => {
+  await store.dispatch("spaces/fetchWorkflowGroupContent", {
+    projectId: cachedLocalSpaceProjectId,
+  });
+
+  store.commit("spaces/setCreateWorkflowModalConfig", {
+    isOpen: true,
+    projectId: cachedLocalSpaceProjectId,
+  });
+};
 </script>
 
 <template>
   <div class="recent-workflows">
-    <div class="title">Recently used workflows and components</div>
+    <PageTitle title="Recently used workflows and components">
+      <template #append>
+        <Button
+          compact
+          primary
+          class="create-workflow-button"
+          title="Create new workflow"
+          @click="createWorkflowLocally"
+        >
+          <PlusIcon />
+          <span>Create new workflow</span>
+        </Button>
+      </template>
+    </PageTitle>
 
     <div class="list" data-test-id="recent-workflows">
       <FileExplorer
@@ -156,14 +184,8 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
 @import url("@/assets/mixins.css");
 
 .recent-workflows {
-  padding: 30px 50px;
-
-  & .title {
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 28px;
-    padding-bottom: 20px;
-  }
+  padding: 24px;
+  container: wrapper / inline-size;
 
   & .item-content {
     display: flex;
@@ -178,6 +200,34 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
       & .provider-name {
         @mixin truncate;
       }
+    }
+  }
+}
+
+.create-workflow-button {
+  & svg {
+    margin-right: 4px;
+  }
+}
+
+@container wrapper (max-width: 580px) {
+  .create-workflow-button {
+    width: 30px;
+    height: 30px;
+
+    & span {
+      display: none;
+    }
+
+    & svg {
+      margin-right: 0;
+      padding-left: 1px;
+      top: 0;
+    }
+
+    &.compact {
+      min-width: auto;
+      padding: 5px;
     }
   }
 }

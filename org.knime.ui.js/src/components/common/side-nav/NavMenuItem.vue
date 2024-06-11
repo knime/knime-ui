@@ -57,8 +57,8 @@ const itemOnClickHandler = (
 
   --inline-padding: 8px;
   --text-default-color: var(--knime-dove-gray);
-  --text-hover-color: var(--knime-masala);
   --text-active-color: v-bind("$colors.selection.activeBorder");
+  --text-hover-color: var(--knime-masala);
   --bg-active: v-bind("$colors.selection.activeBackground");
   --bg-hover: v-bind("$colors.selection.hoverBackground");
 
@@ -114,16 +114,6 @@ const itemOnClickHandler = (
     }
   }
 
-  & > .menu-item-main:hover {
-    color: var(--text-hover-color);
-    background: var(--bg-active);
-
-    & .prepend :slotted(svg),
-    & .append :slotted(svg) {
-      stroke: var(--text-hover-color);
-    }
-  }
-
   & .menu-item-children {
     & .menu-item-main {
       padding-left: 28px;
@@ -134,6 +124,16 @@ const itemOnClickHandler = (
     & > .menu-item-main .prepend :slotted(svg),
     & > .menu-item-main .append :slotted(svg) {
       stroke: var(--text-active-color);
+    }
+  }
+
+  & > .menu-item-main:hover {
+    color: var(--text-hover-color);
+    background: var(--bg-active);
+
+    & .prepend :slotted(svg),
+    & .append :slotted(svg) {
+      stroke: var(--text-hover-color);
     }
   }
 

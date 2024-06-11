@@ -69,7 +69,7 @@ const shouldDisplayLogoutButton = (
     compact
     :disabled="disabled"
     class="login"
-    @click.stop="onLogin(item.metadata.spaceProvider)"
+    @click.stop.prevent="onLogin(item.metadata.spaceProvider)"
   >
     <template v-if="isConnectingToProvider === item.metadata.spaceProvider.id">
       <LoadingIcon />
@@ -86,7 +86,7 @@ const shouldDisplayLogoutButton = (
     compact
     :disabled="disabled"
     class="logout"
-    @click.stop="onLogout(item.metadata.spaceProvider.id)"
+    @click.stop.prevent="onLogout(item.metadata.spaceProvider.id)"
   >
     Logout
   </Button>

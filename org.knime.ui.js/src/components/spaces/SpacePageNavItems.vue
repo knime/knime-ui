@@ -88,6 +88,8 @@ type GroupsNavItems = NavMenuItemType<{
   spaceGroup?: SpaceProviderNS.SpaceGroup;
 }>;
 
+const urlRegex = /\(https?:\/\/[^\s)]+\)/g;
+
 const getItemsForSpaceGroups = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ): GroupsNavItems[] => {
@@ -109,7 +111,7 @@ const providerItems = computed<ProviderNavItems[]>(() =>
   Object.values(spaceProviders.value ?? {}).map((spaceProvider) => {
     const item: ProviderNavItems = {
       id: spaceProvider.id,
-      text: spaceProvider.name,
+      text: spaceProvider.name.replace(urlRegex, ""),
       active: isSpaceProviderActive(spaceProvider.id),
       onClick: () => onProviderClick(spaceProvider),
       metadata: { spaceProvider },
