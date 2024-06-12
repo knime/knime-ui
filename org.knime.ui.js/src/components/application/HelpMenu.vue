@@ -3,6 +3,7 @@ import { API } from "@/api";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import OpenSourceCreditsModal from "./OpenSourceCreditsModal.vue";
 
+import Steps123Icon from "webapps-common/ui/assets/img/icons/steps-1-3.svg";
 import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
 import ForumIcon from "webapps-common/ui/assets/img/icons/forum.svg";
 import GettingStartedIcon from "webapps-common/ui/assets/img/icons/rocket.svg";
@@ -33,7 +34,18 @@ const customHelpMenuEntries = computed(() => {
 
 const creditsModalActive = ref(false);
 
-const helpMenuItem: MenuItem = {
+const hasExampleWorkflows = computed(
+  () => store.state.application.exampleProjects.length > 0,
+);
+const hasDismissedExamples = computed(
+  () => !store.state.settings.settings.shouldShowExampleWorkflows,
+);
+
+const addConditionalMenuEntry = (condition: boolean, item: MenuItem) => {
+  return condition ? [item] : [];
+};
+
+const helpMenuItem = computed<MenuItem>(() => ({
   text: "Help",
   icon: HelpIcon,
   children: [
@@ -82,12 +94,28 @@ const helpMenuItem: MenuItem = {
     {
       text: "Additional Credits",
       icon: InfoIcon,
+      separator: hasDismissedExamples.value && hasExampleWorkflows.value,
       metadata: {
         handler: () => (creditsModalActive.value = true),
       },
     },
+    ...addConditionalMenuEntry(
+      hasDismissedExamples.value && hasExampleWorkflows.value,
+      {
+        text: "Bring back examples on homepage",
+        icon: Steps123Icon,
+        metadata: {
+          handler: () => {
+            store.dispatch("settings/updateSetting", {
+              key: "shouldShowExampleWorkflows",
+              value: true,
+            });
+          },
+        },
+      },
+    ),
   ],
-};
+}));
 
 const onItemClick = (_: any, item: MenuItem) => item.metadata?.handler?.();
 </script>

@@ -60,7 +60,7 @@ const dismissExamples = () => {
           <img
             class="card-img"
             :src="`data:image/svg+xml;base64,${example.svg}`"
-            :alt="`Preview image of ${example.name}`"
+            :alt="`Preview of ${example.name}`"
           />
           <span class="name">{{ example.name }}</span>
         </CardContent>

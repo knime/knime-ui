@@ -90,7 +90,9 @@ describe("RecentWorkflowsList.vue", () => {
   it("should render recent workflows", async () => {
     const { wrapper } = doMount();
 
-    expect(wrapper.text()).toMatch("There are no recent workflows");
+    expect(wrapper.find('[data-test-id="no-recent-workflows"]').exists()).toBe(
+      true,
+    );
 
     await flushPromises();
 

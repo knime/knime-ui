@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { ref } from "vue";
+import { useElementHover } from "@vueuse/core";
+
 import type { NavMenuItemProps } from "./types";
 
 const props = withDefaults(defineProps<NavMenuItemProps>(), {
@@ -19,6 +22,9 @@ const itemOnClickHandler = (event: KeyboardEvent | MouseEvent) => {
 
   emit("click", event);
 };
+
+const itemRef = ref<HTMLElement>();
+const isHovered = useElementHover(itemRef);
 </script>
 
 <template>
@@ -28,9 +34,14 @@ const itemOnClickHandler = (event: KeyboardEvent | MouseEvent) => {
       { active, highlighted, 'with-indicator': withIndicator },
     ]"
   >
-    <a :href="href ?? '#'" class="menu-item-main" @click="itemOnClickHandler">
+    <a
+      ref="itemRef"
+      :href="href ?? '#'"
+      class="menu-item-main"
+      @click="itemOnClickHandler"
+    >
       <div v-if="$slots.prepend" class="prepend">
-        <slot name="prepend" />
+        <slot name="prepend" :is-item-hovered="isHovered" />
       </div>
 
       <div class="text" :title="text">
@@ -38,12 +49,12 @@ const itemOnClickHandler = (event: KeyboardEvent | MouseEvent) => {
       </div>
 
       <div v-if="$slots.append" class="append">
-        <slot name="append" />
+        <slot name="append" :is-item-hovered="isHovered" />
       </div>
     </a>
 
     <div v-if="$slots.children" class="menu-item-children">
-      <slot name="children" />
+      <slot name="children" :is-item-hovered="isHovered" />
     </div>
   </li>
 </template>
@@ -128,7 +139,7 @@ const itemOnClickHandler = (event: KeyboardEvent | MouseEvent) => {
     }
   }
 
-  &.highlighted {
+  &.highlighted > .menu-item-main {
     background: var(--bg-active);
   }
 

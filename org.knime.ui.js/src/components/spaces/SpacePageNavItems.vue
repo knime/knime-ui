@@ -2,6 +2,10 @@
 import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
+import LeaveIcon from "webapps-common/ui/assets/img/icons/leave.svg";
+
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceGroup } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -16,7 +20,7 @@ import {
 } from "@/components/common/side-nav";
 
 import { useSpaceIcons } from "./useSpaceIcons";
-import SpacePageNavItemsAuthButtons from "./SpacePageNavItemsAuthButtons.vue";
+import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
 
 const store = useStore();
 const $router = useRouter();
@@ -28,8 +32,22 @@ const isLoadingProviders = computed(
   () => store.state.spaces.isLoadingProviders,
 );
 
+const {
+  connectAndNavigate,
+  shouldShowLoginIndicator,
+  shouldShowLogout,
+  isAuthDisabled,
+  logout,
+  isConnectingToProvider,
+} = useSpaceProviderAuth();
+
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
+  if (isConnectingToProvider.value === spaceProvider.id) {
+    return;
+  }
+
   if (!spaceProvider.connected) {
+    connectAndNavigate(spaceProvider);
     return;
   }
 
@@ -143,22 +161,40 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
     @click="item.onClick()"
   >
     <template #prepend>
-      <Component :is="getSpaceProviderIcon(item.metadata!.spaceProvider!)" />
+      <Component :is="getSpaceProviderIcon(item.metadata.spaceProvider!)" />
     </template>
 
-    <template #append>
-      <SpacePageNavItemsAuthButtons
-        :space-provider="item.metadata.spaceProvider"
+    <template #append="{ isItemHovered }">
+      <span
+        v-if="
+          isItemHovered && shouldShowLoginIndicator(item.metadata.spaceProvider)
+        "
+        class="login-indicator"
+      >
+        Connect
+      </span>
+
+      <LoadingIcon
+        v-if="isConnectingToProvider === item.metadata.spaceProvider.id"
       />
+
+      <FunctionButton
+        v-if="shouldShowLogout(item.metadata.spaceProvider)"
+        compact
+        :disabled="isAuthDisabled"
+        @click.stop.prevent="logout(item.metadata.spaceProvider)"
+      >
+        <LeaveIcon />
+      </FunctionButton>
     </template>
 
     <template
-      v-if="isLoggedInHubProvider(item.metadata!.spaceProvider!)"
+      v-if="isLoggedInHubProvider(item.metadata.spaceProvider!)"
       #children
     >
       <NavMenu>
         <NavMenuItem
-          v-for="child in getItemsForSpaceGroups(item.metadata!.spaceProvider!)"
+          v-for="child in getItemsForSpaceGroups(item.metadata.spaceProvider!)"
           :key="child.id"
           :text="child.text"
           :active="child.active"
@@ -208,5 +244,11 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
       padding: 5px 8px 8px;
     }
   }
+}
+
+.login-indicator {
+  color: var(--knime-dove-gray);
+  font-weight: 400;
+  font-size: 13px;
 }
 </style>

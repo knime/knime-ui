@@ -5,6 +5,7 @@ import { formatTimeAgo } from "@vueuse/core";
 import { isEqual } from "lodash-es";
 
 import Button from "webapps-common/ui/components/Button.vue";
+import TimeIcon from "webapps-common/ui/assets/img/icons/time.svg";
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
@@ -150,7 +151,21 @@ const createWorkflowLocally = async () => {
         disable-dragging
         @open-file="openRecentWorkflow"
       >
-        <template #emptyFolder> There are no recent workflows </template>
+        <template #emptyFolder>
+          <div
+            data-test-id="no-recent-workflows"
+            class="no-recent-workflows-wrapper"
+          >
+            <div class="no-recent-workflows">
+              <TimeIcon />
+              <h3>You don't have any recent workflows yet</h3>
+              <p>
+                Once you open a workflow or a component you will be able to
+                quickly find it here.
+              </p>
+            </div>
+          </div>
+        </template>
 
         <template #itemIcon="{ item }">
           <Component :is="getIcon(item.meta!.recentWorkflow)" />
@@ -228,6 +243,25 @@ const createWorkflowLocally = async () => {
     &.compact {
       min-width: auto;
       padding: 5px;
+    }
+  }
+}
+
+.no-recent-workflows-wrapper {
+  display: flex;
+  justify-content: center;
+
+  & .no-recent-workflows {
+    padding: 20px;
+    margin-top: 220px;
+    color: var(--knime-dove-gray);
+    font-size: 12px;
+    text-align: center;
+
+    & svg {
+      stroke: var(--knime-dove-gray);
+
+      @mixin svg-icon-size 60;
     }
   }
 }
