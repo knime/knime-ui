@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 import SaveIcon from "webapps-common/ui/assets/img/icons/check.svg";
 import CancelIcon from "webapps-common/ui/assets/img/icons/close.svg";
@@ -14,7 +14,7 @@ type Props = {
 };
 const props = defineProps<Props>();
 const emit = defineEmits<{
-  (e: "submit", name: string): void;
+  submit: [name: string];
 }>();
 
 const spaceName = ref(props.title);
@@ -36,6 +36,16 @@ const onCancel = () => {
   spaceName.value = props.title;
   isEditing.value = false;
 };
+
+watch(
+  () => props.title,
+  (title: string) => {
+    if (!isEditing.value) {
+      spaceName.value = title;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -56,6 +66,8 @@ const onCancel = () => {
         rows="1"
         :class="{ editing: isEditing }"
         @focus="onFocus"
+        @keydown.enter="onSubmit"
+        @keydown.esc="onCancel"
       />
       <FunctionButton
         :class="{ hidden: !isEditing }"

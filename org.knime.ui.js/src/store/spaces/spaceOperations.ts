@@ -16,6 +16,7 @@ import type { SpacesState } from "./index";
 import { isProjectOpen } from "./util";
 import type { Router } from "vue-router";
 import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
+import { $bus } from "@/plugins/event-bus";
 
 const $toast = getToastsProvider();
 
@@ -125,43 +126,46 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       $router,
     }: { spaceProviderId: string; spaceGroup: SpaceGroup; $router: Router },
   ) {
+    if (
+      typeof state.spaceProviders === "undefined" ||
+      state.spaceProviders === null
+    ) {
+      return;
+    }
+
     try {
+      $bus.emit("desktop-api-function-block-ui", {
+        block: true,
+      });
       const newSpace = await API.space.createSpace({
         spaceProviderId,
         spaceGroupName: spaceGroup.name,
       });
-      if (state.spaceProviders) {
-        const provider = state.spaceProviders[spaceProviderId];
-        const updatedGroups = provider.spaceGroups.map((group) =>
-          group.id === spaceGroup.id
-            ? { ...group, spaces: [...group.spaces, newSpace] }
-            : group,
-        );
-        commit("updateSpaceProvider", {
-          id: spaceProviderId,
-          value: { ...provider, spaceGroups: updatedGroups },
-        });
 
-        $router.push({
-          name: APP_ROUTES.Home.SpaceBrowsingPage,
-          params: {
-            spaceProviderId,
-            groupId: spaceGroup.id,
-            spaceId: newSpace.id,
-            itemId: "root",
-          },
-        });
+      const provider = state.spaceProviders[spaceProviderId];
+      const updatedGroups = provider.spaceGroups.map((group) =>
+        group.id === spaceGroup.id
+          ? { ...group, spaces: [...group.spaces, newSpace] }
+          : group,
+      );
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { ...provider, spaceGroups: updatedGroups },
+      });
 
-        // Update providers in the background
-        dispatch("fetchProviderSpaces", {
-          id: spaceProviderId,
-        }).then((spacesData) => {
-          commit("updateSpaceProvider", {
-            id: spaceProviderId,
-            value: { ...provider, ...spacesData },
-          });
-        });
-      }
+      $bus.emit("desktop-api-function-block-ui", {
+        block: false,
+      });
+
+      $router.push({
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        params: {
+          spaceProviderId,
+          groupId: spaceGroup.id,
+          spaceId: newSpace.id,
+          itemId: "root",
+        },
+      });
     } catch (error) {
       $toast.show({
         type: "error",
@@ -171,10 +175,21 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         autoRemove: true,
       });
       consola.error("Error while creating space", { error });
+    } finally {
+      const provider = state.spaceProviders[spaceProviderId];
+      // Update providers in the background
+      dispatch("fetchProviderSpaces", {
+        id: spaceProviderId,
+      }).then((spacesData) => {
+        commit("updateSpaceProvider", {
+          id: spaceProviderId,
+          value: { ...provider, ...spacesData },
+        });
+      });
     }
   },
 
-  renameSpace(
+  async renameSpace(
     { commit, dispatch, state },
     { spaceProviderId, spaceId, spaceName },
   ) {
@@ -195,21 +210,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         });
       }
 
-      API.space.renameSpace({
+      await API.space.renameSpace({
         spaceProviderId,
         spaceId,
         spaceName,
       });
-
-      // fetch providers
-      dispatch("fetchProviderSpaces", {
-        id: spaceProviderId,
-      }).then((spacesData) =>
-        commit("updateSpaceProvider", {
-          id: spaceProviderId,
-          value: { ...spacesData },
-        }),
-      );
     } catch (error) {
       $toast.show({
         type: "error",
@@ -219,6 +224,16 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         autoRemove: true,
       });
       consola.error("Error while renaming space", { error });
+    } finally {
+      // fetch providers
+      const spacesData = await dispatch("fetchProviderSpaces", {
+        id: spaceProviderId,
+      });
+
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { ...spacesData },
+      });
     }
   },
 
