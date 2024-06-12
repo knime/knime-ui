@@ -158,11 +158,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await dispatch("setActiveProject", { $router });
 
     await runInEnvironment({
-      DESKTOP: () =>
-        Promise.all([
-          dispatch("spaces/loadLocalSpace", {}, { root: true }),
-          dispatch("spaces/fetchAllSpaceProviders", {}, { root: true }),
-        ]),
+      DESKTOP: async () => {
+        await dispatch("spaces/loadLocalSpace", {}, { root: true });
+        await dispatch("spaces/fetchAllSpaceProviders", {}, { root: true });
+      },
     });
 
     const { isKaiInstalled, isKaiPermitted } = features(state.featureFlags);
