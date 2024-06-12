@@ -7,7 +7,7 @@ import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg"
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
 import ServerIcon from "webapps-common/ui/assets/img/icons/server-racks.svg";
 import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
-import ComputerDesktopIcon from "webapps-common/ui/assets/img/icons/computer-desktop.svg";
+import ComputerDesktopIcon from "webapps-common/ui/assets/img/icons/local-space.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import { SpaceProviderNS } from "@/api/custom-types";
