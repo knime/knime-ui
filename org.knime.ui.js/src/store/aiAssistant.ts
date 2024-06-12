@@ -290,7 +290,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           projectId,
           isPositive: feedback.isPositive,
           comment: feedback.comment,
-        }
+        },
       });
     } catch (error) {
       consola.error("submitFeedback", error);
