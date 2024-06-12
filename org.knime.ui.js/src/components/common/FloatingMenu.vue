@@ -65,7 +65,7 @@ const props = withDefaults(defineProps<Props>(), {
   anchor: "top-left",
   disableInteractions: false,
   closeOnEscape: true,
-  focusTrap: true,
+  focusTrap: false,
 });
 
 const emit = defineEmits(["menuClose"]);
@@ -86,6 +86,9 @@ const isDraggingNodeInCanvas = computed(() => store.state.workflow.isDragging);
 
 const rootEl = ref<HTMLDivElement | null>(null);
 
+const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } =
+  useFocusTrap(rootEl);
+
 onMounted(async () => {
   // wait once after first event loop run before registering the click outside handler,
   // to avoid closing immediately after opening
@@ -94,10 +97,16 @@ onMounted(async () => {
   onClickOutside(
     rootEl,
     () => {
+      deactivateFocusTrap();
       emit("menuClose");
     },
     { capture: false },
   );
+
+  if (props.focusTrap) {
+    await nextTick();
+    activateFocusTrap();
+  }
 });
 
 const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
@@ -217,15 +226,6 @@ if (props.closeOnEscape) {
     },
   });
 }
-
-const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } =
-  useFocusTrap(rootEl);
-onMounted(async () => {
-  if (props.focusTrap) {
-    await nextTick();
-    activateFocusTrap();
-  }
-});
 
 onBeforeUnmount(() => {
   deactivateFocusTrap();
