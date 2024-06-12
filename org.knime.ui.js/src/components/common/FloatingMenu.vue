@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import { toRef, watch, computed, ref, onBeforeUnmount, onMounted } from "vue";
+import {
+  toRef,
+  watch,
+  computed,
+  ref,
+  onBeforeUnmount,
+  onMounted,
+  nextTick,
+} from "vue";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import throttle from "raf-throttle";
+import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
@@ -44,6 +53,11 @@ type Props = {
    * Whether to enable the behavior that closes the menu by pressing the escape key. `true` by default
    */
   closeOnEscape?: boolean;
+
+  /**
+   * Keep focus inside of the FloatingMenu while it is open
+   */
+  focusTrap?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -51,6 +65,7 @@ const props = withDefaults(defineProps<Props>(), {
   anchor: "top-left",
   disableInteractions: false,
   closeOnEscape: true,
+  focusTrap: true,
 });
 
 const emit = defineEmits(["menuClose"]);
@@ -203,23 +218,23 @@ if (props.closeOnEscape) {
   });
 }
 
+const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } =
+  useFocusTrap(rootEl);
+onMounted(async () => {
+  if (props.focusTrap) {
+    await nextTick();
+    activateFocusTrap();
+  }
+});
+
 onBeforeUnmount(() => {
+  deactivateFocusTrap();
   store.commit("canvas/setInteractionsEnabled", true);
 
   // if kanvas currently exists (workflow is open) remove scroll event listener
   let kanvas = document.getElementById("kanvas")!;
   kanvas?.removeEventListener("scroll", onCanvasScroll);
 });
-
-const onFocusOut = (event: FocusEvent) => {
-  if (
-    event.relatedTarget &&
-    rootEl.value &&
-    !rootEl.value.contains(event.relatedTarget as HTMLElement)
-  ) {
-    emit("menuClose");
-  }
-};
 </script>
 
 <template>
@@ -230,8 +245,6 @@ const onFocusOut = (event: FocusEvent) => {
       left: `${absolutePosition.left}px`,
       top: `${absolutePosition.top}px`,
     }"
-    @focusout.stop="onFocusOut"
-    @keydown.tab.stop.prevent
   >
     <slot />
   </div>

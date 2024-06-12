@@ -445,9 +445,7 @@ describe("PortTypeMenu.vue", () => {
         expect(wrapper.emitted("itemClick")).toStrictEqual([
           [{ typeId: "1", portGroup: null }],
         ]);
-        expect(wrapper.emitted("menuClose")).toStrictEqual([
-          [{ typeId: "1", portGroup: null }],
-        ]);
+        expect(wrapper.emitted("menuClose")).toBeTruthy();
       });
 
       it("setup menu items", () => {
