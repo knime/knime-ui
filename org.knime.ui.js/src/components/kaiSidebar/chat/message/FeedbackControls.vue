@@ -30,10 +30,16 @@ watch(
 
 <template>
   <div v-show="showControls" v-if="submitFeedback" class="feedback-controls">
-    <Button class="button thumbs-up" @click="submitFeedback(true, '')">
+    <Button
+      class="button thumbs-up"
+      @click="submitFeedback({ isPositive: true, comment: '' })"
+    >
       <ThumbsUpIcon class="icon" />
     </Button>
-    <Button class="button thumbs-down" @click="submitFeedback(false, '')">
+    <Button
+      class="button thumbs-down"
+      @click="submitFeedback({ isPositive: false, comment: '' })"
+    >
       <ThumbsDownIcon class="icon" />
     </Button>
   </div>

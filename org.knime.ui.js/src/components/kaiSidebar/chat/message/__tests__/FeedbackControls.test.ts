@@ -63,7 +63,10 @@ describe("FeedbackControls", () => {
 
     await wrapper.find(".thumbs-up").trigger("click");
 
-    expect(submitFeedbackMock).toHaveBeenCalledWith(true, "");
+    expect(submitFeedbackMock).toHaveBeenCalledWith({
+      comment: "",
+      isPositive: true,
+    });
   });
 
   it("calls submitFeedback with false when thumbs-down button is clicked", async () => {
@@ -77,7 +80,10 @@ describe("FeedbackControls", () => {
 
     await wrapper.find(".thumbs-down").trigger("click");
 
-    expect(submitFeedbackMock).toHaveBeenCalledWith(false, "");
+    expect(submitFeedbackMock).toHaveBeenCalledWith({
+      comment: "",
+      isPositive: false,
+    });
   });
 
   it("shows thank you message when submitFeedback is set to null", async () => {
