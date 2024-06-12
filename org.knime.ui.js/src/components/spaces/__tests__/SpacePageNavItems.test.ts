@@ -64,52 +64,39 @@ describe("SpacePageNavItems.vue", () => {
   it("should render items", async () => {
     const { wrapper } = await doMount();
 
-    // @ts-ignore
     expect(wrapper.findAllComponents(NavMenuItem).length).toBe(3);
 
-    const firstItem = wrapper
-      // @ts-ignore
-      .findAllComponents(NavMenuItem)
-      .at(0)!
-      // @ts-ignore
-      .props("item");
+    const firstItem = wrapper.findAllComponents(NavMenuItem).at(0)!.props();
 
-    const secondItem = wrapper
-      // @ts-ignore
-      .findAllComponents(NavMenuItem)
-      .at(1)!
-      // @ts-ignore
-      .props("item");
+    const secondItem = wrapper.findAllComponents(NavMenuItem).at(1)!.props();
 
-    const thirdItem = wrapper
-      // @ts-ignore
-      .findAllComponents(NavMenuItem)
-      .at(2)!
-      // @ts-ignore
-      .props("item");
+    const thirdItem = wrapper.findAllComponents(NavMenuItem).at(2)!.props();
 
-    expect(firstItem).toEqual({
-      id: spaceProvider1.id,
-      text: spaceProvider1.name,
-      active: false,
-      onClick: expect.any(Function),
-      metadata: { spaceProvider: spaceProvider1 },
-    });
+    expect(firstItem).toEqual(
+      expect.objectContaining({
+        text: spaceProvider1.name,
+        active: false,
+        highlighted: false,
+        withIndicator: false,
+      }),
+    );
 
-    expect(secondItem).toEqual({
-      id: spaceProvider2.id,
-      text: spaceProvider2.name,
-      active: true,
-      onClick: expect.any(Function),
-      metadata: { spaceProvider: spaceProvider2 },
-    });
+    expect(secondItem).toEqual(
+      expect.objectContaining({
+        text: spaceProvider2.name,
+        active: true,
+        highlighted: false,
+        withIndicator: true,
+      }),
+    );
 
-    expect(thirdItem).toEqual({
-      id: spaceGroup.id,
-      text: spaceGroup.name,
-      active: true,
-      onClick: expect.any(Function),
-      metadata: { spaceGroup },
-    });
+    expect(thirdItem).toEqual(
+      expect.objectContaining({
+        text: spaceGroup.name,
+        active: true,
+        highlighted: true,
+        withIndicator: false,
+      }),
+    );
   });
 });

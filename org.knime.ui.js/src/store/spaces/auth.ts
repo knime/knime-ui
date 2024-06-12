@@ -85,6 +85,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         [spaceProviderId]: {
           ...otherProperties,
           connected: false,
+          spaceGroups: [],
         },
       });
 

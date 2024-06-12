@@ -1,21 +1,19 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import NavMenuItem from "../NavMenuItem.vue";
-import type { NavMenuItemType } from "..";
+import type { NavMenuItemProps } from "..";
 
 describe("NavMenuItem.vue", () => {
-  const item1: NavMenuItemType = {
-    id: "item1",
+  const defaultProps: NavMenuItemProps = {
     text: "Item 1",
     active: true,
-    onClick: () => {},
   };
 
-  type MountOptions = Parameters<typeof mount<typeof NavMenuItem<any>>>[1];
+  type MountOptions = Parameters<typeof mount<typeof NavMenuItem>>[1];
 
   const doMount = (opts: MountOptions = {}) => {
     const wrapper = mount(NavMenuItem, {
-      props: opts?.props ?? { item: item1 },
+      props: opts?.props ?? { ...defaultProps },
       ...opts,
     });
 
@@ -48,17 +46,33 @@ describe("NavMenuItem.vue", () => {
 
     expect(wrapper.classes()).toContain("active");
 
-    await wrapper.setProps({ item: { ...item1, active: false } });
+    await wrapper.setProps({ active: false });
 
     expect(wrapper.classes()).not.toContain("active");
   });
 
-  it("should handle onClick handler passed", async () => {
-    const onClick = vi.fn();
-    const item = { ...item1, onClick };
-    const { wrapper } = doMount({
-      props: { item },
-    });
+  it("should display indicator", async () => {
+    const { wrapper } = doMount();
+
+    expect(wrapper.classes()).not.toContain("with-indicator");
+
+    await wrapper.setProps({ withIndicator: true });
+
+    expect(wrapper.classes()).toContain("with-indicator");
+  });
+
+  it("should display highlighted item", async () => {
+    const { wrapper } = doMount();
+
+    expect(wrapper.classes()).not.toContain("highlighted");
+
+    await wrapper.setProps({ highlighted: true });
+
+    expect(wrapper.classes()).toContain("highlighted");
+  });
+
+  it("should emit a click event", async () => {
+    const { wrapper } = doMount();
 
     const preventDefault = vi.fn();
 
@@ -66,15 +80,12 @@ describe("NavMenuItem.vue", () => {
     await wrapper.find("a").trigger("click", { preventDefault });
 
     expect(preventDefault).toHaveBeenCalled();
-    expect(onClick).toHaveBeenCalledWith(expect.anything(), item);
+    expect(wrapper.emitted("click")).toBeDefined();
   });
 
   it("should handle href", async () => {
-    const onClick = vi.fn();
-    const item = { ...item1, onClick, href: "http://www.google.com" };
-
     const { wrapper } = doMount({
-      props: { item },
+      props: { ...defaultProps, href: "http://www.google.com" },
     });
 
     const preventDefault = vi.fn();
@@ -82,6 +93,6 @@ describe("NavMenuItem.vue", () => {
     await wrapper.find("a").trigger("click", { preventDefault });
 
     expect(preventDefault).not.toHaveBeenCalled();
-    expect(onClick).toHaveBeenCalledWith(expect.anything(), item);
+    expect(wrapper.emitted("click")).toBeDefined();
   });
 });

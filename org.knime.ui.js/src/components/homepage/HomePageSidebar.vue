@@ -8,7 +8,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import {
   NavMenu,
   NavMenuItem,
-  type NavMenuItemType,
+  type NavMenuItemProps,
 } from "@/components/common/side-nav";
 
 import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
@@ -21,20 +21,19 @@ const isGetStartedPageActive = computed(() => {
   return $route.name === APP_ROUTES.Home.GetStarted;
 });
 
-const recent = computed<NavMenuItemType>(() => ({
-  id: "recent",
+const recent = computed<NavMenuItemProps>(() => ({
   text: "Recent",
-  hoverable: true,
   icon: TimeIcon,
   active: isGetStartedPageActive.value,
-  clickable: true,
+  withIndicator: isGetStartedPageActive.value,
+  highlighted: isGetStartedPageActive.value,
   onClick: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
 }));
 </script>
 
 <template>
   <NavMenu>
-    <NavMenuItem :item="recent">
+    <NavMenuItem v-bind="recent">
       <template #prepend>
         <TimeIcon />
       </template>

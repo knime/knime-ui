@@ -113,6 +113,7 @@ describe("spaces::auth", () => {
       const expectedProvider = {
         ...otherProperties,
         connected: false,
+        spaceGroups: [],
       };
 
       await store.dispatch("spaces/disconnectProvider", {
@@ -120,9 +121,6 @@ describe("spaces::auth", () => {
         $router: { push: vi.fn(), currentRoute: { value: { name: "" } } },
       });
       expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
-      expect(
-        store.state.spaces.spaceProviders.hub1.spaceGroups,
-      ).toBeUndefined();
 
       // reset projects that were connected to that hub to local
       expect(store.state.spaces.projectPath.projectInHub1).toStrictEqual({
@@ -170,6 +168,7 @@ describe("spaces::auth", () => {
       const expectedProvider = {
         ...otherProperties,
         connected: false,
+        spaceGroups: [],
       };
 
       const routerPush = vi.fn();
@@ -186,9 +185,6 @@ describe("spaces::auth", () => {
         },
       });
       expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
-      expect(
-        store.state.spaces.spaceProviders.hub1.spaceGroups,
-      ).toBeUndefined();
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.Home.GetStarted,
       });

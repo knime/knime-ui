@@ -12,7 +12,7 @@ import { isHubProvider } from "@/store/spaces/util";
 import {
   NavMenu,
   NavMenuItem,
-  type NavMenuItemType,
+  type NavMenuItemProps,
 } from "@/components/common/side-nav";
 
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -81,23 +81,29 @@ const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 const isLoggedInHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
   isHubProvider(spaceProvider) && spaceProvider.spaceGroups;
 
-type ProviderNavItems = NavMenuItemType<{
-  spaceProvider: SpaceProviderNS.SpaceProvider;
-}>;
-type GroupsNavItems = NavMenuItemType<{
-  spaceGroup?: SpaceProviderNS.SpaceGroup;
-}>;
+type SpaceProviderNavItems = NavMenuItemProps & {
+  id: string;
+  onClick: () => void;
+  metadata: { spaceProvider: SpaceProviderNS.SpaceProvider };
+};
+
+type SpaceGroupsNavItems = NavMenuItemProps & {
+  id: string;
+  onClick: (event: MouseEvent | KeyboardEvent) => void;
+  metadata: { spaceGroup: SpaceProviderNS.SpaceGroup };
+};
 
 const urlRegex = /\(https?:\/\/[^\s)]+\)/g;
 
 const getItemsForSpaceGroups = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
-): GroupsNavItems[] => {
+): SpaceGroupsNavItems[] => {
   return isLoggedInHubProvider(spaceProvider)
     ? spaceProvider.spaceGroups.map((group) => ({
         id: group.id,
         text: group.name,
         active: isSpaceGroupActive(group.id),
+        highlighted: isSpaceGroupActive(group.id),
         onClick: (event) => {
           event.stopPropagation();
           onSpaceGroupClick(group, spaceProvider);
@@ -107,12 +113,16 @@ const getItemsForSpaceGroups = (
     : [];
 };
 
-const providerItems = computed<ProviderNavItems[]>(() =>
+const providerItems = computed<SpaceProviderNavItems[]>(() =>
   Object.values(spaceProviders.value ?? {}).map((spaceProvider) => {
-    const item: ProviderNavItems = {
+    const item: SpaceProviderNavItems = {
       id: spaceProvider.id,
       text: spaceProvider.name.replace(urlRegex, ""),
       active: isSpaceProviderActive(spaceProvider.id),
+      withIndicator: isSpaceProviderActive(spaceProvider.id),
+      highlighted:
+        isSpaceProviderActive(spaceProvider.id) &&
+        getItemsForSpaceGroups(spaceProvider).every((item) => !item.active),
       onClick: () => onProviderClick(spaceProvider),
       metadata: { spaceProvider },
     };
@@ -123,13 +133,23 @@ const providerItems = computed<ProviderNavItems[]>(() =>
 </script>
 
 <template>
-  <NavMenuItem v-for="item in providerItems" :key="item.id" :item="item">
+  <NavMenuItem
+    v-for="item in providerItems"
+    :key="item.id"
+    :text="item.text"
+    :active="item.active"
+    :highlighted="item.highlighted"
+    :with-indicator="item.withIndicator"
+    @click="item.onClick()"
+  >
     <template #prepend>
       <Component :is="getSpaceProviderIcon(item.metadata!.spaceProvider!)" />
     </template>
 
     <template #append>
-      <SpacePageNavItemsAuthButtons :item="item" />
+      <SpacePageNavItemsAuthButtons
+        :space-provider="item.metadata.spaceProvider"
+      />
     </template>
 
     <template
@@ -140,7 +160,11 @@ const providerItems = computed<ProviderNavItems[]>(() =>
         <NavMenuItem
           v-for="child in getItemsForSpaceGroups(item.metadata!.spaceProvider!)"
           :key="child.id"
-          :item="child"
+          :text="child.text"
+          :active="child.active"
+          :highlighted="child.highlighted"
+          :with-indicator="child.withIndicator"
+          @click="child.onClick($event)"
         >
           <template #prepend>
             <Component :is="getSpaceGroupIcon(child.metadata!.spaceGroup!)" />

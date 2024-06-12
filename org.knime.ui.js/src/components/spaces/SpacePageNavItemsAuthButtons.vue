@@ -5,16 +5,15 @@ import { useRouter } from "vue-router";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 
-import { type NavMenuItemType } from "@/components/common/side-nav";
 import { SpaceProviderNS } from "@/api/custom-types";
 
 import { useStore } from "@/composables/useStore";
 
 type Props = {
-  item: NavMenuItemType;
+  spaceProvider: SpaceProviderNS.SpaceProvider;
 };
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const store = useStore();
 const $router = useRouter();
@@ -29,64 +28,54 @@ const disabled = computed(
   () => isLoadingProviders.value || Boolean(isConnectingToProvider.value),
 );
 
-const onLogin = async (spaceProvider: SpaceProviderNS.SpaceProvider) => {
-  const spaceProviderId = spaceProvider.id;
+const onLogin = async () => {
+  const spaceProviderId = props.spaceProvider.id;
 
   await store.dispatch("spaces/connectProvider", { spaceProviderId });
 };
 
-const onLogout = async (spaceProviderId: string) => {
+const onLogout = async () => {
   await store.dispatch("spaces/disconnectProvider", {
-    spaceProviderId,
+    spaceProviderId: props.spaceProvider.id,
     $router,
   });
 };
 
-const shouldDisplayLoginButton = (
-  spaceProvider: SpaceProviderNS.SpaceProvider,
-) => {
-  return (
-    spaceProvider.connectionMode !== "AUTOMATIC" && !spaceProvider.connected
-  );
-};
+const shouldDisplayLoginButton = computed(
+  () =>
+    props.spaceProvider.connectionMode !== "AUTOMATIC" &&
+    !props.spaceProvider.connected,
+);
 
-const shouldDisplayLogoutButton = (
-  spaceProvider: SpaceProviderNS.SpaceProvider,
-) => {
-  return (
-    spaceProvider.connectionMode === "AUTHENTICATED" && spaceProvider.connected
-  );
-};
+const shouldDisplayLogoutButton = computed(
+  () =>
+    props.spaceProvider.connectionMode === "AUTHENTICATED" &&
+    props.spaceProvider.connected,
+);
 </script>
 
 <template>
   <Button
-    v-if="
-      item.metadata?.spaceProvider &&
-      shouldDisplayLoginButton(item.metadata.spaceProvider)
-    "
+    v-if="shouldDisplayLoginButton"
     with-border
     compact
     :disabled="disabled"
     class="login"
-    @click.stop.prevent="onLogin(item.metadata.spaceProvider)"
+    @click.stop.prevent="onLogin()"
   >
-    <template v-if="isConnectingToProvider === item.metadata.spaceProvider.id">
+    <template v-if="isConnectingToProvider === spaceProvider.id">
       <LoadingIcon />
     </template>
     <template v-else> Login </template>
   </Button>
 
   <Button
-    v-if="
-      item.metadata?.spaceProvider &&
-      shouldDisplayLogoutButton(item.metadata.spaceProvider)
-    "
+    v-if="shouldDisplayLogoutButton"
     with-border
     compact
     :disabled="disabled"
     class="logout"
-    @click.stop.prevent="onLogout(item.metadata.spaceProvider.id)"
+    @click.stop.prevent="onLogout()"
   >
     Logout
   </Button>

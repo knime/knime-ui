@@ -21,7 +21,7 @@ describe("SpacePageNavItemAuthButtons.vue", () => {
   const localProvider = createSpaceProvider();
   const hubProvider = createSpaceProvider({
     id: "provider1",
-    name: "Hub provider",
+    name: "Some hub provider",
     type: SpaceProviderNS.TypeEnum.HUB,
     connectionMode: "AUTHENTICATED",
     connected: true,
@@ -48,13 +48,7 @@ describe("SpacePageNavItemAuthButtons.vue", () => {
     it("should render correctly for connected provider", () => {
       const { wrapper } = doMount({
         props: {
-          item: {
-            id: "item1",
-            text: "Some hub provider",
-            metadata: {
-              spaceProvider: hubProvider,
-            },
-          },
+          spaceProvider: hubProvider,
         },
       });
 
@@ -65,13 +59,7 @@ describe("SpacePageNavItemAuthButtons.vue", () => {
     it("should render correctly for non-connected provider", () => {
       const { wrapper } = doMount({
         props: {
-          item: {
-            id: "item1",
-            text: "Some hub provider",
-            metadata: {
-              spaceProvider: { ...hubProvider, connected: false },
-            },
-          },
+          spaceProvider: { ...hubProvider, connected: false },
         },
       });
 
@@ -84,13 +72,7 @@ describe("SpacePageNavItemAuthButtons.vue", () => {
     it("should render correctly for connected provider", () => {
       const { wrapper } = doMount({
         props: {
-          item: {
-            id: "item1",
-            text: "Some hub provider",
-            metadata: {
-              spaceProvider: localProvider,
-            },
-          },
+          spaceProvider: localProvider,
         },
       });
 
@@ -102,13 +84,7 @@ describe("SpacePageNavItemAuthButtons.vue", () => {
   it("should do login", async () => {
     const { wrapper, dispatchSpy } = doMount({
       props: {
-        item: {
-          id: "item1",
-          text: "Some hub provider",
-          metadata: {
-            spaceProvider: { ...hubProvider, connected: false },
-          },
-        },
+        spaceProvider: { ...hubProvider, connected: false },
       },
     });
 
@@ -129,13 +105,7 @@ describe("SpacePageNavItemAuthButtons.vue", () => {
   it("should do logout", () => {
     const { wrapper, dispatchSpy } = doMount({
       props: {
-        item: {
-          id: "item1",
-          text: "Some hub provider",
-          metadata: {
-            spaceProvider: hubProvider,
-          },
-        },
+        spaceProvider: hubProvider,
       },
     });
 

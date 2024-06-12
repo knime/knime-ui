@@ -1,37 +1,40 @@
-<script setup lang="ts" generic="T">
-import type { NavMenuItem } from "./types";
+<script setup lang="ts">
+import type { NavMenuItemProps } from "./types";
 
-type Props = {
-  item: NavMenuItem<T>;
-};
+const props = withDefaults(defineProps<NavMenuItemProps>(), {
+  active: false,
+  href: null,
+  withIndicator: false,
+  highlighted: false,
+});
 
-defineProps<Props>();
+const emit = defineEmits<{
+  click: [event: KeyboardEvent | MouseEvent];
+}>();
 
-const itemOnClickHandler = (
-  item: NavMenuItem,
-  event: KeyboardEvent | MouseEvent,
-) => {
-  if (!item.href) {
+const itemOnClickHandler = (event: KeyboardEvent | MouseEvent) => {
+  if (!props.href) {
     event.preventDefault();
   }
 
-  item.onClick?.(event, item);
+  emit("click", event);
 };
 </script>
 
 <template>
-  <li :class="['menu-item', { active: item.active }]">
-    <a
-      :href="item.href ?? '#'"
-      class="menu-item-main"
-      @click="itemOnClickHandler(item, $event)"
-    >
+  <li
+    :class="[
+      'menu-item',
+      { active, highlighted, 'with-indicator': withIndicator },
+    ]"
+  >
+    <a :href="href ?? '#'" class="menu-item-main" @click="itemOnClickHandler">
       <div v-if="$slots.prepend" class="prepend">
         <slot name="prepend" />
       </div>
 
-      <div class="text" :title="item.text">
-        {{ item.text }}
+      <div class="text" :title="text">
+        {{ text }}
       </div>
 
       <div v-if="$slots.append" class="append">
@@ -61,20 +64,6 @@ const itemOnClickHandler = (
   --text-hover-color: var(--knime-masala);
   --bg-active: v-bind("$colors.selection.activeBackground");
   --bg-hover: v-bind("$colors.selection.hoverBackground");
-
-  @define-mixin active-indicator {
-    content: "";
-    display: block;
-    position: absolute;
-    left: 0;
-    top: var(--inline-padding);
-    background: v-bind("$colors.selection.activeBorder");
-    width: 4px;
-    height: 16px;
-    border-radius: 0 4px 4px 0;
-
-    @mixin-content;
-  }
 
   color: var(--text-default-color);
   font: var(--typography-button-medium-prominent);
@@ -121,6 +110,8 @@ const itemOnClickHandler = (
   }
 
   &.active {
+    color: var(--text-active-color);
+
     & > .menu-item-main .prepend :slotted(svg),
     & > .menu-item-main .append :slotted(svg) {
       stroke: var(--text-active-color);
@@ -137,52 +128,20 @@ const itemOnClickHandler = (
     }
   }
 
-  /* For: items **without** children */
-  &.active:not(:has(.menu-item-children)) {
-    color: var(--text-active-color);
+  &.highlighted {
     background: var(--bg-active);
-
-    &::after {
-      @mixin active-indicator;
-    }
   }
 
-  /* For: items **with** children */
-  &.active:has(.menu-item-children) {
-    /* if it does NOT have a child that's active -> ONLY parent is active */
-    &:not(:has(.menu-item-children .active)) {
-      /* apply color & bg on parent */
-      & > .menu-item-main {
-        color: var(--text-active-color);
-        background: var(--bg-active);
-      }
-
-      /* add indicator on parent */
-      &::after {
-        @mixin active-indicator;
-      }
-    }
-
-    /* if it has a child that's active -> BOTH parent & child are active */
-    &:has(.menu-item-children .active) {
-      /* apply color on parent */
-      color: var(--text-active-color);
-
-      /* and bg on child only */
-      & .menu-item-children .active {
-        background: var(--bg-active);
-      }
-
-      /* add indicator on parent */
-      &::after {
-        @mixin active-indicator;
-      }
-
-      /* remove indicator from child */
-      & .menu-item-children .active::after {
-        display: none;
-      }
-    }
+  &.with-indicator::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    top: var(--inline-padding);
+    background: v-bind("$colors.selection.activeBorder");
+    width: 4px;
+    height: 16px;
+    border-radius: 0 4px 4px 0;
   }
 }
 </style>

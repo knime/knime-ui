@@ -70,7 +70,7 @@ const title = computed(() =>
 const icon = computed(() =>
   isShowingAllSpaces.value
     ? getSpaceProviderIcon(activeSpaceProvider.value)
-    : getSpaceGroupIcon(activeSpaceGroup.value!),
+    : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value),
 );
 </script>
 
