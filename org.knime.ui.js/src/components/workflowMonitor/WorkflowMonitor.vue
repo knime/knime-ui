@@ -7,15 +7,12 @@ import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarP
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
-import WorkflowMonitorFilters from "./WorkflowMonitorFilters.vue";
 import { useWorkflowMonitorActivation } from "./useWorkflowMonitorActivation";
 import WorkflowMonitorContent from "./WorkflowMonitorContent.vue";
 
 const store = useStore();
 
 const isLoading = computed(() => store.state.workflowMonitor.isLoading);
-
-const activeFilter = computed(() => store.state.workflowMonitor.activeFilter);
 
 useWorkflowMonitorActivation();
 </script>
@@ -24,10 +21,6 @@ useWorkflowMonitorActivation();
   <SidebarPanelLayout>
     <template #header>
       <h2>Workflow monitor</h2>
-      <WorkflowMonitorFilters
-        :active-filter="activeFilter"
-        @change="store.commit('workflowMonitor/setActiveFilter', $event)"
-      />
     </template>
 
     <SidebarPanelScrollContainer>

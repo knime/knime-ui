@@ -22,8 +22,6 @@ import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import type { RootStoreState } from "../types";
 import { lifecycleBus } from "../application/lifecycle-events";
 
-export type Filter = "SHOW_ERRORS" | "SHOW_ALL";
-
 export interface WorkflowMonitorState {
   /**
    * Indicates loading state when fetching the Workflow Monitor data
@@ -39,10 +37,6 @@ export interface WorkflowMonitorState {
    */
   hasLoaded: boolean;
   /**
-   * The currently applied filters
-   */
-  activeFilter: Filter;
-  /**
    * The Workflow Manager data
    */
   currentState: WorkflowMonitorAPIState;
@@ -52,7 +46,6 @@ export const state = (): WorkflowMonitorState => ({
   isLoading: false,
   isActive: false,
   hasLoaded: false,
-  activeFilter: "SHOW_ERRORS",
   currentState: {
     errors: [],
     warnings: [],
@@ -70,9 +63,6 @@ export const mutations: MutationTree<WorkflowMonitorState> = {
   },
   setHasLoaded(state, value) {
     state.hasLoaded = value;
-  },
-  setActiveFilter(state, value) {
-    state.activeFilter = value;
   },
   setCurrentState(state, value) {
     state.currentState = value;
