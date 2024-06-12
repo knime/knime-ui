@@ -111,9 +111,8 @@ const openNodeInBrowser = (
           }
 
           &:hover,
-          &:focus {
+          &:focus-visible {
             outline: none;
-            color: var(--theme-button-function-foreground-color-hover);
             background-color: var(
               --theme-button-function-background-color-hover
             );

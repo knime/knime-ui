@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import NodeIcon from "webapps-common/ui/assets/img/icons/node.svg";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import { useNodeDescriptionPanel } from "../../useNodeDescriptionPanel";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
 
 interface Props {
   nodeTemplates: NodeTemplateWithExtendedPorts[];
@@ -13,14 +14,28 @@ interface Props {
 const props = defineProps<Props>();
 
 const { toggleNodeDescription } = useNodeDescriptionPanel();
+const addNodeToWorkflow = useAddNodeToWorkflow();
 
 const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
+
+const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
+
+const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
+  if (node.nodeFactory) {
+    addNodeToWorkflow({ nodeFactory: node.nodeFactory });
+  }
+};
 </script>
 
 <template>
   <div v-if="hasNodeTemplates" class="nodes">
     <div class="title"><NodeIcon /> Nodes</div>
-    <NodeList :nodes="nodeTemplates" class="node-list">
+    <NodeList
+      v-model:selected-node="selectedNode"
+      :nodes="nodeTemplates"
+      class="node-list"
+      @enter-key="handleEnterKey"
+    >
       <template #item="slotProps">
         <DraggableNodeTemplate
           v-bind="slotProps"
@@ -52,7 +67,8 @@ const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
   }
 
   & .node-list {
-    margin-left: -10px;
+    margin-left: -5px;
+    margin-right: -5px;
   }
 }
 </style>

@@ -99,6 +99,7 @@ const showFeedbackControls = computed(() => !isUser.value && !props.isError);
     width: 100%;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
 
     & .icon {
       position: absolute;

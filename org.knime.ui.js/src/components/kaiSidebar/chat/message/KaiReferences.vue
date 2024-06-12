@@ -22,21 +22,21 @@ const showPopover = ref(false);
 const togglePopup = () => {
   showPopover.value = !showPopover.value;
 };
+const buttonRef = ref(null);
 const popoverRef = ref(null);
-onClickOutside(popoverRef, togglePopup);
+onClickOutside(popoverRef, togglePopup, { ignore: [buttonRef] });
 </script>
 
 <template>
   <BaseButton
     v-if="hasReferences"
+    ref="buttonRef"
     class="reference-button"
     title="Related Topics"
-    :active="showPopover"
     @click="togglePopup"
   >
     <HelpIcon :class="{ active: showPopover }" />
   </BaseButton>
-
   <div v-if="showPopover" ref="popoverRef" class="reference-popover">
     See the source of this answer in the <br />
     <template v-for="(refName, index) in referenceCategories" :key="refName">
@@ -57,6 +57,15 @@ onClickOutside(popoverRef, togglePopup);
   display: flex;
   align-items: center;
   cursor: pointer;
+  border-radius: var(--theme-button-function-border-radius, 9999px);
+  padding: 2px;
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+    color: var(--theme-button-function-foreground-color-hover);
+    background-color: var(--theme-button-function-background-color-hover);
+  }
 
   & svg {
     @mixin svg-icon-size 11;

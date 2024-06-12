@@ -98,6 +98,13 @@ export default {
       }
     }
   }
+
+  &:focus-visible .dropdown,
+  &:hover .dropdown {
+    outline: none;
+    color: var(--theme-button-function-foreground-color-hover);
+    background-color: var(--theme-button-function-background-color-hover);
+  }
 }
 
 :deep(ul),

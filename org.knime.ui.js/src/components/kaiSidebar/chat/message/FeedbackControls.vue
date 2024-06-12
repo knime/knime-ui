@@ -78,7 +78,8 @@ watch(
     }
   }
 
-  & .button.thumbs-up:hover {
+  & .button.thumbs-up:hover,
+  .button.thumbs-up:focus-visible {
     background-color: var(--theme-color-success-semi);
 
     & svg.icon {
@@ -86,7 +87,8 @@ watch(
     }
   }
 
-  & .button.thumbs-down:hover {
+  & .button.thumbs-down:hover,
+  .button.thumbs-down:focus-visible {
     background-color: var(--theme-color-error-semi);
 
     & svg.icon {
