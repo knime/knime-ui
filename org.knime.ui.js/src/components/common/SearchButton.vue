@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { nextTick, ref, toRef, watch } from "vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import LensIcon from "webapps-common/ui/assets/img/icons/lens.svg";
@@ -9,10 +9,12 @@ import LensIcon from "webapps-common/ui/assets/img/icons/lens.svg";
 interface Props {
   modelValue: string;
   placeholder?: string;
+  showInput?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   placeholder: "Search",
+  showInput: false,
 });
 
 const emit = defineEmits<{
@@ -32,6 +34,20 @@ const toggleInput = async () => {
   await nextTick();
   inputField.value?.focus();
 };
+
+watch(
+  toRef(props, "showInput"),
+  (show) => {
+    if (show && !isInputFieldShown.value) {
+      toggleInput();
+    }
+  },
+  { immediate: true },
+);
+const focus = () => {
+  inputField.value?.focus();
+};
+defineExpose({ focus });
 </script>
 
 <template>

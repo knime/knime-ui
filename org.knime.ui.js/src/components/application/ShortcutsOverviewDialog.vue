@@ -1,31 +1,41 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
 import shortcuts from "@/shortcuts";
-import type { FormattedShortcut, ShortcutGroups } from "@/shortcuts/types";
+import type {
+  FormattedShortcut,
+  Shortcut,
+  ShortcutGroups,
+} from "@/shortcuts/types";
 import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
 import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
 import { groupBy } from "lodash-es";
 import otherHotkeys from "@/shortcuts/otherHotkeys";
-
-const boundShortcuts = Object.values(shortcuts).filter(
-  (s) => s.hotkey,
-) as Array<FormattedShortcut>;
-
-const allShortcuts = [
-  ...boundShortcuts,
-  ...otherHotkeys,
-] as FormattedShortcut[];
+import SearchButton from "@/components/common/SearchButton.vue";
+import { matchesQuery } from "@/util/matchesQuery";
+import { formatHotkeys } from "@/util/formatHotkeys";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";
 
-const groupedShortcuts = groupBy(
-  allShortcuts,
-  ({ group }) => group ?? "others",
-);
+type ShortcutItemData = FormattedShortcut & { displayText: string };
+
+const boundShortcuts = Object.values(shortcuts).filter(
+  (s) => s.hotkey,
+) as Array<Shortcut>;
+
+const getText = (shortcut: FormattedShortcut) => {
+  const text = typeof shortcut.text === "function" ? null : shortcut.text;
+  return shortcut.description ?? text ?? shortcut.title ?? shortcut.name;
+};
+
+const allShortcuts = [...boundShortcuts, ...otherHotkeys].map((shortcut) => ({
+  ...shortcut,
+  hotkeyText: shortcut.hotkey ? formatHotkeys(shortcut.hotkey) : "",
+  displayText: getText(shortcut as FormattedShortcut),
+})) as ShortcutItemData[];
 
 const groupNamesMap: Record<ShortcutGroupsWithOthers, string> = {
   general: "General actions",
@@ -49,13 +59,24 @@ const isOpen = computed(
   () => store.state.application.isShortcutsOverviewDialogOpen,
 );
 
+// focus search on open
+const searchButton = ref<InstanceType<typeof SearchButton>>();
+watch(
+  isOpen,
+  async () => {
+    if (isOpen.value) {
+      await nextTick();
+      searchButton.value?.focus();
+    }
+  },
+  { immediate: true },
+);
+
+const searchQuery = ref("");
+
 const closeModal = () => {
   store.commit("application/setIsShortcutsOverviewDialogOpen", false);
-};
-
-const getText = (shortcut: FormattedShortcut) => {
-  const text = typeof shortcut.text === "function" ? null : shortcut.text;
-  return shortcut.description ?? text ?? shortcut.title ?? shortcut.name;
+  searchQuery.value = "";
 };
 
 const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
@@ -65,6 +86,19 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
         .filter(Boolean)
     : [];
 };
+
+const filteredShortcuts = computed(() =>
+  allShortcuts.filter(
+    (shortcut) =>
+      matchesQuery(searchQuery.value, shortcut.displayText) ||
+      matchesQuery(searchQuery.value, shortcut.title ?? "") ||
+      matchesQuery(searchQuery.value, shortcut.hotkeyText ?? ""),
+  ),
+);
+
+const groupedShortcuts = computed(() =>
+  groupBy(filteredShortcuts.value, ({ group }) => group ?? "others"),
+);
 </script>
 
 <template>
@@ -77,6 +111,16 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
     class="modal"
     @cancel="closeModal"
   >
+    <template #titleAppend>
+      <span class="title-append">
+        <SearchButton
+          ref="searchButton"
+          v-model="searchQuery"
+          placeholder="Filter shortcuts"
+          show-input
+        />
+      </span>
+    </template>
     <template #icon>
       <ShortcutsIcon />
     </template>
@@ -95,7 +139,7 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
           >
             <span>
               <ArrowRightIcon class="arrow" />
-              {{ getText(shortcut) }}
+              {{ shortcut.displayText }}
             </span>
 
             <div class="hotkeys">
@@ -139,6 +183,24 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
   & :deep(.controls) {
     display: none;
   }
+
+  & .title-append {
+    margin-left: auto;
+    display: flex;
+  }
+
+  &:deep(.closer) {
+    margin-left: 5px;
+  }
+
+  & :deep(.search-button) {
+    &:not(.active) svg {
+      stroke: var(--knime-white);
+    }
+  }
+  --theme-button-function-foreground-color-active: var(--knime-black);
+  --theme-button-function-background-color-active: var(--knime-white);
+  --theme-input-field-background-color-focus: var(--knime-stone-light);
 }
 
 .shortcut-overview {
