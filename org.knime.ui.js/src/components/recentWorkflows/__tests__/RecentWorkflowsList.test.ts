@@ -56,6 +56,11 @@ describe("RecentWorkflowsList.vue", () => {
     id: "provider2",
     name: "Provider 2",
   });
+  const spaceProvider3 = createSpaceProvider({
+    id: "provider3",
+    name: "Provider 3",
+    connected: false,
+  });
 
   const doMount = () => {
     const $store = mockVuexStore({
@@ -73,6 +78,7 @@ describe("RecentWorkflowsList.vue", () => {
     $store.commit("spaces/setSpaceProviders", {
       [spaceProvider1.id]: spaceProvider1,
       [spaceProvider2.id]: spaceProvider2,
+      [spaceProvider3.id]: spaceProvider3,
     });
 
     return { wrapper, $store, dispatchSpy };
@@ -144,6 +150,25 @@ describe("RecentWorkflowsList.vue", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
       ...recentWorkflows.at(1)?.origin,
       $router: expect.anything(),
+    });
+  });
+
+  it("should auto login when user tries to open a recent workflow from not connected in space", async () => {
+    const notConnectedWorkflow: RecentWorkflow = {
+      name: "Workflow 4",
+      origin: { providerId: "provider3", spaceId: "space1", itemId: "item1" },
+      timeUsed: new Date("2024-09-01T09:00:00").toISOString(),
+    };
+    const { wrapper, dispatchSpy } = doMount();
+
+    await flushPromises();
+
+    wrapper.findComponent(FileExplorer).vm.$emit("openFile", {
+      meta: { recentWorkflow: notConnectedWorkflow },
+    });
+
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
+      spaceProviderId: notConnectedWorkflow.origin.providerId,
     });
   });
 
