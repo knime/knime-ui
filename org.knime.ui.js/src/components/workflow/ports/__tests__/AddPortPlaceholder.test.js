@@ -196,8 +196,9 @@ describe("AddPortPlaceholder.vue", () => {
         expect(wrapper.find(".add-port-icon").exists()).toBe(false);
         expect(wrapper.findComponent(Port).props("port")).toStrictEqual(port);
 
-        // TODO: test transition element directly
-        expect(wrapper.vm.transitionEnabled).toBe(true);
+        expect(wrapper.findComponent(Vue.Transition).attributes("name")).toBe(
+          "port-fade",
+        );
       });
 
       it("resets port preview", async () => {
@@ -239,22 +240,24 @@ describe("AddPortPlaceholder.vue", () => {
         expect(wrapper.find(".add-port-icon").exists()).toBe(true);
       });
 
-      // TODO: test transition element directly
       it("click on item reset preview without transition", async () => {
         const { wrapper, $store } = await mountWithOpenMenu();
 
         const port = { typeId: "table" };
         $store.state.workflow.portTypeMenu.events.itemClick({ port });
 
-        expect(wrapper.vm.transitionEnabled).toBe(false);
         await Vue.nextTick();
-
+        expect(wrapper.findComponent(Vue.Transition).attributes("name")).toBe(
+          "none",
+        );
         expect(wrapper.findComponent(Port).exists()).toBe(false);
         expect(wrapper.find(".add-port-icon").exists()).toBe(true);
 
-        // reset transitionEnabled to true
+        // checks transitionEnabled is reset to true in $nextTick
         await Vue.nextTick();
-        expect(wrapper.vm.transitionEnabled).toBe(true);
+        expect(wrapper.findComponent(Vue.Transition).attributes("name")).toBe(
+          "port-fade",
+        );
       });
 
       it("click on item emits event", async () => {

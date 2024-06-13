@@ -5,7 +5,8 @@ import { API } from "@api";
 import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
-import { createConnection } from "@/test/factories";
+import { createConnection, createMetanode } from "@/test/factories";
+import { flushPromises } from "@vue/test-utils";
 
 const mockedAPI = deepMocked(API);
 
@@ -162,6 +163,62 @@ describe("workflow::index", () => {
             "The following connections can’t be deleted: [connection-1]",
         );
       });
+    });
+
+    it("deletes selected port", async () => {
+      const matchingNodeId = "matchingNodeId";
+
+      const { store } = await loadStore();
+      vi.spyOn(store, "commit");
+
+      store.state.workflow.activeWorkflow = {
+        nodes: {
+          matchingNodeId: createMetanode({
+            outPorts: [{}, {}, { canRemove: true }],
+          }),
+        },
+      };
+
+      store.state.selection.activeNodePorts = {
+        nodeId: matchingNodeId,
+        selectedPort: "output-2",
+        isModificationInProgress: false,
+      };
+      const dispatchOriginal = store.dispatch;
+      let resolveRemoveNodePortAction = null;
+      vi.spyOn(store, "dispatch")
+        .mockImplementationOnce(dispatchOriginal)
+        .mockImplementationOnce((target, args) => {
+          // check remove port action is dispatched as expected
+          expect(target).toBe("workflow/removeNodePort");
+          expect(args).toStrictEqual({
+            nodeId: matchingNodeId,
+            side: "output",
+            index: 2,
+            portGroup: undefined,
+          });
+          return new Promise((resolve) => {
+            resolveRemoveNodePortAction = resolve;
+          });
+        });
+      store.dispatch("workflow/deleteSelectedPort");
+
+      expect(
+        store.state.selection.activeNodePorts.isModificationInProgress,
+      ).toBe(true);
+
+      // remove finished
+      expect(resolveRemoveNodePortAction).not.toBeNull();
+      resolveRemoveNodePortAction!();
+      await flushPromises();
+      // check modification lock is removed
+      expect(
+        store.state.selection.activeNodePorts.isModificationInProgress,
+      ).toBe(false);
+      // deleted port was at last index: check selection is updated to new last
+      expect(store.state.selection.activeNodePorts.selectedPort).toBe(
+        "output-1",
+      );
     });
   });
 

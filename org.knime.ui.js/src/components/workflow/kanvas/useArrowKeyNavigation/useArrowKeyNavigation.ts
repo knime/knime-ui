@@ -49,7 +49,11 @@ export const useArrowKeyNavigation = (
   };
 
   const shouldNavigate = (event: KeyboardEvent) => {
-    return !isInputElement(event.target as HTMLElement) && !event.altKey;
+    return (
+      !isInputElement(event.target as HTMLElement) &&
+      !event.altKey &&
+      !store.state.selection.activeNodePorts.selectedPort
+    );
   };
 
   // prevent native events

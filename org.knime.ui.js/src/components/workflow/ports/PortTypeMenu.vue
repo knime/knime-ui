@@ -256,6 +256,7 @@ export default defineComponent({
         :aria-owns="ariaActiveDescendant"
         :aria-activedescendant="ariaActiveDescendant"
         @keydown="onSearchBarKeyDown"
+        @keydown.esc="$emit('menuClose')"
       />
 
       <MenuItems

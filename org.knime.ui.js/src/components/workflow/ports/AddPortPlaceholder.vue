@@ -46,8 +46,14 @@ export default {
       type: Object,
       default: null,
     },
+    /** if true, this placeholder is selected in its owning NodePorts */
+    selected: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["addPort"],
+  expose: ["isMenuOpen", "onClick"],
   data: () => ({
     transitionEnabled: true,
     closeTimeout: null,
@@ -190,7 +196,7 @@ export default {
 
 <template>
   <g :transform="`translate(${position})`">
-    <transition :name="transitionEnabled ? 'port-fade' : 'none'">
+    <Transition :name="transitionEnabled ? 'port-fade' : 'none'">
       <Port
         v-if="previewPort && previewPort.typeId"
         :key="previewPort.typeId"
@@ -207,6 +213,7 @@ export default {
         ]"
         @click="onClick"
       >
+        <circle v-if="selected" class="selection-outline" r="9.5" />
         <circle r="6.5" fill="white" stroke="none" />
         <path
           :d="addPortPlaceholderPath"
@@ -218,7 +225,7 @@ export default {
         <line y1="0" y2="0" x1="-3.5" x2="3.5" stroke="#000" stroke-width="1" />
         <line x1="0" x2="0" y1="-3.5" y2="3.5" stroke="#000" stroke-width="1" />
       </g>
-    </transition>
+    </Transition>
   </g>
 </template>
 
@@ -254,5 +261,10 @@ export default {
   & line {
     pointer-events: none;
   }
+}
+
+.selection-outline {
+  fill: white;
+  stroke: var(--knime-cornflower-dark);
 }
 </style>
