@@ -60,6 +60,13 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   const {
     recentWorkflow: { origin },
   } = (item as RecentWorkflowItem).meta!;
+  const provider = spaceProviders.value[origin.providerId];
+
+  if (!provider.connected) {
+    await store.dispatch("spaces/connectProvider", {
+      spaceProviderId: provider.id,
+    });
+  }
 
   try {
     await store.dispatch("spaces/openProject", {
