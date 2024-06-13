@@ -37,7 +37,7 @@ describe("SpacePageHeader.vue", () => {
   it("should render an non editable title", () => {
     const { wrapper } = doMount(false);
 
-    expect(wrapper.find(".title").text()).toBe(title);
+    expect(wrapper.find("h2").find("span").text()).toBe(title);
   });
 
   it("should render correct breadcrumb", () => {

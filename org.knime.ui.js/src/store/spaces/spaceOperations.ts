@@ -119,19 +119,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async createSpace(
-    { commit, dispatch, state },
+    { commit, state },
     {
       spaceProviderId,
       spaceGroup,
       $router,
     }: { spaceProviderId: string; spaceGroup: SpaceGroup; $router: Router },
   ) {
-    if (
-      typeof state.spaceProviders === "undefined" ||
-      state.spaceProviders === null
-    ) {
-      return;
-    }
+    const originalProvider = state.spaceProviders![spaceProviderId];
 
     try {
       $bus.emit("desktop-api-function-block-ui", {
@@ -142,15 +137,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceGroupName: spaceGroup.name,
       });
 
-      const provider = state.spaceProviders[spaceProviderId];
-      const updatedGroups = provider.spaceGroups.map((group) =>
+      const updatedGroups = originalProvider.spaceGroups.map((group) =>
         group.id === spaceGroup.id
           ? { ...group, spaces: [...group.spaces, newSpace] }
           : group,
       );
       commit("updateSpaceProvider", {
         id: spaceProviderId,
-        value: { ...provider, spaceGroups: updatedGroups },
+        value: { ...originalProvider, spaceGroups: updatedGroups },
       });
 
       $bus.emit("desktop-api-function-block-ui", {
@@ -175,46 +169,39 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         autoRemove: true,
       });
       consola.error("Error while creating space", { error });
-    } finally {
-      const provider = state.spaceProviders[spaceProviderId];
-      // Update providers in the background
-      dispatch("fetchProviderSpaces", {
+
+      // rollback the space providers state
+      commit("updateSpaceProvider", {
         id: spaceProviderId,
-      }).then((spacesData) => {
-        commit("updateSpaceProvider", {
-          id: spaceProviderId,
-          value: { ...provider, ...spacesData },
-        });
+        value: originalProvider,
       });
     }
   },
 
   async renameSpace(
-    { commit, dispatch, state },
+    { commit, state },
     { spaceProviderId, spaceId, spaceName },
   ) {
+    const provider = state.spaceProviders![spaceProviderId];
     try {
-      // Update optimistically
-      if (state.spaceProviders) {
-        const provider = state.spaceProviders[spaceProviderId];
-        const updatedGroups = provider.spaceGroups.map((group) => ({
-          ...group,
-          spaces: group.spaces.map((space) =>
-            space.id === spaceId ? { ...space, name: spaceName } : space,
-          ),
-        }));
+      const updatedGroups = provider.spaceGroups.map((group) => ({
+        ...group,
+        spaces: group.spaces.map((space) =>
+          space.id === spaceId ? { ...space, name: spaceName } : space,
+        ),
+      }));
 
-        commit("updateSpaceProvider", {
-          id: spaceProviderId,
-          value: { spaceGroups: updatedGroups },
-        });
-      }
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { spaceGroups: updatedGroups },
+      });
 
       await API.space.renameSpace({
         spaceProviderId,
         spaceId,
         spaceName,
       });
+      return Promise.resolve;
     } catch (error) {
       $toast.show({
         type: "error",
@@ -224,16 +211,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         autoRemove: true,
       });
       consola.error("Error while renaming space", { error });
-    } finally {
-      // fetch providers
-      const spacesData = await dispatch("fetchProviderSpaces", {
-        id: spaceProviderId,
-      });
 
+      // Rollback to the original spaceProvider state
       commit("updateSpaceProvider", {
         id: spaceProviderId,
-        value: { ...spacesData },
+        value: provider,
       });
+
+      return Promise.reject(error);
     }
   },
 

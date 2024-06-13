@@ -96,12 +96,19 @@ const hubSpaceIcon = computed(() => {
   return getSpaceIcon(activeSpace.value!);
 });
 
+const errorOnHeader = ref("");
+
 const onRenameSpace = (name: String) => {
-  store.dispatch("spaces/renameSpace", {
-    spaceProviderId: activeSpaceProvider.value.id,
-    spaceId: activeSpace.value!.id,
-    spaceName: name,
-  });
+  errorOnHeader.value = "";
+  store
+    .dispatch("spaces/renameSpace", {
+      spaceProviderId: activeSpaceProvider.value.id,
+      spaceId: activeSpace.value!.id,
+      spaceName: name,
+    })
+    .catch((error) => {
+      errorOnHeader.value = error.message;
+    });
 };
 </script>
 
@@ -112,6 +119,7 @@ const onRenameSpace = (name: String) => {
         :title="title"
         :breadcrumbs="breadcrumbs"
         is-editable
+        :error="errorOnHeader"
         @submit="onRenameSpace"
       >
         <template v-if="hubSpaceIcon" #icon>
