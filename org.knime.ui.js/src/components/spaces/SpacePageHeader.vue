@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, toRef, watch } from "vue";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 import SaveIcon from "webapps-common/ui/assets/img/icons/check.svg";
 import CancelIcon from "webapps-common/ui/assets/img/icons/close.svg";
@@ -12,30 +12,45 @@ type Props = {
   breadcrumbs: Array<BreadcrumbItem>;
   isEditable: boolean;
   error?: string;
+  isEditing?: boolean;
 };
-const props = defineProps<Props>();
+
+const props = withDefaults(defineProps<Props>(), {
+  isEditing: false,
+  // eslint-disable-next-line no-undefined
+  error: undefined,
+});
+
 const emit = defineEmits<{
   submit: [name: string];
+  cancel: [];
+  "update:isEditing": [value: boolean];
 }>();
 
 const spaceName = ref(props.title);
-const isEditing = ref(false);
-const titleRef = ref<HTMLElement | null>(null);
+const titleRef = ref<HTMLTextAreaElement | null>(null);
 
 const onFocus = () => {
-  isEditing.value = true;
+  emit("update:isEditing", true);
 };
 
+watch(toRef(props, "isEditing"), () => {
+  if (props.isEditing) {
+    titleRef.value?.focus();
+  }
+});
+
 const onSubmit = () => {
-  emit("submit", spaceName.value);
   titleRef.value?.blur();
-  isEditing.value = false;
+  emit("submit", spaceName.value);
+  emit("update:isEditing", false);
 };
 
 const onCancel = () => {
   titleRef.value?.blur();
   spaceName.value = props.title;
-  isEditing.value = false;
+  emit("update:isEditing", false);
+  emit("cancel");
 };
 </script>
 

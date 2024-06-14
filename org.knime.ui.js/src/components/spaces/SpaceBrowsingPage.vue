@@ -97,6 +97,7 @@ const hubSpaceIcon = computed(() => {
 });
 
 const errorOnHeader = ref("");
+const isEditing = ref(false);
 
 const onRenameSpace = (name: String) => {
   errorOnHeader.value = "";
@@ -108,6 +109,7 @@ const onRenameSpace = (name: String) => {
     })
     .catch((error) => {
       errorOnHeader.value = error.message;
+      isEditing.value = true;
     });
 };
 </script>
@@ -116,11 +118,13 @@ const onRenameSpace = (name: String) => {
   <SpacePageLayout v-if="activeSpaceProvider && activeSpaceGroup">
     <template #header>
       <SpacePageHeader
+        v-model:is-editing="isEditing"
         :title="title"
         :breadcrumbs="breadcrumbs"
         is-editable
         :error="errorOnHeader"
         @submit="onRenameSpace"
+        @cancel="errorOnHeader = ''"
       >
         <template v-if="hubSpaceIcon" #icon>
           <Component :is="hubSpaceIcon" />

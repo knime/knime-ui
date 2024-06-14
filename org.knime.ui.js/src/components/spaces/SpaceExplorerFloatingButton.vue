@@ -2,7 +2,7 @@
 import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 
 type Props = {
-  title: string;
+  title: string | null;
   disabled?: boolean;
 };
 
@@ -14,7 +14,7 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <div class="floating-btn">
-    <PlusButton :title="title" primary :disabled="disabled" />
+    <PlusButton :title="title ?? undefined" primary :disabled="disabled" />
   </div>
 </template>
 
