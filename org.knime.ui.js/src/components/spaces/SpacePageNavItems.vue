@@ -21,6 +21,7 @@ import {
 
 import { useSpaceIcons } from "./useSpaceIcons";
 import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 const store = useStore();
 const $router = useRouter();
@@ -111,8 +112,6 @@ type SpaceGroupsNavItems = NavMenuItemProps & {
   metadata: { spaceGroup: SpaceProviderNS.SpaceGroup };
 };
 
-const urlRegex = /\(https?:\/\/[^\s)]+\)/g;
-
 const getItemsForSpaceGroups = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ): SpaceGroupsNavItems[] => {
@@ -135,7 +134,7 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
   Object.values(spaceProviders.value ?? {}).map((spaceProvider) => {
     const item: SpaceProviderNavItems = {
       id: spaceProvider.id,
-      text: spaceProvider.name.replace(urlRegex, ""),
+      text: formatSpaceProviderName(spaceProvider),
       active: isSpaceProviderActive(spaceProvider.id),
       withIndicator: isSpaceProviderActive(spaceProvider.id),
       highlighted:

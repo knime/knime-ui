@@ -16,6 +16,7 @@ import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
 import SearchButton from "@/components/common/SearchButton.vue";
 import { matchesQuery } from "@/util/matchesQuery";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 
@@ -70,7 +71,7 @@ const filteredSpaces = computed(() =>
 
 const title = computed(() =>
   isShowingAllSpaces.value
-    ? `Spaces of ${activeSpaceProvider.value.name}`
+    ? `Spaces of ${formatSpaceProviderName(activeSpaceProvider.value)}`
     : activeSpaceGroup.value?.name ?? "",
 );
 

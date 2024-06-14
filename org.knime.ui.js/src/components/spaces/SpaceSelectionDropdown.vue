@@ -14,6 +14,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
 import { useSpaceIcons } from "./useSpaceIcons";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 interface Props {
   showText?: boolean;
@@ -125,7 +126,7 @@ const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 const createProviderHeadlineMenuItem = (
   provider: SpaceProviderNS.SpaceProvider,
 ): MenuItem => ({
-  text: provider.name,
+  text: formatSpaceProviderName(provider),
   icon: getSpaceProviderIcon(provider),
   selected: false,
   sectionHeadline: true,

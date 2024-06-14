@@ -6,6 +6,7 @@ import { isHubProvider } from "@/store/spaces/util";
 
 import { useActiveRouteData } from "./useActiveRouteData";
 import { useSpaceIcons } from "./useSpaceIcons";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 export type BreadcrumbItem = {
   text: string;
@@ -29,7 +30,7 @@ export const usePageBreadcrumbs = () => {
 
   const breadcrumbs = computed<Array<BreadcrumbItem>>(() => {
     const spaceProviderBreadcrumbItem: BreadcrumbItem = {
-      text: activeSpaceProvider.value.name,
+      text: formatSpaceProviderName(activeSpaceProvider.value),
       icon: getSpaceProviderIcon(activeSpaceProvider.value),
       clickable: true,
       onClick: () => {
