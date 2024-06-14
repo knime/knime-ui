@@ -176,6 +176,7 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
 
       <LoadingIcon
         v-if="isConnectingToProvider === item.metadata.spaceProvider.id"
+        class="loading-indicator"
       />
 
       <FunctionButton
@@ -250,5 +251,9 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
   color: var(--knime-dove-gray);
   font-weight: 400;
   font-size: 13px;
+}
+
+.loading-indicator {
+  margin-right: 8px;
 }
 </style>
