@@ -535,14 +535,20 @@ final class ClassicAPCopyMoveLogic {
 
         private boolean checkPublicUploadOK(final AbstractContentProvider destProvider,
                 final RemoteExplorerFileStore remoteDest) {
-            final var destParentFS = remoteDest.getParent();
-            final var destParentFSInfo = destParentFS.fetchInfo();
-            if (!m_uploadWarningShown && destParentFSInfo.isSpace() && !destParentFSInfo.isPrivateSpace()) {
-                IStatus userChoice = destProvider.showUploadWarning(destParentFSInfo.getName());
-                if (userChoice.isOK()) {
-                    m_uploadWarningShown = true;
-                } else {
-                    return false;
+            if (m_uploadWarningShown) {
+                return true;
+            }
+
+            for (var ancestor = remoteDest.getParent(); ancestor != null; ancestor = ancestor.getParent()) {
+                final var ancestorInfo = ancestor.fetchInfo();
+                if (ancestorInfo.isSpace() && !ancestorInfo.isPrivateSpace()) {
+                    IStatus userChoice = destProvider.showUploadWarning(ancestor.getName());
+                    if (userChoice.isOK()) {
+                        m_uploadWarningShown = true;
+                        break;
+                    } else {
+                        return false;
+                    }
                 }
             }
             return true;

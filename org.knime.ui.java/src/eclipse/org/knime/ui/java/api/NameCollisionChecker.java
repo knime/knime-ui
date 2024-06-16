@@ -52,6 +52,7 @@ import static org.eclipse.core.runtime.Path.forPosix;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +60,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.knime.core.ui.util.SWTUtilities;
@@ -177,24 +179,30 @@ final class NameCollisionChecker {
      */
     static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final Space space,
         final String workflowGroupItemId, final List<String> nameCollisions) {
-        var names = nameCollisions.stream().map(name -> "* " + name).collect(Collectors.joining("\n"));
-        var sh = SWTUtilities.getActiveShell();
-        var msg = String.format(
-            "The following items already exist in \"%s\": %n%n%s %n%n"
-                + "Overwrite existing items or keep all by renaming automatically?",
-            space.getItemName(workflowGroupItemId), names);
-        var choice = MessageDialog.open(MessageDialog.QUESTION, sh, "Items already exist", msg, SWT.NONE, //
-            "Cancel", // 0
-            "Overwrite", // 1
-            "Keep all"// 2
-        );
-        if (choice == 0) {
-            return Optional.empty();
-        } else if (choice == 1) {
-            return Optional.of(NameCollisionHandling.OVERWRITE);
-        } else {
-            return Optional.of(NameCollisionHandling.AUTORENAME);
-        }
+        final var groupName = space.getItemName(workflowGroupItemId);
+        return openDialogToSelectCollisionHandling(groupName, nameCollisions, true);
     }
 
+    /**
+     * @param space
+     * @param workflowGroupItemId
+     * @param nameCollisions
+     * @return
+     */
+    static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final String group,
+        final List<String> nameCollisions, final boolean canOverwrite) {
+        var names = nameCollisions.stream().map(name -> "* " + name).collect(Collectors.joining("\n"));
+        final var question = canOverwrite ? "Overwrite existing items or keep all by renaming automatically?"
+            : "Item types are incompatible, keep all by renaming automatically?";
+        var sh = SWTUtilities.getActiveShell();
+        var msg = String.format("The following items already exist in \"%s\": %n%n%s %n%n%s", group, names, question);
+        final List<Pair<String, NameCollisionHandling>> options  = new ArrayList<>(List.of(Pair.of("Cancel", null),
+            Pair.of("Upload with new name", NameCollisionHandling.AUTORENAME)));
+        if (canOverwrite) {
+            options.add(1, Pair.of("Overwrite", NameCollisionHandling.OVERWRITE));
+        }
+        var choice = MessageDialog.open(MessageDialog.QUESTION, sh, "Items already exist", msg, SWT.NONE,
+            options.stream().map(Pair::getLeft).toArray(String[]::new));
+        return Optional.ofNullable(options.get(choice).getRight());
+    }
 }

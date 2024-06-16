@@ -51,6 +51,7 @@ package org.knime.ui.java.api;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -63,12 +64,14 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.util.CheckUtils;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.KnimeUrlType;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
@@ -94,6 +97,17 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
  * @author Kai Franze, KNIME GmbH, Germany
  */
 final class SpaceAPI {
+
+    private static final String ASYNC_UPLOAD_FEATURE_FLAG = "knime.hub.async_upload";
+
+    private static final String ASYNC_DOWNLOAD_FEATURE_FLAG = "knime.hub.async_download";
+
+    private static boolean systemPropertyIsFalse(final String propertyName) {
+        return Boolean.FALSE.toString() //
+                .equalsIgnoreCase(System.getProperty(propertyName));
+    }
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(SpaceAPI.class);
 
     private SpaceAPI() {
        // stateless
@@ -174,9 +188,9 @@ final class SpaceAPI {
      * @return {@code true} if all files could be uploaded, {@code false} otherwise
      */
     @API
-    @SuppressWarnings("java:S2440") // false positive for SpaceDestinationPicker
     static boolean copyBetweenSpaces(final String spaceProviderId, final String spaceId, final Object[] arr) {
-        if (arr.length == 0) {
+        final List<String> itemIds = Stream.of(arr).map(String.class::cast).toList();
+        if (itemIds.isEmpty()) {
             return true;
         }
 
@@ -184,11 +198,6 @@ final class SpaceAPI {
         final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
 
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-        final var selection = Arrays.stream(arr) //
-                .map(String.class::cast) //
-                .map(sourceSpace::toKnimeUrl) //
-                .map(ExplorerFileSystem.INSTANCE::getStore) //
-                .toList();
 
         final var isUpload = sourceSpace instanceof LocalWorkspace;
         final var mountIds = !isUpload ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }
@@ -209,16 +218,60 @@ final class SpaceAPI {
         }
         final var destInfo = destPicker.getSelectedDestination();
 
-        final var destinationStore = destInfo.getDestination();
+        var destinationStore = destInfo.getDestination();
+        if (!destinationStore.fetchInfo().isWorkflowGroup()) {
+            destinationStore = CheckUtils.checkNotNull(destinationStore.getParent());
+        }
+
         final var excludeData = destInfo.isExcludeData();
         final var targetMountId = destinationStore.getMountID();
         final SpaceProvider targetSpaceProvider;
-        if (targetMountId.equalsIgnoreCase(LocalWorkspace.LOCAL_WORKSPACE_ID)) {
+        final var isDownload = targetMountId.equalsIgnoreCase(LocalWorkspace.LOCAL_WORKSPACE_ID);
+        if (isDownload) {
             targetSpaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider(DesktopAPI.getDeps(LocalWorkspace.class));
         } else {
             targetSpaceProvider = getSpaceProvider(targetMountId);
         }
+
+        final var sourceType = sourceSpaceProvider.getType();
+        final var targetType = targetSpaceProvider.getType();
+
+
+        final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
+        final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
+        if (!asyncUploadDisabled && sourceSpace instanceof LocalWorkspace localSource && targetType == TypeEnum.HUB) {
+            // async upload
+            try {
+                final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
+                final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
+                    .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
+                final var targetSpace = targetSpaceProvider.getSpace(targetSpaceAndId.spaceId());
+                return targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+            } catch (OperationNotAllowedException e) { // NOSONAR
+                // fall through to the default upload
+            } catch (IOException ex) { // NOSONAR
+                DesktopAPUtil.showAndLogError("Upload error", "Could not upload items: " + ex.getMessage(), LOGGER, ex);
+                return false;
+            }
+        } else if (!asyncDownloadDisabled && sourceType == TypeEnum.HUB && isDownload) {
+            // async download
+            try {
+                final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
+                final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
+                return sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
+            } catch (Exception ex) { // NOSONAR
+                DesktopAPUtil.showAndLogError("Download error", "Could not download items: " + ex.getMessage(), LOGGER,
+                    ex);
+                return false;
+            }
+        }
+
+        // old upload/download flow
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
+        final var selection = itemIds.stream() //
+                .map(sourceSpace::toKnimeUrl) //
+                .map(ExplorerFileSystem.INSTANCE::getStore) //
+                .toList();
         return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
             destinationStore, excludeData);
     }
@@ -470,7 +523,8 @@ final class SpaceAPI {
                 if (!isWorkflow && !isWorkflowGroup) {
                     return "Only workflows or workflow groups can be selected as target.";
                 } else if (!info.isModifiable()) {
-                    return "You have no write permissions for the selected " + (isWorkflow ? "workflow." : "workflow group.");
+                    return "You have no write permissions for the selected "
+                            + (isWorkflow ? "workflow." : "workflow group.");
                 }
 
                 dialog.setNameFieldEnabled(isWorkflowGroup);
