@@ -21,6 +21,8 @@ import {
 } from "@knime/ui-extension-service";
 import { createNativeNode } from "@/test/factories";
 import ExecuteButton from "../../ExecuteButton.vue";
+import { useSelectionEvents } from "../../common/useSelectionEvents";
+import { SelectionEvent } from "@/api/gateway-api/generated-api";
 
 const dynamicImportMock = mockDynamicImport();
 
@@ -216,7 +218,7 @@ describe("NodeViewLoader.vue", () => {
       expect(wrapper.emitted("alert")![1][0]).toEqual(alert1);
     });
 
-    it("implements registerPushEventService", async () => {
+    it("implements registerPushEventService to set the event dispatcher to update the view data", async () => {
       mockGetNodeView();
       const { wrapper, $store } = doMount();
       await flushPromises();
@@ -236,6 +238,52 @@ describe("NodeViewLoader.vue", () => {
         eventType: UIExtensionPushEvents.EventTypes.DataEvent,
         payload: { mock: "new-data" },
       });
+    });
+
+    it("implements registerPushEventService to listen to selection events", async () => {
+      mockGetNodeView();
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const dispatchPushEvent = vi.fn();
+      const removeListener = apiLayer.registerPushEventService({
+        dispatchPushEvent,
+      });
+
+      expect(dispatchPushEvent).not.toHaveBeenCalled();
+
+      const { notifyListeners } = useSelectionEvents();
+
+      const mockSelectionEvent: SelectionEvent = {
+        projectId: props.projectId,
+        workflowId: props.workflowId,
+        nodeId: dummyNode.id,
+        mode: SelectionEvent.ModeEnum.ADD,
+      };
+
+      notifyListeners(mockSelectionEvent);
+
+      expect(dispatchPushEvent).toHaveBeenCalledOnce();
+      expect(dispatchPushEvent).toHaveBeenCalledWith({
+        eventType: "SelectionEvent",
+        payload: mockSelectionEvent,
+      });
+
+      notifyListeners({
+        projectId: "some other project",
+        workflowId: "some other workflow",
+        nodeId: "some other node",
+        mode: SelectionEvent.ModeEnum.ADD,
+      });
+
+      expect(dispatchPushEvent).toHaveBeenCalledOnce();
+
+      removeListener();
+
+      notifyListeners(mockSelectionEvent);
+      expect(dispatchPushEvent).toHaveBeenCalledOnce();
     });
   });
 

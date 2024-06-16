@@ -1,5 +1,5 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@api";
 import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
@@ -8,6 +8,8 @@ import { UIExtension } from "webapps-common/ui/uiExtensions";
 import * as applicationStore from "@/store/application";
 import PortViewLoader from "../PortViewLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
+import { useSelectionEvents } from "../../common/useSelectionEvents";
+import { SelectionEvent } from "@/api/gateway-api/generated-api";
 
 const dynamicImportMock = mockDynamicImport();
 
@@ -166,15 +168,17 @@ describe("PortViewLoader.vue", () => {
   });
 
   describe("apiLayer", () => {
+    const getApiLayer = (wrapper: VueWrapper<any>) => {
+      const uiExtension = wrapper.findComponent(UIExtension);
+      return uiExtension.props("apiLayer");
+    };
+
     it("implements getResourceLocation in apiLayer", async () => {
       mockGetPortView();
       const { wrapper } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const location = await apiLayer.getResourceLocation("path1");
 
@@ -195,10 +199,7 @@ describe("PortViewLoader.vue", () => {
       await flushPromises();
       $store.commit("application/setActiveProjectId", "project1");
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const location = await apiLayer.getResourceLocation("path1");
 
@@ -213,10 +214,7 @@ describe("PortViewLoader.vue", () => {
       const { wrapper } = doMount();
       await flushPromises();
 
-      const uiExtension = wrapper.findComponent(UIExtension);
-      const props = uiExtension.props();
-
-      const apiLayer = props.apiLayer;
+      const apiLayer = getApiLayer(wrapper);
 
       const result = await apiLayer.callNodeDataService({
         serviceType: "data",
@@ -234,6 +232,52 @@ describe("PortViewLoader.vue", () => {
         viewIdx: 0,
         workflowId: "workflow-id",
       });
+    });
+
+    it("implements registerPushEventService in apiLayer to listen to selection events", async () => {
+      mockGetPortView();
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const dispatchPushEvent = vi.fn();
+      const removeListener = apiLayer.registerPushEventService({
+        dispatchPushEvent,
+      });
+
+      expect(dispatchPushEvent).not.toHaveBeenCalled();
+
+      const { notifyListeners } = useSelectionEvents();
+
+      const mockSelectionEvent: SelectionEvent = {
+        projectId: props.projectId,
+        workflowId: props.workflowId,
+        nodeId: dummyNode.id,
+        mode: SelectionEvent.ModeEnum.ADD,
+      };
+
+      notifyListeners(mockSelectionEvent);
+
+      expect(dispatchPushEvent).toHaveBeenCalledOnce();
+      expect(dispatchPushEvent).toHaveBeenCalledWith({
+        eventType: "SelectionEvent",
+        payload: mockSelectionEvent,
+      });
+
+      notifyListeners({
+        projectId: "some other project",
+        workflowId: "some other workflow",
+        nodeId: "some other node",
+        mode: SelectionEvent.ModeEnum.ADD,
+      });
+
+      expect(dispatchPushEvent).toHaveBeenCalledOnce();
+
+      removeListener();
+
+      notifyListeners(mockSelectionEvent);
+      expect(dispatchPushEvent).toHaveBeenCalledOnce();
     });
   });
 

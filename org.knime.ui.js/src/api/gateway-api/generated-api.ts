@@ -3262,34 +3262,73 @@ export interface ReplaceNodeCommand extends WorkflowCommand {
 export namespace ReplaceNodeCommand {
 }
 /**
- * Event type to register for SelectionEvents.
+ * A selection (aka hiliting) event.
  * @export
- * @interface SelectionEventType
+ * @interface SelectionEvent
  */
-export interface SelectionEventType extends EventType {
+export interface SelectionEvent extends Event {
 
     /**
-     * The workflow project id to get the selection-events for.
+     * The project emitting the event.
      * @type {string}
-     * @memberof SelectionEventType
+     * @memberof SelectionEvent
      */
     projectId: string;
     /**
-     * The top-level (root) or sub-workflow to get the selection-events for.
+     * The (sub-)workflow emitting the event.
      * @type {string}
-     * @memberof SelectionEventType
+     * @memberof SelectionEvent
      */
     workflowId: string;
     /**
-     *
+     * The node emitting the event.
      * @type {string}
-     * @memberof SelectionEventType
+     * @memberof SelectionEvent
      */
     nodeId: string;
+    /**
+     * The port emitting the event (in case of a port view).
+     * @type {number}
+     * @memberof SelectionEvent
+     */
+    portIndex?: number;
+    /**
+     * selection mode
+     * @type {string}
+     * @memberof SelectionEvent
+     */
+    mode: SelectionEvent.ModeEnum;
+    /**
+     * representation of the actual selection (e.g. a list of row keys)
+     * @type {Array<string>}
+     * @memberof SelectionEvent
+     */
+    selection?: Array<string>;
+    /**
+     * an error message if the selection event couldn&#39;t be created
+     * @type {string}
+     * @memberof SelectionEvent
+     */
+    error?: string;
 
 }
 
 
+/**
+ * @export
+ * @namespace SelectionEvent
+ */
+export namespace SelectionEvent {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum ModeEnum {
+        ADD = 'ADD',
+        REMOVE = 'REMOVE',
+        REPLACE = 'REPLACE'
+    }
+}
 /**
  * Event emmitted in order to show a toast.
  * @export
@@ -5899,7 +5938,6 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
 export type EventParams =
     | (WorkflowChangedEventType & { typeId: 'WorkflowChangedEventType' })
     | (AppStateChangedEventType & { typeId: 'AppStateChangedEventType' })
-    | (SelectionEventType & { typeId: 'SelectionEventType' })
     | (UpdateAvailableEventType & { typeId: 'UpdateAvailableEventType' })
     | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
     | (ProjectDisposedEventType & { typeId: 'ProjectDisposedEventType' })
@@ -5916,6 +5954,7 @@ export interface EventHandlers {
     ShowToastEvent?(payload: ShowToastEvent): void;
     ProjectDisposedEvent?(payload: ProjectDisposedEvent): void;
     WorkflowMonitorStateChangeEvent?(payload: WorkflowMonitorStateChangeEvent): void;
+    SelectionEvent?(payload: SelectionEvent): void;
 }
 
 const EventApiWrapper = function (rpcClient: RPCClient) {
