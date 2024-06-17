@@ -68,7 +68,7 @@ import org.knime.gateway.impl.project.Project.Origin;
  */
 public final class MostRecentlyUsedProjects {
 
-    private static final int MAX_NUM_RECENTLY_USED_PROJECTS = 10;
+    private static final int MAX_NUM_RECENTLY_USED_PROJECTS = 20;
 
     private final Map<String, RecentlyUsedProject> m_projects = new LinkedHashMap<>() {
         @Override
