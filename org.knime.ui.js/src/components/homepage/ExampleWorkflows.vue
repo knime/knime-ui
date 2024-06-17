@@ -71,7 +71,7 @@ const dismissExamples = () => {
       href="https://knime.com/modern-ui-hub-home-link?src=knimeappmodernui"
     >
       <ArrowRightIcon />
-      <span>Show me more examples on the hub</span>
+      <span>Show me more examples on the KNIME Community Hub</span>
     </a>
   </div>
 </template>

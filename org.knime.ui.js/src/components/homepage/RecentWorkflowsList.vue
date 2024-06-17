@@ -19,6 +19,7 @@ import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
 import PageTitle from "./PageTitle.vue";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
+import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
 
 type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 
@@ -54,7 +55,7 @@ const getSpaceProviderName = (recentWorkflow: RecentWorkflow) => {
   const { origin } = recentWorkflow;
   const provider = spaceProviders.value[origin.providerId];
 
-  return provider?.name;
+  return formatSpaceProviderName(provider);
 };
 
 onMounted(() => {

@@ -49,7 +49,7 @@ const shouldDisplayPromo = computed(() => {
       href="https://knime.com/modern-ui-hub-tile-link?src=knimeappmodernui"
     >
       <LinkExternalIcon />
-      Explore the community hub
+      Explore the KNIME Community Hub
     </Button>
   </div>
 </template>
