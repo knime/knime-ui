@@ -64,6 +64,7 @@ describe("WorkflowMetadata.vue", () => {
     const wrapper = mount(WorkflowMetadata, {
       global: {
         plugins: [$store],
+        stubs: { RichTextEditor: true },
       },
     });
 
