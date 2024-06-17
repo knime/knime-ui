@@ -2,6 +2,7 @@
 import { mapState, mapGetters, mapActions } from "vuex";
 import { placeholderPosition, portPositions } from "@/util/portShift";
 import { getPortContext } from "@/util/portSelection";
+import { isInputElement } from "@/util/isInputElement";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
 import NodePort from "./NodePort/NodePort.vue";
@@ -320,6 +321,10 @@ export default {
       this.clearSelection();
     },
     onKeydown(event) {
+      if (isInputElement(event.target)) {
+        return;
+      }
+
       const direction = {
         ArrowUp: "up",
         ArrowDown: "down",

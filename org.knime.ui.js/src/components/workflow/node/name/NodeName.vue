@@ -79,6 +79,7 @@ export default {
     },
     onCancel() {
       this.closeNameEditor();
+      this.$store.dispatch("canvas/focus");
     },
   },
 };
