@@ -31,6 +31,7 @@ export const routes: Array<RouteRecordRaw> = [
     name: Home,
     path: "/",
     component: () => import("@/components/homepage/HomePageLayout.vue"),
+    redirect: "/get-started",
     children: [
       {
         name: APP_ROUTES.Home.GetStarted,
