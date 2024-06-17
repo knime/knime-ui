@@ -775,6 +775,21 @@ export const removeMostRecentlyUsedProject = ({
   );
 };
 
+export const updateMostRecentlyUsedProject = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+  newName,
+}: SpaceProviderId & SpaceId & SpaceItemId & { newName: string }) => {
+  return callBrowserFunction(
+    window.updateMostRecentlyUsedProject,
+    [spaceProviderId, spaceId, itemId, newName],
+    "Failed to update most recently used project",
+    false,
+    { block: false },
+  );
+};
+
 export const getCustomHelpMenuEntries = () => {
   return callBrowserFunction(
     window.getCustomHelpMenuEntries,

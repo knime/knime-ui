@@ -60,6 +60,7 @@ import java.util.function.Predicate;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 
 /**
  * Utility class to be able to keep track of the most recently used projects.
@@ -117,9 +118,39 @@ public final class MostRecentlyUsedProjects {
         });
     }
 
+    /**
+     * Updates infos on a most recently used project (name, relative path (in case of a local project)).
+     *
+     * @param providerId
+     * @param spaceId
+     * @param itemId
+     * @param newName a new name to set; won't be updated if {@code null} or empty
+     * @param localSpace
+     */
+    public void updateOriginAndName(final String providerId, final String spaceId, final String itemId,
+        final String newName, final LocalWorkspace localSpace) {
+
+        Origin newOrigin = null;
+        if (LocalSpaceUtil.isLocalSpace(providerId, spaceId)) {
+            // update relative path in origin (in case the project has been renamed or moved
+            var absolutePath = localSpace.toLocalAbsolutePath(null, itemId).orElse(null);
+            if (absolutePath != null) {
+                newOrigin = LocalSpaceUtil.getLocalOrigin(absolutePath, localSpace);
+            }
+        }
+
+        var id = getId(providerId, spaceId, itemId);
+        var project = m_projects.get(id);
+        m_projects.put(id, new RecentlyUsedProject(newName == null || newName.isEmpty() ? project.name() : newName,
+            newOrigin == null ? project.origin() : newOrigin, project.timeUsed()));
+    }
+
     private static String getId(final Origin origin) {
-        return origin.getRelativePath()
-            .orElse(format("%s_%s_%s", origin.getItemId(), origin.getSpaceId(), origin.getProviderId()));
+        return getId(origin.getProviderId(), origin.getSpaceId(), origin.getItemId());
+    }
+
+    private static String getId(final String providerId, final String spaceId, final String itemId) {
+        return format("%s_%s_%s", providerId, spaceId, itemId);
     }
 
     /**

@@ -290,6 +290,17 @@ final class ProjectAPI {
         });
     }
 
+    /**
+     * Updates infos of the reference most recently used project, such as name or relative path (in case a local project
+     * has been moved).
+     */
+    @API
+    static void updateMostRecentlyUsedProject(final String providerId, final String spaceId, final String itemId,
+        final String newName) {
+        DesktopAPI.getDeps(MostRecentlyUsedProjects.class).updateOriginAndName(providerId, spaceId, itemId, newName,
+            DesktopAPI.getDeps(LocalWorkspace.class));
+    }
+
     private static Collector<Object, ArrayNode, ArrayNode> arrayNodeCollector() {
         return Collector.of(MAPPER::createArrayNode, ArrayNode::addPOJO, (n1, n2) -> {
             throw new UnsupportedOperationException();

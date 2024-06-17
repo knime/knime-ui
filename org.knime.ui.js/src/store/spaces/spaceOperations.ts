@@ -381,6 +381,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         itemName: newName,
       });
 
+      await API.desktop.updateMostRecentlyUsedProject({
+        spaceProviderId,
+        spaceId,
+        itemId,
+        newName,
+      });
+
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {
       commit("setIsLoadingContent", false);
@@ -475,6 +482,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         destWorkflowGroupItemId,
         collisionHandling: collisionStrategy,
         copy: isCopy,
+      });
+      itemIds.forEach(async (itemId: string) => {
+        await API.desktop.updateMostRecentlyUsedProject({
+          spaceProviderId,
+          spaceId,
+          itemId,
+          newName: "",
+        });
       });
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {
