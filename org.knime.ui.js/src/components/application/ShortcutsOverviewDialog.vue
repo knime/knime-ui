@@ -14,7 +14,7 @@ import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
 import { groupBy } from "lodash-es";
 import otherHotkeys from "@/shortcuts/otherHotkeys";
-import SearchButton from "@/components/common/SearchButton.vue";
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 import { matchesQuery } from "@/util/matchesQuery";
 import { formatHotkeys } from "@/util/formatHotkeys";
 
@@ -60,13 +60,13 @@ const isOpen = computed(
 );
 
 // focus search on open
-const searchButton = ref<InstanceType<typeof SearchButton>>();
+const searchInput = ref<InstanceType<typeof SearchInput>>();
 watch(
   isOpen,
   async () => {
     if (isOpen.value) {
       await nextTick();
-      searchButton.value?.focus();
+      searchInput.value?.focus();
     }
   },
   { immediate: true },
@@ -111,20 +111,17 @@ const groupedShortcuts = computed(() =>
     class="modal"
     @cancel="closeModal"
   >
-    <template #titleAppend>
-      <span class="title-append">
-        <SearchButton
-          ref="searchButton"
-          v-model="searchQuery"
-          placeholder="Filter shortcuts"
-          show-input
-        />
-      </span>
-    </template>
     <template #icon>
       <ShortcutsIcon />
     </template>
     <template #notice>
+      <div class="search">
+        <SearchInput
+          ref="searchInput"
+          v-model="searchQuery"
+          placeholder="Filter shortcuts"
+        />
+      </div>
       <div class="shortcut-overview">
         <div
           v-for="(shortcutsOfGroup, groupKey) of groupedShortcuts"
@@ -171,7 +168,6 @@ const groupedShortcuts = computed(() =>
 
   & :deep(.notice) {
     padding: 0;
-    overflow: hidden auto;
     height: 100%;
   }
 
@@ -183,24 +179,11 @@ const groupedShortcuts = computed(() =>
   & :deep(.controls) {
     display: none;
   }
+}
 
-  & .title-append {
-    margin-left: auto;
-    display: flex;
-  }
-
-  &:deep(.closer) {
-    margin-left: 5px;
-  }
-
-  & :deep(.search-button) {
-    &:not(.active) svg {
-      stroke: var(--knime-white);
-    }
-  }
-  --theme-button-function-foreground-color-active: var(--knime-black);
-  --theme-button-function-background-color-active: var(--knime-white);
-  --theme-input-field-background-color-focus: var(--knime-stone-light);
+.search {
+  padding: var(--modal-padding) var(--modal-padding) 0 var(--modal-padding);
+  margin-bottom: 10px;
 }
 
 .shortcut-overview {
@@ -212,6 +195,8 @@ const groupedShortcuts = computed(() =>
   grid-gap: 0 calc(var(--modal-padding) * 2);
   padding: 0 var(--modal-padding) var(--modal-padding) var(--modal-padding);
   font-size: 13px;
+  overflow: hidden auto;
+  height: calc(100% - 70px);
 
   & .group {
     align-self: start;
