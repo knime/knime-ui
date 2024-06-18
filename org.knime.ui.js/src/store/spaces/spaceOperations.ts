@@ -488,7 +488,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
           spaceProviderId,
           spaceId,
           itemId,
-          newName: "",
         });
       });
       await dispatch("fetchWorkflowGroupContent", { projectId });

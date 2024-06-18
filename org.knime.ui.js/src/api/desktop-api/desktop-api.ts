@@ -780,7 +780,7 @@ export const updateMostRecentlyUsedProject = ({
   spaceId,
   itemId,
   newName,
-}: SpaceProviderId & SpaceId & SpaceItemId & { newName: string }) => {
+}: SpaceProviderId & SpaceId & SpaceItemId & { newName?: string }) => {
   return callBrowserFunction(
     window.updateMostRecentlyUsedProject,
     [spaceProviderId, spaceId, itemId, newName],
