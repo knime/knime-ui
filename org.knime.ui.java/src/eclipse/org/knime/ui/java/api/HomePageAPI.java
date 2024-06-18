@@ -65,7 +65,7 @@ final class HomePageAPI {
      * 
      * @return A map/record with plain-text properties of title, image, text, button label and button link URL.
      */
-    @API
+    @API(runInUIThread = false)
     static Map<String, String> getHomePageTileContent() {
         return DesktopAPI.getDeps(ExternalContent.class).getHomepageSidebarTile();
     }

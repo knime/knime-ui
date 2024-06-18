@@ -65,6 +65,7 @@ import org.knime.core.util.ThreadLocalHTTPAuthenticator;
 import org.knime.core.util.proxy.URLConnectionFactory;
 import org.knime.product.rcp.KNIMEApplication;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -76,6 +77,12 @@ public final class WelcomeAPEndpoint {
     private static final String ENDPOINT = "https://tips-and-tricks.knime.com/welcome-ap";
 
     private WelcomeAPEndpoint() {
+    }
+
+    private enum SessionState {
+        CREATE,
+
+        OPERATIONAL
     }
 
     /**
@@ -91,7 +98,7 @@ public final class WelcomeAPEndpoint {
      *           </ul>
      */
     public static void callWelcomeAPEndpointForTrackingStartup() {
-        var response = request("create");
+        var response = request(SessionState.CREATE);
         response.ifPresent(r -> {
             try {
                 IOUtils.toString(r, StandardCharsets.UTF_8);
@@ -121,12 +128,14 @@ public final class WelcomeAPEndpoint {
             .addParameter("ui", "modern");
     }
 
-    private static Optional<InputStream> request(final String sessionState) {
+    private static Optional<InputStream> request(final SessionState sessionState) {
         if (EclipseUtil.isRunFromSDK()) {
             return Optional.empty();
         }
         try (final var suppression = ThreadLocalHTTPAuthenticator.suppressAuthenticationPopups()) {
-            var url = getBaseRequestURI().addParameter("session_state", sessionState).build().toURL();
+            var url = getBaseRequestURI() //
+                    .addParameter("session_state", sessionState.name().toLowerCase()) //
+                    .build().toURL();
             HttpURLConnection connection = (HttpURLConnection)URLConnectionFactory.getConnection(url);
             connection.setReadTimeout(5000);
             connection.setConnectTimeout(2000);
@@ -191,7 +200,7 @@ public final class WelcomeAPEndpoint {
      * @return All content provided by the endpoint, in a structured format
      */
     static Optional<JSONCategory[]> getWelcomePageContents() {
-        var response = request("operational");
+        var response = request(SessionState.OPERATIONAL);
         return response.map(res -> {
             try {
                 return parseResponse(res);

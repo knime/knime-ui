@@ -72,7 +72,7 @@ public class ExternalContent {
     public Map<String, String> getHomepageSidebarTile() {
         var categories = WelcomeAPEndpoint.getWelcomePageContents();
         if (categories.isEmpty()) {
-            return Collections.emptyMap();
+            return null;
         }
         var firstNewsTile =
                  Arrays.stream(categories.get()) //
@@ -81,7 +81,7 @@ public class ExternalContent {
                 .map(JSONCategory::getTiles)
                 .flatMap(tiles -> tiles.stream().findFirst());
         return firstNewsTile.map(WelcomeAPEndpoint::tileToMap) //
-                .orElse(Collections.emptyMap());
+                .orElse(null);
     }
 
 
