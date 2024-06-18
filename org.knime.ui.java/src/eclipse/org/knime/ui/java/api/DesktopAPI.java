@@ -70,6 +70,7 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.externalcontent.ExternalContent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -161,7 +162,7 @@ public final class DesktopAPI {
         }
     }
 
-    @SuppressWarnings("java:S112")  // generic exception reasonable here
+    @SuppressWarnings("java:S112") // generic exception reasonable here
     private static Object invokeMethod(final Method m, final Object[] args) throws Throwable {
         var name = m.getName();
         try {
@@ -185,20 +186,22 @@ public final class DesktopAPI {
      * @param workflowProjectManager
      * @param appStateUpdater
      * @param spaceProviders
-     * @param updateStateProvider optional, can be {@code null}
+     * @param updateStateProvider    optional, can be {@code null}
      * @param eventConsumer
      * @param workflowMiddleware
      * @param toastService
      * @param nodeRepo
      * @param mruProjects
      * @param localWorkspace
+     * @param externalContent
      * @throws IllegalStateException if the dependencies have been already injected
      */
     public static void injectDependencies(final ProjectManager workflowProjectManager,
         final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
-        final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace) {
+        final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace,
+            ExternalContent externalContent) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -215,6 +218,7 @@ public final class DesktopAPI {
         }
         dependencies.put(MostRecentlyUsedProjects.class, mruProjects);
         dependencies.put(LocalWorkspace.class, localWorkspace);
+        dependencies.put(ExternalContent.class, externalContent);
     }
 
     /**

@@ -82,7 +82,7 @@ class ImportURITest {
     void testImportURI() throws IOException {
         Supplier<int[]> cursorLocationSupplier = () -> new int[]{102, 99};
         var eventConsumer = mock(EventConsumer.class);
-        DesktopAPI.injectDependencies(null, null, null, null, eventConsumer, null, null, null, null, null);
+        DesktopAPI.injectDependencies(null, null, null, null, eventConsumer, null, null, null, null, null, null);
 
         var success = ImportURI.importURI(cursorLocationSupplier, "test://domain/resource");
         assertThat(success).isTrue();

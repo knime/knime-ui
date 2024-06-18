@@ -49,43 +49,34 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.io.ByteArrayInputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.core.util.EclipseUtil;
-import org.knime.core.util.HubStatistics;
-import org.knime.core.util.ThreadLocalHTTPAuthenticator;
-import org.knime.core.util.proxy.URLConnectionFactory;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.product.rcp.KNIMEApplication;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.ui.java.util.externalcontent.WelcomeAPEndpoint;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
@@ -124,7 +115,7 @@ final class Create {
             } catch (Exception e) { // NOSONAR
                 // nothing to do - since it's for a sanity check only
             }
-            callWelcomeAPEndpoint();
+            WelcomeAPEndpoint.callWelcomeAPEndpointForTrackingStartup();
         }
 
         // Initialize the node timer with the currently active 'perspective'
@@ -172,74 +163,6 @@ final class Create {
             }
 
         };
-    }
-
-    private static void callWelcomeAPEndpoint() {
-        if (EclipseUtil.isRunFromSDK()) {
-            return;
-        }
-        try (final var suppression = ThreadLocalHTTPAuthenticator.suppressAuthenticationPopups()) {
-            final var baseUrl = "https://tips-and-tricks.knime.com/welcome-ap";
-            var builder = new StringBuilder(baseUrl);
-            builder.append("?knid=" + KNIMEConstants.getKNID());
-            builder.append("&version=" + KNIMEConstants.VERSION);
-            builder.append("&os=" + Platform.getOS());
-            builder.append("&osname=" + KNIMEConstants.getOSVariant());
-            builder.append("&arch=" + Platform.getOSArch());
-            builder.append("&ui=modern");
-
-            // details
-            builder.append("&details=");
-            builder.append(buildAPUsage());
-            builder.append(",");
-            builder.append(buildHubUsage());
-
-            var url = new URL(builder.toString().replace(" ", "%20"));
-            HttpURLConnection conn = (HttpURLConnection)URLConnectionFactory.getConnection(url);
-            conn.setReadTimeout(5000);
-            conn.setConnectTimeout(2000);
-            conn.connect();
-
-            try (var is = conn.getInputStream()) {
-                IOUtils.toString(is, StandardCharsets.UTF_8);
-            } finally {
-                conn.disconnect();
-            }
-        } catch (Throwable e) { // NOSONAR
-            NodeLogger.getLogger(Create.class).debug("Could not call 'welcome-AP' endpoint: " + e.getMessage(), e);
-        }
-    }
-
-    private static String buildAPUsage() {
-        // simple distinction between first and recurring users
-        var apUsage = "apUsage:";
-        if (KNIMEApplication.isStartedWithFreshWorkspace()) {
-            apUsage += "first";
-        } else {
-            apUsage += "recurring";
-        }
-        return apUsage;
-    }
-
-    private static String buildHubUsage() {
-        var hubUsage = "hubUsage:";
-        Optional<ZonedDateTime> lastLogin = Optional.empty();
-        Optional<ZonedDateTime> lastUpload = Optional.empty();
-        try {
-            lastLogin = HubStatistics.getLastLogin();
-            lastUpload = HubStatistics.getLastUpload();
-        } catch (Exception e) { // NOSONAR
-            NodeLogger.getLogger(Create.class).info("Hub statistics could not be fetched: " + e.getMessage(), e);
-        }
-
-        if (lastUpload.isPresent()) {
-            hubUsage += "contributer";
-        } else if (lastLogin.isPresent()) {
-            hubUsage += "user";
-        } else {
-            hubUsage += "none";
-        }
-        return hubUsage;
     }
 
     private static void initializeResourceHandlers() {

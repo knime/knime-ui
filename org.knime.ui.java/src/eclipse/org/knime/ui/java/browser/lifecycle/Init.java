@@ -104,6 +104,7 @@ import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.NodeCollectionUtil;
 import org.knime.ui.java.util.SpaceProvidersUtil;
+import org.knime.ui.java.util.externalcontent.ExternalContent;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -146,7 +147,7 @@ final class Init {
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
-            state.getLocalWorkspace());
+            state.getLocalWorkspace(), new ExternalContent());
 
         var listener = registerListenerToSendProgressEvents(eventConsumer);
 

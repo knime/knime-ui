@@ -100,7 +100,7 @@ class ProjectAPITest {
         mruProjects.add(proj3);
 
         DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects,
-            LocalSpaceUtilTest.createLocalWorkspace());
+            LocalSpaceUtilTest.createLocalWorkspace(), null);
 
         var res = ProjectAPI.updateAndGetMostRecentlyUsedProjects();
         assertThat(res).isEqualTo(String.format("""
@@ -126,7 +126,7 @@ class ProjectAPITest {
         mruProjects.add(proj1);
         mruProjects.add(proj2);
 
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, null);
+        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, null, null);
 
         ProjectAPI.removeMostRecentlyUsedProject("pidblub", "sid", "iid2");
         assertThat(mruProjects.get()).hasSize(2);

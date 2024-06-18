@@ -97,7 +97,7 @@ class OpenProjectTest {
         var mruProjects = new MostRecentlyUsedProjects();
         var pm = ProjectManager.getInstance();
         DesktopAPI.injectDependencies(pm, appStateUpdater, spaceProviders, null,
-            eventConsumer, null, null, null, mruProjects, localWorkspace);
+            eventConsumer, null, null, null, mruProjects, localWorkspace, null);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
