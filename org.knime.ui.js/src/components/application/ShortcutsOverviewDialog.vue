@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
@@ -59,19 +59,6 @@ const isOpen = computed(
   () => store.state.application.isShortcutsOverviewDialogOpen,
 );
 
-// focus search on open
-const searchInput = ref<InstanceType<typeof SearchInput>>();
-watch(
-  isOpen,
-  async () => {
-    if (isOpen.value) {
-      await nextTick();
-      searchInput.value?.focus();
-    }
-  },
-  { immediate: true },
-);
-
 const searchQuery = ref("");
 
 const closeModal = () => {
@@ -117,8 +104,9 @@ const groupedShortcuts = computed(() =>
     <template #notice>
       <div class="search">
         <SearchInput
-          ref="searchInput"
+          v-if="isOpen"
           v-model="searchQuery"
+          focus-on-mount
           placeholder="Filter shortcuts"
         />
       </div>
