@@ -2,12 +2,16 @@
 import type { PropType } from "vue";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 
+import { clamp, throttle } from "lodash-es";
+
 interface BreadcrumbItem {
   text: string;
   href?: string;
   id?: string;
   icon?: unknown;
 }
+
+const BREADCRUMB_THROTTLE_WHEEL = 150;
 
 /**
  * Wraps the webapps-common Breadcrumb and works with IDs and click events
@@ -52,16 +56,29 @@ export default {
 
       this.$emit("click", { id, target });
     },
+    onWheel: throttle(function (this: any, e: WheelEvent) {
+      // eslint-disable-next-line no-invalid-this
+      const breadcrumbElement = this.$refs.breadcrumb.$el as HTMLElement;
+      const maxScroll =
+        breadcrumbElement.scrollWidth - breadcrumbElement.offsetWidth;
+
+      breadcrumbElement?.scrollTo({
+        left: clamp(breadcrumbElement.scrollLeft + e.deltaY, 0, maxScroll),
+        behavior: "smooth",
+      });
+    }, BREADCRUMB_THROTTLE_WHEEL),
   },
 };
 </script>
 
 <template>
   <Breadcrumb
+    ref="breadcrumb"
     class="action-breadcrumb"
     v-bind="$attrs"
     :items="breadcrumbItems"
     @click.capture.prevent.stop="onClick"
+    @wheel="onWheel"
   />
 </template>
 
@@ -69,6 +86,13 @@ export default {
 @import url("@/assets/mixins.css");
 
 .action-breadcrumb {
+  overflow-x: auto; /* Scroll breadcrumb with hidden scrollbar in ... */
+  -ms-overflow-style: none; /* ... Edge */
+  scrollbar-width: none; /* ... Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* ... Chrome, Safari and Opera */
+  }
+
   & :deep(a):focus-visible {
     @mixin focus-style;
   }
