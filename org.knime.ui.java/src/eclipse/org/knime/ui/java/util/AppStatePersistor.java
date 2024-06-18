@@ -355,7 +355,7 @@ public final class AppStatePersistor {
                 // project type might not be available in the rare case that the workflow at the
                 // given absolute path doesn't exist anymore
                 if (projectType.isEmpty() && isLocal) {
-                    return Optional.of(localSpace.getProjectType(itemId).orElse(null));
+                    return Optional.ofNullable(localSpace.getProjectType(itemId).orElse(null));
                 } else {
                     return projectType;
                 }
