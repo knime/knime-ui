@@ -1,22 +1,24 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
+import { groupBy } from "lodash-es";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
+import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
+import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
+import { formatHotkeys, type Hotkey } from "webapps-common/util/formatHotkeys";
+
 import shortcuts from "@/shortcuts";
 import type {
   FormattedShortcut,
   Shortcut,
   ShortcutGroups,
 } from "@/shortcuts/types";
-import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
-import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
-import { groupBy } from "lodash-es";
+
 import otherHotkeys from "@/shortcuts/otherHotkeys";
-import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 import { matchesQuery } from "@/util/matchesQuery";
-import { formatHotkeys } from "@/util/formatHotkeys";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";
 
@@ -33,7 +35,7 @@ const getText = (shortcut: FormattedShortcut) => {
 
 const allShortcuts = [...boundShortcuts, ...otherHotkeys].map((shortcut) => ({
   ...shortcut,
-  hotkeyText: shortcut.hotkey ? formatHotkeys(shortcut.hotkey) : "",
+  hotkeyText: shortcut.hotkey ? formatHotkeys(shortcut.hotkey as Hotkey[]) : "",
   displayText: getText(shortcut as FormattedShortcut),
 })) as ShortcutItemData[];
 

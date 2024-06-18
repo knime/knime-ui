@@ -14,7 +14,7 @@ import type { EditorTools } from "webapps-common/ui/components/forms/RichTextEdi
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as $shapes from "@/style/shapes.mjs";
-import { formatHotkeys } from "@/util/formatHotkeys";
+import { type Hotkey, formatHotkeys } from "webapps-common/util/formatHotkeys";
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
 import ColorIcon from "./ColorIcon.vue";
@@ -23,7 +23,6 @@ import ColorSelectionDialog from "./ColorSelectionDialog.vue";
 import CreateLinkModal from "./CreateLinkModal.vue";
 
 import { addCustomLink } from "./extended-link";
-import type { Hotkey } from "@/shortcuts";
 
 interface Props {
   editor: Editor;

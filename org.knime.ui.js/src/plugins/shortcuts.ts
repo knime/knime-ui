@@ -3,14 +3,15 @@ import { useStore, type Store } from "vuex";
 
 import { useToasts, type ToastService } from "webapps-common/ui/services/toast";
 import { isMac } from "webapps-common/util/navigator";
+import { type Hotkey, formatHotkeys } from "webapps-common/util/formatHotkeys";
+
 import shortcuts from "@/shortcuts";
 import type {
   ShortcutsService,
   FormattedShortcut,
   Hotkeys,
-  Hotkey,
 } from "@/shortcuts/types";
-import { formatHotkeys } from "@/util/formatHotkeys";
+
 import type { RootStoreState } from "@/store/types";
 import type { PluginInitFunction } from "./types";
 

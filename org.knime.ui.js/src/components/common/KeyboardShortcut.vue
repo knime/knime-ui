@@ -1,6 +1,12 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
+import {
+  formatHotkey,
+  getDefaultSeparator,
+} from "webapps-common/util/formatHotkeys";
+
 import type { HotkeyText, Hotkeys } from "@/shortcuts/types";
-import { mapKeyFormat, getSeparator } from "@/util/formatHotkeys";
 
 interface Props {
   hotkey: Hotkeys;
@@ -12,29 +18,27 @@ const isText = (keyOrText: Hotkeys[number]): keyOrText is HotkeyText => {
   return typeof keyOrText !== "string" && keyOrText.hasOwnProperty("text");
 };
 
-const getText = (keyOrText: Hotkeys[number]) => {
-  return (keyOrText as HotkeyText).text;
-};
-
 const isNextItemText = (index: number) => {
   const item = props.hotkey.at(index + 1);
   return item ? isText(item) : false;
 };
 
-const isLast = (index: number) => {
-  return index === props.hotkey.length - 1;
-};
+const isLast = (index: number) => index === props.hotkey.length - 1;
+
+const keys = computed(() =>
+  props.hotkey.map((key) => (isText(key) ? key : formatHotkey(key))),
+);
 </script>
 
 <template>
-  <template v-for="(keyOrText, index) of mapKeyFormat(hotkey)" :key="index">
+  <template v-for="(keyOrText, index) of keys" :key="index">
     <template v-if="isText(keyOrText)">
-      <span class="text">{{ getText(keyOrText) }}</span>
+      <span class="text">{{ keyOrText.text }}</span>
     </template>
     <template v-else>
       <kbd>{{ keyOrText }}</kbd>
       <span v-if="!isLast(index) && !isNextItemText(index)">
-        {{ getSeparator() }}
+        {{ getDefaultSeparator() }}
       </span>
     </template>
   </template>

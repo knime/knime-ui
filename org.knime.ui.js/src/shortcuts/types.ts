@@ -5,32 +5,7 @@ import type { Store } from "vuex";
 import type { ToastService } from "webapps-common/ui/services/toast";
 import type { RootStoreState } from "@/store/types";
 import type { ShortcutsRegistry } from ".";
-
-type Keys =
-  | "F1"
-  | "F2"
-  | "F3"
-  | "F4"
-  | "F5"
-  | "F6"
-  | "F7"
-  | "F8"
-  | "F9"
-  | "F10"
-  | "F11"
-  | "F12"
-  | "PageUp"
-  | "PageDown"
-  | "ArrowUp"
-  | "ArrowRight"
-  | "ArrowDown"
-  | "ArrowLeft"
-  | "Delete"
-  | "Enter"
-  | " "
-  | "Backspace";
-
-type Modifiers = "CtrlOrCmd" | "Ctrl" | "Alt" | "Shift";
+import type { Hotkey } from "webapps-common/util/formatHotkeys";
 
 export type ShortcutGroups =
   | "general"
@@ -43,14 +18,8 @@ export type ShortcutGroups =
   | "workflowAnnotations"
   | "workflowEditor";
 
-// creates loose autocomplete by using a union of the passed-in type
-// and the entire `string` set *except* the passed-in type
-type LooseAutoComplete<T extends string> = T | Omit<string, T>;
-
-export type NumberRange = `${number}-${number}`;
 export type HotkeyText = { text: string };
-export type Hotkey = Keys | Modifiers | NumberRange;
-export type Hotkeys = Array<LooseAutoComplete<Keys | Modifiers> | HotkeyText>;
+export type Hotkeys = Array<Hotkey | HotkeyText>;
 
 export type ShortcutExecuteContext = {
   $store: Store<RootStoreState>;
