@@ -3,15 +3,15 @@ import { mapState, mapGetters } from "vuex";
 
 import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 
 import type { ShortcutName } from "@/shortcuts";
+import { isDesktop } from "@/environment";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
-import { compatibility, isDesktop } from "@/environment";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -89,9 +89,6 @@ export default {
       return { save: ["save", "saveAs"] };
     },
     toolbarButtons(): ShortcutName[] {
-      const isInsideComponent =
-        this.workflow?.info.containerType === "component";
-
       if (!this.workflow) {
         return [];
       }
@@ -99,6 +96,8 @@ export default {
       if (!this.workflow || !this.permissions.canEditWorkflow) {
         return [];
       }
+
+      const hasNodesSelected = this.selectedNodes.length > 0;
 
       const visibleItems: Partial<Record<ShortcutName, boolean>> = {
         save: !this.isUnknownProject(this.activeProjectId) && isDesktop,
@@ -109,22 +108,20 @@ export default {
         redo: true,
 
         // Workflow
-        executeAll: !this.selectedNodes.length,
-        cancelAll: !this.selectedNodes.length,
-        resetAll: !this.selectedNodes.length,
+        executeAll: !hasNodesSelected,
+        cancelAll: !hasNodesSelected,
+        resetAll: !hasNodesSelected,
 
         // Node execution
-        executeSelected: this.selectedNodes.length,
-        cancelSelected: this.selectedNodes.length,
-        resetSelected: this.selectedNodes.length,
+        executeSelected: hasNodesSelected,
+        cancelSelected: hasNodesSelected,
+        resetSelected: hasNodesSelected,
 
         // Workflow abstraction
-        createMetanode: this.selectedNodes.length,
-        createComponent:
-          this.selectedNodes.length && compatibility.canDoComponentOperations(),
+        createMetanode: hasNodesSelected,
+        createComponent: hasNodesSelected,
 
-        openLayoutEditor:
-          isInsideComponent && compatibility.canDoComponentOperations(),
+        openLayoutEditor: this.$shortcuts.isEnabled("openLayoutEditor"),
       };
 
       return (
