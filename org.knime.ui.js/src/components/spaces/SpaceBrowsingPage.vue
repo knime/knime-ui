@@ -121,7 +121,7 @@ const onRenameSpace = (name: String) => {
         v-model:is-editing="isEditing"
         :title="title"
         :breadcrumbs="breadcrumbs"
-        is-editable
+        :is-editable="isHubProvider(activeSpaceProvider)"
         :error="errorOnHeader"
         @submit="onRenameSpace"
         @cancel="errorOnHeader = ''"

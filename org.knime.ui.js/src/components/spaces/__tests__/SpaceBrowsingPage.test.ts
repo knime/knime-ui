@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { mockVuexStore, deepMocked } from "@/test/utils";
+import { useRoute } from "vue-router";
 
 import * as spacesStore from "@/store/spaces";
 import * as applicationStore from "@/store/application";
@@ -90,7 +91,21 @@ mockedAPI.space.listWorkflowGroup.mockResolvedValue({
 vi.mock("webapps-common/ui/services/toast");
 
 describe("SpaceBrowsingPage.vue", () => {
-  const doMount = async ({ initialStoreState = {} } = {}) => {
+  beforeEach(() => {
+    // @ts-ignore
+    useRoute.mockReturnValue({
+      params: {
+        spaceProviderId: spaceProvider.id,
+        groupId: spaceGroup.id,
+        spaceId: spaceGroup.spaces.at(0)!.id,
+      },
+    });
+  });
+
+  const doMount = async ({
+    initialStoreState = {},
+    customProviders = {},
+  } = {}) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
       application: applicationStore,
@@ -98,6 +113,7 @@ describe("SpaceBrowsingPage.vue", () => {
 
     $store.commit("spaces/setSpaceProviders", {
       [spaceProvider.id]: spaceProvider,
+      ...customProviders,
     });
 
     $store.state.spaces = {
@@ -175,13 +191,42 @@ describe("SpaceBrowsingPage.vue", () => {
     });
   });
 
+  it("should not allow rename on non-hub spaces", async () => {
+    const localProvider = createSpaceProvider({
+      spaceGroups: [
+        createSpaceGroup({
+          id: "local",
+          spaces: [createSpace({ id: "local" })],
+        }),
+      ],
+    });
+    // @ts-ignore
+    useRoute.mockReturnValue({
+      params: {
+        spaceProviderId: localProvider.id,
+        groupId: "local",
+        spaceId: "local",
+      },
+    });
+
+    const { wrapper } = await doMount({
+      customProviders: {
+        [localProvider.id]: localProvider,
+      },
+    });
+
+    const headerComponent = wrapper.findComponent(SpacePageHeader);
+    expect(headerComponent.props("isEditable")).toBe(false);
+  });
+
   it("should rename a space", async () => {
     const { wrapper, dispatchSpy } = await doMount();
 
-    await wrapper
-      .findAllComponents(SpacePageHeader)
-      .at(0)!
-      .vm.$emit("submit", "testName");
+    const headerComponent = wrapper.findComponent(SpacePageHeader);
+    expect(headerComponent.props("isEditable")).toBe(true);
+
+    headerComponent.vm.$emit("submit", "testName");
+
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/renameSpace", {
       spaceProviderId: spaceProvider.id,
       spaceId: spaceGroup.spaces.at(0)!.id,
