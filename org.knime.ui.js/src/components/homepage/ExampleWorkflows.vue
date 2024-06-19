@@ -10,10 +10,14 @@ import { useStore } from "@/composables/useStore";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
 import type { ExampleProject } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import PageTitle from "./PageTitle.vue";
+
+import { isEqual } from "lodash-es";
 
 const store = useStore();
 const $router = useRouter();
+const $toast = getToastsProvider();
 
 const exampleProjects = computed(() => store.state.application.exampleProjects);
 const settings = computed(() => store.state.settings.settings);
@@ -24,11 +28,25 @@ const shouldShowExampleWorkflows = computed(
 );
 
 const onExampleClick = async (example: ExampleProject) => {
-  // TODO: Handle exception here?
-  await store.dispatch("spaces/openProject", {
-    ...example.origin,
-    $router,
-  });
+  try {
+    await store.dispatch("spaces/openProject", {
+      ...example.origin,
+      $router,
+    });
+  } catch (error) {
+    consola.error("could not open example workflow", error);
+
+    $toast.show({
+      type: "warning",
+      headline: "Could not open workflow",
+      message: "The workflow might not exist anymore or be corrupted",
+    });
+
+    const newExampleProjects = exampleProjects.value.filter(
+      (item) => !isEqual(item.origin, example.origin),
+    );
+    store.commit("application/setExampleProjects", newExampleProjects);
+  }
 };
 
 const dismissExamples = () => {

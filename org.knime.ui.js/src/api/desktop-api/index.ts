@@ -22,7 +22,6 @@ export interface DesktopEventHandlers {
   DesktopAPIFunctionResultEvent(payload: {
     name: string;
     result: boolean | string | null;
-    error: string | null;
   }): void;
 
   SpaceProvidersChangedEvent(

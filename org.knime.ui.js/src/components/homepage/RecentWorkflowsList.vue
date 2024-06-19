@@ -87,7 +87,7 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
       $router,
     });
   } catch (error) {
-    consola.log("could not open recent workflow", error);
+    consola.error("could not open recent workflow", error);
 
     $toast.show({
       type: "warning",

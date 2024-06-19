@@ -173,7 +173,7 @@ const onOpenFile = async ({ id }: FileExplorerItem) => {
       $router,
     });
   } catch (error) {
-    consola.log("could not open recent workflow", error);
+    consola.error("could not open selected workflow", error);
 
     $toast.show({
       type: "warning",
