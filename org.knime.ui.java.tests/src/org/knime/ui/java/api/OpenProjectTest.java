@@ -100,7 +100,11 @@ class OpenProjectTest {
             eventConsumer, null, null, null, mruProjects, localWorkspace);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
-        OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
+
+        var didOpen1 = OpenProject.openProjectInWebUIOnly("local", "local", "does-not-exist", new NullProgressMonitor());
+        assertThat(didOpen1).isFalse();
+        var didOpen2 = OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
+        assertThat(didOpen2).isTrue();
 
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);
