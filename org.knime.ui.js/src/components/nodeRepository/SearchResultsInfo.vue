@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { API } from "@api";
-import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
+import CircleInfoIcon from "webapps-common/ui/assets/img/icons/network-workflow.svg";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 import MoreNodesIllustration from "@/assets/more-nodes-illustration.svg";
 import { isDesktop } from "@/environment";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import DummyNodes from "@/assets/workflow-coach-dummy-nodes.svg";
 
 type Props = {
   numFilteredOutNodes: number;
@@ -24,13 +25,14 @@ const openKnimeUIPreferencePage = () => {
 
 <template>
   <div v-if="numFilteredOutNodes > 0" class="filtered-nodes-wrapper">
-    <CircleInfoIcon class="info-icon" />
     <div class="filtered-nodes-content">
       <template v-if="isDesktop">
+        <DummyNodes class="dummy-nodes" />
         <span>
-          Change filter settings to “All nodes“ to see more advanced nodes
-          matching your search criteria.
+          <b>Change filter settings</b> to “All nodes“ to see more advanced
+          nodes matching your search criteria.
         </span>
+
         <Button
           primary
           compact
@@ -60,11 +62,11 @@ const openKnimeUIPreferencePage = () => {
     :class="{ mini: isQuickAddNodeMenu }"
   >
     <template v-if="isDesktop">
-      <CircleInfoIcon class="info-icon" />
       <div class="filtered-nodes-content">
-        <span>There are no matching nodes.</span>
+        <CircleInfoIcon class="info-icon" />
         <span
-          >Search the
+          >There are no matching nodes. <br />
+          Search the
           <a :href="searchHubLink">KNIME Community Hub</a>
           to find more nodes and extensions.</span
         >
@@ -99,7 +101,6 @@ const openKnimeUIPreferencePage = () => {
 @import url("@/assets/mixins.css");
 
 .filtered-nodes-wrapper {
-  border-top: 1px solid var(--knime-silver-sand);
   padding-top: 20px;
   display: flex;
   align-items: center;
@@ -110,24 +111,28 @@ const openKnimeUIPreferencePage = () => {
   }
 
   & .info-icon {
-    @mixin svg-icon-size 20;
+    @mixin svg-icon-size 32;
 
     stroke: var(--knime-masala);
     min-width: 20px;
-    margin-right: 10px;
   }
 
   & .filtered-nodes-content {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     font-weight: 500;
     font-size: 13px;
-    font-style: italic;
     width: 100%;
 
     & .filtered-nodes-button {
       margin-top: 15px;
+    }
+
+    & .dummy-nodes {
+      margin: 0 0 24px 0;
+      filter: blur(2px);
+      align-self: center;
     }
   }
 
