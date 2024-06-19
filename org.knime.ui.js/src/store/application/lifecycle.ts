@@ -85,6 +85,30 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       },
     });
 
+    await runInEnvironment({
+      DESKTOP: async () => {
+        const RETRY_DELAY_MS = 50;
+        // TODO: NXT-989 remove this delay once desktop calls are made via the
+        // EquoComm service
+        const retry = async (retryCount: number) => {
+          try {
+            await API.desktop.getHomePageTile()
+              .then((homePageTileContent) => {
+                  console.log("retrieved home page tile content:", homePageTileContent);
+                  // commit("setHomePageTileContent", homePageTileContent)
+                  // TODO how to access value later?
+              });
+          } catch (e) {
+            if (retryCount > 0) {
+              await sleep(RETRY_DELAY_MS);
+              await retry(retryCount - 1);
+            }
+          }
+        };
+        await retry(100);
+      },
+    });
+
     // On desktop, the application state will load rather quickly, so we don't
     // need to set this
     runInEnvironment({

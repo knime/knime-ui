@@ -45,9 +45,14 @@
  */
 package org.knime.ui.java.api;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
-import org.knime.ui.java.util.externalcontent.ExternalContent;
+import org.knime.product.rcp.intro.WelcomeAPEndpoint;
+// TODO avoid exporting this package?
+import org.knime.product.rcp.intro.json.JSONCategory;
+import org.knime.product.rcp.intro.json.JSONTile;
 
 /**
  * Provide content for the app home / entry page.
@@ -62,12 +67,37 @@ final class HomePageAPI {
 
     /**
      * Get the contents of the single content tile in the home page sidebar.
-     * 
+     *
      * @return A map/record with plain-text properties of title, image, text, button label and button link URL.
      */
     @API(runInUIThread = false)
-    static Map<String, String> getHomePageTileContent() {
-        return DesktopAPI.getDeps(ExternalContent.class).getHomepageSidebarTile();
+    // TODO better name?
+    static Map<String, String> getHomePageTile() {
+        JSONCategory[] categories = null;
+        try {
+            categories = DesktopAPI.getDeps(WelcomeAPEndpoint.class).getCategories(true).orElse(null);
+        } catch (IOException e) { // NOSONAR
+            //
+        }
+        if (categories == null) {
+            return null; // NOSONAR
+        }
+        var firstNewsTile = Arrays.stream(categories) //
+            .filter(cat -> cat.getId().equals("c3-events-promotions")) //
+            .findFirst() //
+            .map(JSONCategory::getTiles).flatMap(tiles -> tiles.stream().findFirst());
+        return firstNewsTile.map(HomePageAPI::tileToMap) //
+            .orElse(null);
+        // TODO instead serialise JSONNode?
+    }
+
+    private static Map<String, String> tileToMap(final JSONTile tile) {
+        return Map.of( //
+                "title", tile.getTitle(), //
+                "image", tile.getImage(), //
+                "text", tile.getText(), //
+                "button-text", tile.getButtonText(), //
+                "link", tile.getLink());
     }
 
 }

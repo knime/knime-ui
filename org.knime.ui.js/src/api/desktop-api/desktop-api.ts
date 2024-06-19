@@ -799,3 +799,13 @@ export const getCustomHelpMenuEntries = () => {
     { block: true },
   );
 };
+
+export const getHomePageTile = () => {
+  return callBrowserFunction(
+    window.getHomePageTile,
+    [],
+    "Failed to fetch home page tile",
+    true,
+    { block: false },
+  );
+};

@@ -70,13 +70,13 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
+import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.AppStatePersistor;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.ui.java.util.externalcontent.WelcomeAPEndpoint;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
@@ -100,6 +100,8 @@ final class Create {
         initializeResourceHandlers();
         DesktopAPI.forEachAPIFunction(apiFunctionCaller);
 
+        var welcomeAPEndpoint = WelcomeAPEndpoint.getInstance();
+
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             IWorkbenchPage page = null;
             try {
@@ -115,7 +117,8 @@ final class Create {
             } catch (Exception e) { // NOSONAR
                 // nothing to do - since it's for a sanity check only
             }
-            WelcomeAPEndpoint.callWelcomeAPEndpointForTrackingStartup();
+
+            welcomeAPEndpoint.callEndpointForTracking(true);
         }
 
         // Initialize the node timer with the currently active 'perspective'
@@ -162,6 +165,10 @@ final class Create {
                 return localWorkspace;
             }
 
+            @Override
+            public WelcomeAPEndpoint getWelcomeApEndpoint() {
+                return welcomeAPEndpoint;
+            }
         };
     }
 

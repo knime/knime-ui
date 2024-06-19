@@ -69,8 +69,8 @@ import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
-import org.knime.ui.java.util.externalcontent.ExternalContent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -187,14 +187,14 @@ public final class DesktopAPI {
      * @param workflowProjectManager
      * @param appStateUpdater
      * @param spaceProviders
-     * @param updateStateProvider    optional, can be {@code null}
+     * @param updateStateProvider optional, can be {@code null}
      * @param eventConsumer
      * @param workflowMiddleware
      * @param toastService
      * @param nodeRepo
      * @param mruProjects
      * @param localWorkspace
-     * @param externalContent
+     * @param welcomeAPEndpoint
      * @throws IllegalStateException if the dependencies have been already injected
      */
     public static void injectDependencies(final ProjectManager workflowProjectManager,
@@ -202,7 +202,7 @@ public final class DesktopAPI {
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
         final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace,
-            ExternalContent externalContent) {
+        final WelcomeAPEndpoint welcomeAPEndpoint) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -219,7 +219,7 @@ public final class DesktopAPI {
         }
         dependencies.put(MostRecentlyUsedProjects.class, mruProjects);
         dependencies.put(LocalWorkspace.class, localWorkspace);
-        dependencies.put(ExternalContent.class, externalContent);
+        dependencies.put(WelcomeAPEndpoint.class, welcomeAPEndpoint);
     }
 
     /**

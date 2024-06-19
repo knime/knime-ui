@@ -213,3 +213,5 @@ declare function updateMostRecentlyUsedProject(
 ): void;
 
 declare function getCustomHelpMenuEntries(): Record<string, string>;
+
+declare function getHomePageTile(): Record<string, string>;
