@@ -18,6 +18,7 @@ import NodeState from "./NodeState.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
 
+import { compatibility } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { KnimeMIME } from "@/mixins/dropNode";
 
@@ -326,20 +327,26 @@ export default {
       this.isHovering = false;
     },
 
-    onLeftDoubleClick(e) {
+    async onLeftDoubleClick(e) {
       // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
       if (
         this.kind === "metanode" ||
         (this.kind === "component" && (e.ctrlKey || e.metaKey))
       ) {
-        if (this.isLocked) {
-          consola.trace(`${this.kind} cannot be opened because it's locked`);
-        } else {
-          this.$router.push({
-            name: APP_ROUTES.WorkflowPage,
-            params: { projectId: this.projectId, workflowId: this.id },
-          });
+        if (this.isLocked && compatibility.canLockAndUnlockSubnodes()) {
+          const isUnlocked = await this.$store.dispatch(
+            "workflow/unlockSubnode",
+            { nodeId: this.id },
+          );
+
+          if (!isUnlocked) {
+            return;
+          }
         }
+        this.$router.push({
+          name: APP_ROUTES.WorkflowPage,
+          params: { projectId: this.projectId, workflowId: this.id },
+        });
       } else if (
         this.allowedActions?.canOpenDialog &&
         this.permissions.canConfigureNodes

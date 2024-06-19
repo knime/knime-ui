@@ -222,4 +222,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const { projectId } = getProjectAndWorkflowIds(state);
     API.desktop.openLockSubnodeDialog({ projectId, nodeId });
   },
+
+  unlockSubnode({ state }, { nodeId }) {
+    const { projectId } = getProjectAndWorkflowIds(state);
+    return API.desktop.unlockSubnode({ projectId, nodeId });
+  },
 };

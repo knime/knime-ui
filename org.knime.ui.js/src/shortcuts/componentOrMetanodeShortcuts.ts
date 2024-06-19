@@ -58,7 +58,13 @@ const canOpen =
   ({ $store }: ShortcutConditionContext) => {
     const selectedNode = $store.getters["selection/singleSelectedNode"];
 
-    return selectedNode?.kind === kind && !selectedNode?.isLocked;
+    if (selectedNode.isLocked) {
+      return (
+        selectedNode?.kind === kind && compatibility.canLockAndUnlockSubnodes()
+      );
+    }
+
+    return selectedNode?.kind === kind;
   };
 
 const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
@@ -119,9 +125,20 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "Alt", "Enter"],
     group: "componentAndMetanode",
     description: "Open Component or Metanode",
-    execute: ({ $store, $router }) => {
+    execute: async ({ $store, $router }) => {
       const projectId = $store.state.application.activeProjectId;
-      const id = $store.getters["selection/singleSelectedNode"].id;
+      const { isLocked, id } = $store.getters["selection/singleSelectedNode"];
+
+      if (isLocked) {
+        const isUnlocked = await $store.dispatch("workflow/unlockSubnode", {
+          nodeId: id,
+        });
+
+        if (!isUnlocked) {
+          return;
+        }
+      }
+
       $router.push({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId, workflowId: id },

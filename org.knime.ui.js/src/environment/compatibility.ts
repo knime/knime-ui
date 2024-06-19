@@ -28,4 +28,4 @@ export const canOpenLegacyPortViews = () => isDesktop;
 
 export const isAiAssistantSupported = () => isDesktop;
 
-export const canLockSubnodes = () => isDesktop;
+export const canLockAndUnlockSubnodes = () => isDesktop;

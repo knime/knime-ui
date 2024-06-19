@@ -821,6 +821,22 @@ export const openLockSubnodeDialog = ({
   );
 };
 
+export const unlockSubnode = ({
+  projectId,
+  nodeId,
+}: {
+  projectId: string;
+  nodeId: string;
+}) => {
+  return callBrowserFunction(
+    window.unlockSubnode,
+    [projectId, nodeId],
+    `Could not unlock component ${nodeId}`,
+    true,
+    { block: true, darkenBackground: true },
+  );
+};
+
 type HomePageTileResponse = {
   title: string;
   tag: string;

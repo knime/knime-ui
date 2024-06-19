@@ -217,4 +217,6 @@ declare function getCustomHelpMenuEntries(): Record<string, string>;
 
 declare function openLockSubnodeDialog(projectId: string, nodeId: string);
 
+declare function unlockSubnode(projectId: string, nodeId: string);
+
 declare function getHomePageTile(): Record<string, string>;

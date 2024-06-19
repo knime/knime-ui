@@ -418,6 +418,12 @@ export default defineComponent({
               { name: "openComponentOrMetanode", isVisible: true },
               { name: "editName", isVisible: true },
               { name: "expandMetanode", isVisible: true },
+              {
+                name: "lockSubnode",
+                isVisible:
+                  this.isLockingEnabled &&
+                  compatibility.canLockAndUnlockSubnodes(),
+              },
             ]),
           },
           isMetanode,
@@ -457,7 +463,8 @@ export default defineComponent({
               {
                 name: "lockSubnode",
                 isVisible:
-                  this.isLockingEnabled && compatibility.canLockSubnodes(),
+                  this.isLockingEnabled &&
+                  compatibility.canLockAndUnlockSubnodes(),
               },
             ]),
           },
