@@ -538,6 +538,12 @@ export interface AppState {
      * @memberof AppState
      */
     analyticsPlatformDownloadURL?: string;
+    /**
+     * Wheter to enable the locking of metanodes and components
+     * @type {boolean}
+     * @memberof AppState
+     */
+    isSubnodeLockingEnabled?: boolean;
 
 }
 

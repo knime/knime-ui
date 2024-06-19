@@ -30,6 +30,10 @@ interface State {
    * If true, dev mode specifics buttons will be shown.
    */
   devMode: boolean;
+  /*
+   * Wheter to enable the locking of metanodes and components
+   */
+  isSubnodeLockingEnabled: boolean;
 }
 
 declare module "./index" {
@@ -43,6 +47,7 @@ export const state = (): State => ({
   activeNodeCollection: "",
   scrollToZoomEnabled: false,
   devMode: false,
+  isSubnodeLockingEnabled: false,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -63,6 +68,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setDevMode(state, devMode) {
     state.devMode = devMode;
+  },
+  setIsSubnodeLockingEnabled(state, isSubnodeLockingEnabled) {
+    state.isSubnodeLockingEnabled = isSubnodeLockingEnabled;
   },
 };
 

@@ -805,6 +805,22 @@ export const getCustomHelpMenuEntries = () => {
   );
 };
 
+export const openLockSubnodeDialog = ({
+  projectId,
+  nodeId,
+}: {
+  projectId: string;
+  nodeId: string;
+}) => {
+  return callBrowserFunction(
+    window.openLockSubnodeDialog,
+    [projectId, nodeId],
+    `Could not open lock component dialog for component ${nodeId}`,
+    true,
+    { block: true, darkenBackground: true },
+  );
+};
+
 type HomePageTileResponse = {
   title: string;
   tag: string;

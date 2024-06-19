@@ -146,6 +146,8 @@ export default defineComponent({
         (state as ApplicationState).activeProjectId as string | null,
       availablePortTypes: (state: unknown) =>
         (state as ApplicationState).availablePortTypes as AvailablePortTypes,
+      isLockingEnabled: (state: unknown) =>
+        (state as ApplicationState).isSubnodeLockingEnabled,
     }),
   },
   watch: {
@@ -451,6 +453,11 @@ export default defineComponent({
               {
                 name: "unlinkComponent",
                 isVisible: isLinked,
+              },
+              {
+                name: "lockSubnode",
+                isVisible:
+                  this.isLockingEnabled && compatibility.canLockSubnodes(),
               },
             ]),
           },

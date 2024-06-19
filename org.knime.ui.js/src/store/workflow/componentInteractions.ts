@@ -217,4 +217,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   clearProcessedUpdateNotification({ commit }, { projectId }) {
     commit("setProcessedNotification", { projectId, value: false });
   },
+
+  lockSubnode({ state }, { nodeId }) {
+    const { projectId } = getProjectAndWorkflowIds(state);
+    API.desktop.openLockSubnodeDialog({ projectId, nodeId });
+  },
 };

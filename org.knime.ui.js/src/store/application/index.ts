@@ -299,6 +299,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       commit("setDevMode", applicationState.devMode);
     }
 
+    if (applicationState.hasOwnProperty("isSubnodeLockingEnabled")) {
+      commit(
+        "setIsSubnodeLockingEnabled",
+        applicationState.isSubnodeLockingEnabled,
+      );
+    }
+
     if (applicationState.fileExtensionToNodeTemplateId) {
       commit(
         "setFileExtensionToNodeTemplateId",

@@ -215,4 +215,6 @@ declare function updateMostRecentlyUsedProject(
 
 declare function getCustomHelpMenuEntries(): Record<string, string>;
 
+declare function openLockSubnodeDialog(projectId: string, nodeId: string);
+
 declare function getHomePageTile(): Record<string, string>;

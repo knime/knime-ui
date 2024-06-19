@@ -48,13 +48,22 @@
  */
 package org.knime.ui.java.api;
 
+import java.security.NoSuchAlgorithmException;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Shell;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
+import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.WorkflowKey;
+import org.knime.workbench.editor2.actions.LockMetaNodeDialog;
+import org.knime.workbench.editor2.editparts.GUIWorkflowCipherPrompt;
 
 /**
  * API for component related desktop functions
@@ -62,6 +71,8 @@ import org.knime.gateway.impl.webui.WorkflowKey;
  * @author Kai Franze, KNIME GmbH, Germany
  */
 final class ComponentAPI {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(ComponentAPI.class);
 
     private ComponentAPI() {
         // Stateless
@@ -121,6 +132,32 @@ final class ComponentAPI {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentHubItemVersionDialog(component, wfKey);
+    }
+
+    @API
+    static void openLockSubnodeDialog(final String projectId, final String nodeId) throws OperationNotAllowedException {
+        final var subnodeContainer = assertIsWritableAndGetComponent(projectId, nodeId);
+        final var wfm = subnodeContainer.getWorkflowManager();
+
+        // The following code is a copy from LockMetaNodeAction.java from KNIME-Workbench
+        // The action is not called directly as it requires an active workbench
+        final Shell shell = SWTUtilities.getActiveShell();
+        if (!wfm.unlock(new GUIWorkflowCipherPrompt(true))) {
+            return;
+        }
+        LockMetaNodeDialog lockDialog = new LockMetaNodeDialog(shell, wfm);
+        if (lockDialog.open() != Window.OK) {
+            return;
+        }
+        String password = lockDialog.getPassword();
+        String hint = lockDialog.getPasswordHint();
+        try {
+            wfm.setWorkflowPassword(password, hint);
+        } catch (NoSuchAlgorithmException e) {
+            String msg = "Unable to encrypt Component: " + e.getMessage();
+            LOGGER.error(msg, e);
+            MessageDialog.openError(shell, "Component encrypt", msg);
+        }
     }
 
     private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)

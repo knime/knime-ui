@@ -27,6 +27,7 @@ type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "openLayoutEditor"
   | "openLayoutEditorByNodeId"
   | "checkForComponentUpdates"
+  | "lockSubnode"
 >;
 
 declare module "./index" {
@@ -318,6 +319,18 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       const isWritable = $store.getters["workflow/isWritable"];
       return containsLinkedComponents && isWritable;
+    },
+  },
+  lockSubnode: {
+    text: "Lock",
+    title: "Set password protection",
+    execute: ({ $store }) => {
+      const nodeId = $store.getters["selection/singleSelectedNode"]?.id;
+      $store.dispatch("workflow/lockSubnode", { nodeId });
+    },
+    condition: ({ $store }) => {
+      const selectedNode = $store.getters["selection/singleSelectedNode"];
+      return !selectedNode.isLocked;
     },
   },
 };
