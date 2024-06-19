@@ -527,7 +527,7 @@ export default {
         <g
           ref="hoverContainer"
           class="hover-container"
-          @pointerdown.right="onContextMenu"
+          @contextmenu.prevent="onContextMenu"
           @connector-enter="onConnectorEnter"
           @connector-leave="onConnectorLeave"
           @connector-move="onConnectorMove($event, { inPorts, outPorts })"
@@ -637,7 +637,7 @@ export default {
                 :value="name"
                 :editable="isEditable && isContainerNode"
                 @click.left="onLeftMouseClick"
-                @pointerdown.right="onContextMenu"
+                @contextmenu.prevent="onContextMenu"
                 @width-change="nameDimensions.width = $event"
                 @height-change="nameDimensions.height = $event"
                 @edit-start="isHovering = false"

@@ -7,6 +7,7 @@ type BusEvents = {
   "selection-pointerup": PointerEvent;
   "selection-pointermove": PointerEvent;
   "selection-lostpointercapture": PointerEvent;
+  "context-menu-closed": MouseEvent;
 
   "connector-start": {
     validConnectionTargets: Set<string>;
