@@ -101,20 +101,20 @@ final class OpenProject {
      * @param spaceId The ID of the space the item is in
      * @param itemId The item ID of the workflow to open
      * @param spaceProviderId The ID of the space provider of the space
+     * @return A boolean indicating whether the project has been opened successfully or not.
      */
-    static void openProject(final String spaceId, final String itemId, final String spaceProviderId) {
+    static boolean openProject(final String spaceId, final String itemId, final String spaceProviderId) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
             final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
             final var knimeUrl = space.toKnimeUrl(itemId);
             final var isServerProject =
                 spaceProviders.getProviderTypes().get(spaceProviderId) == SpaceProviderEnt.TypeEnum.SERVER;
-            openProjectInClassicAndWebUI(knimeUrl, null, isServerProject);
+            return openProjectInClassicAndWebUI(knimeUrl, null, isServerProject);
         } else {
-            DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {
-                openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
-                return null;
-            });
+            return DesktopAPUtil.runWithProgressWithoutWarnings(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, //
+                monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor)) //
+                .orElse(false); // Since an empty optional means opening failed
         }
     }
 
@@ -155,11 +155,15 @@ final class OpenProject {
      * @param knimeUrl The knime:// URI identifying the source of the project to load
      * @param locationInfo Information about where on a KNIME Hub a workflow is stored
      * @param isServerProject Whether the project to open is a KNIME Server project or not
+     * @return A boolean indicating whether the project has been opened successfully or not.
      */
-    private static void openProjectInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo,
+    private static boolean openProjectInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo,
         final boolean isServerProject) {
         try {
-            DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo);
+            if (!DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo)) {
+                return false; // Since 'openEditor' returned a failure state
+            }
+
             hideSharedEditorArea();
             var activeProjectId = ClassicWorkflowEditorUtil
                 .updateWorkflowProjectsFromOpenedWorkflowEditors(DesktopAPI.getDeps(LocalWorkspace.class));
@@ -167,8 +171,11 @@ final class OpenProject {
                 .filter(p -> !isServerProject) // To not track KNIME Server projects as recently used
                 .ifPresent(p -> DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(p));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+
+            return true;
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
             LOGGER.warn("Could not open editor", e);
+            return false;
         }
     }
 
@@ -181,8 +188,9 @@ final class OpenProject {
      * @param itemId
      * @param spaceProviderId
      * @param monitor
+     * @return A boolean indicating whether the project has been opened successfully or not.
      */
-    static void openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
+    static boolean openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
@@ -194,8 +202,9 @@ final class OpenProject {
         if (projectAndWfm == null) {
             projectAndWfm = loadProject(space, spaceProviderId, spaceId, itemId, projectType, monitor);
         }
+
         if (projectAndWfm == null) {
-            return;
+            return false; // Opening failed if there is no project and WFM at this point
         }
 
         final var isServerProject =
@@ -205,6 +214,8 @@ final class OpenProject {
         }
         registerProjectAndSetActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
+
+        return true;
     }
 
     private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
@@ -289,4 +300,5 @@ final class OpenProject {
             .flatMap(DesktopAPUtil::loadWorkflowWithProgress) //
             .orElse(null);
     }
+
 }

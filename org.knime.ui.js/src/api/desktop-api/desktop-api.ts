@@ -320,7 +320,7 @@ export const openProject = ({
     window.openProject,
     [spaceId, itemId, spaceProviderId],
     "Could not open workflow",
-    false,
+    true,
     { block: true },
   );
 };

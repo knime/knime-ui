@@ -164,13 +164,23 @@ const onOpenFile = async ({ id }: FileExplorerItem) => {
   const { spaceProviderId, spaceId } =
     store.state.spaces.projectPath[props.projectId];
 
-  await store.dispatch("spaces/openProject", {
-    providerId: spaceProviderId,
-    spaceId,
-    itemId: id,
-    // send in router, so it can be used to navigate to an already open workflow
-    $router,
-  });
+  try {
+    await store.dispatch("spaces/openProject", {
+      providerId: spaceProviderId,
+      spaceId,
+      itemId: id,
+      // send in router, so it can be used to navigate to an already open workflow
+      $router,
+    });
+  } catch (error) {
+    consola.log("could not open recent workflow", error);
+
+    $toast.show({
+      type: "warning",
+      headline: "Could not open workflow",
+      message: "The workflow might not exist anymore or be corrupted",
+    });
+  }
 };
 
 const onRenameFile = ({

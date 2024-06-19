@@ -192,7 +192,7 @@ describe("RecentWorkflowsList.vue", () => {
     expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "warning",
-        headline: "Workflow not found",
+        headline: "Could not open workflow",
       }),
     );
 

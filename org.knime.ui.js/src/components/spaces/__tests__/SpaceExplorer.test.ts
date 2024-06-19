@@ -92,8 +92,8 @@ describe("SpaceExplorer.vue", () => {
     } else {
       mockedAPI.space.listWorkflowGroup.mockResolvedValue(mockResponse);
     }
-
     mockedAPI.space.createWorkflow.mockResolvedValue({ type: "Workflow" });
+    mockedAPI.desktop.openProject.mockResolvedValue(true);
 
     const store = mockVuexStore({
       spaces: spacesStore,

@@ -91,8 +91,8 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
 
     $toast.show({
       type: "warning",
-      headline: "Workflow not found",
-      message: "The workflow you tried to open was not found",
+      headline: "Could not open workflow",
+      message: "The workflow might not exist anymore or be corrupted",
     });
 
     items.value = items.value.filter(

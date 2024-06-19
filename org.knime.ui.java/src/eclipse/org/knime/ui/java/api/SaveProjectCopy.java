@@ -57,7 +57,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.lang3.Functions.FailableFunction;
+import org.apache.commons.lang3.function.FailableFunction;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.knime.core.node.CanceledExecutionException;

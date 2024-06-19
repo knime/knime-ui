@@ -58,8 +58,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import org.apache.commons.lang3.Functions;
+import org.apache.commons.lang3.function.FailableFunction;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -409,15 +410,39 @@ public final class DesktopAPUtil {
      * @return returned value
      */
     public static <T> Optional<T> runWithProgress(final String name, final NodeLogger logger,
-            final Functions.FailableFunction<IProgressMonitor, T, InvocationTargetException> func) {
+        final FailableFunction<IProgressMonitor, T, InvocationTargetException> func) {
+        return composedRunWithProgress(name, logger, func,
+            cause -> showWarningAndLogError(name + " failed", cause.getMessage(), logger, cause));
+    }
+
+    /**
+     * Runs the given function while showing a modal SWT dialog with progress information but no Java warnings.
+     *
+     * @param <T> return type
+     * @param name name of the operation for error messages, e.g. {@code "Opening workflow"}
+     * @param logger logger to use
+     * @param func function to call
+     * @return returned value
+     */
+    public static <T> Optional<T> runWithProgressWithoutWarnings(final String name, final NodeLogger logger,
+        final FailableFunction<IProgressMonitor, T, InvocationTargetException> func) {
+        return composedRunWithProgress(name, logger, func,
+            cause -> logger.error("%s failed: %s".formatted(name, cause.getMessage())));
+    }
+
+    /**
+     * A composed 'runWithProgress' function you have to provide a {@link Throwable} to
+     */
+    private static <T> Optional<T> composedRunWithProgress(final String name, final NodeLogger logger,
+        final FailableFunction<IProgressMonitor, T, InvocationTargetException> func,
+        final Consumer<Throwable> throwableConsumer) {
         try {
             final var ref = new AtomicReference<T>();
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> ref.set(func.apply(monitor)));
             return Optional.ofNullable(ref.get());
         } catch (InvocationTargetException e) {
             // `InvocationTargetException` doesn't have value itself (and often no message), report its cause instead
-            final var cause = Optional.ofNullable(e.getCause()).orElse(e);
-            showWarningAndLogError(name + " failed", cause.getMessage(), logger, cause);
+            throwableConsumer.accept(Optional.ofNullable(e.getCause()).orElse(e));
         } catch (InterruptedException e) {
             logger.warn(name + " interrupted");
             Thread.currentThread().interrupt();
@@ -435,6 +460,19 @@ public final class DesktopAPUtil {
     public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgress(
         final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
         return runWithProgress(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+            progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
+    }
+
+    /**
+     * Downloads a remote workflow into a temporary directory, but warnings suppressed.
+     *
+     * @param remoteFileStore
+     * @param locationInfo if {@code null} it will be inferred from 'remoteFileStore'
+     * @return an empty optional if the download or opening the workflow failed
+     */
+    public static Optional<RemoteWorkflowInput> downloadWorkflowWithProgressWithoutWarnings(
+        final RemoteExplorerFileStore remoteFileStore, final HubSpaceLocationInfo locationInfo) {
+        return runWithProgressWithoutWarnings(LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
             progress -> downloadWorkflowFromMountpoint(progress, remoteFileStore, locationInfo));
     }
 
@@ -583,22 +621,27 @@ public final class DesktopAPUtil {
      *
      * @param fileStore The file store for the editor.
      * @param locationInfo if {@code null} it will be inferred from 'fileStore'
+     * @return A boolean indicating whether the project has been opened successfully or not.
      * @throws PartInitException If the editor part could not be initialized.
      */
-    public static void openEditor(final AbstractExplorerFileStore fileStore, final HubSpaceLocationInfo locationInfo)
+    public static boolean openEditor(final AbstractExplorerFileStore fileStore, final HubSpaceLocationInfo locationInfo)
         throws PartInitException {
         final IEditorInput input;
         if (fileStore instanceof RemoteExplorerFileStore remoteFileStore) {
-            final var tempInput = downloadWorkflowWithProgress(remoteFileStore, locationInfo);
+            final var tempInput = downloadWorkflowWithProgressWithoutWarnings(remoteFileStore, locationInfo);
+
             if (tempInput.isEmpty()) {
-                return;
+                return false; // Since an empty optional means downloading failed
             }
+
             input = tempInput.get();
         } else {
             input = new FileStoreEditorInput(fileStore.getChild(WorkflowPersistor.WORKFLOW_FILE));
         }
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         page.openEditor(input, WorkflowEditor.ID, false);
+
+        return true;
     }
 
 }

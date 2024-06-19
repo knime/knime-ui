@@ -24,6 +24,7 @@ const shouldShowExampleWorkflows = computed(
 );
 
 const onExampleClick = async (example: ExampleProject) => {
+  // TODO: Handle exception here?
   await store.dispatch("spaces/openProject", {
     ...example.origin,
     $router,

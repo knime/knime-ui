@@ -215,6 +215,8 @@ describe("spaces::spaceOperations", () => {
         itemId: "level2",
       };
 
+      mockedAPI.desktop.openProject.mockResolvedValue(true);
+
       await store.dispatch("spaces/openProject", {
         providerId: "local",
         spaceId: "local",
@@ -238,6 +240,26 @@ describe("spaces::spaceOperations", () => {
       );
     });
 
+    it("should fail to open workflow", async () => {
+      const { store } = loadStore();
+
+      store.state.spaces.projectPath.project2 = {
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "something",
+      };
+
+      mockedAPI.desktop.openProject.mockResolvedValue(false);
+
+      await expect(() =>
+        store.dispatch("spaces/openProject", {
+          providerId: "local",
+          spaceId: "local",
+          itemId: "foobar",
+        }),
+      ).rejects.toThrow("Could not open workflow");
+    });
+
     it("should navigate to already open workflow", async () => {
       const openProjects = [
         createProject({
@@ -258,6 +280,8 @@ describe("spaces::spaceOperations", () => {
       });
 
       const mockRouter = { push: vi.fn() };
+      mockedAPI.desktop.openProject.mockResolvedValue(true);
+
       await store.dispatch("spaces/openProject", {
         providerId: "local",
         spaceId: "local",

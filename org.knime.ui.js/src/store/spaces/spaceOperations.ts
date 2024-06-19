@@ -319,13 +319,15 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     );
 
     try {
-      await API.desktop.openProject({
+      const didOpen = await API.desktop.openProject({
         spaceProviderId: providerId,
         spaceId,
         itemId,
       });
-    } catch (error) {
-      throw error;
+      if (!didOpen) {
+        // Throwing an error here, so calling components can handle it
+        throw new Error("Could not open workflow");
+      }
     } finally {
       await dispatch(
         "application/updateGlobalLoader",

@@ -98,10 +98,11 @@ final class ProjectAPI {
      * @param spaceId
      * @param itemId
      * @param spaceProviderId {@code local} if absent
+     * @return A boolean indicating whether the project has been opened successfully or not.
      */
     @API
-    static void openProject(final String spaceId, final String itemId, final String spaceProviderId) {
-        OpenProject.openProject(spaceId, itemId, spaceProviderId);
+    static boolean openProject(final String spaceId, final String itemId, final String spaceProviderId) {
+        return OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 
     /**

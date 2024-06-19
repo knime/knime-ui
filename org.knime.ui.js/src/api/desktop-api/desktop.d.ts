@@ -60,7 +60,7 @@ declare function openProject(
   spaceId: string,
   itemId: string,
   spaceProviderId: string,
-): void;
+): boolean;
 
 declare function closeProject(
   closingProjectId: string,
