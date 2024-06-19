@@ -18,6 +18,7 @@ import { getProjectAndWorkflowIds } from "../store/workflow/util";
 import { getNextSelectedPort } from "@/util/portSelection";
 import { API } from "@api";
 import { compatibility, isDesktop } from "@/environment";
+import { isMac } from "webapps-common/util/navigator";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
@@ -632,7 +633,7 @@ const workflowShortcuts: WorkflowShortcuts = {
   shuffleSelectedPort: {
     text: "Select (next) port",
     title: "Select (next) port of the selected node",
-    hotkey: ["Alt", "P"],
+    hotkey: [isMac() ? "Ctrl" : "Alt", "P"], // Alt+P yields a pi-symbol on mac
     group: "selectedNode",
     execute: ({ $store }) => {
       const node = $store.getters["selection/singleSelectedNode"];
