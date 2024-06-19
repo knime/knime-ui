@@ -89,6 +89,13 @@ public interface LifeCycleStateInternal extends LifeCycleState {
     }
 
     /**
+     * @return the instance
+     */
+    default WelcomeAPEndpoint getWelcomeApEndpoint() {
+        return null;
+    }
+
+    /**
      * @return project manager instance to be passed between life cycle phases
      */
     ProjectManager getProjectManager();
@@ -102,14 +109,5 @@ public interface LifeCycleStateInternal extends LifeCycleState {
      * @return the local workspace instance to be passed between life cycle phases
      */
     LocalWorkspace getLocalWorkspace();
-
-    /**
-     * TODO
-     *
-     * @return
-     */
-    default WelcomeAPEndpoint getWelcomeApEndpoint() {
-        return null;
-    }
 
 }
