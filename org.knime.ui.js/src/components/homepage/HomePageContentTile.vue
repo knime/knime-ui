@@ -6,18 +6,12 @@ import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.s
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { API } from "@api";
-import { retryAsyncCall } from "@/util/retryAsyncCall";
 
 type ContentTileData = Awaited<ReturnType<typeof API.desktop.getHomePageTile>>;
 const data = ref<ContentTileData | null>(null);
 
-const fetchData = async () => {
-  const retryDelayMS = 50;
-  data.value = await retryAsyncCall(API.desktop.getHomePageTile, retryDelayMS);
-};
-
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  data.value = await API.desktop.getHomePageTile();
 });
 </script>
 
