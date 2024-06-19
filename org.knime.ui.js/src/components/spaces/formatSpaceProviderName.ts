@@ -3,6 +3,7 @@ import { COMMUNITY_HUB_ID, isHubProvider } from "@/store/spaces/util";
 
 const urlRegex = /\(https?:\/\/[^\s)]+\)/g;
 
+// TODO to be removed with NXT-2680
 export const formatSpaceProviderName = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ) => {

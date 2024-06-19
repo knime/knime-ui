@@ -54,7 +54,9 @@ const getRecentWorkflows = async () => {
 const getSpaceProviderName = (recentWorkflow: RecentWorkflow) => {
   const { origin } = recentWorkflow;
   const provider = spaceProviders.value[origin.providerId];
-
+  if (!provider) {
+    return "…";
+  }
   return formatSpaceProviderName(provider);
 };
 
