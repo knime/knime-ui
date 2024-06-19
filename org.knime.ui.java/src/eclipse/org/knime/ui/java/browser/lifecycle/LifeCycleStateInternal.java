@@ -91,9 +91,7 @@ public interface LifeCycleStateInternal extends LifeCycleState {
     /**
      * @return the instance
      */
-    default WelcomeAPEndpoint getWelcomeApEndpoint() {
-        return null;
-    }
+    WelcomeAPEndpoint getWelcomeApEndpoint();
 
     /**
      * @return project manager instance to be passed between life cycle phases

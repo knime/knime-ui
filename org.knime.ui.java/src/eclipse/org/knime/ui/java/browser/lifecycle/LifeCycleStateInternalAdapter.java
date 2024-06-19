@@ -53,6 +53,7 @@ import java.util.function.IntSupplier;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 /**
@@ -97,6 +98,11 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     @Override
     public LocalWorkspace getLocalWorkspace() {
         return m_lifeCycleStateInternal.getLocalWorkspace();
+    }
+
+    @Override
+    public WelcomeAPEndpoint getWelcomeApEndpoint() {
+        return m_lifeCycleStateInternal.getWelcomeApEndpoint();
     }
 
 }
