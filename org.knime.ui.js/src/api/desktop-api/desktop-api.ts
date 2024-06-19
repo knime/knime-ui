@@ -800,12 +800,23 @@ export const getCustomHelpMenuEntries = () => {
   );
 };
 
-export const getHomePageTile = () => {
-  return callBrowserFunction(
+type HomePageTileResponse = {
+  title: string;
+  tag: string;
+  image: string;
+  text: string;
+  "button-text": string;
+  link: string;
+};
+
+export const getHomePageTile = async () => {
+  const data = await callBrowserFunction(
     window.getHomePageTile,
     [],
     "Failed to fetch home page tile",
     true,
     { block: false },
   );
+
+  return data as HomePageTileResponse;
 };

@@ -12,7 +12,7 @@ import {
 } from "@/components/common/side-nav";
 
 import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
-import CommunityHubPromoCard from "@/components/spaces/CommunityHubPromoCard.vue";
+import HomePageContentTile from "./HomePageContentTile.vue";
 
 const $router = useRouter();
 const $route = useRoute();
@@ -42,5 +42,5 @@ const recent = computed<NavMenuItemProps>(() => ({
     <SpacePageNavItems />
   </NavMenu>
 
-  <CommunityHubPromoCard />
+  <HomePageContentTile />
 </template>

@@ -16,7 +16,7 @@ import { runInEnvironment } from "@/environment";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
 import { features } from "@/plugins/feature-flags";
 import { ratioToZoomLevel } from "@/store/settings";
-import sleep from "webapps-common/util/sleep";
+import { retryAsyncCall } from "@/util/retryAsyncCall";
 
 import { lifecycleBus } from "./lifecycle-events";
 
@@ -69,43 +69,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         const RETRY_DELAY_MS = 50;
         // TODO: NXT-989 remove this delay once desktop calls are made via the
         // EquoComm service
-        const retry = async (retryCount: number) => {
-          try {
-            await API.desktop.setZoomLevel(
+        await retryAsyncCall(
+          () =>
+            API.desktop.setZoomLevel(
               ratioToZoomLevel(rootState.settings.settings.uiScale),
-            );
-          } catch (e) {
-            if (retryCount > 0) {
-              await sleep(RETRY_DELAY_MS);
-              await retry(retryCount - 1);
-            }
-          }
-        };
-        await retry(100);
-      },
-    });
-
-    await runInEnvironment({
-      DESKTOP: async () => {
-        const RETRY_DELAY_MS = 50;
-        // TODO: NXT-989 remove this delay once desktop calls are made via the
-        // EquoComm service
-        const retry = async (retryCount: number) => {
-          try {
-            await API.desktop.getHomePageTile()
-              .then((homePageTileContent) => {
-                  console.log("retrieved home page tile content:", homePageTileContent);
-                  // commit("setHomePageTileContent", homePageTileContent)
-                  // TODO how to access value later?
-              });
-          } catch (e) {
-            if (retryCount > 0) {
-              await sleep(RETRY_DELAY_MS);
-              await retry(retryCount - 1);
-            }
-          }
-        };
-        await retry(100);
+            ),
+          RETRY_DELAY_MS,
+        );
       },
     });
 
