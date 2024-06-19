@@ -9,6 +9,7 @@ import type {
 } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
 import { compatibility } from "@/environment";
+import { isComponentProject } from "@/util/projectUtil";
 
 type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "createMetanode"
@@ -271,9 +272,17 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     group: "componentAndMetanode",
     icon: LayoutIcon,
     execute: ({ $store }) => $store.dispatch("workflow/openLayoutEditor"),
-    condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.info.containerType ===
-        "component" && $store.getters["workflow/isWritable"],
+    condition: ({ $store }) => {
+      const workflow = $store.state.workflow.activeWorkflow!;
+
+      const isWritable = $store.getters["workflow/isWritable"];
+
+      return (
+        isWritable &&
+        isComponentProject(workflow) &&
+        compatibility.canDoComponentOperations()
+      );
+    },
   },
   openLayoutEditorByNodeId: {
     text: "Open layout editor",

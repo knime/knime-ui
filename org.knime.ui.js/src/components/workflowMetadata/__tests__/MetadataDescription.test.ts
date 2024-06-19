@@ -28,8 +28,7 @@ describe("MetadataDescription.vue", () => {
     expect(wrapper.text()).toMatch("No description has been set yet");
   });
 
-  // eslint-disable-next-line vitest/no-disabled-tests
-  it.skip("should render the description editor", async () => {
+  it("should render the description editor", async () => {
     const { wrapper } = doMount();
 
     await wrapper.setProps({ editable: true });
@@ -46,13 +45,12 @@ describe("MetadataDescription.vue", () => {
     });
 
     editor.vm.$emit("update:modelValue", "<p>Lorem ipsum</p>");
-    expect(wrapper.emitted("update:modelValue")[0][0]).toBe(
+    expect(wrapper.emitted("update:modelValue")?.[0][0]).toBe(
       "<p>Lorem ipsum</p>",
     );
   });
 
-  // eslint-disable-next-line vitest/no-disabled-tests
-  it.skip("should not emit content changes from the editor if description is not editable", () => {
+  it("should not emit content changes from the editor if description is not editable", () => {
     const { wrapper } = doMount({ props: { editable: false } });
 
     const editor = wrapper.findComponent(RichTextEditor);

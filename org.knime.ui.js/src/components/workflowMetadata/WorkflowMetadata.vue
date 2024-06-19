@@ -11,6 +11,7 @@ import ComponentMetadata, {
   type SaveEventPayload as SaveComponentEventPayload,
 } from "./ComponentMetadata.vue";
 import { isNodeMetaNode } from "@/util/nodeUtil";
+import * as projectUtil from "@/util/projectUtil";
 
 const store = useStore();
 
@@ -27,28 +28,13 @@ const isWorkflowWritable = computed<boolean>(
   () => store.getters["workflow/isWritable"],
 );
 
-const isProjectType = computed(
-  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Project,
-);
-const isComponentType = computed(
-  () => containerType.value === WorkflowInfo.ContainerTypeEnum.Component,
+const isWorkflowProject = computed(() =>
+  projectUtil.isWorkflowProject(workflow.value),
 );
 
-const isProject = computed(() => {
-  return (
-    isProjectType.value &&
-    workflow.value.projectMetadata &&
-    !workflow.value.componentMetadata
-  );
-});
-
-const isComponent = computed(() => {
-  return (
-    (isComponentType.value || isProjectType.value) &&
-    workflow.value.componentMetadata &&
-    !workflow.value.projectMetadata
-  );
-});
+const isComponentProject = computed(() =>
+  projectUtil.isComponentProject(workflow.value),
+);
 
 const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode,
@@ -105,7 +91,7 @@ const updateComponentMetadata = ({
 <template>
   <div v-if="workflow && !isMetanode" class="metadata">
     <ProjectMetadata
-      v-if="isProject && workflow.projectMetadata"
+      v-if="isWorkflowProject && workflow.projectMetadata"
       :project-metadata="workflow.projectMetadata"
       :project-id="workflow.projectId"
       :workflow-id="workflow.info.containerId"
@@ -115,7 +101,7 @@ const updateComponentMetadata = ({
     />
 
     <ComponentMetadata
-      v-if="isComponent && workflow.componentMetadata"
+      v-if="isComponentProject && workflow.componentMetadata"
       :component-metadata="workflow.componentMetadata"
       :project-id="workflow.projectId"
       :component-id="workflow.info.containerId"

@@ -3,19 +3,25 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useStore } from "@/composables/useStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
 
 import SpacePageLayout from "./SpacePageLayout.vue";
+import SpacePageHeader from "./SpacePageHeader.vue";
 import SpaceCard from "./SpaceCard.vue";
+import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
+
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
 import SearchButton from "@/components/common/SearchButton.vue";
 import { matchesQuery } from "@/util/matchesQuery";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 
 const $router = useRouter();
+const store = useStore();
 
 const { activeSpaceProvider, activeSpaceGroup, isShowingAllSpaces } =
   useActiveRouteData();
@@ -36,6 +42,8 @@ const onSpaceCardClick = (space: SpaceWithGroupId) => {
 };
 
 const query = ref("");
+
+const isCreateSpaceDisabled = ref(false);
 
 const toSpaceWithGroupId =
   (groupId: string) =>
@@ -63,25 +71,48 @@ const filteredSpaces = computed(() =>
 
 const title = computed(() =>
   isShowingAllSpaces.value
-    ? `Spaces of ${activeSpaceProvider.value.name}`
+    ? `Spaces of ${formatSpaceProviderName(activeSpaceProvider.value)}`
     : activeSpaceGroup.value?.name ?? "",
 );
 
 const icon = computed(() =>
   isShowingAllSpaces.value
     ? getSpaceProviderIcon(activeSpaceProvider.value)
-    : getSpaceGroupIcon(activeSpaceGroup.value!),
+    : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value),
 );
+
+const createSpace = () => {
+  isCreateSpaceDisabled.value = true;
+  store.dispatch("spaces/createSpace", {
+    spaceProviderId: activeSpaceProvider.value.id,
+    spaceGroup: activeSpaceGroup.value,
+    $router,
+  });
+};
 </script>
 
 <template>
-  <SpacePageLayout :title="title" :breadcrumbs="breadcrumbs">
-    <template #icon>
-      <Component :is="icon" />
+  <SpacePageLayout>
+    <template #header>
+      <SpacePageHeader
+        :title="title"
+        :breadcrumbs="breadcrumbs"
+        :is-editable="false"
+      >
+        <template #icon>
+          <Component :is="icon" />
+        </template>
+      </SpacePageHeader>
     </template>
 
     <template #toolbar>
       <SearchButton v-model="query" />
+      <SpaceExplorerFloatingButton
+        v-if="!isShowingAllSpaces"
+        :disabled="isCreateSpaceDisabled"
+        title="Create new space"
+        @click="createSpace"
+      />
     </template>
 
     <template #content>

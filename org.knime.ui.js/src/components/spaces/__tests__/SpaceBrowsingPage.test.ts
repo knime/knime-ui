@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { mockVuexStore, deepMocked } from "@/test/utils";
+import { useRoute } from "vue-router";
 
 import * as spacesStore from "@/store/spaces";
 import * as applicationStore from "@/store/application";
@@ -15,7 +16,7 @@ import {
 } from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import SpacePageLayout from "../SpacePageLayout.vue";
+import SpacePageHeader from "../SpacePageHeader.vue";
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
 import SpaceExplorer from "../SpaceExplorer.vue";
 import { router } from "@/router/router";
@@ -90,7 +91,21 @@ mockedAPI.space.listWorkflowGroup.mockResolvedValue({
 vi.mock("webapps-common/ui/services/toast");
 
 describe("SpaceBrowsingPage.vue", () => {
-  const doMount = async ({ initialStoreState = {} } = {}) => {
+  beforeEach(() => {
+    // @ts-ignore
+    useRoute.mockReturnValue({
+      params: {
+        spaceProviderId: spaceProvider.id,
+        groupId: spaceGroup.id,
+        spaceId: spaceGroup.spaces.at(0)!.id,
+      },
+    });
+  });
+
+  const doMount = async ({
+    initialStoreState = {},
+    customProviders = {},
+  } = {}) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
       application: applicationStore,
@@ -98,6 +113,7 @@ describe("SpaceBrowsingPage.vue", () => {
 
     $store.commit("spaces/setSpaceProviders", {
       [spaceProvider.id]: spaceProvider,
+      ...customProviders,
     });
 
     $store.state.spaces = {
@@ -114,6 +130,8 @@ describe("SpaceBrowsingPage.vue", () => {
       ...initialStoreState,
     };
 
+    const dispatchSpy = vi.spyOn($store, "dispatch");
+
     const SpaceBrowsingPage = (await import("../SpaceBrowsingPage.vue"))
       .default;
 
@@ -124,7 +142,7 @@ describe("SpaceBrowsingPage.vue", () => {
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, $store, dispatchSpy };
   };
 
   it("should render correctly", async () => {
@@ -132,7 +150,7 @@ describe("SpaceBrowsingPage.vue", () => {
 
     await flushPromises();
 
-    expect(wrapper.findComponent(SpacePageLayout).props("title")).toBe(
+    expect(wrapper.findComponent(SpacePageHeader).props("title")).toBe(
       spaceGroup.spaces.at(0)!.name,
     );
 
@@ -144,7 +162,7 @@ describe("SpaceBrowsingPage.vue", () => {
   it("should display breadcrumbs", async () => {
     const { wrapper } = await doMount();
 
-    expect(wrapper.findComponent(SpacePageLayout).props("breadcrumbs")).toEqual(
+    expect(wrapper.findComponent(SpacePageHeader).props("breadcrumbs")).toEqual(
       [
         expect.objectContaining({ text: spaceProvider.name }),
         expect.objectContaining({ text: spaceGroup.name }),
@@ -170,6 +188,49 @@ describe("SpaceBrowsingPage.vue", () => {
         spaceId: "space1",
         spaceProviderId: "provider1",
       },
+    });
+  });
+
+  it("should not allow rename on non-hub spaces", async () => {
+    const localProvider = createSpaceProvider({
+      spaceGroups: [
+        createSpaceGroup({
+          id: "local",
+          spaces: [createSpace({ id: "local" })],
+        }),
+      ],
+    });
+    // @ts-ignore
+    useRoute.mockReturnValue({
+      params: {
+        spaceProviderId: localProvider.id,
+        groupId: "local",
+        spaceId: "local",
+      },
+    });
+
+    const { wrapper } = await doMount({
+      customProviders: {
+        [localProvider.id]: localProvider,
+      },
+    });
+
+    const headerComponent = wrapper.findComponent(SpacePageHeader);
+    expect(headerComponent.props("isEditable")).toBe(false);
+  });
+
+  it("should rename a space", async () => {
+    const { wrapper, dispatchSpy } = await doMount();
+
+    const headerComponent = wrapper.findComponent(SpacePageHeader);
+    expect(headerComponent.props("isEditable")).toBe(true);
+
+    headerComponent.vm.$emit("submit", "testName");
+
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/renameSpace", {
+      spaceProviderId: spaceProvider.id,
+      spaceId: spaceGroup.spaces.at(0)!.id,
+      spaceName: "testName",
     });
   });
 });

@@ -1,6 +1,8 @@
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
 import { placeholderPosition, portPositions } from "@/util/portShift";
+import { getPortContext } from "@/util/portSelection";
+import { isInputElement } from "@/util/isInputElement";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
 import NodePort from "./NodePort/NodePort.vue";
@@ -71,12 +73,28 @@ export default {
     },
   },
   emits: ["updatePortPositions"],
-  data: () => ({
-    selectedPort: null,
-  }),
+  data: () => ({}),
   computed: {
+    ...mapState("canvas", ["getScrollContainerElement"]),
+    ...mapState("selection", {
+      isModificationInProgress: (state) =>
+        state.activeNodePorts.isModificationInProgress,
+    }),
     ...mapState("workflow", ["isDragging", "quickAddNodeMenu"]),
-    ...mapGetters("workflow", ["isWritable"]),
+    ...mapGetters("workflow", ["isWritable", "getNodeById"]),
+    node() {
+      return this.getNodeById(this.nodeId);
+    },
+    selectedPort() {
+      if (this.isActiveNodePortsInstance) {
+        return this.$store.state.selection.activeNodePorts.selectedPort;
+      }
+
+      return null;
+    },
+    isActiveNodePortsInstance() {
+      return this.$store.state.selection.activeNodePorts.nodeId === this.nodeId;
+    },
 
     isMetanode() {
       return this.nodeKind === "metanode";
@@ -151,15 +169,35 @@ export default {
   watch: {
     isDragging(isDragging, wasDragging) {
       if (isDragging && !wasDragging) {
-        this.selectedPort = null;
+        this.clearSelection();
       }
     },
     portPositions() {
       this.$emit("updatePortPositions", this.portPositions);
     },
+    isActiveNodePortsInstance(isActivated) {
+      this.getScrollContainerElement().removeEventListener(
+        "keydown",
+        this.onKeydown,
+      );
+
+      if (isActivated) {
+        this.getScrollContainerElement().addEventListener(
+          "keydown",
+          this.onKeydown,
+        );
+      }
+    },
   },
   mounted() {
     this.$emit("updatePortPositions", this.portPositions);
+  },
+  unmount() {
+    // cleanup potentially registered listeners
+    this.getScrollContainerElement().removeEventListener(
+      "keydown",
+      this.onKeydown,
+    );
   },
   methods: {
     ...mapActions("workflow", ["addNodePort", "removeNodePort"]),
@@ -177,7 +215,7 @@ export default {
       }
 
       let selectPort = () => {
-        this.selectedPort = `${side}-${index}`;
+        this.updateSelection(`${side}-${index}`);
       };
 
       if (this.nodeKind === "component" && index !== 0)
@@ -190,11 +228,13 @@ export default {
         let [, upperBound] = portGroup[`${side}Range`];
 
         // select last port of group
-        this.selectedPort = `${side}-${upperBound}`;
+        this.updateSelection(`${side}-${upperBound}`);
       }
     },
     onDeselectPort() {
-      this.selectedPort = null;
+      // TODO: This currently conflicts with the selection of the last port of a PortGroup
+      // (it is immediately de-selected again because the initial click was "outside" the element)
+      this.clearSelection();
     },
     isMickeyMousePort(port) {
       return !this.isMetanode && port.index === 0;
@@ -226,13 +266,50 @@ export default {
         ? this.isPortTargeted({ index: this.inPorts.length }, "in")
         : this.isPortTargeted({ index: this.outPorts.length }, "out");
     },
+    clamp(val, min, max) {
+      return Math.max(min, Math.min(val, max));
+    },
+    triggerAddPortMenu(side) {
+      this.$refs[`${side}-AddPortPlaceholder`]?.at(0)?.onClick();
+    },
+    updateSelection(selectedPort) {
+      this.$store.commit("selection/updateActiveNodePorts", {
+        nodeId: this.nodeId,
+        selectedPort,
+      });
+    },
+    clearSelection() {
+      this.$store.commit("selection/updateActiveNodePorts", {
+        nodeId: null,
+        selectedPort: null,
+      });
+    },
     addPort({ side, typeId, portGroup }) {
+      if (this.isModificationInProgress) {
+        return;
+      }
+
+      this.$store.commit("selection/updateActiveNodePorts", {
+        isModificationInProgress: true,
+      });
       this.addNodePort({
         nodeId: this.nodeId,
         side,
         typeId,
         portGroup,
-      });
+      })
+        .then(() => {
+          // AddPortPlaceholder may be removed after adding a port
+          if (!this.canAddPort[side]) {
+            const sidePorts = side === "input" ? this.inPorts : this.outPorts;
+            this.updateSelection(`${side}-${sidePorts.length - 1}`);
+          }
+        })
+        .finally(() => {
+          this.$store.commit("selection/updateActiveNodePorts", {
+            isModificationInProgress: false,
+          });
+        });
     },
     removePort({ portGroupId, index }, side) {
       this.removeNodePort({
@@ -241,7 +318,102 @@ export default {
         index,
         portGroup: portGroupId,
       });
-      this.selectedPort = null;
+      this.clearSelection();
+    },
+    onKeydown(event) {
+      if (isInputElement(event.target)) {
+        return;
+      }
+
+      const direction = {
+        ArrowUp: "up",
+        ArrowDown: "down",
+        ArrowLeft: "left",
+        ArrowRight: "right",
+      }[event.key];
+
+      if (direction) {
+        event.preventDefault();
+        this.navigateSelection(direction);
+        return;
+      }
+
+      if (event.key === "Enter" && this.selectedPort.endsWith("AddPort")) {
+        this.triggerAddPortMenu(
+          getPortContext(this.node, this.selectedPort).side,
+        );
+      }
+    },
+    navigateSelection(direction) {
+      const current = getPortContext(this.node, this.selectedPort);
+      switch (direction) {
+        case "up":
+          this.navigateUp(current);
+          break;
+        case "down":
+          this.navigateDown(current);
+          break;
+        case "left":
+        case "right":
+          this.navigateLeftRight(current, direction);
+          break;
+        default:
+          break;
+      }
+    },
+    navigateUp(current) {
+      const minIndex = this.isMetanode ? 0 : 1;
+      const candidateIndex = current.isAddPort
+        ? current.sidePorts.length - 1
+        : current.index - 1;
+      if (candidateIndex >= minIndex && current.sidePorts[candidateIndex]) {
+        this.updateSelection(`${current.side}-${candidateIndex}`);
+      }
+    },
+    navigateDown(current) {
+      if (current.sidePorts[current.index + 1]) {
+        this.updateSelection(`${current.side}-${current.index + 1}`);
+        return;
+      }
+
+      if (this.canAddPort[current.side]) {
+        if (current.isAddPort) {
+          this.triggerAddPortMenu(current.side);
+        } else {
+          this.updateSelection(`${current.side}-AddPort`);
+        }
+      }
+    },
+    navigateLeftRight(current, direction) {
+      const isSwap =
+        (current.side === "input" && direction === "right") ||
+        (current.side === "output" && direction === "left");
+      const otherSide = current.side === "input" ? "output" : "input";
+      const otherPorts =
+        current.side === "input" ? this.outPorts : this.inPorts;
+
+      if (!isSwap) {
+        if (current.isAddPort) {
+          this.triggerAddPortMenu(current.side);
+        }
+        return;
+      }
+
+      const minIndex = this.isMetanode ? 0 : 1;
+      const equivIndex = this.clamp(
+        current.isAddPort ? current.sidePorts.length : current.index,
+        minIndex,
+        otherPorts.length - 1,
+      );
+
+      if (otherPorts[equivIndex]) {
+        this.updateSelection(`${otherSide}-${equivIndex}`);
+        return;
+      }
+
+      if (this.canAddPort[otherSide]) {
+        this.updateSelection(`${otherSide}-AddPort`);
+      }
     },
   },
 };
@@ -290,10 +462,12 @@ export default {
     <template v-for="side in ['input', 'output']">
       <AddPortPlaceholder
         v-if="canAddPort[side]"
+        :ref="`${side}-AddPortPlaceholder`"
         :key="side"
         :side="side"
         :targeted="isPlaceholderPortTargeted(side)"
         :target-port="targetPort"
+        :selected="selectedPort === `${side}-AddPort`"
         :node-id="nodeId"
         :position="addPortPlaceholderPositions[side]"
         :port-groups="portGroups"
@@ -303,6 +477,7 @@ export default {
             'node-hover': hover,
             'connector-hover': connectorHover,
             'node-selected': isSingleSelected,
+            selected: selectedPort === `${side}-AddPort`,
           },
         ]"
         data-hide-in-workflow-preview
@@ -361,7 +536,8 @@ export default {
     transform 120ms ease-out;
 
   &.node-selected,
-  &.node-hover {
+  &.node-hover,
+  &.selected {
     opacity: 1;
   }
 

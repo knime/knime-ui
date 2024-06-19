@@ -4,9 +4,11 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import {
+  SpaceGroup,
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 
@@ -14,6 +16,9 @@ import type { SpacesState } from "./index";
 import { isProjectOpen } from "./util";
 import type { Router } from "vue-router";
 import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
+import { $bus } from "@/plugins/event-bus";
+
+const $toast = getToastsProvider();
 
 export interface PathTriplet {
   spaceId: string;
@@ -111,6 +116,110 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const itemId = getters.pathToItemId(projectId, pathId);
     commit("updateProjectPath", { projectId, value: { itemId } });
     return { itemId };
+  },
+
+  async createSpace(
+    { commit, state },
+    {
+      spaceProviderId,
+      spaceGroup,
+      $router,
+    }: { spaceProviderId: string; spaceGroup: SpaceGroup; $router: Router },
+  ) {
+    const originalProvider = state.spaceProviders![spaceProviderId];
+
+    try {
+      $bus.emit("desktop-api-function-block-ui", {
+        block: true,
+      });
+      const newSpace = await API.space.createSpace({
+        spaceProviderId,
+        spaceGroupName: spaceGroup.name,
+      });
+
+      const updatedGroups = originalProvider.spaceGroups.map((group) =>
+        group.id === spaceGroup.id
+          ? { ...group, spaces: [...group.spaces, newSpace] }
+          : group,
+      );
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { ...originalProvider, spaceGroups: updatedGroups },
+      });
+
+      $bus.emit("desktop-api-function-block-ui", {
+        block: false,
+      });
+
+      $router.push({
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        params: {
+          spaceProviderId,
+          groupId: spaceGroup.id,
+          spaceId: newSpace.id,
+          itemId: "root",
+        },
+      });
+    } catch (error) {
+      $toast.show({
+        type: "error",
+        headline: "Error while creating space",
+        // @ts-ignore
+        message: error.message,
+        autoRemove: true,
+      });
+      consola.error("Error while creating space", { error });
+
+      // rollback the space providers state
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: originalProvider,
+      });
+    }
+  },
+
+  async renameSpace(
+    { commit, state },
+    { spaceProviderId, spaceId, spaceName },
+  ) {
+    const provider = state.spaceProviders![spaceProviderId];
+    try {
+      const updatedGroups = provider.spaceGroups.map((group) => ({
+        ...group,
+        spaces: group.spaces.map((space) =>
+          space.id === spaceId ? { ...space, name: spaceName } : space,
+        ),
+      }));
+
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: { spaceGroups: updatedGroups },
+      });
+
+      await API.space.renameSpace({
+        spaceProviderId,
+        spaceId,
+        spaceName,
+      });
+      return Promise.resolve;
+    } catch (error) {
+      $toast.show({
+        type: "error",
+        headline: "Error while renaming space",
+        // @ts-ignore
+        message: error.message,
+        autoRemove: true,
+      });
+      consola.error("Error while renaming space", { error });
+
+      // Rollback to the original spaceProvider state
+      commit("updateSpaceProvider", {
+        id: spaceProviderId,
+        value: provider,
+      });
+
+      return Promise.reject(error);
+    }
   },
 
   async createWorkflow({ state, dispatch }, { projectId, workflowName }) {
@@ -272,6 +381,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         itemName: newName,
       });
 
+      await API.desktop.updateMostRecentlyUsedProject({
+        spaceProviderId,
+        spaceId,
+        itemId,
+        newName,
+      });
+
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {
       commit("setIsLoadingContent", false);
@@ -366,6 +482,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         destWorkflowGroupItemId,
         collisionHandling: collisionStrategy,
         copy: isCopy,
+      });
+      itemIds.forEach(async (itemId: string) => {
+        await API.desktop.updateMostRecentlyUsedProject({
+          spaceProviderId,
+          spaceId,
+          itemId,
+        });
       });
       await dispatch("fetchWorkflowGroupContent", { projectId });
     } catch (error) {

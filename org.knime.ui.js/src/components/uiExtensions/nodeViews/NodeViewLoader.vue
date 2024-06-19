@@ -20,6 +20,7 @@ import { useResourceLocation } from "../common/useResourceLocation";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 import ExecuteButton from "../ExecuteButton.vue";
+import { useSelectionEvents } from "../common/useSelectionEvents";
 
 /**
  * Renders a node view
@@ -133,7 +134,16 @@ const apiLayer: UIExtensionAPILayer = {
         payload: toRaw(data),
       });
 
-    return () => {};
+    const id = {
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId: props.selectedNode.id,
+    };
+    const { addListener, removeListener } = useSelectionEvents();
+    addListener(id, dispatchPushEvent);
+    return () => {
+      removeListener(id);
+    };
   },
 
   // NOOP - not required by this embedding context for this type of UI Extension

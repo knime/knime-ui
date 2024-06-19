@@ -56,10 +56,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.project.DefaultProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
+import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
@@ -85,9 +89,9 @@ public class MostRecentlyUsedProjectsTest {
         mruProjects.add(proj2);
         assertThat(mruProjects.get()).isEqualTo(List.of(proj1, proj2));
         mruProjects.add(proj3);
-        assertThat(mruProjects.get()).isEqualTo(List.of(proj2, proj3));
+        assertThat(mruProjects.get()).isEqualTo(List.of(proj1, proj2, proj3));
         mruProjects.add(proj4);
-        assertThat(mruProjects.get()).isEqualTo(List.of(proj3, proj4));
+        assertThat(mruProjects.get()).isEqualTo(List.of(proj1, proj3, proj4));
     }
 
     /**
@@ -124,6 +128,36 @@ public class MostRecentlyUsedProjectsTest {
         assertThat(mruProjects.get()).hasSize(1);
         assertThat(mruProjects.get().get(0).name()).isEqualTo("name2");
 
+    }
+
+    /**
+     * Tests
+     * {@link MostRecentlyUsedProjects#updateOriginAndName(String, String, String, String, org.knime.gateway.impl.webui.spaces.local.LocalWorkspace)}.
+     *
+     * @throws IOException
+     * @throws OperationNotAllowedException
+     */
+    @Test
+    void testUpdateOriginAndName() throws IOException, OperationNotAllowedException {
+        var localSpace = new LocalWorkspace(FileUtil.createTempDir("testUpdateOriginAndName").toPath());
+        var wfId = localSpace.createWorkflow("root", "simple").getId();
+        var groupId = localSpace.createWorkflowGroup("root").getId();
+        localSpace.renameItem(groupId, "group");
+        localSpace.listWorkflowGroup("root");
+        localSpace.listWorkflowGroup(groupId);
+
+        var mruProjects = new MostRecentlyUsedProjects();
+        var proj = new RecentlyUsedProject("name1", createOrigin("local", "local", wfId, "simple"), OffsetDateTime.MAX);
+        mruProjects.add(proj);
+
+
+        mruProjects.updateOriginAndName("local", "local", wfId, "newName", localSpace);
+        assertThat(mruProjects.get().get(0).name()).isEqualTo("newName");
+
+        assertThat(mruProjects.get().get(0).origin().getRelativePath().orElse(null)).isEqualTo("simple");
+        localSpace.moveOrCopyItems(List.of(wfId), groupId, NameCollisionHandling.NOOP, false);
+        mruProjects.updateOriginAndName("local", "local", wfId, null, localSpace);
+        assertThat(mruProjects.get().get(0).origin().getRelativePath().orElse(null)).isEqualTo("group/simple");
     }
 
     /**

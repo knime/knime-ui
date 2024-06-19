@@ -12,6 +12,7 @@ import type { KnimeNode } from "@/api/custom-types";
 
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
+import { useSelectionEvents } from "../common/useSelectionEvents";
 
 /**
  * Dynamically loads a component that will render a Port's output view
@@ -122,7 +123,18 @@ const apiLayer: UIExtensionAPILayer = {
   publishData: noop,
   setReportingContent: noop,
   imageGenerated: noop,
-  registerPushEventService: () => noop,
+  registerPushEventService: ({ dispatchPushEvent }) => {
+    const id = {
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId: props.selectedNode.id,
+    };
+    const { addListener, removeListener } = useSelectionEvents();
+    addListener(id, dispatchPushEvent);
+    return () => {
+      removeListener(id);
+    };
+  },
   onDirtyStateChange: noop,
   onApplied: noop,
   setControlsVisibility: noop,

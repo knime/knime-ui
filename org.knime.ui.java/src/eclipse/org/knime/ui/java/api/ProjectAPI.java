@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collector;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -269,12 +268,7 @@ final class ProjectAPI {
 
     private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalWorkspace localSpace) {
         if (LocalSpaceUtil.isLocalSpace(origin.getProviderId(), origin.getSpaceId())) {
-            try {
-                localSpace.getItemName(origin.getItemId());
-                return false;
-            } catch (NoSuchElementException e) { // NOSONAR
-                return true;
-            }
+            return localSpace.toLocalAbsolutePath(null, origin.getItemId()).isEmpty();
         } else {
             return false;
         }
@@ -294,6 +288,17 @@ final class ProjectAPI {
             return origin.getItemId().equals(itemId) && origin.getSpaceId().equals(spaceId)
                 && origin.getProviderId().equals(spacePoviderId);
         });
+    }
+
+    /**
+     * Updates infos of the reference most recently used project, such as name or relative path (in case a local project
+     * has been moved).
+     */
+    @API
+    static void updateMostRecentlyUsedProject(final String providerId, final String spaceId, final String itemId,
+        final String newName) {
+        DesktopAPI.getDeps(MostRecentlyUsedProjects.class).updateOriginAndName(providerId, spaceId, itemId, newName,
+            DesktopAPI.getDeps(LocalWorkspace.class));
     }
 
     private static Collector<Object, ArrayNode, ArrayNode> arrayNodeCollector() {

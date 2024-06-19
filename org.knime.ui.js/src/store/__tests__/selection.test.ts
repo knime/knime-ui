@@ -172,6 +172,11 @@ describe("workflow store", () => {
             },
             selectedBendpoints: {},
             selectedMetanodePortBars: {},
+            activeNodePorts: {
+              nodeId: null,
+              selectedPort: null,
+              isModificationInProgress: false,
+            },
           },
         },
         workflow: {
@@ -194,6 +199,10 @@ describe("workflow store", () => {
     });
 
     it("deselects all selected Objects", () => {
+      Object.assign($store.state.selection.activeNodePorts, {
+        nodeId: "someid:0",
+        selectedPort: "output-3",
+      });
       $store.dispatch("selection/deselectAllObjects");
       expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
       expect(
@@ -202,6 +211,8 @@ describe("workflow store", () => {
       expect(
         Object.keys($store.state.selection.selectedAnnotations).length,
       ).toBe(0);
+      expect($store.state.selection.activeNodePorts.nodeId).toBeNull();
+      expect($store.state.selection.activeNodePorts.selectedPort).toBeNull();
     });
 
     it("selects all objects", () => {

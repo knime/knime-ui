@@ -19,7 +19,9 @@ const shouldDisplayPromo = computed(() => {
     store.state.spaces.isConnectingToProvider === COMMUNITY_HUB_ID;
 
   return (
-    !spaceProviders[COMMUNITY_HUB_ID]?.connected && !isConnectingToCommunityHub
+    spaceProviders[COMMUNITY_HUB_ID] &&
+    !spaceProviders[COMMUNITY_HUB_ID].connected &&
+    !isConnectingToCommunityHub
   );
 });
 </script>
@@ -47,7 +49,7 @@ const shouldDisplayPromo = computed(() => {
       href="https://knime.com/modern-ui-hub-tile-link?src=knimeappmodernui"
     >
       <LinkExternalIcon />
-      Explore the community hub
+      Explore the KNIME Community Hub
     </Button>
   </div>
 </template>

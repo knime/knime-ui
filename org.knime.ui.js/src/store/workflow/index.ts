@@ -10,6 +10,7 @@ import {
 import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
+import { getPortContext } from "@/util/portSelection";
 
 import {
   actions as jsonPatchActions,
@@ -203,6 +204,76 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     if (messages.length) {
       window.alert(messages.join(" \n"));
     }
+  },
+
+  async deleteSelectedPort({ rootState, commit, dispatch, rootGetters }) {
+    const { selectedPort, nodeId } = rootState.selection.activeNodePorts;
+    const node: KnimeNode = rootGetters["workflow/getNodeById"](nodeId);
+
+    if (
+      !selectedPort ||
+      rootState.selection.activeNodePorts.isModificationInProgress
+    ) {
+      return;
+    }
+
+    const { side, index, sidePorts, isAddPort } = getPortContext(
+      node,
+      selectedPort,
+    );
+
+    if (isAddPort || !sidePorts[index].canRemove) {
+      return;
+    }
+
+    commit(
+      "selection/updateActiveNodePorts",
+      {
+        isModificationInProgress: true,
+      },
+      { root: true },
+    );
+
+    const isLastSideport = index === sidePorts.length - 1;
+    await dispatch("removeNodePort", {
+      nodeId,
+      side,
+      index,
+      portGroup: sidePorts[index].portGroupId,
+    })
+      .then(() => {
+        if (isLastSideport) {
+          const minIndex = node.kind === "metanode" ? 0 : 1;
+          if (index - 1 >= minIndex) {
+            commit(
+              "selection/updateActiveNodePorts",
+              {
+                selectedPort: `${side}-${index - 1}`,
+              },
+              { root: true },
+            );
+          } else {
+            commit(
+              "selection/updateActiveNodePorts",
+              {
+                nodeId: null,
+                selectedPort: null,
+              },
+              { root: true },
+            );
+          }
+        }
+      })
+
+      .finally(() => {
+        commit(
+          "selection/updateActiveNodePorts",
+          {
+            isModificationInProgress: false,
+          },
+          { root: true },
+        );
+      });
   },
 
   async collapseToContainer(

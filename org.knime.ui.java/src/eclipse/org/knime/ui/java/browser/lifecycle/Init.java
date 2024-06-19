@@ -88,11 +88,14 @@ import org.knime.gateway.impl.webui.kai.KaiHandlerFactory.AuthTokenProvider;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactoryRegistry;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
+import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.commservice.CEFCommService;
+import org.knime.js.cef.nodeview.CEFNodeView;
+import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
@@ -135,10 +138,11 @@ final class Init {
         var preferenceProvider = createPreferencesProvider();
         var nodeCollections = new NodeCollections(preferenceProvider);
         var nodeRepo = createNodeRepository(nodeCollections);
+        var selectionEventBus = createSelectionEventBus(eventConsumer);
 
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createExampleProjects(localSpace),
-            createNodeFactoryProvider(), kaiHandler, nodeCollections, nodeRepo);
+            createNodeFactoryProvider(), kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
 
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
@@ -166,6 +170,14 @@ final class Init {
 
         };
 
+    }
+
+    private static SelectionEventBus createSelectionEventBus(final EventConsumer eventConsumer) {
+        var selectionEventBus = new SelectionEventBus();
+        selectionEventBus.addSelectionEventListener(e -> eventConsumer.accept("SelectionEvent", e));
+        CEFNodeView.setSelectionEventBus(selectionEventBus);
+        CEFWizardNodeView.setSelectionEventBus(selectionEventBus);
+        return selectionEventBus;
     }
 
     private static void registerPreferenceListeners(final AppStateUpdater appStateUpdater,

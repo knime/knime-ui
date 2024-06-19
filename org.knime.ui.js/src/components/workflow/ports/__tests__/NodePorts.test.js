@@ -1,13 +1,16 @@
+/* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { shallowMount, flushPromises } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
+import * as selectionStoreOriginal from "@/store/selection";
 
 import * as $shapes from "@/style/shapes.mjs";
 
 import AddPortPlaceholder from "../AddPortPlaceholder.vue";
 import NodePorts from "../NodePorts.vue";
 import NodePort from "../NodePort/NodePort.vue";
+import { createNativeNode } from "@/test/factories";
 
 const mockPort = ({ index, connectedVia = [], portGroupId = null }) => ({
   inactive: false,
@@ -22,6 +25,13 @@ describe("NodePorts.vue", () => {
   const doMount = ({
     addNodePortMock = vi.fn(),
     removeNodePortMock = vi.fn(),
+    updateActiveNodePorts = vi
+      .fn()
+      .mockImplementation(
+        selectionStoreOriginal.mutations.updateActiveNodePorts,
+      ),
+    getNodeByIdMock = vi.fn(),
+    isWorkflowWritable = true,
     quickAddNodeMenu = {},
     customProps = {},
   } = {}) => {
@@ -55,6 +65,27 @@ describe("NodePorts.vue", () => {
           addNodePort: addNodePortMock,
           removeNodePort: removeNodePortMock,
         },
+        getters: {
+          getNodeById: () => getNodeByIdMock,
+          isWritable: () => isWorkflowWritable,
+        },
+      },
+      selection: {
+        state: () => ({
+          activeNodePorts: {
+            nodeId: null,
+            selectedPort: null,
+            isModificationInProgress: false,
+          },
+        }),
+        mutations: {
+          updateActiveNodePorts,
+        },
+      },
+      canvas: {
+        state: () => ({
+          getScrollContainerElement: () => document.createElement("div"),
+        }),
       },
     };
 
@@ -65,7 +96,14 @@ describe("NodePorts.vue", () => {
       global: { mocks: { $shapes }, plugins: [$store] },
     });
 
-    return { wrapper, $store, addNodePortMock, removeNodePortMock };
+    return {
+      wrapper,
+      $store,
+      addNodePortMock,
+      removeNodePortMock,
+      updateActiveNodePorts,
+      getNodeByIdMock,
+    };
   };
 
   describe("port positions", () => {
@@ -131,7 +169,7 @@ describe("NodePorts.vue", () => {
       ).toBeTruthy();
     });
 
-    it("ports cant be selected if components or metanodes are linked or workflow is not writable", async () => {
+    it("ports cannot be selected if components or metanodes are linked or workflow is not writable", async () => {
       let { wrapper } = doMount({
         customProps: { nodeKind: "metanode", isEditable: false },
       });
@@ -142,7 +180,7 @@ describe("NodePorts.vue", () => {
       expect(firstPort.props("selected")).toBe(false);
     });
 
-    it("metanode", async () => {
+    it("metanode: click to select", async () => {
       let { wrapper } = doMount({ customProps: { nodeKind: "metanode" } });
       let firstPort = wrapper.findAllComponents(NodePort).at(0);
       firstPort.vm.$emit("click");
@@ -151,7 +189,7 @@ describe("NodePorts.vue", () => {
       expect(firstPort.props("selected")).toBe(true);
     });
 
-    it("component", async () => {
+    it("component: click to select", async () => {
       let { wrapper } = doMount({ customProps: { nodeKind: "component" } });
 
       // Flow Variable Port can't be selected
@@ -212,6 +250,81 @@ describe("NodePorts.vue", () => {
       expect(lastGroupPort.props("selected")).toBe(true);
     });
 
+    it("selection can be navigated", async () => {
+      const nodeId = "mocknodeid:1";
+      const nodeInfo = {
+        kind: "node",
+        inPorts: [
+          mockPort({ index: 0, connectedVia: ["inA"] }),
+          mockPort({ index: 1 }),
+        ],
+        outPorts: [
+          mockPort({ index: 0, outgoing: true, connectedVia: ["outA"] }),
+          mockPort({ index: 1, outgoing: true }),
+          mockPort({ index: 2, outgoing: true, connectedVia: ["outB"] }),
+        ],
+      };
+
+      const { wrapper, $store, getNodeByIdMock } = doMount({
+        customProps: {
+          ...nodeInfo,
+          nodeId,
+        },
+      });
+      getNodeByIdMock.mockImplementation((id) =>
+        createNativeNode({ ...nodeInfo, id }),
+      );
+      const nodePorts = wrapper.getComponent(NodePorts);
+
+      $store.state.selection.activeNodePorts = {
+        nodeId,
+        selectedPort: "output-1",
+      };
+      expect(nodePorts.vm.selectedPort).toBe("output-1");
+      nodePorts.vm.onKeydown(
+        new KeyboardEvent("keydown", { key: "ArrowDown" }),
+      );
+      expect(nodePorts.vm.selectedPort).toBe("output-2");
+      nodePorts.vm.navigateSelection("up");
+      expect(nodePorts.vm.selectedPort).toBe("output-1");
+      nodePorts.vm.navigateSelection("left");
+      expect(nodePorts.vm.selectedPort).toBe("input-1");
+      nodePorts.vm.navigateSelection("right");
+      expect(nodePorts.vm.selectedPort).toBe("output-1");
+      // index is clamped to existing ports when switching sides
+      nodePorts.vm.navigateSelection("down");
+      nodePorts.vm.navigateSelection("left");
+      expect(nodePorts.vm.selectedPort).toBe("input-1");
+      // going left is a no-op if selection is already on input side
+      nodePorts.vm.navigateSelection("left");
+      expect(nodePorts.vm.selectedPort).toBe("input-1");
+      // navigation target can also be an AddPort
+      $store.state.selection.activeNodePorts = {
+        nodeId,
+        selectedPort: "output-AddPort",
+      };
+      getNodeByIdMock.mockImplementation((id) =>
+        createNativeNode({
+          ...nodeInfo,
+          // node with only default flowvar port
+          inPorts: [mockPort({ index: 0, connectedVia: ["inA"] })],
+          id,
+        }),
+      );
+      await wrapper.setProps({
+        inPorts: [mockPort({ index: 0, connectedVia: ["inA"] })],
+        portGroups: {
+          group1: {
+            canAddInPort: true,
+            canAddOutPort: false,
+            supportedPortTypeIds: ["type1"],
+          },
+        },
+      });
+      nodePorts.vm.navigateSelection("left");
+      expect(nodePorts.vm.selectedPort).toBe("input-AddPort");
+    });
+
     it("port can deselect itself", async () => {
       let { wrapper } = doMount({ customProps: { nodeKind: "component" } });
       let normalPort = wrapper.findAllComponents(NodePort).at(1);
@@ -257,6 +370,24 @@ describe("NodePorts.vue", () => {
 
       expect(normalPort.props("selected")).toBe(false);
     });
+  });
+
+  it("check port is selected by store state", async () => {
+    const matchingNodeId = "matchingNodeId";
+    let { wrapper, $store } = doMount({
+      customProps: { nodeId: matchingNodeId },
+    });
+    const nodePorts = wrapper.getComponent(NodePorts);
+    $store.state.selection.activeNodePorts.selectedPort = "output-1";
+    expect(nodePorts.vm.selectedPort).toBeNull();
+
+    $store.state.selection.activeNodePorts.nodeId = matchingNodeId;
+    await flushPromises();
+    expect(nodePorts.vm.selectedPort).toBe("output-1");
+
+    $store.state.selection.activeNodePorts.selectedPort = "input-2";
+    await flushPromises();
+    expect(nodePorts.vm.selectedPort).toBe("input-2");
   });
 
   it("always shows ports other than mickey-mouse", () => {
@@ -470,6 +601,117 @@ describe("NodePorts.vue", () => {
         typeId: "type1",
         portGroup: "group1",
       });
+    });
+
+    it("port deletion locks modifications", async () => {
+      let { wrapper, addNodePortMock } = doMount({
+        customProps: {
+          nodeKind: "node",
+          portGroups: {
+            group1: {
+              canAddInPort: true,
+              supportedPortTypeIds: ["type1"],
+            },
+          },
+        },
+      });
+
+      let resolveAddPort = null;
+      addNodePortMock.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveAddPort = resolve;
+        }),
+      );
+      let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(0);
+      addPortButton.vm.$emit("add-port", {
+        typeId: "type1",
+        portGroup: "group1",
+      });
+
+      // more add-port events before first is finished
+      addPortButton.vm.$emit("add-port", {
+        typeId: "type1",
+        portGroup: "group1",
+      });
+      // more add-port events before first is finished
+      addPortButton.vm.$emit("add-port", {
+        typeId: "type1",
+        portGroup: "group1",
+      });
+      expect(addNodePortMock).toBeCalledTimes(1);
+
+      resolveAddPort();
+      await flushPromises();
+      addPortButton.vm.$emit("add-port", {
+        typeId: "type1",
+        portGroup: "group1",
+      });
+      resolveAddPort();
+      expect(addNodePortMock).toBeCalledTimes(2);
+    });
+
+    it("update selection if no more ports can be added", async () => {
+      const nodeId = "mocknodeid:1";
+      let { wrapper, addNodePortMock, $store, updateActiveNodePorts } = doMount(
+        {
+          customProps: {
+            inPorts: [
+              mockPort({ index: 0, connectedVia: ["inA"] }),
+              mockPort({ index: 1 }),
+            ],
+            nodeKind: "node",
+            portGroups: {
+              group1: {
+                canAddInPort: true,
+                supportedPortTypeIds: ["type1"],
+              },
+            },
+            nodeId,
+          },
+        },
+      );
+
+      $store.state.selection.activeNodePorts = {
+        nodeId,
+        selectedPort: "input-AddPort",
+      };
+      let resolveAddPort = null;
+      addNodePortMock.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveAddPort = resolve;
+        }),
+      );
+
+      const addPortButton = wrapper.findComponent(AddPortPlaceholder);
+      addPortButton.vm.$emit("add-port", {
+        side: "input",
+        typeId: "type1",
+        portGroup: "group1",
+      });
+
+      await wrapper.setProps({
+        portGroups: {
+          group1: {
+            canAddInPort: false,
+            supportedPortTypeIds: ["type1"],
+          },
+        },
+        inPorts: [
+          mockPort({ index: 0, connectedVia: ["inA"] }),
+          mockPort({ index: 1 }),
+          mockPort({ index: 2 }), // new port
+        ],
+      });
+      resolveAddPort();
+      await flushPromises();
+      // selects last port (the one that was just added)
+      expect(updateActiveNodePorts).toHaveBeenCalledWith(
+        $store.state.selection,
+        {
+          nodeId,
+          selectedPort: "input-2",
+        },
+      );
     });
 
     describe.each(["metanode", "component"])(

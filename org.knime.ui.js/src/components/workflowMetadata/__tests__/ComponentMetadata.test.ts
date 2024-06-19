@@ -192,7 +192,7 @@ describe("ComponentMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "This is a new description",
       },
       icon: "data:image/anotherImage",
@@ -309,7 +309,7 @@ describe("ComponentMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "This is a new description",
       },
       icon: "data:image/anotherImage",
@@ -366,7 +366,7 @@ describe("ComponentMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "This is a new description",
       },
       icon: "data:image/anotherImage",
@@ -425,7 +425,7 @@ describe("ComponentMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "This is a new description",
       },
       icon: "data:image/anotherImage",
@@ -489,7 +489,7 @@ describe("ComponentMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "This is a new description",
       },
       icon: "data:image/anotherImage",

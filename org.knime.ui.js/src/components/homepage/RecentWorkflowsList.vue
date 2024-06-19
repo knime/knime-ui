@@ -4,6 +4,9 @@ import { useRouter } from "vue-router";
 import { formatTimeAgo } from "@vueuse/core";
 import { isEqual } from "lodash-es";
 
+import Button from "webapps-common/ui/components/Button.vue";
+import TimeIcon from "webapps-common/ui/assets/img/icons/time.svg";
+import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
 import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
 import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
@@ -14,6 +17,9 @@ import type { RecentWorkflow } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
+import PageTitle from "./PageTitle.vue";
+import { cachedLocalSpaceProjectId } from "@/store/spaces";
+import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
 
 type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 
@@ -49,7 +55,7 @@ const getSpaceProviderName = (recentWorkflow: RecentWorkflow) => {
   const { origin } = recentWorkflow;
   const provider = spaceProviders.value[origin.providerId];
 
-  return provider?.name;
+  return formatSpaceProviderName(provider);
 };
 
 onMounted(() => {
@@ -60,6 +66,18 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   const {
     recentWorkflow: { origin },
   } = (item as RecentWorkflowItem).meta!;
+  const provider = spaceProviders.value[origin.providerId];
+
+  if (!provider.connected) {
+    const connectedProvider = await store.dispatch("spaces/connectProvider", {
+      spaceProviderId: provider.id,
+    });
+
+    // If login was cancelled don't continue
+    if (Object.keys(connectedProvider).length === 0) {
+      return;
+    }
+  }
 
   try {
     await store.dispatch("spaces/openProject", {
@@ -96,11 +114,35 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
     ? icons[recentWorkflow.origin.projectType]
     : WorkflowIcon;
 };
+
+const createWorkflowLocally = async () => {
+  await store.dispatch("spaces/fetchWorkflowGroupContent", {
+    projectId: cachedLocalSpaceProjectId,
+  });
+
+  store.commit("spaces/setCreateWorkflowModalConfig", {
+    isOpen: true,
+    projectId: cachedLocalSpaceProjectId,
+  });
+};
 </script>
 
 <template>
   <div class="recent-workflows">
-    <div class="title">Recently used workflows and components</div>
+    <PageTitle title="Recently used workflows and components">
+      <template #append>
+        <Button
+          compact
+          primary
+          class="create-workflow-button"
+          title="Create new workflow"
+          @click="createWorkflowLocally"
+        >
+          <PlusIcon />
+          <span>Create new workflow</span>
+        </Button>
+      </template>
+    </PageTitle>
 
     <div class="list" data-test-id="recent-workflows">
       <FileExplorer
@@ -110,7 +152,21 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
         disable-dragging
         @open-file="openRecentWorkflow"
       >
-        <template #emptyFolder> There are no recent workflows </template>
+        <template #emptyFolder>
+          <div
+            data-test-id="no-recent-workflows"
+            class="no-recent-workflows-wrapper"
+          >
+            <div class="no-recent-workflows">
+              <TimeIcon />
+              <h3>You don't have any recent workflows yet</h3>
+              <p>
+                Once you open a workflow or a component you will be able to
+                quickly find it here.
+              </p>
+            </div>
+          </div>
+        </template>
 
         <template #itemIcon="{ item }">
           <Component :is="getIcon(item.meta!.recentWorkflow)" />
@@ -144,14 +200,8 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
 @import url("@/assets/mixins.css");
 
 .recent-workflows {
-  padding: 30px 50px;
-
-  & .title {
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 28px;
-    padding-bottom: 20px;
-  }
+  padding: 24px;
+  container: wrapper / inline-size;
 
   & .item-content {
     display: flex;
@@ -166,6 +216,53 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
       & .provider-name {
         @mixin truncate;
       }
+    }
+  }
+}
+
+.create-workflow-button {
+  & svg {
+    margin-right: 4px;
+  }
+}
+
+@container wrapper (max-width: 580px) {
+  .create-workflow-button {
+    width: 30px;
+    height: 30px;
+
+    & span {
+      display: none;
+    }
+
+    & svg {
+      margin-right: 0;
+      padding-left: 1px;
+      top: 0;
+    }
+
+    &.compact {
+      min-width: auto;
+      padding: 5px;
+    }
+  }
+}
+
+.no-recent-workflows-wrapper {
+  display: flex;
+  justify-content: center;
+
+  & .no-recent-workflows {
+    padding: 20px;
+    margin-top: 220px;
+    color: var(--knime-dove-gray);
+    font-size: 12px;
+    text-align: center;
+
+    & svg {
+      stroke: var(--knime-dove-gray);
+
+      @mixin svg-icon-size 60;
     }
   }
 }

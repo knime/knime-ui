@@ -103,7 +103,7 @@ const { saveContent } = useSaveMetadata({
       tags: metadataDraft.value.data.tags,
       description: {
         value: metadataDraft.value.data.description,
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
       },
     });
   },

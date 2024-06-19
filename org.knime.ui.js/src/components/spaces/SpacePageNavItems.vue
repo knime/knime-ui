@@ -1,28 +1,31 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
+
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
+import LeaveIcon from "webapps-common/ui/assets/img/icons/leave.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceGroup } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useStore } from "@/composables/useStore";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 
 import { isHubProvider } from "@/store/spaces/util";
 import {
-  SidebarNavItem,
-  type SidebarNavItemType,
+  NavMenu,
+  NavMenuItem,
+  type NavMenuItemProps,
 } from "@/components/common/side-nav";
 
 import { useSpaceIcons } from "./useSpaceIcons";
-import SpacePageNavItemsAuthButtons from "./SpacePageNavItemsAuthButtons.vue";
+import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 const store = useStore();
 const $router = useRouter();
 const $route = useRoute();
-
-const emit = defineEmits<{
-  loading: [value: boolean];
-}>();
 
 const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 
@@ -30,16 +33,26 @@ const isLoadingProviders = computed(
   () => store.state.spaces.isLoadingProviders,
 );
 
-watch(
-  isLoadingProviders,
-  () => {
-    emit("loading", isLoadingProviders.value);
-  },
-  { immediate: true },
-);
+const {
+  connectAndNavigate,
+  shouldShowLoginIndicator,
+  shouldShowLogout,
+  isAuthDisabled,
+  logout,
+  isConnectingToProvider,
+} = useSpaceProviderAuth();
 
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
-  if (isHubProvider(spaceProvider) || !spaceProvider.connected) {
+  if (isConnectingToProvider.value === spaceProvider.id) {
+    return;
+  }
+
+  if (!spaceProvider.connected) {
+    connectAndNavigate(spaceProvider);
+    return;
+  }
+
+  if (isHubProvider(spaceProvider)) {
     $router.push({
       name: APP_ROUTES.Home.SpaceSelectionPage,
       params: {
@@ -87,39 +100,48 @@ const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 const isLoggedInHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
   isHubProvider(spaceProvider) && spaceProvider.spaceGroups;
 
-type SpaceNavItem = SidebarNavItemType<{
-  spaceProvider: SpaceProviderNS.SpaceProvider;
-  spaceGroup?: SpaceProviderNS.SpaceGroup;
-}>;
+type SpaceProviderNavItems = NavMenuItemProps & {
+  id: string;
+  onClick: () => void;
+  metadata: { spaceProvider: SpaceProviderNS.SpaceProvider };
+};
 
-const items = computed<SpaceNavItem[]>(() =>
+type SpaceGroupsNavItems = NavMenuItemProps & {
+  id: string;
+  onClick: (event: MouseEvent | KeyboardEvent) => void;
+  metadata: { spaceGroup: SpaceProviderNS.SpaceGroup };
+};
+
+const getItemsForSpaceGroups = (
+  spaceProvider: SpaceProviderNS.SpaceProvider,
+): SpaceGroupsNavItems[] => {
+  return isLoggedInHubProvider(spaceProvider)
+    ? spaceProvider.spaceGroups.map((group) => ({
+        id: group.id,
+        text: group.name,
+        active: isSpaceGroupActive(group.id),
+        highlighted: isSpaceGroupActive(group.id),
+        onClick: (event) => {
+          event.stopPropagation();
+          onSpaceGroupClick(group, spaceProvider);
+        },
+        metadata: { spaceGroup: group },
+      }))
+    : [];
+};
+
+const providerItems = computed<SpaceProviderNavItems[]>(() =>
   Object.values(spaceProviders.value ?? {}).map((spaceProvider) => {
-    const item: SpaceNavItem = {
+    const item: SpaceProviderNavItems = {
       id: spaceProvider.id,
-      text: spaceProvider.name,
+      text: formatSpaceProviderName(spaceProvider),
       active: isSpaceProviderActive(spaceProvider.id),
-      clickable: spaceProvider.connected,
+      withIndicator: isSpaceProviderActive(spaceProvider.id),
+      highlighted:
+        isSpaceProviderActive(spaceProvider.id) &&
+        getItemsForSpaceGroups(spaceProvider).every((item) => !item.active),
       onClick: () => onProviderClick(spaceProvider),
-      hoverable: spaceProvider.connected,
-      icon: getSpaceProviderIcon(spaceProvider),
-
       metadata: { spaceProvider },
-
-      children: isLoggedInHubProvider(spaceProvider)
-        ? spaceProvider.spaceGroups.map((group) => ({
-            id: group.id,
-            text: group.name,
-            active: isSpaceGroupActive(group.id),
-            icon: getSpaceGroupIcon(group),
-            clickable: true,
-            onClick: (event) => {
-              event.stopPropagation();
-              onSpaceGroupClick(group, spaceProvider);
-            },
-
-            metadata: { spaceProvider, spaceGroup: group },
-          }))
-        : [],
     };
 
     return item;
@@ -128,9 +150,109 @@ const items = computed<SpaceNavItem[]>(() =>
 </script>
 
 <template>
-  <SidebarNavItem v-for="item in items" :key="item.id" :item="item">
-    <template #append>
-      <SpacePageNavItemsAuthButtons :item="item" />
+  <NavMenuItem
+    v-for="item in providerItems"
+    :key="item.id"
+    :text="item.text"
+    :active="item.active"
+    :highlighted="item.highlighted"
+    :with-indicator="item.withIndicator"
+    @click="item.onClick()"
+  >
+    <template #prepend>
+      <Component :is="getSpaceProviderIcon(item.metadata.spaceProvider!)" />
     </template>
-  </SidebarNavItem>
+
+    <template #append="{ isItemHovered }">
+      <span
+        v-if="
+          isItemHovered && shouldShowLoginIndicator(item.metadata.spaceProvider)
+        "
+        class="login-indicator"
+      >
+        Connect
+      </span>
+
+      <LoadingIcon
+        v-if="isConnectingToProvider === item.metadata.spaceProvider.id"
+        class="loading-indicator"
+      />
+
+      <FunctionButton
+        v-if="shouldShowLogout(item.metadata.spaceProvider)"
+        compact
+        :disabled="isAuthDisabled"
+        @click.stop.prevent="logout(item.metadata.spaceProvider)"
+      >
+        <LeaveIcon />
+      </FunctionButton>
+    </template>
+
+    <template
+      v-if="isLoggedInHubProvider(item.metadata.spaceProvider!)"
+      #children
+    >
+      <NavMenu>
+        <NavMenuItem
+          v-for="child in getItemsForSpaceGroups(item.metadata.spaceProvider!)"
+          :key="child.id"
+          :text="child.text"
+          :active="child.active"
+          :highlighted="child.highlighted"
+          :with-indicator="child.withIndicator"
+          @click="child.onClick($event)"
+        >
+          <template #prepend>
+            <Component :is="getSpaceGroupIcon(child.metadata!.spaceGroup!)" />
+          </template>
+        </NavMenuItem>
+      </NavMenu>
+    </template>
+  </NavMenuItem>
+
+  <div v-if="isLoadingProviders" class="menu-skeleton">
+    <div v-for="index in 4" :key="index" class="menu-skeleton-item">
+      <div class="skeleton-list">
+        <SkeletonItem
+          :color1="$colors.SilverSandSemi"
+          width="70%"
+          height="24px"
+        />
+        <SkeletonItem
+          :color1="$colors.SilverSandSemi"
+          width="70px"
+          height="24px"
+          type="button"
+        />
+      </div>
+    </div>
+  </div>
 </template>
+
+<style lang="postcss" scoped>
+.menu-skeleton {
+  padding: 0;
+
+  & .menu-skeleton-item {
+    display: flex;
+    flex-direction: column;
+
+    & .skeleton-list {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 5px 8px 8px;
+    }
+  }
+}
+
+.login-indicator {
+  color: var(--knime-dove-gray);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.loading-indicator {
+  margin-right: 8px;
+}
+</style>

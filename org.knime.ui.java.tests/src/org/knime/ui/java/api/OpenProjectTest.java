@@ -112,7 +112,7 @@ class OpenProjectTest {
         assertThat(mruProjects.get()).hasSize(1);
         assertThat(mruProjects.get().get(0).name()).isEqualTo("simple");
 
-        verify(appStateUpdateListener).run();;
+        verify(appStateUpdateListener).run();
     }
 
     @Test

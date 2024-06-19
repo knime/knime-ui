@@ -10,6 +10,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
+import SpacePageHeader from "./SpacePageHeader.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -94,16 +95,41 @@ const hubSpaceIcon = computed(() => {
 
   return getSpaceIcon(activeSpace.value!);
 });
+
+const errorOnHeader = ref("");
+const isEditing = ref(false);
+
+const onRenameSpace = (name: String) => {
+  errorOnHeader.value = "";
+  store
+    .dispatch("spaces/renameSpace", {
+      spaceProviderId: activeSpaceProvider.value.id,
+      spaceId: activeSpace.value!.id,
+      spaceName: name,
+    })
+    .catch((error) => {
+      errorOnHeader.value = error.message;
+      isEditing.value = true;
+    });
+};
 </script>
 
 <template>
-  <SpacePageLayout
-    v-if="activeSpaceProvider && activeSpaceGroup"
-    :title="title"
-    :breadcrumbs="breadcrumbs"
-  >
-    <template v-if="hubSpaceIcon" #icon>
-      <Component :is="hubSpaceIcon" />
+  <SpacePageLayout v-if="activeSpaceProvider && activeSpaceGroup">
+    <template #header>
+      <SpacePageHeader
+        v-model:is-editing="isEditing"
+        :title="title"
+        :breadcrumbs="breadcrumbs"
+        :is-editable="isHubProvider(activeSpaceProvider)"
+        :error="errorOnHeader"
+        @submit="onRenameSpace"
+        @cancel="errorOnHeader = ''"
+      >
+        <template v-if="hubSpaceIcon" #icon>
+          <Component :is="hubSpaceIcon" />
+        </template>
+      </SpacePageHeader>
     </template>
 
     <template #toolbar>

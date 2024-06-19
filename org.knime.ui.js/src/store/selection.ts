@@ -2,16 +2,22 @@ import type { ActionTree, Commit, GetterTree, MutationTree } from "vuex";
 
 import type { RootStoreState } from "./types";
 import { parseBendpointId } from "@/util/connectorUtil";
+import type { SelectedPortIdentifier } from "@/util/portSelection";
 import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
 
 export interface SelectionState {
   selectedNodes: Record<string, boolean>;
-  selectedPort: "view" | Omit<string, "view"> | null;
   selectedConnections: Record<string, boolean>;
   selectedAnnotations: Record<string, boolean>;
   selectedBendpoints: Record<string, boolean>;
   selectedMetanodePortBars: { in?: boolean; out?: boolean };
+  activePortTab: "view" | Omit<string, "view"> | null;
+  activeNodePorts: {
+    nodeId: string | null;
+    selectedPort: SelectedPortIdentifier;
+    isModificationInProgress: boolean;
+  };
 
   startedSelectionFromAnnotationId: string | null;
   didStartRectangleSelection: boolean;
@@ -27,13 +33,18 @@ export interface SelectionState {
 // WARNING: Do not use this state directly. Use getters that filter non existent workflow objects.
 export const state = (): SelectionState => ({
   selectedNodes: {},
-  selectedPort: null,
   selectedConnections: {},
   selectedAnnotations: {},
   selectedMetanodePortBars: {},
   startedSelectionFromAnnotationId: null,
   didStartRectangleSelection: false,
   selectedBendpoints: {},
+  activePortTab: null,
+  activeNodePorts: {
+    nodeId: null,
+    selectedPort: null,
+    isModificationInProgress: false,
+  },
 
   focusedObject: null,
 
@@ -78,6 +89,10 @@ export const mutations: MutationTree<SelectionState> = {
     }
     if (Object.keys(state.selectedMetanodePortBars).length > 0) {
       state.selectedMetanodePortBars = {};
+    }
+    if (state.activeNodePorts.selectedPort) {
+      state.activeNodePorts.nodeId = null;
+      state.activeNodePorts.selectedPort = null;
     }
   },
 
@@ -155,8 +170,12 @@ export const mutations: MutationTree<SelectionState> = {
     state.shouldHideSelection = value;
   },
 
-  setSelectedPort(state, value) {
-    state.selectedPort = value;
+  setActivePortTab(state, value) {
+    state.activePortTab = value;
+  },
+
+  updateActiveNodePorts(state, value) {
+    Object.assign(state.activeNodePorts, value);
   },
 };
 

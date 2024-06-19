@@ -157,6 +157,12 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
     description: "Close dialog and execute node",
     group: "execution",
   },
+  /** Selected node actions */
+  {
+    hotkey: ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"],
+    description: "Move port selection",
+    group: "selectedNode",
+  },
   /** Node labels */
   {
     hotkey: ["CtrlOrCmd", "Enter"],

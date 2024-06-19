@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
-import RocketIcon from "webapps-common/ui/assets/img/icons/rocket.svg";
+import TimeIcon from "webapps-common/ui/assets/img/icons/time.svg";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
-  SidebarNav,
-  SidebarNavItem,
-  type SidebarNavItemType,
+  NavMenu,
+  NavMenuItem,
+  type NavMenuItemProps,
 } from "@/components/common/side-nav";
 
 import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
 import CommunityHubPromoCard from "@/components/spaces/CommunityHubPromoCard.vue";
-
-const isSkeletonShown = ref(true);
 
 const $router = useRouter();
 const $route = useRoute();
@@ -23,23 +21,26 @@ const isGetStartedPageActive = computed(() => {
   return $route.name === APP_ROUTES.Home.GetStarted;
 });
 
-const recent = computed<SidebarNavItemType>(() => ({
-  id: "get-started",
-  text: "Get started",
-  hoverable: true,
-  icon: RocketIcon,
+const recent = computed<NavMenuItemProps>(() => ({
+  text: "Recent",
+  icon: TimeIcon,
   active: isGetStartedPageActive.value,
-  clickable: true,
+  withIndicator: isGetStartedPageActive.value,
+  highlighted: isGetStartedPageActive.value,
   onClick: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
 }));
 </script>
 
 <template>
-  <SidebarNav :show-skeleton="isSkeletonShown">
-    <SidebarNavItem :item="recent" />
+  <NavMenu>
+    <NavMenuItem v-bind="recent">
+      <template #prepend>
+        <TimeIcon />
+      </template>
+    </NavMenuItem>
 
-    <SpacePageNavItems @loading="isSkeletonShown = $event" />
-  </SidebarNav>
+    <SpacePageNavItems />
+  </NavMenu>
 
   <CommunityHubPromoCard />
 </template>

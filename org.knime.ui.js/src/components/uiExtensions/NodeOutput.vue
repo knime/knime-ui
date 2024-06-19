@@ -76,10 +76,10 @@ export default defineComponent({
 
     selectedTab: {
       get() {
-        return this.$store.state.selection.selectedPort;
+        return this.$store.state.selection.activePortTab;
       },
       set(val: "view" | Omit<string, "view"> | null) {
-        this.$store.commit("selection/setSelectedPort", val);
+        this.$store.commit("selection/setActivePortTab", val);
       },
     },
     canSelectTabs() {

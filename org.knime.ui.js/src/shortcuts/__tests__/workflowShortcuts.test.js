@@ -6,6 +6,7 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 import { createNativeNode } from "@/test/factories";
 import { Node } from "@/api/gateway-api/generated-api";
+import { getNextSelectedPort } from "@/util/portSelection";
 
 describe("workflowShortcuts", () => {
   const mockSelectedNode = { id: "root:0", allowedActions: {} };
@@ -15,6 +16,12 @@ describe("workflowShortcuts", () => {
   vi.mock("@/environment", async (importOriginal) => {
     Object.assign(mockEnvironment, await importOriginal());
     return mockEnvironment;
+  });
+
+  vi.mock("@/util/portSelection", () => {
+    return {
+      getNextSelectedPort: vi.fn(),
+    };
   });
 
   const createStore = ({
@@ -79,7 +86,11 @@ describe("workflowShortcuts", () => {
           getScrollContainerElement,
         },
         selection: {
-          selectedPort: null,
+          activePortTab: null,
+          activeNodePorts: {
+            nodeId: null,
+            selectedPort: null,
+          },
         },
       },
       getters: {
@@ -243,7 +254,7 @@ describe("workflowShortcuts", () => {
           payload: { event: eventShiftDigit1 },
         });
         expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setSelectedPort",
+          "selection/setActivePortTab",
           "1",
         );
 
@@ -252,7 +263,7 @@ describe("workflowShortcuts", () => {
           payload: { event: eventShiftDigit3 },
         });
         expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setSelectedPort",
+          "selection/setActivePortTab",
           "3",
         );
 
@@ -265,7 +276,7 @@ describe("workflowShortcuts", () => {
           payload: { event: eventShiftDigit1 },
         });
         expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setSelectedPort",
+          "selection/setActivePortTab",
           "0",
         );
 
@@ -274,7 +285,7 @@ describe("workflowShortcuts", () => {
           payload: { event: eventShiftDigit3 },
         });
         expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setSelectedPort",
+          "selection/setActivePortTab",
           "2",
         );
 
@@ -302,7 +313,7 @@ describe("workflowShortcuts", () => {
           payload: { event: eventShiftDigit1 },
         });
         expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setSelectedPort",
+          "selection/setActivePortTab",
           "view",
         );
       });
@@ -337,7 +348,7 @@ describe("workflowShortcuts", () => {
           $store,
         });
         expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setSelectedPort",
+          "selection/setActivePortTab",
           "0",
         );
       });
@@ -585,7 +596,7 @@ describe("workflowShortcuts", () => {
       it("executes", () => {
         const { $store, mockDispatch } = createStore();
 
-        $store.state.selection.selectedPort = "42";
+        $store.state.selection.activePortTab = "42";
         const node = $store.getters["selection/singleSelectedNode"];
 
         workflowShortcuts.detachActiveOutputPort.execute({
@@ -611,7 +622,7 @@ describe("workflowShortcuts", () => {
         expect(
           workflowShortcuts.detachActiveOutputPort.condition({ $store }),
         ).toBeFalsy();
-        $store.state.selection.selectedPort = "1";
+        $store.state.selection.activePortTab = "1";
         expect(
           workflowShortcuts.detachActiveOutputPort.condition({ $store }),
         ).toBeTruthy();
@@ -791,7 +802,7 @@ describe("workflowShortcuts", () => {
   });
 
   describe("deleteSelected", () => {
-    it("executes", () => {
+    it("execute: delete selected objects", () => {
       const { $store, mockDispatch } = createStore();
       workflowShortcuts.deleteSelected.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
@@ -799,7 +810,22 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("checkes when workflow is not writeable ", () => {
+    it("execute: delete selected port", () => {
+      const { $store, mockDispatch } = createStore();
+
+      $store.state.selection.activeNodePorts = {
+        nodeId: "someid",
+        selectedPort: "some-port",
+      };
+
+      workflowShortcuts.deleteSelected.execute({ $store });
+      expect(mockDispatch).toHaveBeenCalledOnce();
+      expect(mockDispatch).toHaveBeenLastCalledWith(
+        "workflow/deleteSelectedPort",
+      );
+    });
+
+    it("condition checks when workflow is not writeable ", () => {
       const { $store } = createStore({ singleSelectedNode: null });
       $store.getters["workflow/isWritable"] = false;
       expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
@@ -807,7 +833,7 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("checks when nothing selected", () => {
+    it("condition checks when nothing selected", () => {
       const { $store } = createStore({ singleSelectedNode: null });
       $store.getters["selection/selectedNodes"] = [];
       $store.getters["selection/selectedConnections"] = [];
@@ -815,9 +841,18 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
         false,
       );
+
+      // port is selected -> shortcut active...
+      $store.state.selection.activeNodePorts.selectedPort = "some-port";
+      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(true);
+      // ... unless a modification is already in progress
+      $store.state.selection.activeNodePorts.isModificationInProgress = true;
+      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
+        false,
+      );
     });
 
-    it("checkes when one node is not deletable", () => {
+    it("condition checks when one node is not deletable", () => {
       const { $store } = createStore({
         singleSelectedNode: null,
         selectedNodes: [
@@ -846,7 +881,7 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("checkes when all selected are deletable", () => {
+    it("condition checks when all selected are deletable", () => {
       const { $store } = createStore({
         singleSelectedNode: null,
         selectedNodes: [
@@ -861,7 +896,7 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(true);
     });
 
-    it("checkes when only nodes are selected", () => {
+    it("condition checks when only nodes are selected", () => {
       const { $store } = createStore({
         singleSelectedNode: null,
         selectedNodes: [
@@ -1169,6 +1204,55 @@ describe("workflowShortcuts", () => {
       expect(
         workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
       ).toBe(true);
+    });
+  });
+
+  describe("shuffleSelectedPort", () => {
+    it("executes:", () => {
+      const { $store, mockCommit } = createStore({
+        singleSelectedNode: mockSelectedNode,
+        isWorkflowWritable: true,
+      });
+      getNextSelectedPort.mockReturnValueOnce("someSelectedPortIdentifier");
+
+      workflowShortcuts.shuffleSelectedPort.execute({ $store });
+      expect(mockCommit).toHaveBeenCalledOnce();
+      expect(mockCommit).toHaveBeenLastCalledWith(
+        "selection/updateActiveNodePorts",
+        {
+          nodeId: $store.getters["selection/singleSelectedNode"].id,
+          selectedPort: "someSelectedPortIdentifier",
+        },
+      );
+    });
+
+    it("checks condition:", () => {
+      // ideal condition
+      let { $store } = createStore({
+        singleSelectedNode: mockSelectedNode,
+        isWorkflowWritable: true,
+      });
+      expect(workflowShortcuts.shuffleSelectedPort.condition({ $store })).toBe(
+        true,
+      );
+
+      // no single node selected
+      ({ $store } = createStore({
+        singleSelectedNode: null,
+        isWorkflowWritable: true,
+      }));
+      expect(workflowShortcuts.shuffleSelectedPort.condition({ $store })).toBe(
+        false,
+      );
+
+      // workflow read-only
+      ({ $store } = createStore({
+        singleSelectedNode: mockSelectedNode,
+        isWorkflowWritable: false,
+      }));
+      expect(workflowShortcuts.shuffleSelectedPort.condition({ $store })).toBe(
+        false,
+      );
     });
   });
 });

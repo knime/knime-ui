@@ -12,6 +12,7 @@ import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 export type ActionMenuItem = MenuItem & {
   id: string;
@@ -102,7 +103,7 @@ export const buildHubUploadMenuItems = (
   const connectToHubItems = disconnectedSpaceProviders.map(
     (provider: SpaceProviderNS.SpaceProvider) => ({
       id: `connectToHub-${provider.id}`,
-      text: provider.name,
+      text: formatSpaceProviderName(provider),
       execute: () => {
         dispatch("spaces/connectProvider", {
           spaceProviderId: provider.id,

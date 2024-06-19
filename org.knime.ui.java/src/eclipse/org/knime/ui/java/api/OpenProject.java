@@ -60,7 +60,9 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.DefaultProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -102,10 +104,12 @@ final class OpenProject {
      */
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId) {
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            final var space =
-                SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+            final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+            final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
             final var knimeUrl = space.toKnimeUrl(itemId);
-            openProjectInClassicAndWebUI(knimeUrl, null);
+            final var isServerProject =
+                spaceProviders.getProviderTypes().get(spaceProviderId) == SpaceProviderEnt.TypeEnum.SERVER;
+            openProjectInClassicAndWebUI(knimeUrl, null, isServerProject);
         } else {
             DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {
                 openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor);
@@ -127,8 +131,12 @@ final class OpenProject {
             .filter(HubSpaceLocationInfo.class::isInstance)//
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
+
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            openProjectInClassicAndWebUI(repoObjectImport.getKnimeURI(), locationInfo);
+            final var isServerProject = repoObjectImport.locationInfo()//
+                .map(info -> info.getType() == LocationType.SERVER_REPOSITORY)//
+                .orElse(false);
+            openProjectInClassicAndWebUI(repoObjectImport.getKnimeURI(), locationInfo, isServerProject);
         } else {
             final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
             if (wfm == null) {
@@ -145,14 +153,18 @@ final class OpenProject {
      * Opens the project in both the Classic UI and the Modern/Web UI
      *
      * @param knimeUrl The knime:// URI identifying the source of the project to load
+     * @param locationInfo Information about where on a KNIME Hub a workflow is stored
+     * @param isServerProject Whether the project to open is a KNIME Server project or not
      */
-    private static void openProjectInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo) {
+    private static void openProjectInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo,
+        final boolean isServerProject) {
         try {
             DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo);
             hideSharedEditorArea();
             var activeProjectId = ClassicWorkflowEditorUtil
                 .updateWorkflowProjectsFromOpenedWorkflowEditors(DesktopAPI.getDeps(LocalWorkspace.class));
             activeProjectId.flatMap(id -> DesktopAPI.getDeps(ProjectManager.class).getProject(id)) //
+                .filter(p -> !isServerProject) // To not track KNIME Server projects as recently used
                 .ifPresent(p -> DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(p));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
@@ -172,7 +184,9 @@ final class OpenProject {
      */
     static void openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) {
-        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+
         var projectType = space.getProjectType(itemId).orElseThrow(() -> new IllegalArgumentException(
             "The item for id " + itemId + " is neither a workflow- nor a component-project"));
 
@@ -184,7 +198,11 @@ final class OpenProject {
             return;
         }
 
-        DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(projectAndWfm.project);
+        final var isServerProject =
+            spaceProviders.getProviderTypes().get(spaceProviderId) == SpaceProviderEnt.TypeEnum.SERVER;
+        if (!isServerProject) { // To not track KNIME Server projects as recently used
+            DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(projectAndWfm.project);
+        }
         registerProjectAndSetActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }

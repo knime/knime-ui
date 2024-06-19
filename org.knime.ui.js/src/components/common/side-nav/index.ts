@@ -1,5 +1,5 @@
-import SidebarNav from "./SidebarNav.vue";
-import SidebarNavItem from "./SidebarNavItem.vue";
-import type { SidebarNavItem as SidebarNavItemType } from "./types";
+import NavMenu from "./NavMenu.vue";
+import NavMenuItem from "./NavMenuItem.vue";
+import type { NavMenuItemProps } from "./types";
 
-export { SidebarNav, SidebarNavItem, type SidebarNavItemType };
+export { NavMenu, NavMenuItem, type NavMenuItemProps };

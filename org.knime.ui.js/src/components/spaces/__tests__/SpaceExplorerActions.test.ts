@@ -3,7 +3,6 @@ import { nextTick } from "vue";
 import type { Store } from "vuex";
 import { mount } from "@vue/test-utils";
 
-import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 import { createSpace, createSpaceProvider } from "@/test/factories";
@@ -14,6 +13,7 @@ import * as spacesStore from "@/store/spaces";
 import type { RootStoreState } from "@/store/types";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
+import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 
 const mockedAPI = deepMocked(API);
 
@@ -104,7 +104,9 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.text()).toMatch("Upload");
       expect(wrapper.text()).toMatch("Reload");
 
-      expect(wrapper.findComponent(PlusButton).exists()).toBe(true);
+      expect(wrapper.findComponent(SpaceExplorerFloatingButton).exists()).toBe(
+        true,
+      );
       expect(
         wrapper.findAllComponents(OptionalSubMenuActionButton).length,
       ).toBe(5);
@@ -124,7 +126,9 @@ describe("SpaceExplorerActions.vue", () => {
       expect(wrapper.text()).toMatch("Add files");
       expect(wrapper.text()).toMatch("Reload");
 
-      expect(wrapper.findComponent(PlusButton).exists()).toBe(true);
+      expect(wrapper.findComponent(SpaceExplorerFloatingButton).exists()).toBe(
+        true,
+      );
       expect(
         wrapper.findAllComponents(OptionalSubMenuActionButton).length,
       ).toBe(6);
@@ -176,7 +180,7 @@ describe("SpaceExplorerActions.vue", () => {
     it("should open create workflow dialog  when clicking on the relevant action", () => {
       const { wrapper, commitSpy } = doMount();
 
-      wrapper.findComponent(PlusButton).vm.$emit("click");
+      wrapper.findComponent(SpaceExplorerFloatingButton).vm.$emit("click");
       expect(commitSpy).toHaveBeenCalledWith(
         "spaces/setCreateWorkflowModalConfig",
         {

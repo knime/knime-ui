@@ -119,12 +119,6 @@ describe("WorkflowMonitorContent.vue", () => {
 
     expect(wrapper.find(".empty-message").exists()).toBe(false);
     expect(wrapper.find("[data-test-id='errors']").isVisible()).toBe(true);
-    expect(wrapper.find("[data-test-id='warnings']").isVisible()).toBe(false);
-
-    $store.commit("workflowMonitor/setActiveFilter", "SHOW_ALL");
-    await nextTick();
-
-    expect(wrapper.find("[data-test-id='errors']").isVisible()).toBe(true);
     expect(wrapper.find("[data-test-id='warnings']").isVisible()).toBe(true);
   });
 
@@ -132,9 +126,6 @@ describe("WorkflowMonitorContent.vue", () => {
     const { wrapper, $store } = doMount();
 
     await initStateComponent($store);
-
-    $store.commit("workflowMonitor/setActiveFilter", "SHOW_ALL");
-    await nextTick();
 
     const errors = wrapper.find("[data-test-id='errors']");
     const warnings = wrapper.find("[data-test-id='warnings']");

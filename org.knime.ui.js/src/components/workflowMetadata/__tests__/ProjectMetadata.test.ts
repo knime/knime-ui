@@ -133,7 +133,7 @@ describe("ProjectMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "<p>This is a new description</>",
       },
       links: [{ text: "link3", url: "://link3.com" }],
@@ -189,7 +189,7 @@ describe("ProjectMetadata.vue", () => {
       projectMetadata: {
         description: {
           value: "This is the description of the 2nd workflow",
-          contentType: TypedText.ContentTypeEnum.Plain,
+          contentType: TypedText.ContentTypeEnum.Html,
         },
         links: [{ text: "WF2 link1", url: "http://link2.com" }],
         tags: ["tag3", "tag4"],
@@ -263,7 +263,7 @@ describe("ProjectMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "<p>This is an updated description for workflow1</>",
       },
       links: [{ text: "link3", url: "://link3.com" }],
@@ -307,7 +307,7 @@ describe("ProjectMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "<p>This is a new description</>",
       },
       links: [{ text: "link3", url: "://link3.com" }],
@@ -350,7 +350,7 @@ describe("ProjectMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "<p>This is a new description</>",
       },
       links: [{ text: "link3", url: "://link3.com" }],
@@ -392,7 +392,7 @@ describe("ProjectMetadata.vue", () => {
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
-        contentType: TypedText.ContentTypeEnum.Plain,
+        contentType: TypedText.ContentTypeEnum.Html,
         value: "<p>This is a new description</>",
       },
       links: defaultProps.projectMetadata.links,

@@ -15,6 +15,7 @@ import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import type { Connection, XY } from "@/api/gateway-api/generated-api";
 import { getProjectAndWorkflowIds } from "../store/workflow/util";
+import { getNextSelectedPort } from "@/util/portSelection";
 import { API } from "@api";
 import { compatibility, isDesktop } from "@/environment";
 
@@ -53,6 +54,7 @@ type WorkflowShortcuts = UnionToShortcutRegistry<
   | "autoConnectNodesFlowVar"
   | "autoDisconnectNodesDefault"
   | "autoDisconnectNodesFlowVar"
+  | "shuffleSelectedPort"
 >;
 
 declare module "./index" {
@@ -221,7 +223,7 @@ const workflowShortcuts: WorkflowShortcuts = {
         return;
       }
 
-      $store.commit("selection/setSelectedPort", port);
+      $store.commit("selection/setActivePortTab", port);
     },
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
@@ -235,7 +237,7 @@ const workflowShortcuts: WorkflowShortcuts = {
     icon: OpenDialogIcon,
     group: "selectedNode",
     execute: ({ $store }) => {
-      $store.commit("selection/setSelectedPort", "0");
+      $store.commit("selection/setActivePortTab", "0");
     },
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
@@ -320,14 +322,14 @@ const workflowShortcuts: WorkflowShortcuts = {
     icon: OpenDialogIcon,
     group: "selectedNode",
     execute: ({ $store }) => {
-      const port = $store.state.selection.selectedPort;
+      const port = $store.state.selection.activePortTab;
       const node = $store.getters["selection/singleSelectedNode"];
 
       $store.dispatch("workflow/openPortView", { node, port });
     },
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      const port = $store.state.selection.selectedPort;
+      const port = $store.state.selection.activePortTab;
       return isDesktop && singleSelectedNode && port;
     },
   },
@@ -385,10 +387,21 @@ const workflowShortcuts: WorkflowShortcuts = {
     hotkey: ["Delete"],
     group: "general",
     icon: DeleteIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/deleteSelectedObjects"),
+    execute: ({ $store }) => {
+      if ($store.state.selection.activeNodePorts.selectedPort) {
+        $store.dispatch("workflow/deleteSelectedPort");
+      } else {
+        $store.dispatch("workflow/deleteSelectedObjects");
+      }
+    },
     condition({ $store }) {
       if (!$store.getters["workflow/isWritable"]) {
         return false;
+      }
+
+      // enable depending on the selected NodePort
+      if ($store.state.selection.activeNodePorts.selectedPort) {
+        return !$store.state.selection.activeNodePorts.isModificationInProgress;
       }
 
       const selectedNodes: Array<KnimeNode> =
@@ -416,7 +429,7 @@ const workflowShortcuts: WorkflowShortcuts = {
           (connection) => connection.allowedActions?.canDelete,
         );
 
-      // enabled, if all selected objects are deletable
+      // enable if all selected objects are deletable
       return allSelectedDeletable;
     },
   },
@@ -615,6 +628,27 @@ const workflowShortcuts: WorkflowShortcuts = {
     group: "workflowEditor",
     execute: createAutoConnectionHandler(API.workflowCommand.AutoDisconnect),
     condition: canAutoConnectOrDisconnect,
+  },
+  shuffleSelectedPort: {
+    text: "Select (next) port",
+    title: "Select (next) port of the selected node",
+    hotkey: ["Alt", "P"],
+    group: "selectedNode",
+    execute: ({ $store }) => {
+      const node = $store.getters["selection/singleSelectedNode"];
+      const currentSelectedPort =
+        $store.state.selection.activeNodePorts.nodeId === node.id
+          ? $store.state.selection.activeNodePorts.selectedPort
+          : null;
+      $store.commit("selection/updateActiveNodePorts", {
+        nodeId: node.id,
+        selectedPort: getNextSelectedPort($store, node, currentSelectedPort),
+      });
+    },
+    condition: ({ $store }) => {
+      const node: KnimeNode = $store.getters["selection/singleSelectedNode"];
+      return Boolean(node) && $store.getters["workflow/isWritable"];
+    },
   },
 };
 

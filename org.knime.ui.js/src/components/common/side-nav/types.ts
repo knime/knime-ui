@@ -1,11 +1,23 @@
-export type SidebarNavItem<TMetadata = any> = {
-  id: string;
+export type NavMenuItemProps = {
+  /**
+   * Text displayed in the nav menu item
+   */
   text: string;
-  icon?: any;
-  hoverable?: boolean;
+  /**
+   * Sets the text color to the active color
+   */
   active?: boolean;
-  clickable?: boolean;
-  onClick?: (event: MouseEvent | KeyboardEvent) => void;
-  children?: Array<Omit<SidebarNavItem<TMetadata>, "children" | "hoverable">>;
-  metadata?: TMetadata;
+  /**
+   * Acts as a link to the provide value. When this is not set
+   * it will not navigate anywhere but you still receive a click event
+   */
+  href?: string | null;
+  /**
+   * Displays the indicator to the left of the item
+   */
+  withIndicator?: boolean;
+  /**
+   * Adds the highlighted background to the item
+   */
+  highlighted?: boolean;
 };

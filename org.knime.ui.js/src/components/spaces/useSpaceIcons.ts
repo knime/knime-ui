@@ -1,6 +1,6 @@
 import CloudKnimeIcon from "webapps-common/ui/assets/img/icons/cloud-knime.svg";
 import ServerRacksIcon from "webapps-common/ui/assets/img/icons/server-racks.svg";
-import ComputerDesktopIcon from "webapps-common/ui/assets/img/icons/computer-desktop.svg";
+import ComputerDesktopIcon from "webapps-common/ui/assets/img/icons/local-space.svg";
 import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
 import UsersIcon from "webapps-common/ui/assets/img/icons/users.svg";
 import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";

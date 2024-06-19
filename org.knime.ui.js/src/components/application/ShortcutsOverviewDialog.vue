@@ -1,31 +1,41 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
 import shortcuts from "@/shortcuts";
-import type { FormattedShortcut, ShortcutGroups } from "@/shortcuts/types";
+import type {
+  FormattedShortcut,
+  Shortcut,
+  ShortcutGroups,
+} from "@/shortcuts/types";
 import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
 import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
 import { groupBy } from "lodash-es";
 import otherHotkeys from "@/shortcuts/otherHotkeys";
-
-const boundShortcuts = Object.values(shortcuts).filter(
-  (s) => s.hotkey,
-) as Array<FormattedShortcut>;
-
-const allShortcuts = [
-  ...boundShortcuts,
-  ...otherHotkeys,
-] as FormattedShortcut[];
+import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
+import { matchesQuery } from "@/util/matchesQuery";
+import { formatHotkeys } from "@/util/formatHotkeys";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";
 
-const groupedShortcuts = groupBy(
-  allShortcuts,
-  ({ group }) => group ?? "others",
-);
+type ShortcutItemData = FormattedShortcut & { displayText: string };
+
+const boundShortcuts = Object.values(shortcuts).filter(
+  (s) => s.hotkey,
+) as Array<Shortcut>;
+
+const getText = (shortcut: FormattedShortcut) => {
+  const text = typeof shortcut.text === "function" ? null : shortcut.text;
+  return shortcut.description ?? text ?? shortcut.title ?? shortcut.name;
+};
+
+const allShortcuts = [...boundShortcuts, ...otherHotkeys].map((shortcut) => ({
+  ...shortcut,
+  hotkeyText: shortcut.hotkey ? formatHotkeys(shortcut.hotkey) : "",
+  displayText: getText(shortcut as FormattedShortcut),
+})) as ShortcutItemData[];
 
 const groupNamesMap: Record<ShortcutGroupsWithOthers, string> = {
   general: "General actions",
@@ -49,13 +59,11 @@ const isOpen = computed(
   () => store.state.application.isShortcutsOverviewDialogOpen,
 );
 
+const searchQuery = ref("");
+
 const closeModal = () => {
   store.commit("application/setIsShortcutsOverviewDialogOpen", false);
-};
-
-const getText = (shortcut: FormattedShortcut) => {
-  const text = typeof shortcut.text === "function" ? null : shortcut.text;
-  return shortcut.description ?? text ?? shortcut.title ?? shortcut.name;
+  searchQuery.value = "";
 };
 
 const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
@@ -65,6 +73,19 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
         .filter(Boolean)
     : [];
 };
+
+const filteredShortcuts = computed(() =>
+  allShortcuts.filter(
+    (shortcut) =>
+      matchesQuery(searchQuery.value, shortcut.displayText) ||
+      matchesQuery(searchQuery.value, shortcut.title ?? "") ||
+      matchesQuery(searchQuery.value, shortcut.hotkeyText ?? ""),
+  ),
+);
+
+const groupedShortcuts = computed(() =>
+  groupBy(filteredShortcuts.value, ({ group }) => group ?? "others"),
+);
 </script>
 
 <template>
@@ -81,6 +102,14 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
       <ShortcutsIcon />
     </template>
     <template #notice>
+      <div class="search">
+        <SearchInput
+          v-if="isOpen"
+          v-model="searchQuery"
+          focus-on-mount
+          placeholder="Filter shortcuts"
+        />
+      </div>
       <div class="shortcut-overview">
         <div
           v-for="(shortcutsOfGroup, groupKey) of groupedShortcuts"
@@ -95,7 +124,7 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
           >
             <span>
               <ArrowRightIcon class="arrow" />
-              {{ getText(shortcut) }}
+              {{ shortcut.displayText }}
             </span>
 
             <div class="hotkeys">
@@ -127,7 +156,6 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
 
   & :deep(.notice) {
     padding: 0;
-    overflow: hidden auto;
     height: 100%;
   }
 
@@ -141,6 +169,11 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
   }
 }
 
+.search {
+  padding: var(--modal-padding) var(--modal-padding) 0 var(--modal-padding);
+  margin-bottom: 10px;
+}
+
 .shortcut-overview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
@@ -150,6 +183,8 @@ const getVisibleAdditionalHotkeys = (shortcut: FormattedShortcut) => {
   grid-gap: 0 calc(var(--modal-padding) * 2);
   padding: 0 var(--modal-padding) var(--modal-padding) var(--modal-padding);
   font-size: 13px;
+  overflow: hidden auto;
+  height: calc(100% - 70px);
 
   & .group {
     align-self: start;

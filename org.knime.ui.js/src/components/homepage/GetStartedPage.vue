@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import GetStartedPageHeader from "./GetStartedPageHeader.vue";
-import RecentWorkflowsList from "@/components/recentWorkflows/RecentWorkflowsList.vue";
+import ExampleWorkflows from "./ExampleWorkflows.vue";
+import RecentWorkflowsList from "./RecentWorkflowsList.vue";
 </script>
 
 <template>
   <div class="get-started">
-    <div class="header"><GetStartedPageHeader /></div>
-    <div class="recent">
+    <div class="header">
+      <ExampleWorkflows />
+    </div>
+    <div>
       <RecentWorkflowsList />
     </div>
   </div>
@@ -22,10 +24,6 @@ import RecentWorkflowsList from "@/components/recentWorkflows/RecentWorkflowsLis
 
   & .header {
     border-bottom: 1px solid var(--knime-silver-sand);
-  }
-
-  & .grid-border {
-    height: 1px;
   }
 }
 </style>

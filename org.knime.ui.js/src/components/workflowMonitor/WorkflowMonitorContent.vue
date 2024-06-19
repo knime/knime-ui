@@ -8,7 +8,6 @@ import JoyIcon from "webapps-common/ui/assets/img/icons/joy.svg";
 
 import type { WorkflowMonitorMessage as WorkflowMonitorMessageType } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import type { Filter } from "@/store/workflowMonitor";
 import * as $colors from "@/style/colors.mjs";
 
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
@@ -21,27 +20,17 @@ const workflowMonitorState = computed(
 );
 
 const hasLoaded = computed(() => store.state.workflowMonitor.hasLoaded);
-const activeFilter = computed(() => store.state.workflowMonitor.activeFilter);
 
 const errors = computed(() => workflowMonitorState.value.errors);
 const warnings = computed(() => workflowMonitorState.value.warnings);
 
 const shouldShowErrors = computed(() => errors.value.length > 0);
-const shouldShowWarnings = computed(
-  () => activeFilter.value === "SHOW_ALL" && warnings.value.length > 0,
-);
-
-type Messages = typeof errors;
+const shouldShowWarnings = computed(() => warnings.value.length > 0);
 
 const shouldDisplayEmptyMessage = computed(() => {
-  const mapper: Record<Filter, Messages[]> = {
-    SHOW_ERRORS: [errors],
-    SHOW_ALL: [errors, warnings],
-  };
-
   return (
     hasLoaded.value &&
-    mapper[activeFilter.value].every((messages) => messages.value.length === 0)
+    [errors, warnings].every((messages) => messages.value.length === 0)
   );
 });
 
@@ -52,13 +41,6 @@ const getTemplate = (templateId: string) => {
 const navigateToIssue = async (message: WorkflowMonitorMessageType) => {
   await store.dispatch("workflowMonitor/navigateToIssue", { message });
 };
-
-const emptyMessage = computed(() => {
-  const isShowingAll = activeFilter.value === "SHOW_ALL";
-  return `There are no errors ${
-    isShowingAll ? "or warnings" : ""
-  } in your workflow.`;
-});
 
 const isFromNestedNode = (message: WorkflowMonitorMessageType) => {
   return message.workflowId !== "root";
@@ -112,7 +94,7 @@ const isHighlighted = (message: WorkflowMonitorMessageType) => {
 
   <div v-if="shouldDisplayEmptyMessage" class="empty-message">
     <JoyIcon />
-    <div>{{ emptyMessage }}</div>
+    <div>There are no errors or warnings in your workflow.</div>
   </div>
 </template>
 

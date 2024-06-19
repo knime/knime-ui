@@ -1,41 +1,42 @@
 <script lang="ts">
+import { defineComponent, type PropType } from "vue";
 import { mapGetters, mapState } from "vuex";
 
-import PlusButton from "webapps-common/ui/components/PlusButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import FolderPlusIcon from "webapps-common/ui/assets/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 import SearchButton from "@/components/common/SearchButton.vue";
 
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import PlusIcon from "@/assets/plus.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import AddFileIcon from "@/assets/add-file.svg";
+import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import { isLocalProvider } from "@/store/spaces/util";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildMoveToSpaceMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
-import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import { defineComponent, type PropType } from "vue";
-import type { ActionMenuItem } from "@/components/spaces/remoteMenuItems";
-import { isLocalProvider } from "@/store/spaces/util";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+
+import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
+import type { ActionMenuItem } from "./remoteMenuItems";
 
 type DisplayModes = "normal" | "mini";
 
 export default defineComponent({
   components: {
     OptionalSubMenuActionButton,
-    PlusButton,
     SearchButton,
     SubMenu,
     MenuOptionsIcon,
     ReloadIcon,
     FunctionButton,
+    SpaceExplorerFloatingButton,
   },
 
   props: {
@@ -258,14 +259,12 @@ export default defineComponent({
           @click="(item) => (item as ActionMenuItem).execute?.()"
         />
 
-        <div class="create-workflow-btn">
-          <PlusButton
-            :title="createWorkflowButtonTitle"
-            primary
-            :disabled="createWorkflowAction.disabled"
-            @click="createWorkflowAction.execute()"
-          />
-        </div>
+        <SpaceExplorerFloatingButton
+          class="create-workflow-btn"
+          :title="createWorkflowButtonTitle"
+          :disabled="createWorkflowAction.disabled"
+          @click="createWorkflowAction.execute()"
+        />
       </div>
     </template>
 
@@ -305,10 +304,7 @@ export default defineComponent({
     --theme-button-function-background-color-hover: var(--knime-masala);
 
     & .create-workflow-btn {
-      position: fixed;
       z-index: 2;
-      top: 265px;
-      right: 32px;
     }
   }
 

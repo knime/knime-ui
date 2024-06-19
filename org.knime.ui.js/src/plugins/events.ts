@@ -6,6 +6,7 @@ import type { RootStoreState } from "@/store/types";
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
 import { fetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
+import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 
 const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   API.event.registerEventHandlers({
@@ -122,6 +123,10 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         type: "error",
         autoRemove: false,
       });
+    },
+
+    SelectionEvent(event) {
+      useSelectionEvents().notifyListeners(event);
     },
   });
 
