@@ -548,7 +548,7 @@ describe("WorkflowAnnotation.vue", () => {
       const { wrapper, dispatchSpy } = doMount();
       await wrapper
         .findComponent(TransformControls)
-        .trigger("pointerdown", { button: 2 });
+        .trigger("contextmenu", { button: 2 });
 
       expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
       expect(dispatchSpy).toHaveBeenCalledWith(
@@ -567,7 +567,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       await wrapper
         .findComponent(TransformControls)
-        .trigger("pointerdown", { button: 2, [`${mod}Key`]: true });
+        .trigger("contextmenu", { button: 2, [`${mod}Key`]: true });
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",
@@ -585,7 +585,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       await wrapper
         .findComponent(TransformControls)
-        .trigger("pointerdown", { button: 2, metaKey: true });
+        .trigger("contextmenu", { button: 2, metaKey: true });
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectAnnotation",

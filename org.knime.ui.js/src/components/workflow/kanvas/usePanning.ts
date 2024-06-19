@@ -6,6 +6,7 @@ import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { runInEnvironment } from "@/environment";
+import { $bus } from "@/plugins/event-bus";
 
 type UsePanningWithSpaceOptions = {
   shouldShowMoveCursor: Ref<boolean>;
@@ -67,6 +68,7 @@ const usePanningWithSpace = (options: UsePanningWithSpaceOptions) => {
   onBeforeUnmount(() => {
     document.removeEventListener("keypress", onPressSpace);
     document.removeEventListener("keyup", onReleaseKey);
+    $bus.off("context-menu-closed");
   });
 
   return { isHoldingDownSpace };
@@ -208,6 +210,10 @@ export const usePanning = (options: UsePanningOptions) => {
     // move cursor should remain set if the user is still holding down the space key
     shouldShowMoveCursor.value = isHoldingDownSpace.value;
   };
+
+  $bus.on("context-menu-closed", () => {
+    resetPanState();
+  });
 
   const stopPan = (event: PointerEvent) => {
     // user is not panning but did right-clicked
