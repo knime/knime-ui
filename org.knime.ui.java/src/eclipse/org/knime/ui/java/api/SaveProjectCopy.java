@@ -77,6 +77,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -221,8 +222,8 @@ final class SaveProjectCopy {
         if (nameCollisions.isEmpty()) {
             return NameCollisionHandling.NOOP;
         } else {
-            return NameCollisionChecker
-                .openDialogToSelectCollisionHandling(localWorkspace, workflowGroupItemId, nameCollisions).orElse(null);
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(localWorkspace, workflowGroupItemId,
+                nameCollisions, UsageContext.SAVE).orElse(null);
         }
     }
 

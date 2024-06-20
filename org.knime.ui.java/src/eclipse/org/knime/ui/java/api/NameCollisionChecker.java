@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import static org.eclipse.core.runtime.Path.forPosix;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -58,12 +56,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.core.util.Pair;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 
@@ -73,6 +73,14 @@ import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
  * @author Kai Franze, KNIME GmbH
  */
 final class NameCollisionChecker {
+
+    /** Contexts in which the user is asked for preferred name collision handling. */
+    enum UsageContext {
+        IMPORT,
+        SAVE,
+        COPY,
+        MOVE
+    }
 
     /** Dialog constant */
     static final String CANCEL = "cancel";
@@ -141,7 +149,9 @@ final class NameCollisionChecker {
         final String destWorkflowGroupItemId) throws IOException {
         try (final var zipFile = new ZipFile(srcPath.toFile())) {
             final var rootNames = zipFile.stream() //
-                .map(entry -> forPosix(entry.toString()).segment(0)) //
+                .map(ZipEntry::getName) // item path
+                .map(IPath::forPosix) // parse path
+                .map(path -> path.segment(0)) // get root item name
                 .collect(Collectors.toSet());
             if (rootNames.size() != 1) {
                 throw new IOException("Expected one item in archive '" + srcPath + "', found " + rootNames + ".");
@@ -178,31 +188,31 @@ final class NameCollisionChecker {
      *         been selected (cancel)
      */
     static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final Space space,
-        final String workflowGroupItemId, final List<String> nameCollisions) {
+        final String workflowGroupItemId, final List<String> nameCollisions, final UsageContext context) {
         final var groupName = space.getItemName(workflowGroupItemId);
-        return openDialogToSelectCollisionHandling(groupName, nameCollisions, true);
+        return openDialogToSelectCollisionHandling(groupName, nameCollisions, context, true);
     }
 
-    /**
-     * @param space
-     * @param workflowGroupItemId
-     * @param nameCollisions
-     * @return
-     */
     static Optional<NameCollisionHandling> openDialogToSelectCollisionHandling(final String group,
-        final List<String> nameCollisions, final boolean canOverwrite) {
+        final List<String> nameCollisions, final UsageContext context, final boolean canOverwrite) {
         var names = nameCollisions.stream().map(name -> "* " + name).collect(Collectors.joining("\n"));
         final var question = canOverwrite ? "Overwrite existing items or keep all by renaming automatically?"
             : "Item types are incompatible, keep all by renaming automatically?";
         var sh = SWTUtilities.getActiveShell();
         var msg = String.format("The following items already exist in \"%s\": %n%n%s %n%n%s", group, names, question);
-        final List<Pair<String, NameCollisionHandling>> options  = new ArrayList<>(List.of(Pair.of("Cancel", null),
-            Pair.of("Upload with new name", NameCollisionHandling.AUTORENAME)));
+        final var renameText = switch (context) {
+            case IMPORT -> "Import";
+            case SAVE -> "Save";
+            case COPY -> "Copy";
+            case MOVE -> "Move";
+        };
+        final List<Pair<String, NameCollisionHandling>> options  = new ArrayList<>(List.of(Pair.create("Cancel", null),
+            Pair.create(renameText + " with new name", NameCollisionHandling.AUTORENAME)));
         if (canOverwrite) {
-            options.add(1, Pair.of("Overwrite", NameCollisionHandling.OVERWRITE));
+            options.add(1, Pair.create("Overwrite", NameCollisionHandling.OVERWRITE));
         }
         var choice = MessageDialog.open(MessageDialog.QUESTION, sh, "Items already exist", msg, SWT.NONE,
-            options.stream().map(Pair::getLeft).toArray(String[]::new));
-        return Optional.ofNullable(options.get(choice).getRight());
+            options.stream().map(Pair::getFirst).toArray(String[]::new));
+        return Optional.ofNullable(options.get(choice).getSecond());
     }
 }

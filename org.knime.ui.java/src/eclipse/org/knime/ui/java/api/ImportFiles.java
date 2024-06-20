@@ -64,6 +64,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
@@ -87,7 +88,8 @@ class ImportFiles extends AbstractImportItems {
         if (nameCollisions.isEmpty()) {
             return Optional.of(NameCollisionHandling.NOOP);
         } else {
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions);
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions,
+                UsageContext.IMPORT);
         }
     }
 

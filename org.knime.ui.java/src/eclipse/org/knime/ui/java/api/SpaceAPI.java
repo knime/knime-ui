@@ -79,6 +79,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -166,18 +167,18 @@ final class SpaceAPI {
      */
     @API
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
-        final String destWorkflowGroupItemId) {
+        final String destWorkflowGroupItemId, final UsageContext context) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId) //
+        return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, context) //
             .map(NameCollisionHandling::toString) //
             .orElse("CANCEL");
     }
 
     private static Optional<NameCollisionHandling> determineNameCollisionHandling(final Space space,
-        final Object[] itemIds, final String destWorkflowGroupItemId) {
+        final Object[] itemIds, final String destWorkflowGroupItemId, final UsageContext context) {
         final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
         return nameCollisions.isEmpty() ? Optional.of(Space.NameCollisionHandling.NOOP) : NameCollisionChecker //
-                    .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions);
+                    .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions, context);
     }
     /**
      * Copies space items from Local to Hub space or vice versa.
@@ -312,7 +313,8 @@ final class SpaceAPI {
         final var destinationSpace = destinationProvider.getSpace(destination.spaceId());
 
         final var optCollisionHandling =
-                determineNameCollisionHandling(destinationSpace, sourceItemIds, destinationWorkflowGroupItemId);
+                determineNameCollisionHandling(destinationSpace, sourceItemIds, destinationWorkflowGroupItemId,
+                    doCopy ? UsageContext.COPY : UsageContext.MOVE);
         if (optCollisionHandling.isEmpty()) {
             return false;
         }
@@ -475,7 +477,8 @@ final class SpaceAPI {
 
         final AtomicReference<NameCollisionHandling> collisionHandlingStrategyRef = new AtomicReference<>();
         Display.getDefault().syncExec(() ->
-            NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions)
+        NameCollisionChecker
+            .openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions, UsageContext.SAVE)
                 .ifPresent(collisionHandlingStrategyRef::set)
         );
         final var strategy = collisionHandlingStrategyRef.get();

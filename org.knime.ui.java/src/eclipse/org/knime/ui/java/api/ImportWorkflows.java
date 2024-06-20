@@ -69,6 +69,7 @@ import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.ui.workflow.metadata.MetaInfoFile;
 
@@ -94,10 +95,12 @@ class ImportWorkflows extends AbstractImportItems {
     protected Optional<NameCollisionHandling> checkForNameCollisionsAndSuggestSolution(final Space space,
             final String workflowGroupItemId, final List<Path> srcPaths) throws IOException {
         var archiveFilePath = srcPaths.get(0); // There can only be one
-        var nameCollision = NameCollisionChecker.checkForNameCollisionInZip(space, archiveFilePath, workflowGroupItemId);
+        var nameCollision =
+                NameCollisionChecker.checkForNameCollisionInZip(space, archiveFilePath, workflowGroupItemId);
         return nameCollision.map(nc -> {
             var nameCollisions = Collections.singletonList(nc);
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions);
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions,
+                UsageContext.IMPORT);
         }).orElse(Optional.of(Space.NameCollisionHandling.NOOP));
     }
 
