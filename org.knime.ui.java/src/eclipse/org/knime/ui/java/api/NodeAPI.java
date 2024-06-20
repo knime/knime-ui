@@ -62,6 +62,7 @@ import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.NodeStateChangeListener;
 import org.knime.core.node.workflow.NodeStateEvent;
 import org.knime.core.node.workflow.SubNodeContainer;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
@@ -207,8 +208,11 @@ final class NodeAPI {
      */
     @API
     static String openLayoutEditor(final String projectId, final String nodeId) {
-        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
+        if (nc instanceof WorkflowManager wfm && wfm.isComponentProjectWFM()) {
+            nc = (NodeContainer)wfm.getDirectNCParent();
+        }
         if (nc instanceof SubNodeContainer subnode) {
             SubnodeLayoutAction.openLayoutEditor(subnode);
             return null;
