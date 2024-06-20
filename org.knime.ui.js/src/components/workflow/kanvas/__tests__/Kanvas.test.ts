@@ -1150,7 +1150,7 @@ describe("Kanvas", () => {
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
       await Vue.nextTick();
 
-      document.dispatchEvent(new Event("mousedown"));
+      document.dispatchEvent(new Event("pointerdown"));
       await Vue.nextTick();
 
       await wrapper.trigger("focusin");

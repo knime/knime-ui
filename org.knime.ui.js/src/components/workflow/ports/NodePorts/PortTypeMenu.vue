@@ -179,7 +179,7 @@ export default defineComponent({
       portGroup: string | null;
     }) {
       this.$emit("itemClick", { typeId, portGroup });
-      this.$emit("menuClose", { typeId, portGroup });
+      this.$emit("menuClose");
     },
 
     onMenuItemClick(_: MouseEvent, item: MenuItemWithPort) {
@@ -263,6 +263,7 @@ export default defineComponent({
         class="search-results"
         menu-aria-label="Port Type Menu"
         disable-space-to-click
+        @close="$emit('menuClose')"
         @item-click="onMenuItemClick"
         @item-hovered="$emit('itemActive', $event)"
         @item-focused="setActiveDescendant"

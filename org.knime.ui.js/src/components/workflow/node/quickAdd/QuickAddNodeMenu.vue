@@ -249,6 +249,7 @@ export default defineComponent({
     class="quick-add-node"
     :canvas-position="canvasPosition"
     aria-label="Quick add node"
+    focus-trap
     :prevent-overflow="true"
     @menu-close="$emit('menuClose')"
   >
