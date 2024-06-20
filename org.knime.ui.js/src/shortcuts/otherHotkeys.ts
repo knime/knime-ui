@@ -58,7 +58,7 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
     group: "workflowAnnotations",
   },
   {
-    hotkey: ["CtrlOrCmd", "Shift", "X"],
+    hotkey: ["CtrlOrCmd", "Shift", "S"],
     description: "Strikethrough",
     group: "workflowAnnotations",
   },
