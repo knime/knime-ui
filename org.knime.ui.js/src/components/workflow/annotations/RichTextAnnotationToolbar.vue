@@ -254,7 +254,6 @@ onUnmounted(() => {
     :canvas-position="adjustedPosition"
     aria-label="Annotation toolbar"
     :prevent-overflow="true"
-    :focus-trap="false"
     :close-on-escape="false"
     v-bind="$attrs"
   >

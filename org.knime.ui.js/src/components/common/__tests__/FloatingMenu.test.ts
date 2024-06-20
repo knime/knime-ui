@@ -6,17 +6,6 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
 import FloatingMenu from "../FloatingMenu.vue";
 
-const useFocusTrapMock = {
-  activate: vi.fn(),
-  deactivate: vi.fn(),
-};
-
-vi.mock("@vueuse/integrations/useFocusTrap", () => {
-  return {
-    useFocusTrap: () => useFocusTrapMock,
-  };
-});
-
 vi.mock("@/mixins/escapeStack", () => {
   // eslint-disable-next-line func-style
   function escapeStack({ onEscape }) {
@@ -146,24 +135,15 @@ describe("FloatingMenu.vue", () => {
       expect(wrapper.emitted("menuClose")).toBeDefined();
     });
 
-    it("uses focus trap if prop is true", async () => {
-      doMount({
-        props: {
-          focusTrap: true,
-        },
-      });
-      await Vue.nextTick();
-      expect(useFocusTrapMock.activate).toHaveBeenCalled();
-    });
+    it("closes menu when focus leaves the component", () => {
+      const { wrapper } = doMount();
+      const focusOutEvent = new CustomEvent("focusout");
 
-    it("does not use focus trap if prop is false", async () => {
-      doMount({
-        props: {
-          focusTrap: false,
-        },
-      });
-      await Vue.nextTick();
-      expect(useFocusTrapMock.activate).not.toHaveBeenCalled();
+      focusOutEvent.relatedTarget = document.createElement("div");
+
+      wrapper.find(".floating-menu").element.dispatchEvent(focusOutEvent);
+
+      expect(wrapper.emitted("menuClose")).toBeDefined();
     });
 
     it("closes menu if a node template is being dragged", async () => {
