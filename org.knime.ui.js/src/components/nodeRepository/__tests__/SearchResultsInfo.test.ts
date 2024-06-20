@@ -5,6 +5,7 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
 import SearchResultsInfo from "../SearchResultsInfo.vue";
+import Button from "webapps-common/ui/components/Button.vue";
 
 const mockedAPI = deepMocked(API);
 
@@ -22,7 +23,7 @@ describe("SearchResultsInfo", () => {
       isNodeListEmpty: false,
       showDownloadButton: false,
       searchHubLink: "",
-      isQuickAddNodeMenu: false,
+      mini: false,
       ...propsOverrides,
     };
 
@@ -94,8 +95,12 @@ describe("SearchResultsInfo", () => {
         });
 
         expect(wrapper.text()).toMatch("There are no matching nodes.");
-        expect(wrapper.text()).toMatch("Search the KNIME Community Hub");
-        expect(wrapper.find("a").attributes("href")).toBe(encodedQuery);
+        expect(wrapper.text()).toMatch(
+          "Search KNIME Community Hub to find more nodes and extensions.",
+        );
+        expect(wrapper.findComponent(Button).attributes("href")).toBe(
+          encodedQuery,
+        );
       });
 
       it("shows download button in browser", async () => {

@@ -188,7 +188,7 @@ defineExpose({ focusFirst });
         :is-node-list-empty="isNodeListEmpty"
         :show-download-button="showDownloadButton"
         :search-hub-link="searchHubLink"
-        :is-quick-add-node-menu="isQuickAddNodeMenu"
+        :mini="isQuickAddNodeMenu"
       />
     </div>
   </ScrollViewContainer>
@@ -199,7 +199,7 @@ defineExpose({ focusFirst });
 
 .results {
   & .content {
-    padding: 0 10px 10px;
+    padding: 0 var(--space-16) var(--space-16);
 
     & .node-list {
       margin-bottom: -11px;
