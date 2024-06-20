@@ -152,7 +152,7 @@ describe("FloatingMenu.vue", () => {
           focusTrap: true,
         },
       });
-      await new Promise((r) => setTimeout(r, 0));
+      await Vue.nextTick();
       expect(useFocusTrapMock.activate).toHaveBeenCalled();
     });
 
