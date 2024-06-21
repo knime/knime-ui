@@ -25,8 +25,6 @@ import { RESIZE_DEBOUNCE } from "../constants";
 
 vi.mock("@/plugins/event-bus", () => ({
   $bus: {
-    on: vi.fn(),
-    off: vi.fn(),
     emit: vi.fn(),
   },
 }));
