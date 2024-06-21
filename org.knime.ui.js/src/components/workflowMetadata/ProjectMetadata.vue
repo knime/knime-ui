@@ -16,6 +16,7 @@ import MetadataTags from "./MetadataTags.vue";
 import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
 import { useDraft } from "./useDraft";
 import { useSaveMetadata } from "./useSaveMetadata";
+import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
 interface Props {
   projectMetadata: ProjectMetadata;
@@ -111,6 +112,19 @@ const { saveContent } = useSaveMetadata({
   cancelEdit,
   singleMetanodeSelectedId: toRef(props, "singleMetanodeSelectedId"),
 });
+
+const preserveWhitespaceBeforeEdit = () => {
+  if (
+    projectMetadata.value.description?.contentType ===
+    TypedText.ContentTypeEnum.Plain
+  ) {
+    metadataDraft.value.data.description = recreateLinebreaks(
+      projectMetadata.value.description?.value ?? "",
+    );
+  }
+
+  startEdit();
+};
 </script>
 
 <template>
@@ -122,7 +136,7 @@ const { saveContent } = useSaveMetadata({
         :is-editing="isEditing"
         :is-valid="isValid"
         :can-open-workflow-configuration="canOpenWorkflowConfiguration"
-        @start-edit="startEdit"
+        @start-edit="preserveWhitespaceBeforeEdit"
         @save="saveContent()"
         @cancel-edit="cancelEdit"
         @open-workflow-configuration="openWorkflowConfiguration"
@@ -133,6 +147,10 @@ const { saveContent } = useSaveMetadata({
       :original-description="projectMetadata.description?.value ?? ''"
       :model-value="getMetadataFieldValue('description')"
       :editable="isEditing"
+      :is-legacy="
+        projectMetadata.description?.contentType ===
+        TypedText.ContentTypeEnum.Plain
+      "
       @update:model-value="updateMetadataField('description', $event)"
     />
 

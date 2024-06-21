@@ -2,14 +2,20 @@
 import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/RichTextEditor.vue";
 
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
+import LegacyMetadataDescription from "./LegacyMetadataDescription.vue";
 
 interface Props {
   originalDescription: string;
   editable?: boolean;
   modelValue?: string;
+  isLegacy?: boolean;
 }
 
-withDefaults(defineProps<Props>(), { modelValue: "", editable: false });
+withDefaults(defineProps<Props>(), {
+  modelValue: "",
+  editable: false,
+  isLegacy: false,
+});
 
 const emit = defineEmits<{
   "update:modelValue": [content: string];
@@ -26,6 +32,7 @@ const emit = defineEmits<{
 
     <template v-else>
       <RichTextEditor
+        v-if="!isLegacy || editable"
         :editable="editable"
         :model-value="modelValue"
         :class="['description-editor', { editable }]"
@@ -40,6 +47,11 @@ const emit = defineEmits<{
         autofocus
         :with-border="editable"
         @update:model-value="editable && emit('update:modelValue', $event)"
+      />
+
+      <LegacyMetadataDescription
+        v-if="isLegacy && !editable"
+        :text="modelValue"
       />
     </template>
   </div>
