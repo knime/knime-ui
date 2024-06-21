@@ -218,7 +218,7 @@ describe("Connector.vue", () => {
 
     it("right click selects the connection", async () => {
       const { wrapper, dispatchSpy, connection } = doMount();
-      await wrapper.find("g path").trigger("contextmenu", { button: 2 });
+      await wrapper.find("g path").trigger("pointerdown", { button: 2 });
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",
@@ -251,7 +251,7 @@ describe("Connector.vue", () => {
       const { wrapper, dispatchSpy, connection } = doMount();
       await wrapper
         .find("g path")
-        .trigger("contextmenu", { button: 2, shiftKey: true });
+        .trigger("pointerdown", { button: 2, shiftKey: true });
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         "application/toggleContextMenu",

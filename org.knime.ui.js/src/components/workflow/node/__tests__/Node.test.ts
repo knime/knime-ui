@@ -530,7 +530,7 @@ describe("Node", () => {
 
         await wrapper
           .find(".mouse-clickable")
-          .trigger("contextmenu", { button: 2, [`${mod}Key`]: true });
+          .trigger("pointerdown", { button: 2, [`${mod}Key`]: true });
 
         expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
           expect.anything(),
@@ -565,7 +565,7 @@ describe("Node", () => {
 
       await wrapper
         .find(".mouse-clickable")
-        .trigger("contextmenu", { button: 2 });
+        .trigger("pointerdown", { button: 2 });
 
       expect(
         storeConfig.selection.actions.deselectAllObjects,
@@ -1032,7 +1032,7 @@ describe("Node", () => {
     );
 
     it("should handle contextmenu events", async () => {
-      wrapper.findComponent(NodeName).trigger("contextmenu", { button: 2 });
+      wrapper.findComponent(NodeName).trigger("pointerdown", { button: 2 });
       await Vue.nextTick();
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
