@@ -194,21 +194,6 @@ export const usePanning = (options: UsePanningOptions) => {
     }
   });
 
-  const resetPanState = () => {
-    if (isPanning.value) {
-      isPanning.value = false;
-      panningOffset.value = [0, 0];
-    }
-
-    // reset all states
-    isHoldingDownRightClick.value = false;
-    isHoldingDownMiddleClick.value = false;
-    maybePanning = false;
-
-    // move cursor should remain set if the user is still holding down the space key
-    shouldShowMoveCursor.value = isHoldingDownSpace.value;
-  };
-
   const stopPan = (event: PointerEvent) => {
     // user is not panning but did right-clicked
     if (!isPanning.value && isHoldingDownRightClick.value) {
@@ -227,10 +212,19 @@ export const usePanning = (options: UsePanningOptions) => {
     }
 
     if (isPanning.value) {
+      isPanning.value = false;
+      panningOffset.value = [0, 0];
       options.rootEl.value.releasePointerCapture(event.pointerId);
       event.stopPropagation();
     }
-    resetPanState();
+
+    // reset all states
+    isHoldingDownRightClick.value = false;
+    isHoldingDownMiddleClick.value = false;
+    maybePanning = false;
+
+    // move cursor should remain set if the user is still holding down the space key
+    shouldShowMoveCursor.value = isHoldingDownSpace.value;
   };
 
   const windowBlurListener = () => {
@@ -257,7 +251,6 @@ export const usePanning = (options: UsePanningOptions) => {
     beginPan,
     movePan,
     stopPan,
-    resetPanState,
     isHoldingDownSpace: computed(() => isHoldingDownSpace.value),
   };
 };

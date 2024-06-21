@@ -324,7 +324,7 @@ const setColor = (color: string) => {
     :initial-value="annotation.bounds"
     @transform-end="transformAnnotation($event.bounds)"
     @click="onLeftClick"
-    @contextmenu.prevent="onContextMenu"
+    @pointerdown.right.stop="onContextMenu"
   >
     <template #default="{ transformedBounds }">
       <foreignObject

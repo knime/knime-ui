@@ -25,7 +25,6 @@ import type { WorkflowObject } from "@/api/custom-types";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { nodeSize } from "@/style/shapes.mjs";
 import { findSpaceById } from "@/store/spaces/util";
-import { $bus } from "@/plugins/event-bus";
 
 export interface ApplicationState {
   /**
@@ -344,7 +343,6 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       event?.preventDefault();
       commit("setContextMenu", { isOpen: false, position: null });
       dispatch("canvas/focus", null, { root: true });
-      $bus.emit("context-menu-closed", event);
       return;
     }
 

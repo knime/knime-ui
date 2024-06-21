@@ -8,11 +8,8 @@ type UseKanvasContextMenuOptions = {
 export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
   const store = useStore();
 
-  const toggleContextMenu = (event: unknown, deselectAllObjects = false) =>
-    store.dispatch("application/toggleContextMenu", {
-      event,
-      deselectAllObjects,
-    });
+  const toggleContextMenu = (event: unknown) =>
+    store.dispatch("application/toggleContextMenu", { event });
 
   // handle native context menu event
   const onContextMenu = (event: MouseEvent) => {
@@ -27,12 +24,8 @@ export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
     event.preventDefault();
 
     // trigger it for empty workflows as we don't have a pan there
-    if (
-      store.getters["workflow/isWorkflowEmpty"] ||
-      // on mac: ctrl (the real one) + left click
-      (event.ctrlKey && event.button === 0)
-    ) {
-      toggleContextMenu(event, true);
+    if (store.getters["workflow/isWorkflowEmpty"]) {
+      toggleContextMenu(event);
     }
   };
 

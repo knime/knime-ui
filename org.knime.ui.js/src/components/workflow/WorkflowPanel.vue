@@ -60,7 +60,7 @@ const closeContextMenu = (event: unknown) => {
       { 'read-only': !isWritable },
       { 'annotation-cursor': hasAnnotationModeEnabled },
     ]"
-    @contextmenu.prevent="closeContextMenu($event)"
+    @pointerdown.right="closeContextMenu($event)"
   >
     <ContextMenu
       v-if="contextMenu.isOpen"

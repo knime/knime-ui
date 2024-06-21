@@ -291,7 +291,7 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
         @mouseenter="isHovered = true"
         @mouseleave="isHovered = false"
         @click.left="onConnectionSegmentClick"
-        @contextmenu.prevent="onContextMenu"
+        @pointerdown.right="onContextMenu"
         @dragenter="onRepositoryNodeDragEnter"
         @dragleave="onNodeDragLeave"
         @drop.stop="onRepositoryNodeDrop"
@@ -323,7 +323,7 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
         @pointerdown.left="
           onBendpointPointerdown($event, index, pathSegments[index].start)
         "
-        @contextmenu.prevent="onBendpointRightClick($event, index)"
+        @pointerdown.right="onBendpointRightClick($event, index)"
         @click="onBendpointClick($event, index)"
       />
     </template>
