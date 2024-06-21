@@ -520,7 +520,7 @@ export default {
           :node-id="id"
           :node-position="position"
           :number-of-ports="Math.max(inPorts.length, outPorts.length)"
-          @contextmenu.prevent="onContextMenu"
+          @pointerdown.right="onContextMenu"
         />
 
         <!-- Elements for which mouse hover triggers hover state -->
