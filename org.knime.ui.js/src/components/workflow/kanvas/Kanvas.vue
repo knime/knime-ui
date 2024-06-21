@@ -96,10 +96,20 @@ const { onMouseWheel } = useMouseWheelZooming({
   rootEl: rootEl as Ref<HTMLElement>,
 });
 
-const { shouldShowMoveCursor, beginPan, movePan, stopPan, isHoldingDownSpace } =
-  usePanning({
-    rootEl: rootEl as Ref<HTMLElement>,
-  });
+const {
+  shouldShowMoveCursor,
+  beginPan,
+  movePan,
+  stopPan,
+  isHoldingDownSpace,
+  resetPanState,
+} = usePanning({
+  rootEl: rootEl as Ref<HTMLElement>,
+});
+
+$bus.on("context-menu-closed", () => {
+  resetPanState();
+});
 
 const hasKeyboardFocus = useKeyPressedUntilMouseClick(["Tab"]);
 
