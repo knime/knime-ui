@@ -75,6 +75,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
               ratioToZoomLevel(rootState.settings.settings.uiScale),
             ),
           RETRY_DELAY_MS,
+          100,
         );
       },
     });
