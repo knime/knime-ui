@@ -45,13 +45,13 @@ onMounted(() => {
   box-shadow: var(--shadow-elevation-1);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-8);
+  margin-top: var(--space-24);
 
   & .image {
     display: flex;
     gap: 30px;
-    border-radius: 4px 4px 0 0;
+    border-radius: var(--space-4) var(--space-4) 0 0;
     object-fit: cover;
     max-height: 160px;
   }
@@ -59,19 +59,14 @@ onMounted(() => {
   & .content {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-12);
+    padding: var(--space-16);
 
     & h4,
     p {
       font-size: 13px;
       line-height: 18px;
       margin: 0;
-    }
-
-    & ul {
-      margin: 0;
-      padding-left: 18px;
     }
 
     & .button {
