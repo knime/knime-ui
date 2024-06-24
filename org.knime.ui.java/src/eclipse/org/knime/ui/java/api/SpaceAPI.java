@@ -50,6 +50,7 @@ package org.knime.ui.java.api;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -58,8 +59,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -69,9 +73,12 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.KnimeUrlType;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
+import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
@@ -195,12 +202,22 @@ final class SpaceAPI {
             return true;
         }
 
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
-
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
 
-        final var isUpload = sourceSpace instanceof LocalWorkspace;
+        final boolean isUpload;
+        if (sourceSpace instanceof LocalWorkspace localSource) {
+            final var opened = findOpenedWorkflows(localSource, itemIds);
+            if (!opened.isEmpty()) {
+                showOpenedWorkflowsWarningToUser(opened);
+                return false;
+            }
+            isUpload = true;
+        } else {
+            isUpload = false;
+        }
+
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         final var mountIds = !isUpload ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }
             : spaceProviders.getProvidersMap().entrySet().stream() //
                 .filter(provider -> provider.getValue().getType() != TypeEnum.LOCAL
@@ -247,6 +264,13 @@ final class SpaceAPI {
                 final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
                     .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
                 final var targetSpace = targetSpaceProvider.getSpace(targetSpaceAndId.spaceId());
+
+                // show upload warning for public spaces
+                final var spaceEnt = targetSpace.toEntity();
+                if (!spaceEnt.isPrivate().booleanValue()) {
+                    remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
+                }
+
                 return targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
@@ -275,6 +299,37 @@ final class SpaceAPI {
                 .toList();
         return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
             destinationStore, excludeData);
+    }
+
+    private static void showOpenedWorkflowsWarningToUser(final List<String> opened) {
+        final var numOpened = opened.size();
+        final var list = opened.stream().limit(5) //
+                .map(path -> " \u2022 " + StringUtils.abbreviateMiddle(path, "...", 64)) //
+                .collect(Collectors.joining("\n"));
+        final boolean single = numOpened == 1;
+        final var toastService = DesktopAPI.getDeps(ToastService.class);
+        toastService.showToast(ShowToastEventEnt.TypeEnum.ERROR,
+            "Cannot upload opened workflows/components",
+            (single ? "One item you've selected is currently opened:\n\n"
+                : "Some items you've selected are currently opened:\n\n")
+            + list + (numOpened > 5 ? ("\n \u2022 ... (" + (numOpened - 5) + " more)") : "") + "\n\n"
+            + (single ? "Please close it or exclude it from the upload."
+                : "Please close them or exclude them from the upload."),
+            false);
+    }
+
+    private static List<String> findOpenedWorkflows(final LocalWorkspace localSource, final List<String> itemIds) {
+        final var projects = DesktopAPI.getDeps(ProjectManager.class);
+        final var workspaceRoot = localSource.getLocalRootPath();
+        final var opened = new ArrayList<String>();
+        for (final var itemId : itemIds) {
+            final var localDir = localSource.toLocalAbsolutePath(null, itemId).orElseThrow();
+            final var relPath = workspaceRoot.relativize(localDir);
+            if (projects.getLocalProject(relPath).isPresent()) {
+                opened.add(FilenameUtils.separatorsToUnix(relPath.toString()));
+            }
+        }
+        return opened;
     }
 
     /**
