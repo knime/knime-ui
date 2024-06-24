@@ -67,18 +67,19 @@ final class HomePageAPI {
      * Get the contents of the single tile in the home page sidebar.
      *
      * @return A map/record with plain-text properties of title, image, text, button label and button link URL.
+     * {@code null} if absent.
      */
     @API(runInUIThread = false)
     static Map<String, String> getHomePageTile() {
         var categories = Optional.ofNullable(DesktopAPI.getDeps(WelcomeAPEndpoint.class)) //
             .flatMap(endpoint -> endpoint.getCategories(true, null));
-        var firstNewsTile = categories.stream() //
+        var firstTile = categories.stream() //
             .flatMap(Arrays::stream) //
-            .filter(cat -> cat.getId().equals("c3-events-promotions")) //
+            .filter(cat -> cat.getId().equals("c4-modern-ui")) //
             .findFirst() //
             .map(JSONCategory::getTiles) //
             .flatMap(tiles -> tiles.stream().findFirst());
-        return firstNewsTile.map(tile -> {
+        return firstTile.map(tile -> {
             return Map.of( //
                 "title", tile.getTitle(), //
                 "image", tile.getImage(), //
