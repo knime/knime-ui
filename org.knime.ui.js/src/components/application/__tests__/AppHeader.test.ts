@@ -1,6 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
+import { useRoute } from "vue-router";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
@@ -25,7 +26,7 @@ vi.mock("vue-router", async (importOriginal) => {
   return {
     ...actual,
     useRouter: vi.fn(() => ({ push: routerPush })),
-    useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage })),
+    useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage, params: {} })),
   };
 });
 
@@ -168,9 +169,13 @@ describe("AppHeader.vue", () => {
     });
 
     it("updates the active tab when the activeProject changes", async () => {
-      const { wrapper, $store } = doMount();
+      useRoute.mockReturnValueOnce({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "2" },
+      });
 
-      $store.state.application.activeProjectId = "2";
+      const { wrapper } = doMount();
+
       const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1)!;
 
       await Vue.nextTick();

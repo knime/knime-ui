@@ -37,16 +37,20 @@ export const routes: Array<RouteRecordRaw> = [
         name: APP_ROUTES.Home.GetStarted,
         path: "/get-started",
         component: () => import("@/components/homepage/GetStartedPage.vue"),
-        beforeEnter: (_, from, next) => {
+        beforeEnter: (to, from, next) => {
           const isComingFromWorkflow = from.name === APP_ROUTES.WorkflowPage;
+          const skipLastVisitedPage = to.query.skipLastVisitedPage;
+
           if (
             isComingFromWorkflow &&
             lastHomePath &&
-            lastHomePath !== "/get-started"
+            lastHomePath !== "/get-started" &&
+            !skipLastVisitedPage
           ) {
             next(lastHomePath);
             return;
           }
+
           next();
         },
       },
@@ -69,34 +73,6 @@ export const routes: Array<RouteRecordRaw> = [
     meta: { showUpdateBanner: true },
   }),
 ];
-
-export const getPathFromRouteName = (name: string) => {
-  const searchByName = (
-    _routes: typeof routes,
-    name: string,
-    fullPath = "",
-  ): string => {
-    const foundRoute = _routes.find((route) => route.name === name);
-    if (foundRoute) {
-      return `${fullPath}${foundRoute.path}`;
-    }
-
-    let result: string = "";
-    for (let i = 0; i < _routes.length; i++) {
-      const currentRoute = _routes[i];
-      if (currentRoute.children) {
-        result = searchByName(
-          routes[i]?.children ?? [],
-          name,
-          currentRoute.path,
-        );
-      }
-    }
-    return result;
-  };
-
-  return searchByName(routes, name).replaceAll("//", "/");
-};
 
 const router = createRouter({
   history: createWebHistory(),

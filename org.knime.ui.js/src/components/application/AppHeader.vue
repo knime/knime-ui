@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { isNavigationFailure, useRoute, useRouter } from "vue-router";
+import { ref, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { onClickOutside } from "@vueuse/core";
 
 import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
@@ -29,12 +29,19 @@ import AppHeaderContextMenu from "./AppHeaderContextMenu.vue";
 
 const windowWidth = ref(0);
 const hoveredTab = ref<string | null>(null);
-const activeProjectTab = ref<string | null>(null);
 
 const store = useStore();
 const $router = useRouter();
 const $route = useRoute();
 const $shortcuts = useShortcuts();
+
+const activeProjectTab = computed(() => {
+  if ($route.name === APP_ROUTES.WorkflowPage) {
+    return $route.params.projectId;
+  }
+
+  return null;
+});
 
 const openProjects = computed(() => store.state.application.openProjects);
 const activeProjectId = computed(() => store.state.application.activeProjectId);
@@ -67,17 +74,6 @@ const hasOpenProjects = computed(() => {
   return openProjects.value.length >= 1;
 });
 
-watch(
-  activeProjectId,
-  () => {
-    // prevent tab color flashing when switching workflows
-    if (activeProjectId.value) {
-      activeProjectTab.value = activeProjectId.value;
-    }
-  },
-  { immediate: true },
-);
-
 const setupResizeListener = () => {
   const onResize = () => {
     windowWidth.value = window.innerWidth;
@@ -98,19 +94,14 @@ const openInspector = () => {
 };
 
 const setGetStartedPageTab = () => {
-  activeProjectTab.value = null;
   $router.push({ name: APP_ROUTES.Home.GetStarted });
 };
 
-const onProjectTabChange = async (projectId: string) => {
-  const navigationResult = await $router.push({
+const onProjectTabChange = (projectId: string) => {
+  $router.push({
     name: APP_ROUTES.WorkflowPage,
     params: { projectId, workflowId: "root" },
   });
-
-  if (!isNavigationFailure(navigationResult)) {
-    activeProjectTab.value = projectId;
-  }
 };
 
 const openKnimeUIPreferencePage = () => {

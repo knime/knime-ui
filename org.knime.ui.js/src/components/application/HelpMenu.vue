@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { API } from "@/api";
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-import OpenSourceCreditsModal from "./OpenSourceCreditsModal.vue";
+import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import Steps123Icon from "webapps-common/ui/assets/img/icons/steps-1-3.svg";
 import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
@@ -9,18 +8,23 @@ import ForumIcon from "webapps-common/ui/assets/img/icons/forum.svg";
 import GettingStartedIcon from "webapps-common/ui/assets/img/icons/rocket.svg";
 import CheatSheetsIcon from "webapps-common/ui/assets/img/icons/speedo.svg";
 import DocsIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
-import InfoIcon from "@/assets/info.svg";
+import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
 import LinkExteranlIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import { computed, ref } from "vue";
+
+import InfoIcon from "@/assets/info.svg";
+import { API } from "@/api";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { useStore } from "@/composables/useStore";
-import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
+import OpenSourceCreditsModal from "./OpenSourceCreditsModal.vue";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 const buildExternalUrl = (url: string) => {
   return `${url}?src=knimeappmodernui`;
 };
 
 const store = useStore();
+const $router = useRouter();
 
 const customHelpMenuEntries = computed(() => {
   const records = store.state.application.customHelpMenuEntries;
@@ -92,7 +96,7 @@ const helpMenuItem = computed<MenuItem>(() => ({
       },
     },
     {
-      text: "Additional Credits",
+      text: "Additional credits",
       icon: InfoIcon,
       separator: hasDismissedExamples.value && hasExampleWorkflows.value,
       metadata: {
@@ -102,13 +106,18 @@ const helpMenuItem = computed<MenuItem>(() => ({
     ...addConditionalMenuEntry(
       hasDismissedExamples.value && hasExampleWorkflows.value,
       {
-        text: "Bring back examples on homepage",
+        text: "Restore examples on home tab",
         icon: Steps123Icon,
         metadata: {
-          handler: () => {
-            store.dispatch("settings/updateSetting", {
+          handler: async () => {
+            await store.dispatch("settings/updateSetting", {
               key: "shouldShowExampleWorkflows",
               value: true,
+            });
+
+            $router.push({
+              name: APP_ROUTES.Home.GetStarted,
+              query: { skipLastVisitedPage: "true" },
             });
           },
         },

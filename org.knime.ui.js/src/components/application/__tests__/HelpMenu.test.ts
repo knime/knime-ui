@@ -41,7 +41,7 @@ describe("HelpMenu.vue", () => {
   it("should show entry to bring back examples", async () => {
     const { wrapper, $store } = doMount();
 
-    const entryItemText = "Bring back examples on homepage";
+    const entryItemText = "Restore examples on home tab";
 
     const hasEntry = () =>
       wrapper
