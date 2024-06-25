@@ -82,6 +82,7 @@ import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.gateway.impl.webui.spaces.Space.TransferResult;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
@@ -271,11 +272,19 @@ final class SpaceAPI {
                     remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
                 }
 
-                return targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+                final TransferResult result =
+                        targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+                if (result.errorTitleAndDescription() != null) {
+                    showErrorToast(result.errorTitleAndDescription().getFirst(),
+                        result.errorTitleAndDescription().getSecond(), false);
+                }
+                return result.successful();
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
             } catch (IOException ex) { // NOSONAR
-                DesktopAPUtil.showAndLogError("Upload error", "Could not upload items: " + ex.getMessage(), LOGGER, ex);
+                final String message = "Could not upload items: " + ex.getMessage();
+                LOGGER.error("Upload error: " + message, ex);
+                showErrorToast("Upload error", message + "\n\nSee the KNIME Log for details", false);
                 return false;
             }
         } else if (!asyncDownloadDisabled && sourceType == TypeEnum.HUB && isDownload) {
@@ -283,10 +292,16 @@ final class SpaceAPI {
             try {
                 final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
                 final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
-                return sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
+                final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
+                if (result.errorTitleAndDescription() != null) {
+                    showErrorToast(result.errorTitleAndDescription().getFirst(),
+                        result.errorTitleAndDescription().getSecond(), false);
+                }
+                return result.successful();
             } catch (Exception ex) { // NOSONAR
-                DesktopAPUtil.showAndLogError("Download error", "Could not download items: " + ex.getMessage(), LOGGER,
-                    ex);
+                final String message = "Could not download items: " + ex.getMessage();
+                LOGGER.error("Download error: " + message, ex);
+                showErrorToast("Download error", message + "\n\nSee the KNIME Log for details", false);
                 return false;
             }
         }
@@ -301,20 +316,22 @@ final class SpaceAPI {
             destinationStore, excludeData);
     }
 
+    private static void showErrorToast(final String title, final String message, final boolean autoRemove) {
+        DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, title, message, autoRemove);
+    }
+
     private static void showOpenedWorkflowsWarningToUser(final List<String> opened) {
         final var numOpened = opened.size();
         final var list = opened.stream().limit(5) //
-                .map(path -> " \u2022 " + StringUtils.abbreviateMiddle(path, "...", 64)) //
-                .collect(Collectors.joining("\n"));
+            .map(path -> " \u2022 " + StringUtils.abbreviateMiddle(path, "...", 64)) //
+            .collect(Collectors.joining("\n"));
         final boolean single = numOpened == 1;
-        final var toastService = DesktopAPI.getDeps(ToastService.class);
-        toastService.showToast(ShowToastEventEnt.TypeEnum.ERROR,
-            "Cannot upload opened workflows/components",
+        showErrorToast("Cannot upload opened workflows/components",
             (single ? "One item you've selected is currently opened:\n\n"
-                : "Some items you've selected are currently opened:\n\n")
-            + list + (numOpened > 5 ? ("\n \u2022 ... (" + (numOpened - 5) + " more)") : "") + "\n\n"
-            + (single ? "Please close it or exclude it from the upload."
-                : "Please close them or exclude them from the upload."),
+                : "Some items you've selected are currently opened:\n\n") + list
+                + (numOpened > 5 ? ("\n \u2022 ... (" + (numOpened - 5) + " more)") : "") + "\n\n"
+                + (single ? "Please close it or exclude it from the upload."
+                    : "Please close them or exclude them from the upload."),
             false);
     }
 
@@ -562,6 +579,7 @@ final class SpaceAPI {
     }
 
     private static Destination promptDestination(final String defaultWorkflowName, final String spaceProviderId) {
+        @SuppressWarnings("restriction")
         final var sh = SWTUtilities.getActiveShell();
         final var dialog = new SpaceResourceSelectionDialog(sh, new String[]{spaceProviderId}, null);
         dialog.setNameFieldEnabled(true);
