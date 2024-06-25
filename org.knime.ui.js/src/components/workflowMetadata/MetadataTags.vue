@@ -4,6 +4,7 @@ import TagList from "webapps-common/ui/components/TagList.vue";
 import ComboBox from "webapps-common/ui/components/forms/ComboBox.vue";
 
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
+import type { Id } from "webapps-common/ui/components/forms/possibleValues";
 
 interface Props {
   modelValue: Array<string>;
@@ -28,8 +29,11 @@ const currentTags = computed(() =>
 
 const selectedIds = computed(() => currentTags.value.map(({ id }) => id));
 
-const onTagsChange = (tags: Array<string>) => {
-  emit("update:modelValue", tags);
+const onTagsChange = (tags: Array<Id>) => {
+  emit(
+    "update:modelValue",
+    tags.map((tag) => tag.toString()),
+  );
 };
 </script>
 
