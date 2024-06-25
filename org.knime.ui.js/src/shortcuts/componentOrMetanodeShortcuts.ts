@@ -58,9 +58,9 @@ const canOpen =
   ({ $store }: ShortcutConditionContext) => {
     const selectedNode = $store.getters["selection/singleSelectedNode"];
 
-    if (selectedNode.isLocked) {
+    if (selectedNode?.isLocked) {
       return (
-        selectedNode?.kind === kind && compatibility.canLockAndUnlockSubnodes()
+        selectedNode.kind === kind && compatibility.canLockAndUnlockSubnodes()
       );
     }
 
@@ -347,7 +347,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => {
       const selectedNode = $store.getters["selection/singleSelectedNode"];
-      return !selectedNode.isLocked;
+      return !selectedNode?.isLocked;
     },
   },
 };

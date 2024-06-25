@@ -122,6 +122,55 @@ describe("componentOrMetanodeShortcuts", () => {
       });
     });
 
+    it("unlocks a locked component or metanode", async () => {
+      const { mockPush, $router } = createRouter();
+      const { $store, mockDispatch } = createStore({
+        singleSelectedNode: {
+          ...mockSelectedNode,
+          isLocked: true,
+        },
+      });
+      // success unlock
+      mockDispatch.mockResolvedValue(true);
+      await componentOrMetanodeShortcuts.openComponentOrMetanode.execute({
+        $store,
+        $router,
+      });
+      expect(mockDispatch).toHaveBeenCalledWith("workflow/unlockSubnode", {
+        nodeId: mockSelectedNode.id,
+      });
+
+      expect(mockPush).toHaveBeenCalledWith({
+        name: APP_ROUTES.WorkflowPage,
+        params: {
+          workflowId: "root:0",
+          projectId: "activeTestProjectId",
+        },
+      });
+    });
+
+    it("cancels unlock of a locked component or metanode", () => {
+      const { mockPush, $router } = createRouter();
+      const { $store, mockDispatch } = createStore({
+        singleSelectedNode: {
+          ...mockSelectedNode,
+          isLocked: true,
+        },
+      });
+      // fails/cancel unlock
+      mockDispatch.mockResolvedValue(false);
+      componentOrMetanodeShortcuts.openComponentOrMetanode.execute({
+        $store,
+        $router,
+      });
+
+      expect(mockDispatch).toHaveBeenCalledWith("workflow/unlockSubnode", {
+        nodeId: mockSelectedNode.id,
+      });
+
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
     it("open parent workflow", () => {
       const { mockPush, $router } = createRouter();
       const { $store } = createStore();
@@ -150,6 +199,28 @@ describe("componentOrMetanodeShortcuts", () => {
       const { $store, mockDispatch } = createStore();
       componentOrMetanodeShortcuts.openLayoutEditor.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith("workflow/openLayoutEditor");
+    });
+
+    it("can lock a subnode", () => {
+      const { $store, mockDispatch } = createStore();
+
+      componentOrMetanodeShortcuts.lockSubnode.execute({ $store });
+      expect(mockDispatch).toHaveBeenCalledWith("workflow/lockSubnode", {
+        nodeId: mockSelectedNode.id,
+      });
+    });
+
+    it("disables lock when subnode is already locked", () => {
+      const { $store } = createStore({
+        singleSelectedNode: {
+          isLocked: true,
+        },
+      });
+      expect(
+        componentOrMetanodeShortcuts.lockSubnode.condition({
+          $store,
+        }),
+      ).toBeFalsy();
     });
 
     describe("editName", () => {
@@ -353,35 +424,6 @@ describe("componentOrMetanodeShortcuts", () => {
       expect(componentOrMetanodeShortcuts[shortcut].condition({ $store })).toBe(
         false,
       );
-    });
-
-    it("can (not) open component if (not) unlocked", () => {
-      const singleSelectedNode = {
-        kind: "component",
-      };
-      const { $store } = createStore({
-        singleSelectedNode,
-      });
-
-      expect(
-        componentOrMetanodeShortcuts.openComponentOrMetanode.condition({
-          $store,
-        }),
-      ).toBe(true);
-
-      singleSelectedNode.isLocked = false;
-      expect(
-        componentOrMetanodeShortcuts.openComponentOrMetanode.condition({
-          $store,
-        }),
-      ).toBe(true);
-
-      singleSelectedNode.isLocked = true;
-      expect(
-        componentOrMetanodeShortcuts.openComponentOrMetanode.condition({
-          $store,
-        }),
-      ).toBe(false);
     });
   });
 
