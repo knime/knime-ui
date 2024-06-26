@@ -197,7 +197,7 @@ final class SpaceAPI {
      * @return {@code true} if all files could be uploaded, {@code false} otherwise
      */
     @API
-    static boolean copyBetweenSpaces(final String spaceProviderId, final String spaceId, final Object[] arr) {
+    static boolean copyBetweenSpaces(final String spaceProviderId, final String spaceId, final Object[] arr) { // NOSONAR
         final List<String> itemIds = Stream.of(arr).map(String.class::cast).toList();
         if (itemIds.isEmpty()) {
             return true;
@@ -208,9 +208,9 @@ final class SpaceAPI {
 
         final boolean isUpload;
         if (sourceSpace instanceof LocalWorkspace localSource) {
-            final var opened = findOpenedWorkflows(localSource, itemIds);
+            final var opened = findDirtyOpenedWorkflows(localSource, itemIds);
             if (!opened.isEmpty()) {
-                showOpenedWorkflowsWarningToUser(opened);
+                showDirtyWorkflowsWarningToUser(opened);
                 return false;
             }
             isUpload = true;
@@ -259,49 +259,21 @@ final class SpaceAPI {
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
         if (!asyncUploadDisabled && sourceSpace instanceof LocalWorkspace localSource && targetType == TypeEnum.HUB) {
-            // async upload
             try {
-                final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
-                final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
-                    .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
-                final var targetSpace = targetSpaceProvider.getSpace(targetSpaceAndId.spaceId());
-
-                // show upload warning for public spaces
-                final var spaceEnt = targetSpace.toEntity();
-                if (!spaceEnt.isPrivate().booleanValue()) {
-                    remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
-                }
-
-                final TransferResult result =
-                        targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
-                if (result.errorTitleAndDescription() != null) {
-                    showErrorToast(result.errorTitleAndDescription().getFirst(),
-                        result.errorTitleAndDescription().getSecond(), false);
-                }
-                return result.successful();
+                return performAsyncHubUpload(localSource, targetSpaceProvider, destinationStore, itemIds, excludeData);
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
-            } catch (IOException ex) { // NOSONAR
-                final String message = "Could not upload items: " + ex.getMessage();
-                LOGGER.error("Upload error: " + message, ex);
-                showErrorToast("Upload error", message + "\n\nSee the KNIME Log for details", false);
+            } catch (Exception ex) { // NOSONAR
+                LOGGER.error("Upload error: " + ex.getMessage(), ex);
+                showErrorToast("Upload error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
                 return false;
             }
         } else if (!asyncDownloadDisabled && sourceType == TypeEnum.HUB && isDownload) {
-            // async download
             try {
-                final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
-                final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
-                final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
-                if (result.errorTitleAndDescription() != null) {
-                    showErrorToast(result.errorTitleAndDescription().getFirst(),
-                        result.errorTitleAndDescription().getSecond(), false);
-                }
-                return result.successful();
+                return performAsyncHubDownload(sourceSpace, targetSpaceProvider, destinationStore, itemIds);
             } catch (Exception ex) { // NOSONAR
-                final String message = "Could not download items: " + ex.getMessage();
-                LOGGER.error("Download error: " + message, ex);
-                showErrorToast("Download error", message + "\n\nSee the KNIME Log for details", false);
+                LOGGER.error("Download error: " + ex.getMessage(), ex);
+                showErrorToast("Download error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
                 return false;
             }
         }
@@ -316,33 +288,71 @@ final class SpaceAPI {
             destinationStore, excludeData);
     }
 
+    private static boolean performAsyncHubDownload(final Space sourceSpace, final SpaceProvider targetSpaceProvider,
+            final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
+            throws OperationNotAllowedException {
+        final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
+        final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
+        final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
+        if (result.errorTitleAndDescription() != null) {
+            showErrorToast(result.errorTitleAndDescription().getFirst(),
+                result.errorTitleAndDescription().getSecond(), false);
+        }
+        return result.successful();
+    }
+
+    private static boolean performAsyncHubUpload(final LocalWorkspace localSource,
+            final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
+            final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
+        final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
+        final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
+            .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
+        final var targetSpace = targetSpaceProvider.getSpace(targetSpaceAndId.spaceId());
+
+        // show upload warning for public spaces
+        final var spaceEnt = targetSpace.toEntity();
+        if (!spaceEnt.isPrivate().booleanValue()) {
+            remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
+        }
+
+        final TransferResult result =
+                targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+        if (result.errorTitleAndDescription() != null) {
+            showErrorToast(result.errorTitleAndDescription().getFirst(),
+                result.errorTitleAndDescription().getSecond(), false);
+        }
+        return result.successful();
+    }
+
     private static void showErrorToast(final String title, final String message, final boolean autoRemove) {
         DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, title, message, autoRemove);
     }
 
-    private static void showOpenedWorkflowsWarningToUser(final List<String> opened) {
+    private static void showDirtyWorkflowsWarningToUser(final List<String> opened) {
         final var numOpened = opened.size();
         final var list = opened.stream().limit(5) //
             .map(path -> " \u2022 " + StringUtils.abbreviateMiddle(path, "...", 64)) //
             .collect(Collectors.joining("\n"));
         final boolean single = numOpened == 1;
-        showErrorToast("Cannot upload opened workflows/components",
-            (single ? "One item you've selected is currently opened:\n\n"
-                : "Some items you've selected are currently opened:\n\n") + list
+        showErrorToast("Cannot upload unsaved workflows/components",
+            (single ? "One item you've selected is currently open with unsaved changes:\n\n"
+                : "Some items you've selected are currently open with unsaved changes:\n\n") + list
                 + (numOpened > 5 ? ("\n \u2022 ... (" + (numOpened - 5) + " more)") : "") + "\n\n"
-                + (single ? "Please close it or exclude it from the upload."
-                    : "Please close them or exclude them from the upload."),
+                + (single ? "Please save it or exclude it from the upload."
+                    : "Please save them or exclude them from the upload."),
             false);
     }
 
-    private static List<String> findOpenedWorkflows(final LocalWorkspace localSource, final List<String> itemIds) {
+    private static List<String> findDirtyOpenedWorkflows(final LocalWorkspace localSource, final List<String> itemIds) {
         final var projects = DesktopAPI.getDeps(ProjectManager.class);
         final var workspaceRoot = localSource.getLocalRootPath();
         final var opened = new ArrayList<String>();
         for (final var itemId : itemIds) {
             final var localDir = localSource.toLocalAbsolutePath(null, itemId).orElseThrow();
             final var relPath = workspaceRoot.relativize(localDir);
-            if (projects.getLocalProject(relPath).isPresent()) {
+            if (projects.getLocalProject(relPath) //
+                    .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
+                    .isPresent()) {
                 opened.add(FilenameUtils.separatorsToUnix(relPath.toString()));
             }
         }
