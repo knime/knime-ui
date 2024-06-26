@@ -101,6 +101,25 @@ describe("RemoteWorkflowInfo.vue", () => {
     );
   });
 
+  it("shouldn't display banner for workflows that are closing", async () => {
+    const activeProjectId = openProjects.at(0)!.projectId;
+    const workflow = createWorkflow({
+      info: { containerId: activeProjectId },
+    });
+
+    const { wrapper, $store } = doMount({
+      workflow,
+      activeProjectId,
+    });
+
+    expect(wrapper.find(".banner").exists()).toBe(true);
+
+    $store.commit("application/setOpenProjects", []);
+    await nextTick();
+
+    expect(wrapper.find(".banner").exists()).toBe(false);
+  });
+
   it("should display banner for projects that belong to an unknown space", async () => {
     const project = createProject({
       projectId: "server-project",

@@ -10,6 +10,7 @@ const isUnknownProject = computed<(projectId: string) => boolean>(
   () => store.getters["application/isUnknownProject"],
 );
 const permissions = computed(() => store.state.application.permissions);
+const openProjects = computed(() => store.state.application.openProjects);
 
 const activeProjectProvider = computed<SpaceProviderNS.SpaceProvider | null>(
   () => store.getters["spaces/activeProjectProvider"],
@@ -24,7 +25,11 @@ const isServerSpace = computed(
 );
 
 const shouldShow = computed(() => {
-  if (!permissions.value.showRemoteWorkflowInfo) {
+  const foundProject = openProjects.value.find(
+    (project) => project.projectId === activeProjectId.value,
+  );
+
+  if (!permissions.value.showRemoteWorkflowInfo || !foundProject) {
     return false;
   }
 
