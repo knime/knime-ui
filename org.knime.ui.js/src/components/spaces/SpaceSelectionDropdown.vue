@@ -121,7 +121,44 @@ const onSpaceChange = async ({
 const activeSpacePath = computed(
   () => store.state.spaces.projectPath[props.projectId],
 );
-const spaceProviders = computed(() => store.state.spaces.spaceProviders);
+
+const spaceProviders = computed(() => {
+  const spaceProviders = Object.values(store.state.spaces.spaceProviders ?? {});
+
+  return spaceProviders.map((provider) => {
+    const restructuredSpaceGroups: SpaceProviderNS.SpaceGroup[] = [];
+
+    (provider.spaceGroups ?? []).forEach((group) => {
+      if (group.type === SpaceProviderNS.UserTypeEnum.TEAM) {
+        restructuredSpaceGroups.push(group);
+        return;
+      }
+
+      const spacesByOwner: Record<string, SpaceProviderNS.Space[]> = {};
+
+      group.spaces.forEach((space) => {
+        if (!spacesByOwner[space.owner]) {
+          spacesByOwner[space.owner] = [];
+        }
+        spacesByOwner[space.owner].push(space);
+      });
+
+      Object.entries(spacesByOwner).forEach(([owner, spaces]) => {
+        restructuredSpaceGroups.push({
+          id: `${group.id}-${owner}`,
+          name: owner,
+          spaces,
+          type: SpaceProviderNS.UserTypeEnum.USER,
+        });
+      });
+    });
+
+    return {
+      ...provider,
+      spaceGroups: restructuredSpaceGroups,
+    };
+  });
+});
 
 const createProviderHeadlineMenuItem = (
   provider: SpaceProviderNS.SpaceProvider,

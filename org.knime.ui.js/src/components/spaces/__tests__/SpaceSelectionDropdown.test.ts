@@ -3,7 +3,11 @@ import { mockVuexStore } from "@/test/utils";
 import { mount } from "@vue/test-utils";
 
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import { createSpaceGroup, createSpaceProvider } from "@/test/factories";
+import {
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
 import { SpaceProviderNS } from "@/api/custom-types";
 import * as spacesStore from "@/store/spaces";
 
@@ -18,13 +22,14 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     type: SpaceProviderNS.TypeEnum.LOCAL,
     spaceGroups: [
       createSpaceGroup({
+        id: "local",
         spaces: [
-          {
+          createSpace({
             id: "local",
             name: "Local Space",
             owner: "local",
             private: false,
-          },
+          }),
         ],
       }),
     ],
@@ -37,17 +42,25 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     type: SpaceProviderNS.TypeEnum.HUB,
     spaceGroups: [
       createSpaceGroup({
-        name: "Group 1",
+        id: "team1",
+        name: "Team 1",
+        type: SpaceProviderNS.UserTypeEnum.TEAM,
+        spaces: [createSpace({ id: "team1space1", name: "Space of Team 1" })],
+      }),
+      createSpaceGroup({
+        id: "jdoe",
+        name: "John Doe",
+        type: SpaceProviderNS.UserTypeEnum.USER,
         spaces: [
           {
             id: "hub1space1",
-            name: "Space 1 on Hub 1",
-            owner: "someUser",
+            name: "Space 1 on Hub 1 from John Doe",
+            owner: "jdoe",
             private: false,
           },
           {
             id: "hub1space2",
-            name: "Private space of someUser",
+            name: "Private space of someUser shared with John",
             owner: "someUser",
             private: true,
           },
@@ -124,8 +137,12 @@ describe("SpaceSelectionDropdown.vue", () => {
     const { wrapper } = doMount();
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
-    // local (no heading for local) + heading for hub1 + owner group = 3
-    expect(menuItems.length).toBe(3);
+    // local (no heading for local)
+    // + heading for hub1
+    // + team group
+    // + user group
+    // + user group
+    expect(menuItems.length).toBe(5);
 
     expect(menuItems[0]).toStrictEqual(
       expect.objectContaining({
@@ -140,18 +157,49 @@ describe("SpaceSelectionDropdown.vue", () => {
         separator: true,
       }),
     );
+
+    // team group
     expect(menuItems[2]).toStrictEqual(
       expect.objectContaining({
-        text: "Group 1",
+        text: "Team 1",
         children: expect.any(Array),
       }),
     );
+
+    // user group 1
+    expect(menuItems[3]).toStrictEqual(
+      expect.objectContaining({
+        text: "jdoe",
+        children: expect.any(Array),
+      }),
+    );
+
+    // user group 1
+    expect(menuItems[4]).toStrictEqual(
+      expect.objectContaining({
+        text: "someUser",
+        children: expect.any(Array),
+      }),
+    );
+
+    // children of team group
     expect(menuItems[2].children).toStrictEqual([
       expect.objectContaining({
-        text: "Space 1 on Hub 1",
+        text: "Space of Team 1",
       }),
+    ]);
+
+    // children of user group 1
+    expect(menuItems[3].children).toStrictEqual([
       expect.objectContaining({
-        text: "Private space of someUser",
+        text: "Space 1 on Hub 1 from John Doe",
+      }),
+    ]);
+
+    // children of user group 1
+    expect(menuItems[4].children).toStrictEqual([
+      expect.objectContaining({
+        text: "Private space of someUser shared with John",
       }),
     ]);
   });
@@ -168,7 +216,7 @@ describe("SpaceSelectionDropdown.vue", () => {
     expect(commitSpy).toHaveBeenCalledWith("spaces/setProjectPath", {
       projectId: "someProjectId",
       value: {
-        spaceId: "hub1space1",
+        spaceId: "team1space1",
         spaceProviderId: "hub1",
         itemId: "root",
       },

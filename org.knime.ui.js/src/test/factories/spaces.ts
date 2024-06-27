@@ -18,12 +18,17 @@ export const createSpace = (
 };
 
 export const createSpaceGroup = (
-  data: DeepPartial<SpaceProviderNS.SpaceGroup> = {},
+  data: Partial<SpaceProviderNS.SpaceGroup> = {},
 ): SpaceProviderNS.SpaceGroup => {
+  const baseSpaces = data?.spaces ?? [
+    createSpace({ id: "space1" }),
+    createSpace({ id: "space2" }),
+  ];
+
   const base: SpaceProviderNS.SpaceGroup = {
     id: "group1",
     name: "Group 1",
-    spaces: [createSpace({ id: "space1" }), createSpace({ id: "space2" })],
+    spaces: baseSpaces,
     type: SpaceProviderNS.UserTypeEnum.USER,
   };
 
@@ -31,15 +36,17 @@ export const createSpaceGroup = (
 };
 
 export const createSpaceProvider = (
-  data: DeepPartial<SpaceProviderNS.SpaceProvider> = {},
+  data: Partial<SpaceProviderNS.SpaceProvider> = {},
 ): SpaceProviderNS.SpaceProvider => {
+  const baseGroups = data?.spaceGroups ?? [createSpaceGroup()];
+
   const base: SpaceProviderNS.SpaceProvider = {
     id: "local",
     connected: true,
     connectionMode: "AUTOMATIC",
     name: "Local Space",
     type: SpaceProviderNS.TypeEnum.LOCAL,
-    spaceGroups: [createSpaceGroup()],
+    spaceGroups: baseGroups,
   };
 
   return merge(base, data);
