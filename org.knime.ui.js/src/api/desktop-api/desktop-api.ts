@@ -483,7 +483,7 @@ export const getNameCollisionStrategy = ({
   SpaceId & {
     itemIds: string[];
     destinationItemId: string;
-    usageContext: string;
+    usageContext: "IMPORT" | "SAVE" | "COPY" | "MOVE";
   }) => {
   return callBrowserFunction(
     window.getNameCollisionStrategy,
