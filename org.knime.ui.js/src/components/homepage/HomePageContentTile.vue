@@ -1,12 +1,21 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { useStorage } from "@vueuse/core";
 
 import Pill from "webapps-common/ui/components/Pill.vue";
+import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
 import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { API } from "@api";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
+
+const LOCAL_STORAGE_KEY = "home-page-tile";
+const config = useStorage(LOCAL_STORAGE_KEY, {
+  visible: true,
+  hasRegisteredTeardown: false,
+});
 
 type ContentTileData = Awaited<ReturnType<typeof API.desktop.getHomePageTile>>;
 const data = ref<ContentTileData | null>(null);
@@ -16,14 +25,32 @@ const fetchData = async () => {
   data.value = await retryAsyncCall(API.desktop.getHomePageTile, retryDelayMS);
 };
 
+const resetVisibleFlag = () => {
+  // The value from localstorage is used only while the app is running,
+  // so that the preference is retained while the user is on the app.
+  localStorage.removeItem(LOCAL_STORAGE_KEY);
+};
+
 onMounted(() => {
   fetchData();
+
+  if (!config.value.hasRegisteredTeardown) {
+    window.addEventListener("beforeunload", resetVisibleFlag);
+    config.value.hasRegisteredTeardown = true;
+  }
 });
+
+const dismissTile = () => {
+  config.value.visible = false;
+};
 </script>
 
 <template>
-  <div v-if="data" class="content-tile-wrapper">
+  <div v-if="data && config.visible" class="content-tile-wrapper">
     <img class="image" :src="data.image" :alt="data.title" />
+    <FunctionButton class="close" compact @click="dismissTile">
+      <CloseIcon />
+    </FunctionButton>
 
     <div class="content">
       <Pill v-if="data.tag" color="gray">{{ data.tag }}</Pill>
@@ -39,6 +66,8 @@ onMounted(() => {
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
 .content-tile-wrapper {
   background: var(--knime-gray-ultra-light);
   border-radius: 4px;
@@ -47,6 +76,18 @@ onMounted(() => {
   flex-direction: column;
   gap: var(--space-8);
   margin-top: var(--space-24);
+  position: relative;
+
+  & .close {
+    display: none;
+  }
+
+  &:hover .close {
+    display: block;
+    position: absolute;
+    right: var(--space-8);
+    top: var(--space-8);
+  }
 
   & .image {
     display: flex;
