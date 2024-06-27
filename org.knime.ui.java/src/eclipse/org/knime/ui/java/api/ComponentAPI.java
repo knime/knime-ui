@@ -54,11 +54,10 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
@@ -146,9 +145,11 @@ final class ComponentAPI {
      */
     @API
     static void openLockSubnodeDialog(final String projectId, final String nodeId) throws OperationNotAllowedException {
-        final var subnodeContainer = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        final var subnodeInfo = getWorkflowManagerFromSubnode(subnodeContainer);
-        final var wfm = subnodeInfo.wfm;
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        final var containerTypeAndWfm = CoreUtil.getTypeAndContainedWfm(nc).orElseThrow(
+            () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
+        final var containerType = containerTypeAndWfm.getFirst();
+        final var wfm = containerTypeAndWfm.getSecond();
 
         // The following code is a copy from LockMetaNodeAction.java from KNIME-Workbench
         // The action is not called directly as it requires an active workbench
@@ -156,7 +157,7 @@ final class ComponentAPI {
         if (!wfm.unlock(new GUIWorkflowCipherPrompt(true))) {
             return;
         }
-        LockMetaNodeDialog lockDialog = new LockMetaNodeDialog(shell, wfm, subnodeInfo.type);
+        LockMetaNodeDialog lockDialog = new LockMetaNodeDialog(shell, wfm, containerType.getLabel());
         if (lockDialog.open() != Window.OK) {
             return;
         }
@@ -182,24 +183,12 @@ final class ComponentAPI {
      */
     @API
     static boolean unlockSubnode(final String projectId, final String nodeId) throws OperationNotAllowedException {
-        final var nodeContainer = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        return getWorkflowManagerFromSubnode(nodeContainer).wfm.unlock(new GUIWorkflowCipherPrompt(false));
+        final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
+        return CoreUtil.getTypeAndContainedWfm(nc)
+            .map(containerTypeAndWfm -> containerTypeAndWfm.getSecond().unlock(new GUIWorkflowCipherPrompt(false)))
+            .orElseThrow(
+                () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
     }
-
-    private static SubnodeManagerInfo getWorkflowManagerFromSubnode(final NodeContainer nodeContainer)
-        throws OperationNotAllowedException {
-        if (nodeContainer instanceof SubNodeContainer) {
-            return new SubnodeManagerInfo(((SubNodeContainer)nodeContainer).getWorkflowManager(), "Component");
-        }
-
-        if (nodeContainer instanceof WorkflowManager) {
-            return new SubnodeManagerInfo((WorkflowManager)nodeContainer, "Metanode");
-        }
-
-        throw new OperationNotAllowedException("Not a component nor a metanode: " + nodeContainer.getNameWithID());
-    }
-
-    private record SubnodeManagerInfo(WorkflowManager wfm, String type) {}
 
     private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)
         throws OperationNotAllowedException {
