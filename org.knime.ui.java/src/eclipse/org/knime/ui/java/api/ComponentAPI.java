@@ -147,7 +147,8 @@ final class ComponentAPI {
     @API
     static void openLockSubnodeDialog(final String projectId, final String nodeId) throws OperationNotAllowedException {
         final var subnodeContainer = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        final var wfm = getWorkflowManagerFromSubnode(subnodeContainer);
+        final var subnodeInfo = getWorkflowManagerFromSubnode(subnodeContainer);
+        final var wfm = subnodeInfo.wfm;
 
         // The following code is a copy from LockMetaNodeAction.java from KNIME-Workbench
         // The action is not called directly as it requires an active workbench
@@ -155,7 +156,7 @@ final class ComponentAPI {
         if (!wfm.unlock(new GUIWorkflowCipherPrompt(true))) {
             return;
         }
-        LockMetaNodeDialog lockDialog = new LockMetaNodeDialog(shell, wfm);
+        LockMetaNodeDialog lockDialog = new LockMetaNodeDialog(shell, wfm, subnodeInfo.type);
         if (lockDialog.open() != Window.OK) {
             return;
         }
@@ -182,21 +183,23 @@ final class ComponentAPI {
     @API
     static boolean unlockSubnode(final String projectId, final String nodeId) throws OperationNotAllowedException {
         final var nodeContainer = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
-        return getWorkflowManagerFromSubnode(nodeContainer).unlock(new GUIWorkflowCipherPrompt(false));
+        return getWorkflowManagerFromSubnode(nodeContainer).wfm.unlock(new GUIWorkflowCipherPrompt(false));
     }
 
-    private static WorkflowManager getWorkflowManagerFromSubnode(final NodeContainer nodeContainer)
+    private static SubnodeManagerInfo getWorkflowManagerFromSubnode(final NodeContainer nodeContainer)
         throws OperationNotAllowedException {
         if (nodeContainer instanceof SubNodeContainer) {
-            return ((SubNodeContainer)nodeContainer).getWorkflowManager(); // component
+            return new SubnodeManagerInfo(((SubNodeContainer)nodeContainer).getWorkflowManager(), "Component");
         }
 
         if (nodeContainer instanceof WorkflowManager) {
-            return (WorkflowManager)nodeContainer; // metanode
+            return new SubnodeManagerInfo((WorkflowManager)nodeContainer, "Metanode");
         }
 
         throw new OperationNotAllowedException("Not a component nor a metanode: " + nodeContainer.getNameWithID());
     }
+
+    private record SubnodeManagerInfo(WorkflowManager wfm, String type) {}
 
     private static SubNodeContainer assertIsWritableAndGetComponent(final String projectId, final String nodeId)
         throws OperationNotAllowedException {
