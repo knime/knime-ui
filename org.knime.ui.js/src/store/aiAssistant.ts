@@ -1,12 +1,9 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
-import { omit } from "lodash-es";
 import type { RootStoreState } from "./types";
 import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
 import type { KaiMessage } from "@/api/gateway-api/generated-api";
-
-const LOCAL_STORAGE_KEY = "aiAssistantState";
 
 /**
  * This file contains the Vuex store module for the AI assistant.
@@ -49,10 +46,6 @@ export interface Feedback {
 
 type ChainType = Exclude<keyof AiAssistantState, "hubID">;
 
-type PersistedConversationState = {
-  [K in ChainType]: Pick<ConversationState, "conversationId" | "messages">;
-};
-
 type AiAssistantEventPayload = {
   type: "token" | "result" | "error" | "status_update";
   payload: {
@@ -75,31 +68,11 @@ const createEmptyConversationState = (): ConversationState => {
   };
 };
 
-export const state = (): AiAssistantState => {
-  let persistedState: PersistedConversationState | null;
-  try {
-    const persistedStateString = localStorage.getItem(LOCAL_STORAGE_KEY);
-    persistedState = persistedStateString
-      ? JSON.parse(persistedStateString)
-      : {};
-  } catch (error) {
-    persistedState = null;
-    consola.error("Error loading persisted AI Assistant state:", error);
-  }
-
-  return {
-    hubID: null,
-    qa: {
-      ...createEmptyConversationState(),
-      ...(persistedState?.qa || {}),
-    },
-    build: {
-      ...createEmptyConversationState(),
-      ...(persistedState?.build || {}),
-    },
-  };
-};
-
+export const state = (): AiAssistantState => ({
+  hubID: null,
+  qa: createEmptyConversationState(),
+  build: createEmptyConversationState(),
+});
 export const mutations: MutationTree<AiAssistantState> = {
   setHubID(state, hubID) {
     state.hubID = hubID;
@@ -205,26 +178,8 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   async getHubID({ commit }) {
     commit("setHubID", await API.desktop.getHubID());
   },
-  pushMessage(
-    { commit, dispatch },
-    payload: {
-      chainType: ChainType;
-      role: Message["role"];
-      content: string;
-      nodes: Message["nodes"];
-      references: Message["references"];
-      isError?: boolean;
-    },
-  ) {
-    commit("pushMessage", payload);
-    dispatch("persistStateToLocalStorage");
-  },
-  clearConversationAndPersistState(
-    { commit, dispatch },
-    { chainType }: { chainType: ChainType },
-  ) {
+  clearConversation({ commit }, { chainType }: { chainType: ChainType }) {
     commit("clearConversation", { chainType });
-    dispatch("persistStateToLocalStorage");
   },
   async makeAiRequest(
     { commit, state, rootGetters },
@@ -297,7 +252,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     }
   },
   handleAiAssistantEvent(
-    { commit, dispatch },
+    { commit },
     {
       chainType,
       data: { type, payload, conversation_id: conversationId },
@@ -312,7 +267,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         commit("setConversationId", { chainType, conversationId });
 
         if (payload.message) {
-          dispatch("pushMessage", {
+          commit("pushMessage", {
             chainType,
             role: "assistant",
             content: payload.message,
@@ -326,7 +281,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         commit("clearChain", { chainType });
         commit("setConversationId", { chainType, conversationId });
 
-        dispatch("pushMessage", {
+        commit("pushMessage", {
           chainType,
           role: "assistant",
           content: payload.message,
@@ -349,23 +304,6 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       commit("clearChain", { chainType });
     }
     commit("popUserQuery", { chainType });
-  },
-  persistStateToLocalStorage({ state }) {
-    const data: PersistedConversationState = {
-      qa: {
-        conversationId: state.qa.conversationId,
-        messages: state.qa.messages.map((message) =>
-          omit(message, "feedbackId"),
-        ),
-      },
-      build: {
-        conversationId: state.build.conversationId,
-        messages: state.build.messages.map((message) =>
-          omit(message, "feedbackId"),
-        ),
-      },
-    };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   },
 };
 

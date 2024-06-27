@@ -18,11 +18,11 @@ const chainType = ref<ChainType>("qa");
 const store = useStore();
 
 const deleteChatMenuItem = {
-  text: "Delete chat history",
+  text: "Clear chat",
   icon: TrashIcon,
   metadata: {
     handler: () =>
-      store.dispatch("aiAssistant/clearConversationAndPersistState", {
+      store.dispatch("aiAssistant/clearConversation", {
         chainType: chainType.value,
       }),
   },
