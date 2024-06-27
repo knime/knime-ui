@@ -347,7 +347,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => {
       const selectedNode = $store.getters["selection/singleSelectedNode"];
-      return !selectedNode?.isLocked;
+      return selectedNode && !selectedNode.isLocked;
     },
   },
 };

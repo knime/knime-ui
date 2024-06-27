@@ -816,7 +816,7 @@ export const openLockSubnodeDialog = ({
     window.openLockSubnodeDialog,
     [projectId, nodeId],
     `Could not open lock component dialog for component ${nodeId}`,
-    true,
+    false,
     { block: true, darkenBackground: true },
   );
 };
