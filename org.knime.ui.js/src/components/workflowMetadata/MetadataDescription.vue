@@ -44,7 +44,7 @@ const emit = defineEmits<{
           orderedList: true,
           underline: true,
         }"
-        autofocus
+        :autofocus="editable"
         :with-border="editable"
         @update:model-value="editable && emit('update:modelValue', $event)"
       />
