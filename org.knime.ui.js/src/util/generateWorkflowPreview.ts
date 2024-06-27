@@ -1,17 +1,12 @@
 import { camelCase } from "lodash-es";
 import robotoCondensed from "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff";
 
-const escapeRestrictedChars = (xmlStr: string) => {
-  // taken from https://www.w3.org/TR/xml11/#charsets
-  const xml11RestrictedChars =
+const removeNonXMLChars = (xmlStr: string) => {
+  // taken from https://www.w3.org/TR/REC-xml/#charsets
+  const nonXMLChars =
     // eslint-disable-next-line no-control-regex
-    /[\x01-\x08\x0B-\x0C\x0E-\x1F\x7F-\x84\x86-\x9F]/g;
-
-  return xmlStr.replaceAll(
-    xml11RestrictedChars,
-    // eslint-disable-next-line no-magic-numbers
-    (c) => `&#x${c.charCodeAt(0).toString(16)};`,
-  );
+    /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\uD800-\uDFFF]/g;
+  return xmlStr.replaceAll(nonXMLChars, "");
 };
 
 const LICENSE = `<!--
@@ -47,7 +42,7 @@ limitations under the License.
 const getSvgContent = (svg: SVGElement, skipLicense: boolean = false) => {
   // Get svg source
   const serializer = new XMLSerializer();
-  let source = escapeRestrictedChars(serializer.serializeToString(svg));
+  let source = removeNonXMLChars(serializer.serializeToString(svg));
 
   // Add name spaces
   if (
@@ -69,7 +64,7 @@ const getSvgContent = (svg: SVGElement, skipLicense: boolean = false) => {
   }
 
   // Add xml declaration
-  source = `<?xml version="1.1" standalone="no"?>${
+  source = `<?xml version="1.0" standalone="no"?>${
     skipLicense ? "" : `\r\n${LICENSE}`
   }\r\n${source}`;
 
