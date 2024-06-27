@@ -478,11 +478,16 @@ export const getNameCollisionStrategy = ({
   spaceId = "local",
   itemIds,
   destinationItemId,
+  usageContext,
 }: SpaceProviderId &
-  SpaceId & { itemIds: string[]; destinationItemId: string }) => {
+  SpaceId & {
+    itemIds: string[];
+    destinationItemId: string;
+    usageContext: string;
+  }) => {
   return callBrowserFunction(
     window.getNameCollisionStrategy,
-    [spaceProviderId, spaceId, itemIds, destinationItemId],
+    [spaceProviderId, spaceId, itemIds, destinationItemId, usageContext],
     "Could not check for name collisions",
     true,
     { block: false },

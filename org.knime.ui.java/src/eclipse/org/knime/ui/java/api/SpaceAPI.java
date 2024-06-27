@@ -175,9 +175,9 @@ final class SpaceAPI {
      */
     @API
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
-        final String destWorkflowGroupItemId, final UsageContext context) {
+        final String destWorkflowGroupItemId, final String context) {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-        return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, context) //
+        return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, UsageContext.valueOf(context)) //
             .map(NameCollisionHandling::toString) //
             .orElse("CANCEL");
     }

@@ -83,6 +83,7 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
           spaceId: activeSpacePath.value?.spaceId,
           itemIds: sourceItems,
           destinationItemId: destWorkflowGroupItemId,
+          usageContext: "MOVE",
         });
 
     if (collisionStrategy === "CANCEL") {

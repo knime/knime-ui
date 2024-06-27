@@ -166,6 +166,7 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
       ["spaceId", "space1"],
       ["itemIds", ["123"]],
       ["destinationItemId", "hub1"],
+      ["usageContext", "MOVE"],
     ],
     returnValue: "NOOP",
   },

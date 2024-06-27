@@ -105,6 +105,7 @@ declare function getNameCollisionStrategy(
   spaceId: string,
   itemIds: string[],
   destinationItemId: string,
+  usageContext: string,
 ): "OVERWRITE" | "NOOP" | "AUTORENAME" | "CANCEL";
 
 declare function copyBetweenSpaces(
