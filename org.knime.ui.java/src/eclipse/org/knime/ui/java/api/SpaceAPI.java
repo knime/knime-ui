@@ -171,6 +171,7 @@ final class SpaceAPI {
      * @param spaceId The space ID
      * @param itemIds The space item IDs
      * @param destWorkflowGroupId The destination workflow group ID
+     * @param context The {@link UsageContext} in string form for this collision check
      * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
      */
     @API
