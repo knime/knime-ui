@@ -50,7 +50,6 @@ import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 
 import javax.inject.Inject;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
@@ -66,13 +65,13 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.js.cef.CEFSystemProperties;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
+import org.knime.ui.java.util.LocalWorkspaceSingleton;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -162,18 +161,12 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors(m_modelService, m_app,
-            createLocalWorkspace());
+            LocalWorkspaceSingleton.getInstance());
         KnimeBrowserView.activateViewInitializer(false);
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
         switchToWebUITheme();
         CEFSystemProperties.setExternalMessagePump();
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
-    }
-
-    // TOOD to be removed with NXT-2549
-    private static LocalWorkspace createLocalWorkspace() {
-        var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
-        return new LocalWorkspace(localWorkspaceRootPath);
     }
 
     private void onSwitchToJavaUI() {
@@ -243,5 +236,6 @@ public final class PerspectiveSwitchAddon {
     public static java.util.Optional<String> getPreviousPerspectiveId() {
         return java.util.Optional.ofNullable(previousPerspectiveId);
     }
+
 
 }

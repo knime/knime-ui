@@ -130,6 +130,7 @@ public final class LocalSpaceUtil {
      */
     public static Project.Origin getLocalOrigin(final Path absolutePath, final LocalWorkspace localSpace) {
         var relativePath = toRelativePath(absolutePath, localSpace);
+        var itemId = localSpace.getItemId(absolutePath);
         return new Project.Origin() { // NOSONAR
             @Override
             public String getProviderId() {
@@ -143,7 +144,7 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getItemId() {
-                return localSpace.getItemId(absolutePath);
+                return itemId;
             }
 
             @Override
