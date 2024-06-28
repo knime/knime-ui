@@ -19,7 +19,7 @@ export default {
       default: 0,
     },
   },
-  emits: ["update:modelValue", "save", "cancel", "invalidInput"],
+  emits: ["update:modelValue", "save", "cancel"],
   mounted() {
     this.$nextTick(() => {
       this.resizeTextarea();

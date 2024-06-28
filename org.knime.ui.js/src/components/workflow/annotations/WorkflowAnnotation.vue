@@ -248,20 +248,15 @@ useMagicKeys({
       event.type !== "keydown" ||
       !event.altKey ||
       !keys.includes(true) ||
-      isEditing.value
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-
-    if (
+      isEditing.value ||
       !isSelected.value ||
       !singleSelectedAnnotation.value ||
       !singleSelectedObject.value
     ) {
       return;
     }
+
+    event.preventDefault();
 
     const [isUp, isDown, isLeft, isRight] = keys;
 
