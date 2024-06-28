@@ -41,9 +41,13 @@ watch(toRef(props, "isEditing"), () => {
 });
 
 const onSubmit = () => {
+  spaceName.value = spaceName.value.trim();
   titleRef.value?.blur();
-  emit("submit", spaceName.value);
   emit("update:isEditing", false);
+
+  if (spaceName.value !== props.title) {
+    emit("submit", spaceName.value);
+  }
 };
 
 const onCancel = () => {

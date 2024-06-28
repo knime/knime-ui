@@ -59,4 +59,34 @@ describe("SpacePageHeader.vue", () => {
 
     expect(wrapper.emitted("submit")![0]).toEqual(["new name"]);
   });
+
+  it("should NOT submit when name hasn't changed", () => {
+    const { wrapper } = doMount(true);
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = title;
+    textArea.trigger("input");
+    wrapper.findAllComponents(FunctionButton).at(0)!.vm.$emit("click");
+
+    expect(wrapper.emitted("submit")).toBeUndefined();
+  });
+
+  it("should only submit changed values (after trimming)", async () => {
+    const title = "some mock test name";
+
+    const { wrapper } = doMount(true);
+    await wrapper.setProps({ title });
+
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = title;
+    textArea.trigger("input");
+    wrapper.findAllComponents(FunctionButton).at(0)!.vm.$emit("click");
+    expect(wrapper.emitted("submit")).toBeFalsy();
+
+    textArea.element.value = ` ${title}  `; // check trimming
+    textArea.trigger("input");
+    wrapper.findAllComponents(FunctionButton).at(0)!.vm.$emit("click");
+    expect(wrapper.emitted("submit")).toBeFalsy();
+  });
 });
