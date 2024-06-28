@@ -1,0 +1,70 @@
+import { computed, type ComputedRef } from "vue";
+import * as portPositionUtils from "@/util/portShift";
+import { useNodeInfo } from "./useNodeInfo";
+import type { KnimeNode } from "@/api/custom-types";
+
+type PortPositions = {
+  in: Array<[number, number]>;
+  out: Array<[number, number]>;
+};
+
+type UsePortPositionsOptions = {
+  nodeId: string;
+  inPorts: KnimeNode["inPorts"];
+  outPorts: KnimeNode["outPorts"];
+  canAddPort: ComputedRef<{ input: boolean; output: boolean }>;
+};
+
+export const usePortPositions = (options: UsePortPositionsOptions) => {
+  const { isMetanode } = useNodeInfo({ nodeId: options.nodeId });
+
+  /**
+   * @returns the position of all inPorts and outPorts.
+   * The position for each port is an array with two coordinates [x, y].
+   */
+  const portPositions = computed<PortPositions>(() => {
+    const positions = {
+      in: portPositionUtils.portPositions({
+        portCount: options.inPorts.length,
+        isMetanode: isMetanode.value,
+      }),
+      out: portPositionUtils.portPositions({
+        portCount: options.outPorts.length,
+        isMetanode: isMetanode.value,
+        isOutports: true,
+      }),
+    };
+
+    // add placeholder positions to enable the drop to a placeholder
+    if (options.canAddPort.value.input) {
+      positions.in.push(
+        portPositionUtils.placeholderPosition({
+          portCount: options.inPorts.length,
+          isMetanode: isMetanode.value,
+        }),
+      );
+    }
+
+    if (options.canAddPort.value.output) {
+      positions.out.push(
+        portPositionUtils.placeholderPosition({
+          portCount: options.outPorts.length,
+          isMetanode: isMetanode.value,
+          isOutport: true,
+        }),
+      );
+    }
+
+    return positions;
+  });
+
+  const addPortPlaceholderPositions = computed(() => {
+    // the last position is the one of the placeholder
+    return {
+      input: portPositions.value.in[portPositions.value.in.length - 1],
+      output: portPositions.value.out[portPositions.value.out.length - 1],
+    };
+  });
+
+  return { addPortPlaceholderPositions, portPositions };
+};

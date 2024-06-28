@@ -4,7 +4,7 @@
 
 import { mapActions, mapState, mapGetters, mapMutations } from "vuex";
 
-import NodePorts from "@/components/workflow/ports/NodePorts.vue";
+import { NodePorts } from "@/components/workflow/ports/NodePorts";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 

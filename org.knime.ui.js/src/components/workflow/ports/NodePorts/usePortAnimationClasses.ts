@@ -1,0 +1,59 @@
+import type { NodePort } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
+import { computed } from "vue";
+import { useNodeInfo } from "./useNodeInfo";
+
+type UsePortAnimationClassesOptions = {
+  nodeId: string;
+  connectorHover: boolean;
+  hover: boolean;
+};
+
+export const usePortAnimationClasses = (
+  options: UsePortAnimationClassesOptions,
+) => {
+  const store = useStore();
+
+  const { isMetanode } = useNodeInfo({ nodeId: options.nodeId });
+
+  const isWritable = computed<boolean>(
+    () => store.getters["workflow/isWritable"],
+  );
+
+  const quickAddNodeMenu = computed(
+    () => store.state.workflow.quickAddNodeMenu,
+  );
+
+  const isShowingQuickAddNodeMenu = (portIndex: number, side: "in" | "out") => {
+    return (
+      quickAddNodeMenu.value.isOpen &&
+      side === "out" &&
+      quickAddNodeMenu.value.props?.nodeId === options.nodeId &&
+      quickAddNodeMenu.value.props?.port?.index === portIndex
+    );
+  };
+
+  const isMickeyMousePort = (port: NodePort) => {
+    return !isMetanode.value && port.index === 0;
+  };
+
+  // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
+  const portAnimationClasses = (port: NodePort, side: "in" | "out") => {
+    if (!isMickeyMousePort(port)) {
+      return {};
+    }
+
+    const isConnected =
+      isShowingQuickAddNodeMenu(port.index, side) || port.connectedVia.length;
+
+    return {
+      "mickey-mouse": true,
+      "connector-hover": options.connectorHover,
+      connected: isConnected,
+      "read-only": !isWritable.value,
+      "node-hover": options.hover,
+    };
+  };
+
+  return { portAnimationClasses, isMickeyMousePort };
+};
