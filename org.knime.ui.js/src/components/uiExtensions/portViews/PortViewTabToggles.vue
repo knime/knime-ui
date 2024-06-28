@@ -129,6 +129,7 @@ const openInNewWindow = (item: { id: string } | null = null) => {
     background: transparent;
     margin: 0;
     border-radius: 0 100% 100% 0;
+    border-left: 1px solid var(--theme-value-switch-border-color);
 
     &:hover {
       background-color: var(--theme-value-switch-background-color-hover);

@@ -55,7 +55,7 @@ If you want to load KNIME UI in an iframe by means of the AP-loader, in addition
 
 ### Modes
 
-The Analytics Platform can be started under a _mode_. It is used to specify a broad use-case. 
+The Analytics Platform can be started under a _mode_. It is used to specify a broad use-case.
 The mode determines the _permissions_ which, in a granular manner, control what functionality of the AP is available.
 
 To configure a mode, set the following Java system property (i.e., add to `knime.ini` or in the "VM Arguments" section in the Eclipse launch configuration).
