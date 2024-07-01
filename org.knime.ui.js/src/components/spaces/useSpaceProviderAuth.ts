@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
@@ -8,6 +8,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 export const useSpaceProviderAuth = () => {
   const store = useStore();
   const $router = useRouter();
+  const $route = useRoute();
 
   const isLoadingProviders = computed(
     () => store.state.spaces.isLoadingProviders,
@@ -49,7 +50,14 @@ export const useSpaceProviderAuth = () => {
     }
 
     try {
+      const currentRoute = $route.fullPath;
+
       await store.dispatch("spaces/connectProvider", { spaceProviderId });
+
+      // if route updated while login was in progress then skip redirect
+      if (currentRoute !== $route.fullPath) {
+        return;
+      }
 
       const updatedProvider =
         store.state.spaces.spaceProviders![spaceProvider.id];
