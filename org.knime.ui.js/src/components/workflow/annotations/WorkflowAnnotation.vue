@@ -185,6 +185,10 @@ const toggleEdit = () => {
     return;
   }
 
+  if (isEditing.value) {
+    store.dispatch("canvas/focus");
+  }
+
   store.dispatch(
     "workflow/setEditableAnnotationId",
     isEditing.value ? null : props.annotation.id,
@@ -212,7 +216,6 @@ const saveContent = async () => {
     await updateAnnotation();
   }
 
-  store.dispatch("canvas/focus");
   toggleEdit();
 };
 

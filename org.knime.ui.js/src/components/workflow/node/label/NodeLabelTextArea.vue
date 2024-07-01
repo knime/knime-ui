@@ -77,7 +77,7 @@ export default {
       @pointerdown.stop
       @input="onInput"
       @keydown.enter="onSave"
-      @keydown.esc.prevent="$emit('cancel')"
+      @keydown.esc.prevent.stop="$emit('cancel')"
     />
   </NodeLabelText>
 </template>

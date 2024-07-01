@@ -95,6 +95,7 @@ export default {
     },
     onCancel() {
       this.closeLabelEditor();
+      this.$store.dispatch("canvas/focus");
     },
   },
 };

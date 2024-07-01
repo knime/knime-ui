@@ -143,7 +143,7 @@ const deselectAllObjects = () => {
     @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
     @focusin="() => hasKeyboardFocus && doInitialSelection()"
-    @keydown.esc.stop="deselectAllObjects"
+    @keydown.esc="deselectAllObjects"
   >
     <svg
       ref="svg"
