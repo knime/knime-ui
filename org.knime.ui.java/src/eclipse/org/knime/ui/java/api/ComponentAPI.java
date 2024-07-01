@@ -52,12 +52,12 @@ import java.security.NoSuchAlgorithmException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.api.util.CoreUtil.ContainerType;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
@@ -153,11 +153,11 @@ final class ComponentAPI {
 
         // The following code is a copy from LockMetaNodeAction.java from KNIME-Workbench
         // The action is not called directly as it requires an active workbench
-        final Shell shell = SWTUtilities.getActiveShell();
-        if (!wfm.unlock(new GUIWorkflowCipherPrompt(true))) {
+        if (!wfm.unlock(new GUIWorkflowCipherPrompt(containerType == ContainerType.COMPONENT))) {
             return;
         }
-        LockMetaNodeDialog lockDialog = new LockMetaNodeDialog(shell, wfm, containerType.getLabel());
+        final var shell = SWTUtilities.getActiveShell();
+        var lockDialog = new LockMetaNodeDialog(shell, wfm, containerType == ContainerType.COMPONENT);
         if (lockDialog.open() != Window.OK) {
             return;
         }
@@ -185,7 +185,8 @@ final class ComponentAPI {
     static boolean unlockSubnode(final String projectId, final String nodeId) throws OperationNotAllowedException {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         return CoreUtil.getTypeAndContainedWfm(nc)
-            .map(containerTypeAndWfm -> containerTypeAndWfm.getSecond().unlock(new GUIWorkflowCipherPrompt(false)))
+            .map(containerTypeAndWfm -> containerTypeAndWfm.getSecond()
+                .unlock(new GUIWorkflowCipherPrompt(containerTypeAndWfm.getFirst() == ContainerType.COMPONENT)))
             .orElseThrow(
                 () -> new OperationNotAllowedException("Not a component nor a metanode: " + nc.getNameWithID()));
     }
