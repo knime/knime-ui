@@ -47,12 +47,12 @@
    <extension
          point="org.knime.core.EarlyStartup">
       <provider
-            callBeforeKNIMEApplicationStart="true"
-            class="org.knime.ui.java.OnEarlyStartup">
+            class="org.knime.ui.java.OnEarlyStartup"
+            startupStage="AFTER_PROFILES_SET">
       </provider>
       <provider
-            callBeforeKNIMEApplicationStart="false"
-            class="org.knime.ui.java.OnEarlyStartup2">
+            class="org.knime.ui.java.OnEarlyStartup2"
+            startupStage="BEFORE_WFM_CLASS_LOADED">
       </provider>
    </extension>
    <extension
