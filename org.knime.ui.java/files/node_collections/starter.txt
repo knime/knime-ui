@@ -21,8 +21,9 @@ org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory
 org.knime.base.node.preproc.filter.columnref.ColumnFilterRefNodeFactory
 org.knime.base.node.preproc.filter.missingvaluecolfilter.MissingValueColumnFilterNodeFactory
 org.knime.base.node.preproc.filter.nominal.NominalValueRowFilterNodeFactory
-org.knime.base.node.preproc.filter.row.RowFilterNodeFactory
 org.knime.base.node.preproc.filter.rowref.RowFilterRefNodeFactory
+org.knime.base.node.preproc.filter.row3.RowSplitterNodeFactory
+org.knime.base.node.preproc.filter.row3.RowFilterNodeFactory
 org.knime.base.node.preproc.joiner3.Joiner3NodeFactory
 org.knime.base.node.preproc.pivot.Pivot2NodeFactory
 org.knime.base.node.preproc.pmml.missingval.compute.MissingValueHandlerNodeFactory
