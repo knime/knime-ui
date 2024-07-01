@@ -125,8 +125,6 @@ final class SpaceAPI {
     /**
      * Provides infos on all available {@link SpaceProviders}. It's a browser function because this functionality is
      * only available in the desktop AP (the desktop AP, e.g., can connect to multiple hubs).
-     *
-     * @return
      */
     @API
     static void getSpaceProviders() {
