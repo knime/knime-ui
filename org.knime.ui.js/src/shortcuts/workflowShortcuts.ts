@@ -405,6 +405,11 @@ const workflowShortcuts: WorkflowShortcuts = {
         return !$store.state.selection.activeNodePorts.isModificationInProgress;
       }
 
+      // disable while dragging
+      if ($store.state.workflow.isDragging) {
+        return false;
+      }
+
       const selectedNodes: Array<KnimeNode> =
         $store.getters["selection/selectedNodes"];
       const selectedConnections: Array<Connection> =

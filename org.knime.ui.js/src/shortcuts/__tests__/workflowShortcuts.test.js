@@ -907,6 +907,21 @@ describe("workflowShortcuts", () => {
 
       expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(true);
     });
+
+    it("condition checks when dragging", () => {
+      const { $store } = createStore({
+        singleSelectedNode: null,
+        selectedNodes: [
+          { allowedActions: { canDelete: true } },
+          { allowedActions: { canDelete: true } },
+        ],
+      });
+
+      $store.state.workflow.isDragging = true;
+      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
+        false,
+      );
+    });
   });
 
   describe("quickAddNode", () => {
