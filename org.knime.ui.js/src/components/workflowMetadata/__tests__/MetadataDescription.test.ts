@@ -41,7 +41,6 @@ describe("MetadataDescription.vue", () => {
       italic: true,
       bulletList: true,
       orderedList: true,
-      underline: true,
     });
 
     editor.vm.$emit("update:modelValue", "<p>Lorem ipsum</p>");

@@ -42,7 +42,6 @@ const emit = defineEmits<{
           italic: true,
           bulletList: true,
           orderedList: true,
-          underline: true,
         }"
         :autofocus="editable"
         :with-border="editable"
