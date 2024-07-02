@@ -104,5 +104,11 @@ const customExtensions = [
 
   height: 100%;
   border: var(--border-width) solid v-bind("activeBorderColor");
+
+  & :deep(a) {
+    &::after {
+      display: none !important;
+    }
+  }
 }
 </style>
