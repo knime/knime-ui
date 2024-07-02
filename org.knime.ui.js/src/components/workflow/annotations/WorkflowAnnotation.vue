@@ -290,12 +290,17 @@ useMagicKeys({
 
 useEscapeStack({
   onEscape: () => {
+    hasEdited.value = false;
+
     if (isEditing.value) {
       toggleEdit();
     }
   },
 });
 
+// Blur happens on:
+// - When the annotation exits the edit mode
+// - Switching to another workflow (e.g clicking on another tab)
 const onBlur = () => {
   if (hasEdited.value) {
     updateAnnotation();
