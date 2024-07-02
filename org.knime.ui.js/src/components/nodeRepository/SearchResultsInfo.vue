@@ -78,7 +78,7 @@ const openKnimeUIPreferencePage = () => {
           :href="searchHubLink"
         >
           <LinkExternalIcon />
-          <span><b>Search on KNIME Community Hub</b></span>
+          <span>Search on KNIME Community Hub</span>
         </Button>
       </div>
     </template>
