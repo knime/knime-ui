@@ -113,6 +113,8 @@ defineExpose({ focusSearchInput });
       <SearchInput
         ref="searchBar"
         :model-value="store.state.nodeRepository.query"
+        spellcheck="false"
+        :maxlength="300"
         :disabled="!nodeRepositoryLoaded"
         :placeholder="
           hasNodeCollectionActive
