@@ -112,9 +112,12 @@ export const usePanning = (options: UsePanningOptions) => {
   );
 
   const beginPan = (event: PointerEvent) => {
+    store.dispatch("canvas/focus");
+
     if (!interactionsEnabled.value || isWorkflowEmpty.value) {
       return;
     }
+
     const middleButton = 1;
     const rightButton = 2;
 
