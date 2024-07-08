@@ -387,7 +387,7 @@ describe("Node Repository store", () => {
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeRepository/searchStarterOrAllNodes",
+          "nodeRepository/searchNodesDebounce",
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(

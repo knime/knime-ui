@@ -117,7 +117,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    */
   async searchNodes(
     { commit, state, dispatch, getters, rootState },
-    { append = false, all = false } = {},
+    { append = false} = {},
   ) {
     // only do request if we search for something
     if (!getters.hasSearchParams) {
@@ -144,7 +144,6 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           offset: searchPage * nodeSearchPageSize,
           limit: nodeSearchPageSize,
           fullTemplateInfo: true,
-          nodesPartition: all ? "ALL" : "IN_COLLECTION",
           // @ts-expect-error - due to a limitation of the API type generation
           portTypeId: state.portTypeId,
         }),
@@ -197,9 +196,8 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @param {*} context - Vuex context.
    * @returns {Promise<void>}
    */
-  searchStarterOrAllNodes: debounce(async ({ dispatch, rootState, commit }) => {
-    const searchAllNodes = !rootState.application.hasNodeCollectionActive;
-    await dispatch("searchNodes", { all: searchAllNodes });
+  searchNodesDebounce: debounce(async ({ dispatch, commit }) => {
+    await dispatch("searchNodes", {  });
     commit("setLoadingSearchResults", false);
   }, searchNodesDebounceWait),
 
@@ -237,7 +235,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   async setSelectedTags({ dispatch, commit }, tags) {
     commit("setLoadingSearchResults", true);
     commit("setSelectedTags", tags);
-    await dispatch("searchStarterOrAllNodes");
+    await dispatch("searchNodesDebounce");
   },
 
   /**
@@ -250,7 +248,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   async updateQuery({ commit, dispatch }, value) {
     commit("setLoadingSearchResults", true);
     commit("setQuery", value);
-    await dispatch("searchStarterOrAllNodes");
+    await dispatch("searchNodesDebounce");
   },
 
   /**

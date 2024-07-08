@@ -159,7 +159,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   async resetSearchAndCategories({ dispatch, getters }) {
     if (getters.searchIsActive) {
       await dispatch("clearSearchResults");
-      await dispatch("searchStarterOrAllNodes");
+      await dispatch("searchNodesDebounce");
     }
     // Always clear the category results
     await dispatch("clearCategoryResults");

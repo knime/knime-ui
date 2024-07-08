@@ -327,12 +327,10 @@ describe("Node search partial store", () => {
 
         expect(store.state.nodeSearch.query).toBe("some value");
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchStarterOrAllNodes",
+          "nodeSearch/searchNodesDebounce",
           undefined,
         );
-        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {
-          all: false,
-        });
+        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {});
       });
 
       it("updates query for all nodes if hasNodeCollectionActive is false", async () => {
@@ -342,12 +340,10 @@ describe("Node search partial store", () => {
 
         expect(store.state.nodeSearch.query).toBe("some value");
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchStarterOrAllNodes",
+          "nodeSearch/searchNodesDebounce",
           undefined,
         );
-        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {
-          all: true,
-        });
+        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {});
       });
 
       it("set selected tags", async () => {
@@ -359,7 +355,7 @@ describe("Node search partial store", () => {
         ]);
 
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchStarterOrAllNodes",
+          "nodeSearch/searchNodesDebounce",
           undefined,
         );
       });
@@ -374,7 +370,7 @@ describe("Node search partial store", () => {
         await store.dispatch("nodeSearch/setSelectedTags", []);
         expect(store.state.nodeSearch.selectedTags).toEqual([]);
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchStarterOrAllNodes",
+          "nodeSearch/searchNodesDebounce",
           undefined,
         );
       });
