@@ -1,18 +1,4 @@
-@define-mixin svg-icon-size $size {
-  width: calc($size * 1px);
-  height: calc($size * 1px);
-
-  /* get 1px stroke width */
-  stroke-width: calc(32px / $size);
-  @mixin-content;
-}
-
-@define-mixin focus-style $size: 2, $offset: -1 {
-  outline: calc($size * 1px) auto var(--knime-cornflower);
-  outline-offset: calc($offset * 1px);
-
-  @mixin-content;
-}
+@import "@knime/styles/css/mixins";
 
 @define-mixin truncate {
   text-overflow: ellipsis;

@@ -1,4 +1,4 @@
-@import "webapps-common/ui/css/variables";
+@import "@knime/styles/css/variables";
 
 * {
   --app-header-height: 43px;

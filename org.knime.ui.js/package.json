@@ -30,6 +30,7 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",
     "@knime/knime-ui-table": "0.3.64",
+    "@knime/styles": "^1.0.0",
     "@knime/ui-extension-service": "0.32.0",
     "@open-rpc/client-js": "^1.8.1",
     "@types/kd-tree-javascript": "^1.0.3",

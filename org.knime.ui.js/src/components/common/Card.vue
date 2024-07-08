@@ -40,7 +40,7 @@ defineEmits<{
   height: 100%;
 
   &:focus-visible {
-    @mixin focus-style;
+    @mixin focus-outline;
   }
 
   &:hover {

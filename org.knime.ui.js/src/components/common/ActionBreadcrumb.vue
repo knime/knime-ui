@@ -94,7 +94,7 @@ export default {
   }
 
   & :deep(a):focus-visible {
-    @mixin focus-style;
+    @mixin focus-outline;
   }
 }
 </style>
