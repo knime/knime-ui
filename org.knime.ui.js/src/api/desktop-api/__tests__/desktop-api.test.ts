@@ -286,7 +286,10 @@ describe("desktop-api", () => {
       result.then(() => (resolved = true));
       expect(resolved).toBe(false);
 
-      $bus.emit("desktop-api-function-result-spy", returnValue ? true : null);
+      $bus.emit("desktop-api-function-result-spy", {
+        name: "desktop-api-function-result-spy",
+        result: returnValue ? true : null,
+      });
       await new Promise((r) => setTimeout(r, 0));
       expect(resolved).toBe(true);
     },
