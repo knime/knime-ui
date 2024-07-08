@@ -1,6 +1,11 @@
-<script>
-import Port from "@/components/common/Port.vue";
+<script lang="ts">
+import { defineComponent, type PropType } from "vue";
 import { mapActions, mapMutations, mapState } from "vuex";
+import Port from "@/components/common/Port.vue";
+import type { MenuItemWithPort, TargetPort } from "./types";
+import type { WorkflowState } from "@/store/workflow";
+import type { NodePortGroups } from "@/api/custom-types";
+import type { XY } from "@/api/gateway-api/generated-api";
 
 export const addPortPlaceholderPath = (() => {
   let cx = 0;
@@ -13,27 +18,32 @@ export const addPortPlaceholderPath = (() => {
             a ${r},${r} 0 1,1 -${r * 2},0`;
 })();
 
-export default {
+type ComponentData = {
+  transitionEnabled: boolean;
+  closeTimeout: number | null;
+};
+
+export default defineComponent({
   components: {
     Port,
   },
   inject: ["anchorPoint"],
   props: {
     position: {
-      type: Array,
+      type: Array as PropType<Array<number>>,
       required: true,
     },
     side: {
       type: String,
       required: true,
-      validator: (side) => ["input", "output"].includes(side),
+      validator: (side: string) => ["input", "output"].includes(side),
     },
     nodeId: {
       type: String,
       required: true,
     },
     portGroups: {
-      type: Object,
+      type: Object as PropType<NodePortGroups | null>,
       default: null,
     },
     /** if true, the placeholder will be replaced with a preview of the targetPort */
@@ -43,7 +53,7 @@ export default {
     },
     /** object that contains information which port to highlight */
     targetPort: {
-      type: Object,
+      type: Object as PropType<TargetPort | null>,
       default: null,
     },
     /** if true, this placeholder is selected in its owning NodePorts */
@@ -54,12 +64,14 @@ export default {
   },
   emits: ["addPort"],
   expose: ["isMenuOpen", "onClick"],
-  data: () => ({
+  data: (): ComponentData => ({
     transitionEnabled: true,
     closeTimeout: null,
   }),
   computed: {
-    ...mapState("workflow", ["portTypeMenu"]),
+    ...mapState("workflow", {
+      portTypeMenu: (state: unknown) => (state as WorkflowState).portTypeMenu,
+    }),
 
     addPortPlaceholderPath: () => addPortPlaceholderPath,
     validPortGroups() {
@@ -71,7 +83,10 @@ export default {
         Object.entries(this.portGroups)
           .filter(([_, group]) => group.canAddInPort || group.canAddOutPort)
           // map back to an object structure after filtering to match the api object shape
-          .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+          .reduce(
+            (acc, [key, value]) => ({ ...acc, [key]: value }),
+            {} as NodePortGroups,
+          )
       );
     },
     isMenuOpen() {
@@ -96,7 +111,7 @@ export default {
       get() {
         return this.portTypeMenu.previewPort;
       },
-      set(value) {
+      set(value: WorkflowState["portTypeMenu"]) {
         this.setPortTypeMenuPreviewPort(value);
       },
     },
@@ -106,12 +121,15 @@ export default {
       // make the + visible when the menu is open and hide it with a timeout of 1sec if it closes
       if (isOpen) {
         this.$el.style.opacity = "1";
-        // clear the close-timeout of this button if set
-        clearTimeout(this.closeTimeout);
+
+        if (this.closeTimeout) {
+          // clear the close-timeout of this button if set
+          clearTimeout(this.closeTimeout);
+        }
       } else {
         // after closing the menu, keep the add-port button for 1s,
         // then go back to styling by css
-        this.closeTimeout = setTimeout(() => {
+        this.closeTimeout = window.setTimeout(() => {
           this.$el.style.opacity = null;
         }, 1000);
       }
@@ -123,8 +141,8 @@ export default {
     openMenu() {
       // find the position in coordinates relative to the origin
       let position = {
-        x: this.anchorPoint.x + this.position[0],
-        y: this.anchorPoint.y + this.position[1],
+        x: (this.anchorPoint as XY).x + this.position[0],
+        y: (this.anchorPoint as XY).y + this.position[1],
       };
 
       this.openPortTypeMenu({
@@ -155,11 +173,11 @@ export default {
       if (portGroups.length === 1) {
         const { supportedPortTypeIds } = portGroups[0];
 
-        if (supportedPortTypeIds.length === 1) {
+        if (supportedPortTypeIds?.length === 1) {
           let [typeId] = supportedPortTypeIds;
           this.$emit("addPort", {
             typeId,
-            portGroup: Object.keys(this.validPortGroups)[0],
+            portGroup: Object.keys(this.validPortGroups!)[0],
           });
           return;
         }
@@ -167,7 +185,7 @@ export default {
 
       this.openMenu();
     },
-    onRequestClose(item) {
+    onRequestClose(item: MenuItemWithPort | null) {
       if (!item) {
         // If menu closes without selecting an item (eg. when pressing esc), reset preview
         this.selectedPort = null;
@@ -175,11 +193,17 @@ export default {
       this.closeMenu();
     },
 
-    onItemActive(item) {
-      this.selectedPort = item?.port;
+    onItemActive(item: MenuItemWithPort) {
+      this.selectedPort = item?.port ?? null;
     },
 
-    onItemClick({ typeId, portGroup }) {
+    onItemClick({
+      typeId,
+      portGroup,
+    }: {
+      typeId: string;
+      portGroup: string | null;
+    }) {
       // directly switch back to add-port icon
       this.transitionEnabled = false;
       this.selectedPort = null;
@@ -191,7 +215,7 @@ export default {
       });
     },
   },
-};
+});
 </script>
 
 <template>

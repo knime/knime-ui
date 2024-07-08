@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import type { KnimeNode } from "@/api/custom-types";
+import { computed, ref, watch } from "vue";
+import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
 import type {
-  NativeNode,
   Node,
   NodePort as NodePortType,
   PortGroup,
@@ -10,13 +9,14 @@ import type {
 import { useStore } from "@/composables/useStore";
 
 import NodePort from "../NodePort/NodePort.vue";
-import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import { usePortKeyboardNavigation } from "./usePortKeyboardNavigation";
 import { usePortSelection } from "./usePortSelection";
 import { usePortAnimationClasses } from "./usePortAnimationClasses";
 import { useNodeInfo } from "./useNodeInfo";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
 import { usePortPositions } from "./usePortPositions";
+import type { TargetPort } from "./types";
 
 /**
  * This component renders and handles interactions with a Node's Ports
@@ -33,9 +33,9 @@ type Props = {
    * Output ports. List of configuration objects passed-through to the `Port` component
    */
   outPorts: KnimeNode["outPorts"];
-  portGroups?: NativeNode["portGroups"] | null;
+  portGroups?: NodePortGroups | null;
   /** object that contains information which port to highlight */
-  targetPort?: any | null; // TODO: type
+  targetPort?: TargetPort | null;
   isEditable?: boolean;
   /** Interaction state of Node.vue that is passed through */
   hover?: boolean;
@@ -94,13 +94,13 @@ const { portPositions, addPortPlaceholderPositions } = usePortPositions({
   outPorts: props.outPorts,
 });
 
-watch(portPositions, () => {
-  emit("updatePortPositions", portPositions.value);
-});
-
-onMounted(() => {
-  emit("updatePortPositions", portPositions.value);
-});
+watch(
+  portPositions,
+  () => {
+    emit("updatePortPositions", portPositions.value);
+  },
+  { immediate: true },
+);
 
 /* Port positions */
 
@@ -127,14 +127,13 @@ const inputAddPortPlaceholder =
 const outputAddPortPlaceholder =
   ref<[InstanceType<typeof AddPortPlaceholder>]>();
 
-useKeyboardNavigation({
+usePortKeyboardNavigation({
   nodeId: props.nodeId,
   canAddPort,
   inPorts: props.inPorts,
   outPorts: props.outPorts,
   inputAddPortPlaceholder,
   outputAddPortPlaceholder,
-  isMetanode,
   selectedPort: currentlySelectedPort,
   updatePortSelection: updateSelection,
 });

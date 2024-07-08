@@ -8,7 +8,7 @@ interface State {
     isOpen: boolean;
     nodeId: string | null;
     startNodeId: string | null;
-    previewPort: NodePort | null;
+    previewPort: NodePort | { typeId: string } | null;
     // TODO: improve typing by exporting Props from PortTypeMenu component
     // not needed right now because the Vue <-> Vuex type integration is not the best anyway.
     props: {

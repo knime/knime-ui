@@ -4,7 +4,7 @@ import { useStore } from "@/composables/useStore";
 import { useFeatures } from "@/plugins/feature-flags";
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import PortTypeMenu from "@/components/workflow/ports/PortTypeMenu.vue";
+import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import RightPanel from "@/components/sidebar/RightPanel.vue";

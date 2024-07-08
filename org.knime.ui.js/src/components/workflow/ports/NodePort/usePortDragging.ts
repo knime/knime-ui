@@ -209,7 +209,10 @@ export const usePortDragging = (params: Params) => {
             didSnap: isCompatible,
             // eslint-disable-next-line @typescript-eslint/no-extra-parens
             ...(validPortGroups && {
-              createPortFromPlaceholder: { validPortGroups },
+              createPortFromPlaceholder: {
+                validPortGroups,
+                typeId: params.port.typeId,
+              },
             }),
           };
         },

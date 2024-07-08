@@ -10,12 +10,10 @@ type UseNodeInfoOptions = {
 export const useNodeInfo = (options: UseNodeInfoOptions) => {
   const store = useStore();
 
-  const node = computed(() => {
-    const getNodeById: (id: string) => KnimeNode =
-      store.getters["workflow/getNodeById"];
+  const getNodeById: (id: string) => KnimeNode =
+    store.getters["workflow/getNodeById"];
 
-    return getNodeById(options.nodeId);
-  });
+  const node = computed(() => getNodeById(options.nodeId));
 
   const isMetanode = computed(() => {
     return isNodeMetaNode(node.value);

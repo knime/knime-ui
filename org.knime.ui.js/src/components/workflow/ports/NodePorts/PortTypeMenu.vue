@@ -2,7 +2,6 @@
 import { defineComponent, type PropType } from "vue";
 import { mapState } from "vuex";
 
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import ReturnIcon from "webapps-common/ui/assets/img/icons/arrow-back.svg";
 
@@ -12,6 +11,7 @@ import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
+import type { MenuItemWithPort } from "./types";
 
 const isPortGroupWithSinglePort = (
   portGroups: NodePortGroups,
@@ -19,8 +19,6 @@ const isPortGroupWithSinglePort = (
 ) => portGroups[groupName]?.supportedPortTypeIds?.length === 1;
 
 const portNameSizeThreshold = 20;
-
-type MenuItemWithPort = MenuItem & { port?: { typeId: string } };
 
 type ComponentData = {
   searchQuery: string;

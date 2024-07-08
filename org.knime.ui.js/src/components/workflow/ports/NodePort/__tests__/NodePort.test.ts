@@ -28,8 +28,8 @@ const detectConnectionCircleSpy = vi
   .mockReturnValue(new Set());
 
 vi.mock("@/mixins/escapeStack", () => {
+  // eslint-disable-next-line func-style
   function escapeStack({ onEscape }) {
-    // eslint-disable-line func-style
     // @ts-ignore
     escapeStack.onEscape = onEscape;
     return {
@@ -37,8 +37,8 @@ vi.mock("@/mixins/escapeStack", () => {
     };
   }
 
+  // eslint-disable-next-line func-style
   function useEscapeStack({ onEscape }) {
-    // eslint-disable-line func-style
     // @ts-ignore
     escapeStack.onEscape = onEscape;
     return {

@@ -18,11 +18,10 @@ const clamp = (val: number, min: number, max: number) => {
 
 type Direction = "up" | "right" | "down" | "left";
 
-type UseKeyboardNavigationOptions = {
+type UsePortKeyboardNavigationOptions = {
   nodeId: string;
   inPorts: KnimeNode["inPorts"];
   outPorts: KnimeNode["outPorts"];
-  isMetanode: Ref<boolean>;
   inputAddPortPlaceholder: Ref<
     [InstanceType<typeof AddPortPlaceholder>] | undefined
   >;
@@ -34,8 +33,8 @@ type UseKeyboardNavigationOptions = {
   updatePortSelection: (selectedPort: SelectedPortIdentifier) => void;
 };
 
-export const useKeyboardNavigation = (
-  options: UseKeyboardNavigationOptions,
+export const usePortKeyboardNavigation = (
+  options: UsePortKeyboardNavigationOptions,
 ) => {
   const store = useStore();
 
@@ -47,10 +46,10 @@ export const useKeyboardNavigation = (
     () => store.state.selection.activeNodePorts.nodeId === options.nodeId,
   );
 
-  const { node } = useNodeInfo({ nodeId: options.nodeId });
+  const { node, isMetanode } = useNodeInfo({ nodeId: options.nodeId });
 
   const navigateUp = (current: SelectedPortContext) => {
-    const minIndex = options.isMetanode.value ? 0 : 1;
+    const minIndex = isMetanode.value ? 0 : 1;
     const candidateIndex = current.isAddPort
       ? current.sidePorts.length - 1
       : current.index - 1;
@@ -103,7 +102,7 @@ export const useKeyboardNavigation = (
       return;
     }
 
-    const minIndex = options.isMetanode.value ? 0 : 1;
+    const minIndex = isMetanode.value ? 0 : 1;
     const equivIndex = clamp(
       current.isAddPort ? current.sidePorts.length : current.index,
       minIndex,
@@ -147,15 +146,14 @@ export const useKeyboardNavigation = (
       return;
     }
 
-    const direction: Direction =
-      (
-        {
-          ArrowUp: "up",
-          ArrowDown: "down",
-          ArrowLeft: "left",
-          ArrowRight: "right",
-        } as const
-      )[event.key] ?? "down";
+    const direction: Direction | undefined = (
+      {
+        ArrowUp: "up",
+        ArrowDown: "down",
+        ArrowLeft: "left",
+        ArrowRight: "right",
+      } as const
+    )[event.key];
 
     if (direction) {
       event.preventDefault();
