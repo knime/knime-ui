@@ -55,8 +55,8 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
-import org.knime.ui.java.api.CloseProject;
 import org.knime.ui.java.api.DesktopAPI;
+import org.knime.ui.java.api.DesktopAPIExport;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
 
@@ -81,7 +81,7 @@ final class Suspend {
         Job.getJobManager().removeJobChangeListener(listener);
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             final var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            page.removePartListener(CloseProject.LISTENER);
+            page.removePartListener(DesktopAPIExport.PART_CLOSED_LISTENER);
         }
         return new LifeCycleStateInternalAdapter(state) {
 

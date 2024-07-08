@@ -48,10 +48,17 @@
  */
 package org.knime.ui.java.api;
 
+import org.eclipse.ui.IPartListener;
+import org.eclipse.ui.IWorkbenchPart;
+import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.editor2.WorkflowEditor;
+
 /**
  * The {@link DesktopAPI} is usually only meant to be called by the frontend (hence, all desktop API functions are
- * package scope). However, there is at least one case where a desktop API function is required by other java-code. This
- * class publicly exposes the required functions accordingly.
+ * package scope). However, are cases where a desktop API logic is required by other java-code. This class publicly
+ * exposes the required logic/functions accordingly.
  *
  * The function calls will only have an effect if the desktop API has been initialized.
  *
@@ -62,6 +69,34 @@ public final class DesktopAPIExport {
     private DesktopAPIExport() {
         // utility
     }
+
+    /**
+     * Part listener that removes the project from the {@link ProjectManager} on when the part is closed.
+     */
+    public static final IPartListener PART_CLOSED_LISTENER = new IPartListener() {
+
+        @Override
+        public void partActivated(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partBroughtToTop(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partDeactivated(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partOpened(final IWorkbenchPart part) {} // NOSONAR
+
+        @Override
+        public void partClosed(final IWorkbenchPart part) {
+            if (!PerspectiveUtil.isClassicPerspectiveActive() && part instanceof WorkflowEditor editor) {
+                editor.getWorkflowManager() //
+                    .map(WorkflowManager::getNameWithID) //
+                    .filter(id -> ProjectManager.getInstance().getProject(id).isPresent()) //
+                    .ifPresent(CloseProject::onProjectClosedInClassicUI);
+            }
+        }
+    };
 
     /**
      * Sends the event to update the space provider infos on the frontend.

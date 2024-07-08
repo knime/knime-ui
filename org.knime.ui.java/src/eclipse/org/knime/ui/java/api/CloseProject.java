@@ -52,8 +52,6 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.ui.IPartListener;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -74,32 +72,7 @@ import org.knime.workbench.editor2.WorkflowEditor;
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class CloseProject {
-
-    public static final IPartListener LISTENER = new IPartListener() {
-
-        @Override
-        public void partActivated(final IWorkbenchPart part) {} // NOSONAR
-
-        @Override
-        public void partBroughtToTop(final IWorkbenchPart part) {} // NOSONAR
-
-        @Override
-        public void partDeactivated(final IWorkbenchPart part) {} // NOSONAR
-
-        @Override
-        public void partOpened(final IWorkbenchPart part) {} // NOSONAR
-
-        @Override
-        public void partClosed(final IWorkbenchPart part) {
-            if (!PerspectiveUtil.isClassicPerspectiveActive() && part instanceof WorkflowEditor editor) {
-                editor.getWorkflowManager() //
-                    .map(WorkflowManager::getNameWithID) //
-                    .filter(id -> ProjectManager.getInstance().getProject(id).isPresent()) //
-                    .ifPresent(CloseProject::onProjectClosedInClassicUI);
-            }
-        }
-    };
+final class CloseProject {
 
     private CloseProject() {
         // utility
@@ -197,7 +170,7 @@ public final class CloseProject {
         return wasClosed;
     }
 
-    private static void onProjectClosedInClassicUI(final String projectIdToClose) {
+    static void onProjectClosedInClassicUI(final String projectIdToClose) {
         var wpm = ProjectManager.getInstance();
         wpm.removeProject(projectIdToClose, w -> {});
 

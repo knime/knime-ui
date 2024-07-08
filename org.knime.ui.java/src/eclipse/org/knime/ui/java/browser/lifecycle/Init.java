@@ -97,8 +97,8 @@ import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
-import org.knime.ui.java.api.CloseProject;
 import org.knime.ui.java.api.DesktopAPI;
+import org.knime.ui.java.api.DesktopAPIExport;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
@@ -211,7 +211,7 @@ final class Init {
         });
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             final var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            page.addPartListener(CloseProject.LISTENER);
+            page.addPartListener(DesktopAPIExport.PART_CLOSED_LISTENER);
         }
     }
 
