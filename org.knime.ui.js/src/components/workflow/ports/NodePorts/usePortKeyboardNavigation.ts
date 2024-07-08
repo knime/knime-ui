@@ -1,4 +1,10 @@
-import { computed, onUnmounted, watch, type ComputedRef, type Ref } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  watch,
+  type ComputedRef,
+  type Ref,
+} from "vue";
 
 import { useStore } from "@/composables/useStore";
 import {
@@ -171,17 +177,21 @@ export const usePortKeyboardNavigation = (
     }
   };
 
+  let canvasElementRef: HTMLElement | null = null;
+
   watch(isActiveNodePortsInstance, (isActivated) => {
-    getScrollContainerElement.value().removeEventListener("keydown", onKeydown);
+    if (canvasElementRef) {
+      canvasElementRef.removeEventListener("keydown", onKeydown);
+      canvasElementRef = null;
+    }
 
     if (isActivated) {
+      canvasElementRef = getScrollContainerElement.value();
       getScrollContainerElement.value().addEventListener("keydown", onKeydown);
     }
   });
 
-  onUnmounted(() => {
-    getScrollContainerElement.value().removeEventListener("keydown", onKeydown);
+  onBeforeUnmount(() => {
+    canvasElementRef?.removeEventListener("keydown", onKeydown);
   });
-
-  return {};
 };
