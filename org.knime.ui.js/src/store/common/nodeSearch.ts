@@ -196,8 +196,8 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    * @param {*} context - Vuex context.
    * @returns {Promise<void>}
    */
-  searchNodesDebounce: debounce(async ({ dispatch, commit }) => {
-    await dispatch("searchNodes", {  });
+  searchNodesDebounced: debounce(async ({ dispatch, commit }) => {
+    await dispatch("searchNodes");
     commit("setLoadingSearchResults", false);
   }, searchNodesDebounceWait),
 
@@ -235,7 +235,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   async setSelectedTags({ dispatch, commit }, tags) {
     commit("setLoadingSearchResults", true);
     commit("setSelectedTags", tags);
-    await dispatch("searchNodesDebounce");
+    await dispatch("searchNodesDebounced");
   },
 
   /**
@@ -248,7 +248,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
   async updateQuery({ commit, dispatch }, value) {
     commit("setLoadingSearchResults", true);
     commit("setQuery", value);
-    await dispatch("searchNodesDebounce");
+    await dispatch("searchNodesDebounced");
   },
 
   /**

@@ -191,7 +191,7 @@ final class Init {
                     Optional.ofNullable(nodeCollections) //
                         .flatMap(NodeCollections::getActiveCollection) //
                         .map(NodeCollections.NodeCollection::nodeFilter);
-                nodeRepo.resetIsInCollection(activeCollection.orElse(null));
+                nodeRepo.resetFilter(activeCollection.orElse(null));
                 appStateUpdater.updateAppState();
             }
         });

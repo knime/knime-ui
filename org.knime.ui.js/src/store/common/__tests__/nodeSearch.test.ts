@@ -327,7 +327,7 @@ describe("Node search partial store", () => {
 
         expect(store.state.nodeSearch.query).toBe("some value");
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchNodesDebounce",
+          "nodeSearch/searchNodesDebounced",
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {});
@@ -340,10 +340,10 @@ describe("Node search partial store", () => {
 
         expect(store.state.nodeSearch.query).toBe("some value");
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchNodesDebounce",
+          "nodeSearch/searchNodesDebounced",
           undefined,
         );
-        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {});
+        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", undefined)
       });
 
       it("set selected tags", async () => {
@@ -355,7 +355,7 @@ describe("Node search partial store", () => {
         ]);
 
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchNodesDebounce",
+          "nodeSearch/searchNodesDebounced",
           undefined,
         );
       });
@@ -370,7 +370,7 @@ describe("Node search partial store", () => {
         await store.dispatch("nodeSearch/setSelectedTags", []);
         expect(store.state.nodeSearch.selectedTags).toEqual([]);
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeSearch/searchNodesDebounce",
+          "nodeSearch/searchNodesDebounced",
           undefined,
         );
       });
