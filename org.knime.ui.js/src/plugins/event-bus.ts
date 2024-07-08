@@ -1,6 +1,7 @@
 import mitt, { type Emitter } from "mitt";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import type { PluginInitFunction } from "./types";
+import type { DesktopAPIFunctionResultPayload } from "@/api/desktop-api";
 
 type BusEvents = {
   "selection-pointerdown": PointerEvent;
@@ -16,7 +17,9 @@ type BusEvents = {
   "connector-dropped": undefined;
   "connector-end": undefined;
 
-  [key: `desktop-api-function-result-${string}`]: string | null | boolean;
+  [
+    key: `desktop-api-function-result-${string}`
+  ]: DesktopAPIFunctionResultPayload;
 
   "desktop-api-function-block-ui": {
     block: boolean;

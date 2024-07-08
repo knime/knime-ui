@@ -267,7 +267,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
     DesktopAPIFunctionResultEvent(payload) {
       // forward to app local event bus, handled in desktop-api promise
-      $bus.emit(`desktop-api-function-result-${payload.name}`, payload.result);
+      $bus.emit(`desktop-api-function-result-${payload.name}`, payload);
     },
 
     SpaceProvidersChangedEvent(payload) {

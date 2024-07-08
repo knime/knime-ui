@@ -2,6 +2,12 @@ import type { SpaceProviderNS } from "../custom-types";
 import { registerEventHandler } from "../json-rpc-client";
 import * as desktopAPIMethods from "./desktop-api";
 
+export type DesktopAPIFunctionResultPayload = {
+  name: string;
+  result: boolean | string | null;
+  error?: string | null;
+};
+
 export interface DesktopEventHandlers {
   SaveAndCloseProjectsEvent(payload: {
     projectIds: Array<string>;
@@ -19,10 +25,7 @@ export interface DesktopEventHandlers {
 
   AiAssistantServerChangedEvent(): void;
 
-  DesktopAPIFunctionResultEvent(payload: {
-    name: string;
-    result: boolean | string | null;
-  }): void;
+  DesktopAPIFunctionResultEvent(payload: DesktopAPIFunctionResultPayload): void;
 
   SpaceProvidersChangedEvent(
     payload:

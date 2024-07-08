@@ -29,17 +29,27 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
       // 'forwarded' backend event from events.ts
       $bus.on(
         `desktop-api-function-result-${browserFunction.name}`,
-        (result) => {
+        (payload) => {
           $bus.off(`desktop-api-function-result-${browserFunction.name}`);
+
           // unblock UI (if it was blocked) when the desktop function has returned (which is indicated by this event)
           if (blockUi.block) {
             $bus.emit("desktop-api-function-block-ui", { block: false });
           }
+
           // consider the result an error if we got one even for void functions
-          if (!returnsValue && result) {
-            reject(result);
+          if (!returnsValue && payload.result) {
+            reject(payload.result);
+            return; // To really stop execution here
           }
-          resolve(result as ReturnType<TFunction>);
+
+          // consider the result an error if the 'error' property present and non-empty
+          if ("error" in payload && payload.error) {
+            reject(payload.error);
+            return; // To really stop execution here
+          }
+
+          resolve(payload.result as ReturnType<TFunction>);
         },
       );
     });
