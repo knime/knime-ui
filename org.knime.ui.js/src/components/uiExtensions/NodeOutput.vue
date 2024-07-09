@@ -19,6 +19,7 @@ import { buildMiddleware, validateSelection } from "./common/output-validator";
 import type { UIExtensionLoadingState, ValidationError } from "./common/types";
 import LoadingIndicator from "./LoadingIndicator.vue";
 import ValidationInfo from "./ValidationInfo.vue";
+import type { NodeOutputTabIdentifier } from "@/store/selection";
 
 export const runValidationChecks = ({
   selectedNodes,
@@ -78,7 +79,7 @@ export default defineComponent({
       get() {
         return this.$store.state.selection.activePortTab;
       },
-      set(val: "view" | Omit<string, "view"> | null) {
+      set(val: NodeOutputTabIdentifier) {
         this.$store.commit("selection/setActivePortTab", val);
       },
     },

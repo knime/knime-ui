@@ -6,13 +6,15 @@ import type { SelectedPortIdentifier } from "@/util/portSelection";
 import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
 
+export type NodeOutputTabIdentifier = "view" | `${number}` | null;
+
 export interface SelectionState {
   selectedNodes: Record<string, boolean>;
   selectedConnections: Record<string, boolean>;
   selectedAnnotations: Record<string, boolean>;
   selectedBendpoints: Record<string, boolean>;
   selectedMetanodePortBars: { in?: boolean; out?: boolean };
-  activePortTab: "view" | Omit<string, "view"> | null;
+  activePortTab: NodeOutputTabIdentifier;
   activeNodePorts: {
     nodeId: string | null;
     selectedPort: SelectedPortIdentifier;

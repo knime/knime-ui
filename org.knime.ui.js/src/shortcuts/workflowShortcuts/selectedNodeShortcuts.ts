@@ -6,6 +6,7 @@ import { isNodeMetaNode } from "@/util/nodeUtil";
 import { getNextSelectedPort } from "@/util/portSelection";
 import { isMac } from "webapps-common/util/navigator";
 import type { UnionToShortcutRegistry } from "../types";
+import type { NodeOutputTabIdentifier } from "@/store/selection";
 
 type SelectedNodeWorkflowShortcuts = UnionToShortcutRegistry<
   | "activateOutputPort"
@@ -17,29 +18,40 @@ type SelectedNodeWorkflowShortcuts = UnionToShortcutRegistry<
   | "shuffleSelectedPort"
 >;
 
+const getPortFromKey = (
+  node: KnimeNode,
+  e: KeyboardEvent,
+): NodeOutputTabIdentifier => {
+  let port: NodeOutputTabIdentifier = `${Number(e.code.slice("Digit".length))}`;
+
+  if (port === "1" && "hasView" in node && node.hasView) {
+    port = "view";
+  } else if (isNodeMetaNode(node)) {
+    // Metanodes don't have a flowvariable port,
+    // their port tabs are 0-indexed instead
+    port = `${Number(port) - 1}`;
+  }
+
+  if (Number(port) >= node.outPorts.length) {
+    return null;
+  }
+
+  return port;
+};
+
 const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
   activateOutputPort: {
     text: "Activate the n-th output port view",
     hotkey: ["Shift", "1-9"],
-    icon: OpenDialogIcon,
     group: "selectedNode",
     execute: ({ $store, payload }) => {
       const event = payload.event! as KeyboardEvent;
       const node = $store.getters["selection/singleSelectedNode"];
-      let port = event.code.slice("Digit".length);
+      const port = getPortFromKey(node, event);
 
-      if (port === "1" && node.hasView) {
-        port = "view";
-      } else if (isNodeMetaNode(node)) {
-        // Metanodes don't have a flowvariable port and their port tabs are 0-indexed
-        port = String(Number(port) - 1);
+      if (port) {
+        $store.commit("selection/setActivePortTab", port);
       }
-
-      if (Number(port) >= node.outPorts.length) {
-        return;
-      }
-
-      $store.commit("selection/setActivePortTab", port);
     },
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
@@ -50,7 +62,6 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     text: "Activate flow variable view",
     hotkey: ["Shift", "0"],
     additionalHotkeys: [{ key: ["Shift", "0-0"], visible: false }], // range matches Digit0 Key even with shift
-    icon: OpenDialogIcon,
     group: "selectedNode",
     execute: ({ $store }) => {
       $store.commit("selection/setActivePortTab", "0");
@@ -73,22 +84,11 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     execute: ({ $store, payload }) => {
       const event = payload.event! as KeyboardEvent;
       const node = $store.getters["selection/singleSelectedNode"];
+      const port = getPortFromKey(node, event);
 
-      let port = event.code.slice("Digit".length);
-
-      if (port === "1" && node.hasView) {
-        port = "view";
-      } else if (isNodeMetaNode(node)) {
-        // Metanodes don't have a flowvariable port and their port tabs are 0-indexed
-        // eslint-disable-next-line no-magic-numbers
-        port = String(Number(port) - 1);
+      if (port) {
+        $store.dispatch("workflow/openPortView", { node, port });
       }
-
-      if (Number(port) >= node.outPorts.length) {
-        return;
-      }
-
-      $store.dispatch("workflow/openPortView", { node, port });
     },
     condition: ({ $store }) => {
       const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
