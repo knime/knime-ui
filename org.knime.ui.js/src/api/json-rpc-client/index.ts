@@ -4,6 +4,8 @@ import type { Store } from "vuex";
 import type { RootStoreState } from "@/store/types";
 import { getToastsProvider } from "@/plugins/toasts";
 
+import { $bus } from "@/plugins/event-bus";
+
 import {
   getRegisteredEventHandler,
   registerEventHandler,
@@ -74,11 +76,8 @@ const setupServerEventListener = (ws: WebSocket) => {
 const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   const CONNECTION_LOST_TOAST_ID = "__CONNECTION_LOST";
   const onConnectionLost = (headline: string, message: string) => {
-    // add transparent overlay to prevent user interactions
-    store.dispatch("application/updateGlobalLoader", {
-      loading: true,
-      config: { displayMode: "transparent" },
-    });
+    // prevent user interactions
+    $bus.emit("block-ui");
 
     $toast.show({
       id: CONNECTION_LOST_TOAST_ID,
@@ -90,7 +89,7 @@ const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
   };
 
   const onConnectionRestored = () => {
-    store.dispatch("application/updateGlobalLoader", { loading: false });
+    $bus.emit("unblock-ui");
 
     $toast.removeBy((toast) =>
       (toast.id ?? "").startsWith(CONNECTION_LOST_TOAST_ID),

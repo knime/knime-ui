@@ -55,12 +55,7 @@ export default defineComponent({
 
   computed: {
     ...mapState("workflow", { workflow: "activeWorkflow" }),
-    ...mapState("application", [
-      "availableUpdates",
-      "globalLoader",
-      "devMode",
-      "permissions",
-    ]),
+    ...mapState("application", ["availableUpdates", "devMode", "permissions"]),
 
     environment() {
       return environment;
@@ -195,11 +190,7 @@ export default defineComponent({
       class="download-banner"
     />
 
-    <SmartLoader
-      :loading="globalLoader.loading"
-      :text="globalLoader.text"
-      :config="globalLoader.config"
-    />
+    <SmartLoader v-bind="$store.state.application.globalLoader" />
 
     <UpdateBanner
       v-if="$route.meta.showUpdateBanner"

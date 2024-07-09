@@ -17,7 +17,6 @@ import {
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import SmartLoader from "@/components/common/SmartLoader.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
@@ -25,6 +24,7 @@ import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
 import SpaceExplorerDeleteItemModal from "./SpaceExplorerDeleteItemModal.vue";
 import { useCustomDragPreview } from "./useCustomDragPreview";
 import { useMovingItems } from "./useMovingItems";
+import SkeletonItem from "../common/skeleton-loader/SkeletonItem.vue";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
@@ -235,14 +235,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
       @click="onChangeDirectory"
     />
 
-    <SmartLoader
-      class="smart-loader content"
-      :loading="isLoadingContent"
-      :config="{
-        initialDimensions: { height: '76px' },
-        staggerStageCount: 1,
-      }"
-    >
+    <SkeletonItem :loading="isLoadingContent" height="30px" :repeat="5">
       <FileExplorer
         v-if="activeWorkflowGroup"
         aria-label="Current workflow group in Space Explorer"
@@ -302,7 +295,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
           />
         </template>
       </FileExplorer>
-    </SmartLoader>
+    </SkeletonItem>
 
     <SpaceExplorerDeleteItemModal
       :is-active="deleteModal.isActive"
@@ -321,11 +314,5 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
 
 .space-explorer {
   width: 100%;
-}
-
-.smart-loader {
-  --smartloader-bg: var(--knime-gray-ultra-light);
-  --smartloader-icon-size: 30;
-  --smartloader-z-index: 2;
 }
 </style>

@@ -129,9 +129,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const originalProvider = state.spaceProviders![spaceProviderId];
 
     try {
-      $bus.emit("desktop-api-function-block-ui", {
-        block: true,
-      });
+      $bus.emit("block-ui");
       const newSpace = await API.space.createSpace({
         spaceProviderId,
         spaceGroupName: spaceGroup.name,
@@ -147,9 +145,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         value: { ...originalProvider, spaceGroups: updatedGroups },
       });
 
-      $bus.emit("desktop-api-function-block-ui", {
-        block: false,
-      });
+      $bus.emit("unblock-ui");
 
       $router.push({
         name: APP_ROUTES.Home.SpaceBrowsingPage,
@@ -226,36 +222,24 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
 
     try {
-      // use global loader because just using the local one for the space explorer
+      // use global block-ui because just using the local one for the space explorer
       // is not enough since createWorkflow would also open a new workflow instead of just
       // doing a local operation like fetching data or renaming
-      await dispatch(
-        "application/updateGlobalLoader",
-        { loading: true, config: { displayMode: "transparent" } },
-        { root: true },
-      );
+      $bus.emit("block-ui");
       const newWorkflowItem = await API.space.createWorkflow({
         spaceProviderId,
         spaceId,
         itemId,
         itemName: workflowName,
       });
-      await dispatch(
-        "application/updateGlobalLoader",
-        { loading: false },
-        { root: true },
-      );
+      $bus.emit("unblock-ui");
 
       // re-fetch the content of the current folder to include the created workflow (in the background)
       dispatch("fetchWorkflowGroupContent", { projectId });
 
       return newWorkflowItem;
     } catch (error) {
-      await dispatch(
-        "application/updateGlobalLoader",
-        { loading: false },
-        { root: true },
-      );
+      $bus.emit("unblock-ui");
       consola.log("Error creating workflow", { error });
       throw error;
     }
@@ -285,7 +269,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async openProject(
-    { rootState, state, dispatch },
+    { rootState, state },
     {
       providerId,
       spaceId,
@@ -309,14 +293,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return;
     }
 
-    // use global loader because just using the local one for the space explorer
+    // use global block-ui because just using the local one for the space explorer
     // is not enough since 'openProject' would open a new project instead of just
     // doing a local operation like fetching data or renaming
-    await dispatch(
-      "application/updateGlobalLoader",
-      { loading: true, config: { displayMode: "transparent" } },
-      { root: true },
-    );
+    $bus.emit("block-ui");
 
     try {
       const didOpen = await API.desktop.openProject({
@@ -329,11 +309,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         throw new Error("Could not open workflow");
       }
     } finally {
-      await dispatch(
-        "application/updateGlobalLoader",
-        { loading: false },
-        { root: true },
-      );
+      $bus.emit("unblock-ui");
     }
   },
 

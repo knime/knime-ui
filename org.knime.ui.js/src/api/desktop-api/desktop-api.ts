@@ -34,7 +34,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
 
           // unblock UI (if it was blocked) when the desktop function has returned (which is indicated by this event)
           if (blockUi.block) {
-            $bus.emit("desktop-api-function-block-ui", { block: false });
+            $bus.emit("unblock-ui");
           }
 
           // consider the result an error if we got one even for void functions
@@ -55,8 +55,7 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
     });
 
     if (blockUi.block) {
-      $bus.emit("desktop-api-function-block-ui", {
-        block: true,
+      $bus.emit("block-ui", {
         darkenBackground: blockUi.darkenBackground,
       });
     }

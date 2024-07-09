@@ -112,10 +112,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     },
 
     ProjectDisposedEvent() {
-      $store.dispatch("application/updateGlobalLoader", {
-        loading: true,
-        config: { displayMode: "transparent" },
-      });
+      $bus.emit("block-ui");
 
       $toast.show({
         headline: "Session expired",
@@ -238,16 +235,11 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     // or finishing
     ProgressEvent({ status, text }) {
       const isLoading = status === "STARTED";
-      const loaderConfig = isLoading
-        ? {
-            displayMode: "toast",
-            loadingMode: "normal",
-          }
-        : null;
 
       $store.dispatch("application/updateGlobalLoader", {
         loading: isLoading,
-        config: loaderConfig,
+        displayMode: "floating",
+        loadingMode: "normal",
         text,
       });
     },

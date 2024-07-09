@@ -9,6 +9,7 @@ type Props = {
   color2?: string;
   type?: "generic" | "button" | "icon-button" | "rounded";
   loading?: boolean;
+  repeat?: number;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,6 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
   color1: $colors.GrayUltraLight,
   color2: $colors.Porcelain,
   type: "generic",
+  repeat: 1,
   loading: true,
 });
 
@@ -41,11 +43,14 @@ const styles = computed(() => {
     width: width.value,
     height: height.value,
     borderRadius: borderRadius.value,
+    marginBottom: props.repeat > 1 ? "2px" : "",
   };
 });
 </script>
 
 <template>
-  <div v-if="loading" v-bind="$attrs" :style="styles" />
+  <template v-if="loading">
+    <div v-for="index in repeat" :key="index" v-bind="$attrs" :style="styles" />
+  </template>
   <slot v-else v-bind="$attrs" />
 </template>

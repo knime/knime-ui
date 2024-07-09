@@ -1,206 +1,139 @@
-<script lang="ts">
-import { defineComponent, type PropType, type CSSProperties } from "vue";
+<script lang="ts" setup>
+import {
+  toRef,
+  type CSSProperties,
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onMounted,
+} from "vue";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import type { GlobalLoaderConfig } from "@/store/application/globalLoader";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
-const DISPLAY_MODES = Object.freeze({
-  fullscreen: "fullscreen",
-  transparent: "transparent",
-  localized: "localized",
-  toast: "toast",
-});
+export interface SmartLoaderProps {
+  loading?: boolean;
+  text?: string;
+  /**
+   * determines the loader's appearance
+   */
+  displayMode?: "fullscreen" | "floating";
+  /**
+   * whether to use standard load without delay, or a staggered loader
+   */
+  loadingMode?: "stagger" | "normal";
+  /**
+   * number of stages to stagger for.
+   */
+  staggerStageCount?: 1 | 2;
+}
 
-const LOADING_MODES = Object.freeze({
-  normal: "normal",
-  stagger: "stagger",
-});
-
-const DEFAULTS = Object.freeze({
-  displayMode: DISPLAY_MODES.localized,
-  loadingMode: LOADING_MODES.stagger,
+const props = withDefaults(defineProps<SmartLoaderProps>(), {
+  loading: false,
+  text: "Loading…",
+  displayMode: "fullscreen",
+  loadingMode: "stagger",
   staggerStageCount: 2,
 });
 
-type ComponentData = {
-  DEFAULTS: typeof DEFAULTS;
-  showLoader: boolean;
-  isTextShown: boolean;
-  isIconShown: boolean;
-  setLoading: (value: boolean) => any;
+const showLoader = ref<boolean>();
+const isTextShown = ref<boolean>();
+const isIconShown = ref<boolean>();
+const setLoading = ref<(value: boolean) => any>();
+
+const overlayStyles = computed<CSSProperties>(() => {
+  const positionMap = {
+    fullscreen: "fixed",
+    floating: "static",
+  } as const;
+
+  const zIndexMap = {
+    fullscreen: "99",
+    floating: "initial",
+  };
+
+  return {
+    position: positionMap[props.displayMode],
+    zIndex: zIndexMap[props.displayMode],
+
+    // add the initial dimensions as css properties for later usage in the styles
+    "--initial-width": "100%",
+    "--initial-height": "100%",
+    "--smartloader-z-index": 99,
+  };
+});
+
+const loader = ref<HTMLElement>();
+
+const focus = () => {
+  nextTick(() => {
+    loader.value?.focus();
+  });
 };
 
-export default defineComponent({
-  components: {
-    ReloadIcon,
-  },
+const useNormalLoadingMode = () => {
+  setLoading.value = (value) => {
+    showLoader.value = value;
+    focus();
+    isIconShown.value = true;
+    isTextShown.value = true;
+  };
+};
 
-  props: {
-    loading: {
-      type: Boolean,
-      default: false,
+const useStaggerLoadingMode = () => {
+  const noop = () => {};
+
+  setLoading.value = createStaggeredLoader({
+    firstStageCallback: () => {
+      showLoader.value = true;
+      focus();
+      isIconShown.value = true;
     },
-
-    text: {
-      type: String,
-      default: "Loading…",
+    secondStageCallback:
+      props.staggerStageCount === 2
+        ? () => {
+            isTextShown.value = true;
+          }
+        : noop,
+    resetCallback: () => {
+      showLoader.value = false;
+      isTextShown.value = false;
+      isIconShown.value = false;
     },
+  });
+};
 
-    config: {
-      type: Object as PropType<GlobalLoaderConfig>,
-      default: () => ({}) as GlobalLoaderConfig,
-    },
-  },
+const setupLoader = () => {
+  const loadingModeHandlers = {
+    normal: useNormalLoadingMode,
+    stagger: useStaggerLoadingMode,
+  };
 
-  data(): ComponentData {
-    return {
-      DEFAULTS,
-      showLoader: false,
-      isTextShown: false,
-      isIconShown: false,
-      setLoading: () => {},
-    };
-  },
+  loadingModeHandlers[props.loadingMode]();
 
-  computed: {
-    overlayStyles(): CSSProperties {
-      const { displayMode = DEFAULTS.displayMode } = this.config;
+  setLoading.value?.(true);
+};
 
-      const positionMap = {
-        [DISPLAY_MODES.fullscreen]: "fixed",
-        [DISPLAY_MODES.localized]: "relative",
-        [DISPLAY_MODES.transparent]: "fixed",
-        [DISPLAY_MODES.toast]: "static",
-      } as const;
+const teardownLoader = () => {
+  setLoading.value?.(false);
+  setLoading.value = () => {};
+};
 
-      const zIndexMap = {
-        [DISPLAY_MODES.fullscreen]: "99",
-        [DISPLAY_MODES.localized]: "initial",
-        [DISPLAY_MODES.transparent]: "initial",
-        [DISPLAY_MODES.toast]: "initial",
-      };
-
-      const getDimensions = () => {
-        const [firstElementChild] = this.$slots.default?.() || [];
-
-        // match the initialDimensions if no slot child is found
-        if (!firstElementChild) {
-          return {
-            height: this.config.initialDimensions?.height || "100%",
-            width: this.config.initialDimensions?.width || "100%",
-          };
-        }
-
-        return {
-          width: "100%",
-          height: "100%",
-        };
-      };
-
-      const { width, height } = getDimensions();
-
-      return {
-        position: positionMap[displayMode],
-        zIndex: zIndexMap[displayMode],
-
-        // add the initial dimensions as css properties for later usage in the styles
-        "--initial-width": width,
-        "--initial-height": height,
-        "--smartloader-z-index": 99,
-      };
-    },
-  },
-
-  watch: {
-    loading: {
-      handler(loading) {
-        if (loading) {
-          this.setupLoader();
-        } else {
-          this.teardownLoader();
-        }
-      },
-    },
-  },
-
-  mounted() {
-    // setup loader on mounted instead of using an immediate watcher because accessing refs
-    // before mounting component would result in errors
-    if (this.loading) {
-      this.setupLoader();
-    }
-  },
-
-  methods: {
-    setupLoader() {
-      const {
-        displayMode = DEFAULTS.displayMode,
-        loadingMode = DEFAULTS.loadingMode,
-      } = this.config;
-
-      if (displayMode === "transparent") {
-        this.setLoading = (value) => {
-          this.showLoader = value;
-        };
-        this.setLoading(true);
-        return;
+onMounted(() => {
+  // add the watcher on mounted so the immediate watcher can accessing refs,
+  // before mounting component this would result in errors
+  watch(
+    toRef(props, "loading"),
+    (loading) => {
+      if (loading) {
+        setupLoader();
+      } else {
+        teardownLoader();
       }
-
-      const loadingModeHandlers = {
-        normal: this.useNormalLoadingMode,
-        stagger: this.useStaggerLoadingMode,
-      };
-
-      loadingModeHandlers[loadingMode]();
-
-      this.setLoading(true);
     },
-
-    teardownLoader() {
-      this.setLoading(false);
-      this.setLoading = () => {};
-    },
-
-    focus() {
-      this.$nextTick(() => {
-        (this.$refs.loader as HTMLElement).focus();
-      });
-    },
-
-    useNormalLoadingMode() {
-      this.setLoading = (value) => {
-        this.showLoader = value;
-        this.focus();
-        this.isIconShown = true;
-        this.isTextShown = true;
-      };
-    },
-
-    useStaggerLoadingMode() {
-      const { staggerStageCount = DEFAULTS.staggerStageCount } = this.config;
-      const noop = () => {};
-
-      this.setLoading = createStaggeredLoader({
-        firstStageCallback: () => {
-          this.showLoader = true;
-          this.focus();
-          this.isIconShown = true;
-        },
-        secondStageCallback:
-          staggerStageCount === 2
-            ? () => {
-                this.isTextShown = true;
-              }
-            : noop,
-        resetCallback: () => {
-          this.showLoader = false;
-          this.isTextShown = false;
-          this.isIconShown = false;
-        },
-      });
-    },
-  },
+    { immediate: true },
+  );
 });
 </script>
 
@@ -210,7 +143,7 @@ export default defineComponent({
       v-show="showLoader"
       ref="loader"
       class="loader"
-      :class="config.displayMode || DEFAULTS.displayMode"
+      :class="displayMode"
       tabindex="-1"
     >
       <ReloadIcon v-if="isIconShown" />
@@ -275,13 +208,13 @@ export default defineComponent({
     height: 200px;
   }
 
-  &.toast {
+  &.floating {
     background: var(--smartloader-bg, var(--knime-masala));
     min-width: 150px;
     height: 60px;
     position: fixed;
-    left: var(--smartloader-toast-pos-left, 60px);
-    bottom: var(--smartloader-toast-pos-bottom, 60px);
+    left: var(--smartloader-floating-pos-left, 60px);
+    bottom: var(--smartloader-floating-pos-bottom, 60px);
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;

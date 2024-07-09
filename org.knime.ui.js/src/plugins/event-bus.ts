@@ -21,10 +21,12 @@ type BusEvents = {
     key: `desktop-api-function-result-${string}`
   ]: DesktopAPIFunctionResultPayload;
 
-  "desktop-api-function-block-ui": {
-    block: boolean;
-    darkenBackground?: boolean;
-  };
+  "block-ui":
+    | {
+        darkenBackground?: boolean;
+      }
+    | undefined;
+  "unblock-ui": undefined;
 };
 
 const emitter = mitt<BusEvents>();

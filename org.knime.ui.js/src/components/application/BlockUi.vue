@@ -14,14 +14,19 @@ const focus = async () => {
 };
 
 onMounted(() => {
-  $bus.on("desktop-api-function-block-ui", (config) => {
-    block.value = config.block;
+  $bus.on("block-ui", (config = {}) => {
+    block.value = true;
     darkenBackground.value = Boolean(config.darkenBackground);
+  });
+  $bus.on("unblock-ui", () => {
+    block.value = false;
+    darkenBackground.value = false;
   });
 });
 
 onBeforeUnmount(() => {
-  $bus.off("desktop-api-function-block-ui");
+  $bus.off("block-ui");
+  $bus.off("unblock-ui");
 });
 
 watch(block, () => {
