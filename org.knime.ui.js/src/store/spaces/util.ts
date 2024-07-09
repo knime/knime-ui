@@ -24,14 +24,6 @@ export const findSpaceGroupFromSpaceId = (
   );
 };
 
-export const COMMUNITY_HUB_ID = "My-KNIME-Hub";
-export const isCommunityHub = (
-  spaceProvider: SpaceProviderNS.SpaceProvider,
-) => {
-  // this is the official community hub that is automatically created
-  return spaceProvider.id === COMMUNITY_HUB_ID;
-};
-
 export const isLocalProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
   spaceProvider.type === SpaceProviderNS.TypeEnum.LOCAL;
 

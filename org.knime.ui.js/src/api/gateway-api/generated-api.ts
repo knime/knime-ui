@@ -3619,6 +3619,12 @@ export interface SpaceProvider {
      * @memberof SpaceProvider
      */
     type: SpaceProvider.TypeEnum;
+    /**
+     * host of the SpaceProvider, absent if not applicable
+     * @type {string}
+     * @memberof SpaceProvider
+     */
+    hostname?: string;
 
 }
 
