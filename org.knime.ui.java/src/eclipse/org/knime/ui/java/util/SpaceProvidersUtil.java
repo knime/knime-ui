@@ -111,7 +111,9 @@ public final class SpaceProvidersUtil {
             .put("name", spaceProvider.getName()) //
             .put("type", type.toString()) //
             .put("connected", isLocalSpaceProvider || spaceProvider.getConnection(false).isPresent()) //
-            .put("connectionMode", connectionMode);
+            .put("connectionMode", connectionMode) //
+            .put("hostname", isLocalSpaceProvider ? null
+                : spaceProvider.getServerAddress().orElse(null));
         if (!isLocalSpaceProvider) { // Do not set user object node in local space
             spaceProviderObjectNode.set("user", userObjectNode);
         }
