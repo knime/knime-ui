@@ -19,7 +19,7 @@ vi.mock("@/router/router", () => {
   };
 });
 
-vi.mock("webapps-common/util/sleep");
+vi.mock("@knime/utils");
 
 describe("workflowMonitor", () => {
   const loadStore = () => {

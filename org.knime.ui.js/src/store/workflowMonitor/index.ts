@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import sleep from "webapps-common/util/sleep";
+import { sleep } from "@knime/utils";
 import { API } from "@api";
 import {
   type WorkflowMonitorMessage,

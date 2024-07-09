@@ -6,7 +6,7 @@ import { mapActions, mapState, mapGetters, mapMutations } from "vuex";
 
 import { NodePorts } from "@/components/workflow/ports/NodePorts";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 
 import NodeTorso from "./torso/NodeTorso.vue";
 import NodeDecorators from "./decorators/NodeDecorators.vue";
@@ -365,7 +365,7 @@ export default {
         return;
       }
 
-      const metaOrCtrlKey = getMetaOrCtrlKey();
+      const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
 
       if (event.shiftKey || event[metaOrCtrlKey]) {
         // Multi select
@@ -391,7 +391,7 @@ export default {
         return;
       }
 
-      const metaOrCtrlKey = getMetaOrCtrlKey();
+      const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
 
       if (event.shiftKey || event[metaOrCtrlKey]) {
         // Multi select

@@ -1,7 +1,7 @@
 import { computed, onMounted, type Ref } from "vue";
 import { useEventListener } from "@vueuse/core";
 
-import { capitalize } from "webapps-common/util/capitalize";
+import { capitalize } from "@knime/utils";
 import type { WorkflowObject } from "@/api/custom-types";
 
 import { useStore } from "@/composables/useStore";

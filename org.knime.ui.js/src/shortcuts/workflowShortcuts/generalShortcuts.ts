@@ -1,9 +1,9 @@
 import type { UnionToShortcutRegistry } from "../types";
-import RedoIcon from "webapps-common/ui/assets/img/icons/redo.svg";
-import UndoIcon from "webapps-common/ui/assets/img/icons/undo.svg";
+import RedoIcon from "@knime/styles/img/icons/redo.svg";
+import UndoIcon from "@knime/styles/img/icons/undo.svg";
 import DeleteIcon from "@/assets/delete.svg";
-import SaveIcon from "webapps-common/ui/assets/img/icons/save.svg";
-import SaveAsIcon from "webapps-common/ui/assets/img/icons/save-as.svg";
+import SaveIcon from "@knime/styles/img/icons/save.svg";
+import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { compatibility } from "@/environment";
 import type { KnimeNode } from "@/api/custom-types";

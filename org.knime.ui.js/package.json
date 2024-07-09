@@ -22,8 +22,6 @@
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
     "jenkins:lint": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
-    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
-    "postinstall": "npm run opensourcecredits -- --no-overwrite",
     "add-husky": "cd .. && husky install ./org.knime.ui.js/.husky",
     "sbom": "npx @cyclonedx/cyclonedx-npm --output-file bom.json --ignore-npm-errors --omit dev"
   },
@@ -32,6 +30,7 @@
     "@knime/knime-ui-table": "0.3.64",
     "@knime/styles": "^1.0.0",
     "@knime/ui-extension-service": "0.32.0",
+    "@knime/utils": "^1.0.2",
     "@open-rpc/client-js": "^1.8.1",
     "@types/kd-tree-javascript": "^1.0.3",
     "@vueuse/core": "^10.9.0",
@@ -51,7 +50,7 @@
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^1.16.1",
-    "@knime/eslint-config": "^8.0.10",
+    "@knime/eslint-config": "^8.1.0",
     "@tsconfig/node20": "^20.1.2",
     "@types/dompurify": "^3.0.5",
     "@types/jsdom": "^21.1.6",

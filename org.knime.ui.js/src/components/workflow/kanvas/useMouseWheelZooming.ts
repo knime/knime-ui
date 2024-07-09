@@ -2,7 +2,7 @@ import { computed, type Ref } from "vue";
 import throttle from "raf-throttle";
 
 import { useStore } from "@/composables/useStore";
-import { isMac } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 
 type UseZoomOptions = {
   rootEl: Ref<HTMLElement>;
@@ -45,7 +45,9 @@ export const useMouseWheelZooming = (options: UseZoomOptions) => {
     // Note: The pinch-to-zoom gesture on Mac causes a wheel event with ctrlKey=True,
     //       so we need to check for it to obtain zoom on pinch-to-zoom.
     const shouldZoom =
-      scrollToZoomEnabled.value || event.ctrlKey || (isMac() && event.metaKey);
+      scrollToZoomEnabled.value ||
+      event.ctrlKey ||
+      (navigatorUtils.isMac() && event.metaKey);
     if (!shouldZoom) {
       return;
     }

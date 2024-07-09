@@ -5,7 +5,7 @@ import type { Store } from "vuex";
 import type { ToastService } from "webapps-common/ui/services/toast";
 import type { RootStoreState } from "@/store/types";
 import type { ShortcutsRegistry } from ".";
-import type { Hotkey } from "webapps-common/util/formatHotkeys";
+import type { HotkeysNS } from "@knime/utils";
 
 export type ShortcutGroups =
   | "general"
@@ -19,7 +19,7 @@ export type ShortcutGroups =
   | "workflowEditor";
 
 export type HotkeyText = { text: string };
-export type Hotkeys = Array<Hotkey | HotkeyText>;
+export type Hotkeys = Array<HotkeysNS.Hotkey | HotkeyText>;
 
 export type ShortcutExecuteContext = {
   $store: Store<RootStoreState>;

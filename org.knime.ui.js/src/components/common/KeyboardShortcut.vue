@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import {
-  formatHotkey,
-  getDefaultSeparator,
-} from "webapps-common/util/formatHotkeys";
+import { hotkeys } from "@knime/utils";
 
 import type { HotkeyText, Hotkeys } from "@/shortcuts/types";
 
@@ -26,7 +23,7 @@ const isNextItemText = (index: number) => {
 const isLast = (index: number) => index === props.hotkey.length - 1;
 
 const keys = computed(() =>
-  props.hotkey.map((key) => (isText(key) ? key : formatHotkey(key))),
+  props.hotkey.map((key) => (isText(key) ? key : hotkeys.formatHotkey(key))),
 );
 </script>
 
@@ -38,7 +35,7 @@ const keys = computed(() =>
     <template v-else>
       <kbd>{{ keyOrText }}</kbd>
       <span v-if="!isLast(index) && !isNextItemText(index)">
-        {{ getDefaultSeparator() }}
+        {{ hotkeys.getDefaultSeparator() }}
       </span>
     </template>
   </template>

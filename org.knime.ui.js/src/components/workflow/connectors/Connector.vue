@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, toRefs, watch } from "vue";
 
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { getBendpointId } from "@/util/connectorUtil";
 import { useStore } from "@/composables/useStore";
@@ -119,7 +119,7 @@ const {
 });
 
 const isMultiselect = (event: MouseEvent | PointerEvent) =>
-  event.shiftKey || event[getMetaOrCtrlKey()];
+  event.shiftKey || event[navigatorUtils.getMetaOrCtrlKey()];
 
 const onConnectionSegmentClick = (event: MouseEvent) => {
   if (!isMultiselect(event)) {

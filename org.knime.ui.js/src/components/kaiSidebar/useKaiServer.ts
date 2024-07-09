@@ -1,5 +1,5 @@
 import { ref, reactive, computed } from "vue";
-import sleep from "webapps-common/util/sleep";
+import { sleep } from "@knime/utils";
 import { API } from "@api";
 import type { KaiUiStrings } from "@/api/gateway-api/generated-api";
 

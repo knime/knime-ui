@@ -4,7 +4,7 @@ import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 
-import muteConsole from "webapps-common/util/test-utils/muteConsole";
+import { muteConsole } from "@knime/utils/test-utils";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";

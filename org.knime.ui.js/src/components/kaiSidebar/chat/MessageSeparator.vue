@@ -2,7 +2,7 @@
 import { computed } from "vue";
 
 import Pill from "webapps-common/ui/components/Pill.vue";
-import { formatDateString } from "webapps-common/util/format";
+import { formatDateString } from "@knime/utils";
 import { isToday, isYesterday } from "./utils";
 
 interface Props {

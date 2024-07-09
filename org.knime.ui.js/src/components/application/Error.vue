@@ -4,7 +4,6 @@ import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import CopyIcon from "webapps-common/ui/assets/img/icons/copy.svg";
 import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
 import WarningIcon from "webapps-common/ui/assets/img/icons/circle-warning.svg";
-import { copyText } from "webapps-common/util/copyText";
 import SwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
@@ -56,20 +55,21 @@ export default {
       // redirect to the index.html page to trigger a refetch of the whole app
       window.location.href = "/index.html";
     },
-    copyToClipboard() {
-      copyText(
-        JSON.stringify(
-          {
-            app: "KnimeUI",
-            // version: // TODO: NXT-595
-            message: this.message,
-            vueInfo: this.vueInfo,
-            stack: this.stack,
-          },
-          null,
-          2,
-        ),
+    async copyToClipboard() {
+      const content = JSON.stringify(
+        {
+          app: "KnimeUI",
+          // version: // TODO: NXT-595
+          message: this.message,
+          vueInfo: this.vueInfo,
+          stack: this.stack,
+        },
+        null,
+        2,
       );
+
+      await navigator.clipboard.writeText(content);
+
       this.copied = true;
     },
     switchToJavaUI() {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { formatDateString } from "webapps-common/util/format";
+import { formatDateString } from "@knime/utils";
 
 export default defineComponent({
   props: {

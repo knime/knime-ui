@@ -2,8 +2,7 @@ import { useRouter, type Router } from "vue-router";
 import { useStore, type Store } from "vuex";
 
 import { useToasts, type ToastService } from "webapps-common/ui/services/toast";
-import { isMac } from "webapps-common/util/navigator";
-import { type Hotkey, formatHotkeys } from "webapps-common/util/formatHotkeys";
+import { navigatorUtils, hotkeys, type HotkeysNS } from "@knime/utils";
 
 import shortcuts from "@/shortcuts";
 import type {
@@ -24,12 +23,15 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 
   if (shortcut.hotkey) {
     // @ts-ignore
-    shortcut.hotkeyText = formatHotkeys(shortcut.hotkey);
+    shortcut.hotkeyText = hotkeys.formatHotkeys(shortcut.hotkey);
   }
 });
 Object.freeze(shortcuts);
 
-const isDigitKeyInRange = (keyCode: string, hotkey: Hotkey | ""): boolean => {
+const isDigitKeyInRange = (
+  keyCode: string,
+  hotkey: HotkeysNS.Hotkey | "",
+): boolean => {
   // Digit keys exist from 0 to 9, so valid ranges always have length 3
   const digitRangeLength = 3;
   if (hotkey.length !== digitRangeLength || !keyCode?.startsWith("Digit")) {
@@ -71,12 +73,12 @@ export const createShortcutsService = ({
   }) => {
     const checkHotkey = (hotkey: Hotkeys) => {
       const modifiers = hotkey.filter(
-        (key): key is Hotkey => typeof key === "string",
+        (key): key is HotkeysNS.Hotkey => typeof key === "string",
       );
       const character = modifiers.pop() ?? "";
 
       // our special CtrlOrCmd has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems
-      const ctrlOrMeta = isMac() ? "Meta" : "Ctrl";
+      const ctrlOrMeta = navigatorUtils.isMac() ? "Meta" : "Ctrl";
       const platformModifiers = modifiers.map((modifier) =>
         modifier === "CtrlOrCmd" ? ctrlOrMeta : modifier,
       );
@@ -94,7 +96,9 @@ export const createShortcutsService = ({
         key.toUpperCase() === character.toUpperCase() ||
         (character.includes("-") && isDigitKeyInRange(code, character)) ||
         // on mac 'backspace' can be used instead of delete
-        (isMac() && character === "Delete" && key === "Backspace");
+        (navigatorUtils.isMac() &&
+          character === "Delete" &&
+          key === "Backspace");
 
       return (
         metaMatches && ctrlMatches && shiftMatches && altMatches && keysMatch

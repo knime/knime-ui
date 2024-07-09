@@ -1,18 +1,19 @@
-import { expect, describe, it, vi } from "vitest";
+import { expect, describe, it, vi, beforeAll } from "vitest";
 import * as Vue from "vue";
 
-import { shallowMount, mount } from "@vue/test-utils";
+import { shallowMount, mount, flushPromises } from "@vue/test-utils";
 import Button from "webapps-common/ui/components/Button.vue";
-import { copyText } from "webapps-common/util/copyText";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 import Error from "../Error.vue";
 
-vi.mock("webapps-common/util/copyText.js", () => ({
-  copyText: vi.fn(),
-}));
+const clipboardSpy = vi.fn();
 
 describe("Error.vue", () => {
+  beforeAll(() => {
+    Object.assign(navigator, { clipboard: { writeText: clipboardSpy } });
+  });
+
   it("renders default", () => {
     const wrapper = shallowMount(Error, {
       props: {
@@ -50,7 +51,7 @@ describe("Error.vue", () => {
 
     await Vue.nextTick();
 
-    expect(copyText).toHaveBeenCalledWith(
+    expect(clipboardSpy).toHaveBeenCalledWith(
       JSON.stringify(
         {
           app: "KnimeUI",
@@ -95,7 +96,8 @@ describe("Error.vue", () => {
 
     expect(copyButton.attributes().class).not.toMatch("copied");
     copyButton.trigger("click");
-    await Vue.nextTick();
+
+    await flushPromises();
     expect(copyButton.attributes().class).toMatch("copied");
   });
 });

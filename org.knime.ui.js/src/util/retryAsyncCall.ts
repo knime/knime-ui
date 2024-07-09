@@ -1,5 +1,5 @@
 /* eslint-disable func-style */
-import sleep from "webapps-common/util/sleep";
+import { sleep } from "@knime/utils";
 
 const DEFAULT_RETRY_DELAY_MS = 0;
 const DEFAULT_RETRY_COUNT = 5;

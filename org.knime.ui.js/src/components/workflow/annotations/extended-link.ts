@@ -2,7 +2,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { getAttributes } from "@tiptap/core";
 import type { Editor } from "@tiptap/vue-3";
 import Link from "@tiptap/extension-link";
-import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 
 interface CustomLinkOptions {
   isEditing: boolean;
@@ -67,7 +67,7 @@ export const ControlClickLink = Link.extend({
   },
 
   addAttributes() {
-    const modifier = isMac() ? "⌘" : "Ctrl +";
+    const modifier = navigatorUtils.isMac() ? "⌘" : "Ctrl +";
 
     return {
       ...this.parent?.(),
@@ -92,7 +92,7 @@ export const ControlClickLink = Link.extend({
           const attrs = getAttributes(view.state, "link");
           const link = (event.target as HTMLElement)?.closest("a");
 
-          const metaOrCtrlKeyPressed = event[getMetaOrCtrlKey()];
+          const metaOrCtrlKeyPressed = event[navigatorUtils.getMetaOrCtrlKey()];
 
           if (metaOrCtrlKeyPressed && link && attrs.href) {
             window.open(attrs.href, attrs.target);

@@ -4,7 +4,7 @@ import { isDesktop } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import { getNextSelectedPort } from "@/util/portSelection";
-import { isMac } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 import type { UnionToShortcutRegistry } from "../types";
 import type { NodeOutputTabIdentifier } from "@/store/selection";
 
@@ -176,7 +176,7 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
   shuffleSelectedPort: {
     text: "Select (next) port",
     title: "Select (next) port of the selected node",
-    hotkey: [isMac() ? "Ctrl" : "Alt", "P"], // Alt+P yields a pi-symbol on mac
+    hotkey: [navigatorUtils.isMac() ? "Ctrl" : "Alt", "P"], // Alt+P yields a pi-symbol on mac
     group: "selectedNode",
     execute: ({ $store }) => {
       const node = $store.getters["selection/singleSelectedNode"];

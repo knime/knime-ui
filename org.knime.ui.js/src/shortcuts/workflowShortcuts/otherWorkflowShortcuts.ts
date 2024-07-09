@@ -1,6 +1,6 @@
 import OpenDialogIcon from "@/assets/configure-node.svg";
 
-import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
+import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 
 import { compatibility } from "@/environment";

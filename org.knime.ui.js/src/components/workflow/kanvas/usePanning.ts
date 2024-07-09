@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, type Ref } from "vue";
 import throttle from "raf-throttle";
 
-import { isMac } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
@@ -52,7 +52,7 @@ const usePanningWithSpace = (options: UsePanningWithSpaceOptions) => {
       store.dispatch("application/resetCanvasMode");
     }
 
-    const metaOrCtrlKey = isMac() ? "Meta" : "Control";
+    const metaOrCtrlKey = navigatorUtils.isMac() ? "Meta" : "Control";
 
     if (event.key === "Shift" || event.key === metaOrCtrlKey) {
       store.commit("canvas/setIsMoveLocked", false);

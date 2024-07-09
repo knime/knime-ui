@@ -1,6 +1,6 @@
 import { computed, type Ref } from "vue";
 
-import { isMac } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 import { useStore } from "@/composables/useStore";
 import { gridSize } from "@/style/shapes.mjs";
 import { useEventListener, type Fn } from "@vueuse/core";
@@ -17,7 +17,7 @@ export const useArrowKeyMoving = (options: UseArrowKeyMovingOptions) => {
   let cleanupKeyupHandler: Fn | null = null;
 
   const doMove = async (event: KeyboardEvent) => {
-    const modifiers = [isMac() ? "Meta" : "Control", "Shift"];
+    const modifiers = [navigatorUtils.isMac() ? "Meta" : "Control", "Shift"];
     if (modifiers.includes(event.key)) {
       await store.dispatch("workflow/moveObjects");
       if (cleanupKeyupHandler !== null) {

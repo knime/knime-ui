@@ -7,7 +7,7 @@ import Modal from "webapps-common/ui/components/Modal.vue";
 import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
 import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
-import { formatHotkeys, type Hotkey } from "webapps-common/util/formatHotkeys";
+import { hotkeys, type HotkeysNS } from "@knime/utils";
 
 import shortcuts from "@/shortcuts";
 import type {
@@ -35,7 +35,9 @@ const getText = (shortcut: FormattedShortcut) => {
 
 const allShortcuts = [...boundShortcuts, ...otherHotkeys].map((shortcut) => ({
   ...shortcut,
-  hotkeyText: shortcut.hotkey ? formatHotkeys(shortcut.hotkey as Hotkey[]) : "",
+  hotkeyText: shortcut.hotkey
+    ? hotkeys.formatHotkeys(shortcut.hotkey as HotkeysNS.Hotkey[])
+    : "",
   displayText: getText(shortcut as FormattedShortcut),
 })) as ShortcutItemData[];
 

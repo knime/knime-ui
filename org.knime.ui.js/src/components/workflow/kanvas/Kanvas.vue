@@ -10,8 +10,8 @@ import {
 } from "vue";
 import { debounce } from "lodash-es";
 
+import { navigatorUtils } from "@knime/utils";
 import useKeyPressedUntilMouseClick from "webapps-common/ui/composables/useKeyPressedUntilMouseClick";
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
 
 import { useStore } from "@/composables/useStore";
 import { $bus } from "@/plugins/event-bus";
@@ -110,7 +110,7 @@ const { doInitialSelection } = useArrowKeyNavigation({
 useKanvasContextMenu({ rootEl: rootEl as Ref<HTMLElement> });
 
 const startRectangleSelection = (event: PointerEvent) => {
-  const metaOrCtrlKey = getMetaOrCtrlKey();
+  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
 
   if (event.shiftKey || event[metaOrCtrlKey]) {
     $bus.emit("selection-pointerdown", event);

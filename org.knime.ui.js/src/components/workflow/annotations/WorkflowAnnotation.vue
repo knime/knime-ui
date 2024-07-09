@@ -9,7 +9,7 @@ import {
 } from "vue";
 import { onClickOutside, useMagicKeys } from "@vueuse/core";
 
-import { getMetaOrCtrlKey, isMac } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 import type {
   Bounds,
   WorkflowAnnotation,
@@ -145,7 +145,7 @@ onMounted(() => {
 });
 
 const onLeftClick = async (event: PointerEvent) => {
-  const metaOrCtrlKey = getMetaOrCtrlKey();
+  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   await store.dispatch("selection/toggleAnnotationSelection", {
@@ -156,7 +156,7 @@ const onLeftClick = async (event: PointerEvent) => {
 };
 
 const onContextMenu = (event: PointerEvent) => {
-  const metaOrCtrlKey = getMetaOrCtrlKey();
+  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   if (!isMultiselect && !isSelected.value) {
@@ -229,7 +229,9 @@ onClickOutside(transformControlsRef, saveContent, {
 });
 
 const keys = useMagicKeys();
-const saveAnnotationKeys = [isMac() ? keys["Cmd+Enter"] : keys["Ctrl+Enter"]];
+const saveAnnotationKeys = [
+  navigatorUtils.isMac() ? keys["Cmd+Enter"] : keys["Ctrl+Enter"],
+];
 
 watch(saveAnnotationKeys, ([wasPressed]) => {
   if (wasPressed && isEditing.value) {

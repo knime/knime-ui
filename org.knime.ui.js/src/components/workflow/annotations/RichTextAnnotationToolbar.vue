@@ -14,8 +14,7 @@ import type { EditorTools } from "webapps-common/ui/components/forms/RichTextEdi
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as $shapes from "@/style/shapes.mjs";
-import { type Hotkey, formatHotkeys } from "webapps-common/util/formatHotkeys";
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { hotkeys, type HotkeysNS, navigatorUtils } from "@knime/utils";
 
 import ColorIcon from "./ColorIcon.vue";
 import RichTextAnnotationToolbarDialog from "./RichTextAnnotationToolbarDialog.vue";
@@ -127,7 +126,9 @@ const secondaryToolsMenuItems = computed(() =>
   secondaryTools.value.map((tool) => ({
     text: tool.name,
     disabled: tool.disabled?.(),
-    hotkeyText: formatHotkeys((tool.hotkey as Hotkey[]) ?? []),
+    hotkeyText: hotkeys.formatHotkeys(
+      (tool.hotkey as HotkeysNS.Hotkey[]) ?? [],
+    ),
     icon: tool.icon,
     id: tool.id,
   })),
@@ -152,7 +153,7 @@ const headingPresets = computed(() => {
     {
       text: "Normal text",
       selected: !props.editor.isActive("heading"),
-      hotkeyText: formatHotkeys(["Ctrl", "Alt", "0"]),
+      hotkeyText: hotkeys.formatHotkeys(["Ctrl", "Alt", "0"]),
       onClick: () => {
         const currentLevel = getCurrentLevel();
         if (currentLevel) {
@@ -169,7 +170,7 @@ const headingPresets = computed(() => {
   const headings = levels.map((level) => ({
     text: `Heading ${level}`,
     selected: props.editor.isActive("heading", { level }),
-    hotkeyText: formatHotkeys(["Ctrl", "Alt", String(level)]),
+    hotkeyText: hotkeys.formatHotkeys(["Ctrl", "Alt", String(level)]),
     onClick: () => props.editor.chain().focus().setHeading({ level }).run(),
   }));
 
@@ -233,9 +234,9 @@ const changeBorderColor = (color: string) => {
 /**
  * Handles custom hotkeys that are not supported by tiptap.
  */
-const onKeyDown = (e: KeyboardEvent) => {
-  const ctrlPressed = e[getMetaOrCtrlKey()];
-  if (ctrlPressed && e.key === "k") {
+const onKeyDown = (event: KeyboardEvent) => {
+  const ctrlPressed = event[navigatorUtils.getMetaOrCtrlKey()];
+  if (ctrlPressed && event.key === "k") {
     createLink();
   }
 };
@@ -274,7 +275,7 @@ onUnmounted(() => {
         v-for="tool of customTools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
-        :title="`${tool.name} – ${formatHotkeys(tool.hotkey ?? [])}`"
+        :title="`${tool.name} – ${hotkeys.formatHotkeys(tool.hotkey ?? [])}`"
         :disabled="tool.disabled?.()"
         class="toolbar-button"
         @click.stop="tool.onClick"

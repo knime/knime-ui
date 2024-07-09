@@ -1,6 +1,6 @@
 import { computed } from "vue";
 
-import { capitalize } from "webapps-common/util/capitalize";
+import { capitalize } from "@knime/utils";
 
 import { useStore } from "@/composables/useStore";
 import {

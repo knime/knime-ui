@@ -1,5 +1,5 @@
 import { columnTypes } from "@knime/knime-ui-table";
-import { caseFormatter } from "webapps-common/util/capitalize";
+import { caseFormatter } from "@knime/utils";
 import { formatTime } from "@/util/time";
 import type { Store } from "vuex";
 import type { RootStoreState } from "@/store/types";
@@ -57,8 +57,8 @@ export const jobTypes = {
 export const jobFormatters = () => ({
   actions: (actions: unknown[]) =>
     actions?.length ? `${actions.length} Actions` : "-",
-  state: (state: unknown) =>
-    caseFormatter({ string: state, format: "snakeFormat", delimiter: null }),
+  state: (state: string) =>
+    caseFormatter({ string: state, format: "snakeFormat" }),
   nodeMessages: (messages: unknown[]) =>
     messages?.length ? `${messages.length} Messages` : "-",
   createdAt: (createdAt: number) => formatTime(createdAt),

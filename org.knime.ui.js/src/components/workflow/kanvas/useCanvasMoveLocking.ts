@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, onMounted } from "vue";
 import { useStore } from "vuex";
 
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 import { isInputElement } from "@/util/isInputElement";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 
@@ -14,7 +14,7 @@ export const useCanvasMoveLocking = () => {
       return;
     }
 
-    const metaOrCtrlKey = getMetaOrCtrlKey();
+    const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
 
     if ((event.shiftKey || event[metaOrCtrlKey]) && !isDragging.value) {
       store.commit("canvas/setIsMoveLocked", true);

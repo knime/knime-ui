@@ -2,7 +2,7 @@ import { onMounted, type ComputedRef, type Ref } from "vue";
 import throttle from "raf-throttle";
 import { useEventListener } from "@vueuse/core";
 
-import { getMetaOrCtrlKey } from "webapps-common/util/navigator";
+import { navigatorUtils } from "@knime/utils";
 
 import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
@@ -12,7 +12,7 @@ import { useArrowKeyMoving } from "./useArrowKeyMoving";
 import { useInitialSelection } from "./useInitialSelection";
 
 const isMovementEvent = (event: KeyboardEvent) => {
-  const metaOrCtrlKey = getMetaOrCtrlKey();
+  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
   return event.shiftKey && event[metaOrCtrlKey];
 };
 
@@ -43,7 +43,7 @@ export const useArrowKeyNavigation = (
     return (
       !hasSelectedObjects() &&
       !event.shiftKey &&
-      !event[getMetaOrCtrlKey()] &&
+      !event[navigatorUtils.getMetaOrCtrlKey()] &&
       store.state.selection.focusedObject === null
     );
   };
