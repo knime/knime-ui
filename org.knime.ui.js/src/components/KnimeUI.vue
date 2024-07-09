@@ -8,7 +8,7 @@ import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import Error from "@/components/application/Error.vue";
 import DownloadBanner from "@/components/application/DownloadBanner.vue";
-import SmartLoader from "@/components/common/SmartLoader.vue";
+import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
 import BlockUi from "@/components/application/BlockUi.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
@@ -38,7 +38,7 @@ export default defineComponent({
     Error,
     BlockUi,
     DownloadBanner,
-    SmartLoader,
+    GlobalLoader,
     CreateWorkflowModal,
     ToastStack,
     DynamicEnvRenderer,
@@ -190,7 +190,7 @@ export default defineComponent({
       class="download-banner"
     />
 
-    <SmartLoader v-bind="$store.state.application.globalLoader" />
+    <GlobalLoader v-bind="$store.state.application.globalLoader" />
 
     <UpdateBanner
       v-if="$route.meta.showUpdateBanner"

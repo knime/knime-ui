@@ -11,27 +11,11 @@ import {
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { type GlobalLoaderConfig } from "@/store/application/globalLoader";
 
-export interface SmartLoaderProps {
-  loading?: boolean;
-  text?: string;
-  /**
-   * determines the loader's appearance
-   */
-  displayMode?: "fullscreen" | "floating";
-  /**
-   * whether to use standard load without delay, or a staggered loader
-   */
-  loadingMode?: "stagger" | "normal";
-  /**
-   * number of stages to stagger for.
-   */
-  staggerStageCount?: 1 | 2;
-}
-
-const props = withDefaults(defineProps<SmartLoaderProps>(), {
+const props = withDefaults(defineProps<GlobalLoaderConfig>(), {
   loading: false,
-  text: "Loading…",
+  text: "",
   displayMode: "fullscreen",
   loadingMode: "stagger",
   staggerStageCount: 2,
@@ -60,7 +44,7 @@ const overlayStyles = computed<CSSProperties>(() => {
     // add the initial dimensions as css properties for later usage in the styles
     "--initial-width": "100%",
     "--initial-height": "100%",
-    "--smartloader-z-index": 99,
+    "--global-loader-z-index": 99,
   };
 });
 
@@ -169,17 +153,17 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  z-index: var(--smartloader-z-index);
+  z-index: var(--global-loader-z-index);
 
   & svg {
-    @mixin svg-icon-size var(--smartloader-icon-size, 50);
+    @mixin svg-icon-size var(--global-loader-icon-size, 50);
 
-    stroke: var(--smartloader-icon-color, var(--knime-masala));
+    stroke: var(--global-loader-icon-color, var(--knime-masala));
     animation: spin 2s linear infinite;
   }
 
   & .text {
-    color: var(--smartloader-text-color, var(--knime-masala));
+    color: var(--global-loader-text-color, var(--knime-masala));
     min-height: 16px;
     font-size: 16px;
   }
@@ -192,7 +176,7 @@ onMounted(() => {
   }
 
   &.fullscreen {
-    background: var(--smartloader-bg, rgba(255 255 255 / 70%));
+    background: var(--global-loader-bg, rgba(255 255 255 / 70%));
   }
 
   &.transparent {
@@ -201,7 +185,7 @@ onMounted(() => {
   }
 
   &.localized {
-    background: var(--smartloader-bg, rgba(255 255 255 / 70%));
+    background: var(--global-loader-bg, rgba(255 255 255 / 70%));
     position: absolute;
     min-height: var(--initial-height);
     width: var(--initial-width);
@@ -209,12 +193,12 @@ onMounted(() => {
   }
 
   &.floating {
-    background: var(--smartloader-bg, var(--knime-masala));
+    background: var(--global-loader-bg, var(--knime-masala));
     min-width: 150px;
     height: 60px;
     position: fixed;
-    left: var(--smartloader-floating-pos-left, 60px);
-    bottom: var(--smartloader-floating-pos-bottom, 60px);
+    left: var(--global-loader-floating-pos-left, 60px);
+    bottom: var(--global-loader-floating-pos-bottom, 60px);
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
@@ -224,13 +208,13 @@ onMounted(() => {
     box-shadow: var(--shadow-elevation-2);
 
     & .text {
-      color: var(--smartloader-text-color, var(--knime-white));
+      color: var(--global-loader-text-color, var(--knime-white));
     }
 
     & svg {
-      @mixin svg-icon-size var(--smartloader-icon-size, 20);
+      @mixin svg-icon-size var(--global-loader-icon-size, 20);
 
-      stroke: var(--smartloader-icon-color, var(--knime-white));
+      stroke: var(--global-loader-icon-color, var(--knime-white));
     }
   }
 }

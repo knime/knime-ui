@@ -1,8 +1,29 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { RootStoreState } from "../types";
 import type { ApplicationState } from "./index";
-import type { SmartLoaderProps } from "@/components/common/SmartLoader.vue";
-export type GlobalLoaderConfig = SmartLoaderProps;
+
+export interface GlobalLoaderConfig {
+  /**
+   * Loading state
+   */
+  loading?: boolean;
+  /**
+   * Text displayed below or besides the animated loading icon
+   */
+  text?: string;
+  /**
+   * determines the loader's appearance
+   */
+  displayMode?: "fullscreen" | "floating";
+  /**
+   * whether to use standard load without delay, or a staggered loader
+   */
+  loadingMode?: "stagger" | "normal";
+  /**
+   * number of stages to stagger for.
+   */
+  staggerStageCount?: 1 | 2;
+}
 
 interface State {
   globalLoader: GlobalLoaderConfig;
@@ -15,8 +36,6 @@ declare module "./index" {
 export const state = (): State => ({
   globalLoader: {
     loading: false,
-    text: "",
-    displayMode: "fullscreen",
   },
 });
 
