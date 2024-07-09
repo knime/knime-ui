@@ -3,11 +3,11 @@ import { mount } from "@vue/test-utils";
 
 import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
 
-import SmartLoader from "../SmartLoader.vue";
+import GlobalLoader from "../GlobalLoader.vue";
 
-describe("SmarLoader.vue", () => {
+describe("GlobalLoader.vue", () => {
   const doMount = ({ props = {} } = {}) => {
-    const wrapper = mount(SmartLoader, {
+    const wrapper = mount(GlobalLoader, {
       props,
     });
 
@@ -16,14 +16,14 @@ describe("SmarLoader.vue", () => {
 
   describe("display modes", () => {
     describe("fullscreen", () => {
-      const config = {
-        displayMode: "fullscreen",
-        loadingMode: "normal",
-      };
-
       it("should render correctly", async () => {
         const { wrapper } = doMount({
-          props: { loading: true, config, text: "RANDOMTEXT" },
+          props: {
+            loading: true,
+            displayMode: "fullscreen",
+            loadingMode: "normal",
+            text: "RANDOMTEXT",
+          },
         });
 
         await wrapper.vm.$nextTick();
@@ -36,77 +36,19 @@ describe("SmarLoader.vue", () => {
       });
     });
 
-    describe("localized", () => {
-      const config = {
-        displayMode: "localized",
-        loadingMode: "normal",
-      };
-
+    describe("floating", () => {
       it("should render correctly", async () => {
-        const { wrapper } = doMount({
-          props: { loading: true, config, text: "RANDOMTEXT" },
-        });
-
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.attributes("style")).toMatch("position: relative");
-        expect(wrapper.find(".loader").classes()).toContain("localized");
-        expect(wrapper.text()).toMatch("RANDOMTEXT");
-        expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
-      });
-
-      it("should use initialDimensions", async () => {
         const { wrapper } = doMount({
           props: {
             loading: true,
-            config: {
-              ...config,
-              initialDimensions: { width: "300px", height: "100px" },
-            },
+            displayMode: "floating",
+            loadingMode: "normal",
           },
         });
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.attributes("style")).toMatch("--initial-height: 100px");
-        expect(wrapper.attributes("style")).toMatch("--initial-width: 300px");
-      });
-    });
 
-    describe("transparent", () => {
-      const config = {
-        displayMode: "transparent",
-        loadingMode: "normal",
-      };
-
-      it("should render correctly", async () => {
-        const { wrapper } = doMount({
-          props: { loading: true, config },
-        });
-
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.attributes("style")).toMatch("position: fixed");
-        expect(wrapper.find(".loader").classes()).toContain("transparent");
-
-        expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
-        expect(wrapper.find(".text").exists()).toBe(false);
-      });
-    });
-
-    describe("toast", () => {
-      const config = {
-        displayMode: "toast",
-        loadingMode: "normal",
-      };
-
-      it("should render correctly", async () => {
-        const { wrapper } = doMount({
-          props: { loading: true, config },
-        });
-
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.find(".loader").classes()).toContain("toast");
+        expect(wrapper.find(".loader").classes()).toContain("floating");
         expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
         expect(wrapper.find(".text").exists()).toBe(true);
       });
@@ -115,14 +57,14 @@ describe("SmarLoader.vue", () => {
 
   describe("loading Modes", () => {
     describe("normal loading mode", () => {
-      const config = {
-        position: "fullscreen",
-        loadingMode: "normal",
-      };
-
       it("should render the loader without any delay", async () => {
         const { wrapper } = doMount({
-          props: { loading: true, config, text: "RANDOMTEXT" },
+          props: {
+            loading: true,
+            position: "fullscreen",
+            loadingMode: "normal",
+            text: "RANDOMTEXT",
+          },
         });
 
         await wrapper.vm.$nextTick();
@@ -133,18 +75,14 @@ describe("SmarLoader.vue", () => {
     });
 
     describe("stagger loading mode", () => {
-      const config = {
-        loadingMode: "stagger",
-      };
-
       it("should display the loader and its visual elements after a delay", async () => {
         vi.useFakeTimers();
 
         const { wrapper } = doMount({
-          props: { loading: true, config },
+          props: { loading: true, loadingMode: "stagger" },
         });
 
-        const advanceTime = async (timeMs) => {
+        const advanceTime = async (timeMs: number) => {
           vi.advanceTimersByTime(timeMs);
           await wrapper.vm.$nextTick();
         };

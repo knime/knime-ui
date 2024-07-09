@@ -23,7 +23,7 @@ describe("BlockUi", () => {
     const blocker = wrapper.find(".blocker");
 
     expect(blocker.isVisible()).toBe(false);
-    $bus.emit("desktop-api-function-block-ui", { block: true });
+    $bus.emit("block-ui");
     await nextTick();
     expect(blocker.isVisible()).toBe(true);
   });
@@ -33,10 +33,10 @@ describe("BlockUi", () => {
     const blocker = wrapper.find(".blocker");
 
     expect(blocker.isVisible()).toBe(false);
-    $bus.emit("desktop-api-function-block-ui", { block: true });
+    $bus.emit("block-ui");
     await nextTick();
     expect(blocker.isVisible()).toBe(true);
-    $bus.emit("desktop-api-function-block-ui", { block: false });
+    $bus.emit("unblock-ui");
     await nextTick();
     expect(blocker.isVisible()).toBe(false);
   });
@@ -46,14 +46,13 @@ describe("BlockUi", () => {
     const blocker = wrapper.find(".blocker");
 
     expect(blocker.isVisible()).toBe(false);
-    $bus.emit("desktop-api-function-block-ui", {
-      block: true,
+    $bus.emit("block-ui", {
       darkenBackground: true,
     });
     await nextTick();
     expect(blocker.isVisible()).toBe(true);
     expect(blocker.classes("darken-background")).toBe(true);
-    $bus.emit("desktop-api-function-block-ui", { block: false });
+    $bus.emit("unblock-ui");
     await nextTick();
     expect(blocker.isVisible()).toBe(false);
     expect(blocker.classes("darken-background")).toBe(false);

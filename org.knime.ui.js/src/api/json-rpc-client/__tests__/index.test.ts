@@ -5,6 +5,16 @@ import { mockVuexStore, mockedObject } from "@/test/utils";
 import { serverEventHandler } from "../server-events";
 import { getToastsProvider } from "@/plugins/toasts";
 
+import { $bus } from "@/plugins/event-bus";
+import { flushPromises } from "@vue/test-utils";
+import { nextTick } from "vue";
+
+vi.mock("@/plugins/event-bus", () => ({
+  $bus: {
+    emit: vi.fn(),
+  },
+}));
+
 vi.mock("../server-events", () => ({
   getRegisteredEventHandler: () => {},
   registerEventHandler: () => {},
@@ -34,14 +44,7 @@ vi.mock("@open-rpc/client-js", async () => {
 });
 
 describe("rpc client initialization", () => {
-  const updateGlobalLoader = vi.fn();
-  const store = mockVuexStore({
-    application: {
-      actions: {
-        updateGlobalLoader,
-      },
-    },
-  });
+  const store = mockVuexStore({});
 
   beforeEach(() => {
     vi.resetModules();
@@ -112,6 +115,7 @@ describe("rpc client initialization", () => {
 
     it("should attach listeners for connection loss", async () => {
       const spy = vi.spyOn(window, "addEventListener");
+      const busEmitSpy = vi.spyOn($bus, "emit");
       const { initJSONRPCClient } = await import("../index");
 
       await initJSONRPCClient(
@@ -147,10 +151,11 @@ describe("rpc client initialization", () => {
         }),
       );
 
-      expect(updateGlobalLoader).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ loading: true }),
-      );
+      await flushPromises();
+      await nextTick();
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(busEmitSpy).toHaveBeenCalledWith("block-ui");
 
       window.dispatchEvent(new Event("online"));
 
@@ -159,6 +164,8 @@ describe("rpc client initialization", () => {
           headline: "Connection restored",
         }),
       );
+
+      expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
     });
   });
 });

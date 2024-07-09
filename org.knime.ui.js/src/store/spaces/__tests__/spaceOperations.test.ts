@@ -10,6 +10,9 @@ import {
   createSpaceProvider,
   createProject,
 } from "@/test/factories";
+import { $bus } from "@/plugins/event-bus";
+
+const busEmitSpy = vi.spyOn($bus, "emit");
 
 const mockedAPI = deepMocked(API);
 
@@ -140,7 +143,7 @@ describe("spaces::spaceOperations", () => {
 
   describe("createWorkflow", () => {
     it("should create a new workflow", async () => {
-      const { store, dispatchSpy } = loadStore();
+      const { store } = loadStore();
       mockedAPI.space.createWorkflow.mockResolvedValue({
         id: "NewFile",
         type: "Workflow",
@@ -158,10 +161,9 @@ describe("spaces::spaceOperations", () => {
         projectId: "project2",
         workflowName,
       });
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/updateGlobalLoader",
-        { loading: true, config: { displayMode: "transparent" } },
-      );
+
+      expect(busEmitSpy).toHaveBeenCalledWith("block-ui");
+
       expect(mockedAPI.space.createWorkflow).toHaveBeenCalledWith(
         expect.objectContaining({
           spaceProviderId: "local",
@@ -173,10 +175,7 @@ describe("spaces::spaceOperations", () => {
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
         expect.objectContaining({ itemId: "level2" }),
       );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/updateGlobalLoader",
-        { loading: false },
-      );
+      expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
     });
   });
 
@@ -207,7 +206,7 @@ describe("spaces::spaceOperations", () => {
 
   describe("openProject", () => {
     it("should open workflow", async () => {
-      const { store, dispatchSpy } = loadStore();
+      const { store } = loadStore();
 
       store.state.spaces.projectPath.project2 = {
         spaceProviderId: "local",
@@ -223,10 +222,7 @@ describe("spaces::spaceOperations", () => {
         itemId: "foobar",
       });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/updateGlobalLoader",
-        { loading: true, config: { displayMode: "transparent" } },
-      );
+      expect(busEmitSpy).toHaveBeenCalledWith("block-ui");
 
       expect(mockedAPI.desktop.openProject).toHaveBeenCalledWith({
         spaceId: "local",
@@ -234,10 +230,7 @@ describe("spaces::spaceOperations", () => {
         itemId: "foobar",
       });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/updateGlobalLoader",
-        { loading: false },
-      );
+      expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
     });
 
     it("should fail to open workflow", async () => {

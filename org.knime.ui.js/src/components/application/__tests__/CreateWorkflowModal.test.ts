@@ -10,6 +10,9 @@ import * as spacesStore from "@/store/spaces";
 
 import CreateWorkflowModal from "../CreateWorkflowModal.vue";
 import { API } from "@api";
+import { $bus } from "@/plugins/event-bus";
+
+const busEmitSpy = vi.spyOn($bus, "emit");
 
 const mockedAPI = deepMocked(API);
 
@@ -46,9 +49,6 @@ describe("CreateWorkflowModal.vue", () => {
       application: {
         state: {
           openProjects: [],
-        },
-        actions: {
-          updateGlobalLoader: vi.fn(),
         },
       },
       spaces: spacesStore,
@@ -132,10 +132,7 @@ describe("CreateWorkflowModal.vue", () => {
         workflowName: newName,
       });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/updateGlobalLoader",
-        expect.objectContaining({ loading: false }),
-      );
+      expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
 
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
         providerId: "provider",
