@@ -2,10 +2,10 @@
 import { computed, ref } from "vue";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import FilterIcon from "webapps-common/ui/assets/img/icons/filter.svg";
-import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
-import ListIconCheck from "webapps-common/ui/assets/img/icons/unordered-list.svg";
-import ListIcon from "webapps-common/ui/assets/img/icons/view-cards.svg";
+import FilterIcon from "@knime/styles/img/icons/filter.svg";
+import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
+import ListIconCheck from "@knime/styles/img/icons/unordered-list.svg";
+import ListIcon from "@knime/styles/img/icons/view-cards.svg";
 
 import { API } from "@api";
 import { useStore } from "@/composables/useStore";

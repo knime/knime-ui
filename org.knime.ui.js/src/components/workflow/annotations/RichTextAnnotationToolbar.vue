@@ -6,9 +6,9 @@ import type { Level } from "@tiptap/extension-heading";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
-import MoreActionsIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import LinkIcon from "webapps-common/ui/assets/img/icons/link.svg";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+import MoreActionsIcon from "@knime/styles/img/icons/menu-options.svg";
+import LinkIcon from "@knime/styles/img/icons/link.svg";
 import type { EditorTools } from "webapps-common/ui/components/forms/RichTextEditor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";

@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 import { deepMocked } from "@/test/utils";
 
 import { API } from "@api";
-import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
+import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 import SearchResultsInfo from "../SearchResultsInfo.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 

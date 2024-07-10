@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import CircleStopIcon from "webapps-common/ui/assets/img/icons/circle-stop.svg";
+import CircleStopIcon from "@knime/styles/img/icons/circle-stop.svg";
 import { annotationColorPresets } from "@/style/colors.mjs";
 
 interface Props {

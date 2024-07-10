@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import GlobalLoader from "../GlobalLoader.vue";
 

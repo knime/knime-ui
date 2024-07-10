@@ -1,5 +1,5 @@
 <script>
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import ExpandTransition from "webapps-common/ui/components/transitions/ExpandTransition.vue";
 

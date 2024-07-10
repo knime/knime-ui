@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
+import SwitchIcon from "@knime/styles/img/icons/arrow-prev.svg";
 
 interface Props {
   expanded?: boolean;

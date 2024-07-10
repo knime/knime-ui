@@ -1,5 +1,5 @@
 <script>
-import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
+import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 
 /**
  * Node ghost with a plus ([ + ]) that shows up when user drags a port to some free space.

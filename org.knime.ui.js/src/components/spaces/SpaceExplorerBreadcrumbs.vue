@@ -2,7 +2,7 @@
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { computed } from "vue";
 
-import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
+import HouseIcon from "@knime/styles/img/icons/house.svg";
 import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
 
 interface Props {

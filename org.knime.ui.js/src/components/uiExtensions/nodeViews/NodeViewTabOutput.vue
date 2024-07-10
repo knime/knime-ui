@@ -2,7 +2,7 @@
 import { computed, watch } from "vue";
 
 import type { Alert } from "@knime/ui-extension-service";
-import OpenInNewWindowIcon from "webapps-common/ui/assets/img/icons/open-in-new-window.svg";
+import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import type { NativeNode } from "@/api/gateway-api/generated-api";

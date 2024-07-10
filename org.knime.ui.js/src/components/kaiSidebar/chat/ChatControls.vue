@@ -2,8 +2,8 @@
 import { computed } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import SendIcon from "webapps-common/ui/assets/img/icons/paper-flier.svg";
-import AbortIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
+import AbortIcon from "@knime/styles/img/icons/close.svg";
 
 const emit = defineEmits(["sendMessage", "abort"]);
 

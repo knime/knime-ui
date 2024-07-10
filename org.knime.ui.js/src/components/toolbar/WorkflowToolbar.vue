@@ -1,7 +1,7 @@
 <script lang="ts">
 import { mapState, mapGetters } from "vuex";
 
-import ArrowMoveIcon from "webapps-common/ui/assets/img/icons/arrow-move.svg";
+import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import SelectionModeIcon from "@/assets/selection-mode.svg";

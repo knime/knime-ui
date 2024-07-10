@@ -2,7 +2,7 @@
 import { computed, h } from "vue";
 
 import Label from "webapps-common/ui/components/forms/Label.vue";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
 import * as nodeBackgroundColors from "webapps-common/ui/colors/nodeColors.mjs";

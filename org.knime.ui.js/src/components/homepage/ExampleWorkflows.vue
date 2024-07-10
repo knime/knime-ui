@@ -2,8 +2,8 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
-import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
+import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import { useStore } from "@/composables/useStore";

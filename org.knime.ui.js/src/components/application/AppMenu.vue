@@ -2,15 +2,15 @@
 import { API } from "@/api";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 
-import MenuIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import ExtensionsIcon from "webapps-common/ui/assets/img/icons/extension.svg";
-import SwitchIcon from "webapps-common/ui/assets/img/icons/switch.svg";
-import PerspectiveSwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
-import LensIcon from "webapps-common/ui/assets/img/icons/lens.svg";
-import LensPlusIcon from "webapps-common/ui/assets/img/icons/lense-plus.svg";
-import LensMinusIcon from "webapps-common/ui/assets/img/icons/lense-minus.svg";
-import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
+import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import ExtensionsIcon from "@knime/styles/img/icons/extension.svg";
+import SwitchIcon from "@knime/styles/img/icons/switch.svg";
+import PerspectiveSwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
+import LensIcon from "@knime/styles/img/icons/lens.svg";
+import LensPlusIcon from "@knime/styles/img/icons/lense-plus.svg";
+import LensMinusIcon from "@knime/styles/img/icons/lense-minus.svg";
+import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
 
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import { computed } from "vue";

@@ -2,8 +2,8 @@
 import { computed } from "vue";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
-import ArrowNextIcon from "webapps-common/ui/assets/img/icons/arrow-next.svg";
+import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
+import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";

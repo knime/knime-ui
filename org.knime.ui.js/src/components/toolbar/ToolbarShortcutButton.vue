@@ -2,7 +2,7 @@
 import { useShortcuts } from "@/plugins/shortcuts";
 import { computed } from "vue";
 import type { ShortcutName } from "@/shortcuts";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";

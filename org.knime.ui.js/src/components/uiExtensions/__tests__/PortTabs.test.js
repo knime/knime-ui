@@ -2,7 +2,7 @@ import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import FlowVarTabIcon from "webapps-common/ui/assets/img/icons/expose-flow-variables.svg";
+import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 import TabBar from "webapps-common/ui/components/TabBar.vue";
 
 import portIcon from "@/components/common/PortIconRenderer";

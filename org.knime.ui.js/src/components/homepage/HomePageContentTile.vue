@@ -3,8 +3,8 @@ import { onMounted, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
 import Pill from "webapps-common/ui/components/Pill.vue";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 

@@ -1,10 +1,10 @@
-import CloudKnimeIcon from "webapps-common/ui/assets/img/icons/cloud-knime.svg";
-import ServerRacksIcon from "webapps-common/ui/assets/img/icons/server-racks.svg";
-import ComputerDesktopIcon from "webapps-common/ui/assets/img/icons/local-space.svg";
-import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
-import UsersIcon from "webapps-common/ui/assets/img/icons/users.svg";
-import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
-import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
+import CloudKnimeIcon from "@knime/styles/img/icons/cloud-knime.svg";
+import ServerRacksIcon from "@knime/styles/img/icons/server-racks.svg";
+import ComputerDesktopIcon from "@knime/styles/img/icons/local-space.svg";
+import UserIcon from "@knime/styles/img/icons/user.svg";
+import UsersIcon from "@knime/styles/img/icons/users.svg";
+import CubeIcon from "@knime/styles/img/icons/cube.svg";
+import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 

@@ -1,10 +1,10 @@
 <script>
 import Button from "webapps-common/ui/components/Button.vue";
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import CopyIcon from "webapps-common/ui/assets/img/icons/copy.svg";
-import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
-import WarningIcon from "webapps-common/ui/assets/img/icons/circle-warning.svg";
-import SwitchIcon from "webapps-common/ui/assets/img/icons/perspective-switch.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import CopyIcon from "@knime/styles/img/icons/copy.svg";
+import CheckIcon from "@knime/styles/img/icons/check.svg";
+import WarningIcon from "@knime/styles/img/icons/circle-warning.svg";
+import SwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 /**

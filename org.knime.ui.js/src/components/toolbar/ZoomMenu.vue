@@ -1,6 +1,6 @@
 <script>
 import { mapState } from "vuex";
-import DropdownIcon from "webapps-common/ui/assets/img/icons/arrow-dropdown.svg";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 
 /**

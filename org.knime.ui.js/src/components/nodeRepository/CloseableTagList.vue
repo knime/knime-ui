@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import ClosePopoverIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
+import ClosePopoverIcon from "@knime/styles/img/icons/arrow-prev.svg";
 import SelectableTagList from "@/components/common/SelectableTagList.vue";
 import { computed, ref } from "vue";
 import { onClickOutside } from "@vueuse/core";

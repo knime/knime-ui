@@ -2,7 +2,7 @@ import { expect, describe, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
+import SwitchIcon from "@knime/styles/img/icons/arrow-prev.svg";
 
 import * as panelStoreConfig from "@/store/panel";
 import LeftCollapsiblePanel from "../LeftCollapsiblePanel.vue";

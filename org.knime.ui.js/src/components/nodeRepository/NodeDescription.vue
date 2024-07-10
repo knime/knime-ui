@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { toRefs, ref, computed, watch } from "vue";
 
-import KNIMETriangleIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
-import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
+import KNIMETriangleIcon from "@knime/styles/img/KNIME_Triangle.svg";
+import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
 import Description from "webapps-common/ui/components/Description.vue";
 import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";

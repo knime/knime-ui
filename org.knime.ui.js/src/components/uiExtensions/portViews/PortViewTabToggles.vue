@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRef, onMounted } from "vue";
 
-import OpenInNewWindowIcon from "webapps-common/ui/assets/img/icons/open-in-new-window.svg";
+import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import Button from "webapps-common/ui/components/Button.vue";
 

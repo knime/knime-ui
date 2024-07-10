@@ -2,9 +2,9 @@
 import { computed } from "vue";
 
 import Pill from "webapps-common/ui/components/Pill.vue";
-import WarningIcon from "webapps-common/ui/assets/img/icons/sign-warning.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/circle-close.svg";
-import JoyIcon from "webapps-common/ui/assets/img/icons/joy.svg";
+import WarningIcon from "@knime/styles/img/icons/sign-warning.svg";
+import CloseIcon from "@knime/styles/img/icons/circle-close.svg";
+import JoyIcon from "@knime/styles/img/icons/joy.svg";
 
 import type { WorkflowMonitorMessage as WorkflowMonitorMessageType } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";

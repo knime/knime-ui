@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { API } from "@api";
-import FilterCheckIcon from "webapps-common/ui/assets/img/icons/filter-check.svg";
-import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
+import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 import MoreNodesIllustration from "@/assets/more-nodes-illustration.svg";

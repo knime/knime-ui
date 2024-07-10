@@ -9,7 +9,7 @@ import {
   onMounted,
 } from "vue";
 
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { type GlobalLoaderConfig } from "@/store/application/globalLoader";
 

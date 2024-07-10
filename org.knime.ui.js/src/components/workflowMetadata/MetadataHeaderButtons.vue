@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import PencilIcon from "webapps-common/ui/assets/img/icons/pencil.svg";
-import CloseIcon from "webapps-common/ui/assets/img/icons/close.svg";
-import CheckIcon from "webapps-common/ui/assets/img/icons/check.svg";
-import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
+import PencilIcon from "@knime/styles/img/icons/pencil.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+import CheckIcon from "@knime/styles/img/icons/check.svg";
+import CogIcon from "@knime/styles/img/icons/cog.svg";
 
 interface Props {
   isEditing: boolean;

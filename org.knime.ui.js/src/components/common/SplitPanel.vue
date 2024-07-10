@@ -3,7 +3,7 @@
 // which can be limited. Click to the splitter will hide the secondary panel.
 import { computed, ref, toRef, watch } from "vue";
 import Splitter from "./Splitter.vue";
-import SwitchIcon from "webapps-common/ui/assets/img/icons/arrow-prev.svg";
+import SwitchIcon from "@knime/styles/img/icons/arrow-prev.svg";
 
 interface Props {
   direction?: "left" | "right" | "down" | "up";

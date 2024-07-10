@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import MenuIcon from "webapps-common/ui/assets/img/icons/menu-options.svg";
-import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 

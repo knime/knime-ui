@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Button from "webapps-common/ui/components/Button.vue";
-import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
+import PlayIcon from "@knime/styles/img/icons/play.svg";
 
 type Props = {
   canExecute: boolean;

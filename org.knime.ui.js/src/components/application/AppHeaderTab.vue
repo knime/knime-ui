@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
-import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
-import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
-import CloudWorkflowIcon from "webapps-common/ui/assets/img/icons/cloud-workflow.svg";
-import CloudComponentIcon from "webapps-common/ui/assets/img/icons/cloud-component.svg";
+import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
+import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
+import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
+import CloudComponentIcon from "@knime/styles/img/icons/cloud-component.svg";
 import CloseButton from "@/components/common/CloseButton.vue";
 import { SpaceProviderNS } from "@/api/custom-types";
 

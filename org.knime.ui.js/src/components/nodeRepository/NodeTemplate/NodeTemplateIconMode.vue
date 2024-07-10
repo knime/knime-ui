@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ExtensionCommunityIcon from "webapps-common/ui/assets/img/icons/extension-community.svg";
+import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";

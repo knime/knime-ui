@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from "vue";
 import { useElementHover } from "@vueuse/core";
-import UserIcon from "webapps-common/ui/assets/img/icons/user.svg";
-import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+import UserIcon from "@knime/styles/img/icons/user.svg";
+import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import type { NodeWithExtensionInfo, References } from "../../types";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import NodeIcon from "webapps-common/ui/assets/img/icons/node.svg";
+import NodeIcon from "@knime/styles/img/icons/node.svg";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import { useNodeDescriptionPanel } from "../../useNodeDescriptionPanel";

@@ -4,11 +4,11 @@ import type { Link } from "@/api/gateway-api/generated-api";
 
 import LinkList from "webapps-common/ui/components/LinkList.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import InputField from "webapps-common/ui/components/forms/InputField.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import Button from "webapps-common/ui/components/Button.vue";
-import PlusIcon from "webapps-common/ui/assets/img/icons/plus.svg";
+import PlusIcon from "@knime/styles/img/icons/plus.svg";
 import { buildUrlRegex } from "@/util/regex";
 
 const URL_REGEX = buildUrlRegex(true);

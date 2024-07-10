@@ -3,13 +3,13 @@ import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { onClickOutside } from "@vueuse/core";
 
-import PlusIcon from "webapps-common/ui/assets/img/icons/plus-small.svg";
+import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import Carousel from "webapps-common/ui/components/Carousel.vue";
-import ReloadIcon from "webapps-common/ui/assets/img/icons/reload.svg";
-import CodeHtmlIcon from "webapps-common/ui/assets/img/icons/code-html.svg";
-import CogIcon from "webapps-common/ui/assets/img/icons/cog.svg";
-import HouseIcon from "webapps-common/ui/assets/img/icons/house.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
+import CogIcon from "@knime/styles/img/icons/cog.svg";
+import HouseIcon from "@knime/styles/img/icons/house.svg";
 
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
 

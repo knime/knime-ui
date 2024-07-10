@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
-import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import BaseButton from "webapps-common/ui/components/BaseButton.vue";
 import type { References } from "../../types";
 

@@ -2,10 +2,10 @@ import { expect, describe, beforeEach, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 
-import ComponentIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
-import MetaNodeIcon from "webapps-common/ui/assets/img/icons/metanode.svg";
-import LinkedComponentIcon from "webapps-common/ui/assets/img/icons/linked-component.svg";
-import LinkedMetanodeIcon from "webapps-common/ui/assets/img/icons/linked-metanode.svg";
+import ComponentIcon from "@knime/styles/img/icons/node-workflow.svg";
+import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
+import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
+import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 

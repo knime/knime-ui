@@ -2,7 +2,7 @@
 import IconBase64UploadButton from "@/components/common/IconBase64UploadButton.vue";
 import Label from "webapps-common/ui/components/forms/Label.vue";
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 interface Props {
   modelValue: string | null;

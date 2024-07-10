@@ -1,13 +1,13 @@
 /* eslint-disable no-undefined */
 import type { Dispatch } from "vuex";
-import CloudUploadIcon from "webapps-common/ui/assets/img/icons/cloud-upload.svg";
-import CloudLoginIcon from "webapps-common/ui/assets/img/icons/cloud-login.svg";
-import CloudDownloadIcon from "webapps-common/ui/assets/img/icons/cloud-download.svg";
-import LinkExternal from "webapps-common/ui/assets/img/icons/link-external.svg";
-import KeyIcon from "webapps-common/ui/assets/img/icons/key.svg";
-import DeploymentIcon from "webapps-common/ui/assets/img/icons/deployment.svg";
-import CirclePlayIcon from "webapps-common/ui/assets/img/icons/circle-play.svg";
-import MoveToSpaceIcon from "webapps-common/ui/assets/img/icons/move-from-space-to-space.svg";
+import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
+import CloudLoginIcon from "@knime/styles/img/icons/cloud-login.svg";
+import CloudDownloadIcon from "@knime/styles/img/icons/cloud-download.svg";
+import LinkExternal from "@knime/styles/img/icons/link-external.svg";
+import KeyIcon from "@knime/styles/img/icons/key.svg";
+import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
+import CirclePlayIcon from "@knime/styles/img/icons/circle-play.svg";
+import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import { SpaceProviderNS } from "@/api/custom-types";

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import StreamingIcon from "webapps-common/ui/assets/img/icons/nodes-connect.svg";
+import StreamingIcon from "@knime/styles/img/icons/nodes-connect.svg";
 </script>
 
 <template>

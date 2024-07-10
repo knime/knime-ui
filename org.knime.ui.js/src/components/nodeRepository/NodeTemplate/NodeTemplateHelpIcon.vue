@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import CircleHelp from "webapps-common/ui/assets/img/icons/circle-help.svg";
+import CircleHelp from "@knime/styles/img/icons/circle-help.svg";
 
 type Props = {
   isSelected: boolean;

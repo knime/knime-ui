@@ -3,11 +3,11 @@ import { ref, computed, watch, toRef } from "vue";
 import { useRouter } from "vue-router";
 
 import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import FolderIcon from "webapps-common/ui/assets/img/icons/folder.svg";
-import FileTextIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
-import WorkflowIcon from "webapps-common/ui/assets/img/icons/workflow.svg";
-import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
-import WorkflowNodeStackIcon from "webapps-common/ui/assets/img/icons/workflow-node-stack.svg";
+import FolderIcon from "@knime/styles/img/icons/folder.svg";
+import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
+import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
+import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
+import WorkflowNodeStackIcon from "@knime/styles/img/icons/workflow-node-stack.svg";
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
 import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
 import { useToasts } from "webapps-common/ui/services/toast";

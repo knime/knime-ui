@@ -6,7 +6,7 @@ import * as panelStore from "@/store/panel";
 import * as applicationStore from "@/store/application";
 import * as nodeRepositoryStore from "@/store/nodeRepository";
 
-import PlusIcon from "webapps-common/ui/assets/img/icons/node-stack.svg";
+import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 import Metainfo from "@/assets/metainfo.svg";
 
 import Sidebar from "../Sidebar.vue";

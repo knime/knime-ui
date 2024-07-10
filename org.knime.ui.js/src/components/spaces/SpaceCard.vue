@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import CubeIcon from "webapps-common/ui/assets/img/icons/cube.svg";
-import PrivateSpaceIcon from "webapps-common/ui/assets/img/icons/private-space.svg";
+import CubeIcon from "@knime/styles/img/icons/cube.svg";
+import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 
 import Card from "@/components/common/Card.vue";
 import CardHeader from "@/components/common/CardHeader.vue";

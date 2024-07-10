@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LoadingIcon from "webapps-common/ui/assets/img/icons/reload.svg";
+import LoadingIcon from "@knime/styles/img/icons/reload.svg";
 
 interface Props {
   status?: string;

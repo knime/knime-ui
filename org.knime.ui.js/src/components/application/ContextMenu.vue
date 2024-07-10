@@ -4,7 +4,7 @@ import { mapGetters, mapState } from "vuex";
 
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import FlowVariableIcon from "webapps-common/ui/assets/img/icons/expose-flow-variables.svg";
+import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import { API } from "@api";
 import type { XY } from "@/api/gateway-api/generated-api";

@@ -2,8 +2,8 @@ import { expect, describe, it } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import ArrowDownIcon from "webapps-common/ui/assets/img/icons/arrow-down.svg";
-import CircleInfoIcon from "webapps-common/ui/assets/img/icons/circle-info.svg";
+import ArrowDownIcon from "@knime/styles/img/icons/arrow-down.svg";
+import CircleInfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import WorkflowEmpty from "../WorkflowEmpty.vue";

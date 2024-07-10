@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PlayIcon from "webapps-common/ui/assets/img/icons/play.svg";
+import PlayIcon from "@knime/styles/img/icons/play.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 
 type Props = {

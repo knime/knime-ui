@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import ExtensionIcon from "webapps-common/ui/assets/img/icons/extension.svg";
-import LinkIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
+import LinkIcon from "@knime/styles/img/icons/link-external.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 import KaiCollapser from "./KaiCollapser.vue";
 import type { ExtensionWithNodes } from "../../types";

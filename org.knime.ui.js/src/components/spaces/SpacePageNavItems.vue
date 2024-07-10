@@ -4,7 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
-import LeaveIcon from "webapps-common/ui/assets/img/icons/leave.svg";
+import LeaveIcon from "@knime/styles/img/icons/leave.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceGroup } from "@/api/gateway-api/generated-api";

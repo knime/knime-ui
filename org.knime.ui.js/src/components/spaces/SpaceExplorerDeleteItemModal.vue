@@ -2,7 +2,7 @@
 import type { SVGAttributes, FunctionalComponent } from "vue";
 
 import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
-import TrashIcon from "webapps-common/ui/assets/img/icons/trash.svg";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import Button from "webapps-common/ui/components/Button.vue";
 import Modal from "webapps-common/ui/components/Modal.vue";
 

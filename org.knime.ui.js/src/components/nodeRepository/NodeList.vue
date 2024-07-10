@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import Button from "webapps-common/ui/components/Button.vue";
-import CircleArrowIcon from "webapps-common/ui/assets/img/icons/circle-arrow-right.svg";
+import CircleArrowIcon from "@knime/styles/img/icons/circle-arrow-right.svg";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { ref, watch, computed, toRef } from "vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";

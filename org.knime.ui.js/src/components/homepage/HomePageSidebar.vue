@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
-import TimeIcon from "webapps-common/ui/assets/img/icons/time.svg";
+import TimeIcon from "@knime/styles/img/icons/time.svg";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import {

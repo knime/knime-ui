@@ -4,8 +4,8 @@ import { useStore } from "vuex";
 import { groupBy } from "lodash-es";
 
 import Modal from "webapps-common/ui/components/Modal.vue";
-import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
-import ArrowRightIcon from "webapps-common/ui/assets/img/icons/arrow-right.svg";
+import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
+import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 import { hotkeys, type HotkeysNS } from "@knime/utils";
 

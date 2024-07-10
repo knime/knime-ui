@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import Button from "webapps-common/ui/components/Button.vue";
-import LinkExternalIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
 import { useStore } from "@/composables/useStore";
 

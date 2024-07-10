@@ -2,14 +2,14 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import Steps123Icon from "webapps-common/ui/assets/img/icons/steps-1-3.svg";
-import HelpIcon from "webapps-common/ui/assets/img/icons/circle-help.svg";
-import ForumIcon from "webapps-common/ui/assets/img/icons/forum.svg";
-import GettingStartedIcon from "webapps-common/ui/assets/img/icons/rocket.svg";
-import CheatSheetsIcon from "webapps-common/ui/assets/img/icons/speedo.svg";
-import DocsIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
-import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
-import LinkExteranlIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
+import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
+import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import ForumIcon from "@knime/styles/img/icons/forum.svg";
+import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
+import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
+import DocsIcon from "@knime/styles/img/icons/file-text.svg";
+import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
+import LinkExteranlIcon from "@knime/styles/img/icons/link-external.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
 import InfoIcon from "@/assets/info.svg";

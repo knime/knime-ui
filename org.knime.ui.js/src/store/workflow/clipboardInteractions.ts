@@ -11,7 +11,7 @@ import { getProjectAndWorkflowIds } from "./util";
 
 import { uniqueId } from "lodash-es";
 import { getToastsProvider } from "@/plugins/toasts";
-import CopyIcon from "webapps-common/ui/assets/img/icons/copy.svg";
+import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import { shallowRef } from "vue";
 const $toast = getToastsProvider();
 

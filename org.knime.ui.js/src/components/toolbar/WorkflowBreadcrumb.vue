@@ -1,10 +1,10 @@
 <script>
 import { mapState } from "vuex";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-import NodeWorkflowIcon from "webapps-common/ui/assets/img/icons/node-workflow.svg";
-import MetaNodeIcon from "webapps-common/ui/assets/img/icons/metanode.svg";
-import LinkedComponentIcon from "webapps-common/ui/assets/img/icons/linked-component.svg";
-import LinkedMetanodeIcon from "webapps-common/ui/assets/img/icons/linked-metanode.svg";
+import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
+import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
+import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
+import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 /**

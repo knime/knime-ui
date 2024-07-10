@@ -1,11 +1,11 @@
-import ExecuteAllIcon from "webapps-common/ui/assets/img/icons/execute-all.svg";
-import CancelAllIcon from "webapps-common/ui/assets/img/icons/cancel-execution.svg";
-import ResetAllIcon from "webapps-common/ui/assets/img/icons/reset-all.svg";
+import ExecuteAllIcon from "@knime/styles/img/icons/execute-all.svg";
+import CancelAllIcon from "@knime/styles/img/icons/cancel-execution.svg";
+import ResetAllIcon from "@knime/styles/img/icons/reset-all.svg";
 import OpenViewIcon from "@/assets/open-view.svg";
 
-import ExecuteSelectedIcon from "webapps-common/ui/assets/img/icons/selected-execute.svg";
-import CancelSelectedIcon from "webapps-common/ui/assets/img/icons/selected-cancel.svg";
-import ResetSelectedIcon from "webapps-common/ui/assets/img/icons/selected-reset.svg";
+import ExecuteSelectedIcon from "@knime/styles/img/icons/selected-execute.svg";
+import CancelSelectedIcon from "@knime/styles/img/icons/selected-cancel.svg";
+import ResetSelectedIcon from "@knime/styles/img/icons/selected-reset.svg";
 
 import ResumeLoopIcon from "@/assets/resume-execution.svg";
 import PauseLoopIcon from "@/assets/pause-execution.svg";

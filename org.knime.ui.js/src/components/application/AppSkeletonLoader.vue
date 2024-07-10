@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import KnimeIcon from "webapps-common/ui/assets/img/KNIME_Triangle.svg";
+import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import { useStore } from "@/composables/useStore";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { isBrowser } from "@/environment";

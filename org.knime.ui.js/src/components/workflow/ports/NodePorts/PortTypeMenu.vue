@@ -3,7 +3,7 @@ import { defineComponent, type PropType } from "vue";
 import { mapState } from "vuex";
 
 import MenuItems from "webapps-common/ui/components/MenuItems.vue";
-import ReturnIcon from "webapps-common/ui/assets/img/icons/arrow-back.svg";
+import ReturnIcon from "@knime/styles/img/icons/arrow-back.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { NodePortGroups } from "@/api/custom-types";
