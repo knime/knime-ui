@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */

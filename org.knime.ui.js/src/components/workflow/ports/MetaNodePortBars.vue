@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 /**
  * A pair of MetaNodePortBar items. (Or maybe one or none, depending on whether or not the metanode has in/out ports)
  */
@@ -9,7 +9,7 @@ import MoveableMetaNodePortBarContainer from "./MoveableMetaNodePortBarContainer
 
 const store = useStore();
 // can guarantee existence of workflow (!) because this component is only rendered
-// in the canvas whenwe actually have a workflow
+// in the canvas when we actually have a workflow
 const workflow = computed(() => store.state.workflow.activeWorkflow!);
 
 const hasInPorts = computed(() => workflow.value.metaInPorts?.ports?.length);

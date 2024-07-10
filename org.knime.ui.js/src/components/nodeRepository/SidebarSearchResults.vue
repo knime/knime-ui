@@ -1,11 +1,11 @@
-<script lang="ts" setup>
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import { useStore } from "@/composables/useStore";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
-import { useStore } from "@/composables/useStore";
-import { computed, ref } from "vue";
 import type { NavReachedEvent } from "./NodeList.vue";
 /**
  * Search results that use nodeRepository store and the draggable node template (which also uses the store)

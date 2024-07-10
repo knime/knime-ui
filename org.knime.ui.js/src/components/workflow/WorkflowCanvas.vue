@@ -1,5 +1,6 @@
-<script>
-import { mapGetters, mapActions, mapState } from "vuex";
+<script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted } from "vue";
+import { useStore } from "@/composables/useStore";
 import Workflow from "@/components/workflow/Workflow.vue";
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
 import SelectionRectangle from "@/components/workflow/SelectionRectangle/SelectionRectangle.vue";
@@ -7,71 +8,65 @@ import AnnotationRectangle from "@/components/workflow/annotations/AnnotationRec
 import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
 import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
 
-import { dropNode } from "@/mixins";
+import { useDropNode } from "@/composables/useDropNode";
 
-export default {
-  components: {
-    Workflow,
-    Kanvas,
-    SelectionRectangle,
-    AnnotationRectangle,
-    WorkflowEmpty,
-    KanvasFilters,
-  },
-  mixins: [dropNode],
-  computed: {
-    ...mapGetters("application", [
-      "workflowCanvasState",
-      "hasAnnotationModeEnabled",
-    ]),
-    ...mapGetters("canvas", ["contentBounds"]),
-    ...mapGetters("workflow", ["isWorkflowEmpty"]),
-    ...mapState("nodeTemplates", ["isDraggingNodeTemplate"]),
-    ...mapState("canvas", ["zoomFactor"]),
-    ...mapState("workflow", ["activeWorkflow"]),
-  },
-  watch: {
-    isWorkflowEmpty: {
-      immediate: true,
-      async handler(isWorkflowEmpty) {
-        // disable zoom & pan if workflow is empty
-        if (isWorkflowEmpty) {
-          // call to action: move nodes onto workflow
-          // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
-          await this.$nextTick();
-          this.fillScreen();
-        }
-      },
-    },
-  },
-  mounted() {
-    this.$nextTick(() => {
-      // put canvas into fillScreen view after loading the workflow
-      // if there isn't a saved canvas state for it
-      if (!this.workflowCanvasState) {
-        this.fillScreen();
-      }
-    });
-  },
-  methods: {
-    ...mapActions("canvas", ["fillScreen"]),
-    ...mapActions("application", ["resetCanvasMode"]),
+const store = useStore();
+const { onDrop, onDragOver } = useDropNode();
 
-    onNodeSelectionPreview($event) {
-      this.$refs.workflow.applyNodeSelectionPreview($event);
-    },
-    onAnnotationPreview($event) {
-      this.$refs.workflow.applyAnnotationSelectionPreview($event);
-    },
-    async onContainerSizeUpdated() {
-      if (this.isWorkflowEmpty) {
-        await this.$nextTick();
+const isDraggingNodeTemplate = computed(
+  () => store.state.nodeTemplates.isDraggingNodeTemplate,
+);
+const workflowCanvasState = computed(
+  () => store.getters["application/workflowCanvasState"],
+);
 
-        // scroll to center
-        this.fillScreen();
-      }
-    },
-  },
+const hasAnnotationModeEnabled = computed(
+  () => store.getters["application/hasAnnotationModeEnabled"],
+);
+const isWorkflowEmpty = computed(
+  () => store.getters["workflow/isWorkflowEmpty"],
+);
+
+watch(isWorkflowEmpty, async () => {
+  // disable zoom & pan if workflow is empty
+  if (isWorkflowEmpty.value) {
+    // call to action: move nodes onto workflow
+    // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
+    await nextTick();
+    store.dispatch("canvas/fillScreen");
+  }
+});
+
+onMounted(() => {
+  nextTick(() => {
+    // put canvas into fillScreen view after loading the workflow
+    // if there isn't a saved canvas state for it
+    if (!workflowCanvasState.value) {
+      store.dispatch("canvas/fillScreen");
+    }
+  });
+});
+
+const workflow = ref<InstanceType<typeof Workflow>>();
+
+const onNodeSelectionPreview = ($event: { nodeId: string; type: string }) => {
+  workflow.value?.applyNodeSelectionPreview($event);
+};
+
+const onAnnotationPreview = ($event: {
+  annotationId: string;
+  type: "hide" | "show" | "clear" | null;
+}) => {
+  workflow.value?.applyAnnotationSelectionPreview($event);
+};
+
+const onContainerSizeUpdated = async () => {
+  if (isWorkflowEmpty.value) {
+    await nextTick();
+
+    // scroll to center
+    store.dispatch("canvas/fillScreen");
+  }
 };
 </script>
 
