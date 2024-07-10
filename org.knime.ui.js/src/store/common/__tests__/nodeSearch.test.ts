@@ -228,7 +228,6 @@ describe("Node search partial store", () => {
             q: "lookup",
             tags: [],
             portTypeId: null,
-            nodesPartition: "IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumNodesFound).toBe(
             searchNodesResponse.totalNumNodesFound,
@@ -258,7 +257,6 @@ describe("Node search partial store", () => {
             q: "lookup",
             tags: [],
             portTypeId: null,
-            nodesPartition: "ALL",
           });
           expect(store.state.nodeSearch.totalNumNodesFound).toBe(
             searchAllNodesResponse.totalNumNodesFound,
@@ -287,7 +285,6 @@ describe("Node search partial store", () => {
             q: "lookup",
             tags: [],
             portTypeId: null,
-            nodesPartition: "IN_COLLECTION",
           });
           expect(store.state.nodeSearch.totalNumNodesFound).toBe(
             searchNodesResponse.totalNumNodesFound,
@@ -330,7 +327,10 @@ describe("Node search partial store", () => {
           "nodeSearch/searchNodesDebounced",
           undefined,
         );
-        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", {});
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "nodeSearch/searchNodes",
+          undefined,
+        );
       });
 
       it("updates query for all nodes if hasNodeCollectionActive is false", async () => {
@@ -343,7 +343,10 @@ describe("Node search partial store", () => {
           "nodeSearch/searchNodesDebounced",
           undefined,
         );
-        expect(dispatchSpy).toHaveBeenCalledWith("nodeSearch/searchNodes", undefined)
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          "nodeSearch/searchNodes",
+          undefined,
+        );
       });
 
       it("set selected tags", async () => {

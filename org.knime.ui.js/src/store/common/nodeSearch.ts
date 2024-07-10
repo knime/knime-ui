@@ -117,7 +117,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
    */
   async searchNodes(
     { commit, state, dispatch, getters, rootState },
-    { append = false} = {},
+    { append = false } = {},
   ) {
     // only do request if we search for something
     if (!getters.hasSearchParams) {

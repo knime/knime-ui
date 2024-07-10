@@ -11,7 +11,6 @@ import {
   createNodePortTemplate,
   createNodeTemplate,
   createSearchNodesResponse,
-  createSearchAllNodesResponse,
 } from "@/test/factories";
 
 import { API } from "@api";
@@ -62,8 +61,6 @@ const defaultNodeRecommendationsResponse = [
   }),
 ];
 
-const allNodesSearchResult = createSearchAllNodesResponse();
-
 const defaultPortMock = createPort();
 
 const mockedAPI = deepMocked(API);
@@ -102,11 +99,8 @@ describe("QuickAddNodeMenu.vue", () => {
       nodeRecommendationsResponse,
     );
 
-    mockedAPI.noderepository.searchNodes.mockImplementation(
-      ({ nodesPartition }) =>
-        nodesPartition === "IN_COLLECTION"
-          ? Promise.resolve(createSearchNodesResponse())
-          : Promise.resolve(allNodesSearchResult),
+    mockedAPI.noderepository.searchNodes.mockImplementation(() =>
+      Promise.resolve(createSearchNodesResponse()),
     );
     const subscribeToNodeRepositoryLoadingEventMock = vi.fn();
 
