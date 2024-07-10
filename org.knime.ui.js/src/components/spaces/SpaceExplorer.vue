@@ -25,6 +25,7 @@ import SpaceExplorerDeleteItemModal from "./SpaceExplorerDeleteItemModal.vue";
 import { useCustomDragPreview } from "./useCustomDragPreview";
 import { useMovingItems } from "./useMovingItems";
 import SkeletonItem from "../common/skeleton-loader/SkeletonItem.vue";
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
@@ -226,6 +227,22 @@ const { onMoveItems, onDuplicateItems } = useMovingItems({ projectId });
 
 const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
   useCustomDragPreview({ projectId });
+
+// staggered skeleton loader
+const showLoader = ref(false);
+
+const setShowLoader = createStaggeredLoader({
+  firstStageCallback: () => {
+    showLoader.value = true;
+  },
+  resetCallback: () => {
+    showLoader.value = false;
+  },
+});
+
+watch(isLoadingContent, () => {
+  setShowLoader(isLoadingContent.value);
+});
 </script>
 
 <template>
@@ -235,9 +252,9 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
       @click="onChangeDirectory"
     />
 
-    <SkeletonItem :loading="isLoadingContent" height="30px" :repeat="5">
+    <SkeletonItem :loading="showLoader" height="30px" :repeat="5">
       <FileExplorer
-        v-if="activeWorkflowGroup"
+        v-if="activeWorkflowGroup && !isLoadingContent"
         aria-label="Current workflow group in Space Explorer"
         :selected-item-ids="selectedItemIds"
         :mode="mode"
