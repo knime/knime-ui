@@ -86,6 +86,7 @@ import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandler;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactory.AuthTokenProvider;
 import org.knime.gateway.impl.webui.kai.KaiHandlerFactoryRegistry;
+import org.knime.gateway.impl.webui.modes.WebUIMode;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
@@ -136,7 +137,7 @@ final class Init {
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var kaiHandler = createKaiHandler(eventConsumer, spaceProviders);
         var preferenceProvider = createPreferencesProvider();
-        var nodeCollections = new NodeCollections(preferenceProvider);
+        var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepo = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
 
