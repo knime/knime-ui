@@ -1,5 +1,14 @@
 <script setup lang="ts">
 import { Modal, OpenSourceCredits } from "@knime/components";
+import { ref } from "vue";
+
+const usedPackages = ref<any[]>([]);
+
+import("../../../licenses/used-packages.json")
+  .then((module) => {
+    usedPackages.value = module.default;
+  })
+  .catch((err) => consola.warn(err.message));
 
 interface Props {
   active: boolean;
@@ -23,7 +32,7 @@ defineEmits<Emits>();
       @cancel="$emit('update:active', false)"
     >
       <template #notice>
-        <OpenSourceCredits />
+        <OpenSourceCredits :packages="usedPackages" />
       </template>
     </Modal>
   </div>

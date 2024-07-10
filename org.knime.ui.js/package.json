@@ -19,13 +19,16 @@
     "audit:resolve": "resolve-audit --omit dev",
     "test:unit": "vitest",
     "coverage": "vitest run --coverage",
+    "license-check": "license-check -c",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
     "jenkins:lint": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
+    "postinstall": "license-check -o licenses/used-packages.json",
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
     "add-husky": "cd .. && husky install ./org.knime.ui.js/.husky",
     "sbom": "npx @cyclonedx/cyclonedx-npm --output-file bom.json --ignore-npm-errors --omit dev"
   },
   "dependencies": {
+    "@floating-ui/vue": "^1.1.1",
     "@fontsource/roboto-condensed": "4.5.9",
     "@knime/components": "^1.0.2",
     "@knime/knime-ui-table": "0.3.64",
@@ -42,6 +45,7 @@
     "fuse.js": "6.6.2",
     "gsap": "3.12.2",
     "kd-tree-javascript": "^1.0.3",
+    "lodash-es": "^4.17.21",
     "markdown-it": "^13.0.2",
     "mitt": "^3.0.1",
     "raf-throttle": "2.0.6",
@@ -53,6 +57,7 @@
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^1.16.1",
     "@knime/eslint-config": "^8.1.0",
+    "@knime/licenses": "^1.0.1",
     "@tsconfig/node20": "^20.1.2",
     "@types/dompurify": "^3.0.5",
     "@types/jsdom": "^21.1.6",
