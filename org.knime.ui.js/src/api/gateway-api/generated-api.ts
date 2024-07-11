@@ -3625,6 +3625,12 @@ export interface SpaceProvider {
      * @memberof SpaceProvider
      */
     hostname?: string;
+    /**
+     * Whether this provider is the Community Hub
+     * @type {boolean}
+     * @memberof SpaceProvider
+     */
+    isCommunityHub?: boolean;
 
 }
 
