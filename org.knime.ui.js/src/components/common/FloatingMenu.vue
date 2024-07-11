@@ -14,8 +14,7 @@ import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-
-import { useEscapeStack } from "@/mixins/escapeStack";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 
 /*
  * The FloatingMenu component is a container that can be sticked to a position on the canvas,
@@ -215,8 +214,10 @@ onMounted(() => {
   kanvas.addEventListener("scroll", onCanvasScroll);
 });
 
+const { useOnEscapeStack } = useEscapeStack();
+
 if (props.closeOnEscape) {
-  useEscapeStack({
+  useOnEscapeStack({
     onEscape: () => {
       emit("menuClose");
     },

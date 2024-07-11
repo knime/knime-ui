@@ -14,12 +14,12 @@ import type {
   Bounds,
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import { TypedText } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import { gridSize } from "@/style/shapes";
 
-import { useEscapeStack } from "@/mixins/escapeStack";
+import { useStore } from "@/composables/useStore";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
 import TransformControls from "./TransformControls.vue";
@@ -290,7 +290,9 @@ useMagicKeys({
   },
 });
 
-useEscapeStack({
+const { useOnEscapeStack } = useEscapeStack();
+
+useOnEscapeStack({
   onEscape: () => {
     hasEdited.value = false;
 

@@ -5,7 +5,7 @@ import * as $shapes from "@/style/shapes.mjs";
 export const useDropNode = () => {
   const KnimeMIME = "application/vnd.knime.ap.noderepo+json";
   const isKnimeNode = (event: DragEvent) =>
-    event.dataTransfer.types.includes(KnimeMIME);
+    event.dataTransfer?.types.includes(KnimeMIME);
 
   const store = useStore();
 
@@ -13,7 +13,7 @@ export const useDropNode = () => {
 
   const onDrop = async (event: DragEvent) => {
     if (isWritable.value) {
-      const data = event.dataTransfer.getData(KnimeMIME);
+      const data = event.dataTransfer?.getData(KnimeMIME);
 
       if (!data) {
         return;
@@ -42,7 +42,7 @@ export const useDropNode = () => {
 
   const onDragOver = (event: DragEvent) => {
     if (isWritable.value && isKnimeNode(event)) {
-      event.dataTransfer.dropEffect = "copy";
+      event.dataTransfer!.dropEffect = "copy";
     }
   };
 

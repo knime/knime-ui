@@ -1,5 +1,5 @@
 <script>
-import { escapePressed } from "@/mixins/escapeStack";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import { isInputElement } from "@/util/isInputElement";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 
@@ -8,6 +8,10 @@ import { isUIExtensionFocused } from "@/components/uiExtensions";
  * on document and dispatching the corresponding shortcut handler.
  */
 export default {
+  setup() {
+    const { escapePressed } = useEscapeStack();
+    return { escapePressed };
+  },
   mounted() {
     // Start Key Listener
     document.addEventListener("keydown", this.onKeydown);
@@ -40,7 +44,7 @@ export default {
 
       // Close one item on the escape stack
       if (e.key === "Escape") {
-        escapePressed();
+        this.escapePressed();
       }
 
       if (this.preventShortcuts(e)) {

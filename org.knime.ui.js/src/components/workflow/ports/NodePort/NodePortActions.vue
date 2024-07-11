@@ -1,88 +1,80 @@
-<script>
-import { escapeStack } from "@/mixins";
-
+<script setup lang="ts">
+import { computed, defineExpose } from "vue";
+import type { ExtendedPortType } from "@/api/custom-types";
 import DeleteIcon from "@/assets/delete.svg";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 
-export const portActionButtonSize = 20;
+const portActionButtonSize = 20;
 const portActionsGapSize = 5;
 
-export default {
-  components: {
-    Port,
-    ActionButton,
-    DeleteIcon,
-  },
-  mixins: [
-    escapeStack({
-      onEscape() {
-        this.$emit("close");
-      },
-    }),
-  ],
-  props: {
-    port: {
-      type: Object,
-      required: true,
-    },
-    direction: {
-      type: String,
-      required: true,
-      validator: (t) => ["in", "out"].includes(t),
-    },
-    relativePosition: {
-      type: Array,
-      default: () => [0, 0],
-      validator: (pos) => Array.isArray(pos) && pos.length === 2,
-    },
-    anchorPoint: {
-      type: Object,
-      required: true,
-      validator: (value) =>
-        typeof value.x === "number" && typeof value.y === "number",
-    },
-  },
-  emits: ["close", "action:remove"],
-  computed: {
-    actions() {
-      return [
-        {
-          id: "remove",
-          title: "Remove port",
-          isDisabled: !this.port.canRemove,
-          eventName: "action:remove",
-        },
-      ];
-    },
-    selectedPortPosition() {
-      const [x, y] = this.relativePosition;
-      return [this.anchorPoint.x + x, this.anchorPoint.y + y];
-    },
-    hoverArea() {
-      const totalActions = this.actions.length;
+defineExpose({
+  portActionButtonSize,
+});
 
-      // reverse the rect
-      const xOffset =
-        this.direction === "in" ? portActionButtonSize * totalActions : 0;
+type Props = {
+  port: ExtendedPortType;
+  direction: "in" | "out";
+  relativePosition?: [x: number, y: number];
+  anchorPoint: { x: number; y: number };
+};
 
-      return {
-        x: -(portActionButtonSize / 2) - xOffset,
-        y: -(portActionButtonSize / 2),
+const props = withDefaults(defineProps<Props>(), {
+  relativePosition: () => [0, 0],
+});
 
-        // calculates the hover area based on the total actions
-        // adds 1 to account for the space the highlighted port itself takes up
-        width: portActionButtonSize * (totalActions + 1),
-        height: portActionButtonSize,
-      };
-    },
+type Action = string;
+
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "action:remove"): void;
+  (e: Action): void;
+}>();
+
+const { escapeStack } = useEscapeStack();
+
+escapeStack({
+  onEscape() {
+    emit("close");
   },
-  methods: {
-    buttonX(actionIndex) {
-      const delta = this.direction === "in" ? -1 : 1;
-      return (portActionButtonSize + portActionsGapSize) * actionIndex * delta;
-    },
+});
+
+const actions = computed(() => [
+  {
+    id: "remove",
+    title: "Remove port",
+    isDisabled: !props.port.canRemove,
+    eventName: "action:remove",
   },
+]);
+
+const selectedPortPosition = computed(() => {
+  const [x, y] = props.relativePosition;
+  return [props.anchorPoint.x + x, props.anchorPoint.y + y];
+});
+
+const hoverArea = computed(() => {
+  const totalActions = actions.value.length;
+
+  // reverse the rect
+  const xOffset =
+    props.direction === "in" ? portActionButtonSize * totalActions : 0;
+
+  return {
+    x: -(portActionButtonSize / 2) - xOffset,
+    y: -(portActionButtonSize / 2),
+
+    // calculates the hover area based on the total actions
+    // adds 1 to account for the space the highlighted port itself takes up
+    width: portActionButtonSize * (totalActions + 1),
+    height: portActionButtonSize,
+  };
+});
+
+const buttonX = (actionIndex: number) => {
+  const delta = props.direction === "in" ? -1 : 1;
+  return (portActionButtonSize + portActionsGapSize) * actionIndex * delta;
 };
 </script>
 
@@ -110,7 +102,7 @@ export default {
       :x="buttonX(index + 1)"
       :disabled="action.isDisabled"
       :title="action.title"
-      @click="$emit(action.eventName)"
+      @click="emit(action.eventName)"
     >
       <DeleteIcon />
     </ActionButton>

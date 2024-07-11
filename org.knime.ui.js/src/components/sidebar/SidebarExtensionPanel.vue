@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
-import { useEscapeStack } from "@/mixins/escapeStack";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 
 const store = useStore();
 const isExtensionPanelOpen = computed(
   () => store.state.panel.isExtensionPanelOpen,
 );
 
-useEscapeStack({
+const { useOnEscapeStack } = useEscapeStack();
+
+useOnEscapeStack({
   onEscape() {
     if (store.state.panel.isExtensionPanelOpen) {
       store.dispatch("panel/closeExtensionPanel");

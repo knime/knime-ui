@@ -4,7 +4,7 @@ import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import { useStore } from "@/composables/useStore";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import * as $shapes from "@/style/shapes";
-import { KnimeMIME } from "@/mixins/dropNode";
+import { useDropNode } from "@/composables/useDropNode";
 import type { ExtendedPortType } from "@/api/custom-types";
 
 type UseConnectionReplacementOptions = {
@@ -39,6 +39,7 @@ export const useConnectionReplacement = (
 ) => {
   const isDraggedOver = ref(false);
   const store = useStore();
+  const { KnimeMIME } = useDropNode();
 
   const draggedNodeTemplate = computed(
     () => store.state.nodeTemplates.draggedTemplateData,

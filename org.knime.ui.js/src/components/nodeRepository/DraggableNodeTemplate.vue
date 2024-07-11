@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
-import { KnimeMIME } from "@/mixins/dropNode";
+import { useDropNode } from "@/composables/useDropNode";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 /**
@@ -36,7 +36,8 @@ export default {
   emits: ["showNodeDescription"],
   setup() {
     const addNodeToWorkflow = useAddNodeToWorkflow();
-    return { addNodeToWorkflow };
+    const { KnimeMIME } = useDropNode();
+    return { addNodeToWorkflow, KnimeMIME };
   },
   data() {
     return {
@@ -90,7 +91,7 @@ export default {
 
       e.dataTransfer.setData("text/plain", this.nodeTemplate.id);
       e.dataTransfer.setData(
-        KnimeMIME,
+        this.KnimeMIME,
         JSON.stringify(this.nodeTemplate.nodeFactory),
       );
     },

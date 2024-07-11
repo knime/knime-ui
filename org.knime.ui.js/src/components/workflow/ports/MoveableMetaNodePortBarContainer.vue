@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 
 import { useMoveObject } from "@/composables/useMoveObject";
 import { useStore } from "@/composables/useStore";
-import { useEscapeStack } from "@/mixins/escapeStack";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
 
 interface Props {
@@ -78,7 +78,9 @@ const onPointerDown = (event: PointerEvent) => {
   handler(event);
 };
 
-useEscapeStack({
+const { useOnEscapeStack } = useEscapeStack();
+
+useOnEscapeStack({
   group: "OBJECT_DRAG",
   alwaysActive: true,
   onEscape: () => {

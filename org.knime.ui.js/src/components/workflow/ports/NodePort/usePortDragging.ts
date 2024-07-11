@@ -10,7 +10,7 @@ import {
   detectConnectionCircle,
   type Direction,
 } from "@/util/compatibleConnections";
-import { useEscapeStack } from "@/mixins/escapeStack";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 
 import { type PortSnapCallback, usePortSnapping } from "./usePortSnapping";
 import type { DragConnector } from "./types";
@@ -73,7 +73,9 @@ export const usePortDragging = (params: Params) => {
   const didDragToCompatibleTarget = ref(false);
 
   const hasAbortedDrag = ref(false);
-  useEscapeStack({
+  const { useOnEscapeStack } = useEscapeStack();
+
+  useOnEscapeStack({
     group: "PORT_DRAG",
     alwaysActive: true,
     onEscape: () => {

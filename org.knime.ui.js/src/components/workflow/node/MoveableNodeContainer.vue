@@ -5,7 +5,7 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 
 import { useMoveObject } from "@/composables/useMoveObject";
-import { useEscapeStack } from "@/mixins/escapeStack";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 
 interface Props {
   id: string;
@@ -140,7 +140,9 @@ const { createPointerDownHandler } = useMoveObject({
 
 const onPointerDown = createPointerDownHandler(position);
 
-useEscapeStack({
+const { useOnEscapeStack } = useEscapeStack();
+
+useOnEscapeStack({
   group: "OBJECT_DRAG",
   alwaysActive: true,
   onEscape: () => {
