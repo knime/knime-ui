@@ -4,8 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { onClickOutside } from "@vueuse/core";
 
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import Carousel from "webapps-common/ui/components/Carousel.vue";
+import { FunctionButton, Carousel } from "@knime/components";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import CogIcon from "@knime/styles/img/icons/cog.svg";

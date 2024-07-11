@@ -2,10 +2,9 @@
 /*
  * Renders a button with MenuItems data, if it has children it will open a dropdown menu on click (SubMenu)
  */
-import Button from "webapps-common/ui/components/Button.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { Button, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 
 interface Props {
   item: MenuItem;

@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
 import LinkIcon from "@knime/styles/img/icons/link-external.svg";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 import KaiCollapser from "./KaiCollapser.vue";
 import type { ExtensionWithNodes } from "../../types";
 

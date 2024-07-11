@@ -3,8 +3,7 @@ import { toRefs, ref, computed, watch } from "vue";
 
 import KNIMETriangleIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
-import Description from "webapps-common/ui/components/Description.vue";
-import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
+import { Description, NodeFeatureList } from "@knime/components";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { API } from "@api";
 import { compatibility } from "@/environment";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 
 import InstallAiIllustration from "@/assets/install-ai-illustration.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";

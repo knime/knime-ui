@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import Pill from "webapps-common/ui/components/Pill.vue";
+import { Pill } from "@knime/components";
 import { formatDateString } from "@knime/utils";
 import { isToday, isYesterday } from "./utils";
 

@@ -2,7 +2,7 @@
 import { API } from "@api";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 
 import MoreNodesIllustration from "@/assets/more-nodes-illustration.svg";
 import { isDesktop } from "@/environment";

@@ -4,13 +4,12 @@ import { useRouter } from "vue-router";
 import { formatTimeAgo } from "@vueuse/core";
 import { isEqual } from "lodash-es";
 
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button, FileExplorer } from "@knime/components";
 import TimeIcon from "@knime/styles/img/icons/time.svg";
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
-import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
-import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
+import type { FileExplorerItem } from "@knime/components";
 
 import { API } from "@api";
 import type { RecentWorkflow } from "@/api/custom-types";

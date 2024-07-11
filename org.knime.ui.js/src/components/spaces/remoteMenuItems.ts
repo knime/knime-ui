@@ -8,7 +8,7 @@ import KeyIcon from "@knime/styles/img/icons/key.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 import CirclePlayIcon from "@knime/styles/img/icons/circle-play.svg";
 import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.svg";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";

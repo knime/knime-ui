@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PlusButton from "webapps-common/ui/components/PlusButton.vue";
+import { PlusButton } from "@knime/components";
 
 type Props = {
   title: string | null;

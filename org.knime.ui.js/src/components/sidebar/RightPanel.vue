@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
 import type { KnimeNode } from "@/api/custom-types";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";

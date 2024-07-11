@@ -2,7 +2,7 @@ import type { App } from "vue";
 import type { Router } from "vue-router";
 import type { Store } from "vuex";
 
-import type { ToastService } from "webapps-common/ui/services/toast";
+import type { ToastService } from "@knime/components";
 import type { RootStoreState } from "@/store/types";
 
 export type PluginInitFunction = (payload: {

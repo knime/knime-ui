@@ -5,7 +5,7 @@ import svgLoader from "vite-svg-loader";
 import { configDefaults } from "vitest/config";
 import vueDevTools from "vite-plugin-vue-devtools";
 // @ts-ignore
-import { svgoConfig } from "webapps-common/config/svgo.config";
+import { svgoConfig } from "@knime/styles/config/svgo.config";
 
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };

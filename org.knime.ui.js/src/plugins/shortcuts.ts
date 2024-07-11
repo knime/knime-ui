@@ -1,7 +1,7 @@
 import { useRouter, type Router } from "vue-router";
 import { useStore, type Store } from "vuex";
 
-import { useToasts, type ToastService } from "webapps-common/ui/services/toast";
+import { useToasts, type ToastService } from "@knime/components";
 import { navigatorUtils, hotkeys, type HotkeysNS } from "@knime/utils";
 
 import shortcuts from "@/shortcuts";

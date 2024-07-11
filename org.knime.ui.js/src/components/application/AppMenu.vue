@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { API } from "@/api";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 
@@ -12,8 +13,7 @@ import LensPlusIcon from "@knime/styles/img/icons/lense-plus.svg";
 import LensMinusIcon from "@knime/styles/img/icons/lense-minus.svg";
 import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
 
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
-import { computed } from "vue";
+import { type MenuItem } from "@knime/components";
 import { useStore } from "@/composables/useStore";
 
 const store = useStore();

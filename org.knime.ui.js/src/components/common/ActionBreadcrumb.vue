@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { PropType } from "vue";
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
+import { Breadcrumb } from "@knime/components";
 
 import { clamp, throttle } from "lodash-es";
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 import PencilIcon from "@knime/styles/img/icons/pencil.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import CheckIcon from "@knime/styles/img/icons/check.svg";

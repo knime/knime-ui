@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, toRefs } from "vue";
 
-import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/RichTextEditor.vue";
+import { RichTextEditor } from "@knime/rich-text-editor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { buildUrlRegex } from "@/util/regex";

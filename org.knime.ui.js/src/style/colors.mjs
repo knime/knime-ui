@@ -1,7 +1,7 @@
 /* eslint-disable import/extensions */
-import * as knimeColors from "webapps-common/ui/colors/knimeColors.mjs";
-import * as nodeColors from "webapps-common/ui/colors/nodeColors.mjs";
-import * as portColorsCommon from "webapps-common/ui/colors/portColors.mjs";
+import * as knimeColors from "@knime/styles/colors/knimeColors.mjs";
+import * as nodeColors from "@knime/styles/colors/nodeColors.mjs";
+import * as portColorsCommon from "@knime/styles/colors/portColors.mjs";
 
 const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
 
@@ -78,4 +78,4 @@ export const annotationColorPresets = {
 
 export const defaultAnnotationBorderColor = annotationColorPresets.SilverSand;
 
-export * from "webapps-common/ui/colors/knimeColors.mjs";
+export * from "@knime/styles/colors/knimeColors.mjs";

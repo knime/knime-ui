@@ -2,8 +2,8 @@
 import { mapState, mapGetters } from "vuex";
 
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import { SubMenu } from "@knime/components";
+import type { MenuItem } from "@knime/components";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 

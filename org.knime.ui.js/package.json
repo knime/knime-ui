@@ -27,9 +27,12 @@
   },
   "dependencies": {
     "@fontsource/roboto-condensed": "4.5.9",
+    "@knime/components": "^1.0.2",
     "@knime/knime-ui-table": "0.3.64",
+    "@knime/rich-text-editor": "^1.0.2",
     "@knime/styles": "^1.0.0",
     "@knime/ui-extension-service": "0.32.0",
+    "@knime/ui-extensions-renderer": "^1.0.2",
     "@knime/utils": "^1.0.2",
     "@open-rpc/client-js": "^1.8.1",
     "@types/kd-tree-javascript": "^1.0.3",
@@ -45,8 +48,7 @@
     "vue": "3.4.21",
     "vue-router": "^4.1.6",
     "vue3-click-away": "1.2.4",
-    "vuex": "^4.1.0",
-    "webapps-common": "file:webapps-common"
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^1.16.1",

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import Pill from "webapps-common/ui/components/Pill.vue";
+import { Pill } from "@knime/components";
 import WarningIcon from "@knime/styles/img/icons/sign-warning.svg";
 import CloseIcon from "@knime/styles/img/icons/circle-close.svg";
 import JoyIcon from "@knime/styles/img/icons/joy.svg";

@@ -3,10 +3,9 @@ import { computed, ref } from "vue";
 import { useStore } from "vuex";
 import { groupBy } from "lodash-es";
 
-import Modal from "webapps-common/ui/components/Modal.vue";
+import { Modal, SearchInput } from "@knime/components";
 import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
-import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 import { hotkeys, type HotkeysNS } from "@knime/utils";
 
 import shortcuts from "@/shortcuts";

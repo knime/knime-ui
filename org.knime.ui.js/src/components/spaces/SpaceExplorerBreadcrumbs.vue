@@ -3,7 +3,7 @@ import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { computed } from "vue";
 
 import HouseIcon from "@knime/styles/img/icons/house.svg";
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
+import { Breadcrumb } from "@knime/components";
 
 interface Props {
   activeWorkflowGroup: WorkflowGroupContent | null;

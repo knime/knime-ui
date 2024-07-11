@@ -2,15 +2,13 @@
 import { ref, computed, watch, toRef } from "vue";
 import { useRouter } from "vue-router";
 
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
+import { NodePreview, FileExplorer } from "@knime/components";
 import FolderIcon from "@knime/styles/img/icons/folder.svg";
 import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
 import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 import WorkflowNodeStackIcon from "@knime/styles/img/icons/workflow-node-stack.svg";
-import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
-import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
-import { useToasts } from "webapps-common/ui/services/toast";
+import type { FileExplorerItem } from "@knime/components";
 import { matchesQuery } from "@/util/matchesQuery";
 import {
   SpaceItem,
@@ -18,14 +16,15 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { getToastsProvider } from "@/plugins/toasts";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
 import SpaceExplorerDeleteItemModal from "./SpaceExplorerDeleteItemModal.vue";
 import { useCustomDragPreview } from "./useCustomDragPreview";
 import { useMovingItems } from "./useMovingItems";
-import SkeletonItem from "../common/skeleton-loader/SkeletonItem.vue";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
 
@@ -62,7 +61,7 @@ const $emit = defineEmits<{
 
 const store = useStore();
 const $router = useRouter();
-const $toast = useToasts();
+const $toast = getToastsProvider();
 
 const projectId = toRef(props, "projectId");
 

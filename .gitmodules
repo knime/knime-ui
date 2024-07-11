@@ -1,3 +1,0 @@
-[submodule "webapps-common"]
-	path = org.knime.ui.js/webapps-common
-	url = ../webapps-common

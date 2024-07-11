@@ -2,7 +2,7 @@
 import { defineComponent, defineAsyncComponent } from "vue";
 import { mapActions, mapState } from "vuex";
 
-import { ToastStack } from "webapps-common/ui/services/toast";
+import { ToastStack } from "@knime/components";
 import { DynamicEnvRenderer, environment, isDesktop } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";

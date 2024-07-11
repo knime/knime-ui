@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRaw, toRef, type Ref } from "vue";
 
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
+import { NodePreview } from "@knime/components";
 
 import type { AvailablePortTypes, ComponentMetadata } from "@/api/custom-types";
 import {

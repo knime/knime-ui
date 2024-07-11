@@ -1,6 +1,6 @@
 <script>
 import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
-import TabBar from "webapps-common/ui/components/TabBar.vue";
+import { TabBar } from "@knime/components";
 import Eye from "@knime/styles/img/icons/eye.svg";
 
 import portIcon from "@/components/common/PortIconRenderer";

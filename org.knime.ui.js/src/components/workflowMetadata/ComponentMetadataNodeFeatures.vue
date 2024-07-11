@@ -8,7 +8,7 @@ import type {
   NodeViewDescription,
 } from "@/api/gateway-api/generated-api";
 
-import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
+import { NodeFeatureList } from "@knime/components";
 import MetadataPortEditor, {
   type PortEditorData,
 } from "@/components/workflowMetadata/MetadataPortEditor.vue";

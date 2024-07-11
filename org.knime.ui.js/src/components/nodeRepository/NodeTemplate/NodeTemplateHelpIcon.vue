@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 import CircleHelp from "@knime/styles/img/icons/circle-help.svg";
 
 type Props = {

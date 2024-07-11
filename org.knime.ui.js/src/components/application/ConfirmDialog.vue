@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, unref } from "vue";
 
-import Modal from "webapps-common/ui/components/Modal.vue";
-import Button from "webapps-common/ui/components/Button.vue";
-import Checkbox from "webapps-common/ui/components/forms/Checkbox.vue";
+import { Modal, Button, Checkbox } from "@knime/components";
 
 import {
   useConfirmDialog,

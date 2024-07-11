@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import NodeTorsoNormal from "webapps-common/ui/components/node/NodeTorsoNormal.vue";
+import { NodeTorsoNormal } from "@knime/components";
 import type {
   NativeNodeInvariants,
   Node,

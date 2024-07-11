@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { SubMenu, ValueSwitch } from "@knime/components";
 import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
-import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import { useStore } from "@/composables/useStore";

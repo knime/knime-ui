@@ -2,8 +2,7 @@
 import { ref, computed, watch, toRef, onMounted } from "vue";
 
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
-import ValueSwitch from "webapps-common/ui/components/forms/ValueSwitch.vue";
-import Button from "webapps-common/ui/components/Button.vue";
+import { ValueSwitch, Button } from "@knime/components";
 
 import type {
   PortViewDescriptor,

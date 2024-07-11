@@ -5,7 +5,7 @@ import {
   ApplyState,
   type APILayerDirtyState,
 } from "@knime/ui-extension-service";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
 

@@ -3,8 +3,8 @@ import { useShortcuts } from "@/plugins/shortcuts";
 import { computed } from "vue";
 import type { ShortcutName } from "@/shortcuts";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import { SubMenu } from "@knime/components";
+import type { MenuItem } from "@knime/components";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
 
 const $shortcuts = useShortcuts();

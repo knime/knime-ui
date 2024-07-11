@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, toRefs } from "vue";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 import { getToastsProvider } from "@/plugins/toasts";
 
 // eslint-disable-next-line no-magic-numbers

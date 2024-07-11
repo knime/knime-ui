@@ -10,7 +10,7 @@ import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
 import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import LinkExteranlIcon from "@knime/styles/img/icons/link-external.svg";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 
 import InfoIcon from "@/assets/info.svg";
 import { API } from "@/api";

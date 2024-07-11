@@ -2,9 +2,7 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
-import MenuItems, {
-  type MenuItem,
-} from "webapps-common/ui/components/MenuItems.vue";
+import { MenuItems, type MenuItem } from "@knime/components";
 
 import type { SpaceItemReference, XY } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";

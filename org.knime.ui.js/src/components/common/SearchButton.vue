@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import { FunctionButton, InputField } from "@knime/components";
 import LensIcon from "@knime/styles/img/icons/lens.svg";
 /**
  * A function button that toggles a input field that can be used for search/filter queries.

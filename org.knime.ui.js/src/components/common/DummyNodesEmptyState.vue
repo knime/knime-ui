@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DummyNodes from "@/assets/workflow-coach-dummy-nodes.svg";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 
 type Props = {
   buttonText: string;

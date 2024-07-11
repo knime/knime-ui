@@ -2,8 +2,8 @@
 import { defineComponent, h, markRaw, type PropType } from "vue";
 import { mapGetters, mapState } from "vuex";
 
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import { MenuItems } from "@knime/components";
+import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import { API } from "@api";

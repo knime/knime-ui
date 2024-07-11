@@ -11,7 +11,7 @@ import {
 import { debounce } from "lodash-es";
 
 import { navigatorUtils } from "@knime/utils";
-import useKeyPressedUntilMouseClick from "webapps-common/ui/composables/useKeyPressedUntilMouseClick";
+import { useKeyPressedUntilMouseClick } from "@knime/components";
 
 import { useStore } from "@/composables/useStore";
 import { $bus } from "@/plugins/event-bus";

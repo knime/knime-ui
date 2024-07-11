@@ -2,12 +2,14 @@
 import { computed, watch } from "vue";
 import type { Link } from "@/api/gateway-api/generated-api";
 
-import LinkList from "webapps-common/ui/components/LinkList.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import {
+  LinkList,
+  FunctionButton,
+  InputField,
+  Label,
+  Button,
+} from "@knime/components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
-import Label from "webapps-common/ui/components/forms/Label.vue";
-import Button from "webapps-common/ui/components/Button.vue";
 import PlusIcon from "@knime/styles/img/icons/plus.svg";
 import { buildUrlRegex } from "@/util/regex";
 

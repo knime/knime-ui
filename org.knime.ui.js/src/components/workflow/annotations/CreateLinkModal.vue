@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import Modal from "webapps-common/ui/components/Modal.vue";
-import Button from "webapps-common/ui/components/Button.vue";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
-import Label from "webapps-common/ui/components/forms/Label.vue";
+import { Modal, Button, InputField, Label } from "@knime/components";
 
 import { buildUrlRegex } from "@/util/regex";
 

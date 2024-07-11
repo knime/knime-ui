@@ -4,12 +4,11 @@ import { useStore } from "vuex";
 import type { Editor } from "@tiptap/vue-3";
 import type { Level } from "@tiptap/extension-heading";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { FunctionButton, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import MoreActionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import LinkIcon from "@knime/styles/img/icons/link.svg";
-import type { EditorTools } from "webapps-common/ui/components/forms/RichTextEditor";
+import type { EditorTools } from "@knime/rich-text-editor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";

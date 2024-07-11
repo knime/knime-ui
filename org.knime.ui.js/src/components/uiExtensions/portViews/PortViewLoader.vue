@@ -3,7 +3,7 @@ import { ref, toRef, watch, onUnmounted } from "vue";
 import {
   UIExtension,
   type UIExtensionAPILayer,
-} from "webapps-common/ui/uiExtensions";
+} from "@knime/ui-extensions-renderer";
 
 import { AlertType } from "@knime/ui-extension-service";
 

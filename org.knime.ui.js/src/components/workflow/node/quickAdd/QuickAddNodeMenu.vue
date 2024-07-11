@@ -6,7 +6,7 @@ import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
+import { SearchInput } from "@knime/components";
 
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";

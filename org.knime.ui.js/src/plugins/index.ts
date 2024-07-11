@@ -2,7 +2,7 @@ import type { App } from "vue";
 import type { Store } from "vuex";
 import type { Router } from "vue-router";
 
-import type { ToastService } from "webapps-common/ui/services/toast";
+import type { ToastService } from "@knime/components";
 
 import Portal from "@/components/common/Portal.vue";
 import PortalTarget from "@/components/common/PortalTarget.vue";

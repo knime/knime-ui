@@ -2,7 +2,7 @@
 import { defineAsyncComponent, computed } from "vue";
 import { useStore } from "@/composables/useStore";
 
-import Modal from "webapps-common/ui/components/Modal.vue";
+import { Modal } from "@knime/components";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
 const JobsTable = defineAsyncComponent(() => import("./JobsTable.vue"));

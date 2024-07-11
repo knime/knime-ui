@@ -3,7 +3,7 @@ import { ref, toRefs, watch, onUnmounted } from "vue";
 import {
   UIExtension,
   type UIExtensionAPILayer,
-} from "webapps-common/ui/uiExtensions";
+} from "@knime/ui-extensions-renderer";
 
 import { API } from "@api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";

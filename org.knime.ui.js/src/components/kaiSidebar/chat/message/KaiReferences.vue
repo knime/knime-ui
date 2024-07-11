@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
-import BaseButton from "webapps-common/ui/components/BaseButton.vue";
+import { BaseButton } from "@knime/components";
 import type { References } from "../../types";
 
 interface Props {

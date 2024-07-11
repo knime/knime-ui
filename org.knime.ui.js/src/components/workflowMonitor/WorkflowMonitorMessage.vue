@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton, NodePreview } from "@knime/components";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
 import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 

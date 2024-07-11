@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
+import { NodePreview } from "@knime/components";
 
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";

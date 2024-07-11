@@ -2,8 +2,7 @@
 import { computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
+import { FunctionButton, LoadingIcon } from "@knime/components";
 import LeaveIcon from "@knime/styles/img/icons/leave.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";

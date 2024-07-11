@@ -1,7 +1,7 @@
 import { computed, ref, type Ref } from "vue";
 import { useRoute } from "vue-router";
 
-import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
+import type { FileExplorerItem } from "@knime/components";
 import { useStore } from "@/composables/useStore";
 import { SpaceItem, type NodeTemplate } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes.mjs";

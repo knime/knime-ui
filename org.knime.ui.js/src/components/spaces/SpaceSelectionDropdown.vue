@@ -1,14 +1,13 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
-import LoadingIcon from "webapps-common/ui/components/LoadingIcon.vue";
+import { SubMenu, LoadingIcon } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
 import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 import ComputerDesktopIcon from "@knime/styles/img/icons/local-space.svg";
-import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
+import type { MenuItem } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";

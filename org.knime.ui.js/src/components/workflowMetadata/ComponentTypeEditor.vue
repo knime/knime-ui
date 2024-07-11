@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, h } from "vue";
 
-import Label from "webapps-common/ui/components/forms/Label.vue";
+import { Label, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
 import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
-import * as nodeBackgroundColors from "webapps-common/ui/colors/nodeColors.mjs";
-import { HibiscusDark as colorHibiscusDark } from "webapps-common/ui/colors/knimeColors.mjs";
+import * as nodeBackgroundColors from "@knime/styles/colors/nodeColors.mjs";
+import { HibiscusDark as colorHibiscusDark } from "@knime/styles/colors/knimeColors.mjs";
 import type { UpdateComponentMetadataCommand } from "@/api/gateway-api/generated-api";
 
 interface Props {

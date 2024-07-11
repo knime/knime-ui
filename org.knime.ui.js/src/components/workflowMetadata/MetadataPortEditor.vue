@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import Label from "webapps-common/ui/components/forms/Label.vue";
-import TextArea from "webapps-common/ui/components/forms/TextArea.vue";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import { Label, TextArea, InputField } from "@knime/components";
 import type {
   NodePortDescription,
   PortType,

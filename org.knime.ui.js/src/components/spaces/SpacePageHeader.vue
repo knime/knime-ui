@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref, toRef, watch } from "vue";
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
+import { Breadcrumb, FunctionButton } from "@knime/components";
 import SaveIcon from "@knime/styles/img/icons/check.svg";
 import CancelIcon from "@knime/styles/img/icons/close.svg";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 import type { BreadcrumbItem } from "./usePageBreadcrumbs";
 

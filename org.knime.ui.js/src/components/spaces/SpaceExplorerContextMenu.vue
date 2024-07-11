@@ -3,14 +3,15 @@ import { computed } from "vue";
 import type { Dispatch } from "vuex";
 import { useStore } from "@/composables/useStore";
 
-import MenuItems, {
+import {
+  MenuItems,
   type MenuItem,
-} from "webapps-common/ui/components/MenuItems.vue";
+  type FileExplorerContextMenu,
+} from "@knime/components";
 import DeleteIcon from "@knime/styles/img/icons/trash.svg";
 import DuplicateIcon from "@knime/styles/img/icons/duplicate.svg";
 import RenameIcon from "@knime/styles/img/icons/pencil.svg";
 import ExportIcon from "@knime/styles/img/icons/export.svg";
-import type { FileExplorerContextMenu } from "webapps-common/ui/components/FileExplorer/types";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import {

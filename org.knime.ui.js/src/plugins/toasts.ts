@@ -1,4 +1,4 @@
-import { ToastServiceProvider } from "webapps-common/ui/services/toast";
+import { ToastServiceProvider } from "@knime/components";
 
 let __toastsProviderSingleton: ToastServiceProvider | null = null;
 

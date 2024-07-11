@@ -2,11 +2,9 @@
 import { onMounted, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import Pill from "webapps-common/ui/components/Pill.vue";
+import { Pill, FunctionButton, Button } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import Button from "webapps-common/ui/components/Button.vue";
 
 import { API } from "@api";
 import { retryAsyncCall } from "@/util/retryAsyncCall";

@@ -1,7 +1,7 @@
 import type {
   ExtensionConfig as BaseExtensionConfig,
   UIExtensionAPILayer,
-} from "webapps-common/ui/uiExtensions";
+} from "@knime/ui-extensions-renderer";
 
 import type { ValidationResult } from "./output-validator";
 

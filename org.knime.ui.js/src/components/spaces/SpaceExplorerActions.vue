@@ -2,11 +2,10 @@
 import { defineComponent, type PropType } from "vue";
 import { mapGetters, mapState } from "vuex";
 
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { SubMenu, FunctionButton } from "@knime/components";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
 import SearchButton from "@/components/common/SearchButton.vue";
 

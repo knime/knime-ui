@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 
 import { useStore } from "@/composables/useStore";
 import Card from "@/components/common/Card.vue";

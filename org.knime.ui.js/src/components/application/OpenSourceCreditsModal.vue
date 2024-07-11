@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import Modal from "webapps-common/ui/components/Modal.vue";
-import OpenSourceCredits from "webapps-common/ui/components/OpenSourceCredits.vue";
+import { Modal, OpenSourceCredits } from "@knime/components";
 
 interface Props {
   active: boolean;

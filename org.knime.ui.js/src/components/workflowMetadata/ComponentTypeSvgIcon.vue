@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DoveGray as colorDoveGray } from "webapps-common/ui/colors/knimeColors.mjs";
+import { DoveGray as colorDoveGray } from "@knime/styles/colors/knimeColors.mjs";
 interface Props {
   color: string;
 }

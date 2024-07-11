@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor/RichTextEditor.vue";
+import { RichTextEditor } from "@knime/rich-text-editor";
 
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 import LegacyMetadataDescription from "./LegacyMetadataDescription.vue";

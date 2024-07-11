@@ -1,6 +1,6 @@
 import type { ActionTree, MutationTree } from "vuex";
 
-import type { Toast } from "webapps-common/ui/services/toast";
+import type { Toast } from "@knime/components";
 import LoadIcon from "@knime/styles/img/icons/load.svg";
 import { API } from "@api";
 import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
