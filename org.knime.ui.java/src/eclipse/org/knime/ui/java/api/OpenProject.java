@@ -50,7 +50,7 @@ import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -121,6 +121,9 @@ final class OpenProject {
                 DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
                     monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor));
             } catch (Exception e) {
+                if (e instanceof OpenProjectException openProjectException) {
+                    throw new IOException(openProjectException.getUserMessage(), openProjectException.getCause());
+                }
                 throw new IOException(e);
             }
         }
@@ -192,26 +195,32 @@ final class OpenProject {
      * switching to it.
      *
      * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
-     * @apiNote  Throws unchecked exception on failure.
+     * @apiNote  Throws unchecked exception on failure. The exception messages are displayed to the user.
      * @param spaceId
      * @param itemId
      * @param spaceProviderId
      * @param monitor
      */
     static void openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
-        final IProgressMonitor monitor)  {
+        final IProgressMonitor monitor) throws OpenProjectException {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+        final Space space;
+        try {
+            space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+        } catch (NoSuchElementException e) {
+            throw new OpenProjectException("The space could not be accessed.", e);
+        }
 
-        var projectType = space.getProjectType(itemId).orElseThrow(() -> new IllegalArgumentException(
-            "The item for id " + itemId + " is neither a workflow- nor a component-project"));
+        var projectType = space.getProjectType(itemId).orElseThrow(() ->
+                new OpenProjectException("The item is not a valid project.",
+                new IllegalArgumentException("The item for id " + itemId + " is neither a workflow- nor a component-project")));
 
         var projectAndWfm = getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType);
         if (projectAndWfm == null) {
             projectAndWfm = loadProject(space, spaceProviderId, spaceId, itemId, projectType, monitor);
         }
         if (projectAndWfm == null) {
-            throw new IllegalArgumentException("Project could not be loaded");
+            throw new OpenProjectException("The project could not be loaded.");
         }
 
         final var isServerProject =
@@ -221,6 +230,23 @@ final class OpenProject {
         }
         registerProjectAndSetActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
+    }
+
+    final static class OpenProjectException extends Exception {
+        private final String m_userFacingMessage;
+
+        public OpenProjectException(final String userFacingMessage, Throwable cause) {
+            super(cause);
+            this.m_userFacingMessage = userFacingMessage;
+        }
+
+        public OpenProjectException(final String userFacingMessage) {
+            this.m_userFacingMessage = userFacingMessage;
+        }
+
+        public String getUserMessage() {
+            return m_userFacingMessage;
+        }
     }
 
     private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
