@@ -242,7 +242,7 @@ describe("spaces::spaceOperations", () => {
       };
 
       mockedAPI.desktop.openProject.mockRejectedValue(
-        new Error("Could not open workflow"),
+        "Could not open workflow",
       );
 
       await expect(() =>
