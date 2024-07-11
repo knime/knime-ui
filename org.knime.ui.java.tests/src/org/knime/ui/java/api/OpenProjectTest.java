@@ -85,7 +85,7 @@ class OpenProjectTest {
 
     @Test
     @DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
-    void testOpenWorkflowInWebUIOnly() throws IOException {
+    void testOpenWorkflowInWebUIOnly() throws Exception {
         var localWorkspace = LocalSpaceUtilTest.createLocalWorkspace();
         var spaceProvider = mock(SpaceProvider.class);
         when(spaceProvider.getSpace("local")).thenReturn(localWorkspace);
@@ -106,11 +106,11 @@ class OpenProjectTest {
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
-        assertThatThrownBy(
-            () -> OpenProject.openProjectInWebUIOnly("local", "local", "does-not-exist", new NullProgressMonitor()))
+        var monitor = new NullProgressMonitor();
+        assertThatThrownBy(() -> OpenProject.openProjectInWebUIOnly("local", "local", "does-not-exist", monitor))
             .isInstanceOf(IllegalArgumentException.class);
 
-        OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
+        OpenProject.openProjectInWebUIOnly("local", "local", itemId, monitor);
 
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);

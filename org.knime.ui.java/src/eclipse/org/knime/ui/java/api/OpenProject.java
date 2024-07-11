@@ -124,6 +124,9 @@ final class OpenProject {
                 if (e instanceof OpenProjectException openProjectException) {
                     throw new IOException(openProjectException.getUserMessage(), openProjectException.getCause());
                 }
+                if (e instanceof NoSuchElementException) {
+                    throw new IOException("The project could not be found.", e.getCause());
+                }
                 throw new IOException(e);
             }
         }
@@ -211,9 +214,9 @@ final class OpenProject {
             throw new OpenProjectException("The space could not be accessed.", e);
         }
 
-        var projectType = space.getProjectType(itemId).orElseThrow(() ->
-                new OpenProjectException("The item is not a valid project.",
-                new IllegalArgumentException("The item for id " + itemId + " is neither a workflow- nor a component-project")));
+        var projectType = space.getProjectType(itemId).orElseThrow(
+            () -> new OpenProjectException("The item is not a valid project.", new IllegalArgumentException(
+                "The item for id " + itemId + " is neither a workflow- nor a component-project")));
 
         var projectAndWfm = getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType);
         if (projectAndWfm == null) {
@@ -232,10 +235,12 @@ final class OpenProject {
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
     }
 
-    final static class OpenProjectException extends Exception {
+    @SuppressWarnings("serial")
+    private static final class OpenProjectException extends Exception {
+
         private final String m_userFacingMessage;
 
-        public OpenProjectException(final String userFacingMessage, Throwable cause) {
+        public OpenProjectException(final String userFacingMessage, final Throwable cause) {
             super(cause);
             this.m_userFacingMessage = userFacingMessage;
         }
@@ -247,6 +252,7 @@ final class OpenProject {
         public String getUserMessage() {
             return m_userFacingMessage;
         }
+
     }
 
     private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,

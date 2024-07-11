@@ -459,7 +459,7 @@ public final class DesktopAPUtil {
     /**
      * Run the given {@code consumer} (function with argument and void return type), re-throwing any exceptions that
      * occur during its execution but only logging an interrupt.
-     * 
+     *
      * @param name The name of the consumer task.
      * @param logger The logger to use.
      * @param consumer The task to perform.
@@ -478,7 +478,7 @@ public final class DesktopAPUtil {
             });
         } catch (InvocationTargetException e) {
             // recover original exception (cause) from consumer
-            throw new Exception(Optional.ofNullable(e.getCause()).orElse(e));
+            throw ((Exception)Optional.ofNullable(e.getCause()).orElse(e));
         } catch (InterruptedException e) {
             logger.warn(name + " interrupted");
             Thread.currentThread().interrupt();
