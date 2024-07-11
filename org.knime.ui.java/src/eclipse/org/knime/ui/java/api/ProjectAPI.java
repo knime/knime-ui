@@ -112,9 +112,6 @@ final class ProjectAPI {
     @API
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
         throws IOException {
-
-        // TODO: Do we need to throw the IOException here, or will it be forwarded?
-
         OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 

@@ -16,7 +16,6 @@ import { API } from "@api";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
 import PageTitle from "./PageTitle.vue";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
 import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
@@ -26,7 +25,6 @@ type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 const items = ref<RecentWorkflowItem[]>([]);
 const store = useStore();
 const $router = useRouter();
-const $toast = getToastsProvider();
 
 const spaceProviders = computed(() => store.state.spaces.spaceProviders ?? {});
 

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { deepMocked } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
 import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
 import {
   createSpace,
@@ -11,10 +11,11 @@ import {
   createProject,
 } from "@/test/factories";
 import { $bus } from "@/plugins/event-bus";
+import { getToastsProvider } from "@/plugins/toasts";
 
 const busEmitSpy = vi.spyOn($bus, "emit");
-
 const mockedAPI = deepMocked(API);
+const toast = mockedObject(getToastsProvider());
 
 describe("spaces::spaceOperations", () => {
   afterEach(() => {
@@ -214,8 +215,6 @@ describe("spaces::spaceOperations", () => {
         itemId: "level2",
       };
 
-      mockedAPI.desktop.openProject.mockResolvedValue(true);
-
       await store.dispatch("spaces/openProject", {
         providerId: "local",
         spaceId: "local",
@@ -242,7 +241,9 @@ describe("spaces::spaceOperations", () => {
         itemId: "something",
       };
 
-      mockedAPI.desktop.openProject.mockResolvedValue(false);
+      mockedAPI.desktop.openProject.mockRejectedValue(
+        new Error("Could not open workflow"),
+      );
 
       await expect(() =>
         store.dispatch("spaces/openProject", {
@@ -251,6 +252,36 @@ describe("spaces::spaceOperations", () => {
           itemId: "foobar",
         }),
       ).rejects.toThrow("Could not open workflow");
+    });
+
+    it("should show toast when failing to open workflow", async () => {
+      const { store } = loadStore();
+
+      store.state.spaces.projectPath.project2 = {
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "something",
+      };
+
+      mockedAPI.desktop.openProject.mockRejectedValue(
+        "Workflow could not be read",
+      );
+
+      try {
+        await store.dispatch("spaces/openProject", {
+          providerId: "local",
+          spaceId: "local",
+          itemId: "foobar",
+        });
+      } catch (error) {
+        expect(toast.show).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "warning",
+            headline: "Could not open workflow",
+            message: `${error}`,
+          }),
+        );
+      }
     });
 
     it("should navigate to already open workflow", async () => {
@@ -273,7 +304,6 @@ describe("spaces::spaceOperations", () => {
       });
 
       const mockRouter = { push: vi.fn() };
-      mockedAPI.desktop.openProject.mockResolvedValue(true);
 
       await store.dispatch("spaces/openProject", {
         providerId: "local",
