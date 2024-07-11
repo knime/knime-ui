@@ -156,7 +156,7 @@ class ProjectAPITest {
     @Test
     void testGetExampleProjects() throws IOException {
         ExampleProjects exampleProjects = () -> List.of("wfDir1", "wfDir2");
-        var localSpace = mockLocalWorkspace();
+        var localSpace = createLocalWorkspace();
         DesktopAPI.injectDependency(localSpace);
         DesktopAPI.injectDependency(exampleProjects);
 
@@ -171,7 +171,7 @@ class ProjectAPITest {
         assertThat(res.get(0).get("origin").has("providerId"));
     }
 
-    private static LocalWorkspace mockLocalWorkspace() throws IOException {
+    private static LocalWorkspace createLocalWorkspace() throws IOException {
         var root = Files.createTempDirectory("application_service_test");
         var wfDir1 = root.resolve("wfDir1");
         Files.createDirectory(wfDir1);

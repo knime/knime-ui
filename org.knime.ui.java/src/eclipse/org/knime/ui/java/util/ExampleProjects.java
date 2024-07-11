@@ -51,7 +51,7 @@ package org.knime.ui.java.util;
 import java.util.List;
 
 /**
- * Provides information about example projects, e.g., shown at the get-started page.
+ * Provides information about example projects, e.g., shown at the home page.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
