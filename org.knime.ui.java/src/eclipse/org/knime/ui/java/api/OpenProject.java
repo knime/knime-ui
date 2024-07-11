@@ -131,9 +131,9 @@ final class OpenProject {
      * @param throwable The {@link Throwable} (can be {@code null}) to be turned into an {@code IOException}.
      */
     private static IOException getIOExceptionFromThrowable(final Throwable throwable) {
-        // Since `LoadWorkflowRunnalbe.run()` handles `IOException` on its own, we cannot catch them.
-        // So a failed execution without anything caught means the workflow could not be loaded
         if (throwable == null) {
+            // Since `LoadWorkflowRunnable.run()` handles `IOException` on its own, we cannot catch them.
+            // So a failed execution without anything caught means the workflow could not be loaded
             return new IOException(ERROR_LOADING_WORKFLOW_MSG);
         }
         if (throwable instanceof IllegalArgumentException || throwable instanceof NoSuchElementException) {

@@ -404,69 +404,74 @@ public final class DesktopAPUtil {
     /**
      * Runs the given function while showing a modal SWT dialog with progress information.
      *
-     * @param <T> return type
+     * @param <R> Result type of the task
      * @param name name of the operation for error messages, e.g. {@code "Opening workflow"}
      * @param logger logger to use
-     * @param func function to call
+     * @param task Task to perform
      * @return returned value
      */
-    public static <T> Optional<T> runWithProgress(final String name, final NodeLogger logger,
-        final FailableFunction<IProgressMonitor, T, InvocationTargetException> func) {
-        return composedRunWithProgress(name, logger, func,
+    public static <R> Optional<R> runWithProgress(final String name, final NodeLogger logger,
+        final FailableFunction<IProgressMonitor, R, InvocationTargetException> task) {
+        return composedRunWithProgress(name, logger, task,
             cause -> showWarningAndLogError(name + " failed", cause.getMessage(), logger, cause));
     }
 
     /**
-     * Runs the given function while showing a modal SWT dialog with progress information but no Java warnings.
+     * Runs the given function while showing a modal SWT dialog with progress information but no SWT warning dialog.
      *
-     * @param <T> return type
+     * @param <R> Result type of the task
      * @param name name of the operation for progress information
      * @param logger logger to use
-     * @param func function to call
+     * @param task function to call
      * @return returned value
      */
-    public static <T> Optional<T> runWithProgressWithoutWarnings(final String name, final NodeLogger logger,
-        final FailableFunction<IProgressMonitor, T, InvocationTargetException> func) {
-        return composedRunWithProgress(name, logger, func,
+    public static <R> Optional<R> runWithProgressWithoutWarnings(final String name, final NodeLogger logger,
+        final FailableFunction<IProgressMonitor, R, InvocationTargetException> task) {
+        return composedRunWithProgress(name, logger, task,
             cause -> logger.error("%s failed: %s".formatted(name, cause.getMessage())));
     }
 
     /**
-     * Runs the given function while showing a modal SWT dialog with progress information, optionally returning the
-     * cause of failure.
+     * Runs the given function while showing a modal SWT dialog with progress information.
+     * On thrown failure, applies {@code throwableConverter}, uses its result for logging / messages and re-throws it.
      *
-     * @param <T> The exception type
+     * @param <E> The exception type
      * @param name Name of the operation for progress information
      * @param logger Logger to use
-     * @param func Function returning a success state
-     * @param exceptionFunction Function turning the optionally caught {@link Throwable} into a useful {@link Exception}
-     * @throws Exception Exception to be used
+     * @param task Function returning a success state
+     * @param throwableConverter Function turning the optionally caught {@link Throwable} into a useful {@link Exception}
+     * @throws E Exception to be used
      */
-    public static <T extends Exception> void runWithProgressThrowing(final String name, final NodeLogger logger,
-        final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> func,
-        final Function<Throwable, T> exceptionFunction) throws T {
-        final var ref = new AtomicReference<Throwable>();
-        final var success = composedRunWithProgress(name, logger, func, ref::set).orElse(false);
+    public static <E extends Exception> void runWithProgressThrowing(final String name, final NodeLogger logger,
+        final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> task,
+        final Function<Throwable, E> throwableConverter) throws E {
+        final var throwable = new AtomicReference<Throwable>();
+        final var success = composedRunWithProgress(name, logger, task, throwable::set).orElse(false);
         if (!success) {
-            final var exception = exceptionFunction.apply(ref.get());
+            final var exception = throwableConverter.apply(throwable.get());
             logger.error("%s failed: %s".formatted(name, exception));
-            throw exceptionFunction.apply(ref.get());
+            throw throwableConverter.apply(throwable.get());
         }
     }
 
     /**
-     * A composed 'runWithProgress' function you have to provide a {@link Throwable} to
+     * @param name Name of the operation for progress information
+     * @param logger Logger to use
+     * @param task
+     * @param errorHandler
+     * @return An Optional containing the result of the task
+     * @param <R> Result type of the task
      */
-    private static <T> Optional<T> composedRunWithProgress(final String name, final NodeLogger logger,
-        final FailableFunction<IProgressMonitor, T, InvocationTargetException> func,
-        final Consumer<Throwable> throwableConsumer) {
+    private static <R> Optional<R> composedRunWithProgress(final String name, final NodeLogger logger,
+        final FailableFunction<IProgressMonitor, R, InvocationTargetException> task,
+        final Consumer<Throwable> errorHandler) {
         try {
-            final var ref = new AtomicReference<T>();
-            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> ref.set(func.apply(monitor)));
-            return Optional.ofNullable(ref.get());
+            final var result = new AtomicReference<R>();
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> result.set(task.apply(monitor)));
+            return Optional.ofNullable(result.get());
         } catch (InvocationTargetException e) {
             // `InvocationTargetException` doesn't have value itself (and often no message), report its cause instead
-            throwableConsumer.accept(Optional.ofNullable(e.getCause()).orElse(e));
+            errorHandler.accept(Optional.ofNullable(e.getCause()).orElse(e));
         } catch (InterruptedException e) {
             logger.warn(name + " interrupted");
             Thread.currentThread().interrupt();
