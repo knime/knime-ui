@@ -87,14 +87,6 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
       $router,
     });
   } catch (error) {
-    consola.error("could not open recent workflow", error);
-
-    $toast.show({
-      type: "warning",
-      headline: "Could not open workflow",
-      message: "The workflow might not exist anymore or be corrupted",
-    });
-
     items.value = items.value.filter(
       (item) => !isEqual(item.meta?.recentWorkflow.origin, origin),
     );

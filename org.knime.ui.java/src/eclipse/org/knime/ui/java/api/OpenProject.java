@@ -48,7 +48,9 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.NoSuchElementException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -86,10 +88,15 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
  *
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 final class OpenProject {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenProject.class);
+
+    private static final String ERROR_LOADING_WORKFLOW_MSG = "Workflow could not be read";
+
+    private static final String ERROR_FINDING_WORKFLOW_MSG = "Workflow could not be found";
 
     private OpenProject() {
         // utility
@@ -101,21 +108,38 @@ final class OpenProject {
      * @param spaceId The ID of the space the item is in
      * @param itemId The item ID of the workflow to open
      * @param spaceProviderId The ID of the space provider of the space
-     * @return A boolean indicating whether the project has been opened successfully or not.
+     * @throws IOException If something goes wrong opening the project
      */
-    static boolean openProject(final String spaceId, final String itemId, final String spaceProviderId) {
+    static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
+        throws IOException {
+        // TODO: NXT-2549, Remove this part since hybrid mode is no longer supported.
         if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
             final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
             final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
             final var knimeUrl = space.toKnimeUrl(itemId);
             final var isServerProject =
                 spaceProviders.getProviderTypes().get(spaceProviderId) == SpaceProviderEnt.TypeEnum.SERVER;
-            return openProjectInClassicAndWebUI(knimeUrl, null, isServerProject);
+            openProjectInClassicAndWebUI(knimeUrl, null, isServerProject);
         } else {
-            return DesktopAPUtil.runWithProgressWithoutWarnings(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, //
-                monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor)) //
-                .orElse(false); // Since an empty optional means opening failed
+            DesktopAPUtil.runWithProgressThrowing(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+                monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor),
+                OpenProject::getIOExceptionFromThrowable);
         }
+    }
+
+    /**
+     * @param throwable The {@link Throwable} (can be {@code null}) to be turned into an {@code IOException}.
+     */
+    private static IOException getIOExceptionFromThrowable(final Throwable throwable) {
+        // Since `LoadWorkflowRunnalbe.run()` handles `IOException` on its own, we cannot catch them.
+        // So a failed execution without anything caught means the workflow could not be loaded
+        if (throwable == null) {
+            return new IOException(ERROR_LOADING_WORKFLOW_MSG);
+        }
+        if (throwable instanceof IllegalArgumentException || throwable instanceof NoSuchElementException) {
+            return new IOException(ERROR_FINDING_WORKFLOW_MSG);
+        }
+        return new IOException(throwable.getMessage());
     }
 
     /**
@@ -188,7 +212,7 @@ final class OpenProject {
      * @param itemId
      * @param spaceProviderId
      * @param monitor
-     * @return A boolean indicating whether the project has been opened successfully or not.
+     * @return {@code true} if the project loaded successfully, {@code false} otherwise
      */
     static boolean openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) {
@@ -204,7 +228,7 @@ final class OpenProject {
         }
 
         if (projectAndWfm == null) {
-            return false; // Opening failed if there is no project and WFM at this point
+            return false; // Opening failed if we got no project and workflow manager at this point
         }
 
         final var isServerProject =

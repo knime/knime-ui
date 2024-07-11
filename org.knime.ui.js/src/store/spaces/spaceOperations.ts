@@ -299,15 +299,22 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     $bus.emit("block-ui");
 
     try {
-      const didOpen = await API.desktop.openProject({
+      // Async call to indicate that this function might take a while
+      await API.desktop.openProject({
         spaceProviderId: providerId,
         spaceId,
         itemId,
       });
-      if (!didOpen) {
-        // Throwing an error here, so calling components can handle it
-        throw new Error("Could not open workflow");
-      }
+    } catch (error) {
+      consola.error("Could not open workflow:", error);
+
+      $toast.show({
+        type: "warning",
+        headline: "Could not open workflow",
+        message: `${error}`,
+      });
+
+      throw error; // Exception needs to be forwarded to the caller for separate error handling
     } finally {
       $bus.emit("unblock-ui");
     }

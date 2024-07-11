@@ -107,11 +107,15 @@ final class ProjectAPI {
      * @param spaceId
      * @param itemId
      * @param spaceProviderId {@code local} if absent
-     * @return A boolean indicating whether the project has been opened successfully or not.
+     * @throws IOException If something goes wrong opening the project
      */
     @API
-    static boolean openProject(final String spaceId, final String itemId, final String spaceProviderId) {
-        return OpenProject.openProject(spaceId, itemId, spaceProviderId);
+    static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
+        throws IOException {
+
+        // TODO: Do we need to throw the IOException here, or will it be forwarded?
+
+        OpenProject.openProject(spaceId, itemId, spaceProviderId);
     }
 
     /**

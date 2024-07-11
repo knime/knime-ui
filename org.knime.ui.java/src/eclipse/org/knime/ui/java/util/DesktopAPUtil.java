@@ -59,6 +59,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.function.FailableFunction;
 import org.eclipse.core.filesystem.EFS;
@@ -419,7 +420,7 @@ public final class DesktopAPUtil {
      * Runs the given function while showing a modal SWT dialog with progress information but no Java warnings.
      *
      * @param <T> return type
-     * @param name name of the operation for error messages, e.g. {@code "Opening workflow"}
+     * @param name name of the operation for progress information
      * @param logger logger to use
      * @param func function to call
      * @return returned value
@@ -428,6 +429,29 @@ public final class DesktopAPUtil {
         final FailableFunction<IProgressMonitor, T, InvocationTargetException> func) {
         return composedRunWithProgress(name, logger, func,
             cause -> logger.error("%s failed: %s".formatted(name, cause.getMessage())));
+    }
+
+    /**
+     * Runs the given function while showing a modal SWT dialog with progress information, optionally returning the
+     * cause of failure.
+     *
+     * @param <T> The exception type
+     * @param name Name of the operation for progress information
+     * @param logger Logger to use
+     * @param func Function returning a success state
+     * @param exceptionFunction Function turning the optionally caught {@link Throwable} into a useful {@link Exception}
+     * @throws Exception Exception to be used
+     */
+    public static <T extends Exception> void runWithProgressThrowing(final String name, final NodeLogger logger,
+        final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> func,
+        final Function<Throwable, T> exceptionFunction) throws T {
+        final var ref = new AtomicReference<Throwable>();
+        final var success = composedRunWithProgress(name, logger, func, ref::set).orElse(false);
+        if (!success) {
+            final var exception = exceptionFunction.apply(ref.get());
+            logger.error("%s failed: %s".formatted(name, exception));
+            throw exceptionFunction.apply(ref.get());
+        }
     }
 
     /**
