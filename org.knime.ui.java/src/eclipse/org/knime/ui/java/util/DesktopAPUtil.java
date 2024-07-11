@@ -59,8 +59,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
+import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.runtime.CoreException;
@@ -432,29 +432,6 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * Runs the given function while showing a modal SWT dialog with progress information.
-     * On thrown failure, applies {@code throwableConverter}, uses its result for logging / messages and re-throws it.
-     *
-     * @param <E> The exception type
-     * @param name Name of the operation for progress information
-     * @param logger Logger to use
-     * @param task Function returning a success state
-     * @param throwableConverter Function turning the optionally caught {@link Throwable} into a useful {@link Exception}
-     * @throws E Exception to be used
-     */
-    public static <E extends Exception> void runWithProgressThrowing(final String name, final NodeLogger logger,
-        final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> task,
-        final Function<Throwable, E> throwableConverter) throws E {
-        final var throwable = new AtomicReference<Throwable>();
-        final var success = composedRunWithProgress(name, logger, task, throwable::set).orElse(false);
-        if (!success) {
-            final var exception = throwableConverter.apply(throwable.get());
-            logger.error("%s failed: %s".formatted(name, exception));
-            throw throwableConverter.apply(throwable.get());
-        }
-    }
-
-    /**
      * @param name Name of the operation for progress information
      * @param logger Logger to use
      * @param task
@@ -477,6 +454,35 @@ public final class DesktopAPUtil {
             Thread.currentThread().interrupt();
         }
         return Optional.empty();
+    }
+
+    /**
+     * Run the given {@code consumer} (function with argument and void return type), re-throwing any exceptions that
+     * occur during its execution but only logging an interrupt.
+     * 
+     * @param name The name of the consumer task.
+     * @param logger The logger to use.
+     * @param consumer The task to perform.
+     * @throws Exception Exception thrown by the consumer task (checked or unchecked).
+     */
+    public static void consumerWithProgress(final String name, final NodeLogger logger,
+        final FailableConsumer<IProgressMonitor, ? extends Throwable> consumer) throws Exception {
+        try {
+            PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
+                try {
+                    consumer.accept(monitor);
+                } catch (Throwable e) {
+                    // arguments to `busyCursorWhile` are only allowed to throw InvocationTargetExceptions
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            // recover original exception (cause) from consumer
+            throw new Exception(Optional.ofNullable(e.getCause()).orElse(e));
+        } catch (InterruptedException e) {
+            logger.warn(name + " interrupted");
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

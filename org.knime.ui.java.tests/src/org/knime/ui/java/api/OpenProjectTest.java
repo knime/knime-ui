@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,11 +106,11 @@ class OpenProjectTest {
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
-        var didOpen1 =
-            OpenProject.openProjectInWebUIOnly("local", "local", "does-not-exist", new NullProgressMonitor());
-        assertThat(didOpen1).isFalse();
-        var didOpen2 = OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
-        assertThat(didOpen2).isTrue();
+        assertThatThrownBy(
+            () -> OpenProject.openProjectInWebUIOnly("local", "local", "does-not-exist", new NullProgressMonitor()))
+            .isInstanceOf(IllegalArgumentException.class);
+
+        OpenProject.openProjectInWebUIOnly("local", "local", itemId, new NullProgressMonitor());
 
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);

@@ -50,7 +50,7 @@ import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -94,10 +94,6 @@ final class OpenProject {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenProject.class);
 
-    private static final String ERROR_LOADING_WORKFLOW_MSG = "Workflow could not be read";
-
-    private static final String ERROR_FINDING_WORKFLOW_MSG = "Workflow could not be found";
-
     private OpenProject() {
         // utility
     }
@@ -121,25 +117,13 @@ final class OpenProject {
                 spaceProviders.getProviderTypes().get(spaceProviderId) == SpaceProviderEnt.TypeEnum.SERVER;
             openProjectInClassicAndWebUI(knimeUrl, null, isServerProject);
         } else {
-            DesktopAPUtil.runWithProgressThrowing(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-                monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor),
-                OpenProject::getIOExceptionFromThrowable);
+            try {
+                DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+                    monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor));
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
         }
-    }
-
-    /**
-     * @param throwable The {@link Throwable} (can be {@code null}) to be turned into an {@code IOException}.
-     */
-    private static IOException getIOExceptionFromThrowable(final Throwable throwable) {
-        if (throwable == null) {
-            // Since `LoadWorkflowRunnable.run()` handles `IOException` on its own, we cannot catch them.
-            // So a failed execution without anything caught means the workflow could not be loaded
-            return new IOException(ERROR_LOADING_WORKFLOW_MSG);
-        }
-        if (throwable instanceof IllegalArgumentException || throwable instanceof NoSuchElementException) {
-            return new IOException(ERROR_FINDING_WORKFLOW_MSG);
-        }
-        return new IOException(throwable.getMessage());
     }
 
     /**
@@ -208,14 +192,14 @@ final class OpenProject {
      * switching to it.
      *
      * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
+     * @apiNote  Throws unchecked exception on failure.
      * @param spaceId
      * @param itemId
      * @param spaceProviderId
      * @param monitor
-     * @return {@code true} if the project loaded successfully, {@code false} otherwise
      */
-    static boolean openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
-        final IProgressMonitor monitor) {
+    static void openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
+        final IProgressMonitor monitor)  {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
 
@@ -226,9 +210,8 @@ final class OpenProject {
         if (projectAndWfm == null) {
             projectAndWfm = loadProject(space, spaceProviderId, spaceId, itemId, projectType, monitor);
         }
-
         if (projectAndWfm == null) {
-            return false; // Opening failed if we got no project and workflow manager at this point
+            throw new IllegalArgumentException("Project could not be loaded");
         }
 
         final var isServerProject =
@@ -238,8 +221,6 @@ final class OpenProject {
         }
         registerProjectAndSetActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
             space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
-
-        return true;
     }
 
     private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
