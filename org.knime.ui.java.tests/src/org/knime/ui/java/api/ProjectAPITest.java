@@ -107,8 +107,8 @@ class ProjectAPITest {
         mruProjects.add(proj2);
         mruProjects.add(proj3);
 
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, localSpace, null,
-            null);
+        DesktopAPI.injectDependency(mruProjects);
+        DesktopAPI.injectDependency(localSpace);
 
         var res = ProjectAPI.updateAndGetMostRecentlyUsedProjects();
         assertThat(res).isEqualTo(String.format("""
@@ -143,7 +143,7 @@ class ProjectAPITest {
         mruProjects.add(proj1);
         mruProjects.add(proj2);
 
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, mruProjects, null, null, null);
+        DesktopAPI.injectDependency(mruProjects);
 
         ProjectAPI.removeMostRecentlyUsedProject("pidblub", "sid", "iid2");
         assertThat(mruProjects.get()).hasSize(2);
@@ -157,8 +157,8 @@ class ProjectAPITest {
     void testGetExampleProjects() throws IOException {
         ExampleProjects exampleProjects = () -> List.of("wfDir1", "wfDir2");
         var localSpace = mockLocalWorkspace();
-        DesktopAPI.injectDependencies(null, null, null, null, null, null, null, null, null, localSpace, null,
-            exampleProjects);
+        DesktopAPI.injectDependency(localSpace);
+        DesktopAPI.injectDependency(exampleProjects);
 
         var res = (ArrayNode)DesktopAPI.MAPPER.readTree(ProjectAPI.getExampleProjects());
         assertThat(res.size()).isEqualTo(2);

@@ -103,8 +103,7 @@ class SaveAndCloseProjectsTest {
         var appStateUpdater = new AppStateUpdater();
         var appStateUpdateListener = mock(Runnable.class);
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
-        DesktopAPI.injectDependencies(null, appStateUpdater, null, null, null, null, null, null, null, null, null,
-            null);
+        DesktopAPI.injectDependency(appStateUpdater);
 
         var progressService = mock(IProgressService.class);
         Mockito.doAnswer(invocation -> {

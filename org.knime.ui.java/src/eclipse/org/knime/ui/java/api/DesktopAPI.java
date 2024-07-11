@@ -115,7 +115,7 @@ public final class DesktopAPI {
 
     private static final List<APIMethod> METHODS = collectMethods();
 
-    private static Map<Class<?>, Object> dependencies;
+    private static final Map<Class<?>, Object> DEPENDENCIES = new HashMap<>();
 
     private static final String DESKTOP_API_FUNCTION_RESULT_EVENT_NAME = "DesktopAPIFunctionResultEvent";
 
@@ -204,25 +204,87 @@ public final class DesktopAPI {
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
         final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace,
-        final WelcomeAPEndpoint welcomeAPEndpoint, ExampleProjects exampleProjects) {
+        final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
-        dependencies = new HashMap<>();
-        dependencies.put(ProjectManager.class, workflowProjectManager);
-        dependencies.put(AppStateUpdater.class, appStateUpdater);
-        dependencies.put(SpaceProviders.class, spaceProviders);
-        dependencies.put(EventConsumer.class, eventConsumer);
-        dependencies.put(WorkflowMiddleware.class, workflowMiddleware);
-        dependencies.put(ToastService.class, toastService);
-        dependencies.put(NodeRepository.class, nodeRepo);
+        injectDependency(workflowProjectManager);
+        injectDependency(appStateUpdater);
+        injectDependency(spaceProviders);
+        injectDependency(eventConsumer);
+        DEPENDENCIES.put(WorkflowMiddleware.class, workflowMiddleware);
+        DEPENDENCIES.put(ToastService.class, toastService);
+        DEPENDENCIES.put(NodeRepository.class, nodeRepo);
         if (updateStateProvider != null) {
-            dependencies.put(UpdateStateProvider.class, updateStateProvider);
+            DEPENDENCIES.put(UpdateStateProvider.class, updateStateProvider);
         }
-        dependencies.put(MostRecentlyUsedProjects.class, mruProjects);
-        dependencies.put(LocalWorkspace.class, localWorkspace);
-        dependencies.put(WelcomeAPEndpoint.class, welcomeAPEndpoint);
-        dependencies.put(ExampleProjects.class, exampleProjects);
+        injectDependency(mruProjects);
+        injectDependency(localWorkspace);
+        DEPENDENCIES.put(WelcomeAPEndpoint.class, welcomeAPEndpoint);
+        injectDependency(exampleProjects);
+    }
+
+    /**
+     * Add individual dependency for testing purposes.
+     *
+     * @param eventConsumer
+     */
+    static void injectDependency(final EventConsumer eventConsumer) {
+        DEPENDENCIES.put(EventConsumer.class, eventConsumer);
+    }
+
+    /**
+     * Add individual dependency for testing purposes.
+     *
+     * @param localWorkspace
+     */
+    static void injectDependency(final LocalWorkspace localWorkspace) {
+        DEPENDENCIES.put(LocalWorkspace.class, localWorkspace);
+    }
+
+    /**
+     * Add individual dependency for testing purposes.
+     *
+     * @param projectManager
+     */
+    static void injectDependency(final ProjectManager projectManager) {
+        DEPENDENCIES.put(ProjectManager.class, projectManager);
+    }
+
+    /**
+     * Add individual dependency for testing purposes.
+     *
+     * @param appStateUpdater
+     */
+    static void injectDependency(final AppStateUpdater appStateUpdater) {
+        DEPENDENCIES.put(AppStateUpdater.class, appStateUpdater);
+    }
+
+    /**
+     * Add individual dependency for testing purposes.
+     *
+     * @param spaceProviders
+     */
+    static void injectDependency(final SpaceProviders spaceProviders) {
+        DEPENDENCIES.put(SpaceProviders.class, spaceProviders);
+    }
+
+    /**
+     * Add individual dependency for testing purposes.
+     *
+     * @param mruProjects
+     */
+    static void injectDependency(final MostRecentlyUsedProjects mruProjects) {
+        DEPENDENCIES.put(MostRecentlyUsedProjects.class, mruProjects);
+    }
+
+    /**
+     * Add individual dependency for testing purposes.
+     *
+     * @param exampleProjects
+     */
+    static void injectDependency(final ExampleProjects exampleProjects) {
+        DEPENDENCIES.put(ExampleProjects.class, exampleProjects);
     }
 
     /**
@@ -230,14 +292,14 @@ public final class DesktopAPI {
      *         {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}
      */
     public static boolean areDependenciesInjected() {
-        return dependencies != null && !dependencies.isEmpty();
+        return !DEPENDENCIES.isEmpty();
     }
 
     /**
      * Cleans-up the injected dependencies in case the desktop API is not used anymore.
      */
     public static void disposeDependencies() {
-        dependencies = null;
+        DEPENDENCIES.clear();
     }
 
     private static List<APIMethod> collectMethods() {
@@ -270,7 +332,8 @@ public final class DesktopAPI {
      */
     @SuppressWarnings("unchecked")
     static <T> T getDeps(final Class<T> clazz) {
-        return dependencies == null ? null : (T)dependencies.get(clazz);
+        return (T)DEPENDENCIES.get(clazz);
     }
+
 
 }

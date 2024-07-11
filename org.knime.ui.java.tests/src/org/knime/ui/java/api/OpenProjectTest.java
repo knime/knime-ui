@@ -96,8 +96,12 @@ class OpenProjectTest {
         appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
         var mruProjects = new MostRecentlyUsedProjects();
         var pm = ProjectManager.getInstance();
-        DesktopAPI.injectDependencies(pm, appStateUpdater, spaceProviders, null, eventConsumer, null, null, null,
-            mruProjects, localWorkspace, null, null);
+        DesktopAPI.injectDependency(pm);
+        DesktopAPI.injectDependency(appStateUpdater);
+        DesktopAPI.injectDependency(spaceProviders);
+        DesktopAPI.injectDependency(eventConsumer);
+        DesktopAPI.injectDependency(mruProjects);
+        DesktopAPI.injectDependency(localWorkspace);
 
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
