@@ -17,6 +17,7 @@ import {
   mutations as jsonPatchMutations,
 } from "@/store-plugins/json-patch";
 import type { TooltipDefinition } from "@/composables/useTooltip";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 
 import { getProjectAndWorkflowIds } from "./util";
 import * as floatingMenus from "./floatingMenus";
@@ -96,6 +97,8 @@ export const mutations: MutationTree<WorkflowState> = {
     state.calculatedMetanodePortBarBounds = bounds;
   },
 };
+
+const { show: showConfirmDialog } = useConfirmDialog();
 
 export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ...jsonPatchActions,
@@ -293,11 +296,15 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     );
 
     if (isResetRequired) {
-      if (
-        !window.confirm(
-          `Creating this ${containerType} will reset executed nodes.`,
-        )
-      ) {
+      const { confirmed } = await showConfirmDialog({
+        title: "Confirm action",
+        message: `Creating this ${containerType} will reset executed nodes.`,
+        buttons: [
+          { type: "cancel", label: "Cancel" },
+          { type: "confirm", label: "Confirm", flushRight: true },
+        ],
+      });
+      if (!confirmed) {
         return;
       }
     }
@@ -327,11 +334,15 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     const selectedNode = rootGetters["selection/singleSelectedNode"];
 
     if (selectedNode.allowedActions.canExpand === "resetRequired") {
-      if (
-        !window.confirm(
-          `Expanding this ${selectedNode.kind} will reset executed nodes.`,
-        )
-      ) {
+      const { confirmed } = await showConfirmDialog({
+        title: "Confirm action",
+        message: `Expanding this ${selectedNode.kind} will reset executed nodes.`,
+        buttons: [
+          { type: "cancel", label: "Cancel" },
+          { type: "confirm", label: "Confirm", flushRight: true },
+        ],
+      });
+      if (!confirmed) {
         return;
       }
     }

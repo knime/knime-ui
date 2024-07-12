@@ -82,7 +82,7 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
 
   & :deep(.overlay) {
     background: white;
-    opacity: 0.1;
+    opacity: 0.3;
   }
 
   & :deep(.wrapper .inner) {
