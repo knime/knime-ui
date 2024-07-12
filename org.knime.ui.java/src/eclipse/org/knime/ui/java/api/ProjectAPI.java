@@ -303,7 +303,7 @@ final class ProjectAPI {
 
     /**
      * Updates infos of the reference most recently used project, such as name or relative path (in case a local project
-     * has been moved).
+     * has been moved). No-op for space items that are not already part of the MRU list.
      */
     @API
     static void updateMostRecentlyUsedProject(final String providerId, final String spaceId, final String itemId,

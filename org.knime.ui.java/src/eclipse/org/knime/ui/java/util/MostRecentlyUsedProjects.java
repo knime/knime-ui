@@ -79,19 +79,17 @@ public final class MostRecentlyUsedProjects {
     };
 
     /**
-     * @param proj the project to add, see also {@link #add(RecentlyUsedProject)}
+     * @param project the project to add, see also {@link #add(RecentlyUsedProject)}
      */
-    public void add(final Project proj) {
-        var origin = proj.getOrigin().orElse(null);
-        if (origin != null) {
-            add(new RecentlyUsedProject(proj.getName(), origin, OffsetDateTime.now()));
-        }
+    public void add(final Project project) {
+        project.getOrigin()
+            .ifPresent(origin -> add(new RecentlyUsedProject(project.getName(), origin, OffsetDateTime.now())));
     }
 
     /**
      * Adds a new recently used project to the list. Projects are identified by their relative path or, if it doesn't
-     * exist, by item-id (further 'uniquified' by space- and provider-id). If a project of the same 'id' is added
-     * again, it will move to the bottom of the list.
+     * exist, by item-id (further 'uniquified' by space- and provider-id). If a project of the same 'id' is added again,
+     * it will move to the bottom of the list.
      *
      * @param project
      */
@@ -141,6 +139,9 @@ public final class MostRecentlyUsedProjects {
 
         var id = getId(providerId, spaceId, itemId);
         var project = m_projects.get(id);
+        if (project == null) {
+            return;
+        }
         m_projects.put(id, new RecentlyUsedProject(newName == null || newName.isEmpty() ? project.name() : newName,
             newOrigin == null ? project.origin() : newOrigin, project.timeUsed()));
     }

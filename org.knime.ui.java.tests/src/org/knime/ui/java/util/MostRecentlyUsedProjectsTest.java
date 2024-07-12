@@ -150,9 +150,10 @@ public class MostRecentlyUsedProjectsTest {
         var proj = new RecentlyUsedProject("name1", createOrigin("local", "local", wfId, "simple"), OffsetDateTime.MAX);
         mruProjects.add(proj);
 
-
         mruProjects.updateOriginAndName("local", "local", wfId, "newName", localSpace);
         assertThat(mruProjects.get().get(0).name()).isEqualTo("newName");
+
+        mruProjects.updateOriginAndName("local", "local", groupId, "newName", localSpace);
 
         assertThat(mruProjects.get().get(0).origin().getRelativePath().orElse(null)).isEqualTo("simple");
         localSpace.moveOrCopyItems(List.of(wfId), groupId, NameCollisionHandling.NOOP, false);
