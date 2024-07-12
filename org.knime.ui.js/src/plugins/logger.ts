@@ -1,16 +1,15 @@
-import consola, { LogLevel } from "consola";
+import consola, { LogLevels, type LogLevel, type LogType } from "consola";
 
 const getLogLevelFromEnv = (): LogLevel => {
   const fromStorage = localStorage.getItem("KNIME_LOG_LEVEL");
-  const level = fromStorage ?? import.meta.env.VITE_LOG_LEVEL ?? "warn";
-  const levelUppercased = level.charAt(0).toUpperCase().concat(level.slice(1));
+  const level: LogType =
+    fromStorage ?? import.meta.env.VITE_LOG_LEVEL ?? "warn";
 
-  if (!LogLevel[levelUppercased]) {
-    return LogLevel.Warn;
+  if (!(level in LogLevels)) {
+    return LogLevels.warn;
   }
 
-  // @ts-expect-error
-  return LogLevel[levelUppercased];
+  return LogLevels[level];
 };
 
 export const setupLogger = () => {

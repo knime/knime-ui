@@ -4,12 +4,8 @@ import { ref, computed, toRefs } from "vue";
 import { RichTextEditor } from "@knime/rich-text-editor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import { buildUrlRegex } from "@/util/regex";
 
 import RichTextAnnotationToolbar from "./RichTextAnnotationToolbar.vue";
-import { ControlClickLink } from "./extended-link";
-
-const URL_REGEX = buildUrlRegex();
 
 interface Props {
   id: string;
@@ -33,12 +29,6 @@ const emit = defineEmits<{
 const activeBorderColor = computed(
   () => previewBorderColor.value || props.initialBorderColor,
 );
-
-const customExtensions = [
-  ControlClickLink.configure({
-    validate: (href) => URL_REGEX.test(href),
-  }),
-];
 </script>
 
 <template>
@@ -51,7 +41,6 @@ const customExtensions = [
       :model-value="initialValue"
       :editable="editable"
       :with-border="false"
-      :custom-extensions="customExtensions"
       autofocus
       :base-extensions="{
         bold: true,
@@ -63,6 +52,7 @@ const customExtensions = [
         heading: true,
         horizontalRule: true,
         strike: true,
+        link: true,
       }"
       @update:model-value="emit('change', $event)"
       @dblclick="!editable && emit('editStart')"
