@@ -164,7 +164,7 @@ onClickOutside(tooltipRef, onClose, { capture: false });
           v-if="selected"
           :key="`${nodeId}-${port.index}-${direction}`"
           :port="port"
-          :anchor-point="anchorPoint"
+          :anchor-point="anchorPoint!"
           :relative-position="relativePosition"
           :direction="direction"
           @action:remove="$emit('remove')"

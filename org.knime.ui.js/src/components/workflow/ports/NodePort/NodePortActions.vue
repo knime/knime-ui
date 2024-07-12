@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, defineExpose } from "vue";
-import type { ExtendedPortType } from "@/api/custom-types";
+import { computed } from "vue";
+import type { NodePort } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
@@ -14,9 +14,9 @@ defineExpose({
 });
 
 type Props = {
-  port: ExtendedPortType;
+  port: NodePort;
   direction: "in" | "out";
-  relativePosition?: [x: number, y: number];
+  relativePosition?: [number, number];
   anchorPoint: { x: number; y: number };
 };
 

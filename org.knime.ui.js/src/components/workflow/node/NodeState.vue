@@ -1,122 +1,107 @@
-<script>
-import { tooltip } from "@/mixins";
+<script setup lang="ts">
+import { inject, computed } from "vue";
+import type { NodeState, XY } from "@/api/gateway-api/generated-api";
+import { useTooltip, type TooltipDefinition } from "@/composables/useTooltip";
+import * as $shapes from "@/style/shapes.mjs";
+import * as $colors from "@/style/colors.mjs";
 
-export default {
-  mixins: [tooltip],
-  inject: ["anchorPoint"],
-  props: {
-    executionState: {
-      type: String,
-      default: "null",
-      validator: (executionState) =>
-        [
-          "null",
-          "CONFIGURED",
-          "EXECUTED",
-          "EXECUTING",
-          "HALTED",
-          "IDLE",
-          "QUEUED",
-        ].includes(executionState),
-    },
-    // progress as a fraction [0-1]
-    progress: {
-      type: Number,
-      default: null,
-    },
-    progressMessages: {
-      type: Array,
-      default: () => [],
-    },
-    error: {
-      type: String,
-      default: null,
-    },
-    warning: {
-      type: String,
-      default: null,
-    },
-    issue: {
-      type: String,
-      default: null,
-    },
-    resolutions: {
-      type: Array,
-      default: () => [],
-    },
-    // TODO: NXT-845 validator and/or docs needed
-    // TODO: NXT-845 naming state vs status
-    loopStatus: {
-      type: String,
-      default: null,
-    },
-  },
-  computed: {
-    /**
-     * sets the different lights of the traffic light
-     * @returns {[boolean, boolean, boolean] | undefined}
-     * @example [true, false, false] means [red: on, yellow: off, green: off]
-     * @example 'undefined' means no traffic light should be shown
-     */
-    trafficLight() {
-      return {
-        IDLE: [true, false, false],
-        CONFIGURED: [false, true, false],
-        EXECUTED: [false, false, true],
-        HALTED: [false, false, true], // TODO NXT-279: for now halted is the same state as executed
-        null: [false, false, false],
-      }[this.executionState];
-    },
-    progressBarWidth() {
-      let result = this.$shapes.nodeSize * this.clippedProgress;
-      if (result && result < 1) {
-        // fractional pixels just don't look good
-        return 1;
-      }
-      return result;
-    },
-    percentageClipPath() {
-      return `polygon(0 0, ${100 * this.clippedProgress}% 0, ${
-        100 * this.clippedProgress
-      }% 100%, 0 100%)`;
-    },
-    tooltip() {
-      const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = this.$shapes;
-      let tooltip = {
-        position: {
-          x: nodeSize / 2,
-          y: nodeSize + nodeStatusMarginTop + nodeStatusHeight,
-        },
-        anchorPoint: this.anchorPoint,
-        gap: 10,
-        hoverable: true,
-        issue: this.issue,
-        resolutions: this.resolutions,
-      };
+const anchorPoint = inject<XY>("anchorPoint");
 
-      if (this.error) {
-        return { ...tooltip, text: this.error, type: "error" };
-      } else if (this.warning) {
-        return { ...tooltip, text: this.warning, type: "warning" };
-      } else if (this.progressMessages.length) {
-        return { ...tooltip, text: this.progressMessages.join(" – ") };
-      }
-      return null;
+interface Props {
+  executionState?: NodeState.ExecutionStateEnum | null;
+  progress?: number | null;
+  progressMessages?: [];
+  error?: string | null;
+  warning?: string | null;
+  issue?: string | null;
+  resolutions?: [];
+  // TODO: NXT-845 validator and/or docs needed
+  // TODO: NXT-845 naming state vs status
+  loopStatus?: string | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  executionState: null,
+  progress: null,
+  progressMessages: () => [],
+  error: null,
+  warning: null,
+  issue: null,
+  resolutions: () => [],
+  loopStatus: null,
+});
+
+/**
+ * sets the different lights of the traffic light
+ * @returns {[boolean, boolean, boolean] | undefined}
+ * @example [true, false, false] means [red: on, yellow: off, green: off]
+ * @example 'undefined' means no traffic light should be shown
+ */
+const trafficLight = computed(() => {
+  return {
+    IDLE: [true, false, false],
+    CONFIGURED: [false, true, false],
+    EXECUTED: [false, false, true],
+    HALTED: [false, false, true], // TODO NXT-279: for now halted is the same state as executed
+    null: [false, false, false],
+  }[props.executionState!];
+});
+
+const clippedProgress = computed(() =>
+  Math.min(Math.max(props.progress!, 0), 1),
+);
+
+const progressBarWidth = computed(() => {
+  let result = $shapes.nodeSize * clippedProgress.value;
+  if (result && result < 1) {
+    // fractional pixels just don't look good
+    return 1;
+  }
+  return result;
+});
+
+const percentageClipPath = computed(() => {
+  return `polygon(0 0, ${100 * clippedProgress.value}% 0, ${
+    100 * clippedProgress.value
+  }% 100%, 0 100%)`;
+});
+
+const progressDisplayPercentage = computed(() => {
+  // Use `floor` instead of `round` so that 100% isn't reached too early
+  return Math.floor(100 * clippedProgress.value);
+});
+
+const tooltip = computed<TooltipDefinition>(() => {
+  const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = $shapes;
+  let tooltip = {
+    position: {
+      x: nodeSize / 2,
+      y: nodeSize + nodeStatusMarginTop + nodeStatusHeight,
     },
-    // TODO: NXT-845 docs why is clipping needed?
-    clippedProgress() {
-      return Math.min(Math.max(this.progress, 0), 1);
-    },
-    progressDisplayPercentage() {
-      // Use `floor` instead of `round` so that 100% isn't reached too early
-      return Math.floor(100 * this.clippedProgress);
-    },
-  },
-};
+    anchorPoint: anchorPoint ?? { x: 0, y: 0 },
+    gap: 10,
+    hoverable: true,
+    text: props.progressMessages.length
+      ? props.progressMessages.join(" – ")
+      : "",
+    issue: props.issue,
+    resolutions: props.resolutions,
+  } satisfies TooltipDefinition;
+
+  if (props.error) {
+    return { ...tooltip, text: props.error, type: "error" };
+  } else if (props.warning) {
+    return { ...tooltip, text: props.warning, type: "warning" };
+  }
+
+  return null;
+});
+
+const { elemRef: tooltipRef } = useTooltip({ tooltip });
 </script>
 
 <template>
-  <g>
+  <g ref="tooltipRef">
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"

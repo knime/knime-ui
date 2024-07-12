@@ -12,6 +12,8 @@ export interface TooltipDefinition {
   anchorPoint: { x: number; y: number };
   text: string;
   title?: string;
+  issue?: string | null;
+  resolutions?: [];
   type?: "error" | "warning" | "default";
   orientation?: "top" | "bottom";
   hoverable?: boolean;
@@ -65,7 +67,7 @@ export const useTooltip = (params: {
   };
 
   const onTooltipMouseLeave = (event: MouseEvent) => {
-    const relatedTarget = event.target as HTMLElement;
+    const relatedTarget = event.relatedTarget as HTMLElement;
     consola.trace(
       "mouse left to:",
       relatedTarget?.tagName,
@@ -77,8 +79,10 @@ export const useTooltip = (params: {
       clearTimeout(tooltipTimeout);
       return;
     }
-    if (params.tooltip?.value.hoverable) {
+
+    if (params.tooltip.value?.hoverable) {
       const tooltipContainer = document.getElementById("tooltip-container");
+
       if (tooltipContainer && tooltipContainer.contains(relatedTarget)) {
         // abort removing tooltip
         return;
