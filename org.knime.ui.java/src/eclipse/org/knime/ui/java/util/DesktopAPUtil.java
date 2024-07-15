@@ -463,10 +463,11 @@ public final class DesktopAPUtil {
      * @param name The name of the consumer task.
      * @param logger The logger to use.
      * @param consumer The task to perform.
-     * @throws Exception Exception thrown by the consumer task (checked or unchecked).
+     * @throws Throwable Throwable thrown by the consumer task (checked or unchecked).
      */
-    public static void consumerWithProgress(final String name, final NodeLogger logger,
-        final FailableConsumer<IProgressMonitor, ? extends Throwable> consumer) throws Exception {
+    @SuppressWarnings("unchecked")
+    public static <T extends Throwable> void consumerWithProgress(final String name, final NodeLogger logger,
+        final FailableConsumer<IProgressMonitor, T> consumer) throws T {
         try {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
                 try {
@@ -476,9 +477,9 @@ public final class DesktopAPUtil {
                     throw new InvocationTargetException(e);
                 }
             });
-        } catch (InvocationTargetException e) {
+        } catch (InvocationTargetException e) { // NOSONAR: Will be logged one level up
             // recover original exception (cause) from consumer
-            throw ((Exception)Optional.ofNullable(e.getCause()).orElse(e));
+            throw (T)e.getCause();
         } catch (InterruptedException e) {
             logger.warn(name + " interrupted");
             Thread.currentThread().interrupt();

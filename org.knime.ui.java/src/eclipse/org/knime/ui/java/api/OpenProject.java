@@ -120,11 +120,9 @@ final class OpenProject {
             try {
                 DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
                     monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor));
-            } catch (OpenProjectException e) {
-                LOGGER.error("Failed to open project", e);
-                throw new IOException(e.getUserMessage(), e.getCause());
             } catch (Exception e) {
-                throw new IOException(e);
+                LOGGER.error("Failed to open project", e);
+                throw new IOException(e.getMessage(), e);
             }
         }
     }
@@ -195,7 +193,6 @@ final class OpenProject {
      * switching to it.
      *
      * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
-     * @apiNote  Throws unchecked exception on failure. The exception messages are displayed to the user.
      * @param spaceId
      * @param itemId
      * @param spaceProviderId
@@ -242,21 +239,14 @@ final class OpenProject {
     @SuppressWarnings("serial")
     private static final class OpenProjectException extends Exception {
 
-        private final String m_userFacingMessage;
+        public OpenProjectException(final String message, final Throwable cause) {
+            super(message, cause);
 
-        public OpenProjectException(final String userFacingMessage, final Throwable cause) {
-            super(cause);
-            this.m_userFacingMessage = userFacingMessage;
         }
 
-        public OpenProjectException(final String userFacingMessage) {
-            this.m_userFacingMessage = userFacingMessage;
+        public OpenProjectException(final String message) {
+            super(message);
         }
-
-        public String getUserMessage() {
-            return m_userFacingMessage;
-        }
-
     }
 
     private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
