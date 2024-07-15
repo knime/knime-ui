@@ -2,11 +2,12 @@ import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
 import { API } from "@api";
 import * as spacesStore from "@/store/spaces";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { createSpaceProvider } from "@/test/factories";
+import { getToastsProvider } from "@/plugins/toasts";
 import RecentWorkflowsList from "../RecentWorkflowsList.vue";
 
 const routerPush = vi.fn();
@@ -39,6 +40,8 @@ const recentWorkflows: RecentWorkflow[] = [
 mockedAPI.desktop.updateAndGetMostRecentlyUsedProjects.mockResolvedValue(
   recentWorkflows,
 );
+
+const toast = mockedObject(getToastsProvider());
 
 describe("RecentWorkflowsList.vue", () => {
   beforeAll(() => {
@@ -185,6 +188,13 @@ describe("RecentWorkflowsList.vue", () => {
     wrapper.findComponent(FileExplorer).vm.$emit("openFile", {
       meta: { recentWorkflow: recentWorkflows.at(1) },
     });
+
+    expect(toast.show).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "warning",
+        headline: "Could not open workflow",
+      }),
+    );
 
     expect(
       mockedAPI.desktop.removeMostRecentlyUsedProject,

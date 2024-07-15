@@ -174,7 +174,13 @@ const onOpenFile = async ({ id }: FileExplorerItem) => {
       $router,
     });
   } catch (error) {
-    // No extra error handling needed
+    consola.error("Could not open selected workflow:", error);
+
+    $toast.show({
+      type: "warning",
+      headline: "Could not open workflow",
+      message: `${error}`,
+    });
   }
 };
 

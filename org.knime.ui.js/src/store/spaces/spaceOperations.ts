@@ -305,16 +305,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceId,
         itemId,
       });
-    } catch (error) {
-      consola.error("Could not open workflow:", error);
-
-      $toast.show({
-        type: "warning",
-        headline: "Could not open workflow",
-        message: `${error}`,
-      });
-
-      throw error; // Exception needs to be forwarded to the caller for separate error handling
     } finally {
       $bus.emit("unblock-ui");
     }

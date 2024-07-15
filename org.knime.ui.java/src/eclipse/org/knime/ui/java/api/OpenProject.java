@@ -120,13 +120,10 @@ final class OpenProject {
             try {
                 DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
                     monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor));
+            } catch (OpenProjectException e) {
+                LOGGER.error("Failed to open project", e);
+                throw new IOException(e.getUserMessage(), e.getCause());
             } catch (Exception e) {
-                if (e instanceof OpenProjectException openProjectException) {
-                    throw new IOException(openProjectException.getUserMessage(), openProjectException.getCause());
-                }
-                if (e instanceof NoSuchElementException) {
-                    throw new IOException("The project could not be found.", e.getCause());
-                }
                 throw new IOException(e);
             }
         }
@@ -203,10 +200,12 @@ final class OpenProject {
      * @param itemId
      * @param spaceProviderId
      * @param monitor
+     * @throws OpenProjectException Specific exception thrown when a project failed to open
      */
     static void openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) throws OpenProjectException {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+
         final Space space;
         try {
             space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
@@ -214,9 +213,14 @@ final class OpenProject {
             throw new OpenProjectException("The space could not be accessed.", e);
         }
 
-        var projectType = space.getProjectType(itemId).orElseThrow(
-            () -> new OpenProjectException("The item is not a valid project.", new IllegalArgumentException(
-                "The item for id " + itemId + " is neither a workflow- nor a component-project")));
+        final ProjectTypeEnum projectType;
+        try {
+            projectType = space.getProjectType(itemId).orElseThrow(
+                () -> new OpenProjectException("The item is not a valid project.", new IllegalArgumentException(
+                    "The item for id " + itemId + " is neither a workflow- nor a component-project")));
+        } catch (NoSuchElementException e) {
+            throw new OpenProjectException("The project could not be found.", e);
+        }
 
         var projectAndWfm = getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType);
         if (projectAndWfm == null) {
