@@ -5,8 +5,8 @@ import { mockVuexStore } from "@/test/utils";
 
 import NodeTorsoNormal from "webapps-common/ui/components/node/NodeTorsoNormal.vue";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import NodeTorso from "../NodeTorso.vue";
 import NodeTorsoMissing from "../NodeTorsoMissing.vue";

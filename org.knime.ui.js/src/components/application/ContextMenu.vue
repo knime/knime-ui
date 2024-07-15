@@ -19,7 +19,7 @@ import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptor
 import { getNodeState, isNodeMetaNode } from "@/util/nodeUtil";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import { compatibility } from "@/environment";
 import type { ApplicationState } from "@/store/application";
 
@@ -283,7 +283,7 @@ export default defineComponent({
 
         const headline: MenuItem = {
           text: buildPortNameAndIndex(port.name, portIndex),
-          // @ts-expect-error - because the icon is tricky to type properly
+          // @ts-ignore
           icon: buildPortViewIcon(node, port, portIndex),
           sectionHeadline: true,
           separator: true,

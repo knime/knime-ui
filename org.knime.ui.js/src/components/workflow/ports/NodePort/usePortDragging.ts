@@ -4,7 +4,7 @@ import throttle from "raf-throttle";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
-import * as shapes from "@/style/shapes.mjs";
+import * as shapes from "@/style/shapes";
 
 import {
   detectConnectionCircle,

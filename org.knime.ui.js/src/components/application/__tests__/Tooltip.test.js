@@ -1,7 +1,7 @@
 import { expect, describe, beforeEach, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import Tooltip from "../Tooltip.vue";
 
 describe("Tooltip", () => {

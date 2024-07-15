@@ -16,8 +16,8 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { TypedText } from "@/api/gateway-api/generated-api";
-import * as $colors from "@/style/colors.mjs";
-import { gridSize } from "@/style/shapes.mjs";
+import * as $colors from "@/style/colors";
+import { gridSize } from "@/style/shapes";
 
 import { useEscapeStack } from "@/mixins/escapeStack";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";

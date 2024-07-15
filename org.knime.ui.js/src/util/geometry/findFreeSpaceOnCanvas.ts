@@ -1,4 +1,4 @@
-import { nodeSize } from "@/style/shapes.mjs";
+import { nodeSize } from "@/style/shapes";
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 

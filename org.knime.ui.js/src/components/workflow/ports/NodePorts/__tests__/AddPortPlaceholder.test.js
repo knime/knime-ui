@@ -4,8 +4,8 @@ import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import {
   actions as workflowStoreActions,

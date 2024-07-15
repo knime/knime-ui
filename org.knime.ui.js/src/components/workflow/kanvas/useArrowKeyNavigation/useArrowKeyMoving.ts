@@ -2,7 +2,7 @@ import { computed, type Ref } from "vue";
 
 import { navigatorUtils } from "@knime/utils";
 import { useStore } from "@/composables/useStore";
-import { gridSize } from "@/style/shapes.mjs";
+import { gridSize } from "@/style/shapes";
 import { useEventListener, type Fn } from "@vueuse/core";
 
 type UseArrowKeyMovingOptions = {

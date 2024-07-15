@@ -8,7 +8,7 @@ import JoyIcon from "@knime/styles/img/icons/joy.svg";
 
 import type { WorkflowMonitorMessage as WorkflowMonitorMessageType } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
 

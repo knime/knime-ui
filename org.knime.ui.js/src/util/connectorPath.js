@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { portSize } from "@/style/shapes.mjs";
+import { portSize } from "@/style/shapes";
 
 // These deltas are carefully chosen so that the connector line is hidden behind the flow variable line,
 // especially for optional ports, even when hovering the port or the connector line.

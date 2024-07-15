@@ -3,7 +3,7 @@ import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import { API } from "@api";
 import * as selectionStore from "@/store/selection";

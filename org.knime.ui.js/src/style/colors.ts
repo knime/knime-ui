@@ -1,9 +1,10 @@
 /* eslint-disable import/extensions */
-import * as knimeColors from "@knime/styles/colors/knimeColors.mjs";
-import * as nodeColors from "@knime/styles/colors/nodeColors.mjs";
-import * as portColorsCommon from "@knime/styles/colors/portColors.mjs";
+import * as knimeColors from "@knime/styles/colors/knimeColors";
+import * as nodeColors from "@knime/styles/colors/nodeColors";
+import * as portColorsCommon from "@knime/styles/colors/portColors";
 
-const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
+const applyAlphaHSL = (hsl: string, alpha: string) =>
+  `${hsl.slice(0, -1)}, ${alpha})`;
 
 export const text = {
   default: knimeColors.Masala,
@@ -78,4 +79,4 @@ export const annotationColorPresets = {
 
 export const defaultAnnotationBorderColor = annotationColorPresets.SilverSand;
 
-export * from "@knime/styles/colors/knimeColors.mjs";
+export * from "@knime/styles/colors/knimeColors";

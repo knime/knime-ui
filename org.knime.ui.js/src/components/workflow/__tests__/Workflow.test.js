@@ -3,7 +3,7 @@ import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import Node from "@/components/workflow/node/Node.vue";
 import MoveableNodeContainer from "@/components/workflow/node/MoveableNodeContainer.vue";

@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import consola, { LogLevel } from "consola";
+import consola from "consola";
 import { config } from "@vue/test-utils";
 
 config.global.renderStubDefaultSlot = true;
@@ -7,7 +7,7 @@ config.global.stubs = {
   Portal: true,
   PortalTarget: true,
 };
-consola.level = LogLevel.Error;
+consola.level = 0;
 
 // mock presence of 'EquoCommService' object
 window.EquoCommService = {

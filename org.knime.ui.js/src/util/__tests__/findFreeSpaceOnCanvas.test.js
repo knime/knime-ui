@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import { nodeSize } from "@/style/shapes.mjs";
+import { nodeSize } from "@/style/shapes";
 import { geometry } from "../geometry";
 
 describe("findFreeSpaceOnCanvas", () => {

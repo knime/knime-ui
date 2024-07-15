@@ -5,7 +5,7 @@ import {
   defaultMetaNodeBarHeight,
   metaNodeBarWidth,
   defaultMetanodeBarPosition,
-} from "@/style/shapes.mjs";
+} from "@/style/shapes";
 
 export default (workflow: Workflow) => {
   const workflowBounds = getWorkflowObjectBounds(workflow, {

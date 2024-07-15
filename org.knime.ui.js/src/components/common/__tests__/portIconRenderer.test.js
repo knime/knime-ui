@@ -2,8 +2,8 @@ import { expect, describe, beforeEach, it } from "vitest";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import * as $colors from "@/style/colors.mjs";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 import portIconRenderer from "../PortIconRenderer";
 
 describe("PortIconRenderer", () => {

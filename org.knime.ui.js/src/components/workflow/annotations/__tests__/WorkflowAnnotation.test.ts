@@ -7,8 +7,8 @@ import { mockVuexStore } from "@/test/utils";
 import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
 import { mockUserAgent } from "jest-useragent-mock";
 
-import * as $colors from "@/style/colors.mjs";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 import { API } from "@api";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";

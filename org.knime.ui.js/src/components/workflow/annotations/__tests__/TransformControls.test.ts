@@ -3,8 +3,8 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import type { Bounds } from "@/api/gateway-api/generated-api";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import TransformControls, {
   TRANSFORM_RECT_OFFSET,

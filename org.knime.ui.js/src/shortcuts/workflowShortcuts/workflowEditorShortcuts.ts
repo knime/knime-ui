@@ -7,7 +7,7 @@ import type { KnimeNode } from "@/api/custom-types";
 
 import { API } from "@api";
 import { portPositions } from "@/util/portShift";
-import { nodeSize } from "@/style/shapes.mjs";
+import { nodeSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import type { XY } from "@/api/gateway-api/generated-api";

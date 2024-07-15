@@ -6,8 +6,8 @@ import { mockVuexStore } from "@/test/utils";
 
 import { muteConsole } from "@knime/utils/test-utils";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import NodeState from "../NodeState.vue";
 

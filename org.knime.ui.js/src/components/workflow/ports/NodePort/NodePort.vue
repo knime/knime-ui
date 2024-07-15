@@ -5,7 +5,7 @@ import { useStore } from "vuex";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
 import { useTooltip, type TooltipDefinition } from "@/composables/useTooltip";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import { toExtendedPortObject } from "@/util/portDataMapper";
 

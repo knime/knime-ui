@@ -14,8 +14,8 @@ import {
 } from "@/test/factories";
 
 import { API } from "@api";
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as workflowStore from "@/store/workflow";

@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import { geometry } from "@/util/geometry";
 

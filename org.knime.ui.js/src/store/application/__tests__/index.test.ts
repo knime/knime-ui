@@ -16,7 +16,7 @@ import {
 import { flushPromises } from "@vue/test-utils";
 import type { RootStoreState } from "@/store/types";
 import type { Store } from "vuex";
-import { nodeSize } from "@/style/shapes.mjs";
+import { nodeSize } from "@/style/shapes";
 import { mockedObject } from "@/test/utils";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 

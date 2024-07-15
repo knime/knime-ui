@@ -11,7 +11,7 @@ import {
   metaNodeBarWidth,
   nodeSize,
   portSize,
-} from "@/style/shapes.mjs";
+} from "@/style/shapes";
 
 describe("workflow store", () => {
   const loadStore = async () => {

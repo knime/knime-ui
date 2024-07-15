@@ -51,7 +51,9 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
+type SpaceExplorerContentMenuItem = MenuItem & { execute?: () => void };
+
+const handleItemClick = (item: SpaceExplorerContentMenuItem) => {
   if (item.execute) {
     item.execute();
     props.closeContextMenu();
@@ -64,193 +66,195 @@ const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
 const valueOrEmpty = <T,>(condition: boolean, value: T) =>
   condition ? [value] : [];
 
-const fileExplorerContextMenuItems = computed(() => {
-  const {
-    createRenameOption,
-    createDeleteOption,
-    anchor: { item: anchorItem },
-    isMultipleSelectionActive,
-  } = props;
+const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
+  () => {
+    const {
+      createRenameOption,
+      createDeleteOption,
+      anchor: { item: anchorItem },
+      isMultipleSelectionActive,
+    } = props;
 
-  const isLocal = isLocalProvider(
-    getProviderInfoFromProjectPath.value(props.projectId),
-  );
+    const isLocal = isLocalProvider(
+      getProviderInfoFromProjectPath.value(props.projectId),
+    );
 
-  const isServer = isServerProvider(
-    getProviderInfoFromProjectPath.value(props.projectId),
-  );
+    const isServer = isServerProvider(
+      getProviderInfoFromProjectPath.value(props.projectId),
+    );
 
-  const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
-    props.projectId,
-    props.selectedItemIds,
-  );
+    const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
+      props.projectId,
+      props.selectedItemIds,
+    );
 
-  const selectionContainsWorkflow = store.getters[
-    "spaces/selectionContainsWorkflow"
-  ](props.projectId, props.selectedItemIds);
+    const selectionContainsWorkflow = store.getters[
+      "spaces/selectionContainsWorkflow"
+    ](props.projectId, props.selectedItemIds);
 
-  const downloadToLocalSpace = buildHubDownloadMenuItem(
-    store.dispatch,
-    props.projectId,
-    props.selectedItemIds,
-  );
+    const downloadToLocalSpace = buildHubDownloadMenuItem(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    );
 
-  // ... to space on same space provider as source
-  const moveToSpace = buildMoveToSpaceMenuItem(
-    store.dispatch,
-    props.projectId,
-    props.selectedItemIds,
-  );
+    // ... to space on same space provider as source
+    const moveToSpace = buildMoveToSpaceMenuItem(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    );
 
-  const openInBrowser = buildOpenInBrowserMenuItem(
-    store.dispatch,
-    props.projectId,
-    props.selectedItemIds,
-    getProviderInfoFromProjectPath.value(props.projectId),
-  );
+    const openInBrowser = buildOpenInBrowserMenuItem(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+      getProviderInfoFromProjectPath.value(props.projectId),
+    );
 
-  const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
-    store.dispatch,
-    props.projectId,
-    props.selectedItemIds,
-  );
+    const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    );
 
-  const uploadAndConnectToHub = buildHubUploadMenuItems(
-    store.dispatch,
-    store.getters["spaces/hasActiveHubSession"],
-    props.projectId,
-    props.selectedItemIds,
-    store.state.spaces.spaceProviders ?? {},
-  );
+    const uploadAndConnectToHub = buildHubUploadMenuItems(
+      store.dispatch,
+      store.getters["spaces/hasActiveHubSession"],
+      props.projectId,
+      props.selectedItemIds,
+      store.state.spaces.spaceProviders ?? {},
+    );
 
-  const getHubActions = () => {
-    if (isLocal) {
-      return uploadAndConnectToHub;
-    }
+    const getHubActions = () => {
+      if (isLocal) {
+        return uploadAndConnectToHub;
+      }
 
-    if (isServer) {
-      return [];
-    }
+      if (isServer) {
+        return [];
+      }
 
-    if (selectionContainsFile) {
-      return [downloadToLocalSpace, moveToSpace];
-    }
+      if (selectionContainsFile) {
+        return [downloadToLocalSpace, moveToSpace];
+      }
 
-    return [downloadToLocalSpace, moveToSpace, openInBrowser];
-  };
-
-  const displayDeployments = buildDisplayDeploymentsMenuItem(
-    store.dispatch,
-    props.projectId,
-    props.selectedItemIds,
-    anchorItem.name,
-  );
-
-  const openPermissionsDialog = buildOpenPermissionsDialog(
-    store.dispatch,
-    props.projectId,
-    props.selectedItemIds,
-  );
-
-  const executeWorkflow = buildExecuteWorkflowMenuItem(
-    store.dispatch,
-    props.projectId,
-    props.selectedItemIds,
-  );
-
-  const getServerActions = () => {
-    if (!isServer) {
-      return [];
-    }
-
-    if (!selectionContainsWorkflow) {
-      return [openInBrowser, openPermissionsDialog];
-    }
-
-    return [
-      downloadToLocalSpace,
-      executeWorkflow,
-      displayDeployments,
-      openInBrowser,
-      openAPIDefinition,
-      openPermissionsDialog,
-    ];
-  };
-
-  const createExportItemOption = (
-    dispatch: Dispatch,
-    projectId: string,
-    selectedItems: Array<string>,
-  ) => {
-    const isSelectionMultiple = selectedItems.length > 1;
-    return {
-      id: "export",
-      text: "Export",
-      icon: ExportIcon,
-      disabled: selectionContainsFile || isSelectionMultiple,
-      execute: () => {
-        dispatch("spaces/exportSpaceItem", {
-          projectId,
-          itemId: selectedItems[0],
-        });
-      },
+      return [downloadToLocalSpace, moveToSpace, openInBrowser];
     };
-  };
 
-  const openFileType =
-    anchorItem.meta?.type === SpaceItem.TypeEnum.Workflow
-      ? "workflows"
-      : "folders";
+    const displayDeployments = buildDisplayDeploymentsMenuItem(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+      anchorItem.name,
+    );
 
-  const createDuplicateItemOption = () => {
-    return {
-      id: "duplicate",
-      text: "Duplicate",
-      icon: DuplicateIcon,
-      title: anchorItem.isOpen
-        ? `Open ${openFileType} cannot be duplicated.`
-        : null,
-      disabled: anchorItem.isOpen,
-      execute: () => emit("duplicateItems", props.selectedItemIds),
+    const openPermissionsDialog = buildOpenPermissionsDialog(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    );
+
+    const executeWorkflow = buildExecuteWorkflowMenuItem(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    );
+
+    const getServerActions = () => {
+      if (!isServer) {
+        return [];
+      }
+
+      if (!selectionContainsWorkflow) {
+        return [openInBrowser, openPermissionsDialog];
+      }
+
+      return [
+        downloadToLocalSpace,
+        executeWorkflow,
+        displayDeployments,
+        openInBrowser,
+        openAPIDefinition,
+        openPermissionsDialog,
+      ];
     };
-  };
 
-  const renameOptionTitle = anchorItem.isOpen
-    ? `Open ${openFileType} cannot be renamed`
-    : "";
+    const createExportItemOption = (
+      dispatch: Dispatch,
+      projectId: string,
+      selectedItems: Array<string>,
+    ) => {
+      const isSelectionMultiple = selectedItems.length > 1;
+      return {
+        id: "export",
+        text: "Export",
+        icon: ExportIcon,
+        disabled: selectionContainsFile || isSelectionMultiple,
+        execute: () => {
+          dispatch("spaces/exportSpaceItem", {
+            projectId,
+            itemId: selectedItems[0],
+          });
+        },
+      };
+    };
 
-  const contextMenuItems = [
-    // hide rename for multiple selected items
-    ...valueOrEmpty(
-      !isMultipleSelectionActive,
-      createRenameOption(anchorItem, {
-        title: renameOptionTitle,
-        icon: RenameIcon,
-      }),
-    ),
+    const openFileType =
+      anchorItem.meta?.type === SpaceItem.TypeEnum.Workflow
+        ? "workflows"
+        : "folders";
 
-    createDeleteOption(anchorItem, {
-      title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
-      icon: DeleteIcon,
-    }),
+    const createDuplicateItemOption = () => {
+      return {
+        id: "duplicate",
+        text: "Duplicate",
+        icon: DuplicateIcon,
+        title: anchorItem.isOpen
+          ? `Open ${openFileType} cannot be duplicated.`
+          : null,
+        disabled: anchorItem.isOpen,
+        execute: () => emit("duplicateItems", props.selectedItemIds),
+      };
+    };
 
-    createDuplicateItemOption(),
+    const renameOptionTitle = anchorItem.isOpen
+      ? `Open ${openFileType} cannot be renamed`
+      : "";
 
-    ...valueOrEmpty(
-      isLocal,
-      createExportItemOption(
-        store.dispatch,
-        props.projectId,
-        props.selectedItemIds,
+    const contextMenuItems = [
+      // hide rename for multiple selected items
+      ...valueOrEmpty(
+        !isMultipleSelectionActive,
+        createRenameOption(anchorItem, {
+          title: renameOptionTitle,
+          icon: RenameIcon,
+        }),
       ),
-    ),
 
-    ...getHubActions(),
-    ...getServerActions(),
-  ];
+      createDeleteOption(anchorItem, {
+        title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
+        icon: DeleteIcon,
+      }),
 
-  return contextMenuItems;
-});
+      createDuplicateItemOption(),
+
+      ...valueOrEmpty(
+        isLocal,
+        createExportItemOption(
+          store.dispatch,
+          props.projectId,
+          props.selectedItemIds,
+        ),
+      ),
+
+      ...getHubActions(),
+      ...getServerActions(),
+    ];
+
+    return contextMenuItems;
+  },
+);
 </script>
 
 <template>
@@ -261,6 +265,9 @@ const fileExplorerContextMenuItems = computed(() => {
     register-keydown
     :items="fileExplorerContextMenuItems"
     @close="closeContextMenu"
-    @item-click="(_, item) => handleItemClick(item)"
+    @item-click="
+      (_: MouseEvent, item: SpaceExplorerContentMenuItem) =>
+        handleItemClick(item)
+    "
   />
 </template>

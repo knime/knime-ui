@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 
 type Props = {
   width?: `${number}px` | `${number}%`;

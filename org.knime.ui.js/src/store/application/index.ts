@@ -22,7 +22,7 @@ import * as canvasModes from "./canvasModes";
 import * as permissions from "./permissions";
 import type { WorkflowObject, ExampleProject } from "@/api/custom-types";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
-import { nodeSize } from "@/style/shapes.mjs";
+import { nodeSize } from "@/style/shapes";
 import { findSpaceById } from "@/store/spaces/util";
 
 export interface ApplicationState {

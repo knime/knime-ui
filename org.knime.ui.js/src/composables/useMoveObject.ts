@@ -3,7 +3,7 @@ import throttle from "raf-throttle";
 
 import { geometry } from "@/util/geometry";
 import type { XY } from "@/api/gateway-api/generated-api";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import { useStore } from "./useStore";
 

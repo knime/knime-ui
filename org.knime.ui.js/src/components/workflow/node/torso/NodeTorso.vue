@@ -5,7 +5,7 @@ import type {
   NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 
 import NodeTorsoMissing from "./NodeTorsoMissing.vue";
 import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";

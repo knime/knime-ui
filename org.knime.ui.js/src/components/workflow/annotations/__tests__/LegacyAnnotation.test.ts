@@ -2,7 +2,7 @@ import { expect, describe, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import { createWorkflowAnnotation } from "@/test/factories";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import {
   Annotation,
   TypedText,

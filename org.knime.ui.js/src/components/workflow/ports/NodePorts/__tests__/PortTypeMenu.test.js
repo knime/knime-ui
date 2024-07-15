@@ -7,8 +7,8 @@ import MenuItems from "webapps-common/ui/components/MenuItems.vue";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import PortTypeMenu from "../PortTypeMenu.vue";
 import { nextTick } from "vue";

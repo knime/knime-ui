@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import type { FileExplorerItem } from "@knime/components";
 import { useStore } from "@/composables/useStore";
 import { SpaceItem, type NodeTemplate } from "@/api/gateway-api/generated-api";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {

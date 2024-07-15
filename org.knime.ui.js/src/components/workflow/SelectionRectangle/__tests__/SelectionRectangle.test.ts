@@ -5,8 +5,8 @@ import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import { $bus } from "@/plugins/event-bus";
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import { findObjectsForSelection } from "../findObjectsForSelection";
 import SelectionRectangle from "../SelectionRectangle.vue";

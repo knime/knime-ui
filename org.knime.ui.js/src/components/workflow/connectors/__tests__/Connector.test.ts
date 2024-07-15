@@ -31,8 +31,8 @@ import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 import { KnimeMIME } from "@/mixins/dropNode";
 
 import * as portShift from "@/util/portShift";

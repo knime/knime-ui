@@ -4,7 +4,7 @@ import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 
 import * as selectionStore from "@/store/selection";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import NodeLabel from "../NodeLabel.vue";
 import NodeLabelText from "../NodeLabelText.vue";

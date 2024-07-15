@@ -1,7 +1,7 @@
 import { expect, describe, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 
 import LoopDecorator from "../LoopDecorator.vue";
 

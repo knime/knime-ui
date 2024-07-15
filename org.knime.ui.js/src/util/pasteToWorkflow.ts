@@ -1,6 +1,6 @@
 import { API } from "@api";
 import type { XY } from "@/api/gateway-api/generated-api";
-import { nodeSize } from "@/style/shapes.mjs";
+import { nodeSize } from "@/style/shapes";
 
 import type { GeometryArea, GeometryBounds } from "@/util/geometry/types";
 import { geometry } from "@/util/geometry";

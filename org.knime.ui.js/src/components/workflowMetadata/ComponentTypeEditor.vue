@@ -4,8 +4,8 @@ import { computed, h } from "vue";
 import { Label, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
-import * as nodeBackgroundColors from "@knime/styles/colors/nodeColors.mjs";
-import { HibiscusDark as colorHibiscusDark } from "@knime/styles/colors/knimeColors.mjs";
+import * as nodeBackgroundColors from "@knime/styles/colors/nodeColors";
+import { HibiscusDark as colorHibiscusDark } from "@knime/styles/colors/knimeColors";
 import type { UpdateComponentMetadataCommand } from "@/api/gateway-api/generated-api";
 
 interface Props {
@@ -60,7 +60,10 @@ const emit = defineEmits<{
         class="type-submenu"
         :teleport-to-body="false"
         positioning-strategy="absolute"
-        @item-click="(_, item) => emit('update:modelValue', item.metadata.id)"
+        @item-click="
+          (_: MouseEvent, item: any) =>
+            emit('update:modelValue', item.metadata.id)
+        "
       >
         <template #default="{ expanded }">
           <Component :is="activeComponentType.icon" />

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import CircleStopIcon from "@knime/styles/img/icons/circle-stop.svg";
-import { annotationColorPresets } from "@/style/colors.mjs";
+import { annotationColorPresets } from "@/style/colors";
 
 import ColorIcon from "../ColorIcon.vue";
 

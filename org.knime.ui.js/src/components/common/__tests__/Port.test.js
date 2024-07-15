@@ -5,8 +5,8 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import PortIcon from "webapps-common/ui/components/node/PortIcon.vue";
 import Port from "../Port.vue";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 describe("Port", () => {
   let wrapper, props, storeConfig, doShallowMount, $store;

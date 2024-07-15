@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import ActionBar from "@/components/common/ActionBar.vue";
 
 import NodeNameEditor from "../NodeNameEditor.vue";

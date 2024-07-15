@@ -3,7 +3,7 @@ import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import {
   defaultAddWorkflowAnnotationWidth,
   defaultAddWorkflowAnnotationHeight,
-} from "@/style/shapes.mjs";
+} from "@/style/shapes";
 import type { UnionToShortcutRegistry } from "./types";
 
 type AnnotationShortcuts = UnionToShortcutRegistry<

@@ -182,7 +182,7 @@ export default defineComponent({
       this.$emit("menuClose", { typeId, portGroup });
     },
 
-    onMenuItemClick(_: unknown, item: MenuItemWithPort) {
+    onMenuItemClick(_: MouseEvent, item: MenuItemWithPort) {
       if (item.port) {
         const { typeId } = item.port;
         this.emitPortClick({ typeId, portGroup: this.selectedPortGroup });

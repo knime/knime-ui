@@ -8,7 +8,7 @@ import {
   TypedText,
 } from "@/api/gateway-api/generated-api";
 
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 
 import { loadStore } from "./loadStore";
 

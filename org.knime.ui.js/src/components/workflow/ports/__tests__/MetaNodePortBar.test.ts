@@ -8,8 +8,8 @@ import { createWorkflow } from "@/test/factories";
 
 import { $bus } from "@/plugins/event-bus";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";

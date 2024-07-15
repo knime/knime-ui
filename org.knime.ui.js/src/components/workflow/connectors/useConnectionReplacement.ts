@@ -3,7 +3,7 @@ import { computed, ref, type Ref } from "vue";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import { useStore } from "@/composables/useStore";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import { KnimeMIME } from "@/mixins/dropNode";
 import type { ExtendedPortType } from "@/api/custom-types";
 

@@ -2,7 +2,7 @@
 import { defineComponent, type PropType } from "vue";
 import { mapGetters, mapState } from "vuex";
 
-import { SubMenu, FunctionButton } from "@knime/components";
+import { SubMenu, FunctionButton, type MenuItem } from "@knime/components";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
@@ -26,6 +26,9 @@ import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 import type { ActionMenuItem } from "./remoteMenuItems";
 
 type DisplayModes = "normal" | "mini";
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
+type ItemWithExecute = MenuItem & { execute: () => any };
 
 export default defineComponent({
   components: {
@@ -284,7 +287,9 @@ export default defineComponent({
           class="more-actions"
           button-title="More actions"
           @toggle.stop
-          @item-click="(_, { execute }) => execute()"
+          @item-click="
+            (_: MouseEvent, { execute }: ItemWithExecute) => execute()
+          "
         >
           <MenuOptionsIcon class="open-icon" />
         </SubMenu>

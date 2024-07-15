@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import annotationShortcuts from "../annotationShortcuts";
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
-import * as shapes from "@/style/shapes.mjs";
+import * as shapes from "@/style/shapes";
 
 describe("annotationShortcuts", () => {
   const mockSelectedNode = { id: "root:0", allowedActions: {} };

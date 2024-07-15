@@ -2,7 +2,7 @@ import { expect, describe, it, afterEach, vi } from "vitest";
 import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 import SearchResults from "../SearchResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
 import NodeList from "../NodeList.vue";

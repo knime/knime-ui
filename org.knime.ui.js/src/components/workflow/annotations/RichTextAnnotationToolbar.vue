@@ -4,7 +4,7 @@ import { useStore } from "vuex";
 import type { Editor } from "@tiptap/vue-3";
 import type { Level } from "@tiptap/extension-heading";
 
-import { FunctionButton, SubMenu } from "@knime/components";
+import { FunctionButton, SubMenu, type MenuItem } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import MoreActionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import LinkIcon from "@knime/styles/img/icons/link.svg";
@@ -12,7 +12,7 @@ import type { EditorTools } from "@knime/rich-text-editor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import { hotkeys, type HotkeysNS, navigatorUtils } from "@knime/utils";
 
 import ColorIcon from "./ColorIcon.vue";
@@ -133,7 +133,7 @@ const secondaryToolsMenuItems = computed(() =>
   })),
 );
 
-const onSecondaryToolClick = (_: any, { id }: { id: string }) => {
+const onSecondaryToolClick = (_: MouseEvent, { id }: { id: string }) => {
   const foundTool = secondaryTools.value.find((tool) => tool.id === id);
   foundTool?.onClick?.();
 };
@@ -141,7 +141,9 @@ const onSecondaryToolClick = (_: any, { id }: { id: string }) => {
 // +1 to include the border color tool
 const totalEditorTools = computed(() => customTools.value.length + 2);
 
-const headingPresets = computed(() => {
+type HeadingMenuItem = MenuItem & { onClick: () => void };
+
+const headingPresets = computed<HeadingMenuItem[]>(() => {
   // eslint-disable-next-line no-magic-numbers
   const levels: Level[] = [1, 2, 3, 4, 5, 6];
 
@@ -164,7 +166,7 @@ const headingPresets = computed(() => {
         }
       },
     },
-  ];
+  ] satisfies HeadingMenuItem[];
 
   const headings = levels.map((level) => ({
     text: `Heading ${level}`,
@@ -264,7 +266,7 @@ onUnmounted(() => {
         :teleport-to-body="false"
         positioning-strategy="absolute"
         class="heading-menu"
-        @item-click="(_, item) => item.onClick()"
+        @item-click="(_: MouseEvent, item: HeadingMenuItem) => item.onClick()"
       >
         <span class="heading-current-text">{{ selectedHeadingText }}</span>
         <DropdownIcon />

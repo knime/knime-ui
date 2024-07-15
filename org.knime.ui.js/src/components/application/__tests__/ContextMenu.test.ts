@@ -30,7 +30,7 @@ import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import ContextMenu from "../ContextMenu.vue";
 

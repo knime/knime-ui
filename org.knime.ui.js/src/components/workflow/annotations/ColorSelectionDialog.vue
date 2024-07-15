@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { FunctionButton } from "@knime/components";
 
-import { annotationColorPresets } from "@/style/colors.mjs";
+import { annotationColorPresets } from "@/style/colors";
 
 import ColorIcon from "./ColorIcon.vue";
 

@@ -4,7 +4,7 @@ import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import { $bus } from "@/plugins/event-bus";
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 
 import AnnotationRectangle from "../AnnotationRectangle.vue";
 

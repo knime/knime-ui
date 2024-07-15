@@ -27,8 +27,8 @@ import * as applicationStore from "@/store/application";
 import { KnimeMIME } from "@/mixins/dropNode";
 import { APP_ROUTES } from "@/router/appRoutes";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 import type { Store } from "vuex";
 import type { RootStoreState } from "@/store/types";
 

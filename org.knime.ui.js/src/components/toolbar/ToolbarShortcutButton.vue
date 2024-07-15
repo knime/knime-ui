@@ -77,7 +77,10 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
       :items="subMenuItems"
       tabindex="0"
       orientation="left"
-      @item-click="(_, item) => $shortcuts.dispatch(item.name)"
+      @item-click="
+        (_: MouseEvent, item: MenuItemWithName) =>
+          $shortcuts.dispatch(item.name)
+      "
       @keydown.enter.stop.prevent="
         (e: KeyboardEvent) => ($refs.submenu as any).toggleMenu(e)
       "

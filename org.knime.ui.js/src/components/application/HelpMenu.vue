@@ -126,7 +126,8 @@ const helpMenuItem = computed<MenuItem>(() => ({
   ],
 }));
 
-const onItemClick = (_: any, item: MenuItem) => item.metadata?.handler?.();
+const onItemClick = (_: MouseEvent, item: MenuItem) =>
+  item.metadata?.handler?.();
 </script>
 
 <template>

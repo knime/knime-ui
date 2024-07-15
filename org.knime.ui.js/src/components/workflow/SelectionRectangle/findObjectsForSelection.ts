@@ -1,6 +1,6 @@
 import type { Workflow } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 import type { BendpointId } from "@/util/connectorUtil";
 
 // find nodes that are fully or partly inside the rectangle defined by startPos and endPos

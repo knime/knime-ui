@@ -7,7 +7,7 @@ import { computed, provide } from "vue";
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
-import { portSize } from "@/style/shapes.mjs";
+import { portSize } from "@/style/shapes";
 
 import NodePort from "./NodePort/NodePort.vue";
 import { useStore } from "@/composables/useStore";

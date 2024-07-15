@@ -3,7 +3,7 @@ import { computed, type Ref } from "vue";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 import portShift from "@/util/portShift";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import { usePortBarPositions } from "./usePortBarPositions";
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";

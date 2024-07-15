@@ -5,7 +5,7 @@ import { describe, expect, it, vi, type Mock } from "vitest";
 
 import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
 
-import * as $colors from "@/style/colors.mjs";
+import * as $colors from "@/style/colors";
 
 import RichTextAnnotation from "../RichTextAnnotation.vue";
 import CreateLinkModal from "../CreateLinkModal.vue";

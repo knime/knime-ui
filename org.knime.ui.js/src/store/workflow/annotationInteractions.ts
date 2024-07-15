@@ -7,7 +7,7 @@ import {
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 
-import * as colors from "@/style/colors.mjs";
+import * as colors from "@/style/colors";
 
 import type { RootStoreState } from "../types";
 import type { WorkflowState } from ".";

@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import NodeNameTextarea from "../NodeNameTextarea.vue";
 

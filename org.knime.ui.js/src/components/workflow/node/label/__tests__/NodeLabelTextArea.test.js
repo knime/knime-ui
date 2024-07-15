@@ -2,7 +2,7 @@ import { expect, describe, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import NodeLabelTextArea from "../NodeLabelTextArea.vue";
 

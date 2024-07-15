@@ -7,8 +7,8 @@ import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import AddPortPlaceholder from "../AddPortPlaceholder.vue";
 import NodePorts from "../NodePorts.vue";

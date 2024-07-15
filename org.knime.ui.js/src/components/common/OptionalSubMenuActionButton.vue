@@ -31,7 +31,10 @@ withDefaults(defineProps<Props>(), {
     class="submenu-button"
     :disabled="item.disabled"
     :items="item.children"
-    @item-click="(_, item) => (item.disabled ? null : $emit('click', item))"
+    @item-click="
+      (_: MouseEvent, item: MenuItem) =>
+        item.disabled ? null : $emit('click', item)
+    "
   >
     <template #default="{ expanded }">
       <Component :is="item.icon" class="icon" />

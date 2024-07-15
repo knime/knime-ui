@@ -168,7 +168,9 @@ const onMenuItemClick = (item: AppHeaderContextMenuItem) => {
     class="context-menu"
     menu-aria-label="Tab context menu"
     :items="contextMenuItems"
-    @item-click="(_, item) => onMenuItemClick(item)"
+    @item-click="
+      (_: MouseEvent, item: AppHeaderContextMenuItem) => onMenuItemClick(item)
+    "
   />
 </template>
 

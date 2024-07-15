@@ -257,14 +257,19 @@ const createMenuEntries = (
   });
 };
 
-const spacesDropdownData = computed((): Array<MenuItem<AllMetadata>> => {
+const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
   const isLoading =
     store.state.spaces.isLoadingProviders ||
     store.state.spaces.isConnectingToProvider;
 
   if (isLoading) {
-    // @ts-ignore
-    return [{ text: "Loading…", disabled: true, icon: LoadingIcon }];
+    return [
+      {
+        text: "Loading…",
+        disabled: true,
+        icon: LoadingIcon as any,
+      },
+    ];
   }
 
   const providers = Object.values(spaceProviders.value ?? {});
@@ -355,7 +360,10 @@ const spaceIcon = computed(() => {
       class="submenu"
       button-title="Change space"
       orientation="left"
-      @item-click="(e, item) => onSpaceChange(item)"
+      @item-click="
+        (_: MouseEvent, item: MenuItem<ClickableItemsMetadata>) =>
+          onSpaceChange(item)
+      "
     >
       <template #default="{ expanded }">
         <template v-if="showText">

@@ -9,8 +9,8 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";

@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import ActionButton from "../ActionButton.vue";
 import ActionBar from "../ActionBar.vue";

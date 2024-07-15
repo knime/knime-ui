@@ -15,8 +15,8 @@ import Connector from "@/components/workflow/connectors/Connector.vue";
 import * as compatibleConnections from "@/util/compatibleConnections";
 import { $bus } from "@/plugins/event-bus";
 
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 import NodePort from "../NodePort.vue";
 import NodePortActions from "../NodePortActions.vue";

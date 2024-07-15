@@ -1,7 +1,7 @@
 import { expect, describe, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import NodeHoverSizeProvider from "../NodeHoverSizeProvider.vue";
 
@@ -36,12 +36,12 @@ describe("NodeHoverSizeProvider", () => {
       },
       slots: {
         default: `<template #default="props">
-                <span 
+                <span
                     class="slot-content"
-                    :width="props.hoverSize.width" 
-                    :height="props.hoverSize.height" 
-                    :x="props.hoverSize.y" 
-                    :y="props.hoverSize.x" 
+                    :width="props.hoverSize.width"
+                    :height="props.hoverSize.height"
+                    :x="props.hoverSize.y"
+                    :y="props.hoverSize.x"
                 ></span>
             </template>`,
       },

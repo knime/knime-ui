@@ -4,7 +4,7 @@ import { mockVuexStore } from "@/test/utils";
 
 import * as applicationStore from "@/store/application";
 
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import ActionButton from "@/components/common/ActionButton.vue";
 

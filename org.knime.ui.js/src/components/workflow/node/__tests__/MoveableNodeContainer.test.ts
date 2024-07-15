@@ -6,7 +6,7 @@ import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
 import { API } from "@api";
 import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
