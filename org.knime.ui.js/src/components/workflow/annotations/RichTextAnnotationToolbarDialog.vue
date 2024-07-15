@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref, toRefs, watch } from "vue";
-import { createPopper, type Instance as PopperInstance } from "@popperjs/core";
+import { useFloating, offset, shift } from "@floating-ui/vue";
 
 interface Props {
   isOpen: boolean;
@@ -12,37 +12,23 @@ const { isOpen } = toRefs(props);
 
 const toolbarElement = ref<HTMLElement | null>(null);
 const toolbarDialogElement = ref<HTMLElement | null>(null);
-const popperInstance = ref<PopperInstance | null>(null);
 
-const showDialog = () => {
-  const yOffset = 20;
-  popperInstance.value = createPopper(
-    toolbarElement.value!,
-    toolbarDialogElement.value!,
-    {
-      placement: "bottom",
-      strategy: "absolute",
-      modifiers: [
-        { name: "preventOverflow" },
-        {
-          name: "offset",
-          options: { offset: [0, yOffset] },
-        },
-      ],
-    },
-  );
-};
-
-const hideDialog = () => {
-  if (popperInstance.value) {
-    popperInstance.value.destroy();
-  }
-};
+const yOffset = 20;
+const { floatingStyles, update: updateFloating } = useFloating(
+  toolbarElement,
+  toolbarDialogElement,
+  {
+    placement: "bottom",
+    strategy: "absolute",
+    middleware: [offset({ mainAxis: yOffset }), shift()],
+  },
+);
 
 watch(isOpen, async () => {
-  const toggle = isOpen.value ? showDialog : hideDialog;
   await nextTick();
-  toggle();
+  if (isOpen.value) {
+    updateFloating();
+  }
 });
 </script>
 
@@ -51,7 +37,12 @@ watch(isOpen, async () => {
     <slot name="toggle" />
   </div>
 
-  <div v-if="isOpen" ref="toolbarDialogElement" class="dialog">
+  <div
+    v-if="isOpen"
+    ref="toolbarDialogElement"
+    class="dialog"
+    :style="floatingStyles"
+  >
     <slot name="content" />
   </div>
 </template>
