@@ -21,11 +21,14 @@ describe("SearchResults", () => {
     numFilteredOutNodes = 10,
     component = SearchResults,
     useScrollViewContainerMock = false,
+    searchNextPageTimeout = 10,
   } = {}) => {
     const searchActions = {
       searchNodesNextPage: vi
         .fn()
-        .mockImplementation(() => new Promise((r) => setTimeout(r, 10))),
+        .mockImplementation(
+          () => new Promise((r) => setTimeout(r, searchNextPageTimeout)),
+        ),
     };
 
     const props = {
@@ -122,7 +125,9 @@ describe("SearchResults", () => {
 
     it("scrolling to bottom load more results", async () => {
       vi.useFakeTimers();
-      const { wrapper, searchActions } = doMount();
+      const { wrapper, searchActions } = doMount({
+        searchNextPageTimeout: 3000,
+      });
 
       const scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
 
@@ -135,7 +140,8 @@ describe("SearchResults", () => {
 
       expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
 
-      vi.advanceTimersByTime(1000);
+      await vi.advanceTimersByTimeAsync(1000);
+      vi.runOnlyPendingTimers();
       await Vue.nextTick();
       expect(wrapper.find(".node-list-skeleton").exists()).toBe(true);
 

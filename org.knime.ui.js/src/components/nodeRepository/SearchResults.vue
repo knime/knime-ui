@@ -119,11 +119,10 @@ const onSearchChanged = async () => {
   }
 };
 
-const loadMoreSearchResults = () => {
+const loadMoreSearchResults = async () => {
   setIsLoadingNextPage(true);
-  searchActions.value.searchNodesNextPage().then(() => {
-    setIsLoadingNextPage(false);
-  });
+  await searchActions.value.searchNodesNextPage();
+  setIsLoadingNextPage(false);
 };
 
 const nodeList = ref<InstanceType<typeof NodeList> | null>(null);
