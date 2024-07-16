@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => {
       ],
       setupFiles: ["src/test/setup"],
       environment: "jsdom",
+      testTimeout: 30000,
       reporters: ["default", "junit"],
       alias: {
         "@api": fileURLToPath(

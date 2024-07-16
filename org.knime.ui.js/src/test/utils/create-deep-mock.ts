@@ -12,7 +12,7 @@ type DeepMocked<T> = T extends object
           T[P]
         : // else, if it's a function then set its type to be a Mock
         T[P] extends FunctionType<T[P]>
-        ? Mock<any[], any>
+        ? Mock<any>
         : // otherwise it's an object so recursively set the type
           DeepMocked<T[P]>;
     }

@@ -9,7 +9,7 @@ import { Button } from "@knime/components";
 import { useStore } from "@/composables/useStore";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
-import type { ExampleProject } from "@/api/custom-types.ts";
+import type { ExampleProject } from "@/api/custom-types";
 import { getToastsProvider } from "@/plugins/toasts";
 import PageTitle from "./PageTitle.vue";
 
