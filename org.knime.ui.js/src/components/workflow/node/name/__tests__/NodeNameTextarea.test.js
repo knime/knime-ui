@@ -17,6 +17,7 @@ describe("NodeNameTextarea", () => {
           },
         },
       },
+      attachTo: document.body,
     });
 
     return wrapper;

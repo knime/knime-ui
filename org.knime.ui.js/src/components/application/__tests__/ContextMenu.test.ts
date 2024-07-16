@@ -13,7 +13,7 @@ import {
   createPort,
   createWorkflow,
 } from "@/test/factories";
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
+import { MenuItems } from "@knime/components";
 import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
 import {
   MetaNodePort,

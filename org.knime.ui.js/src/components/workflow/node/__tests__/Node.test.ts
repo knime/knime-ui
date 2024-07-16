@@ -199,8 +199,9 @@ describe("Node", () => {
           ...customStubs,
         },
       },
+      attachTo: document.body,
     });
-    return { wrapper, storeConfig, $store, props };
+    return { wrapper, storeConfig, $store, props, $router };
   };
 
   describe("features", () => {
@@ -931,10 +932,10 @@ describe("Node", () => {
   describe("opening containers", () => {
     it("opens metanode on double click", async () => {
       props = { ...metaNode };
-      const { wrapper } = doMount({ props });
+      const { wrapper, $router } = doMount({ props });
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
-      expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
+      expect($router.push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: {
           workflowId: "root:1",
@@ -955,11 +956,11 @@ describe("Node", () => {
 
     it("opens component on control-double click", async () => {
       props = { ...componentNode };
-      const { wrapper } = doMount({ props });
+      const { wrapper, $router } = doMount({ props });
       await wrapper.findComponent(NodeTorso).trigger("dblclick", {
         ctrlKey: true,
       });
-      expect(wrapper.vm.$router.push).toHaveBeenCalledWith({
+      expect($router.push).toHaveBeenCalledWith({
         name: APP_ROUTES.WorkflowPage,
         params: {
           workflowId: "root:1",
@@ -1131,7 +1132,7 @@ describe("Node", () => {
         const dropEvent = triggerDragEvent(node.element, "drop", {
           getData: () => '{ "className": "test" }',
         });
-        node.vm.onTorsoDragDrop(dropEvent);
+        wrapper.findComponent(NodeTorso).vm.$emit("drop", dropEvent);
         await Vue.nextTick();
         expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
           expect.anything(),
@@ -1148,7 +1149,7 @@ describe("Node", () => {
         const dropEvent = triggerDragEvent(node.element, "drop", {
           getData: () => '{ "className": "test" }',
         });
-        node.vm.onTorsoDragDrop(dropEvent);
+        wrapper.findComponent(NodeTorso).vm.$emit("drop", dropEvent);
         await Vue.nextTick();
         expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
       });

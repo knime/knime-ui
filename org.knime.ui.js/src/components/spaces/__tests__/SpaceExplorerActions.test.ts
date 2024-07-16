@@ -3,7 +3,7 @@ import { nextTick } from "vue";
 import type { Store } from "vuex";
 import { mount } from "@vue/test-utils";
 
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { SubMenu } from "@knime/components";
 
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";

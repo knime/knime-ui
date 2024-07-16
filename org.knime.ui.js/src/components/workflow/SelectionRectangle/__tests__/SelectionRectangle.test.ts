@@ -82,6 +82,7 @@ describe("SelectionRectangle", () => {
           $bus,
         },
       },
+      attachTo: document.body,
     });
 
     const kanvasMock = document.createElement("div");

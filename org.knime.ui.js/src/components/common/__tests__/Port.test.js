@@ -2,7 +2,7 @@ import { expect, describe, beforeEach, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import PortIcon from "webapps-common/ui/components/node/PortIcon.vue";
+import { PortIcon } from "@knime/components";
 import Port from "../Port.vue";
 
 import * as $shapes from "@/style/shapes";

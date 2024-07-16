@@ -20,8 +20,7 @@ import {
   TypedText,
 } from "@/api/gateway-api/generated-api";
 
-// @ts-ignore
-import RichTextEditor from "webapps-common/ui/components/forms/RichTextEditor";
+import { RichTextEditor } from "@knime/rich-text-editor";
 import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
 import RichTextAnnotation from "../RichTextAnnotation.vue";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
@@ -75,7 +74,7 @@ describe("WorkflowAnnotation.vue", () => {
         plugins: [$store],
         stubs: {
           RichTextEditor: true,
-          TransformControls: transformControlStub || false,
+          TransformControls: transformControlStub ?? false,
         },
         directives,
       },
@@ -233,19 +232,20 @@ describe("WorkflowAnnotation.vue", () => {
     it("should set the transformed annotation bounds", () => {
       const bounds = { x: 15, y: 15, width: 100, height: 100 };
       const transformControlStub = getTransformControlsStub(bounds);
+      const selector = '[data-test-id="transformed-controls"]';
       // @ts-ignore
       const { wrapper } = doMount({ transformControlStub });
 
-      expect(wrapper.find("foreignObject").attributes("x")).toEqual(
+      expect(wrapper.find(selector).attributes("x")).toEqual(
         bounds.x.toString(),
       );
-      expect(wrapper.find("foreignObject").attributes("y")).toEqual(
+      expect(wrapper.find(selector).attributes("y")).toEqual(
         bounds.y.toString(),
       );
-      expect(wrapper.find("foreignObject").attributes("width")).toEqual(
+      expect(wrapper.find(selector).attributes("width")).toEqual(
         bounds.width.toString(),
       );
-      expect(wrapper.find("foreignObject").attributes("height")).toEqual(
+      expect(wrapper.find(selector).attributes("height")).toEqual(
         bounds.height.toString(),
       );
     });

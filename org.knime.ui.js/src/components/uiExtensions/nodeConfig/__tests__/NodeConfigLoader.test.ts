@@ -7,10 +7,10 @@ import {
   VueWrapper,
 } from "@vue/test-utils";
 
-import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import { API } from "@api";
 
-import { UIExtension } from "webapps-common/ui/uiExtensions";
+import { UIExtension } from "@knime/ui-extensions-renderer";
 import * as applicationStore from "@/store/application";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
@@ -21,14 +21,6 @@ import {
   DataServiceType,
   ViewState,
 } from "@knime/ui-extension-service";
-
-const dynamicImportMock = mockDynamicImport();
-
-vi.mock("webapps-common/ui/uiExtensions/useDynamicImport", () => ({
-  useDynamicImport: vi.fn().mockImplementation(() => {
-    return { dynamicImport: dynamicImportMock };
-  }),
-}));
 
 const mockedAPI = deepMocked(API);
 
@@ -76,7 +68,7 @@ describe("NodeConfigLoader.vue", () => {
 
     const wrapper = mount(NodeConfigLoader, {
       props: { ...defaultProps, ...props },
-      global: { plugins: [$store] },
+      global: { plugins: [$store], stubs: { UIExtension: true } },
       slots,
     });
 

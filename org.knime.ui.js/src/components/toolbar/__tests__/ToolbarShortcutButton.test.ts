@@ -1,4 +1,4 @@
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { SubMenu } from "@knime/components";
 import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";

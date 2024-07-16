@@ -1,10 +1,20 @@
 import { expect, describe, it, vi, beforeEach } from "vitest";
+import { deepMocked, lodashMockFactory, mockVuexStore } from "@/test/utils";
+
+vi.mock("lodash-es", async (importActual) => {
+  const actual = await importActual();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    ...lodashMockFactory(),
+  };
+});
+
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
-import Button from "webapps-common/ui/components/Button.vue";
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import { deepMocked, lodashMockFactory, mockVuexStore } from "@/test/utils";
+import { Button, NodePreview } from "@knime/components";
 import {
   createAvailablePortTypes,
   createPort,
@@ -30,15 +40,6 @@ import {
   PortType,
 } from "@/api/gateway-api/generated-api";
 import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
-
-vi.mock("lodash-es", async () => {
-  const actual = await vi.importActual("lodash-es");
-
-  return {
-    ...actual,
-    ...lodashMockFactory(),
-  };
-});
 
 const defaultNodeRecommendationsResponse = [
   createNodeTemplate(),

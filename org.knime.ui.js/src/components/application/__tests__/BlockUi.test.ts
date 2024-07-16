@@ -14,6 +14,7 @@ describe("BlockUi", () => {
           $bus,
         },
       },
+      attachTo: document.body,
     });
     return { wrapper };
   };

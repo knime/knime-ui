@@ -9,6 +9,7 @@ describe("GlobalLoader.vue", () => {
   const doMount = ({ props = {} } = {}) => {
     const wrapper = mount(GlobalLoader, {
       props,
+      attachTo: document.body,
     });
 
     return { wrapper };

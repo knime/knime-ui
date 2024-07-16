@@ -3,7 +3,7 @@ import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
-import TabBar from "webapps-common/ui/components/TabBar.vue";
+import { TabBar } from "@knime/components";
 
 import portIcon from "@/components/common/PortIconRenderer";
 import PortTabs, { portIconSize } from "../PortTabs.vue";

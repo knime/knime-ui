@@ -7,7 +7,7 @@ import * as applicationStore from "@/store/application";
 import * as panelStore from "@/store/panel";
 
 import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
+import { MenuItems } from "@knime/components";
 import { getToastsProvider } from "@/plugins/toasts";
 import {
   createProject,
@@ -19,7 +19,15 @@ import { APP_ROUTES } from "@/router/appRoutes";
 
 const routerPush = vi.fn();
 
-vi.mock("webapps-common/ui/services/toast");
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useToasts: vi.fn(),
+  };
+});
 vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: routerPush })),
   useRoute: vi.fn(() => ({})),

@@ -34,6 +34,7 @@ describe("WorkflowMonitorContent.vue", () => {
 
     const wrapper = mount(WorkflowMonitorContent, {
       global: { plugins: [$store] },
+      attachTo: document.body,
     });
 
     return { wrapper, $store };

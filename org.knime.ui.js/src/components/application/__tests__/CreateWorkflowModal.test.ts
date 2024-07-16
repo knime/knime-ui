@@ -2,8 +2,7 @@ import { expect, describe, it, vi, afterEach } from "vitest";
 import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import Modal from "webapps-common/ui/components/Modal.vue";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import { Modal, InputField } from "@knime/components";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
@@ -82,6 +81,7 @@ describe("CreateWorkflowModal.vue", () => {
         plugins: [$store],
         stubs: { BaseModal: true },
       },
+      attachTo: document.body,
     });
 
     return { wrapper, $store, dispatchSpy, commitSpy };

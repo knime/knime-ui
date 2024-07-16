@@ -4,7 +4,7 @@ import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 import { createSpace, createSpaceProvider } from "@/test/factories";
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
+import { MenuItems } from "@knime/components";
 import * as spacesStore from "@/store/spaces";
 import { SpaceProviderNS } from "@/api/custom-types";
 import SpaceSelectionContextMenu from "../SpaceExplorerContextMenu.vue";

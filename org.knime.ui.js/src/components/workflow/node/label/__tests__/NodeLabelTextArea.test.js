@@ -18,6 +18,7 @@ describe("NodeLabelTextArea", () => {
           },
         },
       },
+      attachTo: document.body,
     });
 
     return wrapper;

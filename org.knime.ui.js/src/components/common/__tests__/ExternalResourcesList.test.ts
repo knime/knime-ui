@@ -1,8 +1,7 @@
 import { expect, describe, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import LinkList from "webapps-common/ui/components/LinkList.vue";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import { LinkList, InputField } from "@knime/components";
 
 import ExternalResourcesList from "../ExternalResourcesList.vue";
 

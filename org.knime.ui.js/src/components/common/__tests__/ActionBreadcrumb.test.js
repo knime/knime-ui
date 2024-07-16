@@ -1,7 +1,7 @@
 import { expect, describe, beforeEach, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
+import { Breadcrumb } from "@knime/components";
 import ActionBreadcrumb from "../ActionBreadcrumb.vue";
 
 describe("ActionBreadcrumb.vue", () => {

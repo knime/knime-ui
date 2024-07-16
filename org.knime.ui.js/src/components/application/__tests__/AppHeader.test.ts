@@ -14,7 +14,8 @@ import CloseButton from "@/components/common/CloseButton.vue";
 import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
 import { createProject } from "@/test/factories";
 import type { Project } from "@/api/gateway-api/generated-api";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+
+import { FunctionButton } from "@knime/components";
 
 const mockedAPI = deepMocked(API);
 
@@ -162,7 +163,7 @@ describe("AppHeader.vue", () => {
     it("navigates to homepage during startup when there are no open projects", () => {
       const { wrapper } = doMount({ customOpenProjects: [] });
       expect(
-        wrapper.find(".home-button").findComponent(FunctionButton).props(),
+        wrapper.findComponent<typeof FunctionButton>(".home-button").props(),
       ).toMatchObject({
         active: true,
       });

@@ -2,22 +2,14 @@ import { expect, describe, afterEach, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@api";
-import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 
-import { UIExtension } from "webapps-common/ui/uiExtensions";
+import { UIExtension } from "@knime/ui-extensions-renderer";
 import * as applicationStore from "@/store/application";
 import PortViewLoader from "../PortViewLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
-
-const dynamicImportMock = mockDynamicImport();
-
-vi.mock("webapps-common/ui/uiExtensions/useDynamicImport", () => ({
-  useDynamicImport: vi.fn().mockImplementation(() => {
-    return { dynamicImport: dynamicImportMock };
-  }),
-}));
 
 const mockedAPI = deepMocked(API);
 
@@ -71,7 +63,7 @@ describe("PortViewLoader.vue", () => {
 
     const wrapper = mount(PortViewLoader, {
       props: { ...props, ...customProps },
-      global: { plugins: [$store] },
+      global: { plugins: [$store], stubs: { UIExtension: true } },
     });
 
     return { wrapper, $store };

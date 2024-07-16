@@ -17,7 +17,7 @@ import {
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import SpacePageHeader from "../SpacePageHeader.vue";
-import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
+import { FileExplorer } from "@knime/components";
 import SpaceExplorer from "../SpaceExplorer.vue";
 import { router } from "@/router/router";
 
@@ -88,7 +88,15 @@ mockedAPI.space.listWorkflowGroup.mockResolvedValue({
   path: [],
 });
 
-vi.mock("webapps-common/ui/services/toast");
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useToasts: vi.fn(),
+  };
+});
 
 describe("SpaceBrowsingPage.vue", () => {
   beforeEach(() => {

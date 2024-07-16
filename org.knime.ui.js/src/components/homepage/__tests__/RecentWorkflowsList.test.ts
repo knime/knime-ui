@@ -1,7 +1,7 @@
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
-import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
+import { FileExplorer } from "@knime/components";
 import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
 import { API } from "@api";
 import * as spacesStore from "@/store/spaces";

@@ -2,8 +2,7 @@ import { expect, describe, it, vi, beforeAll } from "vitest";
 import * as Vue from "vue";
 
 import { shallowMount, mount, flushPromises } from "@vue/test-utils";
-import Button from "webapps-common/ui/components/Button.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { Button, FunctionButton } from "@knime/components";
 
 import Error from "../Error.vue";
 

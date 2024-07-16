@@ -5,11 +5,13 @@ import { nextTick } from "vue";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 
-import LinkList from "webapps-common/ui/components/LinkList.vue";
-import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import TagList from "webapps-common/ui/components/TagList.vue";
-import Tag from "webapps-common/ui/components/Tag.vue";
+import {
+  LinkList,
+  NodeFeatureList,
+  NodePreview,
+  TagList,
+  Tag,
+} from "@knime/components";
 
 import {
   ComponentNodeAndDescription,

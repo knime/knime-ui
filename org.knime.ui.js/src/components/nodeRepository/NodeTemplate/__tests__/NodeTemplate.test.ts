@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 import CircleHelp from "@knime/styles/img/icons/circle-help.svg";
 
 import NodeTemplate, { type Props } from "../NodeTemplate.vue";

@@ -2,8 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import SearchButton from "../SearchButton.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import { FunctionButton, InputField } from "@knime/components";
 import { nextTick } from "vue";
 
 describe("Search Button", () => {

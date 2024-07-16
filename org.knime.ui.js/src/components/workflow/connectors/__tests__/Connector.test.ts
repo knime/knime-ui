@@ -149,7 +149,10 @@ describe("Connector.vue", () => {
   const doMount = ({
     props = null,
     customStore = null,
-  }: { props?: Partial<ConnectorProps>; customStore?: Store<any> } = {}) => {
+  }: {
+    props?: Partial<ConnectorProps> | null;
+    customStore?: Store<any> | null;
+  } = {}) => {
     const { $store: _$store, connection } = createStore();
 
     const $store = customStore || _$store;
@@ -161,6 +164,7 @@ describe("Connector.vue", () => {
         plugins: [$store],
         mocks: { $colors, $shapes, $bus },
       },
+      attachTo: document.body,
     });
 
     return { wrapper, $store, dispatchSpy, connection };

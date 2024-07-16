@@ -213,6 +213,7 @@ export default defineComponent({
       :height="70"
       :x="errorMessagePosition.x"
       :y="errorMessagePosition.y"
+      data-test-id="validation-msg"
     >
       <div class="invalid-chars-error">
         Characters <span class="chars">{{ invalidCharacters.source }}</span> are

@@ -28,7 +28,7 @@ import PortViewTabOutput from "../portViews/PortViewTabOutput.vue";
 import ValidationInfo from "../ValidationInfo.vue";
 import LoadingIndicator from "../LoadingIndicator.vue";
 import ExecuteButton from "../ExecuteButton.vue";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 import NodeViewTabOutput from "../nodeViews/NodeViewTabOutput.vue";
 
 vi.mock("@knime/ui-extension-service");

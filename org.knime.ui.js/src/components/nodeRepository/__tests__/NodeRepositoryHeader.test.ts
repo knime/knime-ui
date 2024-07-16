@@ -3,7 +3,7 @@ import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import * as settingsStore from "@/store/settings";
-import SearchBar from "webapps-common/ui/components/forms/SearchInput.vue";
+import { SearchInput } from "@knime/components";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 
 import CloseableTagList from "../CloseableTagList.vue";
@@ -104,7 +104,7 @@ describe("NodeRepositoryHeader", () => {
       expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
         { text: "Nodes" },
       ]);
-      expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
+      expect(wrapper.findComponent(SearchInput).exists()).toBe(true);
       expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
     });
   });
@@ -165,10 +165,12 @@ describe("NodeRepositoryHeader", () => {
   });
 
   describe("search for nodes", () => {
-    it("updates query on SearchBar input", async () => {
+    it("updates query on SearchInput input", async () => {
       const { wrapper, updateQueryMock } = doMount();
 
-      wrapper.findComponent(SearchBar).vm.$emit("update:modelValue", "myquery");
+      wrapper
+        .findComponent(SearchInput)
+        .vm.$emit("update:modelValue", "myquery");
       await wrapper.vm.$nextTick();
 
       expect(updateQueryMock).toHaveBeenCalledWith(
@@ -195,7 +197,7 @@ describe("NodeRepositoryHeader", () => {
         hasNodeCollectionActiveMock: "test",
         activeNodeCollectionMock,
       });
-      expect(wrapper.findComponent(SearchBar).props("placeholder")).includes(
+      expect(wrapper.findComponent(SearchInput).props("placeholder")).includes(
         activeNodeCollectionMock,
       );
     });

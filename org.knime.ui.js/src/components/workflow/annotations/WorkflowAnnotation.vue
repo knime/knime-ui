@@ -337,6 +337,7 @@ const setColor = (color: string) => {
         :y="transformedBounds.y"
         :width="transformedBounds.width"
         :height="transformedBounds.height"
+        data-test-id="transformed-controls"
       >
         <LegacyAnnotation
           v-if="!isRichTextAnnotation && !isEditing"

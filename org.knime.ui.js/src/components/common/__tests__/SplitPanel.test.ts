@@ -43,7 +43,7 @@ describe("SplitPanel", () => {
 
       return { styles, gridTemplate };
     };
-    const dragSplitter = async (pageX: number, pageY: number) => {
+    const dragSplitter = async (x: number, y: number) => {
       const splitter = wrapper.find(".splitter");
       await splitter.trigger("mousedown", { offsetY: 10, offsetX: 10 });
 
@@ -59,11 +59,10 @@ describe("SplitPanel", () => {
 
       const move = new MouseEvent("mousemove", {
         buttons: 1,
+        clientX: x,
+        clientY: y,
       });
-      // @ts-ignore
-      move.pageX = pageX;
-      // @ts-ignore
-      move.pageY = pageY;
+
       window.dispatchEvent(move);
 
       window.dispatchEvent(new MouseEvent("mouseup"));
@@ -137,7 +136,7 @@ describe("SplitPanel", () => {
     const { dragSplitter, checkSecondarySize } = doMount();
 
     await dragSplitter(300, 400);
-    checkSecondarySize(34.84);
+    checkSecondarySize(33.18000000000001);
   });
 
   it.each(["down", "up", "left", "right"])(

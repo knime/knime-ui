@@ -7,11 +7,13 @@ import { useRoute } from "vue-router";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
 
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
-import Modal from "webapps-common/ui/components/Modal.vue";
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import FileExplorer from "webapps-common/ui/components/FileExplorer/FileExplorer.vue";
-import type { FileExplorerItem } from "webapps-common/ui/components/FileExplorer/types";
+import {
+  Breadcrumb,
+  Modal,
+  NodePreview,
+  FileExplorer,
+} from "@knime/components";
+import type { FileExplorerItem } from "@knime/components";
 
 import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -72,7 +74,16 @@ const fetchWorkflowGroupContentResponse: Awaited<
   ],
 };
 
-vi.mock("webapps-common/ui/services/toast");
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useToasts: vi.fn(),
+  };
+});
+
 vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: () => {} })),
   useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage, params: {} })),

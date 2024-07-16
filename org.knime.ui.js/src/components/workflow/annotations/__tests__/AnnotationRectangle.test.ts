@@ -48,6 +48,7 @@ describe("AnnotationRectangle", () => {
           $bus,
         },
       },
+      attachTo: document.body,
     });
 
     const pointerDown = ({ clientX, clientY, shiftKey = false }) => {

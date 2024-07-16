@@ -3,7 +3,7 @@ import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
-import Modal from "webapps-common/ui/components/Modal.vue";
+import { Modal } from "@knime/components";
 
 import { API } from "@api";
 import * as spacesStore from "@/store/spaces";
@@ -61,6 +61,7 @@ describe("DeploymentsModal.vue", () => {
         plugins: [$store],
         stubs: { BaseModal: true },
       },
+      attachTo: document.body,
     });
 
     return { wrapper, $store, dispatchSpy, commitSpy };

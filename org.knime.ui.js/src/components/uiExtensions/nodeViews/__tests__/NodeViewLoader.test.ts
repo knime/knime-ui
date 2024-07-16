@@ -2,8 +2,8 @@ import { expect, describe, afterEach, it, vi } from "vitest";
 import * as Vue from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { deepMocked, mockDynamicImport, mockVuexStore } from "@/test/utils";
-import { UIExtension } from "webapps-common/ui/uiExtensions";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import { UIExtension } from "@knime/ui-extensions-renderer";
 import { API } from "@api";
 
 import * as applicationStore from "@/store/application";
@@ -23,14 +23,6 @@ import { createNativeNode } from "@/test/factories";
 import ExecuteButton from "../../ExecuteButton.vue";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
-
-const dynamicImportMock = mockDynamicImport();
-
-vi.mock("webapps-common/ui/uiExtensions/useDynamicImport", () => ({
-  useDynamicImport: vi.fn().mockImplementation(() => {
-    return { dynamicImport: dynamicImportMock };
-  }),
-}));
 
 const mockedAPI = deepMocked(API);
 
@@ -74,7 +66,7 @@ describe("NodeViewLoader.vue", () => {
 
     const wrapper = mount(NodeViewLoader, {
       props,
-      global: { plugins: [$store] },
+      global: { plugins: [$store], stubs: { UIExtension: true } },
     });
 
     return { wrapper, $store };

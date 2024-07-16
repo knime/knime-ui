@@ -215,23 +215,25 @@ describe("NodeNameEditor", () => {
 
   it("should show an error message for invalid characters input", async () => {
     const wrapper = doMount();
-    expect(wrapper.find("foreignObject").exists()).toBe(false);
+    const selector = '[data-test-id="validation-msg"]';
+    expect(wrapper.find(selector).exists()).toBe(false);
     await wrapper.findComponent(NodeNameTextarea).vm.$emit("invalidInput");
-    expect(wrapper.find("foreignObject").exists()).toBe(true);
-    expect(wrapper.find("foreignObject").text()).toContain(
+    expect(wrapper.find(selector).exists()).toBe(true);
+    expect(wrapper.find(selector).text()).toContain(
       "are not allowed and have been removed.",
     );
   });
 
   it("hides error message after some time", async () => {
     const wrapper = doMount();
+    const selector = '[data-test-id="validation-msg"]';
     vi.useFakeTimers();
-    expect(wrapper.find("foreignObject").exists()).toBe(false);
+    expect(wrapper.find(selector).exists()).toBe(false);
     await wrapper.findComponent(NodeNameTextarea).vm.$emit("invalidInput");
-    expect(wrapper.find("foreignObject").exists()).toBe(true);
+    expect(wrapper.find(selector).exists()).toBe(true);
     vi.runAllTimers();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find("foreignObject").exists()).toBe(false);
+    expect(wrapper.find(selector).exists()).toBe(false);
   });
 
   it("clears active hide error message timer if another inlaid input occurs", async () => {

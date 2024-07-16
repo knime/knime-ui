@@ -3,7 +3,7 @@ import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 
-import NodeTorsoNormal from "webapps-common/ui/components/node/NodeTorsoNormal.vue";
+import { NodeTorsoNormal } from "@knime/components";
 
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";

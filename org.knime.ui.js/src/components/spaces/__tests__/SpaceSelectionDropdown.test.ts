@@ -2,7 +2,7 @@ import { expect, describe, beforeEach, it, vi } from "vitest";
 import { mockVuexStore } from "@/test/utils";
 import { mount } from "@vue/test-utils";
 
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { SubMenu } from "@knime/components";
 import {
   createSpace,
   createSpaceGroup,

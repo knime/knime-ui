@@ -20,7 +20,11 @@ describe("NodeList", () => {
   };
 
   const doMount = (props = {}, opts = {}) =>
-    mount(NodeList, { props: { ...defaultProps, ...props }, ...opts });
+    mount(NodeList, {
+      props: { ...defaultProps, ...props },
+      attachTo: document.body,
+      ...opts,
+    });
 
   it("show-more button", async () => {
     const wrapper = doMount({ hasMoreNodes: true });

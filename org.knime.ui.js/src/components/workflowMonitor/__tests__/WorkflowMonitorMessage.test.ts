@@ -5,8 +5,7 @@ import {
   createNodeTemplateWithExtendedPorts,
   createWorkflowMonitorMessage,
 } from "@/test/factories";
-import NodePreview from "webapps-common/ui/components/node/NodePreview.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { NodePreview, FunctionButton } from "@knime/components";
 
 describe("WorkflowMonitorMessage.vue", () => {
   type ComponentProps = InstanceType<typeof WorkflowMonitorMessage>["$props"];

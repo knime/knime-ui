@@ -5,7 +5,7 @@ import { deepMocked } from "@/test/utils";
 import { API } from "@api";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 import SearchResultsInfo from "../SearchResultsInfo.vue";
-import Button from "webapps-common/ui/components/Button.vue";
+import { Button } from "@knime/components";
 
 const mockedAPI = deepMocked(API);
 

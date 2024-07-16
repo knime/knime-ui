@@ -461,6 +461,7 @@ export default {
       this.selectionPreview = preview === "clear" ? null : preview;
     },
   },
+  expose: ["setSelectionPreview"],
 };
 </script>
 

@@ -3,8 +3,7 @@ import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 
-import Breadcrumb from "webapps-common/ui/components/Breadcrumb.vue";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { Breadcrumb, FunctionButton } from "@knime/components";
 
 import * as spacesStore from "@/store/spaces";
 

@@ -4,7 +4,7 @@ import { VueWrapper, mount } from "@vue/test-utils";
 import { createWorkflow } from "@/test/factories";
 import { TypedText, type Link } from "@/api/gateway-api/generated-api";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
 import ProjectMetadata from "../ProjectMetadata.vue";

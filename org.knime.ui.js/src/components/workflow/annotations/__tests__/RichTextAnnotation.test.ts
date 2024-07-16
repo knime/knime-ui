@@ -3,7 +3,7 @@ import { shallowRef } from "vue";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { describe, expect, it, vi, type Mock } from "vitest";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 
 import * as $colors from "@/style/colors";
 

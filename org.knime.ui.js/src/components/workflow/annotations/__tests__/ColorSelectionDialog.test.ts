@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import { annotationColorPresets } from "@/style/colors";
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 
 import ColorSelectionDialog from "../ColorSelectionDialog.vue";
 

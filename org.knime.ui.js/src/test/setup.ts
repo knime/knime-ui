@@ -1,13 +1,14 @@
 import { vi } from "vitest";
-import consola from "consola";
 import { config } from "@vue/test-utils";
+import { setupLogger } from "@/plugins/logger";
 
 config.global.renderStubDefaultSlot = true;
 config.global.stubs = {
   Portal: true,
   PortalTarget: true,
 };
-consola.level = 0;
+
+setupLogger();
 
 // mock presence of 'EquoCommService' object
 window.EquoCommService = {

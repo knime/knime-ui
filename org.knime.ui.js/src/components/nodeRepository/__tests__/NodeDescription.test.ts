@@ -3,8 +3,7 @@ import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import Description from "webapps-common/ui/components/Description.vue";
-import NodeFeatureList from "webapps-common/ui/components/node/NodeFeatureList.vue";
+import { Description, NodeFeatureList } from "@knime/components";
 
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import NodeDescription from "../NodeDescription.vue";

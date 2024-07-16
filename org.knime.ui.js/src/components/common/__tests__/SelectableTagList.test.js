@@ -1,6 +1,6 @@
 import { expect, describe, it } from "vitest";
 import { shallowMount, mount } from "@vue/test-utils";
-import Tag from "webapps-common/ui/components/Tag.vue";
+import { Tag } from "@knime/components";
 import SelectableTagList, {
   defaultInitialTagCount,
 } from "../SelectableTagList.vue";

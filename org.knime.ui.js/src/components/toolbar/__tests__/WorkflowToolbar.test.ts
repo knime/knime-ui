@@ -3,7 +3,7 @@ import { nextTick } from "vue";
 import type { Store } from "vuex";
 import { mount } from "@vue/test-utils";
 
-import SubMenu from "webapps-common/ui/components/SubMenu.vue";
+import { SubMenu } from "@knime/components";
 
 import { router } from "@/router/router";
 import * as applicationStore from "@/store/application";
@@ -27,7 +27,15 @@ import ToolbarShortcutButton from "../ToolbarShortcutButton.vue";
 import ZoomMenu from "../ZoomMenu.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 
-vi.mock("webapps-common/ui/services/toast");
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useToasts: vi.fn(),
+  };
+});
 
 describe("WorkflowToolbar.vue", () => {
   const doMount = () => {

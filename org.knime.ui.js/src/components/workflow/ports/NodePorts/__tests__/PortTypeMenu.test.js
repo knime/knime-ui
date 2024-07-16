@@ -3,9 +3,8 @@ import { mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import MenuItems from "webapps-common/ui/components/MenuItems.vue";
+import { MenuItems, SearchInput } from "@knime/components";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import SearchInput from "webapps-common/ui/components/forms/SearchInput.vue";
 
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";

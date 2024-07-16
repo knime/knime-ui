@@ -10,7 +10,7 @@ import {
   type Link,
 } from "@/api/gateway-api/generated-api";
 
-import FunctionButton from "webapps-common/ui/components/FunctionButton.vue";
+import { FunctionButton } from "@knime/components";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
 import ComponentMetadata from "../ComponentMetadata.vue";

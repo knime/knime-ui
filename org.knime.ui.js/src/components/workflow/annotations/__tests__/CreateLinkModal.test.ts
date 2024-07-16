@@ -2,7 +2,7 @@ import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 
-import InputField from "webapps-common/ui/components/forms/InputField.vue";
+import { InputField } from "@knime/components";
 
 import CreateLinkModal from "../CreateLinkModal.vue";
 
