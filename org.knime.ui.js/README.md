@@ -16,14 +16,6 @@ The frontend is based on the [Vue.js] JavaScript framework.
     | `-Dorg.knime.ui.dev.mode=true` | Enables debugging the AP's browser from your system browser at http://localhost:8888 and more |
     | `-Dorg.knime.ui.dev.url=http://localhost:3000` | Makes the AP use KNIME UI served from localhost instead of using the resources bundled with the KNIME UI Extension |
 
-### Initialize submodules
-
-Pull the contained [git submodules](https://stackoverflow.com/a/4438292/5134084) with
-
-```sh
-git submodule update --init --recursive
-```
-
 ### Install dependencies
 
 ```sh
