@@ -12,11 +12,14 @@ describe("useUniqueNodeStateId", () => {
       selectedNode: ref(
         createNativeNode({
           inputContentVersion: 13,
+          templateId: "org.knime.base.node.MockNodeFactory",
         }),
       ),
     });
 
-    expect(uniqueNodeConfigId.value).toMatch("project1__workflow1::root:1_13");
+    expect(uniqueNodeConfigId.value).toBe(
+      "project1__workflow1::org.knime.base.node.MockNodeFactory_root:1_13",
+    );
   });
 
   it("generates the correct node view id", () => {

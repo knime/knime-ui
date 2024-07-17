@@ -12,7 +12,7 @@ export const useUniqueNodeStateId = (options: UseUniqueNodeStateIdOptions) => {
 
   const uniqueNodeConfigId = computed(
     () =>
-      `${projectId.value}__${workflowId.value}::${selectedNode.value.id}_${selectedNode.value.inputContentVersion}`,
+      `${projectId.value}__${workflowId.value}::${selectedNode.value.templateId}_${selectedNode.value.id}_${selectedNode.value.inputContentVersion}`,
   );
 
   const uniqueNodeViewId = computed(
