@@ -27,7 +27,7 @@ const currentTags = computed(() =>
 
 const selectedIds = computed(() => currentTags.value.map(({ id }) => id));
 
-const onTagsChange = (tags: Array<string | number>) => {
+const onTagsChange = (tags: Array<string | number | symbol>) => {
   emit(
     "update:modelValue",
     tags.map((tag) => tag.toString()),

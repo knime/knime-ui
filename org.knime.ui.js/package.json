@@ -20,7 +20,7 @@
     "test:unit": "vitest",
     "coverage": "vitest run --coverage",
     "license-check": "license-check -c",
-    "type-check": "vue-tsc --noEmit -p tsconfig.app.json --composite false",
+    "type-check": "vue-tsc --noEmit -p tsconfig.app.json",
     "jenkins:lint": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
     "jenkins:audit": "check-audit --omit dev --json > target/audit.json || true",
     "add-husky": "cd .. && husky install ./org.knime.ui.js/.husky",

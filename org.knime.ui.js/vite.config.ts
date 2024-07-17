@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, UserConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import svgLoader from "vite-svg-loader";
 import { configDefaults } from "vitest/config";
@@ -10,7 +10,7 @@ import { svgoConfig } from "@knime/styles/config/svgo.config";
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
-  return {
+  const config: UserConfig = {
     plugins: [vue(), svgLoader({ svgoConfig }), vueDevTools()],
 
     build: {
@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => {
         ),
       },
       coverage: {
+        provider: "v8",
         all: true,
         reportsDirectory: "test-results",
         reporter: "lcov",
@@ -81,4 +82,6 @@ export default defineConfig(({ mode }) => {
       },
     },
   };
+
+  return config;
 });

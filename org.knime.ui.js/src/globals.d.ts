@@ -1,8 +1,6 @@
 /* eslint-disable one-var */
 import { Entries } from "type-fest";
 
-// declare let consola: import("consola").Consola;
-
 declare global {
   interface Window {
     EquoCommService: {

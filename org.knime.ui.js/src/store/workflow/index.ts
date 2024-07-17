@@ -184,7 +184,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       await dispatch("selection/deselectAllObjects", null, { root: true });
     }
 
-    const messages = [];
+    const messages: string[] = [];
     if (nonDeletableNodeIds.length) {
       messages.push(
         `The following nodes can’t be deleted: [${nonDeletableNodeIds.join(

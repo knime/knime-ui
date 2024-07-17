@@ -35,8 +35,8 @@ export default defineComponent({
     // Sort nodes so that selected nodes are rendered in front
     // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
     sortedNodes() {
-      let selected = [];
-      let unselected = [];
+      let selected: any[] = [];
+      let unselected: any[] = [];
 
       for (const nodeId of Object.keys(this.workflow.nodes)) {
         if (this.isNodeSelected(nodeId)) {

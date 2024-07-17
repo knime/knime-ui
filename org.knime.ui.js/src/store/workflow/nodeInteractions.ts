@@ -249,7 +249,7 @@ const getNodeTemplateProperty = (params: {
     return nodeTemplates[templateId][property];
   }
 
-  // @ts-expect-error - TODO: NXT-2023 component is not inheriting properties correctly. Type narrowing
+  // @ts-ignore - TODO: NXT-2023 component is not inheriting properties correctly. Type narrowing
   // can be improved here once NativeNode, ComponentNode and MetaNode types are generated correctly
   return node[property];
 };
