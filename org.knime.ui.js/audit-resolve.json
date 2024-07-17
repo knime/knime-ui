@@ -12,6 +12,10 @@
     "1094544|postcss": {
       "decision": "ignore",
       "madeAt": 1699363284248
+    },
+    "1096484|semver": {
+      "decision": "ignore",
+      "madeAt": 1721216378170
     }
   },
   "rules": {},
