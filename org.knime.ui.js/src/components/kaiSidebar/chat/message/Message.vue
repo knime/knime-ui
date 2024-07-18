@@ -190,7 +190,7 @@ const showFeedbackControls = computed(() => !isUser.value && !props.isError);
       & ul {
         & li {
           &::before {
-            content: "•";
+            content: "\2022";
           }
         }
       }
