@@ -9,7 +9,7 @@ properties([
         'knime-gateway/' + env.BRANCH_NAME.replaceAll('/', '%2F')
     )]),
     buildDiscarder(logRotator(numToKeepStr: '5')),
-    parameters([p2Tools.getP2pruningParameter()]),
+    parameters([p2Tools.getP2pruningParameter(), booleanParam(name: 'RUN_UI_TESTS', defaultValue: false, description: 'Trigger UI integration tests')]),
     disableConcurrentBuilds()
 ])
 
@@ -33,6 +33,10 @@ try {
                 }
             }
         }
+    }
+    if (params.RUN_UI_TESTS == true) {
+        build(wait: true, job: "knime-qa-ui-automation-ap-modern-ui-testing-ap-next//master",
+                        parameters: [ string(name: 'KNIME_UI_BRANCH', value: "$BRANCH_NAME") ])
     }
 } catch (ex) {
     currentBuild.result = 'FAILURE'
