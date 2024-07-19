@@ -80,11 +80,6 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
 .modal {
   --modal-width: 450px;
 
-  & :deep(.overlay) {
-    background: white;
-    opacity: 0.3;
-  }
-
   & :deep(.wrapper .inner) {
     box-shadow: var(--shadow-elevation-2);
   }
