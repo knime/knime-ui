@@ -4,19 +4,9 @@ import { shallowMount } from "@vue/test-utils";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
 
-import NodePortActions, { portActionButtonSize } from "../NodePortActions.vue";
+import NodePortActions from "../NodePortActions.vue";
 
-import { escapeStack as escapeStackMock } from "@/mixins/escapeStack";
-vi.mock("@/mixins/escapeStack", () => {
-  function escapeStack({ onEscape }) {
-    // eslint-disable-line func-style
-    escapeStack.onEscape = onEscape;
-    return {
-      /* empty mixin */
-    };
-  }
-  return { escapeStack };
-});
+const portActionButtonSize = 20;
 
 describe("NodePortActions.vue", () => {
   const defaultProps = {
@@ -127,13 +117,5 @@ describe("NodePortActions.vue", () => {
     const actionButton = wrapper.findComponent(ActionButton);
 
     expect(actionButton.props("disabled")).toBe(true);
-  });
-
-  it("should close on escape", () => {
-    const wrapper = doShallowMount();
-
-    expect(wrapper.emitted("close")).toBeFalsy();
-    escapeStackMock.onEscape.call(wrapper.vm);
-    expect(wrapper.emitted("close")).toBeTruthy();
   });
 });

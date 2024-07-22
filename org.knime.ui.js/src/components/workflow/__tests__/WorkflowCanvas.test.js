@@ -11,7 +11,7 @@ import SelectionRectangle from "../SelectionRectangle/SelectionRectangle.vue";
 import WorkflowEmpty from "../WorkflowEmpty.vue";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
 
-describe("Kanvas", () => {
+describe("WorkflowCanvas", () => {
   let doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty;
 
   beforeEach(() => {
@@ -74,6 +74,11 @@ describe("Kanvas", () => {
           hasAnnotationModeEnabled: () => false,
         },
       },
+      nodeTemplates: {
+        getters: {
+          isDraggingNodeTemplate: () => false,
+        },
+      },
     };
 
     $store = mockVuexStore(storeConfig);
@@ -124,7 +129,7 @@ describe("Kanvas", () => {
       storeConfig.canvas.actions.fillScreen.mockReset();
 
       // workaround, instead of triggering the canvas getter to reevaluate
-      wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, false);
+      vi.spyOn(wrapper.vm, "isWorkflowEmpty", "get").mockReturnValue(false);
       await Vue.nextTick();
 
       expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
@@ -158,7 +163,7 @@ describe("Kanvas", () => {
 
     it("switch to empty workflow", async () => {
       // workaround, instead of triggering the canvas getter to reevaluate
-      wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, true);
+      vi.spyOn(wrapper.vm, "isWorkflowEmpty", "get").mockReturnValue(false);
       await Vue.nextTick();
 
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();

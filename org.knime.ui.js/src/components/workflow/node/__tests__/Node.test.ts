@@ -24,13 +24,17 @@ import Node from "../Node.vue";
 
 import * as applicationStore from "@/store/application";
 
-import { KnimeMIME } from "@/mixins/dropNode";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
 import type { Store } from "vuex";
 import type { RootStoreState } from "@/store/types";
+
+let KnimeMIME: string;
+vi.mock("@/composables/useDropNode", () => ({
+  useDropNode: () => ({ KnimeMIME }),
+}));
 
 const commonNode = {
   id: "root:1",

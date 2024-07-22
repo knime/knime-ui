@@ -33,7 +33,6 @@ import * as applicationStore from "@/store/application";
 
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-import { KnimeMIME } from "@/mixins/dropNode";
 
 import * as portShift from "@/util/portShift";
 import * as connectorPath from "@/util/connectorPath";
@@ -48,6 +47,11 @@ vi.mock("gsap", () => ({
   gsap: { utils: { snap: (input) => input } },
 }));
 const mockedAPI = deepMocked(API);
+
+let KnimeMIME: string;
+vi.mock("@/composables/useDropNode", () => ({
+  useDropNode: () => ({ KnimeMIME }),
+}));
 
 describe("Connector.vue", () => {
   const portShiftMock = vi.spyOn(portShift, "default");

@@ -3,8 +3,6 @@ import { mount } from "@vue/test-utils";
 import * as Vue from "vue";
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
-import { KnimeMIME } from "@/mixins/dropNode";
-
 import {
   NativeNodeInvariants,
   PortType,
@@ -21,6 +19,11 @@ import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
 
 const mockedAPI = deepMocked(API);
+
+let KnimeMIME: string;
+vi.mock("@/composables/useDropNode", () => ({
+  useDropNode: () => ({ KnimeMIME }),
+}));
 
 describe("DraggableNodeTemplate", () => {
   const baseNodeTemplate: NodeTemplate = {
