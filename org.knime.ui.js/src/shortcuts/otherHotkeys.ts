@@ -22,7 +22,7 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
   /** general */
   {
     hotkey: ["Esc"],
-    description: "Close any dialog unsaved",
+    description: "Close any unsaved dialog",
     group: "general",
   },
   /** Workflow editor modes */
@@ -110,7 +110,7 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
   },
   {
     hotkey: ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"],
-    description: "Moving the selection rectangle to the next element",
+    description: "Move the selection rectangle to the next element",
     group: "workflowEditor",
   },
   {

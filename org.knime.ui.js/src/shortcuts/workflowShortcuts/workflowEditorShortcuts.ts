@@ -167,8 +167,8 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     condition: canAutoConnectOrDisconnect,
   },
   autoDisconnectNodesFlowVar: {
-    text: "Disconnect nodes's flow variable ports",
-    title: "Disconnect nodes's flow variable ports",
+    text: "Disconnect nodes' flow variable ports",
+    title: "Disconnect nodes' flow variable ports",
     hotkey: ["CtrlOrCmd", "Shift", "K"],
     group: "workflowEditor",
     execute: createAutoConnectionHandler(API.workflowCommand.AutoDisconnect),
