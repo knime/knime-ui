@@ -12,7 +12,6 @@ definitions:
         size: 2x # more memory needed for unit tests
         script:
           - cd org.knime.ui.js
-          - git submodule update --init --recursive
           - npm ci
           - npm run ci:lint-format
           - npm run coverage

@@ -1,6 +1,4 @@
 package-lock.json
 test-results
 dist
-knime-js-pagebuilder
-webapps-common
 generated-api.ts

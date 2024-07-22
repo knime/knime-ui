@@ -1,8 +1,8 @@
 import { fileURLToPath, URL } from "node:url";
-import { defineConfig, loadEnv, UserConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
+import { UserConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 import svgLoader from "vite-svg-loader";
-import { configDefaults } from "vitest/config";
 import vueDevTools from "vite-plugin-vue-devtools";
 // @ts-ignore
 import { svgoConfig } from "@knime/styles/config/svgo.config";
@@ -35,11 +35,6 @@ export default defineConfig(({ mode }) => {
 
     test: {
       include: ["**/__tests__/*.test.{js,mjs,cjs,ts,mts,cts}"],
-      exclude: [
-        ...configDefaults.exclude,
-        "webapps-common",
-        "knime-js-pagebuilder",
-      ],
       setupFiles: ["src/test/setup"],
       environment: "jsdom",
       testTimeout: 30000,
@@ -59,8 +54,6 @@ export default defineConfig(({ mode }) => {
           "src/test",
           "target",
           "bin",
-          "webapps-common",
-          "knime-js-pagebuilder",
           "buildtools",
           ".history",
           "src/main.js",
