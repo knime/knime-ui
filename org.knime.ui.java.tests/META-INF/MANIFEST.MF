@@ -4,11 +4,11 @@ Bundle-Name: Unit-Tests for org.knime.ui.java
 Bundle-SymbolicName: org.knime.ui.java.tests;singleton:=true
 Bundle-Version: 5.4.0.qualifier
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
-Fragment-Host: org.knime.ui.java;bundle-version="[5.3.0,6.0.0)"
+Fragment-Host: org.knime.ui.java;bundle-version="[5.4.0,6.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.knime.ui.java.tests
 Require-Bundle: junit-jupiter-api;bundle-version="[5.8.1,6.0.0)",
  junit-jupiter-params;bundle-version="[5.8.1,6.0.0)",
  assertj-core;bundle-version="[3.22.0,4.0.0)",
  org.mockito.mockito-core;bundle-version="[2.18.3,3.0.0)",
- org.knime.testing;bundle-version="[5.3.0,6.0.0)"
+ org.knime.testing;bundle-version="[5.4.0,6.0.0)"
