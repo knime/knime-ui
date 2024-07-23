@@ -155,6 +155,7 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
         <NodeDescription
           show-close-button
           :selected-node="isNodeVisible ? showDescriptionForNode : null"
+          is-node-description-visible
           @close="store.dispatch('panel/closeExtensionPanel')"
         />
       </Transition>
