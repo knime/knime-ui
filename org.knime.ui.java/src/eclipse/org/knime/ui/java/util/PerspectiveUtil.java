@@ -49,20 +49,11 @@ package org.knime.ui.java.util;
 import java.util.Optional;
 
 import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.ui.MUIElement;
-import org.eclipse.e4.ui.model.application.ui.advanced.MArea;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
-import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
-import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainer;
-import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainerElement;
-import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
-import org.knime.ui.java.browser.KnimeBrowserView;
-import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
 
@@ -99,13 +90,6 @@ public final class PerspectiveUtil {
     public static final String BROWSER_VIEW_PART_ID = "org.knime.ui.java.browser.view";
 
     /**
-     * The container for the browser view in the Web UI perspective.
-     *
-     * @see PerspectiveUtil#addSharedEditorAreaToWebUIPerspective(EModelService, MApplication)
-     */
-    public static final String BROWSER_VIEW_CONTAINER_ID = "org.knime.ui.java.browser.viewcontainer";
-
-    /**
      * A shared {@link org.eclipse.e4.ui.model.application.ui.advanced.MArea} that is among the Window's sharedElements.
      * Used for sharing editors across different perspectives.
      */
@@ -116,20 +100,7 @@ public final class PerspectiveUtil {
      */
     private static final String LOCAL_CONTENT_PROVIDER_ID = "LOCAL";
 
-    private static Boolean isClassicPerspectiveLoaded;
-
     private static Boolean isClassicPerspectiveActive;
-
-    /**
-     * @return {@code true} if the classic perspective has been loaded (i.e. the user switched from there to the Modern
-     *         UI at least once)
-     */
-    public static boolean isClassicPerspectiveLoaded() {
-        if (isClassicPerspectiveLoaded == null) {
-            return isClassicPerspectiveActive();
-        }
-        return isClassicPerspectiveLoaded;
-    }
 
     /**
      * @return {@code true} if the classic perspective is currently active
@@ -196,63 +167,6 @@ public final class PerspectiveUtil {
         } else {
             throw new IllegalStateException("No KNIME Web UI perspective registered");
         }
-    }
-
-    /**
-     * Workaround to open a {@link WorkflowEditor} from the Web UI perspective without showing the editor part.
-     * Having an editor part is required for saving the workflow. See NXT-622 (save workflow) and NXT-807 (open workflow).
-     * Creates a sash container of the {@link KnimeBrowserView} and a placeholder for the shared editor area. A sash
-     * container is a {@link MPart} that displays two child parts side-by-side with configurable space distribution.
-     * The shared editor area is the {@link MArea} with a hardcoded ID and newly opened editors will appear in that area
-     * by default. The sash container is configured s.t. the part displaying the shared editor area receives zero space.
-     *
-     * @see org.knime.ui.java.browser.OpenProject.OpenWorkflow
-     */
-    public static void addSharedEditorAreaToWebUIPerspective(final EModelService modelService, final MApplication application) {
-        MPerspective webUIPerspective = getWebUIPerspective(application, modelService);
-
-        var hasSharedEditorArea = modelService.find(SHARED_EDITOR_AREA_ID, webUIPerspective) != null;
-        var hasBrowserViewContainer = modelService.find(BROWSER_VIEW_CONTAINER_ID, webUIPerspective) != null;
-        if (hasSharedEditorArea && hasBrowserViewContainer) {
-            return;
-        }
-
-        MWindow window = application.getSelectedElement();
-        var sharedEditorArea = window.getSharedElements().stream()
-                .filter(muiElement -> muiElement.getElementId().equals(SHARED_EDITOR_AREA_ID))
-                .findAny().orElseThrow();
-
-        var areaPlaceholder = createPlaceholder(sharedEditorArea, modelService);
-        areaPlaceholder.setCloseable(false);
-        // As child of an MPartSashContainer, containerData sets the space distribution.
-        areaPlaceholder.setContainerData("0");
-        areaPlaceholder.setVisible(false);
-
-        // The browser view part is expected to already be a child of this perspective.
-        var browserViewPart = modelService.find(BROWSER_VIEW_PART_ID, webUIPerspective);
-
-        var sashContainer = modelService.createModelElement(MPartSashContainer.class);
-        sashContainer.setElementId(BROWSER_VIEW_CONTAINER_ID);
-        // Previously a direct child of the perspective.
-        sashContainer.getChildren().add((MPartSashContainerElement)browserViewPart);
-        sashContainer.getChildren().add(areaPlaceholder);
-        webUIPerspective.getChildren().add(sashContainer);
-    }
-
-    /**
-     * Create a placeholder part for the given element. By convention, the placeholder receives the same ID as the
-     * source element. This is essential e.g. when using the shared editor area in different perspectives.
-     * @see org.eclipse.e4.ui.internal.workbench.PartServiceImpl#createSharedPart(String)
-     * @param sourceElement The element to create a placeholder for.
-     * @return The placeholder for the element.
-     */
-    private static MPlaceholder createPlaceholder(final MUIElement sourceElement, final EModelService modelService) {
-        // Create and return a reference to the shared part
-        MPlaceholder placeholder = modelService.createModelElement(MPlaceholder.class);
-        placeholder.setElementId(sourceElement.getElementId());
-        placeholder.setRef(sourceElement);
-        placeholder.getTags().addAll(sourceElement.getTags());
-        return placeholder;
     }
 
     /**

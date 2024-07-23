@@ -46,8 +46,6 @@
  */
 package org.knime.ui.java;
 
-import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
-
 import javax.inject.Inject;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
@@ -57,11 +55,12 @@ import org.eclipse.e4.ui.css.swt.theme.ITheme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
-import org.eclipse.e4.ui.model.application.ui.advanced.MPerspectiveStack;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
@@ -71,7 +70,6 @@ import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
-import org.knime.ui.java.util.LocalWorkspaceSingleton;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -133,35 +131,17 @@ public final class PerspectiveSwitchAddon {
         }
     }
 
-    /**
-     * On reset of the Web UI perspective, re-add dynamically added elements.
-     *
-     * @see PerspectiveSwitchAddon#addSharedEditorAreaToWebUIPerspective()
-     * @param event ignored
-     */
-    @Inject
-    @org.eclipse.e4.core.di.annotations.Optional
-    public void listenResetPerspective(@EventTopic(UIEvents.UILifeCycle.PERSPECTIVE_RESET) final Event event) {
-        MPerspectiveStack perspectiveStack = (MPerspectiveStack)m_modelService.find(PERSPECTIVE_STACK_ID, m_app);
-        var activePerspective = perspectiveStack.getSelectedElement();
-        var webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        if (activePerspective == webUIPerspective) {
-            PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
-        }
-    }
-
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
         PerspectiveUtil.setClassicPerspectiveActive(false);
-        // we assume we always switch _from_ the classic UI - i.e. it must have been loaded
-        // before a switch to the web UI is possible
-        PerspectiveUtil.setClassicPerspectiveLoaded();
         OpenKnimeUrlAction.setEventHandlingActive(false);
-        PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
+
+        closeAllActiveEditors();
+
+        // TODO: Is this still needed?
         setTrimsAndMenuVisible(false, m_modelService, m_app);
-        ClassicWorkflowEditorUtil.updateWorkflowProjectsFromOpenedWorkflowEditors(m_modelService, m_app,
-            LocalWorkspaceSingleton.getInstance());
+
         KnimeBrowserView.activateViewInitializer(false);
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
         switchToWebUITheme();
@@ -177,10 +157,13 @@ public final class PerspectiveSwitchAddon {
         ProjectWorkflowMap.isActive = true;
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
-            lifeCycle.saveState(false);
+            lifeCycle.saveState();
             lifeCycle.suspend();
         }
+
+        // TODO: Is this still needed?
         setTrimsAndMenuVisible(true, m_modelService, m_app);
+
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(true);
         switchToJavaUITheme();
         PerspectiveUtil.setClassicPerspectiveActive(true);
@@ -218,6 +201,12 @@ public final class PerspectiveSwitchAddon {
             return;
         }
         engine.setTheme(webUITheme, true);
+    }
+
+    private static void closeAllActiveEditors() {
+        java.util.Optional.ofNullable(PlatformUI.getWorkbench().getActiveWorkbenchWindow())//
+            .map(IWorkbenchWindow::getActivePage)//
+            .ifPresent(page -> page.closeAllEditors(true));
     }
 
     static void setTrimsAndMenuVisible(final boolean visible, final EModelService modelService,

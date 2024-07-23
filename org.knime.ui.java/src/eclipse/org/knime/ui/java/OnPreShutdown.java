@@ -64,7 +64,7 @@ public class OnPreShutdown implements PreShutdown {
             // This is being called by the eclipse framework before any window is being closed.
             // And before we close the browser, we need, e.g., to ask the user to save (and save) all the workflows
             // (or abort the shutdown, if the user cancels).
-            lifeCycle.saveState(true);
+            lifeCycle.saveState();
             // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
             // or the workflows need to be saved (through a respective event to the FE, see SaveAndCloseWorkflows)
             if (!lifeCycle.getState().workflowsSaved()) {

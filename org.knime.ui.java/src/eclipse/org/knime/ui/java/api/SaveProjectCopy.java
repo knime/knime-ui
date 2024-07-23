@@ -79,9 +79,7 @@ import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
-import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.ProjectFactory;
 
 /**
@@ -312,12 +310,6 @@ final class SaveProjectCopy {
             }
             ProjectManager.getInstance().addProject(project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-        }
-
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) { // To sync the classic perspective
-            final var wfm = project.loadWorkflowManager();
-            project.getOrigin().ifPresent(origin -> ClassicWorkflowEditorUtil.updateInputForOpenEditors(origin, wfm,
-                DesktopAPI.getDeps(LocalWorkspace.class)));
         }
     }
 }

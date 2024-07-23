@@ -46,23 +46,16 @@
  */
 package org.knime.ui.java.api;
 
-import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
-
 import java.io.IOException;
-import java.net.URI;
 import java.util.NoSuchElementException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
-import org.knime.core.node.workflow.contextv2.WorkflowContextV2.LocationType;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.DefaultProject;
@@ -73,10 +66,8 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
-import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
-import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.ProjectFactory;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
@@ -108,22 +99,12 @@ final class OpenProject {
      */
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
         throws IOException {
-        // TODO: NXT-2549, Remove this part since hybrid mode is no longer supported.
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-            final var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
-            final var knimeUrl = space.toKnimeUrl(itemId);
-            final var isServerProject =
-                spaceProviders.getProviderTypes().get(spaceProviderId) == SpaceProviderEnt.TypeEnum.SERVER;
-            openProjectInClassicAndWebUI(knimeUrl, null, isServerProject);
-        } else {
-            try {
-                DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
-                    monitor -> openProjectInWebUIOnly(spaceProviderId, spaceId, itemId, monitor));
-            } catch (Exception e) {
-                LOGGER.error("Failed to open project", e);
-                throw new IOException(e.getMessage(), e);
-            }
+        try {
+            DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
+                monitor -> openProjectWithProgress(spaceProviderId, spaceId, itemId, monitor));
+        } catch (Exception e) {
+            LOGGER.error("Failed to open project", e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -136,56 +117,20 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport) {
+        final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
+        if (wfm == null) {
+            return false;
+        }
+
         final var locationInfo = repoObjectImport.locationInfo()//
             .filter(HubSpaceLocationInfo.class::isInstance)//
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
+        final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm).orElse(null);
+        final var project = DefaultProject.builder(wfm).setOrigin(origin).build();
+        registerProjectAndSetActiveAndUpdateAppState(project, wfm, WorkflowType.REMOTE);
 
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            final var isServerProject = repoObjectImport.locationInfo()//
-                .map(info -> info.getType() == LocationType.SERVER_REPOSITORY)//
-                .orElse(false);
-            openProjectInClassicAndWebUI(repoObjectImport.getKnimeURI(), locationInfo, isServerProject);
-        } else {
-            final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
-            if (wfm == null) {
-                return false;
-            }
-            final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm).orElse(null);
-            final var project = DefaultProject.builder(wfm).setOrigin(origin).build();
-            registerProjectAndSetActiveAndUpdateAppState(project, wfm, WorkflowType.REMOTE);
-        }
         return true;
-    }
-
-    /**
-     * Opens the project in both the Classic UI and the Modern/Web UI
-     *
-     * @param knimeUrl The knime:// URI identifying the source of the project to load
-     * @param locationInfo Information about where on a KNIME Hub a workflow is stored
-     * @param isServerProject Whether the project to open is a KNIME Server project or not
-     * @return A boolean indicating whether the project has been opened successfully or not.
-     */
-    private static boolean openProjectInClassicAndWebUI(final URI knimeUrl, final HubSpaceLocationInfo locationInfo,
-        final boolean isServerProject) {
-        try {
-            if (!DesktopAPUtil.openEditor(ExplorerFileSystem.INSTANCE.getStore(knimeUrl), locationInfo)) {
-                return false; // Since 'openEditor' returned a failure state
-            }
-
-            hideSharedEditorArea();
-            var activeProjectId = ClassicWorkflowEditorUtil
-                .updateWorkflowProjectsFromOpenedWorkflowEditors(DesktopAPI.getDeps(LocalWorkspace.class));
-            activeProjectId.flatMap(id -> DesktopAPI.getDeps(ProjectManager.class).getProject(id)) //
-                .filter(p -> !isServerProject) // To not track KNIME Server projects as recently used
-                .ifPresent(p -> DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(p));
-            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-
-            return true;
-        } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
-            LOGGER.warn("Could not open editor", e);
-            return false;
-        }
     }
 
     /**
@@ -199,7 +144,7 @@ final class OpenProject {
      * @param monitor
      * @throws OpenProjectException Specific exception thrown when a project failed to open
      */
-    static void openProjectInWebUIOnly(final String spaceProviderId, final String spaceId, final String itemId,
+    static void openProjectWithProgress(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) throws OpenProjectException {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
 
@@ -305,21 +250,6 @@ final class OpenProject {
 
     private static record ProjectAndWorkflowManager(Project project, WorkflowManager wfm) {
         //
-    }
-
-    @SuppressWarnings("restriction")
-    private static void hideSharedEditorArea() {
-        // Set editor area to non-visible again (WorkbenchPage#openEditor sets it to active).
-        // Even though the part has zero size in its container, the renderer will still show a few pixels,
-        //   and on these pixels a drag listener is active, allowing to resize the part.
-        // This workaround results in these pixels being shown while the workflow is loading, causing a slight
-        //   shift back and forth of the Web UI view.
-        var workbench = (org.eclipse.ui.internal.Workbench)PlatformUI.getWorkbench();
-        var modelService = workbench.getService(EModelService.class);
-        var app = workbench.getApplication();
-        var areaPlaceholder =
-            modelService.find(SHARED_EDITOR_AREA_ID, PerspectiveUtil.getWebUIPerspective(app, modelService));
-        areaPlaceholder.setVisible(false);
     }
 
     private static WorkflowManager fetchAndLoadProjectWithProgress(final RepoObjectImport repoObjectImport) {

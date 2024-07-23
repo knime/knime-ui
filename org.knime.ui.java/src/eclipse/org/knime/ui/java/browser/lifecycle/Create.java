@@ -98,26 +98,11 @@ final class Create {
         initializeResourceHandlers();
         DesktopAPI.forEachAPIFunction(apiFunctionCaller);
 
+        // TODO: Is this check still necessary?
+        assertNoOpenEclipseEditors();
+
         var welcomeAPEndpoint = WelcomeAPEndpoint.getInstance();
-
-        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            IWorkbenchPage page = null;
-            try {
-                page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                if (page != null) {
-                    var refs = page.getEditorReferences();
-                    if (refs.length > 0) { // NOSONAR
-                        NodeLogger.getLogger(LifeCycle.class)
-                            .error("There are open eclipse editors which is not expected: "
-                                + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
-                    }
-                }
-            } catch (Exception e) { // NOSONAR
-                // nothing to do - since it's for a sanity check only
-            }
-
-            welcomeAPEndpoint.callEndpointForTracking(true);
-        }
+        welcomeAPEndpoint.callEndpointForTracking(true);
 
         // Initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
@@ -134,17 +119,12 @@ final class Create {
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
 
+        // Load application state
         var projectManager = ProjectManager.getInstance();
         var mostRecentlyUsedProjects = new MostRecentlyUsedProjects();
         var localWorkspace = createLocalWorkspace();
-        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            ProjectWorkflowMap.isActive = false;
-            AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localWorkspace);
-        } else {
-            // only load the most recently used projects in case the classic UI is active
-            // since the project-manager itself is updated on switch
-            AppStatePersistor.loadAppState(null, mostRecentlyUsedProjects, localWorkspace);
-        }
+        ProjectWorkflowMap.isActive = false;
+        AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localWorkspace);
 
         return new LifeCycleStateInternal() {
 
@@ -188,6 +168,30 @@ final class Create {
             PageResourceHandler.NODE_VIEW, //
             PageResourceHandler.NODE_DIALOG //
         );
+    }
+
+    private static URL stringToURL(final String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Not a valid URL");
+        }
+    }
+
+    private static void assertNoOpenEclipseEditors() {
+        IWorkbenchPage page = null;
+        try {
+            page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            if (page != null) {
+                var refs = page.getEditorReferences();
+                if (refs.length > 0) { // NOSONAR
+                    NodeLogger.getLogger(LifeCycle.class).error("There are open eclipse editors which is not expected: "
+                        + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
+                }
+            }
+        } catch (Exception e) { // NOSONAR
+            // nothing to do - since it's for a sanity check only
+        }
     }
 
     private static LocalWorkspace createLocalWorkspace() {

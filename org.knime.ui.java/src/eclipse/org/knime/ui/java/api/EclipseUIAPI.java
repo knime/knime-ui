@@ -208,15 +208,12 @@ final class EclipseUIAPI {
      */
     @API
     static void switchToJavaUI() { // NOSONAR
-        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            // NOTE: if no classic UI has been loaded, yet,
-            // all the open workflow projects will be closed on perspective switch
-            var proceed = SaveAndCloseProjects.saveAndCloseProjectsInteractively(
-                ProjectManager.getInstance().getProjectIds(), DesktopAPI.getDeps(EventConsumer.class),
-                PostProjectCloseAction.SWITCH_PERSPECTIVE) == 1;
-            if (!proceed) {
-                return;
-            }
+        // All the open workflow projects will be closed on perspective switch
+        var proceed =
+            SaveAndCloseProjects.saveAndCloseProjectsInteractively(ProjectManager.getInstance().getProjectIds(),
+                DesktopAPI.getDeps(EventConsumer.class), PostProjectCloseAction.SWITCH_PERSPECTIVE) == 1;
+        if (!proceed) {
+            return;
         }
 
         doSwitchToJavaUI();

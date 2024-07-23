@@ -107,10 +107,10 @@ class OpenProjectTest {
         var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
         var monitor = new NullProgressMonitor();
-        assertThatThrownBy(() -> OpenProject.openProjectInWebUIOnly("local", "local", "does-not-exist", monitor))
+        assertThatThrownBy(() -> OpenProject.openProjectWithProgress("local", "local", "does-not-exist", monitor))
             .isInstanceOf(IllegalArgumentException.class);
 
-        OpenProject.openProjectInWebUIOnly("local", "local", itemId, monitor);
+        OpenProject.openProjectWithProgress("local", "local", itemId, monitor);
 
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).hasSize(1);

@@ -56,7 +56,6 @@ import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
  * The 'suspend' lifecycle state transition for the KNIME-UI. Called when the view is (temporarily) not used anymore (on
@@ -73,7 +72,7 @@ final class Suspend {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
         DesktopAPI.disposeDependencies();
         ServiceInstances.disposeAllServiceInstancesAndDependencies();
-        disposeAllProjects(!PerspectiveUtil.isClassicPerspectiveLoaded());
+        disposeAllProjects();
         KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
@@ -86,27 +85,23 @@ final class Suspend {
         };
     }
 
-    private static void disposeAllProjects(final boolean disposeWorkflowManagers) {
+    private static void disposeAllProjects() {
         var pm = ProjectManager.getInstance();
         // dispose all projects that are used by the UI
-        pm.getProjectIds().stream().forEach(projectId -> {
-            if (disposeWorkflowManagers) {
-                pm.getCachedProject(projectId).ifPresent(t -> {
-                    try {
-                        CoreUtil.cancelAndCloseLoadedWorkflow(t);
-                    } catch (InterruptedException e) { // NOSONAR
-                        NodeLogger.getLogger(Suspend.class).error(e);
-                    }
-                });
-            }
+        for (var projectId : pm.getProjectIds()) {
+            pm.getCachedProject(projectId).ifPresent(t -> {
+                try {
+                    CoreUtil.cancelAndCloseLoadedWorkflow(t);
+                } catch (InterruptedException e) { // NOSONAR
+                    NodeLogger.getLogger(Suspend.class).error(e);
+                }
+            });
             pm.removeProject(projectId, w -> {
             });
-        });
+        }
 
         // (triggers to) dispose all projects used as workflow service
-        if (disposeWorkflowManagers) {
-            WorkflowServiceProjects.removeAllProjects();
-        }
+        WorkflowServiceProjects.removeAllProjects();
     }
 
 }

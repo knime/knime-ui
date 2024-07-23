@@ -53,7 +53,6 @@ import java.util.function.IntSupplier;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.knime.ui.java.util.AppStatePersistor;
-import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
  * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
@@ -67,24 +66,19 @@ final class SaveState {
         //
     }
 
-    static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean forShutdown)
+    static LifeCycleStateInternal run(final LifeCycleStateInternal state)
         throws StateTransitionAbortedException {
-        IntSupplier saveAndCloseAllWorkflows;
-        boolean workflowsSaved;
-        var serializedAppState = // NOSONAR
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            saveAndCloseAllWorkflows = null;
-            workflowsSaved = !forShutdown || saveAndCloseClassicWorkbenchEditors();
-        } else {
-            saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-            final var saveState = saveAndCloseAllWorkflows.getAsInt();
-            if (saveState == 0) {
-                // saving has been cancelled
-                throw new StateTransitionAbortedException();
-            }
-            workflowsSaved = saveState == 1;
+        final IntSupplier saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
+        final var saveState = saveAndCloseAllWorkflows.getAsInt();
+
+        if (saveState == 0) {
+            // saving has been cancelled
+            throw new StateTransitionAbortedException();
         }
+
+        final var workflowsSaved = saveState == 1;
+        final var serializedAppState =
+            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
 
         return new LifeCycleStateInternalAdapter(state) {
 

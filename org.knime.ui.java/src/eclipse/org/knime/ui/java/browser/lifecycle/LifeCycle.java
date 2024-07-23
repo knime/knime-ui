@@ -190,12 +190,10 @@ public final class LifeCycle {
     /**
      * Runs the save-state-state-transition.
      *
-     * @param forShutdown whether to save the state in order to shutdown the application
-     *
      * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
-    public void saveState(final boolean forShutdown) {
-        doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state, forShutdown),
+    public void saveState() {
+        doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state),
             StateTransition.WEB_APP_LOADED);
     }
 
