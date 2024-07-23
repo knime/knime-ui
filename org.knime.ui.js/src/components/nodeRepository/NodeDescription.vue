@@ -30,7 +30,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   selectedNode: null,
-  isNodeDescriptionVisible: false,
+  isNodeDescriptionVisible: true,
 });
 
 const store = useStore();

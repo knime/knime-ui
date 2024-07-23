@@ -24,7 +24,6 @@ watch(isExtensionPanelOpen, (isOpen) => {
       <NodeDescription
         show-close-button
         :selected-node="selectedNodeTemplate"
-        is-node-description-visible
         @close="closeNodeDescription"
       />
     </Transition>
