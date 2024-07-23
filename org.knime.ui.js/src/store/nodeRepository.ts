@@ -14,6 +14,7 @@ import {
 
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
+import type { NativeNodeDescription } from "@/api/gateway-api/generated-api";
 
 /**
  * Store that manages node repository state.
@@ -33,6 +34,8 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
 
   selectedNode: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
+
+  nodeDescriptions: Map<String, NativeNodeDescription>;
 }
 
 export const state = (): NodeRepositoryState => ({
@@ -47,6 +50,9 @@ export const state = (): NodeRepositoryState => ({
   /* node interaction */
   selectedNode: null,
   showDescriptionForNode: null,
+
+  /* nodeDescriptions cache */
+  nodeDescriptions: new Map<String, NativeNodeDescription>(),
 });
 
 export const mutations: MutationTree<NodeRepositoryState> = {
@@ -125,11 +131,18 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
 
   async getNodeDescription({ rootState }, { selectedNode }) {
     const { className, settings } = selectedNode.nodeFactory;
+    const { availablePortTypes } = rootState.application;
+    // Check if the node description is already in the cache
+    if (rootState.nodeRepository.nodeDescriptions.has(className)) {
+      return toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(
+        rootState.nodeRepository.nodeDescriptions.get(className)!,
+      );
+    }
+
     const node = await API.node.getNodeDescription({
       nodeFactoryKey: { className, settings },
     });
-
-    const { availablePortTypes } = rootState.application;
+    rootState.nodeRepository.nodeDescriptions.set(className, node);
     return toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
   },
 
