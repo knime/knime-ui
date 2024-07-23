@@ -134,16 +134,21 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     const { availablePortTypes } = rootState.application;
     // Check if the node description is already in the cache
     if (rootState.nodeRepository.nodeDescriptions.has(className)) {
-      return toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(
-        rootState.nodeRepository.nodeDescriptions.get(className)!,
-      );
+      return rootState.nodeRepository.nodeDescriptions.get(className);
     }
 
     const node = await API.node.getNodeDescription({
       nodeFactoryKey: { className, settings },
     });
-    rootState.nodeRepository.nodeDescriptions.set(className, node);
-    return toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
+
+    const nodeDescriptionWithExtendedPorts =
+      toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
+
+    rootState.nodeRepository.nodeDescriptions.set(
+      className,
+      nodeDescriptionWithExtendedPorts,
+    );
+    return nodeDescriptionWithExtendedPorts;
   },
 
   async getComponentDescription({ rootState, rootGetters }, { nodeId }) {

@@ -14,6 +14,8 @@ const isNodeDescriptionTabActive = computed<boolean>(() =>
   store.getters["panel/isTabActive"](TABS.CONTEXT_AWARE_DESCRIPTION),
 );
 
+const isSidebarExpanded = computed(() => store.state.panel.expanded);
+
 const singleSelectedNode = computed(
   () => store.getters["selection/singleSelectedNode"],
 );
@@ -47,7 +49,9 @@ const selectedNode = computed(() => {
       class="node-description"
       :selected-node="selectedNode"
       :is-component="isComponentSelected"
-      :is-node-description-visible="isNodeDescriptionTabActive"
+      :is-node-description-visible="
+        isNodeDescriptionTabActive && isSidebarExpanded
+      "
     />
     <WorkflowMetadata v-else key="workflow-metadata" />
   </div>
