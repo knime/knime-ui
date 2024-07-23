@@ -127,15 +127,6 @@ describe("FloatingMenu.vue", () => {
       expect(useFocusTrapMock.activate).toHaveBeenCalled();
     });
 
-    it("closes menu when focus leaves the component", () => {
-      const { wrapper } = doMount();
-      const focusOutEvent = new CustomEvent("focusout");
-
-      focusOutEvent.relatedTarget = document.createElement("div");
-
-      wrapper.find(".floating-menu").element.dispatchEvent(focusOutEvent);
-    });
-
     it("does not use focus trap if prop is false", async () => {
       doMount({
         props: {

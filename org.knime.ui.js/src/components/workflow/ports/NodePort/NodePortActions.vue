@@ -24,12 +24,10 @@ const props = withDefaults(defineProps<Props>(), {
   relativePosition: () => [0, 0],
 });
 
-type Action = string;
-
 const emit = defineEmits<{
   (e: "close"): void;
   (e: "action:remove"): void;
-  (e: Action): void;
+  (e: string): void;
 }>();
 
 const { escapeStack } = useEscapeStack();
