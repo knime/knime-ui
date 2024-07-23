@@ -35,7 +35,7 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
   selectedNode: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
 
-  nodeDescriptions: Map<String, NativeNodeDescription>;
+  nodeDescriptions: Map<string, NativeNodeDescription>;
 }
 
 export const state = (): NodeRepositoryState => ({
@@ -52,7 +52,7 @@ export const state = (): NodeRepositoryState => ({
   showDescriptionForNode: null,
 
   /* nodeDescriptions cache */
-  nodeDescriptions: new Map<String, NativeNodeDescription>(),
+  nodeDescriptions: new Map<string, NativeNodeDescription>(),
 });
 
 export const mutations: MutationTree<NodeRepositoryState> = {

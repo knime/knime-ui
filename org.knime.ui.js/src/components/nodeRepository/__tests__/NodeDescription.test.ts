@@ -47,6 +47,7 @@ describe("NodeDescription", () => {
           settings: "",
         },
       },
+      isNodeDescriptionVisible: true,
     };
 
     const $store = mockVuexStore({
@@ -126,6 +127,27 @@ describe("NodeDescription", () => {
     });
     await Vue.nextTick();
     expect(getNodeDescriptionMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("should not load descriptions if description is not visible and selection changes", async () => {
+    const { wrapper } = await doMount({
+      props: {
+        isNodeDescriptionVisible: false,
+      },
+    });
+    expect(getNodeDescriptionMock).not.toHaveBeenCalled();
+    wrapper.setProps({
+      selectedNode: {
+        id: 2,
+        name: "Node",
+        nodeFactory: {
+          className: "some.other.thing",
+          settings: "",
+        },
+      },
+    });
+    await Vue.nextTick();
+    expect(getNodeDescriptionMock).not.toHaveBeenCalled();
   });
 
   it("changes title and description when node is not visible", async () => {

@@ -165,6 +165,7 @@ describe("Node Repository store", () => {
       categoryScrollPosition: 0,
       selectedNode: null,
       showDescriptionForNode: null,
+      nodeDescriptions: new Map(),
     });
   });
 

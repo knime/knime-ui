@@ -24,6 +24,13 @@ describe("ContextAwareDescription.vue", () => {
           },
         },
       },
+      panel: {
+        getters: {
+          isTabActive() {
+            return () => true;
+          },
+        },
+      },
     });
 
     const wrapper = shallowMount(ContextAwareDescription, {
