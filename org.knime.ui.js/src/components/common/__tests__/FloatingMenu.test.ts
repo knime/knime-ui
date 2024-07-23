@@ -134,200 +134,200 @@ describe("FloatingMenu.vue", () => {
       focusOutEvent.relatedTarget = document.createElement("div");
 
       wrapper.find(".floating-menu").element.dispatchEvent(focusOutEvent);
-
-      it("does not use focus trap if prop is false", async () => {
-        doMount({
-          props: {
-            focusTrap: false,
-          },
-        });
-        await Vue.nextTick();
-        expect(useFocusTrapMock.activate).not.toHaveBeenCalled();
-      });
-
-      it("closes menu if a node template is being dragged", async () => {
-        const { wrapper } = doMount({ isDraggingNodeTemplate: true });
-        await Vue.nextTick();
-
-        expect(wrapper.emitted("menuClose")).toBeDefined();
-      });
-
-      it("closes menu when a node is dragged in the canvas", async () => {
-        const { wrapper, $store } = doMount();
-        $store.state.workflow.isDragging = true;
-
-        await Vue.nextTick();
-        expect(wrapper.emitted("menuClose")).toBeDefined();
-      });
     });
 
-    describe("menu position and effects", () => {
-      it("position inside canvas; top-left", async () => {
-        const { wrapper } = doMount();
-        await Vue.nextTick();
+    it("does not use focus trap if prop is false", async () => {
+      doMount({
+        props: {
+          focusTrap: false,
+        },
+      });
+      await Vue.nextTick();
+      expect(useFocusTrapMock.activate).not.toHaveBeenCalled();
+    });
 
-        expect(wrapper.attributes("style")).toMatch("left: 20px;");
-        expect(wrapper.attributes("style")).toMatch("top: 20px;");
-        expect(wrapper.attributes("style")).toMatch("opacity: 1;");
+    it("closes menu if a node template is being dragged", async () => {
+      const { wrapper } = doMount({ isDraggingNodeTemplate: true });
+      await Vue.nextTick();
+
+      expect(wrapper.emitted("menuClose")).toBeDefined();
+    });
+
+    it("closes menu when a node is dragged in the canvas", async () => {
+      const { wrapper, $store } = doMount();
+      $store.state.workflow.isDragging = true;
+
+      await Vue.nextTick();
+      expect(wrapper.emitted("menuClose")).toBeDefined();
+    });
+  });
+
+  describe("menu position and effects", () => {
+    it("position inside canvas; top-left", async () => {
+      const { wrapper } = doMount();
+      await Vue.nextTick();
+
+      expect(wrapper.attributes("style")).toMatch("left: 20px;");
+      expect(wrapper.attributes("style")).toMatch("top: 20px;");
+      expect(wrapper.attributes("style")).toMatch("opacity: 1;");
+    });
+
+    it("position inside canvas; top-right", async () => {
+      const { wrapper } = doMount({ props: { anchor: "top-right" } });
+
+      await Vue.nextTick();
+
+      expect(wrapper.attributes("style")).toMatch("left: 10px;");
+      expect(wrapper.attributes("style")).toMatch("top: 20px;");
+      expect(wrapper.attributes("style")).toMatch("opacity: 1;");
+    });
+
+    it("position outside left border, half threshold", async () => {
+      const { wrapper } = doMount({
+        props: { canvasPosition: { x: -5, y: 20 } },
       });
 
-      it("position inside canvas; top-right", async () => {
-        const { wrapper } = doMount({ props: { anchor: "top-right" } });
+      await Vue.nextTick();
+      expect(wrapper.attributes("style")).toMatch("opacity: 0.5;");
+    });
 
-        await Vue.nextTick();
+    it.each([
+      ["left border", { x: -31, y: 20 }],
+      ["top border", { x: 20, y: -31 }],
+      ["right border", { x: 151, y: 20 }],
+      ["bottom border", { x: 20, y: 151 }],
+    ])("position outside %s, exceeding threshold", async (_, position) => {
+      const { wrapper } = doMount({ props: { canvasPosition: position } });
 
-        expect(wrapper.attributes("style")).toMatch("left: 10px;");
-        expect(wrapper.attributes("style")).toMatch("top: 20px;");
-        expect(wrapper.attributes("style")).toMatch("opacity: 1;");
+      await Vue.nextTick();
+      expect(wrapper.attributes("style")).toMatch("opacity: 0;");
+      expect(wrapper.emitted("menuClose")).toBeTruthy();
+    });
+
+    it("prevent window overflow top-left", async () => {
+      const { wrapper } = doMount({
+        props: { canvasPosition: { x: -20, y: -20 }, preventOverflow: true },
       });
+      await Vue.nextTick();
 
-      it("position outside left border, half threshold", async () => {
-        const { wrapper } = doMount({
-          props: { canvasPosition: { x: -5, y: 20 } },
-        });
+      expect(wrapper.attributes("style")).toMatch("left: 0px;");
+      expect(wrapper.attributes("style")).toMatch("top: 0px;");
+    });
 
-        await Vue.nextTick();
-        expect(wrapper.attributes("style")).toMatch("opacity: 0.5;");
+    it("prevent window overflow bottom-right", async () => {
+      const { wrapper } = doMount({
+        props: { canvasPosition: { x: 150, y: 150 }, preventOverflow: true },
       });
+      await Vue.nextTick();
 
-      it.each([
-        ["left border", { x: -31, y: 20 }],
-        ["top border", { x: 20, y: -31 }],
-        ["right border", { x: 151, y: 20 }],
-        ["bottom border", { x: 20, y: 151 }],
-      ])("position outside %s, exceeding threshold", async (_, position) => {
-        const { wrapper } = doMount({ props: { canvasPosition: position } });
+      expect(wrapper.attributes("style")).toMatch("left: 90px;");
+      expect(wrapper.attributes("style")).toMatch("top: 90px;");
+    });
 
-        await Vue.nextTick();
-        expect(wrapper.attributes("style")).toMatch("opacity: 0;");
-        expect(wrapper.emitted("menuClose")).toBeTruthy();
-      });
+    it("re-position on position update", async () => {
+      const { wrapper } = doMount();
+      await Vue.nextTick();
 
-      it("prevent window overflow top-left", async () => {
-        const { wrapper } = doMount({
-          props: { canvasPosition: { x: -20, y: -20 }, preventOverflow: true },
-        });
-        await Vue.nextTick();
+      wrapper.setProps({ canvasPosition: { x: 0, y: 0 } });
+      await Vue.nextTick();
 
-        expect(wrapper.attributes("style")).toMatch("left: 0px;");
-        expect(wrapper.attributes("style")).toMatch("top: 0px;");
-      });
+      expect(wrapper.attributes("style")).toMatch("left: 0px;");
+      expect(wrapper.attributes("style")).toMatch("top: 0px;");
+    });
 
-      it("prevent window overflow bottom-right", async () => {
-        const { wrapper } = doMount({
-          props: { canvasPosition: { x: 150, y: 150 }, preventOverflow: true },
-        });
-        await Vue.nextTick();
+    it("re-position on zoom factor update", async () => {
+      const { wrapper, $store } = doMount();
+      await Vue.nextTick();
 
-        expect(wrapper.attributes("style")).toMatch("left: 90px;");
-        expect(wrapper.attributes("style")).toMatch("top: 90px;");
-      });
+      $store.state.canvas.zoomFactor = 2;
+      await Vue.nextTick();
 
-      it("re-position on position update", async () => {
-        const { wrapper } = doMount();
-        await Vue.nextTick();
+      expect(wrapper.attributes("style")).toMatch("left: 40px;");
+      expect(wrapper.attributes("style")).toMatch("top: 40px;");
+    });
 
-        wrapper.setProps({ canvasPosition: { x: 0, y: 0 } });
-        await Vue.nextTick();
-
-        expect(wrapper.attributes("style")).toMatch("left: 0px;");
-        expect(wrapper.attributes("style")).toMatch("top: 0px;");
-      });
-
-      it("re-position on zoom factor update", async () => {
-        const { wrapper, $store } = doMount();
-        await Vue.nextTick();
-
-        $store.state.canvas.zoomFactor = 2;
-        await Vue.nextTick();
-
-        expect(wrapper.attributes("style")).toMatch("left: 40px;");
-        expect(wrapper.attributes("style")).toMatch("top: 40px;");
-      });
-
-      it("re-position on canvas scroll", async () => {
-        const screenFromCanvasCoordinatesMock = vi
-          .fn()
-          .mockImplementationOnce(() => {
-            let wasCalledOnce = false;
-            return () => {
-              // eslint-disable-next-line vitest/no-conditional-tests
-              if (!wasCalledOnce) {
-                wasCalledOnce = true;
-                return {
-                  x: 20,
-                  y: 20,
-                };
-              }
-
+    it("re-position on canvas scroll", async () => {
+      const screenFromCanvasCoordinatesMock = vi
+        .fn()
+        .mockImplementationOnce(() => {
+          let wasCalledOnce = false;
+          return () => {
+            // eslint-disable-next-line vitest/no-conditional-tests
+            if (!wasCalledOnce) {
+              wasCalledOnce = true;
               return {
-                x: 50,
-                y: 50,
+                x: 20,
+                y: 20,
               };
+            }
+
+            return {
+              x: 50,
+              y: 50,
             };
-          });
-
-        const { wrapper, getBoundingClientRect } = doMount({
-          screenFromCanvasCoordinatesMock,
+          };
         });
-        await Vue.nextTick();
 
-        expect(wrapper.attributes("style")).toContain("left: 20px");
-        expect(wrapper.attributes("style")).toContain("top: 20px");
-
-        const kanvas = document.getElementById("kanvas")!;
-        getBoundingClientRect.mockImplementationOnce(() => ({
-          x: 50,
-          y: 50,
-          width: 80,
-          height: 80,
-        }));
-
-        await Vue.nextTick();
-
-        kanvas.dispatchEvent(new CustomEvent("scroll"));
-
-        await Vue.nextTick();
-        expect(wrapper.attributes("style")).toContain("left: 50px");
-        expect(wrapper.attributes("style")).toContain("top: 50px");
+      const { wrapper, getBoundingClientRect } = doMount({
+        screenFromCanvasCoordinatesMock,
       });
+      await Vue.nextTick();
 
-      it("disable interactions when the prop is set", () => {
-        const { mutations } = doMount({ props: { disableInteractions: true } });
+      expect(wrapper.attributes("style")).toContain("left: 20px");
+      expect(wrapper.attributes("style")).toContain("top: 20px");
 
-        expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
-          expect.anything(),
-          false,
-        );
-      });
+      const kanvas = document.getElementById("kanvas")!;
+      getBoundingClientRect.mockImplementationOnce(() => ({
+        x: 50,
+        y: 50,
+        width: 80,
+        height: 80,
+      }));
+
+      await Vue.nextTick();
+
+      kanvas.dispatchEvent(new CustomEvent("scroll"));
+
+      await Vue.nextTick();
+      expect(wrapper.attributes("style")).toContain("left: 50px");
+      expect(wrapper.attributes("style")).toContain("top: 50px");
     });
 
-    describe("clean up", () => {
-      it("removes scroll listener", async () => {
-        const { wrapper } = doMount();
-        await Vue.nextTick();
+    it("disable interactions when the prop is set", () => {
+      const { mutations } = doMount({ props: { disableInteractions: true } });
 
-        wrapper.unmount();
+      expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
+        expect.anything(),
+        false,
+      );
+    });
+  });
 
-        const kanvas = document.getElementById("kanvas")!;
+  describe("clean up", () => {
+    it("removes scroll listener", async () => {
+      const { wrapper } = doMount();
+      await Vue.nextTick();
 
-        kanvas.dispatchEvent(new CustomEvent("scroll"));
+      wrapper.unmount();
 
-        expect(HTMLElement.prototype.removeEventListener).toHaveBeenCalledWith(
-          "scroll",
-          expect.anything(),
-        );
-      });
+      const kanvas = document.getElementById("kanvas")!;
 
-      it("enables interactions", () => {
-        const { wrapper, mutations } = doMount();
-        wrapper.unmount();
+      kanvas.dispatchEvent(new CustomEvent("scroll"));
 
-        expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
-          expect.anything(),
-          true,
-        );
-      });
+      expect(HTMLElement.prototype.removeEventListener).toHaveBeenCalledWith(
+        "scroll",
+        expect.anything(),
+      );
+    });
+
+    it("enables interactions", () => {
+      const { wrapper, mutations } = doMount();
+      wrapper.unmount();
+
+      expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
+        expect.anything(),
+        true,
+      );
     });
   });
 });

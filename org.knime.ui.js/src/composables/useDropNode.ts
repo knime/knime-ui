@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useStore } from "./useStore";
-import * as $shapes from "@/style/shapes.mjs";
+import * as $shapes from "@/style/shapes";
 
 export const useDropNode = () => {
   const KnimeMIME = "application/vnd.knime.ap.noderepo+json";

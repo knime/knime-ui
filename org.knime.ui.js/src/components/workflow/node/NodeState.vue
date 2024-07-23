@@ -2,8 +2,8 @@
 import { inject, computed } from "vue";
 import type { NodeState, XY } from "@/api/gateway-api/generated-api";
 import { useTooltip, type TooltipDefinition } from "@/composables/useTooltip";
-import * as $shapes from "@/style/shapes.mjs";
-import * as $colors from "@/style/colors.mjs";
+import * as $shapes from "@/style/shapes";
+import * as $colors from "@/style/colors";
 
 const anchorPoint = inject<XY>("anchorPoint");
 
