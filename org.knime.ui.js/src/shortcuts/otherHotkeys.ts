@@ -22,7 +22,7 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
   /** general */
   {
     hotkey: ["Esc"],
-    description: "Close any dialog unsaved",
+    description: "Close any unsaved dialog",
     group: "general",
   },
   /** Workflow editor modes */

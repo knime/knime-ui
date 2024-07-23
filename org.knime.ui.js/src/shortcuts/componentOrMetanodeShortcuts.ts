@@ -124,7 +124,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       `Open ${$store.getters["selection/singleSelectedNode"]?.kind}`,
     hotkey: ["CtrlOrCmd", "Alt", "Enter"],
     group: "componentAndMetanode",
-    description: "Open Component or Metanode",
+    description: "Open component or metanode",
     execute: async ({ $store, $router }) => {
       const projectId = $store.state.application.activeProjectId;
       const { isLocked, id } = $store.getters["selection/singleSelectedNode"];
