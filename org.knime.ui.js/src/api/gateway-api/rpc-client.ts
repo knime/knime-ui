@@ -20,13 +20,22 @@ export const createRPCClient = (configuration: Configuration): RPCClient => {
   const rpcClient: RPCClient = {
     async call(method, params) {
       try {
-        return await getRPCClientInstance().request({
+        const response = await getRPCClientInstance().request({
           ...request,
           method,
           params,
         });
+
+        consola.trace("RPC Client:: request", {
+          request,
+          method,
+          params,
+          response,
+        });
+
+        return response;
       } catch (error) {
-        consola.error("Error making RPC call", error);
+        consola.error("RPC Client:: Error RPC request", error);
 
         throw error;
       }

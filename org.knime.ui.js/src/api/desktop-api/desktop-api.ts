@@ -40,12 +40,22 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
 
           // consider the result an error if we got one even for void functions
           if (!returnsValue && payload.result) {
+            consola.error(
+              "Desktop API:: Function did not expect a return value",
+              { browserFunction, params, payload },
+            );
             reject(payload.result);
             return; // To really stop execution here
           }
 
           // consider the result an error if the 'error' property present and non-empty
           if ("error" in payload && payload.error) {
+            consola.error("Desktop API:: Error response", {
+              message: messageOnError,
+              browserFunction,
+              params,
+              payload,
+            });
             reject(payload.error);
             return; // To really stop execution here
           }
@@ -60,6 +70,8 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
         darkenBackground: blockUi.darkenBackground,
       });
     }
+
+    consola.info("Desktop API::", { browserFunction, params });
     // call the async browserFunction
     browserFunction(...params);
     return result;

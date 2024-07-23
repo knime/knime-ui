@@ -34,7 +34,12 @@ export default {
 
     onKeydown(e) {
       // Pressed key is just a modifier
-      if (e.key === "Control" || e.key === "Shift" || e.key === "Meta") {
+      if (
+        e.key === "Control" ||
+        e.key === "Shift" ||
+        e.key === "Meta" ||
+        e.key === "Alt"
+      ) {
         return;
       }
 

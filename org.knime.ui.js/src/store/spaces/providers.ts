@@ -69,9 +69,13 @@ export const mutations: MutationTree<SpacesState> = {
 
 export const actions: ActionTree<SpacesState, RootStoreState> = {
   async loadLocalSpace({ dispatch, commit }) {
+    consola.trace("action::loadLocalSpace");
+
     const spacesData = await dispatch("fetchProviderSpaces", {
       id: localRootProjectPath.spaceProviderId,
     });
+
+    consola.trace("action::loadLocalSpace. Loaded data", { spacesData });
 
     const localSpace = {
       id: "local",
@@ -116,6 +120,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     commit("setIsLoadingProviders", true);
 
+    consola.trace("action::fetchAllSpaceProviders");
+
     // provider fetch happens async, so the payload will be received via a
     // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
     // action
@@ -134,6 +140,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         )
         .map(({ id }) => id);
 
+      consola.trace(
+        "action::setAllSpaceProviders -> Fetching provider spaces",
+        {
+          connectedProviderIds,
+        },
+      );
+
       for (const id of connectedProviderIds) {
         const spacesData = await dispatch("fetchProviderSpaces", { id });
         spaceProviders[id] = {
@@ -141,11 +154,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
           ...spacesData,
         };
       }
+
+      consola.trace(
+        "action::setAllSpaceProviders -> Setting providers with space data",
+        spaceProviders,
+      );
       commit("setSpaceProviders", spaceProviders);
       commit("setHasLoadedProviders", true);
     } catch (error) {
       commit("setHasLoadedProviders", false);
-      consola.error("Error fetching providers", { error });
+      consola.error("action::setAllSpaceProviders. Error fetching providers", {
+        error,
+      });
       throw error;
     } finally {
       commit("setIsLoadingProviders", false);
@@ -154,9 +174,19 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async fetchProviderSpaces(_, { id }) {
     try {
-      return await API.space.getSpaceProvider({ spaceProviderId: id });
+      const data = await API.space.getSpaceProvider({ spaceProviderId: id });
+
+      consola.info("action::fetchProviderSpaces", {
+        params: { id },
+        response: data,
+      });
+
+      return data;
     } catch (error) {
-      consola.error("Error fetching provider spaces", { error });
+      consola.error(
+        "action::fetchProviderSpaces -> Error fetching provider spaces",
+        { error },
+      );
       throw error;
     }
   },

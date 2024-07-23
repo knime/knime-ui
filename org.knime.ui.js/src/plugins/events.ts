@@ -16,6 +16,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
      */
     // @ts-expect-error
     CompositeEvent({ events, params, eventHandlers }) {
+      consola.info("events::CompositeEvent", { events, params });
       (events ?? []).forEach((event, index) => {
         const handler = eventHandlers.get(event);
         if (params[index]) {
@@ -28,7 +29,10 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
      * Is triggered by the backend, whenever a change to the workflow has been made/requested
      * Sends a list of json-patch operations to update the frontend's state
      */
-    WorkflowChangedEvent({ patch: { ops }, snapshotId }) {
+    WorkflowChangedEvent({ patch, snapshotId }) {
+      consola.info("events::WorkflowChangedEvent", { patch, snapshotId });
+
+      const { ops } = patch;
       // for all patch ops rewrite their path such that they are applied to 'activeWorkflow'
       ops.forEach((op) => {
         op.path = `/activeWorkflow${op.path}`;
@@ -45,6 +49,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
      * Sends a list of json-patch operations to update the frontend's state
      */
     async WorkflowMonitorStateChangeEvent({ patch }) {
+      consola.info("events::WorkflowMonitorStateChangeEvent", { patch });
+
       if (!$store.state.workflowMonitor.isActive) {
         // ignore events that could be lagging behind and are not needed anymore
         return;
@@ -58,7 +64,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       });
 
       await $store.dispatch("workflowMonitor/patch.apply", ops);
-      $store.dispatch("workflowMonitor/updateMessagesNodeTemplates");
+      $store.dispatch("workflowMonitor/ProjectDirtyStateEvent");
     },
 
     /**
@@ -66,6 +72,11 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
      * Sends a map with all open project ids and their dirty flag
      */
     ProjectDirtyStateEvent({ dirtyProjectsMap, shouldReplace }) {
+      consola.info("events::ProjectDirtyStateEvent", {
+        dirtyProjectsMap,
+        shouldReplace,
+      });
+
       if (shouldReplace) {
         $store.dispatch("application/setDirtyProjectsMap", dirtyProjectsMap);
       } else {
@@ -78,6 +89,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
      * sends the new state
      */
     AppStateChangedEvent({ appState }) {
+      consola.info("events::AppStateChangedEvent", { appState });
+
       $store.dispatch("application/replaceApplicationState", appState);
       if (appState.openProjects) {
         $store.dispatch("application/setActiveProject", { $router });
@@ -90,6 +103,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
     // Is triggered by the backend, whenever there are AP updates available
     UpdateAvailableEvent({ newReleases, bugfixes }) {
+      consola.info("events::UpdateAvailableEvent", { newReleases, bugfixes });
+
       if (newReleases || bugfixes) {
         $store.commit("application/setAvailableUpdates", {
           newReleases,
@@ -112,6 +127,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     },
 
     ProjectDisposedEvent() {
+      consola.info("events::ProjectDisposedEvent");
+
       $bus.emit("block-ui");
 
       $toast.show({
@@ -123,12 +140,16 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     },
 
     SelectionEvent(event) {
+      consola.info("events::SelectionEvent", event);
+
       useSelectionEvents().notifyListeners(event);
     },
   });
 
   API.desktop.registerEventHandlers({
     async SaveAndCloseProjectsEvent({ projectIds, params = [] }) {
+      consola.info("events::SaveAndCloseProjectsEvent", { projectIds, params });
+
       await $store.dispatch("application/updateGlobalLoader", {
         loading: true,
       });
@@ -146,7 +167,10 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
                 { projectId },
               );
         } catch (error) {
-          consola.error(error);
+          consola.error(
+            "SaveAndCloseProjectsEvent:: Error resolving workflow SVG snapshot",
+            error,
+          );
           // null values will trigger a validation on the BE which will cause
           // a warning to be shown to the user
           return null;
@@ -171,6 +195,11 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
           params,
         });
       } catch (error) {
+        consola.error(
+          "SaveAndCloseProjectsEvent:: Error calling API.desktop.saveAndCloseProjects",
+          error,
+        );
+
         // if BE fails we're back in control in the UI, so we should remove the
         // loader overlay which blocks user interaction
         await $store.dispatch("application/updateGlobalLoader", {
@@ -204,13 +233,18 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         // switching perspective then this error is not super relevant since
         // will only cause a bit of extra data leftover which will be cleaned up
         // anyway after the app is shutdown
-        consola.error("Error tearing down canvas or workflow snapshot state", {
-          error,
-        });
+        consola.error(
+          "SaveAndCloseProjectsEvent:: Error tearing down canvas or workflow snapshot state",
+          {
+            error,
+          },
+        );
       }
     },
 
     ImportURIEvent({ x, y }) {
+      consola.info("events::ImportURIEvent", { x, y });
+
       const el = document.elementFromPoint(x, y);
       const kanvas = $store.state.canvas.getScrollContainerElement();
 
@@ -246,6 +280,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
     // Is triggered by the backend, e.g. when an answer is received from the AI Assistant
     AiAssistantEvent({ chainType, data }) {
+      consola.info("events::AiAssistantEvent", { chainType, data });
+
       $store.dispatch("aiAssistant/handleAiAssistantEvent", {
         chainType,
         data,
@@ -253,6 +289,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     },
 
     AiAssistantServerChangedEvent() {
+      consola.info("events::AiAssistantServerChangedEvent");
+
       $store.dispatch("aiAssistant/getHubID");
       fetchUiStrings();
     },
@@ -263,6 +301,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     },
 
     SpaceProvidersChangedEvent(payload) {
+      consola.info("events::SpaceProvidersChangedEvent", payload);
+
       if ("error" in payload) {
         consola.error("Error fetching space providers", payload.error);
 

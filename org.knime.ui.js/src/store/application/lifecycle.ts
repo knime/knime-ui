@@ -60,12 +60,15 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     { state, rootState, commit, dispatch },
     { $router }: { $router: Router },
   ) {
+    consola.trace("lifecycle::initializeApplication");
+
     // Read settings saved in local storage
     await dispatch("settings/fetchSettings", {}, { root: true });
 
     // Set zoom level and retry until the 'API.desktop' functions are available
     await runInEnvironment({
       DESKTOP: async () => {
+        consola.trace("lifecycle::setting zoom level");
         const RETRY_DELAY_MS = 50;
         // TODO: NXT-989 remove this delay once desktop calls are made via the
         // EquoComm service
@@ -97,17 +100,28 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
           .getCustomHelpMenuEntries()
           .then((customHelpMenuEntries) =>
             commit("setCustomHelpMenuEntries", customHelpMenuEntries),
-          );
+          )
+          .catch((error) => {
+            consola.error(
+              "lifecycle::Error getting custom menu entries",
+              error,
+            );
+          });
 
         const populateExampleProjects = API.desktop
           .getExampleProjects()
-          .then((data) => commit("setExampleProjects", data));
+          .then((data) => commit("setExampleProjects", data))
+          .catch((error) => {
+            consola.error("lifecycle::Error getting example projects", error);
+          });
 
         // Subscribe to update available event
         const checkForUpdates = API.event
           .subscribeEvent({ typeId: "UpdateAvailableEventType" })
           .then(() => API.desktop.checkForUpdates())
-          .catch((error) => consola.error(error));
+          .catch((error) => {
+            consola.error("lifecycle::Error checking for updates", error);
+          });
 
         await Promise.all([
           populateCustomMenuEntries,
@@ -120,6 +134,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     $router.beforeEach(async (to, from, next) => {
       const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
       const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
+
+      consola.trace("lifecycle::route middleware", { to, from });
 
       if (isLeavingWorkflow) {
         // before leaving a workflow check attempt to auto-apply pending
@@ -157,12 +173,15 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     });
 
     const applicationState = await API.application.getState({});
+    consola.info("lifecycle::Application state", { applicationState });
     await dispatch("replaceApplicationState", applicationState);
     await dispatch("setActiveProject", { $router });
 
     await runInEnvironment({
       DESKTOP: async () => {
+        consola.trace("lifecycle::loading local space");
         await dispatch("spaces/loadLocalSpace", {}, { root: true });
+        consola.trace("lifecycle::fetching all space providers");
         await dispatch("spaces/fetchAllSpaceProviders", {}, { root: true });
       },
     });
@@ -174,15 +193,17 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   },
 
   destroyApplication({ dispatch }) {
+    consola.trace("lifecycle::destroyApplication");
     API.event.unsubscribeEventListener({ typeId: "AppStateChangedEventType" });
     dispatch("unloadActiveWorkflow", { clearWorkflow: true });
   },
 
   async setActiveProject({ state }, { $router }: { $router: Router }) {
+    consola.trace("action::setActiveProject");
     const { openProjects } = state;
 
     if (openProjects.length === 0) {
-      consola.info("No workflows opened");
+      consola.trace("action::setActiveProject -> No workflows opened");
       await runInEnvironment({
         DESKTOP: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
       });
@@ -193,6 +214,9 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     // No active project is set -> stay on home page (aka: null project)
     if (!activeProject) {
+      consola.trace(
+        "action::setActiveProject -> No active project set. Redirecting home",
+      );
       await runInEnvironment({
         DESKTOP: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
       });
@@ -208,14 +232,14 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       return;
     }
 
-    await $router.push({
-      name: APP_ROUTES.WorkflowPage,
-      params: {
-        projectId: activeProject.projectId,
-        workflowId: activeProject.activeWorkflowId,
-      },
-      force: true,
-    });
+    const params = {
+      projectId: activeProject.projectId,
+      workflowId: activeProject.activeWorkflowId,
+    };
+
+    consola.trace("action::setActiveProject -> Navigating to project", params);
+
+    await $router.push({ name: APP_ROUTES.WorkflowPage, params, force: true });
   },
   /*
    *   W O R K F L O W   L I F E C Y C L E
@@ -224,8 +248,11 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     { commit, dispatch, rootState, state },
     { newWorkflow = null },
   ) {
+    consola.trace("action::switchWorkflow >> Params", { newWorkflow });
+
     const isChangingProject =
       rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
+
     await dispatch("updatePreviewSnapshot", { isChangingProject, newWorkflow });
 
     commit("setIsChangingProject", isChangingProject);
@@ -241,6 +268,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await new Promise((r) => setTimeout(r, RENDER_DELAY_MS));
 
     if (rootState.workflow?.activeWorkflow) {
+      consola.trace(
+        "action::switchWorkflow -> saving canvas state and unloading active workflow",
+      );
+
       dispatch("saveCanvasState");
       lifecycleBus.emit("beforeUnloadWorkflow");
 

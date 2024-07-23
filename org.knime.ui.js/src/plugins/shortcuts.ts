@@ -4,7 +4,7 @@ import { useStore, type Store } from "vuex";
 import { useToasts, type ToastService } from "@knime/components";
 import { navigatorUtils, hotkeys, type HotkeysNS } from "@knime/utils";
 
-import shortcuts from "@/shortcuts";
+import shortcuts, { type ShortcutsRegistry } from "@/shortcuts";
 import type {
   ShortcutsService,
   FormattedShortcut,
@@ -105,7 +105,7 @@ export const createShortcutsService = ({
       );
     };
 
-    return Object.entries(shortcuts).flatMap(
+    const foundShortcuts = Object.entries(shortcuts).flatMap(
       ([shortcutName, { hotkey, additionalHotkeys = [] }]) => {
         if (!hotkey) {
           return [];
@@ -123,14 +123,36 @@ export const createShortcutsService = ({
         return [];
       },
     );
+
+    consola.info("shortcuts::findByHotkey", {
+      params: {
+        key,
+        code,
+        metaKey,
+        ctrlKey,
+        shiftKey,
+        altKey,
+      },
+      foundShortcuts,
+    });
+
+    return foundShortcuts;
+  };
+
+  const getByName = (shortcutName: keyof ShortcutsRegistry) => {
+    const shortcut = shortcuts[shortcutName];
+
+    if (!shortcut) {
+      consola.warn("shortcuts::dispatch -> Shortcut not found");
+      throw new Error(`Shortcut ${shortcutName} doesn't exist`);
+    }
+
+    return shortcut;
   };
 
   // find out whether a specific shortcut is currently enabled
   const isEnabled: ShortcutsService["isEnabled"] = (shortcutName) => {
-    const shortcut = shortcuts[shortcutName];
-    if (!shortcut) {
-      throw new Error(`Shortcut ${shortcutName} doesn't exist`);
-    }
+    const shortcut = getByName(shortcutName);
 
     if (!shortcut.condition) {
       return true;
@@ -140,10 +162,7 @@ export const createShortcutsService = ({
   };
 
   const preventDefault: ShortcutsService["preventDefault"] = (shortcutName) => {
-    const shortcut = shortcuts[shortcutName];
-    if (!shortcut) {
-      throw new Error(`Shortcut ${shortcutName} doesn't exist`);
-    }
+    const shortcut = getByName(shortcutName);
 
     return !shortcut.allowEventDefault;
   };
@@ -153,10 +172,8 @@ export const createShortcutsService = ({
     shortcutName,
     payload = {},
   ) => {
-    const shortcut = shortcuts[shortcutName];
-    if (!shortcut) {
-      throw new Error(`Shortcut ${shortcutName} doesn't exist`);
-    }
+    consola.info("shortcuts::dispatch", { shortcutName, payload });
+    const shortcut = getByName(shortcutName);
 
     shortcut.execute({
       $store,

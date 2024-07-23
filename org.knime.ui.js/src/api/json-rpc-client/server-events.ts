@@ -92,12 +92,13 @@ export const serverEventHandler = function (rawServerEvent: string) {
     throw new TypeError(GENERIC_ERROR_MESSAGE);
   }
 
-  consola.log("server event", rawServerEvent);
-
   const { isValid, response } = validate(rawServerEvent);
   if (!isValid) {
+    consola.error("serverEventHandler:: Invalid server event");
     throw response;
   }
+
+  consola.info("serverEventHandler:: Event", response);
 
   const { eventType, payload } = response as ServerEvent;
   try {
@@ -119,6 +120,6 @@ export const serverEventHandler = function (rawServerEvent: string) {
 
     handler(handlerParams);
   } catch (error) {
-    consola.error("Server event handler error", error);
+    consola.error("serverEventHandler::Error", error);
   }
 };

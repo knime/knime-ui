@@ -149,6 +149,19 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
         }),
       );
 
+      consola.trace("action::searchNodes -> calling API.searchNodes", {
+        params: {
+          q: state.query,
+          tags: state.selectedTags,
+          allTagsMatch: true,
+          offset: searchPage * nodeSearchPageSize,
+          limit: nodeSearchPageSize,
+          fullTemplateInfo: true,
+          portTypeId: state.portTypeId,
+        },
+        response: searchResponse,
+      });
+
       // update current page in state AFTER the API call resolved successfully
       commit("setNodeSearchPage", searchPage);
 
@@ -186,6 +199,11 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
       ) {
         return;
       }
+
+      consola.error(
+        "action::searchNodes -> Error calling API.searchNodes",
+        error,
+      );
       throw error;
     }
   },

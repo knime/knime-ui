@@ -71,11 +71,17 @@ const apiURLResolver = () =>
           payload: ConnectionInfo;
         }>;
 
-        consola.log("received connection info message", data);
+        consola.info(
+          "Browser mode init:: Received connection info message",
+          data,
+        );
         const { payload } = data;
 
         if (!payload.url || !payload.sessionId) {
-          consola.error("incorrect connection info payload", data);
+          consola.fatal(
+            "Browser mode init:: incorrect connection info payload",
+            data,
+          );
           reject(new Error("incorrect connection info payload"));
         }
 
@@ -85,7 +91,7 @@ const apiURLResolver = () =>
     );
 
     // send message to parent after listener has been set-up
-    consola.log("posting message to parent window");
+    consola.info("Browser mode init:: posting message to parent window");
     window.parent.postMessage({ type: AWAITING_CONNECTION_INFO_MESSAGE }, "*");
   });
 
@@ -124,6 +130,6 @@ try {
 
   app.mount("#app");
 } catch (error) {
-  consola.log("Could not initialize Application due to:", error);
+  consola.fatal("Failed to initialize Application", error);
   window.parent.postMessage({ type: CONNECTION_FAIL_MESSAGE, error }, "*");
 }
