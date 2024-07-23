@@ -27,11 +27,15 @@ describe("NodeState.vue", () => {
       resolutions: [],
     };
 
+    $store = mockVuexStore({
+      workflow: {},
+    });
+
     doShallowMount = () => {
       wrapper = shallowMount(NodeState, {
         props,
         global: {
-          plugins: $store ? [$store] : [],
+          plugins: [$store],
           mocks: { $shapes, $colors },
           provide,
         },
@@ -114,6 +118,7 @@ describe("NodeState.vue", () => {
   });
 
   it("shows all null state", () => {
+    doShallowMount();
     expect(wrapper.text()).toBe("");
     expect(wrapper.find(".warning").exists()).toBe(false);
     expect(wrapper.find(".error").exists()).toBe(false);
@@ -210,7 +215,7 @@ describe("NodeState.vue", () => {
       props.error = "this is an error";
       doShallowMount();
 
-      wrapper.find("g").trigger("mouseenter");
+      wrapper.find({ ref: "tooltipRef" }).trigger("mouseenter");
       vi.runAllTimers();
       await Vue.nextTick();
 

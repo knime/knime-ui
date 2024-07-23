@@ -29,8 +29,6 @@ vi.mock("@/plugins/event-bus");
 
 const mockBus = deepMocked($bus);
 
-// const escapeStackMock = escapeStack as { onEscape: Function }
-
 window.crypto.randomUUID = vi.fn();
 
 describe("NodePort", () => {
@@ -55,8 +53,6 @@ describe("NodePort", () => {
   };
 
   const doMount = ({ isWorkflowWritable = true, props = {} } = {}) => {
-    // const mutations = {}
-
     const storeConfig = {
       workflow: {
         state: {

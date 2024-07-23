@@ -38,13 +38,21 @@ const props = withDefaults(defineProps<Props>(), {
  * @example 'undefined' means no traffic light should be shown
  */
 const trafficLight = computed(() => {
-  return {
+  const defaultValue = [false, false, false];
+  const stateMapper: Partial<
+    Record<NodeState.ExecutionStateEnum, [boolean, boolean, boolean]>
+  > = {
     IDLE: [true, false, false],
     CONFIGURED: [false, true, false],
     EXECUTED: [false, false, true],
     HALTED: [false, false, true], // TODO NXT-279: for now halted is the same state as executed
-    null: [false, false, false],
-  }[props.executionState!];
+  };
+
+  if (props.executionState && props.executionState in stateMapper) {
+    return stateMapper[props.executionState];
+  }
+
+  return props.executionState === null ? defaultValue : null;
 });
 
 const clippedProgress = computed(() =>
@@ -71,7 +79,7 @@ const progressDisplayPercentage = computed(() => {
   return Math.floor(100 * clippedProgress.value);
 });
 
-const tooltip = computed<TooltipDefinition>(() => {
+const tooltip = computed<TooltipDefinition | null>(() => {
   const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = $shapes;
   let tooltip = {
     position: {
@@ -81,9 +89,7 @@ const tooltip = computed<TooltipDefinition>(() => {
     anchorPoint: anchorPoint ?? { x: 0, y: 0 },
     gap: 10,
     hoverable: true,
-    text: props.progressMessages.length
-      ? props.progressMessages.join(" – ")
-      : "",
+    text: "",
     issue: props.issue,
     resolutions: props.resolutions,
   } satisfies TooltipDefinition;
@@ -92,10 +98,20 @@ const tooltip = computed<TooltipDefinition>(() => {
     return { ...tooltip, text: props.error, type: "error" };
   } else if (props.warning) {
     return { ...tooltip, text: props.warning, type: "warning" };
+  } else if (props.progressMessages.length) {
+    return { ...tooltip, text: props.progressMessages.join(" – ") };
   }
 
   return null;
 });
+
+const fillColor = (active: boolean, index: number) => {
+  const activeColor = (["red", "yellow", "green"] as const)[index];
+
+  return active
+    ? $colors.trafficLight[activeColor]
+    : $colors.trafficLight.inactive;
+};
 
 const { elemRef: tooltipRef } = useTooltip({ tooltip });
 </script>
@@ -121,11 +137,7 @@ const { elemRef: tooltipRef } = useTooltip({ tooltip });
           :class="
             active ? `traffic-light-${['red', 'yellow', 'green'][index]}` : null
           "
-          :fill="
-            active
-              ? $colors.trafficLight[['red', 'yellow', 'green'][index]]
-              : $colors.trafficLight.inactive
-          "
+          :fill="fillColor(active, index)"
         />
         <circle
           :cx="6 + 10 * index"

@@ -13,14 +13,14 @@ export interface TooltipDefinition {
   text: string;
   title?: string;
   issue?: string | null;
-  resolutions?: [];
+  resolutions?: string[];
   type?: "error" | "warning" | "default";
   orientation?: "top" | "bottom";
   hoverable?: boolean;
 }
 
 export const useTooltip = (params: {
-  tooltip: ComputedRef<TooltipDefinition>;
+  tooltip: ComputedRef<TooltipDefinition | null>;
 }) => {
   const elemRef = ref<HTMLElement | null>(null);
   const store = useStore();
