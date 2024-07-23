@@ -2,7 +2,7 @@ import { expect, describe, it } from "vitest";
 import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import SelectableTagList from "@/components/common/SelectableTagList.vue";
+import { TagList } from "@knime/components";
 import CloseableTagList from "../CloseableTagList.vue";
 
 const minNumberOfInitialTags = 1;
@@ -26,7 +26,7 @@ describe("CloseableTagList.vue", () => {
 
   it("renders with empty tags", () => {
     const wrapper = doShallowMount();
-    expect(wrapper.findComponent(SelectableTagList).exists()).toBe(true);
+    expect(wrapper.findComponent(TagList).exists()).toBe(true);
   });
 
   it("renders three tags", () => {
@@ -34,42 +34,50 @@ describe("CloseableTagList.vue", () => {
       tags: sevenTags,
       modelValue: threeTags,
     });
-    expect(wrapper.findComponent(SelectableTagList).props("tags")).toEqual(
-      sevenTags,
+    expect(wrapper.findComponent(TagList).props("tags")).toEqual(sevenTags);
+    expect(wrapper.findComponent(TagList).props("activeTags")).toEqual(
+      threeTags,
     );
-    expect(
-      wrapper.findComponent(SelectableTagList).props("modelValue"),
-    ).toEqual(threeTags);
   });
 
-  it("@show-more event leads to displayAll update", async () => {
+  describe("click on tag", () => {
+    it("adds tag on click to active tags", async () => {
+      const wrapper = doShallowMount({
+        tags: sevenTags,
+        modelValue: ["some"],
+      });
+
+      await wrapper.findComponent(TagList).vm.$emit("click", "clicked-tag");
+
+      expect(wrapper.emitted("update:modelValue")[0][0]).toStrictEqual([
+        "some",
+        "clicked-tag",
+      ]);
+    });
+
+    it("removes tag on click to active tags", async () => {
+      const wrapper = doShallowMount({
+        tags: sevenTags,
+        modelValue: ["some", "other"],
+      });
+
+      await wrapper.findComponent(TagList).vm.$emit("click", "other");
+
+      expect(wrapper.emitted("update:modelValue")[0][0]).toStrictEqual([
+        "some",
+      ]);
+    });
+  });
+
+  it("shows close button if showAll is set", async () => {
     const wrapper = doShallowMount({
       tags: sevenTags,
       modelValue: threeTags,
     });
-    expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-      false,
-    );
-    expect(wrapper.vm.displayAll).toBe(false);
-    wrapper.findComponent(SelectableTagList).vm.$emit("show-more", true);
-    await Vue.nextTick();
-    expect(wrapper.vm.displayAll).toBe(true);
-    expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-      true,
-    );
-  });
-
-  it("shows close button if displayAll is set", async () => {
-    const wrapper = doShallowMount({
-      tags: sevenTags,
-      modelValue: threeTags,
-    });
-    await wrapper.findComponent(SelectableTagList).vm.$emit("show-more");
+    await wrapper.findComponent(TagList).vm.$emit("update:showAll", true);
     let btn = wrapper.find(".tags-popout-close");
     expect(btn.exists()).toBe(true);
-    expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-      true,
-    );
+    expect(wrapper.findComponent(TagList).props("showAll")).toBe(true);
   });
 
   describe("dynamic number of initial tags", () => {
@@ -86,9 +94,9 @@ describe("CloseableTagList.vue", () => {
         ],
         modelValue: ["some selected ", "medium sized tags", "should be shown"],
       });
-      expect(
-        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags"),
-      ).toBe(2);
+      expect(wrapper.findComponent(TagList).props("numberOfInitialTags")).toBe(
+        2,
+      );
     });
 
     it("limits the number of initial tags to the maximum even if space is left", () => {
@@ -107,9 +115,9 @@ describe("CloseableTagList.vue", () => {
         ],
         modelValue: ["some", "short", "tags"],
       });
-      expect(
-        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags"),
-      ).toBe(7);
+      expect(wrapper.findComponent(TagList).props("numberOfInitialTags")).toBe(
+        7,
+      );
     });
 
     it("shows a minimum of 2 tags even if they would not fit", () => {
@@ -120,9 +128,9 @@ describe("CloseableTagList.vue", () => {
         ],
         modelValue: [],
       });
-      expect(
-        wrapper.findComponent(SelectableTagList).props("numberOfInitialTags"),
-      ).toBe(minNumberOfInitialTags);
+      expect(wrapper.findComponent(TagList).props("numberOfInitialTags")).toBe(
+        minNumberOfInitialTags,
+      );
     });
   });
 
@@ -133,17 +141,13 @@ describe("CloseableTagList.vue", () => {
         modelValue: threeTags,
       });
 
-      await wrapper.findComponent(SelectableTagList).vm.$emit("show-more");
+      await wrapper.findComponent(TagList).vm.$emit("update:showAll", true);
       let btn = wrapper.find(".tags-popout-close");
-      expect(wrapper.vm.displayAll).toBe(true);
       expect(btn.exists()).toBe(true);
 
       await btn.trigger("click");
-      expect(wrapper.vm.displayAll).toBe(false);
       expect(wrapper.find(".tags-popout-close").exists()).toBe(false);
-      expect(wrapper.findComponent(SelectableTagList).props("showAll")).toBe(
-        false,
-      );
+      expect(wrapper.findComponent(TagList).props("showAll")).toBe(false);
     });
 
     it("hides more tags on click", async () => {
@@ -152,11 +156,11 @@ describe("CloseableTagList.vue", () => {
         modelValue: threeTags,
       });
 
-      wrapper.findComponent({ ref: "tagList" }).vm.$emit("show-more");
+      wrapper.findComponent(TagList).vm.$emit("update:showAll", true);
       await Vue.nextTick();
       expect(wrapper.find(".tags-popout-close").exists()).toBe(true);
 
-      wrapper.findComponent({ ref: "tagList" }).vm.$emit("update:modelValue");
+      wrapper.findComponent(TagList).vm.$emit("click", "something");
       await Vue.nextTick();
       expect(wrapper.find(".tags-popout-close").exists()).toBe(false);
     });

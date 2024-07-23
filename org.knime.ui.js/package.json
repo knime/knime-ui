@@ -30,7 +30,7 @@
   "dependencies": {
     "@floating-ui/vue": "^1.1.1",
     "@fontsource/roboto-condensed": "4.5.9",
-    "@knime/components": "^1.0.7",
+    "@knime/components": "^1.0.9",
     "@knime/knime-ui-table": "^0.5.0",
     "@knime/rich-text-editor": "^1.0.8",
     "@knime/styles": "^1.0.1",

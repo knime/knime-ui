@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import ClosePopoverIcon from "@knime/styles/img/icons/arrow-prev.svg";
-import SelectableTagList from "@/components/common/SelectableTagList.vue";
+import { TagList } from "@knime/components";
 import { computed, ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
@@ -10,18 +10,18 @@ const maxNumberOfInitialTags = 10;
 const minNumberOfInitialTags = 1;
 
 /**
- * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a
+ * Wraps a TagList and adds close buttons and click-away to it. The visible area overflows and looks like a
  * popover. Designed to work in NodeRepository. It has a dynamic number of initially shown tags based on the length
  * (number of chars) of a tag.
  */
 
 interface Props {
   /**
-   * List of tags (Strings) to display. Not including selected ones.
+   * List of tags to display. Not including active ones.
    */
   tags?: string[];
   /**
-   * List of selected tags (Strings) to display.
+   * List of active tags to display.
    */
   modelValue?: string[];
 }
@@ -37,7 +37,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const displayAll = ref(false);
+const showAll = ref(false);
 
 const numberOfInitialTags = computed(() => {
   let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
@@ -59,34 +59,42 @@ const numberOfInitialTags = computed(() => {
   );
 });
 
-const onUpdateModelValue = (value: string[]) => {
-  displayAll.value = false;
-  emit("update:modelValue", value);
+const onTagClick = (tag: string) => {
+  showAll.value = false;
+
+  // remove from model value
+  if (props.modelValue.includes(tag)) {
+    emit(
+      "update:modelValue",
+      props.modelValue.filter((element) => element !== tag),
+    );
+    return;
+  }
+
+  // add to model
+  emit("update:modelValue", [...props.modelValue, tag]);
 };
 
 const closeableTagsRef = ref<HTMLElement | null>(null);
 onClickOutside(closeableTagsRef, () => {
-  displayAll.value = false;
+  showAll.value = false;
 });
 </script>
 
 <template>
   <div ref="closeableTagsRef" class="closeable-tags">
     <div class="popout">
-      <SelectableTagList
-        ref="tagList"
+      <TagList
+        v-model:show-all="showAll"
+        :class="['tag-list', { 'show-all': showAll }]"
         :number-of-initial-tags="numberOfInitialTags"
-        :model-value="modelValue"
+        :active-tags="modelValue"
+        clickable
+        sort-by-active
         :tags="tags"
-        :show-all="displayAll"
-        @show-more="displayAll = true"
-        @update:model-value="onUpdateModelValue"
+        @click="onTagClick"
       />
-      <button
-        v-if="displayAll"
-        class="tags-popout-close"
-        @click="displayAll = false"
-      >
+      <button v-if="showAll" class="tags-popout-close" @click="showAll = false">
         <ClosePopoverIcon />
       </button>
     </div>
@@ -107,7 +115,7 @@ onClickOutside(closeableTagsRef, () => {
     width: 100%;
   }
 
-  & .wrapper {
+  & .tag-list {
     /* prevents wrapping due to small fails in the size heuristic */
     flex-wrap: nowrap;
     padding: 0 20px 13px;
@@ -115,32 +123,12 @@ onClickOutside(closeableTagsRef, () => {
     /* limit tag length to a maximum */
     & :deep(.tag.clickable) {
       max-width: 250px;
+      height: var(--space-24);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       font-size: 13px;
       line-height: 15px;
-
-      &:hover {
-        text-decoration: none;
-        background-color: var(--knime-dove-gray);
-        border-color: var(--knime-dove-gray);
-      }
-    }
-
-    /* Checked icon */
-    & :deep(.tag.clickable.selected)::after {
-      border-color: var(--knime-white);
-      border-style: solid;
-      border-width: 0 0 1.3px 1.3px;
-      content: "";
-      display: block;
-      height: 5px;
-      margin-right: 3px;
-      position: relative;
-      top: -5px;
-      transform: translate(4px, 3.5px) rotate(-45deg);
-      width: 8px;
     }
 
     &.show-all {
@@ -151,7 +139,7 @@ onClickOutside(closeableTagsRef, () => {
       /* The 230px is the fixed part of the apps header that has a fixed size. */
       max-height: calc(90vh - 230px);
       overflow: auto;
-      background: var(--knime-gray-ultra-light);
+      background-color: var(--sidebar-background-color);
     }
   }
 
