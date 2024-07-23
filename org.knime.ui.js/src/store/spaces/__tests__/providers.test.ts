@@ -5,7 +5,11 @@ import { API } from "@api";
 import { fetchAllSpaceProvidersResponse, loadStore } from "./loadStore";
 import { flushPromises } from "@vue/test-utils";
 import { SpaceProviderNS } from "@/api/custom-types";
-import { createSpaceGroup, createSpaceProvider } from "@/test/factories";
+import {
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
 
 const mockedAPI = deepMocked(API);
 
@@ -92,11 +96,10 @@ describe("spaces::providers", () => {
       const mockSpace = { name: "mock space", description: "" };
 
       store.state.spaces.spaceProviders = {
-        // @ts-ignore
-        hub1: {
+        hub1: createSpaceProvider({
           id: "hub1",
           name: "Hub 1",
-        },
+        }),
       };
 
       mockedAPI.space.getSpaceProvider.mockResolvedValue({
@@ -305,6 +308,40 @@ describe("spaces::providers", () => {
       });
 
       expect(store.getters["spaces/activeProjectProvider"]).toBeNull();
+    });
+  });
+
+  describe("reloadProviderSpaces", () => {
+    it("should reload a space provider's spaces", async () => {
+      const provider = createSpaceProvider();
+
+      const newSpaceGroup = createSpaceGroup({
+        spaces: [createSpace({ id: "new1" }), createSpace({ id: "new1" })],
+      });
+
+      mockedAPI.space.getSpaceProvider.mockResolvedValue({
+        ...provider,
+        spaceGroups: newSpaceGroup,
+      });
+
+      const { store } = loadStore();
+
+      store.state.spaces.spaceProviders = {
+        [provider.id]: provider,
+      };
+
+      expect(store.state.spaces.spaceProviders[provider.id]).toEqual(provider);
+
+      expect(store.state.spaces.isLoadingProviderSpaces).toBe(false);
+
+      store.dispatch("spaces/reloadProviderSpaces", { id: provider.id });
+      expect(store.state.spaces.isLoadingProviderSpaces).toBe(true);
+      await flushPromises();
+
+      expect(store.state.spaces.spaceProviders[provider.id]).toEqual({
+        ...provider,
+        spaceGroups: newSpaceGroup,
+      });
     });
   });
 });

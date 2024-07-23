@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import { mount } from "@vue/test-utils";
 
 import SearchButton from "@/components/common/SearchButton.vue";
-import { mockVuexStore } from "@/test/utils";
+import { mockVuexStore, mockedObject } from "@/test/utils";
 import {
   createSpace,
   createSpaceGroup,
@@ -20,6 +20,7 @@ import SpaceCard from "../SpaceCard.vue";
 import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";
+import { getToastsProvider } from "@/plugins/toasts";
 
 const routerPush = vi.fn();
 
@@ -27,6 +28,8 @@ vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: routerPush })),
   useRoute: vi.fn(),
 }));
+
+const toast = mockedObject(getToastsProvider());
 
 describe("SpaceSelectionPage.vue", () => {
   const spaceGroup1 = createSpaceGroup({
@@ -92,6 +95,38 @@ describe("SpaceSelectionPage.vue", () => {
           groupId: spaceGroup1.id,
         },
       }));
+    });
+
+    it("should reload spaces", async () => {
+      const { wrapper, dispatchSpy } = doMount();
+
+      await wrapper.find(".reload-button").trigger("click");
+
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
+        id: spaceProvider.id,
+      });
+
+      expect(toast.show).not.toHaveBeenCalled();
+    });
+
+    it("should show error when reloading spaces", async () => {
+      const { wrapper, dispatchSpy } = doMount();
+
+      dispatchSpy.mockImplementationOnce(() =>
+        Promise.reject(new Error("failed")),
+      );
+
+      await wrapper.find(".reload-button").trigger("click");
+
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
+        id: spaceProvider.id,
+      });
+
+      expect(toast.show).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "failed",
+        }),
+      );
     });
 
     it("should render correctly", () => {

@@ -14,6 +14,8 @@ export interface State {
   isLoadingProviders: boolean;
   isConnectingToProvider: string | null;
   hasLoadedProviders: boolean;
+
+  isLoadingProviderSpaces: boolean;
 }
 
 declare module "./index" {
@@ -27,6 +29,8 @@ export const state = (): State => ({
   isLoadingProviders: false,
   isConnectingToProvider: null,
   hasLoadedProviders: false,
+
+  isLoadingProviderSpaces: false,
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -153,6 +157,33 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return await API.space.getSpaceProvider({ spaceProviderId: id });
     } catch (error) {
       consola.error("Error fetching provider spaces", { error });
+      throw error;
+    }
+  },
+
+  async reloadProviderSpaces({ commit, dispatch, state }, { id }) {
+    if (!state.spaceProviders) {
+      return;
+    }
+
+    try {
+      state.isLoadingProviderSpaces = true;
+
+      const spaceProvider = state.spaceProviders[id];
+      const spacesData = await dispatch("fetchProviderSpaces", { id });
+
+      commit("updateSpaceProvider", {
+        id,
+        value: { ...spaceProvider, ...spacesData },
+      });
+
+      state.isLoadingProviderSpaces = false;
+    } catch (error) {
+      state.isLoadingProviderSpaces = false;
+      consola.error(
+        "action::reloadProviderSpaces -> Error reloading provider spaces",
+        { error },
+      );
       throw error;
     }
   },
