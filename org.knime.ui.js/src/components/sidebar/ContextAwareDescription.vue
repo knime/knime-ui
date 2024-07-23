@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
+import { TABS } from "@/store/panel";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
@@ -9,6 +10,9 @@ import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
  */
 const store = useStore();
+const isNodeDescriptionTabActive = computed<boolean>(() =>
+  store.getters["panel/isTabActive"](TABS.CONTEXT_AWARE_DESCRIPTION),
+);
 
 const singleSelectedNode = computed(
   () => store.getters["selection/singleSelectedNode"],
@@ -43,6 +47,7 @@ const selectedNode = computed(() => {
       class="node-description"
       :selected-node="selectedNode"
       :is-component="isComponentSelected"
+      :is-node-description-visible="isNodeDescriptionTabActive"
     />
     <WorkflowMetadata v-else key="workflow-metadata" />
   </div>

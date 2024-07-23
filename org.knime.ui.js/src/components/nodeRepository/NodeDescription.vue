@@ -25,17 +25,19 @@ type Props = {
   selectedNode?: SelectedNode | null;
   showCloseButton?: boolean;
   isComponent?: boolean;
+  isNodeDescriptionVisible?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
   selectedNode: null,
+  isNodeDescriptionVisible: false,
 });
 
 const store = useStore();
 
 const emit = defineEmits<(e: "close") => void>();
 
-const { selectedNode, isComponent } = toRefs(props);
+const { selectedNode, isComponent, isNodeDescriptionVisible } = toRefs(props);
 
 const descriptionData = ref<NativeNodeDescriptionWithExtendedPorts | null>(
   null,
@@ -68,8 +70,12 @@ const loadComponentDescription = async () => {
 };
 
 watch(
-  selectedNode,
+  [selectedNode, isNodeDescriptionVisible],
   async () => {
+    if (!isNodeDescriptionVisible.value) {
+      return;
+    }
+
     // reset data
     if (selectedNode.value === null) {
       return;
