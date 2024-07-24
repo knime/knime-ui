@@ -42,6 +42,7 @@
     "@vueuse/core": "^10.9.0",
     "@vueuse/integrations": "^10.11.0",
     "consola": "3.2.3",
+    "@ysx-libs/vue-virtual-tree": "^0.0.9",
     "dompurify": "^3.0.6",
     "events": "^3.3.0",
     "focus-trap": "^7.5.4",

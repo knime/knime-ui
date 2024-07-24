@@ -7,6 +7,8 @@ import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
 import { TABS } from "@/store/panel";
 import CategoryResults from "./CategoryResults.vue";
+import CategoryTree from "./CategoryTree.vue";
+
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
 import type { NavigationKey } from "./NodeList.vue";
@@ -23,11 +25,12 @@ const showDescriptionForNode = computed(
 const searchIsActive = computed(
   () => store.getters["nodeRepository/searchIsActive"],
 );
-const isNodeVisible = computed(() =>
-  store.getters["nodeRepository/isNodeVisible"](
-    showDescriptionForNode.value?.id,
-  ),
-);
+const isNodeVisible = computed(() => true);
+//   // TODO: add tree state here (which is not so simple)
+//   store.getters["nodeRepository/isNodeVisible"](
+//     showDescriptionForNode.value?.id,
+//   ),
+// );
 const displayMode = computed(
   () => store.state.settings.settings.nodeRepositoryDisplayMode,
 );
@@ -131,10 +134,16 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
-      <CategoryResults
-        v-else
+      <!--<CategoryResults
+        v-else-if="displayMode !== 'tree'"
         ref="categoryResults"
         :display-mode="displayMode"
+        @nav-reached-top="handleNavReachedTop($event)"
+        @show-node-description="toggleNodeDescription"
+      />-->
+      <CategoryTree
+        v-else
+        ref="categoryTree"
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />

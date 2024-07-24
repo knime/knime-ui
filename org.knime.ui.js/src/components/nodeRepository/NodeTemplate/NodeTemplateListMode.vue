@@ -37,7 +37,7 @@ const emit = defineEmits(["helpIconClick"]);
       <slot name="node-preview" />
     </div>
 
-    <div class="content">
+    <div class="node-template-content">
       <span class="node-name" data-test-id="node-template-name">
         {{ nodeTemplate.name }}
       </span>
@@ -68,14 +68,16 @@ const emit = defineEmits(["helpIconClick"]);
   max-height: 27px;
   position: relative;
   padding: 1px 0;
+  width: 100%;
 
-  & .content {
+  & .node-template-content {
     display: flex;
-    flex-direction: column;
+    width: 100%;
+    max-width: calc(100% - 33px); /** WHY? */
 
     & .node-name {
+      display: block;
       font-size: 13px;
-      max-width: 250px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -83,7 +85,7 @@ const emit = defineEmits(["helpIconClick"]);
   }
 
   & .node-preview {
-    width: 25px;
+    flex: 0 0 25px;
     height: 27px;
     margin-right: 5px;
   }

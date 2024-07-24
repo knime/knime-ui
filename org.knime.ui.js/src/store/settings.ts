@@ -7,7 +7,7 @@ import { API } from "@api";
  * Store that manages UI settings, for now saved to local storage
  */
 
-export type NodeRepositoryDisplayModesType = "icon" | "list";
+export type NodeRepositoryDisplayModesType = "icon" | "list" | "tree";
 
 const SETTINGS_KEY = "knime-ui-settings";
 export const UI_SCALE_STEPSIZE = 0.2;
