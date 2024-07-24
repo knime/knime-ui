@@ -41,6 +41,8 @@ const toggleInput = async () => {
     :model-value="modelValue"
     :placeholder="placeholder"
     class="search-button-input"
+    spellcheck="false"
+    :maxlength="300"
     @keydown.esc="toggleInput"
     @update:model-value="$emit('update:modelValue', $event)"
   />
