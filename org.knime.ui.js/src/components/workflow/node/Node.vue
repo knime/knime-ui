@@ -20,7 +20,7 @@ import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
 
 import { compatibility } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { useDropNode } from "@/composables/useDropNode";
+import { KNIME_MIME } from "@/composables/useDropNode";
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
@@ -191,10 +191,6 @@ export default {
       type: Boolean,
       default: null,
     },
-  },
-  setup() {
-    const { KnimeMIME } = useDropNode();
-    return { KnimeMIME };
   },
   data() {
     return {
@@ -413,7 +409,7 @@ export default {
       if (!this.isWritable) {
         return;
       }
-      if ([...dragEvent.dataTransfer.types].includes(this.KnimeMIME)) {
+      if ([...dragEvent.dataTransfer.types].includes(KNIME_MIME)) {
         this.isDraggedOver = true;
         this.dragTarget = dragEvent.target;
       }
@@ -431,7 +427,7 @@ export default {
         return;
       }
       const nodeFactory = JSON.parse(
-        dragEvent.dataTransfer.getData(this.KnimeMIME),
+        dragEvent.dataTransfer.getData(KNIME_MIME),
       );
       this.replaceNode({ targetNodeId: this.id, nodeFactory });
       this.isDraggedOver = false;

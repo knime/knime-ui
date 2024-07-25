@@ -27,15 +27,19 @@ const isWorkflowEmpty = computed(
   () => store.getters["workflow/isWorkflowEmpty"],
 );
 
-watch(isWorkflowEmpty, async () => {
-  // disable zoom & pan if workflow is empty
-  if (isWorkflowEmpty.value) {
-    // call to action: move nodes onto workflow
-    // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
-    await nextTick();
-    store.dispatch("canvas/fillScreen");
-  }
-});
+watch(
+  isWorkflowEmpty,
+  async () => {
+    // disable zoom & pan if workflow is empty
+    if (isWorkflowEmpty.value) {
+      // call to action: move nodes onto workflow
+      // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
+      await nextTick();
+      store.dispatch("canvas/fillScreen");
+    }
+  },
+  { immediate: true },
+);
 
 onMounted(() => {
   nextTick(() => {

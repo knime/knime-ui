@@ -11,9 +11,22 @@ import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
 
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import MoveableNodeContainer from "../MoveableNodeContainer.vue";
 
 const mockedAPI = deepMocked(API);
+
+vi.mock("@/composables/useEscapeStack", () => {
+  function useEscapeStack({ onEscape }) {
+    // @ts-ignore
+    useEscapeStack.onEscape = onEscape;
+    return {
+      /* empty mixin */
+    };
+  }
+
+  return { useEscapeStack };
+});
 
 describe("MoveableNodeContainer", () => {
   const doMount = ({
@@ -197,6 +210,29 @@ describe("MoveableNodeContainer", () => {
 
       expect(mockedAPI.workflowCommand.Translate).toHaveBeenCalled();
     });
+  });
+
+  it("should abort moving a node when Esc is pressed", async () => {
+    const mockTarget = document.createElement("div");
+    mockTarget.dispatchEvent = vi.fn();
+    window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
+    const { wrapper, $store } = doMount({
+      isDragging: true,
+    });
+    const rect = { left: 5, top: 8, right: 20, bottom: 20 };
+    mockBoundingRect(rect);
+    await startNodeDrag(wrapper, { clientX: 10, clientY: 10 });
+    moveNodeTo({ clientX: 250, clientY: 250 });
+    await Vue.nextTick();
+    expect($store.state.workflow.movePreviewDelta).not.toEqual({ x: 0, y: 0 });
+    useEscapeStack.onEscape();
+    expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
+    expect($store.state.workflow.hasAbortedDrag).toBe(true);
+    expect($store.state.workflow.isDragging).toBe(false);
+    // drag was aborted, so the move preview cannot be updated
+    expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
+    await endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
+    expect($store.state.workflow.hasAbortedDrag).toBe(false);
   });
 
   describe("node dragging notification", () => {

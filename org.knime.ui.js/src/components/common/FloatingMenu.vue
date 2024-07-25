@@ -214,10 +214,8 @@ onMounted(() => {
   kanvas.addEventListener("scroll", onCanvasScroll);
 });
 
-const { useOnEscapeStack } = useEscapeStack();
-
 if (props.closeOnEscape) {
-  useOnEscapeStack({
+  useEscapeStack({
     onEscape: () => {
       emit("menuClose");
     },

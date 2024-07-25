@@ -3,12 +3,25 @@ import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import FloatingMenu from "../FloatingMenu.vue";
 
 const useFocusTrapMock = {
   activate: vi.fn(),
   deactivate: vi.fn(),
 };
+
+vi.mock("@/composables/useEscapeStack", () => {
+  function useEscapeStack({ onEscape }) {
+    // @ts-ignore
+    useEscapeStack.onEscape = onEscape;
+    return {
+      /* empty mixin */
+    };
+  }
+
+  return { useEscapeStack };
+});
 
 vi.mock("@vueuse/integrations/useFocusTrap", () => {
   return {
@@ -117,6 +130,12 @@ describe("FloatingMenu.vue", () => {
   });
 
   describe("close menu", () => {
+    it("closes menu on escape key", () => {
+      const { wrapper } = doMount();
+      useEscapeStack.onEscape();
+      expect(wrapper.emitted("menuClose")).toBeDefined();
+    });
+
     it("uses focus trap if prop is true", async () => {
       doMount({
         props: {

@@ -8,9 +8,7 @@ const isExtensionPanelOpen = computed(
   () => store.state.panel.isExtensionPanelOpen,
 );
 
-const { useOnEscapeStack } = useEscapeStack();
-
-useOnEscapeStack({
+useEscapeStack({
   onEscape() {
     if (store.state.panel.isExtensionPanelOpen) {
       store.dispatch("panel/closeExtensionPanel");

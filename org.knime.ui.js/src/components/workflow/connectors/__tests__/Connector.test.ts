@@ -37,6 +37,7 @@ import * as $colors from "@/style/colors";
 import * as portShift from "@/util/portShift";
 import * as connectorPath from "@/util/connectorPath";
 
+import { KNIME_MIME } from "@/composables/useDropNode";
 import type { ConnectorProps } from "../types";
 import Connector from "../Connector.vue";
 import ConnectorPathSegment from "../ConnectorPathSegment.vue";
@@ -47,11 +48,6 @@ vi.mock("gsap", () => ({
   gsap: { utils: { snap: (input) => input } },
 }));
 const mockedAPI = deepMocked(API);
-
-let KnimeMIME: string;
-vi.mock("@/composables/useDropNode", () => ({
-  useDropNode: () => ({ KnimeMIME }),
-}));
 
 describe("Connector.vue", () => {
   const portShiftMock = vi.spyOn(portShift, "default");
@@ -593,7 +589,7 @@ describe("Connector.vue", () => {
       const paths = wrapper.findAll("path");
 
       triggerDragEvent(paths.at(0).element, "dragenter", {
-        types: [KnimeMIME],
+        types: [KNIME_MIME],
       });
       await nextTick();
       expect(paths.at(1).classes()).toContain("is-dragged-over");
@@ -622,7 +618,7 @@ describe("Connector.vue", () => {
       const paths = wrapper.findAll("path");
 
       triggerDragEvent(paths.at(0).element, "dragenter", {
-        types: [KnimeMIME],
+        types: [KNIME_MIME],
       });
       await nextTick();
       expect(paths.at(1).classes()).not.toContain("is-dragged-over");
@@ -649,7 +645,7 @@ describe("Connector.vue", () => {
       const paths = wrapper.findAll("path");
 
       triggerDragEvent(paths.at(0).element, "dragenter", {
-        types: [KnimeMIME],
+        types: [KNIME_MIME],
       });
       await nextTick();
       expect(paths.at(1).classes()).not.toContain("is-dragged-over");

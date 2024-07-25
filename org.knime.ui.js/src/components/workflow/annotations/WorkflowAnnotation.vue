@@ -290,9 +290,7 @@ useMagicKeys({
   },
 });
 
-const { useOnEscapeStack } = useEscapeStack();
-
-useOnEscapeStack({
+useEscapeStack({
   onEscape: () => {
     hasEdited.value = false;
 

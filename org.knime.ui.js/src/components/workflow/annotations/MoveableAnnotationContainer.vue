@@ -55,9 +55,7 @@ const onPointerDown = (event: PointerEvent) => {
   handler(event);
 };
 
-const { useOnEscapeStack } = useEscapeStack();
-
-useOnEscapeStack({
+useEscapeStack({
   group: "OBJECT_DRAG",
   alwaysActive: true,
   onEscape: () => {

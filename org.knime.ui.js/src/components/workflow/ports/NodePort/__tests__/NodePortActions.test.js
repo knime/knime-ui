@@ -1,12 +1,11 @@
 import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
+import * as $shapes from "@/style/shapes";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
 
 import NodePortActions from "../NodePortActions.vue";
-
-const portActionButtonSize = 20;
 
 describe("NodePortActions.vue", () => {
   const defaultProps = {
@@ -25,6 +24,9 @@ describe("NodePortActions.vue", () => {
   const doShallowMount = (customProps = {}) =>
     shallowMount(NodePortActions, {
       props: { ...defaultProps, ...customProps },
+      global: {
+        mocks: { $shapes },
+      },
     });
 
   it("should render properly", () => {
@@ -67,7 +69,7 @@ describe("NodePortActions.vue", () => {
   });
 
   it.each([
-    ["in", portActionButtonSize],
+    ["in", $shapes.portActionButtonSize],
     ["out", 0],
   ])(
     "should set the proper hover area dimensions for %sPorts",
@@ -81,10 +83,10 @@ describe("NodePortActions.vue", () => {
           .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
       const hoverAreaDimensions = {
-        x: -(portActionButtonSize / 2) - xOffset,
-        y: -(portActionButtonSize / 2),
-        width: portActionButtonSize * 2,
-        height: portActionButtonSize,
+        x: -($shapes.portActionButtonSize / 2) - xOffset,
+        y: -($shapes.portActionButtonSize / 2),
+        width: $shapes.portActionButtonSize * 2,
+        height: $shapes.portActionButtonSize,
       };
 
       expect(wrapper.find("rect").attributes()).toEqual(

@@ -2,10 +2,11 @@ import { computed } from "vue";
 import { useStore } from "./useStore";
 import * as $shapes from "@/style/shapes";
 
+export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
+
 export const useDropNode = () => {
-  const KnimeMIME = "application/vnd.knime.ap.noderepo+json";
   const isKnimeNode = (event: DragEvent) =>
-    event.dataTransfer?.types.includes(KnimeMIME);
+    event.dataTransfer?.types.includes(KNIME_MIME);
 
   const store = useStore();
 
@@ -13,7 +14,7 @@ export const useDropNode = () => {
 
   const onDrop = async (event: DragEvent) => {
     if (isWritable.value) {
-      const data = event.dataTransfer?.getData(KnimeMIME);
+      const data = event.dataTransfer?.getData(KNIME_MIME);
 
       if (!data) {
         return;
@@ -47,7 +48,6 @@ export const useDropNode = () => {
   };
 
   return {
-    KnimeMIME,
     onDrop,
     onDragOver,
   };

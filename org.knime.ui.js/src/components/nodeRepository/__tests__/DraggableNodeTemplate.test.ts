@@ -16,14 +16,10 @@ import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as selectionStore from "@/store/selection";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
 
+import { KNIME_MIME } from "@/composables/useDropNode";
 import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
 
 const mockedAPI = deepMocked(API);
-
-let KnimeMIME: string;
-vi.mock("@/composables/useDropNode", () => ({
-  useDropNode: () => ({ KnimeMIME }),
-}));
 
 describe("DraggableNodeTemplate", () => {
   const baseNodeTemplate: NodeTemplate = {
@@ -258,7 +254,7 @@ describe("DraggableNodeTemplate", () => {
         "node-id",
       );
       expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith(
-        KnimeMIME,
+        KNIME_MIME,
         JSON.stringify({
           className: "class-name",
           settings: "encoded-settings",

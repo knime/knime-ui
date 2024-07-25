@@ -4,7 +4,7 @@ import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import { useStore } from "@/composables/useStore";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import * as $shapes from "@/style/shapes";
-import { useDropNode } from "@/composables/useDropNode";
+import { KNIME_MIME } from "@/composables/useDropNode";
 import type { ExtendedPortType } from "@/api/custom-types";
 
 type UseConnectionReplacementOptions = {
@@ -39,7 +39,6 @@ export const useConnectionReplacement = (
 ) => {
   const isDraggedOver = ref(false);
   const store = useStore();
-  const { KnimeMIME } = useDropNode();
 
   const draggedNodeTemplate = computed(
     () => store.state.nodeTemplates.draggedTemplateData,
@@ -134,7 +133,7 @@ export const useConnectionReplacement = (
 
     if (
       dragEvent.dataTransfer &&
-      [...dragEvent.dataTransfer.types].includes(KnimeMIME) &&
+      [...dragEvent.dataTransfer.types].includes(KNIME_MIME) &&
       draggedNodeTemplate.value
     ) {
       const { inPorts, outPorts } = draggedNodeTemplate.value;
@@ -150,7 +149,7 @@ export const useConnectionReplacement = (
       return;
     }
 
-    const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
+    const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KNIME_MIME));
     insertNode({
       clientX: dragEvent.clientX,
       clientY: dragEvent.clientY,

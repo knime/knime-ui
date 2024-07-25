@@ -140,9 +140,7 @@ const { createPointerDownHandler } = useMoveObject({
 
 const onPointerDown = createPointerDownHandler(position);
 
-const { useOnEscapeStack } = useEscapeStack();
-
-useOnEscapeStack({
+useEscapeStack({
   group: "OBJECT_DRAG",
   alwaysActive: true,
   onEscape: () => {

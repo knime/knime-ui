@@ -2,16 +2,10 @@
 import { computed } from "vue";
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
+import * as $shapes from "@/style/shapes";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-
-const portActionButtonSize = 20;
-const portActionsGapSize = 5;
-
-defineExpose({
-  portActionButtonSize,
-});
 
 type Props = {
   port: NodePort;
@@ -30,9 +24,7 @@ const emit = defineEmits<{
   (e: string): void;
 }>();
 
-const { escapeStack } = useEscapeStack();
-
-escapeStack({
+useEscapeStack({
   onEscape() {
     emit("close");
   },
@@ -57,22 +49,26 @@ const hoverArea = computed(() => {
 
   // reverse the rect
   const xOffset =
-    props.direction === "in" ? portActionButtonSize * totalActions : 0;
+    props.direction === "in" ? $shapes.portActionButtonSize * totalActions : 0;
 
   return {
-    x: -(portActionButtonSize / 2) - xOffset,
-    y: -(portActionButtonSize / 2),
+    x: -($shapes.portActionButtonSize / 2) - xOffset,
+    y: -($shapes.portActionButtonSize / 2),
 
     // calculates the hover area based on the total actions
     // adds 1 to account for the space the highlighted port itself takes up
-    width: portActionButtonSize * (totalActions + 1),
-    height: portActionButtonSize,
+    width: $shapes.portActionButtonSize * (totalActions + 1),
+    height: $shapes.portActionButtonSize,
   };
 });
 
 const buttonX = (actionIndex: number) => {
   const delta = props.direction === "in" ? -1 : 1;
-  return (portActionButtonSize + portActionsGapSize) * actionIndex * delta;
+  return (
+    ($shapes.portActionButtonSize + $shapes.portActionsGapSize) *
+    actionIndex *
+    delta
+  );
 };
 </script>
 

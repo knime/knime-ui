@@ -4,10 +4,10 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import HotkeyHandler from "../HotkeyHandler.vue";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { escapePressed as expressPressedMock } from "@/composables/useEscapeStack";
 
-const escapePressed = vi.fn();
 vi.mock("@/composables/useEscapeStack", () => ({
-  useEscapeStack: () => ({ escapePressed }),
+  escapePressed: vi.fn(),
 }));
 
 const expectEventHandled = () => {
@@ -46,7 +46,7 @@ describe("HotKeys", () => {
     KeyboardEvent.prototype.preventDefault = vi.fn();
     KeyboardEvent.prototype.stopPropagation = vi.fn();
 
-    escapePressed.mockClear();
+    expressPressedMock.mockClear();
 
     storeConfig = {
       workflow: {
@@ -81,7 +81,7 @@ describe("HotKeys", () => {
     doShallowMount();
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 
-    expect(escapePressed).toHaveBeenCalled();
+    expect(expressPressedMock).toHaveBeenCalled();
   });
 
   it("shortcut found and is enabled", () => {

@@ -1,6 +1,8 @@
 /* eslint-disable no-magic-numbers */
 export const nodeSize = 32;
 export const portSize = 9;
+export const portActionButtonSize = 20;
+export const portActionsGapSize = 5;
 
 export const addNodeGhostSize = 20;
 

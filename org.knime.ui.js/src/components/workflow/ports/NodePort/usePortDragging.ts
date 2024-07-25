@@ -67,15 +67,12 @@ export const usePortDragging = (params: Params) => {
 
   // represents the <Connector> line that can be dragged to other ports
   const dragConnector = ref<DragConnector | null>(null);
-
   const didMove = ref(false);
   const pointerDown = ref(false);
   const didDragToCompatibleTarget = ref(false);
-
   const hasAbortedDrag = ref(false);
-  const { useOnEscapeStack } = useEscapeStack();
 
-  useOnEscapeStack({
+  useEscapeStack({
     group: "PORT_DRAG",
     alwaysActive: true,
     onEscape: () => {

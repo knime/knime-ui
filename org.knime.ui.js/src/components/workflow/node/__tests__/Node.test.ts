@@ -17,6 +17,7 @@ import NodeName from "../name/NodeName.vue";
 import NodeLabel from "../label/NodeLabel.vue";
 import NodeDecorators from "../decorators/NodeDecorators.vue";
 
+import { KNIME_MIME } from "@/composables/useDropNode";
 import NodeActionBar from "../NodeActionBar.vue";
 import NodeState from "../NodeState.vue";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
@@ -30,11 +31,6 @@ import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
 import type { Store } from "vuex";
 import type { RootStoreState } from "@/store/types";
-
-let KnimeMIME: string;
-vi.mock("@/composables/useDropNode", () => ({
-  useDropNode: () => ({ KnimeMIME }),
-}));
 
 const commonNode = {
   id: "root:1",
@@ -1107,7 +1103,7 @@ describe("Node", () => {
         const { wrapper } = doMount({ props });
         const torso = wrapper.findComponent(NodeTorso);
 
-        triggerDragEvent(torso.element, "dragenter", { types: [KnimeMIME] });
+        triggerDragEvent(torso.element, "dragenter", { types: [KNIME_MIME] });
         await Vue.nextTick();
 
         expect(torso.vm.$props.isDraggedOver).toBeTruthy();
@@ -1122,7 +1118,7 @@ describe("Node", () => {
         const { wrapper } = doMount({ props, storeState: storeConfig });
         const torso = wrapper.findComponent(NodeTorso);
 
-        triggerDragEvent(torso.element, "dragenter", { types: [KnimeMIME] });
+        triggerDragEvent(torso.element, "dragenter", { types: [KNIME_MIME] });
         await Vue.nextTick();
 
         expect(torso.vm.$props.isDraggedOver).toBeFalsy();
