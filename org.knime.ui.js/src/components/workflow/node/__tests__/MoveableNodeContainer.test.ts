@@ -225,7 +225,7 @@ describe("MoveableNodeContainer", () => {
     moveNodeTo({ clientX: 250, clientY: 250 });
     await Vue.nextTick();
     expect($store.state.workflow.movePreviewDelta).not.toEqual({ x: 0, y: 0 });
-    useEscapeStack.onEscape();
+    (useEscapeStack as any).onEscape();
     expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
     expect($store.state.workflow.hasAbortedDrag).toBe(true);
     expect($store.state.workflow.isDragging).toBe(false);
@@ -283,6 +283,18 @@ describe("MoveableNodeContainer", () => {
       );
       expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
         expect.objectContaining({ type: "node-dragging-end" }),
+      );
+    });
+
+    it("aborts dragging", async () => {
+      const { mockTarget, wrapper } = await doMountWithHitTarget();
+      (useEscapeStack as any).onEscape();
+      endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
+      expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "node-dragging-enter" }),
+      );
+      expect(mockTarget.dispatchEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "node-dragging-leave" }),
       );
     });
   });

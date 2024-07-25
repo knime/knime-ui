@@ -19,9 +19,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: "close"): void;
-  (e: "action:remove"): void;
-  (e: string): void;
+  close: [];
+  "action:remove": [];
 }>();
 
 useEscapeStack({
@@ -35,7 +34,7 @@ const actions = computed(() => [
     id: "remove",
     title: "Remove port",
     isDisabled: !props.port.canRemove,
-    eventName: "action:remove",
+    eventName: "action:remove" as const,
   },
 ]);
 

@@ -16,16 +16,29 @@ import { $bus } from "@/plugins/event-bus";
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
 
+import { useEscapeStack } from "@/composables/useEscapeStack";
+import QuickAddNodeGhost from "@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue";
 import NodePort from "../NodePort.vue";
 import NodePortActions from "../NodePortActions.vue";
 import NodePortActiveConnector from "../NodePortActiveConnector.vue";
-import QuickAddNodeGhost from "@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue";
 
 const detectConnectionCircleSpy = vi
   .spyOn(compatibleConnections, "detectConnectionCircle")
   .mockReturnValue(new Set());
 
 vi.mock("@/plugins/event-bus");
+
+vi.mock("@/composables/useEscapeStack", () => {
+  function useEscapeStack({ onEscape }) {
+    // @ts-ignore
+    useEscapeStack.onEscape = onEscape;
+    return {
+      /* empty mixin */
+    };
+  }
+
+  return { useEscapeStack };
+});
 
 const mockBus = deepMocked($bus);
 
@@ -1122,6 +1135,20 @@ describe("NodePort", () => {
 
       await dropOnTarget({ wrapper });
       expect(hitTarget._connectorDropEvent).toBeFalsy();
+    });
+
+    it("should abort dragging a port when Esc is pressed", async () => {
+      const { wrapper } = doMount();
+      await startDragging({ wrapper });
+      (useEscapeStack as any).onEscape.call(wrapper.vm);
+      await Vue.nextTick();
+      expect(wrapper.findComponent(Connector).exists()).toBe(false);
+      const dispatchEventSpy = vi.spyOn(wrapper.element, "dispatchEvent");
+      await wrapper.trigger("lostpointercapture");
+      // only the trigger of `lostpointecapture`, but not opening the quick node add menu
+      // since drag was aborted
+      expect(dispatchEventSpy).toHaveBeenCalledTimes(1);
+      expect(mockBus.emit).toHaveBeenCalledWith("connector-end");
     });
 
     describe("quick add node menu", () => {

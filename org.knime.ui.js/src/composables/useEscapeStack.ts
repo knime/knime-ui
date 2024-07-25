@@ -2,8 +2,22 @@ import { onBeforeUnmount, onMounted, type Component } from "vue";
 import { getId } from "@/util/getUniqueId";
 
 type StackItemConfig = {
+  /**
+    Handler that will get called when the escape key is called
+  */
   onEscape: () => void;
+  /**
+    Optional. If a stack entry that has a group set is being handled, then all the stack entries that
+    belong to the same group will execute all their handlers as well
+    (with their corresponding component instance) when the escape key is pressed
+  */
   group?: string | null;
+  /**
+    Will keep the stack entry in the stack even after the handler has executed. This is useful for
+    components that do not destroy after escape is pressed and want to keep the escape handling behavior
+    for as long as they're mounted. Destroying the component will still remove the entry, even if this
+    property is set.
+  */
   alwaysActive?: boolean;
 };
 

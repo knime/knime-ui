@@ -5,7 +5,20 @@ import * as $shapes from "@/style/shapes";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
 
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import NodePortActions from "../NodePortActions.vue";
+
+vi.mock("@/composables/useEscapeStack", () => {
+  function useEscapeStack({ onEscape }) {
+    // @ts-ignore
+    useEscapeStack.onEscape = onEscape;
+    return {
+      /* empty mixin */
+    };
+  }
+
+  return { useEscapeStack };
+});
 
 describe("NodePortActions.vue", () => {
   const defaultProps = {
@@ -119,5 +132,12 @@ describe("NodePortActions.vue", () => {
     const actionButton = wrapper.findComponent(ActionButton);
 
     expect(actionButton.props("disabled")).toBe(true);
+  });
+
+  it("should close on escape", () => {
+    const wrapper = doShallowMount();
+    expect(wrapper.emitted("close")).toBeFalsy();
+    useEscapeStack.onEscape();
+    expect(wrapper.emitted("close")).toBeTruthy();
   });
 });
