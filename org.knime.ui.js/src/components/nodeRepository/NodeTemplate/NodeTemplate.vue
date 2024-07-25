@@ -61,6 +61,7 @@ defineExpose({ getNodePreview });
       'node',
       {
         'list-mode': displayMode === 'list',
+        'tree-mode': displayMode === 'tree',
         selected: isSelected,
         highlighted: isHighlighted,
       },
@@ -104,6 +105,11 @@ defineExpose({ getNodePreview });
   &[draggable="true"]:hover {
     cursor: grab;
   }
+
+  &.tree-mode {
+    margin: 0;
+    background-color: transparent;
+  }
 }
 
 .highlighted {
@@ -112,7 +118,8 @@ defineExpose({ getNodePreview });
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
   background-color: var(--knime-porcelain);
 
-  &.list-mode {
+  &.list-mode,
+  &.tree-mode {
     border-radius: 0;
   }
 }
@@ -124,7 +131,8 @@ defineExpose({ getNodePreview });
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
   background-color: v-bind("$colors.selection.activeBackground");
 
-  &.list-mode {
+  &.list-mode,
+  &.tree-mode {
     border-radius: 0;
   }
 }

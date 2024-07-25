@@ -2,7 +2,6 @@
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 import { computed } from "vue";
 
@@ -10,7 +9,6 @@ export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
   isHovered: boolean;
   isDescriptionActive: boolean;
-  displayMode?: NodeRepositoryDisplayModesType;
   showFloatingHelpIcon?: boolean;
   isSelected?: boolean;
 };
@@ -19,7 +17,6 @@ const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isDescriptionActive: false,
   showFloatingHelpIcon: false,
-  displayMode: "icon",
 });
 const emit = defineEmits(["helpIconClick"]);
 const extensionText = computed(() => {

@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 
 export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
   isHovered: boolean;
-  displayMode?: NodeRepositoryDisplayModesType;
   showFloatingHelpIcon?: boolean;
   isSelected?: boolean;
   isDescriptionActive: boolean;
@@ -17,7 +15,6 @@ withDefaults(defineProps<Props>(), {
   isSelected: false,
   isDescriptionActive: false,
   showFloatingHelpIcon: false,
-  displayMode: "icon",
 });
 
 const emit = defineEmits(["helpIconClick"]);
@@ -99,9 +96,7 @@ const emit = defineEmits(["helpIconClick"]);
 
   & .help-icon {
     padding: 0;
-    position: absolute;
-    right: -4px;
-    top: -4px;
+    margin: 0 var(--space-4);
   }
 }
 </style>

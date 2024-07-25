@@ -117,7 +117,7 @@ defineExpose({ focusFirst, getVisibleNodeIds });
             :is-description-active="
               showDescriptionForNode?.id === node.origin.nodeTemplate.id
             "
-            display-mode="list"
+            display-mode="tree"
             @show-node-description="onShowNodeDescription(node)"
           />
           <span v-else class="category">{{ node.name }}</span>
@@ -129,8 +129,7 @@ defineExpose({ focusFirst, getVisibleNodeIds });
 
 <style lang="postcss" scoped>
 .scroll-container-content {
-  padding: 0 15px 15px;
-  margin-right: 15px; /* TODO: why is this needed? */
+  padding: 0 20px 15px;
   font-family: "Roboto Condensed", sans-serif;
 }
 
@@ -141,21 +140,10 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   white-space: nowrap;
   max-width: 100%;
 }
-
-:deep(.display-list) {
-  width: 100%;
-  margin: 0;
-}
-
-:deep(.vir-tree-node) {
-  height: 27px;
-  line-height: 27px;
-  vertical-align: middle;
-}
 </style>
 
 <style lang="css">
-/** inlined virtree styles */
+/** inlined virtual tree styles */
 /* stylelint-disable */
 .vue-recycle-scroller {
   position: relative;
@@ -224,14 +212,14 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   z-index: -1;
 }
 .vir-tree {
-  --white-color: #fff;
-  --border-color: #dcdee2;
-  --dash-border-color: #f0f0f0;
-  --primary-color: #2d8cf0;
-  --assist-color: #bae7ff;
-  --disable-color: #c5c8ce;
-  --text-color: #333;
-  --gray-color-tree: #e7eaef;
+  --white-color: var(--knime-white);
+  --border-color: var(--knime-dove-gray);
+  --dash-border-color: var(--knime-silver-sand-semi);
+  --primary-color: var(--knime-cornflower);
+  --assist-color: var(--knime-aquamarine);
+  --disable-color: var(--knime-stone-dark);
+  --text-color: var(--knime-masala);
+  --gray-color-tree: var(--knime-silver-sand-semi);
   --font-size-base: 13px;
   --font-size-mid: var(--font-size-base) + 2;
   --font-size-large: var(--font-size-base) + 4;
@@ -265,7 +253,7 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   border: 1px solid var(--border-color);
   border-radius: 2px;
   border-collapse: initial;
-  transition: all 0.2s ease-in-out;
+  /*transition: all 0.2s ease-in-out;*/
   box-sizing: border-box;
 }
 .vir-checkbox .inner:after {
@@ -321,13 +309,15 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   user-select: none;
 }
 .vir-tree-node {
-  display: flex;
-  gap: 2px;
-  margin: 4px 0;
-  line-height: normal;
+  display: grid;
+  grid-template-columns: 16px auto;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
   font-size: var(--font-size-base);
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  /*transition: all 0.2s ease-in-out;*/
+  height: 28px;
+  line-height: 28px;
 }
 .vir-tree-node:hover {
   background-color: var(--gray-color-tree);
@@ -337,9 +327,14 @@ defineExpose({ focusFirst, getVisibleNodeIds });
 }
 .vir-tree-node .node-arrow {
   display: flex;
-  flex: 0 0 16px;
   align-items: center;
   cursor: pointer;
+}
+.vir-tree-node .node-arrow:empty {
+  display: none;
+}
+.vir-tree-node:has(.node-arrow:empty) {
+  grid-template-columns: 1fr;
 }
 .vir-tree-node .node-arrow .iconfont {
   display: block;
@@ -352,16 +347,14 @@ defineExpose({ focusFirst, getVisibleNodeIds });
 }
 .vir-tree-node .node-content {
   display: flex;
-  flex: 0 0 100%;
   align-items: center;
-  max-width: calc(100% - var(--icon-size-tree));
 }
 .vir-tree-node .node-content .node-title {
   padding: 0 6px;
   vertical-align: top;
   color: var(--text-color);
   white-space: nowrap;
-  transition: background-color 0.2s;
+  /*transition: background-color 0.2s;*/
 }
 .vir-tree-node .node-content .node-title.selected {
   background-color: var(--assist-color);
