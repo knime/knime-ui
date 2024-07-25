@@ -49,8 +49,6 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.io.ByteArrayInputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
@@ -173,31 +171,23 @@ final class Create {
     }
 
     private static void initializeResourceHandlers() {
-        CEFMiddlewareService.registerCustomResourceHandler(KnimeBrowserView.DOMAIN_NAME, urlString -> { // NOSONAR
-            var path = stringToURL(urlString).getPath();
-            var url = Platform.getBundle("org.knime.ui.js").getEntry(BASE_PATH + path);
+        CEFMiddlewareService.registerCustomResourceHandler(KnimeBrowserView.DOMAIN_NAME, url -> {
+            var bundleUrl = Platform.getBundle("org.knime.ui.js").getEntry(BASE_PATH + url.getPath());
             try {
-                return FileLocator.toFileURL(url).openStream();
+                return FileLocator.toFileURL(bundleUrl).openStream();
             } catch (Exception e) { // NOSONAR
-                var message = "Problem loading UI resources at '" + urlString + "'. See log for details.";
+                var message = "Problem loading UI resources at '" + url + "'. See log for details.";
                 NodeLogger.getLogger(KnimeBrowserView.class).error(message, e);
                 return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
             }
-        });
+
+        }, true);
 
         CEFMiddlewareService.registerPageAndPageBuilderResourceHandlers( //
             PageResourceHandler.PORT_VIEW, //
             PageResourceHandler.NODE_VIEW, //
             PageResourceHandler.NODE_DIALOG //
         );
-    }
-
-    private static URL stringToURL(final String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Not a valid URL");
-        }
     }
 
     private static LocalWorkspace createLocalWorkspace() {
