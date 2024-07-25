@@ -15,7 +15,7 @@ interface Props {
   displayMode: NodeRepositoryDisplayModesType;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   displayMode: "icon",
 });
 
@@ -83,6 +83,13 @@ const onHelpKey = (node: NodeTemplateWithExtendedPorts) => {
 };
 
 defineExpose({ focusFirst });
+
+const displayModeSupported = computed(() => {
+  if (props.displayMode === "tree") {
+    return "list";
+  }
+  return props.displayMode;
+});
 </script>
 
 <template>
@@ -93,7 +100,7 @@ defineExpose({ focusFirst });
     :search-actions="searchActions"
     :selected-tags="selectedTags"
     :show-description-for-node="showDescriptionForNode"
-    :display-mode="displayMode"
+    :display-mode="displayModeSupported"
     :query="query"
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"

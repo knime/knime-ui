@@ -25,15 +25,25 @@ const showDescriptionForNode = computed(
 const searchIsActive = computed(
   () => store.getters["nodeRepository/searchIsActive"],
 );
-const isNodeVisible = computed(() => true);
-//   // TODO: add tree state here (which is not so simple)
-//   store.getters["nodeRepository/isNodeVisible"](
-//     showDescriptionForNode.value?.id,
-//   ),
-// );
+
+const categoryTree = ref<InstanceType<typeof CategoryTree>>();
+
 const displayMode = computed(
   () => store.state.settings.settings.nodeRepositoryDisplayMode,
 );
+
+const isNodeVisible = computed(() => {
+  if (displayMode.value === "tree" && !searchIsActive.value) {
+    return categoryTree.value
+      ?.getVisibleNodeIds()
+      .includes(showDescriptionForNode.value!.id);
+  }
+
+  return store.getters["nodeRepository/isNodeVisible"](
+    showDescriptionForNode.value?.id,
+  );
+});
+
 const activeProjectId = computed(() => store.state.application.activeProjectId);
 const nodeRepositoryLoaded = computed(
   () => store.state.application.nodeRepositoryLoaded,
@@ -134,13 +144,13 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
-      <!--<CategoryResults
+      <CategoryResults
         v-else-if="displayMode !== 'tree'"
         ref="categoryResults"
         :display-mode="displayMode"
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
-      />-->
+      />
       <CategoryTree
         v-else
         ref="categoryTree"

@@ -20,7 +20,6 @@ import QuickAddNodeSearchResults from "./QuickAddNodeSearchResults.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
-import type { SettingsState } from "@/store/settings";
 import type {
   AvailablePortTypes,
   ExtendedPortType,
@@ -111,14 +110,18 @@ export default defineComponent({
       "nodeRepositoryLoaded",
       "nodeRepositoryLoadingProgress",
     ]),
-    ...mapState("settings", {
-      displayMode: (state: unknown) =>
-        (state as SettingsState).settings.nodeRepositoryDisplayMode,
-    }),
     ...mapState("canvas", ["zoomFactor"]),
     ...mapState("quickAddNodes", ["recommendedNodes"]),
     ...mapGetters("workflow", ["isWritable", "getNodeById"]),
     ...mapGetters("quickAddNodes", ["searchIsActive", "getFirstResult"]),
+
+    displayMode() {
+      const { nodeRepositoryDisplayMode } = this.$store.state.settings.settings;
+      if (nodeRepositoryDisplayMode !== "tree") {
+        return "list";
+      }
+      return nodeRepositoryDisplayMode;
+    },
 
     canvasPosition() {
       let pos = { ...this.position };

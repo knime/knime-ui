@@ -41,6 +41,12 @@ export default defineComponent({
         this.$store.commit("nodeRepository/setSelectedNode", value);
       },
     },
+    displayModeSupported() {
+      if (this.displayMode === "tree") {
+        return "list";
+      }
+      return this.displayMode;
+    },
   },
   expose: ["focusFirst"],
   methods: {
@@ -107,7 +113,7 @@ export default defineComponent({
           :tag="tag"
           :nodes="nodes"
           :show-description-for-node="showDescriptionForNode"
-          :display-mode="displayMode"
+          :display-mode="displayModeSupported"
           @item-enter-key="addNodeToWorkflow"
           @select-tag="onSelectTag"
           @help-key="onHelpKey"

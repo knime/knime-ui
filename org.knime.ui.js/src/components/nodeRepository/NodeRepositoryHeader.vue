@@ -4,8 +4,9 @@ import { computed, ref } from "vue";
 import { FunctionButton, SearchInput } from "@knime/components";
 import FilterIcon from "@knime/styles/img/icons/filter.svg";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
-import ListIconCheck from "@knime/styles/img/icons/unordered-list.svg";
-import ListIcon from "@knime/styles/img/icons/view-cards.svg";
+import DisplayModeIconIcon from "@knime/styles/img/icons/unordered-list.svg";
+import DisplayModeListIcon from "@knime/styles/img/icons/view-cards.svg";
+import DisplayModeTreeIcon from "@knime/styles/img/icons/align-right.svg";
 
 import { API } from "@api";
 import { useStore } from "@/composables/useStore";
@@ -56,10 +57,35 @@ const onBreadcrumbClick = (event: { id: string }) => {
   }
 };
 
-const toggleListView = () => {
+const displayModeIconComponent = computed(() => {
+  switch (displayMode.value) {
+    case "icon":
+      return DisplayModeIconIcon;
+    case "list":
+      return DisplayModeListIcon;
+    case "tree":
+      return DisplayModeTreeIcon;
+  }
+  return DisplayModeIconIcon;
+});
+
+const toggleDisplayModes = () => {
+  let value = "";
+  switch (displayMode.value) {
+    case "icon":
+      value = "list";
+      break;
+    case "list":
+      value = "tree";
+      break;
+    case "tree":
+      value = "icon";
+      break;
+  }
+
   store.dispatch("settings/updateSetting", {
     key: "nodeRepositoryDisplayMode",
-    value: displayMode.value === "list" ? "icon" : "list",
+    value,
   });
 };
 
@@ -87,13 +113,15 @@ defineExpose({ focusSearchInput });
         />
         <div class="view-settings">
           <FunctionButton
-            class="list-view-button"
-            title="Switch between icon and list view"
+            class="display-mode-button"
+            title="Switch between icon, list and tree view"
             :disabled="!nodeRepositoryLoaded"
-            @click="toggleListView"
+            @click="toggleDisplayModes"
           >
-            <ListIcon v-if="displayMode === 'list'" class="list-icon" />
-            <ListIconCheck v-else class="list-icon" />
+            <Component
+              :is="displayModeIconComponent"
+              class="display-mode-icon"
+            />
           </FunctionButton>
           <FunctionButton
             v-if="isDesktop"
@@ -162,14 +190,14 @@ defineExpose({ focusSearchInput });
         gap: 5px;
       }
 
-      & .list-view-button {
+      & .display-mode-button {
         width: 30px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
 
-        & .list-icon {
+        & .display-mode-icon {
           @mixin svg-icon-size 18;
 
           stroke: var(--knime-masala);

@@ -3,6 +3,7 @@ import VirtualTree, {
   type BaseTreeNode,
   type TreeNodeOptions,
   type TreeContext,
+  type NodeKey,
 } from "@ysx-libs/vue-virtual-tree";
 
 // import "@ysx-libs/vue-virtual-tree/style.css";
@@ -43,7 +44,16 @@ onMounted(async () => {
 const tree = ref<TreeContext>();
 
 const focusFirst = () => {
-  console.log("Tree focus not yet implemented");
+  consola.warn("CategoryTree::focus Tree focus not yet implemented");
+};
+
+const loadedNodeIds = ref<Map<NodeKey, string[]>>(new Map<NodeKey, string[]>());
+
+const getVisibleNodeIds = () => {
+  const expandedKeys = tree.value!.getExpandedKeys();
+  return expandedKeys
+    .map((key: NodeKey) => loadedNodeIds.value.get(key) ?? [])
+    .flat();
 };
 
 const loadData = async (
@@ -53,7 +63,7 @@ const loadData = async (
   const { categories, nodes } = await store.dispatch(
     "nodeRepository/getNodesOfCategory",
     {
-      categoryId: treeNode.name,
+      categoryId: treeNode.name, // TODO: change
     },
   );
 
@@ -66,10 +76,12 @@ const loadData = async (
     };
   });
 
-  // simulate more loading time
-  await new Promise((r) => setTimeout(r, 250));
+  // remember nodeIds for visible check
+  const nodeIds = nodes.map((node: NodeTemplateWithExtendedPorts) => node.id);
+  loadedNodeIds.value.set(treeNode.key, nodeIds);
 
-  console.log(tree.value?.getExpandedKeys());
+  // simulate more loading time
+  // await new Promise((r) => setTimeout(r, 250));
 
   callback([...categories.map(mapCategory), ...mappedNodes]);
 };
@@ -89,7 +101,7 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   });
 };
 
-defineExpose({ focusFirst });
+defineExpose({ focusFirst, getVisibleNodeIds });
 </script>
 
 <template>
