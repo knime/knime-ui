@@ -122,6 +122,8 @@ defineExpose({ focusSearchInput });
         "
         class="search-bar"
         tabindex="-1"
+        spellcheck="false"
+        :maxlength="300"
         @keydown.down.prevent.stop="$emit('searchBarDownKey')"
         @clear="store.dispatch('nodeRepository/clearSearchParams')"
         @update:model-value="
