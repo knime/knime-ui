@@ -35,7 +35,7 @@ const displayMode = computed(
 const isNodeVisible = computed(() => {
   if (displayMode.value === "tree" && !searchIsActive.value) {
     return categoryTree.value
-      ?.getVisibleNodeIds()
+      ?.getExpandedNodeIds()
       .includes(showDescriptionForNode.value!.id);
   }
 

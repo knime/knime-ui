@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { FunctionButton, SearchInput } from "@knime/components";
+import {
+  FunctionButton,
+  SearchInput,
+  SubMenu,
+  type MenuItem,
+} from "@knime/components";
 import FilterIcon from "@knime/styles/img/icons/filter.svg";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
-import DisplayModeIconIcon from "@knime/styles/img/icons/unordered-list.svg";
-import DisplayModeListIcon from "@knime/styles/img/icons/view-cards.svg";
-import DisplayModeTreeIcon from "@knime/styles/img/icons/align-right.svg";
+import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
+import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
+import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
+
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 import { API } from "@api";
 import { useStore } from "@/composables/useStore";
@@ -57,32 +64,32 @@ const onBreadcrumbClick = (event: { id: string }) => {
   }
 };
 
-const displayModeIconComponent = computed(() => {
-  switch (displayMode.value) {
-    case "icon":
-      return DisplayModeIconIcon;
-    case "list":
-      return DisplayModeListIcon;
-    case "tree":
-      return DisplayModeTreeIcon;
-  }
-  return DisplayModeIconIcon;
-});
+type MenuItemWithDisplayMode = MenuItem<{
+  displayMode: NodeRepositoryDisplayModesType;
+}>;
 
-const toggleDisplayModes = () => {
-  let value = "";
-  switch (displayMode.value) {
-    case "icon":
-      value = "list";
-      break;
-    case "list":
-      value = "tree";
-      break;
-    case "tree":
-      value = "icon";
-      break;
-  }
+const displayModeSubMenuItems = computed<MenuItemWithDisplayMode[]>(() => [
+  {
+    text: "Grid",
+    icon: DisplayModeGridIcon as any,
+    selected: displayMode.value === "icon",
+    metadata: { displayMode: "icon" },
+  },
+  {
+    text: "List",
+    icon: DisplayModeListIcon as any,
+    selected: displayMode.value === "list",
+    metadata: { displayMode: "list" },
+  },
+  {
+    text: "Tree",
+    icon: DisplayModeTreeIcon as any,
+    selected: displayMode.value === "tree",
+    metadata: { displayMode: "tree" },
+  },
+]);
 
+const setDisplayMode = (value: NodeRepositoryDisplayModesType) => {
   store.dispatch("settings/updateSetting", {
     key: "nodeRepositoryDisplayMode",
     value,
@@ -112,17 +119,23 @@ defineExpose({ focusSearchInput });
           @click="onBreadcrumbClick"
         />
         <div class="view-settings">
-          <FunctionButton
-            class="display-mode-button"
-            title="Switch between icon, list and tree view"
-            :disabled="!nodeRepositoryLoaded"
-            @click="toggleDisplayModes"
+          <SubMenu
+            :items="displayModeSubMenuItems"
+            :teleport-to-body="false"
+            class="display-modes-sub-menu"
+            button-title="Change display mode"
+            @toggle.stop
+            @item-click="
+              (_: MouseEvent, item) => setDisplayMode(item.metadata.displayMode)
+            "
           >
             <Component
-              :is="displayModeIconComponent"
+              :is="
+                displayModeSubMenuItems.find(({ selected }) => selected)?.icon
+              "
               class="display-mode-icon"
             />
-          </FunctionButton>
+          </SubMenu>
           <FunctionButton
             v-if="isDesktop"
             class="filter-button"

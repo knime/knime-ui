@@ -8,6 +8,9 @@ import VirtualTree, {
 
 // import "@ysx-libs/vue-virtual-tree/style.css";
 
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
+
 import { computed, onMounted, ref } from "vue";
 import { useStore } from "@/composables/useStore";
 import ScrollViewContainer from "./ScrollViewContainer.vue";
@@ -49,7 +52,7 @@ const focusFirst = () => {
 
 const loadedNodeIds = ref<Map<NodeKey, string[]>>(new Map<NodeKey, string[]>());
 
-const getVisibleNodeIds = () => {
+const getExpandedNodeIds = () => {
   const expandedKeys = tree.value!.getExpandedKeys();
   return expandedKeys
     .map((key: NodeKey) => loadedNodeIds.value.get(key) ?? [])
@@ -90,8 +93,6 @@ const showDescriptionForNode = computed(
   () => store.state.nodeRepository.showDescriptionForNode,
 );
 
-const selectedNode = computed(() => store.state.nodeRepository.selectedNode);
-
 const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   const { nodeTemplate } = treeNode.origin;
 
@@ -101,7 +102,11 @@ const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   });
 };
 
-defineExpose({ focusFirst, getVisibleNodeIds });
+const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
+  return tree.value!.getSelectedNode()?.key === treeNode.key;
+};
+
+defineExpose({ focusFirst, getExpandedNodeIds });
 </script>
 
 <template>
@@ -118,16 +123,23 @@ defineExpose({ focusFirst, getVisibleNodeIds });
             v-if="node.origin.nodeTemplate"
             :node-template="node.origin.nodeTemplate"
             :is-highlighted="false"
-            :is-selected="selectedNode?.id === node.origin.nodeTemplate.id"
+            :is-selected="isTreeNodeSelected(node)"
             :is-description-active="
               showDescriptionForNode?.id === node.origin.nodeTemplate.id
             "
             display-mode="tree"
             @show-node-description="onShowNodeDescription(node)"
           />
-          <span v-else class="category" @click="tree!.toggleExpand(node.key)">{{
-            node.name
-          }}</span>
+          <span
+            v-else
+            :class="['category', { selected: isTreeNodeSelected(node) }]"
+            @click="tree!.toggleExpand(node.key)"
+            >{{ node.name }}</span
+          >
+        </template>
+        <template #icon="{ loading }">
+          <ReloadIcon v-if="loading" class="icon" />
+          <ArrowNextIcon v-else class="icon" />
         </template>
       </VirtualTree>
     </div>
@@ -148,6 +160,18 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+
+  &.selected {
+    color: var(--knime-white);
+  }
+}
+
+:deep(.vir-tree-node:has(.category.selected)) {
+  background-color: var(--knime-masala);
+
+  & .icon {
+    stroke: var(--knime-white);
+  }
 }
 </style>
 
@@ -233,19 +257,8 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   --font-size-mid: var(--font-size-base) + 2;
   --font-size-large: var(--font-size-base) + 4;
   --font-size-huge: var(--font-size-base) + 10;
-  --icon-size-tree: 16px;
 }
 
-.iconloading {
-  width: var(--icon-size-tree);
-  height: var(--icon-size-tree);
-  background-image: url("@knime/styles/img/icons/reload.svg");
-}
-.iconExpand {
-  width: var(--icon-size-tree);
-  height: var(--icon-size-tree);
-  background-image: url("@knime/styles/img/icons/arrow-next.svg");
-}
 .vir-checkbox {
   display: inline-block;
   cursor: pointer;
@@ -338,6 +351,7 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   display: flex;
   align-items: center;
   cursor: pointer;
+  transition: transform 0.3s ease;
 }
 .vir-tree-node .node-arrow:empty {
   display: none;
