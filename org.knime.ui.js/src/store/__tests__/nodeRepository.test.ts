@@ -5,11 +5,9 @@ import {
   lodashMockFactory,
   mockVuexStore,
   withPorts,
-  withoutKeys,
 } from "@/test/utils";
 import { API } from "@api";
 import { createSearchNodesResponse } from "@/test/factories";
-import { state as nodeSearchState } from "../common/nodeSearch";
 
 const getNodesGroupedByTagsResponse = {
   groups: [
@@ -63,32 +61,6 @@ const getNodeDescriptionResponse = {
   ],
 };
 
-const getNodeTemplatesResponse = {
-  "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory": {
-    name: "H2O to Table",
-    id: "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory",
-    type: "Manipulator",
-    component: false,
-    icon: "data:image/png;base64,xxx",
-    inPorts: [
-      {
-        optional: false,
-        typeId: "org.knime.ext.h2o.ports.H2OFramePortObject",
-      },
-    ],
-    outPorts: [
-      {
-        optional: false,
-        typeId: "org.knime.core.node.BufferedDataTable",
-      },
-    ],
-    nodeFactory: {
-      className:
-        "org.knime.ext.h2o.nodes.frametotable.H2OFrameToTableNodeFactory",
-    },
-  },
-};
-
 const mockedAPI = deepMocked(API);
 
 vi.mock("lodash-es", async () => {
@@ -126,9 +98,6 @@ describe("Node Repository store", () => {
     mockedAPI.node.getNodeDescription.mockReturnValue(
       getNodeDescriptionResponse,
     );
-    mockedAPI.noderepository.getNodeTemplates.mockReturnValue(
-      getNodeTemplatesResponse,
-    );
 
     const store = mockVuexStore({
       nodeRepository: await import("@/store/nodeRepository"),
@@ -150,23 +119,6 @@ describe("Node Repository store", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("creates an empty store", async () => {
-    const { store } = await createStore();
-    const nodeSearchStateKeys = Object.keys(nodeSearchState());
-
-    expect(
-      withoutKeys(store.state.nodeRepository, nodeSearchStateKeys),
-    ).toStrictEqual({
-      nodesPerCategory: [],
-      totalNumCategories: null,
-      categoryPage: 0,
-      categoryScrollPosition: 0,
-      selectedNode: null,
-      showDescriptionForNode: null,
-      nodeDescriptions: new Map(),
-    });
   });
 
   describe("getters", () => {
@@ -318,62 +270,6 @@ describe("Node Repository store", () => {
 
         await store.dispatch("nodeRepository/getAllNodes", { append: true });
         expect(API.noderepository.getNodesGroupedByTags).not.toHaveBeenCalled();
-      });
-    });
-
-    describe("node description", () => {
-      it("fetches node description", async () => {
-        const { store, availablePortTypes } = await createStore();
-        const selectedNode = {
-          id: "node1",
-          nodeFactory: {
-            className: "test",
-            settings: "test1",
-          },
-        };
-
-        const result = await store.dispatch(
-          "nodeRepository/getNodeDescription",
-          { selectedNode },
-        );
-
-        const data = withPorts(
-          [getNodeDescriptionResponse],
-          availablePortTypes,
-        )[0];
-
-        expect(mockedAPI.node.getNodeDescription).toHaveBeenCalled();
-        expect(result).toEqual({
-          ...data,
-          dynInPorts: [
-            {
-              groupName: "inGroupName",
-              groupDescription: "No description available",
-              types: [
-                expect.objectContaining({
-                  color: "green",
-                  kind: "table",
-                  type: "table",
-                  description: "No description available",
-                }),
-              ],
-            },
-          ],
-          dynOutPorts: [
-            {
-              groupName: "outGroupName",
-              groupDescription: "This is the description",
-              types: [
-                expect.objectContaining({
-                  color: "green",
-                  kind: "table",
-                  type: "table",
-                  description: "No description available",
-                }),
-              ],
-            },
-          ],
-        });
       });
     });
 

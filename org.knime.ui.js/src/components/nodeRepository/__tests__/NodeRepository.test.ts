@@ -6,9 +6,9 @@ import { lodashMockFactory } from "@/test/utils";
 import * as panelStore from "@/store/panel";
 import * as settingsStore from "@/store/settings";
 
+import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import CategoryResults from "../CategoryResults.vue";
 import SearchResults from "../SearchResults.vue";
-import NodeDescription from "../NodeDescription.vue";
 import NodeRepositoryLoader from "../NodeRepositoryLoader.vue";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
 import NodeRepository from "../NodeRepository.vue";

@@ -1,92 +1,129 @@
 <script setup lang="ts">
 import { toRefs, ref, computed, watch } from "vue";
 
-import KNIMETriangleIcon from "@knime/styles/img/KNIME_Triangle.svg";
-import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
-import { Description, NodeFeatureList } from "@knime/components";
+import { NodeFeatureList } from "@knime/components";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import CloseButton from "@/components/common/CloseButton.vue";
 
 import { useStore } from "@/composables/useStore";
-import type { NodeTemplate } from "@/api/gateway-api/generated-api";
-import MetadataDescription from "@/components/workflowMetadata/MetadataDescription.vue";
-import type { NativeNodeDescriptionWithExtendedPorts } from "@/util/portDataMapper";
+import { type NodeFactoryKey } from "@/api/gateway-api/generated-api";
+import NodeDescriptionContent from "./NodeDescriptionContent.vue";
+import type {
+  ComponentNodeDescriptionWithExtendedPorts,
+  NativeNodeDescriptionWithExtendedPorts,
+} from "@/util/portDataMapper";
+import NodeDescriptionExtensionInfo from "./NodeDescriptionExtensionInfo.vue";
 
-type SelectedNode = Partial<Pick<NodeTemplate, "nodeFactory">> & {
+type Params = {
   id: string;
   name: string;
+  nodeFactory?: NodeFactoryKey;
 };
 
 /*
- * Base component for the NodeDescriptionOverlay for the nodeRepo, also used in the ContextAwareDescription for nodes
- * of the workflow
+ * Component that renders a NativeNode or a Component description
  */
 type Props = {
-  selectedNode?: SelectedNode | null;
+  params?: Params | null;
   showCloseButton?: boolean;
-  isComponent?: boolean;
-  isNodeDescriptionVisible?: boolean;
+  isVisible?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  selectedNode: null,
-  isNodeDescriptionVisible: true,
+  params: null,
+  isVisible: true,
+  showCloseButton: false,
 });
 
 const store = useStore();
 
+const isLoading = ref(false);
 const emit = defineEmits<(e: "close") => void>();
 
-const { selectedNode, isComponent, isNodeDescriptionVisible } = toRefs(props);
+const { params, isVisible } = toRefs(props);
 
-const descriptionData = ref<NativeNodeDescriptionWithExtendedPorts | null>(
-  null,
+const descriptionData = ref<
+  | NativeNodeDescriptionWithExtendedPorts
+  | ComponentNodeDescriptionWithExtendedPorts
+  | null
+>(null);
+
+const isNativeNode = computed(() =>
+  Boolean(params.value && params.value.nodeFactory),
 );
 
-const title = computed(() => {
-  if (!selectedNode.value) {
-    return "";
+const isNativeNodeDescription = (
+  data:
+    | NativeNodeDescriptionWithExtendedPorts
+    | ComponentNodeDescriptionWithExtendedPorts,
+): data is NativeNodeDescriptionWithExtendedPorts => {
+  return isNativeNode.value;
+};
+
+const title = computed(() => params.value?.name ?? "");
+
+const loadNativeNodeDescription = async () => {
+  if (!params.value) {
+    return;
   }
 
-  return selectedNode.value.name;
-});
+  isLoading.value = true;
 
-const loadNodeDescription = async () => {
-  descriptionData.value = await store.dispatch(
-    "nodeRepository/getNodeDescription",
-    { selectedNode: selectedNode.value },
-  );
+  try {
+    descriptionData.value = await store.dispatch(
+      "nodeDescription/getNativeNodeDescription",
+      { factoryId: params.value.id, nodeFactory: params.value.nodeFactory },
+    );
+  } catch (error) {
+    consola.error("NodeDescription::Problem fetching NativeNode description", {
+      params,
+      error,
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const loadComponentDescription = async () => {
-  const data = await store.dispatch("nodeRepository/getComponentDescription", {
-    nodeId: selectedNode.value?.id,
-  });
+  if (!params.value) {
+    return;
+  }
 
-  descriptionData.value = {
-    ...data,
-    description: data.description.value,
-  };
+  isLoading.value = true;
+
+  try {
+    descriptionData.value = await store.dispatch(
+      "nodeDescription/getComponentDescription",
+      { nodeId: params.value.id },
+    );
+  } catch (error) {
+    consola.error("NodeDescription::Problem fetching Component description", {
+      params,
+      error,
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 watch(
-  [selectedNode, isNodeDescriptionVisible],
+  [params, isVisible],
   async () => {
-    if (!isNodeDescriptionVisible.value) {
+    if (!isVisible.value) {
       return;
     }
 
     // reset data
-    if (selectedNode.value === null) {
+    if (params.value === null) {
       return;
     }
 
-    if (isComponent.value) {
-      await loadComponentDescription();
+    if (isNativeNode.value) {
+      await loadNativeNodeDescription();
       return;
     }
 
-    await loadNodeDescription();
+    await loadComponentDescription();
   },
   { immediate: true },
 );
@@ -108,20 +145,12 @@ watch(
     <div class="node-info">
       <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
              have some data as the selection is not cleared. -->
-      <template v-if="selectedNode">
-        <template v-if="descriptionData">
+      <template v-if="params">
+        <template v-if="descriptionData && !isLoading">
           <template v-if="descriptionData.description">
-            <!-- use the same component as in project metadata to avoid different rendering -->
-            <MetadataDescription
-              v-if="isComponent"
-              :original-description="descriptionData.description"
-              :model-value="descriptionData.description"
-            />
-            <Description
-              v-else
-              id="node-description-html"
-              :text="descriptionData.description"
-              render-as-html
+            <NodeDescriptionContent
+              :description-data="descriptionData"
+              :is-component="!isNativeNode"
             />
           </template>
 
@@ -136,33 +165,26 @@ watch(
 
           <NodeFeatureList
             :in-ports="descriptionData.inPorts"
-            :dyn-in-ports="descriptionData.dynInPorts"
+            :dyn-in-ports="
+              isNativeNodeDescription(descriptionData)
+                ? descriptionData.dynInPorts
+                : []
+            "
             :out-ports="descriptionData.outPorts"
-            :dyn-out-ports="descriptionData.dynOutPorts"
+            :dyn-out-ports="
+              isNativeNodeDescription(descriptionData)
+                ? descriptionData.dynOutPorts
+                : []
+            "
             :views="descriptionData.views"
             :options="descriptionData.options"
             class="node-feature-list"
           />
 
-          <div
-            v-if="descriptionData.extension && descriptionData.extension.vendor"
-            class="extension-info"
-          >
-            <div class="header">
-              <ExtensionIcon class="icon" />
-              <span>Extension</span>
-            </div>
-            <div class="extension-name">
-              {{ descriptionData.extension.name }}
-            </div>
-            <div class="extension-vendor">
-              provided by {{ descriptionData.extension.vendor.name }}
-              <KNIMETriangleIcon
-                v-if="descriptionData.extension.vendor.isKNIME"
-                class="knime-icon"
-              />
-            </div>
-          </div>
+          <NodeDescriptionExtensionInfo
+            v-if="isNativeNodeDescription(descriptionData)"
+            :description-data="descriptionData"
+          />
         </template>
       </template>
       <div v-else class="placeholder no-node">Please select a node</div>
@@ -228,16 +250,6 @@ watch(
   & .close-button {
     margin-top: 2px;
     margin-right: -15px;
-  }
-
-  & .description {
-    font-size: 13px;
-    line-height: 150%;
-    width: 310px;
-
-    & :deep(h3) {
-      font-size: 13px;
-    }
   }
 
   & .node-feature-list {
@@ -375,63 +387,6 @@ watch(
           left: -17px;
         }
       }
-    }
-  }
-
-  /* Style refinement for Code */
-  & :deep(tt),
-  & :deep(pre),
-  & :deep(code),
-  & :deep(samp) {
-    font-size: 11px;
-    line-height: 150%;
-  }
-
-  /* Style refinement for Tables */
-  & :deep(table) {
-    width: 100%;
-    font-size: 11px;
-    border-spacing: 3px 0;
-    margin-left: 10px;
-
-    & th,
-    & td {
-      padding: 2px 0;
-    }
-  }
-
-  & .extension-info {
-    & > .header {
-      display: flex;
-      align-items: center;
-      font-size: 16px;
-      line-height: 150%;
-      font-weight: 700;
-      margin-bottom: 10px;
-
-      & span {
-        margin-left: 5px;
-      }
-
-      & .icon {
-        @mixin svg-icon-size 18;
-      }
-    }
-
-    & .extension-name,
-    & .extension-vendor {
-      font-size: 13px;
-      line-height: 150%;
-
-      & .knime-icon {
-        @mixin svg-icon-size 18;
-
-        fill: var(--knime-dove-gray);
-      }
-    }
-
-    & .extension-name {
-      font-weight: 700;
     }
   }
 }

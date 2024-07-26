@@ -5,7 +5,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import type {
   AvailablePortTypes,
-  ComponentMetadata,
+  ComponentNodeDescription,
   ExtendedPortType,
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
@@ -146,14 +146,17 @@ export const toNativeNodeDescriptionWithExtendedPorts =
     };
   };
 
-export type ComponentNodeDescriptionWithExtendedPorts = ComponentMetadata & {
-  inPorts: ExtendedPortType[];
-  outPorts: ExtendedPortType[];
-};
+export type ComponentNodeDescriptionWithExtendedPorts =
+  ComponentNodeDescription & {
+    inPorts: ExtendedPortType[];
+    outPorts: ExtendedPortType[];
+  };
 
 export const toComponentNodeDescriptionWithExtendedPorts =
   (availablePortTypes: AvailablePortTypes) =>
-  (node: ComponentMetadata): ComponentNodeDescriptionWithExtendedPorts => {
+  (
+    node: ComponentNodeDescription,
+  ): ComponentNodeDescriptionWithExtendedPorts => {
     const { inPorts = [], outPorts = [] } = node;
 
     return {

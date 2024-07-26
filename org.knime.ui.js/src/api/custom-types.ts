@@ -14,6 +14,7 @@ import type {
   NodeTemplate,
   XY,
   SpaceItemReference,
+  ProjectMetadata,
 } from "./gateway-api/generated-api";
 
 import {
@@ -88,6 +89,11 @@ export namespace SpaceProviderNS {
 export type ComponentMetadata = ComponentNodeAndDescription &
   NodeDescription &
   EditableProjectMetadata;
+
+// TODO: NXT-2023 remove if API codegen supports multiple inheritance:
+export type ComponentNodeDescription = ComponentNodeAndDescription &
+  NodeDescription &
+  ProjectMetadata;
 
 // TODO: NXT-2023 remove once API codegen properly types the workflow nodes
 export type Workflow = Omit<_Workflow, "nodes" | "componentMetadata"> & {

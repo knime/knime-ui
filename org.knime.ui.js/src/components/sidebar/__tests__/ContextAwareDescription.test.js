@@ -4,7 +4,7 @@ import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 import ContextAwareDescription from "@/components/sidebar/ContextAwareDescription.vue";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
-import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
+import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 
 describe("ContextAwareDescription.vue", () => {
   const doMount = ({ singleSelectedNodeMock = vi.fn() } = {}) => {
@@ -53,14 +53,17 @@ describe("ContextAwareDescription.vue", () => {
     const { wrapper } = doMount({
       singleSelectedNodeMock: vi.fn().mockReturnValue({
         id: 2,
+        templateId: "org.mock.node",
         kind: "node",
       }),
     });
+
     expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
     expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
     expect(
-      wrapper.findComponent(NodeDescription).props("selectedNode"),
+      wrapper.findComponent(NodeDescription).props("params"),
     ).toMatchObject({
+      id: "org.mock.node",
       name: "Node with id 2", // see getter
       nodeFactory: {
         className: "someClassName",

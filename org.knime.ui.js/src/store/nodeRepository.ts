@@ -1,23 +1,12 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
-import type {
-  ComponentMetadata,
-  NodeTemplateWithExtendedPorts,
-} from "@/api/custom-types";
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 
-import {
-  toNativeNodeDescriptionWithExtendedPorts,
-  toNodeTemplateWithExtendedPorts,
-  toComponentNodeDescriptionWithExtendedPorts,
-} from "@/util/portDataMapper";
+import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
-import type {
-  NativeNodeDescription,
-  NodeTemplate,
-} from "@/api/gateway-api/generated-api";
 
 /**
  * Store that manages node repository state.
@@ -37,8 +26,6 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
 
   selectedNode: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
-
-  nodeDescriptions: Map<string, NativeNodeDescription>;
 }
 
 export const state = (): NodeRepositoryState => ({
@@ -53,9 +40,6 @@ export const state = (): NodeRepositoryState => ({
   /* node interaction */
   selectedNode: null,
   showDescriptionForNode: null,
-
-  /* nodeDescriptions cache */
-  nodeDescriptions: new Map<string, NativeNodeDescription>(),
 });
 
 export const mutations: MutationTree<NodeRepositoryState> = {
@@ -130,50 +114,6 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
 
     commit("setTotalNumCategories", totalNumGroups);
     commit("setNodesPerCategories", { groupedNodes: withMappedPorts, append });
-  },
-
-  async getNodeDescription(
-    { rootState },
-    { selectedNode }: { selectedNode: NodeTemplate },
-  ) {
-    const { className, settings } = selectedNode.nodeFactory!;
-    const { availablePortTypes } = rootState.application;
-
-    const factoryId = selectedNode.id;
-
-    // Check if the node description is already in the cache
-    if (rootState.nodeRepository.nodeDescriptions.has(factoryId)) {
-      return rootState.nodeRepository.nodeDescriptions.get(factoryId);
-    }
-
-    const node = await API.node.getNodeDescription({
-      nodeFactoryKey: { className, settings },
-    });
-
-    const nodeDescriptionWithExtendedPorts =
-      toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
-
-    rootState.nodeRepository.nodeDescriptions.set(
-      factoryId,
-      nodeDescriptionWithExtendedPorts,
-    );
-    return nodeDescriptionWithExtendedPorts;
-  },
-
-  async getComponentDescription({ rootState, rootGetters }, { nodeId }) {
-    const { projectId, workflowId } =
-      rootGetters["workflow/projectAndWorkflowIds"];
-
-    const node = (await API.node.getComponentDescription({
-      nodeId,
-      projectId,
-      workflowId,
-    })) as ComponentMetadata; // TODO: NXT-2023 - remove type cast
-
-    const { availablePortTypes } = rootState.application;
-    return toComponentNodeDescriptionWithExtendedPorts(availablePortTypes)(
-      node,
-    );
   },
 
   clearCategoryResults({ commit }) {

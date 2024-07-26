@@ -3,7 +3,7 @@ import { computed, watch, onMounted, ref } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
-import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
+import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
 import { TABS } from "@/store/panel";
 import CategoryResults from "./CategoryResults.vue";
@@ -154,7 +154,7 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
       <Transition name="extension-panel">
         <NodeDescription
           show-close-button
-          :selected-node="isNodeVisible ? showDescriptionForNode : null"
+          :params="isNodeVisible ? showDescriptionForNode : null"
           @close="store.dispatch('panel/closeExtensionPanel')"
         />
       </Transition>

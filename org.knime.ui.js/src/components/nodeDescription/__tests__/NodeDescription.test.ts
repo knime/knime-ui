@@ -1,7 +1,8 @@
 import { expect, describe, it, vi, afterEach } from "vitest";
 import * as Vue from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { NODE_FACTORIES, createNativeNodeDescription } from "@/test/factories";
 
 import { Description, NodeFeatureList } from "@knime/components";
 
@@ -11,16 +12,17 @@ import NodeDescription from "../NodeDescription.vue";
 vi.mock("@/environment");
 
 describe("NodeDescription", () => {
-  const getNodeDescriptionMock = vi.fn().mockReturnValue({
-    id: 1,
-    description: "This is a node.",
-    links: [
-      {
-        text: "link",
-        url: "www.link.com",
-      },
-    ],
-  });
+  const getNodeDescriptionMock = vi.fn().mockReturnValue(
+    createNativeNodeDescription({
+      description: "This is a node.",
+      links: [
+        {
+          text: "link",
+          url: "www.link.com",
+        },
+      ],
+    }),
+  );
 
   const getComponentDescriptionMock = vi.fn().mockReturnValue({
     id: 1,
@@ -39,35 +41,33 @@ describe("NodeDescription", () => {
 
   const doMount = async ({ props = {} } = {}) => {
     const defaultProps = {
-      selectedNode: {
-        id: 1,
+      params: {
+        id: NODE_FACTORIES.ExcelTableReaderNodeFactory,
         name: "Test",
         nodeFactory: {
           className: "some.class.name",
           settings: "",
         },
       },
-      isNodeDescriptionVisible: true,
+      isVisible: true,
     };
 
     const $store = mockVuexStore({
-      nodeRepository: {
+      nodeDescription: {
         actions: {
-          getNodeDescription: getNodeDescriptionMock,
+          getNativeNodeDescription: getNodeDescriptionMock,
           getComponentDescription: getComponentDescriptionMock,
         },
       },
     });
 
-    // @ts-ignore
     const wrapper = mount(NodeDescription, {
       props: { ...defaultProps, ...props },
       global: { plugins: [$store] },
     });
 
     // wait for the initial fetch of data
-    await Vue.nextTick();
-    await Vue.nextTick();
+    await flushPromises();
 
     return { wrapper, $store };
   };
@@ -115,9 +115,10 @@ describe("NodeDescription", () => {
   it("calls getNodeDescriptionMock when selected node changes", async () => {
     const { wrapper } = await doMount();
     expect(getNodeDescriptionMock).toHaveBeenCalled();
+
     wrapper.setProps({
-      selectedNode: {
-        id: 2,
+      params: {
+        id: NODE_FACTORIES.CSVWriter2NodeFactory,
         name: "Node",
         nodeFactory: {
           className: "some.other.thing",
@@ -125,20 +126,20 @@ describe("NodeDescription", () => {
         },
       },
     });
+
     await Vue.nextTick();
     expect(getNodeDescriptionMock).toHaveBeenCalledTimes(2);
   });
 
   it("should not load descriptions if description is not visible and selection changes", async () => {
     const { wrapper } = await doMount({
-      props: {
-        isNodeDescriptionVisible: false,
-      },
+      props: { isVisible: false },
     });
+
     expect(getNodeDescriptionMock).not.toHaveBeenCalled();
     wrapper.setProps({
-      selectedNode: {
-        id: 2,
+      params: {
+        id: NODE_FACTORIES.CSVTableReaderNodeFactory,
         name: "Node",
         nodeFactory: {
           className: "some.other.thing",
@@ -151,7 +152,7 @@ describe("NodeDescription", () => {
   });
 
   it("changes title and description when node is not visible", async () => {
-    const { wrapper } = await doMount({ props: { selectedNode: null } });
+    const { wrapper } = await doMount({ props: { params: null } });
     const title = wrapper.find("h2");
     expect(title.text()).toBe("");
     expect(wrapper.findComponent(Description).exists()).toBe(false);
@@ -163,8 +164,7 @@ describe("NodeDescription", () => {
   it("should fetch a component description", async () => {
     const { wrapper } = await doMount({
       props: {
-        isComponent: true,
-        selectedNode: { id: "componentId", name: "Component" },
+        params: { id: "componentId", name: "Component" },
       },
     });
 

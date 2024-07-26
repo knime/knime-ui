@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { useStore } from "@/composables/useStore";
 import { TABS } from "@/store/panel";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
-import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
+import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type {
   ComponentNode,
@@ -51,11 +51,8 @@ const selectedNode = computed(() => {
     <NodeDescription
       v-if="showNodeDescription"
       class="node-description"
-      :selected-node="selectedNode"
-      :is-component="isNodeComponent(singleSelectedNode)"
-      :is-node-description-visible="
-        isNodeDescriptionTabActive && isSidebarExpanded
-      "
+      :params="selectedNode"
+      :is-visible="isNodeDescriptionTabActive && isSidebarExpanded"
     />
     <WorkflowMetadata v-else key="workflow-metadata" />
   </div>
