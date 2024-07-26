@@ -107,8 +107,13 @@ defineExpose({ focusFirst, getVisibleNodeIds });
 <template>
   <ScrollViewContainer class="results" :initial-position="0">
     <div class="scroll-container-content">
-      <VirtualTree ref="tree" :source="rootCategories" :load-data="loadData">
-        <template #node="{ node }">
+      <VirtualTree
+        ref="tree"
+        :source="rootCategories"
+        :load-data="loadData"
+        indent-type="margin"
+      >
+        <template #node="{ node }: { node: BaseTreeNode }">
           <DraggableNodeTemplate
             v-if="node.origin.nodeTemplate"
             :node-template="node.origin.nodeTemplate"
@@ -120,7 +125,9 @@ defineExpose({ focusFirst, getVisibleNodeIds });
             display-mode="tree"
             @show-node-description="onShowNodeDescription(node)"
           />
-          <span v-else class="category">{{ node.name }}</span>
+          <span v-else class="category" @click="tree!.toggleExpand(node.key)">{{
+            node.name
+          }}</span>
         </template>
       </VirtualTree>
     </div>
@@ -134,6 +141,8 @@ defineExpose({ focusFirst, getVisibleNodeIds });
 }
 
 .category {
+  display: block;
+  width: 100%;
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -312,7 +321,7 @@ defineExpose({ focusFirst, getVisibleNodeIds });
   display: grid;
   grid-template-columns: 16px auto;
   gap: var(--space-4);
-  margin: var(--space-4) 0;
+  margin: 1px 0;
   font-size: var(--font-size-base);
   cursor: pointer;
   /*transition: all 0.2s ease-in-out;*/
