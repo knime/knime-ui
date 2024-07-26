@@ -1,135 +1,110 @@
 <script lang="ts" setup>
-import Tree from "@/components/common/Tree.vue";
-
-import {
-  type NodeKey,
+/**
+ * Thin wrapper around the tree library with added KNIME styles and UX.
+ */
+import { ref } from "vue";
+import VirtualTree, {
+  // TODO: do we want to re-export those types?
+  type LoadDataFunc,
   type TreeNodeOptions,
   type BaseTreeNode,
+  type TreeContext,
+  type NodeKey,
+  type VirtualConfig,
 } from "@ysx-libs/vue-virtual-tree";
 
-import { computed, onMounted, ref } from "vue";
-import { useStore } from "@/composables/useStore";
-import ScrollViewContainer from "./ScrollViewContainer.vue";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
-import type { NavigationKey } from "./NodeList.vue";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
 
-const emit = defineEmits<{
-  showNodeDescription: [
-    {
-      isDescriptionActive: boolean;
-      nodeTemplate: NodeTemplateWithExtendedPorts;
-    },
-  ];
-  navReachedTop: [{ key: NavigationKey }];
-}>();
+interface Props {
+  source?: TreeNodeOptions[];
+  loadData?: LoadDataFunc;
+  virtual?: VirtualConfig;
+}
 
-const store = useStore();
-
-const rootCategories = ref<TreeNodeOptions[]>();
-
-const mapCategory = (category: { id: string; name: string }) => ({
-  nodeKey: category.id,
-  name: category.name,
-  hasChildren: true,
+withDefaults(defineProps<Props>(), {
+  source: () => [],
+  // eslint-disable-next-line no-undefined
+  loadData: undefined,
+  // eslint-disable-next-line no-undefined
+  virtual: undefined,
 });
 
-onMounted(async () => {
-  rootCategories.value = (
-    await store.dispatch("nodeRepository/getRootCategories")
-  ).map(mapCategory);
-});
-
-const tree = ref<InstanceType<typeof Tree>>();
-
-const focusFirst = () => {
-  consola.warn("CategoryTree::focus Tree focus not yet implemented");
-};
-
-const loadedNodeIds = ref<Map<NodeKey, string[]>>(new Map<NodeKey, string[]>());
-
-const getExpandedNodeIds = () => {
-  const expandedKeys = tree.value!.getExpandedKeys() ?? [];
-  return expandedKeys
-    .map((key: NodeKey) => loadedNodeIds.value.get(key) ?? [])
-    .flat();
-};
-
-const loadData = async (
-  treeNode: BaseTreeNode,
-  callback: (children: TreeNodeOptions[]) => void,
-) => {
-  const { categories, nodes } = await store.dispatch(
-    "nodeRepository/getNodesOfCategory",
-    {
-      categoryId: treeNode.name, // TODO: change
-    },
-  );
-
-  const mappedNodes = nodes.map((node: NodeTemplateWithExtendedPorts) => {
-    return {
-      nodeKey: `${node.id}__${Date.now()}`, // make it unique TODO: remove me
-      name: node.name,
-      nodeTemplate: node,
-      hasChildren: false,
-    };
-  });
-
-  // remember nodeIds for visible check
-  const nodeIds = nodes.map((node: NodeTemplateWithExtendedPorts) => node.id);
-  loadedNodeIds.value.set(treeNode.key, nodeIds);
-
-  // simulate more loading time
-  // await new Promise((r) => setTimeout(r, 250));
-
-  callback([...categories.map(mapCategory), ...mappedNodes]);
-};
-
-const showDescriptionForNode = computed(
-  () => store.state.nodeRepository.showDescriptionForNode,
-);
-
-const onShowNodeDescription = (treeNode: BaseTreeNode) => {
-  const { nodeTemplate } = treeNode.origin;
-
-  emit("showNodeDescription", {
-    nodeTemplate,
-    isDescriptionActive: showDescriptionForNode.value?.id === nodeTemplate.id,
-  });
-};
+const tree = ref<TreeContext>();
 
 const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
   return tree.value!.getSelectedNode()?.key === treeNode.key;
 };
 
-defineExpose({ focusFirst, getExpandedNodeIds });
+defineExpose({
+  getExpandedKeys: () => tree.value?.getExpandedKeys(),
+  toggleExpand: (nodeKey: NodeKey, state?: boolean) =>
+    tree.value?.toggleExpand(nodeKey, state),
+  getSelectedNode: () => tree.value?.getSelectedNode(),
+});
 </script>
 
 <template>
-  <ScrollViewContainer class="results" :initial-position="0">
-    <div class="scroll-container-content">
-      <Tree ref="tree" :source="rootCategories" :load-data="loadData">
-        <template #leaf="{ treeNode }: { treeNode: BaseTreeNode }">
-          <DraggableNodeTemplate
-            :node-template="treeNode.origin.nodeTemplate"
-            :is-highlighted="false"
-            :is-selected="isTreeNodeSelected(treeNode)"
-            :is-description-active="
-              showDescriptionForNode?.id === treeNode.origin.nodeTemplate.id
-            "
-            display-mode="tree"
-            @show-node-description="onShowNodeDescription(treeNode)"
-          />
-        </template>
-      </Tree>
-    </div>
-  </ScrollViewContainer>
+  <VirtualTree
+    ref="tree"
+    :source="source"
+    :load-data="loadData"
+    :virtual="virtual"
+    indent-type="margin"
+  >
+    <template #node="{ node }: { node: BaseTreeNode }">
+      <slot v-if="node.hasChildren" name="expandable" :tree-node="node">
+        <span
+          :class="[
+            'tree-node',
+            'expandable',
+            { selected: isTreeNodeSelected(node) },
+          ]"
+          @click="tree!.toggleExpand(node.key)"
+          >{{ node.name }}</span
+        >
+      </slot>
+      <slot v-else name="leaf" :tree-node="node">
+        <span
+          :class="['tree-node', 'leaf', { selected: isTreeNodeSelected(node) }]"
+          @click="tree!.toggleExpand(node.key)"
+          >{{ node.name }}</span
+        >
+      </slot>
+    </template>
+    <template #icon="slotProps">
+      <slot name="icon" v-bind="slotProps">
+        <ReloadIcon v-if="slotProps.loading" class="icon" />
+        <ArrowNextIcon v-else class="icon" />
+      </slot>
+    </template>
+  </VirtualTree>
 </template>
 
 <style lang="postcss" scoped>
-.scroll-container-content {
-  padding: 0 20px 15px;
-  font-family: "Roboto Condensed", sans-serif;
+.tree-node {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+
+  &.selected {
+    color: var(--knime-white);
+  }
+}
+
+.expandable {
+  font-weight: 700;
+}
+
+:deep(.vir-tree-node:has(.tree-node.selected)) {
+  background-color: var(--knime-masala);
+
+  & .icon {
+    stroke: var(--knime-white);
+  }
 }
 </style>
 
