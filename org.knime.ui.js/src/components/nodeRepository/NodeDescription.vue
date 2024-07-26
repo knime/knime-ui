@@ -97,7 +97,6 @@ watch(
     <div class="node-header">
       <div class="header-content">
         <h2>{{ title }}</h2>
-        <!-- <slot name="header-action" /> -->
         <CloseButton
           v-if="showCloseButton"
           class="close-button"

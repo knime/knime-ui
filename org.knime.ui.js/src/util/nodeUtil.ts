@@ -14,7 +14,10 @@ export const isNativeNode = (node: KnimeNode): node is NativeNode =>
 export const isNodeMetaNode = (node: KnimeNode): node is MetaNode =>
   node.kind === Node.KindEnum.Metanode;
 
-export const isNodeComponent = (node: KnimeNode): node is ComponentNode =>
+// TODO: NXT-2023 - remove union with name property
+export const isNodeComponent = (
+  node: KnimeNode,
+): node is ComponentNode & { name: string } =>
   node.kind === Node.KindEnum.Component;
 
 /**

@@ -14,7 +14,10 @@ import {
 
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
-import type { NativeNodeDescription } from "@/api/gateway-api/generated-api";
+import type {
+  NativeNodeDescription,
+  NodeTemplate,
+} from "@/api/gateway-api/generated-api";
 
 /**
  * Store that manages node repository state.
@@ -129,12 +132,18 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     commit("setNodesPerCategories", { groupedNodes: withMappedPorts, append });
   },
 
-  async getNodeDescription({ rootState }, { selectedNode }) {
-    const { className, settings } = selectedNode.nodeFactory;
+  async getNodeDescription(
+    { rootState },
+    { selectedNode }: { selectedNode: NodeTemplate },
+  ) {
+    const { className, settings } = selectedNode.nodeFactory!;
     const { availablePortTypes } = rootState.application;
+
+    const factoryId = selectedNode.id;
+
     // Check if the node description is already in the cache
-    if (rootState.nodeRepository.nodeDescriptions.has(className)) {
-      return rootState.nodeRepository.nodeDescriptions.get(className);
+    if (rootState.nodeRepository.nodeDescriptions.has(factoryId)) {
+      return rootState.nodeRepository.nodeDescriptions.get(factoryId);
     }
 
     const node = await API.node.getNodeDescription({
@@ -145,7 +154,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
       toNativeNodeDescriptionWithExtendedPorts(availablePortTypes)(node);
 
     rootState.nodeRepository.nodeDescriptions.set(
-      className,
+      factoryId,
       nodeDescriptionWithExtendedPorts,
     );
     return nodeDescriptionWithExtendedPorts;

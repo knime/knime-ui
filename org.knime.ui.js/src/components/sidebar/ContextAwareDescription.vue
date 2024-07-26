@@ -5,6 +5,10 @@ import { TABS } from "@/store/panel";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
 import NodeDescription from "@/components/nodeRepository/NodeDescription.vue";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import type {
+  ComponentNode,
+  NativeNode,
+} from "@/api/gateway-api/generated-api";
 
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
@@ -16,26 +20,26 @@ const isNodeDescriptionTabActive = computed<boolean>(() =>
 
 const isSidebarExpanded = computed(() => store.state.panel.expanded);
 
-const singleSelectedNode = computed(
+const singleSelectedNode = computed<NativeNode | ComponentNode>(
   () => store.getters["selection/singleSelectedNode"],
 );
+
 const showNodeDescription = computed(
   () => singleSelectedNode.value && !isNodeMetaNode(singleSelectedNode.value),
 );
-const isComponentSelected = computed(() =>
-  isNodeComponent(singleSelectedNode.value),
-);
+
 const selectedNode = computed(() => {
-  if (isComponentSelected.value) {
+  if (isNodeComponent(singleSelectedNode.value)) {
     const { id, name } = singleSelectedNode.value;
 
     return { id, name };
   }
 
-  // transform this into a node repo like node object
-  const { id } = singleSelectedNode.value;
+  // transform this into a NodeTemplate-like object
+  const { id, templateId } = singleSelectedNode.value as NativeNode;
+
   return {
-    id,
+    id: templateId,
     name: store.getters["workflow/getNodeName"](id),
     nodeFactory: store.getters["workflow/getNodeFactory"](id),
   };
@@ -48,7 +52,7 @@ const selectedNode = computed(() => {
       v-if="showNodeDescription"
       class="node-description"
       :selected-node="selectedNode"
-      :is-component="isComponentSelected"
+      :is-component="isNodeComponent(singleSelectedNode)"
       :is-node-description-visible="
         isNodeDescriptionTabActive && isSidebarExpanded
       "
