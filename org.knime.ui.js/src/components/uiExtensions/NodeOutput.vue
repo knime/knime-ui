@@ -189,6 +189,7 @@ export default defineComponent({
     <PortTabs
       v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
       v-model="selectedTab"
+      class="tabs"
       :has-view-tab="singleSelectedNode.hasView"
       :node="singleSelectedNode"
       :disabled="!canSelectTabs"
@@ -241,10 +242,8 @@ export default defineComponent({
   height: 100%;
   padding: 10px 10px 0;
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  contain: strict;
 
   & :deep(.tab-bar) {
     padding-top: 0;
@@ -272,9 +271,14 @@ export default defineComponent({
     }
   }
 
+  & .tabs {
+    flex: 0 0 auto;
+  }
+
   & .node-output-content {
     position: relative;
-    height: 100%;
+    flex: 1;
+    overflow: auto;
   }
 }
 </style>
