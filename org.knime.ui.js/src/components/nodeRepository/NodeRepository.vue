@@ -115,11 +115,19 @@ const searchResults = ref<InstanceType<typeof SidebarSearchResults>>();
 const categoryResults = ref<InstanceType<typeof CategoryResults>>();
 
 const onSearchBarDownKey = () => {
+  // search (regardless of display mode)
   if (searchIsActive.value) {
     searchResults.value?.focusFirst();
-  } else {
-    categoryResults.value?.focusFirst();
+    return;
   }
+
+  // tree
+  if (displayMode.value === "tree") {
+    categoryTree.value?.focusFirst();
+    return;
+  }
+  // category
+  categoryResults.value?.focusFirst();
 };
 
 const handleNavReachedTop = (event: { key: NavigationKey }) => {

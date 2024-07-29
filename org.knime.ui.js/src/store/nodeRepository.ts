@@ -124,18 +124,22 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
       }),
     );
 
-    const subCategories = [
-      { id: `excel${Date.now()}`, name: "Excel" },
-      { id: `data${Date.now()}`, name: "Data" },
-      { id: `mining${Date.now()}`, name: "Mining" },
-      { id: `tree${Date.now()}`, name: "Tree" },
-      { id: `weka${Date.now()}`, name: "Weka" },
-    ];
+    const subCategories = (base: number) => {
+      let count = base;
+      return [
+        { id: `excel${performance.now()}${++count}`, name: "Excel" },
+        { id: `data${performance.now()}${++count}`, name: "Data" },
+        { id: `mining${performance.now()}${++count}`, name: "Mining" },
+        { id: `tree${performance.now()}${++count}`, name: "Tree" },
+        { id: `weka${performance.now()}${++count}`, name: "Weka" },
+      ];
+    };
 
-    return {
-      categories: [sample(subCategories), sample(subCategories)],
+    const result = {
+      categories: [sample(subCategories(1)), sample(subCategories(2))],
       nodes,
     };
+    return result;
   },
 
   async getAllNodes({ commit, dispatch, state, rootState }, { append }) {

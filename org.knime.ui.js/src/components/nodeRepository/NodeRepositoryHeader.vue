@@ -163,7 +163,6 @@ defineExpose({ focusSearchInput });
             : 'Search all nodes'
         "
         class="search-bar"
-        tabindex="-1"
         @keydown.down.prevent.stop="$emit('searchBarDownKey')"
         @clear="store.dispatch('nodeRepository/clearSearchParams')"
         @update:model-value="

@@ -2,16 +2,17 @@
 /**
  * Thin wrapper around the tree library with added KNIME styles and UX.
  */
-import { ref } from "vue";
-import VirtualTree, {
-  // TODO: do we want to re-export those types?
+import { ref, nextTick } from "vue";
+import VirtualTree from "@ysx-libs/vue-virtual-tree";
+
+import {
   type LoadDataFunc,
   type TreeNodeOptions,
   type BaseTreeNode,
-  type TreeContext,
   type NodeKey,
   type VirtualConfig,
-} from "@ysx-libs/vue-virtual-tree";
+  type KeydownEvent,
+} from "./types";
 
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
@@ -20,57 +21,131 @@ interface Props {
   source?: TreeNodeOptions[];
   loadData?: LoadDataFunc;
   virtual?: VirtualConfig;
+  selectable?: boolean;
+  idPrefix?: string;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   source: () => [],
   // eslint-disable-next-line no-undefined
   loadData: undefined,
   // eslint-disable-next-line no-undefined
   virtual: undefined,
+  selectable: true,
+  idPrefix: "tree",
 });
 
-const tree = ref<TreeContext>();
+const emit = defineEmits<{
+  keydown: [value: KeydownEvent];
+}>();
+
+const tree = ref<InstanceType<typeof VirtualTree>>();
+
+const focusKey = ref<NodeKey | null>();
 
 const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
-  return tree.value!.getSelectedNode()?.key === treeNode.key;
+  return (
+    props.selectable && tree.value!.getSelectedNode()?.key === treeNode.key
+  );
 };
+
+const onFocusChange = async ({ node }: { node: BaseTreeNode | null }) => {
+  focusKey.value = node?.key ?? null;
+  // scroll into view
+  await nextTick();
+  const element = tree.value?.$el.querySelector(".tree-node-wrapper.focus");
+  element?.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+const onTreeKeydown = ({ event, node }: KeydownEvent) => {
+  const { key } = event;
+
+  const toggleExpand = () => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (node.hasChildren) {
+      tree.value!.toggleExpand(node.key);
+    }
+  };
+
+  switch (key) {
+    case "Enter":
+      toggleExpand();
+      break;
+  }
+
+  emit("keydown", { event, node });
+};
+
+const nodeDomId = (key?: NodeKey | null) =>
+  // eslint-disable-next-line no-undefined
+  key ? `${props.idPrefix}_${key}` : undefined;
+
+const hasFocus = (treeNode: BaseTreeNode) => focusKey.value === treeNode.key;
 
 defineExpose({
   getExpandedKeys: () => tree.value?.getExpandedKeys(),
   toggleExpand: (nodeKey: NodeKey, state?: boolean) =>
     tree.value?.toggleExpand(nodeKey, state),
-  getSelectedNode: () => tree.value?.getSelectedNode(),
+  getSelectedTreeNode: () => tree.value?.getSelectedNode(),
 });
 </script>
 
 <template>
   <VirtualTree
     ref="tree"
+    class="virtual-tree"
     :source="source"
     :load-data="loadData"
     :virtual="virtual"
     indent-type="margin"
+    :aria-activedescendant="nodeDomId(focusKey)"
+    @keydown="onTreeKeydown"
+    @focus-change="onFocusChange"
   >
     <template #node="{ node }: { node: BaseTreeNode }">
-      <slot v-if="node.hasChildren" name="expandable" :tree-node="node">
-        <span
-          :class="[
-            'tree-node',
-            'expandable',
-            { selected: isTreeNodeSelected(node) },
-          ]"
-          @click="tree!.toggleExpand(node.key)"
-          >{{ node.name }}</span
+      <span
+        :id="nodeDomId(node.key)"
+        :class="['tree-node-wrapper', { focus: hasFocus(node) }]"
+      >
+        <slot
+          v-if="node.hasChildren"
+          name="expandable"
+          :tree-node="node"
+          :is-selected="isTreeNodeSelected(node)"
+          :has-focus="hasFocus(node)"
         >
-      </slot>
-      <slot v-else name="leaf" :tree-node="node">
-        <span
-          :class="['tree-node', 'leaf', { selected: isTreeNodeSelected(node) }]"
-          @click="tree!.toggleExpand(node.key)"
-          >{{ node.name }}</span
+          <span
+            :class="[
+              'tree-node',
+              'expandable',
+              {
+                selected: isTreeNodeSelected(node),
+                focus: hasFocus(node),
+              },
+            ]"
+            @click="tree!.toggleExpand(node.key)"
+            >{{ node.name }}</span
+          >
+        </slot>
+        <slot
+          v-else
+          name="leaf"
+          :tree-node="node"
+          :is-selected="isTreeNodeSelected(node)"
+          :has-focus="hasFocus(node)"
         >
-      </slot>
+          <span
+            :class="[
+              'tree-node',
+              'leaf',
+              { selected: isTreeNodeSelected(node), focus: hasFocus(node) },
+            ]"
+            @click="tree!.toggleExpand(node.key)"
+            >{{ node.name }}</span
+          >
+        </slot>
+      </span>
     </template>
     <template #icon="slotProps">
       <slot name="icon" v-bind="slotProps">
@@ -82,6 +157,13 @@ defineExpose({
 </template>
 
 <style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
+.tree-node-wrapper {
+  display: block;
+  width: 100%;
+}
+
 .tree-node {
   display: block;
   width: 100%;
@@ -89,17 +171,22 @@ defineExpose({
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
-
-  &.selected {
-    color: var(--knime-white);
-  }
 }
 
 .expandable {
   font-weight: 700;
 }
 
-:deep(.vir-tree-node:has(.tree-node.selected)) {
+.virtual-tree {
+  &:focus {
+    outline: none;
+  }
+}
+
+/* selected and focus styles */
+:deep(.vir-tree-node:has(.tree-node.selected)),
+.virtual-tree:focus-visible :deep(.vir-tree-node:has(.tree-node.focus)) {
+  color: var(--knime-white);
   background-color: var(--knime-masala);
 
   & .icon {
@@ -109,50 +196,56 @@ defineExpose({
 </style>
 
 <style lang="css">
-/** inlined virtual tree styles */
+/** inlined virtual tree styles with KNIME modifications */
 /* stylelint-disable */
-.vue-recycle-scroller {
+.vir-tree .vue-recycle-scroller {
   position: relative;
 }
-.vue-recycle-scroller.direction-vertical:not(.page-mode) {
+.vir-tree .vue-recycle-scroller.direction-vertical:not(.page-mode) {
   overflow-y: auto;
 }
-.vue-recycle-scroller.direction-horizontal:not(.page-mode) {
+.vir-tree .vue-recycle-scroller.direction-horizontal:not(.page-mode) {
   overflow-x: auto;
 }
-.vue-recycle-scroller.direction-horizontal {
+.vir-tree .vue-recycle-scroller.direction-horizontal {
   display: flex;
 }
-.vue-recycle-scroller__slot {
+.vir-tree .vue-recycle-scroller__slot {
   flex: auto 0 0;
 }
-.vue-recycle-scroller__item-wrapper {
+.vir-tree .vue-recycle-scroller__item-wrapper {
   flex: 1;
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
 }
-.vue-recycle-scroller.ready .vue-recycle-scroller__item-view {
+.vir-tree .vue-recycle-scroller.ready .vue-recycle-scroller__item-view {
   position: absolute;
   top: 0;
   left: 0;
   will-change: transform;
 }
-.vue-recycle-scroller.direction-vertical .vue-recycle-scroller__item-wrapper {
+.vir-tree
+  .vue-recycle-scroller.direction-vertical
+  .vue-recycle-scroller__item-wrapper {
   width: 100%;
 }
-.vue-recycle-scroller.direction-horizontal .vue-recycle-scroller__item-wrapper {
+.vir-tree
+  .vue-recycle-scroller.direction-horizontal
+  .vue-recycle-scroller__item-wrapper {
   height: 100%;
 }
-.vue-recycle-scroller.ready.direction-vertical
+.vir-tree
+  .vue-recycle-scroller.ready.direction-vertical
   .vue-recycle-scroller__item-view {
   width: 100%;
 }
-.vue-recycle-scroller.ready.direction-horizontal
+.vir-tree
+  .vue-recycle-scroller.ready.direction-horizontal
   .vue-recycle-scroller__item-view {
   height: 100%;
 }
-.resize-observer[data-v-b329ee4c] {
+.vir-tree .resize-observer {
   position: absolute;
   top: 0;
   left: 0;
@@ -166,7 +259,7 @@ defineExpose({
   overflow: hidden;
   opacity: 0;
 }
-.resize-observer[data-v-b329ee4c] object {
+.vir-tree .resize-observer object {
   display: block;
   position: absolute;
   top: 0;
@@ -291,9 +384,6 @@ defineExpose({
 }
 .vir-tree-node:has(.node-arrow:empty) {
   grid-template-columns: 1fr;
-}
-.vir-tree-node .node-arrow .iconfont {
-  display: block;
 }
 .vir-tree-node .node-arrow.expanded {
   transform: rotate(90deg);
