@@ -16,6 +16,24 @@ import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
 
+const mapCategoryToTreeNode = (category: {
+  fullId: string;
+  displayName: string;
+}): TreeNodeOptions => ({
+  nodeKey: category.fullId,
+  name: category.displayName,
+  hasChildren: true,
+});
+
+const mapNodeToTreeNode = (
+  node: NodeTemplateWithExtendedPorts,
+): TreeNodeOptions => ({
+  nodeKey: `node_${node.id}`,
+  name: node.name,
+  nodeTemplate: node,
+  hasChildren: false,
+});
+
 const emit = defineEmits<{
   showNodeDescription: [
     {
@@ -30,16 +48,13 @@ const store = useStore();
 
 const rootCategories = ref<TreeNodeOptions[]>();
 
-const mapCategory = (category: { id: string; name: string }) => ({
-  nodeKey: category.id,
-  name: category.name,
-  hasChildren: true,
-});
-
 onMounted(async () => {
-  rootCategories.value = (
-    await store.dispatch("nodeRepository/getRootCategories")
-  ).map(mapCategory);
+  const { categories } = await store.dispatch(
+    "nodeRepository/getNodeCategory",
+    { categoryPath: "/" },
+  );
+
+  rootCategories.value = categories.map(mapCategoryToTreeNode);
 });
 
 const tree = ref<InstanceType<typeof Tree>>();
@@ -57,34 +72,23 @@ const getExpandedNodeIds = () => {
     .flat();
 };
 
-const loadData = async (
+const loadTreeLevel = async (
   treeNode: BaseTreeNode,
   callback: (children: TreeNodeOptions[]) => void,
 ) => {
   const { categories, nodes } = await store.dispatch(
-    "nodeRepository/getNodesOfCategory",
-    {
-      categoryId: treeNode.name, // TODO: change
-    },
+    "nodeRepository/getNodeCategory",
+    { categoryPath: treeNode.key },
   );
 
-  const mappedNodes = nodes.map((node: NodeTemplateWithExtendedPorts) => {
-    return {
-      nodeKey: `${node.id}__${Date.now()}`, // make it unique TODO: remove me
-      name: node.name,
-      nodeTemplate: node,
-      hasChildren: false,
-    };
-  });
-
   // remember nodeIds for visible check
-  const nodeIds = nodes.map((node: NodeTemplateWithExtendedPorts) => node.id);
+  const nodeIds = nodes.map(({ id }: { id: string }) => id);
   loadedNodeIds.value.set(treeNode.key, nodeIds);
 
-  // simulate more loading time
-  // await new Promise((r) => setTimeout(r, 250));
-
-  callback([...categories.map(mapCategory), ...mappedNodes]);
+  callback([
+    ...categories.map(mapCategoryToTreeNode),
+    ...nodes.map(mapNodeToTreeNode),
+  ]);
 };
 
 const showDescriptionForNode = computed(
@@ -130,7 +134,7 @@ defineExpose({ focusFirst, getExpandedNodeIds });
       <Tree
         ref="tree"
         :source="rootCategories"
-        :load-data="loadData"
+        :load-data="loadTreeLevel"
         :selectable="false"
         @keydown="onTreeKeydown"
       >

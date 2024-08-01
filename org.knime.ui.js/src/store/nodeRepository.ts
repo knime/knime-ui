@@ -7,7 +7,6 @@ import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
-import { sample } from "lodash-es";
 
 /**
  * Store that manages node repository state.
@@ -76,68 +75,35 @@ export const mutations: MutationTree<NodeRepositoryState> = {
 export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.actions,
 
-  async getRootCategories() {
-    // just fake them for now
-    await new Promise((r) => setTimeout(r, 100));
-    return [
-      {
-        id: "node",
-        name: "Nodes",
-      },
-      {
-        id: "csv",
-        name: "CSV",
-      },
-      { id: "excel", name: "Excel" },
-      { id: "data", name: "Data" },
-      { id: "mining", name: "Mining" },
-      { id: "tree", name: "Tree" },
-      { id: "weka", name: "Weka" },
-      {
-        id: "decision",
-        name: "Weka",
-      },
-      { id: "filter", name: "Filter" },
-      {
-        id: "super",
-        name: "Super",
-      },
-    ];
-  },
-
-  async getNodesOfCategory({ rootState }, { categoryId }) {
-    // FAKE IMPL using search
-    const searchResponse = await API.noderepository.searchNodes({
-      q: categoryId,
-      tags: [],
-      allTagsMatch: true,
-      offset: 0,
-      limit: 250,
-      fullTemplateInfo: true,
+  async getNodeCategory(
+    { rootState, dispatch },
+    { categoryPath }: { categoryPath: string },
+  ) {
+    const nodeCategoryResult = await API.noderepository.getNodeCategory({
+      categoryPath,
     });
 
-    const nodes: NodeTemplateWithExtendedPorts[] = searchResponse.nodes.map(
-      (node) => ({
-        ...toNodeTemplateWithExtendedPorts(
-          rootState.application.availablePortTypes,
-        )(node),
-      }),
+    const { availablePortTypes } = rootState.application;
+    const nodesWithMappedPorts = nodeCategoryResult.nodes?.map(
+      toNodeTemplateWithExtendedPorts(availablePortTypes),
     );
 
-    const subCategories = (base: number) => {
-      let count = base;
-      return [
-        { id: `excel${performance.now()}${++count}`, name: "Excel" },
-        { id: `data${performance.now()}${++count}`, name: "Data" },
-        { id: `mining${performance.now()}${++count}`, name: "Mining" },
-        { id: `tree${performance.now()}${++count}`, name: "Tree" },
-        { id: `weka${performance.now()}${++count}`, name: "Weka" },
-      ];
-    };
+    // contribute to the node templates cache
+    dispatch(
+      "nodeTemplates/updateCacheFromSearchResults",
+      { nodeTemplates: nodesWithMappedPorts },
+      { root: true },
+    );
+
+    const fullPath = ({ levelId }: { levelId?: string }) =>
+      [categoryPath, levelId].filter(Boolean).join("/");
 
     const result = {
-      categories: [sample(subCategories(1)), sample(subCategories(2))],
-      nodes,
+      categories: nodeCategoryResult.children?.map((category) => ({
+        fullId: fullPath(category),
+        displayName: category.displayName,
+      })),
+      nodes: nodesWithMappedPorts,
     };
     return result;
   },
