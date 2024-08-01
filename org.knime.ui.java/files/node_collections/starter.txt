@@ -1,3 +1,4 @@
+org.knime.base.expressions.node.ExpressionNodeFactory
 org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory
 org.knime.base.node.io.filehandling.csv.writer.CSVWriter2NodeFactory
 org.knime.base.node.io.tablecreator.TableCreator2NodeFactory
