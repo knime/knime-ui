@@ -669,6 +669,29 @@ export interface Bounds {
 
 
 /**
+ * Metadata on a node category
+ * @export
+ * @interface CategoryMetadata
+ */
+export interface CategoryMetadata {
+
+    /**
+     * Human-readable display name of this category
+     * @type {string}
+     * @memberof CategoryMetadata
+     */
+    displayName?: string;
+    /**
+     * The full path of this category in the category tree.
+     * @type {Array<string>}
+     * @memberof CategoryMetadata
+     */
+    path?: Array<string>;
+
+}
+
+
+/**
  * Resets selected nodes and collapses selected nodes and annotations into a metanode or component.
  * @export
  * @interface CollapseCommand
@@ -2094,6 +2117,35 @@ export interface NodeAnnotation extends Annotation {
  */
 export namespace NodeAnnotation {
 }
+/**
+ * A category of nodes, including metadata, directly contained nodes, and child categories.
+ * @export
+ * @interface NodeCategory
+ */
+export interface NodeCategory {
+
+    /**
+     *
+     * @type {CategoryMetadata}
+     * @memberof NodeCategory
+     */
+    metadata?: CategoryMetadata;
+    /**
+     * List of nodes directly in this category (not including those in sub-categories).
+     * @type {Array<NodeTemplate>}
+     * @memberof NodeCategory
+     */
+    nodes?: Array<NodeTemplate>;
+    /**
+     * Child categories of this category.
+     * @type {Array<CategoryMetadata>}
+     * @memberof NodeCategory
+     */
+    children?: Array<CategoryMetadata>;
+
+}
+
+
 /**
  * Node description properties that are common to all kinds of nodes. This is static information in the sense that it does not depend on a concrete node instance in a workflow.
  * @export
@@ -4980,6 +5032,20 @@ const node = function(rpcClient: RPCClient) {
  */
 const noderepository = function(rpcClient: RPCClient) {
     return {
+        /**
+         * Provides metadata and contents of node categories.
+         * @param {Array<string>} categoryPath 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getNodeCategory(
+        	params: { categoryPath: Array<string>  }
+        ): Promise<NodeCategory> {
+           const defaultParams = { 
+           }
+
+           return rpcClient.call('NodeRepositoryService.getNodeCategory', { ...defaultParams, ...params });
+        },
         /**
          * Given a node, a port and a node-relation it recommends a certain number of compatible nodes the user might want to add next to its workflow. If queried with no node, no port and no node-relation, it recommends the most relevant source nodes, that naturally have no predecessor.
          * @param {string} projectId ID of the workflow-project.
