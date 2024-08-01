@@ -7,6 +7,7 @@ import { API } from "@api";
 import { createNativeNode } from "@/test/factories";
 import { Node } from "@/api/gateway-api/generated-api";
 import { getNextSelectedPort } from "@/util/portSelection";
+import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
 
 describe("workflowShortcuts", () => {
   const mockSelectedNode = { id: "root:0", allowedActions: {} };
@@ -708,13 +709,10 @@ describe("workflowShortcuts", () => {
     });
 
     it("checks copy condition", () => {
-      const nodeOutputEl = document.createElement("div");
-      nodeOutputEl.id = "node-output";
-      const nodeOutputContentEl = document.createElement("div");
-      nodeOutputContentEl.classList.add("node-output-content");
-      nodeOutputContentEl.setAttribute("tabIndex", "0");
-      nodeOutputEl.appendChild(nodeOutputContentEl);
-      document.body.appendChild(nodeOutputEl);
+      const bottomPanel = document.createElement("div");
+      bottomPanel.id = EMBEDDED_CONTENT_PANEL_ID__BOTTOM;
+      bottomPanel.setAttribute("tabIndex", "0");
+      document.body.appendChild(bottomPanel);
 
       // mock kanvas element and make it the activeElement
       const kanvasElement = document.createElement("div");
@@ -733,7 +731,9 @@ describe("workflowShortcuts", () => {
       $store.getters["selection/selectedNodes"] = [{ allowedActions: {} }];
       expect(workflowShortcuts.copy.condition({ $store })).toBe(true);
 
-      nodeOutputContentEl.focus();
+      bottomPanel.focus();
+
+      expect(document.activeElement).toBe(bottomPanel);
       expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
 
       kanvasElement.focus();

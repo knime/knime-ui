@@ -15,7 +15,7 @@ import ContextMenu from "@/components/application/ContextMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import RightPanel from "@/components/sidebar/RightPanel.vue";
+import RightPanel from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 
 import WorkflowPanel from "../WorkflowPanel.vue";
 

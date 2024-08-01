@@ -7,12 +7,12 @@ import {
 
 import { API } from "@api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
+import { gatewayRpcClient } from "@/api/gateway-api";
 
 import { useStore } from "@/composables/useStore";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
-import { gatewayRpcClient } from "@/api/gateway-api";
 
 /**
  * Dynamically loads a component that will render a Node's configuration dialog
@@ -51,7 +51,7 @@ const loadExtensionConfig = async () => {
     nodeId: selectedNode.value.id,
   });
 
-  consola.trace("NodeDialog :: extensionConfig", _extensionConfig);
+  consola.info("NodeDialog :: extensionConfig", _extensionConfig);
 
   if (_extensionConfig.deactivationRequired) {
     deactivateDataServicesFn = () => {
@@ -65,6 +65,11 @@ const loadExtensionConfig = async () => {
   }
 
   extensionConfig.value = _extensionConfig;
+
+  store.commit(
+    "nodeConfiguration/setActiveExtensionConfig",
+    extensionConfig.value,
+  );
 };
 
 const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
@@ -141,6 +146,7 @@ watch(
   async () => {
     try {
       isConfigReady.value = false;
+      store.commit("nodeConfiguration/setActiveExtensionConfig", null);
       store.dispatch("nodeConfiguration/resetDirtyState");
 
       emit("loadingStateChange", {
@@ -155,6 +161,11 @@ watch(
     } catch (error) {
       isConfigReady.value = false;
 
+      consola.error("NodeConfigLoader :: failed to initialize", {
+        error,
+        uniqueNodeConfigId: uniqueNodeConfigId.value,
+      });
+
       emit("loadingStateChange", {
         value: "error",
         message: error as string,
@@ -166,6 +177,7 @@ watch(
 );
 
 onUnmounted(() => {
+  store.commit("nodeConfiguration/setActiveExtensionConfig", null);
   deactivateDataServicesFn?.();
 });
 </script>

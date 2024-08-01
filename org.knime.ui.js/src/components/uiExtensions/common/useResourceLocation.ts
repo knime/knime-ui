@@ -16,6 +16,8 @@ export const useResourceLocation = (options: UseResourceLocationOptions) => {
   const store = useStore();
 
   const resourceLocationResolver = (path: string, baseUrl?: string) => {
+    consola.trace("resolving dynamic resource :: ", { path, baseUrl });
+
     if (baseUrl) {
       return `${baseUrl}${path}`;
     } else {

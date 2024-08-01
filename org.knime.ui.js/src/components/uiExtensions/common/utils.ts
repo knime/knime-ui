@@ -1,12 +1,20 @@
+export const EMBEDDED_CONTENT_PANEL_ID__RIGHT =
+  "embedded__content-panel-right" as const;
+
+export const EMBEDDED_CONTENT_PANEL_ID__BOTTOM =
+  "embedded__content-panel-bottom" as const;
+
 export const isUIExtensionFocused = () => {
-  // refers to the id used by NodeOutput.vue
-  const nodeOutputContent = document.querySelector(
-    "#node-output > .node-output-content",
+  const embeddedContentPanelBottom = document.querySelector(
+    `#${EMBEDDED_CONTENT_PANEL_ID__BOTTOM}`,
   );
-  const rightPanel = document.querySelector("#right-panel");
+
+  const embeddedContentPanelRight = document.querySelector(
+    `#${EMBEDDED_CONTENT_PANEL_ID__RIGHT}`,
+  );
 
   return (
-    nodeOutputContent?.contains(document.activeElement) ||
-    rightPanel?.contains(document.activeElement)
+    embeddedContentPanelBottom?.contains(document.activeElement) ||
+    embeddedContentPanelRight?.contains(document.activeElement)
   );
 };

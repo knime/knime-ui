@@ -16,6 +16,7 @@ import { isNativeNode, isNodeExecuting } from "@/util/nodeUtil";
 import { runInEnvironment } from "@/environment";
 
 import type { RootStoreState } from "../types";
+import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 
 export type UIExtensionPushEventDispatcher = Parameters<
   UIExtensionAPILayer["registerPushEventService"]
@@ -30,6 +31,7 @@ export type UIExtensionPushEventDispatcher = Parameters<
 
 export interface NodeConfigurationState {
   activeNodeId: string | null;
+  activeExtensionConfig: ExtensionConfig | null;
   dirtyState: APILayerDirtyState;
   latestPublishedData: unknown | null;
   pushEventDispatcher: UIExtensionPushEventDispatcher;
@@ -37,6 +39,7 @@ export interface NodeConfigurationState {
 
 export const state = (): NodeConfigurationState => ({
   activeNodeId: null,
+  activeExtensionConfig: null,
   dirtyState: {
     apply: ApplyState.CLEAN,
     view: ViewState.CLEAN,
@@ -112,6 +115,9 @@ export const mutations: MutationTree<NodeConfigurationState> = {
   },
   setLatestPublishedData(state, value) {
     state.latestPublishedData = value;
+  },
+  setActiveExtensionConfig(state, value) {
+    state.activeExtensionConfig = value;
   },
 };
 

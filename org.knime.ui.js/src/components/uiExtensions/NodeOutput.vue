@@ -17,6 +17,8 @@ import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
 
 import { buildMiddleware, validateSelection } from "./common/output-validator";
 import type { UIExtensionLoadingState, ValidationError } from "./common/types";
+import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "./common/utils";
+
 import LoadingIndicator from "./LoadingIndicator.vue";
 import ValidationInfo from "./ValidationInfo.vue";
 import type { NodeOutputTabIdentifier } from "@/store/selection";
@@ -39,6 +41,7 @@ interface ComponentData {
   currentNodeViewAlert: Alert | null;
 
   compatibility: typeof compatibility;
+  EMBEDDED_CONTENT_PANEL_ID__BOTTOM: typeof EMBEDDED_CONTENT_PANEL_ID__BOTTOM;
 }
 
 /**
@@ -60,6 +63,7 @@ export default defineComponent({
       loadingState: null,
       compatibility,
       currentNodeViewAlert: null,
+      EMBEDDED_CONTENT_PANEL_ID__BOTTOM,
     };
   },
   computed: {
@@ -185,7 +189,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div id="node-output" class="output-container">
+  <div class="output-container">
     <PortTabs
       v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
       v-model="selectedTab"
@@ -195,7 +199,7 @@ export default defineComponent({
       :disabled="!canSelectTabs"
     />
 
-    <div class="node-output-content">
+    <div :id="EMBEDDED_CONTENT_PANEL_ID__BOTTOM" class="node-output-content">
       <LoadingIndicator v-if="showLoadingIndicator" :message="loadingMessage" />
 
       <UIExtensionAlertsWrapper

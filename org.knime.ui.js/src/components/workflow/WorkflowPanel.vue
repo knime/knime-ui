@@ -7,7 +7,7 @@ import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
-import RightPanel from "@/components/sidebar/RightPanel.vue";
+import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 
 const $features = useFeatures();
@@ -101,7 +101,7 @@ const closeContextMenu = (event: unknown) => {
     -->
       <WorkflowCanvas :key="`${workflow!.projectId}-${activeWorkflowId}`" />
       <template #secondary>
-        <RightPanel id="right-panel" />
+        <NodeConfig />
       </template>
     </SplitPanel>
 
