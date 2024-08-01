@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import { FunctionButton, InputField } from "@knime/components";
 import LensIcon from "@knime/styles/img/icons/lens.svg";
+import { navigatorUtils } from "@knime/utils";
 /**
  * A function button that toggles a input field that can be used for search/filter queries.
  */
@@ -31,6 +32,24 @@ const toggleInput = async () => {
   await nextTick();
   inputField.value?.focus();
 };
+
+const onKeydown = (event: KeyboardEvent) => {
+  if (
+    event[navigatorUtils.getMetaOrCtrlKey()] &&
+    event.shiftKey &&
+    event.key.toLowerCase() === "f"
+  ) {
+    toggleInput();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("keydown", onKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", onKeydown);
+});
 </script>
 
 <template>

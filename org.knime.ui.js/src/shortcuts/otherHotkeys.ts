@@ -15,6 +15,11 @@ const otherHotkeys: Array<Partial<Shortcut>> = [
     group: "general",
   },
   {
+    hotkey: ["CtrlOrCmd", "Shift", "F"],
+    description: "Activate the filter input field",
+    group: "general",
+  },
+  {
     hotkey: ["CtrlOrCmd", "Shift", "C"],
     description: "Copy selected table cells and corresponding header",
     group: "general",
