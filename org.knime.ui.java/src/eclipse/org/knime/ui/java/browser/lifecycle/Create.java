@@ -170,14 +170,6 @@ final class Create {
         );
     }
 
-    private static URL stringToURL(final String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Not a valid URL");
-        }
-    }
-
     private static void assertNoOpenEclipseEditors() {
         IWorkbenchPage page = null;
         try {
