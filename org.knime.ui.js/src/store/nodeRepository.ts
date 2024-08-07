@@ -77,7 +77,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
 
   async getNodeCategory(
     { rootState, dispatch },
-    { categoryPath }: { categoryPath: string },
+    { categoryPath }: { categoryPath: string[] },
   ) {
     const nodeCategoryResult = await API.noderepository.getNodeCategory({
       categoryPath,
@@ -95,17 +95,10 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
       { root: true },
     );
 
-    const fullPath = ({ levelId }: { levelId?: string }) =>
-      [categoryPath, levelId].filter(Boolean).join("/");
-
-    const result = {
-      categories: nodeCategoryResult.children?.map((category) => ({
-        fullId: fullPath(category),
-        displayName: category.displayName,
-      })),
+    return {
+      ...nodeCategoryResult,
       nodes: nodesWithMappedPorts,
     };
-    return result;
   },
 
   async getAllNodes({ commit, dispatch, state, rootState }, { append }) {

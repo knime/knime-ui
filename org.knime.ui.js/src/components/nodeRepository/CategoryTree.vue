@@ -17,10 +17,10 @@ import type { NavigationKey } from "./NodeList.vue";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
 
 const mapCategoryToTreeNode = (category: {
-  fullId: string;
+  path: string[];
   displayName: string;
 }): TreeNodeOptions => ({
-  nodeKey: category.fullId,
+  nodeKey: category.path.join("/"),
   name: category.displayName,
   hasChildren: true,
 });
@@ -49,12 +49,11 @@ const store = useStore();
 const rootCategories = ref<TreeNodeOptions[]>();
 
 onMounted(async () => {
-  const { categories } = await store.dispatch(
-    "nodeRepository/getNodeCategory",
-    { categoryPath: "/" },
-  );
+  const { children } = await store.dispatch("nodeRepository/getNodeCategory", {
+    categoryPath: [],
+  });
 
-  rootCategories.value = categories.map(mapCategoryToTreeNode);
+  rootCategories.value = children.map(mapCategoryToTreeNode);
 });
 
 const tree = ref<InstanceType<typeof Tree>>();
@@ -76,9 +75,9 @@ const loadTreeLevel = async (
   treeNode: BaseTreeNode,
   callback: (children: TreeNodeOptions[]) => void,
 ) => {
-  const { categories, nodes } = await store.dispatch(
+  const { children: categories, nodes } = await store.dispatch(
     "nodeRepository/getNodeCategory",
-    { categoryPath: treeNode.key },
+    { categoryPath: treeNode.key.toString().split("/") },
   );
 
   // remember nodeIds for visible check
