@@ -50,8 +50,6 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.function.IntSupplier;
 
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.Workbench;
 import org.knime.ui.java.util.AppStatePersistor;
 
 /**
@@ -68,17 +66,16 @@ final class SaveState {
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state)
         throws StateTransitionAbortedException {
+        final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
+                AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
         final IntSupplier saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
         final var saveState = saveAndCloseAllWorkflows.getAsInt();
+        final var workflowsSaved = saveState == 1;
 
         if (saveState == 0) {
             // saving has been cancelled
             throw new StateTransitionAbortedException();
         }
-
-        final var workflowsSaved = saveState == 1;
-        final var serializedAppState =
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
 
         return new LifeCycleStateInternalAdapter(state) {
 
@@ -98,26 +95,6 @@ final class SaveState {
             }
 
         };
-    }
-
-    /**
-     * Tries to close all editors in the Classic perspective, asking the user to save them if applicable.
-     *
-     * @return {@code true} if all editors have been closed, {@code false} otherwise
-     */
-    private static boolean saveAndCloseClassicWorkbenchEditors() {
-        final var workbench = (Workbench)PlatformUI.getWorkbench();
-        final var window = workbench.getActiveWorkbenchWindow();
-
-        var allEditorsClosed = true;
-        if (window != null) {
-            for (var page : window.getPages()) {
-                if (!page.closeAllEditors(true)) {
-                    allEditorsClosed = false;
-                }
-            }
-        }
-        return allEditorsClosed;
     }
 
 }

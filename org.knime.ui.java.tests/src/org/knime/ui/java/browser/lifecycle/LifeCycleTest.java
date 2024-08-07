@@ -137,7 +137,7 @@ class LifeCycleTest {
         assertStateTransition(lc, StateTransition.WEB_APP_LOADED, StateTransition.SAVE_STATE);
 
         AppStatePersistorTest.openWorkflowProject();
-        lc.saveState(); // TODO: Are the tests still working?
+        lc.saveState();
         assertStateTransition(lc, StateTransition.SAVE_STATE, StateTransition.SUSPEND);
         assertThat(lc.getState().workflowsSaved()).isTrue();
 
@@ -163,7 +163,7 @@ class LifeCycleTest {
         lc.startup();
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.webAppLoaded());
-        assertFails(() -> lc.saveState()); // TODO: Are the tests still working?
+        assertFails(() -> lc.saveState());
         assertFails(() -> lc.suspend());
 
         CEFPlugin.setMiddlewareService(mock(IMiddlewareService.class));
