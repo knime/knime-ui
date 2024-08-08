@@ -194,11 +194,12 @@ export default defineComponent({
     ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
     ...mapActions("quickAddNodes", ["searchNodesNextPage"]),
     async fetchNodeRecommendations() {
-      const { nodeId, portIndex: portIdx } = this;
+      const { nodeId, portIndex: portIdx, direction } = this;
 
       await this.$store.dispatch("quickAddNodes/getNodeRecommendations", {
         nodeId,
         portIdx,
+        direction,
       });
     },
     async addNode(nodeTemplate: NodeTemplateWithExtendedPorts) {

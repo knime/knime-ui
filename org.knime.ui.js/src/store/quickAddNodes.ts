@@ -6,6 +6,7 @@ import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
+import { type Direction } from "@/util/compatibleConnections";
 
 /**
  * Store that manages quick add nodes menu states.
@@ -35,7 +36,17 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
 
   async getNodeRecommendations(
     { commit, rootState },
-    { nodeId, portIdx, nodesLimit = recommendationLimit },
+    {
+      nodeId,
+      portIdx,
+      nodesLimit = recommendationLimit,
+      direction,
+    }: {
+      nodeId?: string;
+      portIdx?: number;
+      nodesLimit?: number;
+      direction: Direction;
+    },
   ) {
     if (!rootState.workflow.activeWorkflow) {
       return;
@@ -47,6 +58,11 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
     } = rootState.workflow.activeWorkflow;
     const { availablePortTypes } = rootState.application;
 
+    const directionMap: Record<Direction, "successors" | "predecessors"> = {
+      in: "predecessors",
+      out: "successors",
+    };
+
     // call api
     const recommendedNodesResult =
       await API.noderepository.getNodeRecommendations({
@@ -55,6 +71,7 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
         nodeId,
         portIdx,
         nodesLimit,
+        direction: directionMap[direction],
         fullTemplateInfo: true,
       });
 
