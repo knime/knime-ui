@@ -3,6 +3,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@api";
 import type {
   Connection,
+  Direction,
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
@@ -94,8 +95,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       nodeFactory,
       spaceItemReference,
 
-      sourceNodeId,
-      sourcePortIdx,
+      quickAddNodeId,
+      quickAddPortIdx,
+      quickAddDirection,
       // possible values are: 'new-only' | 'add' | 'none'
       // 'new-only' clears the active selection and selects only the new node
       // 'add' adds the new node to the active selection
@@ -106,8 +108,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       position: XY;
       nodeFactory?: { className: string };
       spaceItemReference: SpaceItemReference;
-      sourceNodeId?: string;
-      sourcePortIdx?: number;
+      quickAddNodeId?: string;
+      quickAddPortIdx?: number;
+      quickAddDirection?: Direction.DirectionEnum;
       /**
        * 'new-only' clears the active selection and selects only the new node
        * 'add' adds the new node to the active selection
@@ -143,8 +146,11 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
             position: gridAdjustedPosition,
             nodeFactory,
             spaceItemReference,
-            sourceNodeId,
-            sourcePortIdx,
+            quickAddNodeId,
+            quickAddPortIdx,
+            quickAddDirection: quickAddDirection && {
+              direction: quickAddDirection,
+            },
           });
 
     const response = await apiCall();

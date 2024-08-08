@@ -177,3 +177,5 @@ export type ExampleProject = {
   svg: string;
   origin: SpaceItemReference;
 };
+
+export type WorkflowDirection = "PREDECESSORS" | "SUCCESSORS";

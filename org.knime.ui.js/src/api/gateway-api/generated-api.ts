@@ -95,13 +95,19 @@ export interface AddNodeCommand extends WorkflowCommand {
      * @type {string}
      * @memberof AddNodeCommand
      */
-    sourceNodeId?: string;
+    quickAddNodeId?: string;
     /**
      * Optional parameter identifying the port index of the existing node to connect to. This will be determined automatically if only a source node id is provided.
      * @type {number}
      * @memberof AddNodeCommand
      */
-    sourcePortIdx?: number;
+    quickAddPortIdx?: number;
+    /**
+     * Optional parameter that describe if the new node is a Successor or a predecessor of the given node
+     * @type {string}
+     * @memberof AddNodeCommand
+     */
+    quickAddDirection?: string;
 
 }
 
@@ -1179,37 +1185,6 @@ export interface DeleteCommand extends WorkflowCommand {
  * @namespace DeleteCommand
  */
 export namespace DeleteCommand {
-}
-/**
- * Direction of an Node operation, either toward it successors or it&#39;s predecessors nodes
- * @export
- * @interface Direction
- */
-export interface Direction {
-
-    /**
-     *
-     * @type {string}
-     * @memberof Direction
-     */
-    direction?: Direction.DirectionEnum;
-
-}
-
-
-/**
- * @export
- * @namespace Direction
- */
-export namespace Direction {
-    /**
-     * @export
-     * @enum {string}
-     */
-    export enum DirectionEnum {
-        PREDECESSORS = 'PREDECESSORS',
-        SUCCESSORS = 'SUCCESSORS'
-    }
 }
 /**
  * The description of a dynamic port group. A dynamic port group is a collection of dynamic ports, grouped by a common identifier, e.g. \&quot;Input\&quot; or \&quot;Output\&quot;.
@@ -5042,13 +5017,13 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {string} [nodeId] The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} [portIdx] The port index to be used.
          * @param {number} [nodesLimit] The maximum number of node recommendations to return.
-         * @param {Direction} [direction] 
+         * @param {'PREDECESSORS' | 'SUCCESSORS'} [direction] The direction to look for nodes in a workflow, either for predecessors or succesors
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getNodeRecommendations(
-        	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  direction?: Direction,  fullTemplateInfo?: boolean  }
+        	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  direction?: 'PREDECESSORS' | 'SUCCESSORS',  fullTemplateInfo?: boolean  }
         ): Promise<Array<NodeTemplate>> {
            const defaultParams = { 
                 nodeId: null,
@@ -5105,12 +5080,12 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {number} [limit] The maximum number of nodes/components in the search result (mainly for pagination).
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
          * @param {string} [portTypeId] The port type ID of the port type all returned nodes (and components) have to be compatible with.
-         * @param {Direction} [searchDirection] The direction to look for compatible nodes, either for predecessors or succesors
+         * @param {'PREDECESSORS' | 'SUCCESSORS'} [direction] The direction to look for nodes in a workflow, either for predecessors or succesors
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         searchNodes(
-        	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  offset?: number,  limit?: number,  fullTemplateInfo?: boolean,  portTypeId?: string,  searchDirection?: Direction  }
+        	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  offset?: number,  limit?: number,  fullTemplateInfo?: boolean,  portTypeId?: string,  direction?: 'PREDECESSORS' | 'SUCCESSORS'  }
         ): Promise<NodeSearchResult> {
            const defaultParams = { 
                 q: null,
@@ -5120,8 +5095,9 @@ const noderepository = function(rpcClient: RPCClient) {
                 limit: null,
                 fullTemplateInfo: null,
                 portTypeId: null,
-                searchDirection: null,
+                direction: null,
            }
+
            return rpcClient.call('NodeRepositoryService.searchNodes', { ...defaultParams, ...params });
         },
     }
