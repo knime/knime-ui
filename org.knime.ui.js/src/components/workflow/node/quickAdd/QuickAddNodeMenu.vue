@@ -2,7 +2,11 @@
 import { defineComponent, type PropType } from "vue";
 import { mapActions, mapGetters, mapState } from "vuex";
 
-import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
+import {
+  type NodePort,
+  type NodePortTemplate,
+  type XY,
+} from "@/api/gateway-api/generated-api";
 import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -19,36 +23,41 @@ import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoad
 import type { SettingsState } from "@/store/settings";
 import type {
   AvailablePortTypes,
+  ExtendedPortType,
   NodeTemplateWithExtendedPorts,
   WorkflowDirection,
 } from "@/api/custom-types";
 
 const calculatePortOffset = (params: {
-  targetPorts: any[];
-  sourcePort: NodePort;
+  selectedPort: NodePort;
+  templatePorts: (NodePortTemplate & ExtendedPortType)[];
   availablePortTypes: AvailablePortTypes;
+  direction: WorkflowDirection;
 }) => {
-  const { targetPorts, sourcePort, availablePortTypes } = params;
+  const { selectedPort, templatePorts, availablePortTypes, direction } = params;
 
-  const targetPortIndex = targetPorts.findIndex((toPort) =>
+  const portIndex = templatePorts.findIndex((templatePort) =>
     checkPortCompatibility({
-      fromPort: sourcePort,
-      toPort,
+      fromPort: direction === "SUCCESSORS" ? selectedPort : templatePort,
+      toPort: direction === "SUCCESSORS" ? templatePort : selectedPort,
       availablePortTypes,
     }),
   );
 
-  const portCount = targetPorts.length + 1; // +1 for the mickey mouse port
-  const positions = portPositions({ portCount });
+  const portCount = templatePorts.length + 1; // +1 for the mickey mouse port
+  const positions = portPositions({
+    isOutports: direction === "PREDECESSORS",
+    portCount,
+  });
 
-  if (targetPortIndex === -1 && sourcePort.index === 0) {
+  if (portIndex === -1 && selectedPort.index === 0) {
     // will be a mickey mouse to mickey mouse flow port connection
     // NOTE: the index 0 is always the red mickey mouse port for nodes that
     // are on the workflow, NOT for them in the repo! They lack those ports completely.
     // TODO: fix the inconsistency with NXT-1489
     return positions[0];
   } else {
-    return positions[targetPortIndex + 1];
+    return positions[portIndex + 1];
   }
 };
 
@@ -206,14 +215,14 @@ export default defineComponent({
         return;
       }
 
-      const { nodeFactory, inPorts } = nodeTemplate;
+      const { nodeFactory, inPorts, outPorts } = nodeTemplate;
 
       const [offsetX, offsetY] = this.port
         ? calculatePortOffset({
-            targetPorts:
-              this.direction === "SUCCESSORS" ? inPorts : [this.port],
-            sourcePort: this.port,
+            selectedPort: this.port,
+            templatePorts: this.direction === "SUCCESSORS" ? inPorts : outPorts,
             availablePortTypes: this.availablePortTypes,
+            direction: this.direction,
           })
         : [0, 0];
 
