@@ -1,10 +1,12 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
-import type { Direction } from "@/api/gateway-api/generated-api";
 
 import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type {
+  NodeTemplateWithExtendedPorts,
+  WorkflowDirection,
+} from "@/api/custom-types";
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
 
@@ -45,7 +47,7 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
       nodeId?: string;
       portIdx?: number;
       nodesLimit?: number;
-      direction: Direction.DirectionEnum;
+      direction: WorkflowDirection;
     },
   ) {
     if (!rootState.workflow.activeWorkflow) {
@@ -66,7 +68,7 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
         nodeId,
         portIdx,
         nodesLimit,
-        direction: { direction },
+        direction,
         fullTemplateInfo: true,
       });
 

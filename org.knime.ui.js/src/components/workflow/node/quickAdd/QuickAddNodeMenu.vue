@@ -2,16 +2,13 @@
 import { defineComponent, type PropType } from "vue";
 import { mapActions, mapGetters, mapState } from "vuex";
 
-import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import { SearchInput } from "@knime/components";
 
-import {
-  checkPortCompatibility,
-  type Direction,
-} from "@/util/compatibleConnections";
+import { checkPortCompatibility } from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";
 
 import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
@@ -23,6 +20,7 @@ import type { SettingsState } from "@/store/settings";
 import type {
   AvailablePortTypes,
   NodeTemplateWithExtendedPorts,
+  WorkflowDirection,
 } from "@/api/custom-types";
 
 const calculatePortOffset = (params: {
@@ -86,8 +84,8 @@ export default defineComponent({
       default: null,
     },
     direction: {
-      type: String as PropType<Direction>,
-      required: true,
+      type: String as PropType<WorkflowDirection>,
+      default: null,
     },
   },
   emits: ["menuClose"],
@@ -129,8 +127,8 @@ export default defineComponent({
         : null;
       const flowVariableConnection = portType?.kind === "flowVariable";
 
-      const node = this.direction === "in" ? "destNode" : "sourceNode";
-      const port = this.direction === "in" ? "destPort" : "sourcePort";
+      const node = this.direction === "SUCCESSORS" ? "sourceNode" : "destNode";
+      const port = this.direction === "SUCCESSORS" ? "sourcePort" : "destPort";
 
       return {
         id: `quick-add-${this.nodeId}-${this.portIndex}`,
@@ -183,6 +181,7 @@ export default defineComponent({
   mounted() {
     if (this.port) {
       this.$store.commit("quickAddNodes/setPortTypeId", this.port.typeId);
+      this.$store.commit("quickAddNodes/setSearchDirection", this.direction);
     }
 
     this.$store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
@@ -211,7 +210,8 @@ export default defineComponent({
 
       const [offsetX, offsetY] = this.port
         ? calculatePortOffset({
-            targetPorts: inPorts,
+            targetPorts:
+              this.direction === "SUCCESSORS" ? inPorts : [this.port],
             sourcePort: this.port,
             availablePortTypes: this.availablePortTypes,
           })
@@ -227,8 +227,9 @@ export default defineComponent({
           y: y - offsetY,
         },
         nodeFactory,
-        sourceNodeId: this.nodeId,
-        sourcePortIdx: this.portIndex,
+        quickAddNodeId: this.nodeId,
+        quickAddPortIdx: this.portIndex,
+        quickAddDirection: this.direction,
       });
 
       this.$emit("menuClose");
@@ -268,7 +269,7 @@ export default defineComponent({
     <NodePortActiveConnector
       :port="port"
       :targeted="false"
-      :direction="direction"
+      :direction="direction === 'SUCCESSORS' ? 'out' : 'in'"
       :drag-connector="fakePortConnector"
       :did-drag-to-compatible-target="false"
       :disable-quick-node-add="false"

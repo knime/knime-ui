@@ -2,12 +2,14 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { debounce } from "lodash-es";
 
 import { API } from "@api";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type {
+  NodeTemplateWithExtendedPorts,
+  WorkflowDirection,
+} from "@/api/custom-types";
 import { createAbortablePromise } from "@/api/utils";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
 import type { RootStoreState } from "../types";
-import { Direction } from "@/api/gateway-api/generated-api";
 
 /**
  * This store is not instantiated by Vuex but used by other stores.
@@ -20,7 +22,7 @@ export interface CommonNodeSearchState {
   query: string;
   selectedTags: string[];
   portTypeId: string | null;
-  searchDirection: Direction.DirectionEnum | null;
+  searchDirection: WorkflowDirection | null;
   searchScrollPosition: number;
 
   nodes: NodeTemplateWithExtendedPorts[] | null;
@@ -154,11 +156,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           // @ts-expect-error - due to a limitation of the API type generation
           portTypeId: state.portTypeId,
           // @ts-expect-error - due to a limitation of the API type generation
-          searchDirection:
-            state.searchDirection &&
-            ({
-              direction: state.searchDirection,
-            } as Direction),
+          direction: state.searchDirection,
         }),
       );
 
