@@ -1,12 +1,12 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
+import type { Direction } from "@/api/gateway-api/generated-api";
 
 import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
-import { type Direction } from "@/util/compatibleConnections";
 
 /**
  * Store that manages quick add nodes menu states.
@@ -45,7 +45,7 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
       nodeId?: string;
       portIdx?: number;
       nodesLimit?: number;
-      direction: Direction;
+      direction: Direction.DirectionEnum;
     },
   ) {
     if (!rootState.workflow.activeWorkflow) {
@@ -58,11 +58,6 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
     } = rootState.workflow.activeWorkflow;
     const { availablePortTypes } = rootState.application;
 
-    const directionMap: Record<Direction, "successors" | "predecessors"> = {
-      in: "predecessors",
-      out: "successors",
-    };
-
     // call api
     const recommendedNodesResult =
       await API.noderepository.getNodeRecommendations({
@@ -71,7 +66,7 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
         nodeId,
         portIdx,
         nodesLimit,
-        direction: directionMap[direction],
+        direction: { direction },
         fullTemplateInfo: true,
       });
 

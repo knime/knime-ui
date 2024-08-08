@@ -2,7 +2,11 @@
 import { inject, computed } from "vue";
 import { useStore } from "vuex";
 
-import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import {
+  Direction,
+  type NodePort,
+  type XY,
+} from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
 import { useTooltip, type TooltipDefinition } from "@/composables/useTooltip";
 import * as $shapes from "@/style/shapes";
@@ -116,7 +120,10 @@ const {
       props: {
         position: { x, y },
         port: props.port,
-        direction: props.direction,
+        direction:
+          props.direction === "out"
+            ? Direction.DirectionEnum.SUCCESSORS
+            : Direction.DirectionEnum.PREDECESSORS,
         nodeId: props.nodeId,
       },
     });

@@ -7,6 +7,7 @@ import { createAbortablePromise } from "@/api/utils";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
 import type { RootStoreState } from "../types";
+import { Direction } from "@/api/gateway-api/generated-api";
 
 /**
  * This store is not instantiated by Vuex but used by other stores.
@@ -19,6 +20,7 @@ export interface CommonNodeSearchState {
   query: string;
   selectedTags: string[];
   portTypeId: string | null;
+  searchDirection: Direction.DirectionEnum | null;
   searchScrollPosition: number;
 
   nodes: NodeTemplateWithExtendedPorts[] | null;
@@ -37,6 +39,7 @@ export const state = (): CommonNodeSearchState => ({
   selectedTags: [],
   /* filter for compatible port type ids */
   portTypeId: null,
+  searchDirection: null,
   /* ui scroll state */
   searchScrollPosition: 0,
 
@@ -63,6 +66,10 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
 
   setPortTypeId(state, value) {
     state.portTypeId = value;
+  },
+
+  setSearchDirection(state, value) {
+    state.searchDirection = value;
   },
 
   setSearchScrollPosition(state, value) {
@@ -146,6 +153,12 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           fullTemplateInfo: true,
           // @ts-expect-error - due to a limitation of the API type generation
           portTypeId: state.portTypeId,
+          // @ts-expect-error - due to a limitation of the API type generation
+          searchDirection:
+            state.searchDirection &&
+            ({
+              direction: state.searchDirection,
+            } as Direction),
         }),
       );
 
@@ -279,6 +292,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     commit("setSelectedTags", []);
     commit("setQuery", "");
     commit("setPortTypeId", null);
+    commit("setSearchDirection", null);
     await dispatch("clearSearchResults");
   },
 };
