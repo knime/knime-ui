@@ -174,6 +174,7 @@ describe("WorkflowPanel", () => {
           position: { x: 0, y: 0 },
           port: { index: 2 },
           nodeId: "node:0",
+          nodeRelation: "SUCCESSORS",
         },
         events: { menuClose: closeCallback },
       };
@@ -211,6 +212,7 @@ describe("WorkflowPanel", () => {
           x: 0,
           y: 0,
         },
+        nodeRelation: "SUCCESSORS",
       });
     });
 

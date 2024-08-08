@@ -8,6 +8,7 @@ describe("QuickAddNodeGhost.vue", () => {
   const doMount = (
     props = {
       position: [5, 8],
+      nodeRelation: "SUCCESSORS",
     },
   ) =>
     shallowMount(QuickAddNodeGhost, {
@@ -35,7 +36,7 @@ describe("QuickAddNodeGhost.vue", () => {
       const posGroup = gs.at(0);
       const centerGroup = gs.at(1);
       expect(posGroup.attributes("transform")).toBe("translate(5,8)");
-      expect(centerGroup.attributes("transform")).toBe("translate(5,-10)");
+      expect(centerGroup.attributes("transform")).toBe("translate(4.5,-10)");
     });
 
     it("uses the size shape", () => {

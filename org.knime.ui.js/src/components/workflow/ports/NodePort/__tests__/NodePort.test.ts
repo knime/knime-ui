@@ -1208,6 +1208,7 @@ describe("NodePort", () => {
                   x: 0,
                   y: 0,
                 },
+                nodeRelation: "SUCCESSORS",
               },
             }),
           );
@@ -1253,37 +1254,6 @@ describe("NodePort", () => {
 
           // see if close went good
           expect($store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
-        });
-      });
-
-      // eslint-disable-next-line vitest/max-nested-describe
-      describe("dragging in port", () => {
-        it("does not show quick add node ghost", async () => {
-          const { wrapper } = doMount({ props: { direction: "in" } });
-          await startDragging({ wrapper });
-
-          expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
-        });
-
-        it("does not show quick add node menu", async () => {
-          const { wrapper } = doMount({ props: { direction: "in" } });
-          await startDragging({ wrapper });
-          await dragAboveTarget({ wrapper });
-
-          // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
-          const dispatchEventSpy = vi.spyOn(wrapper.element, "dispatchEvent");
-
-          // connector and QuickAddNodeGhost should be visible
-          expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
-          expect(wrapper.findComponent(Connector).exists()).toBe(true);
-
-          await wrapper.trigger("lostpointercapture");
-
-          expect(wrapper.findComponent(Connector).exists()).toBe(false);
-          expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
-
-          // one event is triggered by the wrapper.trigger which translates to wrapper.element.dispatchEvent
-          expect(dispatchEventSpy.mock.calls.length).toBe(1);
         });
       });
     });

@@ -94,6 +94,7 @@ describe("QuickAddNodeMenu.vue", () => {
         typeId: "org.knime.core.node.BufferedDataTable",
         connectedVia: [],
       }),
+      nodeRelation: "SUCCESSORS",
     };
 
     mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
@@ -266,6 +267,7 @@ describe("QuickAddNodeMenu.vue", () => {
         },
         sourceNodeId: "node-id",
         sourcePortIdx: 1,
+        nodeRelation: "SUCCESSORS",
       });
     });
 
@@ -299,6 +301,7 @@ describe("QuickAddNodeMenu.vue", () => {
       const props = {
         nodeId: null,
         port: null,
+        nodeRelation: null,
       };
       const { wrapper, addNodeMock, $store } = doMount({ props });
 
@@ -317,6 +320,7 @@ describe("QuickAddNodeMenu.vue", () => {
           },
           sourceNodeId: null,
           sourcePortIdx: null,
+          nodeRelation: null,
         }),
       );
     });
@@ -347,6 +351,7 @@ describe("QuickAddNodeMenu.vue", () => {
         },
         sourceNodeId: "node-id",
         sourcePortIdx: 1,
+        nodeRelation: "SUCCESSORS",
       });
     });
 
@@ -433,6 +438,7 @@ describe("QuickAddNodeMenu.vue", () => {
           },
           sourceNodeId: "node-id",
           sourcePortIdx: 1,
+          nodeRelation: "SUCCESSORS",
         });
       });
 
@@ -460,6 +466,7 @@ describe("QuickAddNodeMenu.vue", () => {
               position: expect.anything(),
               sourceNodeId: "node-id",
               sourcePortIdx: 1,
+              nodeRelation: "SUCCESSORS",
             }),
           );
         },

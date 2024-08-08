@@ -137,6 +137,12 @@ describe("Node search partial store", () => {
       expect(store.state.nodeSearch.portTypeId).toBe("org.some.port.typeId");
     });
 
+    it("sets nodeRelation", async () => {
+      const { store } = await createStore();
+      store.commit("nodeSearch/setSearchNodeRelation", "SUCCESSORS");
+      expect(store.state.nodeSearch.nodeRelation).toBe("SUCCESSORS");
+    });
+
     it("sets totalNumNodesFound", async () => {
       const { store } = await createStore();
       store.commit("nodeSearch/setTotalNumNodesFound", 2);
@@ -228,6 +234,7 @@ describe("Node search partial store", () => {
             q: "lookup",
             tags: [],
             portTypeId: null,
+            nodeRelation: null,
           });
           expect(store.state.nodeSearch.totalNumNodesFound).toBe(
             searchNodesResponse.totalNumNodesFound,
@@ -257,6 +264,7 @@ describe("Node search partial store", () => {
             q: "lookup",
             tags: [],
             portTypeId: null,
+            nodeRelation: null,
           });
           expect(store.state.nodeSearch.totalNumNodesFound).toBe(
             searchAllNodesResponse.totalNumNodesFound,
@@ -285,6 +293,7 @@ describe("Node search partial store", () => {
             q: "lookup",
             tags: [],
             portTypeId: null,
+            nodeRelation: null,
           });
           expect(store.state.nodeSearch.totalNumNodesFound).toBe(
             searchNodesResponse.totalNumNodesFound,
