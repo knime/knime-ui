@@ -58,9 +58,6 @@ export default defineComponent({
     :display-mode="displayMode"
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
-    :show-download-button="
-      $store.state.application.permissions.showFloatingDownloadButton
-    "
     :is-loading-search-results="isLoadingSearchResults"
     :is-quick-add-node-menu="true"
     @update:selected-node="$emit('update:selectedNode', $event)"

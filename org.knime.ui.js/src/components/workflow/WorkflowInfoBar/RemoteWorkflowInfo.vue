@@ -9,7 +9,8 @@ const store = useStore();
 const isUnknownProject = computed<(projectId: string) => boolean>(
   () => store.getters["application/isUnknownProject"],
 );
-const permissions = computed(() => store.state.application.permissions);
+
+const uiControls = computed(() => store.state.uiControls);
 const openProjects = computed(() => store.state.application.openProjects);
 
 const activeProjectProvider = computed<SpaceProviderNS.SpaceProvider | null>(
@@ -29,7 +30,7 @@ const shouldShow = computed(() => {
     (project) => project.projectId === activeProjectId.value,
   );
 
-  if (!permissions.value.showRemoteWorkflowInfo || !foundProject) {
+  if (!uiControls.value.shouldDisplayRemoteWorkflowInfoBar || !foundProject) {
     return false;
   }
 

@@ -10,7 +10,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { compatibility } from "@/environment";
+import { useStore } from "@/composables/useStore";
 
 type Props = {
   uniquePortKey: string;
@@ -23,6 +23,10 @@ type Props = {
 const props = defineProps<Props>();
 
 const emit = defineEmits(["openViewInNewWindow"]);
+
+const store = useStore();
+
+const uiControls = computed(() => store.state.uiControls);
 
 const activeView = ref<number | null>(null);
 
@@ -63,14 +67,14 @@ const openInNewWindow = (item: { id: string } | null = null) => {
       v-if="tabToggles.length > 1"
       :class="[
         'value-switch',
-        { 'has-detach-button': compatibility.canDetachPortViews() },
+        { 'has-detach-button': uiControls.canDetachPortViews },
       ]"
       compact
       :model-value="activeView === null ? undefined : activeView.toString()"
       :possible-values="tabToggles"
       @update:model-value="activeView = Number($event)"
     >
-      <template v-if="compatibility.canDetachPortViews()" #default="{ item }">
+      <template v-if="uiControls.canDetachPortViews" #default="{ item }">
         <Button
           class="open-window"
           :disabled="!item.canDetach || item.disabled"
@@ -82,7 +86,7 @@ const openInNewWindow = (item: { id: string } | null = null) => {
       </template>
     </ValueSwitch>
     <Button
-      v-if="tabToggles.length === 1 && compatibility.canDetachPortViews()"
+      v-if="tabToggles.length === 1 && uiControls.canDetachPortViews"
       with-border
       class="fallback-open-window"
       title="Open port view in new window"

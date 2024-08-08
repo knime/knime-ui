@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { API } from "@api";
-import { compatibility } from "@/environment";
 import { Button } from "@knime/components";
 
 import InstallAiIllustration from "@/assets/install-ai-illustration.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
+import { useStore } from "@/composables/useStore";
 
 const installKai = API.desktop.installKAI;
+
+const store = useStore();
+const uiControls = computed(() => store.state.uiControls);
 </script>
 
 <template>
@@ -25,22 +29,21 @@ const installKai = API.desktop.installKAI;
       </div>
 
       <Button
-        v-if="compatibility.isAiAssistantSupported()"
+        v-if="uiControls.isKAISupported"
         primary
         compact
         @click="installKai"
-        >Install AI Assistant</Button
       >
+        Install AI Assistant
+      </Button>
+
       <template v-else>
         <div class="slogan">
           The KNIME AI Assistant is not available in the playground. To try its
           capabilites, get the free and open source KNIME Analytics Platform.
         </div>
-        <DownloadAPButton
-          v-if="$store.state.application.permissions.showFloatingDownloadButton"
-          compact
-          src="k-ai-panel"
-        />
+
+        <DownloadAPButton compact src="k-ai-panel" />
       </template>
     </div>
   </SidebarPanelLayout>

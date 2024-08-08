@@ -8,7 +8,6 @@ import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 
 import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import MetainfoIcon from "@/assets/metainfo.svg";
-import { compatibility } from "@/environment";
 import { TABS, type TabValues } from "@/store/panel";
 import { useStore } from "@/composables/useStore";
 import { useFeatures } from "@/plugins/feature-flags";
@@ -65,7 +64,7 @@ const isExtensionPanelOpen = computed(
   () => store.state.panel.isExtensionPanelOpen,
 );
 
-const permissions = computed(() => store.state.application.permissions);
+const uiControls = computed(() => store.state.uiControls);
 
 const isWorkflowEmpty = computed(
   () => store.getters["workflow/isWorkflowEmpty"],
@@ -107,7 +106,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       onClick: () => activateSection(TABS.CONTEXT_AWARE_DESCRIPTION),
     },
 
-    ...registerSidebarSection(permissions.value.canAccessNodeRepository, {
+    ...registerSidebarSection(uiControls.value.canAccessNodeRepository, {
       name: TABS.NODE_REPOSITORY,
       title: "Nodes",
       icon: PlusIcon,
@@ -116,21 +115,17 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       onClick: () => activateSection(TABS.NODE_REPOSITORY),
     }),
 
-    ...registerSidebarSection(
-      permissions.value.canAccessSpaceExplorer &&
-        compatibility.isSpaceExplorerSupported(),
-      {
-        name: TABS.SPACE_EXPLORER,
-        title: "Space explorer",
-        icon: CubeIcon,
-        isActive: isTabActive.value(TABS.SPACE_EXPLORER),
-        isExpanded: expanded.value,
-        onClick: () => activateSection(TABS.SPACE_EXPLORER),
-      },
-    ),
+    ...registerSidebarSection(uiControls.value.canAccessSpaceExplorer, {
+      name: TABS.SPACE_EXPLORER,
+      title: "Space explorer",
+      icon: CubeIcon,
+      isActive: isTabActive.value(TABS.SPACE_EXPLORER),
+      isExpanded: expanded.value,
+      onClick: () => activateSection(TABS.SPACE_EXPLORER),
+    }),
 
     ...registerSidebarSection(
-      $features.isKaiPermitted() && permissions.value.canAccessKAIPanel,
+      $features.isKaiPermitted() && uiControls.value.canAccessKAIPanel,
       {
         name: TABS.KAI,
         title: "K-AI AI assistant",

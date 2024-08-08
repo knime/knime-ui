@@ -15,6 +15,7 @@ import * as nodeConfiguration from "./nodeConfiguration";
 import * as workflowMonitor from "./workflowMonitor";
 import * as nodeTemplates from "./nodeTemplates";
 import * as nodeDescription from "./nodeDescription";
+import * as uiControls from "./uiControls";
 
 export const initStore = () => {
   return createStore<RootStoreState>({
@@ -33,6 +34,7 @@ export const initStore = () => {
       workflowMonitor: { namespaced: true, ...workflowMonitor },
       nodeTemplates: { namespaced: true, ...nodeTemplates },
       nodeDescription: { namespaced: true, ...nodeDescription },
+      uiControls: { namespaced: true, ...uiControls },
     },
   });
 };

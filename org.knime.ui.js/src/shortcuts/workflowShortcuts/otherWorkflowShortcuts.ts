@@ -3,8 +3,6 @@ import OpenDialogIcon from "@/assets/configure-node.svg";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 
-import { compatibility } from "@/environment";
-
 import type { UnionToShortcutRegistry } from "../types";
 
 type OtherWorkflowShortcuts = UnionToShortcutRegistry<
@@ -33,11 +31,7 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
       if (singleSelectedNode) {
         const { canOpenDialog } = singleSelectedNode.allowedActions;
 
-        return (
-          canOpenDialog &&
-          compatibility.canConfigureNodes() &&
-          $store.state.application.permissions.canConfigureNodes
-        );
+        return canOpenDialog && $store.state.uiControls.canConfigureNodes;
       }
 
       return false;
@@ -61,8 +55,7 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
 
         return (
           canOpenLegacyFlowVariableDialog &&
-          compatibility.canConfigureFlowVariables() &&
-          $store.state.application.permissions.canConfigureNodes
+          $store.state.uiControls.canConfigureFlowVariables
         );
       }
 

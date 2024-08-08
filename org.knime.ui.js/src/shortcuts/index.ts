@@ -42,7 +42,7 @@ const shortcuts: ShortcutsRegistry = {
       ...annotationShortcuts,
       ...componentOrMetanodeShortcuts,
       ...conditionGroup(
-        ({ $store }) => $store.state.application.permissions.canEditWorkflow,
+        ({ $store }) => $store.state.uiControls.canEditWorkflow,
         executionShortcuts,
       ),
       ...conditionGroup(

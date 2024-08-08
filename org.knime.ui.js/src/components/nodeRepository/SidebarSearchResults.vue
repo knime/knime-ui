@@ -97,9 +97,6 @@ defineExpose({ focusFirst });
     :query="query"
     :nodes="nodes"
     :num-filtered-out-nodes="totalNumFilteredNodesFound"
-    :show-download-button="
-      $store.state.application.permissions.showFloatingDownloadButton
-    "
     :is-loading-search-results="isLoadingSearchResults"
     @item-enter-key="addNodeToWorkflow({ nodeFactory: $event.nodeFactory! })"
     @help-key="onHelpKey"

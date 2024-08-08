@@ -28,7 +28,6 @@ type Props = {
   numFilteredOutNodes: number;
   highlightFirst?: boolean;
   displayMode: NodeRepositoryDisplayModesType;
-  showDownloadButton?: boolean;
   isLoadingSearchResults: boolean;
   isQuickAddNodeMenu?: boolean;
 };
@@ -38,7 +37,6 @@ const props = withDefaults(defineProps<Props>(), {
   searchScrollPosition: 0,
   highlightFirst: false,
   displayMode: "icon",
-  showDownloadButton: false,
   isQuickAddNodeMenu: false,
   showDescriptionForNode: null,
 });
@@ -185,7 +183,6 @@ defineExpose({ focusFirst });
         v-if="!isLoadingSearchResults"
         :num-filtered-out-nodes="numFilteredOutNodes"
         :is-node-list-empty="isNodeListEmpty"
-        :show-download-button="showDownloadButton"
         :search-hub-link="searchHubLink"
         :mini="isQuickAddNodeMenu"
       />

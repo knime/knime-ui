@@ -8,6 +8,7 @@ import type { KnimeNode } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import { isDesktop } from "@/environment";
 
 const store = useStore();
 
@@ -19,9 +20,7 @@ const hasLegacyDialog = computed(() =>
   Boolean(selectedNode.value && !selectedNode.value.hasDialog),
 );
 
-const showDownloadButton = computed(
-  () => store.state.application.permissions.showFloatingDownloadButton,
-);
+const uiControls = computed(() => store.state.uiControls);
 
 const isMetanode = computed(
   () => selectedNode.value && isNodeMetaNode(selectedNode.value),
@@ -40,21 +39,7 @@ const openNodeConfiguration = () => {
 <template>
   <!-- PLACEHOLDER - LEGACY DIALOGS -->
   <div v-if="hasLegacyDialog" class="placeholder full-height">
-    <template v-if="showDownloadButton">
-      <span v-if="isMetanode" class="placeholder-text">
-        Please select one node.
-      </span>
-
-      <template v-else>
-        <span class="placeholder-text">
-          To configure nodes with a classic dialog, download the KNIME Analytics
-          Platform.
-        </span>
-        <DownloadAPButton compact src="node-configuration-panel" />
-      </template>
-    </template>
-
-    <template v-else>
+    <template v-if="isDesktop">
       <span class="placeholder-text">
         This node dialog is not supported here.
       </span>
@@ -63,6 +48,24 @@ const openNodeConfiguration = () => {
         <CogIcon />
         <span>Open legacy dialog</span>
       </Button>
+    </template>
+
+    <template v-else>
+      <span v-if="isMetanode" class="placeholder-text">
+        Please select one node.
+      </span>
+
+      <template v-else-if="uiControls.shouldDisplayDownloadAPButton">
+        <span class="placeholder-text">
+          To configure nodes with a classic dialog, download the KNIME Analytics
+          Platform.
+        </span>
+        <DownloadAPButton compact src="node-configuration-panel" />
+      </template>
+
+      <span v-else class="placeholder-text">
+        This node dialog is not supported here.
+      </span>
     </template>
   </div>
 

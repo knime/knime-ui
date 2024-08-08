@@ -16,12 +16,12 @@ import type {
 import type { ShortcutName } from "@/shortcuts";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { getNodeState, isNodeMetaNode } from "@/util/nodeUtil";
+import { getNodeState, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
 import * as $shapes from "@/style/shapes";
-import { compatibility } from "@/environment";
 import type { ApplicationState } from "@/store/application";
+import type { UIControlsState } from "@/store/uiControls";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
 
@@ -148,6 +148,9 @@ export default defineComponent({
         (state as ApplicationState).availablePortTypes as AvailablePortTypes,
       isLockingEnabled: (state: unknown) =>
         (state as ApplicationState).isSubnodeLockingEnabled,
+    }),
+    ...mapState("uiControls", {
+      uiControls: (state: unknown) => state as UIControlsState,
     }),
   },
   watch: {
@@ -306,9 +309,11 @@ export default defineComponent({
         this.singleSelectedNode &&
         "canOpenLegacyFlowVariableDialog" in
           this.singleSelectedNode.allowedActions;
-      const isMetanode = this.singleSelectedNode?.kind === "metanode";
-      const isComponent = this.singleSelectedNode?.kind === "component";
-      const isLinked = this.singleSelectedNode?.link;
+
+      const isMetanode =
+        this.singleSelectedNode && isNodeMetaNode(this.singleSelectedNode);
+      const isComponent =
+        this.singleSelectedNode && isNodeComponent(this.singleSelectedNode);
 
       const portViewItems = this.portViews();
 
@@ -330,7 +335,7 @@ export default defineComponent({
             text: "Open output port",
             children: portViewItems,
           },
-          portViewItems.length > 0 && compatibility.canDetachPortViews(),
+          portViewItems.length > 0 && this.uiControls.canDetachPortViews,
         ),
         // Loop nodes
         ...this.mapToShortcut([
@@ -404,12 +409,7 @@ export default defineComponent({
       const metanodeAndComponentGroup: Array<MenuItem> = [
         ...this.mapToShortcut([
           { name: "createMetanode", isVisible: this.selectedNodes.length },
-          {
-            name: "createComponent",
-            isVisible:
-              this.selectedNodes.length &&
-              compatibility.canDoComponentOperations(),
-          },
+          { name: "createComponent", isVisible: this.selectedNodes.length },
         ]),
         ...filterItemVisibility(
           {
@@ -418,12 +418,7 @@ export default defineComponent({
               { name: "openComponentOrMetanode", isVisible: true },
               { name: "editName", isVisible: true },
               { name: "expandMetanode", isVisible: true },
-              {
-                name: "lockSubnode",
-                isVisible:
-                  this.isLockingEnabled &&
-                  compatibility.canLockAndUnlockSubnodes(),
-              },
+              { name: "lockSubnode", isVisible: this.isLockingEnabled },
             ]),
           },
           isMetanode,
@@ -436,39 +431,16 @@ export default defineComponent({
               { name: "openComponentOrMetanode", isVisible: true },
               { name: "editName", isVisible: true },
               { name: "expandComponent", isVisible: true },
-              {
-                name: "openLayoutEditorByNodeId",
-                isVisible: !isLinked,
-              },
-              {
-                name: "linkComponent",
-                isVisible: !isLinked,
-              },
-              {
-                name: "updateComponent",
-                isVisible: isLinked,
-              },
-              {
-                name: "changeComponentLinkType",
-                isVisible: isLinked,
-              },
-              {
-                name: "changeHubItemVersion",
-                isVisible: isLinked,
-              },
-              {
-                name: "unlinkComponent",
-                isVisible: isLinked,
-              },
-              {
-                name: "lockSubnode",
-                isVisible:
-                  this.isLockingEnabled &&
-                  compatibility.canLockAndUnlockSubnodes(),
-              },
+              { name: "openLayoutEditorByNodeId", isVisible: true },
+              { name: "linkComponent", isVisible: true },
+              { name: "updateComponent", isVisible: true },
+              { name: "changeComponentLinkType", isVisible: true },
+              { name: "changeHubItemVersion", isVisible: true },
+              { name: "unlinkComponent", isVisible: true },
+              { name: "lockSubnode", isVisible: this.isLockingEnabled },
             ]),
           },
-          isComponent && compatibility.canDoComponentOperations(),
+          isComponent,
         ),
       ];
 

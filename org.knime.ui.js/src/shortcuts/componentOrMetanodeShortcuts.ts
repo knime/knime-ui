@@ -8,8 +8,9 @@ import type {
   UnionToShortcutRegistry,
 } from "./types";
 import type { KnimeNode } from "@/api/custom-types";
-import { compatibility } from "@/environment";
 import { isComponentProject } from "@/util/projectUtil";
+import { isNodeComponent } from "@/util/nodeUtil";
+import type { ComponentNode } from "@/api/gateway-api/generated-api";
 
 type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "createMetanode"
@@ -34,6 +35,12 @@ declare module "./index" {
   interface ShortcutsRegistry extends ComponentOrMetanodeShortcuts {}
 }
 
+const isComponent = (node?: KnimeNode): node is ComponentNode =>
+  Boolean(node && isNodeComponent(node));
+
+const isLinkedComponent = (node?: KnimeNode) =>
+  Boolean(isComponent(node) && node.link);
+
 const canExpand =
   (kind: "metanode" | "component") =>
   ({ $store }: ShortcutConditionContext) => {
@@ -57,11 +64,10 @@ const canOpen =
   (kind: "metanode" | "component") =>
   ({ $store }: ShortcutConditionContext) => {
     const selectedNode = $store.getters["selection/singleSelectedNode"];
+    const { uiControls } = $store.state;
 
     if (selectedNode?.isLocked) {
-      return (
-        selectedNode.kind === kind && compatibility.canLockAndUnlockSubnodes()
-      );
+      return selectedNode.kind === kind && uiControls.canLockAndUnlockSubnodes;
     }
 
     return selectedNode?.kind === kind;
@@ -103,10 +109,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         containerType: "component",
       }),
     condition({ $store }) {
-      if (
-        !$store.getters["workflow/isWritable"] ||
-        !compatibility.canDoComponentOperations()
-      ) {
+      if (!$store.getters["workflow/isWritable"]) {
         return false;
       }
 
@@ -216,9 +219,14 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
+
       $store.dispatch("workflow/linkComponent", { nodeId: selectedNodeId });
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+    condition: ({ $store }) =>
+      $store.getters["workflow/isWritable"] &&
+      isComponent($store.getters["selection/singleSelectedNode"]) &&
+      !isLinkedComponent($store.getters["selection/singleSelectedNode"]) &&
+      $store.state.uiControls.canDoComponentSharingOperations,
   },
   updateComponent: {
     text: "Update component",
@@ -232,7 +240,10 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         nodeIds: [selectedNodeId],
       });
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+    condition: ({ $store }) =>
+      $store.getters["workflow/isWritable"] &&
+      isLinkedComponent($store.getters["selection/singleSelectedNode"]) &&
+      $store.state.uiControls.canDoComponentSharingOperations,
   },
   unlinkComponent: {
     text: "Disconnect link",
@@ -243,7 +254,10 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         $store.getters["selection/singleSelectedNode"].id;
       $store.dispatch("workflow/unlinkComponent", { nodeId: selectedNodeId });
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+    condition: ({ $store }) =>
+      $store.getters["workflow/isWritable"] &&
+      isLinkedComponent($store.getters["selection/singleSelectedNode"]) &&
+      $store.state.uiControls.canDoComponentSharingOperations,
   },
   changeHubItemVersion: {
     text: "Change KNIME Hub item version",
@@ -252,16 +266,24 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
+
       $store.dispatch("workflow/changeHubItemVersion", {
         nodeId: selectedNodeId,
       });
     },
     condition: ({ $store }) => {
       const isWritable = $store.getters["workflow/isWritable"];
+      const node = $store.getters["selection/singleSelectedNode"];
       const isHubItemVersionChangeable =
-        $store.getters["selection/singleSelectedNode"].link
-          ?.isHubItemVersionChangeable;
-      return isWritable && isHubItemVersionChangeable;
+        isComponent(node) &&
+        isLinkedComponent(node) &&
+        node.link?.isHubItemVersionChangeable;
+
+      return (
+        isWritable &&
+        $store.state.uiControls.canDoComponentSharingOperations &&
+        isHubItemVersionChangeable
+      );
     },
   },
   changeComponentLinkType: {
@@ -271,16 +293,26 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       const selectedNodeId =
         payload?.metadata?.nodeId ||
         $store.getters["selection/singleSelectedNode"].id;
+
       $store.dispatch("workflow/changeComponentLinkType", {
         nodeId: selectedNodeId,
       });
     },
     condition: ({ $store }) => {
       const isWritable = $store.getters["workflow/isWritable"];
+
+      const node: KnimeNode = $store.getters["selection/singleSelectedNode"];
+
       const isLinkTypeChangeable =
-        $store.getters["selection/singleSelectedNode"].link
-          ?.isLinkTypeChangeable;
-      return isWritable && isLinkTypeChangeable;
+        isComponent(node) &&
+        isLinkedComponent(node) &&
+        node.link?.isLinkTypeChangeable;
+
+      return (
+        isWritable &&
+        isLinkTypeChangeable &&
+        $store.state.uiControls.canDoComponentSharingOperations
+      );
     },
   },
   openLayoutEditor: {
@@ -298,7 +330,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       return (
         isWritable &&
         isComponentProject(workflow) &&
-        compatibility.canDoComponentOperations()
+        $store.state.uiControls.canOpenComponentLayoutEditor
       );
     },
   },
@@ -315,11 +347,14 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => {
       const selectedNode = $store.getters["selection/singleSelectedNode"];
+      const isWritable = $store.getters["workflow/isWritable"];
+
       return (
-        selectedNode?.kind === "component" &&
+        isWritable &&
+        isComponent(selectedNode) &&
         !selectedNode?.isLocked &&
-        !selectedNode?.link &&
-        compatibility.canDoComponentOperations()
+        !isLinkedComponent(selectedNode) &&
+        $store.state.uiControls.canOpenComponentLayoutEditor
       );
     },
   },
@@ -347,7 +382,12 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     },
     condition: ({ $store }) => {
       const selectedNode = $store.getters["selection/singleSelectedNode"];
-      return selectedNode && !selectedNode.isLocked;
+
+      return (
+        selectedNode &&
+        !selectedNode.isLocked &&
+        $store.state.uiControls.canLockAndUnlockSubnodes
+      );
     },
   },
 };

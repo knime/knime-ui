@@ -2,7 +2,6 @@
 import { computed } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { compatibility } from "@/environment";
 import * as nodeUtils from "@/util/nodeUtil";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { useStore } from "@/composables/useStore";
@@ -21,8 +20,8 @@ type Props = {
 const props = defineProps<Props>();
 
 const store = useStore();
+const uiControls = computed(() => store.state.uiControls);
 
-const permissions = computed(() => store.state.application.permissions);
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,
 );
@@ -66,7 +65,7 @@ const executeButtonMessage = computed(() => {
 });
 
 const canExecute = computed(() => {
-  if (!permissions.value.canEditWorkflow || !props.selectedNode) {
+  if (!uiControls.value.canEditWorkflow || !props.selectedNode) {
     return false;
   }
 
@@ -123,7 +122,7 @@ const openLegacyPortView = (executeNode: boolean) => {
 <template>
   <div v-if="validationError" class="info-wrapper">
     <template v-if="isUnsupportedView">
-      <template v-if="!compatibility.canOpenLegacyPortViews()">
+      <template v-if="!uiControls.canOpenLegacyPortViews">
         This port view is not supported in the browser. Please download the
         KNIME Analytics Platform to see the content in the desktop application
       </template>
@@ -131,7 +130,7 @@ const openLegacyPortView = (executeNode: boolean) => {
       <span v-else>{{ validationError.message }}</span>
 
       <LegacyPortViewButtons
-        v-if="isUnsupportedView && compatibility.canOpenLegacyPortViews()"
+        v-if="isUnsupportedView && uiControls.canOpenLegacyPortViews"
         :can-execute="canExecute"
         :is-executed="isPortExecuted"
         @open-legacy-port-view="openLegacyPortView"

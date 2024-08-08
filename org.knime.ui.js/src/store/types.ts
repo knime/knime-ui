@@ -12,6 +12,7 @@ import type { NodeConfigurationState } from "./nodeConfiguration";
 import type { WorkflowMonitorState } from "./workflowMonitor";
 import type { NodeTemplatesState } from "./nodeTemplates";
 import type { NodeDescriptionState } from "./nodeDescription";
+import type { UIControlsState } from "./uiControls";
 
 export interface RootStoreState {
   application: ApplicationState;
@@ -28,4 +29,5 @@ export interface RootStoreState {
   workflowMonitor: WorkflowMonitorState;
   nodeTemplates: NodeTemplatesState;
   nodeDescription: NodeDescriptionState;
+  uiControls: UIControlsState;
 }

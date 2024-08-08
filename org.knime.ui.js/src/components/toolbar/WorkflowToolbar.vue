@@ -1,9 +1,8 @@
-<script lang="ts">
-import { mapState, mapGetters } from "vuex";
+<script setup lang="ts">
+import { computed } from "vue";
 
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import { SubMenu } from "@knime/components";
-import type { MenuItem } from "@knime/components";
+import { SubMenu, type MenuItem } from "@knime/components";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 
@@ -12,134 +11,143 @@ import { isDesktop } from "@/environment";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
+import { useStore } from "@/composables/useStore";
+import type { KnimeNode } from "@/api/custom-types";
+import { useShortcuts } from "@/plugins/shortcuts";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
  */
-export default {
-  components: {
-    WorkflowBreadcrumb,
-    ZoomMenu,
-    ToolbarShortcutButton,
-    SubMenu,
-    SelectionModeIcon,
-    ArrowMoveIcon,
-    AnnotationModeIcon,
-  },
-  computed: {
-    ...mapState("workflow", { workflow: "activeWorkflow" }),
-    ...mapState("application", ["permissions", "activeProjectId"]),
-    ...mapGetters("workflow", ["isWorkflowEmpty"]),
-    ...mapGetters("selection", ["selectedNodes"]),
-    ...mapGetters("application", [
-      "hasAnnotationModeEnabled",
-      "hasSelectionModeEnabled",
-      "hasPanModeEnabled",
-      "isUnknownProject",
-    ]),
 
-    canvasModes(): Array<MenuItem> {
-      const canvasModeShortcuts: Array<{
-        id: string;
-        shortcutName: ShortcutName;
-      }> = [
-        { id: "selection", shortcutName: "switchToSelectionMode" },
-        { id: "annotation", shortcutName: "switchToAnnotationMode" },
-        { id: "pan", shortcutName: "switchToPanMode" },
-      ];
+const $shortcuts = useShortcuts();
+const store = useStore();
+const uiControls = computed(() => store.state.uiControls);
 
-      return canvasModeShortcuts.flatMap(({ id, shortcutName }) => {
-        const shortcut = this.$shortcuts.get(shortcutName);
-        if (!shortcut) {
-          return [];
-        }
+const workflow = computed(() => store.state.workflow.activeWorkflow);
+const activeProjectId = computed(() => store.state.application.activeProjectId);
 
-        const shortcutText =
-          typeof shortcut.text === "function"
-            ? shortcut.text({ $store: this.$store })
-            : shortcut.text ?? "";
+const isWorkflowEmpty = computed<boolean>(
+  () => store.getters["workflow/isWorkflowEmpty"],
+);
 
-        return {
-          text: shortcutText,
-          hotkeyText: shortcut.hotkeyText,
-          disabled: !this.$shortcuts.isEnabled(shortcutName),
-          metadata: { id },
-        };
-      });
-    },
+const selectedNodes = computed<Array<KnimeNode>>(
+  () => store.getters["selection/selectedNodes"],
+);
+const hasAnnotationModeEnabled = computed<boolean>(
+  () => store.getters["application/hasAnnotationModeEnabled"],
+);
+const hasSelectionModeEnabled = computed<boolean>(
+  () => store.getters["application/hasSelectionModeEnabled"],
+);
+const hasPanModeEnabled = computed<boolean>(
+  () => store.getters["application/hasPanModeEnabled"],
+);
+const isUnknownProject = computed<(id: string) => boolean>(
+  () => store.getters["application/isUnknownProject"],
+);
 
-    hasBreadcrumb() {
-      return this.workflow?.parents?.length > 0;
-    },
-    hideText(): Partial<Record<ShortcutName, boolean>> {
-      return {
-        save: true,
-        saveAs: true,
-        undo: true,
-        redo: true,
-      };
-    },
-    toolbarDropdowns(): Partial<Record<ShortcutName, ShortcutName[]>> {
-      // when the project is unknown we won't show the "save" action, and therefore
-      // cannot show the dropdown
-      if (this.isUnknownProject(this.activeProjectId)) {
-        return {};
-      }
+const canvasModes = computed<Array<MenuItem>>(() => {
+  const canvasModeShortcuts: Array<{
+    id: string;
+    shortcutName: ShortcutName;
+  }> = [
+    { id: "selection", shortcutName: "switchToSelectionMode" },
+    { id: "annotation", shortcutName: "switchToAnnotationMode" },
+    { id: "pan", shortcutName: "switchToPanMode" },
+  ];
 
-      return { save: ["save", "saveAs"] };
-    },
-    toolbarButtons(): ShortcutName[] {
-      if (!this.workflow) {
-        return [];
-      }
+  return canvasModeShortcuts.flatMap(({ id, shortcutName }) => {
+    const shortcut = $shortcuts.get(shortcutName);
+    if (!shortcut) {
+      return [];
+    }
 
-      if (!this.workflow || !this.permissions.canEditWorkflow) {
-        return [];
-      }
+    const shortcutText =
+      typeof shortcut.text === "function"
+        ? shortcut.text({ $store: store })
+        : shortcut.text ?? "";
 
-      const hasNodesSelected = this.selectedNodes.length > 0;
+    return {
+      text: shortcutText,
+      hotkeyText: shortcut.hotkeyText,
+      disabled: !$shortcuts.isEnabled(shortcutName),
+      metadata: { id },
+    };
+  });
+});
 
-      const visibleItems: Partial<Record<ShortcutName, boolean>> = {
-        save: !this.isUnknownProject(this.activeProjectId) && isDesktop,
-        saveAs: this.isUnknownProject(this.activeProjectId) && isDesktop,
+const hasBreadcrumb = computed(() => {
+  return (workflow.value?.parents?.length ?? 0) > 0;
+});
 
-        // Always visible
-        undo: true,
-        redo: true,
+const hideText = computed<Partial<Record<ShortcutName, boolean>>>(() => ({
+  save: true,
+  saveAs: true,
+  undo: true,
+  redo: true,
+}));
 
-        // Workflow
-        executeAll: !hasNodesSelected,
-        cancelAll: !hasNodesSelected,
-        resetAll: !hasNodesSelected,
+const toolbarDropdowns = computed<
+  Partial<Record<ShortcutName, ShortcutName[]>>
+>(() => {
+  // when the project is unknown we won't show the "save" action, and therefore
+  // cannot show the dropdown
+  if (activeProjectId.value && isUnknownProject.value(activeProjectId.value)) {
+    return {};
+  }
 
-        // Node execution
-        executeSelected: hasNodesSelected,
-        cancelSelected: hasNodesSelected,
-        resetSelected: hasNodesSelected,
+  return { save: ["save", "saveAs"] };
+});
 
-        // Workflow abstraction
-        createMetanode: hasNodesSelected,
-        createComponent: hasNodesSelected,
+const toolbarButtons = computed(() => {
+  if (!workflow.value || !activeProjectId.value) {
+    return [];
+  }
 
-        openLayoutEditor: this.$shortcuts.isEnabled("openLayoutEditor"),
-      };
+  if (!workflow.value || !uiControls.value.canEditWorkflow) {
+    return [];
+  }
 
-      return (
-        Object.entries(visibleItems)
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          .filter(([_, visible]) => visible)
-          .map(([name]) => name as ShortcutName)
-      );
-    },
-  },
-  methods: {
-    onCanvasModeUpdate(
-      _: unknown,
-      { metadata: { id } }: { metadata: { id: string } },
-    ) {
-      this.$store.dispatch("application/switchCanvasMode", id);
-    },
-  },
+  const hasNodesSelected = selectedNodes.value.length > 0;
+
+  const visibleItems: Partial<Record<ShortcutName, boolean>> = {
+    save: !isUnknownProject.value(activeProjectId.value) && isDesktop,
+    saveAs: isUnknownProject.value(activeProjectId.value) && isDesktop,
+
+    // Always visible
+    undo: true,
+    redo: true,
+
+    // Workflow
+    executeAll: !hasNodesSelected,
+    cancelAll: !hasNodesSelected,
+    resetAll: !hasNodesSelected,
+
+    // Node execution
+    executeSelected: hasNodesSelected,
+    cancelSelected: hasNodesSelected,
+    resetSelected: hasNodesSelected,
+
+    // Workflow abstraction
+    createMetanode: hasNodesSelected,
+    createComponent: hasNodesSelected,
+
+    openLayoutEditor: $shortcuts.isEnabled("openLayoutEditor"),
+  };
+
+  return (
+    Object.entries(visibleItems)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .filter(([_, visible]) => visible)
+      .map(([name]) => name)
+  );
+});
+
+const onCanvasModeUpdate = (
+  _: unknown,
+  { metadata: { id } }: { metadata: { id: string } },
+) => {
+  store.dispatch("application/switchCanvasMode", id);
 };
 </script>
 

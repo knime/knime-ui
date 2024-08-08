@@ -5,7 +5,6 @@ import DeleteIcon from "@/assets/delete.svg";
 import SaveIcon from "@knime/styles/img/icons/save.svg";
 import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { compatibility } from "@/environment";
 import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
 
@@ -35,7 +34,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       }
     },
     condition: ({ $store }) =>
-      compatibility.isLocalSaveSupported() &&
+      $store.state.uiControls.isLocalSaveSupported &&
       ($store.getters["application/isDirtyActiveProject"] ||
         !$store.getters["application/activeProjectOrigin"]),
   },
@@ -44,7 +43,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     text: "Save as…",
     icon: SaveAsIcon,
     execute: ({ $store }) => $store.dispatch("workflow/saveProjectAs"),
-    condition: () => compatibility.isLocalSaveSupported(),
+    condition: ({ $store }) => $store.state.uiControls.isLocalSaveSupported,
   },
   undo: {
     title: "Undo",

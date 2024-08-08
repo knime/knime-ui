@@ -19,11 +19,12 @@ import * as settings from "./settings";
 import * as globalLoader from "./globalLoader";
 import * as dirtyProjectTracking from "./dirtyProjectsTracking";
 import * as canvasModes from "./canvasModes";
-import * as permissions from "./permissions";
 import type { WorkflowObject, ExampleProject } from "@/api/custom-types";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { nodeSize } from "@/style/shapes";
 import { findSpaceById } from "@/store/spaces/util";
+
+export type AppMode = "job-viewer" | "default" | "playground";
 
 export interface ApplicationState {
   /**
@@ -93,6 +94,8 @@ export interface ApplicationState {
    * Custom help menu entries, if present
    */
   customHelpMenuEntries: Record<string, string>;
+
+  mode: AppMode;
 }
 
 /*
@@ -106,7 +109,6 @@ export const state = (): ApplicationState => ({
   ...globalLoader.state(),
   ...dirtyProjectTracking.state(),
   ...canvasModes.state(),
-  ...permissions.state(),
 
   openProjects: [],
   activeProjectId: null,
@@ -128,6 +130,8 @@ export const state = (): ApplicationState => ({
   analyticsPlatformDownloadURL: null,
   askToConfirmNodeConfigChanges: true,
   customHelpMenuEntries: {},
+
+  mode: "default",
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -138,7 +142,6 @@ export const mutations: MutationTree<ApplicationState> = {
   ...globalLoader.mutations,
   ...dirtyProjectTracking.mutations,
   ...canvasModes.mutations,
-  ...permissions.mutations,
 
   setActiveProjectId(state, projectId) {
     state.activeProjectId = projectId;
@@ -187,6 +190,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setCustomHelpMenuEntries(state, customHelpMenuEntries) {
     state.customHelpMenuEntries = customHelpMenuEntries;
+  },
+  setMode(state, mode) {
+    state.mode = mode;
   },
 };
 
@@ -240,7 +246,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       commit("setFeatureFlags", applicationState.featureFlags);
     }
 
-    // needs to be assigned before the permissions
+    // needs to be assigned before the ui controls are initialized
     if (applicationState.analyticsPlatformDownloadURL) {
       commit(
         "setAnalyticsPlatformDownloadURL",
@@ -248,9 +254,12 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       );
     }
 
-    if (applicationState.permissions) {
-      commit("setPermissions", applicationState.permissions);
+    // TODO: UPDATE THIS TO MATCH TYPE FROM API
+    if (applicationState.mode) {
+      commit("setMode", applicationState.mode);
     }
+    // TODO: move into the if statement
+    dispatch("uiControls/init", null, { root: true });
 
     if (applicationState.openProjects) {
       commit("setOpenProjects", applicationState.openProjects);

@@ -73,7 +73,7 @@ export default {
   <g>
     <ActionButton
       v-for="(action, index) in actions"
-      :key="action.name"
+      :key="index"
       :x="positions[index]"
       :primary="action.primary"
       :disabled="action.disabled"

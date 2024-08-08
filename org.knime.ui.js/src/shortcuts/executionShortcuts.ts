@@ -12,7 +12,6 @@ import PauseLoopIcon from "@/assets/pause-execution.svg";
 import StepLoopIcon from "@/assets/step-execution.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { compatibility } from "@/environment";
 
 import type {
   ShortcutConditionContext,
@@ -32,7 +31,7 @@ const executeAndOpenViewHelper = ({
 
 // eslint-disable-next-line @typescript-eslint/no-extra-parens
 const canExecuteAndOpenView = ({ $store }: ShortcutConditionContext) =>
-  compatibility.canDetachNodeViews() &&
+  $store.state.uiControls.canDetachNodeViews &&
   $store.getters["selection/singleSelectedNode"] &&
   ($store.getters["selection/singleSelectedNode"].allowedActions.canExecute ||
     $store.getters["selection/singleSelectedNode"].allowedActions.canOpenView);

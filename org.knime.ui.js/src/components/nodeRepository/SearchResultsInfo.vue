@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { API } from "@api";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import { Button } from "@knime/components";
 
+import { useStore } from "@/composables/useStore";
 import MoreNodesIllustration from "@/assets/more-nodes-illustration.svg";
 import { isDesktop } from "@/environment";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
@@ -12,12 +14,14 @@ import DummyNodesEmptyState from "../common/DummyNodesEmptyState.vue";
 type Props = {
   numFilteredOutNodes: number;
   isNodeListEmpty: boolean;
-  showDownloadButton: boolean;
   searchHubLink: string;
   mini: boolean;
 };
 
 defineProps<Props>();
+
+const store = useStore();
+const uiControls = computed(() => store.state.uiControls);
 
 const openKnimeUIPreferencePage = () => {
   API.desktop.openWebUIPreferencePage();
@@ -47,7 +51,7 @@ const openKnimeUIPreferencePage = () => {
         </span>
 
         <DownloadAPButton
-          v-if="showDownloadButton"
+          v-if="uiControls.shouldDisplayDownloadAPButton"
           compact
           src="node-repository"
           class="filtered-nodes-button"

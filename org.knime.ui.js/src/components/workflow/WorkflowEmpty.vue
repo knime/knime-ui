@@ -8,9 +8,7 @@ import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
 const store = useStore();
 
-const canEditWorkflow = computed(
-  () => store.state.application.permissions.canEditWorkflow,
-);
+const uiControls = computed(() => store.state.uiControls);
 
 const bounds = computed(() => {
   const { containerSize } = store.state.canvas;
@@ -44,18 +42,18 @@ const rectangleBounds = computed(() => {
       :y="rectangleBounds.top"
       :width="rectangleBounds.width"
       :height="rectangleBounds.height"
-      :class="{ dashed: canEditWorkflow }"
+      :class="{ dashed: uiControls.canEditWorkflow }"
     />
 
     <Component
-      :is="canEditWorkflow ? ArrowDownIcon : CircleInfoIcon"
+      :is="uiControls.canEditWorkflow ? ArrowDownIcon : CircleInfoIcon"
       height="64"
       width="64"
       x="-32"
       y="-99"
     />
 
-    <template v-if="canEditWorkflow">
+    <template v-if="uiControls.canEditWorkflow">
       <text y="-9">Start building your workflow by dropping</text>
       <text y="27"> your data or nodes here.</text>
     </template>
@@ -65,7 +63,7 @@ const rectangleBounds = computed(() => {
     </template>
 
     <!-- Define all Portals also for the empty workflow because some features rely on them -->
-    <WorkflowPortalLayers v-if="canEditWorkflow" />
+    <WorkflowPortalLayers v-if="uiControls.canEditWorkflow" />
   </g>
 </template>
 

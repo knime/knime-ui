@@ -18,7 +18,6 @@ import NodeState from "./NodeState.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
 
-import { compatibility } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { KNIME_MIME } from "@/composables/useDropNode";
 
@@ -207,10 +206,7 @@ export default {
     };
   },
   computed: {
-    ...mapState("application", {
-      projectId: "activeProjectId",
-      permissions: "permissions",
-    }),
+    ...mapState("application", { projectId: "activeProjectId" }),
     ...mapState("workflow", ["isDragging"]),
     ...mapState("selection", ["shouldHideSelection"]),
     ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
@@ -336,7 +332,10 @@ export default {
         this.kind === "metanode" ||
         (this.kind === "component" && (e.ctrlKey || e.metaKey))
       ) {
-        if (this.isLocked && compatibility.canLockAndUnlockSubnodes()) {
+        if (
+          this.isLocked &&
+          this.$store.state.uiControls.canLockAndUnlockSubnodes
+        ) {
           const isUnlocked = await this.$store.dispatch(
             "workflow/unlockSubnode",
             { nodeId: this.id },
@@ -352,7 +351,7 @@ export default {
         });
       } else if (
         this.allowedActions?.canOpenDialog &&
-        this.permissions.canConfigureNodes
+        this.$store.state.uiControls.canConfigureNodes
       ) {
         // open node dialog if one is present
         this.openNodeConfiguration(this.id);

@@ -232,7 +232,7 @@ export const getters: GetterTree<NodeConfigurationState, RootStoreState> = {
 
   isConfigurationDisabled(_, getters, rootState) {
     const activeNode: NativeNode = getters.activeNode;
-    const { canConfigureNodes } = rootState.application.permissions;
+    const { canConfigureNodes } = rootState.uiControls;
 
     const isActiveNodeExecuting = activeNode && isNodeExecuting(activeNode);
     if (isActiveNodeExecuting || !canConfigureNodes || !activeNode) {

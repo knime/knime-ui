@@ -8,7 +8,6 @@ import { Button } from "@knime/components";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
-import { compatibility } from "@/environment";
 
 import type { UIExtensionLoadingState, ValidationError } from "../common/types";
 
@@ -62,6 +61,8 @@ const props = defineProps<Props>();
 
 const store = useStore();
 
+const uiControls = computed(() => store.state.uiControls);
+
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
   validationError: [value: ValidationError | null];
@@ -92,7 +93,7 @@ const openInNewWindow = () => {
 
 <template>
   <div
-    v-if="!nodeErrors && compatibility.canDetachNodeViews()"
+    v-if="!nodeErrors && uiControls.canDetachNodeViews"
     class="detach-button-wrapper"
   >
     <Button

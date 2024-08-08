@@ -8,7 +8,6 @@ import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 
 import type { ApplicationState } from "@/store/application";
 import type { WorkflowState } from "@/store/workflow";
-import { compatibility } from "@/environment";
 
 import PortTabs from "./PortTabs.vue";
 import UIExtensionAlertsWrapper from "./UIExtensionAlertsWrapper.vue";
@@ -39,8 +38,6 @@ interface ComponentData {
   loadingState: UIExtensionLoadingState | null;
   currentValidationError: ValidationError | null;
   currentNodeViewAlert: Alert | null;
-
-  compatibility: typeof compatibility;
   EMBEDDED_CONTENT_PANEL_ID__BOTTOM: typeof EMBEDDED_CONTENT_PANEL_ID__BOTTOM;
 }
 
@@ -61,7 +58,6 @@ export default defineComponent({
     return {
       currentValidationError: null,
       loadingState: null,
-      compatibility,
       currentNodeViewAlert: null,
       EMBEDDED_CONTENT_PANEL_ID__BOTTOM,
     };
