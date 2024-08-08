@@ -105,7 +105,7 @@ const {
   port: props.port,
 
   onCanvasDrop: () => {
-    // ignore drop if quick add menu is disabled (e.g. for metanode or component)
+    // ignore drop if quick add menu is disabled (e.g for metanode port bars)
     if (props.disableQuickNodeAdd) {
       return { removeConnector: true };
     }
@@ -116,6 +116,7 @@ const {
       props: {
         position: { x, y },
         port: props.port,
+        direction: props.direction,
         nodeId: props.nodeId,
       },
     });

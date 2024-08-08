@@ -321,8 +321,7 @@ export const usePortDragging = (params: Params) => {
     const onCanvasDrop =
       params.onCanvasDrop ?? (() => ({ removeConnector: true }));
 
-    const isDroppedOnCanvas =
-      !didDragToCompatibleTarget.value && params.direction === "out";
+    const isDroppedOnCanvas = !didDragToCompatibleTarget.value;
 
     const { removeConnector } =
       isDroppedOnCanvas && dragConnector.value

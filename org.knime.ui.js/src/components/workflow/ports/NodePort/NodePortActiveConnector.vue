@@ -26,9 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const showAddNodeGhost = computed(
   () =>
-    props.direction === "out" &&
-    !props.didDragToCompatibleTarget &&
-    !props.disableQuickNodeAdd,
+    // props.direction === "out" &&
+    !props.didDragToCompatibleTarget && !props.disableQuickNodeAdd,
 );
 
 /*
@@ -87,6 +86,7 @@ watch(indicateConnectorReplacement, (indicateReplacement) => {
       v-if="showAddNodeGhost"
       class="non-interactive"
       :position="dragConnector.absolutePoint"
+      :direction="direction"
     />
   </Portal>
 </template>

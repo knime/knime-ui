@@ -1,47 +1,53 @@
-<script>
+<script setup lang="ts">
+import { computed } from "vue";
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
+import * as $shapes from "@/style/shapes";
+import type { Direction } from "@/util/compatibleConnections";
 
 /**
  * Node ghost with a plus ([ + ]) that shows up when user drags a port to some free space.
  * Only works for direction = out ports
  */
-export default {
-  components: {
-    PlusIcon,
-  },
-  props: {
-    position: {
-      type: Array,
-      required: true,
-    },
-  },
-  computed: {
-    size() {
-      return this.$shapes.addNodeGhostSize;
-    },
-    iconSize() {
-      // eslint-disable-next-line no-magic-numbers
-      return this.size * 0.9;
-    },
-    portSize() {
-      return this.$shapes.portSize;
-    },
-    transformToCenter() {
-      return [this.portSize / 2, -this.size / 2];
-    },
-  },
+
+type Props = {
+  position: [number, number];
+  direction?: Direction;
 };
+
+const props = withDefaults(defineProps<Props>(), {
+  direction: "out",
+});
+
+// eslint-disable-next-line no-magic-numbers
+const iconSize = computed(() => $shapes.addNodeGhostSize * 0.9);
+
+const translatePosition = computed(() => {
+  const [x, y] = props.position;
+
+  return props.direction === "out"
+    ? props.position
+    : [x - ($shapes.addNodeGhostSize + $shapes.portSize), y];
+});
+
+const transformToCenter = computed(() => {
+  return [$shapes.portSize / 2, -$shapes.addNodeGhostSize / 2];
+});
 </script>
 
 <template>
-  <g :transform="`translate(${position})`">
+  <g :transform="`translate(${translatePosition})`">
     <g :transform="`translate(${transformToCenter})`">
-      <rect :width="size" :height="size" rx="1" ry="1" />
+      <rect
+        :width="$shapes.addNodeGhostSize"
+        :height="$shapes.addNodeGhostSize"
+        rx="1"
+        ry="1"
+      />
       <PlusIcon
         :width="iconSize"
         :height="iconSize"
-        :x="size / 2 - iconSize / 2"
-        :y="size / 2 - iconSize / 2"
+        :x="$shapes.addNodeGhostSize / 2 - iconSize / 2"
+        :y="$shapes.addNodeGhostSize / 2 - iconSize / 2"
       />
     </g>
   </g>

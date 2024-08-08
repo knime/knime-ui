@@ -8,7 +8,10 @@ import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import { SearchInput } from "@knime/components";
 
-import { checkPortCompatibility } from "@/util/compatibleConnections";
+import {
+  checkPortCompatibility,
+  type Direction,
+} from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";
 
 import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
@@ -82,6 +85,10 @@ export default defineComponent({
       type: [Object, null] as PropType<NodePort | null>,
       default: null,
     },
+    direction: {
+      type: String as PropType<Direction>,
+      required: true,
+    },
   },
   emits: ["menuClose"],
   data(): ComponentData {
@@ -122,6 +129,9 @@ export default defineComponent({
         : null;
       const flowVariableConnection = portType?.kind === "flowVariable";
 
+      const node = this.direction === "in" ? "destNode" : "sourceNode";
+      const port = this.direction === "in" ? "destPort" : "sourcePort";
+
       return {
         id: `quick-add-${this.nodeId}-${this.portIndex}`,
         flowVariableConnection,
@@ -129,9 +139,9 @@ export default defineComponent({
         allowedActions: { canDelete: false },
         interactive: false,
         // eslint-disable-next-line no-undefined
-        sourceNode: this.nodeId ?? undefined,
+        [node]: this.nodeId ?? undefined,
         // eslint-disable-next-line no-undefined
-        sourcePort: this.portIndex ?? undefined,
+        [port]: this.portIndex ?? undefined,
       };
     },
     marginTop() {
@@ -257,7 +267,7 @@ export default defineComponent({
     <NodePortActiveConnector
       :port="port"
       :targeted="false"
-      direction="out"
+      :direction="direction"
       :drag-connector="fakePortConnector"
       :did-drag-to-compatible-target="false"
       :disable-quick-node-add="false"
