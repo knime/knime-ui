@@ -116,7 +116,7 @@ const {
       props: {
         position: { x, y },
         port: props.port,
-        direction: props.direction === "out" ? "SUCCESSORS" : "PREDECESSORS",
+        nodeRelation: props.direction === "out" ? "SUCCESSORS" : "PREDECESSORS",
         nodeId: props.nodeId,
       },
     });

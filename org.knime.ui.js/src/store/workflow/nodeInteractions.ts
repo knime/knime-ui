@@ -6,7 +6,7 @@ import type {
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
-import type { WorkflowDirection } from "@/api/custom-types";
+import type { NodeRelation } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
 import type { RootStoreState } from "../types";
@@ -95,9 +95,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       nodeFactory,
       spaceItemReference,
 
-      quickAddNodeId,
-      quickAddPortIdx,
-      quickAddDirection,
+      sourceNodeId,
+      sourcePortIdx,
+      nodeRelation,
       // possible values are: 'new-only' | 'add' | 'none'
       // 'new-only' clears the active selection and selects only the new node
       // 'add' adds the new node to the active selection
@@ -108,9 +108,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       position: XY;
       nodeFactory?: { className: string };
       spaceItemReference: SpaceItemReference;
-      quickAddNodeId?: string;
-      quickAddPortIdx?: number;
-      quickAddDirection?: WorkflowDirection;
+      sourceNodeId?: string;
+      sourcePortIdx?: number;
+      nodeRelation?: NodeRelation;
       /**
        * 'new-only' clears the active selection and selects only the new node
        * 'add' adds the new node to the active selection
@@ -146,9 +146,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
             position: gridAdjustedPosition,
             nodeFactory,
             spaceItemReference,
-            quickAddNodeId,
-            quickAddPortIdx,
-            quickAddDirection,
+            sourceNodeId,
+            sourcePortIdx,
+            nodeRelation,
           });
 
     const response = await apiCall();

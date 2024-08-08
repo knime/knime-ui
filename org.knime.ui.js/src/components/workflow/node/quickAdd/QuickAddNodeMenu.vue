@@ -25,28 +25,29 @@ import type {
   AvailablePortTypes,
   ExtendedPortType,
   NodeTemplateWithExtendedPorts,
-  WorkflowDirection,
+  NodeRelation,
 } from "@/api/custom-types";
 
 const calculatePortOffset = (params: {
   selectedPort: NodePort;
   templatePorts: (NodePortTemplate & ExtendedPortType)[];
   availablePortTypes: AvailablePortTypes;
-  direction: WorkflowDirection;
+  nodeRelation: NodeRelation;
 }) => {
-  const { selectedPort, templatePorts, availablePortTypes, direction } = params;
+  const { selectedPort, templatePorts, availablePortTypes, nodeRelation } =
+    params;
 
   const portIndex = templatePorts.findIndex((templatePort) =>
     checkPortCompatibility({
-      fromPort: direction === "SUCCESSORS" ? selectedPort : templatePort,
-      toPort: direction === "SUCCESSORS" ? templatePort : selectedPort,
+      fromPort: nodeRelation === "SUCCESSORS" ? selectedPort : templatePort,
+      toPort: nodeRelation === "SUCCESSORS" ? templatePort : selectedPort,
       availablePortTypes,
     }),
   );
 
   const portCount = templatePorts.length + 1; // +1 for the mickey mouse port
   const positions = portPositions({
-    isOutports: direction === "PREDECESSORS",
+    isOutports: nodeRelation === "PREDECESSORS",
     portCount,
   });
 
@@ -92,8 +93,8 @@ export default defineComponent({
       type: [Object, null] as PropType<NodePort | null>,
       default: null,
     },
-    direction: {
-      type: String as PropType<WorkflowDirection>,
+    nodeRelation: {
+      type: String as PropType<NodeRelation>,
       default: null,
     },
   },
@@ -136,8 +137,10 @@ export default defineComponent({
         : null;
       const flowVariableConnection = portType?.kind === "flowVariable";
 
-      const node = this.direction === "SUCCESSORS" ? "sourceNode" : "destNode";
-      const port = this.direction === "SUCCESSORS" ? "sourcePort" : "destPort";
+      const node =
+        this.nodeRelation === "SUCCESSORS" ? "sourceNode" : "destNode";
+      const port =
+        this.nodeRelation === "SUCCESSORS" ? "sourcePort" : "destPort";
 
       return {
         id: `quick-add-${this.nodeId}-${this.portIndex}`,
@@ -190,7 +193,10 @@ export default defineComponent({
   mounted() {
     if (this.port) {
       this.$store.commit("quickAddNodes/setPortTypeId", this.port.typeId);
-      this.$store.commit("quickAddNodes/setSearchDirection", this.direction);
+      this.$store.commit(
+        "quickAddNodes/setSearchNodeRelation",
+        this.nodeRelation,
+      );
     }
 
     this.$store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
@@ -202,12 +208,12 @@ export default defineComponent({
     ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
     ...mapActions("quickAddNodes", ["searchNodesNextPage"]),
     async fetchNodeRecommendations() {
-      const { nodeId, portIndex: portIdx, direction } = this;
+      const { nodeId, portIndex: portIdx, nodeRelation } = this;
 
       await this.$store.dispatch("quickAddNodes/getNodeRecommendations", {
         nodeId,
         portIdx,
-        direction,
+        nodeRelation,
       });
     },
     async addNode(nodeTemplate: NodeTemplateWithExtendedPorts) {
@@ -220,9 +226,10 @@ export default defineComponent({
       const [offsetX, offsetY] = this.port
         ? calculatePortOffset({
             selectedPort: this.port,
-            templatePorts: this.direction === "SUCCESSORS" ? inPorts : outPorts,
+            templatePorts:
+              this.nodeRelation === "SUCCESSORS" ? inPorts : outPorts,
             availablePortTypes: this.availablePortTypes,
-            direction: this.direction,
+            nodeRelation: this.nodeRelation,
           })
         : [0, 0];
 
@@ -236,9 +243,9 @@ export default defineComponent({
           y: y - offsetY,
         },
         nodeFactory,
-        quickAddNodeId: this.nodeId,
-        quickAddPortIdx: this.portIndex,
-        quickAddDirection: this.direction,
+        sourceNodeId: this.nodeId,
+        sourcePortIdx: this.portIndex,
+        nodeRelation: this.nodeRelation,
       });
 
       this.$emit("menuClose");
@@ -278,7 +285,7 @@ export default defineComponent({
     <NodePortActiveConnector
       :port="port"
       :targeted="false"
-      :direction="direction === 'SUCCESSORS' ? 'out' : 'in'"
+      :direction="nodeRelation === 'SUCCESSORS' ? 'out' : 'in'"
       :drag-connector="fakePortConnector"
       :did-drag-to-compatible-target="false"
       :disable-quick-node-add="false"

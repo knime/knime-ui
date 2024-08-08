@@ -178,4 +178,4 @@ export type ExampleProject = {
   origin: SpaceItemReference;
 };
 
-export type WorkflowDirection = "PREDECESSORS" | "SUCCESSORS";
+export type NodeRelation = "PREDECESSORS" | "SUCCESSORS";

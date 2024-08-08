@@ -25,9 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const showAddNodeGhost = computed(
-  () =>
-    // props.direction === "out" &&
-    !props.didDragToCompatibleTarget && !props.disableQuickNodeAdd,
+  () => !props.didDragToCompatibleTarget && !props.disableQuickNodeAdd,
 );
 
 /*
@@ -86,7 +84,7 @@ watch(indicateConnectorReplacement, (indicateReplacement) => {
       v-if="showAddNodeGhost"
       class="non-interactive"
       :position="dragConnector.absolutePoint"
-      :direction="direction"
+      :node-relation="direction === 'in' ? 'PREDECESSORS' : 'SUCCESSORS'"
     />
   </Portal>
 </template>

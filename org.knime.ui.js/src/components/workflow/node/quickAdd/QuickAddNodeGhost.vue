@@ -2,20 +2,15 @@
 import { computed } from "vue";
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import * as $shapes from "@/style/shapes";
-import type { WorkflowDirection } from "@/api/custom-types";
-
-/**
- * Node ghost with a plus ([ + ]) that shows up when user drags a port to some free space.
- * Only works for direction = out ports
- */
+import type { NodeRelation } from "@/api/custom-types";
 
 type Props = {
   position: [number, number];
-  direction?: WorkflowDirection;
+  nodeRelation?: NodeRelation;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  direction: "SUCCESSORS",
+  nodeRelation: "SUCCESSORS",
 });
 
 // eslint-disable-next-line no-magic-numbers
@@ -24,7 +19,7 @@ const iconSize = computed(() => $shapes.addNodeGhostSize * 0.9);
 const translatePosition = computed(() => {
   const [x, y] = props.position;
 
-  return props.direction === "SUCCESSORS"
+  return props.nodeRelation === "SUCCESSORS"
     ? props.position
     : [x - ($shapes.addNodeGhostSize + $shapes.portSize), y];
 });

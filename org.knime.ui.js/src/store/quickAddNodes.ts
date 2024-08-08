@@ -5,7 +5,7 @@ import { API } from "@api";
 import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
 import type {
   NodeTemplateWithExtendedPorts,
-  WorkflowDirection,
+  NodeRelation,
 } from "@/api/custom-types";
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
@@ -42,12 +42,12 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
       nodeId,
       portIdx,
       nodesLimit = recommendationLimit,
-      direction,
+      nodeRelation,
     }: {
       nodeId?: string;
       portIdx?: number;
       nodesLimit?: number;
-      direction: WorkflowDirection;
+      nodeRelation: NodeRelation;
     },
   ) {
     if (!rootState.workflow.activeWorkflow) {
@@ -68,7 +68,7 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
         nodeId,
         portIdx,
         nodesLimit,
-        direction,
+        nodeRelation,
         fullTemplateInfo: true,
       });
 

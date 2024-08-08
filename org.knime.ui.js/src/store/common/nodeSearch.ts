@@ -4,7 +4,7 @@ import { debounce } from "lodash-es";
 import { API } from "@api";
 import type {
   NodeTemplateWithExtendedPorts,
-  WorkflowDirection,
+  NodeRelation,
 } from "@/api/custom-types";
 import { createAbortablePromise } from "@/api/utils";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
@@ -22,7 +22,7 @@ export interface CommonNodeSearchState {
   query: string;
   selectedTags: string[];
   portTypeId: string | null;
-  searchDirection: WorkflowDirection | null;
+  nodeRelation: NodeRelation | null;
   searchScrollPosition: number;
 
   nodes: NodeTemplateWithExtendedPorts[] | null;
@@ -41,7 +41,7 @@ export const state = (): CommonNodeSearchState => ({
   selectedTags: [],
   /* filter for compatible port type ids */
   portTypeId: null,
-  searchDirection: null,
+  nodeRelation: null,
   /* ui scroll state */
   searchScrollPosition: 0,
 
@@ -70,8 +70,8 @@ export const mutations: MutationTree<CommonNodeSearchState> = {
     state.portTypeId = value;
   },
 
-  setSearchDirection(state, value) {
-    state.searchDirection = value;
+  setSearchNodeRelation(state, value) {
+    state.nodeRelation = value;
   },
 
   setSearchScrollPosition(state, value) {
@@ -156,7 +156,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
           // @ts-expect-error - due to a limitation of the API type generation
           portTypeId: state.portTypeId,
           // @ts-expect-error - due to a limitation of the API type generation
-          direction: state.searchDirection,
+          nodeRelation: state.nodeRelation,
         }),
       );
 
@@ -290,7 +290,7 @@ export const actions: ActionTree<CommonNodeSearchState, RootStoreState> = {
     commit("setSelectedTags", []);
     commit("setQuery", "");
     commit("setPortTypeId", null);
-    commit("setSearchDirection", null);
+    commit("setSearchNodeRelation", null);
     await dispatch("clearSearchResults");
   },
 };
