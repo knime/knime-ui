@@ -10,6 +10,7 @@ import { runInEnvironment } from "@/environment";
 import * as workflowStore from "../../workflow";
 import * as selectionStore from "../../selection";
 import * as applicationStore from "../../application";
+import * as uiControlsStore from "../../uiControls";
 import * as nodeConfigurationStore from "../index";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 
@@ -53,6 +54,7 @@ describe("nodeConfiguration", () => {
       nodeConfiguration: nodeConfigurationStore,
       application: applicationStore,
       selection: selectionStore,
+      uiControls: uiControlsStore,
       workflow: {
         ...workflowStore,
         actions: { executeNodes: () => {} },

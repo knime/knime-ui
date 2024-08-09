@@ -31,6 +31,7 @@ import { $bus } from "@/plugins/event-bus";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
@@ -96,6 +97,7 @@ describe("Connector.vue", () => {
           screenToCanvasCoordinates: vi.fn().mockReturnValue(() => [5, 5]),
         },
       },
+      uiControls: uiControlsStore,
       ...extraModules,
     });
 

@@ -1,4 +1,4 @@
-import { expect, describe, it, vi, beforeAll } from "vitest";
+import { expect, describe, it, vi, beforeAll, type Mock } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 
@@ -7,16 +7,24 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as applicationStore from "@/store/application";
 import * as workflowStore from "@/store/workflow";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
-
-import NodeConfig from "../NodeConfig.vue";
-import NodeConfigWrapper from "../NodeConfigWrapper.vue";
+import * as uiControlsStore from "@/store/uiControls";
 import { createNativeNode, createWorkflow } from "@/test/factories";
+import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
+import NodeConfig from "../NodeConfig.vue";
+import { setEnvironment } from "@/test/utils/setEnvironment";
 
 describe("NodeConfig", () => {
-  const doMount = (
-    { props = {}, singleSelectedNodeMock = vi.fn() } = {},
-    component: typeof NodeConfig | null = null,
-  ) => {
+  type MountOpts = {
+    props?: Partial<InstanceType<typeof NodeConfig>["$props"]>;
+    singleSelectedNodeMock?: Mock;
+    component?: typeof NodeConfig | null;
+  };
+
+  const doMount = ({
+    props = {},
+    singleSelectedNodeMock = vi.fn(),
+    component = null,
+  }: MountOpts = {}) => {
     const $store = mockVuexStore({
       workflow: {
         ...workflowStore,
@@ -39,13 +47,12 @@ describe("NodeConfig", () => {
           singleSelectedNode: singleSelectedNodeMock,
         },
       },
+      uiControls: uiControlsStore,
       settings: { state: { settings: { nodeDialogSize: 100 } } },
     });
 
     const wrapper = mount(component ?? NodeConfig, {
-      props: {
-        ...props,
-      },
+      props,
       global: {
         plugins: [$store],
       },
@@ -57,7 +64,6 @@ describe("NodeConfig", () => {
   it("renders default", () => {
     const { wrapper } = doMount();
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.findComponent(NodeConfig).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
       "Please select one node.",
     );
@@ -71,54 +77,61 @@ describe("NodeConfig", () => {
       }),
     });
 
-    expect(wrapper.findComponent(NodeConfig).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
       "This node dialog is not supported here.",
     );
   });
 
-  it("shows download AP link for legacy dialogs when permission is set", async () => {
+  it("shows download AP link for legacy dialogs in browser when ui control set", async () => {
+    setEnvironment("BROWSER");
+
+    const NodeConfig = (await import("../NodeConfig.vue")).default;
+
     const { wrapper, $store } = doMount({
       singleSelectedNodeMock: vi.fn().mockReturnValue({
         id: 2,
         kind: "node",
       }),
+      component: NodeConfig,
     });
 
-    $store.state.application.permissions.showFloatingDownloadButton = true;
+    $store.state.uiControls.shouldDisplayDownloadAPButton = true;
     await nextTick();
 
-    expect(wrapper.findComponent(NodeConfig).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
       "To configure nodes with a classic dialog, download the KNIME Analytics Platform.",
     );
   });
 
-  it("shows NodeConfigWrapper component if selected node has dialog", () => {
+  it("shows placeholder component if selected node has a legacy dialog", () => {
     const { wrapper } = doMount({
       singleSelectedNodeMock: vi.fn().mockReturnValue({
         id: 1,
         kind: "node",
-        hasDialog: true,
       }),
     });
 
-    expect(wrapper.findComponent(NodeConfig).exists()).toBe(true);
-    expect(wrapper.findComponent(NodeConfigWrapper).exists()).toBe(true);
+    expect(wrapper.find(".content-wrapper").exists()).toBe(true);
+    expect(
+      wrapper.findComponent(IncompatibleNodeConfigPlaceholder).exists(),
+    ).toBe(true);
   });
 
   it("shows a message if selected node is a metanode in a browser", async () => {
+    setEnvironment("BROWSER");
+    const NodeConfig = (await import("../NodeConfig.vue")).default;
+
     const { wrapper, $store } = doMount({
       singleSelectedNodeMock: vi.fn().mockReturnValue({
         id: 2,
         kind: "metanode",
       }),
+      component: NodeConfig,
     });
 
-    $store.state.application.permissions.showFloatingDownloadButton = true;
+    $store.state.uiControls.shouldDisplayDownloadAPButton = true;
     await nextTick();
 
-    expect(wrapper.findComponent(NodeConfig).exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
       "Please select one node.",
     );

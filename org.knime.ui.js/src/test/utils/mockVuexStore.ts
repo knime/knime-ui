@@ -24,7 +24,13 @@ const mockVuexStore = <T = any>(moduleInput: Record<any, any>) => {
     storeConfig.state = () => storeConfig.state;
   }
 
-  return createStore<T>(storeConfig);
+  const store = createStore<T>(storeConfig);
+
+  if ("uiControls" in moduleInput) {
+    store.dispatch("uiControls/init");
+  }
+
+  return store;
 };
 
 export { mockVuexStore };

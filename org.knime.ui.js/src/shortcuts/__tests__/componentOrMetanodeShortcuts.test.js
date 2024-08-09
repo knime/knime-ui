@@ -1,6 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import * as uiControlsStore from "@/store/uiControls";
 
 const capitalize = (str) => str.charAt(0).toUpperCase().concat(str.slice(1));
 
@@ -24,6 +25,7 @@ describe("componentOrMetanodeShortcuts", () => {
     const $store = {
       dispatch: mockDispatch,
       state: {
+        uiControls: uiControlsStore.state(),
         application: {
           activeProjectId: "activeTestProjectId",
           hasClipboardSupport: true,
@@ -292,6 +294,15 @@ describe("componentOrMetanodeShortcuts", () => {
             kind: "component",
           },
         });
+
+        $store.state.uiControls.canOpenComponentLayoutEditor = false;
+        expect(
+          componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({
+            $store,
+          }),
+        ).toBeFalsy();
+
+        $store.state.uiControls.canOpenComponentLayoutEditor = true;
         expect(
           componentOrMetanodeShortcuts.openLayoutEditorByNodeId.condition({
             $store,
@@ -451,6 +462,13 @@ describe("componentOrMetanodeShortcuts", () => {
         isWorkflowWritable: true,
         containerType: "component",
       });
+
+      $store.state.uiControls.canOpenComponentLayoutEditor = false;
+      expect(
+        componentOrMetanodeShortcuts.openLayoutEditor.condition({ $store }),
+      ).toBe(false);
+
+      $store.state.uiControls.canOpenComponentLayoutEditor = true;
       expect(
         componentOrMetanodeShortcuts.openLayoutEditor.condition({ $store }),
       ).toBe(true);

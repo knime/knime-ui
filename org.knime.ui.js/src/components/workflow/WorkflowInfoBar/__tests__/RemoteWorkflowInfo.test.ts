@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
 
@@ -9,9 +9,11 @@ import {
   createSpaceProvider,
   createWorkflow,
   createProject,
+  createSpaceGroup,
 } from "@/test/factories";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
 import * as spacesStore from "@/store/spaces";
 
@@ -43,16 +45,15 @@ describe("RemoteWorkflowInfo.vue", () => {
   const doMount = ({
     workflow,
     activeProjectId,
-    component = null,
   }: {
     workflow: Workflow;
     activeProjectId: string;
-    component?: typeof RemoteWorkflowInfo | null;
   }) => {
     const $store = mockVuexStore({
       workflow: workflowStore,
       application: applicationStore,
       spaces: spacesStore,
+      uiControls: uiControlsStore,
     });
 
     $store.commit("application/setActiveProjectId", activeProjectId);
@@ -65,17 +66,19 @@ describe("RemoteWorkflowInfo.vue", () => {
         id: "hub-provider1",
         name: "Hub space",
         type: SpaceProviderNS.TypeEnum.HUB,
-        spaces: [createSpace({ id: "space1" })],
+        spaceGroups: [
+          createSpaceGroup({ spaces: [createSpace({ id: "space1" })] }),
+        ],
       }),
       [openProjects.at(2)!.origin!.providerId]: createSpaceProvider({
         id: "server-provider1",
         name: "Server space",
         type: SpaceProviderNS.TypeEnum.SERVER,
-        spaces: [createSpace()],
+        spaceGroups: [createSpaceGroup({ spaces: [createSpace()] })],
       }),
     };
 
-    const wrapper = mount(component ?? RemoteWorkflowInfo, {
+    const wrapper = mount(RemoteWorkflowInfo, {
       global: {
         plugins: [$store],
       },
@@ -179,22 +182,7 @@ describe("RemoteWorkflowInfo.vue", () => {
     );
   });
 
-  it("should hide bar for browser environment", async () => {
-    vi.resetModules();
-    vi.doMock("@/environment", async () => {
-      const actual = await vi.importActual("@/environment");
-
-      return {
-        ...actual,
-        environment: "BROWSER",
-        isDesktop: false,
-        isBrowser: true,
-      };
-    });
-
-    const RemoteWorkflowInfo = (await import("../RemoteWorkflowInfo.vue"))
-      .default;
-
+  it("should hide bar when ui control is set", async () => {
     const activeProjectId = openProjects.at(2)!.projectId;
     const workflow = createWorkflow({
       info: { containerId: activeProjectId },
@@ -203,10 +191,9 @@ describe("RemoteWorkflowInfo.vue", () => {
     const { wrapper, $store } = doMount({
       workflow,
       activeProjectId,
-      component: RemoteWorkflowInfo,
     });
 
-    $store.state.application.permissions.showRemoteWorkflowInfo = false;
+    $store.state.uiControls.shouldDisplayRemoteWorkflowInfoBar = false;
     await nextTick();
 
     expect(wrapper.find(".banner").exists()).toBe(false);

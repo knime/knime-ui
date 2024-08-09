@@ -189,7 +189,7 @@ export const mutations: MutationTree<ApplicationState> = {
   setCustomHelpMenuEntries(state, customHelpMenuEntries) {
     state.customHelpMenuEntries = customHelpMenuEntries;
   },
-  setMode(state, mode) {
+  setAppMode(state, mode) {
     state.appMode = mode;
   },
 };
@@ -253,7 +253,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     }
 
     if (applicationState.appMode) {
-      commit("setMode", applicationState.appMode);
+      commit("setAppMode", applicationState.appMode);
       dispatch("uiControls/init", null, { root: true });
     }
 

@@ -133,9 +133,6 @@ describe("QuickAddNodeMenu.vue", () => {
           hasNodeCollectionActive: true,
           hasNodeRecommendationsEnabled: true,
           nodeRepositoryLoaded: nodeRepositoryLoadedMock,
-          permissions: {
-            showFloatingDownloadButton: false,
-          },
         },
         actions: {
           subscribeToNodeRepositoryLoadingEvent:

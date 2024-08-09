@@ -15,6 +15,7 @@ import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
+import * as uiControlsStore from "@/store/uiControls";
 import {
   type WorkflowAnnotation,
   type Bounds,
@@ -54,6 +55,7 @@ describe("WorkflowAnnotation.vue", () => {
           toggleContextMenu: vi.fn(),
         },
       },
+      uiControls: uiControlsStore,
     });
 
     const div = document.createElement("div");

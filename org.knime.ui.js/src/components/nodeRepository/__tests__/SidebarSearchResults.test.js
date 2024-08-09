@@ -38,9 +38,6 @@ describe("SidebarSearchResults", () => {
       application: {
         state: {
           hasNodeCollectionActive: false,
-          permissions: {
-            showFloatingDownloadButton: false,
-          },
         },
       },
     });

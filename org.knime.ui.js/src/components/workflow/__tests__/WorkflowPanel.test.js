@@ -10,6 +10,7 @@ import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 import * as settingsStore from "@/store/settings";
+import * as uiControlsStore from "@/store/uiControls";
 
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
@@ -39,6 +40,7 @@ describe("WorkflowPanel", () => {
     const storeConfig = {
       workflow: workflowStore,
       application: applicationStore,
+      uiControls: uiControlsStore,
       canvas: {
         state: {
           getScrollContainerElement: () => document.createElement("div"),

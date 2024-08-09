@@ -8,6 +8,7 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
@@ -83,6 +84,7 @@ describe("NodeOutput.vue", () => {
       workflow,
       application: applicationStore,
       selection: selectionStore,
+      uiControls: uiControlsStore,
     });
 
     $store.commit(

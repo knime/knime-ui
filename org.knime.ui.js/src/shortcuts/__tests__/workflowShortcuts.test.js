@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 import workflowShortcuts from "../workflowShortcuts";
 import { deepMocked } from "@/test/utils";
 import { API } from "@api";
@@ -52,6 +53,7 @@ describe("workflowShortcuts", () => {
           dirtyProjectsMap: { activeTestProjectId: false },
           hasClipboardSupport: true,
         },
+        uiControls: uiControlsStore.state(),
         workflow: {
           activeWorkflow: {
             projectId: "activeTestProjectId",
@@ -138,8 +140,16 @@ describe("workflowShortcuts", () => {
     it("checks save condition", () => {
       const { $store } = createStore();
       expect(workflowShortcuts.save.condition({ $store })).toBeFalsy();
+
       $store.getters["application/isDirtyActiveProject"] = true;
+      $store.state.uiControls.isLocalSaveSupported = false;
+      expect(workflowShortcuts.save.condition({ $store })).toBe(false);
+
+      $store.state.uiControls.isLocalSaveSupported = true;
       expect(workflowShortcuts.save.condition({ $store })).toBe(true);
+
+      $store.getters["application/isDirtyActiveProject"] = false;
+      expect(workflowShortcuts.save.condition({ $store })).toBe(false);
     });
   });
 
@@ -187,6 +197,9 @@ describe("workflowShortcuts", () => {
       $store.getters["selection/singleSelectedNode"].allowedActions = {
         canOpenDialog: true,
       };
+      $store.state.uiControls.canConfigureNodes = false;
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+      $store.state.uiControls.canConfigureNodes = true;
       expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
     });
   });
@@ -203,15 +216,24 @@ describe("workflowShortcuts", () => {
 
     it("checks condition", () => {
       const { $store } = createStore();
+
+      $store.state.uiControls.canConfigureFlowVariables = true;
       expect(
         workflowShortcuts.configureFlowVariables.condition({ $store }),
       ).toBeFalsy();
+
       $store.getters["selection/singleSelectedNode"].allowedActions = {
         canOpenLegacyFlowVariableDialog: true,
       };
+
       expect(
         workflowShortcuts.configureFlowVariables.condition({ $store }),
       ).toBe(true);
+
+      $store.state.uiControls.canConfigureFlowVariables = false;
+      expect(
+        workflowShortcuts.configureFlowVariables.condition({ $store }),
+      ).toBe(false);
     });
   });
 

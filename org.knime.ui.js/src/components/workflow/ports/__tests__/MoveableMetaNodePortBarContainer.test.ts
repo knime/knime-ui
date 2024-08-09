@@ -9,6 +9,7 @@ import { API } from "@api";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 
 import MoveableMetaNodePortBarContainer from "../MoveableMetaNodePortBarContainer.vue";
 import { createPort, createWorkflow } from "@/test/factories";
@@ -63,6 +64,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
           };
         },
       },
+      uiControls: uiControlsStore,
     });
 
     $store.commit(

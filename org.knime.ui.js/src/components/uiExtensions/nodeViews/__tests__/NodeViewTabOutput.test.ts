@@ -7,6 +7,7 @@ import { NodeState, PortType } from "@/api/gateway-api/generated-api";
 
 import NodeViewTabOutput from "../NodeViewTabOutput.vue";
 import NodeViewLoader from "../NodeViewLoader.vue";
+import { mockVuexStore } from "@/test/utils";
 
 describe("NodeViewTabOutput.vue", () => {
   const dummyNode = createNativeNode({
@@ -66,12 +67,21 @@ describe("NodeViewTabOutput.vue", () => {
   };
 
   const doMount = ({ props = {} } = {}) => {
+    const $store = mockVuexStore({
+      uiControls: {
+        state: { canDetachNodeViews: true },
+        actions: { init: () => {} },
+      },
+    });
+
     const wrapper = mount(NodeViewTabOutput, {
       props: { ...defaultProps, ...props },
       global: {
         stubs: { NodeViewLoader: true },
+        plugins: [$store],
       },
     });
+
     return { wrapper };
   };
 

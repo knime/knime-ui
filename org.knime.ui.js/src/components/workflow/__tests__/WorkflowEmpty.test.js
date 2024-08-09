@@ -21,10 +21,9 @@ describe("WorkflowEmpty", () => {
           containerSize,
         },
       },
-      application: {
-        state: {
-          permissions: { canEditWorkflow: true },
-        },
+      uiControls: {
+        state: { canEditWorkflow: true },
+        actions: { init: () => {} },
       },
     };
 
@@ -47,7 +46,7 @@ describe("WorkflowEmpty", () => {
   it("renders correctly (job viewer)", async () => {
     const { wrapper, $store } = doShallowMount();
 
-    $store.state.application.permissions.canEditWorkflow = false;
+    $store.state.uiControls.canEditWorkflow = false;
 
     await nextTick();
 

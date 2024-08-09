@@ -1,3 +1,4 @@
+/* eslint-disable func-style */
 import { expect, describe, it, vi, beforeEach } from "vitest";
 import * as Vue from "vue";
 import { VueWrapper, shallowMount } from "@vue/test-utils";
@@ -10,6 +11,7 @@ import * as $shapes from "@/style/shapes";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import MoveableNodeContainer from "../MoveableNodeContainer.vue";
@@ -21,7 +23,7 @@ vi.mock("@/composables/useEscapeStack", () => {
     // @ts-ignore
     useEscapeStack.onEscape = onEscape;
     return {
-      /* empty mixin */
+      /* empty */
     };
   }
 
@@ -54,6 +56,7 @@ describe("MoveableNodeContainer", () => {
         },
       },
       selection: selectionStore,
+      uiControls: uiControlsStore,
     };
 
     const $store = mockVuexStore(storeConfig);

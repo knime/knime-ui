@@ -24,6 +24,7 @@ import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 import Node from "../Node.vue";
 
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 
@@ -143,6 +144,7 @@ describe("Node", () => {
           toggleContextMenu: vi.fn(),
         },
       },
+      uiControls: uiControlsStore,
       selection: {
         getters: {
           isNodeSelected: () => vi.fn(),

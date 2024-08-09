@@ -6,6 +6,7 @@ import * as applicationStore from "@/store/application";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
+import * as uiControlsStore from "@/store/uiControls";
 import { createNativeNode, createWorkflow } from "@/test/factories";
 import { NodeState } from "@/api/gateway-api/generated-api";
 
@@ -45,6 +46,7 @@ describe("NodeConfigLayout.vue", () => {
       selection: selectionStore,
       workflow: workflowStore,
       nodeConfiguration: nodeConfigurationStore,
+      uiControls: uiControlsStore,
       settings: { state: { settings: { nodeDialogSize: 200 } } },
     });
 

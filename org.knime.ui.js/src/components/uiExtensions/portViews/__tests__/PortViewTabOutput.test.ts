@@ -75,7 +75,7 @@ describe("PortViewTabOutput.vue", () => {
         ...props,
       },
       global: {
-        stubs: { PortViewLoader: true },
+        stubs: { PortViewLoader: true, PortViewTabToggles: true },
       },
     });
 

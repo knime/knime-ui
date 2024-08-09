@@ -11,6 +11,7 @@ import * as canvasStore from "@/store/canvas";
 import * as workflowStore from "@/store/workflow";
 import * as spacesStore from "@/store/spaces";
 import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
 import { mockVuexStore } from "@/test/utils";
 import {
   createSpace,
@@ -45,6 +46,7 @@ describe("WorkflowToolbar.vue", () => {
       selection: selectionStore,
       canvas: canvasStore,
       spaces: spacesStore,
+      uiControls: uiControlsStore,
     });
 
     const $shortcuts = createShortcutsService({

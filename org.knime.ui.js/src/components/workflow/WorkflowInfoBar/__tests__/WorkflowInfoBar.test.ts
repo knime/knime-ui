@@ -4,6 +4,7 @@ import { mockVuexStore } from "@/test/utils";
 
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 import { createWorkflow } from "@/test/factories";
 import type { Workflow } from "@/api/custom-types";
 import WorkflowInfoBar from "../WorkflowInfoBar.vue";
@@ -16,6 +17,7 @@ describe("WorkflowInfoBar.vue", () => {
     const $store = mockVuexStore({
       workflow: workflowStore,
       application: applicationStore,
+      uiControls: uiControlsStore,
     });
 
     $store.commit("workflow/setActiveWorkflow", workflow ?? createWorkflow());

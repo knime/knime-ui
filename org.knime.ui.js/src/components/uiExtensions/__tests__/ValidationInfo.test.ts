@@ -1,9 +1,10 @@
 import { mount } from "@vue/test-utils";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { mockVuexStore } from "@/test/utils";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 
 import type { ValidationError } from "../common/types";
 import {
@@ -19,14 +20,6 @@ import LegacyPortViewButtons from "../LegacyPortViewButtons.vue";
 import ExecuteButton from "../ExecuteButton.vue";
 import LoadingIndicator from "../LoadingIndicator.vue";
 import { nextTick } from "vue";
-
-let isDesktopMock = false;
-
-vi.mock("@/environment", () => ({
-  compatibility: {
-    canOpenLegacyPortViews: () => isDesktopMock,
-  },
-}));
 
 describe("ValidationInfo.vue", () => {
   const defaultProps = {
@@ -53,6 +46,7 @@ describe("ValidationInfo.vue", () => {
         },
       },
       application: applicationStore,
+      uiControls: uiControlsStore,
     });
 
     $store.commit(
@@ -89,12 +83,8 @@ describe("ValidationInfo.vue", () => {
       message: "rendered message",
     };
 
-    describe("in desktop", () => {
-      beforeAll(() => {
-        isDesktopMock = true;
-      });
-
-      it("should handle unsupported views", () => {
+    describe("supports legacy views", () => {
+      it("should handle legacy views", () => {
         const { wrapper } = doMount({
           props: { validationError },
         });
@@ -140,22 +130,21 @@ describe("ValidationInfo.vue", () => {
       });
     });
 
-    describe("in browser", () => {
-      beforeAll(() => {
-        isDesktopMock = false;
-      });
-
-      it("should handle unsupported views", () => {
-        const { wrapper } = doMount({
+    describe("does not support legacy views", () => {
+      it("should handle unsupported views", async () => {
+        const { wrapper, $store } = doMount({
           props: { validationError },
         });
+
+        $store.state.uiControls.canOpenLegacyPortViews = false;
+        await nextTick();
 
         expect(wrapper.text()).toMatch(
           "port view is not supported in the browser",
         );
       });
 
-      it("should NOT render buttons for legacy views", () => {
+      it("should NOT render buttons for legacy views", async () => {
         const selectedNode = createNativeNode({
           state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
           allowedActions: { canExecute: true },
@@ -172,9 +161,12 @@ describe("ValidationInfo.vue", () => {
           ],
         });
 
-        const { wrapper } = doMount({
+        const { wrapper, $store } = doMount({
           props: { validationError, selectedNode, selectedPortIndex: 1 },
         });
+
+        $store.state.uiControls.canOpenLegacyPortViews = false;
+        await nextTick();
 
         const legacyButtons = wrapper.findComponent(LegacyPortViewButtons);
 
@@ -215,12 +207,12 @@ describe("ValidationInfo.vue", () => {
       ],
     });
 
-    it("should NOT render if `canEditWorkflow` permission is false", async () => {
+    it("should NOT render if `canEditWorkflow` ui control is false", async () => {
       const { wrapper, $store } = doMount({
         props: { selectedNode },
       });
 
-      $store.state.application.permissions.canEditWorkflow = false;
+      $store.state.uiControls.canEditWorkflow = false;
 
       await nextTick();
 

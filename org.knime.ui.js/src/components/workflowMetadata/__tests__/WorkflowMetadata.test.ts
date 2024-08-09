@@ -22,6 +22,7 @@ import {
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
 
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
@@ -41,6 +42,7 @@ describe("WorkflowMetadata.vue", () => {
     const $store = mockVuexStore({
       selection: selectionStore,
       workflow: workflowStore,
+      uiControls: uiControlsStore,
 
       application: {
         state: {

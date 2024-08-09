@@ -1,41 +1,40 @@
-import { expect, describe, afterEach, it, vi, beforeEach } from "vitest";
+import { expect, describe, afterEach, it, vi } from "vitest";
 import { mockUserAgent } from "jest-useragent-mock";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
 import { $bus } from "@/plugins/event-bus";
+import * as uiControlsStore from "@/store/uiControls";
+import { useRoute } from "vue-router";
+import ErrorOverlay from "../application/Error.vue";
+import { nextTick } from "vue";
+import { setEnvironment } from "@/test/utils/setEnvironment";
+
+vi.mock("vue-router", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useRouter: vi.fn(() => ({ push: () => {} })),
+    useRoute: vi.fn(() => ({ meta: {} })),
+  };
+});
 
 describe("KnimeUI.vue", () => {
-  beforeEach(() => {
-    vi.resetModules();
-  });
-
   const doShallowMount = async ({
-    environment = "BROWSER",
-    routeMeta = { showUpdateBanner: false },
     initializeApplication = vi.fn().mockResolvedValue({}) as any,
     destroyApplication = vi.fn(),
     setHasClipboardSupport = vi.fn(),
-    showFloatingDownloadButton = false,
+    uiControlsOverrides = {},
   } = {}) => {
-    vi.doMock("@/environment", async (importOriginal) => {
-      const actual = await importOriginal();
-
-      return {
-        ...actual,
-        DynamicEnvRenderer: {},
-        environment,
-        isDesktop: environment === "DESKTOP",
-        isBrowser: environment === "BROWSER",
-      };
-    });
-
     // @ts-ignore: assign read-only property
     document.fonts = {
       load: vi.fn(() => Promise.resolve("dummy")),
     };
 
     const storeConfig = {
+      uiControls: uiControlsStore,
       application: {
         mutations: {
           setHasClipboardSupport,
@@ -55,9 +54,6 @@ describe("KnimeUI.vue", () => {
             ],
             bugfixes: ["Update1", "Update2"],
           },
-          permissions: {
-            showFloatingDownloadButton,
-          },
           globalLoader: {},
         },
       },
@@ -69,13 +65,9 @@ describe("KnimeUI.vue", () => {
     };
 
     const $store = mockVuexStore(storeConfig);
-    const $router = {
-      currentRoute: {},
-      push: vi.fn(),
-    };
-
-    const $route = {
-      meta: routeMeta,
+    $store.state.uiControls = {
+      ...$store.state.uiControls,
+      ...uiControlsOverrides,
     };
 
     const KnimeUI = (await import("../KnimeUI.vue")).default;
@@ -83,7 +75,7 @@ describe("KnimeUI.vue", () => {
     const wrapper = shallowMount(KnimeUI, {
       global: {
         plugins: [$store],
-        mocks: { $router, $route, $bus },
+        mocks: { $bus },
         stubs: {
           RouterView: true,
           HotkeyHandler: true,
@@ -91,13 +83,11 @@ describe("KnimeUI.vue", () => {
       },
     });
 
-    await new Promise((r) => setTimeout(r, 0));
+    await flushPromises();
 
     return {
       wrapper,
       $store,
-      $route,
-      $router,
       initializeApplication,
       destroyApplication,
       setHasClipboardSupport,
@@ -109,23 +99,25 @@ describe("KnimeUI.vue", () => {
   });
 
   it("renders UpdateBanner if showUpdateBanner in meta in router is true", async () => {
-    const { wrapper } = await doShallowMount({
-      routeMeta: { showUpdateBanner: true },
-      environment: "DESKTOP",
+    // @ts-ignore
+    useRoute.mockReturnValue({
+      meta: { showUpdateBanner: true },
     });
+
+    const { wrapper } = await doShallowMount();
 
     expect(wrapper.find("update-banner-stub").exists()).toBe(true);
     expect(wrapper.find(".main-content-with-banner").exists()).toBe(true);
   });
 
-  it("catches errors in fetch hook", async () => {
+  it("catches errors", async () => {
     const { wrapper } = await doShallowMount({
       initializeApplication: vi.fn(() => {
         throw new TypeError("error");
       }),
     });
 
-    const errorComponent = wrapper.findComponent(Error);
+    const errorComponent = wrapper.findComponent(ErrorOverlay);
     expect(errorComponent.exists()).toBe(true);
     expect(errorComponent.props()).toMatchObject({
       message: "error",
@@ -134,10 +126,10 @@ describe("KnimeUI.vue", () => {
   });
 
   it("initiates", async () => {
-    const { initializeApplication, $router } = await doShallowMount();
+    const { initializeApplication } = await doShallowMount();
 
     expect(initializeApplication).toHaveBeenCalledWith(expect.anything(), {
-      $router,
+      $router: expect.anything(),
     });
     expect(document.fonts.load).toHaveBeenCalledWith("400 1em Roboto");
     expect(document.fonts.load).toHaveBeenCalledWith(
@@ -151,25 +143,25 @@ describe("KnimeUI.vue", () => {
 
   it("destroys application", async () => {
     const { wrapper, destroyApplication } = await doShallowMount();
-    await wrapper.unmount();
+    wrapper.unmount();
 
     expect(destroyApplication).toHaveBeenCalled();
   });
 
   it("shows download banner when required", async () => {
-    const { wrapper } = await doShallowMount({
-      showFloatingDownloadButton: true,
-    });
+    const { wrapper, $store } = await doShallowMount();
+
+    expect(wrapper.findComponent(".download-banner").exists()).toBe(false);
+
+    $store.state.uiControls.shouldDisplayDownloadAPButton = true;
+    await nextTick();
 
     expect(wrapper.findComponent(".download-banner").exists()).toBe(true);
   });
 
   it("sets CSS variable --app-main-content-height in desktop correctly", async () => {
-    const { wrapper } = await doShallowMount({
-      environment: "DESKTOP",
-    });
-
-    await wrapper.vm.$nextTick();
+    setEnvironment("DESKTOP");
+    await doShallowMount();
 
     const style = getComputedStyle(document.documentElement);
     const appHeight = style
@@ -180,9 +172,8 @@ describe("KnimeUI.vue", () => {
   });
 
   it("sets CSS variable --app-main-content-height in browser correctly", async () => {
-    const { wrapper } = await doShallowMount();
-
-    await wrapper.vm.$nextTick();
+    setEnvironment("BROWSER");
+    await doShallowMount();
 
     const style = getComputedStyle(document.documentElement);
     const appHeight = style
@@ -193,11 +184,10 @@ describe("KnimeUI.vue", () => {
   });
 
   it("sets CSS variable --app-main-content-height with download banner correctly", async () => {
-    const { wrapper } = await doShallowMount({
-      showFloatingDownloadButton: true,
+    setEnvironment("BROWSER");
+    await doShallowMount({
+      uiControlsOverrides: { shouldDisplayDownloadAPButton: true },
     });
-
-    await wrapper.vm.$nextTick();
 
     const style = getComputedStyle(document.documentElement);
     const appHeight = style

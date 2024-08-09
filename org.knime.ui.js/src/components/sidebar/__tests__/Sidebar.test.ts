@@ -5,6 +5,7 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as panelStore from "@/store/panel";
 import * as applicationStore from "@/store/application";
 import * as nodeRepositoryStore from "@/store/nodeRepository";
+import * as uiControlsStore from "@/store/uiControls";
 
 import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 import Metainfo from "@/assets/metainfo.svg";
@@ -45,6 +46,7 @@ describe("Sidebar", () => {
           activeProjectId: "activeProject1",
         },
       },
+      uiControls: uiControlsStore,
     });
 
     const dispatchSpy = vi.spyOn($store, "dispatch");

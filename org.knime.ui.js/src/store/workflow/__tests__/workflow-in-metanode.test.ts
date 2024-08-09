@@ -1,7 +1,9 @@
 import { expect, describe, it } from "vitest";
 import { mockVuexStore, type DeepPartial } from "@/test/utils";
 
-import * as canvasStoreConfig from "@/store/canvas";
+import * as canvasStore from "@/store/canvas";
+import * as uiControlsStore from "@/store/uiControls";
+import * as applicationStore from "@/store/application";
 import type { Bounds, MetaPorts, XY } from "@/api/gateway-api/generated-api";
 import { geometry } from "@/util/geometry";
 import {
@@ -17,7 +19,9 @@ describe("workflow store", () => {
   const loadStore = async () => {
     const store = mockVuexStore({
       workflow: await import("@/store/workflow"),
-      canvas: canvasStoreConfig,
+      canvas: canvasStore,
+      application: applicationStore,
+      uiControls: uiControlsStore,
     });
 
     return { store };

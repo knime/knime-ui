@@ -30,6 +30,7 @@ import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
+import * as uiControlsStore from "@/store/uiControls";
 import * as $shapes from "@/style/shapes";
 
 import ContextMenu from "../ContextMenu.vue";
@@ -45,6 +46,7 @@ describe("ContextMenu.vue", () => {
       selection: selectionStore,
       workflow: workflowStore,
       canvas: canvasStore,
+      uiControls: uiControlsStore,
       application: {
         state: {
           ...applicationStore.state(),
