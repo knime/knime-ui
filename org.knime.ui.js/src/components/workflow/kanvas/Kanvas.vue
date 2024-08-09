@@ -120,6 +120,13 @@ const startRectangleSelection = (event: PointerEvent) => {
 const deselectAllObjects = () => {
   store.dispatch("selection/deselectAllObjects");
 };
+
+const onLeftControlClick = (event: PointerEvent) => {
+  if (navigatorUtils.isMac()) {
+    store.dispatch("application/toggleContextMenu", { event });
+    store.dispatch("selection/deselectAllObjects", null, { root: true });
+  }
+};
 </script>
 
 <template>
@@ -137,7 +144,8 @@ const deselectAllObjects = () => {
     @wheel="onMouseWheel"
     @pointerdown.middle="beginPan"
     @pointerdown.prevent.right="beginPan"
-    @pointerdown.left="beginPan"
+    @pointerdown.left.exact="beginPan"
+    @pointerdown.left.ctrl="onLeftControlClick"
     @pointerup.middle="stopPan"
     @pointerup.left="stopPan"
     @pointerup.prevent.right="stopPan"

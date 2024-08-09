@@ -330,6 +330,9 @@ const setColor = (color: string) => {
     @transform-end="transformAnnotation($event.bounds)"
     @click="onLeftClick"
     @pointerdown.right.stop="onContextMenu"
+    @pointerdown.left.ctrl.stop="
+      navigatorUtils.isMac() ? onContextMenu($event) : null
+    "
   >
     <template #default="{ transformedBounds }">
       <foreignObject

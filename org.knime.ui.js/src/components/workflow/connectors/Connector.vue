@@ -292,6 +292,9 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
         @mouseleave="isHovered = false"
         @click.left="onConnectionSegmentClick"
         @pointerdown.right="onContextMenu"
+        @pointerdown.left.ctrl="
+          navigatorUtils.isMac() ? onContextMenu($event) : null
+        "
         @dragenter="onRepositoryNodeDragEnter"
         @dragleave="onNodeDragLeave"
         @drop.stop="onRepositoryNodeDrop"

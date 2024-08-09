@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+import { navigatorUtils } from "@knime/utils";
 import { useStore } from "@/composables/useStore";
 import { useFeatures } from "@/plugins/feature-flags";
 import ContextMenu from "@/components/application/ContextMenu.vue";
@@ -61,6 +62,9 @@ const closeContextMenu = (event: unknown) => {
       { 'annotation-cursor': hasAnnotationModeEnabled },
     ]"
     @pointerdown.right="closeContextMenu($event)"
+    @pointerdown.left.ctrl="
+      navigatorUtils.isMac() ? closeContextMenu($event) : null
+    "
   >
     <ContextMenu
       v-if="contextMenu.isOpen"

@@ -285,6 +285,9 @@ export default {
           this.nameDimensions.height,
       };
     },
+    isMac() {
+      return navigatorUtils.isMac();
+    },
   },
   methods: {
     ...mapActions("workflow", [
@@ -531,6 +534,7 @@ export default {
           :node-position="position"
           :number-of-ports="Math.max(inPorts.length, outPorts.length)"
           @pointerdown.right="onContextMenu"
+          @pointerdown.left.ctrl="isMac ? onContextMenu($event) : null"
         />
 
         <!-- Elements for which mouse hover triggers hover state -->
@@ -538,6 +542,7 @@ export default {
           ref="hoverContainer"
           class="hover-container"
           @pointerdown.right="onContextMenu"
+          @pointerdown.left.ctrl="isMac ? onContextMenu($event) : null"
           @connector-enter="onConnectorEnter"
           @connector-leave="onConnectorLeave"
           @connector-move="onConnectorMove($event, { inPorts, outPorts })"
@@ -648,6 +653,7 @@ export default {
                 :editable="isEditable && isContainerNode"
                 @click.left="onLeftMouseClick"
                 @pointerdown.right="onContextMenu"
+                @pointerdown.left.ctrl="isMac ? onContextMenu($event) : null"
                 @width-change="nameDimensions.width = $event"
                 @height-change="nameDimensions.height = $event"
                 @edit-start="isHovering = false"
