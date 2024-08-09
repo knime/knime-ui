@@ -457,6 +457,25 @@ describe("Node", () => {
       );
     });
 
+    it("left click with control on Mac opens context menu", async () => {
+      mockUserAgent("mac");
+      storeConfig.selection.getters.isNodeSelected = () =>
+        vi.fn().mockReturnValueOnce(true);
+      const { wrapper } = doMount({ props });
+
+      await wrapper
+        .find(".mouse-clickable")
+        .trigger("pointerdown", { button: 0, ctrlKey: true });
+
+      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.stringMatching("root:1"),
+      );
+      expect(
+        storeConfig.application.actions.toggleContextMenu,
+      ).toHaveBeenCalled();
+    });
+
     it.each(["shift", "ctrl"])("%ss-click adds to selection", async (mod) => {
       mockUserAgent("windows");
       storeConfig.selection.getters.isNodeSelected = () =>

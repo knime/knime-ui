@@ -561,6 +561,24 @@ describe("WorkflowAnnotation.vue", () => {
       );
     });
 
+    it("left click with control on Mac opens context menu", async () => {
+      mockUserAgent("mac");
+      const { wrapper, dispatchSpy } = doMount();
+      await wrapper
+        .findComponent(TransformControls)
+        .trigger("pointerdown", { button: 0, ctrlKey: true });
+
+      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "selection/selectAnnotation",
+        defaultProps.annotation.id,
+      );
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
+    });
+
     it.each(["shift", "ctrl"])("%ss-click adds to selection", async (mod) => {
       mockUserAgent("windows");
       const { wrapper, dispatchSpy } = doMount();

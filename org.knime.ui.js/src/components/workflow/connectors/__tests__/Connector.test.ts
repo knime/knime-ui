@@ -13,6 +13,7 @@ import type { Store } from "vuex";
 import gsap from "gsap";
 import { mount } from "@vue/test-utils";
 
+import { mockUserAgent } from "jest-useragent-mock";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import {
   createAvailablePortTypes,
@@ -213,6 +214,24 @@ describe("Connector.vue", () => {
       const { wrapper, dispatchSpy, connection } = doMount();
       await wrapper.find("g path").trigger("click", { button: 0 });
 
+      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "selection/selectConnection",
+        connection.id,
+      );
+    });
+
+    it("left click with control on Mac opens context menu", async () => {
+      mockUserAgent("mac");
+      const { wrapper, dispatchSpy, connection } = doMount();
+      await wrapper
+        .find("g path")
+        .trigger("pointerdown", { button: 0, ctrlKey: true });
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
       expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
       expect(dispatchSpy).toHaveBeenCalledWith(
         "selection/selectConnection",

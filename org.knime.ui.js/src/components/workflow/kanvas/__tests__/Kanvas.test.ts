@@ -2,7 +2,6 @@
 import { expect, describe, it, vi, afterEach } from "vitest";
 import * as Vue from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
-import { mockUserAgent } from "jest-useragent-mock";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { $bus } from "@/plugins/event-bus";
@@ -33,6 +32,21 @@ vi.mock("@/util/workflowNavigationService", () => {
   return {
     workflowNavigationService: {
       nearestObject: vi.fn(),
+    },
+  };
+});
+
+let isMacMock, metaOrCtrlKeyMock;
+
+vi.mock("@knime/utils", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    navigatorUtils: {
+      isMac: () => isMacMock,
+      getMetaOrCtrlKey: () => metaOrCtrlKeyMock,
     },
   };
 });
@@ -185,6 +199,12 @@ describe("Kanvas", () => {
     };
   };
 
+  afterEach(() => {
+    vi.clearAllMocks();
+    isMacMock = false;
+    metaOrCtrlKeyMock = "ctrlKey";
+  });
+
   const triggerPointerDown = async ({
     wrapper,
     position,
@@ -268,7 +288,7 @@ describe("Kanvas", () => {
     });
 
     it("should emit select-pointerdown when pressing meta on Mac and left mouse button", async () => {
-      mockUserAgent("mac");
+      metaOrCtrlKeyMock = "metaKey";
       const { wrapper } = doShallowMount();
       const svg = wrapper.find("svg");
       await svg.trigger("pointerdown", {
@@ -288,7 +308,6 @@ describe("Kanvas", () => {
     });
 
     it("should emit select-pointerdown when pressing control on Windows/Linux and left mouse button", async () => {
-      mockUserAgent("windows");
       const { wrapper } = doShallowMount();
       const svg = wrapper.find("svg");
       await svg.trigger("pointerdown", {
@@ -308,7 +327,7 @@ describe("Kanvas", () => {
     });
 
     it("should set objects to be unmovable if meta key is down on mac", async () => {
-      mockUserAgent("mac");
+      metaOrCtrlKeyMock = "metaKey";
       const { commitSpy } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { metaKey: true }));
@@ -318,7 +337,6 @@ describe("Kanvas", () => {
     });
 
     it("should set objects to be unmovable if control key is down on windows", async () => {
-      mockUserAgent("windows");
       const { commitSpy } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { ctrlKey: true }));
@@ -670,6 +688,17 @@ describe("Kanvas", () => {
         "application/toggleContextMenu",
         expect.anything(),
       );
+    });
+
+    it("left click with control on Mac opens context menu", async () => {
+      isMacMock = true;
+      const { wrapper, dispatchSpy } = doShallowMount();
+      await wrapper.trigger("pointerdown", { button: 0, ctrlKey: true });
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        "application/toggleContextMenu",
+        expect.anything(),
+      );
+      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
     });
 
     it("opens contextmenu via context menu key (regardless of empty state)", async () => {

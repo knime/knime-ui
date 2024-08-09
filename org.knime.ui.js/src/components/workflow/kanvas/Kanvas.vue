@@ -124,7 +124,7 @@ const deselectAllObjects = () => {
 const onLeftControlClick = (event: PointerEvent) => {
   if (navigatorUtils.isMac()) {
     store.dispatch("application/toggleContextMenu", { event });
-    store.dispatch("selection/deselectAllObjects", null, { root: true });
+    store.dispatch("selection/deselectAllObjects");
   }
 };
 </script>
