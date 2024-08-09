@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { expect, describe, it, vi, afterEach } from "vitest";
 import { h, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
