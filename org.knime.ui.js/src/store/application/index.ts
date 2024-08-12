@@ -1,10 +1,10 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import type {
-  PortType,
-  UpdateAvailableEvent,
-  Project,
-  XY,
+import {
+  type PortType,
+  type UpdateAvailableEvent,
+  type Project,
+  type XY,
   AppState,
 } from "@/api/gateway-api/generated-api";
 import { API } from "@api";
@@ -23,8 +23,6 @@ import type { WorkflowObject, ExampleProject } from "@/api/custom-types";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { nodeSize } from "@/style/shapes";
 import { findSpaceById } from "@/store/spaces/util";
-
-export type AppMode = "job-viewer" | "default" | "playground";
 
 export interface ApplicationState {
   /**
@@ -95,7 +93,7 @@ export interface ApplicationState {
    */
   customHelpMenuEntries: Record<string, string>;
 
-  mode: AppMode;
+  appMode: AppState.AppModeEnum;
 }
 
 /*
@@ -131,7 +129,7 @@ export const state = (): ApplicationState => ({
   askToConfirmNodeConfigChanges: true,
   customHelpMenuEntries: {},
 
-  mode: "default",
+  appMode: AppState.AppModeEnum.Default,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -192,7 +190,7 @@ export const mutations: MutationTree<ApplicationState> = {
     state.customHelpMenuEntries = customHelpMenuEntries;
   },
   setMode(state, mode) {
-    state.mode = mode;
+    state.appMode = mode;
   },
 };
 
@@ -254,12 +252,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       );
     }
 
-    // TODO: UPDATE THIS TO MATCH TYPE FROM API
-    if (applicationState.mode) {
-      commit("setMode", applicationState.mode);
+    if (applicationState.appMode) {
+      commit("setMode", applicationState.appMode);
+      dispatch("uiControls/init", null, { root: true });
     }
-    // TODO: move into the if statement
-    dispatch("uiControls/init", null, { root: true });
 
     if (applicationState.openProjects) {
       commit("setOpenProjects", applicationState.openProjects);

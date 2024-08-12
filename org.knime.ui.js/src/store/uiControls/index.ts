@@ -1,5 +1,7 @@
-import { isBrowser, isDesktop } from "@/environment";
 import type { ActionTree, MutationTree } from "vuex";
+
+import { isBrowser, isDesktop } from "@/environment";
+import { AppState } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
 
 /** *******************************************************************
@@ -125,9 +127,9 @@ export const mutations: MutationTree<UIControlsState> = {
 
 export const actions: ActionTree<UIControlsState, RootStoreState> = {
   init({ commit, rootState }) {
-    const mode = rootState.application.mode;
-    const isDefault = mode === "default";
-    const isPlayground = mode === "playground";
+    const { appMode } = rootState.application;
+    const isDefault = appMode === AppState.AppModeEnum.Default;
+    const isPlayground = appMode === AppState.AppModeEnum.Playground;
 
     const { analyticsPlatformDownloadURL } = rootState.application;
 
