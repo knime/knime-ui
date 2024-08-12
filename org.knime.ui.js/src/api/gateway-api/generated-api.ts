@@ -457,6 +457,12 @@ export namespace Annotation {
 export interface AppState {
 
     /**
+     * The general mode the app is initialized with.  Control various aspects of the app  (ui elements being hidden/shown, whether a workflow can be edited, ...)
+     * @type {string}
+     * @memberof AppState
+     */
+    appMode: AppState.AppModeEnum;
+    /**
      * List of all opened workflow projects.
      * @type {Array<Project>}
      * @memberof AppState
@@ -556,6 +562,21 @@ export interface AppState {
 }
 
 
+/**
+ * @export
+ * @namespace AppState
+ */
+export namespace AppState {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum AppModeEnum {
+        Default = 'default',
+        JobViewer = 'job-viewer',
+        Playground = 'playground'
+    }
+}
 /**
  * Event for changes to the application state
  * @export
