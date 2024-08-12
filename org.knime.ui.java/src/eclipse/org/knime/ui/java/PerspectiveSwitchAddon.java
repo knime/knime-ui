@@ -59,8 +59,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
@@ -137,9 +135,8 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.setClassicPerspectiveActive(false);
         OpenKnimeUrlAction.setEventHandlingActive(false);
 
-        closeAllActiveEditors();
+        ClassicWorkflowEditorUtil.closeAllActiveEditors();
 
-        // TODO: Is this still needed?
         setTrimsAndMenuVisible(false, m_modelService, m_app);
 
         KnimeBrowserView.activateViewInitializer(false);
@@ -201,12 +198,6 @@ public final class PerspectiveSwitchAddon {
             return;
         }
         engine.setTheme(webUITheme, true);
-    }
-
-    private static void closeAllActiveEditors() {
-        java.util.Optional.ofNullable(PlatformUI.getWorkbench().getActiveWorkbenchWindow())//
-            .map(IWorkbenchWindow::getActivePage)//
-            .ifPresent(page -> page.closeAllEditors(true));
     }
 
     static void setTrimsAndMenuVisible(final boolean visible, final EModelService modelService,

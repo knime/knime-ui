@@ -79,9 +79,9 @@ final class CloseProject {
      */
     static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
         if (nextProjectId != null) {
-            var pm = DesktopAPI.getDeps(ProjectManager.class);
-            pm.openAndCacheProject(nextProjectId);
-            pm.setProjectActive(nextProjectId);
+            var projectManager = DesktopAPI.getDeps(ProjectManager.class);
+            projectManager.openAndCacheProject(nextProjectId);
+            projectManager.setProjectActive(nextProjectId);
         }
         var success =
             SaveAndCloseProjects.saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose),
@@ -110,9 +110,9 @@ final class CloseProject {
     }
 
     static boolean closeProject(final String projectId) {
-        var wpm = ProjectManager.getInstance();
+        var projectManager = ProjectManager.getInstance();
         var success = new AtomicBoolean(true);
-        wpm.removeProject(projectId, wfm -> {
+        projectManager.removeProject(projectId, wfm -> {
             try {
                 CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
             } catch (InterruptedException e) { // NOSONAR

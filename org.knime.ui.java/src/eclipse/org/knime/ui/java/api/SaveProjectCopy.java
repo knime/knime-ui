@@ -298,9 +298,9 @@ final class SaveProjectCopy {
     private static void saveAndReplaceProject(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
         final Project project, final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> saveLogic) {
         final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
-        final var resultOptional = DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic);
+        final var result = DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic);
 
-        if (resultOptional.isEmpty() || !resultOptional.get().booleanValue()) { // If saving has failed
+        if (result.isEmpty() || !result.get()) { // If saving has failed
             FileUtil.deleteRecursively(newPath.toFile());
         } else {
             if (oldContext.isTemporyWorkflowCopyMode()) { // If saved from a yellow bar editor

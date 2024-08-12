@@ -94,16 +94,24 @@ final class EclipseUIAPI {
 
         /** Pages in the 'General' section */
         private static final String APPEARANCE = "org.eclipse.ui.preferencePages.Views";
+
         private static final String KEYS = "org.eclipse.ui.preferencePages.Keys";
+
         private static final String SECURITY = "org.eclipse.equinox.security.ui.category";
+
         private static final String STARTUP_SHUTDOWN = "org.eclipse.ui.preferencePages.Startup";
+
         private static final String WEB_BROWSER = "org.eclipse.ui.browser.preferencePage";
+
         private static final String WORKSPACE = "org.eclipse.ui.preferencePages.Workspace";
 
         /** Pages in the 'KNIME' section */
         private static final String MASTER_KEY = "org.knime.workbench.ui.preferences.masterkey";
+
         private static final String META_INFO = "org.knime.workbench.ui.metainfo";
+
         private static final String MODERN_UI = "org.knime.ui.java.prefs.KnimeUIPreferencePage";
+
         private static final String WORKFLOW_COACH = "org.knime.workbench.workflowcoach";
 
         /** Pages in the 'Report Design' section */
@@ -209,9 +217,11 @@ final class EclipseUIAPI {
     @API
     static void switchToJavaUI() { // NOSONAR
         // All the open workflow projects will be closed on perspective switch
-        var proceed =
-            SaveAndCloseProjects.saveAndCloseProjectsInteractively(ProjectManager.getInstance().getProjectIds(),
-                DesktopAPI.getDeps(EventConsumer.class), PostProjectCloseAction.SWITCH_PERSPECTIVE) == 1;
+        var proceed = SaveAndCloseProjects.saveAndCloseProjectsInteractively( //
+            ProjectManager.getInstance().getProjectIds(), //
+            DesktopAPI.getDeps(EventConsumer.class), //
+            PostProjectCloseAction.SWITCH_PERSPECTIVE //
+        ) == 1;
         if (!proceed) {
             return;
         }

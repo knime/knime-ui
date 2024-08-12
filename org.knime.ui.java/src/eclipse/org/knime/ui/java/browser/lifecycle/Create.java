@@ -98,9 +98,6 @@ final class Create {
         initializeResourceHandlers();
         DesktopAPI.forEachAPIFunction(apiFunctionCaller);
 
-        // TODO: Is this check still necessary?
-        assertNoOpenEclipseEditors();
-
         var welcomeAPEndpoint = WelcomeAPEndpoint.getInstance();
         welcomeAPEndpoint.callEndpointForTracking(true);
 
@@ -168,22 +165,6 @@ final class Create {
             PageResourceHandler.NODE_VIEW, //
             PageResourceHandler.NODE_DIALOG //
         );
-    }
-
-    private static void assertNoOpenEclipseEditors() {
-        IWorkbenchPage page = null;
-        try {
-            page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            if (page != null) {
-                var refs = page.getEditorReferences();
-                if (refs.length > 0) { // NOSONAR
-                    NodeLogger.getLogger(LifeCycle.class).error("There are open eclipse editors which is not expected: "
-                        + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
-                }
-            }
-        } catch (Exception e) { // NOSONAR
-            // nothing to do - since it's for a sanity check only
-        }
     }
 
     private static LocalWorkspace createLocalWorkspace() {

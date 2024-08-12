@@ -70,7 +70,6 @@ final class SaveState {
                 AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
         final IntSupplier saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
         final var saveState = saveAndCloseAllWorkflows.getAsInt();
-        final var workflowsSaved = saveState == 1;
 
         if (saveState == 0) {
             // saving has been cancelled
@@ -81,7 +80,7 @@ final class SaveState {
 
             @Override
             public boolean workflowsSaved() {
-                return workflowsSaved;
+                return saveState == 1;
             }
 
             @Override
