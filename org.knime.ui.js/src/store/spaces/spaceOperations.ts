@@ -259,6 +259,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       await dispatch("fetchWorkflowGroupContent", { projectId });
       commit("setActiveRenamedItemId", newFolderItem.id);
+      commit("setCurrentSelectedItemIds", [newFolderItem.id]);
 
       return newFolderItem;
     } catch (error) {
