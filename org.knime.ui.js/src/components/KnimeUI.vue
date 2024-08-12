@@ -36,7 +36,7 @@ const AppHeader = defineAsyncComponent({
 });
 
 const loaded = ref(false);
-const error = ref<any | null>(null);
+const error = ref<{ message: string; stack?: string } | null>(null);
 
 const $router = useRouter();
 const $route = useRoute();
@@ -85,7 +85,7 @@ const setup = async () => {
     if (_error instanceof Error) {
       error.value = { message: _error.message, stack: _error.stack };
     } else {
-      error.value = "Unknown application error";
+      error.value = { message: "Unknown application error" };
       consola.fatal("Initialization failed", { error: _error });
     }
   }
