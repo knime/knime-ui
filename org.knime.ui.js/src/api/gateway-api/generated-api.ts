@@ -499,12 +499,6 @@ export interface AppState {
      */
     featureFlags?: { [key: string]: any; };
     /**
-     *
-     * @type {Permissions}
-     * @memberof AppState
-     */
-    permissions?: Permissions;
-    /**
      * If true, scrolling in the workflow canvas will be interpreted as zooming
      * @type {boolean}
      * @memberof AppState
@@ -2792,59 +2786,6 @@ export namespace PatchOp {
         Test = 'test'
     }
 }
-/**
- *
- * @export
- * @interface Permissions
- */
-export interface Permissions {
-
-    /**
-     * Whether the current user is allowed to configure nodes
-     * @type {boolean}
-     * @memberof Permissions
-     */
-    canConfigureNodes: boolean;
-    /**
-     * Whether the current user is allowed to edit workflows,  this includes most operations including execution and editing meta data
-     * @type {boolean}
-     * @memberof Permissions
-     */
-    canEditWorkflow: boolean;
-    /**
-     * Whether the current user is allowed access to the node repository
-     * @type {boolean}
-     * @memberof Permissions
-     */
-    canAccessNodeRepository: boolean;
-    /**
-     * Whether the current user is allowed access to KAI
-     * @type {boolean}
-     * @memberof Permissions
-     */
-    canAccessKAIPanel: boolean;
-    /**
-     * Whether the current user is allowed to navigate in the space explorer
-     * @type {boolean}
-     * @memberof Permissions
-     */
-    canAccessSpaceExplorer: boolean;
-    /**
-     * Whether an indicator for certain kinds of remote workflows (\&quot;yellow bar\&quot;) should be shown in some contexts
-     * @type {boolean}
-     * @memberof Permissions
-     */
-    showRemoteWorkflowInfo: boolean;
-    /**
-     * Whether to show a floating download button above the entire app.
-     * @type {boolean}
-     * @memberof Permissions
-     */
-    showFloatingDownloadButton: boolean;
-
-}
-
-
 /**
  * Abstract schema for commands acting on ports (port operations).
  * @export
