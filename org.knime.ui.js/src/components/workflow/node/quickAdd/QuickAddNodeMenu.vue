@@ -299,7 +299,7 @@ export default defineComponent({
           placeholder="Search compatible nodes"
           class="search-bar"
           focus-on-mount
-          tabindex="-1"
+          tabindex="0"
           @update:model-value="
             $store.dispatch('quickAddNodes/updateQuery', $event)
           "
