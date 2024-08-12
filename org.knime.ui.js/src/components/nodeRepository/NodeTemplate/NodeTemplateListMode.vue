@@ -70,7 +70,7 @@ const emit = defineEmits(["helpIconClick"]);
   & .node-template-content {
     display: flex;
     width: 100%;
-    max-width: calc(100% - 33px); /** WHY? */
+    max-width: calc(100% - 33px);
 
     & .node-name {
       display: block;

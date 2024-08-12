@@ -16,9 +16,10 @@ import {
 
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import ArrowNextIcon from "@knime/styles/img/icons/arrow-next.svg";
+import { useKeyPressedUntilMouseClick } from "@knime/components";
 
 interface Props {
-  source?: TreeNodeOptions[];
+  source: TreeNodeOptions[];
   loadData?: LoadDataFunc;
   virtual?: VirtualConfig;
   selectable?: boolean;
@@ -26,7 +27,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  source: () => [],
   // eslint-disable-next-line no-undefined
   loadData: undefined,
   // eslint-disable-next-line no-undefined
@@ -49,9 +49,20 @@ const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
   );
 };
 
+const keyPressedUntilMouseClick = useKeyPressedUntilMouseClick([
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Enter",
+]);
+
 const onFocusChange = async ({ node }: { node: BaseTreeNode | null }) => {
   focusKey.value = node?.key ?? null;
-  // scroll into view
+  // scroll into view if we are using the keyboard to navigate
+  if (!keyPressedUntilMouseClick.value) {
+    return;
+  }
   await nextTick();
   const element = tree.value?.$el.querySelector(".tree-node-wrapper.focus");
   element?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -68,16 +79,14 @@ const onTreeKeydown = ({ event, node }: KeydownEvent) => {
     }
   };
 
-  switch (key) {
-    case "Enter":
-      toggleExpand();
-      break;
+  if (key === "Enter") {
+    toggleExpand();
   }
 
   emit("keydown", { event, node });
 };
 
-const nodeDomId = (key?: NodeKey | null) =>
+const domNodeId = (key?: NodeKey | null) =>
   // eslint-disable-next-line no-undefined
   key ? `${props.idPrefix}_${key}` : undefined;
 
@@ -99,13 +108,13 @@ defineExpose({
     :load-data="loadData"
     :virtual="virtual"
     indent-type="margin"
-    :aria-activedescendant="nodeDomId(focusKey)"
+    :aria-activedescendant="domNodeId(focusKey)"
     @keydown="onTreeKeydown"
     @focus-change="onFocusChange"
   >
     <template #node="{ node }: { node: BaseTreeNode }">
       <span
-        :id="nodeDomId(node.key)"
+        :id="domNodeId(node.key)"
         :class="['tree-node-wrapper', { focus: hasFocus(node) }]"
       >
         <slot
@@ -301,7 +310,6 @@ defineExpose({
   border: 1px solid var(--border-color);
   border-radius: 2px;
   border-collapse: initial;
-  /*transition: all 0.2s ease-in-out;*/
   box-sizing: border-box;
 }
 .vir-checkbox .inner:after {
@@ -363,7 +371,6 @@ defineExpose({
   margin: 1px 0;
   font-size: var(--font-size-base);
   cursor: pointer;
-  /*transition: all 0.2s ease-in-out;*/
   height: 28px;
   line-height: 28px;
 }
@@ -400,7 +407,6 @@ defineExpose({
   vertical-align: top;
   color: var(--text-color);
   white-space: nowrap;
-  /*transition: background-color 0.2s;*/
 }
 .vir-tree-node .node-content .node-title.selected {
   background-color: var(--assist-color);
@@ -410,7 +416,7 @@ defineExpose({
   color: var(--disable-color);
 }
 .node-selected .node-title {
-  background-color: #d5e8fc;
+  background-color: var(--assist-color);
 }
 @keyframes roundLoading {
   0% {

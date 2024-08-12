@@ -46,7 +46,7 @@ const emit = defineEmits<{
 
 const store = useStore();
 
-const rootCategories = ref<TreeNodeOptions[]>();
+const rootCategories = ref<TreeNodeOptions[]>([]);
 
 onMounted(async () => {
   const { children } = await store.dispatch("nodeRepository/getNodeCategory", {
@@ -164,7 +164,7 @@ defineExpose({ focusFirst, getExpandedNodeIds });
 
 <style lang="postcss" scoped>
 .scroll-container-content {
-  padding: 0 20px 15px;
+  padding: 0 4px 16px 20px;
   font-family: "Roboto Condensed", sans-serif;
 }
 </style>
