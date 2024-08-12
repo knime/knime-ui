@@ -461,7 +461,7 @@ export interface AppState {
      * @type {string}
      * @memberof AppState
      */
-    appMode: AppState.AppModeEnum;
+    appMode?: AppState.AppModeEnum;
     /**
      * List of all opened workflow projects.
      * @type {Array<Project>}
