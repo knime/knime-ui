@@ -79,7 +79,7 @@ public final class PerspectiveUtil {
     }
 
     /**
-     * System property that controls the perspective eclipse/AP is started with.
+     * System property that signals the currently active perspective.
      */
     public static final String PERSPECTIVE_SYSTEM_PROPERTY = "perspective";
 
@@ -150,6 +150,9 @@ public final class PerspectiveUtil {
         isClassicPerspectiveActive = isActive;
         if (isActive) {
             isClassicPerspectiveLoaded = true;
+            System.setProperty(PERSPECTIVE_SYSTEM_PROPERTY, CLASSIC_PERSPECTIVE_ID);
+        } else {
+            System.setProperty(PERSPECTIVE_SYSTEM_PROPERTY, WEB_UI_PERSPECTIVE_ID);
         }
     }
 
