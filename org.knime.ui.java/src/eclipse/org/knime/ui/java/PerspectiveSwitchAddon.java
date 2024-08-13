@@ -59,6 +59,8 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
@@ -67,10 +69,8 @@ import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
-import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.view.actions.OpenKnimeUrlAction;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.osgi.service.event.Event;
@@ -135,7 +135,7 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.setClassicPerspectiveActive(false);
         OpenKnimeUrlAction.setEventHandlingActive(false);
 
-        ClassicWorkflowEditorUtil.closeAllActiveEditors();
+        closeAllActiveEditors();
 
         setTrimsAndMenuVisible(false, m_modelService, m_app);
 
@@ -158,20 +158,12 @@ public final class PerspectiveSwitchAddon {
             lifeCycle.suspend();
         }
 
-        // TODO: Is this still needed?
         setTrimsAndMenuVisible(true, m_modelService, m_app);
 
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(true);
         switchToJavaUITheme();
         PerspectiveUtil.setClassicPerspectiveActive(true);
         OpenKnimeUrlAction.setEventHandlingActive(true);
-
-        // The color of the workflow editor canvas changes when switching back
-        // -> this is a workaround to compensate for it
-        // (couldn't be solved via css styling because the background color differs if the respective workflow
-        // is write protected)
-        ClassicWorkflowEditorUtil.getOpenWorkflowEditors(m_modelService, m_app)
-            .forEach(WorkflowEditor::updateEditorBackgroundColor);
 
         // Keeps Classic UI in sync with the file system
         PerspectiveUtil.refreshLocalWorkspaceContentProvider();
@@ -217,5 +209,10 @@ public final class PerspectiveSwitchAddon {
         return java.util.Optional.ofNullable(previousPerspectiveId);
     }
 
+    private static void closeAllActiveEditors() {
+        java.util.Optional.ofNullable(PlatformUI.getWorkbench().getActiveWorkbenchWindow())//
+            .map(IWorkbenchWindow::getActivePage)//
+            .ifPresent(page -> page.closeAllEditors(true));
+    }
 
 }

@@ -56,11 +56,17 @@ import java.util.function.Supplier;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
+import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
+import org.knime.core.util.Version;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -145,7 +151,7 @@ public final class TestingUtil {
     private static WorkflowManager loadWorkflowForTesting(final String projectId) {
         var file = getProjectFile(projectId);
         try {
-            WorkflowManager wfm = ClassicWorkflowEditorUtil.loadTempWorkflow(file);
+            WorkflowManager wfm = loadTempWorkflow(file);
             if (loadedWorkflowsForTesting == null) {
                 loadedWorkflowsForTesting = new HashSet<>();
             }
@@ -156,6 +162,22 @@ public final class TestingUtil {
             LOGGER.error("Workflow at '" + file + "' couldn't be loaded", ex);
             return null;
         }
+    }
+
+    static WorkflowManager loadTempWorkflow(final File wfDir) throws IOException, InvalidSettingsException,
+        CanceledExecutionException, UnsupportedWorkflowVersionException, LockFailedException {
+        WorkflowLoadHelper loadHelper =
+            new WorkflowLoadHelper(WorkflowContextV2.forTemporaryWorkflow(wfDir.toPath(), null)) {
+                @Override
+                public UnknownKNIMEVersionLoadPolicy getUnknownKNIMEVersionLoadPolicy(
+                    final LoadVersion workflowKNIMEVersion, final Version createdByKNIMEVersion,
+                    final boolean isNightlyBuild) {
+                    return UnknownKNIMEVersionLoadPolicy.Try;
+                }
+            };
+
+        WorkflowLoadResult loadRes = WorkflowManager.loadProject(wfDir, new ExecutionMonitor(), loadHelper);
+        return loadRes.getWorkflowManager();
     }
 
     private static void disposeLoadedWorkflowsForTesting() {

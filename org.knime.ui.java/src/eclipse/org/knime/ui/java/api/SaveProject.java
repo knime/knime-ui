@@ -53,8 +53,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -76,10 +74,8 @@ import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.DesktopAPUtil.OverwriteRemotelyResult;
-import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
@@ -116,8 +112,6 @@ final class SaveProject {
             DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
         } else {
             saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
-            ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
-            unmarkDirtyChildWorkflowEditors(projectWfm);
             // Emit a ProjectDirtyStateEvent
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
@@ -126,24 +120,6 @@ final class SaveProject {
     private static boolean isExecutionInProgress(final WorkflowManager wfm) {
         var state = wfm.getNodeContainerState();
         return state.isExecutionInProgress() || state.isExecutingRemotely();
-    }
-
-    /**
-     * Get the {@link WorkflowManager}s of node containers contained in the given workflow manager (no recursion).
-     *
-     * @param parent The workflow manager whose direct children (contained node containers) to consider
-     * @return A list of workflow managers that correspond to node containers appearing in the parent workflow manager.
-     */
-    private static List<WorkflowManager> getChildWfms(final WorkflowManager parent) {
-        return parent.getNodeContainers().stream().map(nodeContainer -> {
-            if (nodeContainer instanceof SubNodeContainer snc) {
-                return snc.getWorkflowManager();
-            } else if (nodeContainer instanceof WorkflowManager wfm) {
-                return wfm;
-            } else {  // native nodes etc.
-                return null;
-            }
-        }).filter(Objects::nonNull).toList();
     }
 
     private static void saveProjectWithProgressBar(final WorkflowManager wfm, final String svg,
@@ -234,20 +210,6 @@ final class SaveProject {
                     "Saving the SVG didn't work", LOGGER, e));
             }
         }
-    }
-
-    /**
-     * Workaround to set sub-editors to clean (cf WorkflowEditor#saveTo). If viewing in new frontend, the existing
-     * implementation does not suffice to find sub-editors.
-     */
-    private static void unmarkDirtyChildWorkflowEditors(final WorkflowManager wfm) {
-        if (Display.getCurrent().isDisposed()) {
-            return;
-        }
-        getChildWfms(wfm).stream()//
-            .map(ClassicWorkflowEditorUtil::getOpenWorkflowEditor)//
-            .flatMap(Optional::stream) // unpack/collapse optionals
-            .forEach(WorkflowEditor::unmarkDirty);
     }
 
     private static boolean saveBackToServerOrHub(final IProgressMonitor monitor, final WorkflowManager wfm,
