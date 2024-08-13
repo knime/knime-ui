@@ -54,14 +54,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.CanceledExecutionException;
@@ -103,33 +101,25 @@ final class SaveProject {
      * Save the project workflow manager identified by a given project ID.
      *
      * @param projectId ID of the project
-     * @param projectSVG SVG of the project, may be {@code null} if the project is open in Classic AP
+     * @param projectSVG SVG of the project, must not be {@code null}.
      * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
      */
     static void saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
-        var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
+        if (projectSVG == null) {
+            // Only log a warning since saving will still work
+            LOGGER.warn("The 'saveProject(...)' function was not provided an SVG when called. This should not happen.");
+        }
 
-        if (projectSVG == null) { // No SVG received, workflow editor instance must be present
-            // For at least as long as new frontend is integrated in "old" knime eclipse workbench,
-            // we want a save action triggered from new frontend to be consistent with one triggered
-            // from the traditional UI. The best thing we can do is trigger the exact same action.
-            WorkflowEditor editor = ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm)
-                .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
-            editor.doSave(new NullProgressMonitor());
+        var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
+        if (isExecutionInProgress(projectWfm)) {
+            // Show a warning otherwise
+            DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
+        } else {
+            saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
+            ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
             unmarkDirtyChildWorkflowEditors(projectWfm);
             // Emit a ProjectDirtyStateEvent
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-        } else { // SVG received, workflow editor instance might not be present
-            if (isExecutionInProgress(projectWfm)) {
-                // Show a warning otherwise
-                DesktopAPUtil.showWarning("Workflow in execution", "Executing nodes are not saved!");
-            } else {
-                saveProjectWithProgressBar(projectWfm, projectSVG, localOnly);
-                ClassicWorkflowEditorUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
-                unmarkDirtyChildWorkflowEditors(projectWfm);
-                // Emit a ProjectDirtyStateEvent
-                DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            }
         }
     }
 
