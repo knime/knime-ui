@@ -995,6 +995,7 @@ describe("workflowShortcuts", () => {
         {
           props: {
             nodeId: "root:4",
+            nodeRelation: "SUCCESSORS",
             port: { index: 0, typeId: "some.type" },
             position: expect.anything(),
           },
@@ -1013,6 +1014,7 @@ describe("workflowShortcuts", () => {
         {
           props: {
             nodeId: "root:4",
+            nodeRelation: "SUCCESSORS",
             port: { index: 1, typeId: "some.type" },
             position: expect.anything(),
           },
@@ -1042,6 +1044,7 @@ describe("workflowShortcuts", () => {
         {
           props: {
             nodeId: "root:4",
+            nodeRelation: "SUCCESSORS",
             port: { index: 2, typeId: "some.type" },
             position: { x: 5, y: 8 },
           },

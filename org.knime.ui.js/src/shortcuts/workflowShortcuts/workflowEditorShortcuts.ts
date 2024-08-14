@@ -137,7 +137,12 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         : calculatePosition(node, portIndex, outPortCount);
 
       $store.dispatch("workflow/openQuickAddNodeMenu", {
-        props: { nodeId, port: outputPort, position },
+        props: {
+          nodeId,
+          port: outputPort,
+          position,
+          nodeRelation: "SUCCESSORS",
+        },
       });
     },
     condition: ({ $store }) => $store.getters["workflow/isWritable"],
