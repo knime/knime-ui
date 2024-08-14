@@ -5,8 +5,8 @@ import type {
   Connection,
   SpaceItemReference,
   XY,
+  AddNodeCommand,
 } from "@/api/gateway-api/generated-api";
-import type { NodeRelation } from "@/api/custom-types";
 
 import { geometry } from "@/util/geometry";
 import type { RootStoreState } from "../types";
@@ -110,7 +110,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       spaceItemReference: SpaceItemReference;
       sourceNodeId?: string;
       sourcePortIdx?: number;
-      nodeRelation?: NodeRelation;
+      nodeRelation?: AddNodeCommand.NodeRelationEnum;
       /**
        * 'new-only' clears the active selection and selects only the new node
        * 'add' adds the new node to the active selection

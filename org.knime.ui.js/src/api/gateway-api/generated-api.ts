@@ -107,7 +107,7 @@ export interface AddNodeCommand extends WorkflowCommand {
      * @type {string}
      * @memberof AddNodeCommand
      */
-    nodeRelation?: string;
+    nodeRelation?: AddNodeCommand.NodeRelationEnum;
 
 }
 
@@ -117,6 +117,14 @@ export interface AddNodeCommand extends WorkflowCommand {
  * @namespace AddNodeCommand
  */
 export namespace AddNodeCommand {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum NodeRelationEnum {
+        PREDECESSORS = 'PREDECESSORS',
+        SUCCESSORS = 'SUCCESSORS'
+    }
 }
 /**
  *
@@ -5011,7 +5019,7 @@ const node = function(rpcClient: RPCClient) {
 const noderepository = function(rpcClient: RPCClient) {
     return {
         /**
-         * Given a node, a port and a direction it recommends a certain number of compatible nodes the user might want to add next to its workflow. If queried with no node, no port and no direction, it recommends the most relevant source nodes, that naturally have no predecessor.
+         * Given a node, a port and a node-relation it recommends a certain number of compatible nodes the user might want to add next to its workflow. If queried with no node, no port and no node-relation, it recommends the most relevant source nodes, that naturally have no predecessor.
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} [nodeId] The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
