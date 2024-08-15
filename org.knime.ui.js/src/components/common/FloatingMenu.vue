@@ -241,7 +241,7 @@ const onFocusOut = (event: FocusEvent) => {
 .floating-menu {
   position: absolute;
   display: block;
-  z-index: 5;
+  z-index: 10;
 
   &:focus {
     outline: none;
