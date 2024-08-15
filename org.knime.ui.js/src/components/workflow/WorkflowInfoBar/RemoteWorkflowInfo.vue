@@ -66,5 +66,6 @@ const shouldShow = computed(() => {
   align-items: center;
   min-height: 40px;
   background: v-bind("$colors.notifications.warning");
+  backdrop-filter: brightness(4);
 }
 </style>
