@@ -2141,7 +2141,7 @@ export interface NodeCategory {
      * @type {Array<CategoryMetadata>}
      * @memberof NodeCategory
      */
-    children?: Array<CategoryMetadata>;
+    childCategories?: Array<CategoryMetadata>;
 
 }
 

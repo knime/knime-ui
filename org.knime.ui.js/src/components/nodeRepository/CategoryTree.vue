@@ -49,11 +49,14 @@ const store = useStore();
 const rootCategories = ref<TreeNodeOptions[]>([]);
 
 onMounted(async () => {
-  const { children } = await store.dispatch("nodeRepository/getNodeCategory", {
-    categoryPath: [],
-  });
+  const { childCategories } = await store.dispatch(
+    "nodeRepository/getNodeCategory",
+    {
+      categoryPath: [],
+    },
+  );
 
-  rootCategories.value = children.map(mapCategoryToTreeNode);
+  rootCategories.value = childCategories.map(mapCategoryToTreeNode);
 });
 
 const tree = ref<InstanceType<typeof Tree>>();
@@ -75,7 +78,7 @@ const loadTreeLevel = async (
   treeNode: BaseTreeNode,
   callback: (children: TreeNodeOptions[]) => void,
 ) => {
-  const { children: categories, nodes } = await store.dispatch(
+  const { childCategories, nodes } = await store.dispatch(
     "nodeRepository/getNodeCategory",
     { categoryPath: treeNode.key.toString().split("/") },
   );
@@ -85,7 +88,7 @@ const loadTreeLevel = async (
   loadedNodeIds.value.set(treeNode.key, nodeIds);
 
   callback([
-    ...categories.map(mapCategoryToTreeNode),
+    ...childCategories.map(mapCategoryToTreeNode),
     ...nodes.map(mapNodeToTreeNode),
   ]);
 };
