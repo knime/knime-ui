@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { onClickOutside } from "@vueuse/core";
 
@@ -145,6 +145,22 @@ const displayContextMenu = (event: MouseEvent) => {
 };
 
 onClickOutside(menuWrapper, hideMenu);
+
+const tabWrapper = ref<HTMLElement | null>(null);
+
+watch(
+  activeProjectTab,
+  async () => {
+    await nextTick();
+
+    const activeTab = tabWrapper.value?.querySelector(".active");
+
+    if (activeTab) {
+      activeTab.scrollIntoView();
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -168,7 +184,7 @@ onClickOutside(menuWrapper, hideMenu);
     >
       <div v-if="hasOpenProjects" class="project-tabs">
         <Carousel ref="carousel" @wheel="onWheelScroll">
-          <div class="wrapper">
+          <div ref="tabWrapper" class="wrapper">
             <AppHeaderTab
               v-for="{
                 name,

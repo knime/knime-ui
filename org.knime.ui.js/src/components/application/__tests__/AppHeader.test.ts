@@ -20,6 +20,7 @@ import { FunctionButton } from "@knime/components";
 const mockedAPI = deepMocked(API);
 
 const routerPush = vi.fn();
+Element.prototype.scrollIntoView = vi.fn();
 
 vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
@@ -181,6 +182,17 @@ describe("AppHeader.vue", () => {
 
       await Vue.nextTick();
       expect(secondTab.props("isActive")).toBe(true);
+    });
+
+    it("scrolls into active tab", () => {
+      useRoute.mockReturnValueOnce({
+        name: APP_ROUTES.WorkflowPage,
+        params: { projectId: "2" },
+      });
+      const { wrapper } = doMount();
+      const activeDiv = wrapper.find(".active").element;
+
+      expect(activeDiv.scrollIntoView).toHaveBeenCalledOnce();
     });
   });
 
