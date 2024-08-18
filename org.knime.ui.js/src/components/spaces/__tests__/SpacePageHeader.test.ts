@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils";
 
@@ -11,7 +12,7 @@ import SpacePageHeader from "../SpacePageHeader.vue";
 
 describe("SpacePageHeader.vue", () => {
   const title = "title test";
-  const doMount = (isEditable: boolean) => {
+  const doMount = (isEditable: boolean, isEditing: boolean = false) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
     });
@@ -21,6 +22,7 @@ describe("SpacePageHeader.vue", () => {
         title,
         breadcrumbs: [{ text: "item 1" }, { text: "item 2" }],
         isEditable,
+        isEditing,
       },
     });
 
@@ -87,5 +89,116 @@ describe("SpacePageHeader.vue", () => {
     textArea.trigger("input");
     wrapper.findAllComponents(FunctionButton).at(0)!.vm.$emit("click");
     expect(wrapper.emitted("submit")).toBeFalsy();
+  });
+
+  it("should emit update:isEditing on focus", async () => {
+    const { wrapper } = doMount(true);
+
+    const textArea = wrapper.find("textarea");
+    await textArea.trigger("focus");
+
+    expect(wrapper.emitted("update:isEditing")).toBeTruthy();
+    expect(wrapper.emitted("update:isEditing")![0]).toEqual([true]);
+  });
+
+  it("should reset spaceName, emit update:isEditing and cancel on cancel", async () => {
+    const { wrapper } = doMount(true);
+
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = "changed name";
+    textArea.trigger("input");
+
+    const functionButtons = wrapper.findAllComponents(FunctionButton);
+    await functionButtons.at(1)!.trigger("click");
+    await nextTick();
+
+    expect(textArea.element.value).toBe(title);
+    expect(wrapper.emitted("update:isEditing")![0]).toEqual([false]);
+    expect(wrapper.emitted("cancel")).toBeTruthy();
+  });
+
+  it("should display error message when error prop is provided", () => {
+    const errorMessage = "This is an error";
+
+    const wrapper = mount(SpacePageHeader, {
+      props: {
+        title,
+        breadcrumbs: [{ text: "item 1" }, { text: "item 2" }],
+        isEditable: true,
+        error: errorMessage,
+      },
+    });
+
+    const errorSpan = wrapper.find(".msg-error");
+    expect(errorSpan.exists()).toBe(true);
+    expect(errorSpan.text()).toBe(errorMessage);
+  });
+
+  it("should submit on Enter key press", async () => {
+    const { wrapper } = doMount(true, true);
+    await nextTick();
+
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = "new name";
+    textArea.trigger("input");
+
+    await textArea.trigger("keydown", { key: "Enter" });
+    await nextTick();
+
+    expect(wrapper.emitted("submit")![0]).toEqual(["new name"]);
+  });
+
+  it("should cancel on Escape key press", async () => {
+    const { wrapper } = doMount(true, true);
+    await nextTick();
+
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = "Space New Title 1";
+    textArea.trigger("input");
+
+    await textArea.trigger("keydown", { key: "Escape" });
+    await nextTick();
+
+    expect(wrapper.emitted("cancel")).toBeTruthy();
+    expect(textArea.element.value).toBe(title);
+  });
+
+  it("should submit on clicking outside the textarea", async () => {
+    const { wrapper } = doMount(true, true);
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = "Space New Title 2";
+    textArea.trigger("input");
+
+    const clickEvent = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+    });
+    document.body.dispatchEvent(clickEvent);
+    await nextTick();
+
+    expect(wrapper.emitted("submit")![0]).toEqual(["Space New Title 2"]);
+  });
+
+  it("should not submit if the title has not changed on clicking outside", async () => {
+    const { wrapper } = doMount(true, true);
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = title;
+    textArea.trigger("input");
+
+    const clickEvent = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    document.body.dispatchEvent(clickEvent);
+
+    await nextTick();
+
+    expect(wrapper.emitted("submit")).toBeUndefined();
   });
 });
