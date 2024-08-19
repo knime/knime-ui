@@ -1,4 +1,4 @@
-import { expect, describe, it, vi } from "vitest";
+import { expect, describe, it, vi, beforeEach } from "vitest";
 import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
@@ -50,6 +50,10 @@ describe("AppHeader.vue", () => {
     $route?: { name: string };
     isLoadingWorkflow?: boolean;
   };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   const doMount = ({
     props = {},
@@ -184,12 +188,13 @@ describe("AppHeader.vue", () => {
       expect(secondTab.props("isActive")).toBe(true);
     });
 
-    it("scrolls into active tab", () => {
+    it("scrolls into active tab", async () => {
       useRoute.mockReturnValueOnce({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: "2" },
       });
       const { wrapper } = doMount();
+      await wrapper.findAll(".tab-item").at(2)!.trigger("click");
       const activeDiv = wrapper.find(".active").element;
 
       expect(activeDiv.scrollIntoView).toHaveBeenCalledOnce();
