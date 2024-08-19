@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
 import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import ForumIcon from "@knime/styles/img/icons/forum.svg";
+import GraduateHatIcon from "@knime/styles/img/icons/graduate-hat.svg";
 import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
 import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
@@ -64,12 +65,17 @@ const helpMenuItem = computed<MenuItem>(() => ({
       },
     },
     {
-      text: "KNIME Getting started guide",
+      text: "KNIME Getting Started Guide",
       icon: GettingStartedIcon,
       href: buildExternalUrl("https://www.knime.com/getting-started-guide"),
     },
     {
-      text: "KNIME Cheat sheets",
+      text: "KNIME Self-paced Courses",
+      icon: GraduateHatIcon,
+      href: buildExternalUrl("https://knime.com/modern-ui-courses/"),
+    },
+    {
+      text: "KNIME Cheat Sheets",
       icon: CheatSheetsIcon,
       href: buildExternalUrl("https://www.knime.com/cheat-sheets"),
     },
@@ -79,7 +85,7 @@ const helpMenuItem = computed<MenuItem>(() => ({
       href: buildExternalUrl("https://docs.knime.com/"),
     },
     {
-      text: "Get Help From the KNIME Community",
+      text: "Get help from the KNIME Community",
       separator: true,
       icon: ForumIcon,
       href: buildExternalUrl("https://forum.knime.com/"),
