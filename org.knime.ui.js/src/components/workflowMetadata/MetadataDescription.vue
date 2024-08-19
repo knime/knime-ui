@@ -73,5 +73,9 @@ const emit = defineEmits<{
   &:not(.editable) {
     --rich-text-editor-padding: 0px;
   }
+
+  &:deep(li > p) {
+    width: 245px;
+  }
 }
 </style>
