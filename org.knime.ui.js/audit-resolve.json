@@ -16,6 +16,30 @@
     "1096484|semver": {
       "decision": "ignore",
       "madeAt": 1721216378170
+    },
+    "1098615|@knime/components>@knime/styles>postcss-mixins>fast-glob>micromatch": {
+      "decision": "ignore",
+      "madeAt": 1724311567279
+    },
+    "1098615|@knime/knime-ui-table>@knime/components>@knime/styles>postcss-mixins>fast-glob>micromatch": {
+      "decision": "ignore",
+      "madeAt": 1724311567279
+    },
+    "1098615|@knime/rich-text-editor>@knime/components>@knime/styles>postcss-mixins>fast-glob>micromatch": {
+      "decision": "ignore",
+      "madeAt": 1724311567279
+    },
+    "1098615|@knime/styles>postcss-mixins>fast-glob>micromatch": {
+      "decision": "ignore",
+      "madeAt": 1724311567279
+    },
+    "1098615|@knime/ui-extensions-renderer>@knime/components>@knime/styles>postcss-mixins>fast-glob>micromatch": {
+      "decision": "ignore",
+      "madeAt": 1724311567279
+    },
+    "1098615|@knime/utils>@knime/styles>postcss-mixins>fast-glob>micromatch": {
+      "decision": "ignore",
+      "madeAt": 1724311567279
     }
   },
   "rules": {},
