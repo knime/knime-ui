@@ -171,6 +171,8 @@ const isLoadingNodePreview = computed(
 
   & .content {
     padding: 4px var(--padding) var(--padding);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   & .go-to-issue {
