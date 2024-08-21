@@ -97,13 +97,12 @@ final class SaveProject {
      * Save the project workflow manager identified by a given project ID.
      *
      * @param projectId ID of the project
-     * @param projectSVG SVG of the project, must not be {@code null}.
+     * @param projectSVG SVG of the project, should not be {@code null}.
      * @param localOnly if {@code true}, the project is only saved locally even if it is a temporary copy from Hub
      */
     static void saveProject(final String projectId, final String projectSVG, final boolean localOnly) {
         if (projectSVG == null) {
-            // Only log a warning since saving will still work
-            LOGGER.warn("The 'saveProject(...)' function was not provided an SVG when called. This should not happen.");
+            LOGGER.warn("Saving the project without a workflow preview. This is unexpected and should not happen.");
         }
 
         var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());

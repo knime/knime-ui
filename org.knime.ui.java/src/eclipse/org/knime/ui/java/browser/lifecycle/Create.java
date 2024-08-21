@@ -98,8 +98,25 @@ final class Create {
         initializeResourceHandlers();
         DesktopAPI.forEachAPIFunction(apiFunctionCaller);
 
+        // Only call endpoint for tracking when the classic perspective is not loaded
         var welcomeAPEndpoint = WelcomeAPEndpoint.getInstance();
-        welcomeAPEndpoint.callEndpointForTracking(true);
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            IWorkbenchPage page = null;
+            try {
+                page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                if (page != null) {
+                    var refs = page.getEditorReferences();
+                    if (refs.length > 0) { // NOSONAR
+                        NodeLogger.getLogger(LifeCycle.class)
+                            .error("There are open eclipse editors which is not expected: "
+                                + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
+                    }
+                }
+            } catch (Exception e) { // NOSONAR
+                // nothing to do - since it's for a sanity check only
+            }
+            welcomeAPEndpoint.callEndpointForTracking(true);
+        }
 
         // Initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());

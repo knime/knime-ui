@@ -217,7 +217,13 @@ public final class SaveAndCloseProjects {
         eventConsumer.accept("SaveAndCloseProjectsEvent", event);
     }
 
-    private static int promptWhetherToSaveProjects(final WorkflowManager... dirtyWfms) {
+    /**
+     * Opens a user prompt asking to save all projects provided.
+     *
+     * @param dirtyWfms The dirty workflow managers to potentially save
+     * @return {@code 0} if 'Yes', {@code 1} if 'No', {@code 2} if 'Cancel'
+     */
+    public static int promptWhetherToSaveProjects(final WorkflowManager... dirtyWfms) {
         String title;
         var message = new StringBuilder();
         if (dirtyWfms.length == 0) {
@@ -237,7 +243,6 @@ public final class SaveAndCloseProjects {
             new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL};
         var d = new MessageDialog(sh, title, null, message.toString(), MessageDialog.QUESTION, buttons, 0);
         return d.open();
-
     }
 
     private static boolean shallCancelProjectsIfNecessary(final WorkflowManager... wfms) {

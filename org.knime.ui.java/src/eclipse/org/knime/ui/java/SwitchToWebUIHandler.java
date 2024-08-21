@@ -52,6 +52,7 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.knime.ui.java.util.ClassicWorkflowEditorUtil;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
@@ -78,7 +79,10 @@ public final class SwitchToWebUIHandler {
     @Execute
     public void execute() {
         var perspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
+        var didClosedAll = ClassicWorkflowEditorUtil.closeAllEditorsWithPrompt();
+        if (didClosedAll) {
+            PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
+        }
     }
 
 }

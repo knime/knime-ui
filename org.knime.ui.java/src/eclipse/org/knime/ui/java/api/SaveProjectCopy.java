@@ -300,7 +300,7 @@ final class SaveProjectCopy {
         final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
         final var result = DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic);
 
-        if (result.isEmpty() || !result.get()) { // If saving has failed
+        if (result.isEmpty() || Boolean.TRUE.equals(!result.get())) { // If saving has failed
             FileUtil.deleteRecursively(newPath.toFile());
         } else {
             if (oldContext.isTemporyWorkflowCopyMode()) { // If saved from a yellow bar editor

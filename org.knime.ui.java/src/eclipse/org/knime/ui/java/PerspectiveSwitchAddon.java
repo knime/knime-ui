@@ -59,8 +59,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats;
@@ -132,10 +130,9 @@ public final class PerspectiveSwitchAddon {
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
+
         PerspectiveUtil.setClassicPerspectiveActive(false);
         OpenKnimeUrlAction.setEventHandlingActive(false);
-
-        closeAllActiveEditors();
 
         setTrimsAndMenuVisible(false, m_modelService, m_app);
 
@@ -154,7 +151,7 @@ public final class PerspectiveSwitchAddon {
         ProjectWorkflowMap.isActive = true;
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
-            lifeCycle.saveState();
+            lifeCycle.saveState(); // Aborts perspective switch if not all project could be saved and closed
             lifeCycle.suspend();
         }
 
@@ -207,12 +204,6 @@ public final class PerspectiveSwitchAddon {
      */
     public static java.util.Optional<String> getPreviousPerspectiveId() {
         return java.util.Optional.ofNullable(previousPerspectiveId);
-    }
-
-    private static void closeAllActiveEditors() {
-        java.util.Optional.ofNullable(PlatformUI.getWorkbench().getActiveWorkbenchWindow())//
-            .map(IWorkbenchWindow::getActivePage)//
-            .ifPresent(page -> page.closeAllEditors(true));
     }
 
 }
