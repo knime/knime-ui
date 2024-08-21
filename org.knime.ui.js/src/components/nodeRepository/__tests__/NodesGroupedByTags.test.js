@@ -1,7 +1,7 @@
 import { expect, describe, beforeEach, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import NodesGroupedByTag from "../NodesGroupedByTag.vue";
+import NodesGroupedByTags from "../NodesGroupedByTags.vue";
 import NodeList from "../NodeList.vue";
 
 describe("NodesGroupedByTag", () => {
@@ -23,7 +23,7 @@ describe("NodesGroupedByTag", () => {
       },
     };
     doShallowMount = () => {
-      wrapper = shallowMount(NodesGroupedByTag, { props });
+      wrapper = shallowMount(NodesGroupedByTags, { props });
     };
   });
 
