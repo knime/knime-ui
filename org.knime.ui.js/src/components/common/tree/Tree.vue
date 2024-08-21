@@ -45,7 +45,7 @@ const focusKey = ref<NodeKey | null>();
 
 const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
   return (
-    props.selectable && tree.value!.getSelectedNode()?.key === treeNode.key
+    props.selectable && tree.value?.getSelectedNode()?.key === treeNode.key
   );
 };
 

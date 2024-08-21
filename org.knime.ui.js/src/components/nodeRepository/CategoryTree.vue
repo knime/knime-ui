@@ -99,11 +99,12 @@ const showDescriptionForNode = computed(
 
 const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   const { nodeTemplate } = treeNode.origin;
-
-  emit("showNodeDescription", {
-    nodeTemplate,
-    isDescriptionActive: showDescriptionForNode.value?.id === nodeTemplate.id,
-  });
+  if (nodeTemplate) {
+    emit("showNodeDescription", {
+      nodeTemplate,
+      isDescriptionActive: showDescriptionForNode.value?.id === nodeTemplate.id,
+    });
+  }
 };
 
 const addNodeToWorkflow = useAddNodeToWorkflow();

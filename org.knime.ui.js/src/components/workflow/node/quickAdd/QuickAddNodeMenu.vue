@@ -117,7 +117,7 @@ export default defineComponent({
 
     displayMode() {
       const { nodeRepositoryDisplayMode } = this.$store.state.settings.settings;
-      if (nodeRepositoryDisplayMode !== "tree") {
+      if (nodeRepositoryDisplayMode === "tree") {
         return "list";
       }
       return nodeRepositoryDisplayMode;
