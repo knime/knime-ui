@@ -58,7 +58,7 @@ export const loadStore = (options: Options = {}) => {
     nodeRepository: {
       actions: {
         closeDescriptionPanel: vi.fn(),
-        resetSearchAndCategories: vi.fn(),
+        resetSearchAndTags: vi.fn(),
       },
     },
     spaces: {

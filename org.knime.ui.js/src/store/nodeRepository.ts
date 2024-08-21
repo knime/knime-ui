@@ -12,17 +12,17 @@ import type { RootStoreState } from "./types";
  * Store that manages node repository state.
  */
 
-const categoryPageSize = 3;
+const tagPageSize = 3;
 const firstLoadOffset = 6;
 
 export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
-  nodesPerCategory: Array<{
+  nodesPerTag: Array<{
     tag: string;
     nodes: NodeTemplateWithExtendedPorts[];
   }>;
-  totalNumCategories: number | null;
-  categoryPage: number;
-  categoryScrollPosition: number;
+  totalNumTags: number | null;
+  tagPage: number;
+  tagScrollPosition: number;
 
   selectedNode: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
@@ -31,11 +31,11 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
 export const state = (): NodeRepositoryState => ({
   ...nodeSearch.state(),
 
-  /* categories */
-  nodesPerCategory: [],
-  totalNumCategories: null,
-  categoryPage: 0,
-  categoryScrollPosition: 0,
+  /* tags */
+  nodesPerTag: [],
+  totalNumTags: null,
+  tagPage: 0,
+  tagScrollPosition: 0,
 
   /* node interaction */
   selectedNode: null,
@@ -45,22 +45,22 @@ export const state = (): NodeRepositoryState => ({
 export const mutations: MutationTree<NodeRepositoryState> = {
   ...nodeSearch.mutations,
 
-  setCategoryPage(state, pageNumber) {
-    state.categoryPage = pageNumber;
+  setTagPage(state, pageNumber) {
+    state.tagPage = pageNumber;
   },
 
-  setNodesPerCategories(state, { groupedNodes, append }) {
-    state.nodesPerCategory = append
-      ? state.nodesPerCategory.concat(groupedNodes)
+  setNodesPerTags(state, { groupedNodes, append }) {
+    state.nodesPerTag = append
+      ? state.nodesPerTag.concat(groupedNodes)
       : groupedNodes;
   },
 
-  setTotalNumCategories(state, totalNumCategories) {
-    state.totalNumCategories = totalNumCategories;
+  setTotalNumTags(state, totalNumTags) {
+    state.totalNumTags = totalNumTags;
   },
 
-  setCategoryScrollPosition(state, value) {
-    state.categoryScrollPosition = value;
+  setTagScrollPosition(state, value) {
+    state.tagScrollPosition = value;
   },
 
   setSelectedNode(state, node) {
@@ -75,16 +75,16 @@ export const mutations: MutationTree<NodeRepositoryState> = {
 export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.actions,
 
-  async getNodeCategory(
+  async getNodeTag(
     { rootState, dispatch },
-    { categoryPath }: { categoryPath: string[] },
+    { tagPath }: { tagPath: string[] },
   ) {
-    const nodeCategoryResult = await API.noderepository.getNodeCategory({
-      categoryPath,
+    const nodeTagResult = await API.noderepository.getNodeCategory({
+      categoryPath: tagPath,
     });
 
     const { availablePortTypes } = rootState.application;
-    const nodesWithMappedPorts = nodeCategoryResult.nodes?.map(
+    const nodesWithMappedPorts = nodeTagResult.nodes?.map(
       toNodeTemplateWithExtendedPorts(availablePortTypes),
     );
 
@@ -96,25 +96,25 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     );
 
     return {
-      ...nodeCategoryResult,
+      ...nodeTagResult,
       nodes: nodesWithMappedPorts,
     };
   },
 
   async getAllNodes({ commit, dispatch, state, rootState }, { append }) {
-    if (state.nodesPerCategory.length === state.totalNumCategories) {
+    if (state.nodesPerTag.length === state.totalNumTags) {
       return;
     }
     const tagsOffset = append
-      ? firstLoadOffset + state.categoryPage * categoryPageSize
+      ? firstLoadOffset + state.tagPage * tagPageSize
       : 0;
-    const tagsLimit = append ? categoryPageSize : firstLoadOffset;
+    const tagsLimit = append ? tagPageSize : firstLoadOffset;
 
     if (append) {
-      commit("setCategoryPage", state.categoryPage + 1);
+      commit("setTagPage", state.tagPage + 1);
     } else {
       commit("setNodeSearchPage", 0);
-      commit("setCategoryPage", 0);
+      commit("setTagPage", 0);
     }
 
     const { totalNumGroups, groups } =
@@ -138,24 +138,24 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
       { root: true },
     );
 
-    commit("setTotalNumCategories", totalNumGroups);
-    commit("setNodesPerCategories", { groupedNodes: withMappedPorts, append });
+    commit("setTotalNumTags", totalNumGroups);
+    commit("setNodesPerTags", { groupedNodes: withMappedPorts, append });
   },
 
-  clearCategoryResults({ commit }) {
-    commit("setNodesPerCategories", { groupedNodes: [], append: false });
-    commit("setTotalNumCategories", null);
-    commit("setCategoryPage", 0);
-    commit("setCategoryScrollPosition", 0);
+  clearTagResults({ commit }) {
+    commit("setNodesPerTags", { groupedNodes: [], append: false });
+    commit("setTotalNumTags", null);
+    commit("setTagPage", 0);
+    commit("setTagScrollPosition", 0);
   },
 
-  async resetSearchAndCategories({ dispatch, getters }) {
+  async resetSearchAndTags({ dispatch, getters }) {
     if (getters.searchIsActive) {
       await dispatch("clearSearchResults");
       await dispatch("searchNodesDebounced");
     }
-    // Always clear the category results
-    await dispatch("clearCategoryResults");
+    // Always clear the tag results
+    await dispatch("clearTagResults");
     await dispatch("getAllNodes", { append: false });
   },
 };
@@ -163,15 +163,15 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
 export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.getters,
 
-  nodesPerCategoryContainNodeId(state) {
+  nodesPerTagContainNodeId(state) {
     return (nodeId: string) =>
-      state.nodesPerCategory.some((category) =>
-        category.nodes.some((node) => node.id === nodeId),
+      state.nodesPerTag.some((tag) =>
+        tag.nodes.some((node) => node.id === nodeId),
       );
   },
 
   isNodeVisible: (state, getters) => (nodeId: string) =>
     getters.searchIsActive
       ? getters.searchResultsContainNodeId(nodeId)
-      : getters.nodesPerCategoryContainNodeId(nodeId),
+      : getters.nodesPerTagContainNodeId(nodeId),
 };

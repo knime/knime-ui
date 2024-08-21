@@ -2,18 +2,20 @@
 import { mapState, mapMutations, mapActions } from "vuex";
 
 import ScrollViewContainer from "./ScrollViewContainer.vue";
-import NodeCategory from "./NodeCategory.vue";
+import NodesGroupedByTags from "./NodesGroupedByTags.vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { defineComponent, type PropType } from "vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 import type { NavReachedEvent } from "./NodeList.vue";
 
-type NodeCategoriesComponentRef = Array<InstanceType<typeof NodeCategory>>;
+type NodesGroupedByTagsComponentRef = Array<
+  InstanceType<typeof NodesGroupedByTags>
+>;
 
 export default defineComponent({
   components: {
-    NodeCategory,
+    NodesGroupedByTags,
     ScrollViewContainer,
   },
   props: {
@@ -30,8 +32,8 @@ export default defineComponent({
   computed: {
     ...mapState("nodeRepository", [
       "showDescriptionForNode",
-      "categoryScrollPosition",
-      "nodesPerCategory",
+      "tagScrollPosition",
+      "nodesPerTag",
     ]),
     selectedNode: {
       get() {
@@ -51,32 +53,32 @@ export default defineComponent({
   expose: ["focusFirst"],
   methods: {
     ...mapActions("nodeRepository", ["getAllNodes", "setSelectedTags"]),
-    ...mapMutations("nodeRepository", ["setCategoryScrollPosition"]),
+    ...mapMutations("nodeRepository", ["setTagScrollPosition"]),
 
     onScrollBottom() {
       this.getAllNodes({ append: true });
     },
     onSaveScrollPosition(position: number) {
-      this.setCategoryScrollPosition(position);
+      this.setTagScrollPosition(position);
     },
     onSelectTag(tag: string) {
       this.setSelectedTags([tag]);
     },
     onNavReachedEnd(index: number, event: NavReachedEvent) {
-      const categories = this.$refs.categories as NodeCategoriesComponentRef;
-      const category = categories?.[index + 1];
-      if (category) {
-        category.focusFirst(event);
+      const tags = this.$refs.tags as NodesGroupedByTagsComponentRef;
+      const tag = tags?.[index + 1];
+      if (tag) {
+        tag.focusFirst(event);
       }
     },
     onNavReachedTop(index: number, event: NavReachedEvent) {
       if (index === 0) {
         this.$emit("navReachedTop", event);
       } else {
-        const categories = this.$refs.categories as NodeCategoriesComponentRef;
-        const category = categories?.[index - 1];
-        if (category) {
-          category.focusLast(event);
+        const tags = this.$refs.tags as NodesGroupedByTagsComponentRef;
+        const tag = tags?.[index - 1];
+        if (tag) {
+          tag.focusLast(event);
         }
       }
     },
@@ -87,8 +89,8 @@ export default defineComponent({
       });
     },
     focusFirst() {
-      const categories = this.$refs.categories as NodeCategoriesComponentRef;
-      categories?.[0].focusFirst();
+      const tags = this.$refs.tags as NodesGroupedByTagsComponentRef;
+      tags?.[0].focusFirst();
     },
   },
 });
@@ -97,19 +99,19 @@ export default defineComponent({
 <template>
   <ScrollViewContainer
     class="results"
-    :initial-position="categoryScrollPosition"
+    :initial-position="tagScrollPosition"
     @scroll-bottom="onScrollBottom"
     @save-position="onSaveScrollPosition"
   >
     <div class="content">
       <template
-        v-for="({ tag, nodes }, index) in nodesPerCategory"
+        v-for="({ tag, nodes }, index) in nodesPerTag"
         :key="`tag-${tag}`"
       >
-        <NodeCategory
-          ref="categories"
+        <NodesGroupedByTags
+          ref="tags"
           v-model:selected-node="selectedNode"
-          class="category"
+          class="tag"
           :tag="tag"
           :nodes="nodes"
           :show-description-for-node="showDescriptionForNode"

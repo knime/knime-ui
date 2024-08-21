@@ -122,20 +122,20 @@ describe("Node Repository store", () => {
   });
 
   describe("getters", () => {
-    it("returns proper value for nodesPerCategoryContainSelectedNode", async () => {
+    it("returns proper value for nodesPerTagContainSelectedNode", async () => {
       const nodeId = 1;
       const { store } = await createStore();
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainNodeId"](nodeId),
+        store.getters["nodeRepository/nodesPerTagContainNodeId"](nodeId),
       ).toBe(false);
-      store.state.nodeRepository.nodesPerCategory = [
+      store.state.nodeRepository.nodesPerTag = [
         { tag: "tag:1", nodes: [{ id: 1 }, { id: 2 }] },
       ];
+      expect(store.getters["nodeRepository/nodesPerTagContainNodeId"](3)).toBe(
+        false,
+      );
       expect(
-        store.getters["nodeRepository/nodesPerCategoryContainNodeId"](3),
-      ).toBe(false);
-      expect(
-        store.getters["nodeRepository/nodesPerCategoryContainNodeId"](nodeId),
+        store.getters["nodeRepository/nodesPerTagContainNodeId"](nodeId),
       ).toBe(true);
     });
 
@@ -147,10 +147,10 @@ describe("Node Repository store", () => {
       expect(store.getters["nodeRepository/isNodeVisible"](1)).toBe(true);
     });
 
-    it("returns proper value for isSelectedNodeVisible for categories", async () => {
+    it("returns proper value for isSelectedNodeVisible for tags", async () => {
       const { store } = await createStore();
       expect(store.getters["nodeRepository/isNodeVisible"](0)).toBe(false);
-      store.state.nodeRepository.nodesPerCategory = [
+      store.state.nodeRepository.nodesPerTag = [
         { tag: "tag:1", nodes: [{ id: 1 }, { id: 2 }] },
       ];
       expect(store.getters["nodeRepository/isNodeVisible"](2)).toBe(true);
@@ -158,51 +158,47 @@ describe("Node Repository store", () => {
   });
 
   describe("mutations", () => {
-    it("sets categoryPage", async () => {
+    it("sets tagPage", async () => {
       const { store } = await createStore();
-      store.commit("nodeRepository/setCategoryPage", 1);
-      expect(store.state.nodeRepository.categoryPage).toBe(1);
+      store.commit("nodeRepository/setTagPage", 1);
+      expect(store.state.nodeRepository.tagPage).toBe(1);
     });
 
-    it("sets nodesPerCategory", async () => {
+    it("sets nodesPerTag", async () => {
       const { store } = await createStore();
-      const categories = [{ tag: "MyTag1", nodes: [{ id: "node1" }] }];
-      store.commit("nodeRepository/setNodesPerCategories", {
+      const tags = [{ tag: "MyTag1", nodes: [{ id: "node1" }] }];
+      store.commit("nodeRepository/setNodesPerTags", {
         groupedNodes: [{ tag: "MyTag1", nodes: [{ id: "node1" }] }],
       });
-      expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(
-        categories,
-      );
+      expect(store.state.nodeRepository.nodesPerTag).toStrictEqual(tags);
     });
 
-    it("adds nodesPerCategory", async () => {
+    it("adds nodesPerTag", async () => {
       const { store } = await createStore();
-      store.commit("nodeRepository/setNodesPerCategories", {
+      store.commit("nodeRepository/setNodesPerTag", {
         groupedNodes: [{ tag: "MyTag1", nodes: [{ id: "node1" }] }],
       });
-      const categories = store.state.nodeRepository.nodesPerCategory;
-      const category = { tag: "MyTag2", nodes: [{ id: "node2" }] };
-      store.commit("nodeRepository/setNodesPerCategories", {
-        groupedNodes: [category],
+      const tags = store.state.nodeRepository.nodesPerTag;
+      const tag = { tag: "MyTag2", nodes: [{ id: "node2" }] };
+      store.commit("nodeRepository/setNodesPerTags", {
+        groupedNodes: [tag],
         append: true,
       });
-      categories.push(category);
+      tags.push(tag);
 
-      expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(
-        categories,
-      );
+      expect(store.state.nodeRepository.nodesPerTag).toStrictEqual(tags);
     });
 
-    it("sets totalNumCategories", async () => {
+    it("sets totalNumTags", async () => {
       const { store } = await createStore();
-      store.commit("nodeRepository/setTotalNumCategories", 2);
-      expect(store.state.nodeRepository.totalNumCategories).toBe(2);
+      store.commit("nodeRepository/setTotalNumTags", 2);
+      expect(store.state.nodeRepository.totalNumTags).toBe(2);
     });
 
-    it("sets category scroll position", async () => {
+    it("sets tag scroll position", async () => {
       const { store } = await createStore();
-      store.commit("nodeRepository/setCategoryScrollPosition", 22);
-      expect(store.state.nodeRepository.categoryScrollPosition).toBe(22);
+      store.commit("nodeRepository/setTagScrollPosition", 22);
+      expect(store.state.nodeRepository.tagScrollPosition).toBe(22);
     });
 
     it("sets selected node", async () => {
@@ -219,7 +215,7 @@ describe("Node Repository store", () => {
         const { store, availablePortTypes } = await createStore();
 
         await store.dispatch("nodeRepository/getAllNodes", { append: true });
-        expect(store.state.nodeRepository.categoryPage).toBe(1);
+        expect(store.state.nodeRepository.tagPage).toBe(1);
 
         expect(
           mockedAPI.noderepository.getNodesGroupedByTags,
@@ -235,7 +231,7 @@ describe("Node Repository store", () => {
         // make sure the port information is mapped in to every node
         const groupedNodesWithPorts = withPorts(nodes, availablePortTypes);
 
-        expect(store.state.nodeRepository.nodesPerCategory).toEqual([
+        expect(store.state.nodeRepository.nodesPerTag).toEqual([
           {
             nodes: groupedNodesWithPorts,
             tag,
@@ -248,7 +244,7 @@ describe("Node Repository store", () => {
 
         await store.dispatch("nodeRepository/getAllNodes", { append: false });
 
-        expect(store.state.nodeRepository.categoryPage).toBe(0);
+        expect(store.state.nodeRepository.tagPage).toBe(0);
         expect(store.state.nodeRepository.nodeSearchPage).toBe(0);
         expect(
           mockedAPI.noderepository.getNodesGroupedByTags,
@@ -260,13 +256,13 @@ describe("Node Repository store", () => {
         });
       });
 
-      it("skips getting nodes when all categories were loaded", async () => {
+      it("skips getting nodes when all tags were loaded", async () => {
         const { store } = await createStore();
-        const categories = [{}, {}, {}];
-        store.commit("nodeRepository/setNodesPerCategories", {
-          groupedNodes: categories,
+        const tags = [{}, {}, {}];
+        store.commit("nodeRepository/setNodesPerTags", {
+          groupedNodes: tags,
         });
-        store.commit("nodeRepository/setTotalNumCategories", categories.length);
+        store.commit("nodeRepository/setTotalNumTags", tags.length);
 
         await store.dispatch("nodeRepository/getAllNodes", { append: true });
         expect(API.noderepository.getNodesGroupedByTags).not.toHaveBeenCalled();
@@ -278,7 +274,7 @@ describe("Node Repository store", () => {
         const { store, dispatchSpy } = await createStore();
         store.state.nodeRepository.query = "foo";
         store.state.nodeRepository.nodes = [{ dummy: true }];
-        await store.dispatch("nodeRepository/resetSearchAndCategories");
+        await store.dispatch("nodeRepository/resetSearchAndTags");
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeRepository/clearSearchResults",
           undefined,
@@ -288,7 +284,7 @@ describe("Node Repository store", () => {
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeRepository/clearCategoryResults",
+          "nodeRepository/clearTagResults",
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith("nodeRepository/getAllNodes", {
@@ -296,9 +292,9 @@ describe("Node Repository store", () => {
         });
       });
 
-      it("resets category results", async () => {
+      it("resets tag results", async () => {
         const { store, dispatchSpy } = await createStore();
-        await store.dispatch("nodeRepository/resetSearchAndCategories");
+        await store.dispatch("nodeRepository/resetSearchAndTags");
         expect(dispatchSpy).not.toHaveBeenCalledWith(
           "nodeRepository/clearSearchResults",
           undefined,
@@ -308,7 +304,7 @@ describe("Node Repository store", () => {
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeRepository/clearCategoryResults",
+          "nodeRepository/clearTagResults",
           undefined,
         );
         expect(dispatchSpy).toHaveBeenCalledWith("nodeRepository/getAllNodes", {
@@ -316,17 +312,17 @@ describe("Node Repository store", () => {
         });
       });
 
-      it("clears category results", async () => {
+      it("clears tag results", async () => {
         const { store } = await createStore();
-        store.state.nodeRepository.nodesPerCategory = [{ dummy: true }];
-        store.state.nodeRepository.totalNumCategories = 100;
-        store.state.nodeRepository.categoryPage = 5;
-        store.state.nodeRepository.categoryScrollPosition = 10;
-        await store.dispatch("nodeRepository/clearCategoryResults");
-        expect(store.state.nodeRepository.nodesPerCategory).toEqual([]);
-        expect(store.state.nodeRepository.totalNumCategories).toBeNull();
-        expect(store.state.nodeRepository.categoryPage).toBe(0);
-        expect(store.state.nodeRepository.categoryScrollPosition).toBe(0);
+        store.state.nodeRepository.nodesPerTag = [{ dummy: true }];
+        store.state.nodeRepository.totalNumTags = 100;
+        store.state.nodeRepository.tagPage = 5;
+        store.state.nodeRepository.tagScrollPosition = 10;
+        await store.dispatch("nodeRepository/clearTagResults");
+        expect(store.state.nodeRepository.nodesPerTag).toEqual([]);
+        expect(store.state.nodeRepository.totalNumTags).toBeNull();
+        expect(store.state.nodeRepository.tagPage).toBe(0);
+        expect(store.state.nodeRepository.tagScrollPosition).toBe(0);
       });
     });
   });

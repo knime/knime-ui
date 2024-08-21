@@ -6,7 +6,7 @@ import { defineComponent, type PropType } from "vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
-const CATEGORY_LIMIT = 8;
+const TAG_LIMIT = 8;
 
 export default defineComponent({
   components: {
@@ -47,7 +47,7 @@ export default defineComponent({
   ],
   computed: {
     hasMoreNodes() {
-      return this.nodes.length >= CATEGORY_LIMIT;
+      return this.nodes.length >= TAG_LIMIT;
     },
   },
   methods: {
@@ -64,9 +64,9 @@ export default defineComponent({
 </script>
 
 <template>
-  <div :class="['category', `display-${displayMode}`]">
+  <div :class="['tag', `display-${displayMode}`]">
     <div>
-      <span class="category-title" @click="$emit('selectTag', tag)">
+      <span class="tag-title" @click="$emit('selectTag', tag)">
         {{ tag }}
       </span>
       <hr />
@@ -74,7 +74,7 @@ export default defineComponent({
     <NodeList
       ref="nodeList"
       :nodes="nodes"
-      class="category-node-list"
+      class="tag-node-list"
       :has-more-nodes="hasMoreNodes"
       :selected-node="selectedNode"
       :show-description-for-node="showDescriptionForNode"
@@ -98,9 +98,9 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
-.category {
+.tag {
   &.display-list {
-    & .category-node-list {
+    & .tag-node-list {
       padding-top: 5px;
     }
   }
@@ -109,7 +109,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
 
-    & .category-title {
+    & .tag-title {
       border: 1px solid var(--knime-silver-sand);
       margin: 0 5px 0 0;
       padding: 3px 5px;

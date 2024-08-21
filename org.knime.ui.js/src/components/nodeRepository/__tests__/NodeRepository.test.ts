@@ -7,7 +7,7 @@ import * as panelStore from "@/store/panel";
 import * as settingsStore from "@/store/settings";
 
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
-import CategoryResults from "../CategoryResults.vue";
+import TagResults from "../TagResults.vue";
 import SearchResults from "../SearchResults.vue";
 import NodeRepositoryLoader from "../NodeRepositoryLoader.vue";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
@@ -25,7 +25,7 @@ vi.mock("lodash-es", async () => {
 describe("NodeRepository", () => {
   const doMount = ({
     searchIsActive = null,
-    nodesPerCategory = null,
+    nodesPerTag = null,
     nodeRepositoryLoadedMock = true,
   } = {}) => {
     const searchNodesMock = vi.fn();
@@ -37,7 +37,7 @@ describe("NodeRepository", () => {
     const $store = mockVuexStore({
       nodeRepository: {
         state: {
-          nodesPerCategory: nodesPerCategory || [
+          nodesPerTag: nodesPerTag ?? [
             {
               tag: "myTag1",
               nodes: [
@@ -69,7 +69,7 @@ describe("NodeRepository", () => {
           getAllNodes: getAllNodesMock,
         },
         getters: {
-          searchIsActive: searchIsActive || (() => true),
+          searchIsActive: searchIsActive ?? (() => true),
           tagsOfVisibleNodes() {
             return ["myTag1", "myTag2"];
           },
@@ -118,14 +118,14 @@ describe("NodeRepository", () => {
         getAllNodesMock,
         subscribeToNodeRepositoryLoadingEventMock,
       } = doMount({
-        nodesPerCategory: [],
+        nodesPerTag: [],
         searchIsActive: () => false,
       });
 
       expect(getAllNodesMock).toHaveBeenCalled();
       expect(subscribeToNodeRepositoryLoadingEventMock).toHaveBeenCalled();
       expect(wrapper.findComponent(NodeRepositoryHeader).exists()).toBe(true);
-      expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
+      expect(wrapper.findComponent(TagResults).exists()).toBe(true);
       expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
       expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(false);
     });
@@ -142,7 +142,7 @@ describe("NodeRepository", () => {
       expect(getAllNodesMock).not.toHaveBeenCalled();
       expect(subscribeToNodeRepositoryLoadingEventMock).toHaveBeenCalled();
       expect(wrapper.findComponent(NodeRepositoryHeader).exists()).toBe(true);
-      expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
+      expect(wrapper.findComponent(TagResults).exists()).toBe(true);
       expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
       expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(false);
     });
@@ -187,7 +187,7 @@ describe("NodeRepository", () => {
       });
 
       expect(wrapper.findComponent(NodeRepositoryHeader).exists()).toBe(true);
-      expect(wrapper.findComponent(CategoryResults).exists()).toBe(false);
+      expect(wrapper.findComponent(TagResults).exists()).toBe(false);
       expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
       expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(true);
     });

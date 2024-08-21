@@ -13,7 +13,7 @@ interface State {
   hasNodeRecommendationsEnabled: boolean;
   /*
    * If true, a node collection is configured on the preference page. The node search will show the nodes of the
-   * collection first and the category groups and node recommendations will only show nodes from the collection.
+   * collection first and the tag groups and node recommendations will only show nodes from the collection.
    */
   hasNodeCollectionActive: null;
   /**

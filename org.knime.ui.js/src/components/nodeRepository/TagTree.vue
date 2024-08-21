@@ -16,12 +16,12 @@ import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
 
-const mapCategoryToTreeNode = (category: {
+const mapTagToTreeNode = (tag: {
   path: string[];
   displayName: string;
 }): TreeNodeOptions => ({
-  nodeKey: category.path.join("/"),
-  name: category.displayName,
+  nodeKey: tag.path.join("/"),
+  name: tag.displayName,
   hasChildren: true,
 });
 
@@ -46,17 +46,17 @@ const emit = defineEmits<{
 
 const store = useStore();
 
-const rootCategories = ref<TreeNodeOptions[]>([]);
+const rootTags = ref<TreeNodeOptions[]>([]);
 
 onMounted(async () => {
   const { childCategories } = await store.dispatch(
-    "nodeRepository/getNodeCategory",
+    "nodeRepository/getNodeTag",
     {
-      categoryPath: [],
+      tagPath: [],
     },
   );
 
-  rootCategories.value = childCategories.map(mapCategoryToTreeNode);
+  rootTags.value = childCategories.map(mapTagToTreeNode);
 });
 
 const tree = ref<InstanceType<typeof Tree>>();
@@ -79,8 +79,8 @@ const loadTreeLevel = async (
   callback: (children: TreeNodeOptions[]) => void,
 ) => {
   const { childCategories, nodes } = await store.dispatch(
-    "nodeRepository/getNodeCategory",
-    { categoryPath: treeNode.key.toString().split("/") },
+    "nodeRepository/getNodeTag",
+    { tagPath: treeNode.key.toString().split("/") },
   );
 
   // remember nodeIds for visible check
@@ -88,7 +88,7 @@ const loadTreeLevel = async (
   loadedNodeIds.value.set(treeNode.key, nodeIds);
 
   callback([
-    ...childCategories.map(mapCategoryToTreeNode),
+    ...childCategories.map(mapTagToTreeNode),
     ...nodes.map(mapNodeToTreeNode),
   ]);
 };
@@ -135,7 +135,7 @@ defineExpose({ focusFirst, getExpandedNodeIds });
     <div class="scroll-container-content">
       <Tree
         ref="tree"
-        :source="rootCategories"
+        :source="rootTags"
         :load-data="loadTreeLevel"
         :selectable="false"
         @keydown="onTreeKeydown"

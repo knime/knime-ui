@@ -12,7 +12,7 @@ import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
 describe("NodeRepositoryHeader", () => {
   const doMount = ({
     searchIsActive = null,
-    nodesPerCategory = null,
+    nodesPerTag = null,
     selectedTags = null,
     query = null,
     nodeRepositoryLoadedMock = true,
@@ -27,7 +27,7 @@ describe("NodeRepositoryHeader", () => {
     const $store = mockVuexStore({
       nodeRepository: {
         state: {
-          nodesPerCategory: nodesPerCategory || [
+          nodesPerTag: nodesPerTag ?? [
             {
               tag: "myTag1",
               nodes: [
@@ -43,8 +43,8 @@ describe("NodeRepositoryHeader", () => {
             },
           ],
           totalNumTopNodes: 2,
-          selectedTags: selectedTags || ["myTag2"],
-          query: query || "",
+          selectedTags: selectedTags ?? ["myTag2"],
+          query: query ?? "",
           scrollPosition: 100,
           selectedNode: {
             id: 1,
@@ -62,7 +62,7 @@ describe("NodeRepositoryHeader", () => {
           updateQuery: updateQueryMock,
         },
         getters: {
-          searchIsActive: searchIsActive || (() => true),
+          searchIsActive: searchIsActive ?? (() => true),
           tagsOfVisibleNodes() {
             return ["myTag1", "myTag2"];
           },

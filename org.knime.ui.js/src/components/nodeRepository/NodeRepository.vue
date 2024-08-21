@@ -6,8 +6,8 @@ import { useStore } from "@/composables/useStore";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
 import { TABS } from "@/store/panel";
-import CategoryResults from "./CategoryResults.vue";
-import CategoryTree from "./CategoryTree.vue";
+import TagResults from "./TagResults.vue";
+import TagTree from "./TagTree.vue";
 
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
@@ -16,9 +16,7 @@ import type { NavigationKey } from "./NodeList.vue";
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
 const store = useStore();
-const nodesPerCategory = computed(
-  () => store.state.nodeRepository.nodesPerCategory,
-);
+const nodesPerTag = computed(() => store.state.nodeRepository.nodesPerTag);
 const showDescriptionForNode = computed(
   () => store.state.nodeRepository.showDescriptionForNode,
 );
@@ -26,7 +24,7 @@ const searchIsActive = computed(
   () => store.getters["nodeRepository/searchIsActive"],
 );
 
-const categoryTree = ref<InstanceType<typeof CategoryTree>>();
+const tagTree = ref<InstanceType<typeof TagTree>>();
 
 const displayMode = computed(
   () => store.state.settings.settings.nodeRepositoryDisplayMode,
@@ -34,7 +32,7 @@ const displayMode = computed(
 
 const isNodeVisible = computed(() => {
   if (displayMode.value === "tree" && !searchIsActive.value) {
-    return categoryTree.value
+    return tagTree.value
       ?.getExpandedNodeIds()
       .includes(showDescriptionForNode.value!.id);
   }
@@ -75,11 +73,7 @@ watch(isExtensionPanelOpen, (isOpen) => {
 });
 
 watch(nodeRepositoryLoaded, (isLoaded, wasLoaded) => {
-  if (
-    isLoaded === true &&
-    wasLoaded === false &&
-    !nodesPerCategory.value.length
-  ) {
+  if (isLoaded === true && wasLoaded === false && !nodesPerTag.value.length) {
     store.dispatch("nodeRepository/getAllNodes", { append: false });
   }
 });
@@ -87,8 +81,8 @@ watch(nodeRepositoryLoaded, (isLoaded, wasLoaded) => {
 onMounted(() => {
   store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
 
-  // load all nodes for the category view if we have the data otherwise this is done when the repo is loaded
-  if (nodeRepositoryLoaded.value && !nodesPerCategory.value.length) {
+  // load all nodes for the tag view if we have the data otherwise this is done when the repo is loaded
+  if (nodeRepositoryLoaded.value && !nodesPerTag.value.length) {
     store.dispatch("nodeRepository/getAllNodes", { append: false });
   }
 });
@@ -112,7 +106,7 @@ const toggleNodeDescription = ({
 const header = ref<InstanceType<typeof NodeRepositoryHeader>>();
 
 const searchResults = ref<InstanceType<typeof SidebarSearchResults>>();
-const categoryResults = ref<InstanceType<typeof CategoryResults>>();
+const tagResults = ref<InstanceType<typeof TagResults>>();
 
 const onSearchBarDownKey = () => {
   // search (regardless of display mode)
@@ -123,11 +117,11 @@ const onSearchBarDownKey = () => {
 
   // tree
   if (displayMode.value === "tree") {
-    categoryTree.value?.focusFirst();
+    tagTree.value?.focusFirst();
     return;
   }
-  // category
-  categoryResults.value?.focusFirst();
+  // tag
+  tagResults.value?.focusFirst();
 };
 
 const handleNavReachedTop = (event: { key: NavigationKey }) => {
@@ -152,16 +146,16 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
-      <CategoryResults
+      <TagResults
         v-else-if="displayMode !== 'tree'"
-        ref="categoryResults"
+        ref="tagResults"
         :display-mode="displayMode"
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
-      <CategoryTree
+      <TagTree
         v-else
-        ref="categoryTree"
+        ref="tagTree"
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />

@@ -2,32 +2,32 @@ import { expect, describe, beforeEach, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import CategoryResults from "../CategoryResults.vue";
+import TagResults from "../TagResults.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
-import NodeCategory from "../NodeCategory.vue";
+import NodesGroupedByTags from "../NodesGroupedByTags.vue";
 
-describe("CategoryResults", () => {
+describe("TagResults", () => {
   let doShallowMount,
     wrapper,
     $store,
     storeState,
     getAllNodesMock,
     setSelectedTagsMock,
-    setCategoryScrollPositionMock;
+    setTagScrollPositionMock;
 
   beforeEach(() => {
     wrapper = null;
 
     getAllNodesMock = vi.fn();
     setSelectedTagsMock = vi.fn();
-    setCategoryScrollPositionMock = vi.fn();
+    setTagScrollPositionMock = vi.fn();
 
     storeState = {
-      nodesPerCategory: [
+      nodesPerTag: [
         { tag: "tag:1", nodes: ["node:1"] },
         { tag: "tag:2", nodes: ["node:1"] },
       ],
-      categoryScrollPosition: 100,
+      tagScrollPosition: 100,
       showDescriptionForNode: { id: "selected-node-id" },
     };
 
@@ -40,11 +40,11 @@ describe("CategoryResults", () => {
             getAllNodes: getAllNodesMock,
           },
           mutations: {
-            setCategoryScrollPosition: setCategoryScrollPositionMock,
+            setTagScrollPosition: setTagScrollPositionMock,
           },
         },
       });
-      wrapper = shallowMount(CategoryResults, {
+      wrapper = shallowMount(TagResults, {
         global: { plugins: [$store] },
       });
     };
@@ -64,7 +64,7 @@ describe("CategoryResults", () => {
       let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
       scrollViewContainer.vm.$emit("save-position", 100);
 
-      expect(setCategoryScrollPositionMock).toHaveBeenCalledWith(
+      expect(setTagScrollPositionMock).toHaveBeenCalledWith(
         expect.anything(),
         100,
       );
@@ -82,18 +82,18 @@ describe("CategoryResults", () => {
     });
   });
 
-  it("renders categories", () => {
+  it("renders tags", () => {
     doShallowMount();
 
-    let nodeCategory = wrapper.findAllComponents(NodeCategory);
-    expect(nodeCategory.at(0).props()).toStrictEqual({
+    let nodeTag = wrapper.findAllComponents(NodesGroupedByTags);
+    expect(nodeTag.at(0).props()).toStrictEqual({
       tag: "tag:1",
       selectedNode: null,
       showDescriptionForNode: { id: "selected-node-id" },
       displayMode: "icon",
       nodes: ["node:1"],
     });
-    expect(nodeCategory.at(1).props()).toStrictEqual({
+    expect(nodeTag.at(1).props()).toStrictEqual({
       tag: "tag:2",
       selectedNode: null,
       showDescriptionForNode: { id: "selected-node-id" },
@@ -105,8 +105,8 @@ describe("CategoryResults", () => {
   it("can select tag", () => {
     doShallowMount();
 
-    let nodeCategory = wrapper.findComponent(NodeCategory);
-    nodeCategory.vm.$emit("select-tag", "tag:1");
+    let nodeTag = wrapper.findComponent(NodesGroupedByTags);
+    nodeTag.vm.$emit("select-tag", "tag:1");
 
     expect(setSelectedTagsMock).toHaveBeenCalledWith(expect.anything(), [
       "tag:1",

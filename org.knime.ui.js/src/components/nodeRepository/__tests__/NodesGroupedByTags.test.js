@@ -1,10 +1,10 @@
 import { expect, describe, beforeEach, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import NodeCategory from "../NodeCategory.vue";
+import NodesGroupedByTag from "../NodesGroupedByTag.vue";
 import NodeList from "../NodeList.vue";
 
-describe("NodeCategory", () => {
+describe("NodesGroupedByTag", () => {
   let doShallowMount, wrapper, props;
 
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe("NodeCategory", () => {
       },
     };
     doShallowMount = () => {
-      wrapper = shallowMount(NodeCategory, { props });
+      wrapper = shallowMount(NodesGroupedByTag, { props });
     };
   });
 
@@ -37,7 +37,7 @@ describe("NodeCategory", () => {
       { id: "node:4" },
       { id: "node:5" },
     ]);
-    expect(wrapper.find(".category-title").text()).toMatch("tag");
+    expect(wrapper.find(".tag-title").text()).toMatch("tag");
   });
 
   it("has no more nodes", () => {
@@ -58,7 +58,7 @@ describe("NodeCategory", () => {
     it("tag can be selected", async () => {
       doShallowMount();
 
-      await wrapper.find(".category-title").trigger("click");
+      await wrapper.find(".tag-title").trigger("click");
       expect(wrapper.emitted("selectTag")).toStrictEqual([["tag"]]);
     });
 
