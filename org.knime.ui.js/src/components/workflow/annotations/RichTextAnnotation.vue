@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, toRefs } from "vue";
 
-import { RichTextEditor } from "@knime/rich-text-editor";
+import { RichTextEditor, CreateLinkModal } from "@knime/rich-text-editor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 
@@ -68,6 +68,11 @@ const activeBorderColor = computed(
             @change-border-color="emit('changeBorderColor', $event)"
             @preview-border-color="previewBorderColor = $event"
           />
+        </Portal>
+      </template>
+      <template #linkModal="{ linkTool }">
+        <Portal v-if="editable && linkTool" to="annotation-editor-toolbar">
+          <CreateLinkModal v-bind="linkTool.props" v-on="linkTool.events" />
         </Portal>
       </template>
     </RichTextEditor>

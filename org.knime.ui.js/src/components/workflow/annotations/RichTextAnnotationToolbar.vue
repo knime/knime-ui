@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 import type { Editor } from "@tiptap/vue-3";
 import type { Level } from "@tiptap/extension-heading";
@@ -7,20 +7,16 @@ import type { Level } from "@tiptap/extension-heading";
 import { FunctionButton, SubMenu, type MenuItem } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import MoreActionsIcon from "@knime/styles/img/icons/menu-options.svg";
-import LinkIcon from "@knime/styles/img/icons/link.svg";
 import type { EditorTools } from "@knime/rich-text-editor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as $shapes from "@/style/shapes";
-import { hotkeys, type HotkeysNS, navigatorUtils } from "@knime/utils";
+import { hotkeys, type HotkeysNS } from "@knime/utils";
 
 import ColorIcon from "./ColorIcon.vue";
 import RichTextAnnotationToolbarDialog from "./RichTextAnnotationToolbarDialog.vue";
 import ColorSelectionDialog from "./ColorSelectionDialog.vue";
-import CreateLinkModal from "./CreateLinkModal.vue";
-
-import { addCustomLink } from "./extended-link";
 
 interface Props {
   editor: Editor;
@@ -38,83 +34,8 @@ const emit = defineEmits<{
   (e: "changeBorderColor", color: string): void;
 }>();
 
-let showCreateLinkModal = ref(false);
-
-const text = ref("");
-const url = ref("");
-const isEditingLink = ref(false);
-
-const createLink = () => {
-  const { view, state } = props.editor;
-  const { from, to } = view.state.selection;
-
-  const currentLink = props.editor.getAttributes("link").href;
-  url.value = currentLink || "";
-
-  if (currentLink) {
-    const hasSelection = from !== to;
-    if (hasSelection) {
-      // manually update the cursor position to get the entire link text
-      const newCursorPosition = from + Math.floor((to - from) / 2);
-      props.editor.chain().focus().setTextSelection(newCursorPosition).run();
-    }
-
-    const textBefore = view.state.selection.$from.nodeBefore?.textContent ?? "";
-    const textAfter = view.state.selection.$to.nodeAfter?.textContent ?? "";
-
-    text.value = textBefore + textAfter;
-  } else {
-    text.value = state.doc.textBetween(from, to, "");
-  }
-
-  isEditingLink.value = currentLink || text.value;
-  showCreateLinkModal.value = true;
-};
-
-const removeLink = () => {
-  props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
-
-  showCreateLinkModal.value = false;
-  isEditingLink.value = false;
-};
-
-const addLink = (text: string, urlText: string) => {
-  props.editor.chain().focus().extendMarkRange("link").unsetLink().run();
-
-  if (urlText) {
-    const containsHttp = ["http://", "https://"].some((protocol) =>
-      urlText.includes(protocol),
-    );
-    const url = containsHttp ? urlText : `https://${urlText}`;
-
-    addCustomLink(props.editor, {
-      isEditing: isEditingLink.value,
-      urlText,
-      url,
-      text,
-    });
-  }
-
-  showCreateLinkModal.value = false;
-  isEditingLink.value = false;
-};
-
-const cancelAddLink = () => {
-  showCreateLinkModal.value = false;
-  isEditingLink.value = false;
-};
-
-const linkTool = {
-  id: "link",
-  icon: LinkIcon,
-  name: "Link",
-  hotkey: ["Ctrl", "K"],
-  active: () => props.editor.isActive("link"),
-  onClick: () => createLink(),
-};
-
-const customTools = computed(() =>
-  props.tools.filter(({ secondary }) => !secondary).concat(linkTool),
+const primaryTools = computed(() =>
+  props.tools.filter(({ secondary }) => !secondary),
 );
 
 const secondaryTools = computed(() =>
@@ -139,7 +60,7 @@ const onSecondaryToolClick = (_: MouseEvent, { id }: { id: string }) => {
 };
 
 // +1 to include the border color tool
-const totalEditorTools = computed(() => customTools.value.length + 2);
+const totalEditorTools = computed(() => primaryTools.value.length + 1);
 
 type HeadingMenuItem = MenuItem & { onClick: () => void };
 
@@ -231,24 +152,6 @@ const changeBorderColor = (color: string) => {
   hoveredColor.value = null;
   emit("changeBorderColor", color);
 };
-
-/**
- * Handles custom hotkeys that are not supported by tiptap.
- */
-const onKeyDown = (event: KeyboardEvent) => {
-  const ctrlPressed = event[navigatorUtils.getMetaOrCtrlKey()];
-  if (ctrlPressed && event.key === "k") {
-    createLink();
-  }
-};
-
-onMounted(() => {
-  window.addEventListener("keydown", onKeyDown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", onKeyDown);
-});
 </script>
 
 <template>
@@ -273,7 +176,7 @@ onUnmounted(() => {
       </SubMenu>
 
       <FunctionButton
-        v-for="tool of customTools"
+        v-for="tool of primaryTools"
         :key="tool.icon"
         :active="tool.active ? tool.active() : false"
         :title="`${tool.name} – ${hotkeys.formatHotkeys(tool.hotkey ?? [])}`"
@@ -315,15 +218,6 @@ onUnmounted(() => {
       </RichTextAnnotationToolbarDialog>
     </div>
   </FloatingMenu>
-  <CreateLinkModal
-    :is-active="showCreateLinkModal"
-    :text="text"
-    :url="url"
-    :is-edit="url !== ''"
-    @add-link="addLink"
-    @cancel-add-link="cancelAddLink"
-    @remove-link="removeLink"
-  />
 </template>
 
 <style lang="postcss" scoped>

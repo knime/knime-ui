@@ -8,10 +8,10 @@ import { FunctionButton } from "@knime/components";
 import * as $colors from "@/style/colors";
 
 import RichTextAnnotation from "../RichTextAnnotation.vue";
-import CreateLinkModal from "../CreateLinkModal.vue";
 import ColorSelectionDialog from "../ColorSelectionDialog.vue";
 import RichTextAnnotationToolbar from "../RichTextAnnotationToolbar.vue";
 import ColorIcon from "../ColorIcon.vue";
+import { CreateLinkModal } from "@knime/rich-text-editor";
 
 // mock for editor's isActive function. declared separately due to mock hoisting via vi.mock
 const isActive = vi.fn();
