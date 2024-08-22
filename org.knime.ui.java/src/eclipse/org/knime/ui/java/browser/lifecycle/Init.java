@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import static org.knime.ui.java.api.DesktopAPI.MAPPER;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -58,15 +56,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
-import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.progress.ProgressManager;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.util.auth.CouldNotAuthorizeException;
@@ -122,6 +120,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 final class Init {
 
     private static final String SPACE_PROVIDERS_EXTENSION_ID = "org.knime.ui.java.SpaceProviders";
+
+    private static final List<String> WATCHED_JOBS_FOR_PROGRESS_EVENTS =
+        List.of("org.eclipse.equinox.p2.operations.ProfileModificationJob",
+            "org.eclipse.equinox.p2.ui.LoadMetadataRepositoryJob");
 
     private Init() {
         //
@@ -324,80 +326,21 @@ final class Init {
      * @return The job change listener that was registered
      */
     private static IJobChangeListener registerListenerToSendProgressEvents(final EventConsumer eventConsumer) {
-        var listener = new InstallationJobChangeListener(eventConsumer);
+        Predicate<Job> isWatchedJob =
+            job -> WATCHED_JOBS_FOR_PROGRESS_EVENTS.stream().anyMatch(c -> job.getClass().getName().equals(c));
+        BiConsumer<Job, IProgressMonitor> addProgressListener = (job, listener) -> {
+            var pm = ProgressManager.getInstance();
+            pm.progressFor(job).addProgressListener(listener);
+        };
+        BiConsumer<Job, IProgressMonitor> removeProgressListener = (job, listener) -> {
+            var pm = ProgressManager.getInstance();
+            pm.progressFor(job).removeProgresListener(listener);
+        };
+
+        var listener = ProgressEventUtil.createJobChangeListener(eventConsumer, isWatchedJob, addProgressListener,
+            removeProgressListener);
         Job.getJobManager().addJobChangeListener(listener);
         return listener;
-    }
-
-    /**
-     * Listens to all the jobs the {@link IJobManager} is aware of and sends events via the {@link EventConsumer}
-     * whenever a {@link ProfileModificationJob} starts or finishes.
-     *
-     * @author Kai Franze, KNIME GmbH
-     */
-    private static final class InstallationJobChangeListener implements IJobChangeListener {
-
-        private static final String PROFILE_MODIFICATION_JOB_CLASS =
-            "org.eclipse.equinox.p2.operations.ProfileModificationJob";
-
-        private final EventConsumer m_eventConsumer;
-
-        InstallationJobChangeListener(final EventConsumer eventConsumer) {
-            m_eventConsumer = eventConsumer;
-        }
-
-        @Override
-        public void sleeping(final IJobChangeEvent event) {
-            // No need to send an event
-        }
-
-        @Override
-        public void scheduled(final IJobChangeEvent event) {
-            // No need to send an event
-        }
-
-        @Override
-        public void running(final IJobChangeEvent event) {
-            var job = event.getJob();
-            if (isProfileModificationJob(job)) {
-                createAndSendProgressEvent(job, "STARTED");
-            }
-        }
-
-        @Override
-        public void done(final IJobChangeEvent event) {
-            var job = event.getJob();
-            if (isProfileModificationJob(job)) {
-                createAndSendProgressEvent(job, "FINISHED");
-            }
-        }
-
-        @Override
-        public void awake(final IJobChangeEvent event) {
-            // No need to send an event
-        }
-
-        @Override
-        public void aboutToRun(final IJobChangeEvent event) {
-            // No need to send an event
-        }
-
-        private static boolean isProfileModificationJob(final Job job) {
-            if (job == null) {
-                return false;
-            }
-            var className = job.getClass().getName();
-            return className.equals(PROFILE_MODIFICATION_JOB_CLASS);
-        }
-
-        private void createAndSendProgressEvent(final Job job, final String status) {
-            var progressEvent = MAPPER.createObjectNode();
-            var jobName = job.getName();
-            progressEvent.put("text", jobName);
-            progressEvent.put("status", status);
-            m_eventConsumer.accept("ProgressEvent", progressEvent);
-        }
-
     }
 
     private static final class UpdatableSpaceProviders implements SpaceProviders {
