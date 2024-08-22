@@ -138,18 +138,21 @@ public final class SaveAndCloseProjects {
      * Resulting state of a save-and-close process.
      */
     public enum State {
-        /**
-         * The closing process has been cancelled or has failed
-         */
-        CANCEL_OR_FAIL,
-        /**
-         * Projects were saved successfully (or did not need to be saved)
-         */
-        SUCCESS,
-        /**
-         * the projects require to be saved (in which case, an event is triggered to save and close the projects)
-         */
-        NEEDS_SAVE
+
+            /**
+             * The closing process has been cancelled or has failed
+             */
+            CANCEL_OR_FAIL,
+
+            /**
+             * Projects were saved successfully (or did not need to be saved)
+             */
+            SUCCESS,
+
+            /**
+             * The projects require to be saved (in which case, an event is triggered to save and close the projects)
+             */
+            NEEDS_SAVE
     }
 
     /**
@@ -172,14 +175,13 @@ public final class SaveAndCloseProjects {
             .toArray(WorkflowManager[]::new);
         var shallSaveProjects = promptWhetherToSaveProjects(dirtyWfms);
         return switch (shallSaveProjects) {
-            case YES -> {
+            case YES -> { // NOSONAR
                 if (promptCancelExecution(dirtyWfms)) {
                     sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer, action);
                 }
                 yield State.NEEDS_SAVE;
             }
-            case NO ->
-                CloseProject.closeProjects(projectIds) ? State.SUCCESS : State.CANCEL_OR_FAIL;
+            case NO -> CloseProject.closeProjects(projectIds) ? State.SUCCESS : State.CANCEL_OR_FAIL;
             default -> State.CANCEL_OR_FAIL;
         };
     }
@@ -238,7 +240,7 @@ public final class SaveAndCloseProjects {
     public enum DialogResponse {
             YES, NO, CANCEL_OR_CLOSE;
 
-        static DialogResponse of(int returnCode) {
+        static DialogResponse of(final int returnCode) {
             return values()[returnCode];
         }
     }

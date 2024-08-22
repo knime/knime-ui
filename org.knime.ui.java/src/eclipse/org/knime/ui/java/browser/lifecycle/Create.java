@@ -54,12 +54,15 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
@@ -146,15 +149,25 @@ final class Create {
 
             @Override
             public WelcomeAPEndpoint getWelcomeApEndpoint() {
-                return welcomeAPEndpoint;
+                return WelcomeAPEndpoint.getInstance();
             }
         };
     }
 
     private static void assertNoOpenClassicEditors() {
-        Optional.ofNullable(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()) //
+        Supplier<Optional<IWorkbench>> workbenchOptionalSupplier = () -> {
+            try {
+                return Optional.of(PlatformUI.getWorkbench());
+            } catch (IllegalStateException e) { // NOSONAR: Exception not needed
+                return Optional.empty();
+            }
+        };
+        workbenchOptionalSupplier.get() //
+            .map(IWorkbench::getActiveWorkbenchWindow) //
+            .map(IWorkbenchWindow::getActivePage) //
             .map(IWorkbenchPage::getEditorReferences) //
-            .flatMap(editorReferences -> editorReferences.length > 0 ? Optional.of(editorReferences) : Optional.empty()) //
+            .flatMap(editorReferences -> editorReferences.length > 0 //
+                ? Optional.of(editorReferences) : Optional.empty()) //
             .ifPresent(editorReferences -> {
                 var referenceNames =
                     Arrays.stream(editorReferences).map(IEditorReference::getName).collect(Collectors.joining(","));
