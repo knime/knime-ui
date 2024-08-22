@@ -51,6 +51,7 @@ package org.knime.ui.java.browser.lifecycle;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -98,24 +99,10 @@ final class Create {
         initializeResourceHandlers();
         DesktopAPI.forEachAPIFunction(apiFunctionCaller);
 
-        // Only call endpoint for tracking when the classic perspective is not loaded
-        var welcomeAPEndpoint = WelcomeAPEndpoint.getInstance();
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            IWorkbenchPage page = null;
-            try {
-                page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-                if (page != null) {
-                    var refs = page.getEditorReferences();
-                    if (refs.length > 0) { // NOSONAR
-                        NodeLogger.getLogger(LifeCycle.class)
-                            .error("There are open eclipse editors which is not expected: "
-                                + Arrays.stream(refs).map(IEditorReference::getName).collect(Collectors.joining(",")));
-                    }
-                }
-            } catch (Exception e) { // NOSONAR
-                // nothing to do - since it's for a sanity check only
-            }
-            welcomeAPEndpoint.callEndpointForTracking(true);
+            assertNoOpenClassicEditors();
+            // Only call endpoint for tracking when the classic perspective is not loaded
+            WelcomeAPEndpoint.getInstance().callEndpointForTracking(true);
         }
 
         // Initialize the node timer with the currently active 'perspective'
@@ -162,6 +149,18 @@ final class Create {
                 return welcomeAPEndpoint;
             }
         };
+    }
+
+    private static void assertNoOpenClassicEditors() {
+        Optional.ofNullable(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()) //
+            .map(IWorkbenchPage::getEditorReferences) //
+            .flatMap(editorReferences -> editorReferences.length > 0 ? Optional.of(editorReferences) : Optional.empty()) //
+            .ifPresent(editorReferences -> {
+                var referenceNames =
+                    Arrays.stream(editorReferences).map(IEditorReference::getName).collect(Collectors.joining(","));
+                NodeLogger.getLogger(LifeCycle.class)
+                    .error("There are open eclipse editors which is not expected: " + referenceNames);
+            });
     }
 
     private static void initializeResourceHandlers() {

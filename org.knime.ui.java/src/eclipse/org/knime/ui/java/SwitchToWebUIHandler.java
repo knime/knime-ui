@@ -79,8 +79,8 @@ public final class SwitchToWebUIHandler {
     @Execute
     public void execute() {
         var perspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        var didClosedAll = ClassicWorkflowEditorUtil.closeAllEditorsWithPrompt();
-        if (didClosedAll) {
+        var allClosed = ClassicWorkflowEditorUtil.closeAllEditorsWithPrompt();
+        if (allClosed) {
             PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
         }
     }

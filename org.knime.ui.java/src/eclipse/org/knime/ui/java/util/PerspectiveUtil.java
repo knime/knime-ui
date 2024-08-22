@@ -46,6 +46,7 @@
  */
 package org.knime.ui.java.util;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.e4.ui.model.application.MApplication;
@@ -109,10 +110,7 @@ public final class PerspectiveUtil {
      *         UI at least once)
      */
     public static boolean isClassicPerspectiveLoaded() {
-        if (isClassicPerspectiveLoaded == null) {
-            return isClassicPerspectiveActive();
-        }
-        return isClassicPerspectiveLoaded;
+        return Objects.requireNonNullElseGet(isClassicPerspectiveLoaded, PerspectiveUtil::isClassicPerspectiveActive);
     }
 
     /**

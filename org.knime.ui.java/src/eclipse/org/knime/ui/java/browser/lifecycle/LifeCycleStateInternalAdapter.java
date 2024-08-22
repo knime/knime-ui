@@ -48,12 +48,13 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
+import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 /**
@@ -71,7 +72,7 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     }
 
     @Override
-    public IntSupplier saveAndCloseAllWorkflows() {
+    public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
         return m_lifeCycleStateInternal.saveAndCloseAllWorkflows();
     }
 

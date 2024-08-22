@@ -58,8 +58,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.IntSupplier;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -156,7 +156,7 @@ final class Init {
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
             @Override
-            public IntSupplier saveAndCloseAllWorkflows() {
+            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
                 return () -> {
                     var projectIds = projectManager.getProjectIds();
                     return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer,

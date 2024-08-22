@@ -48,8 +48,9 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
+import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.util.AppStatePersistor;
 
 /**
@@ -68,11 +69,9 @@ final class SaveState {
         throws StateTransitionAbortedException {
         final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
                 AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        final IntSupplier saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
-        final var saveState = saveAndCloseAllWorkflows.getAsInt();
+        final var saveProjectsResult = state.saveAndCloseAllWorkflows();
 
-        if (saveState == 0) {
-            // saving has been cancelled
+        if (saveProjectsResult.get() == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
             throw new StateTransitionAbortedException();
         }
 
@@ -80,12 +79,12 @@ final class SaveState {
 
             @Override
             public boolean workflowsSaved() {
-                return saveState == 1;
+                return saveProjectsResult.get() == SaveAndCloseProjects.State.SUCCESS;
             }
 
             @Override
-            public IntSupplier saveAndCloseAllWorkflows() {
-                return saveAndCloseAllWorkflows;
+            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
+                return saveProjectsResult;
             }
 
             @Override

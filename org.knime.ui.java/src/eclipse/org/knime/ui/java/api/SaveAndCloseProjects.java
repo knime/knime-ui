@@ -135,35 +135,53 @@ public final class SaveAndCloseProjects {
     }
 
     /**
+     * Resulting state of a save-and-close process.
+     */
+    public enum State {
+        /**
+         * The closing process has been cancelled or has failed
+         */
+        CANCEL_OR_FAIL,
+        /**
+         * Projects were saved successfully (or did not need to be saved)
+         */
+        SUCCESS,
+        /**
+         * the projects require to be saved (in which case, an event is triggered to save and close the projects)
+         */
+        NEEDS_SAVE
+    }
+
+    /**
      * Closes the given projects (project-ids) and asks the user to save the projects with unsaved changes. Also asks
      * the user to cancel executing projects.
      *
      * @param projectIds
      * @param eventConsumer
      * @param action
-     * @return {@code 0} if the closing process has been cancelled or failed; {@code 1} if the projects have been
-     *         closed successfully; {@code 2} if the projects require to be saved (in which case, an event is triggered
-     *         to save and close the projects)
+     * @return {@link State}
      */
-    public static int saveAndCloseProjectsInteractively(final List<String> projectIds,
+    public static State saveAndCloseProjectsInteractively(final List<String> projectIds,
         final EventConsumer eventConsumer, final PostProjectCloseAction action) {
-        var pm = ProjectManager.getInstance();
-        var dirtyProjectIds = projectIds.stream()
-            .filter(id -> pm.getCachedProject(id).map(WorkflowManager::isDirty).orElse(false)).toArray(String[]::new);
-        var dirtyWfms = Arrays.stream(dirtyProjectIds).flatMap(id -> pm.getCachedProject(id).stream())
+        var projectManager = ProjectManager.getInstance();
+        var dirtyProjectIds = projectIds.stream() //
+            .filter(id -> projectManager.getCachedProject(id).map(WorkflowManager::isDirty).orElse(false)) //
+            .toArray(String[]::new);
+        var dirtyWfms = Arrays.stream(dirtyProjectIds) //
+            .flatMap(id -> projectManager.getCachedProject(id).stream()) //
             .toArray(WorkflowManager[]::new);
         var shallSaveProjects = promptWhetherToSaveProjects(dirtyWfms);
-        switch (shallSaveProjects) {
-            case 0: // YES
-                if (shallCancelProjectsIfNecessary(dirtyWfms)) {
+        return switch (shallSaveProjects) {
+            case YES -> {
+                if (promptCancelExecution(dirtyWfms)) {
                     sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer, action);
                 }
-                return 2;
-            case 1: // NO
-                return CloseProject.closeProjects(projectIds) ? 1 : 0;
-            default: // CANCEL button or window 'x'
-                return 0;
-        }
+                yield State.NEEDS_SAVE;
+            }
+            case NO ->
+                CloseProject.closeProjects(projectIds) ? State.SUCCESS : State.CANCEL_OR_FAIL;
+            default -> State.CANCEL_OR_FAIL;
+        };
     }
 
     private static void saveProjectsWithProgressBar(final String[] projectIds, final String[] svgs,
@@ -200,7 +218,7 @@ public final class SaveAndCloseProjects {
         monitor.subTask("Saving '" + projectId + "'");
         // workflow not loaded -> nothing to save
         final var success = (projectWfm == null || SaveProject.saveProject(monitor, projectWfm, projectSVG, false))
-                && CloseProject.closeProject(projectId);
+            && CloseProject.closeProject(projectId);
         monitor.worked(1);
         return success;
     }
@@ -217,35 +235,51 @@ public final class SaveAndCloseProjects {
         eventConsumer.accept("SaveAndCloseProjectsEvent", event);
     }
 
+    public enum DialogResponse {
+            YES, NO, CANCEL_OR_CLOSE;
+
+        static DialogResponse of(int returnCode) {
+            return values()[returnCode];
+        }
+    }
+
     /**
      * Opens a user prompt asking to save all projects provided.
      *
      * @param dirtyWfms The dirty workflow managers to potentially save
-     * @return {@code 0} if 'Yes', {@code 1} if 'No', {@code 2} if 'Cancel'
+     * @return The {@link DialogResponse}
      */
-    public static int promptWhetherToSaveProjects(final WorkflowManager... dirtyWfms) {
+    public static DialogResponse promptWhetherToSaveProjects(final WorkflowManager... dirtyWfms) {
         String title;
         var message = new StringBuilder();
         if (dirtyWfms.length == 0) {
-            return 1;
+            return DialogResponse.NO;
         } else if (dirtyWfms.length == 1) {
             title = "Save Workflow";
-            message.append("Save '" + dirtyWfms[0].getName() + "'?");
+            message.append("Save '").append(dirtyWfms[0].getName()).append("'?");
         } else {
             title = "Save Workflows";
             message.append("Save workflows?\n");
-            for (var i = 0; i < dirtyWfms.length; i++) {
-                message.append("\n" + dirtyWfms[i].getName());
+            for (WorkflowManager dirtyWfm : dirtyWfms) {
+                message.append("\n").append(dirtyWfm.getName());
             }
         }
-        var sh = SWTUtilities.getActiveShell();
         var buttons =
             new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL};
-        var d = new MessageDialog(sh, title, null, message.toString(), MessageDialog.QUESTION, buttons, 0);
-        return d.open();
+        var dialog = new MessageDialog( //
+            SWTUtilities.getActiveShell(), //
+            title, //
+            null, //
+            message.toString(), //
+            MessageDialog.QUESTION, //
+            buttons, //
+            0 //
+        );
+        var dialogReturnCode = dialog.open();
+        return DialogResponse.of(dialogReturnCode);
     }
 
-    private static boolean shallCancelProjectsIfNecessary(final WorkflowManager... wfms) {
+    private static boolean promptCancelExecution(final WorkflowManager... wfms) {
         var namesOfExecutingProjects = Arrays.stream(wfms).filter(Objects::nonNull)
             .filter(wfm -> wfm.getNodeContainerState().isExecutionInProgress()).map(WorkflowManager::getName)
             .toArray(String[]::new);
@@ -261,7 +295,7 @@ public final class SaveAndCloseProjects {
             title = "Workflows in execution";
             message.append("Workflows in execution:\n");
             for (var i = 0; i < namesOfExecutingProjects.length; i++) {
-                message.append("\n" + namesOfExecutingProjects[i]);
+                message.append("\n").append(namesOfExecutingProjects[i]);
             }
             message.append("\nExecuting nodes are not saved! Close anyway?");
         }

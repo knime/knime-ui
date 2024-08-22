@@ -48,11 +48,13 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.util.function.IntSupplier;
+import java.util.List;
+import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
@@ -66,11 +68,10 @@ import org.knime.ui.java.util.MostRecentlyUsedProjects;
 public interface LifeCycleStateInternal extends LifeCycleState {
 
     /**
-     * @return the logic which saves and closes all workflows; see
-     *         {@link SaveAndCloseProjects#saveAndCloseProjectsInteractively(java.util.Set, org.knime.gateway.impl.service.util.EventConsumer, org.knime.ui.java.browser.SaveAndCloseProjects.SaveAndCloseWorkflows.PostWorkflowCloseAction)}
-     *         for documentation on the result
+     * @return the logic which saves and closes all workflows.
+     * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List, EventConsumer, SaveAndCloseProjects.PostProjectCloseAction)
      */
-    default IntSupplier saveAndCloseAllWorkflows() {
+    default Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
         return null;
     }
 

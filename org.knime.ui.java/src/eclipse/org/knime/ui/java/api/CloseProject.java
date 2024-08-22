@@ -46,6 +46,8 @@
  */
 package org.knime.ui.java.api;
 
+import static org.knime.ui.java.api.SaveAndCloseProjects.saveAndCloseProjectsInteractively;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -83,9 +85,9 @@ final class CloseProject {
             projectManager.openAndCacheProject(nextProjectId);
             projectManager.setProjectActive(nextProjectId);
         }
-        var success =
-            SaveAndCloseProjects.saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose),
-                DesktopAPI.getDeps(EventConsumer.class), PostProjectCloseAction.UPDATE_APP_STATE) == 1;
+        var saveAndCloseState = saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose),
+                DesktopAPI.getDeps(EventConsumer.class), PostProjectCloseAction.UPDATE_APP_STATE);
+        var success = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
         if (success) {
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }

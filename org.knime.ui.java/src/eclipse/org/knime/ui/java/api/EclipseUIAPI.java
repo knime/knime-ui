@@ -217,11 +217,12 @@ final class EclipseUIAPI {
     @API
     static void switchToJavaUI() { // NOSONAR
         // All the open workflow projects will be closed on perspective switch
-        var proceed = SaveAndCloseProjects.saveAndCloseProjectsInteractively( //
-            ProjectManager.getInstance().getProjectIds(), //
-            DesktopAPI.getDeps(EventConsumer.class), //
-            PostProjectCloseAction.SWITCH_PERSPECTIVE //
-        ) == 1;
+        var saveAndCloseState = SaveAndCloseProjects.saveAndCloseProjectsInteractively( //
+                        ProjectManager.getInstance().getProjectIds(), //
+                        DesktopAPI.getDeps(EventConsumer.class), //
+                        PostProjectCloseAction.SWITCH_PERSPECTIVE //
+                );
+        var proceed = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
         if (!proceed) {
             return;
         }

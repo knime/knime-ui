@@ -158,8 +158,8 @@ public final class ClassicWorkflowEditorUtil {
                 }
             };
 
-        WorkflowLoadResult loadRes = WorkflowManager.loadProject(wfDir, new ExecutionMonitor(), loadHelper);
-        return loadRes.getWorkflowManager();
+        WorkflowLoadResult loadResult = WorkflowManager.loadProject(wfDir, new ExecutionMonitor(), loadHelper);
+        return loadResult.getWorkflowManager();
     }
 
     private static WorkflowManager[] getDirtyWorkflowManagers() {
@@ -173,7 +173,7 @@ public final class ClassicWorkflowEditorUtil {
     /**
      * Close all open editors with a user prompt.
      *
-     * @return Whether all editors where closed successfully or not
+     * @return Whether all editors where closed successfully.
      */
     public static boolean closeAllEditorsWithPrompt() {
         return Optional.ofNullable(PlatformUI.getWorkbench())//
@@ -181,11 +181,11 @@ public final class ClassicWorkflowEditorUtil {
             .map(IWorkbenchWindow::getActivePage)//
             .map(page -> {
                 final var dirtyWfms = getDirtyWorkflowManagers();
-                final var shallSaveProjects = SaveAndCloseProjects.promptWhetherToSaveProjects(dirtyWfms);
-                return switch (shallSaveProjects) {
-                    case 0 -> page.saveAllEditors(false) && page.closeAllEditors(false); // Yes
-                    case 1 -> page.closeAllEditors(false); // No
-                    default -> false; // Cancel
+                final var dialogResponse = SaveAndCloseProjects.promptWhetherToSaveProjects(dirtyWfms);
+                return switch (dialogResponse) {
+                    case YES -> page.saveAllEditors(false) && page.closeAllEditors(false);
+                    case NO -> page.closeAllEditors(false);
+                    default -> false;
                 };
             })//
             .orElse(true); // Success if no active page found
