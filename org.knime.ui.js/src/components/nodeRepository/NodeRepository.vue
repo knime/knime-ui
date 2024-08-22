@@ -7,7 +7,7 @@ import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
 import { TABS } from "@/store/panel";
 import TagResults from "./TagResults.vue";
-import TagTree from "./TagTree.vue";
+import CategoryTree from "./CategoryTree.vue";
 
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
@@ -24,7 +24,7 @@ const searchIsActive = computed(
   () => store.getters["nodeRepository/searchIsActive"],
 );
 
-const tagTree = ref<InstanceType<typeof TagTree>>();
+const categoryTree = ref<InstanceType<typeof CategoryTree>>();
 
 const displayMode = computed(
   () => store.state.settings.settings.nodeRepositoryDisplayMode,
@@ -32,7 +32,7 @@ const displayMode = computed(
 
 const isNodeVisible = computed(() => {
   if (displayMode.value === "tree" && !searchIsActive.value) {
-    return tagTree.value
+    return categoryTree.value
       ?.getExpandedNodeIds()
       .includes(showDescriptionForNode.value!.id);
   }
@@ -117,7 +117,7 @@ const onSearchBarDownKey = () => {
 
   // tree
   if (displayMode.value === "tree") {
-    tagTree.value?.focusFirst();
+    categoryTree.value?.focusFirst();
     return;
   }
   // tag
@@ -153,9 +153,9 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />
-      <TagTree
+      <CategoryTree
         v-else
-        ref="tagTree"
+        ref="categoryTree"
         @nav-reached-top="handleNavReachedTop($event)"
         @show-node-description="toggleNodeDescription"
       />

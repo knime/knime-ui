@@ -75,16 +75,16 @@ export const mutations: MutationTree<NodeRepositoryState> = {
 export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.actions,
 
-  async getNodeTag(
+  async getNodeCategory(
     { rootState, dispatch },
-    { tagPath }: { tagPath: string[] },
+    { categoryPath }: { categoryPath: string[] },
   ) {
-    const nodeTagResult = await API.noderepository.getNodeCategory({
-      categoryPath: tagPath,
+    const nodeCategoryResult = await API.noderepository.getNodeCategory({
+      categoryPath,
     });
 
     const { availablePortTypes } = rootState.application;
-    const nodesWithMappedPorts = nodeTagResult.nodes?.map(
+    const nodesWithMappedPorts = nodeCategoryResult.nodes?.map(
       toNodeTemplateWithExtendedPorts(availablePortTypes),
     );
 
@@ -96,7 +96,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     );
 
     return {
-      ...nodeTagResult,
+      ...nodeCategoryResult,
       nodes: nodesWithMappedPorts,
     };
   },
