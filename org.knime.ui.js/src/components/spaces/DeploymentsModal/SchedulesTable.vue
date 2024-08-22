@@ -76,13 +76,13 @@ const getScheduleJobs = (id: string) =>
     >
       <template #collapserContent="{ row }">
         <JobsTable
-          v-if="row.data.id && getScheduleJobs(row.data.id).length"
+          v-if="row.id && getScheduleJobs(row.id).length"
           :show-search="false"
           :show-column-filters="false"
           :page-size="5"
           :is-inside-schedule="true"
           class="table"
-          :jobs="getScheduleJobs(row.data.id)"
+          :jobs="getScheduleJobs(row.id)"
         />
         <div v-else class="empty-message">
           No jobs available for this schedule.
