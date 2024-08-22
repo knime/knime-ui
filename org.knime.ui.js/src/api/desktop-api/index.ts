@@ -17,8 +17,10 @@ export interface DesktopEventHandlers {
   ImportURIEvent(payload: { x: number; y: number }): void;
 
   ProgressEvent(payload: {
-    status: "STARTED" | "FINISHED";
-    text: string;
+    task: string;
+    subtask?: string | null;
+    status: "Started" | "Fetching" | "Installing" | "Finished";
+    progress: number;
   }): void;
 
   AiAssistantEvent(payload: { chainType: "qa" | "build"; data: {} }): void;

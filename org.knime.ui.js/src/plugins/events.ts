@@ -7,6 +7,7 @@ import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
 import { fetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
+import consola from "consola";
 
 const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   API.event.registerEventHandlers({
@@ -267,9 +268,20 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
     // Is triggered by the backend, whenever there are installation or update processes starting
     // or finishing
-    ProgressEvent({ status, text }) {
-      const isLoading = status === "STARTED";
+    ProgressEvent({ task, subtask, status, progress }) {
+      // To at least log all the information we got
+      consola.info("events::ProgressEvent", {
+        task,
+        subtask,
+        status,
+        progress,
+      });
 
+      const isLoading = status !== "Finished";
+      const text = `${task} : ${status} (${progress}%)`;
+
+      // This might change since we will introduce something like a progress bar here
+      // As long as we are not FINISHED we will show the loader
       $store.dispatch("application/updateGlobalLoader", {
         loading: isLoading,
         displayMode: "floating",
