@@ -9,6 +9,7 @@ import GettingStartedIcon from "webapps-common/ui/assets/img/icons/rocket.svg";
 import CheatSheetsIcon from "webapps-common/ui/assets/img/icons/speedo.svg";
 import DocsIcon from "webapps-common/ui/assets/img/icons/file-text.svg";
 import ShortcutsIcon from "webapps-common/ui/assets/img/icons/shortcuts.svg";
+import GraduateHatIcon from "webapps-common/ui/assets/img/icons/graduate-hat.svg";
 import LinkExteranlIcon from "webapps-common/ui/assets/img/icons/link-external.svg";
 import type { MenuItem } from "webapps-common/ui/components/MenuItems.vue";
 
@@ -64,12 +65,17 @@ const helpMenuItem = computed<MenuItem>(() => ({
       },
     },
     {
-      text: "KNIME Getting started guide",
+      text: "KNIME Getting Started Guide",
       icon: GettingStartedIcon,
       href: buildExternalUrl("https://www.knime.com/getting-started-guide"),
     },
     {
-      text: "KNIME Cheat sheets",
+      text: "KNIME Self-paced Courses",
+      icon: GraduateHatIcon,
+      href: buildExternalUrl("https://knime.com/modern-ui-courses/"),
+    },
+    {
+      text: "KNIME Cheat Sheets",
       icon: CheatSheetsIcon,
       href: buildExternalUrl("https://www.knime.com/cheat-sheets"),
     },
@@ -79,7 +85,7 @@ const helpMenuItem = computed<MenuItem>(() => ({
       href: buildExternalUrl("https://docs.knime.com/"),
     },
     {
-      text: "Get Help From the KNIME Community",
+      text: "Get help from the KNIME Community",
       separator: true,
       icon: ForumIcon,
       href: buildExternalUrl("https://forum.knime.com/"),
@@ -126,7 +132,8 @@ const helpMenuItem = computed<MenuItem>(() => ({
   ],
 }));
 
-const onItemClick = (_: any, item: MenuItem) => item.metadata?.handler?.();
+const onItemClick = (_: MouseEvent, item: MenuItem) =>
+  item.metadata?.handler?.();
 </script>
 
 <template>
