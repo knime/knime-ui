@@ -57,6 +57,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IEditorReference;
@@ -76,7 +77,6 @@ import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.AppStatePersistor;
-import org.knime.ui.java.util.LocalWorkspaceSingleton;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
@@ -197,7 +197,8 @@ final class Create {
     }
 
     private static LocalWorkspace createLocalWorkspace() {
-        return LocalWorkspaceSingleton.getInstance();
+        var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
+        return new LocalWorkspace(localWorkspaceRootPath);
     }
 
 }
