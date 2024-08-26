@@ -2,6 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
 import type { WorkflowState } from ".";
 import type { RootStoreState } from "../types";
+import type { NodeRelation } from "@/api/custom-types";
 
 interface State {
   portTypeMenu: {
@@ -30,6 +31,7 @@ interface State {
       position: XY;
       nodeId?: string | null;
       port: NodePort | null;
+      nodeRelation: NodeRelation | null;
     } | null;
     events: {
       menuClose?: () => void;

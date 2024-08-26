@@ -75,7 +75,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       // destruct current state
       const { isOpen, props } = $store.state.workflow.quickAddNodeMenu;
 
-      const { nodeId: lastNodeId, port, position: lastPosition } = props ?? {};
+      const { nodeId: lastNodeId, port, position: lastPosition, nodeRelation } = props ?? {};
       const lastPortIndex = port?.index ?? -1;
 
       // use the node of the currently open dialog because the node might not be selected in that case
@@ -96,12 +96,17 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       }
 
       const nodeId = node.id;
-      const outPortCount = node.outPorts.length;
-
-      // shuffle between port indices, start with the first non mickey-mouse (flowvar) port
-      // if there is one, if not use the mickey-mouse port (index 0)
-      const startIndex = outPortCount === 1 ? 0 : 1;
-      const nextIndex = (lastPortIndex + 1) % outPortCount;
+      // shuffle between ports, starts in the outPort side with the first flowvar port, then the other ports in the same side and last the flowvar port
+      // then change to the inPort side with the same order
+      let nextSide = nodeRelation || "SUCCESSORS";
+      if (lastPortIndex === 0) {
+        nextSide =
+          nodeRelation === "SUCCESSORS" ? "PREDECESSORS" : "SUCCESSORS";
+      }
+      const portCount =
+        nextSide === "SUCCESSORS" ? node.outPorts.length : node.inPorts.length;
+      const startIndex = portCount === 1 ? 0 : 1;
+      const nextIndex = (lastPortIndex + 1) % portCount;
       const portIndex = lastNodeId === nodeId ? nextIndex : startIndex;
 
       // if it's not open we need to find a proper position to put the menu
@@ -113,7 +118,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         const outPortPositions = portPositions({
           portCount,
           isMetanode: isNodeMetaNode(node),
-          isOutports: true,
+          isOutports: nodeRelation === "SUCCESSORS",
         });
 
         // eslint-disable-next-line no-magic-numbers
@@ -134,14 +139,14 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       const outputPort = node.outPorts[portIndex];
       const position = isOpen
         ? lastPosition
-        : calculatePosition(node, portIndex, outPortCount);
+        : calculatePosition(node, portIndex, portCount);
 
       $store.dispatch("workflow/openQuickAddNodeMenu", {
         props: {
           nodeId,
           port: outputPort,
           position,
-          nodeRelation: "SUCCESSORS",
+          nodeRelation: nextSide,
         },
       });
     },

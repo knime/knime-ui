@@ -27,7 +27,8 @@ export const usePortAnimationClasses = (
   const isShowingQuickAddNodeMenu = (portIndex: number, side: "in" | "out") => {
     return (
       quickAddNodeMenu.value.isOpen &&
-      side === "out" &&
+      (quickAddNodeMenu.value.props?.nodeRelation === "SUCCESSORS" && side === "out" ||
+        quickAddNodeMenu.value.props?.nodeRelation === "PREDECESSORS" && side === "in" ) &&
       quickAddNodeMenu.value.props?.nodeId === options.nodeId &&
       quickAddNodeMenu.value.props?.port?.index === portIndex
     );

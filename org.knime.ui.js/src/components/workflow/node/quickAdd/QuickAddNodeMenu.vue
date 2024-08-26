@@ -63,6 +63,7 @@ const calculatePortOffset = (params: {
 
 type ComponentData = {
   selectedNode: NodeTemplateWithExtendedPorts | null;
+  menuWidth: number;
 };
 
 /*
@@ -101,6 +102,7 @@ export default defineComponent({
   data(): ComponentData {
     return {
       selectedNode: null,
+      menuWidth: 360,
     };
   },
   computed: {
@@ -128,8 +130,11 @@ export default defineComponent({
       const halfPort = this.$shapes.portSize / 2;
 
       // x: align with the port arrow (position is the center of the port)
-      // assume direction == out
-      pos.x += halfPort;
+      if (this.nodeRelation === "PREDECESSORS") {
+        pos.x -= this.menuWidth + halfPort;
+      } else {
+        pos.x += halfPort;
+      }      
 
       return pos;
     },
@@ -282,6 +287,7 @@ export default defineComponent({
     aria-label="Quick add node"
     focus-trap
     :prevent-overflow="true"
+    :style="{ width: `${menuWidth}px` }"
     @menu-close="$emit('menuClose')"
   >
     <!-- this will be portalled to the canvas -->
@@ -353,7 +359,6 @@ export default defineComponent({
   --quick-add-node-height: 450;
   --quick-add-node-header-height: 73;
 
-  width: 360px;
   margin-top: v-bind("marginTop");
 
   & .wrapper {
