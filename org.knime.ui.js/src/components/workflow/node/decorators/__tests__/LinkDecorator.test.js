@@ -37,7 +37,7 @@ describe("LinkDecorator.vue", () => {
       $colors.nodeBackgroundColors.Manipulator,
     );
     expect(wrapper.find("path").attributes().stroke).toBe(
-      $colors.linkDecorator,
+      $colors.linkDecoratorUpToDate,
     );
   });
 
@@ -47,7 +47,7 @@ describe("LinkDecorator.vue", () => {
       $colors.nodeBackgroundColors.Metanode,
     );
     expect(wrapper.find("path").attributes().stroke).toBe(
-      $colors.linkDecorator,
+      $colors.linkDecoratorUpToDate,
     );
   });
 
@@ -55,7 +55,7 @@ describe("LinkDecorator.vue", () => {
     const wrapper = doShallowMount("unknown type");
     expect(wrapper.find("rect").exists()).toBe(false);
     expect(wrapper.find("path").attributes().stroke).toBe(
-      $colors.linkDecorator,
+      $colors.linkDecoratorUpToDate,
     );
   });
 });

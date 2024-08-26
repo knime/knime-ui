@@ -48,7 +48,7 @@ export default {
       d="M2.43 8.57L9.5 1.5M5 1.5L9.5 1.5L9.5 6"
       fill="none"
       stroke-linejoin="round"
-      :stroke="$colors.linkDecorator"
+      :stroke="$colors.linkDecoratorUpToDate"
       data-test-id="arrow"
     />
 
@@ -67,12 +67,12 @@ export default {
     <g v-else-if="updateStatus === 'ERROR'">
       <path
         d="M2.4304 8.56863L9.50146 1.49756"
-        :stroke="$colors.linkDecorator"
+        :stroke="$colors.linkDecoratorError"
         data-test-id="cross"
       />
       <path
         d="M9.50124 8.56863L2.43018 1.49756"
-        :stroke="$colors.linkDecorator"
+        :stroke="$colors.linkDecoratorError"
         data-test-id="cross"
       />
     </g>

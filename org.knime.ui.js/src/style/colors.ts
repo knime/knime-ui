@@ -20,6 +20,8 @@ export const portColors = {
 export const nodeBackgroundColors = nodeColors;
 
 export const linkDecorator = knimeColors.Black;
+export const linkDecoratorUpToDate = knimeColors.MeadowDark;
+export const linkDecoratorError = knimeColors.CoralDark;
 
 export const selection = {
   hoverBackground: applyAlphaHSL(knimeColors.Porcelain, "90%"),
