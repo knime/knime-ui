@@ -1,13 +1,12 @@
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
-import { mapActions, mapGetters, mapState } from "vuex";
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 import {
   type NodePort,
   type NodePortTemplate,
   type XY,
 } from "@/api/gateway-api/generated-api";
-import type { DragConnector } from "@/components/workflow/ports/NodePort/types";
+import * as $shapes from "@/style/shapes";
 
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import { SearchInput } from "@knime/components";
@@ -26,6 +25,9 @@ import type {
   NodeTemplateWithExtendedPorts,
   NodeRelation,
 } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
+import { useShortcuts } from "@/plugins/shortcuts";
+import type { DragConnector } from "../../ports/NodePort/types";
 
 const calculatePortOffset = (params: {
   selectedPort: NodePort;
@@ -61,223 +63,226 @@ const calculatePortOffset = (params: {
   }
 };
 
-type ComponentData = {
-  selectedNode: NodeTemplateWithExtendedPorts | null;
-  menuWidth: number;
+const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
+
+export type QuickAddNodeMenuProps = {
+  nodeId?: String | null;
+  position: XY;
+  port?: NodePort | null;
+  nodeRelation: NodeRelation;
+  shouldDoPositionCorrection: boolean;
 };
 
-/*
- * Quick Add Node Menu: Shows a menu with recommended nodes that are provided by the api (based on usage statistics).
- * This component fetches, displays and adds them to the workflow.
- */
-export default defineComponent({
-  components: {
-    QuickAddNodeDisabledWorkflowCoach,
-    QuickAddNodeRecommendations,
-    QuickAddNodeSearchResults,
-    SearchInput,
-    NodePortActiveConnector,
-    FloatingMenu,
-    NodeRepositoryLoader,
-  },
-  props: {
-    nodeId: {
-      type: [String, null] as PropType<string | null>,
-      default: null,
-    },
-    position: {
-      type: Object as PropType<XY>,
-      required: true,
-    },
-    port: {
-      type: [Object, null] as PropType<NodePort | null>,
-      default: null,
-    },
-    nodeRelation: {
-      type: String as PropType<NodeRelation>,
-      default: null,
-    },
-  },
-  emits: ["menuClose"],
-  data(): ComponentData {
-    return {
-      selectedNode: null,
-      menuWidth: 360,
-    };
-  },
-  computed: {
-    ...mapState("application", [
-      "hasNodeRecommendationsEnabled",
-      "availablePortTypes",
-      "nodeRepositoryLoaded",
-      "nodeRepositoryLoadingProgress",
-    ]),
-    ...mapState("canvas", ["zoomFactor"]),
-    ...mapState("quickAddNodes", ["recommendedNodes"]),
-    ...mapGetters("workflow", ["isWritable", "getNodeById"]),
-    ...mapGetters("quickAddNodes", ["searchIsActive", "getFirstResult"]),
-
-    displayMode() {
-      const { nodeRepositoryDisplayMode } = this.$store.state.settings.settings;
-      if (nodeRepositoryDisplayMode === "tree") {
-        return "list";
-      }
-      return nodeRepositoryDisplayMode;
-    },
-
-    canvasPosition() {
-      let pos = { ...this.position };
-      const halfPort = this.$shapes.portSize / 2;
-
-      // x: align with the port arrow (position is the center of the port)
-      if (this.nodeRelation === "PREDECESSORS") {
-        pos.x -= this.menuWidth + halfPort;
-      } else {
-        pos.x += halfPort;
-      }      
-
-      return pos;
-    },
-    fakePortConnector(): DragConnector {
-      // port can be null for the so called global mode
-      const portType = this.port
-        ? this.availablePortTypes[this.port.typeId]
-        : null;
-      const flowVariableConnection = portType?.kind === "flowVariable";
-
-      const node =
-        this.nodeRelation === "SUCCESSORS" ? "sourceNode" : "destNode";
-      const port =
-        this.nodeRelation === "SUCCESSORS" ? "sourcePort" : "destPort";
-
-      return {
-        id: `quick-add-${this.nodeId}-${this.portIndex}`,
-        flowVariableConnection,
-        absolutePoint: [this.position.x, this.position.y],
-        allowedActions: { canDelete: false },
-        interactive: false,
-        // eslint-disable-next-line no-undefined
-        [node]: this.nodeId ?? undefined,
-        // eslint-disable-next-line no-undefined
-        [port]: this.portIndex ?? undefined,
-      };
-    },
-    marginTop() {
-      const ghostSizeZoomed = this.$shapes.addNodeGhostSize * this.zoomFactor;
-      // eslint-disable-next-line no-magic-numbers
-      const extraMargin = Math.log(ghostSizeZoomed) / 1.1;
-      // eslint-disable-next-line no-magic-numbers
-      const marginTop = ghostSizeZoomed / 2 + extraMargin + 3;
-
-      return `${marginTop}px`;
-    },
-    portIndex() {
-      // we need this to be explicit null if no port is given for the api to work
-      // falsy will not work as the index can be 0 (which is falsy)
-      return this.port ? this.port.index : null;
-    },
-  },
-  watch: {
-    hasNodeRecommendationsEnabled: {
-      immediate: true,
-      handler() {
-        if (this.hasNodeRecommendationsEnabled) {
-          this.fetchNodeRecommendations();
-        }
-      },
-    },
-    async port(newPort, oldPort) {
-      if (newPort?.index !== oldPort?.index) {
-        // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
-        await this.$store.dispatch("quickAddNodes/clearSearchParams");
-        // update type id for next search (if one was active it got reset by index change)
-        // this needs to be done in all cases as clearSearchParams resets it
-        this.$store.commit("quickAddNodes/setPortTypeId", newPort.typeId);
-        // fetch new recommendations
-        await this.fetchNodeRecommendations();
-      }
-    },
-  },
-  mounted() {
-    if (this.port) {
-      this.$store.commit("quickAddNodes/setPortTypeId", this.port.typeId);
-      this.$store.commit(
-        "quickAddNodes/setSearchNodeRelation",
-        this.nodeRelation,
-      );
-    }
-
-    this.$store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
-  },
-  beforeUnmount() {
-    this.$store.dispatch("quickAddNodes/clearRecommendedNodesAndSearchParams");
-  },
-  methods: {
-    ...mapActions("workflow", { addNodeToWorkflow: "addNode" }),
-    ...mapActions("quickAddNodes", ["searchNodesNextPage"]),
-    async fetchNodeRecommendations() {
-      const { nodeId, portIndex: portIdx, nodeRelation } = this;
-
-      await this.$store.dispatch("quickAddNodes/getNodeRecommendations", {
-        nodeId,
-        portIdx,
-        nodeRelation,
-      });
-    },
-    async addNode(nodeTemplate: NodeTemplateWithExtendedPorts) {
-      if (!this.isWritable || nodeTemplate === null) {
-        return;
-      }
-
-      const { nodeFactory, inPorts, outPorts } = nodeTemplate;
-
-      const [offsetX, offsetY] = this.port
-        ? calculatePortOffset({
-            selectedPort: this.port,
-            templatePorts:
-              this.nodeRelation === "SUCCESSORS" ? inPorts : outPorts,
-            availablePortTypes: this.availablePortTypes,
-            nodeRelation: this.nodeRelation,
-          })
-        : [0, 0];
-
-      // add node
-      const {
-        canvasPosition: { x, y },
-      } = this;
-      await this.$store.dispatch("workflow/addNode", {
-        position: {
-          x: x - offsetX,
-          y: y - offsetY,
-        },
-        nodeFactory,
-        sourceNodeId: this.nodeId,
-        sourcePortIdx: this.portIndex,
-        nodeRelation: this.nodeRelation,
-      });
-
-      this.$emit("menuClose");
-    },
-    searchEnterKey() {
-      this.addNode(this.getFirstResult());
-    },
-    searchDownKey() {
-      // @ts-ignore
-      this.$refs.recommendationResults?.focusFirst();
-      // @ts-ignore
-      this.$refs.searchResults?.focusFirst();
-    },
-    searchHandleShortcuts(e: KeyboardEvent) {
-      // bypass disabled shortcuts for <input> elements only for the quick add node
-      let [shortcut = null] = this.$shortcuts.findByHotkey(e);
-      if (shortcut === "quickAddNode" && this.$shortcuts.isEnabled(shortcut)) {
-        this.$shortcuts.dispatch(shortcut);
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
-  },
+const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {
+  nodeId: null,
+  port: null,
+  nodeRelation: "SUCCESSORS",
 });
+
+const menuWidth = 360;
+
+const emit = defineEmits(["menuClose"]);
+
+const $shortcuts = useShortcuts();
+
+// --------------------------------------------------------
+// Computed properties from store
+// --------------------------------------------------------
+const store = useStore();
+const hasNodeRecommendationsEnabled = computed(
+  () => store.state.application.hasNodeRecommendationsEnabled,
+);
+const availablePortTypes = computed(
+  () => store.state.application.availablePortTypes,
+);
+const nodeRepositoryLoaded = computed(
+  () => store.state.application.nodeRepositoryLoaded,
+);
+const nodeRepositoryLoadingProgress = computed(
+  () => store.state.application.nodeRepositoryLoadingProgress,
+);
+const zoomFactor = computed(() => store.state.canvas.zoomFactor);
+const isWritable = computed(() => store.getters["workflow/isWritable"]);
+const searchIsActive = computed(
+  () => store.getters["quickAddNodes/searchIsActive"],
+);
+const getFirstResult = computed(
+  () => store.getters["quickAddNodes/getFirstResult"],
+);
+
+const displayMode = computed(() => {
+  const { nodeRepositoryDisplayMode } = store.state.settings.settings;
+  if (nodeRepositoryDisplayMode === "tree") {
+    return "list";
+  }
+  return nodeRepositoryDisplayMode;
+});
+
+// --------------------------------------------------------
+// Computed properties from props
+// --------------------------------------------------------
+const canvasPosition = computed(() => {
+  let pos = { ...props.position };
+  const halfPort = $shapes.portSize / 2;
+
+  // x: align with the port arrow (position is the center of the port)
+  if (props.nodeRelation === "PREDECESSORS") {
+    pos.x -= menuWidth + halfPort;
+  } else {
+    pos.x += halfPort;
+  }
+
+  return pos;
+});
+
+const portIndex = computed(() => {
+  // we need this to be explicit null if no port is given for the api to work
+  // falsy will not work as the index can be 0 (which is falsy)
+  return props.port ? props.port.index : null;
+});
+
+const fakePortConnector = computed<DragConnector>(() => {
+  // port can be null for the so called global mode
+  const portType = props.port ? availablePortTypes[props.port.typeId] : null;
+  const flowVariableConnection = portType?.kind === "flowVariable";
+
+  const node = props.nodeRelation === "SUCCESSORS" ? "sourceNode" : "destNode";
+  const port = props.nodeRelation === "SUCCESSORS" ? "sourcePort" : "destPort";
+
+  return {
+    id: `quick-add-${props.nodeId}-${portIndex.value}`,
+    flowVariableConnection,
+    absolutePoint: [props.position.x, props.position.y],
+    allowedActions: { canDelete: false },
+    interactive: false,
+    // eslint-disable-next-line no-undefined
+    [node]: props.nodeId ?? undefined,
+    // eslint-disable-next-line no-undefined
+    [port]: portIndex.value ?? undefined,
+  };
+});
+
+const marginTop = computed(() => {
+  const ghostSizeZoomed = $shapes.addNodeGhostSize * zoomFactor.value;
+  // eslint-disable-next-line no-magic-numbers
+  const extraMargin = Math.log(ghostSizeZoomed) / 1.1;
+  // eslint-disable-next-line no-magic-numbers
+  const marginTop = ghostSizeZoomed / 2 + extraMargin + 3;
+
+  return `${marginTop}px`;
+});
+
+// --------------------------------------------------------
+// Methods
+// --------------------------------------------------------
+const fetchNodeRecommendations = async () => {
+  const { nodeId, nodeRelation } = props;
+
+  await store.dispatch("quickAddNodes/getNodeRecommendations", {
+    nodeId,
+    portIdx: portIndex.value,
+    nodeRelation,
+  });
+};
+
+const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
+  if (!isWritable.value || nodeTemplate === null) {
+    return;
+  }
+
+  const { nodeFactory, inPorts, outPorts } = nodeTemplate;
+
+  const [offsetX, offsetY] = props.port
+    ? calculatePortOffset({
+        selectedPort: props.port,
+        templatePorts: props.nodeRelation === "SUCCESSORS" ? inPorts : outPorts,
+        availablePortTypes: availablePortTypes.value,
+        nodeRelation: props.nodeRelation,
+      })
+    : [0, 0];
+
+  // add node
+  const { x, y } = canvasPosition.value;
+  await store.dispatch("workflow/addNode", {
+    position: {
+      x: x - offsetX,
+      y: y - offsetY,
+    },
+    nodeFactory,
+    sourceNodeId: props.nodeId,
+    sourcePortIdx: portIndex.value,
+    nodeRelation: props.nodeRelation,
+  });
+
+  emit("menuClose");
+};
+
+const searchEnterKey = () => {
+  addNode(getFirstResult.value());
+};
+
+const recommendationResults =
+  ref<InstanceType<typeof QuickAddNodeRecommendations>>();
+const searchResults = ref<InstanceType<typeof QuickAddNodeSearchResults>>();
+
+const searchDownKey = () => {
+  recommendationResults.value?.focusFirst();
+  searchResults.value?.focusFirst();
+};
+
+const searchHandleShortcuts = (e: KeyboardEvent) => {
+  // bypass disabled shortcuts for <input> elements only for the quick add node
+  let [shortcut = null] = $shortcuts.findByHotkey(e);
+  if (shortcut === "quickAddNode" && $shortcuts.isEnabled(shortcut)) {
+    $shortcuts.dispatch(shortcut);
+    e.preventDefault();
+    e.stopPropagation();
+  }
+};
+
+// --------------------------------------------------------
+// Lifecycle hooks
+// --------------------------------------------------------
+onMounted(() => {
+  if (props.port) {
+    store.commit("quickAddNodes/setPortTypeId", props.port.typeId);
+    store.commit("quickAddNodes/setSearchNodeRelation", props.nodeRelation);
+  }
+
+  store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
+});
+
+onBeforeUnmount(() => {
+  store.dispatch("quickAddNodes/clearRecommendedNodesAndSearchParams");
+});
+
+// --------------------------------------------------------
+// Watchers
+// --------------------------------------------------------
+watch(
+  () => hasNodeRecommendationsEnabled.value,
+  (newValue) => {
+    if (newValue) {
+      fetchNodeRecommendations();
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  () => props.port,
+  async (newPort, oldPort) => {
+    if (newPort && newPort?.index !== oldPort?.index) {
+      // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
+      await store.dispatch("quickAddNodes/clearSearchParams");
+      // update type id for next search (if one was active it got reset by index change)
+      // this needs to be done in all cases as clearSearchParams resets it
+      store.commit("quickAddNodes/setPortTypeId", newPort.typeId);
+      // fetch new recommendations
+      await fetchNodeRecommendations();
+    }
+  },
+);
 </script>
 
 <template>

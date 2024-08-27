@@ -75,7 +75,12 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       // destruct current state
       const { isOpen, props } = $store.state.workflow.quickAddNodeMenu;
 
-      const { nodeId: lastNodeId, port, position: lastPosition, nodeRelation } = props ?? {};
+      const {
+        nodeId: lastNodeId,
+        port,
+        position: lastPosition,
+        nodeRelation,
+      } = props ?? {};
       const lastPortIndex = port?.index ?? -1;
 
       // use the node of the currently open dialog because the node might not be selected in that case
@@ -147,6 +152,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
           port: outputPort,
           position,
           nodeRelation: nextSide,
+          shouldDoPositionCorrection: !isOpen,
         },
       });
     },
