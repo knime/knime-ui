@@ -96,13 +96,13 @@ final class SoftwareUpdateProgressEventListenerTest {
 
     private IProgressMonitor m_progressMonitor;
 
-    private final Function<String, IJobChangeEvent> m_mockEventWithTask = name -> {
+    private IJobChangeEvent mockJobChangeEvent(final String name) {
         var event = Mockito.mock(IJobChangeEvent.class);
         var status = Mockito.mock(IStatus.class);
         var job = Job.create(name, monitor -> status);
         Mockito.doReturn(job).when(event).getJob();
         return event;
-    };
+    }
 
     @BeforeEach
     void setup() {
@@ -128,7 +128,7 @@ final class SoftwareUpdateProgressEventListenerTest {
      */
     @Test
     void testRunning() throws Exception {
-        var event = m_mockEventWithTask.apply(TASK_NAME_INSTALLING_SOFTWARE);
+        var event = mockJobChangeEvent(TASK_NAME_INSTALLING_SOFTWARE);
         m_jobChangeListener.running(event);
 
         var expected = MAPPER.readTree("""
@@ -150,7 +150,7 @@ final class SoftwareUpdateProgressEventListenerTest {
      */
     @Test
     void testDone() throws Exception {
-        var event = m_mockEventWithTask.apply(TASK_NAME_UPDATING_SOFTWARE);
+        var event = mockJobChangeEvent(TASK_NAME_UPDATING_SOFTWARE);
         m_jobChangeListener.running(event); // This registers the job change listener and sends the first event
         assertThat(m_progressMonitor).as("A job progress monitor should have been set").isNotNull();
 
@@ -232,7 +232,7 @@ final class SoftwareUpdateProgressEventListenerTest {
 
     private void assertEventOnSubTask(final String task, final String subTask, final Status expectedStatus,
         final double progress, final double expectedProgress) throws Exception {
-        var event = m_mockEventWithTask.apply(task);
+        var event = mockJobChangeEvent(task);
         m_jobChangeListener.running(event); // This registers the job change listener and sends the first event
 
         m_progressMonitor.beginTask(task, 100);
@@ -248,7 +248,6 @@ final class SoftwareUpdateProgressEventListenerTest {
                 }
                 """.formatted(task, subTask, expectedStatus.label(), expectedProgress));
         var captor = ArgumentCaptor.forClass(JsonNode.class);
-
         Mockito.verify(m_eventConsumer, Mockito.times(2)).accept(eq(EVENT_NAME), captor.capture());
         assertThat(captor.getAllValues()).as("Check if expected event on subtask was sent").contains(expected);
     }
