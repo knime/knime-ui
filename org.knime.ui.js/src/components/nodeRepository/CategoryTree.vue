@@ -141,19 +141,11 @@ defineExpose({ focusFirst, getExpandedNodeIds });
         :selectable="false"
         @keydown="onTreeKeydown"
       >
-        <template
-          #leaf="{
-            treeNode,
-            hasFocus,
-          }: {
-            treeNode: BaseTreeNode;
-            hasFocus: boolean;
-          }"
-        >
+        <template #leaf-inner="{ treeNode }: { treeNode: BaseTreeNode }">
           <DraggableNodeTemplate
             :node-template="treeNode.origin.nodeTemplate"
             :is-highlighted="false"
-            :is-selected="hasFocus"
+            :is-selected="false"
             :is-description-active="
               showDescriptionForNode?.id === treeNode.origin.nodeTemplate.id
             "
@@ -167,8 +159,11 @@ defineExpose({ focusFirst, getExpandedNodeIds });
 </template>
 
 <style lang="postcss" scoped>
+.scroll-container {
+  scrollbar-gutter: stable;
+}
+
 .scroll-container-content {
-  padding: 0 4px 16px 20px;
-  font-family: "Roboto Condensed", sans-serif;
+  padding: 0 8px 16px 20px;
 }
 </style>

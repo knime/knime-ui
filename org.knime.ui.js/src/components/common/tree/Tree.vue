@@ -49,13 +49,7 @@ const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
   );
 };
 
-const keyPressedUntilMouseClick = useKeyPressedUntilMouseClick([
-  "ArrowUp",
-  "ArrowDown",
-  "ArrowLeft",
-  "ArrowRight",
-  "Enter",
-]);
+const keyPressedUntilMouseClick = useKeyPressedUntilMouseClick();
 
 const onFocusChange = async ({ node }: { node: BaseTreeNode | null }) => {
   focusKey.value = node?.key ?? null;
@@ -74,7 +68,7 @@ const onTreeKeydown = ({ event, node }: KeydownEvent) => {
   const toggleExpand = () => {
     event.stopPropagation();
     event.preventDefault();
-    if (node.hasChildren) {
+    if (node.origin.hasChildren) {
       tree.value!.toggleExpand(node.key);
     }
   };
@@ -90,7 +84,11 @@ const domNodeId = (key?: NodeKey | null) =>
   // eslint-disable-next-line no-undefined
   key ? `${props.idPrefix}_${key}` : undefined;
 
-const hasFocus = (treeNode: BaseTreeNode) => focusKey.value === treeNode.key;
+const hasFocus = (treeNode: BaseTreeNode) => {
+  const keysMatch = focusKey.value === treeNode.key;
+
+  return keysMatch && keyPressedUntilMouseClick.value;
+};
 
 defineExpose({
   getExpandedKeys: () => tree.value?.getExpandedKeys(),
@@ -107,7 +105,7 @@ defineExpose({
     :source="source"
     :load-data="loadData"
     :virtual="virtual"
-    indent-type="margin"
+    :indent="24"
     :aria-activedescendant="domNodeId(focusKey)"
     @keydown="onTreeKeydown"
     @focus-change="onFocusChange"
@@ -118,7 +116,7 @@ defineExpose({
         :class="['tree-node-wrapper', { focus: hasFocus(node) }]"
       >
         <slot
-          v-if="node.hasChildren"
+          v-if="node.origin.hasChildren"
           name="expandable"
           :tree-node="node"
           :is-selected="isTreeNodeSelected(node)"
@@ -134,7 +132,9 @@ defineExpose({
               },
             ]"
             @click="tree!.toggleExpand(node.key)"
-            >{{ node.name }}</span
+            ><slot name="expandable-inner" :tree-node="node">{{
+              node.name
+            }}</slot></span
           >
         </slot>
         <slot
@@ -150,8 +150,9 @@ defineExpose({
               'leaf',
               { selected: isTreeNodeSelected(node), focus: hasFocus(node) },
             ]"
-            @click="tree!.toggleExpand(node.key)"
-            >{{ node.name }}</span
+            ><slot name="leaf-inner" :tree-node="node">{{
+              node.name
+            }}</slot></span
           >
         </slot>
       </span>
@@ -187,6 +188,9 @@ defineExpose({
 }
 
 .virtual-tree {
+  /** required for the focus/selection outline */
+  margin-top: 1px;
+
   &:focus {
     outline: none;
   }
@@ -194,13 +198,11 @@ defineExpose({
 
 /* selected and focus styles */
 :deep(.vir-tree-node:has(.tree-node.selected)),
-.virtual-tree:focus-visible :deep(.vir-tree-node:has(.tree-node.focus)) {
-  color: var(--knime-white);
-  background-color: var(--knime-masala);
-
-  & .icon {
-    stroke: var(--knime-white);
-  }
+.virtual-tree :deep(.vir-tree-node:has(.tree-node.focus)) {
+  color: var(--knime-cornflower-dark);
+  background-color: rgb(233 241 246 / 90%);
+  outline: 1px solid var(--knime-cornflower);
+  border-radius: 2px;
 }
 </style>
 
@@ -366,13 +368,12 @@ defineExpose({
 }
 .vir-tree-node {
   display: grid;
-  grid-template-columns: 16px auto;
+  grid-template-columns: 20px auto;
   gap: var(--space-4);
-  margin: 1px 0;
   font-size: var(--font-size-base);
   cursor: pointer;
-  height: 28px;
-  line-height: 28px;
+  height: 24px;
+  line-height: 24px;
 }
 .vir-tree-node:hover {
   background-color: var(--gray-color-tree);
@@ -386,6 +387,13 @@ defineExpose({
   cursor: pointer;
   transition: transform 0.3s ease;
 }
+
+.vir-tree-node .node-arrow svg {
+  height: 16px;
+  width: 16px;
+  stroke-width: 2px;
+}
+
 .vir-tree-node .node-arrow:empty {
   display: none;
 }
@@ -401,6 +409,9 @@ defineExpose({
 .vir-tree-node .node-content {
   display: flex;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 .vir-tree-node .node-content .node-title {
   padding: 0 6px;

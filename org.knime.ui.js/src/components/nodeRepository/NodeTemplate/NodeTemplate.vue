@@ -93,9 +93,8 @@ defineExpose({ getNodePreview });
 @import url("@/assets/mixins.css");
 
 .node {
-  margin: 0 2px;
+  margin: 0;
   position: relative;
-  display: flex;
   font-size: 12px;
 
   &:hover {
@@ -104,11 +103,6 @@ defineExpose({ getNodePreview });
 
   &[draggable="true"]:hover {
     cursor: grab;
-  }
-
-  &.tree-mode {
-    margin: 0;
-    background-color: transparent;
   }
 }
 
@@ -120,7 +114,7 @@ defineExpose({ getNodePreview });
 
   &.list-mode,
   &.tree-mode {
-    border-radius: 0;
+    border-radius: 2px;
   }
 }
 
@@ -130,10 +124,11 @@ defineExpose({ getNodePreview });
     v-bind("$colors.selection.activeBorder");
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
   background-color: v-bind("$colors.selection.activeBackground");
+  color: v-bind("$colors.selection.fontColor");
 
   &.list-mode,
   &.tree-mode {
-    border-radius: 0;
+    border-radius: 2px;
   }
 }
 </style>

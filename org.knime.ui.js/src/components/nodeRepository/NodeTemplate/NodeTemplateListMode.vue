@@ -11,18 +11,21 @@ export type Props = {
   isDescriptionActive: boolean;
 };
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isDescriptionActive: false,
   showFloatingHelpIcon: false,
 });
 
 const emit = defineEmits(["helpIconClick"]);
+
+const isCommunityExtension = !props.nodeTemplate.extension?.vendor?.isKNIME;
 </script>
 
 <template>
   <div
-    class="display-list"
+    class="node-template-list-mode"
+    :class="{ 'with-community-icon': isCommunityExtension }"
     :title="
       nodeTemplate.extension && nodeTemplate.extension.vendor
         ? `${nodeTemplate.extension.name} \nby “${nodeTemplate.extension.vendor.name}”`
@@ -41,7 +44,7 @@ const emit = defineEmits(["helpIconClick"]);
     </div>
 
     <ExtensionCommunityIcon
-      v-if="!nodeTemplate.extension?.vendor?.isKNIME"
+      v-if="isCommunityExtension"
       class="extension-community-icon"
     />
 
@@ -58,19 +61,26 @@ const emit = defineEmits(["helpIconClick"]);
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.display-list {
-  background-color: var(--knime-white);
+.node-template-list-mode {
+  display: flex;
+  background-color: transparent;
   align-items: center;
   justify-content: left;
-  max-height: 27px;
+  max-height: 24px;
   position: relative;
-  padding: 1px 0;
   width: 100%;
+
+  --space-for-icons: 52px;
+
+  &.with-community-icon {
+    --space-for-icons: 72px;
+  }
 
   & .node-template-content {
     display: flex;
-    width: 100%;
-    max-width: calc(100% - 33px);
+    max-width: calc(100% - var(--space-for-icons));
+    align-items: center;
+    align-self: center;
 
     & .node-name {
       display: block;
@@ -82,21 +92,23 @@ const emit = defineEmits(["helpIconClick"]);
   }
 
   & .node-preview {
-    flex: 0 0 25px;
-    height: 27px;
-    margin-right: 5px;
+    flex: 0 0 24px;
+    height: 24px;
+    margin-right: var(--space-4);
   }
 
   & .extension-community-icon {
-    @mixin svg-icon-size 16;
+    @mixin svg-icon-size 12;
 
-    margin: 0 6px 2px auto;
+    margin: 0 var(--space-4);
     stroke: var(--knime-masala);
   }
 
   & .help-icon {
     padding: 0;
-    margin: 0 var(--space-4);
+    margin: 0;
+    position: absolute;
+    right: var(--space-4);
   }
 }
 </style>

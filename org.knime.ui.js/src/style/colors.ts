@@ -31,6 +31,7 @@ export const selection = {
   // results in the same brightness as hoverBackground
   activeBackground: "rgba(233, 241, 246, 90%)",
   activeBorder: knimeColors.Cornflower,
+  fontColor: knimeColors.CornflowerDark,
 };
 
 export const connectorColors = {

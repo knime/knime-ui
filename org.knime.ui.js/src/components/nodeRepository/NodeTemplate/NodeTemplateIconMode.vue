@@ -29,7 +29,7 @@ const extensionText = computed(() => {
 
 <template>
   <div
-    class="display-icon"
+    class="node-template-icon-mode"
     :title="`${nodeTemplate.name}${extensionText}`"
     data-test-id="node-template"
   >
@@ -63,7 +63,8 @@ const extensionText = computed(() => {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.display-icon {
+.node-template-icon-mode {
+  display: flex;
   flex-direction: column;
   position: relative;
   padding: 10px 10px 20px;

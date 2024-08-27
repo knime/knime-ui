@@ -155,6 +155,7 @@ defineExpose({ focusSearchInput });
         ref="searchBar"
         :model-value="store.state.nodeRepository.query"
         spellcheck="false"
+        compact
         :maxlength="300"
         :disabled="!nodeRepositoryLoaded"
         :placeholder="
@@ -163,7 +164,7 @@ defineExpose({ focusSearchInput });
             : 'Search all nodes'
         "
         class="search-bar"
-        @keydown.down.prevent.stop="$emit('searchBarDownKey')"
+        @keydown.down.prevent="$emit('searchBarDownKey')"
         @clear="store.dispatch('nodeRepository/clearSearchParams')"
         @update:model-value="
           store.dispatch('nodeRepository/updateQuery', $event)
@@ -188,7 +189,7 @@ defineExpose({ focusSearchInput });
   padding-bottom: 8px;
 
   & .title-and-search {
-    padding: 0 20px 5px;
+    padding: 0 20px 4px;
 
     & .search-header {
       display: flex;
@@ -198,8 +199,8 @@ defineExpose({ focusSearchInput });
 
       & .view-settings {
         display: flex;
-        margin-top: 5px;
-        gap: 5px;
+        margin-top: 4px;
+        gap: 4px;
       }
 
       & .display-mode-button {
@@ -233,7 +234,7 @@ defineExpose({ focusSearchInput });
 
     & > hr {
       margin-bottom: 2px;
-      margin-top: 5px;
+      margin-top: 4px;
     }
   }
 

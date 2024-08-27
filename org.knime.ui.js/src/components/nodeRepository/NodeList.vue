@@ -289,7 +289,6 @@ defineExpose({ focusFirst, focusLast });
     position: relative;
     grid-template-columns: repeat(v-bind(nodesPerRow), 1fr);
     width: 100%;
-    font-family: "Roboto Condensed", sans-serif;
     margin: 5px 0 0;
 
     /* reset default ul styles */
@@ -327,7 +326,7 @@ defineExpose({ focusFirst, focusLast });
         align-items: center;
         width: calc(100% - 4px);
         justify-content: center;
-        border-radius: 0;
+        border-radius: 2px;
         height: 27px;
         padding: 4px;
         margin: 1px 2px;
@@ -345,10 +344,11 @@ defineExpose({ focusFirst, focusLast });
 
     &.display-icon {
       gap: 4px 0;
+      font-family: "Roboto Condensed", sans-serif;
 
       & .show-more {
         display: flex;
-        margin: 0 2px;
+        margin: 0 4px;
         width: calc(100% - 4px);
         height: 100%;
         flex-direction: column;
