@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import static org.knime.ui.java.browser.lifecycle.SoftwareUpdateProgressEventListener.WATCHED_JOBS;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -57,7 +59,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -120,10 +121,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 final class Init {
 
     private static final String SPACE_PROVIDERS_EXTENSION_ID = "org.knime.ui.java.SpaceProviders";
-
-    private static final List<String> WATCHED_JOBS_FOR_PROGRESS_EVENTS =
-        List.of("org.eclipse.equinox.p2.operations.ProfileModificationJob",
-            "org.eclipse.equinox.p2.ui.LoadMetadataRepositoryJob");
 
     private Init() {
         //
@@ -326,18 +323,14 @@ final class Init {
      * @return The job change listener that was registered
      */
     private static IJobChangeListener registerListenerToSendProgressEvents(final EventConsumer eventConsumer) {
-        Predicate<Job> isWatchedJob =
-            job -> WATCHED_JOBS_FOR_PROGRESS_EVENTS.stream().anyMatch(c -> job.getClass().getName().equals(c));
-        BiConsumer<Job, IProgressMonitor> addProgressListener = (job, listener) -> {
-            var pm = ProgressManager.getInstance();
-            pm.progressFor(job).addProgressListener(listener);
-        };
-        BiConsumer<Job, IProgressMonitor> removeProgressListener = (job, listener) -> {
-            var pm = ProgressManager.getInstance();
-            pm.progressFor(job).removeProgresListener(listener);
-        };
+        // Those three function are passed in on creation to make the class unit-testable
+        Predicate<Job> isWatchedJob = job -> WATCHED_JOBS.stream().anyMatch(c -> job.getClass().getName().equals(c));
+        BiConsumer<Job, IProgressMonitor> addProgressListener =
+            (job, listener) -> ProgressManager.getInstance().progressFor(job).addProgressListener(listener);
+        BiConsumer<Job, IProgressMonitor> removeProgressListener =
+            (job, listener) -> ProgressManager.getInstance().progressFor(job).removeProgresListener(listener);
 
-        var listener = ProgressEventUtil.createJobChangeListener(eventConsumer, isWatchedJob, addProgressListener,
+        var listener = new SoftwareUpdateProgressEventListener(eventConsumer, isWatchedJob, addProgressListener,
             removeProgressListener);
         Job.getJobManager().addJobChangeListener(listener);
         return listener;

@@ -10,7 +10,7 @@ export interface DesktopEventHandlers {
 
   ImportURIEvent(payload: { x: number; y: number }): void;
 
-  ProgressEvent(payload: {
+  SoftwareUpdateProgressEvent(payload: {
     task: string;
     subtask?: string | null;
     status: "Started" | "Fetching" | "Installing" | "Finished";
