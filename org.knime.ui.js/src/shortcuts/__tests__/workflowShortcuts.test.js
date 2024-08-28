@@ -139,6 +139,9 @@ describe("workflowShortcuts", () => {
 
     it("checks save condition", () => {
       const { $store } = createStore();
+
+      $store.getters["application/isUnknownProject"] = () => false;
+
       expect(workflowShortcuts.save.condition({ $store })).toBeFalsy();
 
       $store.getters["application/isDirtyActiveProject"] = true;
@@ -146,6 +149,7 @@ describe("workflowShortcuts", () => {
       expect(workflowShortcuts.save.condition({ $store })).toBe(false);
 
       $store.state.uiControls.isLocalSaveSupported = true;
+      $store.state.application.activeProjectId = "knownProjectId";
       expect(workflowShortcuts.save.condition({ $store })).toBe(true);
 
       $store.getters["application/isDirtyActiveProject"] = false;
