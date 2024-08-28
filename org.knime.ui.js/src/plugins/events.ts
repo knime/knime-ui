@@ -245,13 +245,19 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       });
 
       const isLoading = status !== "Finished";
+      const loaderConfig = isLoading
+        ? {
+            displayMode: "toast",
+            loadingMode: "normal",
+          }
+        : null;
       const text = `${task} : ${status} (${progress}%)`;
 
       // TODO: Use progress UI component to display update progress (NXT-2860)
       // As long as we are not FINISHED we will show the loader
       $store.dispatch("application/updateGlobalLoader", {
         loading: isLoading,
-        config: loaderConfig,
+        loaderConfig,
         text,
       });
     },
