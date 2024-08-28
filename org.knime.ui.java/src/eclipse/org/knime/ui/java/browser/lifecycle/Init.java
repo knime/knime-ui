@@ -42,13 +42,8 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
- * History
- *   Jan 16, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.lifecycle;
-
-import static org.knime.ui.java.browser.lifecycle.SoftwareUpdateProgressEventListener.WATCHED_JOBS;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -150,7 +145,7 @@ final class Init {
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
             state.getLocalWorkspace(), state.getWelcomeApEndpoint());
 
-        var listener = registerListenerToSendProgressEvents(eventConsumer);
+        var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
 
         registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer, nodeCollections, nodeRepo);
 
@@ -167,7 +162,7 @@ final class Init {
 
             @Override
             public IJobChangeListener getJobChangeListener() {
-                return listener;
+                return softwareUpdateProgressListener;
             }
 
         };
@@ -322,14 +317,14 @@ final class Init {
      * @param eventConsumer The event consumer used to send events
      * @return The job change listener that was registered
      */
-    private static IJobChangeListener registerListenerToSendProgressEvents(final EventConsumer eventConsumer) {
+    private static IJobChangeListener registerSoftwareUpdateProgressListener(final EventConsumer eventConsumer) {
         // Those three function are passed in on creation to make the class unit-testable
-        Predicate<Job> isWatchedJob = job -> WATCHED_JOBS.stream().anyMatch(c -> job.getClass().getName().equals(c));
+        Predicate<Job> isWatchedJob = job -> SoftwareUpdateProgressEventListener.WATCHED_JOBS.stream()
+            .anyMatch(c -> job.getClass().getName().equals(c));
         BiConsumer<Job, IProgressMonitor> addProgressListener =
             (job, listener) -> ProgressManager.getInstance().progressFor(job).addProgressListener(listener);
         BiConsumer<Job, IProgressMonitor> removeProgressListener =
             (job, listener) -> ProgressManager.getInstance().progressFor(job).removeProgresListener(listener);
-
         var listener = new SoftwareUpdateProgressEventListener(eventConsumer, isWatchedJob, addProgressListener,
             removeProgressListener);
         Job.getJobManager().addJobChangeListener(listener);
