@@ -105,7 +105,6 @@ defineExpose({
     :source="source"
     :load-data="loadData"
     :virtual="virtual"
-    :indent="24"
     :aria-activedescendant="domNodeId(focusKey)"
     @keydown="onTreeKeydown"
     @focus-change="onFocusChange"
@@ -190,6 +189,8 @@ defineExpose({
 .virtual-tree {
   /** required for the focus/selection outline */
   margin-top: 1px;
+
+  --vir-tree-indent: 24px;
 
   &:focus {
     outline: none;
@@ -367,6 +368,8 @@ defineExpose({
   user-select: none;
 }
 .vir-tree-node {
+  /* indent */
+  padding-left: calc(var(--vir-tree-level, 0) * var(--vir-tree-indent, 18px));
   display: grid;
   grid-template-columns: 20px auto;
   gap: var(--space-4);
