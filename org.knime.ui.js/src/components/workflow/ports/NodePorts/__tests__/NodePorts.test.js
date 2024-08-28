@@ -522,6 +522,7 @@ describe("NodePorts.vue", () => {
         props: {
           nodeId: customProps.nodeId,
           port: customProps.port,
+          nodeRelation: "SUCCESSORS",
         },
       };
       let { wrapper } = doMount({ customProps, quickAddNodeMenu });

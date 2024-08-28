@@ -41,6 +41,16 @@ import {
 } from "@/api/gateway-api/generated-api";
 import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
 
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useToasts: vi.fn(),
+  };
+});
+
 const defaultNodeRecommendationsResponse = [
   createNodeTemplate(),
   createNodeTemplate({
@@ -65,6 +75,17 @@ const defaultNodeRecommendationsResponse = [
 const defaultPortMock = createPort();
 
 const mockedAPI = deepMocked(API);
+
+const $shortcuts = {
+  get: () => ({}),
+  isEnabled: vi.fn().mockReturnValue(true),
+  findByHotkey: vi.fn().mockReturnValue(["quickAddNode"]),
+  dispatch: vi.fn(),
+};
+
+vi.mock("@/plugins/shortcuts", () => ({
+  useShortcuts: () => $shortcuts,
+}));
 
 describe("QuickAddNodeMenu.vue", () => {
   const FloatingMenuStub = {
@@ -171,12 +192,6 @@ describe("QuickAddNodeMenu.vue", () => {
       },
     };
 
-    const $shortcuts = {
-      isEnabled: vi.fn().mockReturnValue(true),
-      findByHotkey: vi.fn().mockReturnValue(["quickAddNode"]),
-      dispatch: vi.fn(),
-    };
-
     const $store = mockVuexStore(storeConfig);
 
     const wrapper = mount(QuickAddNodeMenu, {
@@ -190,7 +205,6 @@ describe("QuickAddNodeMenu.vue", () => {
             portSize: 10,
           },
           $colors,
-          $shortcuts,
         },
         stubs: {
           FloatingMenu: FloatingMenuStub,
@@ -226,7 +240,7 @@ describe("QuickAddNodeMenu.vue", () => {
       expect(
         wrapper.findComponent(FloatingMenuStub).props("canvasPosition"),
       ).toStrictEqual({
-        x: 15,
+        x: 14.5,
         y: 10,
       });
     });

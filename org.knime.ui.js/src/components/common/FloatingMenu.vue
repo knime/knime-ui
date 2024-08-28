@@ -140,9 +140,13 @@ const setAbsolutePosition = () => {
   // linear fading depending on distance
   const distanceThreshold = 50;
 
+  let alpha = Math.max(0, distanceThreshold - distance) / distanceThreshold;
+  rootEl.value.style.opacity = alpha.toString();
+
   // close menu if outside threshold
   if (distance > distanceThreshold) {
-    left += distance;
+    emit("menuClose");
+    return;
   }
 
   const menuWidth = rootEl.value.offsetWidth;

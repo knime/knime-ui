@@ -24,11 +24,19 @@ export const usePortAnimationClasses = (
     () => store.state.workflow.quickAddNodeMenu,
   );
 
+  const isQuickAddNodeMenuOpenInTheSameSide = (side: "in" | "out") => {
+    return (
+      (quickAddNodeMenu.value.props?.nodeRelation === "SUCCESSORS" &&
+        side === "out") ||
+      (quickAddNodeMenu.value.props?.nodeRelation === "PREDECESSORS" &&
+        side === "in")
+    );
+  };
+
   const isShowingQuickAddNodeMenu = (portIndex: number, side: "in" | "out") => {
     return (
       quickAddNodeMenu.value.isOpen &&
-      (quickAddNodeMenu.value.props?.nodeRelation === "SUCCESSORS" && side === "out" ||
-        quickAddNodeMenu.value.props?.nodeRelation === "PREDECESSORS" && side === "in" ) &&
+      isQuickAddNodeMenuOpenInTheSameSide(side) &&
       quickAddNodeMenu.value.props?.nodeId === options.nodeId &&
       quickAddNodeMenu.value.props?.port?.index === portIndex
     );

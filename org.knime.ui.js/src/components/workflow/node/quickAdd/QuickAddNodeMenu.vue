@@ -66,7 +66,7 @@ const calculatePortOffset = (params: {
 const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
 
 export type QuickAddNodeMenuProps = {
-  nodeId?: String | null;
+  nodeId?: string | null;
   position: XY;
   port?: NodePort | null;
   nodeRelation: NodeRelation;
@@ -77,6 +77,7 @@ const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {
   nodeId: null,
   port: null,
   nodeRelation: "SUCCESSORS",
+  shouldDoPositionCorrection: true,
 });
 
 const menuWidth = 360;
@@ -127,7 +128,7 @@ const canvasPosition = computed(() => {
 
   // x: align with the port arrow (position is the center of the port)
   if (props.nodeRelation === "PREDECESSORS") {
-    pos.x -= menuWidth + halfPort;
+    pos.x -= halfPort;
   } else {
     pos.x += halfPort;
   }
@@ -290,6 +291,7 @@ watch(
     class="quick-add-node"
     :canvas-position="canvasPosition"
     aria-label="Quick add node"
+    :anchor="nodeRelation === 'SUCCESSORS' ? 'top-left' : 'top-right'"
     focus-trap
     :prevent-overflow="true"
     :style="{ width: `${menuWidth}px` }"
