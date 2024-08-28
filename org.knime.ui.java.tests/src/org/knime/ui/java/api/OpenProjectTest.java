@@ -108,7 +108,7 @@ class OpenProjectTest {
 
         var monitor = new NullProgressMonitor();
         assertThatThrownBy(() -> OpenProject.openProjectWithProgress("local", "local", "does-not-exist", monitor))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(OpenProject.OpenProjectException.class);
 
         OpenProject.openProjectWithProgress("local", "local", itemId, monitor);
 

@@ -182,14 +182,14 @@ final class OpenProject {
     }
 
     @SuppressWarnings("serial")
-    private static final class OpenProjectException extends Exception {
+    static final class OpenProjectException extends Exception {
 
-        public OpenProjectException(final String message, final Throwable cause) {
+        private OpenProjectException(final String message, final Throwable cause) {
             super(message, cause);
 
         }
 
-        public OpenProjectException(final String message) {
+        private OpenProjectException(final String message) {
             super(message);
         }
     }
