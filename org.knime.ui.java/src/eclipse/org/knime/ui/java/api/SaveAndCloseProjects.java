@@ -102,12 +102,13 @@ public final class SaveAndCloseProjects {
      * Saves and closes the projects represented by the given project-ids. Project-ids that don't reference an opened
      * workflow will just be ignored.
      *
-     * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
+     * @param projectIdsAndSvgsAndMore Array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
      *            after the projects have been saved ('PostProjectCloseAction').
-     * @param runPostProjectCloseAction callback to the the provided post-project-close-action
-     * @param progressService displays the progress
+     * @param runPostProjectCloseAction Callback to the the provided post-project-close-action, will not be executed if
+     *            saving the projects failed for any project.
+     * @param progressService Displays the progress
      */
     static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore,
         final Consumer<PostProjectCloseAction> runPostProjectCloseAction, final IProgressService progressService) { // NOSONAR
@@ -120,10 +121,10 @@ public final class SaveAndCloseProjects {
         final var optFailure = firstFailure.get();
         if (optFailure != null) { // NOSONAR
             DesktopAPUtil.showWarning("Failed to save workflow", "Workflow could not be saved.\nSee log for details.");
-            // make the first project active which couldn't be saved
+            // Make the first project active which couldn't be saved
             optFailure.ifPresent(projectId -> ProjectManager.getInstance().setProjectActive(projectId));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            return;
+            return; // Don't proceed with 'PostProjectCloseAction' on failure
         }
 
         var postProjectCloseAction = PostProjectCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
@@ -157,12 +158,14 @@ public final class SaveAndCloseProjects {
 
     /**
      * Closes the given projects (project-ids) and asks the user to save the projects with unsaved changes. Also asks
-     * the user to cancel executing projects.
+     * the user to cancel executing projects. If the user wants to save the projects, it will send a
+     * 'SaveAndCloseProjectsEvent' to the FE. If the user doesn't want to save the projects, it just closes them. If the
+     * user aborts, nothing will be done.
      *
      * @param projectIds
      * @param eventConsumer
      * @param action
-     * @return {@link State}
+     * @return The projects state from this function. Only not saving the projects yields {@code State.SUCESS}.
      */
     public static State saveAndCloseProjectsInteractively(final List<String> projectIds,
         final EventConsumer eventConsumer, final PostProjectCloseAction action) {
@@ -237,12 +240,21 @@ public final class SaveAndCloseProjects {
         eventConsumer.accept("SaveAndCloseProjectsEvent", event);
     }
 
+    /**
+     * Encodes Java user dialog responses
+     */
     public enum DialogResponse {
-            YES, NO, CANCEL_OR_CLOSE;
+            /** Positive */
+            YES,
+            /** Negative */
+            NO,
+            /** Aborted */
+            CANCEL_OR_CLOSE;
 
         static DialogResponse of(final int returnCode) {
             return values()[returnCode];
         }
+
     }
 
     /**

@@ -135,41 +135,41 @@ final class SaveProject {
     }
 
     static boolean saveProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
-            final boolean localOnly) {
-        if (!localOnly && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo) {
-            if (!saveBackToServerOrHub(monitor, wfm, svg)) {
-                wfm.setDirty();
-                return false;
-            }
-        } else {
-            saveLocalProject(monitor, wfm, svg);
+        final boolean localOnly) {
+        if (!localOnly //
+            && wfm.getContextV2().getLocationInfo() instanceof RestLocationInfo //
+            && !saveBackToServerOrHub(monitor, wfm, svg)) {
+            wfm.setDirty();
+            return false;
         }
-        return true;
+        return saveLocalProject(monitor, wfm, svg);
     }
 
-    private static void saveLocalProject(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
+    private static boolean saveLocalProject(final IProgressMonitor monitor, final WorkflowManager wfm,
+        final String svg) {
         if (wfm.isComponentProjectWFM()) {
-            saveComponentTemplate(monitor, wfm);
+            return saveComponentTemplate(monitor, wfm);
         } else {
-            saveRegularWorkflow(monitor, wfm, svg);
+            return saveRegularWorkflow(monitor, wfm, svg);
         }
     }
 
-    private static void saveComponentTemplate(final IProgressMonitor monitor, final WorkflowManager wfm) {
+    private static boolean saveComponentTemplate(final IProgressMonitor monitor, final WorkflowManager wfm) {
         try {
             ((SubNodeContainer)wfm.getDirectNCParent()).saveTemplate(DesktopAPUtil.toExecutionMonitor(monitor));
         } catch (IOException | CanceledExecutionException | LockFailedException | InvalidSettingsException e) {
             DesktopAPUtil.showWarningAndLogError("Component save attempt", "Saving the component failed", LOGGER, e);
             monitor.done();
-            return;
+            return false;
         }
         monitor.done();
+        return true;
     }
 
     /**
      * Save regular workflow
      */
-    private static void saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm,
+    private static boolean saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm,
             final String svg) {
         monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
         var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
@@ -181,12 +181,12 @@ final class SaveProject {
             DesktopAPUtil.showWarningAndLogError("Workflow save attempt",
                 "Saving the workflow didn't work: " + e.getMessage(), LOGGER, e);
             monitor.done();
-            return; // Abort if saving the workflow fails
+            return false; // Abort if saving the workflow fails
         }
 
         saveWorkflowSvg(wfm.getName(), svg, workflowPath);
-
         monitor.done();
+        return true;
     }
 
     /**

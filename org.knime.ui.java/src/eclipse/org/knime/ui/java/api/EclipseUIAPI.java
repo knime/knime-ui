@@ -212,7 +212,7 @@ final class EclipseUIAPI {
     }
 
     /**
-     * Function to allow the js webapp to switch back to the classic KNIME perspective.
+     * Function to allow the Web UI to switch back to the classic KNIME perspective.
      */
     @API
     static void switchToJavaUI() { // NOSONAR
@@ -223,13 +223,17 @@ final class EclipseUIAPI {
                         PostProjectCloseAction.SWITCH_PERSPECTIVE //
                 );
         var proceed = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
+
         if (!proceed) {
-            return;
+            return; // Please note: Even if returned here, 'doSwitchToJavaUI()' might still get called
         }
 
         doSwitchToJavaUI();
     }
 
+    /**
+     * Performs a switch back to the classic KNIME perspective.
+     */
     static void doSwitchToJavaUI() {
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
