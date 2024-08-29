@@ -41,7 +41,7 @@ const emit = defineEmits<{
 
 const tree = ref<InstanceType<typeof VirtualTree>>();
 
-const focusKey = ref<NodeKey | null>();
+const focusedNodeKey = ref<NodeKey | null>();
 
 const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
   return (
@@ -52,7 +52,7 @@ const isTreeNodeSelected = (treeNode: BaseTreeNode) => {
 const keyPressedUntilMouseClick = useKeyPressedUntilMouseClick();
 
 const onFocusChange = async ({ node }: { node: BaseTreeNode | null }) => {
-  focusKey.value = node?.key ?? null;
+  focusedNodeKey.value = node?.key ?? null;
   // scroll into view if we are using the keyboard to navigate
   if (!keyPressedUntilMouseClick.value) {
     return;
@@ -85,7 +85,7 @@ const domNodeId = (key?: NodeKey | null) =>
   key ? `${props.idPrefix}_${key}` : undefined;
 
 const hasFocus = (treeNode: BaseTreeNode) => {
-  const keysMatch = focusKey.value === treeNode.key;
+  const keysMatch = focusedNodeKey.value === treeNode.key;
 
   return keysMatch && keyPressedUntilMouseClick.value;
 };
@@ -105,7 +105,7 @@ defineExpose({
     :source="source"
     :load-data="loadData"
     :virtual="virtual"
-    :aria-activedescendant="domNodeId(focusKey)"
+    :aria-activedescendant="domNodeId(focusedNodeKey)"
     @keydown="onTreeKeydown"
     @focus-change="onFocusChange"
   >
@@ -188,7 +188,7 @@ defineExpose({
   /** required for the focus/selection outline */
   padding-top: 1px;
 
-  --vir-tree-indent: calc(var(--space-4) * 5);
+  --vir-tree-indent: var(--space-24);
 
   &:focus {
     outline: none;

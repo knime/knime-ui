@@ -324,12 +324,12 @@ defineExpose({ focusFirst, focusLast });
         display: flex;
         flex-direction: row-reverse;
         align-items: center;
-        width: calc(100% - 4px);
+        width: calc(100% - var(--space-4));
         justify-content: center;
         border-radius: 2px;
-        height: 27px;
-        padding: 4px;
-        margin: 1px 2px;
+        height: 24px;
+        padding: var(--space-4);
+        margin: 0;
 
         & .icon {
           margin: 0 var(--space-4) 0 0;

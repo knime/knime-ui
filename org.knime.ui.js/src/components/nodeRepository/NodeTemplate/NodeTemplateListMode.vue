@@ -2,6 +2,7 @@
 import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
+import { computed } from "vue";
 
 export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;
@@ -19,7 +20,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(["helpIconClick"]);
 
-const isCommunityExtension = !props.nodeTemplate.extension?.vendor?.isKNIME;
+const isCommunityExtension = computed(
+  () => !props.nodeTemplate.extension?.vendor?.isKNIME,
+);
 </script>
 
 <template>

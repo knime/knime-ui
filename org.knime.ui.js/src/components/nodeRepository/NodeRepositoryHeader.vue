@@ -186,21 +186,21 @@ defineExpose({ focusSearchInput });
   position: sticky;
   z-index: 2;
   top: 0;
-  padding-bottom: 8px;
+  padding-bottom: var(--space-8);
 
   & .title-and-search {
-    padding: 0 20px 4px;
+    padding: 0 20px var(--space-4);
 
     & .search-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: var(--space-8);
 
       & .view-settings {
         display: flex;
-        margin-top: 4px;
-        gap: 4px;
+        margin-top: var(--space-4);
+        gap: var(--space-4);
       }
 
       & .display-mode-button {
@@ -234,7 +234,7 @@ defineExpose({ focusSearchInput });
 
     & > hr {
       margin-bottom: 2px;
-      margin-top: 4px;
+      margin-top: var(--space-4);
     }
   }
 
