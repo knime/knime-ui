@@ -152,7 +152,6 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
           port: outputPort,
           position,
           nodeRelation: nextSide,
-          shouldDoPositionCorrection: !isOpen,
         },
       });
     },

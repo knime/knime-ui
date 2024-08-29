@@ -40,6 +40,7 @@ import {
   PortType,
 } from "@/api/gateway-api/generated-api";
 import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
+import type { NodeRelation } from "@/api/custom-types";
 
 vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
@@ -77,9 +78,8 @@ const defaultPortMock = createPort();
 const mockedAPI = deepMocked(API);
 
 const $shortcuts = {
-  get: () => ({}),
-  isEnabled: vi.fn().mockReturnValue(true),
-  findByHotkey: vi.fn().mockReturnValue(["quickAddNode"]),
+  isEnabled: () => true,
+  findByHotkey: () => ["quickAddNode"],
   dispatch: vi.fn(),
 };
 
@@ -115,7 +115,7 @@ describe("QuickAddNodeMenu.vue", () => {
         typeId: "org.knime.core.node.BufferedDataTable",
         connectedVia: [],
       }),
-      nodeRelation: "SUCCESSORS",
+      nodeRelation: "SUCCESSORS" as NodeRelation,
     };
 
     mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
@@ -264,7 +264,7 @@ describe("QuickAddNodeMenu.vue", () => {
     it("adds node on click", async () => {
       const { wrapper, addNodeMock } = doMount();
       await Vue.nextTick();
-      const node1 = wrapper.findAll(".node").at(0);
+      const node1 = wrapper.findAll(".display-icon.node").at(0);
       await node1.trigger("click");
 
       expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
@@ -341,7 +341,6 @@ describe("QuickAddNodeMenu.vue", () => {
       await Vue.nextTick();
       const input = wrapper.find(".search-bar input");
       await input.trigger("keydown"); // key doesn't matter as its mocked
-
       expect($shortcuts.dispatch).toHaveBeenCalledWith("quickAddNode");
     });
 

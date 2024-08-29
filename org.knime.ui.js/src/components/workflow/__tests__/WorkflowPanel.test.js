@@ -215,7 +215,6 @@ describe("WorkflowPanel", () => {
           y: 0,
         },
         nodeRelation: "SUCCESSORS",
-        shouldDoPositionCorrection: true,
       });
     });
 

@@ -69,15 +69,13 @@ export type QuickAddNodeMenuProps = {
   nodeId?: string | null;
   position: XY;
   port?: NodePort | null;
-  nodeRelation: NodeRelation;
-  shouldDoPositionCorrection: boolean;
+  nodeRelation?: NodeRelation | null;
 };
 
 const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {
   nodeId: null,
   port: null,
-  nodeRelation: "SUCCESSORS",
-  shouldDoPositionCorrection: true,
+  nodeRelation: null,
 });
 
 const menuWidth = 360;
