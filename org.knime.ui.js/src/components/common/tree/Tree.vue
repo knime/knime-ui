@@ -186,7 +186,7 @@ defineExpose({
 
 .virtual-tree {
   /** required for the focus/selection outline */
-  margin-top: 1px;
+  padding-top: 1px;
 
   --vir-tree-indent: calc(var(--space-4) * 5);
 

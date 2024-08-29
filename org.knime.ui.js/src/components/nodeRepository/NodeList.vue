@@ -332,7 +332,7 @@ defineExpose({ focusFirst, focusLast });
         margin: 1px 2px;
 
         & .icon {
-          margin: 0 5px 0 0;
+          margin: 0 var(--space-4) 0 0;
         }
       }
 
@@ -343,13 +343,13 @@ defineExpose({ focusFirst, focusLast });
     }
 
     &.display-icon {
-      gap: 4px 0;
+      gap: var(--space-4) 0;
       font-family: "Roboto Condensed", sans-serif;
 
       & .show-more {
         display: flex;
-        margin: 0 4px;
-        width: calc(100% - 4px);
+        margin: 0 var(--space-4);
+        width: calc(100% - var(--space-4));
         height: 100%;
         flex-direction: column;
         justify-content: center;
