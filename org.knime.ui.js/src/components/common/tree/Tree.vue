@@ -166,8 +166,6 @@ defineExpose({
 </template>
 
 <style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
 .tree-node-wrapper {
   display: block;
   width: 100%;
@@ -190,7 +188,7 @@ defineExpose({
   /** required for the focus/selection outline */
   margin-top: 1px;
 
-  --vir-tree-indent: 24px;
+  --vir-tree-indent: calc(var(--space-4) * 5);
 
   &:focus {
     outline: none;
@@ -285,16 +283,12 @@ defineExpose({
 .vir-tree {
   --white-color: var(--knime-white);
   --border-color: var(--knime-dove-gray);
-  --dash-border-color: var(--knime-silver-sand-semi);
   --primary-color: var(--knime-cornflower);
   --assist-color: var(--knime-aquamarine);
   --disable-color: var(--knime-stone-dark);
   --text-color: var(--knime-masala);
   --gray-color-tree: var(--knime-silver-sand-semi);
   --font-size-base: 13px;
-  --font-size-mid: var(--font-size-base) + 2;
-  --font-size-large: var(--font-size-base) + 4;
-  --font-size-huge: var(--font-size-base) + 10;
 }
 
 .vir-checkbox {
@@ -369,7 +363,7 @@ defineExpose({
 }
 .vir-tree-node {
   /* indent */
-  padding-left: calc(var(--vir-tree-level, 0) * var(--vir-tree-indent, 18px));
+  padding-left: calc(var(--vir-tree-level, 0) * var(--vir-tree-indent));
   display: grid;
   grid-template-columns: 20px auto;
   gap: var(--space-4);
