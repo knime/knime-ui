@@ -6,7 +6,7 @@ import { mockVuexStore } from "@/test/utils";
 import { $bus } from "@/plugins/event-bus";
 import * as uiControlsStore from "@/store/uiControls";
 import { useRoute } from "vue-router";
-import ErrorOverlay from "../application/Error.vue";
+import ErrorOverlay from "../application/ErrorOverlay.vue";
 import { nextTick } from "vue";
 import { setEnvironment } from "@/test/utils/setEnvironment";
 

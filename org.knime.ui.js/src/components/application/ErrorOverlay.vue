@@ -1,4 +1,6 @@
-<script>
+<script setup lang="ts">
+import { computed, ref, version } from "vue";
+
 import { Button, FunctionButton } from "@knime/components";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
@@ -6,75 +8,64 @@ import CheckIcon from "@knime/styles/img/icons/check.svg";
 import WarningIcon from "@knime/styles/img/icons/circle-warning.svg";
 import SwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
 
+import { API } from "@api";
+import DynamicEnvRenderer from "@/environment/DynamicEnvRenderer.vue";
+
 /**
- * Error.vue
+ * ErrorOverlay.vue
  * This Overlay is to be shown whenever an an error is thrown in KNIME UI (Frontend) that hasn't been caught yet
  * This can include uncaught errors caused or thrown by the backend
  *
  * The user can reload the browser page and should be able to continue to work
  *
  */
-export default {
-  components: {
-    Button,
-    ReloadIcon,
-    CopyIcon,
-    CheckIcon,
-    WarningIcon,
-    SwitchIcon,
-    FunctionButton,
-  },
-  props: {
-    message: {
-      type: String,
-      default: null,
-    },
-    stack: {
-      type: String,
-      default: null,
-    },
-    vueInfo: {
-      type: String,
-      default: null,
-    },
-  },
-  emits: ["close"],
-  data: () => ({
-    copied: false,
-  }),
-  computed: {
-    errorDetails() {
-      let details = [this.message, this.vueInfo, this.stack];
-      // TODO: NXT-595 add version
-      return details.filter(Boolean).join("\n\n");
-    },
-  },
-  methods: {
-    reloadApp() {
-      // redirect to the index.html page to trigger a refetch of the whole app
-      window.location.href = "/index.html";
-    },
-    async copyToClipboard() {
-      const content = JSON.stringify(
-        {
-          app: "KnimeUI",
-          // version: // TODO: NXT-595
-          message: this.message,
-          vueInfo: this.vueInfo,
-          stack: this.stack,
-        },
-        null,
-        2,
-      );
 
-      await navigator.clipboard.writeText(content);
+type Props = {
+  message: string;
+  stack?: string;
+};
 
-      this.copied = true;
+const props = withDefaults(defineProps<Props>(), {
+  stack: "",
+});
+
+const emit = defineEmits<{
+  close: [];
+}>();
+
+const copied = ref(false);
+
+const errorDetails = computed(() => {
+  const details = [props.message, `Vue: ${version}`, props.stack];
+  // TODO: NXT-595 add AP version
+  return details.filter(Boolean).join("\n\n");
+});
+
+const reloadApp = () => {
+  // redirect to the index.html page to trigger a refetch of the whole app
+  window.location.href = "/index.html";
+};
+
+const copyToClipboard = async () => {
+  const content = JSON.stringify(
+    {
+      app: "KnimeUI",
+      // TODO: NXT-595 add AP version
+      message: props.message,
+      vueVersion: version,
+      stack: props.stack,
     },
-    switchToJavaUI() {
-      window.switchToJavaUI();
-    },
-  },
+    null,
+    2,
+  );
+
+  await navigator.clipboard.writeText(content);
+
+  copied.value = true;
+};
+
+const switchToJavaUI = () => {
+  API.desktop.switchToJavaUI();
 };
 </script>
 
@@ -82,17 +73,29 @@ export default {
   <div class="error-overlay" @keydown.stop>
     <div class="background" />
     <div class="content">
-      <FunctionButton class="switch-classic" @click="switchToJavaUI">
-        <SwitchIcon />
-      </FunctionButton>
-      <div class="header" @click="$emit('close')">
-        <h2><WarningIcon /> Sorry, KNIME UI has stopped due to an error.</h2>
+      <DynamicEnvRenderer value="DESKTOP">
+        <FunctionButton class="switch-classic" @click="switchToJavaUI">
+          <SwitchIcon />
+        </FunctionButton>
+      </DynamicEnvRenderer>
+
+      <div class="header" @click="emit('close')">
+        <h2>
+          <WarningIcon /> Sorry, the KNIME Analytics Platform has stopped due to
+          an error.
+        </h2>
         <div class="message">
-          Hitting the reload button should bring you back to KNIME Modern UI,
-          while you could also switch back to KNIME Analytics Platform via the
-          button on the top right.
+          Hitting the reload button should bring you back to Modern UI.
         </div>
+
+        <DynamicEnvRenderer value="DESKTOP">
+          <div class="message">
+            You could also switch back to Classic UI via the button on the top
+            right.
+          </div>
+        </DynamicEnvRenderer>
       </div>
+
       <div class="actions">
         <Button primary on-dark @click="reloadApp">
           <ReloadIcon />
@@ -115,8 +118,7 @@ export default {
         </Button>
       </div>
 
-      <!-- eslint-disable vue/no-textarea-mustache -->
-      <textarea class="stack" readonly>{{ errorDetails }}</textarea>
+      <textarea class="stack" readonly :value="errorDetails" />
     </div>
   </div>
 </template>

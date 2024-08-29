@@ -13,7 +13,7 @@ import { ToastStack } from "@knime/components";
 import { DynamicEnvRenderer, isDesktop } from "@/environment";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
-import ErrorOverlay from "@/components/application/Error.vue";
+import ErrorOverlay from "@/components/application/ErrorOverlay.vue";
 import DownloadBanner from "@/components/application/DownloadBanner.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
@@ -23,6 +23,7 @@ import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader.vue";
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import ConfirmDialog from "./application/ConfirmDialog.vue";
+import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
 
 /**
  * Main page and entry point of KNIME AP Next
@@ -91,6 +92,8 @@ const setup = async () => {
   }
 };
 
+useGlobalErrorReporting();
+
 const checkClipboardSupport = async () => {
   if (isDesktop) {
     store.commit("application/setHasClipboardSupport", true);
@@ -143,7 +146,12 @@ const onCloseError = () => {
 <template>
   <div id="knime-ui">
     <!-- if subsequent errors occur, stick with the first one -->
-    <ErrorOverlay v-if="error" v-bind="error" @close="onCloseError" />
+    <ErrorOverlay
+      v-if="error"
+      :message="error.message"
+      :stack="error.stack"
+      @close="onCloseError"
+    />
 
     <DynamicEnvRenderer value="DESKTOP">
       <AppHeader id="app-header" />

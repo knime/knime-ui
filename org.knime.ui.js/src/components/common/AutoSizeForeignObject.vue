@@ -77,7 +77,9 @@ onMounted(async () => {
   resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
       const { contentRect } = entry;
-      width.value = contentRect.width;
+      // The value is floored to avoid excessive executions of the resize observer,
+      // which can occur due to minor changes in the width's decimal places.
+      width.value = Math.floor(contentRect.width);
       height.value = contentRect.height;
       centerAroundParentWidth();
       emitDimensions();
