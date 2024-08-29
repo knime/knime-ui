@@ -23,7 +23,8 @@ export const linkDecorator = knimeColors.Black;
 export const linkDecoratorUpToDate = knimeColors.MeadowDark;
 export const linkDecoratorError = knimeColors.CoralDark;
 
-export const selection = {
+/** NOTE: THIS SHOULD BE ONLY USED IN KANVAS NOT ANYWHERE ELSE */
+export const kanvasNodeSelection = {
   hoverBackground: applyAlphaHSL(knimeColors.Porcelain, "90%"),
   // goal: 9% of Cornflower on white background at 10% opacity
   // step 1: apply 9.9% opacity to Cornflower
@@ -31,7 +32,6 @@ export const selection = {
   // results in the same brightness as hoverBackground
   activeBackground: "rgba(233, 241, 246, 90%)",
   activeBorder: knimeColors.Cornflower,
-  fontColor: knimeColors.CornflowerDark,
 };
 
 export const connectorColors = {

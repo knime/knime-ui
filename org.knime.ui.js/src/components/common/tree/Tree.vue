@@ -199,7 +199,7 @@ defineExpose({
 :deep(.vir-tree-node:has(.tree-node.selected)),
 .virtual-tree :deep(.vir-tree-node:has(.tree-node.focus)) {
   color: var(--knime-cornflower-dark);
-  background-color: rgb(233 241 246 / 90%);
+  background-color: var(--knime-cornflower-semi);
   outline: 1px solid var(--knime-cornflower);
   border-radius: 2px;
 }

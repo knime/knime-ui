@@ -275,7 +275,7 @@ export default defineComponent({
     :y="selectionBounds.y"
     :width="selectionBounds.width"
     :height="selectionBounds.height"
-    :stroke="$colors.selection.activeBorder"
+    :stroke="$colors.kanvasNodeSelection.activeBorder"
     stroke-dasharray="5"
     vector-effect="non-scaling-stroke"
   />

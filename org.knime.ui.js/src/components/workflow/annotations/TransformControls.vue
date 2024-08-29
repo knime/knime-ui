@@ -182,7 +182,7 @@ export default defineComponent({
         :width="valueWithOffset.width + focusPlaneOffset.width"
         :height="valueWithOffset.height + focusPlaneOffset.height"
         class="transform-box"
-        :stroke="$colors.selection.activeBorder"
+        :stroke="$colors.kanvasNodeSelection.activeBorder"
         :stroke-width="transformRectStrokeWidth"
         :rx="$shapes.selectedItemBorderRadius"
         :stroke-dasharray="5"
@@ -195,7 +195,7 @@ export default defineComponent({
         :x="valueWithOffset.x + movePreviewDelta.x"
         :y="valueWithOffset.y + movePreviewDelta.y"
         class="transform-box"
-        :stroke="$colors.selection.activeBorder"
+        :stroke="$colors.kanvasNodeSelection.activeBorder"
         :stroke-width="transformRectStrokeWidth"
         :rx="$shapes.selectedItemBorderRadius"
       />

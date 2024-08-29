@@ -71,10 +71,9 @@ const isHovered = useElementHover(itemRef);
 
   --inline-padding: 8px;
   --text-default-color: var(--knime-dove-gray);
-  --text-active-color: v-bind("$colors.selection.activeBorder");
+  --text-active-color: var(--knime-cornflower-dark);
   --text-hover-color: var(--knime-masala);
-  --bg-active: v-bind("$colors.selection.activeBackground");
-  --bg-hover: v-bind("$colors.selection.hoverBackground");
+  --bg-active: var(--knime-cornflower-semi);
 
   color: var(--text-default-color);
   font: var(--typography-button-medium-prominent);
@@ -149,7 +148,7 @@ const isHovered = useElementHover(itemRef);
     position: absolute;
     left: 0;
     top: var(--inline-padding);
-    background: v-bind("$colors.selection.activeBorder");
+    background: var(--knime-cornflower);
     width: 4px;
     height: 16px;
     border-radius: 0 4px 4px 0;

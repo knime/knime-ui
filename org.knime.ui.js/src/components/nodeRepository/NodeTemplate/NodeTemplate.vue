@@ -121,10 +121,10 @@ defineExpose({ getNodePreview });
 /* selected needs to come after highlighted */
 .selected {
   outline: calc(v-bind("$shapes.selectedNodeStrokeWidth") * 1px) solid
-    v-bind("$colors.selection.activeBorder");
+    var(--knime-cornflower);
   border-radius: calc(v-bind("$shapes.selectedItemBorderRadius") * 1px);
-  background-color: v-bind("$colors.selection.activeBackground");
-  color: v-bind("$colors.selection.fontColor");
+  background-color: var(--knime-cornflower-semi);
+  color: var(--knime-cornflower-dark);
 
   &.list-mode,
   &.tree-mode {

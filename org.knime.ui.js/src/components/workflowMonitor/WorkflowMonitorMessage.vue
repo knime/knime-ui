@@ -123,7 +123,7 @@ const isLoadingNodePreview = computed(
   border: 1px solid transparent;
 
   &.highlighted {
-    border-color: v-bind("$colors.selection.activeBorder");
+    border-color: var(--knime-cornflower);
   }
 
   --padding: 12px;
