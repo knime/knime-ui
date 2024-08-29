@@ -143,6 +143,7 @@ defineExpose({ focusFirst, getExpandedNodeIds });
       >
         <template #leaf-inner="{ treeNode }: { treeNode: BaseTreeNode }">
           <DraggableNodeTemplate
+            class="node-template-component"
             :node-template="treeNode.origin.nodeTemplate"
             :is-highlighted="false"
             :is-selected="false"
@@ -165,5 +166,14 @@ defineExpose({ focusFirst, getExpandedNodeIds });
 
 .scroll-container-content {
   padding: 0 8px 16px 20px;
+}
+
+/** move padding to inner component to have user interactions on the whole line (hover, drag and dblclick) */
+:deep(.vir-tree-node):has(.leaf) {
+  padding-left: 0;
+}
+
+.node-template-component {
+  padding-left: calc(var(--vir-tree-level, 0) * var(--vir-tree-indent, 18px));
 }
 </style>
