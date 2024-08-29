@@ -27,19 +27,20 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     group: "general",
     icon: SaveIcon,
     execute: ({ $store }) => {
-      if ($store.getters["application/activeProjectOrigin"]) {
-        $store.dispatch("workflow/saveProject");
-      } else {
+      const isUnknownProject = $store.getters["application/isUnknownProject"];
+      const activeProjectId = $store.state.application.activeProjectId;
+
+      if (isUnknownProject(activeProjectId)) {
         $store.dispatch("workflow/saveProjectAs");
+      } else {
+        $store.dispatch("workflow/saveProject");
       }
     },
     condition: ({ $store }) => {
-      const isUnknownProject = $store.getters["application/isUnknownProject"];
       const activeProjectId = $store.state.application.activeProjectId;
 
       return (
         activeProjectId &&
-        !isUnknownProject(activeProjectId) &&
         $store.state.uiControls.isLocalSaveSupported &&
         ($store.getters["application/isDirtyActiveProject"] ||
           !$store.getters["application/activeProjectOrigin"])
