@@ -76,14 +76,15 @@ export const useConnectionReplacement = (
       );
 
     const hasCompatibleDestPort =
-      destNodeObject.value &&
-      replacementOutPorts.some((fromPort) =>
-        checkPortCompatibility({
-          fromPort,
-          toPort: destNodeObject.value!.inPorts[options.destPort.value!],
-          availablePortTypes: availablePortTypes.value,
-        }),
-      );
+      (destNodeObject.value &&
+        replacementOutPorts.some((fromPort) =>
+          checkPortCompatibility({
+            fromPort,
+            toPort: destNodeObject.value!.inPorts[options.destPort.value!],
+            availablePortTypes: availablePortTypes.value,
+          }),
+        )) ||
+      false;
 
     return hasCompatibleSrcPort || hasCompatibleDestPort;
   };
@@ -147,6 +148,13 @@ export const useConnectionReplacement = (
   const onRepositoryNodeDrop = (dragEvent: DragEvent) => {
     if (!dragEvent.dataTransfer) {
       return;
+    }
+
+    if (draggedNodeTemplate.value) {
+      const { inPorts, outPorts } = draggedNodeTemplate.value;
+      if (!hasCompatiblePorts(inPorts, outPorts)) {
+        return;
+      }
     }
 
     const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KNIME_MIME));
