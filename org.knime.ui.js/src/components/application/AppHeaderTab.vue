@@ -35,6 +35,7 @@ type Props = {
   hasUnsavedChanges?: boolean;
   windowWidth?: number;
   disabled?: boolean;
+  workflowPath?: string;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -43,6 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
   hasUnsavedChanges: false,
   windowWidth: 0,
   disabled: false,
+  workflowPath: "",
 });
 
 const emit = defineEmits<{
@@ -69,6 +71,10 @@ const truncatedProjectName = computed(() => {
 const isLocal = computed(
   () => provider.value.toUpperCase() === SpaceProviderNS.TypeEnum.LOCAL,
 );
+
+const tooltipContent = computed(() => {
+  return `${name.value}\n${props.workflowPath}`;
+});
 
 const activateTab = () => {
   if (props.disabled || props.isActive) {
@@ -100,7 +106,9 @@ const activateTab = () => {
       <CloudWorkflowIcon v-else />
     </template>
 
-    <span class="text">{{ truncatedProjectName }}</span>
+    <span class="text" :title="tooltipContent">
+      {{ truncatedProjectName }}
+    </span>
     <CloseButton
       :disabled="disabled"
       class="close-icon"

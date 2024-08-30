@@ -66,6 +66,46 @@ const isHomeButtonActive = computed(() => {
   );
 });
 
+const workflowPaths = computed(() => {
+  const { workflowGroupCache, spaceProviders } = store.state.spaces;
+
+  return openProjects.value.reduce(
+    (paths, project) => {
+      const projectPath =
+        workflowGroupCache[project.projectId] ||
+        store.state.spaces.projectPath[project.projectId];
+
+      if (!projectPath) {
+        paths[project.projectId] = "";
+        return paths;
+      }
+
+      const spaceProvider = spaceProviders?.[projectPath.spaceProviderId];
+      if (!spaceProvider) {
+        paths[project.projectId] = "";
+        return paths;
+      }
+
+      const spaceName =
+        spaceProvider.spaceGroups
+          ?.flatMap((group) => group.spaces)
+          .find((space) => space.id === projectPath.spaceId)?.name ||
+        "Unknown Space";
+
+      const providerName = spaceProvider.name || "Unknown Provider";
+      // console.log("🚀 ~ workflowPaths ~ providerName:", {
+      //   providerName,
+      //   spaceProvider,
+      //   projectPath,
+      // });
+
+      paths[project.projectId] = `${providerName} / ${spaceName}`;
+      return paths;
+    },
+    {} as Record<string, string>,
+  );
+});
+
 const createWorkflowTitle = computed(() => {
   const shortcut = $shortcuts.get("createWorkflow");
   return `${shortcut.text} (${shortcut.hotkeyText})`;
@@ -207,7 +247,7 @@ watch(
               :is-active="activeProjectTab === projectId"
               :disabled="isLoadingWorkflow && !hasWorkflowLoadingError"
               :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
-              :is-hovered-over="hoveredTab === projectId"
+              :workflow-path="workflowPaths[projectId]"
               @hover="hoveredTab = $event"
               @switch-workflow="onProjectTabChange"
               @close-project="closeProject($event)"
