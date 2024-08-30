@@ -39,8 +39,9 @@ import {
   NativeNodeInvariants,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import QuickAddNodeMenu from "../QuickAddNodeMenu.vue";
-import type { NodeRelation } from "@/api/custom-types";
+import QuickAddNodeMenu, {
+  type QuickAddNodeMenuProps,
+} from "../QuickAddNodeMenu.vue";
 
 vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();
@@ -104,7 +105,7 @@ describe("QuickAddNodeMenu.vue", () => {
     getNodeByIdMock = vi.fn(),
     nodeRepositoryLoadedMock = true,
   } = {}) => {
-    const defaultProps = {
+    const defaultProps: QuickAddNodeMenuProps = {
       nodeId: "node-id",
       position: {
         x: 10,
@@ -115,7 +116,7 @@ describe("QuickAddNodeMenu.vue", () => {
         typeId: "org.knime.core.node.BufferedDataTable",
         connectedVia: [],
       }),
-      nodeRelation: "SUCCESSORS" as NodeRelation,
+      nodeRelation: "SUCCESSORS",
     };
 
     mockedAPI.noderepository.getNodeRecommendations.mockReturnValue(
@@ -262,24 +263,30 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("adds node on click", async () => {
-      const { wrapper, addNodeMock } = doMount();
+      const { wrapper, addNodeMock, $store } = doMount();
       await Vue.nextTick();
       const node1 = wrapper.findAll(".display-icon.node").at(0);
       await node1.trigger("click");
 
-      expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
-        nodeFactory: {
-          className:
-            "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
-        },
-        position: {
-          x: 19.5,
-          y: -6,
-        },
-        sourceNodeId: "node-id",
-        sourcePortIdx: 1,
-        nodeRelation: "SUCCESSORS",
-      });
+      expect($store.state.quickAddNodes.portTypeId).toBe(
+        "org.knime.core.node.BufferedDataTable",
+      );
+      expect(addNodeMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          nodeFactory: {
+            className:
+              "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
+          },
+          position: {
+            x: 19,
+            y: -6,
+          },
+          sourceNodeId: "node-id",
+          sourcePortIdx: 1,
+          nodeRelation: "SUCCESSORS",
+        }),
+      );
     });
 
     it("allows dynamic updates of the port", async () => {
@@ -356,7 +363,7 @@ describe("QuickAddNodeMenu.vue", () => {
             "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
         },
         position: {
-          x: 19.5,
+          x: 19,
           y: -6,
         },
         sourceNodeId: "node-id",
@@ -443,7 +450,7 @@ describe("QuickAddNodeMenu.vue", () => {
               "org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory",
           },
           position: {
-            x: 19.5,
+            x: 19,
             y: -6,
           },
           sourceNodeId: "node-id",

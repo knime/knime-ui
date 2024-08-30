@@ -28,6 +28,7 @@ import type {
 import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { DragConnector } from "../../ports/NodePort/types";
+import { useNodeRecommendations } from "./useNodeRecommendations";
 
 const calculatePortOffset = (params: {
   selectedPort: NodePort;
@@ -84,13 +85,8 @@ const emit = defineEmits(["menuClose"]);
 
 const $shortcuts = useShortcuts();
 
-// --------------------------------------------------------
-// Computed properties from store
-// --------------------------------------------------------
 const store = useStore();
-const hasNodeRecommendationsEnabled = computed(
-  () => store.state.application.hasNodeRecommendationsEnabled,
-);
+
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,
 );
@@ -117,9 +113,6 @@ const displayMode = computed(() => {
   return nodeRepositoryDisplayMode;
 });
 
-// --------------------------------------------------------
-// Computed properties from props
-// --------------------------------------------------------
 const canvasPosition = computed(() => {
   let pos = { ...props.position };
   const halfPort = $shapes.portSize / 2;
@@ -171,18 +164,11 @@ const marginTop = computed(() => {
   return `${marginTop}px`;
 });
 
-// --------------------------------------------------------
-// Methods
-// --------------------------------------------------------
-const fetchNodeRecommendations = async () => {
-  const { nodeId, nodeRelation } = props;
-
-  await store.dispatch("quickAddNodes/getNodeRecommendations", {
-    nodeId,
-    portIdx: portIndex.value,
-    nodeRelation,
-  });
-};
+const {
+  hasNodeRecommendationsEnabled,
+  fetchNodeRecommendations,
+  recommendationResults,
+} = useNodeRecommendations(props.nodeId, portIndex.value, props.nodeRelation);
 
 const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   if (!isWritable.value || nodeTemplate === null) {
@@ -196,7 +182,7 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
         selectedPort: props.port,
         templatePorts: props.nodeRelation === "SUCCESSORS" ? inPorts : outPorts,
         availablePortTypes: availablePortTypes.value,
-        nodeRelation: props.nodeRelation,
+        nodeRelation: props.nodeRelation || "SUCCESSORS",
       })
     : [0, 0];
 
@@ -220,8 +206,6 @@ const searchEnterKey = () => {
   addNode(getFirstResult.value());
 };
 
-const recommendationResults =
-  ref<InstanceType<typeof QuickAddNodeRecommendations>>();
 const searchResults = ref<InstanceType<typeof QuickAddNodeSearchResults>>();
 
 const searchDownKey = () => {
@@ -239,9 +223,6 @@ const searchHandleShortcuts = (e: KeyboardEvent) => {
   }
 };
 
-// --------------------------------------------------------
-// Lifecycle hooks
-// --------------------------------------------------------
 onMounted(() => {
   if (props.port) {
     store.commit("quickAddNodes/setPortTypeId", props.port.typeId);
@@ -254,19 +235,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   store.dispatch("quickAddNodes/clearRecommendedNodesAndSearchParams");
 });
-
-// --------------------------------------------------------
-// Watchers
-// --------------------------------------------------------
-watch(
-  () => hasNodeRecommendationsEnabled.value,
-  (newValue) => {
-    if (newValue) {
-      fetchNodeRecommendations();
-    }
-  },
-  { immediate: true },
-);
 
 watch(
   () => props.port,
