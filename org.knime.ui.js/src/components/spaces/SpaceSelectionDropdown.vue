@@ -368,7 +368,9 @@ const spaceIcon = computed(() => {
       <template #default="{ expanded }">
         <template v-if="showText">
           <Component :is="spaceIcon" />
-          <span class="selected-text">{{ selectedText }}</span>
+          <span class="selected-text" :title="selectedText">
+            {{ selectedText }}
+          </span>
         </template>
         <DropdownIcon class="dropdown-icon" :class="{ flip: expanded }" />
       </template>
