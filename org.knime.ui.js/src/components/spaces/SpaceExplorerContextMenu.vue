@@ -11,7 +11,7 @@ import {
 import DeleteIcon from "@knime/styles/img/icons/trash.svg";
 import DuplicateIcon from "@knime/styles/img/icons/duplicate.svg";
 import RenameIcon from "@knime/styles/img/icons/pencil.svg";
-import ExportIcon from "@knime/styles/img/icons/export.svg";
+import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import {
@@ -189,7 +189,8 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       return {
         id: "export",
         text: "Export",
-        icon: ExportIcon,
+        icon: FileExportIcon,
+        hotkeyText: "⌘ E",
         disabled: selectionContainsFile || isSelectionMultiple,
         execute: () => {
           dispatch("spaces/exportSpaceItem", {
@@ -212,7 +213,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         icon: DuplicateIcon,
         title: anchorItem.isOpen
           ? `Open ${openFileType} cannot be duplicated.`
-          : null,
+          : "",
         disabled: anchorItem.isOpen,
         execute: () => emit("duplicateItems", props.selectedItemIds),
       };
@@ -229,12 +230,14 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         createRenameOption(anchorItem, {
           title: renameOptionTitle,
           icon: RenameIcon,
+          hotkeyText: "F2",
         }),
       ),
 
       createDeleteOption(anchorItem, {
         title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
         icon: DeleteIcon,
+        hotkeyText: "⌫",
       }),
 
       createDuplicateItemOption(),

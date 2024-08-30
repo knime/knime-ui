@@ -88,7 +88,7 @@ const hideText = computed<Partial<Record<ShortcutName, boolean>>>(() => ({
 }));
 
 const toolbarDropdowns = computed<
-  Partial<Record<ShortcutName, ShortcutName[]>>
+  Partial<Record<ShortcutName, { name: ShortcutName; separator?: boolean }[]>>
 >(() => {
   // when the project is unknown we won't show the "save" action, and therefore
   // cannot show the dropdown
@@ -96,7 +96,13 @@ const toolbarDropdowns = computed<
     return {};
   }
 
-  return { save: ["save", "saveAs"] };
+  return {
+    save: [
+      { name: "save" },
+      { name: "saveAs", separator: true },
+      { name: "export" },
+    ],
+  };
 });
 
 const toolbarButtons = computed(() => {

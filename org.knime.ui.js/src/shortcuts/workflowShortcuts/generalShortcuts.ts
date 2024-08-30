@@ -4,6 +4,7 @@ import UndoIcon from "@knime/styles/img/icons/undo.svg";
 import DeleteIcon from "@/assets/delete.svg";
 import SaveIcon from "@knime/styles/img/icons/save.svg";
 import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
+import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
@@ -17,6 +18,7 @@ type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<
   | "copy"
   | "cut"
   | "paste"
+  | "export"
 >;
 
 const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
@@ -195,6 +197,29 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     condition: ({ $store }) =>
       $store.getters["workflow/isWritable"] &&
       $store.state.application.hasClipboardSupport,
+  },
+  export: {
+    title: "Export",
+    text: "Export",
+    icon: FileExportIcon,
+    hotkey: ["CtrlOrCmd", "E"],
+    group: "general",
+    execute: ({ $store }) => {
+      const activeProjectOrigin =
+        $store.getters["application/activeProjectOrigin"];
+      const activeProjectId =
+        activeProjectOrigin?.projectId ||
+        $store.state.application.activeProjectId;
+
+      $store.dispatch("spaces/exportSpaceItem", {
+        projectId: activeProjectId,
+        itemId: activeProjectOrigin?.itemId,
+      });
+    },
+    condition: ({ $store }) => {
+      const activeProjectId = $store.state.application.activeProjectId;
+      return Boolean(activeProjectId);
+    },
   },
 };
 

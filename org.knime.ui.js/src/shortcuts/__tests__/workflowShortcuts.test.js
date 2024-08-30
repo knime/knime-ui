@@ -190,6 +190,45 @@ describe("workflowShortcuts", () => {
     });
   });
 
+  describe("export", () => {
+    it("executes export action", () => {
+      const { $store, mockDispatch } = createStore();
+
+      workflowShortcuts.export.execute({ $store });
+
+      expect(mockDispatch).toHaveBeenCalledWith("spaces/exportSpaceItem", {
+        projectId: $store.state.application.activeProjectId,
+        itemId: $store.getters["application/activeProjectOrigin"].itemId,
+      });
+    });
+
+    it("executes export action when project origin is present", () => {
+      const { $store, mockDispatch } = createStore();
+
+      $store.getters["application/activeProjectOrigin"] = {
+        projectId: "testProjectId",
+        itemId: "testItemId",
+      };
+
+      workflowShortcuts.export.execute({ $store });
+
+      expect(mockDispatch).toHaveBeenCalledWith("spaces/exportSpaceItem", {
+        projectId: "testProjectId",
+        itemId: "testItemId",
+      });
+    });
+
+    it("checks export condition", () => {
+      const { $store } = createStore();
+
+      $store.state.application.activeProjectId = "ExampleProjectId";
+      expect(workflowShortcuts.export.condition({ $store })).toBe(true);
+
+      $store.state.application.activeProjectId = null;
+      expect(workflowShortcuts.export.condition({ $store })).toBe(false);
+    });
+  });
+
   describe("configure", () => {
     it("executes", () => {
       const { $store, mockDispatch } = createStore();

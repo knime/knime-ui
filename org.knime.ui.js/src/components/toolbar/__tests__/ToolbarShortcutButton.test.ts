@@ -16,8 +16,14 @@ const mockedShortcuts = {
   },
   saveAs: {
     icon: IconComponent,
-    title: "save workflowas ",
+    title: "save workflow as",
     text: "save as",
+  },
+  export: {
+    icon: IconComponent,
+    title: "Export",
+    text: "Export",
+    hotkeyText: "Ctrl E",
   },
   noText: {
     title: "save workflow",
@@ -120,12 +126,51 @@ describe("ToolbarShortcutButton.vue", () => {
   });
 
   describe("renders submenu", () => {
-    const dropdown = ["save", "saveAs"];
+    const dropdown = [
+      { name: "save" },
+      { name: "saveAs", separator: true },
+      { name: "export" },
+    ];
 
     it("renders a submenu if dropdown prop is non empty", () => {
       const { wrapper } = doMount({ props: { dropdown } });
       expect(wrapper.findComponent(SubMenu).exists()).toBeTruthy();
-      expect(wrapper.findComponent(SubMenu).props("items").length).toBe(2);
+      expect(wrapper.findComponent(SubMenu).props("items").length).toBe(3);
+    });
+
+    it("correctly maps submenu items", () => {
+      const { wrapper } = doMount({ props: { dropdown } });
+      const subMenuItems = (wrapper.vm as any).subMenuItems;
+
+      expect(subMenuItems).toEqual([
+        expect.objectContaining({
+          name: "save",
+          text: "save",
+          title: "save workflow",
+          hotkeyText: "Ctrl S",
+          icon: IconComponent,
+          disabled: false,
+          separator: undefined,
+        }),
+        expect.objectContaining({
+          name: "saveAs",
+          text: "save as",
+          title: "save workflow as",
+          hotkeyText: undefined,
+          icon: IconComponent,
+          disabled: false,
+          separator: true,
+        }),
+        expect.objectContaining({
+          name: "export",
+          text: "Export",
+          title: "Export",
+          hotkeyText: "Ctrl E",
+          icon: IconComponent,
+          disabled: false,
+          separator: undefined,
+        }),
+      ]);
     });
 
     it("dispatches shortcut handler for submenu entries", async () => {

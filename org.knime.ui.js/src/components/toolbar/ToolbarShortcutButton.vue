@@ -12,7 +12,7 @@ const $shortcuts = useShortcuts();
 interface Props {
   name: ShortcutName;
   withText?: boolean;
-  dropdown?: ShortcutName[];
+  dropdown?: { name: ShortcutName; separator?: boolean }[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -20,14 +20,18 @@ const props = withDefaults(defineProps<Props>(), {
   dropdown: () => [],
 });
 
-type MenuItemWithName = MenuItem & { name: ShortcutName };
+type MenuItemWithName = MenuItem & { name: ShortcutName; separator?: boolean };
 
 const subMenuItems = computed((): MenuItemWithName[] => {
   if (!props.dropdown || props.dropdown.length === 0) {
     return [];
   }
 
-  const mapShortcutToItem = (name: ShortcutName) => {
+  const mapShortcutToItem = (item: {
+    name: ShortcutName;
+    separator?: boolean;
+  }) => {
+    const { name, separator } = item;
     const shortcut = $shortcuts.get(name);
     const { hotkeyText, icon, title } = shortcut;
     const text = shortcut.text as string;
@@ -40,6 +44,7 @@ const subMenuItems = computed((): MenuItemWithName[] => {
       disabled,
       hotkeyText,
       icon,
+      separator,
     };
   };
 
