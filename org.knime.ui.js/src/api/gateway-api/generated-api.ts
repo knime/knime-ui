@@ -4749,10 +4749,10 @@ const application = function(rpcClient: RPCClient) {
         getState(
         	params: {  }
         ): Promise<AppState> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('ApplicationService.getState', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ApplicationService.getState', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -4768,15 +4768,16 @@ const event = function(rpcClient: RPCClient) {
          * @param {EventType} [eventType] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         addEventListener(
         	params: { eventType?: EventType  }
         ): Promise<Response> {
-           const defaultParams = { 
+            const defaultParams = { 
                 eventType: null,
-           }
-
-           return rpcClient.call('EventService.addEventListener', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('EventService.addEventListener', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Unregisters event listeners.
@@ -4787,11 +4788,11 @@ const event = function(rpcClient: RPCClient) {
         removeEventListener(
         	params: { eventType?: EventType  }
         ): Promise<Response> {
-           const defaultParams = { 
+            const defaultParams = { 
                 eventType: null,
-           }
-
-           return rpcClient.call('EventService.removeEventListener', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('EventService.removeEventListener', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -4811,10 +4812,10 @@ const kai = function(rpcClient: RPCClient) {
         abortAiRequest(
         	params: { kaiChainId: string  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('KaiService.abortAiRequest', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.abortAiRequest', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Fetches the disclaimer and welcome messages displayed in K-AI's chat interface.
@@ -4824,10 +4825,10 @@ const kai = function(rpcClient: RPCClient) {
         getUiStrings(
         	params: {  }
         ): Promise<KaiUiStrings> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('KaiService.getUiStrings', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.getUiStrings', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Sends a request to a chain.
@@ -4839,10 +4840,10 @@ const kai = function(rpcClient: RPCClient) {
         makeAiRequest(
         	params: { kaiChainId: string,  kaiRequest: KaiRequest  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('KaiService.makeAiRequest', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.makeAiRequest', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Submits feedback for a chain.
@@ -4854,10 +4855,10 @@ const kai = function(rpcClient: RPCClient) {
         submitFeedback(
         	params: { kaiFeedbackId: string,  kaiFeedback: KaiFeedback  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('KaiService.submitFeedback', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('KaiService.submitFeedback', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -4878,15 +4879,17 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         callNodeDataService(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  extensionType: 'dialog' | 'view',  serviceType: 'initial_data' | 'data' | 'apply_data',  dataServiceRequest?: string  }
         ): Promise<string> {
-           const defaultParams = { 
+            const defaultParams = { 
                 dataServiceRequest: null,
-           }
-
-           return rpcClient.call('NodeService.callNodeDataService', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeService.callNodeDataService', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Changes state of a loop. The provided node-id must reference a loop-end node.
@@ -4896,15 +4899,17 @@ const node = function(rpcClient: RPCClient) {
          * @param {'pause' | 'resume' | 'step'} [action] The action (pause, resume, step) to be performed in order to change the loop state.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         changeLoopState(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  action?: 'pause' | 'resume' | 'step'  }
         ): Promise<Response> {
-           const defaultParams = { 
+            const defaultParams = { 
                 action: null,
-           }
-
-           return rpcClient.call('NodeService.changeLoopState', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeService.changeLoopState', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Changes the node state of multiple nodes represented by a list of node-ids.
@@ -4914,16 +4919,18 @@ const node = function(rpcClient: RPCClient) {
          * @param {'reset' | 'cancel' | 'execute'} [action] The action (reset, cancel, execute) to be performed in order to change the node&#39;s state.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         changeNodeStates(
         	params: { projectId: string,  workflowId: string,  nodeIds?: Array<string>,  action?: 'reset' | 'cancel' | 'execute'  }
         ): Promise<Response> {
-           const defaultParams = { 
+            const defaultParams = { 
                 nodeIds: null,
                 action: null,
-           }
-
-           return rpcClient.call('NodeService.changeNodeStates', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeService.changeNodeStates', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * De-activates all the data service associated with the specified ui-extension.
@@ -4933,14 +4940,16 @@ const node = function(rpcClient: RPCClient) {
          * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         deactivateNodeDataServices(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  extensionType: 'dialog' | 'view'  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('NodeService.deactivateNodeDataServices', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('NodeService.deactivateNodeDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Get a components description, will only work for component nodes.
@@ -4949,28 +4958,32 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         getComponentDescription(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<ComponentNodeDescription> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('NodeService.getComponentDescription', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('NodeService.getComponentDescription', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Obtain the description of a given node.
          * @param {NodeFactoryKey} nodeFactoryKey The key identifying the node.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {NodeDescriptionNotAvailableException} A description for a given node could not be determined.
          */
         getNodeDescription(
         	params: { nodeFactoryKey: NodeFactoryKey  }
         ): Promise<NativeNodeDescription> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('NodeService.getNodeDescription', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('NodeService.getNodeDescription', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Returns all the information on a node dialog required to render it.
@@ -4979,14 +4992,16 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         getNodeDialog(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<any> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('NodeService.getNodeDialog', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('NodeService.getNodeDialog', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Returns all the information on a node view required to render it.
@@ -4995,14 +5010,16 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         getNodeView(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<any> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('NodeService.getNodeView', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('NodeService.getNodeView', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Updates the data point selection (aka hiliting) for a single node as specified.
@@ -5013,15 +5030,16 @@ const node = function(rpcClient: RPCClient) {
          * @param {Array<string>} [selection] A list of strings that are translated to the row keys affected by the data point selection modification.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
          */
         updateDataPointSelection(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  mode: 'add' | 'remove' | 'replace',  selection?: Array<string>  }
         ): Promise<Response> {
-           const defaultParams = { 
+            const defaultParams = { 
                 selection: null,
-           }
-
-           return rpcClient.call('NodeService.updateDataPointSelection', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeService.updateDataPointSelection', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -5037,14 +5055,15 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {Array<string>} categoryPath 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NoSuchElementException} The requested element was not found.
          */
         getNodeCategory(
         	params: { categoryPath: Array<string>  }
         ): Promise<NodeCategory> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('NodeRepositoryService.getNodeCategory', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('NodeRepositoryService.getNodeCategory', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Given a node, a port and a node-relation it recommends a certain number of compatible nodes the user might want to add next to its workflow. If queried with no node, no port and no node-relation, it recommends the most relevant source nodes, that naturally have no predecessor.
@@ -5057,19 +5076,20 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         getNodeRecommendations(
         	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  nodeRelation?: 'PREDECESSORS' | 'SUCCESSORS',  fullTemplateInfo?: boolean  }
         ): Promise<Array<NodeTemplate>> {
-           const defaultParams = { 
+            const defaultParams = { 
                 nodeId: null,
                 portIdx: null,
                 nodesLimit: null,
                 nodeRelation: null,
                 fullTemplateInfo: null,
-           }
-
-           return rpcClient.call('NodeRepositoryService.getNodeRecommendations', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeRepositoryService.getNodeRecommendations', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Compiles a list of node templates (with complete information, i.e. including icons, etc.). It doesn't actually change any state or create a new resource (despite the 'post').
@@ -5080,11 +5100,11 @@ const noderepository = function(rpcClient: RPCClient) {
         getNodeTemplates(
         	params: { nodeTemplateIds?: Array<string>  }
         ): Promise<{ [key: string]: NodeTemplate; }> {
-           const defaultParams = { 
+            const defaultParams = { 
                 nodeTemplateIds: null,
-           }
-
-           return rpcClient.call('NodeRepositoryService.getNodeTemplates', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeRepositoryService.getNodeTemplates', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used ones in that group).
@@ -5098,14 +5118,14 @@ const noderepository = function(rpcClient: RPCClient) {
         getNodesGroupedByTags(
         	params: { numNodesPerTag?: number,  tagsOffset?: number,  tagsLimit?: number,  fullTemplateInfo?: boolean  }
         ): Promise<NodeGroups> {
-           const defaultParams = { 
+            const defaultParams = { 
                 numNodesPerTag: null,
                 tagsOffset: null,
                 tagsLimit: null,
                 fullTemplateInfo: null,
-           }
-
-           return rpcClient.call('NodeRepositoryService.getNodesGroupedByTags', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeRepositoryService.getNodesGroupedByTags', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Searches for nodes (and components) in the node repository.
@@ -5119,11 +5139,12 @@ const noderepository = function(rpcClient: RPCClient) {
          * @param {'PREDECESSORS' | 'SUCCESSORS'} [nodeRelation] The relation between connected nodes, either predecessors or succesors
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         searchNodes(
         	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  offset?: number,  limit?: number,  fullTemplateInfo?: boolean,  portTypeId?: string,  nodeRelation?: 'PREDECESSORS' | 'SUCCESSORS'  }
         ): Promise<NodeSearchResult> {
-           const defaultParams = { 
+            const defaultParams = { 
                 q: null,
                 tags: null,
                 allTagsMatch: null,
@@ -5132,9 +5153,9 @@ const noderepository = function(rpcClient: RPCClient) {
                 fullTemplateInfo: null,
                 portTypeId: null,
                 nodeRelation: null,
-           }
-
-           return rpcClient.call('NodeRepositoryService.searchNodes', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('NodeRepositoryService.searchNodes', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -5156,15 +5177,17 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} [dataServiceRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         callPortDataService(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
         ): Promise<string> {
-           const defaultParams = { 
+            const defaultParams = { 
                 dataServiceRequest: null,
-           }
-
-           return rpcClient.call('PortService.callPortDataService', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('PortService.callPortDataService', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * De-activates all data services associated with the port view.
@@ -5175,14 +5198,16 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} viewIdx The index of the specific port view to obtain
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         deactivatePortDataServices(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('PortService.deactivatePortDataServices', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('PortService.deactivatePortDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Returns all the information on a port view required to render it.
@@ -5193,14 +5218,16 @@ const port = function(rpcClient: RPCClient) {
          * @param {number} viewIdx The index of the specific port view to obtain
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         getPortView(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
         ): Promise<any> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('PortService.getPortView', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('PortService.getPortView', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Updates the data point selection (aka hiliting) for a single port as specified.
@@ -5213,15 +5240,16 @@ const port = function(rpcClient: RPCClient) {
          * @param {Array<string>} [selection] A list of strings that are translated to the row keys affected by the data point selection modification.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
          */
         updateDataPointSelection(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  mode: 'add' | 'remove' | 'replace',  selection?: Array<string>  }
         ): Promise<Response> {
-           const defaultParams = { 
+            const defaultParams = { 
                 selection: null,
-           }
-
-           return rpcClient.call('PortService.updateDataPointSelection', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('PortService.updateDataPointSelection', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -5238,14 +5266,16 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceGroupName Identifier name of a space-group.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         createSpace(
         	params: { spaceProviderId: string,  spaceGroupName: string  }
         ): Promise<Space> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.createSpace', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.createSpace', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Create a new workflow within a given workflow group.
@@ -5255,14 +5285,16 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         createWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.createWorkflow', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.createWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Create a new workflow group within a given workflow group.
@@ -5271,14 +5303,16 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         createWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<SpaceItem> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.createWorkflowGroup', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.createWorkflowGroup', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Deletes items from the space.
@@ -5287,14 +5321,16 @@ const space = function(rpcClient: RPCClient) {
          * @param {Array<string>} itemIds A list of identifiers of items in the space.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         deleteItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.deleteItems', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.deleteItems', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Deletes job from the space.
@@ -5304,14 +5340,16 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} jobId The ID of the job to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         deleteJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  jobId: string  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.deleteJobsForWorkflow', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.deleteJobsForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Deletes schedule from the space.
@@ -5321,28 +5359,31 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} scheduleId The ID of the schedule to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         deleteSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  scheduleId: string  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.deleteSchedulesForWorkflow', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.deleteSchedulesForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Mainly returns the spaces provided by this space-provider.
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         getSpaceProvider(
         	params: { spaceProviderId: string  }
         ): Promise<SpaceProvider> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.getSpaceProvider', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.getSpaceProvider', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Lists the available jobs for the given workflow.
@@ -5351,14 +5392,15 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         listJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<Array<any>> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.listJobsForWorkflow', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.listJobsForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Lists the available schedules for the given workflow.
@@ -5367,14 +5409,15 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         listSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<Array<any>> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.listSchedulesForWorkflow', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.listSchedulesForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Get shallow list of workflows, components and data-files within a given workflow group.
@@ -5383,14 +5426,16 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {IOException} If there was an I/O error of some kind.
          */
         listWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<WorkflowGroupContent> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.listWorkflowGroup', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.listWorkflowGroup', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Move or copy space items to a different workflow group within its space.
@@ -5402,14 +5447,16 @@ const space = function(rpcClient: RPCClient) {
          * @param {boolean} copy Copy instead of move items.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         moveOrCopyItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destWorkflowGroupItemId: string,  collisionHandling: 'noop' | 'autorename' | 'overwrite',  copy: boolean  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.moveOrCopyItems', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.moveOrCopyItems', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Rename a space Item
@@ -5419,14 +5466,17 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         renameItem(
         	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.renameItem', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.renameItem', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Rename a space
@@ -5435,14 +5485,17 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceName Name given to a space.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         renameSpace(
         	params: { spaceProviderId: string,  spaceId: string,  spaceName: string  }
         ): Promise<Space> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('SpaceService.renameSpace', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('SpaceService.renameSpace', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -5460,14 +5513,17 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {WorkflowCommand} workflowCommand An object that describes the command to be executed.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         executeWorkflowCommand(
         	params: { projectId: string,  workflowId: string,  workflowCommand: WorkflowCommand  }
         ): Promise<CommandResult> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('WorkflowService.executeWorkflowCommand', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('WorkflowService.executeWorkflowCommand', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Returns the node IDs of all updatable linked components present on a workflow, even if they are deeply nested.
@@ -5475,14 +5531,17 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
         getUpdatableLinkedComponents(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Array<NodeIdAndIsExecuted>> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('WorkflowService.getUpdatableLinkedComponents', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('WorkflowService.getUpdatableLinkedComponents', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Retrieves the complete structure (sub-)workflows.
@@ -5491,15 +5550,17 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {boolean} [includeInteractionInfo] Whether to enclose information that is required when the user is interacting with the returned workflow. E.g. the allowed actions (reset, execute, cancel) for contained nodes and the entire workflow itself.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
+         * @throws {NodeNotFoundException} The requested node was not found.
          */
         getWorkflow(
         	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean  }
         ): Promise<WorkflowSnapshot> {
-           const defaultParams = { 
+            const defaultParams = { 
                 includeInteractionInfo: null,
-           }
-
-           return rpcClient.call('WorkflowService.getWorkflow', { ...defaultParams, ...params });
+            }
+            
+            return rpcClient.call('WorkflowService.getWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Returns the current state of the workflow monitor.
@@ -5510,10 +5571,10 @@ const workflow = function(rpcClient: RPCClient) {
         getWorkflowMonitorState(
         	params: { projectId: string  }
         ): Promise<WorkflowMonitorStateSnapshot> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('WorkflowService.getWorkflowMonitorState', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('WorkflowService.getWorkflowMonitorState', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Re-does the last command from the redo-stack.
@@ -5521,14 +5582,15 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         redoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('WorkflowService.redoWorkflowCommand', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('WorkflowService.redoWorkflowCommand', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Un-does the last command from the undo-stack.
@@ -5536,14 +5598,15 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
+         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
         undoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Response> {
-           const defaultParams = { 
-           }
-
-           return rpcClient.call('WorkflowService.undoWorkflowCommand', { ...defaultParams, ...params });
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('WorkflowService.undoWorkflowCommand', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
 };
@@ -6025,3 +6088,75 @@ export const createAPI = (configuration: Configuration) => {
         workflowCommand: WorkflowCommandApiWrapper(rpcClient, configuration)
     }
 };
+
+/** 
+ * Error handling 
+ */
+export const KNOWN_EXECUTOR_EXCEPTIONS = ["NodeDescriptionNotAvailableException", "NodeNotFoundException", "NoSuchElementException", "NotASubWorkflowException", "InvalidRequestException", "OperationNotAllowedException", "IOException", ] as const;
+export type KnownExecutorExceptions = (typeof KNOWN_EXECUTOR_EXCEPTIONS)[number];
+
+export class GatewayException extends Error {}
+export class KnownGatewayException extends GatewayException {
+    constructor(e: { message: string }) {
+        super(e.message, { cause: e }) 
+    }
+}
+export class UnknownGatewayException extends GatewayException {
+    data: Object;
+    constructor(e: { message: string, data: Object }) {
+        super(e.message, { cause: e })
+        this.data = e.data;   
+    }
+}
+export class NodeDescriptionNotAvailableException extends KnownGatewayException {}
+export class NodeNotFoundException extends KnownGatewayException {}
+export class NoSuchElementException extends KnownGatewayException {}
+export class NotASubWorkflowException extends KnownGatewayException {}
+export class InvalidRequestException extends KnownGatewayException {}
+export class OperationNotAllowedException extends KnownGatewayException {}
+export class IOException extends KnownGatewayException {}
+
+function isKnownGatewayException(e: unknown): e is { message: string, data: string } {
+    return (
+        e !== null &&
+	    typeof e === "object" &&
+	    "code" in e &&
+	    typeof e.code === "number" &&
+	    e.code === -32600 &&
+	    "data" in e &&
+	    typeof e.data === "string" &&
+	    (KNOWN_EXECUTOR_EXCEPTIONS as ReadonlyArray<string>).includes(e.data)
+    );
+};
+
+function isUnknownGatewayException(e: unknown): e is { message: string, data: Object } {
+    return (
+        e !== null &&
+        typeof e === "object" &&
+        "code" in e &&
+        typeof e.code === "number" &&
+        e.code === -32601 &&
+        "data" in e &&
+        typeof e.data === "object"
+    );
+};
+
+const exceptionClassMapping = {
+    "NodeDescriptionNotAvailableException": NodeDescriptionNotAvailableException,
+    "NodeNotFoundException": NodeNotFoundException,
+    "NoSuchElementException": NoSuchElementException,
+    "NotASubWorkflowException": NotASubWorkflowException,
+    "InvalidRequestException": InvalidRequestException,
+    "OperationNotAllowedException": OperationNotAllowedException,
+    "IOException": IOException,
+} as const;
+  
+function mapToExceptionClass(e: unknown) {
+    if (isKnownGatewayException(e)) {
+        return new exceptionClassMapping[e.data](e);
+    } else if (isUnknownGatewayException(e)) {
+        return new UnknownGatewayException(e);
+    } else {
+        return e;
+    }
+}
