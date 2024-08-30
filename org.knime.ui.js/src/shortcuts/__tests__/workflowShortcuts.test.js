@@ -124,6 +124,8 @@ describe("workflowShortcuts", () => {
   describe("save", () => {
     it("executes", () => {
       const { $store, mockDispatch } = createStore();
+
+      $store.getters["application/isUnknownProject"] = () => false;
       workflowShortcuts.save.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith("workflow/saveProject");
       expect(mockDispatch).not.toHaveBeenCalledWith("workflow/saveProjectAs");
@@ -131,7 +133,10 @@ describe("workflowShortcuts", () => {
 
     it("executes when project without origin is open", () => {
       const { $store, mockDispatch } = createStore();
+
+      $store.getters["application/isUnknownProject"] = () => true;
       $store.getters["application/activeProjectOrigin"] = null;
+
       workflowShortcuts.save.execute({ $store });
       expect(mockDispatch).not.toHaveBeenCalledWith("workflow/saveProject");
       expect(mockDispatch).toHaveBeenCalledWith("workflow/saveProjectAs");
