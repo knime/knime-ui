@@ -245,7 +245,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       });
 
       const isLoading = status !== "Finished";
-      const loaderConfig = isLoading
+      const config = isLoading
         ? {
             displayMode: "toast",
             loadingMode: "normal",
@@ -257,8 +257,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       // As long as we are not FINISHED we will show the loader
       $store.dispatch("application/updateGlobalLoader", {
         loading: isLoading,
-        loaderConfig,
         text,
+        config,
       });
     },
 
