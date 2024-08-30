@@ -111,7 +111,10 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       const portCount =
         nextSide === "SUCCESSORS" ? node.outPorts.length : node.inPorts.length;
       const startIndex = portCount === 1 ? 0 : 1;
-      const nextIndex = (lastPortIndex + 1) % portCount;
+      const nextIndex =
+        nextSide === nodeRelation
+          ? (lastPortIndex + 1) % portCount
+          : startIndex;
       const portIndex = lastNodeId === nodeId ? nextIndex : startIndex;
 
       // if it's not open we need to find a proper position to put the menu
@@ -141,7 +144,10 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         });
       };
 
-      const outputPort = node.outPorts[portIndex];
+      const nextPort =
+        nextSide === "SUCCESSORS"
+          ? node.outPorts[portIndex]
+          : node.inPorts[portIndex];
       const position = isOpen
         ? lastPosition
         : calculatePosition(node, portIndex, portCount);
@@ -149,7 +155,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       $store.dispatch("workflow/openQuickAddNodeMenu", {
         props: {
           nodeId,
-          port: outputPort,
+          port: nextPort,
           position,
           nodeRelation: nextSide,
         },

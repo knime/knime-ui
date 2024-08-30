@@ -1045,6 +1045,7 @@ describe("workflowShortcuts", () => {
             index: 1,
           },
           position: { x: 5, y: 8 },
+          nodeRelation: "SUCCESSORS",
         },
       };
       workflowShortcuts.quickAddNode.execute({ $store });

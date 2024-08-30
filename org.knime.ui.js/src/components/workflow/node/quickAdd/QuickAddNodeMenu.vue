@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from "vue";
 
 import {
   type NodePort,
@@ -138,8 +138,10 @@ const fakePortConnector = computed<DragConnector>(() => {
   const portType = props.port ? availablePortTypes[props.port.typeId] : null;
   const flowVariableConnection = portType?.kind === "flowVariable";
 
-  const node = props.nodeRelation === "SUCCESSORS" ? "sourceNode" : "destNode";
-  const port = props.nodeRelation === "SUCCESSORS" ? "sourcePort" : "destPort";
+  const fakeNode =
+    props.nodeRelation === "SUCCESSORS" ? "sourceNode" : "destNode";
+  const fakePort =
+    props.nodeRelation === "SUCCESSORS" ? "sourcePort" : "destPort";
 
   return {
     id: `quick-add-${props.nodeId}-${portIndex.value}`,
@@ -148,9 +150,9 @@ const fakePortConnector = computed<DragConnector>(() => {
     allowedActions: { canDelete: false },
     interactive: false,
     // eslint-disable-next-line no-undefined
-    [node]: props.nodeId ?? undefined,
+    [fakeNode]: props.nodeId ?? undefined,
     // eslint-disable-next-line no-undefined
-    [port]: portIndex.value ?? undefined,
+    [fakePort]: portIndex.value ?? undefined,
   };
 });
 
@@ -164,11 +166,10 @@ const marginTop = computed(() => {
   return `${marginTop}px`;
 });
 
-const {
-  hasNodeRecommendationsEnabled,
-  fetchNodeRecommendations,
-  recommendationResults,
-} = useNodeRecommendations(props.nodeId, portIndex.value, props.nodeRelation);
+const { nodeId, nodeRelation } = toRefs(props);
+
+const { hasNodeRecommendationsEnabled, fetchNodeRecommendations } =
+  useNodeRecommendations(nodeId, portIndex, nodeRelation);
 
 const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
   if (!isWritable.value || nodeTemplate === null) {
@@ -205,6 +206,9 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
 const searchEnterKey = () => {
   addNode(getFirstResult.value());
 };
+
+const recommendationResults =
+  ref<InstanceType<typeof QuickAddNodeRecommendations>>();
 
 const searchResults = ref<InstanceType<typeof QuickAddNodeSearchResults>>();
 

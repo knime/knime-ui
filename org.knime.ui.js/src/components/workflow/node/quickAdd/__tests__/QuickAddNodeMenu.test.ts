@@ -265,7 +265,7 @@ describe("QuickAddNodeMenu.vue", () => {
     it("adds node on click", async () => {
       const { wrapper, addNodeMock, $store } = doMount();
       await Vue.nextTick();
-      const node1 = wrapper.findAll(".display-icon.node").at(0);
+      const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
 
       expect($store.state.quickAddNodes.portTypeId).toBe(
