@@ -20,7 +20,7 @@ import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vu
 import BlockUi from "@/components/application/BlockUi.vue";
 import { useStore } from "@/composables/useStore";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
-import AppSkeletonLoader from "./application/AppSkeletonLoader.vue";
+import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import ConfirmDialog from "./application/ConfirmDialog.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";

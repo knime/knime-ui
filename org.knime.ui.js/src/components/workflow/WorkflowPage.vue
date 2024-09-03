@@ -15,6 +15,8 @@ import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
 const store = useStore();
 
 const workflow = computed(() => store.state.workflow.activeWorkflow);
+const error = computed(() => store.state.workflow.error);
+
 const savedSecondarySize = computed({
   get() {
     return store.state.settings.settings.nodeOutputSize;
@@ -29,7 +31,7 @@ const savedSecondarySize = computed({
 </script>
 
 <template>
-  <div v-if="workflow" id="workflow-page">
+  <div v-if="workflow && !error" id="workflow-page">
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />

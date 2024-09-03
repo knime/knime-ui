@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import { useStore } from "@/composables/useStore";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { isBrowser } from "@/environment";
@@ -9,10 +8,15 @@ import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { TABS, type TabValues } from "@/store/panel";
 
 import AppRightPanelSkeleton from "./AppRightPanelSkeleton.vue";
+import AppToolbarSkeleton from "./AppToolbarSkeleton.vue";
+import AppSidebarSkeletonContent from "./AppSidebarSkeletonContent.vue";
+import AppSidebarSkeletonTabs from "./AppSidebarSkeletonTabs.vue";
+import AppKanvasSkeleton from "./AppKanvasSkeleton.vue";
 
 const store = useStore();
 
 const activeProjectId = computed(() => store.state.application.activeProjectId);
+
 const isLoadingApp = computed(() => store.state.application.isLoadingApp);
 const isLoadingWorkflow = computed(
   () => store.state.application.isLoadingWorkflow,
@@ -31,10 +35,12 @@ const rightPanelWidth = computed(() =>
 const isLoading = computed(() => isLoadingApp.value || isLoadingWorkflow.value);
 
 const isChangingBetweenWorkflows = computed(() => {
-  return (
-    isLoadingWorkflow.value && activeProjectId.value && !isLoadingApp.value
+  return Boolean(
+    isLoadingWorkflow.value && activeProjectId.value && !isLoadingApp.value,
   );
 });
+
+const workflowError = computed(() => store.state.workflow.error);
 
 const isSkeletonTransparentForTab = (currentTab: TabValues) => {
   if (currentTab === TABS.NODE_REPOSITORY) {
@@ -88,79 +94,30 @@ watch(isLoading, (value) => {
       },
     ]"
   >
-    <div
+    <AppToolbarSkeleton
+      :is-changing-between-workflows="isChangingBetweenWorkflows"
       class="toolbar-skeleton"
       :class="{ transparent: isChangingBetweenWorkflows }"
-    >
-      <template v-if="!isChangingBetweenWorkflows">
-        <SkeletonItem
-          width="30px"
-          height="30px"
-          type="icon-button"
-          :style="{ border: '1px solid var(--knime-silver-sand)' }"
-        />
-        <SkeletonItem
-          width="30px"
-          height="30px"
-          type="icon-button"
-          :style="{ border: '1px solid var(--knime-silver-sand)' }"
-        />
-        <SkeletonItem
-          width="100px"
-          type="button"
-          class="button-skeleton-normal"
-          :style="{ border: '1px solid var(--knime-silver-sand)' }"
-        />
-        <SkeletonItem
-          width="100px"
-          type="button"
-          class="button-skeleton-normal"
-          :style="{ border: '1px solid var(--knime-silver-sand)' }"
-        />
-      </template>
-    </div>
+    />
 
-    <div
-      :class="{ transparent: isChangingBetweenWorkflows }"
+    <AppSidebarSkeletonTabs
       class="sidebar-tabs-skeleton"
-    >
-      <template v-if="!isChangingBetweenWorkflows">
-        <SkeletonItem
-          width="40px"
-          height="50px"
-          :style="{ border: '1px solid var(--knime-silver-sand)' }"
-        />
-        <SkeletonItem
-          width="40px"
-          height="50px"
-          :style="{ border: '1px solid var(--knime-silver-sand)' }"
-        />
-        <SkeletonItem
-          width="40px"
-          height="50px"
-          :style="{ border: '1px solid var(--knime-silver-sand)' }"
-        />
-      </template>
-    </div>
+      :is-changing-between-workflows="isChangingBetweenWorkflows"
+      :class="{ transparent: isChangingBetweenWorkflows }"
+    />
 
-    <div
-      v-if="isLeftPanelOpen"
-      class="sidebar-content-skeleton"
+    <AppSidebarSkeletonContent
+      :is-left-panel-open="isLeftPanelOpen"
+      :is-sidebar-transparent="isSidebarTransparent"
       :class="{ transparent: isSidebarTransparent }"
-    >
-      <template v-if="!isSidebarTransparent">
-        <SkeletonItem height="16px" width="70%" />
-        <SkeletonItem height="16px" />
-        <SkeletonItem height="16px" />
-        <SkeletonItem height="16px" width="30%" />
-      </template>
-    </div>
+    />
 
     <div class="workflow-skeleton">
       <div class="top-panel-skeleton">
-        <div class="canvas-skeleton">
-          <KnimeIcon v-if="isLogoShown" class="elastic-spin" />
-        </div>
+        <AppKanvasSkeleton
+          :is-logo-shown="isLogoShown"
+          :workflow-error="workflowError"
+        />
 
         <AppRightPanelSkeleton
           v-if="isBrowser"
@@ -178,8 +135,6 @@ watch(isLoading, (value) => {
 </template>
 
 <style lang="postcss" scoped>
-@import url("@/assets/mixins.css");
-
 .transparent {
   background: transparent !important;
 }
@@ -189,9 +144,7 @@ watch(isLoading, (value) => {
   width: 100vw;
   height: 100vh;
   cursor: progress;
-
-  /* Make sure nothing will be on top of this skeleton */
-  z-index: calc(infinity);
+  z-index: 9;
   background: var(--knime-white);
   display: grid;
 
@@ -209,13 +162,6 @@ watch(isLoading, (value) => {
 
   & .toolbar-skeleton {
     grid-area: toolbar;
-    background: var(--knime-porcelain);
-    border-bottom: 1px solid var(--knime-silver-sand);
-    min-height: var(--app-toolbar-height);
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-    align-items: center;
   }
 
   & .workflow-skeleton {
@@ -228,21 +174,6 @@ watch(isLoading, (value) => {
       align-items: center;
       height: calc(50% - var(--app-toolbar-height));
       height: calc(v-bind("`${topPanelHeight}%`") - var(--app-toolbar-height));
-
-      & .canvas-skeleton {
-        display: flex;
-        flex: 1;
-        justify-content: center;
-
-        & svg {
-          @mixin svg-icon-size 50;
-        }
-
-        & .elastic-spin {
-          transform-origin: 50% 65%;
-          animation: elastic-spin 3.8s infinite ease;
-        }
-      }
     }
 
     & .bottom-panel-skeleton {
@@ -260,21 +191,6 @@ watch(isLoading, (value) => {
 
   & .sidebar-tabs-skeleton {
     grid-area: tabs;
-    background: var(--knime-black);
-    min-width: 40px;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  & .sidebar-content-skeleton {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 370px;
-    padding: 20px;
-    border-right: 1px solid var(--knime-silver-sand);
-    background: var(--sidebar-background-color);
   }
 }
 </style>

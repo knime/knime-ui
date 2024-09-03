@@ -5,7 +5,7 @@ import { ApplyState } from "@knime/ui-extension-service";
 import type { KnimeNode } from "@/api/custom-types";
 import { type NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import AppRightPanelSkeleton from "@/components/application/AppRightPanelSkeleton.vue";
+import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
 
 import NodeConfigLayout from "./NodeConfigLayout.vue";
 

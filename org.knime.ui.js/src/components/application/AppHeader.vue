@@ -47,6 +47,9 @@ const activeProjectId = computed(() => store.state.application.activeProjectId);
 const isLoadingWorkflow = computed(
   () => store.state.application.isLoadingWorkflow,
 );
+const hasWorkflowLoadingError = computed(() =>
+  Boolean(store.state.workflow.error),
+);
 const devMode = computed(() => store.state.application.devMode);
 const dirtyProjectsMap = computed(
   () => store.state.application.dirtyProjectsMap,
@@ -192,7 +195,10 @@ watch(
                 origin = { providerId: '', projectType: null },
               } in openProjects"
               :key="projectId"
-              :class="['project-tab', { loading: isLoadingWorkflow }]"
+              :class="[
+                'project-tab',
+                { loading: isLoadingWorkflow && !hasWorkflowLoadingError },
+              ]"
               :name="name"
               :data-project-id="projectId"
               :project-id="projectId"
@@ -200,7 +206,7 @@ watch(
               :project-type="origin.projectType"
               :window-width="windowWidth"
               :is-active="activeProjectTab === projectId"
-              :disabled="isLoadingWorkflow"
+              :disabled="isLoadingWorkflow && !hasWorkflowLoadingError"
               :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
               :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"

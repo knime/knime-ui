@@ -41,6 +41,8 @@ export interface WorkflowState {
     in: Bounds | null;
     out: Bounds | null;
   };
+
+  error: Error | null;
 }
 
 /**
@@ -66,6 +68,8 @@ export const state = (): WorkflowState => ({
   activeSnapshotId: null,
   tooltip: null,
   calculatedMetanodePortBarBounds: { in: null, out: null },
+
+  error: null,
 });
 
 export const mutations: MutationTree<WorkflowState> = {
@@ -89,6 +93,9 @@ export const mutations: MutationTree<WorkflowState> = {
   setTooltip(state, tooltip) {
     state.tooltip = tooltip;
   },
+  setError(state, error) {
+    state.error = error;
+  },
 
   setCalculatedMetanodePortBarBounds(
     state,
@@ -111,6 +118,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   ...annotationInteractions.actions,
   ...connectionInteractions.actions,
   ...componentInteractions.actions,
+
+  setWorkflowLoadingError({ commit }, error) {
+    commit("setError", error);
+  },
 
   undo({ state }) {
     const { projectId, workflowId } = getProjectAndWorkflowIds(state);

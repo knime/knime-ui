@@ -258,8 +258,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     commit("setIsChangingProject", isChangingProject);
 
     // only activate the app loader if we're going to switch to a workflow; skip it
-    // when showing the home page
+    // when showing the home page.
+    // Also reset the error (if any) but skip for the homepage to avoid flashes of loading state
     if (newWorkflow) {
+      dispatch("workflow/setWorkflowLoadingError", null, { root: true });
       commit("setIsLoadingWorkflow", true);
     }
 
@@ -309,14 +311,31 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
     await API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
 
-    const project = await API.workflow.getWorkflow({
-      projectId,
-      workflowId,
-      includeInteractionInfo: true,
-    });
+    let project: WorkflowSnapshot;
+    try {
+      project = await API.workflow.getWorkflow({
+        projectId,
+        workflowId,
+        includeInteractionInfo: true,
+      });
+    } catch (error) {
+      consola.error("lifecycle::loadWorkflow failed to load workflow", {
+        error,
+      });
+
+      dispatch("workflow/setWorkflowLoadingError", error, { root: true });
+
+      throw error;
+    }
 
     if (!project) {
-      throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
+      const error = new Error(
+        `Workflow not found: "${projectId}" > "${workflowId}"`,
+      );
+
+      dispatch("workflow/setWorkflowLoadingError", error, { root: true });
+
+      throw error;
     }
 
     await dispatch("beforeSetActivateWorkflow", { workflow: project.workflow });
@@ -409,18 +428,25 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     const { activeSnapshotId: snapshotId } = rootState.workflow;
 
-    API.event.unsubscribeEventListener({
-      typeId: "WorkflowChangedEventType",
-      projectId,
-      workflowId,
-      snapshotId: snapshotId!,
-    });
-
     commit("selection/clearSelection", null, { root: true });
     commit("workflow/setTooltip", null, { root: true });
 
     if (clearWorkflow) {
       commit("workflow/setActiveWorkflow", null, { root: true });
+    }
+
+    try {
+      await API.event.unsubscribeEventListener({
+        typeId: "WorkflowChangedEventType",
+        projectId,
+        workflowId,
+        snapshotId: snapshotId!,
+      });
+    } catch (error) {
+      consola.error(
+        "lifecycle::unloadActiveWorkflow failed to unsubscribe to WorkflowChangedEvent",
+        { error },
+      );
     }
   },
 
