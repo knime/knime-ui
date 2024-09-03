@@ -64,7 +64,7 @@ export const useConnectionReplacement = (
   const hasCompatiblePorts = (
     replacementInPorts: ExtendedPortType[],
     replacementOutPorts: ExtendedPortType[],
-  ) => {
+  ): boolean => {
     const hasCompatibleSrcPort =
       sourceNodeObject.value &&
       replacementInPorts.some((toPort) =>
