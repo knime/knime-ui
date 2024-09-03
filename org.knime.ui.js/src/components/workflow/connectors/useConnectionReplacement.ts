@@ -66,29 +66,26 @@ export const useConnectionReplacement = (
     replacementOutPorts: ExtendedPortType[],
   ) => {
     const hasCompatibleSrcPort =
-      (sourceNodeObject.value &&
-        replacementInPorts.some((toPort) =>
-          checkPortCompatibility({
-            fromPort:
-              sourceNodeObject.value!.outPorts[options.sourcePort.value!],
-            toPort,
-            availablePortTypes: availablePortTypes.value,
-          }),
-        )) ||
-      false;
+      sourceNodeObject.value &&
+      replacementInPorts.some((toPort) =>
+        checkPortCompatibility({
+          fromPort: sourceNodeObject.value!.outPorts[options.sourcePort.value!],
+          toPort,
+          availablePortTypes: availablePortTypes.value,
+        }),
+      );
 
     const hasCompatibleDestPort =
-      (destNodeObject.value &&
-        replacementOutPorts.some((fromPort) =>
-          checkPortCompatibility({
-            fromPort,
-            toPort: destNodeObject.value!.inPorts[options.destPort.value!],
-            availablePortTypes: availablePortTypes.value,
-          }),
-        )) ||
-      false;
+      destNodeObject.value &&
+      replacementOutPorts.some((fromPort) =>
+        checkPortCompatibility({
+          fromPort,
+          toPort: destNodeObject.value!.inPorts[options.destPort.value!],
+          availablePortTypes: availablePortTypes.value,
+        }),
+      );
 
-    return hasCompatibleSrcPort || hasCompatibleDestPort;
+    return Boolean(hasCompatibleSrcPort || hasCompatibleDestPort);
   };
 
   const insertNode = ({
