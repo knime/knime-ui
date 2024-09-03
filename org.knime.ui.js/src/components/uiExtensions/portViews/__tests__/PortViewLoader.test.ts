@@ -4,7 +4,7 @@ import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
-import { UIExtension } from "@knime/ui-extensions-renderer";
+import { UIExtension } from "@knime/ui-extension-renderer";
 import * as applicationStore from "@/store/application";
 import PortViewLoader from "../PortViewLoader.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";

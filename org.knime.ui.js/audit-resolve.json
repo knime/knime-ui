@@ -33,7 +33,7 @@
       "decision": "ignore",
       "madeAt": 1724311567279
     },
-    "1098615|@knime/ui-extensions-renderer>@knime/components>@knime/styles>postcss-mixins>fast-glob>micromatch": {
+    "1098615|@knime/ui-extension-renderer>@knime/components>@knime/styles>postcss-mixins>fast-glob>micromatch": {
       "decision": "ignore",
       "madeAt": 1724311567279
     },

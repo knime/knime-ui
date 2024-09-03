@@ -3,7 +3,7 @@ import * as Vue from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
-import { UIExtension } from "@knime/ui-extensions-renderer";
+import { UIExtension } from "@knime/ui-extension-renderer";
 import { API } from "@api";
 
 import * as applicationStore from "@/store/application";

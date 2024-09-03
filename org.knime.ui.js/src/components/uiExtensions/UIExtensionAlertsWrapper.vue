@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Alert } from "@knime/ui-extension-service";
-import { UIExtensionAlerts } from "@knime/ui-extensions-renderer";
+import { UIExtensionAlerts } from "@knime/ui-extension-renderer";
 
 import { useNotifyUIExtensionAlert } from "./common/useNotifyUIExtensionAlert";
 

@@ -5,7 +5,7 @@ import {
   ViewState,
   UIExtensionPushEvents,
 } from "@knime/ui-extension-service";
-import type { UIExtensionAPILayer } from "@knime/ui-extensions-renderer";
+import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer";
 
 import { API } from "@/api";
 import { NodeState, type NativeNode } from "@/api/gateway-api/generated-api";

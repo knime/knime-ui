@@ -10,7 +10,7 @@ import {
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { API } from "@api";
 
-import { UIExtension } from "@knime/ui-extensions-renderer";
+import { UIExtension } from "@knime/ui-extension-renderer";
 import * as applicationStore from "@/store/application";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
