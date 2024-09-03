@@ -32,6 +32,7 @@ import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
 import * as uiControlsStore from "@/store/uiControls";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
 
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
@@ -91,6 +92,7 @@ describe("Connector.vue", () => {
       },
       selection: selectionStore,
       workflow: workflowStore,
+      nodeTemplates: nodeTemplatesStore,
       canvas: {
         state: { zoomFactor: 1 },
         getters: {
