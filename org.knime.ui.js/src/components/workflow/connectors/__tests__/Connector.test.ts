@@ -30,6 +30,7 @@ import { $bus } from "@/plugins/event-bus";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
 
 import * as $shapes from "@/style/shapes.mjs";
 import * as $colors from "@/style/colors.mjs";
@@ -89,6 +90,7 @@ describe("Connector.vue", () => {
       },
       selection: selectionStore,
       workflow: workflowStore,
+      nodeTemplates: nodeTemplatesStore,
       canvas: {
         state: { zoomFactor: 1 },
         getters: {

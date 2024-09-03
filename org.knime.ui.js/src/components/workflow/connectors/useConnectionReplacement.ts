@@ -64,7 +64,7 @@ export const useConnectionReplacement = (
   const hasCompatiblePorts = (
     replacementInPorts: ExtendedPortType[],
     replacementOutPorts: ExtendedPortType[],
-  ) => {
+  ): boolean => {
     const hasCompatibleSrcPort =
       sourceNodeObject.value &&
       replacementInPorts.some((toPort) =>
@@ -85,7 +85,7 @@ export const useConnectionReplacement = (
         }),
       );
 
-    return hasCompatibleSrcPort || hasCompatibleDestPort;
+    return Boolean(hasCompatibleSrcPort || hasCompatibleDestPort);
   };
 
   const insertNode = ({
@@ -147,6 +147,13 @@ export const useConnectionReplacement = (
   const onRepositoryNodeDrop = (dragEvent: DragEvent) => {
     if (!dragEvent.dataTransfer) {
       return;
+    }
+
+    if (draggedNodeTemplate.value) {
+      const { inPorts, outPorts } = draggedNodeTemplate.value;
+      if (!hasCompatiblePorts(inPorts, outPorts)) {
+        return;
+      }
     }
 
     const nodeFactory = JSON.parse(dragEvent.dataTransfer.getData(KnimeMIME));
