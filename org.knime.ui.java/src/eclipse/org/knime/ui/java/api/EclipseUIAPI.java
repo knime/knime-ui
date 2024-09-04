@@ -215,17 +215,24 @@ final class EclipseUIAPI {
      * Function to allow the Web UI to switch back to the classic KNIME perspective.
      */
     @API
-    static void switchToJavaUI() { // NOSONAR
-        // All the open workflow projects will be closed on perspective switch
-        var saveAndCloseState = SaveAndCloseProjects.saveAndCloseProjectsInteractively( //
-                        ProjectManager.getInstance().getProjectIds(), //
-                        DesktopAPI.getDeps(EventConsumer.class), //
-                        PostProjectCloseAction.SWITCH_PERSPECTIVE //
-                );
-        var proceed = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
+    static void switchToJavaUI() {
+        final var projectIds = ProjectManager.getInstance().getProjectIds();
+        final var doProcced = PerspectiveUtil.showDialogCloseAllProjectsOnSwitch(() -> !projectIds.isEmpty());
+        if (!doProcced) {
+            return; // Skips perspective switch
+        }
 
-        if (!proceed) {
-            return; // Please note: Even if returned here, 'doSwitchToJavaUI()' might still get called
+        // All the open workflow projects will be closed on perspective switch
+        final var saveAndCloseState = SaveAndCloseProjects.saveAndCloseProjectsInteractively( //
+            projectIds, //
+            DesktopAPI.getDeps(EventConsumer.class), //
+            PostProjectCloseAction.SWITCH_PERSPECTIVE //
+        );
+        if (saveAndCloseState != SaveAndCloseProjects.State.SUCCESS) {
+            // The 'PostProjectCloseAction.SWITCH_PERSPECTIVE' for the executed
+            // 'SaveAndCloseProjects.saveAndCloseProjectsInteractively(...)' function might (surprisingly) also trigger
+            // a call to 'doSwitchToJavaUI()'.
+            return;
         }
 
         doSwitchToJavaUI();

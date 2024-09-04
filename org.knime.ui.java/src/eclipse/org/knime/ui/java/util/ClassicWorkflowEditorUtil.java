@@ -61,6 +61,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
@@ -189,6 +190,18 @@ public final class ClassicWorkflowEditorUtil {
                 };
             })//
             .orElse(true); // Success if no active page found
+    }
+
+    /**
+     * @return {@code true} if there is at least one open editor
+     */
+    public static boolean hasAtLeastOneOpenEditor() {
+        return Optional.ofNullable(PlatformUI.getWorkbench())//
+            .map(IWorkbench::getActiveWorkbenchWindow)//
+            .map(IWorkbenchWindow::getActivePage)//
+            .map(IWorkbenchPage::getEditorReferences)//
+            .map(references -> references.length > 0)//
+            .orElse(false);
     }
 
 }

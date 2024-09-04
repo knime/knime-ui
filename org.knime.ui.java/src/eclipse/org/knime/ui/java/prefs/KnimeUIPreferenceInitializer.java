@@ -51,9 +51,10 @@ package org.knime.ui.java.prefs;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 
 /**
- * Initializer for the preferences of the modern UI.
+ * Initializer for the preferences of the Modern UI.
  *
  * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -66,9 +67,12 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
             KnimeUIPreferences.SELECTED_NODE_COLLECTION_STARTER_ID);
 
         // Set scroll-to-scroll as default option
-        store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
-            KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL);
+        store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY, KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL);
 
+        // Set always confirm node configuration changes as default option
         store.setDefault(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, true);
+
+        // Set always confirm close projects on perspective switch as default option
+        store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
     }
 }

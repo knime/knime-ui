@@ -78,11 +78,19 @@ public final class SwitchToWebUIHandler {
     @SuppressWarnings("javadoc")
     @Execute
     public void execute() {
-        var perspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        var allClosed = ClassicWorkflowEditorUtil.closeAllEditorsWithPrompt();
-        if (allClosed) {
-            PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
+        final var doProcced =
+            PerspectiveUtil.showDialogCloseAllProjectsOnSwitch(ClassicWorkflowEditorUtil::hasAtLeastOneOpenEditor);
+        if (!doProcced) {
+            return; // Skips perspective switch
         }
+
+        final var allClosed = ClassicWorkflowEditorUtil.closeAllEditorsWithPrompt();
+        if (!allClosed) {
+            return; // Skips perspective switch
+        }
+
+        final var perspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+        PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
     }
 
 }

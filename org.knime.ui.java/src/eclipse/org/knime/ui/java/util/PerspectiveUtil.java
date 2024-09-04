@@ -48,13 +48,17 @@ package org.knime.ui.java.util;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
+import org.knime.core.ui.util.SWTUtilities;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
 
@@ -200,6 +204,33 @@ public final class PerspectiveUtil {
             var bindingService = PlatformUI.getWorkbench().getAdapter(IBindingService.class);
             bindingService.setKeyFilterEnabled(isEnableKeyBindings);
         }
+    }
+
+    /**
+     * Asks for user confirmation when closing open projects on perspective switch. The dialog will not be shown if (a)
+     * the corresponding Modern UI preference says so, or (b) there are no open projects that would be closed.
+     *
+     * @param hasOpenProjects Provides context information on open projects
+     * @return Whether to proceed with the perspective switch or not.
+     */
+    public static boolean showDialogCloseAllProjectsOnSwitch(final BooleanSupplier hasOpenProjects) {
+        if (!KnimeUIPreferences.confirmCloseProjectsOnSwitch() || !hasOpenProjects.getAsBoolean()) {
+            return true; // No dialog needs to be shown
+        }
+
+        final var parent = SWTUtilities.getActiveShell();
+        final var title = "All open projects will be closed";
+        final var message = "Switching the user interface will always close all open projects. Do you want to proceed?";
+        final var toggleMessage = "Don't show this warning again";
+        final var dialog =
+            MessageDialogWithToggle.openYesNoQuestion(parent, title, message, toggleMessage, false, null, null);
+
+        if (dialog.getToggleState()) {
+            KnimeUIPreferences.confirmCloseProjectsOnSwitch(false); // We won't show the dialog again
+        }
+
+        final var dialogReturnCode = dialog.getReturnCode();
+        return dialogReturnCode == 2; // Since '2' means 'Yes'
     }
 
 }

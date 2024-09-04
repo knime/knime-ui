@@ -48,13 +48,15 @@
  */
 package org.knime.ui.java.prefs;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.util.PerspectiveUtil;
@@ -64,6 +66,7 @@ import org.knime.workbench.explorer.view.preferences.MountSettings;
  * The preference of the modern UI.
  *
  * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 public final class KnimeUIPreferences {
 
@@ -81,7 +84,9 @@ public final class KnimeUIPreferences {
 
     static final String CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY = "confirmNodeConfigChanges";
 
-    static final IPreferenceStore PREF_STORE =
+    static final String CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY = "confirmCloseProjectsOnSwitch";
+
+    static final IPersistentPreferenceStore PREF_STORE =
         new ScopedPreferenceStore(InstanceScope.INSTANCE, UIPlugin.getContext().getBundle().getSymbolicName());
 
     static {
@@ -174,6 +179,31 @@ public final class KnimeUIPreferences {
      */
     public static void confirmNodeConfigChanges(final boolean confirmNodeConfigChanges) {
         PREF_STORE.setValue(CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, confirmNodeConfigChanges);
+
+    }
+
+    /**
+     * @return Whether to always confirm closing projects on perspective switch or not
+     */
+    public static boolean confirmCloseProjectsOnSwitch() {
+        return PREF_STORE.getBoolean(CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY);
+    }
+
+    /**
+     * Sets the preferences and writes it to disk
+     *
+     * @param confirmCloseProjectsOnSwitch Whether to always confirm closing projects on perspective switch or not
+     */
+    public static void confirmCloseProjectsOnSwitch(final boolean confirmCloseProjectsOnSwitch) {
+        PREF_STORE.setValue(CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, confirmCloseProjectsOnSwitch);
+        if (PREF_STORE.needsSaving()) {
+            try {
+                PREF_STORE.save(); // Needed to actually persist the preference to disk
+            } catch (IOException e) {
+                NodeLogger.getLogger(KnimeUIPreferences.class)
+                    .error("Could not persist CONFIRM_CLOSE_PROJECTS_ON_SWITCH preference", e);
+            }
+        }
     }
 
     /**

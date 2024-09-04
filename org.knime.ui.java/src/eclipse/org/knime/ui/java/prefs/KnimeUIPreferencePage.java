@@ -57,9 +57,10 @@ import org.knime.gateway.impl.webui.featureflags.FeatureFlags;
 import org.knime.workbench.ui.preferences.HorizontalLineField;
 
 /**
- * The preference page for the modern UI.
+ * The preference page for the Modern UI.
  *
  * @author Benjamin Wilhelm, KNIME GmbH, Berlin, Germany
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 public final class KnimeUIPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -76,7 +77,12 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
     private static final String MOUSE_WHEEL_TO_SCROLL_OPTION = "Scroll";
 
-    /** Create a new preference page for the modern UI. */
+    private static final String CONFIRM_CLOSE_PROJECTS_ON_SWITCH_LABEL =
+        "Ask for confirmation to close all open projects when switching between user interfaces";
+
+    /**
+     * Create a new preference page for the Modern UI.
+     */
     public KnimeUIPreferencePage() {
         super(GRID);
     }
@@ -101,6 +107,13 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         final var scrollToZoomEditor = new RadioGroupFieldEditor(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
             MOUSE_WHEEL_ACTION_LABEL, 1, scrollToZoomOptions, getFieldEditorParent());
         addField(scrollToZoomEditor);
+
+        addField(new HorizontalLineField(getFieldEditorParent()));
+
+        final var confirmCloseProjectsOnSwitchEditor =
+            new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY,
+                CONFIRM_CLOSE_PROJECTS_ON_SWITCH_LABEL, getFieldEditorParent());
+        addField(confirmCloseProjectsOnSwitchEditor);
 
         if (FeatureFlags.embedDialogs()) {
             addField(new HorizontalLineField(getFieldEditorParent()));
