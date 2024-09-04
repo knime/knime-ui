@@ -30,7 +30,12 @@ export const useAddNodeToWorkflow = () => {
           nodes: activeWorkflow!.nodes,
         });
     const sourceNodeId = singleSelectedNode?.id ?? null;
-
-    store.dispatch("workflow/addNode", { position, nodeFactory, sourceNodeId });
+    const nodeRelation = singleSelectedNode ? "SUCCESSORS" : null;
+    store.dispatch("workflow/addNode", {
+      position,
+      nodeFactory,
+      sourceNodeId,
+      nodeRelation,
+    });
   };
 };

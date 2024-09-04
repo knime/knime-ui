@@ -179,6 +179,7 @@ describe("DraggableNodeTemplate", () => {
         expect.objectContaining({
           position: { x: 220, y: 100 },
           sourceNodeId: "root:2",
+          nodeRelation: "SUCCESSORS",
         }),
       );
     });
