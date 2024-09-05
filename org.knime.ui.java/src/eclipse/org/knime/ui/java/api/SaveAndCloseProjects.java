@@ -189,7 +189,15 @@ public final class SaveAndCloseProjects {
         };
     }
 
-    private static void saveProjectsWithProgressBar(final String[] projectIds, final String[] svgs,
+    /**
+     * Saves all projects for the given ids.
+     *
+     * @param projectIds id of the projects to save
+     * @param svgs the project preview svgs
+     * @param firstFailure the first id of the project that couldn't be saved
+     * @param progressService
+     */
+    public static void saveProjectsWithProgressBar(final String[] projectIds, final String[] svgs,
         final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) {
         IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, svgs, firstFailure, monitor);
         try {

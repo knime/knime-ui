@@ -57,10 +57,8 @@ import java.util.stream.Stream;
 
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.swt.program.Program;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.internal.ide.actions.OpenWorkspaceAction;
@@ -75,7 +73,6 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.ui.p2.actions.InvokeInstallSiteAction;
@@ -233,23 +230,7 @@ final class EclipseUIAPI {
             return;
         }
 
-        doSwitchToJavaUI();
-    }
-
-    /**
-     * Performs a switch back to the classic KNIME perspective.
-     */
-    static void doSwitchToJavaUI() {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        try {
-            var perspToRestore = PerspectiveSwitchAddon.getPreviousPerspectiveId() //
-                .orElse(PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
-            workbench.showPerspective(perspToRestore, window);
-        } catch (WorkbenchException e) {
-            // should never happen
-            throw new RuntimeException(e); // NOSONAR
-        }
+        PerspectiveUtil.switchToJavaUI();
     }
 
     /**

@@ -55,9 +55,13 @@ import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.keys.IBindingService;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
@@ -164,6 +168,22 @@ public final class PerspectiveUtil {
             p = (MPerspective)modelService.find(WEB_UI_PERSPECTIVE_ID + ".<WebUI>", app);
         }
         return p;
+    }
+
+    /**
+     * Performs a switch back to the classic KNIME perspective.
+     */
+    public static void switchToJavaUI() {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        try {
+            var perspToRestore = PerspectiveSwitchAddon.getPreviousPerspectiveId() //
+                .orElse(PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
+            workbench.showPerspective(perspToRestore, window);
+        } catch (WorkbenchException e) {
+            // should never happen
+            throw new RuntimeException(e); // NOSONAR
+        }
     }
 
     /**

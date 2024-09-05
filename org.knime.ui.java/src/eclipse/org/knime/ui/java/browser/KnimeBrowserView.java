@@ -128,6 +128,7 @@ public class KnimeBrowserView {
         LifeCycle.get().init(checkForUpdates); // NOSONAR
         isInitialized = true;
         setUrl(ignoreEmptyPageAsDevUrl);
+        KnimeBrowserHealthChecker.setup(browser);
     }
 
     /**
@@ -138,6 +139,7 @@ public class KnimeBrowserView {
      */
     public static void clearView() {
         isInitialized = false;
+        KnimeBrowserHealthChecker.cancel();
         if (browser != null) {
             if (!browser.isDisposed()) {
                 browser.setUrl(EMPTY_PAGE);

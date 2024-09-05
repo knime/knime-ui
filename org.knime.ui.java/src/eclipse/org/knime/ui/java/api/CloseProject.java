@@ -65,7 +65,7 @@ import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-final class CloseProject {
+public final class CloseProject {
 
     private CloseProject() {
         // utility
@@ -103,7 +103,14 @@ final class CloseProject {
         return success;
     }
 
-    static boolean closeProjects(final Collection<String> projectIds) {
+    /**
+     * Closes all projects for the given ids, no matter whether they are dirty or not. If there is no project for a
+     * given id, it will be ignored.
+     *
+     * @param projectIds the ids of the projects to close
+     * @return {@code false} if at least one project wasn't closed successfully otherwise {@code true}
+     */
+    public static boolean closeProjects(final Collection<String> projectIds) {
         var success = true;
         for (var projectId : projectIds) {
             success &= closeProject(projectId);

@@ -84,6 +84,7 @@ import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
+import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -158,7 +159,7 @@ final class ProjectAPI {
         var progressService = PlatformUI.getWorkbench().getProgressService();
         SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, postProjectCloseAction -> { // NOSONAR
             switch (postProjectCloseAction) {
-                case SWITCH_PERSPECTIVE -> EclipseUIAPI.doSwitchToJavaUI();
+                case SWITCH_PERSPECTIVE -> PerspectiveUtil.switchToJavaUI();
                 case SHUTDOWN -> { // NOSONAR
                     var lifeCycle = LifeCycle.get();
                     if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
