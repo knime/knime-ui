@@ -1,40 +1,97 @@
 import { getToastsProvider } from "@/plugins/toasts";
 import { merge } from "lodash-es";
+import { version } from "vue";
+
+type ProblemDetails = {
+  title: string;
+  details?: Array<string>;
+  [key: string]: any; // allow custom extensions
+};
 
 const $toast = getToastsProvider();
 
-export const copyErrorInformation = (data: object = {}) => {
-  merge(data, {
-    _general: {
-      date: new Date().toUTCString(),
-    },
-  });
-  return navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+const toEnumeratedObject = (obj) => {
+  return Object.getOwnPropertyNames(obj).reduce((acc, cur) => {
+    acc[cur] = obj[cur];
+    return acc;
+  }, {});
+};
+
+export const copyReportToClipboard = (data: object = {}) => {
+  const general = {
+    app: "KnimeUI",
+    vueVersion: version,
+    timestamp: new Date().toISOString(),
+  };
+
+  return navigator.clipboard.writeText(
+    JSON.stringify(
+      merge(general, data),
+      // Error object's properties are non-enumerable, and would by default be omitted in the serialization
+      (_, value) =>
+        value instanceof Error ? toEnumeratedObject(value) : value,
+      2,
+    ),
+  );
+};
+
+const formatToastMessage = ({
+  errorHint,
+  problemDetails,
+}: {
+  errorHint?: string;
+  problemDetails: ProblemDetails;
+}): string => {
+  const message: Array<string> = [];
+  message.push(problemDetails.title);
+
+  if (errorHint) {
+    message.push(" ", errorHint);
+  }
+  if (problemDetails.details && problemDetails.details.length > 0) {
+    message.push(
+      `\n\nDetails:\n ${problemDetails.details
+        .map((s) => `  - ${s}`)
+        .join("\n")}`,
+    );
+  }
+
+  return message.join("");
 };
 
 export const showErrorToast = ({
-  id = "__UNKNOWN_ERROR_ID",
+  id = "__ERROR_TOAST_ID",
   headline,
-  message,
-  reportData,
+  errorHint,
+  problemDetails,
+  error,
+  copyToClipboard = false,
 }: {
   id?: string;
   headline?: string;
-  message: string;
-  reportData?: object;
+  errorHint?: string;
+  problemDetails: ProblemDetails;
+  error?: Error;
+  copyToClipboard?: boolean;
 }) => {
   return $toast.show({
     id,
     headline,
-    message,
+    message: formatToastMessage({ errorHint, problemDetails }),
     type: "error",
     autoRemove: false,
-    ...(reportData
+    ...(copyToClipboard
       ? {
           buttons: [
             {
-              callback: () => copyErrorInformation(reportData),
-              text: "Copy error",
+              callback: () => {
+                copyReportToClipboard({
+                  errorContext: headline,
+                  problemDetails,
+                  error,
+                });
+              },
+              text: "Copy error to clipboard",
             },
           ],
         }

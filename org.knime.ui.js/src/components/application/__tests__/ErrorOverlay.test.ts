@@ -1,4 +1,4 @@
-import { expect, describe, it, vi, beforeAll } from "vitest";
+import { expect, describe, it, vi } from "vitest";
 import * as Vue from "vue";
 
 import { mount, flushPromises } from "@vue/test-utils";
@@ -7,17 +7,19 @@ import { API } from "@api";
 import { deepMocked } from "@/test/utils";
 
 import ErrorOverlay from "../ErrorOverlay.vue";
+import { copyReportToClipboard } from "@/util/errorHandling";
 
-const clipboardSpy = vi.fn();
+vi.mock("@/util/errorHandling", async (importOriginal) => {
+  return {
+    ...((await importOriginal()) as Object),
+    copyReportToClipboard: vi.fn(),
+  };
+});
 
 const mockedAPI = deepMocked(API);
 
 describe("ErrorOverlay.vue", () => {
   type ComponentProps = InstanceType<typeof ErrorOverlay>["$props"];
-
-  beforeAll(() => {
-    Object.assign(navigator, { clipboard: { writeText: clipboardSpy } });
-  });
 
   const doMount = (props?: ComponentProps) => {
     const defaultProps: ComponentProps = {
@@ -55,18 +57,10 @@ describe("ErrorOverlay.vue", () => {
 
     await Vue.nextTick();
 
-    expect(clipboardSpy).toHaveBeenCalledWith(
-      JSON.stringify(
-        {
-          app: "KnimeUI",
-          message: "one-liner",
-          vueVersion: Vue.version,
-          stack: "stacky",
-        },
-        null,
-        2,
-      ),
-    );
+    expect(copyReportToClipboard).toHaveBeenCalledWith({
+      message: "one-liner",
+      stack: "stacky",
+    });
   });
 
   it("reload app", () => {

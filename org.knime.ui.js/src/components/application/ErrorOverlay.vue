@@ -10,6 +10,7 @@ import SwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
 
 import { API } from "@api";
 import DynamicEnvRenderer from "@/environment/DynamicEnvRenderer.vue";
+import { copyReportToClipboard } from "@/util/errorHandling";
 
 /**
  * ErrorOverlay.vue
@@ -37,7 +38,7 @@ const copied = ref(false);
 
 const errorDetails = computed(() => {
   const details = [props.message, `Vue: ${version}`, props.stack];
-  // TODO: NXT-595 add AP version
+  // TODO: NXT-584 add AP version
   return details.filter(Boolean).join("\n\n");
 });
 
@@ -47,19 +48,11 @@ const reloadApp = () => {
 };
 
 const copyToClipboard = async () => {
-  const content = JSON.stringify(
-    {
-      app: "KnimeUI",
-      // TODO: NXT-595 add AP version
-      message: props.message,
-      vueVersion: version,
-      stack: props.stack,
-    },
-    null,
-    2,
-  );
-
-  await navigator.clipboard.writeText(content);
+  await copyReportToClipboard({
+    // TODO: NXT-584 add AP version
+    message: props.message,
+    stack: props.stack,
+  });
 
   copied.value = true;
 };
