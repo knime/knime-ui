@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.prefs;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -61,6 +60,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.explorer.view.preferences.MountSettings;
+import org.osgi.service.prefs.BackingStoreException;
 
 /**
  * The preference of the modern UI.
@@ -86,8 +86,9 @@ public final class KnimeUIPreferences {
 
     static final String CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY = "confirmCloseProjectsOnSwitch";
 
-    static final IPersistentPreferenceStore PREF_STORE =
-        new ScopedPreferenceStore(InstanceScope.INSTANCE, UIPlugin.getContext().getBundle().getSymbolicName());
+    private static final String BUNDLE_NAME = UIPlugin.getContext().getBundle().getSymbolicName();
+
+    static final IPersistentPreferenceStore PREF_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, BUNDLE_NAME);
 
     static {
         PREF_STORE.addPropertyChangeListener(event -> {
@@ -179,6 +180,7 @@ public final class KnimeUIPreferences {
      */
     public static void confirmNodeConfigChanges(final boolean confirmNodeConfigChanges) {
         PREF_STORE.setValue(CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, confirmNodeConfigChanges);
+        savePreferenceChanges();
 
     }
 
@@ -190,20 +192,11 @@ public final class KnimeUIPreferences {
     }
 
     /**
-     * Sets the preferences and writes it to disk
-     *
      * @param confirmCloseProjectsOnSwitch Whether to always confirm closing projects on perspective switch or not
      */
     public static void confirmCloseProjectsOnSwitch(final boolean confirmCloseProjectsOnSwitch) {
         PREF_STORE.setValue(CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, confirmCloseProjectsOnSwitch);
-        if (PREF_STORE.needsSaving()) {
-            try {
-                PREF_STORE.save(); // Needed to actually persist the preference to disk
-            } catch (IOException e) {
-                NodeLogger.getLogger(KnimeUIPreferences.class)
-                    .error("Could not persist CONFIRM_CLOSE_PROJECTS_ON_SWITCH preference", e);
-            }
-        }
+        savePreferenceChanges();
     }
 
     /**
@@ -242,5 +235,16 @@ public final class KnimeUIPreferences {
         selectedNodeCollectionChangeListener = null;
         mouseWheelActionChangeListener = null;
         explorerMountPointChangeListener = null;
+    }
+
+    /**
+     * Persists all preference changes if there are any
+     */
+    private static void savePreferenceChanges() {
+        try {
+            InstanceScope.INSTANCE.getNode(UIPlugin.getContext().getBundle().getSymbolicName()).flush();
+        } catch (BackingStoreException e) {
+            NodeLogger.getLogger(KnimeUIPreferences.class).error("Could not persist preference changes", e);
+        }
     }
 }

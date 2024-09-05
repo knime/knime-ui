@@ -50,6 +50,7 @@ package org.knime.ui.java.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -58,7 +59,6 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -125,14 +125,20 @@ public final class ClassicWorkflowEditorUtil {
     }
 
     private static Optional<WorkflowEditor> getWorkflowEditor(final CompatibilityPart part) {
-        AtomicReference<WorkflowEditor> ref = new AtomicReference<>();
+        AtomicReference<Optional<WorkflowEditor>> ref = new AtomicReference<>();
         Display.getDefault().syncExec(() -> {
-            IEditorPart editor = ((IEditorReference)part.getReference()).getEditor(true);
-            if (editor instanceof WorkflowEditor we) {
-                ref.set(we);
-            }
+            final var editor = editorRefenceToWorkflowEditor((IEditorReference)part.getReference(), true);
+            ref.set(editor);
         });
-        return Optional.ofNullable(ref.get());
+        return ref.get();
+    }
+
+    private static Optional<WorkflowEditor> editorRefenceToWorkflowEditor(final IEditorReference reference,
+        final boolean restoreEditor) {
+        return Optional.of(reference)//
+            .map(ref -> ref.getEditor(restoreEditor))//
+            .filter(WorkflowEditor.class::isInstance)//
+            .map(WorkflowEditor.class::cast);
     }
 
     /**
@@ -200,7 +206,11 @@ public final class ClassicWorkflowEditorUtil {
             .map(IWorkbench::getActiveWorkbenchWindow)//
             .map(IWorkbenchWindow::getActivePage)//
             .map(IWorkbenchPage::getEditorReferences)//
-            .map(references -> references.length > 0)//
+            .map(references -> Arrays.stream(references)//
+                .map(reference -> editorRefenceToWorkflowEditor(reference, false))//
+                .flatMap(Optional::stream)//
+                .count())//
+            .map(numberOfWorkflowEditors -> numberOfWorkflowEditors > 0)//
             .orElse(false);
     }
 
