@@ -157,7 +157,7 @@ public class KnimeBrowserView {
 
         browser = new Browser(parent, SWT.NONE); // NOSONAR
         browser.addLocationListener(new KnimeBrowserLocationListener(browser));
-        browser.addOpenWindowListener(this::cancelAndOpenInBrowser);
+        browser.addOpenWindowListener(KnimeBrowserView::cancelAndOpenInBrowser);
         browser.setMenu(new Menu(browser.getShell()));
         CEFUtils.registerNodeLogger(LOGGER, browser);
 
@@ -166,9 +166,10 @@ public class KnimeBrowserView {
         if (viewInitializer == null) {
             viewInitializer = () -> initView(false, true);
         }
+
     }
 
-    private void cancelAndOpenInBrowser(final WindowEvent windowEvent) {
+    private static void cancelAndOpenInBrowser(final WindowEvent windowEvent) {
         // cancels the navigation
         windowEvent.required = true;
         windowEvent.browser = null;
@@ -188,12 +189,12 @@ public class KnimeBrowserView {
      * @param location The location to navigate the new window to.
      */
     @SuppressWarnings("restriction")
-    private void openBrowserWindow(final String location) {
+    private static void openBrowserWindow(final String location) {
         if (Boolean.getBoolean("org.knime.ui.java.use_cef_browser_for_external_links")) {
             // For testing purposes only!
             CEFUtils.openBrowserWindow(location);
         } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(location, getClass());
+            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(location, KnimeBrowserView.class);
         }
     }
 
@@ -251,12 +252,5 @@ public class KnimeBrowserView {
 			return false;
 		}
 	}
-
-    /**
-     * @return the underlying browser instance being used
-     */
-    public static Browser getBrowser() {
-        return browser;
-    }
 
 }
