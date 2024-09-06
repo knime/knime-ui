@@ -220,8 +220,9 @@ public final class PerspectiveUtil {
 
         final var parent = SWTUtilities.getActiveShell();
         final var title = "All open projects will be closed";
-        final var message = "Switching the user interface will always close all open projects. Do you want to proceed?";
-        final var toggleMessage = "Don't show this warning again";
+        final var message =
+            "Switching between user interfaces will always close all open projects. Do you want to proceed?";
+        final var toggleMessage = "Don’t show this warning again.";
         final var dialog =
             MessageDialogWithToggle.openYesNoQuestion(parent, title, message, toggleMessage, false, null, null);
 
