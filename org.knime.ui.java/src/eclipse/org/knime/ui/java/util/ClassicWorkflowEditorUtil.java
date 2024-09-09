@@ -52,7 +52,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.eclipse.e4.ui.model.application.MApplication;
@@ -125,12 +124,8 @@ public final class ClassicWorkflowEditorUtil {
     }
 
     private static Optional<WorkflowEditor> getWorkflowEditor(final CompatibilityPart part) {
-        AtomicReference<Optional<WorkflowEditor>> ref = new AtomicReference<>();
-        Display.getDefault().syncExec(() -> {
-            final var editor = editorRefenceToWorkflowEditor((IEditorReference)part.getReference(), true);
-            ref.set(editor);
-        });
-        return ref.get();
+        return Display.getDefault()
+            .syncCall(() -> editorRefenceToWorkflowEditor((IEditorReference)part.getReference(), true));
     }
 
     private static Optional<WorkflowEditor> editorRefenceToWorkflowEditor(final IEditorReference reference,
