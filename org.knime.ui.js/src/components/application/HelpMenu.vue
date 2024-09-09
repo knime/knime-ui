@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, defineAsyncComponent } from "vue";
 import { useRouter } from "vue-router";
 
 import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
@@ -17,8 +17,11 @@ import InfoIcon from "@/assets/info.svg";
 import { API } from "@/api";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { useStore } from "@/composables/useStore";
-import OpenSourceCreditsModal from "./OpenSourceCreditsModal.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
+
+const OpenSourceCreditsModal = defineAsyncComponent(
+  () => import("./OpenSourceCreditsModal.vue"),
+);
 
 const buildExternalUrl = (url: string) => {
   return `${url}?src=knimeappmodernui`;
