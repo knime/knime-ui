@@ -118,6 +118,7 @@ const {
         port: props.port,
         nodeRelation: props.direction === "out" ? "SUCCESSORS" : "PREDECESSORS",
         nodeId: props.nodeId,
+        positionOrigin: "mouse",
       },
     });
 

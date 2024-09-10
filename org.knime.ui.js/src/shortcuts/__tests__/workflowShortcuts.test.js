@@ -1046,6 +1046,7 @@ describe("workflowShortcuts", () => {
             nodeRelation: "SUCCESSORS",
             port: { index: 0, typeId: "some.type" },
             position: expect.anything(),
+            positionOrigin: "calculated",
           },
         },
       );
@@ -1065,6 +1066,7 @@ describe("workflowShortcuts", () => {
             nodeRelation: "SUCCESSORS",
             port: { index: 1, typeId: "some.type" },
             position: expect.anything(),
+            positionOrigin: "calculated",
           },
         },
       );

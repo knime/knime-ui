@@ -80,6 +80,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         port,
         position: lastPosition,
         nodeRelation,
+        positionOrigin: lastPositionOrigin,
       } = props ?? {};
       const lastPortIndex = port?.index ?? -1;
 
@@ -123,18 +124,19 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         portIndex: number,
         portCount: number,
       ) => {
-        const outPortPositions = portPositions({
+        const isOutports = nextSide === "SUCCESSORS";
+        const portPositionValues = portPositions({
           portCount,
           isMetanode: isNodeMetaNode(node),
-          isOutports: nodeRelation === "SUCCESSORS",
+          isOutports,
         });
 
         // eslint-disable-next-line no-magic-numbers
-        const xOffset = nodeSize * 3;
+        const xOffset = nodeSize * (isOutports ? 3 : -3);
 
         const startPoint: XY = {
-          x: node.position.x + outPortPositions[portIndex][0] + xOffset,
-          y: node.position.y + outPortPositions[portIndex][1],
+          x: node.position.x + portPositionValues[portIndex][0] + xOffset,
+          y: node.position.y + portPositionValues[portIndex][1],
         };
 
         return geometry.findFreeSpaceAroundPointWithFallback({
@@ -148,7 +150,12 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         nextSide === "SUCCESSORS"
           ? node.outPorts[portIndex]
           : node.inPorts[portIndex];
-      const position = isOpen
+
+      const portSideWillChange = nextSide !== nodeRelation;
+      const portSideChangesForCalculatedPosition =
+        portSideWillChange && lastPositionOrigin !== "mouse";
+      const useLastPosition = isOpen && !portSideChangesForCalculatedPosition;
+      const position = useLastPosition
         ? lastPosition
         : calculatePosition(node, portIndex, portCount);
 
@@ -158,6 +165,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
           port: nextPort,
           position,
           nodeRelation: nextSide,
+          positionOrigin: useLastPosition ? lastPositionOrigin : "calculated",
         },
       });
     },

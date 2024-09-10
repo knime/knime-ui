@@ -1209,6 +1209,7 @@ describe("NodePort", () => {
                   y: 0,
                 },
                 nodeRelation: "SUCCESSORS",
+                positionOrigin: "mouse",
               },
             }),
           );

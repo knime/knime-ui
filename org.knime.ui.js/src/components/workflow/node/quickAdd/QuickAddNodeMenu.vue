@@ -71,12 +71,15 @@ export type QuickAddNodeMenuProps = {
   position: XY;
   port?: NodePort | null;
   nodeRelation?: NodeRelation | null;
+  // required for recalculation of the position if opened with key shortcuts
+  positionOrigin?: "mouse" | "calculated";
 };
 
 const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {
   nodeId: null,
   port: null,
   nodeRelation: null,
+  positionOrigin: "mouse",
 });
 
 const menuWidth = 360;
