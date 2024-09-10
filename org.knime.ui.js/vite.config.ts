@@ -48,7 +48,7 @@ export default defineConfig(({ mode }) => {
         provider: "v8",
         all: true,
         reportsDirectory: "test-results",
-        reporter: "lcov",
+        reporter: ["lcov"],
         exclude: [
           "test-results",
           "src/test",
