@@ -311,7 +311,10 @@ final class SpaceAPI {
         // show upload warning for public spaces
         final var spaceEnt = targetSpace.toEntity();
         if (!spaceEnt.isPrivate().booleanValue()) {
-            remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
+            var status = remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
+            if (!status.isOK()) {
+                return false;
+            }
         }
 
         final TransferResult result =
