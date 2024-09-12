@@ -48,13 +48,17 @@
  */
 package org.knime.ui.java.util;
 
+import static org.knime.gateway.api.entity.EntityBuilderManager.builder;
+
 import java.util.Optional;
 
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.AnalyticsPlatformExecutorInfo;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.core.util.hub.NamedItemVersion;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.api.webui.entity.SpaceItemVersionEnt;
 import org.knime.gateway.impl.project.DefaultProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
@@ -182,18 +186,21 @@ public final class ProjectFactory {
     /**
      * Creates an {@link Origin} from a Hub Space and a WorkflowManager
      *
-     * @param hubLocation
-     * @param wfm
+     * @param hubLocation location information of the item
+     * @param wfm the WorkflowManager that contains the project
+     * @param selectedVersion the version information of the item, or null if latest version
      * @return The newly created Origin, or an empty {@link Optional} if hubLocation or workflow manager are missing
      */
     public static Optional<Origin> getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation,
-        final WorkflowManager wfm) {
+        final WorkflowManager wfm, final NamedItemVersion selectedVersion) {
         if (hubLocation == null || wfm == null) {
             return Optional.empty();
         }
         final var context = wfm.getContextV2();
         final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
+        final var versionInfo = Optional.ofNullable(buildVersionInfo(selectedVersion));
         return Optional.of(new Project.Origin() {
+
             @Override
             public String getProviderId() {
                 final var mountpoint = apExecInfo.getMountpoint()
@@ -215,6 +222,22 @@ public final class ProjectFactory {
             public Optional<ProjectTypeEnum> getProjectType() {
                 return Optional.of(wfm.isComponentProjectWFM() ? ProjectTypeEnum.COMPONENT : ProjectTypeEnum.WORKFLOW);
             }
+
+            @Override
+            public Optional<SpaceItemVersionEnt> getItemVersion() {
+                return versionInfo;
+            }
         });
+    }
+
+    private static SpaceItemVersionEnt buildVersionInfo(final NamedItemVersion selectedVersion) {
+        return selectedVersion == null ? null
+            : builder(SpaceItemVersionEnt.SpaceItemVersionEntBuilder.class) //
+                .setVersion(selectedVersion.version()) //
+                .setTitle(selectedVersion.title()) //
+                .setDescription(selectedVersion.description()) //
+                .setAuthor(selectedVersion.author()) //
+                .setAuthorAccountId(selectedVersion.authorAccountId()) //
+                .setCreatedOn(selectedVersion.createdOn()).build();
     }
 }

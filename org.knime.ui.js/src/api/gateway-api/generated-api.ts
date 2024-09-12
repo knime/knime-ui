@@ -3547,6 +3547,12 @@ export interface SpaceItemReference {
      */
     projectType?: SpaceItemReference.ProjectTypeEnum;
     /**
+     *
+     * @type {SpaceItemVersion}
+     * @memberof SpaceItemReference
+     */
+    version?: SpaceItemVersion;
+    /**
      * List of ids of the ancestors. The element at the first position in the list is the direct parent of this item, the second the parent of the parent etc. An empty list if the item is at root level.
      * @type {Array<string>}
      * @memberof SpaceItemReference
@@ -3570,6 +3576,53 @@ export namespace SpaceItemReference {
         Component = 'Component'
     }
 }
+/**
+ *
+ * @export
+ * @interface SpaceItemVersion
+ */
+export interface SpaceItemVersion {
+
+    /**
+     *
+     * @type {number}
+     * @memberof SpaceItemVersion
+     */
+    version?: number;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemVersion
+     */
+    title?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemVersion
+     */
+    description?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemVersion
+     */
+    author?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemVersion
+     */
+    authorAccountId?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemVersion
+     */
+    createdOn?: string;
+
+}
+
+
 /**
  * Holds the id and name of a space path segment.
  * @export

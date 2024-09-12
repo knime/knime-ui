@@ -56,6 +56,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.core.util.hub.NamedItemVersion;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.DefaultProject;
@@ -117,6 +118,19 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport) {
+        return openProjectCopy(repoObjectImport, null);
+    }
+
+    /**
+     * Fetch and open a local copy of a project sourced from the given import (e.g. by dropping an URI)
+     *
+     * @apiNote While opening a project from a mounted remote space may also open them as local copies, the behavior of
+     *          these two cases is different w.r.t. interaction with the space explorer, opening and saving.
+     * @param repoObjectImport The source of the project
+     * @param selectedVersion The version information of the given import, or null if latest version
+     * @return Whether the project could be fetched and opened
+     */
+    static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
         final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
         if (wfm == null) {
             return false;
@@ -126,7 +140,8 @@ final class OpenProject {
             .filter(HubSpaceLocationInfo.class::isInstance)//
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
-        final var origin = ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm).orElse(null);
+        final var origin =
+            ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm, selectedVersion).orElse(null);
         final var project = DefaultProject.builder(wfm).setOrigin(origin).build();
         registerProjectAndSetActiveAndUpdateAppState(project, wfm, WorkflowType.REMOTE);
 
@@ -261,5 +276,4 @@ final class OpenProject {
             .flatMap(DesktopAPUtil::loadWorkflowWithProgress) //
             .orElse(null);
     }
-
 }

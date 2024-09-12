@@ -74,7 +74,10 @@ import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.NodeCreationType;
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.core.util.hub.NamedItemVersion;
+import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.entity.AddNodeCommandEnt.AddNodeCommandEntBuilder;
 import org.knime.gateway.api.webui.entity.NodeFactoryKeyEnt;
@@ -132,10 +135,10 @@ public final class ImportURI {
      */
     public static boolean importURI(final Supplier<int[]> cursorLocationSupplier, final String uriString) {
         var importResult = getEntityImportResult(uriString);
-        if(importResult.status == EntityImportResult.Status.UNAUTHORIZED) {
+        if (importResult.status == EntityImportResult.Status.UNAUTHORIZED) {
             DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, "Import error",
                 "It looks like you do not have permissions to open this workflow or component. "
-                + "Are you logged in to the correct KNIME Hub?",
+                    + "Are you logged in to the correct KNIME Hub?",
                 false);
             return true;
         }
@@ -147,13 +150,34 @@ public final class ImportURI {
 
         if (entityImportInProgress instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
-            return OpenProject.openProjectCopy(repoObjectImport);
+            var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
+            var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
+            return OpenProject.openProjectCopy(repoObjectImport, selectedVersion);
         } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
             return checkAndInstallExtension(extensionImport);
         } else {
             var cursorLocation = cursorLocationSupplier.get();
             return sendImportURIEvent(cursorLocation[0], cursorLocation[1]);
         }
+    }
+
+    /**
+     * Get the version information of the given RepoObjectImport or null if the version was not found or is the latest
+     * version
+     *
+     * @param repoObjectImport
+     * @param hubSpaceLocationInfo
+     */
+    private static NamedItemVersion getWorkflowVersion(final RepoObjectImport repoObjectImport,
+        final HubSpaceLocationInfo hubSpaceLocationInfo) {
+        if (hubSpaceLocationInfo.getItemVersion().isPresent()) {
+            var knimeURI = repoObjectImport.getKnimeURI();
+            var itemVersions = ResolverUtil.getHubItemVersions(knimeURI);
+            return itemVersions.stream()
+                .filter(version -> version.version() == hubSpaceLocationInfo.getItemVersion().getAsInt()).findFirst()
+                .orElse(null);
+        }
+        return null;
     }
 
     private static EntityImportResult getEntityImportResult(final String uriString) {
@@ -283,7 +307,7 @@ public final class ImportURI {
     }
 
     private enum NodeAvailability {
-        AVAILABLE, NOT_INSTALLED, FORBIDDEN
+            AVAILABLE, NOT_INSTALLED, FORBIDDEN
     }
 
     private static NodeAvailability checkNodeAvailable(final NodeImport nodeImport) {
