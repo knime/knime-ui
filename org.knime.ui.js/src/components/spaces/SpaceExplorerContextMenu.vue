@@ -24,6 +24,7 @@ import {
   buildDisplayDeploymentsMenuItem,
   buildExecuteWorkflowMenuItem,
 } from "@/components/spaces/remoteMenuItems";
+import { hotkeys } from "@knime/utils";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 const store = useStore();
@@ -190,7 +191,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         id: "export",
         text: "Export",
         icon: FileExportIcon,
-        hotkeyText: "⌘ E",
+        hotkeyText: hotkeys.formatHotkeys(["CtrlOrCmd", "E"]),
         disabled: selectionContainsFile || isSelectionMultiple,
         execute: () => {
           dispatch("spaces/exportSpaceItem", {
@@ -230,14 +231,14 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         createRenameOption(anchorItem, {
           title: renameOptionTitle,
           icon: RenameIcon,
-          hotkeyText: "F2",
+          hotkeyText: hotkeys.formatHotkeys(["F2"]),
         }),
       ),
 
       createDeleteOption(anchorItem, {
         title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
         icon: DeleteIcon,
-        hotkeyText: "⌫",
+        hotkeyText: hotkeys.formatHotkeys(["Delete"]),
       }),
 
       createDuplicateItemOption(),
