@@ -252,7 +252,12 @@ public final class SaveAndCloseProjects {
             CANCEL_OR_CLOSE;
 
         static DialogResponse of(final int returnCode) {
-            return values()[returnCode];
+            return switch (returnCode) {
+                case 0 -> YES;
+                case 1 -> NO;
+                case -1, 2 -> CANCEL_OR_CLOSE;
+                default -> throw new UnsupportedOperationException("Not implemented");
+            };
         }
 
     }
