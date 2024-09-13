@@ -364,7 +364,7 @@ describe("NodePort", () => {
       });
 
       // revert
-      wrapper.setProps({ targeted: false });
+      wrapper.setProps({ targeted: false, disableQuickNodeAdd: true });
       await Vue.nextTick();
 
       expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
@@ -375,7 +375,9 @@ describe("NodePort", () => {
     it("dragging a connector", async () => {
       const { incomingConnector } = setupIncomingConnector();
       // for simplicity this test directly sets 'dragConnector' instead of using startDragging
-      const { wrapper } = doMount({ props });
+      const { wrapper } = doMount({
+        props: { ...props, disableQuickNodeAdd: true },
+      });
 
       await startDragging({ wrapper });
       await dragAboveTarget({ wrapper });
@@ -389,6 +391,28 @@ describe("NodePort", () => {
 
       expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
         state: false,
+      });
+    });
+
+    it("dragging a connector with quick add nodes", async () => {
+      const { incomingConnector } = setupIncomingConnector();
+      // for simplicity this test directly sets 'dragConnector' instead of using startDragging
+      const { wrapper } = doMount({
+        props: { ...props, disableQuickNodeAdd: false },
+      });
+
+      await startDragging({ wrapper });
+      await dragAboveTarget({ wrapper });
+
+      expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+        state: true,
+      });
+
+      // revert (keep it as quick add nodes will remove it)
+      await wrapper.trigger("lostpointercapture");
+
+      expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+        state: true,
       });
     });
 

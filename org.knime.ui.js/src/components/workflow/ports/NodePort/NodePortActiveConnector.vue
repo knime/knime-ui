@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, computed } from "vue";
+import { watch, computed, toRef, onUnmounted } from "vue";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
 
@@ -37,29 +37,53 @@ const showAddNodeGhost = computed(
 const indicateConnectorReplacement = computed(() => {
   const isConnected = props.port && props.port.connectedVia.length > 0;
 
-  return (
+  return Boolean(
     props.direction === "in" &&
-    isConnected &&
-    // either the Port is being targeted or a connection is being
-    // drawn out of it
-    (props.targeted || Boolean(props.dragConnector))
+      isConnected &&
+      // either the Port is being targeted or a connection is being
+      // drawn out of it
+      (props.targeted || Boolean(props.dragConnector)),
   );
 });
 
-watch(indicateConnectorReplacement, (indicateReplacement) => {
-  if (!props.port) {
+const dispatchIndicateReplacement = (port: NodePort | null, state: boolean) => {
+  if (!port?.connectedVia.length) {
     return;
   }
-  const [incomingConnection] = props.port.connectedVia;
+  const [connectorId] = port.connectedVia;
+
   const incomingConnector = document.querySelector(
-    `[data-connector-id="${incomingConnection}"]`,
+    `[data-connector-id="${connectorId}"]`,
   )!;
+
+  if (!incomingConnector) {
+    consola.warn(`incomingConnector with '${connectorId}' not found.`);
+    return;
+  }
 
   incomingConnector.dispatchEvent(
     new CustomEvent("indicate-replacement", {
-      detail: { state: indicateReplacement },
+      detail: { state },
     }),
   );
+};
+
+watch(indicateConnectorReplacement, (state: boolean) => {
+  // keep indication for dragged out quick add ghosts (will be removed on add or cancel of quick add via unmount hook)
+  if (showAddNodeGhost.value && !state) {
+    return;
+  }
+  dispatchIndicateReplacement(props.port, state);
+});
+
+// quick node adding: set indicate replacement to false for previous port when the port changes
+watch(toRef(props, "port"), (_, oldPort) => {
+  dispatchIndicateReplacement(oldPort, false);
+});
+
+// quick node adding: when the user cancels the add of an in port we need to clean up the replace indicator state
+onUnmounted(() => {
+  dispatchIndicateReplacement(props.port, false);
 });
 </script>
 
