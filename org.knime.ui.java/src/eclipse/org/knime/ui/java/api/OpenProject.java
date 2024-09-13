@@ -48,6 +48,7 @@ package org.knime.ui.java.api;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.knime.core.node.ExecutionMonitor;
@@ -118,7 +119,7 @@ final class OpenProject {
      * @return Whether the project could be fetched and opened
      */
     static boolean openProjectCopy(final RepoObjectImport repoObjectImport) {
-        return openProjectCopy(repoObjectImport, null);
+        return openProjectCopy(repoObjectImport, Optional.empty());
     }
 
     /**
@@ -127,10 +128,11 @@ final class OpenProject {
      * @apiNote While opening a project from a mounted remote space may also open them as local copies, the behavior of
      *          these two cases is different w.r.t. interaction with the space explorer, opening and saving.
      * @param repoObjectImport The source of the project
-     * @param selectedVersion The version information of the given import, or null if latest version
+     * @param selectedVersion The version information of the given import, can be empty
      * @return Whether the project could be fetched and opened
      */
-    static boolean openProjectCopy(final RepoObjectImport repoObjectImport, final NamedItemVersion selectedVersion) {
+    static boolean openProjectCopy(final RepoObjectImport repoObjectImport,
+        final Optional<NamedItemVersion> selectedVersion) { // NOSONAR: The version is optional
         final var wfm = fetchAndLoadProjectWithProgress(repoObjectImport);
         if (wfm == null) {
             return false;

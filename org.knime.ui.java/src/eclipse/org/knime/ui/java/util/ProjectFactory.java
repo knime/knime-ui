@@ -188,17 +188,17 @@ public final class ProjectFactory {
      *
      * @param hubLocation location information of the item
      * @param wfm the WorkflowManager that contains the project
-     * @param selectedVersion the version information of the item, or null if latest version
+     * @param selectedVersion the version information of the item, can be empty
      * @return The newly created Origin, or an empty {@link Optional} if hubLocation or workflow manager are missing
      */
     public static Optional<Origin> getOriginFromHubSpaceLocationInfo(final HubSpaceLocationInfo hubLocation,
-        final WorkflowManager wfm, final NamedItemVersion selectedVersion) {
+        final WorkflowManager wfm, final Optional<NamedItemVersion> selectedVersion) { // NOSONAR: The version is optional
         if (hubLocation == null || wfm == null) {
             return Optional.empty();
         }
         final var context = wfm.getContextV2();
         final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
-        final var versionInfo = Optional.ofNullable(buildVersionInfo(selectedVersion));
+        final var versionInfo = selectedVersion.map(ProjectFactory::buildVersionInfo);
         return Optional.of(new Project.Origin() {
 
             @Override
@@ -231,13 +231,14 @@ public final class ProjectFactory {
     }
 
     private static SpaceItemVersionEnt buildVersionInfo(final NamedItemVersion selectedVersion) {
-        return selectedVersion == null ? null
-            : builder(SpaceItemVersionEnt.SpaceItemVersionEntBuilder.class) //
-                .setVersion(selectedVersion.version()) //
-                .setTitle(selectedVersion.title()) //
-                .setDescription(selectedVersion.description()) //
-                .setAuthor(selectedVersion.author()) //
-                .setAuthorAccountId(selectedVersion.authorAccountId()) //
-                .setCreatedOn(selectedVersion.createdOn()).build();
+        return builder(SpaceItemVersionEnt.SpaceItemVersionEntBuilder.class) //
+            .setVersion(selectedVersion.version()) //
+            .setTitle(selectedVersion.title()) //
+            .setDescription(selectedVersion.description()) //
+            .setAuthor(selectedVersion.author()) //
+            .setAuthorAccountId(selectedVersion.authorAccountId()) //
+            .setCreatedOn(selectedVersion.createdOn()) //
+            .build();
     }
+
 }

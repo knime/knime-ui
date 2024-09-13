@@ -162,22 +162,25 @@ public final class ImportURI {
     }
 
     /**
-     * Get the version information of the given RepoObjectImport or null if the version was not found or is the latest
-     * version
+     * Get the (optional) version information of the given {@link RepoObjectImport}
      *
      * @param repoObjectImport
      * @param hubSpaceLocationInfo
+     * @return The version information optional or an empty optional if the version was not found or is the latest
+     *         version
      */
-    private static NamedItemVersion getWorkflowVersion(final RepoObjectImport repoObjectImport,
+    private static Optional<NamedItemVersion> getWorkflowVersion(final RepoObjectImport repoObjectImport,
         final HubSpaceLocationInfo hubSpaceLocationInfo) {
-        if (hubSpaceLocationInfo.getItemVersion().isPresent()) {
-            var knimeURI = repoObjectImport.getKnimeURI();
-            var itemVersions = ResolverUtil.getHubItemVersions(knimeURI);
-            return itemVersions.stream()
-                .filter(version -> version.version() == hubSpaceLocationInfo.getItemVersion().getAsInt()).findFirst()
-                .orElse(null);
+        var itemVersion = hubSpaceLocationInfo.getItemVersion();
+        if (!itemVersion.isPresent()) {
+            return Optional.empty();
         }
-        return null;
+
+        var knimeURI = repoObjectImport.getKnimeURI();
+        var itemVersions = ResolverUtil.getHubItemVersions(knimeURI);
+        return itemVersions.stream()//
+            .filter(version -> version.version() == itemVersion.getAsInt())//
+            .findFirst();
     }
 
     private static EntityImportResult getEntityImportResult(final String uriString) {
