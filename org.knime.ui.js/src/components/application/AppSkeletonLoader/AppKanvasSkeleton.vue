@@ -8,7 +8,7 @@ import CheckIcon from "@knime/styles/img/icons/check.svg";
 
 type Props = {
   isLogoShown: boolean;
-  workflowError?: Error;
+  workflowError?: Error | null;
 };
 
 const props = defineProps<Props>();
