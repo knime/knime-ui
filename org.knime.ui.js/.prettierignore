@@ -2,3 +2,4 @@ package-lock.json
 test-results
 dist
 generated-api.ts
+licenses/
