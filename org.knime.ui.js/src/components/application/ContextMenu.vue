@@ -485,6 +485,7 @@ export default defineComponent({
       register-keydown
       :items="visibleItems"
       menu-aria-label="Context Menu"
+      @contextmenu.prevent
       @item-click="onItemClick"
       @item-focused="setActiveDescendant"
       @close="$emit('menuClose')"
