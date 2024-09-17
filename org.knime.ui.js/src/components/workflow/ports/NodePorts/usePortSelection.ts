@@ -77,7 +77,7 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
   const isDragging = computed(() => store.state.workflow.isDragging);
 
   watch(isDragging, (isDragging, wasDragging) => {
-    if (isDragging && !wasDragging) {
+    if (isActiveNodePortsInstance.value && isDragging && !wasDragging) {
       clearSelection();
     }
   });

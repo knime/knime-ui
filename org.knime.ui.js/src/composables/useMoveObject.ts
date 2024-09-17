@@ -143,7 +143,9 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
 
         onMoveCallback(pointerMoveEvent);
 
-        store.commit("selection/setShouldHideSelection", true);
+        if (!store.state.selection.shouldHideSelection) {
+          store.commit("selection/setShouldHideSelection", true);
+        }
 
         const snapFn = useGridSnapping
           ? geometry.utils.snapToGrid
@@ -158,7 +160,9 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           snapSize,
         );
 
-        store.commit("workflow/setIsDragging", true);
+        if (!store.state.workflow.isDragging) {
+          store.commit("workflow/setIsDragging", true);
+        }
         store.commit("workflow/setMovePreview", {
           deltaX: deltaX + startPosition.positionDelta.x,
           deltaY: deltaY + startPosition.positionDelta.y,
