@@ -1,6 +1,9 @@
-import { getToastsProvider } from "@/plugins/toasts";
-import { merge } from "lodash-es";
 import { version } from "vue";
+
+import { merge } from "lodash-es";
+
+import { getToastsProvider } from "@/plugins/toasts";
+import CopyIcon from "@knime/styles/img/icons/copy.svg";
 
 type ProblemDetails = {
   title: string;
@@ -71,7 +74,7 @@ export const showErrorToast = ({
   headline?: string;
   errorHint?: string;
   problemDetails: ProblemDetails;
-  error?: Error;
+  error?: unknown; // so one doesn't have to pass a caught exception using "as Error"
   copyToClipboard?: boolean;
 }) => {
   return $toast.show({
@@ -92,6 +95,7 @@ export const showErrorToast = ({
                 });
               },
               text: "Copy error to clipboard",
+              icon: CopyIcon,
             },
           ],
         }
