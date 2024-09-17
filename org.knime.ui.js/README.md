@@ -9,11 +9,13 @@ The frontend is based on the [Vue.js] JavaScript framework.
 
 - Install [Node.js][node], see version in [package.json](package.json)
 - Configure your KNIME Analytics Platform to use the locally running UI
+
   - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
   - add the following arguments to the `<knime-installation-folder>/knime.ini` (For more information see [this page][debugap])
-    | argument | comment |
-    | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-    | `-Dorg.knime.ui.dev.mode=true` | Enables debugging the AP's browser from your system browser at http://localhost:8888 and more |
+
+    | argument                                       | comment                                                                                                            |
+    | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+    | `-Dorg.knime.ui.dev.mode=true`                 | Enables debugging the AP's browser from your system browser at http://localhost:8888 and more                      |
     | `-Dorg.knime.ui.dev.url=http://localhost:3000` | Makes the AP use KNIME UI served from localhost instead of using the resources bundled with the KNIME UI Extension |
 
 ### Install dependencies
@@ -35,7 +37,7 @@ npm run dev
 
 ### Standalone
 
-In addition to running inside the KNIME Analytics Platform, the new UI can also run in the browser. To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page](debugapbrowser).
+In addition to running inside the KNIME Analytics Platform, the new UI can also run in the browser. To use this mode, you need to have the proper Eclipse setup, as well as doing a couple extra steps. You can see more information on [this page][debugapbrowser].
 
 After following the steps above, copy the contents of the `.env.example` file over to a `.env` file. Then adjust the value of the `VITE_BROWSER_DEV_WS_URL` variable to match the url and port of the running WSS server (as configured in your Eclipse setup). NOTE: Remember to set `VITE_BROWSER_DEV_MODE` to `true` in your `.env` file, otherwise the `VITE_BROWSER_DEV_WS_URL` variable will have no effect.
 

@@ -145,7 +145,9 @@ describe("nodeDescription", () => {
       await store.dispatch("nodeDescription/getNativeNodeDescription", params);
 
       expect(mockedAPI.node.getNodeDescription).toHaveBeenCalledOnce();
-      expect(store.state.nodeDescription.cache.has(params.factoryId));
+      expect(store.state.nodeDescription.cache.has(params.factoryId)).toBe(
+        true,
+      );
     });
   });
 

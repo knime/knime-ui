@@ -197,7 +197,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceId,
         spaceName,
       });
-      return Promise.resolve;
+      return Promise.resolve();
     } catch (error) {
       $toast.show({
         type: "error",
