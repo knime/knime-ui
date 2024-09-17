@@ -313,7 +313,7 @@ describe("workflow::componentInteractions", () => {
     expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "success",
-        message: "Updated",
+        message: "Updated.",
       }),
     );
     expect(
@@ -345,7 +345,7 @@ describe("workflow::componentInteractions", () => {
     expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "success",
-        message: "Everything up-to-date",
+        message: "Everything up-to-date.",
       }),
     );
     expect(
@@ -377,7 +377,7 @@ describe("workflow::componentInteractions", () => {
     expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "error",
-        message: "Couldn't update linked components. Please try again",
+        message: "Couldn't update linked components. Please try again.",
       }),
     );
     expect(

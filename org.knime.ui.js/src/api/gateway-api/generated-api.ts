@@ -4078,11 +4078,17 @@ export namespace UpdateLinkedComponentsCommand {
 export interface UpdateLinkedComponentsResult extends CommandResult {
 
     /**
-     * Whether the updated succeeded or an error occured and no component link was updated.
+     * Whether the update succeeded or an error occured and no component link was updated.
      * @type {string}
      * @memberof UpdateLinkedComponentsResult
      */
     status: UpdateLinkedComponentsResult.StatusEnum;
+    /**
+     * Optional detail messages describing the update results
+     * @type {Array<string>}
+     * @memberof UpdateLinkedComponentsResult
+     */
+    details?: Array<string>;
 
 }
 

@@ -1,6 +1,5 @@
 import type { ActionTree, MutationTree } from "vuex";
 
-import type { Toast } from "@knime/components";
 import LoadIcon from "@knime/styles/img/icons/load.svg";
 import { API } from "@api";
 import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
@@ -9,6 +8,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 import type { RootStoreState } from "../types";
 import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
+import { showErrorToast } from "@/util/errorHandling";
 
 const TOAST_ID_PREFIX = "LINK_UPDATE";
 const TOAST_HEADLINE = "Linked components";
@@ -132,37 +132,31 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     $toast.remove(updateStartedToastId);
 
-    const toastMapper: Record<UpdateLinkedComponentsResult.StatusEnum, Toast> =
-      {
-        [UpdateLinkedComponentsResult.StatusEnum.Success]: {
-          id: `${TOAST_ID_PREFIX}__SUCCESS`,
-          type: "success",
-          autoRemove: true,
-          message: "Updated",
-        },
-        [UpdateLinkedComponentsResult.StatusEnum.Unchanged]: {
-          id: `${TOAST_ID_PREFIX}__SUCCESS`,
-          type: "success",
-          autoRemove: true,
-          message: "Everything up-to-date",
-        },
-        [UpdateLinkedComponentsResult.StatusEnum.Error]: {
-          id: `${TOAST_ID_PREFIX}__ERROR`,
-          type: "error",
-          autoRemove: true,
-          message: `Couldn't update linked ${pluralize(
+    if (result.status === UpdateLinkedComponentsResult.StatusEnum.Error) {
+      showErrorToast({
+        id: `${TOAST_ID_PREFIX}__ERROR`,
+        headline: TOAST_HEADLINE,
+        problemDetails: {
+          title: `Couldn't update linked ${pluralize(
             "component",
             nodeIds.length,
-          )}. Please try again`,
+          )}. Please try again.`,
+          details: result.details,
         },
-      };
-
-    const toast = toastMapper[result.status];
-
-    $toast.show({
-      ...toast,
-      headline: TOAST_HEADLINE,
-    });
+      });
+    } else {
+      const message =
+        result.status === UpdateLinkedComponentsResult.StatusEnum.Success
+          ? "Updated."
+          : "Everything up-to-date.";
+      $toast.show({
+        headline: TOAST_HEADLINE,
+        message,
+        id: `${TOAST_ID_PREFIX}__SUCCESS`,
+        type: "success",
+        autoRemove: true,
+      });
+    }
   },
 
   async linkComponent({ state }, { nodeId }) {
