@@ -119,6 +119,7 @@ try {
   if (import.meta.env.DEV) {
     window.store = store;
     window.router = router;
+    app.config.performance = true;
   }
 
   // Init plugins, provide store and router
