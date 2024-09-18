@@ -213,6 +213,9 @@ final class NameCollisionChecker {
         }
         var choice = MessageDialog.open(MessageDialog.QUESTION, sh, "Items already exist", msg, SWT.NONE,
             options.stream().map(Pair::getFirst).toArray(String[]::new));
+        if (choice == -1) { // choice is -1 if the dialog is closed
+            return Optional.empty();
+        }
         return Optional.ofNullable(options.get(choice).getSecond());
     }
 }
