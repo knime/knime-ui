@@ -91,13 +91,26 @@ const icon = computed(() =>
     : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value),
 );
 
-const createSpace = () => {
+const createSpace = async () => {
   isCreateSpaceDisabled.value = true;
-  store.dispatch("spaces/createSpace", {
-    spaceProviderId: activeSpaceProvider.value.id,
-    spaceGroup: activeSpaceGroup.value,
-    $router,
-  });
+
+  try {
+    await store.dispatch("spaces/createSpace", {
+      spaceProviderId: activeSpaceProvider.value.id,
+      spaceGroup: activeSpaceGroup.value,
+      $router,
+    });
+  } catch (error) {
+    $toast.show({
+      type: "error",
+      headline: "Error while creating space",
+      // @ts-ignore
+      message: error.message,
+      autoRemove: true,
+    });
+  } finally {
+    isCreateSpaceDisabled.value = false;
+  }
 };
 
 const reload = async () => {

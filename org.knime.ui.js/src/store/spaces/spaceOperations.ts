@@ -127,9 +127,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }: { spaceProviderId: string; spaceGroup: SpaceGroup; $router: Router },
   ) {
     const originalProvider = state.spaceProviders![spaceProviderId];
+    const routeBefore = $router.currentRoute.value.fullPath;
 
     try {
-      $bus.emit("block-ui");
       const newSpace = await API.space.createSpace({
         spaceProviderId,
         spaceGroupName: spaceGroup.name,
@@ -140,30 +140,26 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
           ? { ...group, spaces: [...group.spaces, newSpace] }
           : group,
       );
+
       commit("updateSpaceProvider", {
         id: spaceProviderId,
         value: { ...originalProvider, spaceGroups: updatedGroups },
       });
 
-      $bus.emit("unblock-ui");
+      const routeNow = $router.currentRoute.value.fullPath;
 
-      $router.push({
-        name: APP_ROUTES.Home.SpaceBrowsingPage,
-        params: {
-          spaceProviderId,
-          groupId: spaceGroup.id,
-          spaceId: newSpace.id,
-          itemId: "root",
-        },
-      });
+      if (routeBefore === routeNow) {
+        $router.push({
+          name: APP_ROUTES.Home.SpaceBrowsingPage,
+          params: {
+            spaceProviderId,
+            groupId: spaceGroup.id,
+            spaceId: newSpace.id,
+            itemId: "root",
+          },
+        });
+      }
     } catch (error) {
-      $toast.show({
-        type: "error",
-        headline: "Error while creating space",
-        // @ts-ignore
-        message: error.message,
-        autoRemove: true,
-      });
       consola.error("Error while creating space", { error });
 
       // rollback the space providers state
@@ -171,6 +167,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         id: spaceProviderId,
         value: originalProvider,
       });
+
+      throw error;
     }
   },
 
