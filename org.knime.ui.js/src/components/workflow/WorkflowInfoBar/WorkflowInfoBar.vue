@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { isDesktop } from "@/environment";
+import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import { useStore } from "@/composables/useStore";
 import RemoteWorkflowInfo from "./RemoteWorkflowInfo.vue";
@@ -12,6 +14,9 @@ const width = computed(() => store.state.canvas.containerSize.width);
 
 const isLinked = computed(() => store.getters["workflow/isLinked"]);
 const isInsideLinked = computed(() => store.getters["workflow/isInsideLinked"]);
+const origin = computed<SpaceItemReference>(
+  () => store.getters["application/activeProjectOrigin"],
+);
 const isStreaming = computed(() => store.getters["workflow/isStreaming"]);
 const isRemoteWorkflow = computed(
   () => store.getters["workflow/isRemoteWorkflow"],
@@ -26,7 +31,10 @@ const containerType = computed(
 
 <template>
   <div class="stack">
-    <div v-if="isLinked || isInsideLinked" class="workflow-info">
+    <div
+      v-if="isLinked || isInsideLinked || origin?.version"
+      class="workflow-info"
+    >
       <span v-if="isInsideLinked" class="linked">
         This is a {{ containerType }} inside a linked {{ insideLinkedType }} and
         cannot be edited.
@@ -34,6 +42,12 @@ const containerType = computed(
 
       <span v-else-if="isLinked" class="linked">
         This is a linked {{ containerType }} and therefore cannot be edited.
+      </span>
+
+      <span v-else-if="isDesktop && origin?.version" class="linked">
+        This is an outdated version of this workflow (Currently viewing: "{{
+          origin?.version.title
+        }}").
       </span>
     </div>
 

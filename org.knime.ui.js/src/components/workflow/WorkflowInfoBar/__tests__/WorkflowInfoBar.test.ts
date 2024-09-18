@@ -8,15 +8,28 @@ import * as uiControlsStore from "@/store/uiControls";
 import { createWorkflow } from "@/test/factories";
 import type { Workflow } from "@/api/custom-types";
 import WorkflowInfoBar from "../WorkflowInfoBar.vue";
-import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import {
+  SpaceItemReference,
+  WorkflowInfo,
+} from "@/api/gateway-api/generated-api";
 import StreamingInfo from "../StreamingInfo.vue";
 import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
+import { setEnvironment } from "@/test/utils/setEnvironment";
 
 describe("WorkflowInfoBar.vue", () => {
-  const doMount = ({ workflow }: { workflow?: Workflow } = {}) => {
+  const doMount = ({
+    workflow,
+    origin,
+  }: { workflow?: Workflow; origin?: SpaceItemReference } = {}) => {
     const $store = mockVuexStore({
       workflow: workflowStore,
-      application: applicationStore,
+      application: {
+        ...applicationStore,
+        getters: {
+          ...applicationStore.getters,
+          activeProjectOrigin: () => origin || null,
+        },
+      },
       uiControls: uiControlsStore,
     });
 
@@ -97,5 +110,36 @@ describe("WorkflowInfoBar.vue", () => {
 
     expect(wrapper.findComponent(StreamingInfo).exists()).toBe(false);
     expect(wrapper.findComponent(RemoteWorkflowInfo).exists()).toBe(true);
+  });
+
+  it("should render info bar for versioned workflows not in their latest version", () => {
+    setEnvironment("DESKTOP");
+
+    const workflow = createWorkflow({
+      info: {
+        providerType: WorkflowInfo.ProviderTypeEnum.HUB,
+      },
+    });
+
+    const origin = {
+      itemId: "itemId",
+      providerId: "providerId",
+      spaceId: "spaceId",
+      ancestorItemIds: [],
+      version: {
+        version: 1,
+        author: "author",
+        authorAccountId: "authorAccountId",
+        createdOn: "createdOn",
+        description: "description",
+        title: "Testversion123",
+      },
+    };
+
+    const { wrapper } = doMount({ workflow, origin });
+
+    expect(wrapper.text()).toMatch(
+      `This is an outdated version of this workflow (Currently viewing: "${origin.version.title}")`,
+    );
   });
 });
