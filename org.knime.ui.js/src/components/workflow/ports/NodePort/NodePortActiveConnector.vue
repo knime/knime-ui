@@ -31,20 +31,12 @@ const showAddNodeGhost = computed(
 /*
  * only in-Ports replace their current connector if a new one is connected
  * only in-Ports that are connected need to indicate connector replacement
- * indicate, if this port is targeted for connection
- * indicate, if this port is the starting point of a new connector
+ * the parameter is used for the dragConnector or targeted state
  */
-const indicateConnectorReplacement = computed(() => {
+const checkIndicateReplacement = (state: boolean) => {
   const isConnected = props.port && props.port.connectedVia.length > 0;
-
-  return Boolean(
-    props.direction === "in" &&
-      isConnected &&
-      // either the Port is being targeted or a connection is being
-      // drawn out of it
-      (props.targeted || Boolean(props.dragConnector)),
-  );
-});
+  return Boolean(props.direction === "in" && isConnected && state);
+};
 
 const dispatchIndicateReplacement = (port: NodePort | null, state: boolean) => {
   if (!port?.connectedVia.length) {
@@ -68,12 +60,24 @@ const dispatchIndicateReplacement = (port: NodePort | null, state: boolean) => {
   );
 };
 
-watch(indicateConnectorReplacement, (state: boolean) => {
+// indicate connector replacement, if this port is the starting point of a new connector
+watch(toRef(props, "dragConnector"), (dragConnector) => {
+  const hasDragConnector = Boolean(dragConnector);
+
   // keep indication for dragged out quick add ghosts (will be removed on add or cancel of quick add via unmount hook)
-  if (showAddNodeGhost.value && !state) {
+  if (showAddNodeGhost.value && !hasDragConnector) {
     return;
   }
-  dispatchIndicateReplacement(props.port, state);
+
+  dispatchIndicateReplacement(
+    props.port,
+    checkIndicateReplacement(hasDragConnector),
+  );
+});
+
+// indicate connector replacement, if this port is targeted for connection
+watch(toRef(props, "targeted"), (targeted: boolean) => {
+  dispatchIndicateReplacement(props.port, checkIndicateReplacement(targeted));
 });
 
 // quick node adding: set indicate replacement to false for previous port when the port changes
