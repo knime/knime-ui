@@ -406,6 +406,21 @@ export default defineComponent({
         ),
       ];
 
+      const nodeConnectionsGroup: Array<MenuItem> = [
+        ...filterItemVisibility(
+          {
+            text: "Node connections",
+            children: this.mapToShortcut([
+              { name: "autoConnectNodesDefault", isVisible: true },
+              { name: "autoConnectNodesFlowVar", isVisible: true },
+              { name: "autoDisconnectNodesDefault", isVisible: true },
+              { name: "autoDisconnectNodesFlowVar", isVisible: true },
+            ]),
+          },
+          this.selectedNodes.length > 1,
+        ),
+      ];
+
       const metanodeAndComponentGroup: Array<MenuItem> = [
         ...this.mapToShortcut([
           { name: "createMetanode", isVisible: this.selectedNodes.length },
@@ -460,7 +475,7 @@ export default defineComponent({
         )
         .append(emptySelectionGroup)
         .append(clipboardOperationsGroup)
-        .append(annotationsGroup)
+        .append(annotationsGroup.concat(nodeConnectionsGroup))
         .append(metanodeAndComponentGroup)
         .value();
     },

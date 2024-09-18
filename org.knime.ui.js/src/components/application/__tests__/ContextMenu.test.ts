@@ -443,6 +443,32 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
+          {
+            text: "Node connections",
+            separator: true,
+            children: [
+              expect.objectContaining({
+                metadata: {
+                  shortcutName: "autoConnectNodesDefault",
+                },
+              }),
+              expect.objectContaining({
+                metadata: {
+                  shortcutName: "autoConnectNodesFlowVar",
+                },
+              }),
+              expect.objectContaining({
+                metadata: {
+                  shortcutName: "autoDisconnectNodesDefault",
+                },
+              }),
+              expect.objectContaining({
+                metadata: {
+                  shortcutName: "autoDisconnectNodesFlowVar",
+                },
+              }),
+            ],
+          },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
         ]),
@@ -656,7 +682,8 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "cut" } },
           { metadata: { shortcutName: "copy" } },
           { metadata: { shortcutName: "deleteSelected" }, separator: true },
-          { text: "Arrange annotations", separator: true },
+          { text: "Arrange annotations" },
+          { text: "Node connections", separator: true },
           { metadata: { shortcutName: "createMetanode" } },
           { metadata: { shortcutName: "createComponent" } },
         ]),

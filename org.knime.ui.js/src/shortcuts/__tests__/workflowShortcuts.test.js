@@ -1112,10 +1112,7 @@ describe("workflowShortcuts", () => {
         selectedMetanodePortBars: ["in"],
       });
 
-      workflowShortcuts.autoConnectNodesDefault.execute({
-        $store,
-        payload: { event: { key: "l" } },
-      });
+      workflowShortcuts.autoConnectNodesDefault.execute({ $store });
       expect(mockedAPI.workflowCommand.AutoConnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
@@ -1133,10 +1130,7 @@ describe("workflowShortcuts", () => {
         selectedMetanodePortBars: ["in"],
       });
 
-      workflowShortcuts.autoConnectNodesDefault.execute({
-        $store,
-        payload: { event: { key: "k" } },
-      });
+      workflowShortcuts.autoConnectNodesFlowVar.execute({ $store });
       expect(mockedAPI.workflowCommand.AutoConnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
@@ -1230,10 +1224,7 @@ describe("workflowShortcuts", () => {
         selectedMetanodePortBars: ["in"],
       });
 
-      workflowShortcuts.autoDisconnectNodesDefault.execute({
-        $store,
-        payload: { event: { key: "k" } },
-      });
+      workflowShortcuts.autoDisconnectNodesFlowVar.execute({ $store });
       expect(mockedAPI.workflowCommand.AutoDisconnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",

@@ -26,14 +26,12 @@ const createAutoConnectionHandler =
     command:
       | typeof API.workflowCommand.AutoConnect
       | typeof API.workflowCommand.AutoDisconnect,
+    flowVariablePortsOnly: boolean = false,
   ) =>
-  ({ $store, payload: { event } }: ShortcutExecuteContext) => {
+  ({ $store }: ShortcutExecuteContext) => {
     const { projectId, workflowId } = getProjectAndWorkflowIds(
       $store.state.workflow,
     );
-
-    const flowVariablePortsOnly =
-      (event as KeyboardEvent).key.toLowerCase() === "k";
 
     const selectedNodes: string[] = $store.getters["selection/selectedNodeIds"];
 
@@ -184,7 +182,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Connect nodes by flow variable port",
     hotkey: ["CtrlOrCmd", "K"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect),
+    execute: createAutoConnectionHandler(API.workflowCommand.AutoConnect, true),
     condition: canAutoConnectOrDisconnect,
   },
   autoDisconnectNodesDefault: {
@@ -200,7 +198,10 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     title: "Disconnect nodes' flow variable ports",
     hotkey: ["CtrlOrCmd", "Shift", "K"],
     group: "workflowEditor",
-    execute: createAutoConnectionHandler(API.workflowCommand.AutoDisconnect),
+    execute: createAutoConnectionHandler(
+      API.workflowCommand.AutoDisconnect,
+      true,
+    ),
     condition: canAutoConnectOrDisconnect,
   },
 };
