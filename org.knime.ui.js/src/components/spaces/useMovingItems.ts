@@ -2,6 +2,7 @@ import { computed, type Ref } from "vue";
 
 import { API } from "@api";
 import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
 
 type UseMovingItemsOptions = {
   projectId: Ref<string | null>;
@@ -15,6 +16,8 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
   const activeSpacePath = computed(() => {
     return store.state.spaces.projectPath[options.projectId.value ?? ""];
   });
+
+  const $toast = getToastsProvider();
 
   const onMoveItems = async ({
     sourceItems,
@@ -93,6 +96,10 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
     }
 
     try {
+      // remove ghosts regardless of sucess criteria. yields better results on slow operations
+      // which will show a loading overlay anyway after a certain time threshold
+      onComplete(true);
+
       await store.dispatch("spaces/moveOrCopyItems", {
         itemIds: sourceItems,
         projectId: options.projectId.value,
@@ -100,12 +107,15 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
         collisionStrategy,
         isCopy,
       });
-
-      onComplete(true);
     } catch (error) {
       const copyOrMove = isCopy ? "copying" : "moving";
       consola.error(`There was a problem ${copyOrMove} the items`, { error });
-      onComplete(false);
+
+      $toast.show({
+        type: "error",
+        headline: "There was a problem moving your files",
+        message: (error as any).message,
+      });
     }
   };
 

@@ -253,7 +253,7 @@ watch(isLoadingContent, () => {
 
     <SkeletonItem :loading="showLoader" height="30px" :repeat="5">
       <FileExplorer
-        v-if="activeWorkflowGroup && !isLoadingContent"
+        v-if="activeWorkflowGroup"
         aria-label="Current workflow group in Space Explorer"
         :selected-item-ids="selectedItemIds"
         :mode="mode"
