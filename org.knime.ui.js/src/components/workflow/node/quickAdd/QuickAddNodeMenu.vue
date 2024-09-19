@@ -278,6 +278,7 @@ watch(
       :drag-connector="fakePortConnector"
       :did-drag-to-compatible-target="false"
       :disable-quick-node-add="false"
+      reset-replace-indicator-state-on-unmount
     />
     <div class="wrapper">
       <div class="header">

@@ -17,11 +17,13 @@ interface Props {
   targeted: boolean;
   didDragToCompatibleTarget: boolean;
   disableQuickNodeAdd: boolean;
+  resetReplaceIndicatorStateOnUnmount?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   port: null,
   dragConnector: null,
+  resetReplaceIndicatorStateOnUnmount: false,
 });
 
 const showAddNodeGhost = computed(
@@ -49,7 +51,7 @@ const dispatchIndicateReplacement = (port: NodePort | null, state: boolean) => {
   )!;
 
   if (!incomingConnector) {
-    consola.warn(`incomingConnector with '${connectorId}' not found.`);
+    consola.debug(`incomingConnector with '${connectorId}' not found.`);
     return;
   }
 
@@ -87,7 +89,9 @@ watch(toRef(props, "port"), (_, oldPort) => {
 
 // quick node adding: when the user cancels the add of an in port we need to clean up the replace indicator state
 onUnmounted(() => {
-  dispatchIndicateReplacement(props.port, false);
+  if (props.resetReplaceIndicatorStateOnUnmount) {
+    dispatchIndicateReplacement(props.port, false);
+  }
 });
 </script>
 
