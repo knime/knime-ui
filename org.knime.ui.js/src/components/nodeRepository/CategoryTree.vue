@@ -165,7 +165,8 @@ defineExpose({ focusFirst, getExpandedNodeIds });
 }
 
 .scroll-container-content {
-  padding: 0 8px 16px 20px;
+  padding: 0 var(--space-8) var(--sidebar-panel-padding)
+    var(--sidebar-panel-padding);
 }
 
 /** move padding to inner component to have user interactions on the whole line (hover, drag and dblclick) */

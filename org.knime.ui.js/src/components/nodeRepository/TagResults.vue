@@ -130,6 +130,6 @@ export default defineComponent({
 
 <style lang="postcss" scoped>
 .content {
-  padding: 0 15px 15px;
+  padding: 0 var(--space-8) var(--space-8) var(--sidebar-panel-padding);
 }
 </style>

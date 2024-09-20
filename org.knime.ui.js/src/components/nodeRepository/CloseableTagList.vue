@@ -118,7 +118,7 @@ onClickOutside(closeableTagsRef, () => {
   & .tag-list {
     /* prevents wrapping due to small fails in the size heuristic */
     flex-wrap: nowrap;
-    padding: 0 20px 13px;
+    padding: 0 var(--sidebar-panel-padding) var(--space-8);
 
     /* limit tag length to a maximum */
     & :deep(.tag.clickable) {

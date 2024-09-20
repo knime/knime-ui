@@ -197,8 +197,7 @@ watch(
 
 .node-description {
   height: 100%;
-  padding-right: 8px;
-  padding-bottom: 8px;
+  padding-bottom: var(--space-8);
   overflow: hidden auto;
 
   & > .node-header {
@@ -211,7 +210,7 @@ watch(
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      padding: 8px 20px 5px;
+      padding: var(--space-8) var(--sidebar-panel-padding) var(--space-4);
 
       & h2 {
         margin: 0;

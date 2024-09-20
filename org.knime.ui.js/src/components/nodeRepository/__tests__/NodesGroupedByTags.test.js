@@ -37,7 +37,7 @@ describe("NodesGroupedByTag", () => {
       { id: "node:4" },
       { id: "node:5" },
     ]);
-    expect(wrapper.find(".tag-title").text()).toMatch("tag");
+    expect(wrapper.find(".tag").text()).toMatch("tag");
   });
 
   it("has no more nodes", () => {
@@ -58,7 +58,7 @@ describe("NodesGroupedByTag", () => {
     it("tag can be selected", async () => {
       doShallowMount();
 
-      await wrapper.find(".tag-title").trigger("click");
+      await wrapper.find(".tag").trigger("click");
       expect(wrapper.emitted("selectTag")).toStrictEqual([["tag"]]);
     });
 

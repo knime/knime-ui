@@ -1,1 +1,0 @@
-export const SIDEBAR_PANEL_PADDING = 20;

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Tag } from "@knime/components";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 
 import NodeList, { type NavReachedEvent } from "./NodeList.vue";
@@ -12,6 +13,7 @@ export default defineComponent({
   components: {
     DraggableNodeTemplate,
     NodeList,
+    Tag,
   },
   props: {
     tag: {
@@ -64,11 +66,11 @@ export default defineComponent({
 </script>
 
 <template>
-  <div :class="['tag', `display-${displayMode}`]">
-    <div>
-      <span class="tag-title" @click="$emit('selectTag', tag)">
-        {{ tag }}
-      </span>
+  <div :class="['grouped-by-tags', `display-${displayMode}`]">
+    <div class="tag-header-line">
+      <Tag class="tag" clickable @click="$emit('selectTag', tag)">{{
+        tag
+      }}</Tag>
       <hr />
     </div>
     <NodeList
@@ -98,36 +100,21 @@ export default defineComponent({
 </template>
 
 <style lang="postcss" scoped>
-.tag {
+.grouped-by-tags {
   &.node-template-list-mode {
     & .tag-node-list {
-      padding-top: 5px;
+      padding-top: var(--space-4);
     }
   }
 
-  & .tag-title {
-    border: 1px solid var(--knime-silver-sand);
-    margin: 0 5px 0 0;
-    padding: 3px 5px;
-    line-height: 15px;
-    display: inline-block;
-    font-size: 13px;
-    color: var(--knime-dove-gray);
-    cursor: pointer;
-    position: relative;
-    background-color: var(--knime-porcelain);
+  & .tag {
+    margin-bottom: 0;
+    height: var(--space-24);
+  }
 
-    &:hover {
-      color: var(--knime-white);
-      background-color: var(--knime-dove-gray);
-      border-color: var(--knime-dove-gray);
-    }
-
-    &:active {
-      color: var(--knime-white);
-      background-color: var(--knime-masala);
-      border-color: var(--knime-masala);
-    }
+  & .tag-header-line {
+    display: flex;
+    align-items: center;
   }
 
   & hr {

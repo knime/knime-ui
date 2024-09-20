@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import { SIDEBAR_PANEL_PADDING } from "./config";
-</script>
-
 <template>
   <div class="panel-layout">
     <div class="panel-header">
@@ -14,7 +10,7 @@ import { SIDEBAR_PANEL_PADDING } from "./config";
 
 <style lang="postcss" scoped>
 .panel-layout {
-  --padding: calc(v-bind(SIDEBAR_PANEL_PADDING) * 1px);
+  --padding: var(--sidebar-panel-padding);
 
   font-family: Roboto, sans-serif;
   font-size: 13px;

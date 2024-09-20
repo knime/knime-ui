@@ -121,7 +121,8 @@ const updateComponentMetadata = ({
 .metadata {
   overflow: hidden auto;
   height: 100%;
-  padding: 8px 20px 20px;
+  padding: var(--space-8) var(--sidebar-panel-padding)
+    var(--sidebar-panel-padding);
   font-size: 16px;
   color: var(--knime-masala);
 

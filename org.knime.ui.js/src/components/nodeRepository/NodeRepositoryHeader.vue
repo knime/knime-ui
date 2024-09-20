@@ -189,7 +189,7 @@ defineExpose({ focusSearchInput });
   padding-bottom: var(--space-8);
 
   & .title-and-search {
-    padding: 0 20px var(--space-4);
+    padding: 0 var(--sidebar-panel-padding) var(--space-4);
 
     & .search-header {
       display: flex;

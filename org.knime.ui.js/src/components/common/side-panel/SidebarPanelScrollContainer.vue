@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
 
-import { SIDEBAR_PANEL_PADDING } from "./config";
-
 const scrollableContainer = ref<HTMLElement>();
 
 const scrollToBottom = async () => {
@@ -27,7 +25,7 @@ defineExpose({ scrollToBottom });
 
 <style lang="postcss" scoped>
 .scrollable-container {
-  --padding: calc(v-bind(SIDEBAR_PANEL_PADDING) * 1px);
+  --padding: var(--sidebar-panel-padding);
 
   width: calc(100% + var(--padding));
   flex: 1;
