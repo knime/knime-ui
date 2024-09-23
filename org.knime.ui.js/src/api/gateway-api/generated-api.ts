@@ -3588,13 +3588,13 @@ export interface SpaceItemVersion {
      * @type {number}
      * @memberof SpaceItemVersion
      */
-    version?: number;
+    version: number;
     /**
      *
      * @type {string}
      * @memberof SpaceItemVersion
      */
-    title?: string;
+    title: string;
     /**
      *
      * @type {string}
