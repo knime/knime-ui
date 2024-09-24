@@ -49,6 +49,18 @@ onMounted(() => {
       store.dispatch("canvas/fillScreen");
     }
   });
+
+  const kanvasElement = document.getElementById("kanvas");
+
+  if (kanvasElement) {
+    kanvasElement.addEventListener("dblclick", (event: MouseEvent) => {
+      const position = { x: event.clientX, y: event.clientY };
+
+      store.dispatch("workflow/openQuickAddNodeMenu", {
+        props: { position },
+      });
+    });
+  }
 });
 
 const workflow = ref<InstanceType<typeof Workflow>>();
