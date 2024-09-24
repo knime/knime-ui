@@ -360,6 +360,12 @@ export default defineComponent({
         ]),
       ];
 
+      const quickNodeAnnotationGroup: Array<MenuItem> = [
+        ...this.mapToShortcut([
+          { name: "quickAddNode", isVisible: this.isSelectionEmpty },
+        ]),
+      ];
+
       const clipboardOperationsGroup: Array<MenuItem> = [
         ...this.mapToShortcut([
           {
@@ -475,6 +481,7 @@ export default defineComponent({
         )
         .append(emptySelectionGroup)
         .append(clipboardOperationsGroup)
+        .append(quickNodeAnnotationGroup)
         .append(annotationsGroup.concat(nodeConnectionsGroup))
         .append(metanodeAndComponentGroup)
         .value();
