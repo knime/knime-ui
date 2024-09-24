@@ -49,18 +49,6 @@ onMounted(() => {
       store.dispatch("canvas/fillScreen");
     }
   });
-
-  const kanvasElement = document.getElementById("kanvas");
-
-  if (kanvasElement) {
-    kanvasElement.addEventListener("dblclick", (event: MouseEvent) => {
-      const position = { x: event.clientX, y: event.clientY };
-
-      store.dispatch("workflow/openQuickAddNodeMenu", {
-        props: { position },
-      });
-    });
-  }
 });
 
 const workflow = ref<InstanceType<typeof Workflow>>();
@@ -84,6 +72,18 @@ const onContainerSizeUpdated = async () => {
     store.dispatch("canvas/fillScreen");
   }
 };
+
+const openQuickAddNodeMenu = (event: MouseEvent) => {
+  const [x, y] = store.getters["canvas/screenToCanvasCoordinates"]([
+    event.clientX,
+    event.clientY,
+  ]);
+
+  store.dispatch("workflow/openQuickAddNodeMenu", {
+    props: { position: { x, y } },
+    event,
+  });
+};
 </script>
 
 <template>
@@ -96,6 +96,7 @@ const onContainerSizeUpdated = async () => {
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
+    @dblclick="openQuickAddNodeMenu"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />
