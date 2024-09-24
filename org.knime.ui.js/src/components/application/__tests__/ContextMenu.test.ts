@@ -161,7 +161,7 @@ describe("ContextMenu.vue", () => {
   it("sets items on mounted", async () => {
     const { wrapper } = await doMount();
 
-    expect(renderedMenuItems(wrapper).length).toBe(4);
+    expect(renderedMenuItems(wrapper).length).toBe(5);
   });
 
   it("sets items on position change", async () => {
@@ -187,6 +187,7 @@ describe("ContextMenu.vue", () => {
       "executeAll",
       "resetAll",
       "paste",
+      "quickAddNode",
       "addWorkflowAnnotation",
     ]);
   });
@@ -255,6 +256,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "cancelAll" } },
           { metadata: { shortcutName: "resetAll" }, separator: true },
           { metadata: { shortcutName: "paste" }, separator: true },
+          { metadata: { shortcutName: "quickAddNode" }, separator: true },
           { metadata: { shortcutName: "addWorkflowAnnotation" } },
         ]),
       );
