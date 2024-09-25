@@ -83,7 +83,7 @@ const applicationShortcuts: ApplicationShortcuts = {
   },
   switchToNextWorkflow: {
     text: "Switch to next opened workflow",
-    hotkey: ["CtrlOrCmd", "Tab"],
+    hotkey: ["Ctrl", "Tab"],
     group: "general",
     execute: ({ $store, $router }) => {
       switchActiveProject($store, $router, 1);
@@ -94,7 +94,7 @@ const applicationShortcuts: ApplicationShortcuts = {
   },
   switchToPreviousWorkflow: {
     text: "Switch to previous opened workflow",
-    hotkey: ["CtrlOrCmd", "Shift", "Tab"],
+    hotkey: ["Ctrl", "Shift", "Tab"],
     group: "general",
     execute: ({ $store, $router }) => {
       switchActiveProject($store, $router, -1);
