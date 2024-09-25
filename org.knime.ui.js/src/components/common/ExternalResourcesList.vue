@@ -73,7 +73,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 
 <template>
   <div class="external-resources-list">
-    <h2 :class="['section', { form: editable }]">External resources</h2>
+    <h3 class="subheading">External resources</h3>
     <template v-if="!editable">
       <LinkList v-if="modelValue.length" :links="modelValue" />
       <!-- Use MetadataPlaceholder? -->
@@ -133,15 +133,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 <style lang="postcss" scoped>
 .external-resources-list {
   & .edit-link-url {
-    margin-bottom: 10px;
-  }
-
-  & h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 36px;
-    border-bottom: 1px solid var(--knime-silver-sand);
+    margin-bottom: var(--space-8);
   }
 
   & ul {
@@ -158,15 +150,21 @@ const updateField = <K extends keyof Link, V = Link[K]>(
   }
 
   & .placeholder {
-    padding-top: 10px;
+    padding-top: var(--space-8);
     font-style: italic;
     font-size: 13px;
     color: var(--knime-dove-gray);
   }
 
+  & .edit-link-text,
+  & .edit-link-url,
+  & .add-link-btn {
+    margin-top: var(--space-8);
+  }
+
   & .edit-link {
     padding: 0;
-    margin-top: 10px;
+    margin-top: var(--space-8);
 
     & .edit-link-header {
       display: flex;
@@ -175,11 +173,6 @@ const updateField = <K extends keyof Link, V = Link[K]>(
       & .delete-link-btn {
         margin-left: auto;
       }
-    }
-
-    & .edit-link-text,
-    & .edit-link-url {
-      margin-top: 10px;
     }
 
     & .item-error {

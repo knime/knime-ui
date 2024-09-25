@@ -65,14 +65,14 @@ const filterPortData = (fullPorts: PortEditorData[]) =>
 <template>
   <div v-if="editable" class="node-feature-editor">
     <template v-if="inPorts && inPorts.length > 0">
-      <h2 class="section form">Input ports</h2>
+      <h3 class="subheading">Input ports</h3>
       <MetadataPortEditor
         :model-value="fullPortValue.inPorts"
         @update:model-value="emit('update:inPorts', filterPortData($event))"
       />
     </template>
     <template v-if="outPorts && outPorts.length > 0">
-      <h2 class="section form">Output ports</h2>
+      <h3 class="subheading">Output ports</h3>
       <MetadataPortEditor
         :model-value="fullPortValue.outPorts"
         @update:model-value="emit('update:outPorts', filterPortData($event))"
@@ -96,7 +96,7 @@ const filterPortData = (fullPorts: PortEditorData[]) =>
 @import url("@/assets/mixins.css");
 
 .node-feature-list {
-  margin-top: 20px; /* no h2 (that has a margin-top) in this case */
+  margin-top: var(--space-16); /* no h2 (that has a margin-top) in this case */
 
   & :deep(.shadow-wrapper::after),
   & :deep(.shadow-wrapper::before) {

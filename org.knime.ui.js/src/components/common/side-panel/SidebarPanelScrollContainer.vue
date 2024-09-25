@@ -35,7 +35,7 @@ defineExpose({ scrollToBottom });
     width: calc(100% - var(--padding));
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
 }
 </style>

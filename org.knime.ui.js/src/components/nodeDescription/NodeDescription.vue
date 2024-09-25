@@ -13,6 +13,8 @@ import type {
   NativeNodeDescriptionWithExtendedPorts,
 } from "@/util/portDataMapper";
 import NodeDescriptionExtensionInfo from "./NodeDescriptionExtensionInfo.vue";
+import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
+import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 
 type Params = {
   id: string;
@@ -130,19 +132,16 @@ watch(
 </script>
 
 <template>
-  <div class="node-description">
-    <div class="node-header">
-      <div class="header-content">
-        <h2>{{ title }}</h2>
-        <CloseButton
-          v-if="showCloseButton"
-          class="close-button"
-          @close="emit('close')"
-        />
-      </div>
-      <hr />
-    </div>
-    <div class="node-info">
+  <SidebarPanelLayout class="node-description">
+    <template #header>
+      <h2>{{ title }}</h2>
+      <CloseButton
+        v-if="showCloseButton"
+        class="close-button"
+        @close="emit('close')"
+      />
+    </template>
+    <SidebarPanelScrollContainer class="node-info">
       <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
              have some data as the selection is not cleared. -->
       <template v-if="params">
@@ -188,51 +187,14 @@ watch(
         </template>
       </template>
       <div v-else class="placeholder no-node">Please select a node</div>
-    </div>
-  </div>
+    </SidebarPanelScrollContainer>
+  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
 .node-description {
-  height: 100%;
-  padding-bottom: var(--space-8);
-  overflow: hidden auto;
-
-  & > .node-header {
-    position: sticky;
-    z-index: 1;
-    top: 0;
-    background-color: inherit;
-
-    & .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: var(--space-8) var(--sidebar-panel-padding) var(--space-4);
-
-      & h2 {
-        margin: 0;
-        font-weight: 400;
-        font-size: 18px;
-        line-height: 36px;
-      }
-    }
-  }
-
-  & hr {
-    border: none;
-    border-top: 1px solid var(--knime-silver-sand);
-    margin: 0 20px;
-  }
-
-  & .node-info {
-    padding: 10px 20px;
-    display: flex;
-    flex-direction: column;
-  }
-
   & .placeholder {
     font-size: 13px;
     font-style: italic;
@@ -244,11 +206,6 @@ watch(
       align-items: center;
       justify-content: center;
     }
-  }
-
-  & .close-button {
-    margin-top: 2px;
-    margin-right: -15px;
   }
 
   & .node-feature-list {

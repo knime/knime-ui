@@ -112,37 +112,13 @@ const updateComponentMetadata = ({
       @save="updateComponentMetadata"
     />
   </div>
-
   <!-- Render an element to prevent issue with transition-group and conditional elements -->
   <div v-else />
 </template>
 
 <style lang="postcss" scoped>
 .metadata {
-  overflow: hidden auto;
+  /** required for scrolling */
   height: 100%;
-  padding: var(--space-8) var(--sidebar-panel-padding)
-    var(--sidebar-panel-padding);
-  font-size: 16px;
-  color: var(--knime-masala);
-
-  & :deep(h2) {
-    margin: 15px 0 5px;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 36px;
-  }
-
-  & :deep(h2.section) {
-    border-bottom: 1px solid var(--knime-silver-sand);
-  }
-
-  & :deep(h2.form) {
-    margin: 30px 0 20px;
-  }
-
-  & > *:last-child {
-    margin-bottom: 0;
-  }
 }
 </style>

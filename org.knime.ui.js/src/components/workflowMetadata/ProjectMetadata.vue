@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRaw, toRef, toRefs, type Ref } from "vue";
+import { computed, ref, toRaw, toRef, toRefs } from "vue";
 
 import { API } from "@api";
 import {
@@ -17,6 +17,8 @@ import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
 import { useDraft } from "./useDraft";
 import { useSaveMetadata } from "./useSaveMetadata";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
+import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 
 interface Props {
   projectMetadata: ProjectMetadata;
@@ -90,12 +92,13 @@ const openWorkflowConfiguration = () => {
   API.desktop.openWorkflowConfiguration(props.projectId);
 };
 
-const wrapper = ref<HTMLElement>();
+const wrapper = ref<InstanceType<typeof SidebarPanelLayout>>();
+const wrapperElement = computed<HTMLElement>(() => wrapper.value?.$el);
 
 const { saveContent } = useSaveMetadata({
   metadataDraft,
   originalData: toRef(props, "projectMetadata"),
-  metadataWrapperElement: wrapper as Ref<HTMLElement>,
+  metadataWrapperElement: wrapperElement,
   triggerSave: () => {
     emit("save", {
       projectId: props.projectId,
@@ -128,8 +131,8 @@ const preserveWhitespaceBeforeEdit = () => {
 </script>
 
 <template>
-  <div ref="wrapper">
-    <div class="header">
+  <SidebarPanelLayout ref="wrapper" class="project-metadata">
+    <template #header>
       <MetadataLastEdit :last-edit="lastEdit" />
       <MetadataHeaderButtons
         v-if="isWorkflowWritable"
@@ -141,39 +144,31 @@ const preserveWhitespaceBeforeEdit = () => {
         @cancel-edit="cancelEdit"
         @open-workflow-configuration="openWorkflowConfiguration"
       />
-    </div>
+    </template>
+    <SidebarPanelScrollContainer>
+      <MetadataDescription
+        :original-description="projectMetadata.description?.value ?? ''"
+        :model-value="getMetadataFieldValue('description')"
+        :editable="isEditing"
+        :is-legacy="
+          projectMetadata.description?.contentType ===
+          TypedText.ContentTypeEnum.Plain
+        "
+        @update:model-value="updateMetadataField('description', $event)"
+      />
 
-    <MetadataDescription
-      :original-description="projectMetadata.description?.value ?? ''"
-      :model-value="getMetadataFieldValue('description')"
-      :editable="isEditing"
-      :is-legacy="
-        projectMetadata.description?.contentType ===
-        TypedText.ContentTypeEnum.Plain
-      "
-      @update:model-value="updateMetadataField('description', $event)"
-    />
+      <ExternalResourcesList
+        :model-value="getMetadataFieldValue('links')"
+        :editable="isEditing"
+        @update:model-value="updateMetadataField('links', $event)"
+        @valid="onValidChange"
+      />
 
-    <ExternalResourcesList
-      :model-value="getMetadataFieldValue('links')"
-      :editable="isEditing"
-      @update:model-value="updateMetadataField('links', $event)"
-      @valid="onValidChange"
-    />
-
-    <MetadataTags
-      :editable="isEditing"
-      :model-value="getMetadataFieldValue('tags')"
-      @update:model-value="updateMetadataField('tags', $event)"
-    />
-  </div>
+      <MetadataTags
+        :editable="isEditing"
+        :model-value="getMetadataFieldValue('tags')"
+        @update:model-value="updateMetadataField('tags', $event)"
+      />
+    </SidebarPanelScrollContainer>
+  </SidebarPanelLayout>
 </template>
-
-<style lang="postcss" scoped>
-.header {
-  display: flex;
-  position: sticky;
-  align-items: center;
-  margin-bottom: 12px;
-}
-</style>

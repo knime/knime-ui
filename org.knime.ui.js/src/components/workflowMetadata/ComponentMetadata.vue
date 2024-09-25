@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRaw, toRef, type Ref } from "vue";
+import { computed, ref, toRaw, toRef } from "vue";
 
 import { NodePreview } from "@knime/components";
 
@@ -25,6 +25,8 @@ import MetadataTags from "./MetadataTags.vue";
 import { useDraft } from "./useDraft";
 import { useSaveMetadata } from "./useSaveMetadata";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
+import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
+import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 
 interface Props {
   componentMetadata: ComponentMetadata;
@@ -150,12 +152,13 @@ const nodePreview = computed(() => {
   };
 });
 
-const wrapper = ref<HTMLElement>();
+const wrapper = ref<InstanceType<typeof SidebarPanelLayout>>();
+const wrapperElement = computed<HTMLElement>(() => wrapper.value?.$el);
 
 const { saveContent } = useSaveMetadata({
   metadataDraft,
   originalData: toRef(props, "componentMetadata"),
-  metadataWrapperElement: wrapper as Ref<HTMLElement>,
+  metadataWrapperElement: wrapperElement,
   triggerSave: () => {
     emit("save", {
       projectId: props.projectId,
@@ -192,18 +195,20 @@ const preserveWhitespaceBeforeEdit = () => {
 </script>
 
 <template>
-  <div ref="wrapper">
-    <div class="header">
-      <h2 class="component-name">
-        <span class="node-preview">
-          <!-- @vue-expect-error -- NodePreview is not properly typed -->
-          <NodePreview v-bind="nodePreview" />
-        </span>
+  <SidebarPanelLayout ref="wrapper">
+    <template #header>
+      <div class="header">
+        <h2 class="component-name">
+          <span class="node-preview">
+            <!-- @vue-expect-error -- NodePreview is not properly typed -->
+            <NodePreview v-bind="nodePreview" />
+          </span>
 
-        <span class="component-title" :title="componentMetadata.name">{{
-          componentMetadata.name
-        }}</span>
-      </h2>
+          <span class="component-title" :title="componentMetadata.name">{{
+            componentMetadata.name
+          }}</span>
+        </h2>
+      </div>
 
       <MetadataHeaderButtons
         v-if="isWorkflowWritable"
@@ -213,63 +218,60 @@ const preserveWhitespaceBeforeEdit = () => {
         @save="saveContent()"
         @cancel-edit="cancelEdit"
       />
-    </div>
-
-    <MetadataDescription
-      :original-description="componentMetadata.description?.value ?? ''"
-      :model-value="getMetadataFieldValue('description')"
-      :editable="isEditing"
-      :is-legacy="
-        componentMetadata.description?.contentType ===
-        TypedText.ContentTypeEnum.Plain
-      "
-      @update:model-value="updateMetadataField('description', $event)"
-    />
-
-    <!-- Type and Icon -->
-    <template v-if="isEditing">
-      <h2 class="section form">Type and icon</h2>
-      <ComponentIconEditor
-        :model-value="icon"
-        @update:model-value="updateMetadataField('icon', $event)"
-      />
-      <ComponentTypeEditor
-        :component-types="availableComponentTypes"
-        :model-value="getMetadataFieldValue('type')"
-        @update:model-value="updateMetadataField('type', $event)"
-      />
     </template>
+    <SidebarPanelScrollContainer>
+      <MetadataDescription
+        :original-description="componentMetadata.description?.value ?? ''"
+        :model-value="getMetadataFieldValue('description')"
+        :editable="isEditing"
+        :is-legacy="
+          componentMetadata.description?.contentType ===
+          TypedText.ContentTypeEnum.Plain
+        "
+        @update:model-value="updateMetadataField('description', $event)"
+      />
 
-    <ExternalResourcesList
-      :model-value="getMetadataFieldValue('links')"
-      :editable="isEditing"
-      @update:model-value="updateMetadataField('links', $event)"
-      @valid="onValidChange"
-    />
+      <!-- Type and Icon -->
+      <template v-if="isEditing">
+        <h3 class="subheading">Type and icon</h3>
+        <ComponentIconEditor
+          :model-value="icon"
+          @update:model-value="updateMetadataField('icon', $event)"
+        />
+        <ComponentTypeEditor
+          :component-types="availableComponentTypes"
+          :model-value="getMetadataFieldValue('type')"
+          @update:model-value="updateMetadataField('type', $event)"
+        />
+      </template>
 
-    <MetadataTags
-      :editable="isEditing"
-      :model-value="getMetadataFieldValue('tags')"
-      @update:model-value="updateMetadataField('tags', $event)"
-    />
+      <ExternalResourcesList
+        :model-value="getMetadataFieldValue('links')"
+        :editable="isEditing"
+        @update:model-value="updateMetadataField('links', $event)"
+        @valid="onValidChange"
+      />
 
-    <ComponentMetadataNodeFeatures
-      :node-features="nodeFeatures"
-      :in-ports="getMetadataFieldValue('inPorts')"
-      :out-ports="getMetadataFieldValue('outPorts')"
-      :editable="isEditing"
-      @update:in-ports="updateMetadataField('inPorts', $event)"
-      @update:out-ports="updateMetadataField('outPorts', $event)"
-    />
-  </div>
+      <MetadataTags
+        :editable="isEditing"
+        :model-value="getMetadataFieldValue('tags')"
+        @update:model-value="updateMetadataField('tags', $event)"
+      />
+
+      <ComponentMetadataNodeFeatures
+        :node-features="nodeFeatures"
+        :in-ports="getMetadataFieldValue('inPorts')"
+        :out-ports="getMetadataFieldValue('outPorts')"
+        :editable="isEditing"
+        @update:in-ports="updateMetadataField('inPorts', $event)"
+        @update:out-ports="updateMetadataField('outPorts', $event)"
+      />
+    </SidebarPanelScrollContainer>
+  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>
 .header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-
   & .component-name {
     display: flex;
     align-items: center;
