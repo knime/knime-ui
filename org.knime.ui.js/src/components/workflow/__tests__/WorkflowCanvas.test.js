@@ -177,6 +177,62 @@ describe("WorkflowCanvas", () => {
     expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
   });
 
+  it("dispatches 'workflow/openQuickAddNodeMenu' with correct coordinates on double click inside <svg>", () => {
+    $store.dispatch("canvas/initScrollContainerElement", {
+      offsetLeft: 10,
+      offsetTop: 10,
+      scrollLeft: 30,
+      scrollTop: 30,
+    });
+
+    const mockScreenToCanvasCoordinates = vi.fn(() => [100, 200]);
+    storeConfig.canvas.getters.screenToCanvasCoordinates = () =>
+      mockScreenToCanvasCoordinates;
+
+    $store = mockVuexStore(storeConfig);
+
+    const dispatchSpy = vi.spyOn($store, "dispatch");
+
+    doShallowMount();
+
+    const kanvas = wrapper.findComponent(Kanvas);
+
+    const svgElement = document.createElement("svg");
+    kanvas.element.appendChild(svgElement);
+
+    svgElement.dispatchEvent(
+      new MouseEvent("dblclick", {
+        clientX: 50,
+        clientY: 75,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(mockScreenToCanvasCoordinates).toHaveBeenCalledWith([50, 75]);
+
+    expect(dispatchSpy).toHaveBeenCalledWith("workflow/openQuickAddNodeMenu", {
+      props: { position: { x: 100, y: 200 } },
+      event: expect.any(MouseEvent),
+    });
+
+    const nonSvgElement = document.createElement("div");
+    kanvas.element.appendChild(nonSvgElement);
+
+    dispatchSpy.mockReset();
+
+    nonSvgElement.dispatchEvent(
+      new MouseEvent("dblclick", {
+        clientX: 50,
+        clientY: 75,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(dispatchSpy).not.toHaveBeenCalled();
+  });
+
   it("does not zoom to fit after mounting if a canvas state exists for this worflow", async () => {
     storeConfig.application.getters.workflowCanvasState = () => ({});
     $store = mockVuexStore(storeConfig);

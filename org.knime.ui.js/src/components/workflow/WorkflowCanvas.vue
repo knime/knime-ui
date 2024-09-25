@@ -12,6 +12,7 @@ import { useDropNode } from "@/composables/useDropNode";
 
 const store = useStore();
 const { onDrop, onDragOver } = useDropNode();
+const kanvas = ref<InstanceType<typeof Kanvas>>();
 
 const isDraggingNodeTemplate = computed(
   () => store.state.nodeTemplates.isDraggingNodeTemplate,
@@ -74,6 +75,11 @@ const onContainerSizeUpdated = async () => {
 };
 
 const openQuickAddNodeMenu = (event: MouseEvent) => {
+  // Check if the event target is specifically the <svg> element inside Kanvas
+  if (event.target !== kanvas.value!.$el.querySelector("svg")) {
+    return;
+  }
+
   const [x, y] = store.getters["canvas/screenToCanvasCoordinates"]([
     event.clientX,
     event.clientY,
@@ -96,7 +102,7 @@ const openQuickAddNodeMenu = (event: MouseEvent) => {
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
-    @dblclick="openQuickAddNodeMenu"
+    @dblclick.exact="openQuickAddNodeMenu"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />

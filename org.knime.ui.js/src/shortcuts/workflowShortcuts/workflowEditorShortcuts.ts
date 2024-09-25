@@ -69,8 +69,9 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     hotkey: ["CtrlOrCmd", "."],
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
-    execute: ({ $store }) => {
+    execute: ({ $store, payload }) => {
       // destruct current state
+      const positionFromContextMenu = payload?.metadata?.position;
       const { isOpen, props } = $store.state.workflow.quickAddNodeMenu;
 
       const {
@@ -89,10 +90,12 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
 
       // global menu without predecessor node
       if (node === null) {
-        const position = geometry.findFreeSpaceAroundCenterWithFallback({
-          visibleFrame: $store.getters["canvas/getVisibleFrame"](),
-          nodes: $store.state.workflow.activeWorkflow!.nodes,
-        });
+        const position =
+          positionFromContextMenu ??
+          geometry.findFreeSpaceAroundCenterWithFallback({
+            visibleFrame: $store.getters["canvas/getVisibleFrame"](),
+            nodes: $store.state.workflow.activeWorkflow!.nodes,
+          });
         $store.dispatch("workflow/openQuickAddNodeMenu", {
           props: { position },
         });
