@@ -27,6 +27,7 @@ import { useSaveMetadata } from "./useSaveMetadata";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
+import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
 
 interface Props {
   componentMetadata: ComponentMetadata;
@@ -233,7 +234,7 @@ const preserveWhitespaceBeforeEdit = () => {
 
       <!-- Type and Icon -->
       <template v-if="isEditing">
-        <h3 class="subheading">Type and icon</h3>
+        <SidebarPanelSubHeading>Type and icon</SidebarPanelSubHeading>
         <ComponentIconEditor
           :model-value="icon"
           @update:model-value="updateMetadataField('icon', $event)"

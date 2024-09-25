@@ -13,6 +13,8 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import PlusIcon from "@knime/styles/img/icons/plus.svg";
 import { buildUrlRegex } from "@/util/regex";
 
+import SidebarPanelSubHeading from "./side-panel/SidebarPanelSubHeading.vue";
+
 const URL_REGEX = buildUrlRegex(true);
 /**
  * Wraps the webapps-common LinkList component to render them alongside a title and a separator
@@ -73,7 +75,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
 
 <template>
   <div class="external-resources-list">
-    <h3 class="subheading">External resources</h3>
+    <SidebarPanelSubHeading>External resources</SidebarPanelSubHeading>
     <template v-if="!editable">
       <LinkList v-if="modelValue.length" :links="modelValue" />
       <!-- Use MetadataPlaceholder? -->
@@ -157,8 +159,7 @@ const updateField = <K extends keyof Link, V = Link[K]>(
   }
 
   & .edit-link-text,
-  & .edit-link-url,
-  & .add-link-btn {
+  & .edit-link-url {
     margin-top: var(--space-8);
   }
 

@@ -36,14 +36,6 @@
     }
   }
 
-  & :deep(h3.subheading) {
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 36px;
-    margin: var(--space-16) 0 var(--space-8);
-    border-bottom: 1px solid var(--knime-silver-sand);
-  }
-
   & hr {
     margin: 5px 0 10px;
     border: none;

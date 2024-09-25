@@ -12,6 +12,7 @@ import { NodeFeatureList } from "@knime/components";
 import MetadataPortEditor, {
   type PortEditorData,
 } from "@/components/workflowMetadata/MetadataPortEditor.vue";
+import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
 
 export interface NodeFeatures {
   options: Array<NodeDialogOptionGroup>;
@@ -65,14 +66,14 @@ const filterPortData = (fullPorts: PortEditorData[]) =>
 <template>
   <div v-if="editable" class="node-feature-editor">
     <template v-if="inPorts && inPorts.length > 0">
-      <h3 class="subheading">Input ports</h3>
+      <SidebarPanelSubHeading>Input ports</SidebarPanelSubHeading>
       <MetadataPortEditor
         :model-value="fullPortValue.inPorts"
         @update:model-value="emit('update:inPorts', filterPortData($event))"
       />
     </template>
     <template v-if="outPorts && outPorts.length > 0">
-      <h3 class="subheading">Output ports</h3>
+      <SidebarPanelSubHeading>Output ports</SidebarPanelSubHeading>
       <MetadataPortEditor
         :model-value="fullPortValue.outPorts"
         @update:model-value="emit('update:outPorts', filterPortData($event))"

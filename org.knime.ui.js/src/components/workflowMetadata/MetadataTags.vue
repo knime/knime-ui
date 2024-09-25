@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { TagList, ComboBox } from "@knime/components";
 
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
+import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
 
 interface Props {
   modelValue: Array<string>;
@@ -37,7 +38,7 @@ const onTagsChange = (tags: Array<string | number | symbol>) => {
 
 <template>
   <div :class="['tags', { editable }]">
-    <h3 :class="['subheading']">Tags</h3>
+    <SidebarPanelSubHeading>Tags</SidebarPanelSubHeading>
 
     <template v-if="!editable">
       <TagList v-if="modelValue.length" :tags="modelValue" />
