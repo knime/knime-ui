@@ -11,6 +11,8 @@ import {
   createProject,
 } from "@/test/factories";
 import { $bus } from "@/plugins/event-bus";
+import { ServiceCallException } from "@/api/gateway-api/generated-api";
+import { StoreActionException } from "@/api/gateway-api/exceptions";
 
 const busEmitSpy = vi.spyOn($bus, "emit");
 const mockedAPI = deepMocked(API);
@@ -199,6 +201,56 @@ describe("spaces::spaceOperations", () => {
       );
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
         expect.objectContaining({ itemId: "level2" }),
+      );
+    });
+
+    it("should throw StoreActionException if folder fails to create", () => {
+      const { store } = loadStore();
+
+      const ioErr = new ServiceCallException({
+        message: "something failed with IO",
+      });
+      mockedAPI.space.createWorkflowGroup.mockRejectedValueOnce(ioErr);
+
+      store.state.spaces.projectPath.project2 = {
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "level2",
+      };
+
+      expect(() =>
+        store.dispatch("spaces/createFolder", { projectId: "project2" }),
+      ).rejects.toThrow(
+        new StoreActionException("Error while creating folder", ioErr),
+      );
+    });
+
+    it("should throw StoreActionException if content refresh fails after folder is created", () => {
+      const { store } = loadStore();
+
+      const ioErr = new ServiceCallException({
+        message: "something failed with IO",
+      });
+      mockedAPI.space.createWorkflowGroup.mockResolvedValue({
+        id: "NewFolder",
+        type: "WorkflowGroup",
+      });
+
+      mockedAPI.space.listWorkflowGroup.mockRejectedValue(ioErr);
+
+      store.state.spaces.projectPath.project2 = {
+        spaceProviderId: "local",
+        spaceId: "local",
+        itemId: "level2",
+      };
+
+      expect(() =>
+        store.dispatch("spaces/createFolder", { projectId: "project2" }),
+      ).rejects.toThrow(
+        new StoreActionException(
+          "Error while fetching workflow group content",
+          ioErr,
+        ),
       );
     });
   });

@@ -243,7 +243,10 @@ describe("SpaceExplorer.vue", () => {
     const { wrapper, store } = await doMountAndLoad();
 
     // initial fetch of root has happened
-    mockedAPI.space.listWorkflowGroup.mockReset();
+    mockedAPI.space.listWorkflowGroup.mockResolvedValue({
+      path: [],
+      items: [],
+    });
 
     store.commit("spaces/setProjectPath", {
       projectId: "anotherProject",
@@ -275,7 +278,10 @@ describe("SpaceExplorer.vue", () => {
       const { store } = await doMountAndLoad();
 
       // initial fetch of root has happened
-      mockedAPI.space.listWorkflowGroup.mockReset();
+      mockedAPI.space.listWorkflowGroup.mockResolvedValue({
+        path: [],
+        items: [],
+      });
 
       store.commit("spaces/setProjectPath", {
         projectId: "someProjectId",

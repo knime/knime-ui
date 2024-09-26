@@ -1,7 +1,7 @@
 import { expect, describe, it, vi } from "vitest";
 import { nextTick } from "vue";
 import type { Store } from "vuex";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
 
@@ -14,16 +14,24 @@ import type { RootStoreState } from "@/store/types";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
+import {
+  StoreActionException,
+  displayStoreActionExceptionMessage,
+} from "@/api/gateway-api/exceptions";
+import { FailedProcedureCallException } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
 mockedAPI.desktop.importWorkflows.mockResolvedValue([]);
 mockedAPI.desktop.importFiles.mockResolvedValue([]);
+mockedAPI.space.listWorkflowGroup.mockResolvedValue([]);
 
 mockedAPI.space.createWorkflowGroup.mockResolvedValue({
   id: "NewFolder",
   type: "WorkflowGroup",
 });
+
+vi.mock("@/api/gateway-api/exceptions");
 
 describe("SpaceExplorerActions.vue", () => {
   const doMount = ({ props = {} } = {}) => {
@@ -423,15 +431,10 @@ describe("SpaceExplorerActions.vue", () => {
       },
     );
 
-    it.each([
-      ["files", "importFiles", "importFiles"],
-      ["workflows", "importWorkflow", "importWorkflows"],
-    ])(
-      "should emit imported %s after successful import",
-      async (_name, menuId, apiName) => {
-        // @ts-ignore
-        mockedAPI.desktop[apiName].mockResolvedValue(["item1", "item2"]);
-        const { wrapper, store, projectId } = doMount({
+    it.each([["createFolder", "spaces/createFolder", {}]])(
+      "should handle failure when executing action %s via store",
+      async (actionId, storeAction, params) => {
+        const { wrapper, store, projectId, dispatchSpy } = doMount({
           props: { mode: "mini" },
         });
 
@@ -444,7 +447,53 @@ describe("SpaceExplorerActions.vue", () => {
         const subMenu = wrapper.findComponent(SubMenu);
         const item = subMenu
           .props("items")
+          .find((item) => item.id === actionId);
+        subMenu.vm.$emit("item-click", null, item);
+
+        dispatchSpy.mockRejectedValueOnce(
+          new StoreActionException(
+            "something went wrong",
+            new FailedProcedureCallException({ message: "IO issue" }),
+          ),
+        );
+
+        expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
+          projectId: "someProjectId",
+          ...params,
+        });
+
+        await flushPromises();
+
+        expect(displayStoreActionExceptionMessage).toHaveBeenCalled();
+      },
+    );
+
+    it.each([
+      ["files", "importFiles", "importFiles"],
+      ["workflows", "importWorkflow", "importWorkflows"],
+    ])(
+      "should emit imported %s after successful import",
+      async (_name, menuId, apiName) => {
+        // @ts-ignore
+        mockedAPI.desktop[apiName].mockResolvedValue(["item1", "item2"]);
+        const { wrapper, store, projectId } = doMount({
+          props: { mode: "mini" },
+        });
+
+        mockedAPI.space.listWorkflowGroup.mockResolvedValue([]);
+
+        await setupStoreWithProvider(
+          store,
+          projectId,
+          SpaceProviderNS.TypeEnum.LOCAL,
+        );
+
+        const subMenu = wrapper.findComponent(SubMenu);
+        const item = subMenu
+          .props("items")
+          // @ts-ignore
           .find(({ id }: { id: string }) => id === menuId);
+
         subMenu.vm.$emit("item-click", null, item);
 
         await new Promise((r) => setTimeout(r, 0));

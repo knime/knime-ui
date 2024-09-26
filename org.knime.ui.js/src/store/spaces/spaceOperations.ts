@@ -4,6 +4,7 @@ import { API } from "@api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import {
+  ServiceCallException,
   SpaceGroup,
   SpaceItem,
   type WorkflowGroupContent,
@@ -17,6 +18,7 @@ import { isProjectOpen } from "./util";
 import type { Router } from "vue-router";
 import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
 import { $bus } from "@/plugins/event-bus";
+import { StoreActionException } from "@/api/gateway-api/exceptions";
 
 const $toast = getToastsProvider();
 
@@ -64,11 +66,22 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   ) {
     try {
       commit("setIsLoadingContent", true);
-      const content = await API.space.listWorkflowGroup({
-        spaceProviderId,
-        spaceId,
-        itemId,
-      });
+      const content = await API.space
+        .listWorkflowGroup({
+          spaceProviderId,
+          spaceId,
+          itemId,
+        })
+        .catch((error) => {
+          if (error instanceof ServiceCallException) {
+            throw new StoreActionException(
+              "Error while fetching workflow group content",
+              error,
+            );
+          }
+
+          throw error;
+        });
 
       return content;
     } catch (error) {
@@ -245,26 +258,33 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
   async createFolder({ dispatch, state, commit }, { projectId }) {
     const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
+    // Loading will be cleared after fetching the data by fetchWorkflowGroupContent
+    commit("setIsLoadingContent", true);
 
-    try {
-      // loading will be cleared after fetching the data by fetchWorkflowGroupContent
-      commit("setIsLoadingContent", true);
-      const newFolderItem = await API.space.createWorkflowGroup({
+    // API call with error handling
+    const newFolderItem = await API.space
+      .createWorkflowGroup({
         spaceId,
         spaceProviderId,
         itemId,
+      })
+      .catch((error) => {
+        const message = "Error while creating folder";
+        commit("setIsLoadingContent", false);
+        consola.error(message, { error });
+
+        if (error instanceof ServiceCallException) {
+          throw new StoreActionException("Error while creating folder", error);
+        }
+
+        throw error;
       });
 
-      await dispatch("fetchWorkflowGroupContent", { projectId });
-      commit("setActiveRenamedItemId", newFolderItem.id);
-      commit("setCurrentSelectedItemIds", [newFolderItem.id]);
-
-      return newFolderItem;
-    } catch (error) {
-      commit("setIsLoadingContent", false);
-      consola.log("Error creating folder", { error });
-      throw error;
-    }
+    // Clears loading, might also throw but we let the exception bubble up
+    await dispatch("fetchWorkflowGroupContent", { projectId });
+    commit("setActiveRenamedItemId", newFolderItem.id);
+    commit("setCurrentSelectedItemIds", [newFolderItem.id]);
+    return newFolderItem;
   },
 
   async openProject(

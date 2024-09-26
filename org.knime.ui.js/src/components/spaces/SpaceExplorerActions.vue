@@ -24,6 +24,10 @@ import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActi
 
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 import type { ActionMenuItem } from "./remoteMenuItems";
+import {
+  StoreActionException,
+  displayStoreActionExceptionMessage,
+} from "@/api/gateway-api/exceptions";
 
 type DisplayModes = "normal" | "mini";
 
@@ -168,10 +172,16 @@ export default defineComponent({
           text: "Create folder",
           icon: FolderPlusIcon,
           separator: true,
-          execute: () => {
-            this.$store.dispatch("spaces/createFolder", {
-              projectId,
-            });
+          execute: async () => {
+            try {
+              await this.$store.dispatch("spaces/createFolder", { projectId });
+            } catch (error) {
+              if (error instanceof StoreActionException) {
+                displayStoreActionExceptionMessage(error);
+              } else {
+                throw error; // For now: re-throw for global error handling
+              }
+            }
           },
         },
         {

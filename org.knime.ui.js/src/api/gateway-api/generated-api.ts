@@ -5325,8 +5325,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceGroupName Identifier name of a space-group.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         createSpace(
         	params: { spaceProviderId: string,  spaceGroupName: string  }
@@ -5344,8 +5343,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         createWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  itemName: string  }
@@ -5362,8 +5360,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         createWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -5380,8 +5377,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {Array<string>} itemIds A list of identifiers of items in the space.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         deleteItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>  }
@@ -5399,8 +5395,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} jobId The ID of the job to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         deleteJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  jobId: string  }
@@ -5418,8 +5413,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} scheduleId The ID of the schedule to delete
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         deleteSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  scheduleId: string  }
@@ -5434,7 +5428,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         getSpaceProvider(
         	params: { spaceProviderId: string  }
@@ -5451,7 +5445,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         listJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -5468,7 +5462,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         listSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -5485,8 +5479,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
-         * @throws {IOException} If there was an I/O error of some kind.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         listWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -5506,8 +5499,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {boolean} copy Copy instead of move items.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         moveOrCopyItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destWorkflowGroupItemId: string,  collisionHandling: 'noop' | 'autorename' | 'overwrite',  copy: boolean  }
@@ -5525,9 +5517,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} itemName Name given to a space item.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         renameItem(
         	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  itemName: string  }
@@ -5544,9 +5534,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceName Name given to a space.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {IOException} If there was an I/O error of some kind.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         renameSpace(
         	params: { spaceProviderId: string,  spaceId: string,  spaceName: string  }
@@ -6151,7 +6139,7 @@ export const createAPI = (configuration: Configuration) => {
 /** 
  * Error handling 
  */
-export const KNOWN_EXECUTOR_EXCEPTIONS = ["NodeDescriptionNotAvailableException", "NodeNotFoundException", "NoSuchElementException", "NotASubWorkflowException", "InvalidRequestException", "OperationNotAllowedException", "IOException", ] as const;
+export const KNOWN_EXECUTOR_EXCEPTIONS = ["ServiceCallException", "NodeDescriptionNotAvailableException", "NodeNotFoundException", "NoSuchElementException", "NotASubWorkflowException", "InvalidRequestException", "OperationNotAllowedException", "IOException", ] as const;
 export type KnownExecutorExceptions = (typeof KNOWN_EXECUTOR_EXCEPTIONS)[number];
 
 export class GatewayException extends Error {}
@@ -6167,6 +6155,7 @@ export class UnknownGatewayException extends GatewayException {
         this.data = e.data;   
     }
 }
+export class ServiceCallException extends KnownGatewayException {}
 export class NodeDescriptionNotAvailableException extends KnownGatewayException {}
 export class NodeNotFoundException extends KnownGatewayException {}
 export class NoSuchElementException extends KnownGatewayException {}
@@ -6201,6 +6190,7 @@ function isUnknownGatewayException(e: unknown): e is { message: string, data: Ob
 };
 
 const exceptionClassMapping = {
+    "ServiceCallException": ServiceCallException,
     "NodeDescriptionNotAvailableException": NodeDescriptionNotAvailableException,
     "NodeNotFoundException": NodeNotFoundException,
     "NoSuchElementException": NoSuchElementException,
