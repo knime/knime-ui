@@ -2,7 +2,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
-import { isHubProvider } from "@/store/spaces/util";
+import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
 
 import { useActiveRouteData } from "./useActiveRouteData";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -32,16 +32,18 @@ export const usePageBreadcrumbs = () => {
     const spaceProviderBreadcrumbItem: BreadcrumbItem = {
       text: formatSpaceProviderName(activeSpaceProvider.value),
       icon: getSpaceProviderIcon(activeSpaceProvider.value),
-      clickable: true,
-      onClick: () => {
-        $router.push({
-          name: APP_ROUTES.Home.SpaceSelectionPage,
-          params: {
-            spaceProviderId: activeSpaceProvider.value.id,
-            groupId: "all",
-          },
-        });
-      },
+      clickable: !isLocalProvider(activeSpaceProvider.value),
+      ...(!isLocalProvider(activeSpaceProvider.value) && {
+        onClick: () => {
+          $router.push({
+            name: APP_ROUTES.Home.SpaceSelectionPage,
+            params: {
+              spaceProviderId: activeSpaceProvider.value.id,
+              groupId: "all",
+            },
+          });
+        },
+      }),
     };
 
     if (!isHubProvider(activeSpaceProvider.value) || isShowingAllSpaces.value) {
