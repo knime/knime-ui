@@ -18,7 +18,7 @@ import {
   StoreActionException,
   displayStoreActionExceptionMessage,
 } from "@/api/gateway-api/exceptions";
-import { FailedProcedureCallException } from "@/api/gateway-api/generated-api";
+import { ServiceCallException } from "@/api/gateway-api/generated-api";
 
 const mockedAPI = deepMocked(API);
 
@@ -453,7 +453,7 @@ describe("SpaceExplorerActions.vue", () => {
         dispatchSpy.mockRejectedValueOnce(
           new StoreActionException(
             "something went wrong",
-            new FailedProcedureCallException({ message: "IO issue" }),
+            new ServiceCallException({ message: "IO issue" }),
           ),
         );
 
