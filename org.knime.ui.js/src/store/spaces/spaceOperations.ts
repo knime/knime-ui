@@ -5,6 +5,7 @@ import { API } from "@/api";
 import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
 import { StoreActionException } from "@/api/gateway-api/exceptions";
 import {
+  NetworkException,
   ServiceCallException,
   SpaceGroup,
   SpaceItem,
@@ -78,6 +79,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
               "Error while fetching workflow group content",
               error,
             );
+          }
+          if (error instanceof NetworkException) {
+            throw new StoreActionException("Connectivity problem", error);
           }
 
           throw error;

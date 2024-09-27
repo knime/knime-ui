@@ -5458,6 +5458,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {NetworkException} If a Gateway service failed due to a network error.
          */
         getSpaceProvider(
         	params: { spaceProviderId: string  }
@@ -5509,6 +5510,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {NetworkException} If a Gateway service failed due to a network error.
          */
         listWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
@@ -6168,7 +6170,7 @@ export const createAPI = (configuration: Configuration) => {
 /** 
  * Error handling 
  */
-export const KNOWN_EXECUTOR_EXCEPTIONS = ["ServiceCallException", "NodeDescriptionNotAvailableException", "NodeNotFoundException", "NoSuchElementException", "NotASubWorkflowException", "InvalidRequestException", "OperationNotAllowedException", "IOException", ] as const;
+export const KNOWN_EXECUTOR_EXCEPTIONS = ["ServiceCallException", "NetworkException", "NodeDescriptionNotAvailableException", "NodeNotFoundException", "NoSuchElementException", "NotASubWorkflowException", "InvalidRequestException", "OperationNotAllowedException", "IOException", ] as const;
 export type KnownExecutorExceptions = (typeof KNOWN_EXECUTOR_EXCEPTIONS)[number];
 
 export class GatewayException extends Error {}
@@ -6185,6 +6187,7 @@ export class UnknownGatewayException extends GatewayException {
     }
 }
 export class ServiceCallException extends KnownGatewayException {}
+export class NetworkException extends KnownGatewayException {}
 export class NodeDescriptionNotAvailableException extends KnownGatewayException {}
 export class NodeNotFoundException extends KnownGatewayException {}
 export class NoSuchElementException extends KnownGatewayException {}
@@ -6220,6 +6223,7 @@ function isUnknownGatewayException(e: unknown): e is { message: string, data: Ob
 
 const exceptionClassMapping = {
     "ServiceCallException": ServiceCallException,
+    "NetworkException": NetworkException,
     "NodeDescriptionNotAvailableException": NodeDescriptionNotAvailableException,
     "NodeNotFoundException": NodeNotFoundException,
     "NoSuchElementException": NoSuchElementException,

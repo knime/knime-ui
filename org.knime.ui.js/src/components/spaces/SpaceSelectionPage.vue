@@ -6,6 +6,10 @@ import { FunctionButton } from "@knime/components";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
+import {
+  StoreActionException,
+  displayStoreActionExceptionMessage,
+} from "@/api/gateway-api/exceptions";
 import SearchButton from "@/components/common/SearchButton.vue";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { useStore } from "@/composables/useStore";
@@ -118,18 +122,11 @@ const reload = async () => {
       id: activeSpaceProvider.value.id,
     });
   } catch (error) {
-    const message =
-      error &&
-      typeof error === "object" &&
-      "message" in error &&
-      typeof error.message === "string"
-        ? error.message
-        : "Could not reload spaces";
-
-    $toast.show({
-      type: "error",
-      message,
-    });
+    if (error instanceof StoreActionException) {
+      displayStoreActionExceptionMessage(error);
+      return;
+    }
+    throw error; // Bubble up to global error handler
   }
 };
 </script>

@@ -4,8 +4,11 @@ import { mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import {
+  StoreActionException,
+  displayStoreActionExceptionMessage,
+} from "@/api/gateway-api/exceptions";
 import SearchButton from "@/components/common/SearchButton.vue";
-import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as spacesStore from "@/store/spaces";
 import {
@@ -13,7 +16,7 @@ import {
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { mockVuexStore, mockedObject } from "@/test/utils";
+import { mockVuexStore } from "@/test/utils";
 import SpaceCard from "../SpaceCard.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";
@@ -26,7 +29,7 @@ vi.mock("vue-router", () => ({
   useRoute: vi.fn(),
 }));
 
-const toast = mockedObject(getToastsProvider());
+vi.mock("@/api/gateway-api/exceptions");
 
 describe("SpaceSelectionPage.vue", () => {
   const spaceGroup1 = createSpaceGroup({
@@ -103,14 +106,16 @@ describe("SpaceSelectionPage.vue", () => {
         id: spaceProvider.id,
       });
 
-      expect(toast.show).not.toHaveBeenCalled();
+      expect(displayStoreActionExceptionMessage).not.toHaveBeenCalled();
     });
 
     it("should show error when reloading spaces", async () => {
       const { wrapper, dispatchSpy } = doMount();
 
       dispatchSpy.mockImplementationOnce(() =>
-        Promise.reject(new Error("failed")),
+        Promise.reject(
+          new StoreActionException("Connectivity issue", new Error("failed")),
+        ),
       );
 
       await wrapper.find(".reload-button").trigger("click");
@@ -119,11 +124,7 @@ describe("SpaceSelectionPage.vue", () => {
         id: spaceProvider.id,
       });
 
-      expect(toast.show).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: "failed",
-        }),
-      );
+      expect(displayStoreActionExceptionMessage).toHaveBeenCalled();
     });
 
     it("should render correctly", () => {
