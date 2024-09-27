@@ -107,47 +107,11 @@ describe("applicationShortcuts", () => {
   });
 
   describe("switchTabs", () => {
-    // Shared test for forward/backward conditions
     it.each([
-      [
-        "switchToNextWorkflow",
-        applicationShortcuts.switchToNextWorkflow.condition,
-      ],
-      [
-        "switchToPreviousWorkflow",
-        applicationShortcuts.switchToPreviousWorkflow.condition,
-      ],
-    ])("condition (%s)", (_, condition) => {
-      $store.state.application = {
-        activeProjectId: "A",
-        openProjects: [
-          { projectId: "A" },
-          { projectId: "B" },
-          { projectId: "C" },
-        ],
-      };
-      expect(condition({ $store })).toBe(true);
-      // no active project
-      $store.state.application = {
-        openProjects: [
-          { projectId: "A" },
-          { projectId: "B" },
-          { projectId: "C" },
-        ],
-      };
-      expect(condition({ $store })).toBe(false);
-      // Only one open project
-      $store.state.application = {
-        activeProjectId: "A",
-        openProjects: [{ projectId: "A" }],
-      };
-      expect(condition({ $store })).toBe(false);
-    });
-
-    it.each([
+      [null, "A"],
       ["A", "B"],
       ["B", "C"],
-      ["C", "A"],
+      ["C", null],
     ])(
       "execute switchToNextWorkflow (%s -> %s)",
       (activeProjectId, expectedProjectId) => {
@@ -157,22 +121,35 @@ describe("applicationShortcuts", () => {
           { projectId: "B" },
           { projectId: "C" },
         ];
+
         $store.state.application.activeProjectId = activeProjectId;
         applicationShortcuts.switchToNextWorkflow.execute({ $store, $router });
+
+        const routeName =
+          expectedProjectId === null
+            ? APP_ROUTES.Home.GetStarted
+            : APP_ROUTES.WorkflowPage;
+
+        const routeParams =
+          expectedProjectId === null
+            ? undefined
+            : {
+                projectId: expectedProjectId,
+                workflowId: "root",
+              };
+
         expect($router.push).toHaveBeenNthCalledWith(1, {
-          name: APP_ROUTES.WorkflowPage,
-          params: {
-            projectId: expectedProjectId,
-            workflowId: "root",
-          },
+          name: routeName,
+          params: routeParams,
         });
       },
     );
 
     it.each([
-      ["A", "C"],
-      ["B", "A"],
+      [null, "C"],
       ["C", "B"],
+      ["B", "A"],
+      ["A", null],
     ])(
       "execute switchToPreviousWorkflow (%s -> %s)",
       (activeProjectId, expectedProjectId) => {
@@ -187,12 +164,23 @@ describe("applicationShortcuts", () => {
           $store,
           $router,
         });
+
+        const routeName =
+          expectedProjectId === null
+            ? APP_ROUTES.Home.GetStarted
+            : APP_ROUTES.WorkflowPage;
+
+        const routeParams =
+          expectedProjectId === null
+            ? undefined
+            : {
+                projectId: expectedProjectId,
+                workflowId: "root",
+              };
+
         expect($router.push).toHaveBeenNthCalledWith(1, {
-          name: APP_ROUTES.WorkflowPage,
-          params: {
-            projectId: expectedProjectId,
-            workflowId: "root",
-          },
+          name: routeName,
+          params: routeParams,
         });
       },
     );

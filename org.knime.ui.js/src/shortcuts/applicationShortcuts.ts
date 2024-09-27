@@ -25,19 +25,24 @@ const switchActiveProject = (
   offset: -1 | 1,
 ) => {
   const { openProjects, activeProjectId } = store.state.application;
-  const currentIndex = openProjects.findIndex(
-    (p) => p.projectId === activeProjectId,
-  );
-  const nextIndex =
-    (currentIndex + offset + openProjects.length) % openProjects.length;
 
-  router.push({
-    name: APP_ROUTES.WorkflowPage,
-    params: {
-      projectId: openProjects[nextIndex].projectId,
-      workflowId: "root",
-    },
-  });
+  type Ids = (string | null)[];
+  const allIds = ([null] as Ids).concat(openProjects.map((p) => p.projectId));
+
+  // add +1 to index due to null being the 1st position in the ids array
+  const currentProjIndex =
+    openProjects.findIndex((p) => p.projectId === activeProjectId) + 1;
+
+  const nextIndex = (currentProjIndex + offset + allIds.length) % allIds.length;
+
+  if (allIds[nextIndex]) {
+    router.push({
+      name: APP_ROUTES.WorkflowPage,
+      params: { projectId: allIds[nextIndex], workflowId: "root" },
+    });
+  } else {
+    router.push({ name: APP_ROUTES.Home.GetStarted });
+  }
 };
 
 const applicationShortcuts: ApplicationShortcuts = {
@@ -88,9 +93,6 @@ const applicationShortcuts: ApplicationShortcuts = {
     execute: ({ $store, $router }) => {
       switchActiveProject($store, $router, 1);
     },
-    condition: ({ $store }) =>
-      Boolean($store.state.application.activeProjectId) &&
-      $store.state.application.openProjects.length >= 2,
   },
   switchToPreviousWorkflow: {
     text: "Switch to previous opened workflow",
@@ -99,9 +101,6 @@ const applicationShortcuts: ApplicationShortcuts = {
     execute: ({ $store, $router }) => {
       switchActiveProject($store, $router, -1);
     },
-    condition: ({ $store }) =>
-      Boolean($store.state.application.activeProjectId) &&
-      $store.state.application.openProjects.length >= 2,
   },
 };
 
