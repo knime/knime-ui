@@ -4,7 +4,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 import CategoryTree from "../CategoryTree.vue";
 import type { NodeCategory } from "@/api/gateway-api/generated-api";
-import Tree from "@/components/common/tree/Tree.vue";
+import { Tree } from "@knime/virtual-tree";
 import { useAddNodeToWorkflow } from "../useAddNodeToWorkflow";
 
 vi.mock("@/components/nodeRepository/useAddNodeToWorkflow", () => {

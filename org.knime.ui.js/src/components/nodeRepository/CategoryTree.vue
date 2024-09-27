@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import Tree from "@/components/common/tree/Tree.vue";
+import { Tree } from "@knime/virtual-tree";
 
 import {
   type NodeKey,
   type TreeNodeOptions,
   type BaseTreeNode,
   type KeydownEvent,
-} from "@/components/common/tree/types";
+} from "@knime/virtual-tree";
 
 import { computed, onMounted, ref } from "vue";
 import { useStore } from "@/composables/useStore";
@@ -141,7 +141,7 @@ defineExpose({ focusFirst, getExpandedNodeIds });
         :selectable="false"
         @keydown="onTreeKeydown"
       >
-        <template #leaf-inner="{ treeNode }: { treeNode: BaseTreeNode }">
+        <template #leaf="{ treeNode }: { treeNode: BaseTreeNode }">
           <DraggableNodeTemplate
             class="node-template-component"
             :node-template="treeNode.origin.nodeTemplate"
