@@ -42,10 +42,23 @@ const rounded = computed(() => round(props.progress * 100));
   padding: 10px 0;
 }
 
-& progress[value] {
+/* In Firefox we have to use the <progress> element direcly to style the
+unfinished part of the bar */
+& progress {
   --color: var(--knime-yellow);
   --background: var(--knime-silver-sand);
+  --radius: 10px;
 
+  border-radius: var(--radius);
+}
+
+/* Firefox */
+& progress[value]::-moz-progress-bar {
+  border-radius: var(--radius);
+  background: var(--color);
+}
+
+& progress[value] {
   width: 200px;
   height: 10px;
   margin: 0 10px;
@@ -53,12 +66,12 @@ const rounded = computed(() => round(props.progress * 100));
 }
 
 & progress[value]::-webkit-progress-bar {
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--background);
 }
 
 & progress[value]::-webkit-progress-value {
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--color);
   transition: width 0.3s ease-in-out;
 }
