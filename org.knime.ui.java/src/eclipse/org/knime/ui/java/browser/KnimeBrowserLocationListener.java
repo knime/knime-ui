@@ -55,9 +55,7 @@ import java.util.function.Supplier;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.widgets.Display;
-import org.knime.core.webui.WebUIUtil;
 import org.knime.js.cef.CEFZoomSync;
-import org.knime.ui.java.api.ImportURI;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
@@ -86,11 +84,11 @@ public class KnimeBrowserLocationListener implements LocationListener {
             if (LifeCycle.get().isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
                 LifeCycle.get().reload();
             }
-        } else if (ImportURI.importURI(createCursorLocationSupplier(m_browser), event.location)) {
-            // Don't change the location but import the URI instead
-            event.doit = false;
+//        } else if (ImportURI.importURI(createCursorLocationSupplier(m_browser), event.location)) {
+//            // Don't change the location but import the URI instead
+//            event.doit = false;
         } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
+//            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
             event.doit = false;
         }
     }
