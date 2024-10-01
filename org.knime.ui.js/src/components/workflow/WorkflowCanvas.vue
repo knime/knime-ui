@@ -100,10 +100,11 @@ const openQuickAddNodeMenu = (event: MouseEvent) => {
       'indicate-node-drag': isWorkflowEmpty && isDraggingNodeTemplate,
     }"
     @drop.stop="onDrop"
-    @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
     @dblclick.exact="openQuickAddNodeMenu"
   >
+    <!-- @dragover.prevent.stop="onDragOver" -->
+
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { navigatorUtils } from "@knime/utils";
 import { useStore } from "@/composables/useStore";
 import { useFeatures } from "@/plugins/feature-flags";
@@ -10,6 +10,8 @@ import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMe
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
+import { useAppDropTarget } from "@/composables/useAppDropTarget";
+import { getToastsProvider } from "@/plugins/toasts";
 
 const $features = useFeatures();
 const store = useStore();
@@ -52,10 +54,27 @@ const closeContextMenu = (event: unknown) => {
     store.dispatch("application/toggleContextMenu", { event });
   }
 };
+const wfpanel = ref<HTMLElement>();
+
+const $toast = getToastsProvider();
+
+const { setTarget } = useAppDropTarget({
+  onURLDrop: (url) => {
+    $toast.show({
+      headline: "URL Dropped",
+      message: url,
+    });
+  },
+});
+
+onMounted(() => {
+  setTarget(wfpanel.value!);
+});
 </script>
 
 <template>
   <div
+    ref="wfpanel"
     :class="[
       'workflow-panel',
       { 'read-only': !isWritable },

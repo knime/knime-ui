@@ -24,6 +24,7 @@ import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import ConfirmDialog from "./application/ConfirmDialog.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
+import DropTargetOverlay from "@/composables/useAppDropTarget/DropTargetOverlay.vue";
 
 /**
  * Main page and entry point of KNIME AP Next
@@ -194,6 +195,8 @@ const onCloseError = () => {
     <ToastStack class="toast-stack" />
 
     <BlockUi />
+
+    <DropTargetOverlay />
   </div>
 </template>
 

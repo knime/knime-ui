@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
@@ -8,6 +8,8 @@ import SpaceSelectionDropdown from "@/components/spaces/SpaceSelectionDropdown.v
 import SpaceExplorerActions from "@/components/spaces/SpaceExplorerActions.vue";
 
 import { useStore } from "@/composables/useStore";
+import { useAppDropTarget } from "@/composables/useAppDropTarget";
+import { getToastsProvider } from "@/plugins/toasts";
 
 const store = useStore();
 const activeProjectId = computed(() => store.state.application.activeProjectId);
@@ -28,10 +30,28 @@ const changeDirectory = async (pathId: string) => {
   });
   filterQuery.value = "";
 };
+
+const explorer = ref<InstanceType<typeof SpaceExplorer>>();
+
+const $toast = getToastsProvider();
+
+const { setTarget } = useAppDropTarget({
+  onFileDrop: (files) => {
+    const names = files.map((f) => f.name).join("\n");
+    $toast.show({
+      headline: "Dropped files",
+      message: names,
+    });
+  },
+});
+
+onMounted(() => {
+  setTarget(explorer.value!.$el);
+});
 </script>
 
 <template>
-  <SidebarPanelLayout>
+  <SidebarPanelLayout ref="explorer">
     <template #header>
       <SpaceSelectionDropdown :project-id="activeProjectId!" />
 
