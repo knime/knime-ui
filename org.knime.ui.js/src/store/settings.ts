@@ -1,7 +1,7 @@
 import type { RootStoreState } from "@/store/types";
 import type { ActionTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 
 /**
  * Store that manages UI settings, for now saved to local storage

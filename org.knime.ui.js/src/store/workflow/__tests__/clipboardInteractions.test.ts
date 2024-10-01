@@ -9,7 +9,7 @@ import {
 import { nextTick } from "vue";
 
 import { deepMocked } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import { pastePartsAt } from "@/util/pasteToWorkflow";
 
 import { createConnection } from "@/test/factories";

@@ -7,7 +7,7 @@ import {
 
 import { AlertType } from "@knime/ui-extension-service";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
 
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";

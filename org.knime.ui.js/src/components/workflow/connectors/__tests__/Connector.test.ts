@@ -25,7 +25,7 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { PortType } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
 import * as workflowStore from "@/store/workflow";

@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { SpaceProviderNS } from "@/api/custom-types";
 

@@ -1,5 +1,5 @@
 import type { Store } from "vuex";
-import { API } from "@api";
+import { API } from "@/api";
 import { notifyPatch } from "@/util/event-syncer";
 import { nodeSize } from "@/style/shapes";
 import type { RootStoreState } from "@/store/types";

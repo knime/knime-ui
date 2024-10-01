@@ -6,7 +6,7 @@ import { Pill, FunctionButton, Button } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
 
 const LOCAL_STORAGE_KEY = "home-page-tile";

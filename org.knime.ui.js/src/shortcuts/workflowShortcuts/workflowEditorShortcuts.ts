@@ -5,7 +5,7 @@ import type {
 } from "../types";
 import type { KnimeNode } from "@/api/custom-types";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { portPositions } from "@/util/portShift";
 import { nodeSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";

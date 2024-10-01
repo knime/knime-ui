@@ -23,7 +23,7 @@ import {
   createSearchNodesResponse,
 } from "@/test/factories";
 
-import { API } from "@api";
+import { API } from "@/api";
 import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
 

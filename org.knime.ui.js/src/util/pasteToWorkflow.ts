@@ -1,4 +1,4 @@
-import { API } from "@api";
+import { API } from "@/api";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { nodeSize } from "@/style/shapes";
 

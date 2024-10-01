@@ -7,7 +7,7 @@ import { SubMenu } from "@knime/components";
 
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import * as spacesStore from "@/store/spaces";
 import type { RootStoreState } from "@/store/types";

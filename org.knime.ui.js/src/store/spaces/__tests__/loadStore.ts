@@ -4,7 +4,7 @@ import type { RootStoreState } from "@/store/types";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { createJob, createSchedule } from "@/test/factories";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 
 import * as spacesStore from "../index";
@@ -88,7 +88,7 @@ type LoadStoreOpts = {
   mockListSchedulesForWorkflowResponse?: typeof listSchedulesForWorkflowResponse;
   openProjects?: Project[];
   activeProjectId?: string;
-  forceCloseProjects?: Mock<any[], any>;
+  forceCloseProjects?: Mock<any>;
   isUnknownProject?: boolean;
   activeProjectOrigin?: SpaceItemReference | null;
 };

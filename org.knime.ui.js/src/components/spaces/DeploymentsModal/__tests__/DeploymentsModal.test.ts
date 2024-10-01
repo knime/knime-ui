@@ -5,7 +5,7 @@ import { deepMocked, mockVuexStore } from "@/test/utils";
 
 import { Modal } from "@knime/components";
 
-import { API } from "@api";
+import { API } from "@/api";
 import * as spacesStore from "@/store/spaces";
 import DeploymentsModal from "../DeploymentsModal.vue";
 import { createJob, createSchedule } from "@/test/factories";

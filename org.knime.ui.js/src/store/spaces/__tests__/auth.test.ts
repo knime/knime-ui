@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { deepMocked } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 
 import { loadStore } from "./loadStore";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";

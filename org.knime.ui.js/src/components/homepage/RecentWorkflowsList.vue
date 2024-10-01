@@ -11,7 +11,7 @@ import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 import type { FileExplorerItem } from "@knime/components";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";

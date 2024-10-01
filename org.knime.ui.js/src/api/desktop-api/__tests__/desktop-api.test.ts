@@ -3,6 +3,8 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { API } from "../../index";
 import { $bus } from "@/plugins/event-bus";
 
+vi.unmock("@/api");
+
 type BrowserFunctionDescriptor = {
   name: string;
   desktopApiName?: string;
@@ -264,7 +266,7 @@ describe("desktop-api", () => {
       const paramEntries = new Map(params);
       const paramsAsObj = Object.fromEntries(paramEntries);
 
-      const mappingFn = ([_, value]) => value;
+      const mappingFn = ([_, value]: readonly [string, any]) => value;
 
       const values = flattenParams
         ? [...params].flatMap(mappingFn)

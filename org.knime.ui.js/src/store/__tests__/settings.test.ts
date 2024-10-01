@@ -5,7 +5,7 @@ import { deepMocked, mockVuexStore } from "@/test/utils";
 import { UI_SCALE_STEPSIZE, ratioToZoomLevel } from "../settings";
 import * as settingsStoreConfig from "../settings";
 
-import { API } from "@api";
+import { API } from "@/api";
 const mockedAPI = deepMocked(API);
 
 const loadStore = () => {

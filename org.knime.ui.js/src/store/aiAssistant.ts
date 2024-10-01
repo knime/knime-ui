@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { RootStoreState } from "./types";
 import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
 import type { KaiMessage } from "@/api/gateway-api/generated-api";

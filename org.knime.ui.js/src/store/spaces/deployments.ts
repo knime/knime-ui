@@ -1,6 +1,6 @@
 import type { MutationTree, ActionTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { Job, Schedule } from "@/api/custom-types";
 
 import type { RootStoreState } from "../types";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { API } from "@api";
+import { API } from "@/api";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import { Button } from "@knime/components";

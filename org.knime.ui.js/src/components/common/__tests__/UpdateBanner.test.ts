@@ -3,7 +3,7 @@ import { shallowMount } from "@vue/test-utils";
 
 import { Button } from "@knime/components";
 import { deepMocked } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import UpdateBanner from "../UpdateBanner.vue";
 
 const mockedAPI = deepMocked(API);

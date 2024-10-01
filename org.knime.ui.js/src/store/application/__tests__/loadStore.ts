@@ -1,6 +1,6 @@
 import { vi, type Mock } from "vitest";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
 import * as applicationStore from "@/store/application";

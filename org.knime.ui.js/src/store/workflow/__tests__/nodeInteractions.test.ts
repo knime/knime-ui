@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";

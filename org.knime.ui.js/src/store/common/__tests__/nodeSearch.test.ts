@@ -6,7 +6,7 @@ import {
   mockVuexStore,
   withPorts,
 } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 
 import {
   createSearchNodesResponse,

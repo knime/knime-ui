@@ -3,7 +3,7 @@ import { version, nextTick } from "vue";
 
 import { mount, flushPromises } from "@vue/test-utils";
 import { Button } from "@knime/components";
-import { API } from "@api";
+import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 
 import ErrorOverlay from "../ErrorOverlay.vue";

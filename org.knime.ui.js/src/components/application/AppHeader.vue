@@ -12,7 +12,7 @@ import HouseIcon from "@knime/styles/img/icons/house.svg";
 
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";

@@ -8,7 +8,7 @@ import {
   PortType,
   type NodeTemplate,
 } from "@/api/gateway-api/generated-api";
-import { API } from "@api";
+import { API } from "@/api";
 
 import * as panelStore from "@/store/panel";
 import * as worflowStore from "@/store/workflow";

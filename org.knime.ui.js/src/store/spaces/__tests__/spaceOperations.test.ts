@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { deepMocked } from "@/test/utils";
 import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
@@ -9,6 +9,7 @@ import {
   createSpace,
   createSpaceProvider,
   createProject,
+  createSpaceGroup,
 } from "@/test/factories";
 import { $bus } from "@/plugins/event-bus";
 import { ServiceCallException } from "@/api/gateway-api/generated-api";
@@ -83,6 +84,7 @@ describe("spaces::spaceOperations", () => {
       const { store } = loadStore();
 
       // mute consola
+      // @ts-ignore
       consola.error = () => {};
 
       store.state.spaces.spaceProviders = {
@@ -435,7 +437,11 @@ describe("spaces::spaceOperations", () => {
 
       const space = createSpace({ id: "local" });
       const localProvider = createSpaceProvider({
-        spaces: [space],
+        spaceGroups: [
+          createSpaceGroup({
+            spaces: [space],
+          }),
+        ],
       });
 
       const openProjects = [
@@ -674,8 +680,12 @@ describe("spaces::spaceOperations", () => {
     describe("getOpenedWorkflowItems", () => {
       it("should return the opened workflow items", () => {
         const openProjects = [
-          { origin: { providerId: "local", spaceId: "local", itemId: "4" } },
-          { origin: { providerId: "local", spaceId: "local", itemId: "8" } },
+          createProject({
+            origin: { providerId: "local", spaceId: "local", itemId: "4" },
+          }),
+          createProject({
+            origin: { providerId: "local", spaceId: "local", itemId: "8" },
+          }),
         ];
 
         const { store } = loadStore({ openProjects });
@@ -705,22 +715,22 @@ describe("spaces::spaceOperations", () => {
     describe("getOpenedFolderItems", () => {
       it("should return the opened folder items", () => {
         const openProjects = [
-          {
+          createProject({
             origin: {
               providerId: "local",
               spaceId: "local",
               itemId: "workflowItem0",
               ancestorItemIds: ["2", "innerFolderId"],
             },
-          },
-          {
+          }),
+          createProject({
             origin: {
               providerId: "local",
               spaceId: "local",
               itemId: "workflowItem2",
               ancestorItemIds: ["5"],
             },
-          },
+          }),
         ];
 
         const activeWorkflowGroup = JSON.parse(

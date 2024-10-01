@@ -8,7 +8,7 @@ import CheckIcon from "@knime/styles/img/icons/check.svg";
 import WarningIcon from "@knime/styles/img/icons/circle-warning.svg";
 import SwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
 
-import { API } from "@api";
+import { API } from "@/api";
 import DynamicEnvRenderer from "@/environment/DynamicEnvRenderer.vue";
 import { copyReportToClipboard } from "@/util/errorHandling";
 

@@ -29,7 +29,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
-        "@api": fileURLToPath(new URL("./src/api", import.meta.url)),
       },
     },
 
@@ -39,11 +38,6 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       testTimeout: 30000,
       reporters: ["default", "junit"],
-      alias: {
-        "@api": fileURLToPath(
-          new URL("./src/api/__mocks__/index.ts", import.meta.url),
-        ),
-      },
       coverage: {
         provider: "v8",
         all: true,

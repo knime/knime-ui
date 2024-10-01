@@ -5,7 +5,7 @@ import {
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { gatewayRpcClient } from "@/api/gateway-api";
 

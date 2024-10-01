@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 
 import type { RootStoreState } from "../types";
 import { getNextProjectId, getProjectAndWorkflowIds } from "./util";

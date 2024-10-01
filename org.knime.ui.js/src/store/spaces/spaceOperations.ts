@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import {

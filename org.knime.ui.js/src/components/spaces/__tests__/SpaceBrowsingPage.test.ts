@@ -8,7 +8,7 @@ import * as applicationStore from "@/store/application";
 
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
 
-import { API } from "@api";
+import { API } from "@/api";
 import {
   createSpace,
   createSpaceGroup,

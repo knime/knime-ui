@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { deepMocked, mockVuexStore } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 
 import {
   createAvailablePortTypes,

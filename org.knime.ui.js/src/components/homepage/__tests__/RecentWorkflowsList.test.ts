@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { FileExplorer } from "@knime/components";
 import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import * as spacesStore from "@/store/spaces";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { createSpaceProvider } from "@/test/factories";

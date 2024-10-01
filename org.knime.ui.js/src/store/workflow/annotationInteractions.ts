@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import {
   TypedText,
   type ReorderWorkflowAnnotationsCommand,

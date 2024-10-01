@@ -1,7 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { Router } from "vue-router";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
 

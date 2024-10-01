@@ -8,7 +8,7 @@ import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as spacesStore from "@/store/spaces";
 
 import CreateWorkflowModal from "../CreateWorkflowModal.vue";
-import { API } from "@api";
+import { API } from "@/api";
 import { $bus } from "@/plugins/event-bus";
 
 const busEmitSpy = vi.spyOn($bus, "emit");

@@ -15,7 +15,7 @@ import {
 } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import SpaceExplorer from "../SpaceExplorer.vue";

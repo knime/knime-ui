@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { createComponentNode, createWorkflow } from "@/test/factories";
 import { deepMocked, mockedObject } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import {
   NodeState,
   UpdateLinkedComponentsResult,

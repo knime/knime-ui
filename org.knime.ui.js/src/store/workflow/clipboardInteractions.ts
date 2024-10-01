@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { createAbortablePromise } from "@/api/utils";
 import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
 import { geometry } from "@/util/geometry";

@@ -5,7 +5,7 @@ import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 
-import { API } from "@api";
+import { API } from "@/api";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as applicationStore from "@/store/application";

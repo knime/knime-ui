@@ -7,7 +7,7 @@ import {
   type XY,
   AppState,
 } from "@/api/gateway-api/generated-api";
-import { API } from "@api";
+import { API } from "@/api";
 
 import type { RootStoreState } from "../types";
 import { getNextProjectId } from "../workflow/util";

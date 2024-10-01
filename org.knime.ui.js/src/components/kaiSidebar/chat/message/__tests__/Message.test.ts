@@ -13,7 +13,7 @@ import {
 } from "@/test/factories";
 import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as applicationStore from "@/store/application";
-import { API } from "@api";
+import { API } from "@/api";
 
 import Message from "../Message.vue";
 import KaiReferences from "../KaiReferences.vue";

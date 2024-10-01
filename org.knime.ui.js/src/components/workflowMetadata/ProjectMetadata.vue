@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRaw, toRef, toRefs } from "vue";
 
-import { API } from "@api";
+import { API } from "@/api";
 import {
   TypedText,
   type Link,

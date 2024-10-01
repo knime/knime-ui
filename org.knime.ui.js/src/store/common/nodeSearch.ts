@@ -1,7 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { debounce } from "lodash-es";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type {
   NodeTemplateWithExtendedPorts,
   NodeRelation,

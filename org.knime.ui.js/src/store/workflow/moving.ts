@@ -1,6 +1,6 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
 
 import type { RootStoreState } from "../types";

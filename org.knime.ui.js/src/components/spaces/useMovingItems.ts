@@ -1,6 +1,6 @@
 import { computed, type Ref } from "vue";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
 

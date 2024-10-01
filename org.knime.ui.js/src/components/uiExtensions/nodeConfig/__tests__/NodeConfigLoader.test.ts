@@ -8,7 +8,7 @@ import {
 } from "@vue/test-utils";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 
 import { UIExtension } from "@knime/ui-extension-renderer";
 import * as applicationStore from "@/store/application";

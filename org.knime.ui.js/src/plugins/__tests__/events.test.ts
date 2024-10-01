@@ -11,7 +11,7 @@ import {
 import { notifyPatch } from "@/util/event-syncer";
 import { deepMocked } from "@/test/utils";
 
-import { API } from "@api";
+import { API } from "@/api";
 import {
   ShowToastEvent,
   type EventHandlers,

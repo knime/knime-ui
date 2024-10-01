@@ -1,5 +1,5 @@
 import { expect, describe, it, vi, afterEach } from "vitest";
-import { API } from "@api";
+import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 import { loadStore } from "./loadStore";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";

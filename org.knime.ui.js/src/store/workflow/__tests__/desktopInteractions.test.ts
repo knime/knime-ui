@@ -9,7 +9,7 @@ import {
 } from "vitest";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
-import { API } from "@api";
+import { API } from "@/api";
 import { getNextProjectId } from "../util";
 import { createWorkflow } from "@/test/factories";
 

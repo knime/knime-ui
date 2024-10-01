@@ -5,7 +5,7 @@ import { useRoute } from "vue-router";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
-import { API } from "@api";
+import { API } from "@/api";
 import CloseIcon from "@/assets/cancel.svg";
 import AppHeader from "../AppHeader.vue";
 import AppHeaderTab from "../AppHeaderTab.vue";

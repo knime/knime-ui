@@ -16,7 +16,7 @@ import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { useStore } from "@/composables/useStore";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import CloseableTagList from "./CloseableTagList.vue";

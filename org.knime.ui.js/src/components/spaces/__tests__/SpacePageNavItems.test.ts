@@ -10,7 +10,7 @@ import {
   createSpaceProvider,
 } from "@/test/factories";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { NavMenuItem } from "@/components/common/side-nav";
 import { APP_ROUTES } from "@/router/appRoutes";

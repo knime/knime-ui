@@ -6,7 +6,7 @@ import {
   withPorts,
   withoutKeys,
 } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import { state as nodeSearchState } from "@/store/common/nodeSearch";
 
 export const getNodeRecommendationsResponse = [

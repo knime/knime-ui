@@ -1,7 +1,7 @@
 import { expect, describe, it, vi, afterEach, beforeEach } from "vitest";
 /* eslint-disable max-lines */
 import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import {
   NODE_FACTORIES,
   createAvailablePortTypes,

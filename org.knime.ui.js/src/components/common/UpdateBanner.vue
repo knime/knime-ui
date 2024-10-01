@@ -2,7 +2,7 @@
 import { type PropType, defineComponent } from "vue";
 
 import { Button } from "@knime/components";
-import { API } from "@api";
+import { API } from "@/api";
 import type { UpdateAvailableEvent } from "@/api/gateway-api/generated-api";
 
 const DOWNLOAD_URL = "https://www.knime.com/downloads?src=knimeappmodernui";

@@ -4,7 +4,7 @@ import * as applicationStore from "@/store/application";
 import * as uiControlsStore from "@/store/uiControls";
 import workflowShortcuts from "../workflowShortcuts";
 import { deepMocked } from "@/test/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import { createNativeNode } from "@/test/factories";
 import { Node } from "@/api/gateway-api/generated-api";
 import { getNextSelectedPort } from "@/util/portSelection";

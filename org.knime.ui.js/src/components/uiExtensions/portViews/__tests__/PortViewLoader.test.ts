@@ -1,7 +1,7 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
 import { UIExtension } from "@knime/ui-extension-renderer";

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 

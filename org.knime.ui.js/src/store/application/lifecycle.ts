@@ -1,7 +1,7 @@
 import { geometry } from "@/util/geometry";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { encodeString } from "@/util/encodeString";
 

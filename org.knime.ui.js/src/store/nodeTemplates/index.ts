@@ -1,6 +1,6 @@
 import type { ActionTree, MutationTree } from "vuex";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type {
   AvailablePortTypes,
   NodeTemplateWithExtendedPorts,

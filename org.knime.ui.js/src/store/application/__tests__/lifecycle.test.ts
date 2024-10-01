@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import { routes } from "@/router/router";
-import { API } from "@api";
+import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 import { applicationState, loadStore } from "./loadStore";
 

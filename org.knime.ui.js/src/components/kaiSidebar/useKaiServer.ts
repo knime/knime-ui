@@ -1,6 +1,6 @@
 import { ref, reactive, computed } from "vue";
 import { sleep } from "@knime/utils";
-import { API } from "@api";
+import { API } from "@/api";
 import type { KaiUiStrings } from "@/api/gateway-api/generated-api";
 
 const SLEEP_AFTER_ERROR = 2000;

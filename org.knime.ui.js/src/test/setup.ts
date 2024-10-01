@@ -9,6 +9,7 @@ config.global.stubs = {
 };
 
 setupLogger();
+vi.mock("@/api");
 
 // mock presence of 'EquoCommService' object
 window.EquoCommService = {

@@ -5,7 +5,7 @@ import { VueWrapper, shallowMount } from "@vue/test-utils";
 
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
-import { API } from "@api";
+import { API } from "@/api";
 import * as $shapes from "@/style/shapes";
 
 import * as selectionStore from "@/store/selection";

@@ -10,7 +10,7 @@ import { mockUserAgent } from "jest-useragent-mock";
 
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { API } from "@api";
+import { API } from "@/api";
 import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";

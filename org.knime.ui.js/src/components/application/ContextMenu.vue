@@ -6,7 +6,7 @@ import { MenuItems } from "@knime/components";
 import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
-import { API } from "@api";
+import { API } from "@/api";
 import type { XY } from "@/api/gateway-api/generated-api";
 import type {
   AvailablePortTypes,
