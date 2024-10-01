@@ -33,7 +33,7 @@
     "@knime/components": "^1.1.9",
     "@knime/knime-ui-table": "^0.5.6",
     "@knime/rich-text-editor": "^1.2.9",
-    "@knime/styles": "^1.0.7",
+    "@knime/styles": "^1.0.10",
     "@knime/ui-extension-renderer": "^1.1.8",
     "@knime/ui-extension-service": "0.39.0",
     "@knime/utils": "^1.0.12",
