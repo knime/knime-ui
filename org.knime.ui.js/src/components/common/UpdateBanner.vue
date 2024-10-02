@@ -21,6 +21,12 @@ export default defineComponent({
       default: () => ({}) as UpdateAvailableEvent,
     },
   },
+  data() {
+    return {
+      isDialogOpen: false,
+      isThrottled: false,
+    };
+  },
   computed: {
     hasBugFixes() {
       return (
@@ -82,8 +88,25 @@ export default defineComponent({
   },
   methods: {
     onUpdateAction() {
+      if (this.isThrottled) {
+        return;
+      }
+
+      // Throttle the button clicks for 600ms
+      this.isThrottled = true;
+      setTimeout(() => {
+        this.isThrottled = false;
+      }, 600);
+
+      if (this.isDialogOpen) {
+        return;
+      }
+
       if (this.hasBugFixes || this.hasReleaseAndIsUpdatePossible) {
-        API.desktop.openUpdateDialog();
+        this.isDialogOpen = true;
+        API.desktop.openUpdateDialog().finally(() => {
+          this.isDialogOpen = false; // Reset when dialog closes
+        });
       } else {
         window.open(DOWNLOAD_URL);
       }
