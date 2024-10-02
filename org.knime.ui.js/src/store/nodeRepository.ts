@@ -1,7 +1,10 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@api";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type {
+  NodeTemplateWithExtendedPorts,
+  NodeCategoryWithExtendedPorts,
+} from "@/api/custom-types";
 
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
@@ -26,6 +29,10 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
 
   selectedNode: NodeTemplateWithExtendedPorts | null;
   showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
+
+  /** tree */
+  treeCache: Map<string, NodeCategoryWithExtendedPorts>;
+  treeExpandedKeys: string[];
 }
 
 export const state = (): NodeRepositoryState => ({
@@ -40,6 +47,10 @@ export const state = (): NodeRepositoryState => ({
   /* node interaction */
   selectedNode: null,
   showDescriptionForNode: null,
+
+  /** tree */
+  treeCache: new Map(),
+  treeExpandedKeys: [],
 });
 
 export const mutations: MutationTree<NodeRepositoryState> = {
@@ -70,15 +81,39 @@ export const mutations: MutationTree<NodeRepositoryState> = {
   setShowDescriptionForNode(state, node) {
     state.showDescriptionForNode = node;
   },
+
+  updateTreeCache(
+    state,
+    {
+      categoryPath,
+      nodeCategory,
+    }: { categoryPath: string[]; nodeCategory: NodeCategoryWithExtendedPorts },
+  ) {
+    state.treeCache.set(categoryPath.join("/"), nodeCategory);
+  },
+
+  resetTreeCache(state) {
+    state.treeCache = new Map();
+  },
+
+  setTreeExpandedKeys(state, value) {
+    state.treeExpandedKeys = value;
+  },
 };
 
 export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   ...nodeSearch.actions,
 
   async getNodeCategory(
-    { rootState, dispatch },
+    { state, rootState, dispatch, commit },
     { categoryPath }: { categoryPath: string[] },
   ) {
+    // use cache if available
+    const path = categoryPath.join("/");
+    if (state.treeCache.has(path)) {
+      return state.treeCache.get(path);
+    }
+
     const nodeCategoryResult = await API.noderepository.getNodeCategory({
       categoryPath,
     });
@@ -95,10 +130,15 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
       { root: true },
     );
 
-    return {
+    const result = {
       ...nodeCategoryResult,
       nodes: nodesWithMappedPorts,
     };
+
+    // remember tree state
+    commit("updateTreeCache", { categoryPath, nodeCategory: result });
+
+    return result;
   },
 
   async getAllNodes({ commit, dispatch, state, rootState }, { append }) {
@@ -149,11 +189,16 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     commit("setTagScrollPosition", 0);
   },
 
+  clearTree({ commit }) {
+    commit("resetTreeCache");
+  },
+
   async resetSearchAndTags({ dispatch, getters }) {
     if (getters.searchIsActive) {
       await dispatch("clearSearchResults");
       await dispatch("searchNodesDebounced");
     }
+    await dispatch("clearTree");
     // Always clear the tag results
     await dispatch("clearTagResults");
     await dispatch("getAllNodes", { append: false });
@@ -170,8 +215,25 @@ export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
       );
   },
 
-  isNodeVisible: (state, getters) => (nodeId: string) =>
-    getters.searchIsActive
-      ? getters.searchResultsContainNodeId(nodeId)
-      : getters.nodesPerTagContainNodeId(nodeId),
+  treeContainsNodeId(state: NodeRepositoryState) {
+    return (nodeId: string) =>
+      state.treeExpandedKeys.some(
+        (nodeKey) =>
+          state.treeCache
+            ?.get(nodeKey)
+            ?.nodes?.some((node) => node.id === nodeId),
+      );
+  },
+
+  isNodeVisible: (state, getters, rootState) => (nodeId: string) => {
+    if (getters.searchIsActive) {
+      return getters.searchResultsContainNodeId(nodeId);
+    }
+
+    if (rootState.settings.settings.nodeRepositoryDisplayMode === "tree") {
+      return getters.treeContainsNodeId(nodeId);
+    }
+
+    return getters.nodesPerTagContainNodeId(nodeId);
+  },
 };

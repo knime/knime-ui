@@ -15,6 +15,7 @@ import type {
   XY,
   SpaceItemReference,
   ProjectMetadata,
+  NodeCategory,
 } from "./gateway-api/generated-api";
 
 import {
@@ -179,3 +180,7 @@ export type ExampleProject = {
 };
 
 export type NodeRelation = "PREDECESSORS" | "SUCCESSORS";
+
+export type NodeCategoryWithExtendedPorts = NodeCategory & {
+  nodes?: NodeTemplateWithExtendedPorts[];
+};

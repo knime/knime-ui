@@ -1,25 +1,28 @@
 <script lang="ts" setup>
-import { Tree } from "@knime/virtual-tree";
-
 import {
-  type NodeKey,
+  Tree,
+  type EventParams,
   type TreeNodeOptions,
   type BaseTreeNode,
   type KeydownEvent,
 } from "@knime/virtual-tree";
 
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useStore } from "@/composables/useStore";
 import ScrollViewContainer from "./ScrollViewContainer.vue";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import type {
+  NodeCategoryWithExtendedPorts,
+  NodeTemplateWithExtendedPorts,
+} from "@/api/custom-types";
 import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
+import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
+import { requireAllObjectProperties } from "@/util/requireAllObjectProperties";
 
-const mapCategoryToTreeNode = (category: {
-  path: string[];
-  displayName: string;
-}): TreeNodeOptions => ({
+const mapCategoryToTreeNode = (
+  category: Required<CategoryMetadata>,
+): TreeNodeOptions => ({
   nodeKey: category.path.join("/"),
   name: category.displayName,
   hasChildren: true,
@@ -46,9 +49,38 @@ const emit = defineEmits<{
 
 const store = useStore();
 
-const rootCategories = ref<TreeNodeOptions[]>([]);
+const treeSource = ref<TreeNodeOptions[]>([]);
+const expandedKeys = ref<string[]>([]);
+const mountWithExpandedKeys = ref<string[]>([]);
 
-onMounted(async () => {
+const loadTreeNodesFromCache = (
+  treeCache: Map<string, NodeCategoryWithExtendedPorts>,
+  path: string = "",
+) => {
+  if (!treeCache.has(path)) {
+    return [];
+  }
+
+  const mapCategoryToTreeNodeWithChildren = (
+    category: Required<CategoryMetadata>,
+  ): TreeNodeOptions => ({
+    ...mapCategoryToTreeNode(category),
+    children: loadTreeNodesFromCache(treeCache, category.path.join("/")),
+  });
+
+  const { childCategories, nodes } = treeCache.get(path)!;
+
+  const treeCategories =
+    childCategories
+      ?.filter(requireAllObjectProperties)
+      .map((category) => mapCategoryToTreeNodeWithChildren(category)) ?? [];
+
+  const treeNodes = nodes?.map(mapNodeToTreeNode) ?? [];
+
+  return [...treeCategories, ...treeNodes];
+};
+
+const fetchRootCategories = async () => {
   const { childCategories } = await store.dispatch(
     "nodeRepository/getNodeCategory",
     {
@@ -56,7 +88,24 @@ onMounted(async () => {
     },
   );
 
-  rootCategories.value = childCategories.map(mapCategoryToTreeNode);
+  treeSource.value = childCategories.map(mapCategoryToTreeNode);
+};
+
+onMounted(async () => {
+  // TODO: check if node repo was already loadad and if not fetch after load
+
+  // use cache
+  const { treeCache } = store.state.nodeRepository;
+  treeSource.value = loadTreeNodesFromCache(treeCache);
+  mountWithExpandedKeys.value = [
+    ...store.state.nodeRepository.treeExpandedKeys,
+  ];
+
+  if (treeSource.value.length > 0) {
+    return;
+  }
+
+  await fetchRootCategories();
 });
 
 const tree = ref<InstanceType<typeof Tree>>();
@@ -65,14 +114,29 @@ const focusFirst = () => {
   tree.value?.$el.focus();
 };
 
-const loadedNodeIds = ref<Map<NodeKey, string[]>>(new Map<NodeKey, string[]>());
-
-const getExpandedNodeIds = () => {
-  const expandedKeys = tree.value!.getExpandedKeys() ?? [];
-  return expandedKeys
-    .map((key: NodeKey) => loadedNodeIds.value.get(key) ?? [])
-    .flat();
+const onExpandChange = (value: EventParams) => {
+  const nodeKey = value.node.key.toString();
+  if (value.state) {
+    expandedKeys.value = [...expandedKeys.value, nodeKey];
+  } else {
+    expandedKeys.value = expandedKeys.value.filter((key) => key !== nodeKey);
+  }
 };
+
+watch(expandedKeys, () => {
+  // update store with current expanded keys
+  store.commit("nodeRepository/setTreeExpandedKeys", expandedKeys.value);
+});
+
+watch(
+  () => store.state.application.hasNodeCollectionActive,
+  async (isActive, wasActive) => {
+    if (isActive !== wasActive) {
+      await store.dispatch("nodeRepository/clearTree");
+      fetchRootCategories();
+    }
+  },
+);
 
 const loadTreeLevel = async (
   treeNode: BaseTreeNode,
@@ -82,10 +146,6 @@ const loadTreeLevel = async (
     "nodeRepository/getNodeCategory",
     { categoryPath: treeNode.key.toString().split("/") },
   );
-
-  // remember nodeIds for visible check
-  const nodeIds = nodes.map(({ id }: { id: string }) => id);
-  loadedNodeIds.value.set(treeNode.key, nodeIds);
 
   callback([
     ...childCategories.map(mapCategoryToTreeNode),
@@ -128,7 +188,7 @@ const onTreeKeydown = ({ event, node: treeNode }: KeydownEvent) => {
   }
 };
 
-defineExpose({ focusFirst, getExpandedNodeIds });
+defineExpose({ focusFirst });
 </script>
 
 <template>
@@ -136,9 +196,11 @@ defineExpose({ focusFirst, getExpandedNodeIds });
     <div class="scroll-container-content">
       <Tree
         ref="tree"
-        :source="rootCategories"
+        :source="treeSource"
         :load-data="loadTreeLevel"
         :selectable="false"
+        :expanded-keys="mountWithExpandedKeys"
+        @expand-change="onExpandChange"
         @keydown="onTreeKeydown"
       >
         <template #leaf="{ treeNode }: { treeNode: BaseTreeNode }">

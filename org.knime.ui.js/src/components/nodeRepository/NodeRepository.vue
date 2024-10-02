@@ -31,12 +31,6 @@ const displayMode = computed(
 );
 
 const isNodeVisible = computed(() => {
-  if (displayMode.value === "tree" && !searchIsActive.value) {
-    return categoryTree.value
-      ?.getExpandedNodeIds()
-      .includes(showDescriptionForNode.value!.id);
-  }
-
   return store.getters["nodeRepository/isNodeVisible"](
     showDescriptionForNode.value?.id,
   );
