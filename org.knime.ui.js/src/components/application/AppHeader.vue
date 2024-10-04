@@ -207,7 +207,7 @@ watch(
               :is-active="activeProjectTab === projectId"
               :disabled="isLoadingWorkflow && !hasWorkflowLoadingError"
               :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
-              workflow-path="/Workflow Path Placeholder"
+              :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"
               @switch-workflow="onProjectTabChange"
               @close-project="closeProject($event)"
@@ -353,7 +353,6 @@ header {
       min-width: 0;
       white-space: nowrap;
       list-style: none;
-      width: 240px;
 
       & :deep(.shadow-wrapper) {
         margin-right: 0;

@@ -35,7 +35,6 @@ type Props = {
   hasUnsavedChanges?: boolean;
   windowWidth?: number;
   disabled?: boolean;
-  workflowPath?: string;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -44,7 +43,6 @@ const props = withDefaults(defineProps<Props>(), {
   hasUnsavedChanges: false,
   windowWidth: 0,
   disabled: false,
-  workflowPath: "",
 });
 
 const emit = defineEmits<{
@@ -73,7 +71,7 @@ const isLocal = computed(
 );
 
 const tooltipContent = computed(() => {
-  return `${name.value}\n${props.workflowPath}`;
+  return `${name.value}`;
 });
 
 const activateTab = () => {
@@ -137,7 +135,7 @@ const activateTab = () => {
   background-color: var(--knime-black);
   color: var(--knime-white);
   min-width: 80px;
-  max-width: 300px;
+  max-width: 240px;
 
   & svg {
     min-width: 18px;
