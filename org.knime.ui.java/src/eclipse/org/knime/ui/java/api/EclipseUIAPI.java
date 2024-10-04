@@ -97,8 +97,6 @@ final class EclipseUIAPI {
 
         private static final String KEYS = "org.eclipse.ui.preferencePages.Keys";
 
-        private static final String SECURITY = "org.eclipse.equinox.security.ui.category";
-
         private static final String STARTUP_SHUTDOWN = "org.eclipse.ui.preferencePages.Startup";
 
         private static final String WEB_BROWSER = "org.eclipse.ui.browser.preferencePage";
@@ -118,7 +116,7 @@ final class EclipseUIAPI {
         private static final String REPORT_DESIGN = "org.eclipse.birt.report.designer.ui.preferences";
 
         /** A list of excluded pages */
-        private static final List<String> EXCLUDED = List.of(APPEARANCE, KEYS, SECURITY, STARTUP_SHUTDOWN, WEB_BROWSER,
+        private static final List<String> EXCLUDED = List.of(APPEARANCE, KEYS, STARTUP_SHUTDOWN, WEB_BROWSER,
             WORKSPACE, MASTER_KEY, META_INFO, REPORT_DESIGN);
 
     }
