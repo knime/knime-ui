@@ -71,7 +71,6 @@ const isLegacyDescription = computed(() => {
 & .node-description-html {
   font-size: 13px;
   line-height: 150%;
-  width: 310px;
 
   & :deep(h3) {
     font-size: 13px;
@@ -91,7 +90,7 @@ const isLegacyDescription = computed(() => {
     width: 100%;
     font-size: 11px;
     border-spacing: 3px 0;
-    margin-left: 10px;
+    margin-left: var(--sidebar-panel-padding);
 
     & th,
     & td {
