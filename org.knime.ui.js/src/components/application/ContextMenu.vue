@@ -423,31 +423,33 @@ export default defineComponent({
               { name: "expandComponent", isVisible: true },
               {
                 name: "openLayoutEditorByNodeId",
-                isVisible: !isLinked,
+                isVisible:
+                  !isLinked && compatibility.canDoComponentOperations(),
               },
               {
                 name: "linkComponent",
-                isVisible: !isLinked,
+                isVisible:
+                  !isLinked && compatibility.canDoComponentOperations(),
               },
               {
                 name: "updateComponent",
-                isVisible: isLinked,
+                isVisible: isLinked && compatibility.canDoComponentOperations(),
               },
               {
                 name: "changeComponentLinkType",
-                isVisible: isLinked,
+                isVisible: isLinked && compatibility.canDoComponentOperations(),
               },
               {
                 name: "changeHubItemVersion",
-                isVisible: isLinked,
+                isVisible: isLinked && compatibility.canDoComponentOperations(),
               },
               {
                 name: "unlinkComponent",
-                isVisible: isLinked,
+                isVisible: isLinked && compatibility.canDoComponentOperations(),
               },
             ]),
           },
-          isComponent && compatibility.canDoComponentOperations(),
+          isComponent,
         ),
       ];
 
