@@ -33,11 +33,19 @@ describe("CategoryTree", () => {
 
     const $store = mockVuexStore({
       nodeRepository: {
-        state: {},
+        state: {
+          treeCache: new Map(),
+          treeExpandedKeys: [],
+        },
         actions: {
           getNodeCategory: getNodeCategoryMock,
         },
         mutations: {},
+      },
+      application: {
+        state: {
+          hasNodeCollectionActive: false,
+        },
       },
     });
 

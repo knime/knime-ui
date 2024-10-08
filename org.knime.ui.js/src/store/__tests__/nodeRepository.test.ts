@@ -8,6 +8,7 @@ import {
 } from "@/test/utils";
 import { API } from "@api";
 import { createSearchNodesResponse } from "@/test/factories";
+import type { NodeRepositoryDisplayModesType } from "../settings";
 
 const getNodesGroupedByTagsResponse = {
   groups: [
@@ -73,7 +74,9 @@ vi.mock("lodash-es", async () => {
 });
 
 describe("Node Repository store", () => {
-  const createStore = async () => {
+  const createStore = async (
+    nodeRepositoryDisplayMode: NodeRepositoryDisplayModesType = "icon",
+  ) => {
     const availablePortTypes = {
       "org.knime.core.node.BufferedDataTable": {
         kind: "table",
@@ -101,6 +104,13 @@ describe("Node Repository store", () => {
 
     const store = mockVuexStore({
       nodeRepository: await import("@/store/nodeRepository"),
+      settings: {
+        state: {
+          settings: {
+            nodeRepositoryDisplayMode,
+          },
+        },
+      },
       application: {
         state: {
           availablePortTypes,

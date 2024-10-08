@@ -30,9 +30,9 @@ const emit = defineEmits(["helpIconClick"]);
 .description-icon {
   display: none;
 
-  & .info-icon {
-    @mixin svg-icon-size 16;
-  }
+  --description-button-size: 16;
+  --size: calc(var(--description-button-size) * 1px);
+  --icon-size: var(--description-button-size);
 
   &.selected-icon {
     display: flex;
