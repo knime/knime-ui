@@ -3,7 +3,7 @@ import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { computed } from "vue";
 
 import HouseIcon from "@knime/styles/img/icons/house.svg";
-import { Breadcrumb } from "@knime/components";
+import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
 
 interface Props {
   activeWorkflowGroup: WorkflowGroupContent | null;
@@ -11,15 +11,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits<{
-  (e: "click", id: string): void;
+  click: [id: string];
 }>();
-
-type BreadcrumbItem = {
-  id: string;
-  icon: any;
-  text: string | null;
-  clickable: boolean;
-};
 
 const breadcrumbItems = computed<Array<BreadcrumbItem>>(() => {
   const homeBreadcrumbItem = {
@@ -40,7 +33,8 @@ const breadcrumbItems = computed<Array<BreadcrumbItem>>(() => {
   const { path } = props.activeWorkflowGroup;
   const rootBreadcrumb: BreadcrumbItem = {
     ...homeBreadcrumbItem,
-    text: path.length === 0 ? "Home" : null,
+    // eslint-disable-next-line no-undefined
+    text: path.length === 0 ? "Home" : undefined,
     clickable: path.length > 0,
   };
   const lastPathIndex = path.length - 1;

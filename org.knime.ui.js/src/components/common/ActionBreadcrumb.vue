@@ -1,15 +1,8 @@
-<script lang="ts">
-import type { PropType } from "vue";
-import { Breadcrumb } from "@knime/components";
-
+<script setup lang="ts">
+import { computed, ref } from "vue";
 import { clamp, throttle } from "lodash-es";
 
-interface BreadcrumbItem {
-  text: string;
-  href?: string;
-  id?: string;
-  icon?: unknown;
-}
+import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
 
 const BREADCRUMB_THROTTLE_WHEEL = 150;
 
@@ -17,58 +10,46 @@ const BREADCRUMB_THROTTLE_WHEEL = 150;
  * Wraps the webapps-common Breadcrumb and works with IDs and click events
  * Emits @click with the given id prop in items. Does not support `href` in items.
  */
-export default {
-  components: {
-    Breadcrumb,
-  },
-  props: {
-    items: {
-      type: Array as PropType<Array<BreadcrumbItem>>,
-      default: () => [],
-    },
-  },
-  emits: ["click"],
-  computed: {
-    breadcrumbItems() {
-      return this.items.map(({ text, icon, id }) => {
-        let item: BreadcrumbItem = {
-          text,
-          icon: icon || null,
-        };
-        if (id) {
-          item.href = `#${encodeURIComponent(id)}`;
-        }
-        return item;
-      });
-    },
-  },
-  methods: {
-    onClick({ target }: MouseEvent) {
-      if (!target || !(target as HTMLAnchorElement).href) {
-        return;
-      }
 
-      let { hash } = new URL(
-        (target as HTMLAnchorElement).href,
-        "file://dummy/",
-      );
-      let id = decodeURIComponent(hash.replace(/^#/, ""));
-
-      this.$emit("click", { id, target });
-    },
-    onWheel: throttle(function (this: any, e: WheelEvent) {
-      // eslint-disable-next-line no-invalid-this
-      const breadcrumbElement = this.$refs.breadcrumb.$el as HTMLElement;
-      const maxScroll =
-        breadcrumbElement.scrollWidth - breadcrumbElement.offsetWidth;
-
-      breadcrumbElement?.scrollTo({
-        left: clamp(breadcrumbElement.scrollLeft + e.deltaY, 0, maxScroll),
-        behavior: "smooth",
-      });
-    }, BREADCRUMB_THROTTLE_WHEEL),
-  },
+type Props = {
+  items?: Array<BreadcrumbItem>;
 };
+
+const props = withDefaults(defineProps<Props>(), {
+  items: () => [],
+});
+
+const emit = defineEmits<{
+  click: [payload: { id: string }];
+}>();
+
+const breadcrumbItems = computed(() =>
+  props.items.map(
+    (item) =>
+      ({
+        ...item,
+        id: item.id,
+        clickable: Boolean(item.id),
+      }) satisfies BreadcrumbItem,
+  ),
+);
+
+const breadcrumb = ref<InstanceType<typeof Breadcrumb>>();
+
+const onWheel = throttle(function (e: WheelEvent) {
+  if (!breadcrumb.value) {
+    return;
+  }
+
+  const breadcrumbElement = breadcrumb.value.$el as HTMLElement;
+  const maxScroll =
+    breadcrumbElement.scrollWidth - breadcrumbElement.offsetWidth;
+
+  breadcrumbElement?.scrollTo({
+    left: clamp(breadcrumbElement.scrollLeft + e.deltaY, 0, maxScroll),
+    behavior: "smooth",
+  });
+}, BREADCRUMB_THROTTLE_WHEEL);
 </script>
 
 <template>
@@ -77,7 +58,7 @@ export default {
     class="action-breadcrumb"
     v-bind="$attrs"
     :items="breadcrumbItems"
-    @click.capture.prevent.stop="onClick"
+    @click-item="emit('click', { id: $event.id })"
     @wheel="onWheel"
   />
 </template>

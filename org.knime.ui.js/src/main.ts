@@ -40,6 +40,12 @@ const apiURLResolver = () =>
       import.meta.env.VITE_BROWSER_DEV_MODE === "true" &&
       import.meta.env.VITE_BROWSER_DEV_MODE_EMBEDDED !== "true"
     ) {
+      // communicate "ready" state back to parent
+      window.parent.postMessage(
+        { type: AWAITING_CONNECTION_INFO_MESSAGE },
+        "*",
+      );
+
       resolve({
         url: import.meta.env.VITE_BROWSER_DEV_WS_URL,
         restApiBaseUrl: "",

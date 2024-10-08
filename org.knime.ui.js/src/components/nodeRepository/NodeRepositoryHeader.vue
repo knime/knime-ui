@@ -5,6 +5,7 @@ import {
   FunctionButton,
   SearchInput,
   SubMenu,
+  type BreadcrumbItem,
   type MenuItem,
 } from "@knime/components";
 import FilterIcon from "@knime/styles/img/icons/filter.svg";
@@ -51,7 +52,7 @@ const selectedTags = computed({
   },
 });
 
-const breadcrumbItems = computed(() => {
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
   // If search results are shown, it's possible to navigate back
   return searchIsActive.value
     ? [{ text: "Nodes", id: "clear" }, { text: "Results" }]

@@ -97,10 +97,11 @@ const useChat = (chainType: ChainType) => {
 
   const lastUserMessage = computed(() => {
     const messages = store.state.aiAssistant[chainType].messages;
-    // @ts-expect-error
+
     const lastUserMessage = messages.findLast(
       (message: Message) => message.role === "user",
     );
+
     return lastUserMessage?.content ?? "";
   });
 
