@@ -1,5 +1,6 @@
 import { expect, describe, it } from "vitest";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
@@ -10,7 +11,6 @@ import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
 
 import PortTypeMenu from "../PortTypeMenu.vue";
-import { nextTick } from "vue";
 
 describe("PortTypeMenu.vue", () => {
   const doMount = ({ props } = {}) => {
@@ -187,7 +187,7 @@ describe("PortTypeMenu.vue", () => {
 
         const searchInput = wrapper.findComponent(SearchInput);
         searchInput.vm.$emit("keydown", new KeyboardEvent("keydown", { code }));
-        await wrapper.vm.$nextTick();
+        await nextTick();
 
         expect(
           searchInput.find("input").attributes("aria-activedescendant"),

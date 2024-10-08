@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, h, markRaw, type PropType } from "vue";
+import { defineComponent, h, markRaw, type PropType, nextTick } from "vue";
 import { mapGetters, mapState } from "vuex";
 
 import { MenuItems } from "@knime/components";
@@ -158,11 +158,10 @@ export default defineComponent({
     // update menu items when another target has been clicked, which is indicated by a change in position
     position: {
       immediate: true,
-      handler() {
+      async handler() {
         this.setMenuItems();
-        this.$nextTick(() => {
-          (this.$refs.menuItems as { $el: HTMLElement }).$el.focus();
-        });
+        await nextTick();
+        (this.$refs.menuItems as { $el: HTMLElement }).$el.focus();
       },
     },
   },

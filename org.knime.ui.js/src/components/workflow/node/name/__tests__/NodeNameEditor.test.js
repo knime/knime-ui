@@ -1,5 +1,6 @@
 import { expect, describe, beforeAll, afterEach, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils";
 
@@ -232,7 +233,7 @@ describe("NodeNameEditor", () => {
     await wrapper.findComponent(NodeNameTextarea).vm.$emit("invalidInput");
     expect(wrapper.find(selector).exists()).toBe(true);
     vi.runAllTimers();
-    await wrapper.vm.$nextTick();
+    await nextTick();
     expect(wrapper.find(selector).exists()).toBe(false);
   });
 

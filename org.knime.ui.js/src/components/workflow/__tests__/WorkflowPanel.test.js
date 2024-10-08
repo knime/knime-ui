@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { createWorkflow } from "@/test/factories";
@@ -112,7 +112,7 @@ describe("WorkflowPanel", () => {
 
       wrapper.findComponent(ContextMenu).vm.$emit("menuClose");
 
-      await wrapper.vm.$nextTick();
+      await nextTick();
       expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
     });
   });
@@ -128,7 +128,7 @@ describe("WorkflowPanel", () => {
         },
         events: { menuClose: closeCallback },
       };
-      await Vue.nextTick();
+      await nextTick();
 
       return { ...mountResult, closeCallback };
     };
@@ -146,7 +146,7 @@ describe("WorkflowPanel", () => {
         events: {},
       };
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
     });
 
@@ -180,7 +180,7 @@ describe("WorkflowPanel", () => {
         },
         events: { menuClose: closeCallback },
       };
-      await Vue.nextTick();
+      await nextTick();
 
       return { ...mountResult, closeCallback };
     };
@@ -200,7 +200,7 @@ describe("WorkflowPanel", () => {
         events: {},
       };
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
     });
 

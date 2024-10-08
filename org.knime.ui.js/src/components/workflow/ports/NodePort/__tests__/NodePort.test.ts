@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { expect, describe, afterEach, it, vi, beforeEach } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -271,7 +271,7 @@ describe("NodePort", () => {
       const { wrapper, $store } = doMount();
 
       wrapper.trigger("mouseenter");
-      await Vue.nextTick();
+      await nextTick();
       vi.runAllTimers();
 
       expect($store.state.workflow.tooltip).toEqual({
@@ -288,7 +288,7 @@ describe("NodePort", () => {
       });
 
       wrapper.trigger("mouseleave");
-      await Vue.nextTick();
+      await nextTick();
       expect($store.state.workflow.tooltip).toBeNull();
     });
 
@@ -300,7 +300,7 @@ describe("NodePort", () => {
       });
       wrapper.trigger("mouseenter");
       vi.runAllTimers();
-      await Vue.nextTick();
+      await nextTick();
 
       expect($store.state.workflow.tooltip).toEqual({
         anchorPoint: { x: 123, y: 456 },
@@ -357,7 +357,7 @@ describe("NodePort", () => {
       const { wrapper } = doMount({ props });
 
       wrapper.setProps({ targeted: true });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
         state: true,
@@ -365,7 +365,7 @@ describe("NodePort", () => {
 
       // revert
       wrapper.setProps({ targeted: false, disableQuickNodeAdd: true });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
         state: false,
@@ -437,7 +437,7 @@ describe("NodePort", () => {
 
       wrapper.setProps({ targeted: true });
       await startDragging({ wrapper });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(incomingConnector._indicateReplacementEvent).toBeFalsy();
     });
@@ -450,12 +450,12 @@ describe("NodePort", () => {
       expect(wrapper.attributes().class).not.toMatch("targeted");
 
       wrapper.setProps({ targeted: true });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes().class).toMatch("targeted");
 
       wrapper.setProps({ targeted: false });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes().class).not.toMatch("targeted");
     });
@@ -510,7 +510,7 @@ describe("NodePort", () => {
             targetElement: null,
             position: [8, 8],
           });
-          await Vue.nextTick();
+          await nextTick();
 
           // connector is bound to 'dragConnector'
           // connector doesn't receive pointer-events
@@ -1165,7 +1165,7 @@ describe("NodePort", () => {
       const { wrapper } = doMount();
       await startDragging({ wrapper });
       (useEscapeStack as any).onEscape.call(wrapper.vm);
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(Connector).exists()).toBe(false);
       const dispatchEventSpy = vi.spyOn(wrapper.element, "dispatchEvent");
       await wrapper.trigger("lostpointercapture");
@@ -1275,7 +1275,7 @@ describe("NodePort", () => {
 
           // call close
           $store.state.workflow.quickAddNodeMenu.events.menuClose();
-          await Vue.nextTick();
+          await nextTick();
 
           // see if close went good
           expect($store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);

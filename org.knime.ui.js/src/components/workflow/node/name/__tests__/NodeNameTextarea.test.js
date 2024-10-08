@@ -1,5 +1,6 @@
 import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import * as $shapes from "@/style/shapes";
 
@@ -74,7 +75,7 @@ describe("NodeNameTextarea", () => {
     const wrapper = doShallowMount({ attachTo: document.body });
     const textareaElement = wrapper.find("textarea");
 
-    await wrapper.vm.$nextTick();
+    await nextTick();
 
     expect(document.activeElement).toBe(textareaElement.element);
   });
@@ -85,7 +86,7 @@ describe("NodeNameTextarea", () => {
 
     const wrapper = doShallowMount();
 
-    await wrapper.vm.$nextTick();
+    await nextTick();
     expect(getHeight(wrapper.find("textarea").element)).toBe("0px");
 
     const mockHeight = 200;
@@ -96,7 +97,7 @@ describe("NodeNameTextarea", () => {
     wrapper.find("textarea").setValue("MOCK TEXT");
     wrapper.find("textarea").trigger("input");
 
-    await wrapper.vm.$nextTick();
+    await nextTick();
     expect(getHeight(wrapper.find("textarea").element)).toBe(`${mockHeight}px`);
   });
 

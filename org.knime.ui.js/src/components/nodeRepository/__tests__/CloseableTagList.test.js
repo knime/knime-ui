@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { TagList } from "@knime/components";
@@ -157,11 +157,11 @@ describe("CloseableTagList.vue", () => {
       });
 
       wrapper.findComponent(TagList).vm.$emit("update:showAll", true);
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.find(".tags-popout-close").exists()).toBe(true);
 
       wrapper.findComponent(TagList).vm.$emit("click", "something");
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.find(".tags-popout-close").exists()).toBe(false);
     });
   });

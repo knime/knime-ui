@@ -1,5 +1,6 @@
 import { expect, describe, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import SidebarSearchResults from "../SidebarSearchResults.vue";
@@ -54,7 +55,7 @@ describe("SidebarSearchResults", () => {
   it("passes nodes and query", async () => {
     const { wrapper, $store } = doMount();
     $store.state.nodeRepository.query = "some query";
-    await wrapper.vm.$nextTick();
+    await nextTick();
 
     let results = wrapper.findComponent(SearchResults);
     expect(results.props("nodes")).toStrictEqual(
@@ -74,7 +75,7 @@ describe("SidebarSearchResults", () => {
     );
 
     results.vm.$emit("update:searchScrollPosition", 57);
-    await wrapper.vm.$nextTick();
+    await nextTick();
 
     expect(commitSpy).toBeCalledWith(
       "nodeRepository/setSearchScrollPosition",

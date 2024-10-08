@@ -1,6 +1,6 @@
 import { expect, describe, it, vi, beforeEach } from "vitest";
-import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { useRoute } from "vue-router";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -184,7 +184,7 @@ describe("AppHeader.vue", () => {
 
       const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1)!;
 
-      await Vue.nextTick();
+      await nextTick();
       expect(secondTab.props("isActive")).toBe(true);
     });
 
@@ -206,7 +206,7 @@ describe("AppHeader.vue", () => {
     window.innerWidth = 100;
     window.dispatchEvent(new Event("resize"));
 
-    await Vue.nextTick();
+    await nextTick();
     expect(
       wrapper.findAllComponents(AppHeaderTab).at(0)!.props("windowWidth"),
     ).toBe(100);
@@ -236,7 +236,7 @@ describe("AppHeader.vue", () => {
       ).toBeFalsy();
 
       $store.state.application.devMode = true;
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(
         wrapper.find('[data-test-id="dev-mode-only"]').exists(),
@@ -266,7 +266,7 @@ describe("AppHeader.vue", () => {
       ).toEqual({ x: 218, y: 15 });
 
       wrapper.findComponent(AppHeaderContextMenu).vm.$emit("itemClick");
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(AppHeaderContextMenu).exists()).toBe(false);
     });
   });

@@ -1,7 +1,6 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
 /* eslint-disable max-lines */
-
-import * as Vue from "vue";
+import { expect, describe, beforeEach, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
@@ -354,7 +353,7 @@ describe("Node", () => {
       let { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
       wrapper.vm.setSelectionPreview("show");
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
       storeConfig.selection.getters.isNodeSelected = () =>
@@ -369,7 +368,7 @@ describe("Node", () => {
       const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
       wrapper.vm.setSelectionPreview("hide");
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
     });
 
@@ -379,10 +378,10 @@ describe("Node", () => {
       const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
       wrapper.vm.setSelectionPreview("hide");
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
       wrapper.vm.setSelectionPreview("clear");
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
     });
   });
@@ -426,7 +425,7 @@ describe("Node", () => {
       const { wrapper } = doMount({ props });
 
       wrapper.find(".hover-container").trigger("mouseenter");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
         nodeId: "root:1",
@@ -625,14 +624,14 @@ describe("Node", () => {
 
     it("increases the size of the hover-container on hover", async () => {
       triggerHover(wrapper, false);
-      await Vue.nextTick();
+      await nextTick();
 
       const smallHoverWidth = Number(
         wrapper.find(".hover-area").attributes("width"),
       );
 
       triggerHover(wrapper, true);
-      await Vue.nextTick();
+      await nextTick();
 
       const largeHoverWidth = Number(
         wrapper.find(".hover-area").attributes("width"),
@@ -649,7 +648,7 @@ describe("Node", () => {
 
       // increase from 20 to 40 (by 20)
       wrapper.findComponent(NodeName).vm.$emit("heightChange", 40);
-      await Vue.nextTick();
+      await nextTick();
 
       const { y, height } = wrapper.find(".hover-area").attributes();
       expect(Number(oldY) - Number(y)).toBe(20);
@@ -658,7 +657,7 @@ describe("Node", () => {
 
     it("shows selection plane and action buttons", async () => {
       triggerHover(wrapper, true);
-      await Vue.nextTick();
+      await nextTick();
 
       const actionBar = wrapper.findComponent(NodeActionBar);
 
@@ -680,7 +679,7 @@ describe("Node", () => {
 
     it("shows shadows", async () => {
       triggerHover(wrapper, true);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodeState).classes()).toContain("hover");
       expect(wrapper.findComponent(NodeTorso).classes()).toContain("hover");
@@ -688,7 +687,7 @@ describe("Node", () => {
 
     it("leaving hover container unsets hover", async () => {
       triggerHover(wrapper, false);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodeTorso).classes()).not.toContain("hover");
     });
@@ -696,10 +695,10 @@ describe("Node", () => {
     describe("portalled elements need MouseLeave Listener", () => {
       it("nodeActionBar", async () => {
         triggerHover(wrapper, true);
-        await Vue.nextTick();
+        await nextTick();
 
         wrapper.findComponent(NodeActionBar).trigger("mouseleave");
-        await Vue.nextTick();
+        await nextTick();
 
         expect(wrapper.findComponent(NodeTorso).classes()).not.toContain(
           "hover",
@@ -709,7 +708,7 @@ describe("Node", () => {
 
     it("enlargens the hover area to include ports", async () => {
       triggerHover(wrapper, true);
-      await Vue.nextTick();
+      await nextTick();
 
       const previousHoverHeight = Number(
         wrapper.find(".hover-area").attributes("height"),
@@ -721,7 +720,7 @@ describe("Node", () => {
         out: [],
       });
 
-      await Vue.nextTick();
+      await nextTick();
 
       const currentHoverHeight = Number(
         wrapper.find(".hover-area").attributes("height"),
@@ -731,7 +730,7 @@ describe("Node", () => {
 
     it("forwards hover state to children", async () => {
       triggerHover(wrapper, true);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodePorts).props("hover")).toBe(true);
     });
@@ -752,7 +751,7 @@ describe("Node", () => {
         .findComponent(NodePorts)
         .vm.$emit("updatePortPositions", mockPortPositions);
 
-      await Vue.nextTick();
+      await nextTick();
 
       const connectorSnappingProvider = wrapper.findComponent(
         ConnectorSnappingProvider,
@@ -767,7 +766,7 @@ describe("Node", () => {
         .find(".hover-container")
         .trigger("connector-enter", { preventDefault: vi.fn() });
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodePorts).props("connectorHover")).toBe(
         true,
@@ -791,7 +790,7 @@ describe("Node", () => {
       wrapper
         .find(".hover-container")
         .trigger("connector-enter", { preventDefault: vi.fn() });
-      await Vue.nextTick();
+      await nextTick();
 
       // connector moves
       wrapper.find(".hover-container").trigger("connector-move", {
@@ -803,7 +802,7 @@ describe("Node", () => {
         },
       });
 
-      await Vue.nextTick();
+      await nextTick();
 
       // target port's side should match that of the connector-move event
       // target port's index is 0 because there's only 1 port (from mock port positions)
@@ -844,42 +843,42 @@ describe("Node", () => {
 
       it("above upper bound", async () => {
         moveConnectorTo(0, -21);
-        await Vue.nextTick();
+        await nextTick();
 
         expect(isOutside()).toBe(true);
       });
 
       it("below upper bound", async () => {
         moveConnectorTo(0, -20);
-        await Vue.nextTick();
+        await nextTick();
 
         expect(isOutside()).toBe(false);
       });
 
       it("targeting inPorts, inside of node torso", async () => {
         moveConnectorTo(32, 0);
-        await Vue.nextTick();
+        await nextTick();
 
         expect(isOutside()).toBe(false);
       });
 
       it("targeting inPorts, outside of node torso", async () => {
         moveConnectorTo(33, 0);
-        await Vue.nextTick();
+        await nextTick();
 
         expect(isOutside()).toBe(true);
       });
 
       it("targeting outPorts, inside of node torso", async () => {
         moveConnectorTo(0, 0, "out");
-        await Vue.nextTick();
+        await nextTick();
 
         expect(isOutside()).toBe(false);
       });
 
       it("targeting outPorts, outside of node torso", async () => {
         moveConnectorTo(-1, 0, "out");
-        await Vue.nextTick();
+        await nextTick();
 
         expect(isOutside()).toBe(true);
       });
@@ -929,7 +928,7 @@ describe("Node", () => {
           }),
         }).wrapper;
 
-        await Vue.nextTick();
+        await nextTick();
 
         expect(wrapper.find(".connection-forbidden").exists()).toBe(true);
       });
@@ -943,7 +942,7 @@ describe("Node", () => {
           }),
         }).wrapper;
 
-        await Vue.nextTick();
+        await nextTick();
 
         expect(wrapper.classes("connection-forbidden")).toBe(false);
       });
@@ -1055,7 +1054,7 @@ describe("Node", () => {
 
     it("should handle contextmenu events", async () => {
       wrapper.findComponent(NodeName).trigger("pointerdown", { button: 2 });
-      await Vue.nextTick();
+      await nextTick();
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
         expect.stringMatching("root:1"),
@@ -1067,7 +1066,7 @@ describe("Node", () => {
 
     it("should handle click events", async () => {
       wrapper.findComponent(NodeName).trigger("click", { button: 0 });
-      await Vue.nextTick();
+      await nextTick();
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
         expect.stringMatching("root:1"),
@@ -1080,7 +1079,7 @@ describe("Node", () => {
         mockWidth + $shapes.nodeNameHorizontalMargin * 2;
       wrapper.findComponent(NodeName).vm.$emit("widthChange", mockWidth);
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodeSelectionPlane).props("width")).toBe(
         expectedSelectionWidth,
@@ -1091,7 +1090,7 @@ describe("Node", () => {
       const mockHeight = 200;
       wrapper.findComponent(NodeName).vm.$emit("heightChange", mockHeight);
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(
         wrapper.findComponent(NodeSelectionPlane).props("extraHeight"),
@@ -1125,11 +1124,11 @@ describe("Node", () => {
         const torso = wrapper.findComponent(NodeTorso);
 
         triggerDragEvent(torso.element, "dragenter", { types: [KNIME_MIME] });
-        await Vue.nextTick();
+        await nextTick();
 
         expect(torso.vm.$props.isDraggedOver).toBeTruthy();
         triggerDragEvent(torso.element, "dragleave");
-        await Vue.nextTick();
+        await nextTick();
         expect(torso.vm.$props.isDraggedOver).toBeFalsy();
       });
 
@@ -1140,7 +1139,7 @@ describe("Node", () => {
         const torso = wrapper.findComponent(NodeTorso);
 
         triggerDragEvent(torso.element, "dragenter", { types: [KNIME_MIME] });
-        await Vue.nextTick();
+        await nextTick();
 
         expect(torso.vm.$props.isDraggedOver).toBeFalsy();
       });
@@ -1154,7 +1153,7 @@ describe("Node", () => {
           getData: () => '{ "className": "test" }',
         });
         wrapper.findComponent(NodeTorso).vm.$emit("drop", dropEvent);
-        await Vue.nextTick();
+        await nextTick();
         expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
           expect.anything(),
           { nodeFactory: { className: "test" }, targetNodeId: "root:1" },
@@ -1171,7 +1170,7 @@ describe("Node", () => {
           getData: () => '{ "className": "test" }',
         });
         wrapper.findComponent(NodeTorso).vm.$emit("drop", dropEvent);
-        await Vue.nextTick();
+        await nextTick();
         expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
       });
     });

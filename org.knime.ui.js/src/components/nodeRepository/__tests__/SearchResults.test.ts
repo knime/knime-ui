@@ -1,5 +1,5 @@
 import { expect, describe, it, afterEach, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import * as $colors from "@/style/colors";
@@ -78,12 +78,12 @@ describe("SearchResults", () => {
     expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
 
     await wrapper.setProps({ isLoadingSearchResults: true });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
 
     vi.advanceTimersByTime(2000);
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.find(".node-list-skeleton").exists()).toBe(true);
   });
@@ -108,7 +108,7 @@ describe("SearchResults", () => {
       wrapper.vm.$refs.scroller.$el.scrollTop = 100;
 
       await wrapper.setProps({ query: "query" });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.vm.$refs.scroller.$el.scrollTop).toBe(0);
     });
@@ -118,7 +118,7 @@ describe("SearchResults", () => {
       wrapper.vm.$refs.scroller.$el.scrollTop = 100;
 
       await wrapper.setProps({ selectedTags: ["1", "2"] });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.vm.$refs.scroller.$el.scrollTop).toBe(0);
     });
@@ -134,7 +134,7 @@ describe("SearchResults", () => {
       expect(wrapper.find(".node-list-skeleton").exists()).toBe(false);
 
       scrollViewContainer.vm.$emit("scrollBottom");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(searchActions.searchNodesNextPage).toHaveBeenCalled();
 
@@ -142,7 +142,7 @@ describe("SearchResults", () => {
 
       await vi.advanceTimersByTimeAsync(1000);
       vi.runOnlyPendingTimers();
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.find(".node-list-skeleton").exists()).toBe(true);
 
       await flushPromises();

@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
 import { shallowMount, VueWrapper } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import {
@@ -195,7 +195,7 @@ describe("ContextMenu.vue", () => {
   it("uses right format for MenuItems", async () => {
     const { wrapper } = await doMount();
 
-    await Vue.nextTick();
+    await nextTick();
 
     expect(renderedMenuItems(wrapper)).toEqual(
       expect.arrayContaining([
@@ -489,7 +489,7 @@ describe("ContextMenu.vue", () => {
 
       const { wrapper } = await doMount({ store: $store });
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([{ metadata: { shortcutName: "deleteSelected" } }]),
@@ -506,7 +506,7 @@ describe("ContextMenu.vue", () => {
 
       const { wrapper } = await doMount({ store: $store });
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(renderedMenuItems(wrapper)).toEqual(
         assertItems([{ metadata: { shortcutName: "deleteSelected" } }]),

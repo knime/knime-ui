@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
+import { Transition, nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -191,12 +191,12 @@ describe("AddPortPlaceholder.vue", () => {
 
         const port = { typeId: "table" };
         $store.state.workflow.portTypeMenu.events.itemActive({ port });
-        await Vue.nextTick();
+        await nextTick();
 
         expect(wrapper.find(".add-port-icon").exists()).toBe(false);
         expect(wrapper.findComponent(Port).props("port")).toStrictEqual(port);
 
-        expect(wrapper.findComponent(Vue.Transition).attributes("name")).toBe(
+        expect(wrapper.findComponent(Transition).attributes("name")).toBe(
           "port-fade",
         );
       });
@@ -205,7 +205,7 @@ describe("AddPortPlaceholder.vue", () => {
         const { wrapper, $store } = await mountWithOpenMenu();
 
         $store.state.workflow.portTypeMenu.events.itemActive(null);
-        await Vue.nextTick();
+        await nextTick();
 
         expect(wrapper.find(".add-port-icon").exists()).toBe(true);
         expect(wrapper.findComponent(Port).exists()).toBe(false);
@@ -223,7 +223,7 @@ describe("AddPortPlaceholder.vue", () => {
         const { $store } = await mountWithOpenMenu();
 
         $store.state.workflow.portTypeMenu.events.menuClose();
-        await Vue.nextTick();
+        await nextTick();
 
         expect($store.state.workflow.portTypeMenu.isOpen).toBe(false);
       });
@@ -234,7 +234,7 @@ describe("AddPortPlaceholder.vue", () => {
 
         callbacks.itemActive({ portId: "table" });
         callbacks.menuClose();
-        await Vue.nextTick();
+        await nextTick();
 
         expect(wrapper.findComponent(Port).exists()).toBe(false);
         expect(wrapper.find(".add-port-icon").exists()).toBe(true);
@@ -246,16 +246,16 @@ describe("AddPortPlaceholder.vue", () => {
         const port = { typeId: "table" };
         $store.state.workflow.portTypeMenu.events.itemClick({ port });
 
-        await Vue.nextTick();
-        expect(wrapper.findComponent(Vue.Transition).attributes("name")).toBe(
+        await nextTick();
+        expect(wrapper.findComponent(Transition).attributes("name")).toBe(
           "none",
         );
         expect(wrapper.findComponent(Port).exists()).toBe(false);
         expect(wrapper.find(".add-port-icon").exists()).toBe(true);
 
-        // checks transitionEnabled is reset to true in $nextTick
-        await Vue.nextTick();
-        expect(wrapper.findComponent(Vue.Transition).attributes("name")).toBe(
+        // checks transitionEnabled is reset to true in nextTick
+        await nextTick();
+        expect(wrapper.findComponent(Transition).attributes("name")).toBe(
           "port-fade",
         );
       });

@@ -1,6 +1,6 @@
-import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
 /* eslint-disable max-lines */
-import * as Vue from "vue";
+import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
+import { nextTick } from "vue";
 
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
@@ -102,19 +102,19 @@ describe("ConnectorSnappingProvider.vue", () => {
       startNodeId,
       validConnectionTargets: new Set(validConnectionTargets),
     });
-    await Vue.nextTick();
+    await nextTick();
   };
 
   const connectorEnter = async ({ wrapper, getSlottedChildComponent }) => {
     getSlottedChildComponent(wrapper).trigger("connector-enter");
-    await Vue.nextTick();
+    await nextTick();
   };
 
   const connectorDrop = async ({ wrapper, eventDetails }) => {
     wrapper
       .find("#slotted-component")
       .trigger("connector-drop", { detail: eventDetails });
-    await Vue.nextTick();
+    await nextTick();
   };
 
   const connectorMove = async ({
@@ -131,17 +131,17 @@ describe("ConnectorSnappingProvider.vue", () => {
       },
       ports,
     );
-    await Vue.nextTick();
+    await nextTick();
   };
 
   const connectorLeave = async ({ wrapper, getSlottedChildComponent }) => {
     getSlottedChildComponent(wrapper).trigger("connector-leave");
-    await Vue.nextTick();
+    await nextTick();
   };
 
   const connectorEnd = async () => {
     $bus.emit("connector-end");
-    await Vue.nextTick();
+    await nextTick();
   };
 
   afterEach(() => {
@@ -465,7 +465,7 @@ describe("ConnectorSnappingProvider.vue", () => {
         const events = openPortTypeMenuMock.mock.calls[0][1].events;
 
         events.itemClick({ typeId: "SOME_TYPE", portGroup: "default" });
-        await Vue.nextTick();
+        await nextTick();
 
         expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
           nodeId: "root",
@@ -487,7 +487,7 @@ describe("ConnectorSnappingProvider.vue", () => {
 
         const port = { typeId: "active" };
         events.itemActive({ port });
-        await Vue.nextTick();
+        await nextTick();
 
         expect(setPortTypeMenuPreviewPortMock).toHaveBeenCalledWith(
           expect.anything(),
@@ -506,7 +506,7 @@ describe("ConnectorSnappingProvider.vue", () => {
         const events = openPortTypeMenuMock.mock.calls[0][1].events;
 
         events.menuClose();
-        await Vue.nextTick();
+        await nextTick();
 
         expect(closePortTypeMenuMock).toHaveBeenCalledTimes(1);
       });

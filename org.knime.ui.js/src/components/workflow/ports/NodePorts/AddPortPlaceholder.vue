@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { defineComponent, type PropType, nextTick } from "vue";
 import { mapActions, mapMutations, mapState } from "vuex";
 import Port from "@/components/common/Port.vue";
 import type { MenuItemWithPort, TargetPort } from "./types";
@@ -197,7 +197,7 @@ export default defineComponent({
       this.selectedPort = item?.port ?? null;
     },
 
-    onItemClick({
+    async onItemClick({
       typeId,
       portGroup,
     }: {
@@ -210,9 +210,8 @@ export default defineComponent({
 
       this.$emit("addPort", { typeId, portGroup });
 
-      this.$nextTick(() => {
-        this.transitionEnabled = true;
-      });
+      await nextTick();
+      this.transitionEnabled = true;
     },
   },
 });

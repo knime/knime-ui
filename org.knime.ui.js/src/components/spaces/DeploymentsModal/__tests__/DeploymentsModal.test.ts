@@ -1,5 +1,5 @@
 import { expect, describe, it, vi, afterEach } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 
@@ -76,7 +76,7 @@ describe("DeploymentsModal.vue", () => {
       isOpen: true,
       name: "Schedules and jobs of Workflow",
     });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.findComponent(Modal).isVisible()).toBe(true);
   });
@@ -85,7 +85,7 @@ describe("DeploymentsModal.vue", () => {
     const { wrapper, commitSpy } = doMount();
 
     wrapper.findComponent(Modal).trigger("cancel");
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
     expect(commitSpy).toHaveBeenCalledWith("spaces/setDeploymentsModalConfig", {

@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 import { expect, describe, it, vi, beforeEach } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { VueWrapper, shallowMount } from "@vue/test-utils";
 
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
@@ -209,7 +209,7 @@ describe("MoveableNodeContainer", () => {
 
       await endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(mockedAPI.workflowCommand.Translate).toHaveBeenCalled();
     });
@@ -226,7 +226,7 @@ describe("MoveableNodeContainer", () => {
     mockBoundingRect(rect);
     await startNodeDrag(wrapper, { clientX: 10, clientY: 10 });
     moveNodeTo({ clientX: 250, clientY: 250 });
-    await Vue.nextTick();
+    await nextTick();
     expect($store.state.workflow.movePreviewDelta).not.toEqual({ x: 0, y: 0 });
     (useEscapeStack as any).onEscape();
     expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });

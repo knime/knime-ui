@@ -1,6 +1,6 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { mockVuexStore } from "@/test/utils";
 
 import * as selectionStore from "@/store/selection";
@@ -160,7 +160,7 @@ describe("NodeLabel", () => {
       // emulate editor being closed from store
       $store.state.workflow.labelEditorNodeId = null;
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);
       expect(wrapper.findComponent(NodeLabelText).exists()).toBe(true);
     });
@@ -173,7 +173,7 @@ describe("NodeLabel", () => {
       // emulate editor being closed from store
       $store.state.workflow.labelEditorNodeId = null;
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);
       expect(wrapper.findComponent(NodeLabelText).exists()).toBe(true);
     });

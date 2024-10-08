@@ -1,5 +1,6 @@
 import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import * as settingsStore from "@/store/settings";
@@ -171,7 +172,7 @@ describe("NodeRepositoryHeader", () => {
       wrapper
         .findComponent(SearchInput)
         .vm.$emit("update:modelValue", "myquery");
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(updateQueryMock).toHaveBeenCalledWith(
         expect.anything(),

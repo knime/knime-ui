@@ -1,4 +1,5 @@
 <script>
+import { nextTick } from "vue";
 import { navigatorUtils } from "@knime/utils";
 import NodeLabelText from "./NodeLabelText.vue";
 
@@ -20,15 +21,15 @@ export default {
     },
   },
   emits: ["update:modelValue", "save", "cancel"],
-  mounted() {
-    this.$nextTick(() => {
-      this.resizeTextarea();
+  async mounted() {
+    await nextTick();
 
-      if (this.$refs.textarea) {
-        this.$refs.textarea.focus();
-        this.$refs.textarea.select();
-      }
-    });
+    this.resizeTextarea();
+
+    if (this.$refs.textarea) {
+      this.$refs.textarea.focus();
+      this.$refs.textarea.select();
+    }
   },
   methods: {
     onInput(event) {

@@ -1,4 +1,5 @@
 <script>
+import { nextTick } from "vue";
 import NodeNameText from "./NodeNameText.vue";
 
 /**
@@ -35,15 +36,15 @@ export default {
     "heightChange",
     "invalidInput",
   ],
-  mounted() {
-    this.$nextTick(() => {
-      this.resizeTextarea();
+  async mounted() {
+    await nextTick();
 
-      if (this.$refs.textarea) {
-        this.$refs.textarea.focus();
-        this.$refs.textarea.select();
-      }
-    });
+    this.resizeTextarea();
+
+    if (this.$refs.textarea) {
+      this.$refs.textarea.focus();
+      this.$refs.textarea.select();
+    }
   },
   methods: {
     onInput(event) {

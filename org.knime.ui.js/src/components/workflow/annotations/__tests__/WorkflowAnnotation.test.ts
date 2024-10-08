@@ -471,7 +471,7 @@ describe("WorkflowAnnotation.vue", () => {
       await wrapper
         .findComponent(TransformControls)
         .trigger("click", { button: 0 });
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect($store.state.selection.selectedNodes).toEqual({});
       expect($store.state.selection.selectedConnections).toEqual({});

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils";
 
@@ -302,7 +302,7 @@ describe("canvas store", () => {
           height: 200,
         });
 
-        await Vue.nextTick();
+        await nextTick();
 
         // new padding is 200 (screen units) => decreasy by 100 => scroll by 100
         expect(scrollContainer.scrollLeft).toBe(-100);

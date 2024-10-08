@@ -1,5 +1,5 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
@@ -36,7 +36,7 @@ describe("PortTabs.vue", () => {
     });
 
     wrapper.findComponent(TabBar).vm.$emit("update:modelValue", 1);
-    await Vue.nextTick();
+    await nextTick();
     expect(wrapper.emitted("update:modelValue")[0]).toStrictEqual([1]);
   });
 

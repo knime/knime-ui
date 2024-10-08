@@ -1,5 +1,5 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -81,7 +81,7 @@ describe("ConnectorLabel.vue", () => {
         movePreviewDelta: { x: 200, y: 200 },
         isDragging: true,
       });
-      await Vue.nextTick();
+      await nextTick();
 
       const endPosition = wrapper.attributes().transform;
 
@@ -101,7 +101,7 @@ describe("ConnectorLabel.vue", () => {
         isDragging: true,
         movePreviewDelta: { x: 200, y: 200 },
       });
-      await Vue.nextTick();
+      await nextTick();
 
       const endPosition = wrapper.attributes().transform;
 

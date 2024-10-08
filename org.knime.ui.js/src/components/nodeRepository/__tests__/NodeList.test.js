@@ -1,9 +1,9 @@
 import { expect, describe, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 import NodeList from "../NodeList.vue";
-import { nextTick } from "vue";
 
 describe("NodeList", () => {
   const defaultProps = {
@@ -60,7 +60,7 @@ describe("NodeList", () => {
       const wrapper = doMount({ selectedNode: { id: startId } });
 
       await wrapper.find("ul").trigger("keydown", { key });
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("update:selectedNode")).toStrictEqual([[{ id }]]);
     });
@@ -74,7 +74,7 @@ describe("NodeList", () => {
       });
 
       await wrapper.find("ul").trigger("keydown", { key });
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("navReachedTop")).toBeTruthy();
     });
@@ -86,7 +86,7 @@ describe("NodeList", () => {
       const wrapper = doMount({ selectedNode: { id } });
 
       await wrapper.find("ul").trigger("keydown", { key });
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("navReachedEnd")).toBeTruthy();
     });
@@ -95,7 +95,7 @@ describe("NodeList", () => {
       const wrapper = doMount();
 
       await wrapper.findAll("li").at(2).trigger("keydown.enter");
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("enterKey")).toStrictEqual([[{ id: "node3" }]]);
     });
@@ -104,7 +104,7 @@ describe("NodeList", () => {
       const wrapper = doMount();
 
       await wrapper.find("ul > li").trigger("keydown.i");
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("helpKey")).toBeTruthy();
     });
@@ -126,7 +126,7 @@ describe("NodeList", () => {
       });
 
       await wrapper.setProps({ selectedNode: { id: "node4" } });
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(focusMock).toBeCalled();
       expect(wrongFocusMock).toBeCalledTimes(0);

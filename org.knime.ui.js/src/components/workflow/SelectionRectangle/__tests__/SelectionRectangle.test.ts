@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, afterEach, it, vi, type Mock } from "vitest";
-import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import { $bus } from "@/plugins/event-bus";
@@ -163,7 +163,7 @@ describe("SelectionRectangle", () => {
     const { pointerDown, storeConfig } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
   });
@@ -173,12 +173,12 @@ describe("SelectionRectangle", () => {
     expect(wrapper.isVisible()).toBe(false);
 
     pointerDown({ clientX: 0, clientY: 0 });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.isVisible()).toBe(true);
 
     pointerUp();
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.isVisible()).toBe(false);
   });
@@ -189,7 +189,7 @@ describe("SelectionRectangle", () => {
 
       mountResult.pointerDown({ clientX: 10, clientY: 10 });
       mountResult.pointerMove({ clientX: 300, clientY: 300 });
-      await Vue.nextTick();
+      await nextTick();
 
       return mountResult;
     };
@@ -233,7 +233,7 @@ describe("SelectionRectangle", () => {
         bendpointsOutside: [],
       });
       pointerMove({ clientX: 0, clientY: 0 });
-      await Vue.nextTick();
+      await nextTick();
 
       const selectionPreviewEvents = wrapper.emitted("nodeSelectionPreview");
       // skip first two events that select those nodes
@@ -292,7 +292,7 @@ describe("SelectionRectangle", () => {
         bendpointsOutside: [],
       });
       pointerMove({ clientX: 0, clientY: 0 });
-      await Vue.nextTick();
+      await nextTick();
 
       const selectionPreviewEvents = wrapper.emitted(
         "annotationSelectionPreview",
@@ -330,7 +330,7 @@ describe("SelectionRectangle", () => {
       const { pointerDown, pointerMove, storeConfig } = await mountAndSelect();
       pointerDown({ clientX: 10, clientY: 10 });
       pointerMove({ clientX: 300, clientY: 300 });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(
         storeConfig.selection.mutations.setDidStartRectangleSelection,
@@ -342,7 +342,7 @@ describe("SelectionRectangle", () => {
         await mountAndSelect();
       pointerDown({ clientX: 10, clientY: 10 });
       pointerMove({ clientX: 300, clientY: 300 });
-      await Vue.nextTick();
+      await nextTick();
       pointerUp();
 
       expect(
@@ -362,7 +362,7 @@ describe("SelectionRectangle", () => {
       mountResult.pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
       mountResult.pointerMove({ clientX: 0, clientY: 0 });
 
-      await Vue.nextTick();
+      await nextTick();
 
       return mountResult;
     };
@@ -494,7 +494,7 @@ describe("SelectionRectangle", () => {
 
       pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
       pointerMove({ clientX: 36, clientY: 36 });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("nodeSelectionPreview")).toStrictEqual([
         [
@@ -526,7 +526,7 @@ describe("SelectionRectangle", () => {
 
       pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
       pointerMove({ clientX: 36, clientY: 36 });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("annotationSelectionPreview")).toStrictEqual([
         [
@@ -567,7 +567,7 @@ describe("SelectionRectangle", () => {
       const { wrapper, pointerMove, pointerUp, storeConfig } = doMount();
       // pointerDown is missing
       pointerMove({ clientX: 300, clientY: 300 });
-      await Vue.nextTick();
+      await nextTick();
       pointerUp();
       expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
       expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();
@@ -585,7 +585,7 @@ describe("SelectionRectangle", () => {
 
       pointerDown({ clientX: 300, clientY: 300, pointerId: 22 });
       pointerMove({ clientX: 300, clientY: 300, pointerId: 3 });
-      await Vue.nextTick();
+      await nextTick();
       pointerUp();
       expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
       expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();

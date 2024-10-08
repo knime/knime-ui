@@ -1,6 +1,6 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import * as Vue from "vue";
 import { shallowMount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { mockVuexStore } from "@/test/utils";
 
 import NodeName from "../NodeName.vue";
@@ -81,7 +81,7 @@ describe("NodeName", () => {
     it("should handle a name change requests triggered via the store (e.g. F2 key)", async () => {
       wrapper.vm.$store.state.workflow.nameEditorNodeId =
         wrapper.props("nodeId");
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.emitted("editStart")).toBeDefined();
     });
   });
@@ -163,7 +163,7 @@ describe("NodeName", () => {
       // emulate editor being closed from store
       $store.state.workflow.nameEditorNodeId = null;
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
       expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
     });
@@ -176,7 +176,7 @@ describe("NodeName", () => {
       // emulate editor being closed from store
       $store.state.workflow.nameEditorNodeId = null;
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
       expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
     });
@@ -200,7 +200,7 @@ describe("NodeName", () => {
       wrapper.findComponent(NodeNameEditor).vm.$emit("save", saveEventPayload);
 
       // emulate close and re-open editor
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodeNameEditor).props("startWidth")).toBe(
         saveEventPayload.dimensionsOnClose.width,

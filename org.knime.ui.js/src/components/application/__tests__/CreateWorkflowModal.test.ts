@@ -1,5 +1,5 @@
 import { expect, describe, it, vi, afterEach } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { Modal, InputField } from "@knime/components";
@@ -94,7 +94,7 @@ describe("CreateWorkflowModal.vue", () => {
         isOpen: true,
         projectId,
       });
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.find("input").isVisible()).toBe(true);
     });
 
@@ -102,7 +102,7 @@ describe("CreateWorkflowModal.vue", () => {
       const { wrapper, commitSpy } = doMount({ isOpen: true });
 
       wrapper.findComponent(Modal).vm.$emit("cancel");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.find("input").isVisible()).toBe(false);
       expect(commitSpy).toHaveBeenCalledWith(
@@ -147,7 +147,7 @@ describe("CreateWorkflowModal.vue", () => {
       const input = wrapper.find("input");
       input.element.value = 'invalid Name?*?#:"<>%~|/\\>?';
       input.trigger("input");
-      await Vue.nextTick();
+      await nextTick();
 
       const errorMessage = wrapper.find(".item-error");
       expect(errorMessage.text()).toMatch("contains invalid characters");

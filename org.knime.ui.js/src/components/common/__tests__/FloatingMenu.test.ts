@@ -1,5 +1,5 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
@@ -152,13 +152,13 @@ describe("FloatingMenu.vue", () => {
           focusTrap: false,
         },
       });
-      await Vue.nextTick();
+      await nextTick();
       expect(useFocusTrapMock.activate).not.toHaveBeenCalled();
     });
 
     it("closes menu if a node template is being dragged", async () => {
       const { wrapper } = doMount({ isDraggingNodeTemplate: true });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("menuClose")).toBeDefined();
     });
@@ -167,7 +167,7 @@ describe("FloatingMenu.vue", () => {
       const { wrapper, $store } = doMount();
       $store.state.workflow.isDragging = true;
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.emitted("menuClose")).toBeDefined();
     });
   });
@@ -175,7 +175,7 @@ describe("FloatingMenu.vue", () => {
   describe("menu position and effects", () => {
     it("position inside canvas; top-left", async () => {
       const { wrapper } = doMount();
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes("style")).toMatch("left: 20px;");
       expect(wrapper.attributes("style")).toMatch("top: 20px;");
@@ -185,7 +185,7 @@ describe("FloatingMenu.vue", () => {
     it("position inside canvas; top-right", async () => {
       const { wrapper } = doMount({ props: { anchor: "top-right" } });
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes("style")).toMatch("left: 10px;");
       expect(wrapper.attributes("style")).toMatch("top: 20px;");
@@ -197,7 +197,7 @@ describe("FloatingMenu.vue", () => {
         props: { canvasPosition: { x: -5, y: 20 } },
       });
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.attributes("style")).toMatch("opacity: 0.5;");
     });
 
@@ -209,7 +209,7 @@ describe("FloatingMenu.vue", () => {
     ])("position outside %s, exceeding threshold", async (_, position) => {
       const { wrapper } = doMount({ props: { canvasPosition: position } });
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.attributes("style")).toMatch("opacity: 0;");
       expect(wrapper.emitted("menuClose")).toBeTruthy();
     });
@@ -218,7 +218,7 @@ describe("FloatingMenu.vue", () => {
       const { wrapper } = doMount({
         props: { canvasPosition: { x: -20, y: -20 }, preventOverflow: true },
       });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes("style")).toMatch("left: 0px;");
       expect(wrapper.attributes("style")).toMatch("top: 0px;");
@@ -228,7 +228,7 @@ describe("FloatingMenu.vue", () => {
       const { wrapper } = doMount({
         props: { canvasPosition: { x: 150, y: 150 }, preventOverflow: true },
       });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes("style")).toMatch("left: 90px;");
       expect(wrapper.attributes("style")).toMatch("top: 90px;");
@@ -236,10 +236,10 @@ describe("FloatingMenu.vue", () => {
 
     it("re-position on position update", async () => {
       const { wrapper } = doMount();
-      await Vue.nextTick();
+      await nextTick();
 
       wrapper.setProps({ canvasPosition: { x: 0, y: 0 } });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes("style")).toMatch("left: 0px;");
       expect(wrapper.attributes("style")).toMatch("top: 0px;");
@@ -247,10 +247,10 @@ describe("FloatingMenu.vue", () => {
 
     it("re-position on zoom factor update", async () => {
       const { wrapper, $store } = doMount();
-      await Vue.nextTick();
+      await nextTick();
 
       $store.state.canvas.zoomFactor = 2;
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes("style")).toMatch("left: 40px;");
       expect(wrapper.attributes("style")).toMatch("top: 40px;");
@@ -281,7 +281,7 @@ describe("FloatingMenu.vue", () => {
       const { wrapper, getBoundingClientRect } = doMount({
         screenFromCanvasCoordinatesMock,
       });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.attributes("style")).toContain("left: 20px");
       expect(wrapper.attributes("style")).toContain("top: 20px");
@@ -294,11 +294,11 @@ describe("FloatingMenu.vue", () => {
         height: 80,
       }));
 
-      await Vue.nextTick();
+      await nextTick();
 
       kanvas.dispatchEvent(new CustomEvent("scroll"));
 
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.attributes("style")).toContain("left: 50px");
       expect(wrapper.attributes("style")).toContain("top: 50px");
     });
@@ -316,7 +316,7 @@ describe("FloatingMenu.vue", () => {
   describe("clean up", () => {
     it("removes scroll listener", async () => {
       const { wrapper } = doMount();
-      await Vue.nextTick();
+      await nextTick();
 
       wrapper.unmount();
 

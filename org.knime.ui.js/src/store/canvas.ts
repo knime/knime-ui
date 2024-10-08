@@ -2,7 +2,7 @@
  * Canvas Store manages positioning, zooming, scrolling and
  * coordinate transformations for the Kanvas component.
  */
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { RootStoreState } from "./types";
@@ -288,7 +288,7 @@ export const actions: ActionTree<CanvasState, RootStoreState> = {
     });
 
     // wait for canvas to update padding, size and scroll
-    await Vue.nextTick();
+    await nextTick();
 
     // find new origin in screen coordinates, relative to upper left corner of canvas
     let { x: newX, y: newY } = getters.fromCanvasCoordinates({ x: 0, y: 0 });
@@ -318,7 +318,7 @@ export const actions: ActionTree<CanvasState, RootStoreState> = {
     }
 
     commit("setFactor", zoomFactor);
-    await Vue.nextTick();
+    await nextTick();
 
     const kanvas = state.getScrollContainerElement();
 

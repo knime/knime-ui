@@ -1,5 +1,5 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils";
@@ -207,7 +207,7 @@ describe("NodeState.vue", () => {
     it("shows no tooltips by default", async () => {
       doShallowMount();
       wrapper.find("g").trigger("mouseenter");
-      await Vue.nextTick();
+      await nextTick();
       expect(currentTooltip).toBeFalsy();
     });
 
@@ -217,7 +217,7 @@ describe("NodeState.vue", () => {
 
       wrapper.find({ ref: "tooltipRef" }).trigger("mouseenter");
       vi.runAllTimers();
-      await Vue.nextTick();
+      await nextTick();
 
       expect(currentTooltip).toStrictEqual({
         anchorPoint: { x: 123, y: 456 },
@@ -234,7 +234,7 @@ describe("NodeState.vue", () => {
       });
 
       wrapper.find("g").trigger("mouseleave");
-      await Vue.nextTick();
+      await nextTick();
       expect(currentTooltip).toBeFalsy();
     });
 
@@ -246,7 +246,7 @@ describe("NodeState.vue", () => {
 
       wrapper.find("g").trigger("mouseenter");
       vi.runAllTimers();
-      await Vue.nextTick();
+      await nextTick();
 
       expect(currentTooltip).toStrictEqual({
         anchorPoint: { x: 123, y: 456 },
@@ -263,7 +263,7 @@ describe("NodeState.vue", () => {
       });
 
       wrapper.find("g").trigger("mouseleave");
-      await Vue.nextTick();
+      await nextTick();
       expect(currentTooltip).toBeFalsy();
     });
 
@@ -272,12 +272,12 @@ describe("NodeState.vue", () => {
       doShallowMount();
 
       wrapper.find("g").trigger("mouseenter");
-      await Vue.nextTick();
+      await nextTick();
 
       wrapper.setProps({
         progressMessages: ["mo Progress", "Level 2"],
       });
-      await Vue.nextTick();
+      await nextTick();
 
       vi.runAllTimers();
 

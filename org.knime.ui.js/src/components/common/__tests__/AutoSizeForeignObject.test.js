@@ -12,7 +12,7 @@ describe("AutoSizeForeignObject.vue", () => {
   const mockRectY = 31;
 
   // Wait for task queue to run until after next task in order to let
-  // the component render the template otherwise we'd have to call $nextTick twice
+  // the component render the template otherwise we'd have to call nextTick twice
   // for this component, which is not very clean
   const flushTaskQueue = () => new Promise((r) => setTimeout(r, 10));
 

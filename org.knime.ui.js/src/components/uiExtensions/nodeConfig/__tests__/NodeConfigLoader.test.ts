@@ -1,5 +1,5 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import {
   flushPromises,
   mount,
@@ -95,7 +95,7 @@ describe("NodeConfigLoader.vue", () => {
 
     wrapper.setProps({ selectedNode: newNode });
 
-    await Vue.nextTick();
+    await nextTick();
 
     expect(mockedAPI.node.getNodeDialog).toBeCalledTimes(2);
     expect(mockedAPI.node.getNodeDialog).toBeCalledWith(
@@ -274,7 +274,7 @@ describe("NodeConfigLoader.vue", () => {
 
       apiLayer.setControlsVisibility({ shouldBeVisible: false });
 
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.find("#slotted-ctrls").exists()).toBe(false);
     });

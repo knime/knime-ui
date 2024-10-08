@@ -1,4 +1,5 @@
 import { expect, describe, it } from "vitest";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import NodeDecorators from "../NodeDecorators.vue";
@@ -60,7 +61,7 @@ describe("NodeDecorators.vue", () => {
     );
 
     wrapper.setProps({ isReexecutable: false });
-    await wrapper.vm.$nextTick();
+    await nextTick();
     reexecutionDecorator = wrapper.findComponent(ReexecutionDecorator);
     expect(wrapper.findComponent(ReexecutionDecorator).exists()).toBe(false);
   });
@@ -102,7 +103,7 @@ describe("NodeDecorators.vue", () => {
     expect(wrapper.findComponent(LockDecorator).exists()).toBe(false);
 
     wrapper.setProps({ isLocked: false });
-    await wrapper.vm.$nextTick();
+    await nextTick();
     expect(wrapper.findComponent(LockDecorator).exists()).toBe(true);
   });
 });

@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { mockVuexStore } from "@/test/utils";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
@@ -171,7 +171,7 @@ describe("NodePorts.vue", () => {
       });
       let somePort = wrapper.findComponent(NodePort);
       somePort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       let allPorts = wrapper.findAllComponents(NodePort);
       expect(
@@ -185,7 +185,7 @@ describe("NodePorts.vue", () => {
       });
       let firstPort = wrapper.findAllComponents(NodePort).at(0);
       firstPort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(firstPort.props("selected")).toBe(false);
     });
@@ -194,7 +194,7 @@ describe("NodePorts.vue", () => {
       let { wrapper } = doMount({ customProps: { nodeKind: "metanode" } });
       let firstPort = wrapper.findAllComponents(NodePort).at(0);
       firstPort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(firstPort.props("selected")).toBe(true);
     });
@@ -211,7 +211,7 @@ describe("NodePorts.vue", () => {
       // Other Port can be
       let normalPort = wrapper.findAllComponents(NodePort).at(1);
       normalPort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(normalPort.props("selected")).toBe(true);
     });
@@ -297,7 +297,7 @@ describe("NodePorts.vue", () => {
           nodeId,
           selectedPort: "output-1",
         };
-        await Vue.nextTick();
+        await nextTick();
 
         navigate($store, "ArrowDown");
         expect($store.state.selection.activeNodePorts.selectedPort).toBe(
@@ -363,7 +363,7 @@ describe("NodePorts.vue", () => {
           selectedPort: "output-AddPort",
         };
 
-        await Vue.nextTick();
+        await nextTick();
 
         getNodeByIdMock.mockImplementation(() => node);
 
@@ -380,13 +380,13 @@ describe("NodePorts.vue", () => {
       let { wrapper } = doMount({ customProps: { nodeKind: "component" } });
       let normalPort = wrapper.findAllComponents(NodePort).at(1);
       normalPort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(normalPort.props("selected")).toBe(true);
 
       // Deselect by event
       normalPort.vm.$emit("deselect");
-      await Vue.nextTick();
+      await nextTick();
       expect(normalPort.props("selected")).toBe(false);
     });
 
@@ -394,14 +394,14 @@ describe("NodePorts.vue", () => {
       let { wrapper } = doMount({ customProps: { nodeKind: "component" } });
       let normalPort = wrapper.findAllComponents(NodePort).at(1);
       normalPort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(normalPort.props("selected")).toBe(true);
 
       // Deselect by selecting another port
       let otherPort = wrapper.findAllComponents(NodePort).at(3);
       otherPort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(normalPort.props("selected")).toBe(false);
     });
@@ -412,12 +412,12 @@ describe("NodePorts.vue", () => {
       });
       let normalPort = wrapper.findAllComponents(NodePort).at(1);
       normalPort.vm.$emit("click");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(normalPort.props("selected")).toBe(true);
 
       $store.state.workflow.isDragging = true;
-      await Vue.nextTick();
+      await nextTick();
 
       expect(normalPort.props("selected")).toBe(false);
     });

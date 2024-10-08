@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { expect, describe, it, vi, afterEach } from "vitest";
-import * as Vue from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { $bus } from "@/plugins/event-bus";
@@ -245,7 +245,7 @@ describe("Kanvas", () => {
 
     $store.state.canvas.__contentBounds = { left: 10, top: 10 };
 
-    await Vue.nextTick();
+    await nextTick();
 
     expect(actions.canvas.contentBoundsChanged).toHaveBeenCalledWith(
       expect.anything(),
@@ -331,7 +331,7 @@ describe("Kanvas", () => {
       const { commitSpy } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { metaKey: true }));
-      await Vue.nextTick();
+      await nextTick();
 
       expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
     });
@@ -340,7 +340,7 @@ describe("Kanvas", () => {
       const { commitSpy } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { ctrlKey: true }));
-      await Vue.nextTick();
+      await nextTick();
 
       expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
     });
@@ -349,12 +349,12 @@ describe("Kanvas", () => {
       const { commitSpy } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { shiftKey: true }));
-      await Vue.nextTick();
+      await nextTick();
 
       expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
 
       document.dispatchEvent(new KeyboardEvent("keyup", { key: "Shift" }));
-      await Vue.nextTick();
+      await nextTick();
 
       expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", false);
     });
@@ -373,7 +373,7 @@ describe("Kanvas", () => {
             new KeyboardEvent("keypress", { code: "Space", bubbles: true }),
           );
 
-          await Vue.nextTick();
+          await nextTick();
 
           expect(wrapper.classes()).not.toContain("panning");
         },
@@ -387,11 +387,11 @@ describe("Kanvas", () => {
         document.dispatchEvent(
           new KeyboardEvent("keypress", { code: "Space" }),
         );
-        await Vue.nextTick();
+        await nextTick();
         expect(wrapper.classes()).toContain("panning");
 
         document.dispatchEvent(new KeyboardEvent("keyup", { code: "Space" }));
-        await Vue.nextTick();
+        await nextTick();
         expect(wrapper.classes()).not.toContain("panning");
       });
 
@@ -401,7 +401,7 @@ describe("Kanvas", () => {
         document.dispatchEvent(
           new KeyboardEvent("keypress", { code: "Space" }),
         );
-        await Vue.nextTick();
+        await nextTick();
 
         await triggerPointerDown({
           wrapper,
@@ -429,7 +429,7 @@ describe("Kanvas", () => {
         document.dispatchEvent(
           new KeyboardEvent("keypress", { code: "Space" }),
         );
-        await Vue.nextTick();
+        await nextTick();
 
         await triggerPointerDown({
           wrapper,
@@ -721,7 +721,7 @@ describe("Kanvas", () => {
       ResizeObserverMock.__trigger__();
 
       vi.advanceTimersByTime(RESIZE_DEBOUNCE);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.emitted("containerSizeChanged")).toBeTruthy();
       expect(actions.canvas.updateContainerSize).toHaveBeenCalledTimes(1);
@@ -739,7 +739,7 @@ describe("Kanvas", () => {
   describe("zooming", () => {
     it("uses canvasSize and viewBox from store", async () => {
       const { wrapper, $store } = doShallowMount();
-      await Vue.nextTick();
+      await nextTick();
 
       const svg = wrapper.find("svg");
 
@@ -1177,10 +1177,10 @@ describe("Kanvas", () => {
       dispatchSpy.mockClear();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
-      await Vue.nextTick();
+      await nextTick();
 
       document.dispatchEvent(new Event("pointerdown"));
-      await Vue.nextTick();
+      await nextTick();
 
       await wrapper.trigger("focusin");
 

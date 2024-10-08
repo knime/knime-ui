@@ -1,6 +1,6 @@
 import { SubMenu } from "@knime/components";
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import IconComponent from "@/assets/redo.svg";
@@ -101,7 +101,7 @@ describe("ToolbarShortcutButton.vue", () => {
       });
 
       expect($shortcuts.isEnabled).toHaveBeenCalledWith("save");
-      await Vue.nextTick();
+      await nextTick();
 
       const toolbarButton = wrapper.getComponent(ToolbarButton);
       expect(toolbarButton.attributes("disabled")).toBeDefined();

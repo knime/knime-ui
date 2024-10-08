@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
@@ -118,12 +118,12 @@ describe("AnnotationRectangle", () => {
     expect(wrapper.isVisible()).toBe(false);
 
     pointerDown({ clientX: 0, clientY: 0 });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.isVisible()).toBe(true);
 
     pointerUp();
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.isVisible()).toBe(false);
   });
@@ -132,12 +132,12 @@ describe("AnnotationRectangle", () => {
     const { wrapper, pointerDown, pointerUp, switchCanvasModeMock } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.isVisible()).toBe(true);
 
     pointerUp();
-    await Vue.nextTick();
+    await nextTick();
 
     expect(switchCanvasModeMock).toHaveBeenCalled();
   });
@@ -152,13 +152,13 @@ describe("AnnotationRectangle", () => {
     } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.isVisible()).toBe(true);
     pointerMove({ clientX: 10, clientY: 13 });
 
     pointerUp();
-    await Vue.nextTick();
+    await nextTick();
 
     expect(switchCanvasModeMock).toHaveBeenCalled();
     expect($shortcuts.dispatch).toHaveBeenCalledWith(

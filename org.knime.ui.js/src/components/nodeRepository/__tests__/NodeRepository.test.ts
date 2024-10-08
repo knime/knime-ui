@@ -2,6 +2,7 @@ import { expect, describe, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { lodashMockFactory } from "@/test/utils";
+import { nextTick } from "vue";
 
 import * as panelStore from "@/store/panel";
 import * as settingsStore from "@/store/settings";
@@ -157,7 +158,7 @@ describe("NodeRepository", () => {
       $store.state.panel.activeTab = {
         project1: panelStore.TABS.NODE_REPOSITORY,
       };
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
     });
@@ -168,12 +169,12 @@ describe("NodeRepository", () => {
         fn();
         return 0;
       });
-      const { wrapper, $store, setShowDescriptionForNodeMock } = doMount();
+      const { $store, setShowDescriptionForNodeMock } = doMount();
       $store.state.panel.isExtensionPanelOpen = true;
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       $store.state.panel.isExtensionPanelOpen = false;
-      await wrapper.vm.$nextTick();
+      await nextTick();
 
       expect(setShowDescriptionForNodeMock).toHaveBeenCalledWith(
         expect.anything(),

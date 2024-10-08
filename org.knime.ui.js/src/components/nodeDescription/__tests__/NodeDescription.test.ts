@@ -1,5 +1,5 @@
 import { expect, describe, it, vi, afterEach } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { NODE_FACTORIES, createNativeNodeDescription } from "@/test/factories";
@@ -96,7 +96,7 @@ describe("NodeDescription", () => {
       id: 1,
     });
     const { wrapper } = await doMount();
-    await Vue.nextTick();
+    await nextTick();
     const description = wrapper.find("span");
     expect(description.text()).toBe("There is no description for this node.");
   });
@@ -127,7 +127,7 @@ describe("NodeDescription", () => {
       },
     });
 
-    await Vue.nextTick();
+    await nextTick();
     expect(getNodeDescriptionMock).toHaveBeenCalledTimes(2);
   });
 
@@ -147,7 +147,7 @@ describe("NodeDescription", () => {
         },
       },
     });
-    await Vue.nextTick();
+    await nextTick();
     expect(getNodeDescriptionMock).not.toHaveBeenCalled();
   });
 
@@ -189,7 +189,7 @@ describe("NodeDescription", () => {
       },
     });
     const { wrapper } = await doMount();
-    await Vue.nextTick();
+    await nextTick();
     const description = wrapper.find(".description");
 
     expect(description.text()).toBe("This is a node.");

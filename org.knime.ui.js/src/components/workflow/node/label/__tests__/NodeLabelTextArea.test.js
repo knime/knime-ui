@@ -1,5 +1,6 @@
 import { expect, describe, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import * as $shapes from "@/style/shapes";
@@ -71,7 +72,7 @@ describe("NodeLabelTextArea", () => {
     const wrapper = doShallowMount({ attachTo: document.body });
     const textareaElement = wrapper.find("textarea");
 
-    await wrapper.vm.$nextTick();
+    await nextTick();
 
     expect(document.activeElement).toBe(textareaElement.element);
   });
@@ -82,7 +83,7 @@ describe("NodeLabelTextArea", () => {
 
     const wrapper = doShallowMount();
 
-    await wrapper.vm.$nextTick();
+    await nextTick();
     expect(getHeight(wrapper.find("textarea").element)).toBe("0px");
 
     const mockHeight = 200;
@@ -93,7 +94,7 @@ describe("NodeLabelTextArea", () => {
     wrapper.find("textarea").setValue("MOCK TEXT");
     wrapper.find("textarea").trigger("input");
 
-    await wrapper.vm.$nextTick();
+    await nextTick();
     expect(getHeight(wrapper.find("textarea").element)).toBe(`${mockHeight}px`);
   });
 });

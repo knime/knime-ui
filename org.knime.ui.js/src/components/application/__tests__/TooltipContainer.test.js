@@ -1,5 +1,5 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils";
 import * as $shapes from "@/style/shapes";
@@ -82,7 +82,7 @@ describe("TooltipContainer", () => {
 
     doShallowMount();
     $store.commit("workflow/setTooltip", tooltip);
-    await Vue.nextTick();
+    await nextTick();
 
     wrapper.findComponent(Tooltip).trigger("mouseleave");
     expect(storeConfig.workflow.state.tooltip).toBeNull();
@@ -98,7 +98,7 @@ describe("TooltipContainer", () => {
 
       doShallowMount();
       $store.commit("workflow/setTooltip", tooltip);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
         x: 40,
@@ -117,7 +117,7 @@ describe("TooltipContainer", () => {
 
       doShallowMount();
       $store.commit("workflow/setTooltip", tooltip);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
         gap: 30,
@@ -135,7 +135,7 @@ describe("TooltipContainer", () => {
       };
       doShallowMount();
       $store.commit("workflow/setTooltip", tooltip);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
         text: "text",
@@ -156,7 +156,7 @@ describe("TooltipContainer", () => {
 
       doShallowMount();
       $store.commit("workflow/setTooltip", tooltip);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(kanvasElement.addEventListener).toHaveBeenCalledWith(
         "scroll",
@@ -165,7 +165,7 @@ describe("TooltipContainer", () => {
 
       // test that it doesn't set another scroll listener
       $store.commit("workflow/setTooltip", { ...tooltip });
-      await Vue.nextTick();
+      await nextTick();
       expect(kanvasElement.addEventListener).toHaveBeenCalledTimes(1);
     });
 
@@ -176,10 +176,10 @@ describe("TooltipContainer", () => {
 
       doShallowMount();
       $store.commit("workflow/setTooltip", tooltip);
-      await Vue.nextTick();
+      await nextTick();
 
       $store.commit("workflow/setTooltip", null);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(kanvasElement.removeEventListener).toHaveBeenCalledWith(
         "scroll",
@@ -205,7 +205,7 @@ describe("TooltipContainer", () => {
 
       doShallowMount();
       $store.commit("workflow/setTooltip", tooltip);
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
         x: 20,
         y: 20,
@@ -215,7 +215,7 @@ describe("TooltipContainer", () => {
       kanvasElement.scrollEventListener({
         target: { scrollLeft: 50, scrollTop: 50 },
       });
-      await Vue.nextTick();
+      await nextTick();
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
         x: -50,
         y: -50,

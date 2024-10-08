@@ -1,5 +1,5 @@
 import { expect, describe, beforeEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -113,24 +113,24 @@ describe("WorkflowCanvas", () => {
 
     it("does not fill the screen if workflow is not empty", async () => {
       doShallowMount();
-      await Vue.nextTick();
+      await nextTick();
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
       const kanvas = wrapper.findComponent(Kanvas);
       kanvas.vm.$emit("container-size-changed");
 
-      await Vue.nextTick();
-      await Vue.nextTick();
+      await nextTick();
+      await nextTick();
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
     });
 
     it("switch from empty workflow", async () => {
       doShallowMount();
-      await Vue.nextTick();
+      await nextTick();
       storeConfig.canvas.actions.fillScreen.mockReset();
 
       // workaround, instead of triggering the canvas getter to reevaluate
       vi.spyOn(wrapper.vm, "isWorkflowEmpty", "get").mockReturnValue(false);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
       expect(
@@ -143,7 +143,7 @@ describe("WorkflowCanvas", () => {
     beforeEach(async () => {
       isWorkflowEmpty = true;
       doShallowMount();
-      await Vue.nextTick();
+      await nextTick();
     });
 
     it("renders workflow placeholder, if workflow is empty", () => {
@@ -157,14 +157,14 @@ describe("WorkflowCanvas", () => {
       const kanvas = wrapper.findComponent(Kanvas);
       kanvas.vm.$emit("container-size-changed");
 
-      await Vue.nextTick();
+      await nextTick();
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
     });
 
     it("switch to empty workflow", async () => {
       // workaround, instead of triggering the canvas getter to reevaluate
       vi.spyOn(wrapper.vm, "isWorkflowEmpty", "get").mockReturnValue(false);
-      await Vue.nextTick();
+      await nextTick();
 
       expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
     });
@@ -172,7 +172,7 @@ describe("WorkflowCanvas", () => {
 
   it("zooms to fit after mounting", async () => {
     doShallowMount();
-    await Vue.nextTick();
+    await nextTick();
 
     expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
   });
@@ -238,7 +238,7 @@ describe("WorkflowCanvas", () => {
     $store = mockVuexStore(storeConfig);
 
     shallowMount(WorkflowCanvas, { global: { plugins: [$store] } });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
   });

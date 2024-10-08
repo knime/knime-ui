@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
+import { version, nextTick } from "vue";
 
 import { mount, flushPromises } from "@vue/test-utils";
 import { Button } from "@knime/components";
@@ -42,7 +42,7 @@ describe("ErrorOverlay.vue", () => {
 
     // @ts-ignore
     expect(wrapper.find(".stack").element.value).toBe(
-      `one-liner\n\nVue: ${Vue.version}\n\nstacky`,
+      `one-liner\n\nVue: ${version}\n\nstacky`,
     );
   });
 
@@ -55,7 +55,7 @@ describe("ErrorOverlay.vue", () => {
     const copyButton = wrapper.findAllComponents(Button)[1];
     copyButton.vm.$emit("click");
 
-    await Vue.nextTick();
+    await nextTick();
 
     expect(copyReportToClipboard).toHaveBeenCalledWith({
       message: "one-liner",

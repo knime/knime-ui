@@ -1,5 +1,5 @@
 import { expect, describe, afterEach, it, vi } from "vitest";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { deepMocked, mockVuexStore } from "@/test/utils";
@@ -92,7 +92,7 @@ describe("NodeViewLoader.vue", () => {
 
     wrapper.setProps({ selectedNode: newNode });
 
-    await Vue.nextTick();
+    await nextTick();
 
     expect(mockedAPI.node.getNodeView).toBeCalledTimes(2);
     expect(mockedAPI.node.getNodeView).toBeCalledWith(
@@ -225,7 +225,7 @@ describe("NodeViewLoader.vue", () => {
         mock: "new-data",
       });
 
-      await Vue.nextTick();
+      await nextTick();
       expect(pushEventDispatcher).toHaveBeenCalledWith({
         eventType: UIExtensionPushEvents.EventTypes.DataEvent,
         payload: { mock: "new-data" },
@@ -291,7 +291,7 @@ describe("NodeViewLoader.vue", () => {
       apply: ApplyState.CONFIG,
       view: ViewState.CONFIG,
     });
-    await Vue.nextTick();
+    await nextTick();
 
     expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
     expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(

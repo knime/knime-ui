@@ -1,7 +1,6 @@
 /* eslint-disable max-params */
 import { expect, describe, it, vi } from "vitest";
 import { nextTick } from "vue";
-import * as Vue from "vue";
 import type { Store } from "vuex";
 import { VueWrapper, mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
@@ -401,14 +400,14 @@ describe("NodeOutput.vue", () => {
 
         // start from the right tab
         wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "view");
-        await Vue.nextTick();
+        await nextTick();
         expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
 
         // select other node
         store.commit("selection/clearSelection");
         store.commit("selection/addNodesToSelection", [node2.id]);
 
-        await Vue.nextTick();
+        await nextTick();
 
         expect(wrapper.findComponent(PortViewTabOutput).exists()).toBe(false);
         expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
@@ -438,7 +437,7 @@ describe("NodeOutput.vue", () => {
           selectedNodeIds: [node.id],
         });
         const { wrapper } = doMount(store);
-        await Vue.nextTick();
+        await nextTick();
 
         expect(
           wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
@@ -455,7 +454,7 @@ describe("NodeOutput.vue", () => {
         });
 
         const { wrapper } = doMount(store);
-        await Vue.nextTick();
+        await nextTick();
 
         // first port is selected by default
         expect(
@@ -464,7 +463,7 @@ describe("NodeOutput.vue", () => {
 
         // select nodeWithPorts's port at index 0
         wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "0");
-        await Vue.nextTick();
+        await nextTick();
 
         // port got selected correctly
         expect(
@@ -482,7 +481,7 @@ describe("NodeOutput.vue", () => {
 
         // select a different port
         wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "0");
-        await Vue.nextTick();
+        await nextTick();
 
         expect(
           wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),
@@ -494,7 +493,7 @@ describe("NodeOutput.vue", () => {
           state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
         } satisfies KnimeNode;
 
-        await Vue.nextTick();
+        await nextTick();
 
         // same port remains active
         expect(
@@ -538,13 +537,13 @@ describe("NodeOutput.vue", () => {
         wrapper
           .findComponent(PortTabs)
           .vm.$emit("update:modelValue", fromPort.toString());
-        await Vue.nextTick();
+        await nextTick();
 
         // select other node
         store.commit("selection/clearSelection");
         store.commit("selection/addNodesToSelection", [node2.id]);
 
-        await Vue.nextTick();
+        await nextTick();
 
         expect(
           wrapper.findComponent(PortViewTabOutput).props("selectedPortIndex"),

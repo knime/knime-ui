@@ -1,6 +1,6 @@
 import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import * as Vue from "vue";
+import { nextTick } from "vue";
 import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 
 import {
@@ -131,7 +131,7 @@ describe("DraggableNodeTemplate", () => {
       const { wrapper } = doMount();
 
       wrapper.find(".node").trigger("dblclick");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith(
         expect.objectContaining({ position: { x: 235, y: 170 } }),
@@ -146,7 +146,7 @@ describe("DraggableNodeTemplate", () => {
       };
 
       wrapper.find(".node").trigger("dblclick");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith(
         expect.objectContaining({ position: { x: 355, y: 290 } }),
@@ -157,7 +157,7 @@ describe("DraggableNodeTemplate", () => {
       const { wrapper } = doMount({ isWritable: () => false });
 
       wrapper.find(".node").trigger("dblclick");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(mockedAPI.workflowCommand.AddNode).not.toHaveBeenCalled();
     });
@@ -173,7 +173,7 @@ describe("DraggableNodeTemplate", () => {
       };
 
       wrapper.find(".node").trigger("dblclick");
-      await Vue.nextTick();
+      await nextTick();
 
       expect(mockedAPI.workflowCommand.AddNode).toHaveBeenCalledWith(
         expect.objectContaining({

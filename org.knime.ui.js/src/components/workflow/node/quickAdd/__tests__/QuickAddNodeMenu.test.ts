@@ -11,8 +11,8 @@ vi.mock("lodash-es", async (importActual) => {
   };
 });
 
-import * as Vue from "vue";
 import { mount } from "@vue/test-utils";
+import { nextTick } from "vue";
 
 import { Button, NodePreview } from "@knime/components";
 import {
@@ -250,7 +250,7 @@ describe("QuickAddNodeMenu.vue", () => {
   describe("recommendations", () => {
     it("should display the nodes recommended", async () => {
       const { wrapper } = doMount();
-      await Vue.nextTick();
+      await nextTick();
       const nodes = wrapper.findAll(".node");
 
       expect(nodes.at(0).text()).toMatch("Column Filter");
@@ -264,7 +264,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     it("adds node on click", async () => {
       const { wrapper, addNodeMock, $store } = doMount();
-      await Vue.nextTick();
+      await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
 
@@ -291,7 +291,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     it("allows dynamic updates of the port", async () => {
       const { wrapper, $store } = doMount();
-      await Vue.nextTick();
+      await nextTick();
       expect($store.state.quickAddNodes.portTypeId).toBe(
         "org.knime.core.node.BufferedDataTable",
       );
@@ -323,7 +323,7 @@ describe("QuickAddNodeMenu.vue", () => {
       };
       const { wrapper, addNodeMock, $store } = doMount({ props });
 
-      await Vue.nextTick();
+      await nextTick();
 
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
@@ -345,7 +345,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     it("triggers shortcut hotkey in search field to switch between ports", async () => {
       const { wrapper, $shortcuts } = doMount();
-      await Vue.nextTick();
+      await nextTick();
       const input = wrapper.find(".search-bar input");
       await input.trigger("keydown"); // key doesn't matter as its mocked
       expect($shortcuts.dispatch).toHaveBeenCalledWith("quickAddNode");
@@ -353,7 +353,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     it("adds node on pressing enter key", async () => {
       const { wrapper, addNodeMock } = doMount();
-      await Vue.nextTick();
+      await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("keydown.enter");
 
@@ -376,7 +376,7 @@ describe("QuickAddNodeMenu.vue", () => {
       const { wrapper, addNodeMock } = doMount({
         isWriteableMock: vi.fn(() => false),
       });
-      await Vue.nextTick();
+      await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
 
@@ -386,14 +386,14 @@ describe("QuickAddNodeMenu.vue", () => {
     it("does display overlay if workflow coach is disabled", async () => {
       const { wrapper, $store } = doMount();
       $store.state.application.hasNodeRecommendationsEnabled = false;
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.find(".disabled-workflow-coach").exists()).toBe(true);
     });
 
     it("does not display overlay if workflow coach is enabled", async () => {
       const { wrapper } = doMount();
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.find(".disabled-workflow-coach").exists()).toBe(false);
     });
@@ -401,7 +401,7 @@ describe("QuickAddNodeMenu.vue", () => {
     it("opens workflow coach preferences page when button is clicked", async () => {
       const { wrapper, $store } = doMount();
       $store.state.application.hasNodeRecommendationsEnabled = false;
-      await Vue.nextTick();
+      await nextTick();
       await wrapper.findComponent(Button).vm.$emit("click");
 
       expect(API.desktop.openWorkflowCoachPreferencePage).toHaveBeenCalled();
@@ -409,7 +409,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     it("displays placeholder message if there are no suggested nodes", async () => {
       const { wrapper } = doMount({ nodeRecommendationsResponse: [] });
-      await Vue.nextTick();
+      await nextTick();
 
       expect(wrapper.find(".no-recommendations-message").exists()).toBe(true);
     });

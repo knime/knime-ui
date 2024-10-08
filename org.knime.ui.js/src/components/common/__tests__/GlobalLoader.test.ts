@@ -1,4 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
@@ -27,7 +28,7 @@ describe("GlobalLoader.vue", () => {
           },
         });
 
-        await wrapper.vm.$nextTick();
+        await nextTick();
 
         expect(wrapper.attributes("style")).toMatch("z-index: 99");
         expect(wrapper.attributes("style")).toMatch("position: fixed");
@@ -47,7 +48,7 @@ describe("GlobalLoader.vue", () => {
           },
         });
 
-        await wrapper.vm.$nextTick();
+        await nextTick();
 
         expect(wrapper.find(".loader").classes()).toContain("floating");
         expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
@@ -68,7 +69,7 @@ describe("GlobalLoader.vue", () => {
           },
         });
 
-        await wrapper.vm.$nextTick();
+        await nextTick();
 
         expect(wrapper.text()).toMatch("RANDOMTEXT");
         expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
@@ -85,7 +86,7 @@ describe("GlobalLoader.vue", () => {
 
         const advanceTime = async (timeMs: number) => {
           vi.advanceTimersByTime(timeMs);
-          await wrapper.vm.$nextTick();
+          await nextTick();
         };
 
         // total time now: 0ms

@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from "vitest";
-import * as Vue from "vue";
+import { h } from "vue";
 import { mount } from "@vue/test-utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
@@ -135,7 +135,7 @@ describe("Workflow", () => {
           MoveableNodeContainer: {
             props: { id: { type: String, default: "" } },
             render(_props) {
-              return Vue.h(
+              return h(
                 "div",
                 { id: _props.id },
                 this.$slots.default({ position: positions.next() }),

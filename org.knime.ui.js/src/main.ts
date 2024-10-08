@@ -1,4 +1,4 @@
-import * as Vue from "vue";
+import { createApp } from "vue";
 import KnimeUI from "./components/KnimeUI.vue";
 
 import { initJSONRPCClient, type ConnectionInfo } from "./api/json-rpc-client";
@@ -104,7 +104,7 @@ try {
   await initJSONRPCClient(environment, connectionInfo, store);
 
   // Create Vue app
-  const app = Vue.createApp(KnimeUI);
+  const app = createApp(KnimeUI);
 
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
