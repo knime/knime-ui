@@ -95,7 +95,7 @@ final class KnimeBrowserHealthChecker {
                 }
                 try {
                     CEFUtils.evaluateInBrowser((ChromiumBrowser)browser.getWebBrowser(), "return true;",
-                        Duration.ofSeconds(1));
+                        Duration.ofSeconds(5));
                 } catch (TimeoutException ex) { // NOSONAR
                     Display.getDefault().syncExec(() -> {
                         var dialog = createMessageDialog();
