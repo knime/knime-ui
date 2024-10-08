@@ -1,10 +1,10 @@
 import type { KnimeNode } from "@/api/custom-types";
 import {
-  MetaNodePort,
-  Node,
-  type MetaNode,
   type ComponentNode,
+  type MetaNode,
+  MetaNodePort,
   type NativeNode,
+  Node,
   NodeState,
 } from "@/api/gateway-api/generated-api";
 

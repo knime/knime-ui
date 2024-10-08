@@ -1,18 +1,12 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, vi, afterEach } from "vitest";
-import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { $bus } from "@/plugins/event-bus";
-
-import { workflowNavigationService } from "@/util/workflowNavigationService";
-
+import * as canvasStore from "@/store/canvas";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
-import * as canvasStore from "@/store/canvas";
-
-import Kanvas from "../Kanvas.vue";
 import {
   createNativeNode,
   createWorkflow,
@@ -20,6 +14,9 @@ import {
   createWorkflowObject,
 } from "@/test/factories";
 import { mockedObject } from "@/test/utils";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { workflowNavigationService } from "@/util/workflowNavigationService";
+import Kanvas from "../Kanvas.vue";
 import { RESIZE_DEBOUNCE } from "../constants";
 
 vi.mock("@/plugins/event-bus", () => ({
@@ -50,6 +47,8 @@ vi.mock("@knime/utils", async (importOriginal) => {
     },
   };
 });
+
+vi.unmock("lodash-es");
 
 describe("Kanvas", () => {
   const doShallowMount = ({

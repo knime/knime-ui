@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LoadingIcon, Button } from "@knime/components";
+import { Button, LoadingIcon } from "@knime/components";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 

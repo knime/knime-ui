@@ -2,19 +2,20 @@
 import { computed, ref } from "vue";
 
 import { Table as KnimeUiTable } from "@knime/knime-ui-table";
+
 import type { Job, Schedule } from "@/api/custom-types";
 
 import JobsTable from "./JobsTable.vue";
 import {
   defaultScheduleColumns,
-  scheduleHeaders,
-  scheduleTypes,
-  scheduleFormatters,
-  scheduleSubMenuItems,
-  scheduleGroupSubMenuItems,
-  slottedColumns,
-  schedulePopoverRenderers,
   scheduleClassGenerators,
+  scheduleFormatters,
+  scheduleGroupSubMenuItems,
+  scheduleHeaders,
+  schedulePopoverRenderers,
+  scheduleSubMenuItems,
+  scheduleTypes,
+  slottedColumns,
 } from "./schedulesTable.config";
 
 type Props = {

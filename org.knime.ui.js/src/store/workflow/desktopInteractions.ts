@@ -1,10 +1,10 @@
 import type { ActionTree, GetterTree } from "vuex";
 
 import { API } from "@/api";
-
 import type { RootStoreState } from "../types";
-import { getNextProjectId, getProjectAndWorkflowIds } from "./util";
+
 import type { WorkflowState } from "./index";
+import { getNextProjectId, getProjectAndWorkflowIds } from "./util";
 
 /**
  * This store is merged with the workflow store.

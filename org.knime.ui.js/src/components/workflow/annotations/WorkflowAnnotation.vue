@@ -1,30 +1,30 @@
 <script setup lang="ts">
 import {
+  type ComponentPublicInstance,
+  type UnwrapRef,
+  computed,
   onMounted,
   ref,
-  computed,
-  type UnwrapRef,
   watch,
-  type ComponentPublicInstance,
 } from "vue";
 import { onClickOutside, useMagicKeys } from "@vueuse/core";
 
 import { navigatorUtils } from "@knime/utils";
+
 import type {
   Bounds,
   WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
+import { useEscapeStack } from "@/composables/useEscapeStack";
+import { useStore } from "@/composables/useStore";
 import * as $colors from "@/style/colors";
 import { gridSize } from "@/style/shapes";
-
-import { useStore } from "@/composables/useStore";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 
-import TransformControls from "./TransformControls.vue";
 import LegacyAnnotation from "./LegacyAnnotation.vue";
 import RichTextAnnotation from "./RichTextAnnotation.vue";
+import TransformControls from "./TransformControls.vue";
 
 defineOptions({ inheritAttrs: false });
 

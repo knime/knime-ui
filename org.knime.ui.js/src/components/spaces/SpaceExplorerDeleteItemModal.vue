@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { SVGAttributes, FunctionalComponent } from "vue";
+import type { FunctionalComponent, SVGAttributes } from "vue";
 
 import type { FileExplorerItem } from "@knime/components";
-import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import { Button, Modal } from "@knime/components";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 interface Props {
   isActive: boolean;

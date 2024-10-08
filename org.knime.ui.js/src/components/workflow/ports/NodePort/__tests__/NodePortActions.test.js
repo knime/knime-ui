@@ -1,11 +1,10 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from "@/style/shapes";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
-
 import { useEscapeStack } from "@/composables/useEscapeStack";
+import * as $shapes from "@/style/shapes";
 import NodePortActions from "../NodePortActions.vue";
 
 vi.mock("@/composables/useEscapeStack", () => {

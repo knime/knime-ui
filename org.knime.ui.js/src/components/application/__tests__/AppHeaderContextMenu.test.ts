@@ -1,21 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { mockVuexStore, mockedObject } from "@/test/utils";
-import * as spacesStore from "@/store/spaces";
+import { MenuItems } from "@knime/components";
+
+import { SpaceProviderNS } from "@/api/custom-types";
+import { getToastsProvider } from "@/plugins/toasts";
+import { APP_ROUTES } from "@/router/appRoutes";
 import * as applicationStore from "@/store/application";
 import * as panelStore from "@/store/panel";
-
-import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
-import { MenuItems } from "@knime/components";
-import { getToastsProvider } from "@/plugins/toasts";
+import * as spacesStore from "@/store/spaces";
 import {
   createProject,
   createSpace,
   createSpaceProvider,
 } from "@/test/factories";
-import { SpaceProviderNS } from "@/api/custom-types";
-import { APP_ROUTES } from "@/router/appRoutes";
+import { mockVuexStore, mockedObject } from "@/test/utils";
+import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
 
 const routerPush = vi.fn();
 

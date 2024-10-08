@@ -1,5 +1,6 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
+
 import CardHeader from "../CardHeader.vue";
 
 describe("CardHeader.vue", () => {

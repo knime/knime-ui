@@ -1,9 +1,10 @@
-import { expect, describe, beforeEach, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+
 /* eslint-disable dot-notation */
 /* eslint-disable quote-props */
 import {
-  detectConnectionCircle,
   checkPortCompatibility,
+  detectConnectionCircle,
 } from "../compatibleConnections";
 
 describe("detectConnectionCircle", () => {

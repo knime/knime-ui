@@ -1,9 +1,8 @@
-import { expect, describe, beforeAll, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from "@/style/shapes";
-
 import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
+import * as $shapes from "@/style/shapes";
 import NodeNameText from "../NodeNameText.vue";
 
 describe("NodeNameText.vue", () => {

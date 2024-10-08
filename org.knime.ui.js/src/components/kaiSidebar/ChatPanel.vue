@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
+
 import { SubMenu, ValueSwitch } from "@knime/components";
+import type { MenuItem } from "@knime/components";
 import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
-import type { MenuItem } from "@knime/components";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import { useStore } from "@/composables/useStore";
 
+import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
 import Chat from "./chat/Chat.vue";
 import type { ChainType } from "./types";
-import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
 
 const chainType = ref<ChainType>("qa");
 

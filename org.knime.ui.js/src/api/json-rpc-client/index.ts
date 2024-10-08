@@ -1,19 +1,17 @@
-import { RequestManager, Client } from "@open-rpc/client-js";
+import { Client, RequestManager } from "@open-rpc/client-js";
 import type { Store } from "vuex";
 
-import type { RootStoreState } from "@/store/types";
-import { getToastsProvider } from "@/plugins/toasts";
-
 import { $bus } from "@/plugins/event-bus";
+import { getToastsProvider } from "@/plugins/toasts";
+import type { RootStoreState } from "@/store/types";
 
+import { DesktopAPTransport } from "./DesktopAPTransport";
+import { WebSocketTransport } from "./WebSocketTransport";
 import {
   getRegisteredEventHandler,
   registerEventHandler,
   serverEventHandler,
 } from "./server-events";
-
-import { DesktopAPTransport } from "./DesktopAPTransport";
-import { WebSocketTransport } from "./WebSocketTransport";
 
 let jsonRPCClient: Client;
 

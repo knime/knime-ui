@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { type MenuItem, SubMenu } from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import { SubMenu, type MenuItem } from "@knime/components";
-import SelectionModeIcon from "@/assets/selection-mode.svg";
-import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 
-import type { ShortcutName } from "@/shortcuts";
+import type { KnimeNode } from "@/api/custom-types";
+import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+import SelectionModeIcon from "@/assets/selection-mode.svg";
+import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
+import { useShortcuts } from "@/plugins/shortcuts";
+import type { ShortcutName } from "@/shortcuts";
+
+import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
-import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
-import { useStore } from "@/composables/useStore";
-import type { KnimeNode } from "@/api/custom-types";
-import { useShortcuts } from "@/plugins/shortcuts";
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.

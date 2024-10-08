@@ -1,26 +1,23 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState, mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 
 import type { Alert } from "@knime/ui-extension-service";
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-
 import type { ApplicationState } from "@/store/application";
+import type { NodeOutputTabIdentifier } from "@/store/selection";
 import type { WorkflowState } from "@/store/workflow";
 
+import LoadingIndicator from "./LoadingIndicator.vue";
 import PortTabs from "./PortTabs.vue";
 import UIExtensionAlertsWrapper from "./UIExtensionAlertsWrapper.vue";
-import PortViewTabOutput from "./portViews/PortViewTabOutput.vue";
-import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
-
+import ValidationInfo from "./ValidationInfo.vue";
 import { buildMiddleware, validateSelection } from "./common/output-validator";
 import type { UIExtensionLoadingState, ValidationError } from "./common/types";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "./common/utils";
-
-import LoadingIndicator from "./LoadingIndicator.vue";
-import ValidationInfo from "./ValidationInfo.vue";
-import type { NodeOutputTabIdentifier } from "@/store/selection";
+import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
+import PortViewTabOutput from "./portViews/PortViewTabOutput.vue";
 
 export const runValidationChecks = ({
   selectedNodes,

@@ -2,14 +2,13 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import {
-  TypedText,
   type ReorderWorkflowAnnotationsCommand,
+  TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-
 import * as colors from "@/style/colors";
-
 import type { RootStoreState } from "../types";
+
 import type { WorkflowState } from ".";
 import { getProjectAndWorkflowIds } from "./util";
 

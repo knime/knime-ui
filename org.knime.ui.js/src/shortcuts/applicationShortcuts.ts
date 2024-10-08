@@ -1,12 +1,14 @@
+import type { Router } from "vue-router";
+import type { Store } from "vuex";
+
+import { APP_ROUTES } from "@/router/appRoutes";
 import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
 } from "@/store/spaces";
-import type { UnionToShortcutRegistry } from "./types";
-import { APP_ROUTES } from "@/router/appRoutes";
-import type { Router } from "vue-router";
 import type { RootStoreState } from "@/store/types";
-import type { Store } from "vuex";
+
+import type { UnionToShortcutRegistry } from "./types";
 
 type ApplicationShortcuts = UnionToShortcutRegistry<
   | "closeProject"

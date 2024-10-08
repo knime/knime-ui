@@ -1,32 +1,31 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import type { Store } from "vuex";
 import { mount } from "@vue/test-utils";
+import type { Store } from "vuex";
 
 import { SubMenu } from "@knime/components";
 
+import type { Workflow } from "@/api/custom-types";
+import { WorkflowInfo } from "@/api/gateway-api/generated-api";
+import { createShortcutsService } from "@/plugins/shortcuts";
 import { router } from "@/router/router";
 import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
-import * as workflowStore from "@/store/workflow";
-import * as spacesStore from "@/store/spaces";
 import * as selectionStore from "@/store/selection";
+import * as spacesStore from "@/store/spaces";
 import * as uiControlsStore from "@/store/uiControls";
-import { mockVuexStore } from "@/test/utils";
+import * as workflowStore from "@/store/workflow";
 import {
+  createProject,
   createSpace,
   createSpaceProvider,
   createWorkflow,
-  createProject,
 } from "@/test/factories";
-import { createShortcutsService } from "@/plugins/shortcuts";
-import type { Workflow } from "@/api/custom-types";
-import { WorkflowInfo } from "@/api/gateway-api/generated-api";
-
-import WorkflowToolbar from "../WorkflowToolbar.vue";
+import { mockVuexStore } from "@/test/utils";
 import ToolbarShortcutButton from "../ToolbarShortcutButton.vue";
-import ZoomMenu from "../ZoomMenu.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
+import WorkflowToolbar from "../WorkflowToolbar.vue";
+import ZoomMenu from "../ZoomMenu.vue";
 
 vi.mock("@knime/components", async (importOriginal) => {
   const actual = await importOriginal();

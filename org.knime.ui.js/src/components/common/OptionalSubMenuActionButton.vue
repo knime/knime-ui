@@ -3,8 +3,8 @@
  * Renders a button with MenuItems data, if it has children it will open a dropdown menu on click (SubMenu)
  */
 import { Button, SubMenu } from "@knime/components";
-import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import type { MenuItem } from "@knime/components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 interface Props {
   item: MenuItem;

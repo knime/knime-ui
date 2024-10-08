@@ -1,7 +1,9 @@
 import mitt, { type Emitter } from "mitt";
-import type { NodePort } from "@/api/gateway-api/generated-api";
-import type { PluginInitFunction } from "./types";
+
 import type { DesktopAPIFunctionResultPayload } from "@/api/desktop-api";
+import type { NodePort } from "@/api/gateway-api/generated-api";
+
+import type { PluginInitFunction } from "./types";
 
 type BusEvents = {
   "selection-pointerdown": PointerEvent;

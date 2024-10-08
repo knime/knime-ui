@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, unref } from "vue";
 
-import { Modal, Button, Checkbox } from "@knime/components";
+import { Button, Checkbox, Modal } from "@knime/components";
 
 import {
-  useConfirmDialog,
   type ConfirmDialogButton,
+  useConfirmDialog,
 } from "@/composables/useConfirmDialog";
 
 const askAgain = ref(false);

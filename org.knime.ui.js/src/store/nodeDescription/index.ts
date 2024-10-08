@@ -1,18 +1,16 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-
-import {
-  toNativeNodeDescriptionWithExtendedPorts,
-  toComponentNodeDescriptionWithExtendedPorts,
-} from "@/util/portDataMapper";
-
-import type { RootStoreState } from "../types";
+import type { ComponentNodeDescription } from "@/api/custom-types";
 import type {
   NativeNodeDescription,
   NodeFactoryKey,
 } from "@/api/gateway-api/generated-api";
-import type { ComponentNodeDescription } from "@/api/custom-types";
+import {
+  toComponentNodeDescriptionWithExtendedPorts,
+  toNativeNodeDescriptionWithExtendedPorts,
+} from "@/util/portDataMapper";
+import type { RootStoreState } from "../types";
 
 /**
  * Store that manages state for node and component descriptions.

@@ -1,34 +1,29 @@
-import { expect, describe, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import { lodashMockFactory } from "@/test/utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-
-import * as panelStore from "@/store/panel";
-import * as settingsStore from "@/store/settings";
+import { shallowMount } from "@vue/test-utils";
 
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
-import TagResults from "../TagResults.vue";
-import SearchResults from "../SearchResults.vue";
-import NodeRepositoryLoader from "../NodeRepositoryLoader.vue";
-import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
+import * as panelStore from "@/store/panel";
+import * as settingsStore from "@/store/settings";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import NodeRepository from "../NodeRepository.vue";
-
-vi.mock("lodash-es", async () => {
-  const actual = await vi.importActual("lodash-es");
-
-  return {
-    ...actual,
-    ...lodashMockFactory(),
-  };
-});
+import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
+import NodeRepositoryLoader from "../NodeRepositoryLoader.vue";
+import SearchResults from "../SearchResults.vue";
+import TagResults from "../TagResults.vue";
 
 describe("NodeRepository", () => {
+  type MountOpts = {
+    searchIsActive?: (() => boolean) | null;
+    nodesPerTag?: any[] | null;
+    nodeRepositoryLoadedMock?: boolean;
+  };
+
   const doMount = ({
     searchIsActive = null,
     nodesPerTag = null,
     nodeRepositoryLoadedMock = true,
-  } = {}) => {
+  }: MountOpts = {}) => {
     const searchNodesMock = vi.fn();
     const getAllNodesMock = vi.fn();
     const setSelectedNodeMock = vi.fn();

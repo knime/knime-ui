@@ -1,9 +1,10 @@
-import { computed, type Ref } from "vue";
+import { type Ref, computed } from "vue";
+import { type Fn, useEventListener } from "@vueuse/core";
 
 import { navigatorUtils } from "@knime/utils";
+
 import { useStore } from "@/composables/useStore";
 import { gridSize } from "@/style/shapes";
-import { useEventListener, type Fn } from "@vueuse/core";
 
 type UseArrowKeyMovingOptions = {
   rootEl: Ref<HTMLElement>;

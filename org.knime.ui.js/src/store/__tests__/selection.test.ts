@@ -1,10 +1,10 @@
 /* eslint-disable max-lines */
-import { expect, describe, beforeEach, it } from "vitest";
-import { mockVuexStore } from "@/test/utils";
+import { beforeEach, describe, expect, it } from "vitest";
+import type { Store } from "vuex";
 
+import { mockVuexStore } from "@/test/utils";
 import * as selectionStoreConfig from "../selection";
 import type { RootStoreState } from "../types";
-import type { Store } from "vuex";
 
 describe("workflow store", () => {
   let $store: Store<RootStoreState>, storeConfig;

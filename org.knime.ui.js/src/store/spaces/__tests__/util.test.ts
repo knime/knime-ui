@@ -1,10 +1,12 @@
+import { describe, expect, it } from "vitest";
+
+import { SpaceProviderNS } from "@/api/custom-types";
 import {
   createProject,
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { describe, expect, it } from "vitest";
 import {
   findSpaceById,
   findSpaceGroupFromSpaceId,
@@ -13,7 +15,6 @@ import {
   isProjectOpen,
   isServerProvider,
 } from "../util";
-import { SpaceProviderNS } from "@/api/custom-types";
 
 describe("spaces::util", () => {
   const createSpaces = (groupId: string) =>

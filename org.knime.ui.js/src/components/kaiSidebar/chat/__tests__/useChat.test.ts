@@ -1,11 +1,12 @@
-import { afterAll, beforeAll, expect, describe, it, vi } from "vitest";
-import { useChat, MessageSeparator } from "../useChat";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { defineComponent } from "vue";
 import { mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils";
+
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import type { ChainType } from "@/components/kaiSidebar/types";
 import type { Message } from "@/store/aiAssistant";
+import { mockVuexStore } from "@/test/utils";
+import { MessageSeparator, useChat } from "../useChat";
 import type { MessageWithFeedbackSubmit } from "../useChat";
 
 vi.mock("@/components/kaiSidebar/useKaiServer.ts", () => ({

@@ -1,36 +1,30 @@
 /* eslint-disable max-lines */
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
-
-import { mockVuexStore } from "@/test/utils";
 import { mockUserAgent } from "jest-useragent-mock";
-
-import { $bus } from "@/plugins/event-bus";
-import NodePorts from "@/components/workflow/ports/NodePorts/NodePorts.vue";
-import NodePort from "@/components/workflow/ports/NodePort/NodePort.vue";
-import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
-
-import NodeTorso from "../torso/NodeTorso.vue";
-import NodeName from "../name/NodeName.vue";
-import NodeLabel from "../label/NodeLabel.vue";
-import NodeDecorators from "../decorators/NodeDecorators.vue";
-
-import { KNIME_MIME } from "@/composables/useDropNode";
-import NodeActionBar from "../NodeActionBar.vue";
-import NodeState from "../NodeState.vue";
-import NodeSelectionPlane from "../NodeSelectionPlane.vue";
-import Node from "../Node.vue";
-
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-
-import { APP_ROUTES } from "@/router/appRoutes";
-
-import * as $shapes from "@/style/shapes";
-import * as $colors from "@/style/colors";
 import type { Store } from "vuex";
+
+import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
+import NodePort from "@/components/workflow/ports/NodePort/NodePort.vue";
+import NodePorts from "@/components/workflow/ports/NodePorts/NodePorts.vue";
+import { KNIME_MIME } from "@/composables/useDropNode";
+import { $bus } from "@/plugins/event-bus";
+import { APP_ROUTES } from "@/router/appRoutes";
+import * as applicationStore from "@/store/application";
 import type { RootStoreState } from "@/store/types";
+import * as uiControlsStore from "@/store/uiControls";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
+import Node from "../Node.vue";
+import NodeActionBar from "../NodeActionBar.vue";
+import NodeSelectionPlane from "../NodeSelectionPlane.vue";
+import NodeState from "../NodeState.vue";
+import NodeDecorators from "../decorators/NodeDecorators.vue";
+import NodeLabel from "../label/NodeLabel.vue";
+import NodeName from "../name/NodeName.vue";
+import NodeTorso from "../torso/NodeTorso.vue";
 
 const commonNode = {
   id: "root:1",

@@ -1,10 +1,10 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { type PropType, defineComponent } from "vue";
 import { mapGetters } from "vuex";
 
-import SaveIcon from "@/assets/ok.svg";
-import CancelIcon from "@/assets/cancel.svg";
 import type { XY } from "@/api/gateway-api/generated-api";
+import CancelIcon from "@/assets/cancel.svg";
+import SaveIcon from "@/assets/ok.svg";
 import ActionBar from "@/components/common/ActionBar.vue";
 
 import NodeNameTextarea from "./NodeNameTextarea.vue";

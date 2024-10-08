@@ -1,10 +1,10 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import SwitchIcon from "@knime/styles/img/icons/arrow-prev.svg";
 
 import * as panelStoreConfig from "@/store/panel";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import LeftCollapsiblePanel from "../LeftCollapsiblePanel.vue";
 
 describe("LeftCollapsiblePanel.vue", () => {

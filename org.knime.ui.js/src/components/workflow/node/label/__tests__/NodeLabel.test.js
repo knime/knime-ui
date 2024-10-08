@@ -1,14 +1,13 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mockVuexStore } from "@/test/utils";
+import { shallowMount } from "@vue/test-utils";
 
 import * as selectionStore from "@/store/selection";
 import * as $shapes from "@/style/shapes";
-
+import { mockVuexStore } from "@/test/utils";
 import NodeLabel from "../NodeLabel.vue";
-import NodeLabelText from "../NodeLabelText.vue";
 import NodeLabelEditor from "../NodeLabelEditor.vue";
+import NodeLabelText from "../NodeLabelText.vue";
 
 describe("NodeLabel", () => {
   const defaultProps = {

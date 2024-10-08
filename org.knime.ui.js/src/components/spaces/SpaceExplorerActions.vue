@@ -1,33 +1,32 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { type PropType, defineComponent } from "vue";
 import { mapGetters, mapState } from "vuex";
 
-import { SubMenu, FunctionButton, type MenuItem } from "@knime/components";
+import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
-import SearchButton from "@/components/common/SearchButton.vue";
-
-import PlusIcon from "@/assets/plus.svg";
-import ImportWorkflowIcon from "@/assets/import-workflow.svg";
-import AddFileIcon from "@/assets/add-file.svg";
+import {
+  StoreActionException,
+  displayStoreActionExceptionMessage,
+} from "@/api/gateway-api/exceptions";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
-import { isLocalProvider } from "@/store/spaces/util";
+import AddFileIcon from "@/assets/add-file.svg";
+import ImportWorkflowIcon from "@/assets/import-workflow.svg";
+import PlusIcon from "@/assets/plus.svg";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import SearchButton from "@/components/common/SearchButton.vue";
 import {
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildMoveToSpaceMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import { isLocalProvider } from "@/store/spaces/util";
 
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 import type { ActionMenuItem } from "./remoteMenuItems";
-import {
-  StoreActionException,
-  displayStoreActionExceptionMessage,
-} from "@/api/gateway-api/exceptions";
 
 type DisplayModes = "normal" | "mini";
 

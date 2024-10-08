@@ -1,14 +1,15 @@
 import type { ActionTree, MutationTree } from "vuex";
 
 import LoadIcon from "@knime/styles/img/icons/load.svg";
+
 import { API } from "@/api";
 import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
-
+import { showErrorToast } from "@/util/errorHandling";
 import type { RootStoreState } from "../types";
+
 import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
-import { showErrorToast } from "@/util/errorHandling";
 
 const TOAST_ID_PREFIX = "LINK_UPDATE";
 const TOAST_HEADLINE = "Linked components";

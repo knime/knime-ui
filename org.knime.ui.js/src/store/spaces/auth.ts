@@ -1,11 +1,11 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import type { Router } from "vue-router";
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
-
 import type { RootStoreState } from "../types";
+
 import type { SpacesState } from "./index";
 
 export interface State {}

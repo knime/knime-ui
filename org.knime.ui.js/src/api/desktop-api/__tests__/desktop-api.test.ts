@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
-import { API } from "../../index";
 import { $bus } from "@/plugins/event-bus";
+import { API } from "../../index";
 
 vi.unmock("@/api");
 

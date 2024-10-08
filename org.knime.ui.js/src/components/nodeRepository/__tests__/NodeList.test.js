@@ -1,9 +1,9 @@
-import { expect, describe, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
-import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 import NodeList from "../NodeList.vue";
+import NodeTemplate from "../NodeTemplate/NodeTemplate.vue";
 
 describe("NodeList", () => {
   const defaultProps = {

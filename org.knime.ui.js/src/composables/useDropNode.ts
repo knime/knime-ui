@@ -1,6 +1,8 @@
 import { computed } from "vue";
-import { useStore } from "./useStore";
+
 import * as $shapes from "@/style/shapes";
+
+import { useStore } from "./useStore";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 

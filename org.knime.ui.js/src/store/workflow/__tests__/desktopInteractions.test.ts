@@ -1,17 +1,18 @@
 import {
-  expect,
+  type Mock,
+  type MockedFunction,
+  afterEach,
   describe,
+  expect,
   it,
   vi,
-  afterEach,
-  type MockedFunction,
-  type Mock,
 } from "vitest";
+
+import { API } from "@/api";
+import { createWorkflow } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
-import { API } from "@/api";
 import { getNextProjectId } from "../util";
-import { createWorkflow } from "@/test/factories";
 
 vi.mock("@/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({

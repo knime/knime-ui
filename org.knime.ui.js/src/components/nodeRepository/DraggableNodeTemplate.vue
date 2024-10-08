@@ -1,7 +1,9 @@
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
-import { KNIME_MIME } from "@/composables/useDropNode";
+
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
+import { KNIME_MIME } from "@/composables/useDropNode";
+
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 /**
  * This component was ripped out of NodeTemplate to make NodeTemplate re-useable. This makes still heavy use of the

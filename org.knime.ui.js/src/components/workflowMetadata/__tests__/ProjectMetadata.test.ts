@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
-import { createWorkflow } from "@/test/factories";
-import { TypedText, type Link } from "@/api/gateway-api/generated-api";
-
 import { FunctionButton } from "@knime/components";
-import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
-import ProjectMetadata from "../ProjectMetadata.vue";
+import { type Link, TypedText } from "@/api/gateway-api/generated-api";
+import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import { createWorkflow } from "@/test/factories";
 import MetadataDescription from "../MetadataDescription.vue";
 import MetadataTags from "../MetadataTags.vue";
-import { nextTick } from "vue";
+import ProjectMetadata from "../ProjectMetadata.vue";
 
 describe("ProjectMetadata.vue", () => {
   type ComponentProps = InstanceType<typeof ProjectMetadata>["$props"];

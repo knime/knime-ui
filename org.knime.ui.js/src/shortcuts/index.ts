@@ -1,11 +1,11 @@
-import workflowShortcuts from "./workflowShortcuts";
-import executionShortcuts from "./executionShortcuts";
-import canvasShortcuts from "./canvasShortcuts";
-import applicationShortcuts from "./applicationShortcuts";
 import annotationShortcuts from "./annotationShortcuts";
+import applicationShortcuts from "./applicationShortcuts";
+import canvasShortcuts from "./canvasShortcuts";
 import componentOrMetanodeShortcuts from "./componentOrMetanodeShortcuts";
+import executionShortcuts from "./executionShortcuts";
 import { selectionShortcuts, sidePanelShortcuts } from "./miscShortcuts";
 import type { ShortcutConditionContext } from "./types";
+import workflowShortcuts from "./workflowShortcuts";
 
 // This interface will be enhanced and extended by the
 // other files which also declare shortcuts

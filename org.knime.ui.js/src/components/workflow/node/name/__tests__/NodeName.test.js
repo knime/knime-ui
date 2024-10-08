@@ -1,11 +1,11 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mockVuexStore } from "@/test/utils";
+import { shallowMount } from "@vue/test-utils";
 
+import { mockVuexStore } from "@/test/utils";
 import NodeName from "../NodeName.vue";
-import NodeNameText from "../NodeNameText.vue";
 import NodeNameEditor from "../NodeNameEditor.vue";
+import NodeNameText from "../NodeNameText.vue";
 
 describe("NodeName", () => {
   const defaultProps = {

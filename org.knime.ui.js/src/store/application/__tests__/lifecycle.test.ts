@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRouter, createWebHistory } from "vue-router";
 
+import { API } from "@/api";
+import { runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { routes } from "@/router/router";
-import { API } from "@/api";
-import { deepMocked } from "@/test/utils";
-import { applicationState, loadStore } from "./loadStore";
-
-import { runInEnvironment } from "@/environment";
 import { createWorkflow } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
 import { lifecycleBus } from "../lifecycle-events";
+
+import { applicationState, loadStore } from "./loadStore";
 
 vi.mock("@/util/generateWorkflowPreview");
 const mockedAPI = deepMocked(API);

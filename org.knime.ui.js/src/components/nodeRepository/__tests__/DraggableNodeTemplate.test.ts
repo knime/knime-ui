@@ -1,22 +1,20 @@
-import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
+import { mount } from "@vue/test-utils";
 
+import { API } from "@/api";
 import {
   NativeNodeInvariants,
-  PortType,
   type NodeTemplate,
+  PortType,
 } from "@/api/gateway-api/generated-api";
-import { API } from "@/api";
-
-import * as panelStore from "@/store/panel";
-import * as worflowStore from "@/store/workflow";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-import * as selectionStore from "@/store/selection";
-import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
-
 import { KNIME_MIME } from "@/composables/useDropNode";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
+import * as panelStore from "@/store/panel";
+import * as selectionStore from "@/store/selection";
+import * as worflowStore from "@/store/workflow";
+import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
+import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
 
 const mockedAPI = deepMocked(API);

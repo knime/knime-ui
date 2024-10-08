@@ -4,9 +4,8 @@ import { computed, onUnmounted, ref } from "vue";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
-import SpaceSelectionDropdown from "@/components/spaces/SpaceSelectionDropdown.vue";
 import SpaceExplorerActions from "@/components/spaces/SpaceExplorerActions.vue";
-
+import SpaceSelectionDropdown from "@/components/spaces/SpaceSelectionDropdown.vue";
 import { useStore } from "@/composables/useStore";
 
 const store = useStore();

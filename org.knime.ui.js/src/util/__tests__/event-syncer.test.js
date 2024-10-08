@@ -1,8 +1,9 @@
-import { expect, describe, afterEach, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+
 import {
+  clearStalledPromises,
   notifyPatch,
   waitForPatch,
-  clearStalledPromises,
 } from "../event-syncer";
 
 describe("Event Syncer util", () => {

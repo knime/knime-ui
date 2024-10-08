@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref, toRefs, watch } from "vue";
-import { useFloating, offset, shift } from "@floating-ui/vue";
+import { offset, shift, useFloating } from "@floating-ui/vue";
 
 interface Props {
   isOpen: boolean;

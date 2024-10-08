@@ -1,9 +1,8 @@
 /* eslint-disable max-lines */
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 
 import { mockVuexStore } from "@/test/utils";
-
 import * as canvasStoreConfig from "../canvas";
 
 const {

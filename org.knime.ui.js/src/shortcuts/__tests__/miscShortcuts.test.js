@@ -1,5 +1,6 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
-import { sidePanelShortcuts, selectionShortcuts } from "../miscShortcuts";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { selectionShortcuts, sidePanelShortcuts } from "../miscShortcuts";
 
 describe("miscShortcuts", () => {
   let mockDispatch, $store, mockCommit;

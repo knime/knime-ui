@@ -1,28 +1,30 @@
 <script setup lang="ts">
 import {
-  ref,
   computed,
-  onBeforeMount,
-  onMounted,
-  onBeforeUnmount,
   defineAsyncComponent,
+  onBeforeMount,
+  onBeforeUnmount,
+  onMounted,
+  ref,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { ToastStack } from "@knime/components";
-import { DynamicEnvRenderer, isDesktop } from "@/environment";
-import UpdateBanner from "@/components/common/UpdateBanner.vue";
-import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
-import ErrorOverlay from "@/components/application/ErrorOverlay.vue";
-import DownloadBanner from "@/components/application/DownloadBanner.vue";
-import GlobalLoader from "@/components/common/GlobalLoader.vue";
-import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
+
 import BlockUi from "@/components/application/BlockUi.vue";
+import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
+import DownloadBanner from "@/components/application/DownloadBanner.vue";
+import ErrorOverlay from "@/components/application/ErrorOverlay.vue";
+import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
+import GlobalLoader from "@/components/common/GlobalLoader.vue";
+import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import { useStore } from "@/composables/useStore";
-import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
-import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
+import { DynamicEnvRenderer, isDesktop } from "@/environment";
+
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
+import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
 import ConfirmDialog from "./application/ConfirmDialog.vue";
+import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
 
 /**

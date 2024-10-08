@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import TimeIcon from "@knime/styles/img/icons/time.svg";
 
-import { APP_ROUTES } from "@/router/appRoutes";
 import {
   NavMenu,
   NavMenuItem,
   type NavMenuItemProps,
 } from "@/components/common/side-nav";
-
 import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
+import { APP_ROUTES } from "@/router/appRoutes";
+
 import HomePageContentTile from "./HomePageContentTile.vue";
 
 const $router = useRouter();

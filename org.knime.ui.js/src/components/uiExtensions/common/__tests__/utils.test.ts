@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import {
   EMBEDDED_CONTENT_PANEL_ID__BOTTOM,
   EMBEDDED_CONTENT_PANEL_ID__RIGHT,

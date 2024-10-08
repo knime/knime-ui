@@ -1,12 +1,13 @@
+import { describe, expect, it, vi } from "vitest";
+import { merge } from "lodash-es";
+
 import { createMetanode, createNativeNode, createPort } from "@/test/factories";
-import { describe, it, expect, vi } from "vitest";
+import { mockVuexStore } from "@/test/utils";
 import {
+  type SelectedPortIdentifier,
   getNextSelectedPort,
   getPortContext,
-  type SelectedPortIdentifier,
 } from "../portSelection";
-import { merge } from "lodash-es";
-import { mockVuexStore } from "@/test/utils";
 
 const setup = ({
   additionalStoreConfig,

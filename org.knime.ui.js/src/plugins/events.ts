@@ -1,12 +1,14 @@
 import type { Store } from "vuex";
+
 import { API } from "@/api";
-import { notifyPatch } from "@/util/event-syncer";
-import { nodeSize } from "@/style/shapes";
-import type { RootStoreState } from "@/store/types";
-import { $bus } from "./event-bus";
-import type { PluginInitFunction } from "./types";
 import { fetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
+import type { RootStoreState } from "@/store/types";
+import { nodeSize } from "@/style/shapes";
+import { notifyPatch } from "@/util/event-syncer";
+
+import { $bus } from "./event-bus";
+import type { PluginInitFunction } from "./types";
 
 const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   API.event.registerEventHandlers({

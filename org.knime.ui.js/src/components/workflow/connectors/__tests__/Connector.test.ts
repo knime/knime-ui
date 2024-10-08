@@ -1,20 +1,30 @@
 /* eslint-disable max-lines */
 import {
-  expect,
-  describe,
-  beforeAll,
   afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
   it,
   vi,
-  beforeEach,
 } from "vitest";
 import { nextTick } from "vue";
-import type { Store } from "vuex";
-import gsap from "gsap";
 import { mount } from "@vue/test-utils";
-
+import gsap from "gsap";
 import { mockUserAgent } from "jest-useragent-mock";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import type { Store } from "vuex";
+
+import { API } from "@/api";
+import { PortType } from "@/api/gateway-api/generated-api";
+import { KNIME_MIME } from "@/composables/useDropNode";
+import { $bus } from "@/plugins/event-bus";
+import * as applicationStore from "@/store/application";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
+import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 import {
   createAvailablePortTypes,
   createConnectedNodes,
@@ -24,27 +34,13 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-
-import { API } from "@/api";
-import { PortType } from "@/api/gateway-api/generated-api";
-import { $bus } from "@/plugins/event-bus";
-import * as workflowStore from "@/store/workflow";
-import * as selectionStore from "@/store/selection";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-
-import * as $shapes from "@/style/shapes";
-import * as $colors from "@/style/colors";
-
-import * as portShift from "@/util/portShift";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import * as connectorPath from "@/util/connectorPath";
-
-import { KNIME_MIME } from "@/composables/useDropNode";
-import type { ConnectorProps } from "../types";
+import * as portShift from "@/util/portShift";
 import Connector from "../Connector.vue";
-import ConnectorPathSegment from "../ConnectorPathSegment.vue";
 import ConnectorBendpoint from "../ConnectorBendpoint.vue";
+import ConnectorPathSegment from "../ConnectorPathSegment.vue";
+import type { ConnectorProps } from "../types";
 
 vi.mock("gsap", () => ({
   default: { to: vi.fn() },

@@ -1,26 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { computed, nextTick, ref, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
+import { useRoute, useRouter } from "vue-router";
 
-import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
-import { FunctionButton, Carousel } from "@knime/components";
-import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import { Carousel, FunctionButton } from "@knime/components";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 import HouseIcon from "@knime/styles/img/icons/house.svg";
-
-import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
+import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { API } from "@/api";
-import { APP_ROUTES } from "@/router/appRoutes";
+import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
 import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
+import { APP_ROUTES } from "@/router/appRoutes";
 
-import HelpMenu from "./HelpMenu.vue";
-import AppMenu from "./AppMenu.vue";
-import AppHeaderTab from "./AppHeaderTab.vue";
 import AppHeaderContextMenu from "./AppHeaderContextMenu.vue";
+import AppHeaderTab from "./AppHeaderTab.vue";
+import AppMenu from "./AppMenu.vue";
+import HelpMenu from "./HelpMenu.vue";
 
 /**
  * Header Bar containing Home, Open project tabs, and the 3 buttons Help, Preferences and Menu

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
+
 import { FunctionButton } from "@knime/components";
-import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
 import AbortIcon from "@knime/styles/img/icons/close.svg";
+import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
 
 const emit = defineEmits(["sendMessage", "abort"]);
 

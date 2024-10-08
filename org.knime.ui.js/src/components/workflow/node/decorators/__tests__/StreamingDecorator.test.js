@@ -1,8 +1,7 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import * as $colors from "@/style/colors";
-
 import StreamingDecorator from "../StreamingDecorator.vue";
 
 describe("StreamingDecorator.vue", () => {

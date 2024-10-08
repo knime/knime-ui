@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import ThumbsUpIcon from "@knime/styles/img/icons/thumbs-up.svg";
-import ThumbsDownIcon from "@knime/styles/img/icons/thumbs-down.svg";
-import { Button } from "@knime/components";
 import { ref, watch } from "vue";
+
+import { Button } from "@knime/components";
+import ThumbsDownIcon from "@knime/styles/img/icons/thumbs-down.svg";
+import ThumbsUpIcon from "@knime/styles/img/icons/thumbs-up.svg";
 
 const DELAY_TIME = 1000;
 

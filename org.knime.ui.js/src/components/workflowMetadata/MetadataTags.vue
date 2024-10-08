@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { TagList, ComboBox } from "@knime/components";
+
+import { ComboBox, TagList } from "@knime/components";
+
+import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
 
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
-import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
 
 interface Props {
   modelValue: Array<string>;

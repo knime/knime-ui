@@ -1,6 +1,6 @@
-import { expect, describe, beforeEach, it } from "vitest";
-import { mockVuexStore } from "@/test/utils";
+import { beforeEach, describe, expect, it } from "vitest";
 
+import { mockVuexStore } from "@/test/utils";
 import * as panelStoreConfig from "../panel";
 
 describe("panel store", () => {

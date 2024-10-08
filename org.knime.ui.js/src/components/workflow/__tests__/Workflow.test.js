@@ -1,15 +1,14 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { h } from "vue";
 import { mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import * as $shapes from "@/style/shapes";
-
-import Node from "@/components/workflow/node/Node.vue";
-import MoveableNodeContainer from "@/components/workflow/node/MoveableNodeContainer.vue";
-import Connector from "@/components/workflow/connectors/Connector.vue";
 import WorkflowAnnotation from "@/components/workflow/annotations/WorkflowAnnotation.vue";
+import Connector from "@/components/workflow/connectors/Connector.vue";
+import MoveableNodeContainer from "@/components/workflow/node/MoveableNodeContainer.vue";
+import Node from "@/components/workflow/node/Node.vue";
 import MetaNodePortBars from "@/components/workflow/ports/MetaNodePortBars.vue";
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import Workflow from "../Workflow.vue";
 
 const mockNode = ({ id, position }) => ({

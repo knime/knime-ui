@@ -1,28 +1,27 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import {
-  type PortType,
-  type UpdateAvailableEvent,
-  type Project,
-  type XY,
-  AppState,
-} from "@/api/gateway-api/generated-api";
 import { API } from "@/api";
-
+import type { ExampleProject, WorkflowObject } from "@/api/custom-types";
+import {
+  AppState,
+  type PortType,
+  type Project,
+  type UpdateAvailableEvent,
+  type XY,
+} from "@/api/gateway-api/generated-api";
+import { findSpaceById } from "@/store/spaces/util";
+import { nodeSize } from "@/style/shapes";
+import { workflowNavigationService } from "@/util/workflowNavigationService";
 import type { RootStoreState } from "../types";
 import { getNextProjectId } from "../workflow/util";
 
-import * as lifecycle from "./lifecycle";
-import * as workflowPreviewSnapshots from "./workflowPreviewSnapshots";
-import * as canvasStateTracking from "./canvasStateTracking";
-import * as settings from "./settings";
-import * as globalLoader from "./globalLoader";
-import * as dirtyProjectTracking from "./dirtyProjectsTracking";
 import * as canvasModes from "./canvasModes";
-import type { WorkflowObject, ExampleProject } from "@/api/custom-types";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
-import { nodeSize } from "@/style/shapes";
-import { findSpaceById } from "@/store/spaces/util";
+import * as canvasStateTracking from "./canvasStateTracking";
+import * as dirtyProjectTracking from "./dirtyProjectsTracking";
+import * as globalLoader from "./globalLoader";
+import * as lifecycle from "./lifecycle";
+import * as settings from "./settings";
+import * as workflowPreviewSnapshots from "./workflowPreviewSnapshots";
 
 export interface ApplicationState {
   /**

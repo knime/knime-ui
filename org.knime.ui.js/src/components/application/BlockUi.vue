@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /** Blocks the whole UI */
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+
 import { $bus } from "@/plugins/event-bus";
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 
 const block = ref(false);
 const darkenBackground = ref(false);

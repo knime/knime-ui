@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, toRefs, watch } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
 
 import { navigatorUtils } from "@knime/utils";
-import type { XY } from "@/api/gateway-api/generated-api";
-import { getBendpointId } from "@/util/connectorUtil";
-import { useStore } from "@/composables/useStore";
-import { useMoveObject } from "@/composables/useMoveObject";
 
-import { useConnectionReplacement } from "./useConnectionReplacement";
-import ConnectorPathSegment from "./ConnectorPathSegment.vue";
+import type { XY } from "@/api/gateway-api/generated-api";
+import { useMoveObject } from "@/composables/useMoveObject";
+import { useStore } from "@/composables/useStore";
+import { getBendpointId } from "@/util/connectorUtil";
+
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
-import { useConnectorPathSegments } from "./useConnectorPathSegments";
+import ConnectorPathSegment from "./ConnectorPathSegment.vue";
 import type { ConnectorProps } from "./types";
+import { useConnectionReplacement } from "./useConnectionReplacement";
+import { useConnectorPathSegments } from "./useConnectorPathSegments";
 
 defineOptions({ inheritAttrs: false });
 

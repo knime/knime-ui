@@ -1,36 +1,33 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-import {
-  WorkflowInfo,
-  type Bounds,
-  TransformMetanodePortsBarCommand,
-  type Connection,
-} from "@/api/gateway-api/generated-api";
 import type { KnimeNode, Workflow, WorkflowObject } from "@/api/custom-types";
-
-import { geometry } from "@/util/geometry";
-import { getPortContext } from "@/util/portSelection";
-
+import {
+  type Bounds,
+  type Connection,
+  TransformMetanodePortsBarCommand,
+  WorkflowInfo,
+} from "@/api/gateway-api/generated-api";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import type { TooltipDefinition } from "@/composables/useTooltip";
 import {
   actions as jsonPatchActions,
   mutations as jsonPatchMutations,
 } from "@/store-plugins/json-patch";
-import type { TooltipDefinition } from "@/composables/useTooltip";
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { geometry } from "@/util/geometry";
+import { getPortContext } from "@/util/portSelection";
+import type { RootStoreState } from "../types";
 
-import { getProjectAndWorkflowIds } from "./util";
-import * as floatingMenus from "./floatingMenus";
-import * as desktopInteractions from "./desktopInteractions";
-import * as execution from "./execution";
-import * as moving from "./moving";
-import * as nodeInteractions from "./nodeInteractions";
 import * as annotationInteractions from "./annotationInteractions";
 import * as clipboardInteractions from "./clipboardInteractions";
-import * as connectionInteractions from "./connectionInteractions";
 import * as componentInteractions from "./componentInteractions";
-
-import type { RootStoreState } from "../types";
+import * as connectionInteractions from "./connectionInteractions";
+import * as desktopInteractions from "./desktopInteractions";
+import * as execution from "./execution";
+import * as floatingMenus from "./floatingMenus";
+import * as moving from "./moving";
+import * as nodeInteractions from "./nodeInteractions";
+import { getProjectAndWorkflowIds } from "./util";
 
 export interface WorkflowState {
   activeWorkflow: Workflow | null;

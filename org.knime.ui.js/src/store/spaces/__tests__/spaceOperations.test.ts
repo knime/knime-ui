@@ -2,18 +2,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { API } from "@/api";
-import { APP_ROUTES } from "@/router/appRoutes";
-import { deepMocked } from "@/test/utils";
-import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
-import {
-  createSpace,
-  createSpaceProvider,
-  createProject,
-  createSpaceGroup,
-} from "@/test/factories";
-import { $bus } from "@/plugins/event-bus";
-import { ServiceCallException } from "@/api/gateway-api/generated-api";
 import { StoreActionException } from "@/api/gateway-api/exceptions";
+import { ServiceCallException } from "@/api/gateway-api/generated-api";
+import { $bus } from "@/plugins/event-bus";
+import { APP_ROUTES } from "@/router/appRoutes";
+import {
+  createProject,
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
+import { deepMocked } from "@/test/utils";
+
+import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
 
 const busEmitSpy = vi.spyOn($bus, "emit");
 const mockedAPI = deepMocked(API);

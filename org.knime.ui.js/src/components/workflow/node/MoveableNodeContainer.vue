@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, toRef } from "vue";
+import { computed, ref, toRef } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
-
-import { useMoveObject } from "@/composables/useMoveObject";
 import { useEscapeStack } from "@/composables/useEscapeStack";
+import { useMoveObject } from "@/composables/useMoveObject";
+import { useStore } from "@/composables/useStore";
 
 interface Props {
   id: string;

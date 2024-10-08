@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { isDesktop } from "@/environment";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
-import * as $colors from "@/style/colors";
 import { useStore } from "@/composables/useStore";
+import { isDesktop } from "@/environment";
+import * as $colors from "@/style/colors";
+
 import RemoteWorkflowInfo from "./RemoteWorkflowInfo.vue";
 import StreamingInfo from "./StreamingInfo.vue";
 

@@ -1,9 +1,9 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils";
-import * as $shapes from "@/style/shapes";
 
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
 import Tooltip from "../Tooltip.vue";
 import TooltipContainer from "../TooltipContainer.vue";
 

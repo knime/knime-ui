@@ -1,14 +1,14 @@
-import { onMounted, type ComputedRef, type Ref } from "vue";
-import throttle from "raf-throttle";
+import { type ComputedRef, type Ref, onMounted } from "vue";
 import { useEventListener } from "@vueuse/core";
+import throttle from "raf-throttle";
 
 import { navigatorUtils } from "@knime/utils";
 
 import { useStore } from "@/composables/useStore";
 import { isInputElement } from "@/util/isInputElement";
 
-import { useArrowKeySelection } from "./useArrowKeySelection";
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
+import { useArrowKeySelection } from "./useArrowKeySelection";
 import { useInitialSelection } from "./useInitialSelection";
 
 const isMovementEvent = (event: KeyboardEvent) => {

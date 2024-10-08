@@ -1,7 +1,8 @@
 <script lang="ts">
-import { defineComponent, type PropType, type StyleValue } from "vue";
-import { applyStyleRanges } from "@/util/styleRanges";
+import { type PropType, type StyleValue, defineComponent } from "vue";
+
 import type { WorkflowAnnotation } from "@/api/gateway-api/generated-api";
+import { applyStyleRanges } from "@/util/styleRanges";
 
 export default defineComponent({
   props: {

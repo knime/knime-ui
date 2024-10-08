@@ -1,9 +1,9 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount as deepMount, shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
 import { SubMenu } from "@knime/components";
 
+import { mockVuexStore } from "@/test/utils";
 import ZoomMenu from "../ZoomMenu.vue";
 
 describe("ZoomMenu", () => {

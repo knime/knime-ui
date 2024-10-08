@@ -1,9 +1,9 @@
-import { computed, type ComputedRef, type Ref } from "vue";
+import { type ComputedRef, type Ref, computed } from "vue";
 import throttle from "raf-throttle";
 
-import { geometry } from "@/util/geometry";
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
+import { geometry } from "@/util/geometry";
 
 import { useStore } from "./useStore";
 

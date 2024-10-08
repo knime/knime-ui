@@ -1,22 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
-
+import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
+import * as applicationStore from "@/store/application";
+import * as spacesStore from "@/store/spaces";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
 import {
+  createProject,
   createSpace,
+  createSpaceGroup,
   createSpaceProvider,
   createWorkflow,
-  createProject,
-  createSpaceGroup,
 } from "@/test/factories";
-import * as workflowStore from "@/store/workflow";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
-import * as spacesStore from "@/store/spaces";
-
+import { mockVuexStore } from "@/test/utils";
 import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
 
 describe("RemoteWorkflowInfo.vue", () => {

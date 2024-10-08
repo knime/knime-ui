@@ -1,6 +1,9 @@
 import { vi } from "vitest";
 import { config } from "@vue/test-utils";
+
 import { setupLogger } from "@/plugins/logger";
+
+import { lodashMockFactory } from "./utils";
 
 config.global.renderStubDefaultSlot = true;
 config.global.stubs = {
@@ -25,6 +28,16 @@ vi.mock("raf-throttle", () => ({
     };
   },
 }));
+
+vi.mock("lodash-es", async (importActual) => {
+  const actual = await importActual();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    ...lodashMockFactory(),
+  };
+});
 
 class MockPointerEvent extends Event {
   clientX = null;

@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, watch, toRef } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 import { useRouter } from "vue-router";
 
-import { NodePreview, FileExplorer } from "@knime/components";
-import FolderIcon from "@knime/styles/img/icons/folder.svg";
+import { FileExplorer, NodePreview } from "@knime/components";
+import type { FileExplorerItem } from "@knime/components";
 import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
-import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
+import FolderIcon from "@knime/styles/img/icons/folder.svg";
 import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 import WorkflowNodeStackIcon from "@knime/styles/img/icons/workflow-node-stack.svg";
-import type { FileExplorerItem } from "@knime/components";
-import { matchesQuery } from "@/util/matchesQuery";
+import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
+
 import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
-import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
-import { getToastsProvider } from "@/plugins/toasts";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
+import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+import { matchesQuery } from "@/util/matchesQuery";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";

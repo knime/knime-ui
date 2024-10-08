@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { type PropType, defineComponent } from "vue";
 
 const TOOLTIP_TYPES = ["error", "warning", "default"] as const;
 const TOOLTIP_ORIENTATIONS = ["bottom", "top"] as const;

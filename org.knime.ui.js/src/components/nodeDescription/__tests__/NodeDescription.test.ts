@@ -1,12 +1,12 @@
-import { expect, describe, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import { NODE_FACTORIES, createNativeNodeDescription } from "@/test/factories";
 
 import { Description, NodeFeatureList } from "@knime/components";
 
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import { NODE_FACTORIES, createNativeNodeDescription } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import NodeDescription from "../NodeDescription.vue";
 
 vi.mock("@/environment");

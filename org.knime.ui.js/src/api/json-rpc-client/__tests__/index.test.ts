@@ -1,13 +1,12 @@
 /* eslint-disable class-methods-use-this */
-import { describe, expect, it, vi, beforeEach } from "vitest";
-
-import { mockVuexStore, mockedObject } from "@/test/utils";
-import { serverEventHandler } from "../server-events";
-import { getToastsProvider } from "@/plugins/toasts";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
+import { flushPromises } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
-import { flushPromises } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { getToastsProvider } from "@/plugins/toasts";
+import { mockVuexStore, mockedObject } from "@/test/utils";
+import { serverEventHandler } from "../server-events";
 
 vi.mock("@/plugins/event-bus", () => ({
   $bus: {

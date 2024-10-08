@@ -1,12 +1,13 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import AppHeaderTab from "../AppHeaderTab.vue";
-import CloseButton from "@/components/common/CloseButton.vue";
-import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
-import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
 import CloudComponentIcon from "@knime/styles/img/icons/cloud-component.svg";
+import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
+import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
+
+import CloseButton from "@/components/common/CloseButton.vue";
+import AppHeaderTab from "../AppHeaderTab.vue";
 
 describe("AppHeaderTab.vue", () => {
   const doMount = (props = {}) => {

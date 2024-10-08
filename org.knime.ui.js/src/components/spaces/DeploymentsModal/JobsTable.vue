@@ -2,19 +2,20 @@
 import { computed, ref } from "vue";
 
 import { Table as KnimeUiTable } from "@knime/knime-ui-table";
+
 import type { Job } from "@/api/custom-types";
 
 import {
   defaultColumns,
   defaultSortColumn,
   defaultSortDirection,
-  jobHeaders,
-  jobTypes,
-  jobFormatters,
   jobClassGenerators,
+  jobFormatters,
+  jobHeaders,
+  jobSubMenuItems,
+  jobTypes,
   popoverRenderers,
   slottedColumns,
-  jobSubMenuItems,
 } from "./jobsTable.config";
 
 type Props = {

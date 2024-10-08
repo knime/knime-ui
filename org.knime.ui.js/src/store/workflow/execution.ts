@@ -1,10 +1,6 @@
 import type { ActionTree, GetterTree } from "vuex";
 
 import { API } from "@/api";
-
-import type { WorkflowState } from ".";
-import type { RootStoreState } from "../types";
-import { getProjectAndWorkflowIds } from "./util";
 import {
   buildMiddleware,
   validateNodeExecuted,
@@ -12,6 +8,10 @@ import {
 } from "@/components/uiExtensions/common/output-validator";
 import { getToastsProvider } from "@/plugins/toasts";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import type { RootStoreState } from "../types";
+
+import type { WorkflowState } from ".";
+import { getProjectAndWorkflowIds } from "./util";
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.

@@ -1,13 +1,14 @@
 <!-- eslint-disable no-undefined -->
 <script lang="ts">
-import { defineComponent, type PropType, type StyleValue } from "vue";
-import { applyStyleRanges } from "@/util/styleRanges";
-import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
+import { type PropType, type StyleValue, defineComponent } from "vue";
+
 import {
+  Node,
   type NodeAnnotation,
   type StyleRange,
-  Node,
 } from "@/api/gateway-api/generated-api";
+import AutoSizeForeignObject from "@/components/common/AutoSizeForeignObject.vue";
+import { applyStyleRanges } from "@/util/styleRanges";
 
 export default defineComponent({
   components: { AutoSizeForeignObject },

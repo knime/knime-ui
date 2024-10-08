@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
+
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
-import * as $shapes from "@/style/shapes";
 import ActionButton from "@/components/common/ActionButton.vue";
 import Port from "@/components/common/Port.vue";
 import { useEscapeStack } from "@/composables/useEscapeStack";
+import * as $shapes from "@/style/shapes";
 
 type Props = {
   port: NodePort;

@@ -1,12 +1,13 @@
+import { navigatorUtils } from "@knime/utils";
+
 import type { KnimeNode } from "@/api/custom-types";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 import { isDesktop } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
+import type { NodeOutputTabIdentifier } from "@/store/selection";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import { getNextSelectedPort } from "@/util/portSelection";
-import { navigatorUtils } from "@knime/utils";
 import type { UnionToShortcutRegistry } from "../types";
-import type { NodeOutputTabIdentifier } from "@/store/selection";
 
 type SelectedNodeWorkflowShortcuts = UnionToShortcutRegistry<
   | "activateOutputPort"

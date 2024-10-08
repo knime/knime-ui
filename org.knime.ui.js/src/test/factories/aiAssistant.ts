@@ -1,7 +1,9 @@
 import { merge } from "lodash-es";
+
 import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
-import { NODE_FACTORIES } from "./common";
 import type { DeepPartial } from "../utils";
+
+import { NODE_FACTORIES } from "./common";
 
 export const createNodeWithExtensionInfo = (
   data: DeepPartial<NodeWithExtensionInfo> = {},

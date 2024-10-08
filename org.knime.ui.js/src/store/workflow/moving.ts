@@ -1,12 +1,12 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
+import type { KnimeNode } from "@/api/custom-types";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
-
 import type { RootStoreState } from "../types";
+
 import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
-import type { KnimeNode } from "@/api/custom-types";
 
 interface State {
   isDragging: boolean;

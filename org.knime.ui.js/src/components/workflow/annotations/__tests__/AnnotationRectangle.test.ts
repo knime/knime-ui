@@ -1,11 +1,10 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
-
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import AnnotationRectangle from "../AnnotationRectangle.vue";
 
 const $shortcuts = {

@@ -1,19 +1,19 @@
 import {
+  type MockedFunction,
   afterEach,
   describe,
   expect,
   it,
   vi,
-  type MockedFunction,
 } from "vitest";
 import { nextTick } from "vue";
 
-import { deepMocked } from "@/test/utils";
 import { API } from "@/api";
+import { getToastsProvider } from "@/plugins/toasts";
+import { createConnection } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
 import { pastePartsAt } from "@/util/pasteToWorkflow";
 
-import { createConnection } from "@/test/factories";
-import { getToastsProvider } from "@/plugins/toasts";
 import { loadStore } from "./loadStore";
 
 vi.mock("@/util/pasteToWorkflow");

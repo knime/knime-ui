@@ -1,12 +1,12 @@
-import { computed, type Ref } from "vue";
+import { type Ref, computed } from "vue";
 
-import type { XY } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
-import portShift from "@/util/portShift";
+import type { XY } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
+import portShift from "@/util/portShift";
 
-import { usePortBarPositions } from "./usePortBarPositions";
 import { useConnectedNodeObjects } from "./useConnectedNodeObjects";
+import { usePortBarPositions } from "./usePortBarPositions";
 
 type UseConnectorPositionOptions = {
   /**

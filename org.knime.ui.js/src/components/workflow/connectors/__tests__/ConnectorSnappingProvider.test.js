@@ -1,14 +1,13 @@
 /* eslint-disable max-lines */
-import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-
 import { mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils";
-import * as $shapes from "@/style/shapes";
-import { $bus } from "@/plugins/event-bus";
 
-import ConnectorSnappingProvider from "../ConnectorSnappingProvider.vue";
+import { $bus } from "@/plugins/event-bus";
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
 import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
+import ConnectorSnappingProvider from "../ConnectorSnappingProvider.vue";
 
 describe("ConnectorSnappingProvider.vue", () => {
   Event.prototype.preventDefault = vi.fn();

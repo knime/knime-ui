@@ -3,14 +3,14 @@ import { merge } from "lodash-es";
 import type { AvailablePortTypes } from "@/api/custom-types";
 import {
   MetaNodePort,
-  PortType,
   type NodePort,
   type PortGroup,
+  PortType,
   type PortViews,
 } from "@/api/gateway-api/generated-api";
 
-import { randomValue } from "./util";
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
+import { randomValue } from "./util";
 
 export const createPortViews = (data: Partial<PortViews> = {}): PortViews => {
   return merge(

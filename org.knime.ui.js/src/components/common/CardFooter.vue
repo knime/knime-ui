@@ -1,5 +1,6 @@
 <script>
 import { h as createElement } from "vue";
+
 import Avatar from "./Avatar.vue";
 
 export default {

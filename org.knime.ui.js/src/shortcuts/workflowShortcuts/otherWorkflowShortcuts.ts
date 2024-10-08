@@ -1,8 +1,7 @@
-import OpenDialogIcon from "@/assets/configure-node.svg";
-
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import SelectionModeIcon from "@/assets/selection-mode.svg";
 
+import OpenDialogIcon from "@/assets/configure-node.svg";
+import SelectionModeIcon from "@/assets/selection-mode.svg";
 import type { UnionToShortcutRegistry } from "../types";
 
 type OtherWorkflowShortcuts = UnionToShortcutRegistry<

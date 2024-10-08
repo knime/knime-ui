@@ -2,17 +2,17 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import type {
+  AddNodeCommand,
   Connection,
   SpaceItemReference,
   XY,
-  AddNodeCommand,
 } from "@/api/gateway-api/generated-api";
-
 import { geometry } from "@/util/geometry";
-import type { RootStoreState } from "../types";
-import { getProjectAndWorkflowIds } from "./util";
-import type { WorkflowState } from ".";
 import { isNativeNode } from "@/util/nodeUtil";
+import type { RootStoreState } from "../types";
+
+import type { WorkflowState } from ".";
+import { getProjectAndWorkflowIds } from "./util";
 
 interface State {
   nameEditorNodeId: string | null;

@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import {
-  toRef,
-  watch,
   computed,
-  ref,
+  nextTick,
   onBeforeUnmount,
   onMounted,
-  nextTick,
+  ref,
+  toRef,
+  watch,
 } from "vue";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
-import throttle from "raf-throttle";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
+import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import { useEscapeStack } from "@/composables/useEscapeStack";
+import { useStore } from "@/composables/useStore";
 
 /*
  * The FloatingMenu component is a container that can be sticked to a position on the canvas,

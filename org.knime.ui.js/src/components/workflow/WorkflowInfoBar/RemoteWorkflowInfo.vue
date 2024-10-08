@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { useStore } from "@/composables/useStore";
 import { SpaceProviderNS } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
 import * as $colors from "@/style/colors";
 
 const store = useStore();

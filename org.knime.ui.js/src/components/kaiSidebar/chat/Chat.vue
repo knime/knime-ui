@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
-import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-
-import Message from "./message/Message.vue";
-import MessageSeparatorComponent from "./MessageSeparator.vue";
-import ChatControls from "./ChatControls.vue";
-import { useChat, MessageSeparator } from "./useChat";
+import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
 import type { ChainType } from "../types";
+
+import ChatControls from "./ChatControls.vue";
+import MessageSeparatorComponent from "./MessageSeparator.vue";
+import Message from "./message/Message.vue";
+import { MessageSeparator, useChat } from "./useChat";
 
 interface Props {
   chainType: ChainType;

@@ -1,11 +1,12 @@
 import type { Workflow } from "@/api/gateway-api/generated-api";
-import getWorkflowObjectBounds from "./workflowObjectBounds";
 import {
   autoPositionMetanodeMargin,
   defaultMetaNodeBarHeight,
-  metaNodeBarWidth,
   defaultMetanodeBarPosition,
+  metaNodeBarWidth,
 } from "@/style/shapes";
+
+import getWorkflowObjectBounds from "./workflowObjectBounds";
 
 export default (workflow: Workflow) => {
   const workflowBounds = getWorkflowObjectBounds(workflow, {

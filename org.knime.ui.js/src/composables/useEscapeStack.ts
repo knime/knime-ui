@@ -1,4 +1,5 @@
-import { onBeforeUnmount, onMounted, type Component } from "vue";
+import { type Component, onBeforeUnmount, onMounted } from "vue";
+
 import { getId } from "@/util/getUniqueId";
 
 type StackItemConfig = {

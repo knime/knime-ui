@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { watch } from "vue";
+
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
+
 import { useNodeDescriptionPanel } from "./useNodeDescriptionPanel";
 
 const {

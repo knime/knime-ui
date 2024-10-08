@@ -1,7 +1,8 @@
-import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
+import { mount } from "@vue/test-utils";
 
 import { RichTextEditor } from "@knime/rich-text-editor";
+
 import MetadataDescription from "../MetadataDescription.vue";
 
 describe("MetadataDescription.vue", () => {

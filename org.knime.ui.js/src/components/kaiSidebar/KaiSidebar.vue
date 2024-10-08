@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+
 import { useFeatures } from "@/plugins/feature-flags";
+
+import ChatPanel from "./ChatPanel.vue";
+import DisclaimerPanel from "./DisclaimerPanel.vue";
+import ErrorPanel from "./ErrorPanel.vue";
+import InstallationPanel from "./InstallationPanel.vue";
+import LoginPanel from "./LoginPanel.vue";
+import NoHubConfiguredPanel from "./NoHubConfiguredPanel.vue";
 import { useHubAuth } from "./useHubAuth";
 import { useKaiServer } from "./useKaiServer";
-import InstallationPanel from "./InstallationPanel.vue";
-import NoHubConfiguredPanel from "./NoHubConfiguredPanel.vue";
-import ErrorPanel from "./ErrorPanel.vue";
-import DisclaimerPanel from "./DisclaimerPanel.vue";
-import LoginPanel from "./LoginPanel.vue";
-import ChatPanel from "./ChatPanel.vue";
 
 const { isKaiInstalled: _isKaiInstalled } = useFeatures();
 const isKaiInstalled = _isKaiInstalled();

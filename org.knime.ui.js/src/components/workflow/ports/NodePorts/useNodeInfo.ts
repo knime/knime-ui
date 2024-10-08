@@ -1,4 +1,5 @@
 import { computed } from "vue";
+
 import type { KnimeNode } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";

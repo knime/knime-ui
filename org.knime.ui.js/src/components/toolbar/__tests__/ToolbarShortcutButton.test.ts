@@ -1,7 +1,8 @@
-import { SubMenu } from "@knime/components";
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+
+import { SubMenu } from "@knime/components";
 
 import IconComponent from "@/assets/redo.svg";
 import ToolbarButton from "@/components/common/ToolbarButton.vue";

@@ -4,9 +4,9 @@ import { useRoute, useRouter } from "vue-router";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
 
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { useSpaceIcons } from "./useSpaceIcons";
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 export type BreadcrumbItem = {
   text: string;

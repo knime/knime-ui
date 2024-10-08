@@ -1,4 +1,4 @@
-import consola, { LogLevels, type LogLevel, type LogType } from "consola";
+import consola, { type LogLevel, LogLevels, type LogType } from "consola";
 
 const getLogLevelFromEnv = (): LogLevel => {
   const fromStorage = localStorage.getItem("KNIME_LOG_LEVEL");

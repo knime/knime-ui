@@ -1,8 +1,8 @@
 <script>
 import { mapGetters } from "vuex";
 
-import SaveIcon from "@/assets/ok.svg";
 import CancelIcon from "@/assets/cancel.svg";
+import SaveIcon from "@/assets/ok.svg";
 import ActionBar from "@/components/common/ActionBar.vue";
 
 import NodeLabelTextArea from "./NodeLabelTextArea.vue";

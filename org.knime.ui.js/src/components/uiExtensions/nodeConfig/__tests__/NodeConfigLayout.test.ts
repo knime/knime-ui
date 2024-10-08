@@ -1,16 +1,17 @@
-import { VueWrapper, mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
-
-import NodeConfigLayout from "../NodeConfigLayout.vue";
-import { createNativeNode } from "@/test/factories";
-import { NodeState, type NativeNode } from "@/api/gateway-api/generated-api";
-import NodeConfigLoader from "../NodeConfigLoader.vue";
 import { nextTick } from "vue";
+import { VueWrapper, mount } from "@vue/test-utils";
+
 import {
-  ApplyState,
   type APILayerDirtyState,
+  ApplyState,
   ViewState,
 } from "@knime/ui-extension-service";
+
+import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import { createNativeNode } from "@/test/factories";
+import NodeConfigLayout from "../NodeConfigLayout.vue";
+import NodeConfigLoader from "../NodeConfigLoader.vue";
 
 describe("NodeConfigLayout.vue", () => {
   const idleNode = createNativeNode({

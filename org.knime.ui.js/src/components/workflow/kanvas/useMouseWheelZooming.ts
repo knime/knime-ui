@@ -1,8 +1,9 @@
-import { computed, type Ref } from "vue";
+import { type Ref, computed } from "vue";
 import throttle from "raf-throttle";
 
-import { useStore } from "@/composables/useStore";
 import { navigatorUtils } from "@knime/utils";
+
+import { useStore } from "@/composables/useStore";
 
 type UseZoomOptions = {
   rootEl: Ref<HTMLElement>;

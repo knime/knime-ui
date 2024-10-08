@@ -3,9 +3,11 @@ import type { Router } from "vue-router";
 import type { Store } from "vuex";
 
 import type { ToastService } from "@knime/components";
-import type { RootStoreState } from "@/store/types";
-import type { ShortcutsRegistry } from ".";
 import type { HotkeysNS } from "@knime/utils";
+
+import type { RootStoreState } from "@/store/types";
+
+import type { ShortcutsRegistry } from ".";
 
 export type ShortcutGroups =
   | "general"

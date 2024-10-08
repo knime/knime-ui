@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 
 import Tooltip from "./Tooltip.vue";
 

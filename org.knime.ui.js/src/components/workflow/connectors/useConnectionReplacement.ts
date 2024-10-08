@@ -1,11 +1,11 @@
-import { computed, ref, type Ref } from "vue";
+import { type Ref, computed, ref } from "vue";
 
-import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
-import { useStore } from "@/composables/useStore";
-import { checkPortCompatibility } from "@/util/compatibleConnections";
-import * as $shapes from "@/style/shapes";
-import { KNIME_MIME } from "@/composables/useDropNode";
 import type { ExtendedPortType } from "@/api/custom-types";
+import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
+import { KNIME_MIME } from "@/composables/useDropNode";
+import { useStore } from "@/composables/useStore";
+import * as $shapes from "@/style/shapes";
+import { checkPortCompatibility } from "@/util/compatibleConnections";
 
 type UseConnectionReplacementOptions = {
   /**

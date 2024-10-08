@@ -1,15 +1,14 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-
-import { TABS } from "@/store/panel";
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
-import Workflow from "../Workflow.vue";
+import { TABS } from "@/store/panel";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import SelectionRectangle from "../SelectionRectangle/SelectionRectangle.vue";
-import WorkflowEmpty from "../WorkflowEmpty.vue";
+import Workflow from "../Workflow.vue";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
+import WorkflowEmpty from "../WorkflowEmpty.vue";
 
 describe("WorkflowCanvas", () => {
   let doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty;

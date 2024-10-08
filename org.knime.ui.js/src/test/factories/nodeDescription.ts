@@ -1,9 +1,11 @@
 import { merge } from "lodash-es";
-import {
-  TypedText,
-  type NativeNodeDescription,
-} from "@/api/gateway-api/generated-api";
+
 import type { ComponentNodeDescription } from "@/api/custom-types";
+import {
+  type NativeNodeDescription,
+  TypedText,
+} from "@/api/gateway-api/generated-api";
+
 import { PORT_TYPE_IDS } from "./common";
 
 export const createNativeNodeDescription = (

@@ -1,15 +1,16 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { type PropType, defineComponent } from "vue";
 import { mapState } from "vuex";
 
 import { MenuItems, SearchInput } from "@knime/components";
 import ReturnIcon from "@knime/styles/img/icons/arrow-back.svg";
 
-import type { XY } from "@/api/gateway-api/generated-api";
 import type { NodePortGroups } from "@/api/custom-types";
-import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
+import type { XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
+import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
+
 import type { MenuItemWithPort } from "./types";
 
 const isPortGroupWithSinglePort = (

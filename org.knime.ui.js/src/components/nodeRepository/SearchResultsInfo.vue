@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { API } from "@/api";
+
+import { Button } from "@knime/components";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
-import { Button } from "@knime/components";
 
-import { useStore } from "@/composables/useStore";
+import { API } from "@/api";
 import MoreNodesIllustration from "@/assets/more-nodes-illustration.svg";
-import { isDesktop } from "@/environment";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import { useStore } from "@/composables/useStore";
+import { isDesktop } from "@/environment";
 import DummyNodesEmptyState from "../common/DummyNodesEmptyState.vue";
 
 type Props = {

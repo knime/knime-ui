@@ -1,24 +1,26 @@
 <script lang="ts" setup>
+import { computed, onMounted, ref, watch } from "vue";
+
 import {
-  Tree,
-  type EventParams,
-  type TreeNodeOptions,
   type BaseTreeNode,
+  type EventParams,
   type KeydownEvent,
+  Tree,
+  type TreeNodeOptions,
 } from "@knime/virtual-tree";
 
-import { computed, onMounted, ref, watch } from "vue";
-import { useStore } from "@/composables/useStore";
-import ScrollViewContainer from "./ScrollViewContainer.vue";
 import type {
   NodeCategoryWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
+import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
+import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
+import { useStore } from "@/composables/useStore";
+import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefined";
+
 import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
-import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
-import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
-import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefined";
+import ScrollViewContainer from "./ScrollViewContainer.vue";
 
 const mapCategoryToTreeNode = (
   category: Required<CategoryMetadata>,

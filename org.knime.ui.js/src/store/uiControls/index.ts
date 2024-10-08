@@ -1,7 +1,7 @@
 import type { ActionTree, MutationTree } from "vuex";
 
-import { isBrowser, isDesktop } from "@/environment";
 import { AppState } from "@/api/gateway-api/generated-api";
+import { isBrowser, isDesktop } from "@/environment";
 import type { RootStoreState } from "../types";
 
 /** *******************************************************************

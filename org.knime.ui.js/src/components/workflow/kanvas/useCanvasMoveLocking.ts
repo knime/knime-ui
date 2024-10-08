@@ -2,8 +2,9 @@ import { computed, onBeforeUnmount, onMounted } from "vue";
 import { useStore } from "vuex";
 
 import { navigatorUtils } from "@knime/utils";
-import { isInputElement } from "@/util/isInputElement";
+
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { isInputElement } from "@/util/isInputElement";
 
 export const useCanvasMoveLocking = () => {
   const store = useStore();

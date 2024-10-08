@@ -1,23 +1,23 @@
 import { describe, expect, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 import type { Store } from "vuex";
-import { mockVuexStore } from "@/test/utils";
 
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-import * as workflowStore from "@/store/workflow";
-import * as workflowMonitorStore from "@/store/workflowMonitor";
-import * as selectionStore from "@/store/selection";
 import {
   ComponentNodeAndDescription,
   type WorkflowMonitorState,
 } from "@/api/gateway-api/generated-api";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
+import * as selectionStore from "@/store/selection";
+import * as workflowStore from "@/store/workflow";
+import * as workflowMonitorStore from "@/store/workflowMonitor";
 import {
   createComponentNode,
   createNativeNode,
   createWorkflow,
   createWorkflowMonitorMessage,
 } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
 import WorkflowMonitorContent from "../WorkflowMonitorContent.vue";
 import WorkflowMonitorMessage from "../WorkflowMonitorMessage.vue";
 

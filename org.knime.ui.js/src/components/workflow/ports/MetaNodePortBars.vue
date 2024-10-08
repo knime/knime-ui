@@ -2,9 +2,11 @@
 /**
  * A pair of MetaNodePortBar items. (Or maybe one or none, depending on whether or not the metanode has in/out ports)
  */
-import { useStore } from "@/composables/useStore";
-import MetaNodePortBar from "./MetaNodePortBar.vue";
 import { computed } from "vue";
+
+import { useStore } from "@/composables/useStore";
+
+import MetaNodePortBar from "./MetaNodePortBar.vue";
 import MoveableMetaNodePortBarContainer from "./MoveableMetaNodePortBarContainer.vue";
 
 const store = useStore();

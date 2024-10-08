@@ -1,8 +1,10 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import { encodeString } from "@/util/encodeString";
-import type { RootStoreState } from "../types";
-import type { ApplicationState } from "./index";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
+import type { RootStoreState } from "../types";
+
+import type { ApplicationState } from "./index";
 
 interface State {
   // Map that keeps track of root workflow snapshots. Used as SVGs when saving

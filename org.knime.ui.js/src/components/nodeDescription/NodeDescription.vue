@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { toRefs, ref, computed, watch } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
 
 import { NodeFeatureList } from "@knime/components";
-import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import CloseButton from "@/components/common/CloseButton.vue";
 
-import { useStore } from "@/composables/useStore";
 import { type NodeFactoryKey } from "@/api/gateway-api/generated-api";
-import NodeDescriptionContent from "./NodeDescriptionContent.vue";
+import CloseButton from "@/components/common/CloseButton.vue";
+import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import { useStore } from "@/composables/useStore";
 import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
 } from "@/util/portDataMapper";
-import NodeDescriptionExtensionInfo from "./NodeDescriptionExtensionInfo.vue";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
+
+import NodeDescriptionContent from "./NodeDescriptionContent.vue";
+import NodeDescriptionExtensionInfo from "./NodeDescriptionExtensionInfo.vue";
 
 type Params = {
   id: string;

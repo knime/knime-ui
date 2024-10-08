@@ -1,9 +1,9 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import { useEscapeStack } from "@/composables/useEscapeStack";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import FloatingMenu from "../FloatingMenu.vue";
 
 const useFocusTrapMock = {

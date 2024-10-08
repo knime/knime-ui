@@ -1,23 +1,20 @@
 /* eslint-disable vitest/no-conditional-tests */
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import { createWorkflow } from "@/test/factories";
-
-import { $bus } from "@/plugins/event-bus";
-
-import * as $shapes from "@/style/shapes";
-import * as $colors from "@/style/colors";
-import * as workflowStore from "@/store/workflow";
-import * as selectionStore from "@/store/selection";
-import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
-
+import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
+import { $bus } from "@/plugins/event-bus";
+import * as selectionStore from "@/store/selection";
+import * as workflowStore from "@/store/workflow";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import { createWorkflow } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { geometry } from "@/util/geometry";
 import MetaNodePortBar from "../MetaNodePortBar.vue";
 import NodePort from "../NodePort/NodePort.vue";
-import { geometry } from "@/util/geometry";
 
 describe("MetaNodePortBar.vue", () => {
   const height = 549;

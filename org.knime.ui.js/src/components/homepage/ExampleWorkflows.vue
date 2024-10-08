@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { isEqual } from "lodash-es";
 import { useRouter } from "vue-router";
 
+import { Button } from "@knime/components";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
-import { Button } from "@knime/components";
 
-import { useStore } from "@/composables/useStore";
+import type { ExampleProject } from "@/api/custom-types";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
-import type { ExampleProject } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
-import PageTitle from "./PageTitle.vue";
 
-import { isEqual } from "lodash-es";
+import PageTitle from "./PageTitle.vue";
 
 const store = useStore();
 const $router = useRouter();

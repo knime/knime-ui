@@ -1,16 +1,17 @@
 <script lang="ts" setup>
 import { computed, watch } from "vue";
-import type { Link } from "@/api/gateway-api/generated-api";
 
 import {
-  LinkList,
+  Button,
   FunctionButton,
   InputField,
   Label,
-  Button,
+  LinkList,
 } from "@knime/components";
-import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import PlusIcon from "@knime/styles/img/icons/plus.svg";
+import TrashIcon from "@knime/styles/img/icons/trash.svg";
+
+import type { Link } from "@/api/gateway-api/generated-api";
 import { buildUrlRegex } from "@/util/regex";
 
 import SidebarPanelSubHeading from "./side-panel/SidebarPanelSubHeading.vue";

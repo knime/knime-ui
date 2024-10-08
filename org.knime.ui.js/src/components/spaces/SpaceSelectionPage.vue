@@ -5,23 +5,22 @@ import { useRouter } from "vue-router";
 import { FunctionButton } from "@knime/components";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
-import { APP_ROUTES } from "@/router/appRoutes";
-import { useStore } from "@/composables/useStore";
 import type { SpaceProviderNS } from "@/api/custom-types";
+import SearchButton from "@/components/common/SearchButton.vue";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { matchesQuery } from "@/util/matchesQuery";
 
-import SpacePageLayout from "./SpacePageLayout.vue";
-import SpacePageHeader from "./SpacePageHeader.vue";
 import SpaceCard from "./SpaceCard.vue";
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
-
+import SpacePageHeader from "./SpacePageHeader.vue";
+import SpacePageLayout from "./SpacePageLayout.vue";
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
-import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import SearchButton from "@/components/common/SearchButton.vue";
-import { matchesQuery } from "@/util/matchesQuery";
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
-import { getToastsProvider } from "@/plugins/toasts";
 
 type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 

@@ -1,14 +1,15 @@
-import { expect, describe, it, vi, afterEach, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 /* eslint-disable max-lines */
-import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
 import { API } from "@/api";
+import { PortType } from "@/api/gateway-api/generated-api";
 import {
   NODE_FACTORIES,
   createAvailablePortTypes,
   createComponentNodeDescription,
   createNativeNodeDescription,
 } from "@/test/factories";
-import { PortType } from "@/api/gateway-api/generated-api";
+import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
 
 const getNodeDescriptionResponse = createNativeNodeDescription();
 const getComponentDescriptionResponse = createComponentNodeDescription();

@@ -1,13 +1,14 @@
 import { merge } from "lodash-es";
 
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import {
   NativeNodeInvariants,
-  PortType,
   type NodePortTemplate,
   type NodeTemplate,
+  PortType,
 } from "@/api/gateway-api/generated-api";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+
 import { PORT_TYPE_IDS, type PortTypeId } from "./common";
 import { createAvailablePortTypes } from "./ports";
 

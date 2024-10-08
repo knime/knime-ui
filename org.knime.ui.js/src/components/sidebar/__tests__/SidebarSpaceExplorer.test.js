@@ -1,11 +1,11 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import * as spacesStore from "@/store/spaces";
 
-import SidebarSpaceExplorer from "../SidebarSpaceExplorer.vue";
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
+import * as spacesStore from "@/store/spaces";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import SidebarSpaceExplorer from "../SidebarSpaceExplorer.vue";
 
 describe("SidebarSpaceExplorer.vue", () => {
   const doMount = ({ activeProjectId = "proj1" } = {}) => {

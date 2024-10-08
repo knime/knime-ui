@@ -1,4 +1,5 @@
 import { merge } from "lodash-es";
+
 import type { WorkflowMonitorMessage } from "@/api/gateway-api/generated-api";
 
 export const createWorkflowMonitorMessage = (

@@ -4,6 +4,7 @@ import { computed, toRefs } from "vue";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { geometry } from "@/util/geometry";
+
 import type { ConnectorProps } from "./types";
 import { useConnectorPathSegments } from "./useConnectorPathSegments";
 

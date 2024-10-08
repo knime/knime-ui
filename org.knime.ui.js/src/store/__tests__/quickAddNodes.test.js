@@ -1,13 +1,14 @@
-import { expect, describe, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 /* eslint-disable max-lines */
+import { API } from "@/api";
+import { state as nodeSearchState } from "@/store/common/nodeSearch";
 import {
   deepMocked,
   mockVuexStore,
   withPorts,
   withoutKeys,
 } from "@/test/utils";
-import { API } from "@/api";
-import { state as nodeSearchState } from "@/store/common/nodeSearch";
 
 export const getNodeRecommendationsResponse = [
   {

@@ -2,11 +2,12 @@
 import { computed, ref, toRef, watch } from "vue";
 import gsap from "gsap";
 
-import connectorPath from "@/util/connectorPath";
-import type { PathSegment } from "./types";
-import { geometry } from "@/util/geometry";
-import ConnectorBendpoint from "./ConnectorBendpoint.vue";
 import type { XY } from "@/api/gateway-api/generated-api";
+import connectorPath from "@/util/connectorPath";
+import { geometry } from "@/util/geometry";
+
+import ConnectorBendpoint from "./ConnectorBendpoint.vue";
+import type { PathSegment } from "./types";
 
 interface Props {
   connectionId: string;

@@ -1,7 +1,9 @@
 import { gsap } from "gsap";
-import * as shapes from "@/style/shapes";
-import type { GeometryArea, GeometryBounds } from "./types";
+
 import type { XY } from "@/api/gateway-api/generated-api";
+import * as shapes from "@/style/shapes";
+
+import type { GeometryArea, GeometryBounds } from "./types";
 
 /**
  * Finds the intersection of A and B

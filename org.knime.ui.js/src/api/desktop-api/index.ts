@@ -1,5 +1,6 @@
 import type { SpaceProviderNS } from "../custom-types";
 import { registerEventHandler } from "../json-rpc-client";
+
 import * as desktopAPIMethods from "./desktop-api";
 
 export type DesktopAPIFunctionResultPayload = {

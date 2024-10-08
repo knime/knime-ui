@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, ref } from "vue";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useMoveObject } from "@/composables/useMoveObject";
 import { useStore } from "@/composables/useStore";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 
 interface Props {
   id: string;

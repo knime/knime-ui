@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, watch, toRefs, nextTick } from "vue";
+import { computed, nextTick, ref, toRefs, watch } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-
-import ScrollViewContainer from "./ScrollViewContainer.vue";
-import NodeList, { type NavReachedEvent } from "./NodeList.vue";
-import SearchResultsInfo from "./SearchResultsInfo.vue";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+
+import NodeList, { type NavReachedEvent } from "./NodeList.vue";
+import ScrollViewContainer from "./ScrollViewContainer.vue";
+import SearchResultsInfo from "./SearchResultsInfo.vue";
 
 export type SearchActions = {
   searchNodesNextPage: () => Promise<any>;

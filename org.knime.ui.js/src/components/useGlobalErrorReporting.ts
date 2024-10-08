@@ -1,6 +1,7 @@
 import { onBeforeUnmount, onErrorCaptured, onMounted } from "vue";
-import { showErrorToast } from "@/util/errorHandling";
+
 import { UnknownGatewayException } from "@/api/gateway-api/generated-api";
+import { showErrorToast } from "@/util/errorHandling";
 
 export const useGlobalErrorReporting = () => {
   onErrorCaptured((_error) => {

@@ -1,8 +1,9 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { TagList } from "@knime/components";
+
 import CloseableTagList from "../CloseableTagList.vue";
 
 const minNumberOfInitialTags = 1;

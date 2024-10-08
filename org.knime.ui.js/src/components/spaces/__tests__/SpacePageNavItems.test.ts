@@ -1,19 +1,18 @@
-import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
 
+import { API } from "@/api";
+import { SpaceProviderNS } from "@/api/custom-types";
+import { NavMenuItem } from "@/components/common/side-nav";
+import { APP_ROUTES } from "@/router/appRoutes";
 import * as spacesStore from "@/store/spaces";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-
-import { API } from "@/api";
-import { SpaceProviderNS } from "@/api/custom-types";
-import { NavMenuItem } from "@/components/common/side-nav";
-import { APP_ROUTES } from "@/router/appRoutes";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import SpacePageNavItems from "../SpacePageNavItems.vue";
 
 const routerPush = vi.fn();

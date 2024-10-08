@@ -2,11 +2,12 @@
 import { computed, h } from "vue";
 
 import { Label, SubMenu } from "@knime/components";
-import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
-import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
-import * as nodeBackgroundColors from "@knime/styles/colors/nodeColors";
 import { HibiscusDark as colorHibiscusDark } from "@knime/styles/colors/knimeColors";
+import * as nodeBackgroundColors from "@knime/styles/colors/nodeColors";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+
 import type { UpdateComponentMetadataCommand } from "@/api/gateway-api/generated-api";
+import ComponentTypeSvgIcon from "@/components/workflowMetadata/ComponentTypeSvgIcon.vue";
 
 interface Props {
   componentTypes: Array<string>;

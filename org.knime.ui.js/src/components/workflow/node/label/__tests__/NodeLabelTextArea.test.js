@@ -1,10 +1,9 @@
-import { expect, describe, it } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
+import { shallowMount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 
 import * as $shapes from "@/style/shapes";
-
 import NodeLabelTextArea from "../NodeLabelTextArea.vue";
 
 describe("NodeLabelTextArea", () => {

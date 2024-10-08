@@ -1,12 +1,12 @@
-import { expect, describe, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { shallowMount } from "@vue/test-utils";
 
-import * as settingsStore from "@/store/settings";
 import { SearchInput } from "@knime/components";
-import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 
+import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
+import * as settingsStore from "@/store/settings";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import CloseableTagList from "../CloseableTagList.vue";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
 

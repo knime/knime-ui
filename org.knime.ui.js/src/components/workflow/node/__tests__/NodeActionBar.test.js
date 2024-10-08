@@ -1,15 +1,13 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils";
-
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-
-import * as $shapes from "@/style/shapes";
 
 import ActionButton from "@/components/common/ActionButton.vue";
+import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
 import NodeActionBar from "../NodeActionBar.vue";
-import { nextTick } from "vue";
 
 const $shortcuts = {
   get: vi.fn(() => ({})),

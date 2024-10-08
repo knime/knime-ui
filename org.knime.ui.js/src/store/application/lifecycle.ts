@@ -1,23 +1,22 @@
-import { geometry } from "@/util/geometry";
+import type { Router } from "vue-router";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-import { APP_ROUTES } from "@/router/appRoutes";
-import { encodeString } from "@/util/encodeString";
-
-import type { RootStoreState } from "../types";
-import type { ApplicationState } from "./index";
-import type { Router } from "vue-router";
 import type {
   Workflow,
   WorkflowSnapshot,
 } from "@/api/gateway-api/generated-api";
-import { runInEnvironment } from "@/environment";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
+import { runInEnvironment } from "@/environment";
 import { features } from "@/plugins/feature-flags";
+import { APP_ROUTES } from "@/router/appRoutes";
 import { ratioToZoomLevel } from "@/store/settings";
+import { encodeString } from "@/util/encodeString";
+import { geometry } from "@/util/geometry";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
+import type { RootStoreState } from "../types";
 
+import type { ApplicationState } from "./index";
 import { lifecycleBus } from "./lifecycle-events";
 
 const getCanvasStateKey = (input: string) => encodeString(input);

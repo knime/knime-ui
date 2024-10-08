@@ -1,8 +1,9 @@
-import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
+import { flushPromises, mount } from "@vue/test-utils";
+
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import ConfirmDialog from "../ConfirmDialog.vue";
-import { nextTick } from "vue";
 
 describe("ConfirmDialog.vue", () => {
   const { show, cancel, confirm, dialogResult, isActive } = useConfirmDialog();

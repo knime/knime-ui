@@ -1,4 +1,5 @@
 import type { Project } from "@/api/gateway-api/generated-api";
+
 import type { WorkflowState } from "./index";
 
 export const getProjectAndWorkflowIds = (state: WorkflowState) => {

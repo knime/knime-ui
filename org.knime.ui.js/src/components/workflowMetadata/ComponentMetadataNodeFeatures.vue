@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { NodeFeatureList } from "@knime/components";
+
 import type {
   ComponentPortDescription,
   NodeDialogOptionGroup,
   NodePortDescription,
   NodeViewDescription,
 } from "@/api/gateway-api/generated-api";
-
-import { NodeFeatureList } from "@knime/components";
 import MetadataPortEditor, {
   type PortEditorData,
 } from "@/components/workflowMetadata/MetadataPortEditor.vue";

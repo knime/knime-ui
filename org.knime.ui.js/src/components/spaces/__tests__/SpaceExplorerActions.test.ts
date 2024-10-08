@@ -1,24 +1,24 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import type { Store } from "vuex";
 import { flushPromises, mount } from "@vue/test-utils";
+import type { Store } from "vuex";
 
 import { SubMenu } from "@knime/components";
 
-import { createSpace, createSpaceProvider } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
-import * as spacesStore from "@/store/spaces";
-import type { RootStoreState } from "@/store/types";
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-import SpaceExplorerActions from "../SpaceExplorerActions.vue";
-import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 import {
   StoreActionException,
   displayStoreActionExceptionMessage,
 } from "@/api/gateway-api/exceptions";
 import { ServiceCallException } from "@/api/gateway-api/generated-api";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import * as spacesStore from "@/store/spaces";
+import type { RootStoreState } from "@/store/types";
+import { createSpace, createSpaceProvider } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import SpaceExplorerActions from "../SpaceExplorerActions.vue";
+import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 
 const mockedAPI = deepMocked(API);
 

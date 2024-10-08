@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { API } from "@/api";
+
 import { Button } from "@knime/components";
 
+import { API } from "@/api";
 import InstallAiIllustration from "@/assets/install-ai-illustration.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";

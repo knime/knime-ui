@@ -2,12 +2,12 @@
 import { computed, ref, watch } from "vue";
 
 import {
-  Modal,
   Button,
   InputField,
   Label,
-  useNameValidator,
   LoadingIcon,
+  Modal,
+  useNameValidator,
 } from "@knime/components";
 
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";

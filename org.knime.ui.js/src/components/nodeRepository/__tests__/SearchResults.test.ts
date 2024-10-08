@@ -1,11 +1,11 @@
-import { expect, describe, it, afterEach, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import * as $colors from "@/style/colors";
-import SearchResults from "../SearchResults.vue";
-import ScrollViewContainer from "../ScrollViewContainer.vue";
 import NodeList from "../NodeList.vue";
+import ScrollViewContainer from "../ScrollViewContainer.vue";
+import SearchResults from "../SearchResults.vue";
 
 const ScrollViewContainerMock = {
   template: "<div><slot></slot></div>",

@@ -1,14 +1,13 @@
 import { computed } from "vue";
 
-import type { NodePort } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes, NodePortGroups } from "@/api/custom-types";
-
+import type { NodePort } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
 import {
+  type Direction,
   checkCompatibleConnectionAndPort,
   generateValidPortGroupsForPlaceholderPort,
-  type Direction,
 } from "@/util/compatibleConnections";
-import { useStore } from "@/composables/useStore";
 
 type PlaceholderPort = {
   isPlaceHolderPort: boolean;

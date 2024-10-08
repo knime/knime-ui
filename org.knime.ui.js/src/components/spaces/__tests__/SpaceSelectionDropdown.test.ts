@@ -1,16 +1,16 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
-import { mockVuexStore } from "@/test/utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
+
+import { SpaceProviderNS } from "@/api/custom-types";
+import * as spacesStore from "@/store/spaces";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { SpaceProviderNS } from "@/api/custom-types";
-import * as spacesStore from "@/store/spaces";
-
+import { mockVuexStore } from "@/test/utils";
 import SpaceSelectionDropdown from "../SpaceSelectionDropdown.vue";
 
 const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {

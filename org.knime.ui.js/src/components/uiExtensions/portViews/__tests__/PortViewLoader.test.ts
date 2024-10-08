@@ -1,15 +1,15 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { API } from "@/api";
-import { deepMocked, mockVuexStore } from "@/test/utils";
-
 import { UIExtension } from "@knime/ui-extension-renderer";
+
+import { API } from "@/api";
+import { SelectionEvent } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "@/store/application";
-import PortViewLoader from "../PortViewLoader.vue";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
-import { SelectionEvent } from "@/api/gateway-api/generated-api";
+import PortViewLoader from "../PortViewLoader.vue";
 
 const mockedAPI = deepMocked(API);
 

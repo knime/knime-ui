@@ -1,12 +1,13 @@
 import {
-  expect,
-  describe,
+  afterAll,
   beforeAll,
   beforeEach,
-  afterAll,
+  describe,
+  expect,
   it,
   vi,
 } from "vitest";
+
 import { registerEventHandler, serverEventHandler } from "../server-events";
 
 const origErrorLogger = consola.error;

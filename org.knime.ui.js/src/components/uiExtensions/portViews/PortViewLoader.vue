@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ref, toRef, watch, onUnmounted } from "vue";
+import { onUnmounted, ref, toRef, watch } from "vue";
+
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
-
 import { AlertType } from "@knime/ui-extension-service";
 
 import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
-
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";

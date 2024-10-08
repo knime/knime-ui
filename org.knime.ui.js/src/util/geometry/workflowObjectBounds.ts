@@ -1,5 +1,5 @@
 import type { Workflow } from "@/api/custom-types";
-import type { MetaPorts, Bounds } from "@/api/gateway-api/generated-api";
+import type { Bounds, MetaPorts } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 import { mergePortBarBounds } from "../workflowUtil";
 

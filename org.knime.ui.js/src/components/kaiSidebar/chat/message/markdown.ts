@@ -1,5 +1,5 @@
-import MarkdownIt from "markdown-it";
 import DOMPurify from "dompurify";
+import MarkdownIt from "markdown-it";
 
 const md = new MarkdownIt();
 

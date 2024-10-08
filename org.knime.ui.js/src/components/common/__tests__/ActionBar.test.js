@@ -1,10 +1,9 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
-
-import ActionButton from "../ActionButton.vue";
 import ActionBar from "../ActionBar.vue";
+import ActionButton from "../ActionButton.vue";
 
 describe("ActionBar.vue", () => {
   const doShallowMount = ({ props = {} } = {}) => {

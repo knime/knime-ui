@@ -1,6 +1,8 @@
+import { computed } from "vue";
+
 import type { NodePort } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { computed } from "vue";
+
 import { useNodeInfo } from "./useNodeInfo";
 
 type UsePortAnimationClassesOptions = {

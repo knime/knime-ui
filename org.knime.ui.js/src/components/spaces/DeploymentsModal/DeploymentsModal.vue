@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { defineAsyncComponent, computed } from "vue";
-import { useStore } from "@/composables/useStore";
+import { computed, defineAsyncComponent } from "vue";
 
 import { Modal } from "@knime/components";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
+
+import { useStore } from "@/composables/useStore";
 
 const JobsTable = defineAsyncComponent(() => import("./JobsTable.vue"));
 const SchedulesTable = defineAsyncComponent(

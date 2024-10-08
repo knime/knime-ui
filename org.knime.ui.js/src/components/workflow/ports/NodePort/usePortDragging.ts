@@ -1,19 +1,18 @@
 import { computed, ref } from "vue";
-import { useStore } from "vuex";
 import throttle from "raf-throttle";
+import { useStore } from "vuex";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
 import * as shapes from "@/style/shapes";
-
 import {
-  detectConnectionCircle,
   type Direction,
+  detectConnectionCircle,
 } from "@/util/compatibleConnections";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 
-import { type PortSnapCallback, usePortSnapping } from "./usePortSnapping";
 import type { DragConnector } from "./types";
+import { type PortSnapCallback, usePortSnapping } from "./usePortSnapping";
 
 type Params = {
   direction: Direction;

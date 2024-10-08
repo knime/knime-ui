@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
+
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
-import * as $shapes from "@/style/shapes";
+
 import type { NodeRelation } from "@/api/custom-types";
+import * as $shapes from "@/style/shapes";
 
 type Props = {
   position: [number, number];

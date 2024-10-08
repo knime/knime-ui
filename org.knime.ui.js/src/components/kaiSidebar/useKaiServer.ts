@@ -1,5 +1,7 @@
-import { ref, reactive, computed } from "vue";
+import { computed, reactive, ref } from "vue";
+
 import { sleep } from "@knime/utils";
+
 import { API } from "@/api";
 import type { KaiUiStrings } from "@/api/gateway-api/generated-api";
 

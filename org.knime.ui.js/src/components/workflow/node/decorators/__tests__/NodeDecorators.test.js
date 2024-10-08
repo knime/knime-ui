@@ -1,13 +1,13 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import NodeDecorators from "../NodeDecorators.vue";
 import LinkDecorator from "../LinkDecorator.vue";
-import StreamingDecorator from "../StreamingDecorator.vue";
-import LoopDecorator from "../LoopDecorator.vue";
-import ReexecutionDecorator from "../ReexecutionDecorator.vue";
 import LockDecorator from "../LockDecorator.vue";
+import LoopDecorator from "../LoopDecorator.vue";
+import NodeDecorators from "../NodeDecorators.vue";
+import ReexecutionDecorator from "../ReexecutionDecorator.vue";
+import StreamingDecorator from "../StreamingDecorator.vue";
 
 describe("NodeDecorators.vue", () => {
   const defaultProps = {

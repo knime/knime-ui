@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { mockVuexStore } from "@/test/utils";
-import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
+
 import * as settings from "@/store/settings";
+import { mockVuexStore } from "@/test/utils";
 import HelpMenu from "../HelpMenu.vue";
 
 const doMount = (customHelpMenuEntries = {}) => {

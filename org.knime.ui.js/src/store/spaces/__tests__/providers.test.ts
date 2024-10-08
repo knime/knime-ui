@@ -1,15 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { deepMocked } from "@/test/utils";
-import { API } from "@/api";
-
-import { fetchAllSpaceProvidersResponse, loadStore } from "./loadStore";
 import { flushPromises } from "@vue/test-utils";
+
+import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
+
+import { fetchAllSpaceProvidersResponse, loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
 

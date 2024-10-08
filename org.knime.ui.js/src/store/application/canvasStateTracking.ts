@@ -1,7 +1,9 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import { encodeString } from "@/util/encodeString";
-import type { ApplicationState } from ".";
 import type { RootStoreState } from "../types";
+
+import type { ApplicationState } from ".";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 

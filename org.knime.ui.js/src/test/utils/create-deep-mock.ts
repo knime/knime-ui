@@ -1,4 +1,4 @@
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 
 // utility type to detect a Function
 type FunctionType<T> = T extends (...args: any[]) => any ? T : never;

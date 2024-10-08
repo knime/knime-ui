@@ -1,17 +1,17 @@
-import { useRouter, type Router } from "vue-router";
-import { useStore, type Store } from "vuex";
+import { type Router, useRouter } from "vue-router";
+import { type Store, useStore } from "vuex";
 
-import { useToasts, type ToastService } from "@knime/components";
-import { navigatorUtils, hotkeys, type HotkeysNS } from "@knime/utils";
+import { type ToastService, useToasts } from "@knime/components";
+import { type HotkeysNS, hotkeys, navigatorUtils } from "@knime/utils";
 
 import shortcuts, { type ShortcutsRegistry } from "@/shortcuts";
 import type {
-  ShortcutsService,
   FormattedShortcut,
   Hotkeys,
+  ShortcutsService,
 } from "@/shortcuts/types";
-
 import type { RootStoreState } from "@/store/types";
+
 import type { PluginInitFunction } from "./types";
 
 // Shortcut setup:

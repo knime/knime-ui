@@ -1,11 +1,13 @@
 <script lang="ts">
+import { type PropType, defineComponent } from "vue";
+
 import { Tag } from "@knime/components";
+
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 import NodeList, { type NavReachedEvent } from "./NodeList.vue";
-import { defineComponent, type PropType } from "vue";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 const TAG_LIMIT = 8;
 

@@ -1,24 +1,23 @@
 /* eslint-disable new-cap */
 import {
-  expect,
-  describe,
+  type Mock,
   afterEach,
+  beforeAll,
+  describe,
+  expect,
   it,
   vi,
-  beforeAll,
-  type Mock,
 } from "vitest";
-import { notifyPatch } from "@/util/event-syncer";
-import { deepMocked } from "@/test/utils";
 
 import { API } from "@/api";
-import {
-  ShowToastEvent,
-  type EventHandlers,
-} from "@/api/gateway-api/generated-api";
-import type { DesktopEventHandlers } from "@/api/desktop-api";
 import type { SpaceProviderNS } from "@/api/custom-types";
-
+import type { DesktopEventHandlers } from "@/api/desktop-api";
+import {
+  type EventHandlers,
+  ShowToastEvent,
+} from "@/api/gateway-api/generated-api";
+import { deepMocked } from "@/test/utils";
+import { notifyPatch } from "@/util/event-syncer";
 import eventsPlugin from "../events";
 
 vi.mock("@/util/event-syncer");

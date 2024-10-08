@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
-import { createAvailablePortTypes, createNativeNode } from "@/test/factories";
 import { NodeState, PortType } from "@/api/gateway-api/generated-api";
-
-import NodeViewTabOutput from "../NodeViewTabOutput.vue";
-import NodeViewLoader from "../NodeViewLoader.vue";
+import { createAvailablePortTypes, createNativeNode } from "@/test/factories";
 import { mockVuexStore } from "@/test/utils";
+import NodeViewLoader from "../NodeViewLoader.vue";
+import NodeViewTabOutput from "../NodeViewTabOutput.vue";
 
 describe("NodeViewTabOutput.vue", () => {
   const dummyNode = createNativeNode({

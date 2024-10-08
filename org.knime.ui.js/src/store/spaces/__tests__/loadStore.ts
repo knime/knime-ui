@@ -1,17 +1,15 @@
-import { vi, type Mock } from "vitest";
-
-import type { RootStoreState } from "@/store/types";
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import { createJob, createSchedule } from "@/test/factories";
+import { type Mock, vi } from "vitest";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
-
-import * as spacesStore from "../index";
 import type {
   Project,
   SpaceItemReference,
 } from "@/api/gateway-api/generated-api";
+import type { RootStoreState } from "@/store/types";
+import { createJob, createSchedule } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import * as spacesStore from "../index";
 
 export const fetchWorkflowGroupContentResponse = {
   id: "root",

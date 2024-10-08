@@ -1,10 +1,10 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import TagResults from "../TagResults.vue";
-import ScrollViewContainer from "../ScrollViewContainer.vue";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import NodesGroupedByTags from "../NodesGroupedByTags.vue";
+import ScrollViewContainer from "../ScrollViewContainer.vue";
+import TagResults from "../TagResults.vue";
 
 describe("TagResults", () => {
   let doShallowMount,

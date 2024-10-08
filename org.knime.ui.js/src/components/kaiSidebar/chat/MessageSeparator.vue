@@ -3,6 +3,7 @@ import { computed } from "vue";
 
 import { Pill } from "@knime/components";
 import { formatDateString } from "@knime/utils";
+
 import { isToday, isYesterday } from "./utils";
 
 interface Props {

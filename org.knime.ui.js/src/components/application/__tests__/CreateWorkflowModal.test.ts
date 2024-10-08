@@ -1,15 +1,14 @@
-import { expect, describe, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { Modal, InputField } from "@knime/components";
+import { InputField, Modal } from "@knime/components";
 
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import * as spacesStore from "@/store/spaces";
-
-import CreateWorkflowModal from "../CreateWorkflowModal.vue";
 import { API } from "@/api";
 import { $bus } from "@/plugins/event-bus";
+import * as spacesStore from "@/store/spaces";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import CreateWorkflowModal from "../CreateWorkflowModal.vue";
 
 const busEmitSpy = vi.spyOn($bus, "emit");
 

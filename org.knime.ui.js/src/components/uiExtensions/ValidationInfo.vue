@@ -2,14 +2,14 @@
 import { computed } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
 import * as nodeUtils from "@/util/nodeUtil";
 import { toExtendedPortObject } from "@/util/portDataMapper";
-import { useStore } from "@/composables/useStore";
 
-import type { ValidationError } from "./common/types";
-import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";
 import ExecuteButton from "./ExecuteButton.vue";
+import LegacyPortViewButtons from "./LegacyPortViewButtons.vue";
 import LoadingIndicator from "./LoadingIndicator.vue";
+import type { ValidationError } from "./common/types";
 
 type Props = {
   selectedNode: KnimeNode | null;

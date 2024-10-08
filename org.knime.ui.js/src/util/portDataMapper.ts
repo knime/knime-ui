@@ -1,14 +1,14 @@
 import type {
-  DynamicPortGroupDescription,
-  NativeNodeDescription,
-  NodeTemplate,
-} from "@/api/gateway-api/generated-api";
-import type {
   AvailablePortTypes,
   ComponentNodeDescription,
   ExtendedPortType,
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
+import type {
+  DynamicPortGroupDescription,
+  NativeNodeDescription,
+  NodeTemplate,
+} from "@/api/gateway-api/generated-api";
 
 /**
  * The purpose of these helpers is to map all required information on ports that

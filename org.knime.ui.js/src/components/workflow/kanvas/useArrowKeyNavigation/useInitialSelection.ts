@@ -4,8 +4,8 @@ import { capitalize } from "@knime/utils";
 
 import { useStore } from "@/composables/useStore";
 import {
-  workflowNavigationService,
   type Direction,
+  workflowNavigationService,
 } from "@/util/workflowNavigationService";
 
 export const useInitialSelection = () => {

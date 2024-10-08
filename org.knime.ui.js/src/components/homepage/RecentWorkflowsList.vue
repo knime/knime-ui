@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
 import { formatTimeAgo } from "@vueuse/core";
 import { isEqual } from "lodash-es";
+import { useRouter } from "vue-router";
 
 import { Button, FileExplorer } from "@knime/components";
-import TimeIcon from "@knime/styles/img/icons/time.svg";
-import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
-import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
-import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 import type { FileExplorerItem } from "@knime/components";
+import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
+import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
+import TimeIcon from "@knime/styles/img/icons/time.svg";
+import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 
 import { API } from "@/api";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
-import PageTitle from "./PageTitle.vue";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
 import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
+
+import PageTitle from "./PageTitle.vue";
 
 type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 

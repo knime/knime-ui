@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, watch, toRef, onMounted } from "vue";
+import { computed, onMounted, ref, toRef, watch } from "vue";
 
+import { Button, ValueSwitch } from "@knime/components";
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
-import { ValueSwitch, Button } from "@knime/components";
 
+import type { KnimeNode } from "@/api/custom-types";
 import type {
   PortViewDescriptor,
   PortViewDescriptorMapping,
 } from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/custom-types";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import { useStore } from "@/composables/useStore";
+import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
 type Props = {
   uniquePortKey: string;

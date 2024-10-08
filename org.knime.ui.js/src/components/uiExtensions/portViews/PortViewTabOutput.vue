@@ -4,8 +4,6 @@ import { computed, watch } from "vue";
 import { API } from "@/api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { toExtendedPortObject } from "@/util/portDataMapper";
-
-import type { UIExtensionLoadingState, ValidationError } from "../common/types";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
@@ -14,6 +12,7 @@ import {
   validatePortSelection,
   validatePortSupport,
 } from "../common/output-validator";
+import type { UIExtensionLoadingState, ValidationError } from "../common/types";
 
 import PortViewLoader from "./PortViewLoader.vue";
 import PortViewTabToggles from "./PortViewTabToggles.vue";

@@ -1,15 +1,7 @@
-import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import ScrollViewContainer from "../ScrollViewContainer.vue";
 
-vi.mock("lodash-es", () => ({
-  throttle(func) {
-    return function (...args) {
-      // eslint-disable-next-line no-invalid-this
-      return func.apply(this, args);
-    };
-  },
-}));
+import ScrollViewContainer from "../ScrollViewContainer.vue";
 
 describe("ScrollViewContainer", () => {
   const doShallowMount = (props = { initialPosition: 100 }) =>

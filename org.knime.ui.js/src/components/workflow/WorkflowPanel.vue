@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+
 import { navigatorUtils } from "@knime/utils";
-import { useStore } from "@/composables/useStore";
-import { useFeatures } from "@/plugins/feature-flags";
+
 import ContextMenu from "@/components/application/ContextMenu.vue";
-import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
-import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
+import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
+import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
+import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
+import { useStore } from "@/composables/useStore";
+import { useFeatures } from "@/plugins/feature-flags";
+
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 
 const $features = useFeatures();

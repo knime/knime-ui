@@ -1,7 +1,8 @@
 import { useStore } from "vuex";
 
-import type { PluginInitFunction } from "./types";
 import type { ApplicationState } from "@/store/application";
+
+import type { PluginInitFunction } from "./types";
 
 export type Features = {
   shouldDisplayEmbeddedDialogs: () => boolean;

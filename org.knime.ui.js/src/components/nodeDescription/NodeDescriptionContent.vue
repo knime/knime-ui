@@ -3,14 +3,12 @@ import { computed } from "vue";
 
 import { Description } from "@knime/components";
 
+import { TypedText } from "@/api/gateway-api/generated-api";
 import MetadataDescription from "@/components/workflowMetadata/MetadataDescription.vue";
-
 import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
 } from "@/util/portDataMapper";
-
-import { TypedText } from "@/api/gateway-api/generated-api";
 
 type Props = {
   descriptionData:

@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import NodeNameEditor from "./NodeNameEditor.vue";
 import NodeNameText from "./NodeNameText.vue";

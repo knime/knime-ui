@@ -1,16 +1,16 @@
-import { computed, onMounted, type Ref } from "vue";
+import { type Ref, computed, onMounted } from "vue";
 import { useEventListener } from "@vueuse/core";
 
 import { capitalize } from "@knime/utils";
-import type { WorkflowObject } from "@/api/custom-types";
 
-import { useStore } from "@/composables/useStore";
-import {
-  workflowNavigationService,
-  type Direction,
-} from "@/util/workflowNavigationService";
-import { isInputElement } from "@/util/isInputElement";
+import type { WorkflowObject } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { useStore } from "@/composables/useStore";
+import { isInputElement } from "@/util/isInputElement";
+import {
+  type Direction,
+  workflowNavigationService,
+} from "@/util/workflowNavigationService";
 
 const getFurthestObjectByDirection = (
   selectedObjects: Array<WorkflowObject>,

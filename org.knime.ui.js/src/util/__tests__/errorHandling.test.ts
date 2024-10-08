@@ -1,15 +1,16 @@
 import {
+  type Mock,
   afterAll,
   beforeEach,
   describe,
   expect,
   it,
   vi,
-  type Mock,
 } from "vitest";
-import { copyReportToClipboard } from "../errorHandling";
 import { version } from "vue";
+
 import { UnknownGatewayException } from "@/api/gateway-api/generated-api";
+import { copyReportToClipboard } from "../errorHandling";
 
 describe("errorHandling", () => {
   describe("copyReportToClipboard", () => {

@@ -1,4 +1,4 @@
-import { watch, onMounted, onBeforeUnmount, ref, type ComputedRef } from "vue";
+import { type ComputedRef, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useStore } from "vuex";
 
 export const entryDelay = 750;

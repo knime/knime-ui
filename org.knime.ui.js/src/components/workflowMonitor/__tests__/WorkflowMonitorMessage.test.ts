@@ -1,11 +1,13 @@
-import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
-import WorkflowMonitorMessage from "../WorkflowMonitorMessage.vue";
+import { mount } from "@vue/test-utils";
+
+import { FunctionButton, NodePreview } from "@knime/components";
+
 import {
   createNodeTemplateWithExtendedPorts,
   createWorkflowMonitorMessage,
 } from "@/test/factories";
-import { NodePreview, FunctionButton } from "@knime/components";
+import WorkflowMonitorMessage from "../WorkflowMonitorMessage.vue";
 
 describe("WorkflowMonitorMessage.vue", () => {
   type ComponentProps = InstanceType<typeof WorkflowMonitorMessage>["$props"];

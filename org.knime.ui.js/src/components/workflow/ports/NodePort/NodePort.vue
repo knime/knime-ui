@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import { inject, computed } from "vue";
+import { computed, inject } from "vue";
+import { onClickOutside } from "@vueuse/core";
 import { useStore } from "vuex";
 
-import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
-import { useTooltip, type TooltipDefinition } from "@/composables/useTooltip";
+import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
+import Port from "@/components/common/Port.vue";
+import { type TooltipDefinition, useTooltip } from "@/composables/useTooltip";
 import * as $shapes from "@/style/shapes";
-
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
-import Port from "@/components/common/Port.vue";
 import NodePortActions from "./NodePortActions.vue";
 import NodePortActiveConnector from "./NodePortActiveConnector.vue";
-
 import { usePortDragging } from "./usePortDragging";
-import { onClickOutside } from "@vueuse/core";
 
 interface Props {
   direction: "in" | "out";

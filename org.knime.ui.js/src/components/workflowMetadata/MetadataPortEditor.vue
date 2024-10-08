@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Label, TextArea, InputField } from "@knime/components";
+import { InputField, Label, TextArea } from "@knime/components";
+
 import type {
   NodePortDescription,
   PortType,

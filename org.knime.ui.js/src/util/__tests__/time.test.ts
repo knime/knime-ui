@@ -1,5 +1,6 @@
-import { expect, describe, it } from "vitest";
-import { formatTime, addLeadingZero } from "@/util/time";
+import { describe, expect, it } from "vitest";
+
+import { addLeadingZero, formatTime } from "@/util/time";
 
 describe("time", () => {
   it("correctly formats time from milliseconds", () => {

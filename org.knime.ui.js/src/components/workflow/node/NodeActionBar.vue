@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import ExecuteIcon from "@/assets/execute.svg";
-import ResumeIcon from "@/assets/resume-execution.svg";
-import ResetIcon from "@/assets/reset-all.svg";
-import CancelIcon from "@/assets/cancel.svg";
-import PauseIcon from "@/assets/pause-execution.svg";
-import StepIcon from "@/assets/step-execution.svg";
-import OpenViewIcon from "@/assets/open-view.svg";
-import OpenDialogIcon from "@/assets/configure-node.svg";
 
-import ActionBar from "@/components/common/ActionBar.vue";
 import type { Node } from "@/api/gateway-api/generated-api";
+import CancelIcon from "@/assets/cancel.svg";
+import OpenDialogIcon from "@/assets/configure-node.svg";
+import ExecuteIcon from "@/assets/execute.svg";
+import OpenViewIcon from "@/assets/open-view.svg";
+import PauseIcon from "@/assets/pause-execution.svg";
+import ResetIcon from "@/assets/reset-all.svg";
+import ResumeIcon from "@/assets/resume-execution.svg";
+import StepIcon from "@/assets/step-execution.svg";
+import ActionBar from "@/components/common/ActionBar.vue";
+import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
-import { useStore } from "@/composables/useStore";
 
 /**
  *  Displays a bar of action buttons above nodes

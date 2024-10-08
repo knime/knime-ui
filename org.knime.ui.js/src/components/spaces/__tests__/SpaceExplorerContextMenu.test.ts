@@ -1,12 +1,13 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
-import { createSpace, createSpaceProvider } from "@/test/factories";
 import { MenuItems } from "@knime/components";
-import * as spacesStore from "@/store/spaces";
+
 import { SpaceProviderNS } from "@/api/custom-types";
+import * as spacesStore from "@/store/spaces";
+import { createSpace, createSpaceProvider } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
 import SpaceSelectionContextMenu from "../SpaceExplorerContextMenu.vue";
 
 const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {

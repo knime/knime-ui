@@ -1,20 +1,20 @@
-import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
-import { mockVuexStore } from "@/test/utils";
+import { mount } from "@vue/test-utils";
 
-import * as workflowStore from "@/store/workflow";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-import { createWorkflow } from "@/test/factories";
 import type { Workflow } from "@/api/custom-types";
-import WorkflowInfoBar from "../WorkflowInfoBar.vue";
 import {
   SpaceItemReference,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
-import StreamingInfo from "../StreamingInfo.vue";
-import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
+import * as applicationStore from "@/store/application";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
+import { createWorkflow } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
 import { setEnvironment } from "@/test/utils/setEnvironment";
+import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
+import StreamingInfo from "../StreamingInfo.vue";
+import WorkflowInfoBar from "../WorkflowInfoBar.vue";
 
 describe("WorkflowInfoBar.vue", () => {
   const doMount = ({

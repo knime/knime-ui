@@ -1,11 +1,11 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-
+import type { XY } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
+
 import type { WorkflowState } from "./index";
 import { getProjectAndWorkflowIds } from "./util";
-import type { XY } from "@/api/gateway-api/generated-api";
 
 type ConnectionID = string;
 type BendpointIndex = number;

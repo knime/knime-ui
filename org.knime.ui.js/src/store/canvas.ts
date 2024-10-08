@@ -5,9 +5,10 @@
 import { nextTick } from "vue";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import type { RootStoreState } from "./types";
-import type { XY } from "@/api/gateway-api/generated-api";
 import type { WorkflowObject } from "@/api/custom-types";
+import type { XY } from "@/api/gateway-api/generated-api";
+
+import type { RootStoreState } from "./types";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;

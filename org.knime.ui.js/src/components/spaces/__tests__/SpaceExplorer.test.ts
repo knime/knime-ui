@@ -1,26 +1,24 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { flushPromises, mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
-
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import * as spacesStore from "@/store/spaces";
 
 import {
   Breadcrumb,
+  FileExplorer,
   Modal,
   NodePreview,
-  FileExplorer,
 } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
 
 import { API } from "@/api";
+import { type Project, SpaceItem } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
-
-import SpaceExplorer from "../SpaceExplorer.vue";
-import { SpaceItem, type Project } from "@/api/gateway-api/generated-api";
+import * as spacesStore from "@/store/spaces";
 import { createProject, createSpaceProvider } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import SpaceExplorer from "../SpaceExplorer.vue";
 
 const mockedAPI = deepMocked(API);
 

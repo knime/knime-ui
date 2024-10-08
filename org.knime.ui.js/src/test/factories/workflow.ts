@@ -2,11 +2,14 @@ import { merge } from "lodash-es";
 
 import type { KnimeNode, Workflow } from "@/api/custom-types";
 import {
-  NativeNodeInvariants,
-  WorkflowInfo,
   MetaNodePort,
+  NativeNodeInvariants,
   TypedText,
+  WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
+import type { DeepPartial } from "../utils";
+
+import { createWorkflowAnnotation } from "./annotations";
 import { connectMultipleNodes } from "./connections";
 import {
   createComponentNode,
@@ -15,9 +18,7 @@ import {
   isNativeNode,
 } from "./nodes";
 import { createMetanodePort, createPort } from "./ports";
-import type { DeepPartial } from "../utils";
 import { arrayToDictionary } from "./util";
-import { createWorkflowAnnotation } from "./annotations";
 
 const createAndConnectNodes = () => {
   const node1 = createNativeNode({

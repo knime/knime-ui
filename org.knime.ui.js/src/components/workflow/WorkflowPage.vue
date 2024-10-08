@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useStore } from "@/composables/useStore";
 
+import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import Sidebar from "@/components/sidebar/Sidebar.vue";
-import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
-import TooltipContainer from "@/components/application/TooltipContainer.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
+import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
 import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
+import { useStore } from "@/composables/useStore";
 
 /**
  * Component that acts as a router page to render the workflow

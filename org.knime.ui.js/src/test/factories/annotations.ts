@@ -2,12 +2,13 @@ import { merge } from "lodash-es";
 
 import {
   Annotation,
-  TypedText,
   type NodeAnnotation,
+  TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
 import { annotationColorPresets } from "@/style/colors";
 import type { DeepPartial } from "../utils";
+
 import { createBounds } from "./common";
 
 const createAnnotation = (data: DeepPartial<Annotation> = {}): Annotation => {

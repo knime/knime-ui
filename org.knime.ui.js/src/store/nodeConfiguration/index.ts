@@ -1,22 +1,22 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
-import {
-  ApplyState,
-  type APILayerDirtyState,
-  ViewState,
-  UIExtensionPushEvents,
-} from "@knime/ui-extension-service";
+
 import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer";
+import {
+  type APILayerDirtyState,
+  ApplyState,
+  UIExtensionPushEvents,
+  ViewState,
+} from "@knime/ui-extension-service";
 
 import { API } from "@/api";
-import { NodeState, type NativeNode } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
+import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { runInEnvironment } from "@/environment";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { isNativeNode, isNodeExecuting } from "@/util/nodeUtil";
-import { runInEnvironment } from "@/environment";
-
 import type { RootStoreState } from "../types";
-import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 
 export type UIExtensionPushEventDispatcher = Parameters<
   UIExtensionAPILayer["registerPushEventService"]

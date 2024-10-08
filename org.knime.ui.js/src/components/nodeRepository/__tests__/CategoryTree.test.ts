@@ -1,12 +1,13 @@
-import { expect, describe, it, vi, type Mock } from "vitest";
+import { type Mock, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 
+import { Tree } from "@knime/virtual-tree";
+
+import type { NodeCategoryWithExtendedPorts } from "@/api/custom-types";
+import type { NodeCategory } from "@/api/gateway-api/generated-api";
 import { mockVuexStore } from "@/test/utils";
 import CategoryTree from "../CategoryTree.vue";
-import type { NodeCategory } from "@/api/gateway-api/generated-api";
-import { Tree } from "@knime/virtual-tree";
 import { useAddNodeToWorkflow } from "../useAddNodeToWorkflow";
-import type { NodeCategoryWithExtendedPorts } from "@/api/custom-types";
 
 vi.mock("@/components/nodeRepository/useAddNodeToWorkflow", () => {
   return { useAddNodeToWorkflow: vi.fn(vi.fn) };

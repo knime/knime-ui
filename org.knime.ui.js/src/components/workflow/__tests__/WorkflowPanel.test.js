@@ -1,23 +1,20 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import { createWorkflow } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import ContextMenu from "@/components/application/ContextMenu.vue";
+import RightPanel from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
+import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
+import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
+import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import { createShortcutsService } from "@/plugins/shortcuts";
-
-import * as workflowStore from "@/store/workflow";
-import * as selectionStore from "@/store/selection";
 import * as applicationStore from "@/store/application";
+import * as selectionStore from "@/store/selection";
 import * as settingsStore from "@/store/settings";
 import * as uiControlsStore from "@/store/uiControls";
-
-import ContextMenu from "@/components/application/ContextMenu.vue";
-import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
-import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
-import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import RightPanel from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
-
+import * as workflowStore from "@/store/workflow";
+import { createWorkflow } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import WorkflowPanel from "../WorkflowPanel.vue";
 
 describe("WorkflowPanel", () => {

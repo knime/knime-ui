@@ -1,7 +1,7 @@
-import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
+import { mount } from "@vue/test-utils";
 
-import { TagList, ComboBox } from "@knime/components";
+import { ComboBox, TagList } from "@knime/components";
 
 import MetadataTags from "../MetadataTags.vue";
 

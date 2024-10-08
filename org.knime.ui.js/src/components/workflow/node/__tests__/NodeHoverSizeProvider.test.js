@@ -1,8 +1,7 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
-
 import NodeHoverSizeProvider from "../NodeHoverSizeProvider.vue";
 
 describe("NodeHoverSizeProvider", () => {

@@ -1,13 +1,14 @@
-import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { FileExplorer } from "@knime/components";
-import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
+
 import { API } from "@/api";
-import * as spacesStore from "@/store/spaces";
 import type { RecentWorkflow } from "@/api/custom-types";
-import { createSpaceProvider } from "@/test/factories";
 import { getToastsProvider } from "@/plugins/toasts";
+import * as spacesStore from "@/store/spaces";
+import { createSpaceProvider } from "@/test/factories";
+import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
 import RecentWorkflowsList from "../RecentWorkflowsList.vue";
 
 const routerPush = vi.fn();

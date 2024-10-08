@@ -1,18 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mockVuexStore } from "@/test/utils";
 import { flushPromises } from "@vue/test-utils";
+
 import { ApplyState, ViewState } from "@knime/ui-extension-service";
 
-import { createNativeNode, createWorkflow } from "@/test/factories";
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
-import { runInEnvironment } from "@/environment";
-
-import * as workflowStore from "../../workflow";
-import * as selectionStore from "../../selection";
-import * as applicationStore from "../../application";
-import * as uiControlsStore from "../../uiControls";
-import * as nodeConfigurationStore from "../index";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { runInEnvironment } from "@/environment";
+import { createNativeNode, createWorkflow } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
+import * as applicationStore from "../../application";
+import * as selectionStore from "../../selection";
+import * as uiControlsStore from "../../uiControls";
+import * as workflowStore from "../../workflow";
+import * as nodeConfigurationStore from "../index";
 
 vi.mock("@/environment");
 

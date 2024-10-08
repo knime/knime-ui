@@ -1,9 +1,10 @@
-import { SubMenu } from "@knime/components";
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
+import { SubMenu } from "@knime/components";
+
 import OptionalSubMenuActionButton from "../OptionalSubMenuActionButton.vue";
-import { nextTick } from "vue";
 
 describe("OptionalSubMenuActionButton.vue", () => {
   const doMount = ({ props = {} } = {}) => {

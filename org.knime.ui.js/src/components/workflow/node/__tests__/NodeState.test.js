@@ -1,14 +1,12 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
-
 import { muteConsole } from "@knime/utils/test-utils";
 
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
 import NodeState from "../NodeState.vue";
 
 describe("NodeState.vue", () => {

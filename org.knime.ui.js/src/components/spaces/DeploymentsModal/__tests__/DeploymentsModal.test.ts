@@ -1,14 +1,14 @@
-import { expect, describe, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-import { deepMocked, mockVuexStore } from "@/test/utils";
 
 import { Modal } from "@knime/components";
 
 import { API } from "@/api";
 import * as spacesStore from "@/store/spaces";
-import DeploymentsModal from "../DeploymentsModal.vue";
 import { createJob, createSchedule } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import DeploymentsModal from "../DeploymentsModal.vue";
 
 const mockedAPI = deepMocked(API);
 

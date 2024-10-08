@@ -1,22 +1,21 @@
 import { createApp } from "vue";
-import KnimeUI from "./components/KnimeUI.vue";
 
-import { initJSONRPCClient, type ConnectionInfo } from "./api/json-rpc-client";
-import { setupLogger } from "./plugins/logger";
-import { store } from "./store";
-import { router } from "./router/router";
-import { initPlugins } from "./plugins";
+import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
+import KnimeUI from "./components/KnimeUI.vue";
+import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
 import {
   environment,
   initGlobalEnvProperty,
   isDesktop,
   runInEnvironment,
 } from "./environment";
+import { initPlugins } from "./plugins";
+import { setupLogger } from "./plugins/logger";
+import { getToastsProvider } from "./plugins/toasts";
+import { router } from "./router/router";
+import { store } from "./store";
 
 import "./assets/index.css";
-
-import { getToastsProvider } from "./plugins/toasts";
-import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
 
 // Setup logger for production
 setupLogger();

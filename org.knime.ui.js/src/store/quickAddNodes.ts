@@ -1,12 +1,12 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-
-import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
 import type {
-  NodeTemplateWithExtendedPorts,
   NodeRelation,
+  NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
+import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
+
 import * as nodeSearch from "./common/nodeSearch";
 import type { RootStoreState } from "./types";
 

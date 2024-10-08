@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { computed } from "vue";
-import { useStore } from "@/composables/useStore";
+
 import { useEscapeStack } from "@/composables/useEscapeStack";
+import { useStore } from "@/composables/useStore";
 
 const store = useStore();
 const isExtensionPanelOpen = computed(

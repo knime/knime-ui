@@ -1,24 +1,24 @@
+import type { Router } from "vue-router";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-import { APP_ROUTES } from "@/router/appRoutes";
-import ITEM_TYPES from "@/util/spaceItemTypes";
+import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
+import { StoreActionException } from "@/api/gateway-api/exceptions";
 import {
   ServiceCallException,
   SpaceGroup,
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
+import { $bus } from "@/plugins/event-bus";
 import { getToastsProvider } from "@/plugins/toasts";
+import { APP_ROUTES } from "@/router/appRoutes";
+import ITEM_TYPES from "@/util/spaceItemTypes";
 import type { RootStoreState } from "../types";
-import { globalSpaceBrowserProjectId } from "./common";
 
+import { globalSpaceBrowserProjectId } from "./common";
 import type { SpacesState } from "./index";
 import { isProjectOpen } from "./util";
-import type { Router } from "vue-router";
-import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
-import { $bus } from "@/plugins/event-bus";
-import { StoreActionException } from "@/api/gateway-api/exceptions";
 
 const $toast = getToastsProvider();
 

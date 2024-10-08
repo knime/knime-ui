@@ -1,12 +1,10 @@
-import { expect, describe, beforeEach, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-
 import * as $shapes from "@/style/shapes";
-
-import MetaNodePortBars from "../MetaNodePortBars.vue";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import MetaNodePortBar from "../MetaNodePortBar.vue";
+import MetaNodePortBars from "../MetaNodePortBars.vue";
 
 describe("MetaNodePortBars.vue", () => {
   let props, doShallowMount, wrapper, $store, activeWorkflow;

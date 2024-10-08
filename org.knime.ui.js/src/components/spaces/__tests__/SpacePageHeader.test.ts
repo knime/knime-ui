@@ -1,13 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { mount } from "@vue/test-utils";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
-
-import { mockVuexStore } from "@/test/utils";
+import { mount } from "@vue/test-utils";
 
 import { Breadcrumb, FunctionButton } from "@knime/components";
 
 import * as spacesStore from "@/store/spaces";
-
+import { mockVuexStore } from "@/test/utils";
 import SpacePageHeader from "../SpacePageHeader.vue";
 
 describe("SpacePageHeader.vue", () => {

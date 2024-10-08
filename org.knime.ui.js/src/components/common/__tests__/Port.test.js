@@ -1,12 +1,12 @@
-import { expect, describe, beforeEach, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
 import { PortIcon } from "@knime/components";
-import Port from "../Port.vue";
 
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import Port from "../Port.vue";
 
 describe("Port", () => {
   let wrapper, props, storeConfig, doShallowMount, $store;

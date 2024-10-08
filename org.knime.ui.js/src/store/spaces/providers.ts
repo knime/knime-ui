@@ -1,12 +1,12 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { SpaceProviderNS } from "@/api/custom-types";
-
+import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "../types";
-import type { SpacesState } from "./index";
+
 import { localRootProjectPath } from "./caching";
+import type { SpacesState } from "./index";
 import { findSpaceById } from "./util";
 
 export interface State {

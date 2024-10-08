@@ -2,26 +2,25 @@
 import { computed, ref } from "vue";
 
 import {
+  type BreadcrumbItem,
   FunctionButton,
+  type MenuItem,
   SearchInput,
   SubMenu,
-  type BreadcrumbItem,
-  type MenuItem,
 } from "@knime/components";
-import FilterIcon from "@knime/styles/img/icons/filter.svg";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
-import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
+import FilterIcon from "@knime/styles/img/icons/filter.svg";
 import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
-
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
 import { API } from "@/api";
-import { useStore } from "@/composables/useStore";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-import CloseableTagList from "./CloseableTagList.vue";
-
+import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
+import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+
+import CloseableTagList from "./CloseableTagList.vue";
 
 const store = useStore();
 

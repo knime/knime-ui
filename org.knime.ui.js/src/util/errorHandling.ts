@@ -1,9 +1,9 @@
 import { version } from "vue";
-
 import { merge } from "lodash-es";
 
-import { getToastsProvider } from "@/plugins/toasts";
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
+
+import { getToastsProvider } from "@/plugins/toasts";
 
 type ProblemDetails = {
   title: string;

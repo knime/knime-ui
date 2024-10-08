@@ -1,15 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { deepMocked } from "@/test/utils";
-import { API } from "@/api";
 
-import { loadStore } from "./loadStore";
+import { API } from "@/api";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import { APP_ROUTES } from "@/router/appRoutes";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { APP_ROUTES } from "@/router/appRoutes";
+import { deepMocked } from "@/test/utils";
+
+import { loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
 

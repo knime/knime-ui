@@ -1,11 +1,12 @@
 import { computed } from "vue";
 
+import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import type { Feedback, Message } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
 import { useKaiServer } from "../useKaiServer";
+
 import { isSameDay } from "./utils";
-import { KaiMessage } from "@/api/gateway-api/generated-api";
 
 class MessageSeparator {
   timestamp: number;

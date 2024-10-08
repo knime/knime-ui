@@ -1,5 +1,6 @@
 <script>
 import { nextTick } from "vue";
+
 import NodeNameText from "./NodeNameText.vue";
 
 /**

@@ -1,5 +1,7 @@
-import { computed, type Ref } from "vue";
+import { type Ref, computed } from "vue";
+
 import { useStore } from "@/composables/useStore";
+
 import type { ExtensionConfig } from "./types";
 
 type UseResourceLocationOptions = {

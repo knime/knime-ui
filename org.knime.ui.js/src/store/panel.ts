@@ -3,6 +3,7 @@
  */
 
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import type { RootStoreState } from "./types";
 
 export const TABS = {

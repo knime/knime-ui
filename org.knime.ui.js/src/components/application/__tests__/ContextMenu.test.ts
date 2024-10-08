@@ -1,9 +1,27 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, vi } from "vitest";
-import { shallowMount, VueWrapper } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { VueWrapper, shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { MenuItems } from "@knime/components";
+
+import type { KnimeNode } from "@/api/custom-types";
+import {
+  MetaNodePort,
+  NodeState,
+  PortType,
+  TemplateLink,
+} from "@/api/gateway-api/generated-api";
+import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
+import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import { createShortcutsService } from "@/plugins/shortcuts";
+import type { ShortcutName } from "@/shortcuts";
+import * as applicationStore from "@/store/application";
+import * as canvasStore from "@/store/canvas";
+import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
+import * as $shapes from "@/style/shapes";
 import {
   createAvailablePortTypes,
   createComponentNode,
@@ -13,26 +31,7 @@ import {
   createPort,
   createWorkflow,
 } from "@/test/factories";
-import { MenuItems } from "@knime/components";
-import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
-import {
-  MetaNodePort,
-  NodeState,
-  PortType,
-  TemplateLink,
-} from "@/api/gateway-api/generated-api";
-import type { KnimeNode } from "@/api/custom-types";
-
-import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import type { ShortcutName } from "@/shortcuts";
-import { createShortcutsService } from "@/plugins/shortcuts";
-import * as workflowStore from "@/store/workflow";
-import * as selectionStore from "@/store/selection";
-import * as applicationStore from "@/store/application";
-import * as canvasStore from "@/store/canvas";
-import * as uiControlsStore from "@/store/uiControls";
-import * as $shapes from "@/style/shapes";
-
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import ContextMenu from "../ContextMenu.vue";
 
 describe("ContextMenu.vue", () => {

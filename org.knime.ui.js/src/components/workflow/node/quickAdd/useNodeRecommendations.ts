@@ -1,6 +1,7 @@
-import { computed, watch, type Ref } from "vue";
-import { useStore } from "@/composables/useStore";
+import { type Ref, computed, watch } from "vue";
+
 import type { NodeRelation } from "@/api/custom-types";
+import { useStore } from "@/composables/useStore";
 
 export const useNodeRecommendations = (
   nodeId: Ref<string | null>,

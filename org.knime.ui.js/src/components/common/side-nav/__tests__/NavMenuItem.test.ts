@@ -1,7 +1,8 @@
-import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
-import NavMenuItem from "../NavMenuItem.vue";
+import { mount } from "@vue/test-utils";
+
 import type { NavMenuItemProps } from "..";
+import NavMenuItem from "../NavMenuItem.vue";
 
 describe("NavMenuItem.vue", () => {
   const defaultProps: NavMenuItemProps = {

@@ -18,7 +18,6 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"]
-      // "@/api": ["./src/api/index"]
     },
     "composite": true
   }

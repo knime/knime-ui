@@ -5,10 +5,10 @@ import { Button } from "@knime/components";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
-import { isNodeMetaNode } from "@/util/nodeUtil";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
+import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
+import { isNodeMetaNode } from "@/util/nodeUtil";
 
 const store = useStore();
 

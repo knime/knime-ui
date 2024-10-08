@@ -1,13 +1,14 @@
-import type { UnionToShortcutRegistry } from "../types";
-import RedoIcon from "@knime/styles/img/icons/redo.svg";
-import UndoIcon from "@knime/styles/img/icons/undo.svg";
-import DeleteIcon from "@/assets/delete.svg";
-import SaveIcon from "@knime/styles/img/icons/save.svg";
-import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
 import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
-import { isUIExtensionFocused } from "@/components/uiExtensions";
+import RedoIcon from "@knime/styles/img/icons/redo.svg";
+import SaveAsIcon from "@knime/styles/img/icons/save-as.svg";
+import SaveIcon from "@knime/styles/img/icons/save.svg";
+import UndoIcon from "@knime/styles/img/icons/undo.svg";
+
 import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
+import DeleteIcon from "@/assets/delete.svg";
+import { isUIExtensionFocused } from "@/components/uiExtensions";
+import type { UnionToShortcutRegistry } from "../types";
 
 type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<
   | "save"

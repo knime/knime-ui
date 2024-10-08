@@ -1,22 +1,21 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useStore } from "vuex";
 import { groupBy } from "lodash-es";
+import { useStore } from "vuex";
 
 import { Modal, SearchInput } from "@knime/components";
-import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
-import { hotkeys, type HotkeysNS } from "@knime/utils";
+import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
+import { type HotkeysNS, hotkeys } from "@knime/utils";
 
+import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
 import shortcuts from "@/shortcuts";
+import otherHotkeys from "@/shortcuts/otherHotkeys";
 import type {
   FormattedShortcut,
   Shortcut,
   ShortcutGroups,
 } from "@/shortcuts/types";
-import KeyboardShortcut from "@/components/common/KeyboardShortcut.vue";
-
-import otherHotkeys from "@/shortcuts/otherHotkeys";
 import { matchesQuery } from "@/util/matchesQuery";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";

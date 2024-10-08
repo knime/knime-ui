@@ -1,9 +1,10 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 /* eslint-disable max-nested-callbacks */
 import shortcuts, { conditionGroup } from "..";
-import workflowShortcutsMock from "../workflowShortcuts";
 import canvasShortcutsMock from "../canvasShortcuts";
 import { selectionShortcuts as selectionShortcutsMocks } from "../miscShortcuts";
+import workflowShortcutsMock from "../workflowShortcuts";
 
 vi.mock("@/shortcuts/workflowShortcuts", () => ({
   __esModule: true,

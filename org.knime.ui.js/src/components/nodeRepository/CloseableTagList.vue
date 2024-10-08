@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import ClosePopoverIcon from "@knime/styles/img/icons/arrow-prev.svg";
-import { TagList } from "@knime/components";
 import { computed, ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
+
+import { TagList } from "@knime/components";
+import ClosePopoverIcon from "@knime/styles/img/icons/arrow-prev.svg";
 
 const maxLengthOfTagInChars = 31;
 const maxLinesOfTags = 1;

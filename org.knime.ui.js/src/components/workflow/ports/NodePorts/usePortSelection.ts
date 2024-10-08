@@ -1,7 +1,9 @@
 import { computed, watch } from "vue";
+
+import type { NativeNode, NodePort } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import type { SelectedPortIdentifier } from "@/util/portSelection";
-import type { NativeNode, NodePort } from "@/api/gateway-api/generated-api";
+
 import { useNodeInfo } from "./useNodeInfo";
 
 type UsePortSelectionOptions = {

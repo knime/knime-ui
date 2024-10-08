@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import IconBase64UploadButton from "@/components/common/IconBase64UploadButton.vue";
-import { Label, FunctionButton } from "@knime/components";
+import { FunctionButton, Label } from "@knime/components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
+
+import IconBase64UploadButton from "@/components/common/IconBase64UploadButton.vue";
 
 interface Props {
   modelValue: string | null;

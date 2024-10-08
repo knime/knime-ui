@@ -1,5 +1,6 @@
-import { SelectionEvent } from "@/api/gateway-api/generated-api";
 import { UIExtensionPushEvents } from "@knime/ui-extension-service";
+
+import { SelectionEvent } from "@/api/gateway-api/generated-api";
 
 type SelectionEventListener = (
   event: UIExtensionPushEvents.PushEvent<

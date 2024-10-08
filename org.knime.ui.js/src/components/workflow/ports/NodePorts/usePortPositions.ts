@@ -1,7 +1,9 @@
-import { computed, type ComputedRef } from "vue";
-import * as portPositionUtils from "@/util/portShift";
-import { useNodeInfo } from "./useNodeInfo";
+import { type ComputedRef, computed } from "vue";
+
 import type { KnimeNode } from "@/api/custom-types";
+import * as portPositionUtils from "@/util/portShift";
+
+import { useNodeInfo } from "./useNodeInfo";
 
 type PortPositions = {
   in: Array<[number, number]>;

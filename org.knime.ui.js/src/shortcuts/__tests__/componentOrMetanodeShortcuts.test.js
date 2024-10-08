@@ -1,7 +1,8 @@
-import { expect, describe, it, vi } from "vitest";
-import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
+import { describe, expect, it, vi } from "vitest";
+
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as uiControlsStore from "@/store/uiControls";
+import componentOrMetanodeShortcuts from "../componentOrMetanodeShortcuts";
 
 const capitalize = (str) => str.charAt(0).toUpperCase().concat(str.slice(1));
 

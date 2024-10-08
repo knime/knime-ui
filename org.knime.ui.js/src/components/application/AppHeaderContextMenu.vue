@@ -2,13 +2,13 @@
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
-import { MenuItems, type MenuItem } from "@knime/components";
+import { type MenuItem, MenuItems } from "@knime/components";
 
 import type { SpaceItemReference, XY } from "@/api/gateway-api/generated-api";
-import { getToastsProvider } from "@/plugins/toasts";
 import { useStore } from "@/composables/useStore";
-import { TABS } from "@/store/panel";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { TABS } from "@/store/panel";
 import { findSpaceGroupFromSpaceId } from "@/store/spaces/util";
 
 type Props = {

@@ -5,9 +5,9 @@ import type {
   AvailablePortTypes,
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
-import type { RootStoreState } from "../types";
-import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
+import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
+import type { RootStoreState } from "../types";
 
 const uniqueStrings = (input: string[]) => [...new Set(input)];
 

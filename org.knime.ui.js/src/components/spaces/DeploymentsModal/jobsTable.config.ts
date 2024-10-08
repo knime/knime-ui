@@ -1,8 +1,10 @@
+import type { Store } from "vuex";
+
 import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "@knime/utils";
-import { formatTime } from "@/util/time";
-import type { Store } from "vuex";
+
 import type { RootStoreState } from "@/store/types";
+import { formatTime } from "@/util/time";
 
 export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 

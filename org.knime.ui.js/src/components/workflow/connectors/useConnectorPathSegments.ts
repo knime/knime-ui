@@ -1,9 +1,11 @@
+import { type Ref, computed } from "vue";
+
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { useStore } from "@/composables/useStore";
-import { computed, type Ref } from "vue";
-import type { PathSegment } from "./types";
 import { getBendpointId } from "@/util/connectorUtil";
+
+import type { PathSegment } from "./types";
 
 type UseConnectorPathSegmentsOptions = {
   id: string;

@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { deepMocked } from "@/test/utils";
 
 import { API } from "@/api";
-
 import {
   ReorderWorkflowAnnotationsCommand,
   TypedText,
 } from "@/api/gateway-api/generated-api";
-
 import * as $colors from "@/style/colors";
+import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
 

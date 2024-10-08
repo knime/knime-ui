@@ -1,14 +1,14 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
-import { mockUserAgent } from "jest-useragent-mock";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { flushPromises, shallowMount } from "@vue/test-utils";
+import { mockUserAgent } from "jest-useragent-mock";
+import { useRoute } from "vue-router";
 
-import { mockVuexStore } from "@/test/utils";
 import { $bus } from "@/plugins/event-bus";
 import * as uiControlsStore from "@/store/uiControls";
-import { useRoute } from "vue-router";
-import ErrorOverlay from "../application/ErrorOverlay.vue";
-import { nextTick } from "vue";
+import { mockVuexStore } from "@/test/utils";
 import { setEnvironment } from "@/test/utils/setEnvironment";
+import ErrorOverlay from "../application/ErrorOverlay.vue";
 
 vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();

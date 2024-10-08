@@ -1,7 +1,8 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
+
 import ActionBreadcrumb from "../ActionBreadcrumb.vue";
 
 describe("ActionBreadcrumb.vue", () => {

@@ -1,26 +1,25 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { FunctionButton, LoadingIcon } from "@knime/components";
 import LeaveIcon from "@knime/styles/img/icons/leave.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceGroup } from "@/api/gateway-api/generated-api";
-import { APP_ROUTES } from "@/router/appRoutes";
-import { useStore } from "@/composables/useStore";
-import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-
-import { isHubProvider } from "@/store/spaces/util";
 import {
   NavMenu,
   NavMenuItem,
   type NavMenuItemProps,
 } from "@/components/common/side-nav";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import { useStore } from "@/composables/useStore";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { isHubProvider } from "@/store/spaces/util";
 
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
 import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
 const store = useStore();
 const $router = useRouter();

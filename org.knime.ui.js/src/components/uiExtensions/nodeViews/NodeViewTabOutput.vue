@@ -1,22 +1,20 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 
-import type { Alert } from "@knime/ui-extension-service";
-import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
 import { Button } from "@knime/components";
+import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
+import type { Alert } from "@knime/ui-extension-service";
 
-import type { NativeNode } from "@/api/gateway-api/generated-api";
 import type { AvailablePortTypes } from "@/api/custom-types";
+import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-
-import type { UIExtensionLoadingState, ValidationError } from "../common/types";
-
 import {
   buildMiddleware,
   validateNodeConfigurationState,
   validateNodeExecuted,
   validateNodeNotBusy,
 } from "../common/output-validator";
+import type { UIExtensionLoadingState, ValidationError } from "../common/types";
 
 import NodeViewLoader from "./NodeViewLoader.vue";
 

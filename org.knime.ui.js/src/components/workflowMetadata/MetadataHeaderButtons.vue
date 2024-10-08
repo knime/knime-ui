@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { FunctionButton } from "@knime/components";
-import PencilIcon from "@knime/styles/img/icons/pencil.svg";
-import CloseIcon from "@knime/styles/img/icons/close.svg";
 import CheckIcon from "@knime/styles/img/icons/check.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
+import PencilIcon from "@knime/styles/img/icons/pencil.svg";
 
 interface Props {
   isEditing: boolean;

@@ -1,7 +1,7 @@
 <script>
+import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { escapePressed } from "@/composables/useEscapeStack";
 import { isInputElement } from "@/util/isInputElement";
-import { isUIExtensionFocused } from "@/components/uiExtensions";
 
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events

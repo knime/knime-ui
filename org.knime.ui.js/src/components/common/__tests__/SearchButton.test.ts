@@ -1,9 +1,10 @@
-import { describe, expect, it, afterEach, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import SearchButton from "../SearchButton.vue";
 import { FunctionButton, InputField } from "@knime/components";
-import { nextTick } from "vue";
+
+import SearchButton from "../SearchButton.vue";
 
 const addEventListenerSpy = vi.spyOn(document, "addEventListener");
 const removeEventListenerSpy = vi.spyOn(document, "removeEventListener");

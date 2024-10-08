@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+
 import { ApplyState } from "@knime/ui-extension-service";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { type NativeNode } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
+import { useStore } from "@/composables/useStore";
 
 import NodeConfigLayout from "./NodeConfigLayout.vue";
 

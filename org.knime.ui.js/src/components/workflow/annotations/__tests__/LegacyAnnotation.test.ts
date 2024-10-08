@@ -1,13 +1,13 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import { createWorkflowAnnotation } from "@/test/factories";
-import * as $shapes from "@/style/shapes";
 import {
   Annotation,
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import * as $shapes from "@/style/shapes";
+import { createWorkflowAnnotation } from "@/test/factories";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
 
 describe("LegacyAnnotation.vue", () => {

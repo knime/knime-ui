@@ -1,10 +1,10 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { type PropType, defineComponent } from "vue";
 import { mapState } from "vuex";
 
-import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
-import NodeList from "@/components/nodeRepository/NodeList.vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import NodeList from "@/components/nodeRepository/NodeList.vue";
+import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 export default defineComponent({

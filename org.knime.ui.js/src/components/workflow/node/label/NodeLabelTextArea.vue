@@ -1,6 +1,8 @@
 <script>
 import { nextTick } from "vue";
+
 import { navigatorUtils } from "@knime/utils";
+
 import NodeLabelText from "./NodeLabelText.vue";
 
 export default {

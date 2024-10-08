@@ -1,21 +1,20 @@
-import { expect, describe, it, vi, beforeEach } from "vitest";
-import { mount } from "@vue/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
 
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { FunctionButton } from "@knime/components";
 
 import { API } from "@/api";
-import CloseIcon from "@/assets/cancel.svg";
-import AppHeader from "../AppHeader.vue";
-import AppHeaderTab from "../AppHeaderTab.vue";
-import { APP_ROUTES } from "@/router/appRoutes";
-import CloseButton from "@/components/common/CloseButton.vue";
-import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
-import { createProject } from "@/test/factories";
 import type { Project } from "@/api/gateway-api/generated-api";
-
-import { FunctionButton } from "@knime/components";
+import CloseIcon from "@/assets/cancel.svg";
+import CloseButton from "@/components/common/CloseButton.vue";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { createProject } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import AppHeader from "../AppHeader.vue";
+import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
+import AppHeaderTab from "../AppHeaderTab.vue";
 
 const mockedAPI = deepMocked(API);
 

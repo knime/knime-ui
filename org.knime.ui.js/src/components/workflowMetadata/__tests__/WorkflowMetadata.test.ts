@@ -1,36 +1,33 @@
-import { mount } from "@vue/test-utils";
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
+import { mount } from "@vue/test-utils";
 
 import {
   LinkList,
   NodeFeatureList,
   NodePreview,
-  TagList,
   Tag,
+  TagList,
 } from "@knime/components";
 
 import {
   ComponentNodeAndDescription,
   TypedText,
-  WorkflowInfo,
   type Workflow,
+  WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-
-import WorkflowMetadata from "../WorkflowMetadata.vue";
-import ProjectMetadata from "../ProjectMetadata.vue";
+import * as applicationStore from "@/store/application";
+import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
+import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import ComponentMetadata from "../ComponentMetadata.vue";
-import MetadataDescription from "../MetadataDescription.vue";
 import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
+import MetadataDescription from "../MetadataDescription.vue";
+import ProjectMetadata from "../ProjectMetadata.vue";
+import WorkflowMetadata from "../WorkflowMetadata.vue";
 
 vi.mock("@/environment");
 

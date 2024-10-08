@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { loadStore } from "./loadStore";
+
+import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { SpaceProviderNS } from "@/api/custom-types";
+
+import { loadStore } from "./loadStore";
 
 describe("spaces::caching", () => {
   describe("actions", () => {

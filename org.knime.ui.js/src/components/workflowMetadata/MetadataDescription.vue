@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { RichTextEditor } from "@knime/rich-text-editor";
 
-import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 import LegacyMetadataDescription from "./LegacyMetadataDescription.vue";
+import MetadataPlaceholder from "./MetadataPlaceholder.vue";
 
 interface Props {
   originalDescription: string;

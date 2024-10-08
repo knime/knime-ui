@@ -1,7 +1,7 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 /* eslint-disable max-nested-callbacks */
 
-import portShift, { portPositions, placeholderPosition } from "../portShift";
+import portShift, { placeholderPosition, portPositions } from "../portShift";
 
 // nodeSize: 32
 // portSize: 9

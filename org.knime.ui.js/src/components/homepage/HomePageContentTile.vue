@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useStorage } from "@vueuse/core";
 
-import { Pill, FunctionButton, Button } from "@knime/components";
+import { Button, FunctionButton, Pill } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 

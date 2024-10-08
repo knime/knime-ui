@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, h, markRaw, type PropType, nextTick } from "vue";
+import { type PropType, defineComponent, h, markRaw, nextTick } from "vue";
 import { mapGetters, mapState } from "vuex";
 
 import { MenuItems } from "@knime/components";
@@ -7,21 +7,21 @@ import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import { API } from "@/api";
-import type { XY } from "@/api/gateway-api/generated-api";
 import type {
   AvailablePortTypes,
   ExtendedPortType,
   KnimeNode,
 } from "@/api/custom-types";
-import type { ShortcutName } from "@/shortcuts";
-import { toExtendedPortObject } from "@/util/portDataMapper";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { getNodeState, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import type { XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
-import * as $shapes from "@/style/shapes";
+import type { ShortcutName } from "@/shortcuts";
 import type { ApplicationState } from "@/store/application";
 import type { UIControlsState } from "@/store/uiControls";
+import * as $shapes from "@/style/shapes";
+import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import { getNodeState, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
 

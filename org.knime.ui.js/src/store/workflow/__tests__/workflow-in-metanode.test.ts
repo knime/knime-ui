@@ -1,11 +1,9 @@
-import { expect, describe, it } from "vitest";
-import { mockVuexStore, type DeepPartial } from "@/test/utils";
+import { describe, expect, it } from "vitest";
 
+import type { Bounds, MetaPorts, XY } from "@/api/gateway-api/generated-api";
+import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
 import * as uiControlsStore from "@/store/uiControls";
-import * as applicationStore from "@/store/application";
-import type { Bounds, MetaPorts, XY } from "@/api/gateway-api/generated-api";
-import { geometry } from "@/util/geometry";
 import {
   autoPositionMetanodeMargin,
   defaultMetaNodeBarHeight,
@@ -14,6 +12,8 @@ import {
   nodeSize,
   portSize,
 } from "@/style/shapes";
+import { type DeepPartial, mockVuexStore } from "@/test/utils";
+import { geometry } from "@/util/geometry";
 
 describe("workflow store", () => {
   const loadStore = async () => {

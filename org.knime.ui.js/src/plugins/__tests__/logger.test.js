@@ -1,4 +1,5 @@
-import { expect, describe, beforeEach, afterEach, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
 import { setupLogger } from "../logger";
 
 describe("logger", () => {

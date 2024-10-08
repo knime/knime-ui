@@ -1,28 +1,27 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { deepMocked, mockVuexStore } from "@/test/utils";
 import { UIExtension } from "@knime/ui-extension-renderer";
-import { API } from "@/api";
-
-import * as applicationStore from "@/store/application";
-import * as nodeConfigurationStore from "@/store/nodeConfiguration";
-import NodeViewLoader from "../NodeViewLoader.vue";
-import { setRestApiBaseUrl } from "../../common/useResourceLocation";
-
 import {
-  DataServiceType,
   type Alert,
   AlertType,
-  UIExtensionPushEvents,
   ApplyState,
+  DataServiceType,
+  UIExtensionPushEvents,
   ViewState,
 } from "@knime/ui-extension-service";
-import { createNativeNode } from "@/test/factories";
-import ExecuteButton from "../../ExecuteButton.vue";
-import { useSelectionEvents } from "../../common/useSelectionEvents";
+
+import { API } from "@/api";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
+import * as applicationStore from "@/store/application";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
+import { createNativeNode } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import ExecuteButton from "../../ExecuteButton.vue";
+import { setRestApiBaseUrl } from "../../common/useResourceLocation";
+import { useSelectionEvents } from "../../common/useSelectionEvents";
+import NodeViewLoader from "../NodeViewLoader.vue";
 
 const mockedAPI = deepMocked(API);
 

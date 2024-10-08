@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+
 import NodeIcon from "@knime/styles/img/icons/node.svg";
-import NodeList from "@/components/nodeRepository/NodeList.vue";
-import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
-import { useNodeDescriptionPanel } from "../../useNodeDescriptionPanel";
+
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
+import NodeList from "@/components/nodeRepository/NodeList.vue";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
+import { useNodeDescriptionPanel } from "../../useNodeDescriptionPanel";
 
 interface Props {
   nodeTemplates: NodeTemplateWithExtendedPorts[];

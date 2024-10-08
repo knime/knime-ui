@@ -1,9 +1,9 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import * as $shapes from "@/style/shapes";
 
-import AutoSizeForeignObject from "../AutoSizeForeignObject.vue";
+import * as $shapes from "@/style/shapes";
 import { mockBoundingRect } from "@/test/utils";
+import AutoSizeForeignObject from "../AutoSizeForeignObject.vue";
 
 describe("AutoSizeForeignObject.vue", () => {
   const mockRectWidth = 232;

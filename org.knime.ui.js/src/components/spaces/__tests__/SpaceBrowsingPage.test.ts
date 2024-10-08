@@ -1,25 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { mockVuexStore, deepMocked } from "@/test/utils";
 import { useRoute } from "vue-router";
 
-import * as spacesStore from "@/store/spaces";
-import * as applicationStore from "@/store/application";
-
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
+import { FileExplorer } from "@knime/components";
 
 import { API } from "@/api";
+import { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { router } from "@/router/router";
+import * as applicationStore from "@/store/application";
+import * as spacesStore from "@/store/spaces";
+import { globalSpaceBrowserProjectId } from "@/store/spaces";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { SpaceProviderNS } from "@/api/custom-types";
-import { SpaceItem } from "@/api/gateway-api/generated-api";
-import SpacePageHeader from "../SpacePageHeader.vue";
-import { FileExplorer } from "@knime/components";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import SpaceExplorer from "../SpaceExplorer.vue";
-import { router } from "@/router/router";
+import SpacePageHeader from "../SpacePageHeader.vue";
 
 const mockedAPI = deepMocked(API);
 mockedAPI.desktop.importWorkflows.mockResolvedValue([]);

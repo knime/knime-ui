@@ -1,24 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
+import type { Store } from "vuex";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
-
-import { applicationState, loadStore } from "./loadStore";
-import {
-  createSpace,
-  createSpaceProvider,
-  createProject,
-  createNativeNode,
-  createWorkflowAnnotation,
-  createWorkflow,
-  createSpaceGroup,
-} from "@/test/factories";
-import { flushPromises } from "@vue/test-utils";
 import type { RootStoreState } from "@/store/types";
-import type { Store } from "vuex";
 import { nodeSize } from "@/style/shapes";
+import {
+  createNativeNode,
+  createProject,
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+  createWorkflow,
+  createWorkflowAnnotation,
+} from "@/test/factories";
 import { mockedObject } from "@/test/utils";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
+
+import { applicationState, loadStore } from "./loadStore";
 
 vi.mock("@/util/workflowNavigationService", () => {
   return {

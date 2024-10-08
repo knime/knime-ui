@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
 
-import { UIExtensionPushEvents } from "@knime/ui-extension-service";
 import { FunctionButton } from "@knime/components";
-import { sleep } from "@knime/utils";
-import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
+import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
+import { UIExtensionPushEvents } from "@knime/ui-extension-service";
+import { sleep } from "@knime/utils";
 
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-
 import { EMBEDDED_CONTENT_PANEL_ID__RIGHT } from "../common/utils";
-import NodeConfigWrapper from "./NodeConfigWrapper.vue";
+
 import IncompatibleNodeConfigPlaceholder from "./IncompatibleNodeConfigPlaceholder.vue";
+import NodeConfigWrapper from "./NodeConfigWrapper.vue";
 
 const store = useStore();
 

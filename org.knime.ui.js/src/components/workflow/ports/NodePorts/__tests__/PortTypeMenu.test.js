@@ -1,15 +1,13 @@
-import { expect, describe, it } from "vitest";
-import { mount } from "@vue/test-utils";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
-
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mount } from "@vue/test-utils";
 
 import { MenuItems, SearchInput } from "@knime/components";
+
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import PortTypeMenu from "../PortTypeMenu.vue";
 
 describe("PortTypeMenu.vue", () => {

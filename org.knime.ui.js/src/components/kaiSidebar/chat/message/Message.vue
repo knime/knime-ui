@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from "vue";
 import { useElementHover } from "@vueuse/core";
-import UserIcon from "@knime/styles/img/icons/user.svg";
+
 import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
+import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import type { NodeWithExtensionInfo, References } from "../../types";
-import { renderMarkdown } from "./markdown";
-import MessagePlaceholder from "./MessagePlaceholder.vue";
-import KaiStatus from "./KaiStatus.vue";
+
+import FeedbackControls from "./FeedbackControls.vue";
 import KaiReferences from "./KaiReferences.vue";
+import KaiStatus from "./KaiStatus.vue";
+import MessagePlaceholder from "./MessagePlaceholder.vue";
 import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
-import FeedbackControls from "./FeedbackControls.vue";
+import { renderMarkdown } from "./markdown";
 import { useNodeTemplates } from "./useNodeTemplates";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);

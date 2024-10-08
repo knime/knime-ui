@@ -1,13 +1,15 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapState, mapGetters } from "vuex";
-import Node from "@/components/workflow/node/Node.vue";
-import MoveableNodeContainer from "@/components/workflow/node/MoveableNodeContainer.vue";
-import Connector from "@/components/workflow/connectors/Connector.vue";
-import WorkflowAnnotation from "@/components/workflow/annotations/WorkflowAnnotation.vue";
+import { mapGetters, mapState } from "vuex";
+
 import MoveableAnnotationContainer from "@/components/workflow/annotations/MoveableAnnotationContainer.vue";
-import MetaNodePortBars from "@/components/workflow/ports/MetaNodePortBars.vue";
+import WorkflowAnnotation from "@/components/workflow/annotations/WorkflowAnnotation.vue";
+import Connector from "@/components/workflow/connectors/Connector.vue";
 import ConnectorLabel from "@/components/workflow/connectors/ConnectorLabel.vue";
+import MoveableNodeContainer from "@/components/workflow/node/MoveableNodeContainer.vue";
+import Node from "@/components/workflow/node/Node.vue";
+import MetaNodePortBars from "@/components/workflow/ports/MetaNodePortBars.vue";
+
 import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
 export default defineComponent({

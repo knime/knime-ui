@@ -1,8 +1,10 @@
+import type { Store } from "vuex";
+
 import { columnTypes } from "@knime/knime-ui-table";
+
+import type { RootStoreState } from "@/store/types";
 import { getIntervalFromSchedule } from "@/util/intervalFromSchedule";
 import { formatTime } from "@/util/time";
-import type { RootStoreState } from "@/store/types";
-import type { Store } from "vuex";
 
 export const defaultScheduleColumns = [
   "lastRun",

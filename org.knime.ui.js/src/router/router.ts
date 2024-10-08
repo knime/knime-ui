@@ -1,12 +1,11 @@
 import {
+  type RouteRecordRaw,
   createRouter,
   createWebHistory,
-  type RouteRecordRaw,
 } from "vue-router";
 
-import { environment } from "@/environment";
-
 import WorkflowPage from "@/components/workflow/WorkflowPage.vue";
+import { environment } from "@/environment";
 
 import { APP_ROUTES } from "./appRoutes";
 

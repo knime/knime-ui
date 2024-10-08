@@ -1,19 +1,16 @@
 /* eslint-disable func-style */
-import { expect, describe, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, shallowMount } from "@vue/test-utils";
 
-import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
-
 import { API } from "@/api";
-import * as $shapes from "@/style/shapes";
-
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-
 import { useEscapeStack } from "@/composables/useEscapeStack";
+import * as applicationStore from "@/store/application";
+import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
+import * as $shapes from "@/style/shapes";
+import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
 import MoveableNodeContainer from "../MoveableNodeContainer.vue";
 
 const mockedAPI = deepMocked(API);

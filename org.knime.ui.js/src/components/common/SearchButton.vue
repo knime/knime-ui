@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
+
 import { FunctionButton, InputField } from "@knime/components";
 import LensIcon from "@knime/styles/img/icons/lens.svg";
 import { navigatorUtils } from "@knime/utils";

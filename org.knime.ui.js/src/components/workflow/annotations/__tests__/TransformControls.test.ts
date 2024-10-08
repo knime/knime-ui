@@ -1,23 +1,22 @@
-import { describe, it, expect, vi } from "vitest";
-import { mount, VueWrapper } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { VueWrapper, mount } from "@vue/test-utils";
+
 import type { Bounds } from "@/api/gateway-api/generated-api";
-
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
+import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
 import TransformControls, {
   TRANSFORM_RECT_OFFSET,
 } from "../TransformControls.vue";
 import {
-  transformBounds,
   DIRECTIONS,
-  getTransformControlPosition,
-  getGridAdjustedBounds,
   type Directions,
+  getGridAdjustedBounds,
+  getTransformControlPosition,
+  transformBounds,
 } from "../transform-control-utils";
-import { mockVuexStore } from "@/test/utils";
-import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
 
 vi.mock("../transform-control-utils", async () => {
   const actual: any = await vi.importActual("../transform-control-utils");

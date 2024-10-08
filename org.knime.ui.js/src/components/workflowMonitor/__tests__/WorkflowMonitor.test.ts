@@ -2,32 +2,21 @@ import { describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@/api";
+import type { WorkflowMonitorState } from "@/api/gateway-api/generated-api";
+import * as applicationStore from "@/store/application";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
+import * as panelStore from "@/store/panel";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as workflowMonitorStore from "@/store/workflowMonitor";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-import * as panelStore from "@/store/panel";
-import * as applicationStore from "@/store/application";
-import { deepMocked, mockVuexStore } from "@/test/utils";
-
-import WorkflowMonitor from "../WorkflowMonitor.vue";
-import type { WorkflowMonitorState } from "@/api/gateway-api/generated-api";
 import {
   createAvailablePortTypes,
   createNodeTemplate,
   createWorkflow,
   createWorkflowMonitorMessage,
 } from "@/test/factories";
-
-vi.mock("lodash-es", async () => {
-  const actual = await vi.importActual("lodash-es");
-  const { lodashMockFactory } = await import("@/test/utils/mockLodash");
-
-  return {
-    ...actual,
-    ...lodashMockFactory(),
-  };
-});
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import WorkflowMonitor from "../WorkflowMonitor.vue";
 
 const mockedAPI = deepMocked(API);
 

@@ -1,18 +1,15 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Transition, nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-
-import * as $shapes from "@/style/shapes";
-import * as $colors from "@/style/colors";
-
+import Port from "@/components/common/Port.vue";
 import {
   actions as workflowStoreActions,
   mutations as workflowStoreMutations,
 } from "@/store/workflow";
-
-import Port from "@/components/common/Port.vue";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import AddPortPlaceholder, {
   addPortPlaceholderPath,
 } from "../AddPortPlaceholder.vue";

@@ -1,10 +1,11 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { mapGetters, mapState, mapActions } from "vuex";
 import throttle from "raf-throttle";
+import { mapActions, mapGetters, mapState } from "vuex";
+
+import type { XY } from "@/api/gateway-api/generated-api";
 
 import { findObjectsForSelection } from "./findObjectsForSelection";
-import type { XY } from "@/api/gateway-api/generated-api";
 
 type ComponentData = {
   startPos: XY;

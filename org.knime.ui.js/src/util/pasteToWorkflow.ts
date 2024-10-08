@@ -1,11 +1,11 @@
+import type { Store } from "vuex";
+
 import { API } from "@/api";
+import type { Workflow } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { nodeSize } from "@/style/shapes";
-
-import type { GeometryArea, GeometryBounds } from "@/util/geometry/types";
 import { geometry } from "@/util/geometry";
-import type { Workflow } from "@/api/custom-types";
-import type { Store } from "vuex";
+import type { GeometryArea, GeometryBounds } from "@/util/geometry/types";
 
 // eslint-disable-next-line no-magic-numbers
 const getRandomNoise = () => (Math.random() * 2 - 1) * 25;

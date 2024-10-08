@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from "vue";
-import { useStore } from "@/composables/useStore";
-import Workflow from "@/components/workflow/Workflow.vue";
-import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
-import SelectionRectangle from "@/components/workflow/SelectionRectangle/SelectionRectangle.vue";
-import AnnotationRectangle from "@/components/workflow/annotations/AnnotationRectangle.vue";
-import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
-import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 
+import SelectionRectangle from "@/components/workflow/SelectionRectangle/SelectionRectangle.vue";
+import Workflow from "@/components/workflow/Workflow.vue";
+import WorkflowEmpty from "@/components/workflow/WorkflowEmpty.vue";
+import AnnotationRectangle from "@/components/workflow/annotations/AnnotationRectangle.vue";
+import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
+import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
 import { useDropNode } from "@/composables/useDropNode";
+import { useStore } from "@/composables/useStore";
 
 const store = useStore();
 const { onDrop, onDragOver } = useDropNode();

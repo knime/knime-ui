@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { computed } from "vue";
 
-import HouseIcon from "@knime/styles/img/icons/house.svg";
 import { Breadcrumb, type BreadcrumbItem } from "@knime/components";
+import HouseIcon from "@knime/styles/img/icons/house.svg";
+
+import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 
 interface Props {
   activeWorkflowGroup: WorkflowGroupContent | null;

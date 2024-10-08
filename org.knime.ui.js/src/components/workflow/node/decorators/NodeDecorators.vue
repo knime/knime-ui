@@ -1,9 +1,9 @@
 <script>
 import LinkDecorator from "./LinkDecorator.vue";
 import LockDecorator from "./LockDecorator.vue";
-import StreamingDecorator from "./StreamingDecorator.vue";
 import LoopDecorator from "./LoopDecorator.vue";
 import ReexecutionDecorator from "./ReexecutionDecorator.vue";
+import StreamingDecorator from "./StreamingDecorator.vue";
 
 /** A component used to render all different decorators a node can show */
 export default {

@@ -1,15 +1,14 @@
 /* eslint-disable max-lines */
-import { expect, describe, afterEach, it, vi, type Mock } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { type Mock, afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { shallowMount } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-
-import { findObjectsForSelection } from "../findObjectsForSelection";
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import SelectionRectangle from "../SelectionRectangle.vue";
+import { findObjectsForSelection } from "../findObjectsForSelection";
 
 vi.mock("../findObjectsForSelection", () => ({
   findObjectsForSelection: vi.fn(),

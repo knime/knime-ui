@@ -1,13 +1,13 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
+import type { RootStoreState } from "../types";
 
 import * as auth from "./auth";
 import * as caching from "./caching";
+import * as deployments from "./deployments";
 import * as providers from "./providers";
 import * as spaceOperations from "./spaceOperations";
-import * as deployments from "./deployments";
-import type { RootStoreState } from "../types";
 
 interface CreateWorkflowModalConfig {
   isOpen: boolean;

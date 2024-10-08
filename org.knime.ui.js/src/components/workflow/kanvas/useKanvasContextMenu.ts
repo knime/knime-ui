@@ -1,4 +1,5 @@
-import { onMounted, onUnmounted, type Ref } from "vue";
+import { type Ref, onMounted, onUnmounted } from "vue";
+
 import { useStore } from "@/composables/useStore";
 
 type UseKanvasContextMenuOptions = {

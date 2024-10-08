@@ -1,11 +1,12 @@
-import { computed, ref, type Ref } from "vue";
+import { type Ref, computed, ref } from "vue";
 import { useRoute } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
+
+import { type NodeTemplate, SpaceItem } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { SpaceItem, type NodeTemplate } from "@/api/gateway-api/generated-api";
-import * as $shapes from "@/style/shapes";
 import { APP_ROUTES } from "@/router/appRoutes";
+import * as $shapes from "@/style/shapes";
 
 const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
   return !nodeTemplateId && item.meta?.type === SpaceItem.TypeEnum.Component;

@@ -1,21 +1,21 @@
 import { createStore } from "vuex";
-import type { RootStoreState } from "./types";
 
+import * as aiAssistant from "./aiAssistant";
 import * as application from "./application";
 import * as canvas from "./canvas";
-import * as nodeRepository from "./nodeRepository";
-import * as panel from "./panel";
-import * as selection from "./selection";
-import * as workflow from "./workflow";
-import * as spaces from "./spaces";
-import * as quickAddNodes from "./quickAddNodes";
-import * as aiAssistant from "./aiAssistant";
-import * as settings from "./settings";
 import * as nodeConfiguration from "./nodeConfiguration";
-import * as workflowMonitor from "./workflowMonitor";
-import * as nodeTemplates from "./nodeTemplates";
 import * as nodeDescription from "./nodeDescription";
+import * as nodeRepository from "./nodeRepository";
+import * as nodeTemplates from "./nodeTemplates";
+import * as panel from "./panel";
+import * as quickAddNodes from "./quickAddNodes";
+import * as selection from "./selection";
+import * as settings from "./settings";
+import * as spaces from "./spaces";
+import type { RootStoreState } from "./types";
 import * as uiControls from "./uiControls";
+import * as workflow from "./workflow";
+import * as workflowMonitor from "./workflowMonitor";
 
 export const initStore = () => {
   return createStore<RootStoreState>({

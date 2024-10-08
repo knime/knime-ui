@@ -1,10 +1,10 @@
-import { expect, describe, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mount } from "@vue/test-utils";
 
-import SidebarSearchResults from "../SidebarSearchResults.vue";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import SidebarSearchResults from "../SidebarSearchResults.vue";
 
 describe("SidebarSearchResults", () => {
   const doMount = () => {

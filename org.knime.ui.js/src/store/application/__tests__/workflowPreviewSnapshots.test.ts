@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Store } from "vuex";
 
 import type { RootStoreState } from "@/store/types";
+
 import { loadStore } from "./loadStore";
 
 vi.mock("@/util/encodeString", () => ({

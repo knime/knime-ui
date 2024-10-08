@@ -1,6 +1,7 @@
-import { waitForPatch } from "@/util/event-syncer";
-import { createAPI } from "./generated-api";
 import { createRPCClient } from "@/api/gateway-api/rpc-client";
+import { waitForPatch } from "@/util/event-syncer";
+
+import { createAPI } from "./generated-api";
 
 const postProcessCommandResponse = async (commandCall: Promise<any>) => {
   const response = await commandCall;

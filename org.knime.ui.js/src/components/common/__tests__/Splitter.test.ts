@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
-import Splitter from "../Splitter.vue";
 import { mount } from "@vue/test-utils";
+
+import Splitter from "../Splitter.vue";
 
 test("isHorizontal false style", () => {
   const comp = mount(Splitter);

@@ -1,14 +1,15 @@
-import { describe, expect, it, vi, afterEach } from "vitest";
-import { createComponentNode, createWorkflow } from "@/test/factories";
-import { deepMocked, mockedObject } from "@/test/utils";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import { API } from "@/api";
 import {
   NodeState,
   UpdateLinkedComponentsResult,
 } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
+import { createComponentNode, createWorkflow } from "@/test/factories";
+import { deepMocked, mockedObject } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
-import { getToastsProvider } from "@/plugins/toasts";
 
 const mockedAPI = deepMocked(API);
 

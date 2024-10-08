@@ -1,26 +1,23 @@
-import { describe, beforeEach, it, vi, expect } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { useRoute } from "vue-router";
 import { mount } from "@vue/test-utils";
+import { useRoute } from "vue-router";
 
+import { SpaceProviderNS } from "@/api/custom-types";
 import SearchButton from "@/components/common/SearchButton.vue";
-import { mockVuexStore, mockedObject } from "@/test/utils";
+import { getToastsProvider } from "@/plugins/toasts";
+import { APP_ROUTES } from "@/router/appRoutes";
+import * as spacesStore from "@/store/spaces";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-
-import * as spacesStore from "@/store/spaces";
-import { APP_ROUTES } from "@/router/appRoutes";
-
-import { SpaceProviderNS } from "@/api/custom-types";
-
+import { mockVuexStore, mockedObject } from "@/test/utils";
 import SpaceCard from "../SpaceCard.vue";
-import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";
-import { getToastsProvider } from "@/plugins/toasts";
+import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 
 const routerPush = vi.fn();
 

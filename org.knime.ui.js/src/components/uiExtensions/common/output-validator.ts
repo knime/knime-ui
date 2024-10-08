@@ -2,7 +2,7 @@
 /* eslint-disable func-style */
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
-import type { NodePort, MetaNodePort } from "@/api/gateway-api/generated-api";
+import type { MetaNodePort, NodePort } from "@/api/gateway-api/generated-api";
 
 /**
  * Returns the PortType of a given port

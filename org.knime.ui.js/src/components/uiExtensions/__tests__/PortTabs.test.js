@@ -1,9 +1,9 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 import { TabBar } from "@knime/components";
+import FlowVarTabIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import portIcon from "@/components/common/PortIconRenderer";
 import PortTabs, { portIconSize } from "../PortTabs.vue";

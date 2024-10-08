@@ -1,10 +1,11 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
-import applicationShortcuts from "../applicationShortcuts";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { APP_ROUTES } from "@/router/appRoutes";
 import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
 } from "@/store/spaces";
-import { APP_ROUTES } from "@/router/appRoutes";
+import applicationShortcuts from "../applicationShortcuts";
 
 describe("applicationShortcuts", () => {
   let mockDispatch, mockCommit, $store;

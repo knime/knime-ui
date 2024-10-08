@@ -1,6 +1,6 @@
 <script>
-import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import { BaseButton, ExpandTransition } from "@knime/components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 export default {
   components: {

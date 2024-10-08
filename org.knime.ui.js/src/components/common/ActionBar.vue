@@ -1,6 +1,6 @@
 <script>
-import SaveIcon from "@/assets/ok.svg";
 import CancelIcon from "@/assets/cancel.svg";
+import SaveIcon from "@/assets/ok.svg";
 import ActionButton from "@/components/common/ActionButton.vue";
 
 /**

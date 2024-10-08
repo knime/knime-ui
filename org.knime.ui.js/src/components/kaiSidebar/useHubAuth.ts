@@ -1,6 +1,7 @@
 import { computed } from "vue";
+
 import { useStore } from "@/composables/useStore";
-import { runInEnvironment, isBrowser } from "@/environment";
+import { isBrowser, runInEnvironment } from "@/environment";
 
 let isHubIdFetched = false;
 

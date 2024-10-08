@@ -1,23 +1,19 @@
 /* eslint-disable max-lines */
-import { expect, describe, afterEach, it, vi, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import * as workflowStore from "@/store/workflow";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
 import Connector from "@/components/workflow/connectors/Connector.vue";
-
-import * as compatibleConnections from "@/util/compatibleConnections";
-import { $bus } from "@/plugins/event-bus";
-
-import * as $shapes from "@/style/shapes";
-import * as $colors from "@/style/colors";
-
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import QuickAddNodeGhost from "@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue";
+import { useEscapeStack } from "@/composables/useEscapeStack";
+import { $bus } from "@/plugins/event-bus";
+import * as workflowStore from "@/store/workflow";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import * as compatibleConnections from "@/util/compatibleConnections";
 import NodePort from "../NodePort.vue";
 import NodePortActions from "../NodePortActions.vue";
 import NodePortActiveConnector from "../NodePortActiveConnector.vue";

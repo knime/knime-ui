@@ -1,23 +1,22 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mockVuexStore } from "@/test/utils";
+import { flushPromises, mount } from "@vue/test-utils";
+
+import * as applicationStore from "@/store/application";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
-import * as applicationStore from "@/store/application";
-
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-
-import AddPortPlaceholder from "../AddPortPlaceholder.vue";
-import NodePorts from "../NodePorts.vue";
-import NodePort from "../../NodePort/NodePort.vue";
+import * as $shapes from "@/style/shapes";
 import {
   PORT_TYPE_IDS,
   createAvailablePortTypes,
   createNativeNode,
 } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
+import NodePort from "../../NodePort/NodePort.vue";
+import AddPortPlaceholder from "../AddPortPlaceholder.vue";
+import NodePorts from "../NodePorts.vue";
 
 const mockPort = ({ index, connectedVia = [], portGroupId = null }) => ({
   inactive: false,

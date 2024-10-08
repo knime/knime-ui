@@ -2,14 +2,15 @@
  * Util functions for handling and manipulating NodePorts port selection
  */
 
+import type { Store } from "vuex";
+
 import type { KnimeNode } from "@/api/custom-types";
 import type {
-  NodePort,
-  MetaNodePort,
   ComponentNode,
+  MetaNodePort,
+  NodePort,
 } from "@/api/gateway-api/generated-api";
 import type { RootStoreState } from "@/store/types";
-import type { Store } from "vuex";
 
 export type SelectedPortIdentifier =
   | `${"input" | "output"}-${number | "AddPort"}`

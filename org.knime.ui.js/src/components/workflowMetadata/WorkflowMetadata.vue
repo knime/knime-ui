@@ -3,15 +3,15 @@ import { computed } from "vue";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
+import { isNodeMetaNode } from "@/util/nodeUtil";
+import * as projectUtil from "@/util/projectUtil";
 
-import ProjectMetadata, {
-  type SaveEventPayload as SaveProjectEventPayload,
-} from "./ProjectMetadata.vue";
 import ComponentMetadata, {
   type SaveEventPayload as SaveComponentEventPayload,
 } from "./ComponentMetadata.vue";
-import { isNodeMetaNode } from "@/util/nodeUtil";
-import * as projectUtil from "@/util/projectUtil";
+import ProjectMetadata, {
+  type SaveEventPayload as SaveProjectEventPayload,
+} from "./ProjectMetadata.vue";
 
 const store = useStore();
 

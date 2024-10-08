@@ -1,7 +1,8 @@
 <script>
-import { mapState, mapActions, mapGetters } from "vuex";
-import NodeLabelText from "./NodeLabelText.vue";
+import { mapActions, mapGetters, mapState } from "vuex";
+
 import NodeLabelEditor from "./NodeLabelEditor.vue";
+import NodeLabelText from "./NodeLabelText.vue";
 
 export default {
   components: {

@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-import { useStore } from "@/composables/useStore";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import { useStore } from "@/composables/useStore";
 import { isBrowser } from "@/environment";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { TABS, type TabValues } from "@/store/panel";
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
+import AppKanvasSkeleton from "./AppKanvasSkeleton.vue";
 import AppRightPanelSkeleton from "./AppRightPanelSkeleton.vue";
-import AppToolbarSkeleton from "./AppToolbarSkeleton.vue";
 import AppSidebarSkeletonContent from "./AppSidebarSkeletonContent.vue";
 import AppSidebarSkeletonTabs from "./AppSidebarSkeletonTabs.vue";
-import AppKanvasSkeleton from "./AppKanvasSkeleton.vue";
+import AppToolbarSkeleton from "./AppToolbarSkeleton.vue";
 
 const store = useStore();
 

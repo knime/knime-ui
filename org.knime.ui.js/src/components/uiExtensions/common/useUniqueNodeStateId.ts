@@ -1,5 +1,6 @@
+import { type Ref, computed } from "vue";
+
 import type { NativeNode } from "@/api/gateway-api/generated-api";
-import { computed, type Ref } from "vue";
 
 type UseUniqueNodeStateIdOptions = {
   projectId: Ref<string>;

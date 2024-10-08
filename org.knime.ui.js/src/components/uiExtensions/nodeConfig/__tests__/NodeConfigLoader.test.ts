@@ -1,26 +1,26 @@
-import { expect, describe, afterEach, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import {
-  flushPromises,
-  mount,
   type ComponentMountingOptions,
   VueWrapper,
+  flushPromises,
+  mount,
 } from "@vue/test-utils";
 
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import { API } from "@/api";
-
 import { UIExtension } from "@knime/ui-extension-renderer";
-import * as applicationStore from "@/store/application";
-import * as nodeConfigurationStore from "@/store/nodeConfiguration";
-import { createNativeNode } from "@/test/factories";
-import NodeConfigLoader from "../NodeConfigLoader.vue";
-import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import {
   ApplyState,
   DataServiceType,
   ViewState,
 } from "@knime/ui-extension-service";
+
+import { API } from "@/api";
+import * as applicationStore from "@/store/application";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
+import { createNativeNode } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
+import { setRestApiBaseUrl } from "../../common/useResourceLocation";
+import NodeConfigLoader from "../NodeConfigLoader.vue";
 
 const mockedAPI = deepMocked(API);
 

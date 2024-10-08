@@ -3,14 +3,14 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useStore } from "@/composables/useStore";
+import { APP_ROUTES } from "@/router/appRoutes";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
 import { isHubProvider } from "@/store/spaces/util";
 
-import { APP_ROUTES } from "@/router/appRoutes";
-import SpacePageLayout from "./SpacePageLayout.vue";
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
 import SpacePageHeader from "./SpacePageHeader.vue";
+import SpacePageLayout from "./SpacePageLayout.vue";
 import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";

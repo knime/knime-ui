@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
 import {
-  onMounted,
-  watch,
   computed,
-  ref,
   nextTick,
   onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
 } from "vue";
 import { debounce } from "lodash-es";
 
-import { navigatorUtils } from "@knime/utils";
 import { useKeyPressedUntilMouseClick } from "@knime/components";
+import { navigatorUtils } from "@knime/utils";
 
 import { useStore } from "@/composables/useStore";
 import { $bus } from "@/plugins/event-bus";
+
+import { RESIZE_DEBOUNCE } from "./constants";
+import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
+import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
+import { useKanvasContextMenu } from "./useKanvasContextMenu";
 import { useMouseWheelZooming } from "./useMouseWheelZooming";
 import { usePanning } from "./usePanning";
-import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
-import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
-import { RESIZE_DEBOUNCE } from "./constants";
-
-import { useKanvasContextMenu } from "./useKanvasContextMenu";
 
 const emit = defineEmits(["containerSizeChanged"]);
 

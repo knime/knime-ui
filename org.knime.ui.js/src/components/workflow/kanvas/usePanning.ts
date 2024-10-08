@@ -1,11 +1,12 @@
-import { computed, onBeforeUnmount, onMounted, ref, type Ref } from "vue";
+import { type Ref, computed, onBeforeUnmount, onMounted, ref } from "vue";
 import throttle from "raf-throttle";
 
 import { navigatorUtils } from "@knime/utils";
-import { useStore } from "@/composables/useStore";
-import { isInputElement } from "@/util/isInputElement";
+
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { useStore } from "@/composables/useStore";
 import { runInEnvironment } from "@/environment";
+import { isInputElement } from "@/util/isInputElement";
 
 type UsePanningWithSpaceOptions = {
   shouldShowMoveCursor: Ref<boolean>;

@@ -1,32 +1,31 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { h, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { mockUserAgent } from "jest-useragent-mock";
 import type { Store } from "vuex";
 
-import { mockVuexStore } from "@/test/utils";
-import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
-import { mockUserAgent } from "jest-useragent-mock";
+import { RichTextEditor } from "@knime/rich-text-editor";
 
-import * as $colors from "@/style/colors";
-import * as $shapes from "@/style/shapes";
 import { API } from "@/api";
-import * as workflowStore from "@/store/workflow";
-import * as selectionStore from "@/store/selection";
-import * as applicationStore from "@/store/application";
-import * as canvasStore from "@/store/canvas";
-import * as uiControlsStore from "@/store/uiControls";
 import {
-  type WorkflowAnnotation,
   type Bounds,
   TypedText,
+  type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-
-import { RichTextEditor } from "@knime/rich-text-editor";
-import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
-import RichTextAnnotation from "../RichTextAnnotation.vue";
+import * as applicationStore from "@/store/application";
+import * as canvasStore from "@/store/canvas";
+import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
+import RichTextAnnotation from "../RichTextAnnotation.vue";
 import TransformControls from "../TransformControls.vue";
+import WorkflowAnnotationComp from "../WorkflowAnnotation.vue";
 
 describe("WorkflowAnnotation.vue", () => {
   const defaultProps = {

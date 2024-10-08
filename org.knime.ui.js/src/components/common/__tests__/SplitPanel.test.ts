@@ -1,8 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+
 import SplitPanel from "../SplitPanel.vue";
 import Splitter from "../Splitter.vue";
-import { nextTick } from "vue";
 
 describe("SplitPanel", () => {
   const doMount = (propsOverride = {}) => {

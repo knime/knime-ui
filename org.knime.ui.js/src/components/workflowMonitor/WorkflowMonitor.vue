@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { useStore } from "@/composables/useStore";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
+import { useStore } from "@/composables/useStore";
 
+import WorkflowMonitorContent from "./WorkflowMonitorContent.vue";
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
 import { useWorkflowMonitorActivation } from "./useWorkflowMonitorActivation";
-import WorkflowMonitorContent from "./WorkflowMonitorContent.vue";
 
 const store = useStore();
 

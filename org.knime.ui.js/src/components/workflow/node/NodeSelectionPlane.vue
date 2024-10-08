@@ -1,7 +1,8 @@
 <script lang="ts">
-import type { Node, XY } from "@/api/gateway-api/generated-api";
 import type { PropType } from "vue";
 import { defineComponent } from "vue";
+
+import type { Node, XY } from "@/api/gateway-api/generated-api";
 
 /**
  * Colored rect that is used as selection plane for nodes

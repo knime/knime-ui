@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, toRefs, watch, onUnmounted } from "vue";
+import { onUnmounted, ref, toRefs, watch } from "vue";
+
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
 
 import { API } from "@/api";
-import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { gatewayRpcClient } from "@/api/gateway-api";
-
+import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";

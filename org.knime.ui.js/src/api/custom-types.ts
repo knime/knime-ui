@@ -1,26 +1,25 @@
 import type {
   ComponentNode,
+  ComponentNodeAndDescription,
+  EditableProjectMetadata,
   MetaNode,
   NativeNode,
+  NodeCategory,
+  NodeDescription,
+  NodeTemplate,
   PortGroup,
   PortType,
-  Space as _Space,
-  SpaceGroup as _SpaceGroup,
-  ComponentNodeAndDescription,
-  NodeDescription,
-  SpaceProvider as _SpaceProvider,
-  Workflow as _Workflow,
-  EditableProjectMetadata,
-  NodeTemplate,
-  XY,
-  SpaceItemReference,
   ProjectMetadata,
-  NodeCategory,
+  SpaceItemReference,
+  XY,
+  Space as _Space,
+  Workflow as _Workflow,
 } from "./gateway-api/generated-api";
-
 import {
-  SpaceProvider as _SpaceProviderNS,
+  SpaceGroup as _SpaceGroup,
   SpaceGroup as _SpaceGroupNS,
+  SpaceProvider as _SpaceProvider,
+  SpaceProvider as _SpaceProviderNS,
 } from "./gateway-api/generated-api";
 
 /**

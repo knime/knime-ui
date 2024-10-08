@@ -1,5 +1,5 @@
-import { computed, ref, watch, type Ref } from "vue";
-import { useFloating, autoUpdate, offset } from "@floating-ui/vue";
+import { type Ref, computed, ref, watch } from "vue";
+import { autoUpdate, offset, useFloating } from "@floating-ui/vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 

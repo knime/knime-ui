@@ -1,8 +1,8 @@
-import { ref, watch, type Ref } from "vue";
-import { useStore } from "@/composables/useStore";
+import { type Ref, ref, watch } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
 import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../../types";
 
 /**

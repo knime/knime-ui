@@ -1,7 +1,8 @@
 <script>
 import { mapState } from "vuex";
-import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+
 import { SubMenu } from "@knime/components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 /**
  * ZoomMenu offers predefined zoom levels and an input field to enter custom zoom levels

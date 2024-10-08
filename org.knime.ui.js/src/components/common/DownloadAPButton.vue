@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+
 import { Button } from "@knime/components";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 

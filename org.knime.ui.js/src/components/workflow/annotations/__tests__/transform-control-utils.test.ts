@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import {
+  type Directions,
   getGridAdjustedBounds,
   getTransformControlPosition,
   transformBounds,
-  type Directions,
 } from "../transform-control-utils";
 
 describe("transform-control-utils", () => {

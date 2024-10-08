@@ -1,5 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
 import type { RootStoreState } from "../types";
+
 import type { ApplicationState } from "./index";
 
 interface State {

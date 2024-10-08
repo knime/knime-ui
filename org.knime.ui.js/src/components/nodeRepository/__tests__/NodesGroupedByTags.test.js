@@ -1,8 +1,8 @@
-import { expect, describe, beforeEach, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import NodesGroupedByTags from "../NodesGroupedByTags.vue";
 import NodeList from "../NodeList.vue";
+import NodesGroupedByTags from "../NodesGroupedByTags.vue";
 
 describe("NodesGroupedByTag", () => {
   let doShallowMount, wrapper, props;

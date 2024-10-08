@@ -1,14 +1,13 @@
-import { vi, type Mock } from "vitest";
+import { type Mock, vi } from "vitest";
 
 import { API } from "@/api";
-import { deepMocked, mockVuexStore } from "@/test/utils";
-
 import * as applicationStore from "@/store/application";
-import * as spacesStore from "@/store/spaces";
-import * as workflowStore from "@/store/workflow";
 import * as selectionStore from "@/store/selection";
+import * as spacesStore from "@/store/spaces";
 import type { RootStoreState } from "@/store/types";
+import * as workflowStore from "@/store/workflow";
 import { createWorkflow } from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 
 const mockedAPI = deepMocked(API);
 

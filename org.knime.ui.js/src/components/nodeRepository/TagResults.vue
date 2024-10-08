@@ -1,13 +1,14 @@
 <script lang="ts">
-import { mapState, mapMutations, mapActions } from "vuex";
+import { type PropType, defineComponent } from "vue";
+import { mapActions, mapMutations, mapState } from "vuex";
 
-import ScrollViewContainer from "./ScrollViewContainer.vue";
-import NodesGroupedByTags from "./NodesGroupedByTags.vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import { defineComponent, type PropType } from "vue";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
-import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
+
 import type { NavReachedEvent } from "./NodeList.vue";
+import NodesGroupedByTags from "./NodesGroupedByTags.vue";
+import ScrollViewContainer from "./ScrollViewContainer.vue";
+import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 
 type NodesGroupedByTagsComponentRef = Array<
   InstanceType<typeof NodesGroupedByTags>

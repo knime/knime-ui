@@ -3,22 +3,22 @@ import { computed, ref, toRaw, toRef, toRefs } from "vue";
 
 import { API } from "@/api";
 import {
-  TypedText,
   type Link,
   type ProjectMetadata,
+  TypedText,
 } from "@/api/gateway-api/generated-api";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import { isDesktop } from "@/environment";
-
-import MetadataLastEdit from "./MetadataLastEdit.vue";
-import MetadataDescription from "./MetadataDescription.vue";
-import MetadataTags from "./MetadataTags.vue";
-import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
-import { useDraft } from "./useDraft";
-import { useSaveMetadata } from "./useSaveMetadata";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
+
+import MetadataDescription from "./MetadataDescription.vue";
+import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
+import MetadataLastEdit from "./MetadataLastEdit.vue";
+import MetadataTags from "./MetadataTags.vue";
+import { useDraft } from "./useDraft";
+import { useSaveMetadata } from "./useSaveMetadata";
 
 interface Props {
   projectMetadata: ProjectMetadata;

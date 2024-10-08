@@ -1,9 +1,11 @@
-import { expect, describe, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import { API } from "@/api";
-import { deepMocked } from "@/test/utils";
-import { loadStore } from "./loadStore";
-import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import { getToastsProvider } from "@/plugins/toasts";
+import { deepMocked } from "@/test/utils";
+import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+
+import { loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
 const variableMockData = vi.hoisted(() => ({

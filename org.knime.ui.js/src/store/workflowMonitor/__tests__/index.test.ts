@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { mockVuexStore } from "@/test/utils";
-
-import { createWorkflow, createWorkflowMonitorMessage } from "@/test/factories";
-import * as applicationStore from "../../application";
-import * as workflowStore from "../../workflow";
-import * as selectionStore from "../../selection";
-import * as workflowMonitorStore from "../index";
 import { flushPromises } from "@vue/test-utils";
+
+import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
 import { lifecycleBus } from "@/store/application/lifecycle-events";
-import { APP_ROUTES } from "@/router/appRoutes";
+import { createWorkflow, createWorkflowMonitorMessage } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
+import * as applicationStore from "../../application";
+import * as selectionStore from "../../selection";
+import * as workflowStore from "../../workflow";
+import * as workflowMonitorStore from "../index";
 
 vi.mock("@/router/router", () => {
   return {

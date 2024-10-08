@@ -1,44 +1,30 @@
-import { expect, describe, it, vi, beforeEach } from "vitest";
-import { deepMocked, lodashMockFactory, mockVuexStore } from "@/test/utils";
-
-vi.mock("lodash-es", async (importActual) => {
-  const actual = await importActual();
-
-  return {
-    // @ts-ignore
-    ...actual,
-    ...lodashMockFactory(),
-  };
-});
-
-import { mount } from "@vue/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
 import { Button, NodePreview } from "@knime/components";
-import {
-  createAvailablePortTypes,
-  createPort,
-  createNodePortTemplate,
-  createNodeTemplate,
-  createSearchNodesResponse,
-} from "@/test/factories";
 
 import { API } from "@/api";
-import * as $shapes from "@/style/shapes";
-import * as $colors from "@/style/colors";
-
-import * as quickAddNodesStore from "@/store/quickAddNodes";
-import * as workflowStore from "@/store/workflow";
-import * as selectionStore from "@/store/selection";
-import * as settingsStore from "@/store/settings";
-
-import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
-
 import {
   NativeNodeInvariants,
   PortType,
 } from "@/api/gateway-api/generated-api";
+import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
+import * as quickAddNodesStore from "@/store/quickAddNodes";
+import * as selectionStore from "@/store/selection";
+import * as settingsStore from "@/store/settings";
+import * as workflowStore from "@/store/workflow";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
+import {
+  createAvailablePortTypes,
+  createNodePortTemplate,
+  createNodeTemplate,
+  createPort,
+  createSearchNodesResponse,
+} from "@/test/factories";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import QuickAddNodeMenu, {
   type QuickAddNodeMenuProps,
 } from "../QuickAddNodeMenu.vue";

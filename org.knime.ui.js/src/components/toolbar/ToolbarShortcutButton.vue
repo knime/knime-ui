@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { useShortcuts } from "@/plugins/shortcuts";
 import { computed } from "vue";
-import type { ShortcutName } from "@/shortcuts";
-import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+
 import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+
 import ToolbarButton from "@/components/common/ToolbarButton.vue";
+import { useShortcuts } from "@/plugins/shortcuts";
+import type { ShortcutName } from "@/shortcuts";
 
 const $shortcuts = useShortcuts();
 

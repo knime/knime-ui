@@ -1,9 +1,8 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
-
 import ConnectorLabel from "../ConnectorLabel.vue";
 
 describe("ConnectorLabel.vue", () => {

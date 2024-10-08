@@ -1,11 +1,11 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, afterEach, vi } from "vitest";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { API } from "@/api";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import { UI_SCALE_STEPSIZE, ratioToZoomLevel } from "../settings";
 import * as settingsStoreConfig from "../settings";
 
-import { API } from "@/api";
 const mockedAPI = deepMocked(API);
 
 const loadStore = () => {

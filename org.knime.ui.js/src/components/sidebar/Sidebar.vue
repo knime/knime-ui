@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { defineAsyncComponent, computed, watch } from "vue";
+import { computed, defineAsyncComponent, watch } from "vue";
 import type { FunctionalComponent, SVGAttributes } from "vue";
 
+import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
 import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
-import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 
-import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import MetainfoIcon from "@/assets/metainfo.svg";
-import { TABS, type TabValues } from "@/store/panel";
+import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import { useStore } from "@/composables/useStore";
 import { useFeatures } from "@/plugins/feature-flags";
+import { TABS, type TabValues } from "@/store/panel";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
-import SidebarExtensionPanel from "./SidebarExtensionPanel.vue";
 import SidebarContentLoading from "./SidebarContentLoading.vue";
+import SidebarExtensionPanel from "./SidebarExtensionPanel.vue";
 
 type SidebarSection = {
   name: TabValues;

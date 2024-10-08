@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
-import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
-import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
-import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
+
 import CloudComponentIcon from "@knime/styles/img/icons/cloud-component.svg";
-import CloseButton from "@/components/common/CloseButton.vue";
+import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
+import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
+import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
+
 import { SpaceProviderNS } from "@/api/custom-types";
+import CloseButton from "@/components/common/CloseButton.vue";
 
 /* eslint-disable no-magic-numbers */
 const maxCharSwitch = [

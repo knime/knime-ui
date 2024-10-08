@@ -1,10 +1,10 @@
-import { expect, describe, beforeEach, afterEach, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
 
-import HotkeyHandler from "../HotkeyHandler.vue";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { escapePressed as expressPressedMock } from "@/composables/useEscapeStack";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import HotkeyHandler from "../HotkeyHandler.vue";
 
 vi.mock("@/composables/useEscapeStack", () => ({
   escapePressed: vi.fn(),

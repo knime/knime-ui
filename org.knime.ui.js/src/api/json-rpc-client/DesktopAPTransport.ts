@@ -1,8 +1,8 @@
 /* eslint-disable class-methods-use-this */
-import type { JSONRPCRequestData } from "@open-rpc/client-js/build/Request";
-import { Transport } from "@open-rpc/client-js/build/transports/Transport";
 import { JSONRPCError } from "@open-rpc/client-js";
 import { ERR_UNKNOWN } from "@open-rpc/client-js/build/Error";
+import type { JSONRPCRequestData } from "@open-rpc/client-js/build/Request";
+import { Transport } from "@open-rpc/client-js/build/transports/Transport";
 
 export class DesktopAPTransport extends Transport {
   private rpcActionId: string;

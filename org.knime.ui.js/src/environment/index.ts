@@ -1,8 +1,9 @@
+import type { App } from "vue";
+
 import DynamicEnvRenderer from "./DynamicEnvRenderer.vue";
 import * as compatibility from "./compatibility";
 
 /* eslint-disable new-cap */
-import type { App } from "vue";
 
 export type Environment = "DESKTOP" | "BROWSER";
 

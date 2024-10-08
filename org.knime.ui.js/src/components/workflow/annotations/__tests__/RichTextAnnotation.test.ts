@@ -1,17 +1,16 @@
-import { mockVuexStore } from "@/test/utils";
+import { type Mock, describe, expect, it, vi } from "vitest";
 import { shallowRef } from "vue";
-import { mount, VueWrapper } from "@vue/test-utils";
-import { describe, expect, it, vi, type Mock } from "vitest";
+import { VueWrapper, mount } from "@vue/test-utils";
 
 import { FunctionButton } from "@knime/components";
+import { CreateLinkModal } from "@knime/rich-text-editor";
 
 import * as $colors from "@/style/colors";
-
-import RichTextAnnotation from "../RichTextAnnotation.vue";
-import ColorSelectionDialog from "../ColorSelectionDialog.vue";
-import RichTextAnnotationToolbar from "../RichTextAnnotationToolbar.vue";
+import { mockVuexStore } from "@/test/utils";
 import ColorIcon from "../ColorIcon.vue";
-import { CreateLinkModal } from "@knime/rich-text-editor";
+import ColorSelectionDialog from "../ColorSelectionDialog.vue";
+import RichTextAnnotation from "../RichTextAnnotation.vue";
+import RichTextAnnotationToolbar from "../RichTextAnnotationToolbar.vue";
 
 // mock for editor's isActive function. declared separately due to mock hoisting via vi.mock
 const isActive = vi.fn();

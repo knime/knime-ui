@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useStore } from "vuex";
+import { computed, onBeforeUnmount, reactive, ref } from "vue";
 import throttle from "raf-throttle";
-import { ref, reactive, computed, onBeforeUnmount } from "vue";
+import { useStore } from "vuex";
 
-import type { RootStoreState } from "@/store/types";
 import { $bus } from "@/plugins/event-bus";
 import { useShortcuts } from "@/plugins/shortcuts";
+import type { RootStoreState } from "@/store/types";
 
 const startPosition = reactive({ x: 0, y: 0 });
 const endPosition = reactive({ x: 0, y: 0 });

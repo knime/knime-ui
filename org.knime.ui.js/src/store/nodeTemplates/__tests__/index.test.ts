@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import { API } from "@/api";
 
+import { API } from "@/api";
+import * as applicationStore from "@/store/application";
 import {
+  NODE_FACTORIES,
   createAvailablePortTypes,
   createNodeTemplate,
   createNodeTemplateWithExtendedPorts,
-  NODE_FACTORIES,
 } from "@/test/factories";
-import * as applicationStore from "@/store/application";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 import * as nodeTemplatesStore from "../index";
 

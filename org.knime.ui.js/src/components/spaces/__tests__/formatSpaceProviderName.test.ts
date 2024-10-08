@@ -1,6 +1,7 @@
+import { describe, expect, it } from "vitest";
+
 import { SpaceProviderNS } from "@/api/custom-types";
 import { createSpaceProvider } from "@/test/factories";
-import { describe, expect, it } from "vitest";
 import { formatSpaceProviderName } from "../formatSpaceProviderName";
 
 describe("formatSpaceProviderName", () => {

@@ -1,15 +1,11 @@
-import { expect, describe, it, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 /* eslint-disable max-lines */
-import {
-  deepMocked,
-  lodashMockFactory,
-  mockVuexStore,
-  withPorts,
-} from "@/test/utils";
 import { API } from "@/api";
-import { createSearchNodesResponse } from "@/test/factories";
-import type { NodeRepositoryDisplayModesType } from "../settings";
 import type { NodeRepositoryState } from "@/store/nodeRepository";
+import { createSearchNodesResponse } from "@/test/factories";
+import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
+import type { NodeRepositoryDisplayModesType } from "../settings";
 
 const getNodesGroupedByTagsResponse = {
   groups: [
@@ -82,15 +78,6 @@ const getNodeDescriptionResponse = {
 };
 
 const mockedAPI = deepMocked(API);
-
-vi.mock("lodash-es", async () => {
-  const actual = await vi.importActual("lodash-es");
-
-  return {
-    ...actual,
-    ...lodashMockFactory(),
-  };
-});
 
 describe("Node Repository store", () => {
   const createStore = async (

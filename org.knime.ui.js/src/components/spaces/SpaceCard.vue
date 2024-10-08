@@ -4,11 +4,11 @@ import { computed } from "vue";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
 import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 
+import type { SpaceProviderNS } from "@/api/custom-types";
 import Card from "@/components/common/Card.vue";
-import CardHeader from "@/components/common/CardHeader.vue";
 import CardContent from "@/components/common/CardContent.vue";
 import CardFooter from "@/components/common/CardFooter.vue";
-import type { SpaceProviderNS } from "@/api/custom-types";
+import CardHeader from "@/components/common/CardHeader.vue";
 
 const props = defineProps<{
   space: SpaceProviderNS.Space;

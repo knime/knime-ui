@@ -1,9 +1,8 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { NodeState, PortType } from "@/api/gateway-api/generated-api";
-
 import type { DeepPartial } from "@/test/utils";
-
 import * as outputValidator from "../output-validator";
 
 describe("output-validator", () => {

@@ -1,4 +1,5 @@
-import { expect, describe, beforeAll, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
 import { generateWorkflowPreview } from "../generateWorkflowPreview";
 
 vi.mock(

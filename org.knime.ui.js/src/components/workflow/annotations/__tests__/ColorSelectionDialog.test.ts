@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import { annotationColorPresets } from "@/style/colors";
 import { FunctionButton } from "@knime/components";
 
+import { annotationColorPresets } from "@/style/colors";
 import ColorSelectionDialog from "../ColorSelectionDialog.vue";
 
 describe("ColorSelectionDialog.vue", () => {

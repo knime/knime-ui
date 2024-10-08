@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+
 import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
 import type {
   Node,
@@ -7,16 +8,15 @@ import type {
   PortGroup,
 } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-
 import NodePort from "../NodePort/NodePort.vue";
-import { usePortKeyboardNavigation } from "./usePortKeyboardNavigation";
-import { usePortSelection } from "./usePortSelection";
-import { usePortAnimationClasses } from "./usePortAnimationClasses";
-import { useNodeInfo } from "./useNodeInfo";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
-import { usePortPositions } from "./usePortPositions";
 import type { TargetPort } from "./types";
+import { useNodeInfo } from "./useNodeInfo";
+import { usePortAnimationClasses } from "./usePortAnimationClasses";
+import { usePortKeyboardNavigation } from "./usePortKeyboardNavigation";
+import { usePortPositions } from "./usePortPositions";
+import { usePortSelection } from "./usePortSelection";
 
 /**
  * This component renders and handles interactions with a Node's Ports

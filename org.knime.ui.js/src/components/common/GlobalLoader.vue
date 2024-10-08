@@ -1,17 +1,18 @@
 <script lang="ts" setup>
 import {
-  toRef,
   type CSSProperties,
-  ref,
   computed,
-  watch,
   nextTick,
   onMounted,
+  ref,
+  toRef,
+  watch,
 } from "vue";
 
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
-import { createStaggeredLoader } from "@/util/createStaggeredLoader";
+
 import { type GlobalLoaderConfig } from "@/store/application/globalLoader";
+import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 const props = withDefaults(defineProps<GlobalLoaderConfig>(), {
   loading: false,

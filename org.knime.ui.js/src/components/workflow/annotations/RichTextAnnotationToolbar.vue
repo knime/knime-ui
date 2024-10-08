@@ -1,22 +1,22 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useStore } from "vuex";
-import type { Editor } from "@tiptap/vue-3";
 import type { Level } from "@tiptap/extension-heading";
+import type { Editor } from "@tiptap/vue-3";
+import { useStore } from "vuex";
 
-import { FunctionButton, SubMenu, type MenuItem } from "@knime/components";
+import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
+import type { EditorTools } from "@knime/rich-text-editor";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import MoreActionsIcon from "@knime/styles/img/icons/menu-options.svg";
-import type { EditorTools } from "@knime/rich-text-editor";
+import { type HotkeysNS, hotkeys } from "@knime/utils";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as $shapes from "@/style/shapes";
-import { hotkeys, type HotkeysNS } from "@knime/utils";
 
 import ColorIcon from "./ColorIcon.vue";
-import RichTextAnnotationToolbarDialog from "./RichTextAnnotationToolbarDialog.vue";
 import ColorSelectionDialog from "./ColorSelectionDialog.vue";
+import RichTextAnnotationToolbarDialog from "./RichTextAnnotationToolbarDialog.vue";
 
 interface Props {
   editor: Editor;

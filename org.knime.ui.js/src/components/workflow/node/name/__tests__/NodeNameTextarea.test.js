@@ -1,9 +1,8 @@
-import { expect, describe, it, vi } from "vitest";
-import { shallowMount } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
-
 import NodeNameTextarea from "../NodeNameTextarea.vue";
 
 describe("NodeNameTextarea", () => {

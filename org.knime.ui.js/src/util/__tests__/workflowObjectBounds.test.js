@@ -1,6 +1,6 @@
-import { expect, describe, it } from "vitest";
-import * as $shapes from "@/style/shapes";
+import { describe, expect, it } from "vitest";
 
+import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 
 describe("Workflow-Objects Bounds", () => {

@@ -2,8 +2,10 @@
 // Offers a primary and a secondary slot that are split horizontal or vertical. Percent or pixel based sizes
 // which can be limited. Click to the splitter will hide the secondary panel.
 import { computed, ref, toRef, watch } from "vue";
-import Splitter from "./Splitter.vue";
+
 import SwitchIcon from "@knime/styles/img/icons/arrow-prev.svg";
+
+import Splitter from "./Splitter.vue";
 
 interface Props {
   direction?: "left" | "right" | "down" | "up";

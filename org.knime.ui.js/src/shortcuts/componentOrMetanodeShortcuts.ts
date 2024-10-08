@@ -1,16 +1,17 @@
-import CreateMetanode from "@knime/styles/img/icons/metanode-add.svg";
 import CreateComponent from "@knime/styles/img/icons/component.svg";
 import LayoutIcon from "@knime/styles/img/icons/layout-editor.svg";
+import CreateMetanode from "@knime/styles/img/icons/metanode-add.svg";
+
+import type { KnimeNode } from "@/api/custom-types";
+import type { ComponentNode } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { isNodeComponent } from "@/util/nodeUtil";
+import { isComponentProject } from "@/util/projectUtil";
 
 import type {
   ShortcutConditionContext,
   UnionToShortcutRegistry,
 } from "./types";
-import type { KnimeNode } from "@/api/custom-types";
-import { isComponentProject } from "@/util/projectUtil";
-import { isNodeComponent } from "@/util/nodeUtil";
-import type { ComponentNode } from "@/api/gateway-api/generated-api";
 
 type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "createMetanode"

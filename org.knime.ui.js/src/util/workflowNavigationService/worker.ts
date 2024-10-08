@@ -2,12 +2,13 @@ import { kdTree as KDTree } from "kd-tree-javascript";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+
 import {
-  isValidEvent,
   type Direction,
-  type WorkerMessage,
   type FindNearestObjectPayload,
   type GenericWorkflowObject,
+  type WorkerMessage,
+  isValidEvent,
 } from "./common";
 
 const distance = function (pt1: XY, pt2: XY) {

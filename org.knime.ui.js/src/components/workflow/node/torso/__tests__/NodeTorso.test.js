@@ -1,18 +1,16 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-
-import { mockVuexStore } from "@/test/utils";
 
 import { NodeTorsoNormal } from "@knime/components";
 
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
 import NodeTorso from "../NodeTorso.vue";
+import NodeTorsoForbidden from "../NodeTorsoForbidden.vue";
+import NodeTorsoMetanode from "../NodeTorsoMetanode.vue";
 import NodeTorsoMissing from "../NodeTorsoMissing.vue";
 import NodeTorsoUnknown from "../NodeTorsoUnknown.vue";
-import NodeTorsoMetanode from "../NodeTorsoMetanode.vue";
-import NodeTorsoForbidden from "../NodeTorsoForbidden.vue";
 
 describe("NodeTorso.vue", () => {
   const doShallowMount = (props, { writable = true } = {}) => {

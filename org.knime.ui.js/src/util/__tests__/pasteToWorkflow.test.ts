@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
 import {
-  offsetStrategy,
   centerStrategy,
+  offsetStrategy,
   pastePartsAt,
 } from "@/util/pasteToWorkflow";
 

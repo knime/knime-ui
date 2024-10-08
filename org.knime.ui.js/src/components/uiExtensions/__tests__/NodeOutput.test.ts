@@ -1,19 +1,18 @@
 /* eslint-disable max-params */
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import type { Store } from "vuex";
 import { VueWrapper, mount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import type { Store } from "vuex";
 
-import * as selectionStore from "@/store/selection";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
+import { Button } from "@knime/components";
 
-import * as $shapes from "@/style/shapes";
-import * as $colors from "@/style/colors";
-
-import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
 import type { KnimeNode } from "@/api/custom-types";
+import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
+import * as applicationStore from "@/store/application";
+import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
+import * as $colors from "@/style/colors";
+import * as $shapes from "@/style/shapes";
 import {
   createAvailablePortTypes,
   createComponentNode,
@@ -21,15 +20,14 @@ import {
   createNativeNode,
   createPort,
 } from "@/test/factories";
-
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import ExecuteButton from "../ExecuteButton.vue";
+import LoadingIndicator from "../LoadingIndicator.vue";
 import NodeOutput from "../NodeOutput.vue";
 import PortTabs from "../PortTabs.vue";
-import PortViewTabOutput from "../portViews/PortViewTabOutput.vue";
 import ValidationInfo from "../ValidationInfo.vue";
-import LoadingIndicator from "../LoadingIndicator.vue";
-import ExecuteButton from "../ExecuteButton.vue";
-import { Button } from "@knime/components";
 import NodeViewTabOutput from "../nodeViews/NodeViewTabOutput.vue";
+import PortViewTabOutput from "../portViews/PortViewTabOutput.vue";
 
 vi.mock("@knime/ui-extension-service");
 

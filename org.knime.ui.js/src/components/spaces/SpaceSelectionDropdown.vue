@@ -1,19 +1,20 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 
-import { SubMenu, LoadingIcon } from "@knime/components";
+import { LoadingIcon, SubMenu } from "@knime/components";
+import type { MenuItem } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
-import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
-import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 import ComputerDesktopIcon from "@knime/styles/img/icons/local-space.svg";
-import type { MenuItem } from "@knime/components";
+import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
+import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
-import { useSpaceIcons } from "./useSpaceIcons";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
+
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
+import { useSpaceIcons } from "./useSpaceIcons";
 
 interface Props {
   showText?: boolean;

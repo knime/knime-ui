@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
+import { useStore } from "@/composables/useStore";
 import { TABS } from "@/store/panel";
-import TagResults from "./TagResults.vue";
-import CategoryTree from "./CategoryTree.vue";
 
+import CategoryTree from "./CategoryTree.vue";
+import type { NavigationKey } from "./NodeList.vue";
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
-import type { NavigationKey } from "./NodeList.vue";
+import TagResults from "./TagResults.vue";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 

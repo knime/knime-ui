@@ -1,9 +1,8 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import * as $shapes from "@/style/shapes";
 import * as $colors from "@/style/colors";
-
+import * as $shapes from "@/style/shapes";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
 
 describe("NodeSlectionPlane.vue", () => {

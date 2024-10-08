@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
+
 import ArrowDownIcon from "@knime/styles/img/icons/arrow-down.svg";
 import CircleInfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
 import { useStore } from "@/composables/useStore";
+
 import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
 const store = useStore();

@@ -1,11 +1,13 @@
 <script lang="ts">
-import { defineComponent, type PropType, nextTick } from "vue";
+import { type PropType, defineComponent, nextTick } from "vue";
 import { mapActions, mapMutations, mapState } from "vuex";
-import Port from "@/components/common/Port.vue";
-import type { MenuItemWithPort, TargetPort } from "./types";
-import type { WorkflowState } from "@/store/workflow";
+
 import type { NodePortGroups } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import Port from "@/components/common/Port.vue";
+import type { WorkflowState } from "@/store/workflow";
+
+import type { MenuItemWithPort, TargetPort } from "./types";
 
 export const addPortPlaceholderPath = (() => {
   let cx = 0;

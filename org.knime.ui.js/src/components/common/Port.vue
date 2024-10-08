@@ -1,5 +1,6 @@
 <script>
 import { mapState } from "vuex";
+
 import { PortIcon } from "@knime/components";
 
 export default {

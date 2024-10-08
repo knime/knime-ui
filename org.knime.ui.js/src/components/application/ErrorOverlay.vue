@@ -2,11 +2,11 @@
 import { computed, ref, version } from "vue";
 
 import { Button, FunctionButton } from "@knime/components";
-import ReloadIcon from "@knime/styles/img/icons/reload.svg";
-import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import CheckIcon from "@knime/styles/img/icons/check.svg";
 import WarningIcon from "@knime/styles/img/icons/circle-warning.svg";
+import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import SwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { API } from "@/api";
 import DynamicEnvRenderer from "@/environment/DynamicEnvRenderer.vue";

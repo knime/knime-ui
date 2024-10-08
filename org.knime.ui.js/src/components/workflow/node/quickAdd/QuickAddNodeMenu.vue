@@ -1,33 +1,32 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from "vue";
 
+import { SearchInput } from "@knime/components";
+
+import type {
+  AvailablePortTypes,
+  ExtendedPortType,
+  NodeRelation,
+  NodeTemplateWithExtendedPorts,
+} from "@/api/custom-types";
 import {
   type NodePort,
   type NodePortTemplate,
   type XY,
 } from "@/api/gateway-api/generated-api";
-import * as $shapes from "@/style/shapes";
-
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
-import { SearchInput } from "@knime/components";
-
-import { checkPortCompatibility } from "@/util/compatibleConnections";
-import { portPositions } from "@/util/portShift";
-
-import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
-import QuickAddNodeSearchResults from "./QuickAddNodeSearchResults.vue";
-import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
-import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
-import type {
-  AvailablePortTypes,
-  ExtendedPortType,
-  NodeTemplateWithExtendedPorts,
-  NodeRelation,
-} from "@/api/custom-types";
+import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
 import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
+import * as $shapes from "@/style/shapes";
+import { checkPortCompatibility } from "@/util/compatibleConnections";
+import { portPositions } from "@/util/portShift";
 import type { DragConnector } from "../../ports/NodePort/types";
+
+import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
+import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
+import QuickAddNodeSearchResults from "./QuickAddNodeSearchResults.vue";
 import { useNodeRecommendations } from "./useNodeRecommendations";
 
 const calculatePortOffset = (params: {

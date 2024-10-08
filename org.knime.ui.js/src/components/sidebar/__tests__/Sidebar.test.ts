@@ -1,15 +1,14 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
-import * as panelStore from "@/store/panel";
+import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
+
+import Metainfo from "@/assets/metainfo.svg";
 import * as applicationStore from "@/store/application";
 import * as nodeRepositoryStore from "@/store/nodeRepository";
+import * as panelStore from "@/store/panel";
 import * as uiControlsStore from "@/store/uiControls";
-
-import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
-import Metainfo from "@/assets/metainfo.svg";
-
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import Sidebar from "../Sidebar.vue";
 import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
 

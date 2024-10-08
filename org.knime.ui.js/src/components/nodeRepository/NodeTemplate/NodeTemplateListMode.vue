@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
-import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
-import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 import { computed } from "vue";
+
+import ExtensionCommunityIcon from "@knime/styles/img/icons/extension-community.svg";
+
+import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+
+import NodeTemplateHelpIcon from "./NodeTemplateHelpIcon.vue";
 
 export type Props = {
   nodeTemplate: NodeTemplateWithExtendedPorts;

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CogIcon from "@knime/styles/img/icons/cog.svg";
+
 import { API } from "@/api";
 import DummyNodesEmptyState from "@/components/common/DummyNodesEmptyState.vue";
 

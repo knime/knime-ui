@@ -1,7 +1,7 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { mutations, actions } from "../json-patch";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { actions, mutations } from "../json-patch";
 
 describe("json-patch plugin", () => {
   let store;

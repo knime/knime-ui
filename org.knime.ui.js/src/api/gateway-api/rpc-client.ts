@@ -1,4 +1,5 @@
 import { getRPCClientInstance, registerEventHandler } from "../json-rpc-client";
+
 import type { Configuration } from "./configuration";
 
 export interface RPCClient {

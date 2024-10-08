@@ -1,16 +1,15 @@
-import { expect, describe, beforeEach, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import { mockVuexStore } from "@/test/utils";
 
-import ComponentIcon from "@knime/styles/img/icons/node-workflow.svg";
-import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
 import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
 import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
+import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
+import ComponentIcon from "@knime/styles/img/icons/node-workflow.svg";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-
-import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { mockVuexStore } from "@/test/utils";
+import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 
 describe("WorkflowBreadcrumb.vue", () => {
   let store, workflow, wrapper, doShallowMount, storeConfig;

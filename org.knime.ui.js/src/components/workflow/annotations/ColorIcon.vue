@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import CircleStopIcon from "@knime/styles/img/icons/circle-stop.svg";
+
 import { annotationColorPresets } from "@/style/colors";
 
 interface Props {

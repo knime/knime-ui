@@ -1,6 +1,6 @@
 import type { App } from "vue";
-import type { Store } from "vuex";
 import type { Router } from "vue-router";
+import type { Store } from "vuex";
 
 import type { ToastService } from "@knime/components";
 
@@ -8,11 +8,11 @@ import Portal from "@/components/common/Portal.vue";
 import PortalTarget from "@/components/common/PortalTarget.vue";
 import type { RootStoreState } from "@/store/types";
 
-import shortcuts from "./shortcuts";
 import constants from "./constants";
-import events from "./events";
 import eventBus from "./event-bus";
+import events from "./events";
 import featureFlags from "./feature-flags";
+import shortcuts from "./shortcuts";
 import type { PluginInitFunction } from "./types";
 
 export const initPlugins = ({

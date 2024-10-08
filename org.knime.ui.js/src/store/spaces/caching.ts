@@ -4,13 +4,13 @@ import type {
   SpaceItemReference,
   WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-
 import type { RootStoreState } from "../types";
-import type { SpacesState } from "./index";
+
 import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
 } from "./common";
+import type { SpacesState } from "./index";
 import type { PathTriplet } from "./types";
 import { findSpaceById } from "./util";
 

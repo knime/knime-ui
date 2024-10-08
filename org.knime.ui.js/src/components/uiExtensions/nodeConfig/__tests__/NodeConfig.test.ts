@@ -1,17 +1,18 @@
-import { expect, describe, it, vi, beforeAll, type Mock } from "vitest";
-import { mount } from "@vue/test-utils";
+import { type Mock, beforeAll, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
 import { sleep } from "@knime/utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+
 import * as applicationStore from "@/store/application";
-import * as workflowStore from "@/store/workflow";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
 import { createNativeNode, createWorkflow } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { setEnvironment } from "@/test/utils/setEnvironment";
 import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
 import NodeConfig from "../NodeConfig.vue";
-import { setEnvironment } from "@/test/utils/setEnvironment";
 
 describe("NodeConfig", () => {
   type MountOpts = {

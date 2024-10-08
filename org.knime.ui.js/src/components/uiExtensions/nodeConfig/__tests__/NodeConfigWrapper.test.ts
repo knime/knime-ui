@@ -1,19 +1,19 @@
-import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
-
-import { mockVuexStore } from "@/test/utils";
-import * as applicationStore from "@/store/application";
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
-import * as nodeConfigurationStore from "@/store/nodeConfiguration";
-import * as uiControlsStore from "@/store/uiControls";
-import { createNativeNode, createWorkflow } from "@/test/factories";
-import { NodeState } from "@/api/gateway-api/generated-api";
-
-import NodeConfigWrapper from "../NodeConfigWrapper.vue";
-import NodeConfigLayout from "../NodeConfigLayout.vue";
+import { flushPromises, mount } from "@vue/test-utils";
 import type { Store } from "vuex";
+
 import { ApplyState, ViewState } from "@knime/ui-extension-service";
+
+import { NodeState } from "@/api/gateway-api/generated-api";
+import * as applicationStore from "@/store/application";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
+import * as selectionStore from "@/store/selection";
+import * as uiControlsStore from "@/store/uiControls";
+import * as workflowStore from "@/store/workflow";
+import { createNativeNode, createWorkflow } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
+import NodeConfigLayout from "../NodeConfigLayout.vue";
+import NodeConfigWrapper from "../NodeConfigWrapper.vue";
 
 describe("NodeConfigLayout.vue", () => {
   const projectId = "project1";

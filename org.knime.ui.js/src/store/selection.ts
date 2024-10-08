@@ -1,10 +1,11 @@
 import type { ActionTree, Commit, GetterTree, MutationTree } from "vuex";
 
-import type { RootStoreState } from "./types";
-import { parseBendpointId } from "@/util/connectorUtil";
-import type { SelectedPortIdentifier } from "@/util/portSelection";
 import type { KnimeNode, WorkflowObject } from "@/api/custom-types";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
+import { parseBendpointId } from "@/util/connectorUtil";
+import type { SelectedPortIdentifier } from "@/util/portSelection";
+
+import type { RootStoreState } from "./types";
 
 export type NodeOutputTabIdentifier = "view" | `${number}` | null;
 

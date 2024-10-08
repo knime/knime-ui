@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import {
-  ApplyState,
-  type APILayerDirtyState,
-} from "@knime/ui-extension-service";
 import { Button } from "@knime/components";
+import {
+  type APILayerDirtyState,
+  ApplyState,
+} from "@knime/ui-extension-service";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
-
 import type { UIExtensionLoadingState } from "../common/types";
+
 import NodeConfigLoader from "./NodeConfigLoader.vue";
 
 type Props = {

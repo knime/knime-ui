@@ -6,6 +6,7 @@ import {
   type PortViewDescriptorMapping,
   type PortViews,
 } from "@/api/gateway-api/generated-api";
+
 import { isNodeMetaNode } from "./nodeUtil";
 
 /**

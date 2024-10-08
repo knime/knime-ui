@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, ref, defineAsyncComponent } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
+import type { MenuItem } from "@knime/components";
 import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import DocsIcon from "@knime/styles/img/icons/file-text.svg";
 import ForumIcon from "@knime/styles/img/icons/forum.svg";
 import GraduateHatIcon from "@knime/styles/img/icons/graduate-hat.svg";
-import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
-import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
-import DocsIcon from "@knime/styles/img/icons/file-text.svg";
-import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import LinkExteranlIcon from "@knime/styles/img/icons/link-external.svg";
-import type { MenuItem } from "@knime/components";
+import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
+import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
+import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
+import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
 
-import InfoIcon from "@/assets/info.svg";
 import { API } from "@/api";
+import InfoIcon from "@/assets/info.svg";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";

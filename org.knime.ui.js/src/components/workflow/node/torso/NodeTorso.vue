@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
+
 import { NodeTorsoNormal } from "@knime/components";
+
 import type {
   NativeNodeInvariants,
   Node,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 
-import NodeTorsoMissing from "./NodeTorsoMissing.vue";
-import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
-import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
-import NodeTorsoReplace from "./NodeTorsoReplace.vue";
 import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
+import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
+import NodeTorsoMissing from "./NodeTorsoMissing.vue";
+import NodeTorsoReplace from "./NodeTorsoReplace.vue";
+import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
 
 /**
  * Main part of the node icon.

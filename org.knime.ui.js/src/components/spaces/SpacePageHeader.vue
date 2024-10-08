@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, toRef, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
+
 import {
   Breadcrumb,
-  FunctionButton,
   type BreadcrumbItem,
+  FunctionButton,
 } from "@knime/components";
 import SaveIcon from "@knime/styles/img/icons/check.svg";
 import CancelIcon from "@knime/styles/img/icons/close.svg";

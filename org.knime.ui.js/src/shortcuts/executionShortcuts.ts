@@ -1,17 +1,15 @@
-import ExecuteAllIcon from "@knime/styles/img/icons/execute-all.svg";
 import CancelAllIcon from "@knime/styles/img/icons/cancel-execution.svg";
+import ExecuteAllIcon from "@knime/styles/img/icons/execute-all.svg";
 import ResetAllIcon from "@knime/styles/img/icons/reset-all.svg";
-import OpenViewIcon from "@/assets/open-view.svg";
-
-import ExecuteSelectedIcon from "@knime/styles/img/icons/selected-execute.svg";
 import CancelSelectedIcon from "@knime/styles/img/icons/selected-cancel.svg";
+import ExecuteSelectedIcon from "@knime/styles/img/icons/selected-execute.svg";
 import ResetSelectedIcon from "@knime/styles/img/icons/selected-reset.svg";
 
-import ResumeLoopIcon from "@/assets/resume-execution.svg";
-import PauseLoopIcon from "@/assets/pause-execution.svg";
-import StepLoopIcon from "@/assets/step-execution.svg";
-
 import type { KnimeNode } from "@/api/custom-types";
+import OpenViewIcon from "@/assets/open-view.svg";
+import PauseLoopIcon from "@/assets/pause-execution.svg";
+import ResumeLoopIcon from "@/assets/resume-execution.svg";
+import StepLoopIcon from "@/assets/step-execution.svg";
 
 import type {
   ShortcutConditionContext,

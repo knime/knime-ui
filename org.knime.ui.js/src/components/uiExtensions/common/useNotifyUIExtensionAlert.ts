@@ -1,5 +1,6 @@
 import { onUnmounted, ref } from "vue";
 import { capitalize } from "lodash-es";
+
 import type { Alert } from "@knime/ui-extension-service";
 
 import { getToastsProvider } from "@/plugins/toasts";

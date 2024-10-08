@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Modal, OpenSourceCredits } from "@knime/components";
 import { ref } from "vue";
+
+import { Modal, OpenSourceCredits } from "@knime/components";
 
 const usedPackages = ref<any[]>([]);
 

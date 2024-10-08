@@ -1,26 +1,23 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { sleep } from "@knime/utils";
-import { API } from "@/api";
-import {
-  type WorkflowMonitorMessage,
-  type WorkflowMonitorState as WorkflowMonitorAPIState,
-} from "@/api/gateway-api/generated-api";
-import type { WorkflowObject } from "@/api/custom-types";
 
+import { API } from "@/api";
+import type { WorkflowObject } from "@/api/custom-types";
+import {
+  type WorkflowMonitorState as WorkflowMonitorAPIState,
+  type WorkflowMonitorMessage,
+} from "@/api/gateway-api/generated-api";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { router } from "@/router/router";
 import {
   actions as jsonPatchActions,
   mutations as jsonPatchMutations,
 } from "@/store-plugins/json-patch";
-
-import { router } from "@/router/router";
-import { APP_ROUTES } from "@/router/appRoutes";
-
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
-
-import type { RootStoreState } from "../types";
 import { lifecycleBus } from "../application/lifecycle-events";
+import type { RootStoreState } from "../types";
 
 export interface WorkflowMonitorState {
   /**

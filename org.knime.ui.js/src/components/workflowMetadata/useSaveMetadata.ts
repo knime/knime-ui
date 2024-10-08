@@ -1,12 +1,12 @@
-import { onBeforeUnmount, watch, type Ref } from "vue";
+import { type Ref, onBeforeUnmount, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
 
-import type { ProjectMetadata } from "@/api/gateway-api/generated-api";
 import type { ComponentMetadata } from "@/api/custom-types";
+import type { ProjectMetadata } from "@/api/gateway-api/generated-api";
 
-import type { MetadataDraft } from "./useDraft";
-import type { MetadataDraftData as ProjectMetadataDraftData } from "./ProjectMetadata.vue";
 import type { MetadataDraftData as ComponentMetadataDraftData } from "./ComponentMetadata.vue";
+import type { MetadataDraftData as ProjectMetadataDraftData } from "./ProjectMetadata.vue";
+import type { MetadataDraft } from "./useDraft";
 
 type UseSaveMetadataOptions<T> = {
   /**

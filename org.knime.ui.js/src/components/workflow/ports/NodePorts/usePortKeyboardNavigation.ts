@@ -1,19 +1,19 @@
 import {
+  type ComputedRef,
+  type Ref,
   computed,
   onBeforeUnmount,
   watch,
-  type ComputedRef,
-  type Ref,
 } from "vue";
 
+import type { KnimeNode } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
+import { isInputElement } from "@/util/isInputElement";
 import {
-  getPortContext,
   type SelectedPortContext,
   type SelectedPortIdentifier,
+  getPortContext,
 } from "@/util/portSelection";
-import type { KnimeNode } from "@/api/custom-types";
-import { isInputElement } from "@/util/isInputElement";
 
 import type AddPortPlaceholder from "./AddPortPlaceholder.vue";
 import { useNodeInfo } from "./useNodeInfo";

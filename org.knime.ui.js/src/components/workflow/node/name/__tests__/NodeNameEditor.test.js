@@ -1,12 +1,10 @@
-import { expect, describe, beforeAll, afterEach, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
-
-import * as $shapes from "@/style/shapes";
 import ActionBar from "@/components/common/ActionBar.vue";
-
+import * as $shapes from "@/style/shapes";
+import { mockVuexStore } from "@/test/utils";
 import NodeNameEditor from "../NodeNameEditor.vue";
 import NodeNameTextarea from "../NodeNameTextarea.vue";
 

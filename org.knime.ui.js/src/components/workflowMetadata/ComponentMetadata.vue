@@ -5,29 +5,27 @@ import { NodePreview } from "@knime/components";
 
 import type { AvailablePortTypes, ComponentMetadata } from "@/api/custom-types";
 import {
-  TypedText,
-  UpdateComponentMetadataCommand,
-  type Link,
   type ComponentNodeAndDescription,
   type ComponentPortDescription,
+  type Link,
+  TypedText,
+  UpdateComponentMetadataCommand,
 } from "@/api/gateway-api/generated-api";
-
-import { toExtendedPortObject } from "@/util/portDataMapper";
-
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
 import ComponentIconEditor from "@/components/workflowMetadata/ComponentIconEditor.vue";
-
-import MetadataDescription from "./MetadataDescription.vue";
-import ComponentMetadataNodeFeatures from "./ComponentMetadataNodeFeatures.vue";
-import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
-import MetadataTags from "./MetadataTags.vue";
-import { useDraft } from "./useDraft";
-import { useSaveMetadata } from "./useSaveMetadata";
+import ComponentTypeEditor from "@/components/workflowMetadata/ComponentTypeEditor.vue";
+import { toExtendedPortObject } from "@/util/portDataMapper";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 import SidebarPanelSubHeading from "../common/side-panel/SidebarPanelSubHeading.vue";
+
+import ComponentMetadataNodeFeatures from "./ComponentMetadataNodeFeatures.vue";
+import MetadataDescription from "./MetadataDescription.vue";
+import MetadataHeaderButtons from "./MetadataHeaderButtons.vue";
+import MetadataTags from "./MetadataTags.vue";
+import { useDraft } from "./useDraft";
+import { useSaveMetadata } from "./useSaveMetadata";
 
 interface Props {
   componentMetadata: ComponentMetadata;

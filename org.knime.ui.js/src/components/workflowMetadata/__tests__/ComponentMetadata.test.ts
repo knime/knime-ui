@@ -1,24 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { VueWrapper, mount } from "@vue/test-utils";
 import { nextTick } from "vue";
-
-import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
-import {
-  ComponentNodeAndDescription,
-  PortType,
-  TypedText,
-  type Link,
-} from "@/api/gateway-api/generated-api";
+import { VueWrapper, mount } from "@vue/test-utils";
 
 import { FunctionButton } from "@knime/components";
-import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 
+import {
+  ComponentNodeAndDescription,
+  type Link,
+  PortType,
+  TypedText,
+} from "@/api/gateway-api/generated-api";
+import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
+import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
+import ComponentIconEditor from "../ComponentIconEditor.vue";
 import ComponentMetadata from "../ComponentMetadata.vue";
+import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
+import ComponentTypeEditor from "../ComponentTypeEditor.vue";
 import MetadataDescription from "../MetadataDescription.vue";
 import MetadataTags from "../MetadataTags.vue";
-import ComponentIconEditor from "../ComponentIconEditor.vue";
-import ComponentTypeEditor from "../ComponentTypeEditor.vue";
-import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
 
 describe("ComponentMetadata.vue", () => {
   type ComponentProps = InstanceType<typeof ComponentMetadata>["$props"];

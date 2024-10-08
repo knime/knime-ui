@@ -1,9 +1,10 @@
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import {
-  defaultAddWorkflowAnnotationWidth,
   defaultAddWorkflowAnnotationHeight,
+  defaultAddWorkflowAnnotationWidth,
 } from "@/style/shapes";
+
 import type { UnionToShortcutRegistry } from "./types";
 
 type AnnotationShortcuts = UnionToShortcutRegistry<

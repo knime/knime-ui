@@ -1,14 +1,15 @@
 <script lang="ts">
-import { defineComponent, type PropType } from "vue";
+import { type PropType, defineComponent } from "vue";
 import { mapGetters, mapState } from "vuex";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
+
 import {
-  type Directions,
   DIRECTIONS,
-  transformBounds,
+  type Directions,
   getGridAdjustedBounds,
   getTransformControlPosition,
+  transformBounds,
 } from "./transform-control-utils";
 
 export const TRANSFORM_RECT_OFFSET = 1;

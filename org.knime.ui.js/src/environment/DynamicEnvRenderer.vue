@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { environment, type Environment } from "./index";
+
+import { type Environment, environment } from "./index";
 
 type Props = {
   value: Environment;

@@ -1,12 +1,11 @@
-import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
+import { mount } from "@vue/test-utils";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { mockVuexStore } from "@/test/utils";
+import { MetaNodePort, NodeState } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "@/store/application";
 import * as uiControlsStore from "@/store/uiControls";
-
-import type { ValidationError } from "../common/types";
 import {
   createAvailablePortTypes,
   createMetanode,
@@ -14,12 +13,12 @@ import {
   createNativeNode,
   createPort,
 } from "@/test/factories";
-import ValidationInfo from "../ValidationInfo.vue";
-import { MetaNodePort, NodeState } from "@/api/gateway-api/generated-api";
-import LegacyPortViewButtons from "../LegacyPortViewButtons.vue";
+import { mockVuexStore } from "@/test/utils";
 import ExecuteButton from "../ExecuteButton.vue";
+import LegacyPortViewButtons from "../LegacyPortViewButtons.vue";
 import LoadingIndicator from "../LoadingIndicator.vue";
-import { nextTick } from "vue";
+import ValidationInfo from "../ValidationInfo.vue";
+import type { ValidationError } from "../common/types";
 
 describe("ValidationInfo.vue", () => {
   const defaultProps = {

@@ -1,11 +1,12 @@
-import { expect, describe, it } from "vitest";
-import { findObjectsForSelection } from "../findObjectsForSelection";
+import { describe, expect, it } from "vitest";
+
 import {
   createConnection,
   createNativeNode,
   createWorkflow,
   createWorkflowAnnotation,
 } from "@/test/factories";
+import { findObjectsForSelection } from "../findObjectsForSelection";
 
 describe("findObjectsForSelection", () => {
   const setup = () => {

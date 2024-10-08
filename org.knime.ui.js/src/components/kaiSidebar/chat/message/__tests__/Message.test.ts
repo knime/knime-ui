@@ -1,27 +1,27 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { deepMocked, mockVuexStore } from "@/test/utils";
 
-import UserIcon from "@knime/styles/img/icons/user.svg";
 import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
+import UserIcon from "@knime/styles/img/icons/user.svg";
+
+import { API } from "@/api";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import * as applicationStore from "@/store/application";
+import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import {
   NODE_FACTORIES,
   createAvailablePortTypes,
   createNodeTemplate,
   createNodeWithExtensionInfo,
 } from "@/test/factories";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-import * as applicationStore from "@/store/application";
-import { API } from "@/api";
-
-import Message from "../Message.vue";
-import KaiReferences from "../KaiReferences.vue";
-import MessagePlaceholder from "../MessagePlaceholder.vue";
-import SuggestedNodes from "../SuggestedNodes.vue";
-import SuggestedExtensions from "../SuggestedExtensions.vue";
-import KaiStatus from "../KaiStatus.vue";
+import { deepMocked, mockVuexStore } from "@/test/utils";
 import FeedbackControls from "../FeedbackControls.vue";
+import KaiReferences from "../KaiReferences.vue";
+import KaiStatus from "../KaiStatus.vue";
+import Message from "../Message.vue";
+import MessagePlaceholder from "../MessagePlaceholder.vue";
+import SuggestedExtensions from "../SuggestedExtensions.vue";
+import SuggestedNodes from "../SuggestedNodes.vue";
 
 const mockedAPI = deepMocked(API);
 

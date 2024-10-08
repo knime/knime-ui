@@ -1,6 +1,7 @@
 import { computed } from "vue";
 
 import { mergePortBarBounds } from "@/util/workflowUtil";
+
 import { useStore } from "./useStore";
 
 export const usePortBarPositions = () => {

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
+
+import { Button } from "@knime/components";
 import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
 import LinkIcon from "@knime/styles/img/icons/link-external.svg";
-import { Button } from "@knime/components";
-import KaiCollapser from "./KaiCollapser.vue";
+
 import type { ExtensionWithNodes } from "../../types";
+
+import KaiCollapser from "./KaiCollapser.vue";
 
 interface Props {
   extensions: { [key: string]: ExtensionWithNodes };

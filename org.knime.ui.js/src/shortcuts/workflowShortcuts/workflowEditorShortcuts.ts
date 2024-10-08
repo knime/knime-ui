@@ -1,17 +1,16 @@
+import { API } from "@/api";
+import type { KnimeNode } from "@/api/custom-types";
+import type { XY } from "@/api/gateway-api/generated-api";
+import { nodeSize } from "@/style/shapes";
+import { geometry } from "@/util/geometry";
+import { isNodeMetaNode } from "@/util/nodeUtil";
+import { portPositions } from "@/util/portShift";
+import { getProjectAndWorkflowIds } from "../../store/workflow/util";
 import type {
   ShortcutConditionContext,
   ShortcutExecuteContext,
   UnionToShortcutRegistry,
 } from "../types";
-import type { KnimeNode } from "@/api/custom-types";
-
-import { API } from "@/api";
-import { portPositions } from "@/util/portShift";
-import { nodeSize } from "@/style/shapes";
-import { geometry } from "@/util/geometry";
-import { isNodeMetaNode } from "@/util/nodeUtil";
-import type { XY } from "@/api/gateway-api/generated-api";
-import { getProjectAndWorkflowIds } from "../../store/workflow/util";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
   | "quickAddNode"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, toRefs } from "vue";
+import { computed, ref, toRefs } from "vue";
 
-import { RichTextEditor, CreateLinkModal } from "@knime/rich-text-editor";
+import { CreateLinkModal, RichTextEditor } from "@knime/rich-text-editor";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 

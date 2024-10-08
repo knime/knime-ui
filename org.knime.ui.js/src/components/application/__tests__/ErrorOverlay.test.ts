@@ -1,13 +1,13 @@
-import { expect, describe, it, vi } from "vitest";
-import { version, nextTick } from "vue";
+import { describe, expect, it, vi } from "vitest";
+import { nextTick, version } from "vue";
+import { flushPromises, mount } from "@vue/test-utils";
 
-import { mount, flushPromises } from "@vue/test-utils";
 import { Button } from "@knime/components";
+
 import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
-
-import ErrorOverlay from "../ErrorOverlay.vue";
 import { copyReportToClipboard } from "@/util/errorHandling";
+import ErrorOverlay from "../ErrorOverlay.vue";
 
 vi.mock("@/util/errorHandling", async (importOriginal) => {
   return {

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, toRef, watch } from "vue";
-import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
+
 import { Button } from "@knime/components";
-import ReloadIcon from "@knime/styles/img/icons/reload.svg";
-import CopyIcon from "@knime/styles/img/icons/copy.svg";
+import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import CheckIcon from "@knime/styles/img/icons/check.svg";
+import CopyIcon from "@knime/styles/img/icons/copy.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 type Props = {
   isLogoShown: boolean;

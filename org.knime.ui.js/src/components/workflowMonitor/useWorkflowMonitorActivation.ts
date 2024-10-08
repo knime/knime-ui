@@ -2,8 +2,8 @@ import { computed, watch } from "vue";
 import { debounce } from "lodash-es";
 
 import { useStore } from "@/composables/useStore";
-import { TABS, type TabValues } from "@/store/panel";
 import { lifecycleBus } from "@/store/application/lifecycle-events";
+import { TABS, type TabValues } from "@/store/panel";
 
 export const useWorkflowMonitorActivation = () => {
   const store = useStore();

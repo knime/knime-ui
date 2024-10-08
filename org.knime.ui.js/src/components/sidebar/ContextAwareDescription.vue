@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useStore } from "@/composables/useStore";
-import { TABS } from "@/store/panel";
-import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
-import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
-import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+
 import type {
   ComponentNode,
   NativeNode,
 } from "@/api/gateway-api/generated-api";
+import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
+import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
+import { useStore } from "@/composables/useStore";
+import { TABS } from "@/store/panel";
+import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)

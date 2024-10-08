@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { watch, computed, toRef, onUnmounted } from "vue";
+import { computed, onUnmounted, toRef, watch } from "vue";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
-
 import Port from "@/components/common/Port.vue";
 import Connector from "@/components/workflow/connectors/Connector.vue";
 import QuickAddNodeGhost from "@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue";

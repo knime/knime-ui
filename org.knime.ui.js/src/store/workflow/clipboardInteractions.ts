@@ -1,18 +1,19 @@
+import { shallowRef } from "vue";
+import { uniqueId } from "lodash-es";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
+
+import CopyIcon from "@knime/styles/img/icons/copy.svg";
 
 import { API } from "@/api";
 import { createAbortablePromise } from "@/api/utils";
-import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
+import { getToastsProvider } from "@/plugins/toasts";
 import { geometry } from "@/util/geometry";
-
+import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
 import type { RootStoreState } from "../types";
+
 import type { WorkflowState } from ".";
 import { getProjectAndWorkflowIds } from "./util";
 
-import { uniqueId } from "lodash-es";
-import { getToastsProvider } from "@/plugins/toasts";
-import CopyIcon from "@knime/styles/img/icons/copy.svg";
-import { shallowRef } from "vue";
 const $toast = getToastsProvider();
 
 const showFallbackToast = (clipboardContent: string) => {

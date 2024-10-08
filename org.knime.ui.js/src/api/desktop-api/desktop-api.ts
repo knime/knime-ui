@@ -1,15 +1,14 @@
 /* eslint-disable max-lines */
 import { isBrowser } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
-
 import {
-  type SpaceProviderId,
-  type SpaceId,
-  type FullSpacePath,
-  type SpaceItemId,
-  SpaceProviderNS,
-  type RecentWorkflow,
   type ExampleProject,
+  type FullSpacePath,
+  type RecentWorkflow,
+  type SpaceId,
+  type SpaceItemId,
+  type SpaceProviderId,
+  SpaceProviderNS,
 } from "../custom-types";
 
 const callBrowserFunction = <TFunction extends (...args: any[]) => any>(

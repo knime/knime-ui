@@ -1,18 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
-import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
-
-import type { Bounds } from "@/api/gateway-api/generated-api";
-import * as $shapes from "@/style/shapes";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { API } from "@/api";
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
+import type { Bounds } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "@/store/application";
+import * as selectionStore from "@/store/selection";
 import * as uiControlsStore from "@/store/uiControls";
-
-import MoveableAnnotationContainer from "../MoveableAnnotationContainer.vue";
+import * as workflowStore from "@/store/workflow";
+import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
+import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
+import MoveableAnnotationContainer from "../MoveableAnnotationContainer.vue";
 
 const mockedAPI = deepMocked(API);
 

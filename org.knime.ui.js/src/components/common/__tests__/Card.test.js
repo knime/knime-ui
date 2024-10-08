@@ -1,10 +1,10 @@
-import { expect, describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import Card from "../Card.vue";
-import CardHeader from "../CardHeader.vue";
 import CardContent from "../CardContent.vue";
 import CardFooter from "../CardFooter.vue";
+import CardHeader from "../CardHeader.vue";
 
 describe("Card.vue", () => {
   const doMount = ({ props = {}, renderSubElements = true } = {}) => {

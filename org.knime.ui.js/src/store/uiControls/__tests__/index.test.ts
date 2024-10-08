@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+
+import { AppState } from "@/api/gateway-api/generated-api";
 import { mockVuexStore } from "@/test/utils";
 import { setEnvironment } from "@/test/utils/setEnvironment";
-import { AppState } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "../../application";
 
 describe("uiControls", () => {

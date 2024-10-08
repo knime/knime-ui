@@ -1,10 +1,10 @@
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
+import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import ContextAwareDescription from "@/components/sidebar/ContextAwareDescription.vue";
 import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
-import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
+import { mockVuexStore } from "@/test/utils";
 
 describe("ContextAwareDescription.vue", () => {
   const doMount = ({ singleSelectedNodeMock = vi.fn() } = {}) => {

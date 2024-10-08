@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PlayIcon from "@knime/styles/img/icons/play.svg";
 import { Button } from "@knime/components";
+import PlayIcon from "@knime/styles/img/icons/play.svg";
 
 type Props = {
   message: string;

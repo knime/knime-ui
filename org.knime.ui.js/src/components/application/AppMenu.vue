@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { API } from "@/api";
-import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-
-import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
-import ReloadIcon from "@knime/styles/img/icons/reload.svg";
-import ExtensionsIcon from "@knime/styles/img/icons/extension.svg";
-import SwitchIcon from "@knime/styles/img/icons/switch.svg";
-import PerspectiveSwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
-import LensIcon from "@knime/styles/img/icons/lens.svg";
-import LensPlusIcon from "@knime/styles/img/icons/lense-plus.svg";
-import LensMinusIcon from "@knime/styles/img/icons/lense-minus.svg";
-import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
 
 import { type MenuItem } from "@knime/components";
+import ExtensionsIcon from "@knime/styles/img/icons/extension.svg";
+import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
+import LensIcon from "@knime/styles/img/icons/lens.svg";
+import LensMinusIcon from "@knime/styles/img/icons/lense-minus.svg";
+import LensPlusIcon from "@knime/styles/img/icons/lense-plus.svg";
+import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
+import PerspectiveSwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
+import ReloadIcon from "@knime/styles/img/icons/reload.svg";
+import SwitchIcon from "@knime/styles/img/icons/switch.svg";
+
+import { API } from "@/api";
+import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import { useStore } from "@/composables/useStore";
 
 const store = useStore();

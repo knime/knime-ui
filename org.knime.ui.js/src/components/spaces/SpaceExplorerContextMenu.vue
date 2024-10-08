@@ -1,30 +1,30 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import type { Dispatch } from "vuex";
-import { useStore } from "@/composables/useStore";
 
 import {
-  MenuItems,
-  type MenuItem,
   type FileExplorerContextMenu,
+  type MenuItem,
+  MenuItems,
 } from "@knime/components";
-import DeleteIcon from "@knime/styles/img/icons/trash.svg";
 import DuplicateIcon from "@knime/styles/img/icons/duplicate.svg";
-import RenameIcon from "@knime/styles/img/icons/pencil.svg";
 import FileExportIcon from "@knime/styles/img/icons/file-export.svg";
+import RenameIcon from "@knime/styles/img/icons/pencil.svg";
+import DeleteIcon from "@knime/styles/img/icons/trash.svg";
+import { hotkeys } from "@knime/utils";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import {
-  buildHubDownloadMenuItem,
-  buildMoveToSpaceMenuItem,
-  buildHubUploadMenuItems,
-  buildOpenInBrowserMenuItem,
-  buildOpenAPIDefinitionMenuItem,
-  buildOpenPermissionsDialog,
   buildDisplayDeploymentsMenuItem,
   buildExecuteWorkflowMenuItem,
+  buildHubDownloadMenuItem,
+  buildHubUploadMenuItems,
+  buildMoveToSpaceMenuItem,
+  buildOpenAPIDefinitionMenuItem,
+  buildOpenInBrowserMenuItem,
+  buildOpenPermissionsDialog,
 } from "@/components/spaces/remoteMenuItems";
-import { hotkeys } from "@knime/utils";
+import { useStore } from "@/composables/useStore";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 const store = useStore();

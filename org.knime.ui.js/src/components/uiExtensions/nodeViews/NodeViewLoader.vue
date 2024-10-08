@@ -1,26 +1,24 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted, toRefs, computed, toRaw } from "vue";
-
-import {
-  UIExtensionPushEvents,
-  type Alert,
-  ViewState,
-} from "@knime/ui-extension-service";
+import { computed, onUnmounted, ref, toRaw, toRefs, watch } from "vue";
 
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
+import {
+  type Alert,
+  UIExtensionPushEvents,
+  ViewState,
+} from "@knime/ui-extension-service";
 
 import { API } from "@/api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-
-import { useResourceLocation } from "../common/useResourceLocation";
-import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
-import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 import ExecuteButton from "../ExecuteButton.vue";
+import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
+import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
+import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
 /**
  * Renders a node view

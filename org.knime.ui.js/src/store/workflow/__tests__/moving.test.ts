@@ -1,8 +1,8 @@
-import { nextTick } from "vue";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 
-import { deepMocked } from "@/test/utils";
 import { API } from "@/api";
+import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
 

@@ -1,14 +1,15 @@
 /* eslint-disable max-lines */
-import { expect, describe, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+import { API } from "@/api";
+import { Node } from "@/api/gateway-api/generated-api";
+import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
 import * as applicationStore from "@/store/application";
 import * as uiControlsStore from "@/store/uiControls";
-import workflowShortcuts from "../workflowShortcuts";
-import { deepMocked } from "@/test/utils";
-import { API } from "@/api";
 import { createNativeNode } from "@/test/factories";
-import { Node } from "@/api/gateway-api/generated-api";
+import { deepMocked } from "@/test/utils";
 import { getNextSelectedPort } from "@/util/portSelection";
-import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
+import workflowShortcuts from "../workflowShortcuts";
 
 describe("workflowShortcuts", () => {
   const mockSelectedNode = { id: "root:0", allowedActions: {} };

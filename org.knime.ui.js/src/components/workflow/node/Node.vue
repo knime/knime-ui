@@ -2,24 +2,23 @@
 /* eslint-disable max-lines */
 // TODO: NXT-1069 split up this file
 
-import { mapActions, mapState, mapGetters, mapMutations } from "vuex";
+import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
 
-import { NodePorts } from "@/components/workflow/ports/NodePorts";
-import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import { navigatorUtils } from "@knime/utils";
 
-import NodeTorso from "./torso/NodeTorso.vue";
-import NodeDecorators from "./decorators/NodeDecorators.vue";
-import NodeName from "./name/NodeName.vue";
-import NodeLabel from "./label/NodeLabel.vue";
+import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
+import { NodePorts } from "@/components/workflow/ports/NodePorts";
+import { KNIME_MIME } from "@/composables/useDropNode";
+import { APP_ROUTES } from "@/router/appRoutes";
 
 import NodeActionBar from "./NodeActionBar.vue";
-import NodeState from "./NodeState.vue";
-import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
-
-import { APP_ROUTES } from "@/router/appRoutes";
-import { KNIME_MIME } from "@/composables/useDropNode";
+import NodeSelectionPlane from "./NodeSelectionPlane.vue";
+import NodeState from "./NodeState.vue";
+import NodeDecorators from "./decorators/NodeDecorators.vue";
+import NodeLabel from "./label/NodeLabel.vue";
+import NodeName from "./name/NodeName.vue";
+import NodeTorso from "./torso/NodeTorso.vue";
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
