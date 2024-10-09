@@ -193,14 +193,14 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
     commit("resetTreeCache");
   },
 
-  async resetSearchAndTags({ dispatch, getters }) {
+  async resetSearchTagsAndTree({ dispatch, getters }) {
     if (getters.searchIsActive) {
       await dispatch("clearSearchResults");
       await dispatch("searchNodesDebounced");
     }
-    await dispatch("clearTree");
-    // Always clear the tag results
+    // Always clear the tag and tree data
     await dispatch("clearTagResults");
+    await dispatch("clearTree");
     await dispatch("getAllNodes", { append: false });
   },
 };

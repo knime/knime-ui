@@ -286,7 +286,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         currentValue !== applicationState.hasNodeCollectionActive
       ) {
         // only fetch when the value has actually changed
-        dispatch("nodeRepository/resetSearchAndTags", {}, { root: true });
+        dispatch("nodeRepository/resetSearchTagsAndTree", {}, { root: true });
       }
     }
 

@@ -92,8 +92,8 @@ const fetchRootCategories = async () => {
 };
 
 onMounted(async () => {
-  // TODO: check if node repo was already loadad and if not fetch after load
-
+  // this component only gets mounted AFTER the node repo has loaded
+  // (nodeRepositoryLoaded) thats why we can be sure we can fetch nodes
   // use cache
   const { treeCache } = store.state.nodeRepository;
   treeSource.value = loadTreeNodesFromCache(treeCache);

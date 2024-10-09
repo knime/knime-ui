@@ -159,7 +159,7 @@ describe("application::index", () => {
         hasNodeCollectionActive: true,
       });
       expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "nodeRepository/resetSearchAndTags",
+        "nodeRepository/resetSearchTagsAndTree",
         expect.anything(),
       );
 
@@ -168,7 +168,7 @@ describe("application::index", () => {
         hasNodeCollectionActive: false,
       });
       expect(dispatchSpy).toHaveBeenCalledWith(
-        "nodeRepository/resetSearchAndTags",
+        "nodeRepository/resetSearchTagsAndTree",
         expect.anything(),
       );
     });

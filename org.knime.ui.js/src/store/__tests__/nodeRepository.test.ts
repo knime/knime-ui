@@ -9,6 +9,7 @@ import {
 import { API } from "@api";
 import { createSearchNodesResponse } from "@/test/factories";
 import type { NodeRepositoryDisplayModesType } from "../settings";
+import type { NodeRepositoryState } from "@/store/nodeRepository";
 
 const getNodesGroupedByTagsResponse = {
   groups: [
@@ -40,6 +41,24 @@ const getNodesGroupedByTagsResponse = {
       tag: "Analytics",
     },
   ],
+};
+
+const getNodeCategoryResponse = {
+  metadata: {
+    displayName: "a node category",
+    path: ["cat"],
+  },
+  childCategories: [
+    {
+      displayName: "child 1",
+      path: ["child1"],
+    },
+    {
+      displayName: "child 2",
+      path: ["child2"],
+    },
+  ],
+  nodes: getNodesGroupedByTagsResponse.groups[0].nodes,
 };
 
 const getNodeDescriptionResponse = {
@@ -102,6 +121,10 @@ describe("Node Repository store", () => {
       getNodeDescriptionResponse,
     );
 
+    mockedAPI.noderepository.getNodeCategory.mockReturnValue(
+      getNodeCategoryResponse,
+    );
+
     const store = mockVuexStore({
       nodeRepository: await import("@/store/nodeRepository"),
       settings: {
@@ -155,6 +178,26 @@ describe("Node Repository store", () => {
       store.state.nodeRepository.query = "value";
       expect(store.getters["nodeRepository/isNodeVisible"](3)).toBe(false);
       expect(store.getters["nodeRepository/isNodeVisible"](1)).toBe(true);
+    });
+
+    it("returns proper value for isSelectedNodeVisible for the tree", async () => {
+      const { store } = await createStore("tree");
+      const repoState = store.state.nodeRepository as NodeRepositoryState;
+      repoState.treeCache.set("something", {
+        // @ts-ignore
+        nodes: [{ id: "node1", name: "Node" }],
+      });
+      repoState.treeCache.set("other", {
+        // @ts-ignore
+        nodes: [{ id: "node3", name: "Node" }],
+      });
+      repoState.treeExpandedKeys.push("something");
+      store.state.nodeRepository.open = "value";
+
+      expect(store.getters["nodeRepository/isNodeVisible"]("node3")).toBe(
+        false,
+      );
+      expect(store.getters["nodeRepository/isNodeVisible"]("node1")).toBe(true);
     });
 
     it("returns proper value for isSelectedNodeVisible for tags", async () => {
@@ -279,12 +322,37 @@ describe("Node Repository store", () => {
       });
     });
 
+    describe("getNodeCategory", () => {
+      it("gets a node category", async () => {
+        const { store, availablePortTypes } = await createStore();
+
+        await store.dispatch("nodeRepository/getNodeCategory", {
+          categoryPath: ["cat"],
+        });
+
+        expect(mockedAPI.noderepository.getNodeCategory).toHaveBeenCalledWith({
+          categoryPath: ["cat"],
+        });
+
+        // make sure the port information is mapped in to every node
+        const groupedNodesWithPorts = withPorts(
+          getNodeCategoryResponse.nodes,
+          availablePortTypes,
+        );
+
+        expect(store.state.nodeRepository.treeCache.get("cat")).toEqual({
+          ...getNodeCategoryResponse,
+          nodes: groupedNodesWithPorts,
+        });
+      });
+    });
+
     describe("reset", () => {
       it("resets search results", async () => {
         const { store, dispatchSpy } = await createStore();
         store.state.nodeRepository.query = "foo";
         store.state.nodeRepository.nodes = [{ dummy: true }];
-        await store.dispatch("nodeRepository/resetSearchAndTags");
+        await store.dispatch("nodeRepository/resetSearchTagsAndTree");
         expect(dispatchSpy).toHaveBeenCalledWith(
           "nodeRepository/clearSearchResults",
           undefined,
@@ -304,7 +372,7 @@ describe("Node Repository store", () => {
 
       it("resets tag results", async () => {
         const { store, dispatchSpy } = await createStore();
-        await store.dispatch("nodeRepository/resetSearchAndTags");
+        await store.dispatch("nodeRepository/resetSearchTagsAndTree");
         expect(dispatchSpy).not.toHaveBeenCalledWith(
           "nodeRepository/clearSearchResults",
           undefined,

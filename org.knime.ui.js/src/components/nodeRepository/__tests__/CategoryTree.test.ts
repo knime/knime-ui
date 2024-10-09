@@ -6,13 +6,14 @@ import CategoryTree from "../CategoryTree.vue";
 import type { NodeCategory } from "@/api/gateway-api/generated-api";
 import { Tree } from "@knime/virtual-tree";
 import { useAddNodeToWorkflow } from "../useAddNodeToWorkflow";
+import type { NodeCategoryWithExtendedPorts } from "@/api/custom-types";
 
 vi.mock("@/components/nodeRepository/useAddNodeToWorkflow", () => {
   return { useAddNodeToWorkflow: vi.fn(vi.fn) };
 });
 
 describe("CategoryTree", () => {
-  const rootNodes: NodeCategory = {
+  const rootTreeResponse: NodeCategory = {
     childCategories: [
       {
         displayName: "mockCategory1",
@@ -24,18 +25,21 @@ describe("CategoryTree", () => {
       },
     ],
   };
-  const doMount = () => {
+  const doMount = (
+    treeCache = new Map<string, any>(),
+    treeExpandedKeys: string[] = [],
+  ) => {
     const getNodeCategoryMock = vi
       .fn()
       .mockImplementation((_, { categoryPath }) =>
-        categoryPath.length === 0 ? rootNodes : {},
+        categoryPath.length === 0 ? rootTreeResponse : {},
       );
 
     const $store = mockVuexStore({
       nodeRepository: {
         state: {
-          treeCache: new Map(),
-          treeExpandedKeys: [],
+          treeCache,
+          treeExpandedKeys,
         },
         actions: {
           getNodeCategory: getNodeCategoryMock,
@@ -63,13 +67,74 @@ describe("CategoryTree", () => {
     });
     await flushPromises();
     const treeNodes = wrapper.findAllComponents({ name: "TreeNode" });
-    expect(treeNodes.length).toBe(rootNodes.childCategories!.length);
+    expect(treeNodes.length).toBe(rootTreeResponse.childCategories!.length);
 
-    for (let i = 0; i < rootNodes.childCategories!.length; i++) {
+    for (let i = 0; i < rootTreeResponse.childCategories!.length; i++) {
       expect(treeNodes.at(i)?.props("node").name).toBe(
-        rootNodes.childCategories![i].displayName,
+        rootTreeResponse.childCategories![i].displayName,
       );
     }
+  });
+
+  it("uses cache on mount if it has data", async () => {
+    const treeCache = new Map<string, NodeCategoryWithExtendedPorts>();
+    const treeExpandedKeys = ["child2"];
+
+    const childCategories = [
+      {
+        displayName: "child 1",
+        path: ["child1"],
+      },
+      {
+        displayName: "child 2",
+        path: ["child2"],
+      },
+      {
+        displayName: "child 3",
+        path: ["child3"],
+      },
+    ];
+
+    treeCache.set("", {
+      childCategories,
+    });
+
+    treeCache.set("child1", {
+      metadata: {
+        displayName: "child 1",
+        path: ["child1"],
+      },
+      nodes: [
+        // @ts-ignore
+        { id: "c11", name: "a node" },
+        // @ts-ignore
+        { id: "c21", name: "another node" },
+      ],
+    });
+
+    treeCache.set("child2", {
+      metadata: {
+        displayName: "child 2",
+        path: ["child2"],
+      },
+      // @ts-ignore
+      nodes: [{ id: "c21", name: "visible node" }],
+    });
+
+    const { wrapper, getNodeCategoryMock } = doMount(
+      treeCache,
+      treeExpandedKeys,
+    );
+    expect(getNodeCategoryMock).toHaveBeenCalledTimes(0);
+    await flushPromises();
+
+    const treeNodes = wrapper.findAllComponents({ name: "TreeNode" });
+    expect(treeNodes.length).toBe(4); // 3 root categories + one is open with a single node
+
+    expect(treeNodes.at(0)?.props("node").name).toBe("child 1");
+    expect(treeNodes.at(1)?.props("node").name).toBe("child 2");
+    expect(treeNodes.at(2)?.props("node").name).toBe("visible node");
+    expect(treeNodes.at(3)?.props("node").name).toBe("child 3");
   });
 
   it("keyboard node actions", () => {
