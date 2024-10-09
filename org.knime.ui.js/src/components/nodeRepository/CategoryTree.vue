@@ -18,7 +18,7 @@ import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
 import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
-import { requireAllObjectProperties } from "@/util/requireAllObjectProperties";
+import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefined";
 
 const mapCategoryToTreeNode = (
   category: Required<CategoryMetadata>,
@@ -51,7 +51,7 @@ const store = useStore();
 
 const treeSource = ref<TreeNodeOptions[]>([]);
 const expandedKeys = ref<string[]>([]);
-const mountWithExpandedKeys = ref<string[]>([]);
+const initialExpandedKeys = ref<string[]>([]);
 
 const loadTreeNodesFromCache = (
   treeCache: Map<string, NodeCategoryWithExtendedPorts>,
@@ -70,12 +70,11 @@ const loadTreeNodesFromCache = (
 
   const { childCategories, nodes } = treeCache.get(path)!;
 
-  const treeCategories =
-    childCategories
-      ?.filter(requireAllObjectProperties)
-      .map((category) => mapCategoryToTreeNodeWithChildren(category)) ?? [];
+  const treeCategories = (childCategories ?? [])
+    .filter(hasAllObjectPropertiesDefined)
+    .map((category) => mapCategoryToTreeNodeWithChildren(category));
 
-  const treeNodes = nodes?.map(mapNodeToTreeNode) ?? [];
+  const treeNodes = (nodes ?? []).map(mapNodeToTreeNode);
 
   return [...treeCategories, ...treeNodes];
 };
@@ -97,9 +96,7 @@ onMounted(async () => {
   // use cache
   const { treeCache } = store.state.nodeRepository;
   treeSource.value = loadTreeNodesFromCache(treeCache);
-  mountWithExpandedKeys.value = [
-    ...store.state.nodeRepository.treeExpandedKeys,
-  ];
+  initialExpandedKeys.value = [...store.state.nodeRepository.treeExpandedKeys];
 
   if (treeSource.value.length > 0) {
     return;
@@ -199,7 +196,7 @@ defineExpose({ focusFirst });
         :source="treeSource"
         :load-data="loadTreeLevel"
         :selectable="false"
-        :expanded-keys="mountWithExpandedKeys"
+        :expanded-keys="initialExpandedKeys"
         @expand-change="onExpandChange"
         @keydown="onTreeKeydown"
       >
