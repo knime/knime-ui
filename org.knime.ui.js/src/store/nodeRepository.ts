@@ -31,7 +31,7 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
   showDescriptionForNode: NodeTemplateWithExtendedPorts | null;
 
   /** tree */
-  treeCache: Map<string, NodeCategoryWithExtendedPorts>;
+  nodeCategoryCache: Map<string, NodeCategoryWithExtendedPorts>;
   treeExpandedKeys: string[];
 }
 
@@ -49,7 +49,7 @@ export const state = (): NodeRepositoryState => ({
   showDescriptionForNode: null,
 
   /** tree */
-  treeCache: new Map(),
+  nodeCategoryCache: new Map(),
   treeExpandedKeys: [],
 });
 
@@ -82,18 +82,18 @@ export const mutations: MutationTree<NodeRepositoryState> = {
     state.showDescriptionForNode = node;
   },
 
-  updateTreeCache(
+  updateNodeCategoryCache(
     state,
     {
       categoryPath,
       nodeCategory,
     }: { categoryPath: string[]; nodeCategory: NodeCategoryWithExtendedPorts },
   ) {
-    state.treeCache.set(categoryPath.join("/"), nodeCategory);
+    state.nodeCategoryCache.set(categoryPath.join("/"), nodeCategory);
   },
 
-  resetTreeCache(state) {
-    state.treeCache = new Map();
+  resetNodeCategoryCache(state) {
+    state.nodeCategoryCache = new Map();
   },
 
   setTreeExpandedKeys(state, value) {
@@ -110,8 +110,8 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   ) {
     // use cache if available
     const path = categoryPath.join("/");
-    if (state.treeCache.has(path)) {
-      return state.treeCache.get(path);
+    if (state.nodeCategoryCache.has(path)) {
+      return state.nodeCategoryCache.get(path);
     }
 
     const nodeCategoryResult = await API.noderepository.getNodeCategory({
@@ -135,8 +135,8 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
       nodes: nodesWithMappedPorts,
     };
 
-    // remember tree state
-    commit("updateTreeCache", { categoryPath, nodeCategory: result });
+    // cache the results
+    commit("updateNodeCategoryCache", { categoryPath, nodeCategory: result });
 
     return result;
   },
@@ -190,7 +190,8 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
   },
 
   clearTree({ commit }) {
-    commit("resetTreeCache");
+    commit("resetNodeCategoryCache");
+    commit("setTreeExpandedKeys", []);
   },
 
   async resetSearchTagsAndTree({ dispatch, getters }) {
@@ -219,7 +220,7 @@ export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
     return (nodeId: string) =>
       state.treeExpandedKeys.some(
         (nodeKey) =>
-          state.treeCache
+          state.nodeCategoryCache
             ?.get(nodeKey)
             ?.nodes?.some((node) => node.id === nodeId),
       );

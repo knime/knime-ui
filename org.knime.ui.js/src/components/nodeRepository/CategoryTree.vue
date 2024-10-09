@@ -54,10 +54,10 @@ const expandedKeys = ref<string[]>([]);
 const initialExpandedKeys = ref<string[]>([]);
 
 const loadTreeNodesFromCache = (
-  treeCache: Map<string, NodeCategoryWithExtendedPorts>,
+  nodeCategoryCache: Map<string, NodeCategoryWithExtendedPorts>,
   path: string = "",
 ) => {
-  if (!treeCache.has(path)) {
+  if (!nodeCategoryCache.has(path)) {
     return [];
   }
 
@@ -65,10 +65,13 @@ const loadTreeNodesFromCache = (
     category: Required<CategoryMetadata>,
   ): TreeNodeOptions => ({
     ...mapCategoryToTreeNode(category),
-    children: loadTreeNodesFromCache(treeCache, category.path.join("/")),
+    children: loadTreeNodesFromCache(
+      nodeCategoryCache,
+      category.path.join("/"),
+    ),
   });
 
-  const { childCategories, nodes } = treeCache.get(path)!;
+  const { childCategories, nodes } = nodeCategoryCache.get(path)!;
 
   const treeCategories = (childCategories ?? [])
     .filter(hasAllObjectPropertiesDefined)
@@ -94,8 +97,8 @@ onMounted(async () => {
   // this component only gets mounted AFTER the node repo has loaded
   // (nodeRepositoryLoaded) thats why we can be sure we can fetch nodes
   // use cache
-  const { treeCache } = store.state.nodeRepository;
-  treeSource.value = loadTreeNodesFromCache(treeCache);
+  const { nodeCategoryCache } = store.state.nodeRepository;
+  treeSource.value = loadTreeNodesFromCache(nodeCategoryCache);
   initialExpandedKeys.value = [...store.state.nodeRepository.treeExpandedKeys];
 
   if (treeSource.value.length > 0) {

@@ -183,11 +183,11 @@ describe("Node Repository store", () => {
     it("returns proper value for isSelectedNodeVisible for the tree", async () => {
       const { store } = await createStore("tree");
       const repoState = store.state.nodeRepository as NodeRepositoryState;
-      repoState.treeCache.set("something", {
+      repoState.nodeCategoryCache.set("something", {
         // @ts-ignore
         nodes: [{ id: "node1", name: "Node" }],
       });
-      repoState.treeCache.set("other", {
+      repoState.nodeCategoryCache.set("other", {
         // @ts-ignore
         nodes: [{ id: "node3", name: "Node" }],
       });
@@ -340,10 +340,12 @@ describe("Node Repository store", () => {
           availablePortTypes,
         );
 
-        expect(store.state.nodeRepository.treeCache.get("cat")).toEqual({
-          ...getNodeCategoryResponse,
-          nodes: groupedNodesWithPorts,
-        });
+        expect(store.state.nodeRepository.nodeCategoryCache.get("cat")).toEqual(
+          {
+            ...getNodeCategoryResponse,
+            nodes: groupedNodesWithPorts,
+          },
+        );
       });
     });
 

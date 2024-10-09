@@ -26,7 +26,7 @@ describe("CategoryTree", () => {
     ],
   };
   const doMount = (
-    treeCache = new Map<string, any>(),
+    nodeCategoryCache = new Map<string, any>(),
     treeExpandedKeys: string[] = [],
   ) => {
     const getNodeCategoryMock = vi
@@ -38,7 +38,7 @@ describe("CategoryTree", () => {
     const $store = mockVuexStore({
       nodeRepository: {
         state: {
-          treeCache,
+          nodeCategoryCache,
           treeExpandedKeys,
         },
         actions: {
@@ -77,7 +77,7 @@ describe("CategoryTree", () => {
   });
 
   it("uses cache on mount if it has data", async () => {
-    const treeCache = new Map<string, NodeCategoryWithExtendedPorts>();
+    const nodeCategoryCache = new Map<string, NodeCategoryWithExtendedPorts>();
     const treeExpandedKeys = ["child2"];
 
     const childCategories = [
@@ -95,11 +95,11 @@ describe("CategoryTree", () => {
       },
     ];
 
-    treeCache.set("", {
+    nodeCategoryCache.set("", {
       childCategories,
     });
 
-    treeCache.set("child1", {
+    nodeCategoryCache.set("child1", {
       metadata: {
         displayName: "child 1",
         path: ["child1"],
@@ -112,7 +112,7 @@ describe("CategoryTree", () => {
       ],
     });
 
-    treeCache.set("child2", {
+    nodeCategoryCache.set("child2", {
       metadata: {
         displayName: "child 2",
         path: ["child2"],
@@ -122,7 +122,7 @@ describe("CategoryTree", () => {
     });
 
     const { wrapper, getNodeCategoryMock } = doMount(
-      treeCache,
+      nodeCategoryCache,
       treeExpandedKeys,
     );
     expect(getNodeCategoryMock).toHaveBeenCalledTimes(0);
