@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { API } from "@/api";
 import { StoreActionException } from "@/api/gateway-api/exceptions";
-import { ServiceCallException } from "@/api/gateway-api/generated-api";
+import {
+  NetworkException,
+  ServiceCallException,
+} from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
@@ -111,6 +114,55 @@ describe("spaces::spaceOperations", () => {
           projectId: "myProject1",
         }),
       ).rejects.toThrow("Error fetching content second time");
+    });
+
+    it("should handle `ServiceCalException`s", () => {
+      const { store } = loadStore();
+
+      store.state.spaces.spaceProviders = {
+        // @ts-ignore
+        hub1: {},
+      };
+
+      const error = new ServiceCallException({
+        message: "Something wrong in the API",
+      });
+
+      const expected = new StoreActionException(
+        "Error while fetching workflow group content",
+        error,
+      );
+
+      mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
+
+      expect(() =>
+        store.dispatch("spaces/fetchWorkflowGroupContent", {
+          projectId: "myProject1",
+        }),
+      ).rejects.toThrowError(expected);
+    });
+
+    it("should handle `NetworkException`s", () => {
+      const { store } = loadStore();
+
+      store.state.spaces.spaceProviders = {
+        // @ts-ignore
+        hub1: {},
+      };
+
+      const error = new NetworkException({
+        message: "Connection loss",
+      });
+
+      const expected = new StoreActionException("Connectivity problem", error);
+
+      mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
+
+      expect(() =>
+        store.dispatch("spaces/fetchWorkflowGroupContent", {
+          projectId: "myProject1",
+        }),
+      ).rejects.toThrowError(expected);
     });
   });
 
