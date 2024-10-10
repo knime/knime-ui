@@ -176,11 +176,16 @@ public final class ImportURI {
             return Optional.empty();
         }
 
-        var knimeURI = repoObjectImport.getKnimeURI();
-        var itemVersions = ResolverUtil.getHubItemVersions(knimeURI);
-        return itemVersions.stream()//
-            .filter(version -> version.version() == itemVersion.getAsInt())//
-            .findFirst();
+        try {
+            var knimeURI = repoObjectImport.getKnimeURI();
+            var itemVersions = ResolverUtil.getHubItemVersions(knimeURI);
+            return itemVersions.stream()//
+                    .filter(version -> version.version() == itemVersion.getAsInt())//
+                    .findFirst();
+        } catch (Exception e) {
+            LOGGER.warn("Failed to get version information for workflow", e);
+            return Optional.empty();
+        }
     }
 
     private static EntityImportResult getEntityImportResult(final String uriString) {
