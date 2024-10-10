@@ -103,7 +103,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        `There are updates for ${totalBugfixes} extensions available.`,
+        `${totalBugfixes} extensions have updates available.`,
       );
     });
 
@@ -206,6 +206,34 @@ describe("UpdateBanner", () => {
       await wrapper.findComponent(Button).trigger("click");
       expect(windowOpen).toHaveBeenCalled();
     });
+  });
+
+  it("should return the correct message when KNIME Analytics Platform update is available", () => {
+    const { wrapper } = doShallowMount({
+      props: {
+        availableUpdates: {
+          bugfixes: ["KNIME Analytics Platform"],
+        },
+      },
+    });
+
+    expect(getUpdateText(wrapper)).toBe(
+      "A new version of KNIME Analytics Platform is available.",
+    );
+  });
+
+  it("should return the correct message when no KNIME Analytics Platform update is available", () => {
+    const { wrapper } = doShallowMount({
+      props: {
+        availableUpdates: {
+          bugfixes: ["Other Extension"], // Does not contain "KNIME Analytics Platform"
+        },
+      },
+    });
+
+    expect(getUpdateText(wrapper)).toBe(
+      "There is an update for 1 extension available.",
+    );
   });
 
   it("should prioritize bugfixes if newReleases are also present", () => {

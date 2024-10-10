@@ -60,15 +60,21 @@ export default defineComponent({
     },
 
     updateMessage() {
+      const knimeAPUpdateAvailable = this.availableUpdates.bugfixes?.includes(
+        "KNIME Analytics Platform",
+      );
+
+      if (knimeAPUpdateAvailable) {
+        return "A new version of KNIME Analytics Platform is available.";
+      }
+
       if (this.hasBugFixes) {
         const totalBugFixes = this.availableUpdates.bugfixes!.length;
         const isPlural = totalBugFixes > 1;
 
-        if (isPlural) {
-          return `There are updates for ${totalBugFixes} extensions available.`;
-        }
-
-        return "There is an update for 1 extension available.";
+        return isPlural
+          ? `${totalBugFixes} extensions have updates available.`
+          : "There is an update for 1 extension available.";
       }
 
       if (this.hasNewReleases) {
