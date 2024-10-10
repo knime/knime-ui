@@ -50,7 +50,6 @@ const emit = defineEmits<{
 const store = useStore();
 
 const treeSource = ref<TreeNodeOptions[]>([]);
-const expandedKeys = ref<string[]>([]);
 const initialExpandedKeys = ref<string[]>([]);
 
 const loadTreeNodesFromCache = (
@@ -117,16 +116,11 @@ const focusFirst = () => {
 const onExpandChange = (value: EventParams) => {
   const nodeKey = value.node.key.toString();
   if (value.state) {
-    expandedKeys.value = [...expandedKeys.value, nodeKey];
+    store.commit("nodeRepository/addTreeExpandedKey", nodeKey);
   } else {
-    expandedKeys.value = expandedKeys.value.filter((key) => key !== nodeKey);
+    store.commit("nodeRepository/removeTreeExpandedKey", nodeKey);
   }
 };
-
-watch(expandedKeys, () => {
-  // update store with current expanded keys
-  store.commit("nodeRepository/setTreeExpandedKeys", expandedKeys.value);
-});
 
 watch(
   () => store.state.application.hasNodeCollectionActive,

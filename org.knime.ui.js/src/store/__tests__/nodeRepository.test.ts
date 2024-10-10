@@ -191,7 +191,7 @@ describe("Node Repository store", () => {
         // @ts-ignore
         nodes: [{ id: "node3", name: "Node" }],
       });
-      repoState.treeExpandedKeys.push("something");
+      repoState.treeExpandedKeys.add("something");
       store.state.nodeRepository.open = "value";
 
       expect(store.getters["nodeRepository/isNodeVisible"]("node3")).toBe(

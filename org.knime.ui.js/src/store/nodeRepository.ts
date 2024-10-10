@@ -32,7 +32,7 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
 
   /** tree */
   nodeCategoryCache: Map<string, NodeCategoryWithExtendedPorts>;
-  treeExpandedKeys: string[];
+  treeExpandedKeys: Set<string>;
 }
 
 export const state = (): NodeRepositoryState => ({
@@ -50,7 +50,7 @@ export const state = (): NodeRepositoryState => ({
 
   /** tree */
   nodeCategoryCache: new Map(),
-  treeExpandedKeys: [],
+  treeExpandedKeys: new Set(),
 });
 
 export const mutations: MutationTree<NodeRepositoryState> = {
@@ -96,8 +96,16 @@ export const mutations: MutationTree<NodeRepositoryState> = {
     state.nodeCategoryCache = new Map();
   },
 
-  setTreeExpandedKeys(state, value) {
-    state.treeExpandedKeys = value;
+  addTreeExpandedKey(state, key) {
+    state.treeExpandedKeys.add(key);
+  },
+
+  removeTreeExpandedKey(state, key) {
+    state.treeExpandedKeys.delete(key);
+  },
+
+  resetTreeExpandedKeys(state) {
+    state.treeExpandedKeys = new Set();
   },
 };
 
@@ -191,7 +199,7 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
 
   clearTree({ commit }) {
     commit("resetNodeCategoryCache");
-    commit("setTreeExpandedKeys", []);
+    commit("resetTreeExpandedKeys");
   },
 
   async resetSearchTagsAndTree({ dispatch, getters }) {
@@ -218,7 +226,7 @@ export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
 
   treeContainsNodeId(state: NodeRepositoryState) {
     return (nodeId: string) =>
-      state.treeExpandedKeys.some(
+      [...state.treeExpandedKeys].some(
         (nodeKey) =>
           state.nodeCategoryCache
             ?.get(nodeKey)
