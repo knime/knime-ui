@@ -18,12 +18,12 @@ import ErrorOverlay from "@/components/application/ErrorOverlay.vue";
 import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
+import ConfirmDialog from "@/composables/useConfirmDialog/ConfirmDialog.vue";
 import { useStore } from "@/composables/useStore";
 import { DynamicEnvRenderer, isDesktop } from "@/environment";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
-import ConfirmDialog from "./application/ConfirmDialog.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
 

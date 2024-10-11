@@ -5,6 +5,7 @@ import { Button, Checkbox, Modal } from "@knime/components";
 
 import {
   type ConfirmDialogButton,
+  isComponentBasedConfig,
   useConfirmDialog,
 } from "@/composables/useConfirmDialog";
 
@@ -41,15 +42,24 @@ const handleButtonClick = (button: ConfirmDialogButton) => {
     v-show="isActive"
     :active="isActive"
     :title="config?.title"
-    :implicit-dismiss="false"
+    :implicit-dismiss="config?.implicitDismiss"
     style-type="info"
     class="modal"
     :animate="false"
     @cancel="onCancel"
   >
+    <template v-if="config?.titleIcon" #icon>
+      <Component :is="config.titleIcon" />
+    </template>
+
     <template #confirmation>
-      <div class="confirmation">
-        <div class="message">{{ config?.message }}</div>
+      <component
+        :is="config.component"
+        v-if="config && isComponentBasedConfig(config)"
+      />
+      <div v-else class="confirmation">
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div class="message" v-html="config?.message" />
         <div v-if="config?.doNotAskAgainText" class="ask-again">
           <Checkbox v-model="askAgain">
             <!-- eslint-disable-next-line vue/no-v-html -->

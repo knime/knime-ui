@@ -1,12 +1,19 @@
 import { type Ref, computed } from "vue";
+import { h } from "vue";
 
 import { API } from "@/api";
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
 
+import MovingItemsTemplate from "./MovingItemsTemplate.vue";
+
 type UseMovingItemsOptions = {
   projectId: Ref<string | null>;
 };
+
+const createModalTemplate = (
+  props: InstanceType<typeof MovingItemsTemplate>["$props"],
+) => h(MovingItemsTemplate, { ...props });
 
 export const useMovingItems = (options: UseMovingItemsOptions) => {
   const store = useStore();
@@ -53,18 +60,15 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
       const isInsideFolderNames = isInsideFolder.map(
         (workflow) => workflow.name,
       );
-      const extraSpace =
-        openedWorkflows.length && isInsideFolder.length ? "\n" : "";
 
-      const copyOrMove = isCopy ? "copy" : "move";
-
-      alert(`Following workflows are opened:\n
-        ${
-          openedWorkflowsNames.map((name) => `• ${name}`).join("\n") +
-          extraSpace +
-          isInsideFolderNames.map((name) => `• ${name}`).join("\n")
-        }
-        \nTo ${copyOrMove} your selected items, they have to be closed first`);
+      $toast.show({
+        headline: "Could not move items",
+        type: "warning",
+        component: createModalTemplate({
+          isCopy,
+          openedItemNames: openedWorkflowsNames.concat(isInsideFolderNames),
+        }),
+      });
 
       onComplete(false);
 

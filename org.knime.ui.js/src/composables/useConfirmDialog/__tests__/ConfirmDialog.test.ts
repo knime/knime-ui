@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
+import { h, nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import {
+  type PropertyBasedConfig,
+  useConfirmDialog,
+} from "@/composables/useConfirmDialog";
 import ConfirmDialog from "../ConfirmDialog.vue";
 
 describe("ConfirmDialog.vue", () => {
@@ -34,6 +37,29 @@ describe("ConfirmDialog.vue", () => {
 
     expect(wrapper.find(".header").text()).toMatch("This is the title");
     expect(wrapper.find(".message").text()).toMatch("This is the message");
+  });
+
+  it("should render custom template component", async () => {
+    const { wrapper } = doMount();
+
+    const customTemplate = h("div", {
+      id: "custom-template",
+      innerHTML: "Hello world",
+    });
+
+    const done = vi.fn();
+    expect(isActive.value).toBe(false);
+    dialogResult.value.then(done);
+
+    show({
+      title: "This is the title",
+      component: customTemplate,
+    });
+
+    await nextTick();
+
+    expect(wrapper.find("#custom-template").exists()).toBe(true);
+    expect(wrapper.find("#custom-template").text()).toMatch("Hello world");
   });
 
   // we can use the ConfirmDialog component to also indirectly test the composable
@@ -143,7 +169,7 @@ describe("ConfirmDialog.vue", () => {
 
     const spy = vi.fn();
 
-    const config: Parameters<typeof show>[0] = {
+    const config: PropertyBasedConfig = {
       title: "This is the title",
       message: "This is the message",
       buttons: [

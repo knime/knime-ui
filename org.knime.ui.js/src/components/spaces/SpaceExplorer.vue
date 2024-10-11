@@ -23,8 +23,8 @@ import { matchesQuery } from "@/util/matchesQuery";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
-import SpaceExplorerDeleteItemModal from "./SpaceExplorerDeleteItemModal.vue";
 import { useCustomDragPreview } from "./useCustomDragPreview";
+import { useDeleteItems } from "./useDeleteItems";
 import { useMovingItems } from "./useMovingItems";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
@@ -65,11 +65,6 @@ const $router = useRouter();
 const $toast = getToastsProvider();
 
 const projectId = toRef(props, "projectId");
-
-const deleteModal = ref<{ isActive: boolean; items: FileExplorerItem[] }>({
-  isActive: false,
-  items: [],
-});
 
 // spaces
 const isLoadingContent = computed(() => store.state.spaces.isLoadingContent);
@@ -206,22 +201,10 @@ const onRenameFile = ({
     });
 };
 
-const openDeleteConfirmModal = ({ items }: { items: FileExplorerItem[] }) => {
-  deleteModal.value.items = items;
-  deleteModal.value.isActive = true;
-};
-
-const deleteItems = async () => {
-  deleteModal.value.isActive = false;
-
-  const itemIds = deleteModal.value.items.map(({ id }) => id);
-
-  await store.dispatch("spaces/deleteItems", {
-    projectId: props.projectId,
-    itemIds,
-    $router,
-  });
-};
+const { onDeleteItems } = useDeleteItems({
+  projectId: props.projectId,
+  itemIconRenderer,
+});
 
 const { onMoveItems, onDuplicateItems } = useMovingItems({ projectId });
 
@@ -268,7 +251,7 @@ watch(isLoadingContent, () => {
         @change-directory="onChangeDirectory"
         @open-file="onOpenFile"
         @rename-file="onRenameFile"
-        @delete-items="openDeleteConfirmModal"
+        @delete-items="onDeleteItems($event.items)"
         @move-items="onMoveItems"
         @drag="onDrag"
         @dragend="onDragEnd"
@@ -313,14 +296,6 @@ watch(isLoadingContent, () => {
         </template>
       </FileExplorer>
     </SkeletonItem>
-
-    <SpaceExplorerDeleteItemModal
-      :is-active="deleteModal.isActive"
-      :items="deleteModal.items"
-      :item-icon-renderer="itemIconRenderer"
-      @accept="deleteItems()"
-      @cancel="deleteModal = { isActive: false, items: [] }"
-    />
 
     <DeploymentsModal />
   </div>

@@ -4,20 +4,17 @@ import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
 
-import {
-  Breadcrumb,
-  FileExplorer,
-  Modal,
-  NodePreview,
-} from "@knime/components";
+import { Breadcrumb, FileExplorer, NodePreview } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
 
 import { API } from "@/api";
 import { type Project, SpaceItem } from "@/api/gateway-api/generated-api";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as spacesStore from "@/store/spaces";
 import { createProject, createSpaceProvider } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
 import SpaceExplorer from "../SpaceExplorer.vue";
 
 const mockedAPI = deepMocked(API);
@@ -88,6 +85,8 @@ vi.mock("vue-router", () => ({
 }));
 
 describe("SpaceExplorer.vue", () => {
+  const toast = mockedObject(getToastsProvider());
+
   const doMount = ({
     props = {} as Partial<InstanceType<typeof SpaceExplorer>["$props"]>,
     mockResponse = fetchWorkflowGroupContentResponse,
@@ -500,6 +499,8 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should show delete modal on deleteItems", async () => {
+      const { isActive } = useConfirmDialog();
+
       const items: FileExplorerItem[] = [
         createMockWorkflow({
           id: "item0",
@@ -508,12 +509,16 @@ describe("SpaceExplorer.vue", () => {
       ];
       const { wrapper } = await doMountAndLoad();
 
+      expect(isActive.value).toBe(false);
+
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
-      // @ts-ignore
-      expect(wrapper.vm.deleteModal.isActive).toBeTruthy();
+
+      expect(isActive.value).toBe(true);
     });
 
     it("should trigger closeItems before deleteItems onDeleteItems", async () => {
+      const { confirm } = useConfirmDialog();
+
       const items: FileExplorerItem[] = [
         createMockWorkflow({
           id: "item0",
@@ -549,8 +554,8 @@ describe("SpaceExplorer.vue", () => {
       const { wrapper, dispatchSpy } = await doMountAndLoad({ openProjects });
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
-      // @ts-expect-error
-      await wrapper.vm.deleteItems();
+      confirm();
+      await flushPromises();
 
       expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/deleteItems", {
         itemIds: ["item0"],
@@ -566,6 +571,8 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should not delete item on negative response", async () => {
+      const { cancel } = useConfirmDialog();
+
       const items: FileExplorerItem[] = [
         createMockWorkflow({
           id: "item0",
@@ -576,9 +583,10 @@ describe("SpaceExplorer.vue", () => {
       const { wrapper, dispatchSpy } = await doMountAndLoad();
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
-      // @ts-expect-error
-      expect(wrapper.vm.deleteModal.isActive).toBeTruthy();
-      wrapper.findComponent(Modal).vm.$emit("cancel");
+
+      cancel();
+      await flushPromises();
+
       expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/deleteItems", {
         itemIds: ["item0"],
       });
@@ -700,7 +708,7 @@ describe("SpaceExplorer.vue", () => {
       expect(onComplete).toHaveBeenCalledWith(false);
     });
 
-    it("should show alert if at least one of the moved workflows is opened", async () => {
+    it("should show toast if at least one of the moved workflows is opened", async () => {
       const openProjects = [
         createProject({
           origin: {
@@ -717,7 +725,6 @@ describe("SpaceExplorer.vue", () => {
       });
       await new Promise((r) => setTimeout(r, 0));
 
-      window.alert = vi.fn();
       const sourceItems = ["id1", "id2"];
       const targetItem = "group1";
       const onComplete = vi.fn();
@@ -725,10 +732,18 @@ describe("SpaceExplorer.vue", () => {
         .findComponent(FileExplorer)
         .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
 
-      expect(window.alert).toHaveBeenCalledWith(
-        // eslint-disable-next-line vitest/no-conditional-tests
-        expect.stringContaining("Following workflows are opened:" && "• test2"),
+      expect(toast.show).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headline: "Could not move items",
+          component: expect.objectContaining({
+            props: {
+              isCopy: false,
+              openedItemNames: ["test2"],
+            },
+          }),
+        }),
       );
+
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
     });
