@@ -1,11 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
+import { debounce } from "lodash-es";
 
 import { Button } from "@knime/components";
 
 import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 import UpdateBanner from "../UpdateBanner.vue";
+
+// Mock lodash-es debounce function
+vi.mock("lodash-es", () => ({
+  debounce: vi.fn((fn) => fn),
+}));
 
 const mockedAPI = deepMocked(API);
 
@@ -32,6 +39,42 @@ describe("UpdateBanner", () => {
   };
   const getUpdateText = (wrapper) => wrapper.find(".text").text();
   const getButtonText = (wrapper) => wrapper.findComponent(Button).text();
+
+  it("should debounce the onUpdateAction method", async () => {
+    const { wrapper } = doShallowMount();
+
+    await wrapper.findComponent(Button).trigger("click");
+
+    expect(debounce).toHaveBeenCalledWith(expect.any(Function), 600);
+  });
+
+  it("should prevent multiple dialog openings", async () => {
+    const { wrapper } = doShallowMount();
+
+    mockedAPI.desktop.openUpdateDialog.mockResolvedValue(Promise.resolve());
+
+    await wrapper.findComponent(Button).trigger("click");
+
+    expect(mockedAPI.desktop.openUpdateDialog).toHaveBeenCalledTimes(0);
+
+    await wrapper.findComponent(Button).trigger("click");
+
+    expect(mockedAPI.desktop.openUpdateDialog).toHaveBeenCalledTimes(1);
+  });
+
+  it("should reset isDialogOpen after the dialog closes", async () => {
+    const { wrapper } = doShallowMount();
+
+    mockedAPI.desktop.openUpdateDialog.mockResolvedValueOnce(Promise.resolve());
+
+    await wrapper.findComponent(Button).trigger("click");
+
+    expect(mockedAPI.desktop.openUpdateDialog).toHaveBeenCalled();
+
+    await nextTick();
+
+    expect(wrapper.vm.isDialogOpen).toBe(false);
+  });
 
   describe("bugfixes", () => {
     it("should show the right message (1 bugfix)", () => {
@@ -154,7 +197,7 @@ describe("UpdateBanner", () => {
           },
         },
       });
-
+      await new Promise((r) => setTimeout(r, 0));
       expect(getUpdateText(wrapper)).toBe(
         "Get the latest features and enhancements! Download 5.2.0 now.",
       );

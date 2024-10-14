@@ -1,5 +1,6 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
+import { debounce } from "lodash-es";
 
 import { Button } from "@knime/components";
 
@@ -24,7 +25,7 @@ export default defineComponent({
   data() {
     return {
       isDialogOpen: false,
-      isThrottled: false,
+      debouncedUpdateAction: null as any,
     };
   },
   computed: {
@@ -86,18 +87,11 @@ export default defineComponent({
       return null;
     },
   },
+  mounted() {
+    this.debouncedUpdateAction = debounce(this.onUpdateAction, 600);
+  },
   methods: {
     onUpdateAction() {
-      if (this.isThrottled) {
-        return;
-      }
-
-      // Throttle the button clicks for 600ms
-      this.isThrottled = true;
-      setTimeout(() => {
-        this.isThrottled = false;
-      }, 600);
-
       if (this.isDialogOpen) {
         return;
       }
@@ -105,7 +99,7 @@ export default defineComponent({
       if (this.hasBugFixes || this.hasReleaseAndIsUpdatePossible) {
         this.isDialogOpen = true;
         API.desktop.openUpdateDialog().finally(() => {
-          this.isDialogOpen = false; // Reset when dialog closes
+          this.isDialogOpen = false;
         });
       } else {
         window.open(DOWNLOAD_URL);
@@ -122,7 +116,7 @@ export default defineComponent({
         <span class="text">
           {{ updateMessage }}
         </span>
-        <Button with-border @click="onUpdateAction">
+        <Button with-border @click="debouncedUpdateAction">
           {{ buttonText }}
         </Button>
       </div>
