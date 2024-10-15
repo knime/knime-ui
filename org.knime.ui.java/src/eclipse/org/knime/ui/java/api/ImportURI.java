@@ -76,6 +76,7 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.NodeCreationType;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.util.hub.NamedItemVersion;
 import org.knime.core.util.pathresolve.ResolverUtil;
 import org.knime.gateway.api.entity.NodeIDEnt;
@@ -178,12 +179,18 @@ public final class ImportURI {
 
         try {
             var knimeURI = repoObjectImport.getKnimeURI();
-            var itemVersions = ResolverUtil.getHubItemVersions(knimeURI);
+            var itemVersions = ResolverUtil.getHubItemVersionList(knimeURI);
             return itemVersions.stream()//
                     .filter(version -> version.version() == itemVersion.getAsInt())//
                     .findFirst();
-        } catch (Exception e) {
-            LOGGER.warn("Failed to get version information for workflow", e);
+        } catch (ResourceAccessException e) {
+            LOGGER.warn("Failed to retrieve version information", e);
+            DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.WARNING,
+                "Workflow Version Unavailable",
+                "Could not retrieve version information for the selected workflow. Please log in. "
+                    + "If you are already logged in, the requested version may no longer exist "
+                    + "or you may not have permission to access it.",
+                false);
             return Optional.empty();
         }
     }
