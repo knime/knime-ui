@@ -307,12 +307,6 @@ export interface AllowedLoopActions {
 export interface AllowedNodeActions extends AllowedActions {
 
     /**
-     * Indicates whether the dialog can be opened (extra window) or not. If the property is absent, no dialog is available altogether.
-     * @type {boolean}
-     * @memberof AllowedNodeActions
-     */
-    canOpenDialog?: boolean;
-    /**
      * Indicates  whether a legacy flow variable dialog can be opened. If the property is absent, there is no legacy flow variable dialog.
      * @type {boolean}
      * @memberof AllowedNodeActions
@@ -510,6 +504,12 @@ export interface AppState {
      * @memberof AppState
      */
     hasNodeCollectionActive?: boolean;
+    /**
+     * Whether the application should use embedded dialogs or detached dialogs.
+     * @type {boolean}
+     * @memberof AppState
+     */
+    useEmbeddedDialogs?: boolean;
     /**
      * Display name of currently active node collection. Compatible with \&quot;Search in {activeNodeCollection} nodes\&quot;.
      * @type {string}
@@ -2058,11 +2058,11 @@ export interface Node {
      */
     kind: Node.KindEnum;
     /**
-     * Indicates whether this node has a dialog. Not present if the node has no dialog. Not true if only a legacy dialog is available.
-     * @type {boolean}
+     * Indicates whether and type of dialog a node has. Not present if the node has no dialog.
+     * @type {string}
      * @memberof Node
      */
-    hasDialog?: boolean;
+    dialogType?: Node.DialogTypeEnum;
     /**
      * A change in this value signals that the input of the node has changed (this currently only considers   port specs). Includes the flow variable port. Not present if &#x60;hasDialog&#x60; is false. Not present if &#x60;interaction info&#x60; is not included. Not present if no input ports present. Not present for metanodes.
      * @type {number}
@@ -2098,6 +2098,14 @@ export namespace Node {
         Node = 'node',
         Component = 'component',
         Metanode = 'metanode'
+    }
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum DialogTypeEnum {
+        Web = 'web',
+        Swing = 'swing'
     }
 }
 /**
