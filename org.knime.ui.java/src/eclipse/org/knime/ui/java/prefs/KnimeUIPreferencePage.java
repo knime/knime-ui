@@ -82,8 +82,6 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         addField(nodeRepoFilterEditor);
 
-        addField(new HorizontalLineField(getFieldEditorParent()));
-
         /// Mouse wheel actions
         final var scrollToZoomOptions = new String[][]{ //
             new String[]{"Zoom", KnimeUIPreferences.MOUSE_WHEEL_ACTION_ZOOM}, //
@@ -95,8 +93,6 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         addField(scrollToZoomEditor);
 
-        addField(new HorizontalLineField(getFieldEditorParent()));
-
         /// Close project confirmation on interface switch
         final var confirmCloseProjectsOnSwitchEditor =
             new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY,
@@ -104,13 +100,9 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         addField(confirmCloseProjectsOnSwitchEditor);
 
-        addField(new HorizontalLineField(getFieldEditorParent()));
-
         /// Confirmation for node config changes
         addField(new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY,
                 "Always confirm node configuration changes", getFieldEditorParent()));
-
-        addField(new HorizontalLineField(getFieldEditorParent()));
 
         /// Node configuration dialog mode
         final var nodeConfigurationModeOptions = new String[][]{ //

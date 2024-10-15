@@ -203,6 +203,12 @@ final class Init {
             spaceProviders.update();
             SpaceProvidersUtil.sendSpaceProvidersChangedEvent(spaceProviders, eventConsumer);
         });
+
+        KnimeUIPreferences.setNodeModeChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                appStateUpdater.updateAppState();
+            }
+        });
     }
 
     private static NodeRepository createNodeRepository(final NodeCollections nodeCollections) {
@@ -245,6 +251,11 @@ final class Init {
             @Override
             public boolean confirmNodeConfigChanges() {
                 return KnimeUIPreferences.confirmNodeConfigChanges();
+            }
+
+            @Override
+            public boolean useEmbeddedDialogs() {
+                return KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED.equals(KnimeUIPreferences.getNodeDialogMode());
             }
         };
     }
