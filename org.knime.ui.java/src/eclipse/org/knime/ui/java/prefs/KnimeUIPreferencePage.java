@@ -53,7 +53,6 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.knime.gateway.impl.webui.featureflags.FeatureFlags;
 import org.knime.workbench.ui.preferences.HorizontalLineField;
 
 /**
@@ -63,23 +62,6 @@ import org.knime.workbench.ui.preferences.HorizontalLineField;
  * @author Kai Franze, KNIME GmbH, Germany
  */
 public final class KnimeUIPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-
-    private static final String SELECTED_NODE_COLLECTION_LABEL =
-        "Nodes included in the node repository and node recommendations";
-
-    private static final String SELECTED_NODE_COLLECTION_NONE_OPTION = "All nodes";
-
-    private static final String SELECTED_NODE_COLLECTION_STARTER_OPTION = "Starter nodes";
-
-    private static final String MOUSE_WHEEL_ACTION_LABEL = "Mouse wheel action";
-
-    private static final String MOUSE_WHEEL_TO_ZOOM_OPTION = "Zoom";
-
-    private static final String MOUSE_WHEEL_TO_SCROLL_OPTION = "Scroll";
-
-    private static final String CONFIRM_CLOSE_PROJECTS_ON_SWITCH_LABEL =
-        "Ask for confirmation to close all open projects when switching between user interfaces";
-
     /**
      * Create a new preference page for the Modern UI.
      */
@@ -89,37 +71,57 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
     @Override
     protected void createFieldEditors() {
+        /// Node collection
         final var nodeRepoFilterOptions = new String[][]{ //
-            new String[]{SELECTED_NODE_COLLECTION_NONE_OPTION, KnimeUIPreferences.SELECTED_NODE_COLLECTION_NONE_ID}, //
-            new String[]{SELECTED_NODE_COLLECTION_STARTER_OPTION,
-                KnimeUIPreferences.SELECTED_NODE_COLLECTION_STARTER_ID} //
+            new String[]{"All nodes", KnimeUIPreferences.SELECTED_NODE_COLLECTION_NONE_ID}, //
+            new String[]{"Starter nodes", KnimeUIPreferences.SELECTED_NODE_COLLECTION_STARTER_ID} //
         };
+
         final var nodeRepoFilterEditor = new RadioGroupFieldEditor(KnimeUIPreferences.SELECTED_NODE_COLLECTION_PREF_KEY,
-            SELECTED_NODE_COLLECTION_LABEL, 1, nodeRepoFilterOptions, getFieldEditorParent());
+                "Nodes included in the node repository and node recommendations", 1, nodeRepoFilterOptions, getFieldEditorParent());
+
         addField(nodeRepoFilterEditor);
 
         addField(new HorizontalLineField(getFieldEditorParent()));
 
+        /// Mouse wheel actions
         final var scrollToZoomOptions = new String[][]{ //
-            new String[]{MOUSE_WHEEL_TO_ZOOM_OPTION, KnimeUIPreferences.MOUSE_WHEEL_ACTION_ZOOM}, //
-            new String[]{MOUSE_WHEEL_TO_SCROLL_OPTION, KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL} //
+            new String[]{"Zoom", KnimeUIPreferences.MOUSE_WHEEL_ACTION_ZOOM}, //
+            new String[]{"Scroll", KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL} //
         };
+
         final var scrollToZoomEditor = new RadioGroupFieldEditor(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
-            MOUSE_WHEEL_ACTION_LABEL, 1, scrollToZoomOptions, getFieldEditorParent());
+                "Mouse wheel action", 1, scrollToZoomOptions, getFieldEditorParent());
+
         addField(scrollToZoomEditor);
 
         addField(new HorizontalLineField(getFieldEditorParent()));
 
+        /// Close project confirmation on interface switch
         final var confirmCloseProjectsOnSwitchEditor =
             new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY,
-                CONFIRM_CLOSE_PROJECTS_ON_SWITCH_LABEL, getFieldEditorParent());
+                    "Ask for confirmation to close all open projects when switching between user interfaces", getFieldEditorParent());
+
         addField(confirmCloseProjectsOnSwitchEditor);
 
-        if (FeatureFlags.embedDialogs()) {
-            addField(new HorizontalLineField(getFieldEditorParent()));
-            addField(new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY,
+        addField(new HorizontalLineField(getFieldEditorParent()));
+
+        /// Confirmation for node config changes
+        addField(new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY,
                 "Always confirm node configuration changes", getFieldEditorParent()));
-        }
+
+        addField(new HorizontalLineField(getFieldEditorParent()));
+
+        /// Node configuration dialog mode
+        final var nodeConfigurationModeOptions = new String[][]{ //
+                new String[]{"Embedded", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
+                new String[]{"Detached", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED} //
+        };
+
+        final var nodeDialogModeEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY,
+                "Node configuration dialog mode", 1, nodeConfigurationModeOptions, getFieldEditorParent());
+
+        addField(nodeDialogModeEditor);
     }
 
     @Override

@@ -76,19 +76,23 @@ public final class KnimeUIPreferences {
 
     private static BiConsumer<String, String> mouseWheelActionChangeListener;
 
-    private static Runnable explorerMountPointChangeListener;
+    static final String MOUSE_WHEEL_ACTION_PREF_KEY = "mouseWheelAction";
 
     private static Runnable confirmNodeConfigChangesPrefChangeListener;
-
-    static final String MOUSE_WHEEL_ACTION_PREF_KEY = "mouseWheelAction";
 
     static final String CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY = "confirmNodeConfigChanges";
 
     static final String CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY = "confirmCloseProjectsOnSwitch";
 
+    static final String NODE_DIALOG_MODE_PREF_KEY = "nodeDialogMode";
+
+    private static BiConsumer<String, String> nodeModeChangeListener;
+
     private static final String BUNDLE_NAME = UIPlugin.getContext().getBundle().getSymbolicName();
 
     static final IPersistentPreferenceStore PREF_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, BUNDLE_NAME);
+
+    private static Runnable explorerMountPointChangeListener;
 
     static {
         PREF_STORE.addPropertyChangeListener(event -> {
@@ -104,6 +108,11 @@ public final class KnimeUIPreferences {
                 && CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY.equals(event.getProperty())
                 && !Objects.equals(event.getOldValue(), event.getNewValue())) {
                 confirmNodeConfigChangesPrefChangeListener.run();
+            }
+            if (NODE_DIALOG_MODE_PREF_KEY.equals(event.getProperty()) && nodeModeChangeListener != null) {
+                final var oldValue = (String)event.getOldValue();
+                final var newValue = (String)event.getNewValue();
+                nodeModeChangeListener.accept(oldValue, newValue);
             }
         });
 
@@ -136,12 +145,6 @@ public final class KnimeUIPreferences {
     /** The identifier for the starter node collection. The node repository will only show starter nodes. */
     public static final String SELECTED_NODE_COLLECTION_STARTER_ID = "starter";
 
-    /** If the desired mouse wheel action is scrolling */
-    public static final String MOUSE_WHEEL_ACTION_SCROLL = "scroll";
-
-    /** If the desired mouse wheel action is zooming */
-    public static final String MOUSE_WHEEL_ACTION_ZOOM = "zoom";
-
     /**
      * @return the identifier of the selected node collection. {@link #SELECTED_NODE_COLLECTION_NONE_ID} if no
      *         collection is selected.
@@ -160,12 +163,28 @@ public final class KnimeUIPreferences {
         selectedNodeCollectionChangeListener = listener;
     }
 
+    /** If the desired mouse wheel action is scrolling */
+    public static final String MOUSE_WHEEL_ACTION_SCROLL = "scroll";
+
+    /** If the desired mouse wheel action is zooming */
+    public static final String MOUSE_WHEEL_ACTION_ZOOM = "zoom";
+
     /**
      * @return which action to perform on mouse wheel. Can be {@link #MOUSE_WHEEL_ACTION_SCROLL} or
      *         {@link #MOUSE_WHEEL_ACTION_ZOOM}
      */
     public static String getMouseWheelAction() {
         return PREF_STORE.getString(MOUSE_WHEEL_ACTION_PREF_KEY);
+    }
+
+    /**
+     * Set a listener that is called whenever the desired mouse wheel action changes. If a listener was set already it
+     * is replaced.
+     *
+     * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
+     */
+    public static void setMouseWheelActionChangeListener(final BiConsumer<String, String> listener) {
+        mouseWheelActionChangeListener = listener;
     }
 
     /**
@@ -181,7 +200,15 @@ public final class KnimeUIPreferences {
     public static void confirmNodeConfigChanges(final boolean confirmNodeConfigChanges) {
         PREF_STORE.setValue(CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, confirmNodeConfigChanges);
         savePreferenceChanges();
+    }
 
+    /**
+     * Changes listener for the {@link #confirmNodeConfigChanges()} preference.
+     *
+     * @param listener
+     */
+    public static void setConfirmNodeConfigChangesPrefChangeListener(final Runnable listener) {
+        confirmNodeConfigChangesPrefChangeListener = listener;
     }
 
     /**
@@ -199,23 +226,27 @@ public final class KnimeUIPreferences {
         savePreferenceChanges();
     }
 
+    /** If the desired mouse wheel action is scrolling */
+    public static final String NODE_DIALOG_MODE_DETACHED = "detached";
+
+    /** If the desired mouse wheel action is zooming */
+    public static final String NODE_DIALOG_MODE_EMBEDDED = "embedded";
+
     /**
-     * Set a listener that is called whenever the desired mouse wheel action changes. If a listener was set already it
+     * @return which mode to use for Node Dialogs.
+     */
+    public static String getNodeDialogMode() {
+        return PREF_STORE.getString(NODE_DIALOG_MODE_PREF_KEY);
+    }
+
+    /**
+     * Set a listener that is called whenever the node configuration mode changes. If a listener was set already it
      * is replaced.
      *
      * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
      */
-    public static void setMouseWheelActionChangeListener(final BiConsumer<String, String> listener) {
-        mouseWheelActionChangeListener = listener;
-    }
-
-    /**
-     * Changes listener for the {@link #confirmNodeConfigChanges()} preference.
-     *
-     * @param listener
-     */
-    public static void setConfirmNodeConfigChangesPrefChangeListener(final Runnable listener) {
-        confirmNodeConfigChangesPrefChangeListener = listener;
+    public static void setNodeModeChangeListener(final BiConsumer<String, String> listener) {
+        nodeModeChangeListener = listener;
     }
 
     /**

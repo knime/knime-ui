@@ -74,5 +74,8 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
 
         // Set always confirm close projects on perspective switch as default option
         store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
+
+        // Set node configuration dialog mode to "embedded" as default option
+        store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED);
     }
 }
