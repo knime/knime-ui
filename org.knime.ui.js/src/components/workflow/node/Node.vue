@@ -189,6 +189,11 @@ export default {
       type: Boolean,
       default: null,
     },
+
+    dialogType: {
+      type: [String, null],
+      default: null,
+    },
   },
   data() {
     return {
@@ -205,7 +210,10 @@ export default {
     };
   },
   computed: {
-    ...mapState("application", { projectId: "activeProjectId" }),
+    ...mapState("application", {
+      projectId: "activeProjectId",
+      useEmbeddedDialogs: "useEmbeddedDialogs",
+    }),
     ...mapState("workflow", ["isDragging"]),
     ...mapState("selection", ["shouldHideSelection"]),
     ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
@@ -230,11 +238,21 @@ export default {
     insideStreamingComponent() {
       return typeof this.executionInfo?.streamable !== "undefined";
     },
-    allNodeActions() {
-      return {
+    actionBarConfig() {
+      const baseConfig = {
         ...this.allowedActions,
         ...this.loopInfo.allowedActions,
       };
+
+      let canConfigure = false;
+
+      if (this.dialogType) {
+        canConfigure = this.useEmbeddedDialogs
+          ? this.dialogType === "swing"
+          : true;
+      }
+
+      return { ...baseConfig, canConfigure };
     },
     isSelected() {
       return this.isNodeSelected(this.id);
@@ -326,11 +344,13 @@ export default {
     },
 
     async onLeftDoubleClick(e) {
-      // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
-      if (
-        this.kind === "metanode" ||
-        (this.kind === "component" && (e.ctrlKey || e.metaKey))
-      ) {
+      const isMetanode = this.kind === "metanode";
+      const isComponent = this.kind === "component";
+      const isOpeningContainerNode =
+        // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
+        isMetanode || (isComponent && (e.ctrlKey || e.metaKey));
+
+      if (isOpeningContainerNode) {
         if (
           this.isLocked &&
           this.$store.state.uiControls.canLockAndUnlockSubnodes
@@ -344,17 +364,29 @@ export default {
             return;
           }
         }
+
         this.$router.push({
           name: APP_ROUTES.WorkflowPage,
           params: { projectId: this.projectId, workflowId: this.id },
         });
-      } else if (
-        this.allowedActions?.canOpenDialog &&
-        this.$store.state.uiControls.canConfigureNodes
-      ) {
-        // open node dialog if one is present
-        this.openNodeConfiguration(this.id);
+
+        return;
       }
+
+      if (!this.$store.state.uiControls.canConfigureNodes) {
+        return;
+      }
+
+      // rare case that the node doesn't have any type of dialog
+      if (!this.dialogType) {
+        return;
+      }
+
+      if (this.dialogType === "web" && this.useEmbeddedDialogs) {
+        return;
+      }
+
+      this.openNodeConfiguration(this.id);
     },
 
     /*
@@ -500,7 +532,7 @@ export default {
           <NodeActionBar
             v-if="!insideStreamingComponent && isHovering && !isDragging"
             ref="actionbar"
-            v-bind="allNodeActions"
+            v-bind="actionBarConfig"
             :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
             :node-id="id"
             :is-node-selected="isSelected"
@@ -554,6 +586,8 @@ export default {
             :is-connector-hovering="connectorHover"
             :allowed-actions="allowedActions"
             :port-positions="portPositions"
+            :dialog-type="dialogType"
+            :is-using-embedded-dialogs="useEmbeddedDialogs"
           >
             <template #default="{ hoverSize }">
               <!-- Elements for which a click selects node -->

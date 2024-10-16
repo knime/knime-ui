@@ -1,20 +1,28 @@
-<script>
+<script lang="ts">
+import type { PropType } from "vue";
+import { defineComponent } from "vue";
+
+import { Node } from "@/api/gateway-api/generated-api";
+
 /**
  * Calculates the size of the Node hover area based on different criteria.
  * Also detects conector events and emits the corresponding event up to the parent
  */
-export default {
+export default defineComponent({
   props: {
     isHovering: {
       type: Boolean,
       default: false,
     },
     nodeNameDimensions: {
-      type: Object,
+      type: Object as PropType<{ width: number; height: number }>,
       required: true,
     },
     portPositions: {
-      type: Object,
+      type: Object as PropType<{
+        in: Array<[number, number]>;
+        out: Array<[number, number]>;
+      }>,
       required: true,
     },
     isConnectorHovering: {
@@ -22,8 +30,16 @@ export default {
       default: false,
     },
     allowedActions: {
-      type: Object,
+      type: Object as PropType<NonNullable<Node["allowedActions"]>>,
       default: () => ({}),
+    },
+    dialogType: {
+      type: String as PropType<Node.DialogTypeEnum>,
+      default: null,
+    },
+    isUsingEmbeddedDialogs: {
+      type: Boolean,
+      default: true,
     },
   },
 
@@ -60,9 +76,14 @@ export default {
         // buttons are shown as disabled if false, hidden if null
         let extraHorizontalSpace = 0;
 
-        if ("canOpenDialog" in this.allowedActions) {
+        if (
+          (this.dialogType === Node.DialogTypeEnum.Web &&
+            this.isUsingEmbeddedDialogs) ||
+          this.dialogType === Node.DialogTypeEnum.Swing
+        ) {
           extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
         }
+
         if ("canOpenView" in this.allowedActions) {
           extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
         }
@@ -91,7 +112,7 @@ export default {
       };
     },
   },
-};
+});
 </script>
 
 <template>

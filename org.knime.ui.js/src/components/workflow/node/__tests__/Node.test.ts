@@ -5,6 +5,7 @@ import { VueWrapper, mount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
 import type { Store } from "vuex";
 
+import { Node as NodeType } from "@/api/gateway-api/generated-api";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import NodePort from "@/components/workflow/ports/NodePort/NodePort.vue";
 import NodePorts from "@/components/workflow/ports/NodePorts/NodePorts.vue";
@@ -65,6 +66,8 @@ const commonNode = {
     allowedActions: {},
   },
   isLocked: null as boolean | null,
+
+  dialogType: NodeType.DialogTypeEnum.Swing,
 };
 const nativeNode = {
   ...commonNode,
@@ -430,7 +433,7 @@ describe("Node", () => {
         canResume: null,
         canStep: null,
         isNodeSelected: false,
-        canOpenDialog: true,
+        canConfigure: true,
         canOpenView: true,
         nodeKind: "node",
       });
@@ -649,28 +652,6 @@ describe("Node", () => {
       expect(Number(height) - Number(oldHeight)).toBe(20);
     });
 
-    it("shows selection plane and action buttons", async () => {
-      triggerHover(wrapper, true);
-      await nextTick();
-
-      const actionBar = wrapper.findComponent(NodeActionBar);
-
-      expect(actionBar.exists()).toBe(true);
-      expect(actionBar.props()).toStrictEqual({
-        canReset: true,
-        canExecute: true,
-        canCancel: true,
-        canPause: null,
-        canResume: null,
-        canStep: null,
-        isNodeSelected: false,
-        canOpenDialog: true,
-        canOpenView: true,
-        nodeId: "root:1",
-        nodeKind: "node",
-      });
-    });
-
     it("shows shadows", async () => {
       triggerHover(wrapper, true);
       await nextTick();
@@ -686,8 +667,8 @@ describe("Node", () => {
       expect(wrapper.findComponent(NodeTorso).classes()).not.toContain("hover");
     });
 
-    describe("portalled elements need MouseLeave Listener", () => {
-      it("nodeActionBar", async () => {
+    describe("action bar", () => {
+      it("is portalled and it needs MouseLeave Listener", async () => {
         triggerHover(wrapper, true);
         await nextTick();
 
@@ -696,6 +677,92 @@ describe("Node", () => {
 
         expect(wrapper.findComponent(NodeTorso).classes()).not.toContain(
           "hover",
+        );
+      });
+
+      it("shows selection plane and action buttons", async () => {
+        triggerHover(wrapper, true);
+        await nextTick();
+
+        const actionBar = wrapper.findComponent(NodeActionBar);
+
+        expect(actionBar.exists()).toBe(true);
+        expect(actionBar.props()).toStrictEqual({
+          canReset: true,
+          canExecute: true,
+          canCancel: true,
+          canPause: null,
+          canResume: null,
+          canStep: null,
+          isNodeSelected: false,
+          canConfigure: true,
+          canOpenView: true,
+          nodeId: "root:1",
+          nodeKind: "node",
+        });
+      });
+
+      it("should handle configure button for web-based dialogs", async () => {
+        const { wrapper, $store } = doMount({
+          props: { ...props, dialogType: NodeType.DialogTypeEnum.Web },
+        });
+
+        $store.state.application.useEmbeddedDialogs = true;
+        await nextTick();
+
+        triggerHover(wrapper, true);
+        await nextTick();
+
+        const actionBar = wrapper.findComponent(NodeActionBar);
+
+        expect(actionBar.props()).toEqual(
+          expect.objectContaining({
+            canConfigure: false,
+          }),
+        );
+
+        $store.state.application.useEmbeddedDialogs = false;
+        await nextTick();
+
+        triggerHover(wrapper, true);
+        await nextTick();
+
+        expect(actionBar.props()).toEqual(
+          expect.objectContaining({
+            canConfigure: true,
+          }),
+        );
+      });
+
+      it("should handle configure button for legacy dialogs", async () => {
+        const { wrapper, $store } = doMount({
+          props: { ...props, dialogType: NodeType.DialogTypeEnum.Swing },
+        });
+
+        $store.state.application.useEmbeddedDialogs = true;
+        await nextTick();
+
+        triggerHover(wrapper, true);
+        await nextTick();
+
+        const actionBar = wrapper.findComponent(NodeActionBar);
+
+        expect(actionBar.props()).toEqual(
+          expect.objectContaining({
+            canConfigure: true,
+          }),
+        );
+
+        $store.state.application.useEmbeddedDialogs = false;
+        await nextTick();
+
+        triggerHover(wrapper, true);
+        await nextTick();
+
+        expect(actionBar.props()).toEqual(
+          expect.objectContaining({
+            canConfigure: true,
+          }),
         );
       });
     });

@@ -4,7 +4,7 @@ import type { Store } from "vuex";
 
 import { ApplyState, ViewState } from "@knime/ui-extension-service";
 
-import { NodeState } from "@/api/gateway-api/generated-api";
+import { Node, NodeState } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "@/store/application";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import * as selectionStore from "@/store/selection";
@@ -21,22 +21,22 @@ describe("NodeConfigLayout.vue", () => {
 
   const idleNode = createNativeNode({
     id: "root:1",
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.IDLE },
   });
   const configuredNode = createNativeNode({
     id: "root:2",
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
   });
   const executedNode = createNativeNode({
     id: "root:3",
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
   });
   const executingNode = createNativeNode({
     id: "root:4",
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
   });
 

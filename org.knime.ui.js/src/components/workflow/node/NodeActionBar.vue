@@ -26,15 +26,14 @@ type Props = {
   canExecute?: boolean;
   canCancel?: boolean;
   canReset?: boolean;
+  canConfigure?: boolean;
   /*
    * The props below can either be true, false or unset.
-   * In case they are unset, Vue defaults them to null
    */
   canStep?: boolean | null;
   canPause?: boolean | null;
   canResume?: boolean | null;
   canOpenView?: boolean | null;
-  canOpenDialog?: boolean | null;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -42,11 +41,11 @@ const props = withDefaults(defineProps<Props>(), {
   canExecute: false,
   canCancel: false,
   canReset: false,
+  canConfigure: false,
   canStep: null,
   canPause: null,
   canResume: null,
   canOpenView: null,
-  canOpenDialog: null,
 });
 
 const $shortcuts = useShortcuts();
@@ -80,7 +79,7 @@ const actions = computed<Record<string, Action>>(() => {
     configureNode: {
       title: () =>
         hoverTitle("Configure", $shortcuts.get("configureNode").hotkeyText),
-      disabled: !props.canOpenDialog,
+      disabled: !props.canConfigure,
       icon: OpenDialogIcon,
       onClick: () => dispatchShortcut("configureNode"),
     },
@@ -150,8 +149,7 @@ const visibleActions = computed<Action[]>(() => {
   }
 
   const conditionMap: Record<keyof Actions, boolean> = {
-    configureNode:
-      props.canOpenDialog !== null && uiControls.value.canConfigureNodes,
+    configureNode: props.canConfigure && uiControls.value.canConfigureNodes,
 
     // plain execution
     execute: !props.canPause && !props.canResume,

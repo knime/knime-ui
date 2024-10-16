@@ -4,11 +4,16 @@ import { mount } from "@vue/test-utils";
 
 import { sleep } from "@knime/utils";
 
+import { Node } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "@/store/application";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import * as uiControlsStore from "@/store/uiControls";
 import * as workflowStore from "@/store/workflow";
-import { createNativeNode, createWorkflow } from "@/test/factories";
+import {
+  createMetanode,
+  createNativeNode,
+  createWorkflow,
+} from "@/test/factories";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { setEnvironment } from "@/test/utils/setEnvironment";
 import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
@@ -72,10 +77,9 @@ describe("NodeConfig", () => {
 
   it("shows different placeholder text when node without dialog is selected", () => {
     const { wrapper } = doMount({
-      singleSelectedNodeMock: vi.fn().mockReturnValue({
-        id: 2,
-        kind: "node",
-      }),
+      singleSelectedNodeMock: vi
+        .fn()
+        .mockReturnValue(createNativeNode({ id: "2" })),
     });
 
     expect(wrapper.find(".placeholder-text").text()).toBe(
@@ -89,10 +93,9 @@ describe("NodeConfig", () => {
     const NodeConfig = (await import("../NodeConfig.vue")).default;
 
     const { wrapper, $store } = doMount({
-      singleSelectedNodeMock: vi.fn().mockReturnValue({
-        id: 2,
-        kind: "node",
-      }),
+      singleSelectedNodeMock: vi
+        .fn()
+        .mockReturnValue(createNativeNode({ id: "2" })),
       component: NodeConfig,
     });
 
@@ -106,10 +109,9 @@ describe("NodeConfig", () => {
 
   it("shows placeholder component if selected node has a legacy dialog", () => {
     const { wrapper } = doMount({
-      singleSelectedNodeMock: vi.fn().mockReturnValue({
-        id: 1,
-        kind: "node",
-      }),
+      singleSelectedNodeMock: vi
+        .fn()
+        .mockReturnValue(createNativeNode({ id: "1" })),
     });
 
     expect(wrapper.find(".content-wrapper").exists()).toBe(true);
@@ -123,10 +125,9 @@ describe("NodeConfig", () => {
     const NodeConfig = (await import("../NodeConfig.vue")).default;
 
     const { wrapper, $store } = doMount({
-      singleSelectedNodeMock: vi.fn().mockReturnValue({
-        id: 2,
-        kind: "metanode",
-      }),
+      singleSelectedNodeMock: vi
+        .fn()
+        .mockReturnValue(createMetanode({ id: "2" })),
       component: NodeConfig,
     });
 
@@ -149,7 +150,7 @@ describe("NodeConfig", () => {
 
     const node = createNativeNode({
       id: "root:1",
-      hasDialog: true,
+      dialogType: Node.DialogTypeEnum.Web,
     });
 
     const workflow = createWorkflow({

@@ -240,16 +240,64 @@ describe("workflowShortcuts", () => {
       );
     });
 
-    it("checks condition", () => {
+    it("checks condition for detached dialogs", () => {
       const { $store } = createStore();
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBeFalsy();
-      $store.getters["selection/singleSelectedNode"].allowedActions = {
-        canOpenDialog: true,
-      };
-      $store.state.uiControls.canConfigureNodes = false;
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+
       $store.state.uiControls.canConfigureNodes = true;
+      $store.state.application.useEmbeddedDialogs = false;
+
+      // check for web dialogs
+      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+        dialogType: "web",
+      });
       expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
+
+      // check for swing dialogs
+      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+        dialogType: "swing",
+      });
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
+
+      $store.state.uiControls.canConfigureNodes = false;
+
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+    });
+
+    it("checks condition for embedded dialogs", () => {
+      const { $store } = createStore();
+
+      $store.state.uiControls.canConfigureNodes = true;
+      $store.state.application.useEmbeddedDialogs = true;
+
+      // check for web dialogs
+      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+        dialogType: "web",
+      });
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+
+      // check for swing dialogs
+      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+        dialogType: "swing",
+      });
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
+
+      $store.state.uiControls.canConfigureNodes = false;
+
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+    });
+
+    it("checks condition for null dialogTypes", () => {
+      const { $store } = createStore();
+
+      $store.state.uiControls.canConfigureNodes = true;
+      $store.state.application.useEmbeddedDialogs = true;
+
+      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+        dialogType: null,
+      });
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+      $store.state.application.useEmbeddedDialogs = false;
+      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
     });
   });
 

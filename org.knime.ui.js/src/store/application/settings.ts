@@ -36,6 +36,10 @@ interface State {
    * Wheter to enable the locking of metanodes and components
    */
   isSubnodeLockingEnabled: boolean;
+  /*
+   * Wheter to use embedded node configuration dialogs
+   */
+  useEmbeddedDialogs: boolean;
 }
 
 declare module "./index" {
@@ -50,6 +54,7 @@ export const state = (): State => ({
   scrollToZoomEnabled: false,
   devMode: false,
   isSubnodeLockingEnabled: false,
+  useEmbeddedDialogs: true,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -73,6 +78,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setIsSubnodeLockingEnabled(state, isSubnodeLockingEnabled) {
     state.isSubnodeLockingEnabled = isSubnodeLockingEnabled;
+  },
+  setUseEmbeddedDialogs(state, value) {
+    state.useEmbeddedDialogs = value;
   },
 };
 

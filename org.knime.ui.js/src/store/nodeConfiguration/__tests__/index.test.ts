@@ -19,27 +19,25 @@ vi.mock("@/environment");
 describe("nodeConfiguration", () => {
   const node1 = createNativeNode({
     id: "root:1",
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
   });
   const node2 = createNativeNode({
     id: "root:2",
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
     allowedActions: { canReset: false },
   });
   const node3 = createNativeNode({
     id: "root:3",
-    hasDialog: false,
   });
   const node4 = createNativeNode({
     id: "root:4",
     kind: Node.KindEnum.Component,
-    hasDialog: false,
   });
   const node5 = createNativeNode({
     id: "root:5",
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
     state: { executionState: NodeState.ExecutionStateEnum.EXECUTING },
     allowedActions: { canReset: false },
   });

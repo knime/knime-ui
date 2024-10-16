@@ -10,13 +10,14 @@ import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import { useStore } from "@/composables/useStore";
-import { useFeatures } from "@/plugins/feature-flags";
 
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 
-const $features = useFeatures();
 const store = useStore();
 
+const useEmbeddedDialogs = computed(
+  () => store.state.application.useEmbeddedDialogs,
+);
 const workflow = computed(() => store.state.workflow.activeWorkflow);
 const activeWorkflowId = computed(
   () => store.state.workflow.activeWorkflow!.info.containerId,
@@ -92,7 +93,7 @@ const closeContextMenu = (event: unknown) => {
     <WorkflowInfoBar />
 
     <SplitPanel
-      v-if="$features.shouldDisplayEmbeddedDialogs()"
+      v-if="useEmbeddedDialogs"
       v-model:secondary-size="nodeDialogSize"
       data-test-id="node-config-split-panel"
       direction="right"

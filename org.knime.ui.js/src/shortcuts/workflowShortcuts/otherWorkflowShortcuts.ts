@@ -1,5 +1,7 @@
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 
+import type { KnimeNode } from "@/api/custom-types";
+import { Node } from "@/api/gateway-api/generated-api";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import type { UnionToShortcutRegistry } from "../types";
@@ -25,15 +27,29 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
       $store.dispatch("workflow/openNodeConfiguration", selectedNodeId);
     },
     condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+      const singleSelectedNode = $store.getters[
+        "selection/singleSelectedNode"
+      ] as KnimeNode;
 
-      if (singleSelectedNode) {
-        const { canOpenDialog } = singleSelectedNode.allowedActions;
+      const useEmbeddedDialogs = $store.state.application.useEmbeddedDialogs;
 
-        return canOpenDialog && $store.state.uiControls.canConfigureNodes;
+      if (!singleSelectedNode) {
+        return false;
       }
 
-      return false;
+      const canConfigureNodes =
+        $store.state.uiControls.canConfigureNodes &&
+        Boolean(singleSelectedNode.dialogType);
+
+      if (useEmbeddedDialogs) {
+        const hasLegacyDialog =
+          singleSelectedNode.dialogType === Node.DialogTypeEnum.Swing;
+
+        // only allow this option for legacy dialogs
+        return hasLegacyDialog && canConfigureNodes;
+      }
+
+      return canConfigureNodes;
     },
   },
   configureFlowVariables: {

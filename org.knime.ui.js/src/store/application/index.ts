@@ -271,6 +271,11 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     }
 
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+    if (applicationState.hasOwnProperty("useEmbeddedDialogs")) {
+      commit("setUseEmbeddedDialogs", applicationState.useEmbeddedDialogs);
+    }
+
+    // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
     if (applicationState.hasOwnProperty("hasNodeCollectionActive")) {
       const currentValue = state.hasNodeCollectionActive;
 

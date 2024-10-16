@@ -22,6 +22,7 @@ const mockNode = ({ id, position }) => ({
   kind: "node",
   icon: "data:image/",
   state: null,
+  dialogType: "web",
 });
 
 const mockConnector = ({ nr, id }) => ({
@@ -214,6 +215,7 @@ describe("Workflow", () => {
           },
           portGroups: null,
           isLocked: null,
+          dialogType: "web",
         };
 
         expect(props).toStrictEqual(expected);

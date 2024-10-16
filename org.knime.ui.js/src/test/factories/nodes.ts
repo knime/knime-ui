@@ -58,7 +58,6 @@ const createBaseNode = (
       canReset: false,
       canDelete: true,
       canCollapse: AllowedNodeActions.CanCollapseEnum.ResetRequired,
-      canOpenDialog: true,
       canExpand: AllowedNodeActions.CanExpandEnum.False,
     },
     annotation: createNodeAnnotation({
@@ -72,7 +71,7 @@ const createBaseNode = (
       defaultFontSize: 12,
     }),
 
-    hasDialog: false,
+    dialogType: Node.DialogTypeEnum.Swing,
 
     inPorts: [defaultVariablePort],
     outPorts: [defaultVariablePort],

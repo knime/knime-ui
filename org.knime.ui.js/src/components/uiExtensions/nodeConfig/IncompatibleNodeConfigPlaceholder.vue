@@ -5,6 +5,7 @@ import { Button } from "@knime/components";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
+import { Node } from "@/api/gateway-api/generated-api";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
 import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
@@ -17,7 +18,10 @@ const selectedNode = computed<KnimeNode>(
 );
 
 const hasLegacyDialog = computed(() =>
-  Boolean(selectedNode.value && !selectedNode.value.hasDialog),
+  Boolean(
+    selectedNode.value &&
+      selectedNode.value.dialogType === Node.DialogTypeEnum.Swing,
+  ),
 );
 
 const uiControls = computed(() => store.state.uiControls);

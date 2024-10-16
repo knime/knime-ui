@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { VueWrapper, mount } from "@vue/test-utils";
 
+import { Node } from "@/api/gateway-api/generated-api";
 import ActionButton from "@/components/common/ActionButton.vue";
 import * as applicationStore from "@/store/application";
 import * as uiControlsStore from "@/store/uiControls";
@@ -19,16 +20,18 @@ vi.mock("@/plugins/shortcuts", () => ({
 }));
 
 describe("NodeActionBar", () => {
-  const doMount = ({ props } = {}) => {
+  type ComponentProps = InstanceType<typeof NodeActionBar>["$props"];
+
+  const doMount = ({ props }: { props?: Partial<ComponentProps> } = {}) => {
     const $store = mockVuexStore({
       application: applicationStore,
       uiControls: uiControlsStore,
     });
 
-    const defaultProps = {
+    const defaultProps: ComponentProps = {
       nodeId: "root:1",
       isNodeSelected: false,
-      nodeKind: "node",
+      nodeKind: Node.KindEnum.Node,
     };
 
     const wrapper = mount(NodeActionBar, {
@@ -52,7 +55,7 @@ describe("NodeActionBar", () => {
   it("renders disabled action buttons without openNodeConfiguration and openView", () => {
     const { wrapper } = doMount();
 
-    let buttons = wrapper.findAllComponents(ActionButton);
+    const buttons = wrapper.findAllComponents(ActionButton);
 
     expect(buttons[0].props()).toStrictEqual(
       expect.objectContaining({ x: -25, disabled: true }),
@@ -65,31 +68,12 @@ describe("NodeActionBar", () => {
     );
   });
 
-  it("renders disabled action buttons with openNodeConfiguration and without openView", () => {
-    const { wrapper } = doMount({ props: { canOpenDialog: false } });
-
-    let buttons = wrapper.findAllComponents(ActionButton);
-
-    expect(buttons.at(0).props()).toStrictEqual(
-      expect.objectContaining({ x: -37.5, disabled: true }),
-    );
-    expect(buttons.at(1).props()).toStrictEqual(
-      expect.objectContaining({ x: -12.5, disabled: true }),
-    );
-    expect(buttons.at(2).props()).toStrictEqual(
-      expect.objectContaining({ x: 12.5, disabled: true }),
-    );
-    expect(buttons.at(3).props()).toStrictEqual(
-      expect.objectContaining({ x: 37.5, disabled: true }),
-    );
-  });
-
-  const getActions = (wrapper) =>
+  const getActions = (wrapper: VueWrapper<any>) =>
     wrapper.findAllComponents(ActionButton).map((btn) => btn.props());
 
   it("shows/hides configure option when ui control is set", async () => {
     const { wrapper, $store } = doMount({
-      props: { canOpenDialog: true },
+      props: { canConfigure: true },
     });
 
     expect(getActions(wrapper)).toContainEqual(
@@ -123,24 +107,24 @@ describe("NodeActionBar", () => {
 
   it("renders disabled action buttons with openNodeConfiguration and openView", () => {
     const { wrapper } = doMount({
-      props: { canOpenDialog: false, canOpenView: false },
+      props: { canConfigure: true, canOpenView: false },
     });
 
-    let buttons = wrapper.findAllComponents(ActionButton);
+    const buttons = wrapper.findAllComponents(ActionButton);
 
-    expect(buttons.at(0).props()).toStrictEqual(
-      expect.objectContaining({ x: -50, disabled: true }),
+    expect(buttons.at(0)!.props()).toStrictEqual(
+      expect.objectContaining({ x: -50, disabled: false }),
     );
-    expect(buttons.at(1).props()).toStrictEqual(
+    expect(buttons.at(1)!.props()).toStrictEqual(
       expect.objectContaining({ x: -25, disabled: true }),
     );
-    expect(buttons.at(2).props()).toStrictEqual(
+    expect(buttons.at(2)!.props()).toStrictEqual(
       expect.objectContaining({ x: 0, disabled: true }),
     );
-    expect(buttons.at(3).props()).toStrictEqual(
+    expect(buttons.at(3)!.props()).toStrictEqual(
       expect.objectContaining({ x: 25, disabled: true }),
     );
-    expect(buttons.at(4).props()).toStrictEqual(
+    expect(buttons.at(4)!.props()).toStrictEqual(
       expect.objectContaining({ x: 50, disabled: true }),
     );
   });
@@ -148,7 +132,7 @@ describe("NodeActionBar", () => {
   it("renders enabled action buttons", () => {
     const { wrapper } = doMount({
       props: {
-        canOpenDialog: true,
+        canConfigure: true,
         canExecute: true,
         canCancel: true,
         canReset: true,
@@ -156,7 +140,7 @@ describe("NodeActionBar", () => {
       },
     });
 
-    let buttons = wrapper.findAllComponents(ActionButton);
+    const buttons = wrapper.findAllComponents(ActionButton);
 
     // fires action event
     buttons.forEach((button) => {
@@ -201,7 +185,7 @@ describe("NodeActionBar", () => {
       });
 
       // fires action event
-      let buttons = wrapper.findAllComponents(ActionButton);
+      const buttons = wrapper.findAllComponents(ActionButton);
       buttons.forEach((button) => {
         button.vm.$emit("click");
       });
@@ -231,7 +215,7 @@ describe("NodeActionBar", () => {
         props: { canStep: true, canPause: false, canResume: true },
       });
 
-      let buttons = wrapper.findAllComponents(ActionButton);
+      const buttons = wrapper.findAllComponents(ActionButton);
       buttons.forEach((button) => {
         button.vm.$emit("click");
       });
@@ -262,7 +246,7 @@ describe("NodeActionBar", () => {
         props: { canStep: true, canPause: true, canResume: true },
       });
 
-      let buttons = wrapper.findAllComponents(ActionButton);
+      const buttons = wrapper.findAllComponents(ActionButton);
       buttons.forEach((button) => {
         button.vm.$emit("click");
       });
@@ -310,7 +294,7 @@ describe("NodeActionBar", () => {
     });
 
     const buttons = wrapper.findAllComponents(ActionButton);
-    const lastButton = buttons.at(buttons.length - 1);
+    const lastButton = buttons.at(buttons.length - 1)!;
 
     expect(lastButton.props("title")).toMatch("- MOCK HOTKEY TEXT");
   });

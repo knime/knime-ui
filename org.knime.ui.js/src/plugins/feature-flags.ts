@@ -5,7 +5,6 @@ import type { ApplicationState } from "@/store/application";
 import type { PluginInitFunction } from "./types";
 
 export type Features = {
-  shouldDisplayEmbeddedDialogs: () => boolean;
   isKaiPermitted: () => boolean;
   isKaiInstalled: () => boolean;
 };
@@ -13,7 +12,6 @@ export type Features = {
 const featureFlagsPrefix = "org.knime.ui.feature";
 
 const featureFlagDefaults = {
-  [`${featureFlagsPrefix}.embedded_views_and_dialogs`]: false,
   [`${featureFlagsPrefix}.ai_assistant`]: true,
   [`${featureFlagsPrefix}.ai_assistant_installed`]: false,
 };
@@ -28,9 +26,6 @@ const getFlagValue = (
 export const features: (
   featureFlags: ApplicationState["featureFlags"],
 ) => Features = (featureFlags) => ({
-  shouldDisplayEmbeddedDialogs: () =>
-    getFlagValue(featureFlags, "embedded_views_and_dialogs"),
-
   isKaiPermitted: () => getFlagValue(featureFlags, "ai_assistant"),
 
   isKaiInstalled: () => getFlagValue(featureFlags, "ai_assistant_installed"),

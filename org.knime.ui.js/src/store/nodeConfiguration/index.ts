@@ -10,7 +10,11 @@ import {
 
 import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
-import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import {
+  type NativeNode,
+  Node,
+  NodeState,
+} from "@/api/gateway-api/generated-api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { runInEnvironment } from "@/environment";
@@ -227,7 +231,11 @@ export const getters: GetterTree<NodeConfigurationState, RootStoreState> = {
     }
 
     const node = rootState.workflow.activeWorkflow?.nodes[activeNodeId];
-    return node && isNativeNode(node) && node.hasDialog ? node : null;
+    return node &&
+      isNativeNode(node) &&
+      node.dialogType === Node.DialogTypeEnum.Web
+      ? node
+      : null;
   },
 
   isConfigurationDisabled(_, getters, rootState) {
