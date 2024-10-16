@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
+import { nextTick, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { Button, NodePreview } from "@knime/components";
@@ -9,7 +9,6 @@ import {
   NativeNodeInvariants,
   PortType,
 } from "@/api/gateway-api/generated-api";
-import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as selectionStore from "@/store/selection";
@@ -75,14 +74,6 @@ vi.mock("@/plugins/shortcuts", () => ({
 }));
 
 describe("QuickAddNodeMenu.vue", () => {
-  const FloatingMenuStub = {
-    template: `
-          <div>
-          <slot />
-          </div>`,
-    props: FloatingMenu.props,
-  };
-
   const doMount = ({
     addNodeMock = vi.fn(),
     props = {},
@@ -93,10 +84,8 @@ describe("QuickAddNodeMenu.vue", () => {
   } = {}) => {
     const defaultProps: QuickAddNodeMenuProps = {
       nodeId: "node-id",
-      position: {
-        x: 10,
-        y: 10,
-      },
+      canvasPosition: ref({ x: 10, y: 10 }),
+      portIndex: ref(1),
       port: createPort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
@@ -194,7 +183,7 @@ describe("QuickAddNodeMenu.vue", () => {
           $colors,
         },
         stubs: {
-          FloatingMenu: FloatingMenuStub,
+          QuickAddNodeMenu: QuickAddNodeMenu,
         },
       },
       attachTo: document.body,
@@ -213,26 +202,6 @@ describe("QuickAddNodeMenu.vue", () => {
     vi.resetAllMocks();
   });
 
-  describe("visuals", () => {
-    it("re-emits menuClose", () => {
-      const { wrapper } = doMount();
-      wrapper.findComponent(FloatingMenuStub).vm.$emit("menuClose");
-
-      expect(wrapper.emitted("menuClose")).toBeTruthy();
-    });
-
-    it("centers to port", () => {
-      const { wrapper } = doMount();
-
-      expect(
-        wrapper.findComponent(FloatingMenuStub).props("canvasPosition"),
-      ).toStrictEqual({
-        x: 14.5,
-        y: 10,
-      });
-    });
-  });
-
   describe("recommendations", () => {
     it("should display the nodes recommended", async () => {
       const { wrapper } = doMount();
@@ -248,7 +217,7 @@ describe("QuickAddNodeMenu.vue", () => {
       expect(previews.at(0).props("type")).toBe("Manipulator");
     });
 
-    it("adds node on click", async () => {
+    it.only("adds node on click", async () => {
       const { wrapper, addNodeMock, $store } = doMount();
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);

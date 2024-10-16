@@ -427,7 +427,7 @@ describe("application::index", () => {
 
     it.each([
       ["PortTypeMenu", "portTypeMenu"],
-      ["QuickAddNodeMenu", "quickAddNodeMenu"],
+      ["QuickAddNodeMenu", "quickActionMenu"],
     ])(
       "closes the %s if its open when context menu opens",
       async (_, stateMenuKey) => {

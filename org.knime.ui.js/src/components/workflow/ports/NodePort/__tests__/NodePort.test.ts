@@ -72,7 +72,7 @@ describe("NodePort", () => {
             props: {},
           },
 
-          quickAddNodeMenu: {
+          quickActionMenu: {
             isOpen: false,
             props: {
               port: {},
@@ -82,8 +82,8 @@ describe("NodePort", () => {
         mutations: workflowStore.mutations,
         actions: {
           connectNodes: vi.fn(),
-          openQuickAddNodeMenu: workflowStore.actions.openQuickAddNodeMenu,
-          closeQuickAddNodeMenu: workflowStore.actions.closeQuickAddNodeMenu,
+          openQuickActionMenu: workflowStore.actions.openQuickActionMenu,
+          closeQuickActionMenu: workflowStore.actions.closeQuickActionMenu,
           removeContainerNodePort: vi.fn(),
         },
         getters: {
@@ -1218,7 +1218,7 @@ describe("NodePort", () => {
 
           await wrapper.trigger("lostpointercapture");
 
-          expect($store.state.workflow.quickAddNodeMenu).toEqual(
+          expect($store.state.workflow.quickActionMenu).toEqual(
             expect.objectContaining({
               isOpen: true,
               props: {
@@ -1245,7 +1245,7 @@ describe("NodePort", () => {
           expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
           // simulate open menu
-          $store.state.workflow.quickAddNodeMenu = {
+          $store.state.workflow.quickActionMenu = {
             isOpen: true,
             props: {
               nodeId: defaultProps.nodeId,
@@ -1270,11 +1270,11 @@ describe("NodePort", () => {
           await wrapper.trigger("lostpointercapture");
 
           // call close
-          $store.state.workflow.quickAddNodeMenu.events.menuClose();
+          $store.state.workflow.quickActionMenu.events.menuClose();
           await nextTick();
 
           // see if close went good
-          expect($store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
+          expect($store.state.workflow.quickActionMenu.isOpen).toBe(false);
         });
       });
     });

@@ -71,7 +71,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     execute: ({ $store, payload }) => {
       // destruct current state
       const positionFromContextMenu = payload?.metadata?.position;
-      const { isOpen, props } = $store.state.workflow.quickAddNodeMenu;
+      const { isOpen, props } = $store.state.workflow.quickActionMenu;
 
       const {
         nodeId: lastNodeId,
@@ -95,7 +95,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
             visibleFrame: $store.getters["canvas/getVisibleFrame"](),
             nodes: $store.state.workflow.activeWorkflow!.nodes,
           });
-        $store.dispatch("workflow/openQuickAddNodeMenu", {
+        $store.dispatch("workflow/openQuickActionMenu", {
           props: { position },
         });
         return;
@@ -159,7 +159,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         ? lastPosition
         : calculatePosition(node, portIndex, portCount);
 
-      $store.dispatch("workflow/openQuickAddNodeMenu", {
+      $store.dispatch("workflow/openQuickActionMenu", {
         props: {
           nodeId,
           port: nextPort,

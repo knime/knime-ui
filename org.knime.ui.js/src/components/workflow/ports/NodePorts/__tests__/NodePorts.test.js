@@ -33,7 +33,7 @@ describe("NodePorts.vue", () => {
     removeNodePortMock = vi.fn(),
     getNodeByIdMock = vi.fn(),
     isWorkflowWritable = true,
-    quickAddNodeMenu = {},
+    quickActionMenu = {},
     customProps = {},
   } = {}) => {
     let defaultProps = {
@@ -64,7 +64,7 @@ describe("NodePorts.vue", () => {
         state: () => ({
           // isDragging: false,
           ...workflowStore.state(),
-          quickAddNodeMenu,
+          quickActionMenu,
         }),
         actions: {
           addNodePort: addNodePortMock,
@@ -516,7 +516,7 @@ describe("NodePorts.vue", () => {
           mockPort({ index: 2, outgoing: true, connectedVia: ["outB"] }),
         ],
       };
-      const quickAddNodeMenu = {
+      const quickActionMenu = {
         isOpen: true,
         props: {
           nodeId: customProps.nodeId,
@@ -524,7 +524,7 @@ describe("NodePorts.vue", () => {
           nodeRelation: "SUCCESSORS",
         },
       };
-      let { wrapper } = doMount({ customProps, quickAddNodeMenu });
+      let { wrapper } = doMount({ customProps, quickActionMenu });
       let ports = wrapper.findAllComponents(NodePort);
 
       // flowVariable ports are connected to quick node add (start at 2 as inPorts are 0 and 1)

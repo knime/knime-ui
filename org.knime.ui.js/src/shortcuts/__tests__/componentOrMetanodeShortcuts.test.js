@@ -54,7 +54,7 @@ describe("componentOrMetanodeShortcuts", () => {
               },
             ],
           },
-          quickAddNodeMenu: {
+          quickActionMenu: {
             isOpen: false,
             props: {},
             events: {},

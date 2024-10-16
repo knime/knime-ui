@@ -176,7 +176,7 @@ describe("WorkflowCanvas", () => {
     expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
   });
 
-  it("dispatches 'workflow/openQuickAddNodeMenu' with correct coordinates on double click inside <svg>", () => {
+  it("dispatches 'workflow/openQuickActionMenu' with correct coordinates on double click inside <svg>", () => {
     $store.dispatch("canvas/initScrollContainerElement", {
       offsetLeft: 10,
       offsetTop: 10,
@@ -210,7 +210,7 @@ describe("WorkflowCanvas", () => {
 
     expect(mockScreenToCanvasCoordinates).toHaveBeenCalledWith([50, 75]);
 
-    expect(dispatchSpy).toHaveBeenCalledWith("workflow/openQuickAddNodeMenu", {
+    expect(dispatchSpy).toHaveBeenCalledWith("workflow/openQuickActionMenu", {
       props: { position: { x: 100, y: 200 } },
       event: expect.any(MouseEvent),
     });

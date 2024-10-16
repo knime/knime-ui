@@ -80,7 +80,7 @@ describe("workflowShortcuts", () => {
               },
             ],
           },
-          quickAddNodeMenu: {
+          quickActionMenu: {
             isOpen: false,
             props: {},
             events: {},
@@ -1062,7 +1062,7 @@ describe("workflowShortcuts", () => {
       });
       workflowShortcuts.quickAddNode.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickAddNodeMenu",
+        "workflow/openQuickActionMenu",
         {
           props: {
             position: expect.anything(),
@@ -1088,7 +1088,7 @@ describe("workflowShortcuts", () => {
       });
       workflowShortcuts.quickAddNode.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickAddNodeMenu",
+        "workflow/openQuickActionMenu",
         {
           props: {
             nodeId: "root:4",
@@ -1108,7 +1108,7 @@ describe("workflowShortcuts", () => {
       });
       workflowShortcuts.quickAddNode.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickAddNodeMenu",
+        "workflow/openQuickActionMenu",
         {
           props: {
             nodeId: "root:4",
@@ -1127,7 +1127,7 @@ describe("workflowShortcuts", () => {
         getNodeById: vi.fn().mockReturnValue(mockNodeTemplate(3)),
         singleSelectedNode: mockNodeTemplate(3),
       });
-      $store.state.workflow.quickAddNodeMenu = {
+      $store.state.workflow.quickActionMenu = {
         isOpen: true,
         props: {
           nodeId: "root:4",
@@ -1140,7 +1140,7 @@ describe("workflowShortcuts", () => {
       };
       workflowShortcuts.quickAddNode.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickAddNodeMenu",
+        "workflow/openQuickActionMenu",
         {
           props: {
             nodeId: "root:4",

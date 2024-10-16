@@ -74,7 +74,7 @@ const onContainerSizeUpdated = async () => {
   }
 };
 
-const openQuickAddNodeMenu = (event: MouseEvent) => {
+const openQuickActionMenu = (event: MouseEvent) => {
   // Check if the event target is specifically the <svg> element inside Kanvas
   if (event.target !== kanvas.value!.$el.querySelector("svg")) {
     return;
@@ -85,7 +85,7 @@ const openQuickAddNodeMenu = (event: MouseEvent) => {
     event.clientY,
   ]);
 
-  store.dispatch("workflow/openQuickAddNodeMenu", {
+  store.dispatch("workflow/openQuickActionMenu", {
     props: { position: { x, y } },
     event,
   });
@@ -102,7 +102,7 @@ const openQuickAddNodeMenu = (event: MouseEvent) => {
     @drop.stop="onDrop"
     @dragover.prevent.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
-    @dblclick.exact="openQuickAddNodeMenu"
+    @dblclick.exact="openQuickActionMenu"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />

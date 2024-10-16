@@ -51,7 +51,7 @@ describe("annotationShortcuts", () => {
               },
             ],
           },
-          quickAddNodeMenu: {
+          quickActionMenu: {
             isOpen: false,
             props: {},
             events: {},

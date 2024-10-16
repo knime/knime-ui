@@ -5,7 +5,7 @@ import { shallowMount } from "@vue/test-utils";
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import RightPanel from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import QuickAddNodeMenu from "@/components/workflow/quickActionMenu/quickAdd/QuickAddNodeMenu.vue";
+import QuickActionMenu from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import * as applicationStore from "@/store/application";
@@ -166,7 +166,7 @@ describe("WorkflowPanel", () => {
   describe("quick add node menu", () => {
     const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
       const mountResult = doShallowMount();
-      mountResult.$store.state.workflow.quickAddNodeMenu = {
+      mountResult.$store.state.workflow.quickActionMenu = {
         isOpen: true,
         props: {
           direction: "in",
@@ -184,9 +184,9 @@ describe("WorkflowPanel", () => {
 
     it("renders menu if open", async () => {
       const { wrapper, $store } = doShallowMount();
-      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
+      expect(wrapper.findComponent(QuickActionMenu).exists()).toBe(false);
 
-      $store.state.workflow.quickAddNodeMenu = {
+      $store.state.workflow.quickActionMenu = {
         isOpen: true,
         props: {
           direction: "in",
@@ -198,13 +198,13 @@ describe("WorkflowPanel", () => {
       };
 
       await nextTick();
-      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
+      expect(wrapper.findComponent(QuickActionMenu).exists()).toBe(true);
     });
 
     it("passes props", async () => {
       const { wrapper } = await mountAndOpenMenu();
-      let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
-      expect(quickAddNodeMenu.props()).toEqual({
+      let quickActionMenu = wrapper.findComponent(QuickActionMenu);
+      expect(quickActionMenu.props()).toEqual({
         nodeId: "node:0",
         port: { index: 2 },
         position: {
@@ -218,8 +218,8 @@ describe("WorkflowPanel", () => {
 
     it("binds events", async () => {
       const { wrapper, closeCallback } = await mountAndOpenMenu();
-      let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
-      quickAddNodeMenu.vm.$emit("menuClose");
+      let quickActionMenu = wrapper.findComponent(QuickActionMenu);
+      quickActionMenu.vm.$emit("menuClose");
       expect(closeCallback).toHaveBeenCalled();
     });
   });

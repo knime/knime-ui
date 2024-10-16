@@ -345,8 +345,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     { event = null, deselectAllObjects = false } = {},
   ) {
     // close other menus if they are open
-    if (rootState.workflow.quickAddNodeMenu.isOpen) {
-      rootState.workflow.quickAddNodeMenu.events.menuClose?.();
+    if (rootState.workflow.quickActionMenu.isOpen) {
+      rootState.workflow.quickActionMenu.events.menuClose?.();
     }
 
     if (rootState.workflow.portTypeMenu.isOpen) {

@@ -3,22 +3,22 @@ import { describe, expect, it } from "vitest";
 import { loadStore } from "./loadStore";
 
 describe("workflow::floatingMenus", () => {
-  describe("quickAddNodeMenu", () => {
+  describe("quickActionMenu", () => {
     it("opens the quick add node menu", async () => {
       const { store } = await loadStore();
 
-      expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
+      expect(store.state.workflow.quickActionMenu.isOpen).toBe(false);
 
-      await store.dispatch("workflow/openQuickAddNodeMenu", {
+      await store.dispatch("workflow/openQuickActionMenu", {
         props: { someProp: "val" },
         events: { "menu-close": () => {} },
       });
 
-      expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(true);
-      expect(store.state.workflow.quickAddNodeMenu.props).toStrictEqual({
+      expect(store.state.workflow.quickActionMenu.isOpen).toBe(true);
+      expect(store.state.workflow.quickActionMenu.props).toStrictEqual({
         someProp: "val",
       });
-      expect(store.state.workflow.quickAddNodeMenu.events).toMatchObject({
+      expect(store.state.workflow.quickActionMenu.events).toMatchObject({
         "menu-close": expect.anything(),
       });
     });
@@ -26,11 +26,11 @@ describe("workflow::floatingMenus", () => {
     it("closes the quick add node menu", async () => {
       const { store } = await loadStore();
 
-      await store.dispatch("workflow/openQuickAddNodeMenu", {});
-      expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(true);
+      await store.dispatch("workflow/openQuickActionMenu", {});
+      expect(store.state.workflow.quickActionMenu.isOpen).toBe(true);
 
-      await store.dispatch("workflow/closeQuickAddNodeMenu");
-      expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
+      await store.dispatch("workflow/closeQuickActionMenu");
+      expect(store.state.workflow.quickActionMenu.isOpen).toBe(false);
     });
   });
 

@@ -81,8 +81,8 @@ const tooltip = computed<TooltipDefinition>(() => {
   } satisfies TooltipDefinition;
 });
 
-const openQuickAddNodeMenuAction = (payload: unknown) => {
-  store.dispatch("workflow/openQuickAddNodeMenu", payload);
+const openQuickActionMenuAction = (payload: unknown) => {
+  store.dispatch("workflow/openQuickActionMenu", payload);
 };
 
 const isWritable = computed(() => store.getters["workflow/isWritable"]);
@@ -110,7 +110,7 @@ const {
 
     const [x, y] = dragConnector.value!.absolutePoint;
 
-    openQuickAddNodeMenuAction({
+    openQuickActionMenuAction({
       props: {
         position: { x, y },
         port: props.port,

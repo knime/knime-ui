@@ -22,25 +22,25 @@ export const usePortAnimationClasses = (
     () => store.getters["workflow/isWritable"],
   );
 
-  const quickAddNodeMenu = computed(
-    () => store.state.workflow.quickAddNodeMenu,
+  const quickActionMenu = computed(
+    () => store.state.workflow.quickActionMenu,
   );
 
   const isQuickAddNodeMenuOpenInTheSameSide = (side: "in" | "out") => {
     return (
-      (quickAddNodeMenu.value.props?.nodeRelation === "SUCCESSORS" &&
+      (quickActionMenu.value.props?.nodeRelation === "SUCCESSORS" &&
         side === "out") ||
-      (quickAddNodeMenu.value.props?.nodeRelation === "PREDECESSORS" &&
+      (quickActionMenu.value.props?.nodeRelation === "PREDECESSORS" &&
         side === "in")
     );
   };
 
   const isShowingQuickAddNodeMenu = (portIndex: number, side: "in" | "out") => {
     return (
-      quickAddNodeMenu.value.isOpen &&
+      quickActionMenu.value.isOpen &&
       isQuickAddNodeMenuOpenInTheSameSide(side) &&
-      quickAddNodeMenu.value.props?.nodeId === options.nodeId &&
-      quickAddNodeMenu.value.props?.port?.index === portIndex
+      quickActionMenu.value.props?.nodeId === options.nodeId &&
+      quickActionMenu.value.props?.port?.index === portIndex
     );
   };
 

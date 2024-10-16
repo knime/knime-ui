@@ -7,7 +7,7 @@ import ContextMenu from "@/components/application/ContextMenu.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import QuickAddNodeMenu from "@/components/workflow/quickActionMenu/quickAdd/QuickAddNodeMenu.vue";
+import QuickActionMenu from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import { useStore } from "@/composables/useStore";
 
@@ -23,7 +23,7 @@ const activeWorkflowId = computed(
   () => store.state.workflow.activeWorkflow!.info.containerId,
 );
 const portTypeMenu = computed(() => store.state.workflow.portTypeMenu);
-const quickAddNodeMenu = computed(() => store.state.workflow.quickAddNodeMenu);
+const quickActionMenu = computed(() => store.state.workflow.quickActionMenu);
 const contextMenu = computed(() => store.state.application.contextMenu);
 const isWritable = computed(() => store.getters["workflow/isWritable"]);
 
@@ -46,8 +46,8 @@ const nodeDialogSize = computed({
 });
 
 watch(selectedNodeIds, () => {
-  if (quickAddNodeMenu.value.isOpen) {
-    quickAddNodeMenu.value.events.menuClose?.();
+  if (quickActionMenu.value.isOpen) {
+    quickActionMenu.value.events.menuClose?.();
   }
 });
 
@@ -82,10 +82,10 @@ const closeContextMenu = (event: unknown) => {
       v-on="portTypeMenu.events"
     />
 
-    <QuickAddNodeMenu
-      v-if="quickAddNodeMenu.isOpen"
-      v-bind="quickAddNodeMenu.props!"
-      v-on="quickAddNodeMenu.events"
+    <QuickActionMenu
+      v-if="quickActionMenu.isOpen"
+      v-bind="quickActionMenu.props!"
+      v-on="quickActionMenu.events"
     />
 
     <PortalTarget name="annotation-editor-toolbar" tag="div" />

@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  type Ref,
+  ref,
+  toRefs,
+  watch,
+} from "vue";
 
 import { SearchInput } from "@knime/components";
 
@@ -14,20 +22,30 @@ import {
   type NodePortTemplate,
   type XY,
 } from "@/api/gateway-api/generated-api";
-import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
-import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
 import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
-import * as $shapes from "@/style/shapes";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";
-import type { DragConnector } from "../../ports/NodePort/types";
 
 import QuickAddNodeDisabledWorkflowCoach from "./QuickAddNodeDisabledWorkflowCoach.vue";
 import QuickAddNodeRecommendations from "./QuickAddNodeRecommendations.vue";
 import QuickAddNodeSearchResults from "./QuickAddNodeSearchResults.vue";
 import { useNodeRecommendations } from "./useNodeRecommendations";
+
+export type QuickAddNodeMenuProps = {
+  nodeId?: string | null;
+  port?: NodePort | null;
+  nodeRelation?: NodeRelation | null;
+  canvasPosition: Ref<XY>;
+  portIndex: Ref<number | null>;
+};
+
+const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {
+  nodeId: null,
+  port: null,
+  nodeRelation: null,
+});
 
 const calculatePortOffset = (params: {
   selectedPort: NodePort;
@@ -65,24 +83,6 @@ const calculatePortOffset = (params: {
 
 const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
 
-export type QuickAddNodeMenuProps = {
-  nodeId?: string | null;
-  position: XY;
-  port?: NodePort | null;
-  nodeRelation?: NodeRelation | null;
-  // required for recalculation of the position if opened with key shortcuts
-  positionOrigin?: "mouse" | "calculated";
-};
-
-const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {
-  nodeId: null,
-  port: null,
-  nodeRelation: null,
-  positionOrigin: "mouse",
-});
-
-const menuWidth = 360;
-
 const emit = defineEmits(["menuClose"]);
 
 const $shortcuts = useShortcuts();
@@ -98,7 +98,6 @@ const nodeRepositoryLoaded = computed(
 const nodeRepositoryLoadingProgress = computed(
   () => store.state.application.nodeRepositoryLoadingProgress,
 );
-const zoomFactor = computed(() => store.state.canvas.zoomFactor);
 const isWritable = computed(() => store.getters["workflow/isWritable"]);
 const searchIsActive = computed(
   () => store.getters["quickAddNodes/searchIsActive"],
@@ -115,60 +114,7 @@ const displayMode = computed(() => {
   return nodeRepositoryDisplayMode;
 });
 
-const canvasPosition = computed(() => {
-  let pos = { ...props.position };
-  const halfPort = $shapes.portSize / 2;
-
-  // x: align with the port arrow (position is the center of the port)
-  if (props.nodeRelation === "PREDECESSORS") {
-    pos.x -= halfPort;
-  } else {
-    pos.x += halfPort;
-  }
-
-  return pos;
-});
-
-const portIndex = computed(() => {
-  // we need this to be explicit null if no port is given for the api to work
-  // falsy will not work as the index can be 0 (which is falsy)
-  return props.port ? props.port.index : null;
-});
-
-const fakePortConnector = computed<DragConnector>(() => {
-  // port can be null for the so called global mode
-  const portType = props.port ? availablePortTypes[props.port.typeId] : null;
-  const flowVariableConnection = portType?.kind === "flowVariable";
-
-  const fakeNode =
-    props.nodeRelation === "SUCCESSORS" ? "sourceNode" : "destNode";
-  const fakePort =
-    props.nodeRelation === "SUCCESSORS" ? "sourcePort" : "destPort";
-
-  return {
-    id: `quick-add-${props.nodeId}-${portIndex.value}`,
-    flowVariableConnection,
-    absolutePoint: [props.position.x, props.position.y],
-    allowedActions: { canDelete: false },
-    interactive: false,
-    // eslint-disable-next-line no-undefined
-    [fakeNode]: props.nodeId ?? undefined,
-    // eslint-disable-next-line no-undefined
-    [fakePort]: portIndex.value ?? undefined,
-  };
-});
-
-const marginTop = computed(() => {
-  const ghostSizeZoomed = $shapes.addNodeGhostSize * zoomFactor.value;
-  // eslint-disable-next-line no-magic-numbers
-  const extraMargin = Math.log(ghostSizeZoomed) / 1.1;
-  // eslint-disable-next-line no-magic-numbers
-  const marginTop = ghostSizeZoomed / 2 + extraMargin + 3;
-
-  return `${marginTop}px`;
-});
-
-const { nodeId, nodeRelation } = toRefs(props);
+const { canvasPosition, nodeId, portIndex, nodeRelation } = toRefs(props);
 
 const { hasNodeRecommendationsEnabled, fetchNodeRecommendations } =
   useNodeRecommendations(nodeId, portIndex, nodeRelation);
@@ -197,9 +143,9 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
       y: y - offsetY,
     },
     nodeFactory,
-    sourceNodeId: props.nodeId,
+    sourceNodeId: nodeId.value,
     sourcePortIdx: portIndex.value,
-    nodeRelation: props.nodeRelation,
+    nodeRelation: nodeRelation.value,
   });
 
   emit("menuClose");
@@ -259,112 +205,72 @@ watch(
 </script>
 
 <template>
-  <FloatingMenu
-    class="quick-add-node"
-    :canvas-position="canvasPosition"
-    aria-label="Quick add node"
-    :anchor="nodeRelation === 'SUCCESSORS' ? 'top-left' : 'top-right'"
-    focus-trap
-    :prevent-overflow="true"
-    :style="{ width: `${menuWidth}px` }"
-    @menu-close="$emit('menuClose')"
-  >
-    <!-- this will be portalled to the canvas -->
-    <NodePortActiveConnector
-      :port="port"
-      :targeted="false"
-      :direction="nodeRelation === 'SUCCESSORS' ? 'out' : 'in'"
-      :drag-connector="fakePortConnector"
-      :did-drag-to-compatible-target="false"
-      :disable-quick-node-add="false"
-      reset-replace-indicator-state-on-unmount
+  <div class="header">
+    <SearchInput
+      ref="search"
+      :disabled="!nodeRepositoryLoaded"
+      :model-value="$store.state.quickAddNodes.query"
+      placeholder="Search compatible nodes"
+      class="search-bar"
+      focus-on-mount
+      tabindex="0"
+      @update:model-value="$store.dispatch('quickAddNodes/updateQuery', $event)"
+      @focusin="selectedNode = null"
+      @keydown.enter.prevent.stop="searchEnterKey"
+      @keydown.down.prevent.stop="searchDownKey"
+      @keydown="searchHandleShortcuts"
     />
-    <div class="wrapper">
-      <div class="header">
-        <SearchInput
-          ref="search"
-          :disabled="!nodeRepositoryLoaded"
-          :model-value="$store.state.quickAddNodes.query"
-          placeholder="Search compatible nodes"
-          class="search-bar"
-          focus-on-mount
-          tabindex="0"
-          @update:model-value="
-            $store.dispatch('quickAddNodes/updateQuery', $event)
-          "
-          @focusin="selectedNode = null"
-          @keydown.enter.prevent.stop="searchEnterKey"
-          @keydown.down.prevent.stop="searchDownKey"
-          @keydown="searchHandleShortcuts"
-        />
-      </div>
-      <hr />
-      <template v-if="nodeRepositoryLoaded">
-        <QuickAddNodeDisabledWorkflowCoach
-          v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
-        />
-        <template v-else>
-          <QuickAddNodeSearchResults
-            v-if="searchIsActive"
-            ref="searchResults"
-            v-model:selected-node="selectedNode"
-            :display-mode="displayMode"
-            @nav-reached-top="($refs.search as any).focus()"
-            @add-node="addNode($event)"
-          />
-          <QuickAddNodeRecommendations
-            v-else
-            ref="recommendationResults"
-            v-model:selected-node="selectedNode"
-            :display-mode="displayMode"
-            @nav-reached-top="($refs.search as any).focus()"
-            @add-node="addNode($event)"
-          />
-        </template>
-      </template>
-      <template v-else>
-        <NodeRepositoryLoader
-          :progress="nodeRepositoryLoadingProgress?.progress"
-          :extension-name="nodeRepositoryLoadingProgress?.extensionName"
-        />
-      </template>
-    </div>
-  </FloatingMenu>
+  </div>
+  <hr />
+  <template v-if="nodeRepositoryLoaded">
+    <QuickAddNodeDisabledWorkflowCoach
+      v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
+    />
+    <template v-else>
+      <QuickAddNodeSearchResults
+        v-if="searchIsActive"
+        ref="searchResults"
+        v-model:selected-node="selectedNode"
+        :display-mode="displayMode"
+        @nav-reached-top="($refs.search as any).focus()"
+        @add-node="addNode($event)"
+      />
+      <QuickAddNodeRecommendations
+        v-else
+        ref="recommendationResults"
+        v-model:selected-node="selectedNode"
+        :display-mode="displayMode"
+        @nav-reached-top="($refs.search as any).focus()"
+        @add-node="addNode($event)"
+      />
+    </template>
+  </template>
+  <template v-else>
+    <NodeRepositoryLoader
+      :progress="nodeRepositoryLoadingProgress?.progress"
+      :extension-name="nodeRepositoryLoadingProgress?.extensionName"
+    />
+  </template>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.quick-add-node {
-  --quick-add-node-height: 450;
-  --quick-add-node-header-height: 73;
+&:focus {
+  outline: none;
+}
 
-  margin-top: v-bind("marginTop");
+& hr {
+  border: none;
+  border-top: 1px solid var(--knime-silver-sand);
+  margin: 0;
+}
 
-  & .wrapper {
-    height: calc(var(--quick-add-node-height) * 1px);
-    box-shadow: var(--shadow-elevation-1);
-    background: var(--knime-gray-ultra-light);
-    display: flex;
-    flex-direction: column;
-  }
+& .header {
+  padding: 10px;
+}
 
-  &:focus {
-    outline: none;
-  }
-
-  & hr {
-    border: none;
-    border-top: 1px solid var(--knime-silver-sand);
-    margin: 0;
-  }
-
-  & .header {
-    padding: 10px;
-  }
-
-  & :deep(.filtered-nodes-wrapper) {
-    border-top: none;
-  }
+& :deep(.filtered-nodes-wrapper) {
+  border-top: none;
 }
 </style>

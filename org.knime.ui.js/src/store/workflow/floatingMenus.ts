@@ -1,7 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
-import type { QuickAddNodeMenuProps } from "@/components/workflow/quickActionMenu/quickAdd/QuickAddNodeMenu.vue";
+import type { QuickActionMenuProps } from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
 import type { RootStoreState } from "../types";
 
 import type { WorkflowState } from ".";
@@ -27,9 +27,9 @@ interface State {
     };
   };
 
-  quickAddNodeMenu: {
+  quickActionMenu: {
     isOpen: boolean;
-    props: QuickAddNodeMenuProps | null;
+    props: QuickActionMenuProps | null;
     events: {
       menuClose?: () => void;
     };
@@ -50,7 +50,7 @@ export const state = (): State => ({
     events: {},
   },
 
-  quickAddNodeMenu: {
+  quickActionMenu: {
     isOpen: false,
     props: null,
     events: {},
@@ -62,8 +62,8 @@ export const mutations: MutationTree<WorkflowState> = {
     state.portTypeMenu = value;
   },
 
-  setQuickAddNodeMenu(state, value) {
-    state.quickAddNodeMenu = value;
+  setQuickActionMenu(state, value) {
+    state.quickActionMenu = value;
   },
 
   setPortTypeMenuPreviewPort(state, previewPort) {
@@ -94,18 +94,18 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     dispatch("canvas/focus", null, { root: true });
   },
 
-  openQuickAddNodeMenu({ commit, dispatch }, { props, events }) {
-    commit("setQuickAddNodeMenu", {
+  openQuickActionMenu({ commit, dispatch }, { props, events }) {
+    commit("setQuickActionMenu", {
       isOpen: true,
       props,
       events: events
         ? events
-        : { menuClose: () => dispatch("closeQuickAddNodeMenu") },
+        : { menuClose: () => dispatch("closeQuickActionMenu") },
     });
   },
 
-  async closeQuickAddNodeMenu({ commit, dispatch }) {
-    commit("setQuickAddNodeMenu", {
+  async closeQuickActionMenu({ commit, dispatch }) {
+    commit("setQuickActionMenu", {
       isOpen: false,
       props: {},
       events: {},
