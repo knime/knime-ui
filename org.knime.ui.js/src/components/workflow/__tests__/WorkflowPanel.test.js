@@ -5,7 +5,7 @@ import { shallowMount } from "@vue/test-utils";
 import ContextMenu from "@/components/application/ContextMenu.vue";
 import RightPanel from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import QuickAddNodeMenu from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
+import QuickAddNodeMenu from "@/components/workflow/quickActionMenu/quickAdd/QuickAddNodeMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import * as applicationStore from "@/store/application";

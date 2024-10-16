@@ -6,7 +6,7 @@ import { mount } from "@vue/test-utils";
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
 import Connector from "@/components/workflow/connectors/Connector.vue";
-import QuickAddNodeGhost from "@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue";
+import QuickAddNodeGhost from "@/components/workflow/quickActionMenu/quickAdd/QuickAddNodeGhost.vue";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
 import * as workflowStore from "@/store/workflow";

@@ -1,7 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
-import type { QuickAddNodeMenuProps } from "@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue";
+import type { QuickAddNodeMenuProps } from "@/components/workflow/quickActionMenu/quickAdd/QuickAddNodeMenu.vue";
 import type { RootStoreState } from "../types";
 
 import type { WorkflowState } from ".";
