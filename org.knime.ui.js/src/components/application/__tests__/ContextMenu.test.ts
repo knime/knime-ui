@@ -15,13 +15,12 @@ import {
 import type { AllowedWorkflowActions } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import { createShortcutsService } from "@/plugins/shortcuts";
-import type { ShortcutName } from "@/shortcuts";
+import type { ShortcutName, ShortcutsService } from "@/shortcuts";
 import * as applicationStore from "@/store/application";
 import * as canvasStore from "@/store/canvas";
 import * as selectionStore from "@/store/selection";
 import * as uiControlsStore from "@/store/uiControls";
 import * as workflowStore from "@/store/workflow";
-import * as $shapes from "@/style/shapes";
 import {
   createAvailablePortTypes,
   createComponentNode,
@@ -33,6 +32,18 @@ import {
 } from "@/test/factories";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import ContextMenu from "../ContextMenu.vue";
+
+let $shortcuts: ShortcutsService;
+
+vi.mock("@/plugins/shortcuts", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useShortcuts: () => $shortcuts,
+  };
+});
 
 describe("ContextMenu.vue", () => {
   const createStore = (
@@ -102,8 +113,11 @@ describe("ContextMenu.vue", () => {
 
     const $store: typeof defaultStore = store ?? defaultStore;
 
-    // @ts-ignore
-    const $shortcuts = createShortcutsService({ $store, $router: mockRouter });
+    $shortcuts = createShortcutsService({
+      $store,
+      // @ts-ignore
+      $router: mockRouter,
+    });
 
     const shortcutsSpy = vi.spyOn($shortcuts, "dispatch");
 
@@ -111,7 +125,6 @@ describe("ContextMenu.vue", () => {
       props: { ...defaultProps, ...props },
       global: {
         plugins: [$store],
-        mocks: { $shortcuts, $shapes },
       },
     });
 

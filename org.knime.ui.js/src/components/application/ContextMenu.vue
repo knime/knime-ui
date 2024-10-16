@@ -1,34 +1,29 @@
-<script lang="ts">
-import { type PropType, defineComponent, h, markRaw, nextTick } from "vue";
-import { mapGetters, mapState } from "vuex";
+<script setup lang="ts">
+import { computed, h, markRaw, nextTick, ref, toRef, watch } from "vue";
 
 import { MenuItems } from "@knime/components";
 import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
 import { API } from "@/api";
-import type {
-  AvailablePortTypes,
-  ExtendedPortType,
-  KnimeNode,
-} from "@/api/custom-types";
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { ExtendedPortType, KnimeNode } from "@/api/custom-types";
+import type { Annotation, XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
+import { useStore } from "@/composables/useStore";
+import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
-import type { ApplicationState } from "@/store/application";
-import type { UIControlsState } from "@/store/uiControls";
 import * as $shapes from "@/style/shapes";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import { getNodeState, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import {
+  getNodeState,
+  isNativeNode,
+  isNodeComponent,
+  isNodeMetaNode,
+} from "@/util/nodeUtil";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
 type ShortcutItem = { name: ShortcutName; isVisible: boolean };
-
-type ComponentData = {
-  visibleItems: Array<MenuItem>;
-  activeDescendant: string | null;
-};
 
 /**
  * Helper fn that enables easily creating separators between the different context menu action groups
@@ -107,386 +102,390 @@ const buildPortViewIcon = (
 };
 
 /**
- * ContextMenu offers actions for the Kanvas based on the selected nodes.
+ * ContextMenu offers actions for the Kanvas based on the selected objects.
  */
-export default defineComponent({
-  components: {
-    FloatingMenu,
-    MenuItems,
-  },
-  props: {
-    /**
-     * Position of the menu in canvas coordinates.
-     */
-    position: {
-      type: Object as PropType<XY>,
-      required: true,
-      validator: (position: Partial<XY>) =>
-        typeof position.x === "number" && typeof position.y === "number",
-    },
-  },
-  emits: ["menuClose"],
-  data: (): ComponentData => ({
-    visibleItems: [],
-    activeDescendant: null,
-  }),
-  computed: {
-    ...mapGetters("selection", [
-      "selectedNodes",
-      "selectedAnnotations",
-      "selectedConnections",
-      "selectedBendpointIds",
-      "singleSelectedNode",
-      "singleSelectedAnnotation",
-      "singleSelectedObject",
-      "isSelectionEmpty",
-    ]),
-    ...mapState("application", {
-      projectId: (state: unknown) =>
-        (state as ApplicationState).activeProjectId as string | null,
-      availablePortTypes: (state: unknown) =>
-        (state as ApplicationState).availablePortTypes as AvailablePortTypes,
-      isLockingEnabled: (state: unknown) =>
-        (state as ApplicationState).isSubnodeLockingEnabled,
-    }),
-    ...mapState("uiControls", {
-      uiControls: (state: unknown) => state as UIControlsState,
-    }),
-  },
-  watch: {
-    // set menu items on mounted,
-    // update menu items when another target has been clicked, which is indicated by a change in position
-    position: {
-      immediate: true,
-      async handler() {
-        this.setMenuItems();
-        await nextTick();
-        (this.$refs.menuItems as { $el: HTMLElement }).$el.focus();
-      },
-    },
-  },
-  beforeMount() {
-    // deselect any selected text to make copy and paste of non text possible
-    window?.getSelection()?.removeAllRanges();
-  },
-  methods: {
-    mapToShortcut(
-      shortcutItem: ShortcutItem | Array<ShortcutItem>,
-    ): Array<MenuItem> {
-      const mapSingleItem = (shortcutItem: ShortcutItem): MenuItem[] => {
-        if (!shortcutItem.isVisible) {
-          return []; // end early
-        }
 
-        const shortcut = this.$shortcuts.get(shortcutItem.name);
+type Props = {
+  position: XY;
+};
 
-        const shortcutText =
-          typeof shortcut.text === "function"
-            ? shortcut.text({ $store: this.$store })
-            : shortcut.text;
+const props = defineProps<Props>();
 
-        return [
-          {
-            text: shortcutText ?? "",
-            hotkeyText: shortcut.hotkeyText,
-            disabled: !this.$shortcuts.isEnabled(shortcutItem.name),
-            metadata: { shortcutName: shortcutItem.name },
-          },
-        ];
-      };
+const emit = defineEmits<{
+  menuClose: [];
+}>();
 
-      return Array.isArray(shortcutItem)
-        ? shortcutItem.flatMap(mapSingleItem)
-        : mapSingleItem(shortcutItem);
-    },
-    onItemClick(event: MouseEvent, item: MenuItem) {
-      this.$emit("menuClose");
+const visibleItems = ref<MenuItem[]>([]);
+const activeDescendant = ref<string | null>(null);
 
-      if (typeof item.metadata.handler === "function") {
-        item.metadata.handler();
-        return;
-      }
+const $shortcuts = useShortcuts();
+const store = useStore();
 
-      const shortcutName = item.metadata?.shortcutName;
+const projectId = computed(() => store.state.application.activeProjectId);
+const availablePortTypes = computed(
+  () => store.state.application.availablePortTypes,
+);
+const isLockingEnabled = computed(
+  () => store.state.application.isSubnodeLockingEnabled,
+);
+const uiControls = computed(() => store.state.uiControls);
 
-      // do nothing if we don't have a shortcut name
-      if (!shortcutName) {
-        return;
-      }
+const selectedNodes = computed<KnimeNode[]>(
+  () => store.getters["selection/selectedNodes"],
+);
+const selectedAnnotations = computed<Annotation[]>(
+  () => store.getters["selection/selectedAnnotations"],
+);
+const singleSelectedNode = computed<KnimeNode | null>(
+  () => store.getters["selection/singleSelectedNode"],
+);
+const singleSelectedAnnotation = computed<Annotation | null>(
+  () => store.getters["selection/singleSelectedAnnotation"],
+);
+const isSelectionEmpty = computed<boolean>(
+  () => store.getters["selection/isSelectionEmpty"],
+);
 
-      this.$shortcuts.dispatch(shortcutName, {
-        event,
-        metadata: { position: this.position },
-      });
-    },
-    setActiveDescendant(itemId: string | null) {
-      this.activeDescendant = itemId;
-    },
-    portViews(): MenuItem[] {
-      const node = this.singleSelectedNode as KnimeNode;
+const portViews = (): MenuItem[] => {
+  const node = singleSelectedNode.value;
 
-      if (!node) {
-        return [];
-      }
+  if (!node) {
+    return [];
+  }
 
-      const nodeId = node.id;
-      const allOutPorts = node.outPorts.map((port) =>
-        toExtendedPortObject(this.availablePortTypes)(port),
-      );
+  const nodeId = node.id;
+  const allOutPorts = node.outPorts.map((port) =>
+    toExtendedPortObject(availablePortTypes.value)(port),
+  );
 
-      return allOutPorts.flatMap((port, portIndex) => {
-        // TODO: NXT-2024 show port views at configure time
-        if (getNodeState(node, portIndex) !== "EXECUTED") {
-          return [];
-        }
+  return allOutPorts.flatMap((port, portIndex) => {
+    // TODO: NXT-2024 show port views at configure time
+    if (getNodeState(node, portIndex) !== "EXECUTED") {
+      return [];
+    }
 
-        if (!port.views) {
-          return [
-            {
-              text: buildPortNameAndIndex(port.name, portIndex),
-              icon: markRaw(portIcon(port, this.$shapes.portSize)),
-              sectionHeadline: true,
-              separator: true,
-            },
-            {
-              text: "Open legacy port view",
-              metadata: {
-                handler: () => {
-                  this.$store.dispatch("workflow/openLegacyPortView", {
-                    nodeId,
-                    portIndex,
-                  });
-                },
-              },
-            },
-          ] as MenuItem[];
-        }
-
-        const portViewItems = getPortViewByViewDescriptors(
-          port.views,
-          node,
-          portIndex,
-        );
-
-        const mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
-          text: item.text,
-          disabled: item.disabled,
+    if (!port.views) {
+      return [
+        {
+          text: buildPortNameAndIndex(port.name, portIndex),
+          icon: markRaw(portIcon(port, $shapes.portSize)),
+          sectionHeadline: true,
+          separator: true,
+        },
+        {
+          text: "Open legacy port view",
           metadata: {
             handler: () => {
-              API.desktop.openPortView({
-                projectId: this.projectId!,
+              store.dispatch("workflow/openLegacyPortView", {
                 nodeId,
                 portIndex,
-                viewIndex: Number(item.id),
               });
             },
           },
-        }));
+        },
+      ] as MenuItem[];
+    }
 
-        const headline: MenuItem = {
-          text: buildPortNameAndIndex(port.name, portIndex),
-          // @ts-ignore
-          icon: buildPortViewIcon(node, port, portIndex),
-          sectionHeadline: true,
-          separator: true,
-        };
+    const portViewItems = getPortViewByViewDescriptors(
+      port.views,
+      node,
+      portIndex,
+    );
 
-        return [headline, ...mappedPortViewItems];
-      });
-    },
-    setMenuItems() {
-      const areNodesSelected = this.selectedNodes.length > 0;
-      const areAnnotationsSelected = this.selectedAnnotations.length > 0;
+    const mappedPortViewItems = portViewItems.map<MenuItem>((item) => ({
+      text: item.text,
+      disabled: item.disabled,
+      metadata: {
+        handler: () => {
+          API.desktop.openPortView({
+            projectId: projectId.value!,
+            nodeId,
+            portIndex,
+            viewIndex: Number(item.id),
+          });
+        },
+      },
+    }));
 
-      const isLoopEnd = Boolean(
-        this.singleSelectedNode?.loopInfo?.allowedActions,
-      );
-      const isView =
-        this.singleSelectedNode &&
-        "canOpenView" in this.singleSelectedNode.allowedActions;
-      const hasLegacyFlowVariableDialog =
-        this.singleSelectedNode &&
-        "canOpenLegacyFlowVariableDialog" in
-          this.singleSelectedNode.allowedActions;
+    const headline: MenuItem = {
+      text: buildPortNameAndIndex(port.name, portIndex),
+      // @ts-ignore
+      icon: buildPortViewIcon(node, port, portIndex),
+      sectionHeadline: true,
+      separator: true,
+    };
 
-      const isMetanode =
-        this.singleSelectedNode && isNodeMetaNode(this.singleSelectedNode);
-      const isComponent =
-        this.singleSelectedNode && isNodeComponent(this.singleSelectedNode);
+    return [headline, ...mappedPortViewItems];
+  });
+};
 
-      const portViewItems = this.portViews();
+const mapToShortcut = (
+  shortcutItem: ShortcutItem | Array<ShortcutItem>,
+): Array<MenuItem> => {
+  const mapSingleItem = (shortcutItem: ShortcutItem): MenuItem[] => {
+    if (!shortcutItem.isVisible) {
+      return []; // end early
+    }
 
-      const basicOperationsGroup: Array<MenuItem> = [
-        ...this.mapToShortcut([
+    const shortcut = $shortcuts.get(shortcutItem.name);
+
+    const shortcutText =
+      typeof shortcut.text === "function"
+        ? shortcut.text({ $store: store })
+        : shortcut.text;
+
+    return [
+      {
+        text: shortcutText ?? "",
+        hotkeyText: shortcut.hotkeyText,
+        disabled: !$shortcuts.isEnabled(shortcutItem.name),
+        metadata: { shortcutName: shortcutItem.name },
+      },
+    ];
+  };
+
+  return Array.isArray(shortcutItem)
+    ? shortcutItem.flatMap(mapSingleItem)
+    : mapSingleItem(shortcutItem);
+};
+
+const setMenuItems = () => {
+  const areNodesSelected = selectedNodes.value.length > 0;
+  const areAnnotationsSelected = selectedAnnotations.value.length > 0;
+
+  const isLoopEnd = Boolean(
+    singleSelectedNode.value &&
+      isNativeNode(singleSelectedNode.value) &&
+      Boolean(singleSelectedNode.value?.loopInfo?.allowedActions),
+  );
+
+  const isView = Boolean(
+    singleSelectedNode.value &&
+      "canOpenView" in singleSelectedNode.value.allowedActions!,
+  );
+
+  const hasLegacyFlowVariableDialog = Boolean(
+    singleSelectedNode.value &&
+      "canOpenLegacyFlowVariableDialog" in
+        singleSelectedNode.value.allowedActions!,
+  );
+
+  const isMetanode = Boolean(
+    singleSelectedNode.value && isNodeMetaNode(singleSelectedNode.value),
+  );
+
+  const isComponent = Boolean(
+    singleSelectedNode.value && isNodeComponent(singleSelectedNode.value),
+  );
+
+  const portViewItems = portViews();
+
+  const basicOperationsGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      {
+        name: "configureNode",
+        isVisible: Boolean(singleSelectedNode.value),
+      },
+      {
+        name: "configureFlowVariables",
+        isVisible: hasLegacyFlowVariableDialog,
+      },
+      { name: "executeSelected", isVisible: selectedNodes.value.length > 0 },
+      { name: "executeAndOpenView", isVisible: isView },
+    ]),
+    ...filterItemVisibility(
+      {
+        text: "Open output port",
+        children: portViewItems,
+      },
+      portViewItems.length > 0 && uiControls.value.canDetachPortViews,
+    ),
+    // Loop nodes
+    ...mapToShortcut([
+      { name: "resumeLoopExecution", isVisible: isLoopEnd },
+      { name: "pauseLoopExecution", isVisible: isLoopEnd },
+      { name: "stepLoopExecution", isVisible: isLoopEnd },
+      { name: "cancelSelected", isVisible: selectedNodes.value.length > 0 },
+      { name: "resetSelected", isVisible: selectedNodes.value.length > 0 },
+    ]),
+  ];
+
+  const emptySelectionGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      // no nodes selected
+      { name: "executeAll", isVisible: isSelectionEmpty.value },
+      { name: "cancelAll", isVisible: isSelectionEmpty.value },
+      { name: "resetAll", isVisible: isSelectionEmpty.value },
+      {
+        name: "checkForComponentUpdates",
+        isVisible: isSelectionEmpty.value,
+      },
+    ]),
+  ];
+
+  const quickNodeAnnotationGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      { name: "quickAddNode", isVisible: isSelectionEmpty.value },
+    ]),
+  ];
+
+  const clipboardOperationsGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      {
+        name: "cut",
+        isVisible: areNodesSelected || areAnnotationsSelected,
+      },
+      {
+        name: "copy",
+        isVisible: areNodesSelected || areAnnotationsSelected,
+      },
+      { name: "paste", isVisible: isSelectionEmpty.value },
+      { name: "deleteSelected", isVisible: !isSelectionEmpty.value },
+    ]),
+  ];
+
+  const annotationsGroup: Array<MenuItem> = [
+    ...mapToShortcut({
+      name: "addWorkflowAnnotation",
+      isVisible: isSelectionEmpty.value,
+    }),
+    ...filterItemVisibility(
+      {
+        text: "Arrange annotations",
+        children: mapToShortcut([
           {
-            name: "configureNode",
-            isVisible: this.singleSelectedNode,
+            name: "bringAnnotationToFront",
+            isVisible: areAnnotationsSelected,
           },
           {
-            name: "configureFlowVariables",
-            isVisible: hasLegacyFlowVariableDialog,
+            name: "bringAnnotationForward",
+            isVisible: areAnnotationsSelected,
           },
-          { name: "executeSelected", isVisible: this.selectedNodes.length },
-          { name: "executeAndOpenView", isVisible: isView },
+          {
+            name: "sendAnnotationBackward",
+            isVisible: areAnnotationsSelected,
+          },
+          {
+            name: "sendAnnotationToBack",
+            isVisible: areAnnotationsSelected,
+          },
         ]),
-        ...filterItemVisibility(
-          {
-            text: "Open output port",
-            children: portViewItems,
-          },
-          portViewItems.length > 0 && this.uiControls.canDetachPortViews,
-        ),
-        // Loop nodes
-        ...this.mapToShortcut([
-          { name: "resumeLoopExecution", isVisible: isLoopEnd },
-          { name: "pauseLoopExecution", isVisible: isLoopEnd },
-          { name: "stepLoopExecution", isVisible: isLoopEnd },
-          { name: "cancelSelected", isVisible: this.selectedNodes.length },
-          { name: "resetSelected", isVisible: this.selectedNodes.length },
+      },
+      areAnnotationsSelected,
+    ),
+  ];
+
+  const nodeConnectionsGroup: Array<MenuItem> = [
+    ...filterItemVisibility(
+      {
+        text: "Node connections",
+        children: mapToShortcut([
+          { name: "autoConnectNodesDefault", isVisible: true },
+          { name: "autoConnectNodesFlowVar", isVisible: true },
+          { name: "autoDisconnectNodesDefault", isVisible: true },
+          { name: "autoDisconnectNodesFlowVar", isVisible: true },
         ]),
-      ];
+      },
+      selectedNodes.value.length > 1,
+    ),
+  ];
 
-      const emptySelectionGroup: Array<MenuItem> = [
-        ...this.mapToShortcut([
-          // no nodes selected
-          { name: "executeAll", isVisible: this.isSelectionEmpty },
-          { name: "cancelAll", isVisible: this.isSelectionEmpty },
-          { name: "resetAll", isVisible: this.isSelectionEmpty },
-          {
-            name: "checkForComponentUpdates",
-            isVisible: this.isSelectionEmpty,
-          },
+  const metanodeAndComponentGroup: Array<MenuItem> = [
+    ...mapToShortcut([
+      { name: "createMetanode", isVisible: selectedNodes.value.length > 0 },
+      { name: "createComponent", isVisible: selectedNodes.value.length > 0 },
+    ]),
+    ...filterItemVisibility(
+      {
+        text: "Metanode",
+        children: mapToShortcut([
+          { name: "openComponentOrMetanode", isVisible: true },
+          { name: "editName", isVisible: true },
+          { name: "expandMetanode", isVisible: true },
+          { name: "lockSubnode", isVisible: isLockingEnabled.value },
         ]),
-      ];
-
-      const quickNodeAnnotationGroup: Array<MenuItem> = [
-        ...this.mapToShortcut([
-          { name: "quickAddNode", isVisible: this.isSelectionEmpty },
+      },
+      isMetanode,
+    ),
+    ...filterItemVisibility(
+      // TODO: Add separators by adding nested groups
+      {
+        text: "Component",
+        children: mapToShortcut([
+          { name: "openComponentOrMetanode", isVisible: true },
+          { name: "editName", isVisible: true },
+          { name: "expandComponent", isVisible: true },
+          { name: "openLayoutEditorByNodeId", isVisible: true },
+          { name: "linkComponent", isVisible: true },
+          { name: "updateComponent", isVisible: true },
+          { name: "changeComponentLinkType", isVisible: true },
+          { name: "changeHubItemVersion", isVisible: true },
+          { name: "unlinkComponent", isVisible: true },
+          { name: "lockSubnode", isVisible: isLockingEnabled.value },
         ]),
-      ];
+      },
+      isComponent,
+    ),
+  ];
 
-      const clipboardOperationsGroup: Array<MenuItem> = [
-        ...this.mapToShortcut([
-          {
-            name: "cut",
-            isVisible: areNodesSelected || areAnnotationsSelected,
-          },
-          {
-            name: "copy",
-            isVisible: areNodesSelected || areAnnotationsSelected,
-          },
-          { name: "paste", isVisible: this.isSelectionEmpty },
-          { name: "deleteSelected", isVisible: !this.isSelectionEmpty },
-        ]),
-      ];
+  visibleItems.value = menuGroups()
+    .append(basicOperationsGroup)
+    .append(
+      mapToShortcut({
+        name: "editNodeComment",
+        isVisible: Boolean(singleSelectedNode.value),
+      }),
+    )
+    .append(
+      mapToShortcut({
+        name: "editAnnotation",
+        isVisible: Boolean(singleSelectedAnnotation.value),
+      }),
+    )
+    .append(emptySelectionGroup)
+    .append(clipboardOperationsGroup)
+    .append(quickNodeAnnotationGroup)
+    .append(annotationsGroup.concat(nodeConnectionsGroup))
+    .append(metanodeAndComponentGroup)
+    .value();
+};
 
-      const annotationsGroup: Array<MenuItem> = [
-        ...this.mapToShortcut({
-          name: "addWorkflowAnnotation",
-          isVisible: this.isSelectionEmpty,
-        }),
-        ...filterItemVisibility(
-          {
-            text: "Arrange annotations",
-            children: this.mapToShortcut([
-              {
-                name: "bringAnnotationToFront",
-                isVisible: areAnnotationsSelected,
-              },
-              {
-                name: "bringAnnotationForward",
-                isVisible: areAnnotationsSelected,
-              },
-              {
-                name: "sendAnnotationBackward",
-                isVisible: areAnnotationsSelected,
-              },
-              {
-                name: "sendAnnotationToBack",
-                isVisible: areAnnotationsSelected,
-              },
-            ]),
-          },
-          areAnnotationsSelected,
-        ),
-      ];
+const menuItems = ref<InstanceType<typeof MenuItems>>();
 
-      const nodeConnectionsGroup: Array<MenuItem> = [
-        ...filterItemVisibility(
-          {
-            text: "Node connections",
-            children: this.mapToShortcut([
-              { name: "autoConnectNodesDefault", isVisible: true },
-              { name: "autoConnectNodesFlowVar", isVisible: true },
-              { name: "autoDisconnectNodesDefault", isVisible: true },
-              { name: "autoDisconnectNodesFlowVar", isVisible: true },
-            ]),
-          },
-          this.selectedNodes.length > 1,
-        ),
-      ];
-
-      const metanodeAndComponentGroup: Array<MenuItem> = [
-        ...this.mapToShortcut([
-          { name: "createMetanode", isVisible: this.selectedNodes.length },
-          { name: "createComponent", isVisible: this.selectedNodes.length },
-        ]),
-        ...filterItemVisibility(
-          {
-            text: "Metanode",
-            children: this.mapToShortcut([
-              { name: "openComponentOrMetanode", isVisible: true },
-              { name: "editName", isVisible: true },
-              { name: "expandMetanode", isVisible: true },
-              { name: "lockSubnode", isVisible: this.isLockingEnabled },
-            ]),
-          },
-          isMetanode,
-        ),
-        ...filterItemVisibility(
-          // TODO: Add separators by adding nested groups
-          {
-            text: "Component",
-            children: this.mapToShortcut([
-              { name: "openComponentOrMetanode", isVisible: true },
-              { name: "editName", isVisible: true },
-              { name: "expandComponent", isVisible: true },
-              { name: "openLayoutEditorByNodeId", isVisible: true },
-              { name: "linkComponent", isVisible: true },
-              { name: "updateComponent", isVisible: true },
-              { name: "changeComponentLinkType", isVisible: true },
-              { name: "changeHubItemVersion", isVisible: true },
-              { name: "unlinkComponent", isVisible: true },
-              { name: "lockSubnode", isVisible: this.isLockingEnabled },
-            ]),
-          },
-          isComponent,
-        ),
-      ];
-
-      this.visibleItems = menuGroups()
-        .append(basicOperationsGroup)
-        .append(
-          this.mapToShortcut({
-            name: "editNodeComment",
-            isVisible: this.singleSelectedNode,
-          }),
-        )
-        .append(
-          this.mapToShortcut({
-            name: "editAnnotation",
-            isVisible: this.singleSelectedAnnotation,
-          }),
-        )
-        .append(emptySelectionGroup)
-        .append(clipboardOperationsGroup)
-        .append(quickNodeAnnotationGroup)
-        .append(annotationsGroup.concat(nodeConnectionsGroup))
-        .append(metanodeAndComponentGroup)
-        .value();
-    },
+watch(
+  toRef(props, "position"),
+  async () => {
+    setMenuItems();
+    await nextTick();
+    menuItems.value!.$el.focus();
   },
-});
+  { immediate: true },
+);
+
+const onItemClick = (event: MouseEvent, item: MenuItem) => {
+  emit("menuClose");
+
+  if (typeof item.metadata.handler === "function") {
+    item.metadata.handler();
+    return;
+  }
+
+  const shortcutName = item.metadata?.shortcutName;
+
+  // do nothing if we don't have a shortcut name
+  if (!shortcutName) {
+    return;
+  }
+
+  $shortcuts.dispatch(shortcutName, {
+    event,
+    metadata: { position: props.position },
+  });
+};
+
+const setActiveDescendant = (itemId: string | null) => {
+  activeDescendant.value = itemId;
+};
 </script>
 
 <template>
