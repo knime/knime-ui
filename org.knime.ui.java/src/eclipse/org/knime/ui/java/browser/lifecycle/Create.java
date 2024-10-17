@@ -192,7 +192,8 @@ final class Create {
         CEFMiddlewareService.registerPageAndPageBuilderResourceHandlers( //
             PageResourceHandler.PORT_VIEW, //
             PageResourceHandler.NODE_VIEW, //
-            PageResourceHandler.NODE_DIALOG //
+            PageResourceHandler.NODE_DIALOG, //
+            PageResourceHandler.DATA_VALUE_VIEW //
         );
     }
 
