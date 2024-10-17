@@ -204,7 +204,7 @@ final class Init {
             SpaceProvidersUtil.sendSpaceProvidersChangedEvent(spaceProviders, eventConsumer);
         });
 
-        KnimeUIPreferences.setNodeModeChangeListener((oldValue, newValue) -> {
+        KnimeUIPreferences.setNodeDialogModeChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
                 appStateUpdater.updateAppState();
             }

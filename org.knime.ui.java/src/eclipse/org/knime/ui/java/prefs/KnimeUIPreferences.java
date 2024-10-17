@@ -86,7 +86,7 @@ public final class KnimeUIPreferences {
 
     static final String NODE_DIALOG_MODE_PREF_KEY = "nodeDialogMode";
 
-    private static BiConsumer<String, String> nodeModeChangeListener;
+    private static BiConsumer<String, String> nodeDialogModeChangeListener;
 
     private static final String BUNDLE_NAME = UIPlugin.getContext().getBundle().getSymbolicName();
 
@@ -109,10 +109,10 @@ public final class KnimeUIPreferences {
                 && !Objects.equals(event.getOldValue(), event.getNewValue())) {
                 confirmNodeConfigChangesPrefChangeListener.run();
             }
-            if (NODE_DIALOG_MODE_PREF_KEY.equals(event.getProperty()) && nodeModeChangeListener != null) {
+            if (NODE_DIALOG_MODE_PREF_KEY.equals(event.getProperty()) && nodeDialogModeChangeListener != null) {
                 final var oldValue = (String)event.getOldValue();
                 final var newValue = (String)event.getNewValue();
-                nodeModeChangeListener.accept(oldValue, newValue);
+                nodeDialogModeChangeListener.accept(oldValue, newValue);
             }
         });
 
@@ -240,13 +240,13 @@ public final class KnimeUIPreferences {
     }
 
     /**
-     * Set a listener that is called whenever the node configuration mode changes. If a listener was set already it
+     * Set a listener that is called whenever the node configuration dialog mode changes. If a listener was set already it
      * is replaced.
      *
      * @param listener the listener that is called with the old value and the new value. <code>null</code> is allowed.
      */
-    public static void setNodeModeChangeListener(final BiConsumer<String, String> listener) {
-        nodeModeChangeListener = listener;
+    public static void setNodeDialogModeChangeListener(final BiConsumer<String, String> listener) {
+        nodeDialogModeChangeListener = listener;
     }
 
     /**

@@ -53,7 +53,6 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.knime.workbench.ui.preferences.HorizontalLineField;
 
 /**
  * The preference page for the Modern UI.
@@ -106,8 +105,8 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
 
         /// Node configuration dialog mode
         final var nodeConfigurationModeOptions = new String[][]{ //
-                new String[]{"Embedded", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
-                new String[]{"Detached", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED} //
+                new String[]{"Embedded inside application", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
+                new String[]{"Open in new window", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED} //
         };
 
         final var nodeDialogModeEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY,
