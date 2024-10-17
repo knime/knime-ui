@@ -20,7 +20,6 @@ import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefi
 
 import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
-import ScrollViewContainer from "./ScrollViewContainer.vue";
 
 const mapCategoryToTreeNode = (
   category: Required<CategoryMetadata>,
@@ -130,6 +129,8 @@ watch(
     if (isActive !== wasActive) {
       await store.dispatch("nodeRepository/clearTree");
       fetchRootCategories();
+      // reset expanded keys otherwise they are kept (but we have no data anymore)
+      initialExpandedKeys.value = [];
     }
   },
 );
@@ -188,41 +189,38 @@ defineExpose({ focusFirst });
 </script>
 
 <template>
-  <ScrollViewContainer class="results" :initial-position="0">
-    <div class="scroll-container-content">
-      <Tree
-        ref="tree"
-        :source="treeSource"
-        :load-data="loadTreeLevel"
-        :selectable="false"
-        :expanded-keys="initialExpandedKeys"
-        @expand-change="onExpandChange"
-        @keydown="onTreeKeydown"
-      >
-        <template #leaf="{ treeNode }: { treeNode: BaseTreeNode }">
-          <DraggableNodeTemplate
-            class="node-template-component"
-            :node-template="treeNode.origin.nodeTemplate"
-            :is-highlighted="false"
-            :is-selected="false"
-            :is-description-active="
-              showDescriptionForNode?.id === treeNode.origin.nodeTemplate.id
-            "
-            display-mode="tree"
-            @show-node-description="onShowNodeDescription(treeNode)"
-          />
-        </template>
-      </Tree>
-    </div>
-  </ScrollViewContainer>
+  <Tree
+    ref="tree"
+    virtual
+    class="node-category-tree"
+    :source="treeSource"
+    :load-data="loadTreeLevel"
+    :selectable="false"
+    :expanded-keys="initialExpandedKeys"
+    @expand-change="onExpandChange"
+    @keydown="onTreeKeydown"
+  >
+    <template #leaf="{ treeNode }: { treeNode: BaseTreeNode }">
+      <DraggableNodeTemplate
+        class="node-template-component"
+        :node-template="treeNode.origin.nodeTemplate"
+        :is-highlighted="false"
+        :is-selected="false"
+        :is-description-active="
+          showDescriptionForNode?.id === treeNode.origin.nodeTemplate.id
+        "
+        display-mode="tree"
+        @show-node-description="onShowNodeDescription(treeNode)"
+      />
+    </template>
+  </Tree>
 </template>
 
 <style lang="postcss" scoped>
-.scroll-container {
+.node-category-tree {
   scrollbar-gutter: stable;
-}
-
-.scroll-container-content {
+  height: 100%;
+  overflow: auto;
   padding: 0 var(--space-8) var(--sidebar-panel-padding)
     var(--sidebar-panel-padding);
 }
