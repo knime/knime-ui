@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs } from "vue";
+import { computed, ref, toRefs } from "vue";
 
 import type { NodeRelation } from "@/api/custom-types";
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
@@ -10,6 +10,9 @@ import * as $shapes from "@/style/shapes";
 
 import type { DragConnector } from "../ports/NodePort/types";
 import QuickAddNodeMenu from "./quickAdd/QuickAddNodeMenu.vue";
+import { Button } from "@knime/components";
+import AiIcon from "@knime/styles/img/icons/ai-general.svg";
+import QuickBuildMenu from "./quickBuild/QuickBuildMenu.vue";
 
 export type QuickActionMenuProps = {
   nodeId?: string | null;
@@ -30,6 +33,10 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
 const menuWidth = 360;
 
 const emit = defineEmits(["menuClose"]);
+
+const menuMode = ref<"quick-add" | "quick-build">("quick-add");
+const setQuickAddMode = () => (menuMode.value = "quick-add");
+const setQuickBuildMode = () => (menuMode.value = "quick-build");
 
 const store = useStore();
 
@@ -116,13 +123,25 @@ const { nodeRelation } = toRefs(props);
       reset-replace-indicator-state-on-unmount
     />
     <div class="wrapper">
-      <QuickAddNodeMenu
-        :node-id="nodeId"
-        :port="port"
-        :node-relation="nodeRelation"
-        :canvas-position="canvasPosition"
-        :port-index="portIndex"
-        @menu-close="$emit('menuClose')"
+      <template v-if="menuMode == 'quick-add'">
+        <QuickAddNodeMenu
+          :node-id="nodeId"
+          :port="port"
+          :node-relation="nodeRelation"
+          :canvas-position="canvasPosition"
+          :port-index="portIndex"
+          @menu-close="$emit('menuClose')"
+        />
+        <div class="footer">
+          <Button primary @click="setQuickBuildMode">
+            <AiIcon />
+            Build with K-AI
+          </Button>
+        </div>
+      </template>
+      <QuickBuildMenu
+        v-else-if="menuMode == 'quick-build'"
+        @menu-back="setQuickAddMode"
       />
     </div>
   </FloatingMenu>
@@ -143,6 +162,13 @@ const { nodeRelation } = toRefs(props);
     background: var(--knime-gray-ultra-light);
     display: flex;
     flex-direction: column;
+
+    & .footer {
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      border-top: 1px solid var(--knime-silver-sand);
+    }
   }
 }
 </style>
