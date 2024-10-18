@@ -65,11 +65,12 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
     />
     <FunctionButton
       class="send-button"
+      primary
       :disabled="disabled"
       @click="handleClick"
     >
       <AbortIcon v-if="isProcessing" class="abort-icon" />
-      <SendIcon v-else />
+      <SendIcon v-else class="send-icon" />
     </FunctionButton>
   </div>
 </template>
@@ -80,14 +81,10 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 .chat-controls {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
-  position: relative;
-  background-color: white;
-  border: 1px solid var(--knime-stone-gray);
-  overflow: hidden;
+  gap: 14px;
 
   & .textarea {
-    color: 1px solid var(--knime-stone-gray);
+    border: 1px solid var(--knime-silver-sand);
     font-size: 13px;
     font-weight: 300;
     line-height: 150%;
@@ -96,7 +93,6 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
     min-height: 50px;
     width: 100%;
     resize: none;
-    border: none;
 
     &:focus {
       outline: none;
@@ -104,18 +100,8 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   }
 
   & .send-button {
-    margin: 0 8px 11px 0;
-
     & svg {
-      @mixin svg-icon-size 18;
-
       stroke: var(--knime-dove-gray);
-      margin-left: -2px;
-    }
-
-    & svg.abort-icon {
-      stroke: var(--knime-dove-gray);
-      margin-left: 0;
     }
   }
 }
