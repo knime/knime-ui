@@ -9,6 +9,7 @@ import * as applicationStore from "@/store/application";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
+import DataValueViewWrapper from "../../dataValueViews/DataValueViewWrapper.vue";
 import PortViewLoader from "../PortViewLoader.vue";
 
 const mockedAPI = deepMocked(API);
@@ -270,6 +271,61 @@ describe("PortViewLoader.vue", () => {
 
       notifyListeners(mockSelectionEvent);
       expect(dispatchPushEvent).toHaveBeenCalledOnce();
+    });
+
+    it("opens data value view when openDataValueView is called", async () => {
+      mockGetPortView();
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const rowIndex = 0;
+      const colIndex = 0;
+      const anchor = {
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        width: 0,
+        height: 0,
+      };
+
+      apiLayer.showDataValueView({
+        rowIndex,
+        colIndex,
+        anchor,
+      });
+
+      await flushPromises();
+      const dataValueViewWrapper = wrapper.findComponent(DataValueViewWrapper);
+      expect(dataValueViewWrapper.exists()).toBe(true);
+      expect(dataValueViewWrapper.props()).toEqual({
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        nodeId: "node1",
+        selectedPortIndex: 0,
+        selectedRowIndex: rowIndex,
+        selectedColIndex: colIndex,
+        anchor,
+      });
+
+      apiLayer.showDataValueView({
+        rowIndex: 1,
+        colIndex: 2,
+        anchor,
+      });
+
+      await flushPromises();
+      expect(dataValueViewWrapper.props().selectedRowIndex).toBe(1);
+      expect(dataValueViewWrapper.props().selectedColIndex).toBe(2);
+
+      apiLayer.closeDataValueView();
+
+      await flushPromises();
+      expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(false);
     });
   });
 

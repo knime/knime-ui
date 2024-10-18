@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { onUnmounted, ref, toRef, watch } from "vue";
+import { onClickOutside } from "@vueuse/core";
 
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
-import { AlertType } from "@knime/ui-extension-service";
+import {
+  AlertType,
+  type DataValueViewConfig,
+} from "@knime/ui-extension-service";
 
 import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
+import DataValueViewWrapper from "../dataValueViews/DataValueViewWrapper.vue";
 
 /**
  * Dynamically loads a component that will render a Port's output view
@@ -68,6 +73,13 @@ const loadExtensionConfig = async () => {
 
 const noop = () => {}; // NOSONAR
 
+const dataValueViewConfig = ref<DataValueViewConfig | null>(null);
+const dataValueView = ref<HTMLElement | null>(null);
+
+const closeDataValueView = () => {
+  dataValueViewConfig.value = null;
+};
+
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
     return Promise.resolve(
@@ -77,7 +89,10 @@ const apiLayer: UIExtensionAPILayer = {
       ),
     );
   },
-
+  showDataValueView: (config) => {
+    dataValueViewConfig.value = config;
+  },
+  closeDataValueView,
   callNodeDataService: async (params) => {
     const { serviceType, dataServiceRequest } = params;
     const result = await API.port.callPortDataService({
@@ -139,6 +154,8 @@ const apiLayer: UIExtensionAPILayer = {
   setControlsVisibility: noop,
 };
 
+onClickOutside(dataValueView, closeDataValueView);
+
 watch(
   toRef(props, "uniquePortKey"),
   async () => {
@@ -182,5 +199,18 @@ onUnmounted(() => {
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
+  />
+
+  <DataValueViewWrapper
+    v-if="dataValueViewConfig"
+    ref="dataValueView"
+    :project-id="projectId"
+    :workflow-id="workflowId"
+    :node-id="selectedNode.id"
+    :selected-port-index="selectedPortIndex"
+    :selected-row-index="dataValueViewConfig.rowIndex"
+    :selected-col-index="dataValueViewConfig.colIndex"
+    :unique-port-key="uniquePortKey"
+    :anchor="dataValueViewConfig.anchor"
   />
 </template>
