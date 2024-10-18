@@ -55,12 +55,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.util.Version;
+import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -151,7 +153,16 @@ final class ClassicAPBuildServerURL {
 
     private static String buildWorkflowPath(final Space sourceSpace, final String itemId) {
         final var workflowName = sourceSpace.getItemName(itemId);
-        final var itemPathNames = sourceSpace.getAncestorItemIds(itemId).stream().filter(not("root"::equals))
+
+        List<String> ancestorItemIds;
+        try {
+            ancestorItemIds = sourceSpace.getAncestorItemIds(itemId);
+        } catch (ResourceAccessException e) { // NOSONAR: No need to log or re-throw
+            ancestorItemIds = List.of(); // Never happens, `ServerSpace.getAncestorItemIds(...)` doesn't throw
+        }
+
+        final var itemPathNames = ancestorItemIds.stream() //
+            .filter(not("root"::equals)) //
             .map(sourceSpace::getItemName).toList();
         final var workflowPath = new StringBuilder(workflowName);
         for (String part : itemPathNames) {

@@ -889,3 +889,17 @@ export const getExampleProjects = async () => {
   );
   return (data ? JSON.parse(data) : []) as Array<ExampleProject>;
 };
+
+export const getAncestorItemIds = ({
+  spaceProviderId,
+  spaceId,
+  itemId,
+}: SpaceProviderId & SpaceId & SpaceItemId) => {
+  return callBrowserFunction(
+    window.getAncestorItemIds,
+    [spaceProviderId, spaceId, itemId],
+    "Failed to fetch ancestor item IDs",
+    true,
+    { block: false },
+  );
+};

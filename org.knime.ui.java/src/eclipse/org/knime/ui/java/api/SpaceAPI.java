@@ -646,4 +646,18 @@ final class SpaceAPI {
         }
         return spaceProvider;
     }
+
+    @API
+    static List<String> getAncestorItemIds(final String spaceProviderId, final String spaceId, final String itemId)
+        throws IOException {
+        try {
+            final var space =
+                SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+            return space.getAncestorItemIds(itemId);
+        } catch (ResourceAccessException e) {
+            throw new IOException(
+                "Could not retrieve ancestors for the selected project. Maybe it was deleted remotely?", e);
+        }
+    }
+
 }

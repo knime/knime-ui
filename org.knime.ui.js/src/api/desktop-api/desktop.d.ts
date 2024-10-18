@@ -222,3 +222,9 @@ declare function unlockSubnode(projectId: string, nodeId: string): boolean;
 declare function getHomePageTile(): Record<string, string>;
 
 declare function getExampleProjects(): string;
+
+declare function getAncestorItemIds(
+  spaceProviderId: string,
+  spaceId: string,
+  itemId: string,
+): Array<string>;

@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { type MenuItem, MenuItems } from "@knime/components";
 
+import { API } from "@/api";
 import type { SpaceItemReference, XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { TABS } from "@/store/panel";
-import { findSpaceGroupFromSpaceId } from "@/store/spaces/util";
+import {
+  findSpaceGroupFromSpaceId,
+  isLocalProvider,
+} from "@/store/spaces/util";
 
 type Props = {
   projectId: string | null;
@@ -36,6 +40,28 @@ const activeProjectId = computed(() => store.state.application.activeProjectId);
 const isUnknownProject = computed<(projectId: string) => boolean>(
   () => store.getters["application/isUnknownProject"],
 );
+
+const getAncestorItemIds = (
+  origin: SpaceItemReference,
+): Promise<Array<string> | null> => {
+  const provider = store.state.spaces.spaceProviders?.[origin.providerId];
+  if (!provider) {
+    return Promise.resolve(null);
+  }
+
+  if (isLocalProvider(provider)) {
+    return origin.ancestorItemIds
+      ? Promise.resolve(origin.ancestorItemIds)
+      : Promise.resolve(null);
+  }
+
+  // Throws error if the ancestor item IDs could not be retrieved
+  return API.desktop.getAncestorItemIds({
+    spaceProviderId: origin.providerId,
+    spaceId: origin.spaceId,
+    itemId: origin.itemId,
+  });
+};
 
 const navigateToSpaceBrowsingPage = async (origin: SpaceItemReference) => {
   const group = findSpaceGroupFromSpaceId(
@@ -70,7 +96,8 @@ const displaySpaceExplorerSidebar = async (origin: SpaceItemReference) => {
     );
   }
 
-  const { spaceId, providerId, itemId, ancestorItemIds } = origin;
+  const { providerId, spaceId, itemId } = origin;
+  const ancestorItemIds = await getAncestorItemIds(origin);
 
   const currentPath = store.state.spaces.projectPath[activeProjectId.value];
   const nextItemId = ancestorItemIds?.at(0) ?? "root";
@@ -90,18 +117,27 @@ const displaySpaceExplorerSidebar = async (origin: SpaceItemReference) => {
     });
   }
 
-  store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+  // To make sure it selects the item AFTER loading the content
+  const unWatch = watch(
+    () => store.state.spaces.isLoadingContent,
+    (isLoading, wasLoading) => {
+      if (wasLoading && !isLoading) {
+        store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+        unWatch();
+      }
+    },
+  );
 };
 
 let previousToastId: string;
 
-const showErrorToast = () => {
+const showErrorToast = (message: string) => {
   store.commit("spaces/setCurrentSelectedItemIds", []);
 
   previousToastId = $toast.show({
     type: "error",
     headline: "Project not found",
-    message: "Could not reveal project in Space Explorer.",
+    message,
     autoRemove: true,
   });
 };
@@ -120,8 +156,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
             !foundProject?.origin ||
             isUnknownProject.value(foundProject.projectId)
           ) {
-            showErrorToast();
-
+            showErrorToast("Could not reveal project in Space Explorer.");
             return;
           }
 
@@ -135,8 +170,8 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
 
           await displaySpaceExplorerSidebar(foundProject.origin);
         } catch (error) {
-          consola.error("Error revealing project in Space Explorer", error);
-          showErrorToast();
+          consola.error("Error revealing project in Space Explorer: ", error);
+          showErrorToast(error as string);
         }
       },
     },
