@@ -6,8 +6,8 @@ import DownloadAPButton from "../common/DownloadAPButton.vue";
   <div class="download-banner">
     <div class="info-text">
       <span>
-        This is only a demo of the KNIME Analytics Platform. Download for free
-        to make use of the full potential
+        This is a demo version of KNIME Analytics Platform. Download the product
+        for free to start building your own workflows.
       </span>
       <div class="links">
         <a href="https://www.knime.com/imprint" target="_blank">Imprint</a
