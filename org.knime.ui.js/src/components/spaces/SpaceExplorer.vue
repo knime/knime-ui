@@ -4,11 +4,6 @@ import { useRouter } from "vue-router";
 
 import { FileExplorer, NodePreview } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
-import FileTextIcon from "@knime/styles/img/icons/file-text.svg";
-import FolderIcon from "@knime/styles/img/icons/folder.svg";
-import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
-import WorkflowNodeStackIcon from "@knime/styles/img/icons/workflow-node-stack.svg";
-import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 
 import {
   SpaceItem,
@@ -23,23 +18,14 @@ import { matchesQuery } from "@/util/matchesQuery";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
+import { spaceItemIconRenderer } from "./spaceItemIconRenderer";
 import { useCustomDragPreview } from "./useCustomDragPreview";
 import { useDeleteItems } from "./useDeleteItems";
 import { useMovingItems } from "./useMovingItems";
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
-
-const itemIconRenderer = (item: FileExplorerItem) => {
-  const typeIcons = {
-    [SpaceItem.TypeEnum.WorkflowGroup]: FolderIcon,
-    [SpaceItem.TypeEnum.Workflow]: WorkflowIcon,
-    [SpaceItem.TypeEnum.Component]: NodeWorkflowIcon,
-    [SpaceItem.TypeEnum.WorkflowTemplate]: WorkflowNodeStackIcon,
-    [SpaceItem.TypeEnum.Data]: FileTextIcon,
-  };
-
-  return typeIcons[(item as FileExplorerItemWithMeta).meta!.type];
-};
+const itemIconRenderer = (item: FileExplorerItemWithMeta) =>
+  spaceItemIconRenderer(item.meta!.type);
 
 interface Props {
   projectId: string;
