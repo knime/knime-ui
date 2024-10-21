@@ -80,6 +80,7 @@ import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProjectFactory;
 
 /**
@@ -308,8 +309,9 @@ final class SaveProjectCopy {
                 final var srcPath = execInfo.getLocalWorkflowPath();
                 FileUtil.deleteRecursively(srcPath.toFile());
             }
-            ProjectManager.getInstance().addProject(project);
+            DesktopAPI.getDeps(ProjectManager.class).addProject(project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(project);
         }
     }
 }
