@@ -29,6 +29,20 @@ vi.mock("@/util/workflowNavigationService", () => {
 });
 
 describe("application::index", () => {
+  it("should have dismissedUpdateBanner set to false by default", () => {
+    const { store } = loadStore();
+    expect(store.state.application.dismissedUpdateBanner).toBe(false);
+  });
+
+  it("should update dismissedUpdateBanner using setDismissedUpdateBanner", () => {
+    const { store } = loadStore();
+    store.commit("application/setDismissedUpdateBanner", true);
+    expect(store.state.application.dismissedUpdateBanner).toBe(true);
+
+    store.commit("application/setDismissedUpdateBanner", false);
+    expect(store.state.application.dismissedUpdateBanner).toBe(false);
+  });
+
   it("returns the active project's origin", () => {
     const { store } = loadStore();
     store.commit("application/setOpenProjects", [

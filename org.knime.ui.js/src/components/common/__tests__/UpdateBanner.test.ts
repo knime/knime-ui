@@ -86,9 +86,7 @@ describe("UpdateBanner", () => {
         },
       });
 
-      expect(getUpdateText(wrapper)).toBe(
-        "There is an update for 1 extension available.",
-      );
+      expect(getUpdateText(wrapper)).toBe("1 extension update available.");
     });
 
     it("should show the right message (multiple bugfix)", () => {
@@ -139,7 +137,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        "Get the latest features and enhancements! Update to 5.2.0 now.",
+        "A new version of KNIME Analytics Platform is available. Update to 5.2.0 now.",
       );
 
       expect(getButtonText(wrapper)).toBe("Update");
@@ -168,7 +166,7 @@ describe("UpdateBanner", () => {
       });
 
       expect(getUpdateText(wrapper)).toBe(
-        "Get the latest features and enhancements! Update to 5.2.0 now.",
+        "A new version of KNIME Analytics Platform is available. Update to 5.2.0 now.",
       );
 
       expect(getButtonText(wrapper)).toBe("Update");
@@ -199,41 +197,13 @@ describe("UpdateBanner", () => {
       });
       await new Promise((r) => setTimeout(r, 0));
       expect(getUpdateText(wrapper)).toBe(
-        "Get the latest features and enhancements! Download 5.2.0 now.",
+        "A new version of KNIME Analytics Platform is available. Download 5.2.0 now.",
       );
 
       expect(getButtonText(wrapper)).toBe("Download");
       await wrapper.findComponent(Button).trigger("click");
       expect(windowOpen).toHaveBeenCalled();
     });
-  });
-
-  it("should return the correct message when KNIME Analytics Platform update is available", () => {
-    const { wrapper } = doShallowMount({
-      props: {
-        availableUpdates: {
-          bugfixes: ["KNIME Analytics Platform"],
-        },
-      },
-    });
-
-    expect(getUpdateText(wrapper)).toBe(
-      "A new version of KNIME Analytics Platform is available.",
-    );
-  });
-
-  it("should return the correct message when no KNIME Analytics Platform update is available", () => {
-    const { wrapper } = doShallowMount({
-      props: {
-        availableUpdates: {
-          bugfixes: ["Other Extension"], // Does not contain "KNIME Analytics Platform"
-        },
-      },
-    });
-
-    expect(getUpdateText(wrapper)).toBe(
-      "There is an update for 1 extension available.",
-    );
   });
 
   it("should prioritize bugfixes if newReleases are also present", () => {
@@ -257,9 +227,7 @@ describe("UpdateBanner", () => {
       },
     });
 
-    expect(getUpdateText(wrapper)).toBe(
-      "There is an update for 1 extension available.",
-    );
+    expect(getUpdateText(wrapper)).toBe("1 extension update available.");
     expect(getButtonText(wrapper)).toBe("Update");
   });
 });

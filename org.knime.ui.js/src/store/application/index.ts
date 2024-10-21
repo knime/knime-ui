@@ -93,6 +93,8 @@ export interface ApplicationState {
   customHelpMenuEntries: Record<string, string>;
 
   appMode: AppState.AppModeEnum;
+
+  dismissedUpdateBanner: boolean; // Property to track banner dismissal
 }
 
 /*
@@ -129,6 +131,7 @@ export const state = (): ApplicationState => ({
   customHelpMenuEntries: {},
 
   appMode: AppState.AppModeEnum.Default,
+  dismissedUpdateBanner: false,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -190,6 +193,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setAppMode(state, mode) {
     state.appMode = mode;
+  },
+  setDismissedUpdateBanner(state, dismissed: boolean) {
+    state.dismissedUpdateBanner = dismissed;
   },
 };
 

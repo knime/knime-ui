@@ -138,6 +138,10 @@ onBeforeUnmount(() => {
   store.dispatch("application/destroyApplication");
 });
 
+const onDismissUpdateBanner = () => {
+  store.commit("application/setDismissedUpdateBanner", true);
+};
+
 const onCloseError = () => {
   if (devMode.value) {
     error.value = null;
@@ -166,7 +170,9 @@ const onCloseError = () => {
     <template v-if="loaded">
       <div
         :class="[
-          $route.meta.showUpdateBanner && availableUpdates
+          $route.meta.showUpdateBanner &&
+          availableUpdates &&
+          !store.state.application.dismissedUpdateBanner
             ? 'main-content-with-banner'
             : 'main-content',
         ]"
@@ -183,8 +189,13 @@ const onCloseError = () => {
     <GlobalLoader v-bind="$store.state.application.globalLoader" />
 
     <UpdateBanner
-      v-if="$route.meta.showUpdateBanner && availableUpdates"
+      v-if="
+        $route.meta.showUpdateBanner &&
+        availableUpdates &&
+        !store.state.application.dismissedUpdateBanner
+      "
       :available-updates="availableUpdates"
+      @dismiss="onDismissUpdateBanner"
     />
 
     <ConfirmDialog />

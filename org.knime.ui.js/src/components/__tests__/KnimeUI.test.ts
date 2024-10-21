@@ -38,6 +38,9 @@ describe("KnimeUI.vue", () => {
       application: {
         mutations: {
           setHasClipboardSupport,
+          setDismissedUpdateBanner: (state, dismissed) => {
+            state.dismissedUpdateBanner = dismissed;
+          },
         },
         actions: {
           initializeApplication,
@@ -55,6 +58,7 @@ describe("KnimeUI.vue", () => {
             bugfixes: ["Update1", "Update2"],
           },
           globalLoader: {},
+          dismissedUpdateBanner: false,
         },
       },
       workflow: {
@@ -96,6 +100,22 @@ describe("KnimeUI.vue", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("does not display the UpdateBanner when dismissedUpdateBanner is true", async () => {
+    // @ts-ignore
+    useRoute.mockReturnValue({
+      meta: { showUpdateBanner: true },
+    });
+
+    const { wrapper, $store } = await doShallowMount();
+
+    expect(wrapper.find("update-banner-stub").exists()).toBe(true);
+
+    $store.state.application.dismissedUpdateBanner = true;
+    await nextTick();
+
+    expect(wrapper.find("update-banner-stub").exists()).toBe(false);
   });
 
   it("renders UpdateBanner if showUpdateBanner in meta in router is true", async () => {

@@ -2,7 +2,8 @@
 import { type PropType, defineComponent } from "vue";
 import { debounce } from "lodash-es";
 
-import { Button } from "@knime/components";
+import { Button, FunctionButton } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 
 import { API } from "@/api";
 import type { UpdateAvailableEvent } from "@/api/gateway-api/generated-api";
@@ -12,6 +13,8 @@ const DOWNLOAD_URL = "https://www.knime.com/downloads?src=knimeappmodernui";
 export default defineComponent({
   components: {
     Button,
+    FunctionButton,
+    CloseIcon,
   },
   props: {
     /**
@@ -22,6 +25,7 @@ export default defineComponent({
       default: () => ({}) as UpdateAvailableEvent,
     },
   },
+  emits: ["dismiss"],
   data() {
     return {
       isDialogOpen: false,
@@ -60,28 +64,23 @@ export default defineComponent({
     },
 
     updateMessage() {
-      const knimeAPUpdateAvailable = this.availableUpdates.bugfixes?.includes(
-        "KNIME Analytics Platform",
-      );
-
-      if (knimeAPUpdateAvailable) {
-        return "A new version of KNIME Analytics Platform is available.";
-      }
-
       if (this.hasBugFixes) {
         const totalBugFixes = this.availableUpdates.bugfixes!.length;
         const isPlural = totalBugFixes > 1;
 
-        return isPlural
-          ? `${totalBugFixes} extensions have updates available.`
-          : "There is an update for 1 extension available.";
+        if (isPlural) {
+          return `${totalBugFixes} extensions have updates available.`;
+        }
+
+        return "1 extension update available.";
       }
 
       if (this.hasNewReleases) {
         const { newReleases } = this.availableUpdates;
 
         const { shortName } = newReleases!.at(0)!;
-        const baseMessage = "Get the latest features and enhancements!";
+        const baseMessage =
+          "A new version of KNIME Analytics Platform is available.";
         const updateMessage = `${baseMessage} Update to ${shortName} now.`;
         const downloadMessage = `${baseMessage} Download ${shortName} now.`;
 
@@ -111,6 +110,10 @@ export default defineComponent({
         window.open(DOWNLOAD_URL);
       }
     },
+    // Method to dismiss the banner
+    onDismiss() {
+      this.$emit("dismiss");
+    },
   },
 });
 </script>
@@ -122,9 +125,16 @@ export default defineComponent({
         <span class="text">
           {{ updateMessage }}
         </span>
-        <Button with-border @click="debouncedUpdateAction">
-          {{ buttonText }}
-        </Button>
+        <div class="button-container">
+          <!-- Compact Update Button -->
+          <Button with-border compact @click="debouncedUpdateAction">
+            {{ buttonText }}
+          </Button>
+          <!-- Compact Function (Dismiss) Button -->
+          <FunctionButton class="dismiss-button" @click="onDismiss">
+            <CloseIcon class="close-icon" />
+          </FunctionButton>
+        </div>
       </div>
     </div>
   </section>
@@ -143,10 +153,30 @@ section.footer-wrapper {
       justify-content: space-between;
       align-items: center;
       font-family: "Roboto Condensed", sans-serif;
-      font-size: 22px;
+      font-size: 24px;
       color: var(--knime-masala);
       font-weight: 700;
     }
   }
+}
+
+.button-container {
+  display: flex;
+  align-items: center;
+}
+
+.dismiss-button {
+  width: 30px;
+  height: 30px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--knime-masala);
+}
+
+.close-icon {
+  width: 18px;
+  height: 18px;
 }
 </style>
