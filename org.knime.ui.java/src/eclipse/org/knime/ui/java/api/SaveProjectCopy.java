@@ -311,6 +311,7 @@ final class SaveProjectCopy {
             }
             DesktopAPI.getDeps(ProjectManager.class).addProject(project);
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            //space provider always LOCAL, no check necessary
             DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(project);
         }
     }
