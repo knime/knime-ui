@@ -14,7 +14,6 @@ import {
 import { API } from "@/api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import ExecuteButton from "../ExecuteButton.vue";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
@@ -160,10 +159,6 @@ const latestPublishedData = computed(
 );
 const dirtyState = computed(() => store.state.nodeConfiguration.dirtyState);
 
-const applySettings = (nodeId: string, execute?: boolean) => {
-  store.dispatch("nodeConfiguration/applySettings", { nodeId, execute });
-};
-
 watch(
   latestPublishedData,
   (data) => {
@@ -214,13 +209,6 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ExecuteButton
-    v-if="!error && !isLoadingConfig && hasToReexecute"
-    message="To preview the node, please apply your changes and re-execute the node"
-    button-label="Apply & execute"
-    @execute-node="applySettings(selectedNode.id, true)"
-  />
-
   <UIExtension
     v-if="!error && !isLoadingConfig && !hasToReexecute"
     :extension-config="extensionConfig!"

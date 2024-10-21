@@ -6,6 +6,7 @@ type Props = {
   message: string;
   buttonLabel?: string;
 };
+
 withDefaults(defineProps<Props>(), {
   buttonLabel: "Execute",
 });

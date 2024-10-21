@@ -9,6 +9,7 @@ import type { ApplicationState } from "@/store/application";
 import type { NodeOutputTabIdentifier } from "@/store/selection";
 import type { WorkflowState } from "@/store/workflow";
 
+import FloatingExecuteAction from "./FloatingExecuteAction.vue";
 import LoadingIndicator from "./LoadingIndicator.vue";
 import PortTabs from "./PortTabs.vue";
 import UIExtensionAlertsWrapper from "./UIExtensionAlertsWrapper.vue";
@@ -50,6 +51,7 @@ export default defineComponent({
     LoadingIndicator,
     ValidationInfo,
     UIExtensionAlertsWrapper,
+    FloatingExecuteAction,
   },
   data(): ComponentData {
     return {
@@ -201,8 +203,14 @@ export default defineComponent({
       />
 
       <ValidationInfo
-        v-if="!currentNodeViewAlert"
+        v-if="!currentNodeViewAlert && currentValidationError"
         :validation-error="currentValidationError"
+        :selected-node="singleSelectedNode"
+        :selected-port-index="selectedPortIndex"
+      />
+
+      <FloatingExecuteAction
+        v-if="singleSelectedNode"
         :selected-node="singleSelectedNode"
         :selected-port-index="selectedPortIndex"
       />

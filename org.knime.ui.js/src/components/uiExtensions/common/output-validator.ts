@@ -350,7 +350,7 @@ export const validateNodeExecuted: ValidationFn<{
       error: {
         type: "NODE",
         code: "NODE_UNEXECUTED",
-        message: "Please execute the node.",
+        message: "", // not needed because this case is handled separately
       },
     };
   }
