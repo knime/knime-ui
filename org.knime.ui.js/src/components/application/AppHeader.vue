@@ -16,7 +16,7 @@ import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { APP_ROUTES } from "@/router/appRoutes";
 
-import AppHeaderContextMenu from "./AppHeaderContextMenu.vue";
+import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
 import AppMenu from "./AppMenu.vue";
 import HelpMenu from "./HelpMenu.vue";

@@ -13,7 +13,7 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { createProject } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import AppHeader from "../AppHeader.vue";
-import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
+import { AppHeaderContextMenu } from "../AppHeaderContextMenu";
 import AppHeaderTab from "../AppHeaderTab.vue";
 
 const mockedAPI = deepMocked(API);

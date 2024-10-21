@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
 import { MenuItems } from "@knime/components";
 
+import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -14,7 +16,7 @@ import {
   createSpace,
   createSpaceProvider,
 } from "@/test/factories";
-import { mockVuexStore, mockedObject } from "@/test/utils";
+import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
 import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
 
 const routerPush = vi.fn();
@@ -32,6 +34,8 @@ vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: routerPush })),
   useRoute: vi.fn(() => ({})),
 }));
+
+const mockedAPI = deepMocked(API);
 
 describe("AppHeaderContextMenu.vue", () => {
   const defaultProps = { position: { x: 0, y: 0 }, projectId: "project1" };
@@ -78,110 +82,140 @@ describe("AppHeaderContextMenu.vue", () => {
 
     const toast = mockedObject(getToastsProvider());
 
-    const openProjects = [
-      createProject({
-        projectId: "no-origin",
+    const LOCAL_PROVIDER = {
+      id: "local",
+      spaceId: "local",
+    };
+
+    const HUB_PROVIDER = {
+      id: "hub-provider",
+      space1Id: "space1",
+      space2Id: "space2",
+    };
+
+    const SERVER_PROVIDER = {
+      id: "server-provider",
+    };
+
+    const PROVIDERS = {
+      [LOCAL_PROVIDER.id]: createSpaceProvider({
+        id: LOCAL_PROVIDER.id,
+        connected: true,
+        connectionMode: "AUTOMATIC",
+        name: "Local Space",
+        type: SpaceProviderNS.TypeEnum.LOCAL,
+        spaceGroups: [
+          {
+            id: "group1",
+            name: "some user group",
+            type: SpaceProviderNS.UserTypeEnum.USER,
+            spaces: [
+              createSpace({
+                id: LOCAL_PROVIDER.spaceId,
+                name: "Local Space",
+                owner: "local",
+              }),
+            ],
+          },
+        ],
       }),
-      createProject({
+      [HUB_PROVIDER.id]: createSpaceProvider({
+        id: HUB_PROVIDER.id,
+        name: "Hub space",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        spaceGroups: [
+          {
+            id: "group1",
+            name: "some other user group 1",
+            type: SpaceProviderNS.UserTypeEnum.USER,
+            spaces: [createSpace({ id: HUB_PROVIDER.space1Id })],
+          },
+          {
+            id: "group2",
+            name: "some other user group 2",
+            type: SpaceProviderNS.UserTypeEnum.USER,
+            spaces: [createSpace({ id: HUB_PROVIDER.space2Id })],
+          },
+        ],
+      }),
+      [SERVER_PROVIDER.id]: createSpaceProvider({
+        id: SERVER_PROVIDER.id,
+        name: "Server space",
+        type: SpaceProviderNS.TypeEnum.SERVER,
+        spaceGroups: [
+          {
+            id: "group2",
+            name: "some other user group",
+            type: SpaceProviderNS.UserTypeEnum.USER,
+            spaces: [createSpace()],
+          },
+        ],
+      }),
+    };
+
+    const openProjects = {
+      noOrigin: createProject({ projectId: "no-origin" }),
+      localProjectRoot: createProject({
         projectId: "local-project-root",
         origin: {
           ancestorItemIds: [],
           itemId: "1234",
-          spaceId: "local",
-          providerId: "local",
+          spaceId: LOCAL_PROVIDER.spaceId,
+          providerId: LOCAL_PROVIDER.id,
         },
       }),
-      createProject({
+      localProjectNested: createProject({
         projectId: "local-project-nested",
         origin: {
           itemId: "1234",
           ancestorItemIds: ["1"],
-          spaceId: "local",
-          providerId: "local",
+          spaceId: LOCAL_PROVIDER.spaceId,
+          providerId: LOCAL_PROVIDER.id,
         },
       }),
-      createProject({
+      localProjectNestedDeep: createProject({
         projectId: "local-project-nested-deep",
         origin: {
           itemId: "1234",
           ancestorItemIds: ["2", "1"],
-          spaceId: "local",
-          providerId: "local",
+          spaceId: LOCAL_PROVIDER.spaceId,
+          providerId: LOCAL_PROVIDER.id,
         },
       }),
-      createProject({
+      hubProject: createProject({
         projectId: "hub-project",
         origin: {
           itemId: "1234",
-          spaceId: "space1",
-          providerId: "hub-provider1",
+          spaceId: HUB_PROVIDER.space1Id,
+          providerId: HUB_PROVIDER.id,
         },
       }),
-      createProject({
+      hubProjectNested: createProject({
+        projectId: "hub-project-nested",
+        origin: {
+          itemId: "1234",
+          ancestorItemIds: ["1"],
+          spaceId: HUB_PROVIDER.space1Id,
+          providerId: HUB_PROVIDER.id,
+        },
+      }),
+      serverProject: createProject({
         projectId: "server-project",
         origin: {
           itemId: "1234",
           spaceId: "irrelevant",
-          providerId: "server-provider1",
+          providerId: SERVER_PROVIDER.id,
         },
       }),
-    ];
+    };
 
     const doMountWithProjects = ({ props = {} } = {}) => {
       const mountResult = doMount({ props });
       const { $store } = mountResult;
 
-      $store.commit("application/setOpenProjects", openProjects);
+      $store.commit("application/setOpenProjects", Object.values(openProjects));
 
-      $store.state.spaces.spaceProviders = {
-        local: createSpaceProvider({
-          id: "local",
-          connected: true,
-          connectionMode: "AUTOMATIC",
-          name: "Local Space",
-          type: SpaceProviderNS.TypeEnum.LOCAL,
-          spaceGroups: [
-            {
-              id: "group1",
-              name: "some user group",
-              type: SpaceProviderNS.UserTypeEnum.USER,
-              spaces: [
-                createSpace({
-                  id: "local",
-                  name: "Local Space",
-                  owner: "local",
-                }),
-              ],
-            },
-          ],
-        }),
-        [openProjects.at(4)!.origin!.providerId]: createSpaceProvider({
-          id: "hub-provider1",
-          name: "Hub space",
-          type: SpaceProviderNS.TypeEnum.HUB,
-          spaceGroups: [
-            {
-              id: "group2",
-              name: "some other user group",
-              type: SpaceProviderNS.UserTypeEnum.USER,
-              spaces: [createSpace({ id: "space1" })],
-            },
-          ],
-        }),
-        [openProjects.at(5)!.origin!.providerId]: createSpaceProvider({
-          id: "server-provider1",
-          name: "Server space",
-          type: SpaceProviderNS.TypeEnum.SERVER,
-          spaceGroups: [
-            {
-              id: "group2",
-              name: "some other user group",
-              type: SpaceProviderNS.UserTypeEnum.USER,
-              spaces: [createSpace()],
-            },
-          ],
-        }),
-      };
+      $store.state.spaces.spaceProviders = PROVIDERS;
 
       return mountResult;
     };
@@ -203,38 +237,40 @@ describe("AppHeaderContextMenu.vue", () => {
     it.each([
       [
         "local project on root",
-        openProjects.at(1)!,
+        openProjects.localProjectRoot!,
         {
           itemId: "root",
-          spaceId: openProjects.at(1)!.origin?.spaceId,
-          spaceProviderId: openProjects.at(1)!.origin?.providerId,
+          spaceId: LOCAL_PROVIDER.spaceId,
+          spaceProviderId: LOCAL_PROVIDER.id,
         },
       ],
       [
         "local project nested",
-        openProjects.at(2)!,
+        openProjects.localProjectNested!,
         {
-          itemId: openProjects.at(2)!.origin?.ancestorItemIds?.at(0),
-          spaceId: openProjects.at(2)!.origin?.spaceId,
-          spaceProviderId: openProjects.at(2)!.origin?.providerId,
+          itemId:
+            openProjects.localProjectNested!.origin?.ancestorItemIds?.at(0),
+          spaceId: LOCAL_PROVIDER.spaceId,
+          spaceProviderId: LOCAL_PROVIDER.id,
         },
       ],
       [
         "local project nested deep",
-        openProjects.at(3)!,
+        openProjects.localProjectNestedDeep!,
         {
-          itemId: openProjects.at(3)!.origin?.ancestorItemIds?.at(0),
-          spaceId: openProjects.at(3)!.origin?.spaceId,
-          spaceProviderId: openProjects.at(3)!.origin?.providerId,
+          itemId:
+            openProjects.localProjectNestedDeep!.origin?.ancestorItemIds?.at(0),
+          spaceId: LOCAL_PROVIDER.spaceId,
+          spaceProviderId: LOCAL_PROVIDER.id,
         },
       ],
       [
         "hub project",
-        openProjects.at(4)!,
+        openProjects.hubProject!,
         {
           itemId: "root",
-          spaceId: openProjects.at(4)!.origin?.spaceId,
-          spaceProviderId: openProjects.at(4)!.origin?.providerId,
+          spaceId: HUB_PROVIDER.space1Id,
+          spaceProviderId: HUB_PROVIDER.id,
         },
       ],
     ])(
@@ -262,6 +298,12 @@ describe("AppHeaderContextMenu.vue", () => {
         );
 
         // fetch is done in SpaceExplorer on change of ProjectPath
+        // simulate loading being done:
+        $store.state.spaces.isLoadingContent = true;
+        await nextTick();
+
+        $store.state.spaces.isLoadingContent = false;
+        await nextTick();
 
         expect($store.state.spaces.currentSelectedItemIds).toEqual([
           project.origin?.itemId,
@@ -269,8 +311,52 @@ describe("AppHeaderContextMenu.vue", () => {
       },
     );
 
+    it("should reveal nested items in hub projects", async () => {
+      const projectId = openProjects.hubProjectNested.projectId;
+
+      mockedAPI.desktop.getAncestorItemIds.mockResolvedValue(["3"]);
+
+      const { wrapper, $store } = doMountWithProjects({
+        props: { projectId },
+      });
+
+      $store.commit("application/setActiveProjectId", projectId);
+
+      await triggerOption(wrapper);
+      await flushPromises();
+
+      expect(toast.remove).toHaveBeenCalledOnce();
+      expect(toast.show).not.toHaveBeenCalled();
+      expect($store.state.panel.activeTab).toEqual({
+        [projectId]: panelStore.TABS.SPACE_EXPLORER,
+      });
+      expect(routerPush).not.toHaveBeenCalled();
+      expect(mockedAPI.desktop.getAncestorItemIds).toHaveBeenCalled();
+      expect($store.state.spaces.projectPath).toEqual(
+        expect.objectContaining({
+          [projectId]: {
+            itemId: "3",
+            spaceId: openProjects.hubProjectNested.origin?.spaceId,
+            spaceProviderId: openProjects.hubProjectNested.origin?.providerId,
+          },
+        }),
+      );
+
+      // fetch is done in SpaceExplorer on change of ProjectPath
+      // simulate loading being done:
+      $store.state.spaces.isLoadingContent = true;
+      await nextTick();
+
+      $store.state.spaces.isLoadingContent = false;
+      await nextTick();
+
+      expect($store.state.spaces.currentSelectedItemIds).toEqual([
+        openProjects.hubProjectNested.origin?.itemId,
+      ]);
+    });
+
     it("should reveal project in SpaceBrowsingPage when there's no active project", async () => {
-      const project = openProjects.at(3)!;
+      const project = openProjects.localProjectNestedDeep!;
       const { wrapper, $store, dispatchSpy } = doMountWithProjects({
         props: { projectId: project.projectId },
       });
