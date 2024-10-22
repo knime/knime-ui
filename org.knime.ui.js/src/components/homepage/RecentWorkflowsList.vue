@@ -6,6 +6,8 @@ import { useRouter } from "vue-router";
 
 import { Button, FileExplorer } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
+import CloudComponentIcon from "@knime/styles/img/icons/cloud-component.svg";
+import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
 import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import TimeIcon from "@knime/styles/img/icons/time.svg";
@@ -17,6 +19,7 @@ import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
+import { isLocalProvider } from "@/store/spaces/util";
 import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
 
 import PageTitle from "./PageTitle.vue";
@@ -29,6 +32,10 @@ const $router = useRouter();
 const $toast = getToastsProvider();
 
 const spaceProviders = computed(() => store.state.spaces.spaceProviders ?? {});
+
+const getProvider = (recentWorkflow: RecentWorkflow) => {
+  return spaceProviders.value[recentWorkflow.origin.providerId];
+};
 
 const toFileExplorerItem = (
   recentWorkflow: RecentWorkflow,
@@ -52,12 +59,8 @@ const getRecentWorkflows = async () => {
 };
 
 const getSpaceProviderName = (recentWorkflow: RecentWorkflow) => {
-  const { origin } = recentWorkflow;
-  const provider = spaceProviders.value[origin.providerId];
-  if (!provider) {
-    return "…";
-  }
-  return formatSpaceProviderName(provider);
+  const provider = getProvider(recentWorkflow);
+  return provider ? formatSpaceProviderName(provider) : "…";
 };
 
 onMounted(() => {
@@ -68,7 +71,9 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   const {
     recentWorkflow: { origin },
   } = (item as RecentWorkflowItem).meta!;
-  const provider = spaceProviders.value[origin.providerId];
+  const provider = getProvider(
+    (item as RecentWorkflowItem).meta!.recentWorkflow,
+  );
 
   if (!provider.connected) {
     const connectedProvider = await store.dispatch("spaces/connectProvider", {
@@ -107,9 +112,19 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
 };
 
 const getIcon = (recentWorkflow: RecentWorkflow) => {
+  const provider = getProvider(recentWorkflow);
+
   const icons = {
-    [SpaceItemReference.ProjectTypeEnum.Workflow]: WorkflowIcon,
-    [SpaceItemReference.ProjectTypeEnum.Component]: NodeWorkflowIcon,
+    [SpaceItemReference.ProjectTypeEnum.Workflow]: isLocalProvider(
+      provider || {},
+    )
+      ? WorkflowIcon
+      : CloudWorkflowIcon,
+    [SpaceItemReference.ProjectTypeEnum.Component]: isLocalProvider(
+      provider || {},
+    )
+      ? NodeWorkflowIcon
+      : CloudComponentIcon,
   };
 
   return recentWorkflow.origin.projectType

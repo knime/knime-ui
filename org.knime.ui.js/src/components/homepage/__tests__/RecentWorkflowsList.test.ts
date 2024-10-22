@@ -52,10 +52,12 @@ describe("RecentWorkflowsList.vue", () => {
   const spaceProvider1 = createSpaceProvider({
     id: "provider1",
     name: "Provider 1",
+    connected: true,
   });
   const spaceProvider2 = createSpaceProvider({
     id: "provider2",
     name: "Provider 2",
+    connected: true,
   });
   const spaceProvider3 = createSpaceProvider({
     id: "provider3",
@@ -141,6 +143,33 @@ describe("RecentWorkflowsList.vue", () => {
     ).toMatch("1 hour ago");
   });
 
+  it("should display '…' when provider is missing for a recent workflow", async () => {
+    const { wrapper, $store } = doMount();
+
+    $store.commit("spaces/setSpaceProviders", {});
+
+    mockedAPI.desktop.updateAndGetMostRecentlyUsedProjects.mockResolvedValueOnce(
+      [
+        {
+          name: "Workflow without provider",
+          origin: {
+            providerId: "nonExistentProvider",
+            spaceId: "space1",
+            itemId: "item1",
+          },
+          timeUsed: new Date("2024-09-05T09:00:00").toISOString(),
+        },
+      ],
+    );
+
+    await flushPromises();
+
+    const providerText = findAllByTestId(wrapper, "recent-workflow-provider")
+      .at(0)
+      ?.text();
+    expect(providerText).toBe("…");
+  });
+
   it("should open recent workflow", async () => {
     const { wrapper, dispatchSpy } = doMount();
 
@@ -173,6 +202,14 @@ describe("RecentWorkflowsList.vue", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
       spaceProviderId: notConnectedWorkflow.origin.providerId,
     });
+  });
+
+  it("should display provider name and fallback for missing provider", async () => {
+    const { wrapper } = doMount();
+    await flushPromises();
+    expect(
+      findAllByTestId(wrapper, "recent-workflow-provider").at(0)?.text(),
+    ).toMatch("Provider 1");
   });
 
   it("should handle failure opening recent workflow", async () => {
