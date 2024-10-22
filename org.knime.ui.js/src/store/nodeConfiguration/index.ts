@@ -176,9 +176,9 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
         }
 
         if (modalResult === "apply") {
-          dispatch("applySettings", { nodeId: activeNode.id });
+          await dispatch("applySettings", { nodeId: activeNode.id });
         } else {
-          dispatch("discardSettings");
+          await dispatch("discardSettings");
         }
 
         commit("setActiveNodeId", nextNode?.id ?? null);

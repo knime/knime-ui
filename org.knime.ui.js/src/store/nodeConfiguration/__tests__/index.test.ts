@@ -140,6 +140,10 @@ describe("nodeConfiguration", () => {
       acceptConfirmDialog();
       await flushPromises();
 
+      // emulate settings getting applied
+      await $store.dispatch("nodeConfiguration/setApplyComplete", true);
+      await flushPromises();
+
       expect(done).toHaveBeenCalledWith(true);
 
       expect(dispatchSpy).toHaveBeenCalledWith(
