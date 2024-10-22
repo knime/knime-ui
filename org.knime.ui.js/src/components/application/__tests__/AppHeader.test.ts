@@ -106,6 +106,11 @@ describe("AppHeader.vue", () => {
           },
         },
       },
+      spaces: {
+        state: {
+          spaceProviders: {},
+        },
+      },
     };
 
     const $store = mockVuexStore(storeConfig);

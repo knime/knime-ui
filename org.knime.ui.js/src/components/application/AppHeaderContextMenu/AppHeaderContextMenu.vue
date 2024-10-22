@@ -30,7 +30,7 @@ const { revealProjectMenuOption } = useRevealProject({
 });
 
 const contextMenuItems: AppHeaderContextMenuItem[] = [
-  revealProjectMenuOption,
+  ...revealProjectMenuOption,
   {
     text: "Close project",
     metadata: {

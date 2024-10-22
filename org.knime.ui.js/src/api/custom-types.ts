@@ -183,3 +183,8 @@ export type NodeRelation = "PREDECESSORS" | "SUCCESSORS";
 export type NodeCategoryWithExtendedPorts = NodeCategory & {
   nodes?: NodeTemplateWithExtendedPorts[];
 };
+
+export type AncestorInfo = {
+  ancestorItemIds: string[];
+  hasNameChanged: boolean;
+};

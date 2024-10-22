@@ -223,8 +223,9 @@ declare function getHomePageTile(): Record<string, string>;
 
 declare function getExampleProjects(): string;
 
-declare function getAncestorItemIds(
+declare function getAncestorInfo(
   spaceProviderId: string,
   spaceId: string,
   itemId: string,
-): Array<string>;
+  projectName: string,
+): string;

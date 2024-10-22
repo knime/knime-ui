@@ -276,6 +276,11 @@ describe("AppHeaderContextMenu.vue", () => {
     ])(
       "should reveal project in sidepanel for -> %s",
       async (_, project, expectedPath) => {
+        mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+          ancestorItemIds: [],
+          hasNameChanged: false,
+        });
+
         const { wrapper, $store } = doMountWithProjects({
           props: { projectId: project.projectId },
         });
@@ -314,7 +319,10 @@ describe("AppHeaderContextMenu.vue", () => {
     it("should reveal nested items in hub projects", async () => {
       const projectId = openProjects.hubProjectNested.projectId;
 
-      mockedAPI.desktop.getAncestorItemIds.mockResolvedValue(["3"]);
+      mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+        ancestorItemIds: ["3"],
+        hasNameChanged: false,
+      });
 
       const { wrapper, $store } = doMountWithProjects({
         props: { projectId },
@@ -331,7 +339,7 @@ describe("AppHeaderContextMenu.vue", () => {
         [projectId]: panelStore.TABS.SPACE_EXPLORER,
       });
       expect(routerPush).not.toHaveBeenCalled();
-      expect(mockedAPI.desktop.getAncestorItemIds).toHaveBeenCalled();
+      expect(mockedAPI.desktop.getAncestorInfo).toHaveBeenCalled();
       expect($store.state.spaces.projectPath).toEqual(
         expect.objectContaining({
           [projectId]: {
