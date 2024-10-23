@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRef } from "vue";
+import { computed, toRef } from "vue";
 
 import { type MenuItem, MenuItems } from "@knime/components";
 
@@ -29,7 +29,7 @@ const { revealProjectMenuOption } = useRevealProject({
   projectId: toRef(props, "projectId"),
 });
 
-const contextMenuItems: AppHeaderContextMenuItem[] = [
+const contextMenuItems = computed(() => [
   ...revealProjectMenuOption,
   {
     text: "Close project",
@@ -39,7 +39,7 @@ const contextMenuItems: AppHeaderContextMenuItem[] = [
       },
     },
   },
-];
+]);
 
 const onMenuItemClick = (item: AppHeaderContextMenuItem) => {
   if (!props.projectId) {

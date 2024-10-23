@@ -26,6 +26,7 @@ export const useRevealProject = (options: UseRevealProject) => {
   const $router = useRouter();
 
   const openProjects = computed(() => store.state.application.openProjects);
+
   const activeProjectId = computed(
     () => store.state.application.activeProjectId,
   );
@@ -160,7 +161,7 @@ export const useRevealProject = (options: UseRevealProject) => {
     });
   };
 
-  const isServerProject = (): boolean => {
+  const isServerProject = computed(() => {
     const foundProject = openProjects.value.find(
       ({ projectId }) => projectId === options.projectId.value,
     );
@@ -175,7 +176,7 @@ export const useRevealProject = (options: UseRevealProject) => {
     }
 
     return isServerProvider(provider);
-  };
+  });
 
   const menuItem: AppHeaderContextMenuItem = {
     text: "Reveal in space explorer",
@@ -214,6 +215,10 @@ export const useRevealProject = (options: UseRevealProject) => {
     },
   };
 
+  const revealProjectMenuOption = computed(() => {
+    return isServerProject.value ? [] : [menuItem];
+  });
+
   // Only show menu item if not a server project
-  return { revealProjectMenuOption: isServerProject() ? [] : [menuItem] };
+  return { revealProjectMenuOption: revealProjectMenuOption.value };
 };
