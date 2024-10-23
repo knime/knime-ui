@@ -1,6 +1,6 @@
 import { merge } from "lodash-es";
 
-import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
+import type { NodeWithExtensionInfo } from "@/components/kai/types";
 import type { DeepPartial } from "../utils";
 
 import { NODE_FACTORIES } from "./common";

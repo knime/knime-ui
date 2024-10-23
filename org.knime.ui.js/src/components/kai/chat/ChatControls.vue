@@ -23,7 +23,7 @@ const { textarea, input } = useTextareaAutosize();
 
 const sendMessage = () => {
   if (input.value) {
-    emit("sendMessage", input.value);
+    emit("sendMessage", { message: input.value });
     input.value = "";
   }
 };

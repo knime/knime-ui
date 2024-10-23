@@ -1,19 +1,12 @@
 <script setup lang="ts">
 import { Button, LoadingIcon } from "@knime/components";
 
-import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
-
 import { useKaiServer } from "./useKaiServer";
 
 const { fetchUiStrings, isLoading } = useKaiServer();
 </script>
 
 <template>
-  <SidebarPanelLayout>
-    <template #header>
-      <h2>KNIME AI Assistant</h2>
-    </template>
-
     <div class="error-panel">
       <div class="slogan">
         Our AI assistant is currently not available. Please try again later.
@@ -28,7 +21,6 @@ const { fetchUiStrings, isLoading } = useKaiServer();
         <LoadingIcon v-if="isLoading" />
       </Button>
     </div>
-  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>

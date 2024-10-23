@@ -6,7 +6,7 @@ import type {
   Workflow,
   WorkflowSnapshot,
 } from "@/api/gateway-api/generated-api";
-import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
+import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
 import { runInEnvironment } from "@/environment";
 import { features } from "@/plugins/feature-flags";
 import { APP_ROUTES } from "@/router/appRoutes";

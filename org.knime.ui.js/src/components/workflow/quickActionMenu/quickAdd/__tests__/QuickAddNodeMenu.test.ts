@@ -217,7 +217,7 @@ describe("QuickAddNodeMenu.vue", () => {
       expect(previews.at(0).props("type")).toBe("Manipulator");
     });
 
-    it.only("adds node on click", async () => {
+    it("adds node on click", async () => {
       const { wrapper, addNodeMock, $store } = doMount();
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);

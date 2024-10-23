@@ -6,7 +6,6 @@ import { Button } from "@knime/components";
 import { API } from "@/api";
 import InstallAiIllustration from "@/assets/install-ai-illustration.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
-import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import { useStore } from "@/composables/useStore";
 
 const installKai = API.desktop.installKAI;
@@ -16,10 +15,7 @@ const uiControls = computed(() => store.state.uiControls);
 </script>
 
 <template>
-  <SidebarPanelLayout>
-    <template #header>
-      <h2>KNIME AI Assistant</h2>
-    </template>
+
 
     <div class="installation-panel">
       <InstallAiIllustration />
@@ -47,7 +43,6 @@ const uiControls = computed(() => store.state.uiControls);
         <DownloadAPButton compact src="k-ai-panel" />
       </template>
     </div>
-  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>

@@ -2,7 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import type { KaiMessage } from "@/api/gateway-api/generated-api";
-import type { NodeWithExtensionInfo } from "@/components/kaiSidebar/types";
+import type { NodeWithExtensionInfo } from "@/components/kai/types";
 
 import type { RootStoreState } from "./types";
 
@@ -184,10 +184,10 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   async makeAiRequest(
     { commit, state, rootGetters },
-    { chainType, message }: { chainType: ChainType; message: Message },
+    { chainType, message, targetNodes }: { chainType: ChainType; message: Message; targetNodes: string[] },
   ) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
-    const selectedNodes = rootGetters["selection/selectedNodeIds"];
+    const selectedNodes = targetNodes.length ? targetNodes : rootGetters["selection/selectedNodeIds"];
 
     commit("setIsProcessing", { chainType, isProcessing: true });
     commit("setProjectAndWorkflowIds", { chainType, projectAndWorkflowIds });

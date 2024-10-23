@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import KaiSidebar from "@/components/kaiSidebar/KaiSidebar.vue";
+import Kai from "@/components/kai/Kai.vue";
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
 
@@ -13,7 +13,7 @@ const emit = defineEmits(["menuBack"]);
       <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
     </div>
     <div class="main">
-      <KaiSidebar />
+      <Kai mode="quick-build" />
     </div>
     <div class="footer"></div>
   </div>

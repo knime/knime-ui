@@ -9,10 +9,7 @@ const { authenticateWithHub, hubId } = useHubAuth();
 </script>
 
 <template>
-  <SidebarPanelLayout>
-    <template #header>
-      <h2>KNIME AI Assistant</h2>
-    </template>
+
 
     <div class="login-panel">
       <div class="slogan">
@@ -23,7 +20,6 @@ const { authenticateWithHub, hubId } = useHubAuth();
         >Login to {{ hubId }}</Button
       >
     </div>
-  </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>

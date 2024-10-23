@@ -106,10 +106,11 @@ const useChat = (chainType: ChainType) => {
     return lastUserMessage?.content ?? "";
   });
 
-  const sendMessage = (message: string) => {
+  const sendMessage = ({message, targetNodes = []}: { message: string, targetNodes?: string[] }) => {
     store.dispatch("aiAssistant/makeAiRequest", {
       chainType,
       message,
+      targetNodes,
     });
   };
 

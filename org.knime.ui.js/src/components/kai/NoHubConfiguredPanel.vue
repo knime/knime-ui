@@ -2,26 +2,17 @@
 import { Button } from "@knime/components";
 
 import { API } from "@/api";
-import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 
 const openPreferencePage = API.desktop.openAiAssistantPreferencePage;
 </script>
 
 <template>
-  <SidebarPanelLayout>
-    <template #header>
-      <h2>KNIME AI Assistant</h2>
-    </template>
-
-    <div class="login-panel">
-      <div class="slogan">
-        Please select a Hub to which K-AI should connect.
-      </div>
-      <Button primary compact @click="openPreferencePage">
-        Open references
-      </Button>
-    </div>
-  </SidebarPanelLayout>
+  <div class="login-panel">
+    <div class="slogan">Please select a Hub to which K-AI should connect.</div>
+    <Button primary compact @click="openPreferencePage">
+      Open references
+    </Button>
+  </div>
 </template>
 
 <style lang="postcss" scoped>

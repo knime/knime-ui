@@ -47,8 +47,8 @@ const SidebarSpaceExplorer = defineAsyncComponent({
   loadingComponent: SidebarContentLoading,
 });
 
-const KaiSidebar = defineAsyncComponent({
-  loader: () => import("@/components/kaiSidebar/KaiSidebar.vue"),
+const SidebarKai = defineAsyncComponent({
+  loader: () => import("@/components/sidebar/SidebarKai.vue"),
   loadingComponent: SidebarContentLoading,
 });
 
@@ -206,7 +206,7 @@ const hasSection = (name: TabValues) => {
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
         />
 
-        <KaiSidebar
+        <SidebarKai
           v-if="hasSection(TABS.KAI)"
           v-show="isTabActive(TABS.KAI)"
         />

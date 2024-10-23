@@ -1,7 +1,7 @@
 import type { Store } from "vuex";
 
 import { API } from "@/api";
-import { fetchUiStrings } from "@/components/kaiSidebar/useKaiServer";
+import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import type { RootStoreState } from "@/store/types";
 import { nodeSize } from "@/style/shapes";
