@@ -131,6 +131,7 @@ export default defineComponent({
         const isDifferentNode = next?.id !== prev?.id;
         if (!this.selectionValidationError && isDifferentNode) {
           this.selectPort();
+          this.currentNodeViewAlert = null;
         }
       },
       deep: true,
@@ -226,6 +227,7 @@ export default defineComponent({
           :selected-node="singleSelectedNode"
           :selected-port-index="selectedPortIndex!"
           :available-port-types="availablePortTypes"
+          @alert="currentNodeViewAlert = $event"
           @loading-state-change="loadingState = $event"
           @validation-error="currentValidationError = $event"
         />

@@ -5,7 +5,7 @@ import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
-import { AlertType } from "@knime/ui-extension-service";
+import { type Alert, AlertType } from "@knime/ui-extension-service";
 
 import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
@@ -32,6 +32,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
+  alert: [value: Alert | null];
 }>();
 
 const error = ref<any>(null);
@@ -129,6 +130,11 @@ const apiLayer: UIExtensionAPILayer = {
       emit("loadingStateChange", {
         value: "error",
         message: alert.subtitle ?? "",
+      });
+
+      emit("alert", {
+        ...alert,
+        message: alert.subtitle,
       });
     }
   },

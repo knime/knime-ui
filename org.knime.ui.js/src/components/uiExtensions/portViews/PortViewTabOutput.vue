@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 
+import type { Alert } from "@knime/ui-extension-service";
+
 import { API } from "@/api";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { toExtendedPortObject } from "@/util/portDataMapper";
@@ -71,6 +73,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
   validationError: [value: ValidationError | null];
+  alert: [value: Alert | null];
   executeNode: [];
 }>();
 
@@ -160,6 +163,7 @@ const openViewInNewWindow = (viewIndex: number) => {
         :selected-port-index="selectedPortIndex"
         :selected-view-index="activeView"
         @loading-state-change="$emit('loadingStateChange', $event)"
+        @alert="emit('alert', $event)"
       />
     </template>
   </PortViewTabToggles>
