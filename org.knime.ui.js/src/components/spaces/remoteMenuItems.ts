@@ -6,6 +6,7 @@ import CirclePlayIcon from "@knime/styles/img/icons/circle-play.svg";
 import CloudDownloadIcon from "@knime/styles/img/icons/cloud-download.svg";
 import CloudLoginIcon from "@knime/styles/img/icons/cloud-login.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
+import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 import KeyIcon from "@knime/styles/img/icons/key.svg";
 import LinkExternal from "@knime/styles/img/icons/link-external.svg";
@@ -58,11 +59,33 @@ export const buildMoveToSpaceMenuItem = (
     icon: MoveToSpaceIcon,
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one item to move." : undefined,
-    separator: true,
     execute: () => {
       dispatch("spaces/moveOrCopyToSpace", {
         projectId,
         isCopy: false,
+        itemIds: selectedItems,
+      });
+    },
+  };
+};
+
+export const buildCopyToSpaceMenuItem = (
+  dispatch: Dispatch,
+  projectId: string,
+  selectedItems: Array<string>,
+): ActionMenuItem => {
+  const isSelectionEmpty = selectedItems.length === 0;
+  return {
+    id: "copyToSpace",
+    text: "Copy to...",
+    icon: CopyIcon,
+    disabled: isSelectionEmpty,
+    title: isSelectionEmpty ? "Select at least one item to copy." : undefined,
+    separator: true,
+    execute: () => {
+      dispatch("spaces/moveOrCopyToSpace", {
+        projectId,
+        isCopy: true,
         itemIds: selectedItems,
       });
     },

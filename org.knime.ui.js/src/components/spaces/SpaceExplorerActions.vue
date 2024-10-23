@@ -18,6 +18,7 @@ import PlusIcon from "@/assets/plus.svg";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import SearchButton from "@/components/common/SearchButton.vue";
 import {
+  buildCopyToSpaceMenuItem,
   buildHubDownloadMenuItem,
   buildHubUploadMenuItems,
   buildMoveToSpaceMenuItem,
@@ -140,7 +141,13 @@ export default defineComponent({
           this.selectedItemIds,
         );
 
-        return [downloadToLocalSpace, moveToSpace];
+        const copyToSpace = buildCopyToSpaceMenuItem(
+          this.$store.dispatch,
+          this.projectId,
+          this.selectedItemIds,
+        );
+
+        return [downloadToLocalSpace, moveToSpace, copyToSpace];
       };
 
       const getServerActions = () => {

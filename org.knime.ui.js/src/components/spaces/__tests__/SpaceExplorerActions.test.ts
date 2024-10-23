@@ -139,7 +139,7 @@ describe("SpaceExplorerActions.vue", () => {
       );
       expect(
         wrapper.findAllComponents(OptionalSubMenuActionButton).length,
-      ).toBe(6);
+      ).toBe(7);
     });
 
     it("should disable actions that require selected items", () => {
@@ -263,7 +263,7 @@ describe("SpaceExplorerActions.vue", () => {
       expect(allItems).toMatch("Import workflow");
       expect(allItems).toMatch("Add files");
 
-      expect(items.length).toBe(6);
+      expect(items.length).toBe(7);
     });
 
     it("shows multiple hubs to connect to in a sub menu", async () => {

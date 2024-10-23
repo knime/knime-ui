@@ -171,6 +171,59 @@ describe("SpaceSelectionContextMenu.vue", () => {
     ]);
   });
 
+  it("displays the 'Copy to...' option when items are selected", () => {
+    const { wrapper } = doMount({
+      props: {
+        selectedItemIds: ["2342"],
+        isMultipleSelectionActive: false,
+      },
+      spaceProviders: {
+        hub1: {
+          ...startSpaceProviders.hub1,
+          connected: true,
+          type: SpaceProviderNS.TypeEnum.HUB,
+        },
+      },
+    });
+
+    const items = wrapper.findComponent(MenuItems).props("items");
+    expect(items.some((item) => item.text === "Copy to...")).toBe(true);
+  });
+
+  it("calls copy to space action on store when 'Copy to...' is clicked", async () => {
+    const closeContextMenu = vi.fn();
+    const { wrapper, dispatchSpy } = doMount({
+      props: {
+        selectedItemIds: ["2342"],
+        isMultipleSelectionActive: false,
+        closeContextMenu,
+      },
+      spaceProviders: {
+        hub1: {
+          ...startSpaceProviders.hub1,
+          connected: true,
+          type: SpaceProviderNS.TypeEnum.HUB,
+        },
+      },
+    });
+
+    const menuItems = wrapper.findComponent(MenuItems);
+    const items = menuItems.props("items");
+
+    const copyToSpace = items.find((item) => item.text === "Copy to...");
+    expect(copyToSpace).toBeDefined();
+
+    menuItems.vm.$emit("item-click", null, copyToSpace);
+    await nextTick();
+
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyToSpace", {
+      itemIds: ["2342"],
+      projectId: "someProjectId",
+      isCopy: true,
+    });
+    expect(closeContextMenu).toHaveBeenCalled();
+  });
+
   it("disables upload to hub if no space provider is connected", () => {
     const { wrapper } = doMount({
       props: {

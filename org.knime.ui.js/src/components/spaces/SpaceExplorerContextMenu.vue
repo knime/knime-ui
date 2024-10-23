@@ -15,6 +15,7 @@ import { hotkeys } from "@knime/utils";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import {
+  buildCopyToSpaceMenuItem,
   buildDisplayDeploymentsMenuItem,
   buildExecuteWorkflowMenuItem,
   buildHubDownloadMenuItem,
@@ -106,6 +107,12 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       props.selectedItemIds,
     );
 
+    const copyToSpace = buildCopyToSpaceMenuItem(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    );
+
     const openInBrowser = buildOpenInBrowserMenuItem(
       store.dispatch,
       props.projectId,
@@ -140,7 +147,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         return [downloadToLocalSpace, moveToSpace];
       }
 
-      return [downloadToLocalSpace, moveToSpace, openInBrowser];
+      return [downloadToLocalSpace, moveToSpace, copyToSpace, openInBrowser];
     };
 
     const displayDeployments = buildDisplayDeploymentsMenuItem(
