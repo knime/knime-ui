@@ -30,7 +30,7 @@ const { revealProjectMenuOption } = useRevealProject({
 });
 
 const contextMenuItems = computed(() => [
-  ...revealProjectMenuOption,
+  ...revealProjectMenuOption.value,
   {
     text: "Close project",
     metadata: {

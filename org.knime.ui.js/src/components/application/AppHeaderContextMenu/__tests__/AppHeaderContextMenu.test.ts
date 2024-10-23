@@ -38,13 +38,151 @@ vi.mock("vue-router", () => ({
 const mockedAPI = deepMocked(API);
 
 describe("AppHeaderContextMenu.vue", () => {
-  const defaultProps = { position: { x: 0, y: 0 }, projectId: "project1" };
+  const LOCAL_PROVIDER = {
+    id: "local",
+    spaceId: "local",
+  };
+
+  const HUB_PROVIDER = {
+    id: "hub-provider",
+    space1Id: "space1",
+    space2Id: "space2",
+  };
+
+  const SERVER_PROVIDER = {
+    id: "server-provider",
+  };
+
+  const PROVIDERS = {
+    [LOCAL_PROVIDER.id]: createSpaceProvider({
+      id: LOCAL_PROVIDER.id,
+      connected: true,
+      connectionMode: "AUTOMATIC",
+      name: "Local Space",
+      type: SpaceProviderNS.TypeEnum.LOCAL,
+      spaceGroups: [
+        {
+          id: "group1",
+          name: "some user group",
+          type: SpaceProviderNS.UserTypeEnum.USER,
+          spaces: [
+            createSpace({
+              id: LOCAL_PROVIDER.spaceId,
+              name: "Local Space",
+              owner: "local",
+            }),
+          ],
+        },
+      ],
+    }),
+    [HUB_PROVIDER.id]: createSpaceProvider({
+      id: HUB_PROVIDER.id,
+      name: "Hub space",
+      type: SpaceProviderNS.TypeEnum.HUB,
+      spaceGroups: [
+        {
+          id: "group1",
+          name: "some other user group 1",
+          type: SpaceProviderNS.UserTypeEnum.USER,
+          spaces: [createSpace({ id: HUB_PROVIDER.space1Id })],
+        },
+        {
+          id: "group2",
+          name: "some other user group 2",
+          type: SpaceProviderNS.UserTypeEnum.USER,
+          spaces: [createSpace({ id: HUB_PROVIDER.space2Id })],
+        },
+      ],
+    }),
+    [SERVER_PROVIDER.id]: createSpaceProvider({
+      id: SERVER_PROVIDER.id,
+      name: "Server space",
+      type: SpaceProviderNS.TypeEnum.SERVER,
+      spaceGroups: [
+        {
+          id: "group2",
+          name: "some other user group",
+          type: SpaceProviderNS.UserTypeEnum.USER,
+          spaces: [createSpace()],
+        },
+      ],
+    }),
+  };
+
+  const openProjects = {
+    noOrigin: createProject({ projectId: "no-origin" }),
+    localProjectRoot: createProject({
+      projectId: "local-project-root",
+      origin: {
+        ancestorItemIds: [],
+        itemId: "1234",
+        spaceId: LOCAL_PROVIDER.spaceId,
+        providerId: LOCAL_PROVIDER.id,
+      },
+    }),
+    localProjectNested: createProject({
+      projectId: "local-project-nested",
+      origin: {
+        itemId: "1234",
+        ancestorItemIds: ["1"],
+        spaceId: LOCAL_PROVIDER.spaceId,
+        providerId: LOCAL_PROVIDER.id,
+      },
+    }),
+    localProjectNestedDeep: createProject({
+      projectId: "local-project-nested-deep",
+      origin: {
+        itemId: "1234",
+        ancestorItemIds: ["2", "1"],
+        spaceId: LOCAL_PROVIDER.spaceId,
+        providerId: LOCAL_PROVIDER.id,
+      },
+    }),
+    hubProject: createProject({
+      projectId: "hub-project",
+      origin: {
+        itemId: "1234",
+        spaceId: HUB_PROVIDER.space1Id,
+        providerId: HUB_PROVIDER.id,
+      },
+    }),
+    hubProjectNested: createProject({
+      projectId: "hub-project-nested",
+      origin: {
+        itemId: "1234",
+        ancestorItemIds: ["1"],
+        spaceId: HUB_PROVIDER.space1Id,
+        providerId: HUB_PROVIDER.id,
+      },
+    }),
+    hubProjectUnknown: createProject({
+      projectId: "hub-project-unknown",
+      origin: {
+        itemId: "1234",
+        spaceId: "some unknown space",
+        providerId: "some unknown provider",
+      },
+    }),
+    serverProject: createProject({
+      projectId: "server-project",
+      origin: {
+        itemId: "1234",
+        spaceId: "irrelevant",
+        providerId: SERVER_PROVIDER.id,
+      },
+    }),
+  };
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  const doMount = ({
+  const defaultProps = {
+    position: { x: 0, y: 0 },
+    projectId: openProjects.localProjectRoot.projectId,
+  };
+
+  const doMount = async ({
     props = {},
   }: { props?: Partial<typeof defaultProps> } = {}) => {
     const $store = mockVuexStore({
@@ -58,6 +196,10 @@ describe("AppHeaderContextMenu.vue", () => {
       },
     });
 
+    $store.commit("application/setOpenProjects", Object.values(openProjects));
+    $store.commit("application/setActiveProjectId", props.projectId);
+    $store.state.spaces.spaceProviders = PROVIDERS;
+
     const dispatchSpy = vi.spyOn($store, "dispatch");
     const wrapper = mount(AppHeaderContextMenu, {
       props: { ...defaultProps, ...props },
@@ -66,11 +208,13 @@ describe("AppHeaderContextMenu.vue", () => {
       },
     });
 
+    await nextTick();
+
     return { wrapper, $store, dispatchSpy };
   };
 
-  it("should render properly", () => {
-    const { wrapper } = doMount();
+  it("should render properly", async () => {
+    const { wrapper } = await doMount();
 
     expect(wrapper.findComponent(MenuItems).props("items").length).toBe(2);
   });
@@ -82,155 +226,22 @@ describe("AppHeaderContextMenu.vue", () => {
 
     const toast = mockedObject(getToastsProvider());
 
-    const LOCAL_PROVIDER = {
-      id: "local",
-      spaceId: "local",
-    };
+    it("should show a toast when an error is thrown", async () => {
+      mockedAPI.desktop.getAncestorInfo.mockRejectedValue(new Error(""));
 
-    const HUB_PROVIDER = {
-      id: "hub-provider",
-      space1Id: "space1",
-      space2Id: "space2",
-    };
-
-    const SERVER_PROVIDER = {
-      id: "server-provider",
-    };
-
-    const PROVIDERS = {
-      [LOCAL_PROVIDER.id]: createSpaceProvider({
-        id: LOCAL_PROVIDER.id,
-        connected: true,
-        connectionMode: "AUTOMATIC",
-        name: "Local Space",
-        type: SpaceProviderNS.TypeEnum.LOCAL,
-        spaceGroups: [
-          {
-            id: "group1",
-            name: "some user group",
-            type: SpaceProviderNS.UserTypeEnum.USER,
-            spaces: [
-              createSpace({
-                id: LOCAL_PROVIDER.spaceId,
-                name: "Local Space",
-                owner: "local",
-              }),
-            ],
-          },
-        ],
-      }),
-      [HUB_PROVIDER.id]: createSpaceProvider({
-        id: HUB_PROVIDER.id,
-        name: "Hub space",
-        type: SpaceProviderNS.TypeEnum.HUB,
-        spaceGroups: [
-          {
-            id: "group1",
-            name: "some other user group 1",
-            type: SpaceProviderNS.UserTypeEnum.USER,
-            spaces: [createSpace({ id: HUB_PROVIDER.space1Id })],
-          },
-          {
-            id: "group2",
-            name: "some other user group 2",
-            type: SpaceProviderNS.UserTypeEnum.USER,
-            spaces: [createSpace({ id: HUB_PROVIDER.space2Id })],
-          },
-        ],
-      }),
-      [SERVER_PROVIDER.id]: createSpaceProvider({
-        id: SERVER_PROVIDER.id,
-        name: "Server space",
-        type: SpaceProviderNS.TypeEnum.SERVER,
-        spaceGroups: [
-          {
-            id: "group2",
-            name: "some other user group",
-            type: SpaceProviderNS.UserTypeEnum.USER,
-            spaces: [createSpace()],
-          },
-        ],
-      }),
-    };
-
-    const openProjects = {
-      noOrigin: createProject({ projectId: "no-origin" }),
-      localProjectRoot: createProject({
-        projectId: "local-project-root",
-        origin: {
-          ancestorItemIds: [],
-          itemId: "1234",
-          spaceId: LOCAL_PROVIDER.spaceId,
-          providerId: LOCAL_PROVIDER.id,
-        },
-      }),
-      localProjectNested: createProject({
-        projectId: "local-project-nested",
-        origin: {
-          itemId: "1234",
-          ancestorItemIds: ["1"],
-          spaceId: LOCAL_PROVIDER.spaceId,
-          providerId: LOCAL_PROVIDER.id,
-        },
-      }),
-      localProjectNestedDeep: createProject({
-        projectId: "local-project-nested-deep",
-        origin: {
-          itemId: "1234",
-          ancestorItemIds: ["2", "1"],
-          spaceId: LOCAL_PROVIDER.spaceId,
-          providerId: LOCAL_PROVIDER.id,
-        },
-      }),
-      hubProject: createProject({
-        projectId: "hub-project",
-        origin: {
-          itemId: "1234",
-          spaceId: HUB_PROVIDER.space1Id,
-          providerId: HUB_PROVIDER.id,
-        },
-      }),
-      hubProjectNested: createProject({
-        projectId: "hub-project-nested",
-        origin: {
-          itemId: "1234",
-          ancestorItemIds: ["1"],
-          spaceId: HUB_PROVIDER.space1Id,
-          providerId: HUB_PROVIDER.id,
-        },
-      }),
-      serverProject: createProject({
-        projectId: "server-project",
-        origin: {
-          itemId: "1234",
-          spaceId: "irrelevant",
-          providerId: SERVER_PROVIDER.id,
-        },
-      }),
-    };
-
-    const doMountWithProjects = ({ props = {} } = {}) => {
-      const mountResult = doMount({ props });
-      const { $store } = mountResult;
-
-      $store.commit("application/setOpenProjects", Object.values(openProjects));
-
-      $store.state.spaces.spaceProviders = PROVIDERS;
-
-      return mountResult;
-    };
-
-    it("should show a toast when project cannot be found", async () => {
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper } = await doMount({
+        props: { projectId: openProjects.hubProject.projectId },
+      });
 
       await triggerOption(wrapper);
+      await flushPromises();
+
       expect(toast.show).toHaveBeenCalledWith(
         expect.objectContaining({
           message: "Could not reveal project in Space Explorer.",
         }),
       );
 
-      expect(dispatchSpy).not.toHaveBeenCalled();
       expect(routerPush).not.toHaveBeenCalled();
     });
 
@@ -281,16 +292,16 @@ describe("AppHeaderContextMenu.vue", () => {
           hasNameChanged: false,
         });
 
-        const { wrapper, $store } = doMountWithProjects({
+        const { wrapper, $store } = await doMount({
           props: { projectId: project.projectId },
         });
 
         $store.commit("application/setActiveProjectId", project.projectId);
+        await nextTick();
 
         await triggerOption(wrapper);
         await flushPromises();
 
-        expect(toast.remove).toHaveBeenCalledOnce();
         expect(toast.show).not.toHaveBeenCalled();
         expect($store.state.panel.activeTab).toEqual({
           [project.projectId]: panelStore.TABS.SPACE_EXPLORER,
@@ -316,6 +327,47 @@ describe("AppHeaderContextMenu.vue", () => {
       },
     );
 
+    it("should not display option for server projects", async () => {
+      const projectId = openProjects.serverProject.projectId;
+
+      const { wrapper, $store } = await doMount({
+        props: { projectId },
+      });
+
+      $store.commit("application/setOpenProjects", Object.values(openProjects));
+      $store.state.spaces.spaceProviders = PROVIDERS;
+
+      $store.commit("application/setActiveProjectId", projectId);
+      await nextTick();
+
+      expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);
+      expect(wrapper.findComponent(MenuItems).props("items")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ text: "Close project" }),
+        ]),
+      );
+    });
+
+    it("should not display option for projects without an origin", async () => {
+      const projectId = openProjects.noOrigin.projectId;
+
+      mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
+        ancestorItemIds: [],
+        hasNameChanged: false,
+      });
+
+      const { wrapper } = await doMount({
+        props: { projectId },
+      });
+
+      expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);
+      expect(wrapper.findComponent(MenuItems).props("items")).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ text: "Close project" }),
+        ]),
+      );
+    });
+
     it("should reveal nested items in hub projects", async () => {
       const projectId = openProjects.hubProjectNested.projectId;
 
@@ -324,7 +376,7 @@ describe("AppHeaderContextMenu.vue", () => {
         hasNameChanged: false,
       });
 
-      const { wrapper, $store } = doMountWithProjects({
+      const { wrapper, $store } = await doMount({
         props: { projectId },
       });
 
@@ -333,7 +385,6 @@ describe("AppHeaderContextMenu.vue", () => {
       await triggerOption(wrapper);
       await flushPromises();
 
-      expect(toast.remove).toHaveBeenCalledOnce();
       expect(toast.show).not.toHaveBeenCalled();
       expect($store.state.panel.activeTab).toEqual({
         [projectId]: panelStore.TABS.SPACE_EXPLORER,
@@ -365,7 +416,7 @@ describe("AppHeaderContextMenu.vue", () => {
 
     it("should reveal project in SpaceBrowsingPage when there's no active project", async () => {
       const project = openProjects.localProjectNestedDeep!;
-      const { wrapper, $store, dispatchSpy } = doMountWithProjects({
+      const { wrapper, $store, dispatchSpy } = await doMount({
         props: { projectId: project.projectId },
       });
 
@@ -374,7 +425,6 @@ describe("AppHeaderContextMenu.vue", () => {
       await triggerOption(wrapper);
       await flushPromises();
 
-      expect(toast.remove).toHaveBeenCalledOnce();
       expect(toast.show).not.toHaveBeenCalled();
 
       expect(dispatchSpy).not.toHaveBeenCalledWith(
@@ -398,13 +448,13 @@ describe("AppHeaderContextMenu.vue", () => {
   });
 
   it("should handle closing a project", async () => {
-    const { wrapper, dispatchSpy } = doMount();
+    const { wrapper, dispatchSpy } = await doMount();
 
     await wrapper.findAll("li button").at(-1)?.trigger("click");
 
     expect(dispatchSpy).toHaveBeenCalledWith(
       "workflow/closeProject",
-      "project1",
+      defaultProps.projectId,
     );
     expect(wrapper.emitted("itemClick")).toBeDefined();
   });

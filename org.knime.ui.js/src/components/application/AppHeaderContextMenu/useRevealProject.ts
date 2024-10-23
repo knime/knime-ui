@@ -20,6 +20,30 @@ type UseRevealProject = {
   projectId: Ref<string | null>;
 };
 
+const useErrorToast = () => {
+  let previousToastId: string;
+  const store = useStore();
+
+  const $toast = getToastsProvider();
+
+  const showErrorToast = () => {
+    if (previousToastId) {
+      $toast.remove(previousToastId);
+    }
+
+    store.commit("spaces/setCurrentSelectedItemIds", []);
+
+    previousToastId = $toast.show({
+      type: "error",
+      headline: "Project not found",
+      message: "Could not reveal project in Space Explorer.",
+      autoRemove: true,
+    });
+  };
+
+  return { showErrorToast };
+};
+
 export const useRevealProject = (options: UseRevealProject) => {
   const store = useStore();
   const $toast = getToastsProvider();
@@ -40,6 +64,7 @@ export const useRevealProject = (options: UseRevealProject) => {
     projectName: string,
   ): Promise<AncestorInfo> => {
     const provider = store.state.spaces.spaceProviders?.[origin.providerId];
+
     if (!provider) {
       return Promise.resolve({ hasNameChanged: false, ancestorItemIds: [] });
     }
@@ -142,40 +167,33 @@ export const useRevealProject = (options: UseRevealProject) => {
       $toast.show({
         type: "warning",
         headline: "Name has changed",
-        message: "The projects name has changed since it was last fetched.",
+        message: `The project "${options.projectId.value}" name's has changed on the remote Hub`,
         autoRemove: true,
       });
     }
   };
 
-  let previousToastId: string;
+  const { showErrorToast } = useErrorToast();
 
-  const showErrorToast = (message: string) => {
-    store.commit("spaces/setCurrentSelectedItemIds", []);
-
-    previousToastId = $toast.show({
-      type: "error",
-      headline: "Project not found",
-      message,
-      autoRemove: true,
-    });
-  };
-
-  const isServerProject = computed(() => {
+  const canRevealProject = computed(() => {
     const foundProject = openProjects.value.find(
       ({ projectId }) => projectId === options.projectId.value,
     );
-    if (!foundProject?.origin) {
+
+    // cannot reveal unknown projects (aka no origin, or not related to our current providers)
+    if (!foundProject || isUnknownProject.value(foundProject.projectId)) {
       return false;
     }
 
     const provider =
-      store.state.spaces.spaceProviders?.[foundProject.origin.providerId];
+      store.state.spaces.spaceProviders?.[foundProject.origin!.providerId];
+
     if (!provider) {
-      return false;
+      return false; // Cannot check if Server project without provider
     }
 
-    return isServerProvider(provider);
+    // Only reveal projects that are not Server projects
+    return !isServerProvider(provider);
   });
 
   const menuItem: AppHeaderContextMenuItem = {
@@ -191,12 +209,11 @@ export const useRevealProject = (options: UseRevealProject) => {
             !foundProject?.origin ||
             isUnknownProject.value(foundProject.projectId)
           ) {
-            showErrorToast("Could not reveal project in Space Explorer.");
+            consola.error("Reveal project option not supported", {
+              foundProject,
+            });
             return;
           }
-
-          // remove any "active" previous toast to avoid confusing the user
-          $toast.remove(previousToastId);
 
           if (!activeProjectId.value) {
             await navigateToSpaceBrowsingPage(foundProject.origin);
@@ -209,16 +226,15 @@ export const useRevealProject = (options: UseRevealProject) => {
           );
         } catch (error) {
           consola.error("Error revealing project in Space Explorer: ", error);
-          showErrorToast(error as string);
+          showErrorToast();
         }
       },
     },
   };
 
   const revealProjectMenuOption = computed(() => {
-    return isServerProject.value ? [] : [menuItem];
+    return canRevealProject.value ? [menuItem] : [];
   });
 
-  // Only show menu item if not a server project
-  return { revealProjectMenuOption: revealProjectMenuOption.value };
+  return { revealProjectMenuOption };
 };
