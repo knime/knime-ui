@@ -203,6 +203,18 @@ const removePort = (
 
   clearSelection();
 };
+
+const isFirstRegularPort = (port) => {
+  if (isMetanode.value && port.index === 0) {
+    return true;
+  }
+
+  if (port.index === 1) {
+    return true;
+  }
+
+  return false;
+};
 </script>
 
 <template>
@@ -229,7 +241,11 @@ const removePort = (
     <NodePort
       v-for="port of outPorts"
       :key="`output-${port.index}`"
-      :class="['port', portAnimationClasses(port, 'out')]"
+      :class="[
+        'port',
+        portAnimationClasses(port, 'out'),
+        { 'first-regular-output-port': isFirstRegularPort(port) },
+      ]"
       direction="out"
       :node-id="nodeId"
       :node-kind="nodeKind"

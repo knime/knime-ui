@@ -523,6 +523,7 @@ export default {
     >
       <g
         v-bind="$attrs"
+        :data-node-id="id"
         :class="{
           'connection-forbidden': connectionForbidden && !isConnectionSource,
         }"

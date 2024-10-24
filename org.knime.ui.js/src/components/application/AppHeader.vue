@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import { useRoute, useRouter } from "vue-router";
 
-import { Carousel, FunctionButton } from "@knime/components";
+import { Carousel, FunctionButton, useHint } from "@knime/components";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 import HouseIcon from "@knime/styles/img/icons/house.svg";
@@ -13,6 +13,7 @@ import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import { API } from "@/api";
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
 import { useStore } from "@/composables/useStore";
+import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { APP_ROUTES } from "@/router/appRoutes";
 
@@ -163,6 +164,18 @@ watch(
   },
   { immediate: true },
 );
+
+const { createHint } = useHint();
+
+const helpMenu = ref<InstanceType<typeof HelpMenu>>();
+
+onMounted(() => {
+  createHint({
+    hintId: HINTS.HELP,
+    // @ts-ignore
+    referenceElement: helpMenu,
+  });
+});
 </script>
 
 <template>
@@ -264,7 +277,7 @@ watch(
           <ReloadIcon />
         </FunctionButton>
 
-        <HelpMenu data-test-id="app-header-help-menu" />
+        <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />
 
         <FunctionButton
           class="header-button"

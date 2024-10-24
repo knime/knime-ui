@@ -9,7 +9,7 @@ import {
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { ToastStack } from "@knime/components";
+import { HintProvider, ToastStack } from "@knime/components";
 
 import BlockUi from "@/components/application/BlockUi.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
@@ -205,6 +205,7 @@ const onCloseError = () => {
     <ShortcutsOverviewDialog />
 
     <ToastStack class="toast-stack" />
+    <HintProvider />
 
     <BlockUi />
   </div>

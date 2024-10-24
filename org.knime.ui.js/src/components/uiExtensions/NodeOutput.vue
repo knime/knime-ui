@@ -2,9 +2,11 @@
 import { defineComponent } from "vue";
 import { mapGetters, mapState } from "vuex";
 
+import { useHint } from "@knime/components";
 import type { Alert } from "@knime/ui-extension-service";
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
+import { HINTS } from "@/hints/hints.config";
 import type { ApplicationState } from "@/store/application";
 import type { NodeOutputTabIdentifier } from "@/store/selection";
 import type { WorkflowState } from "@/store/workflow";
@@ -50,6 +52,10 @@ export default defineComponent({
     LoadingIndicator,
     ValidationInfo,
     UIExtensionAlertsWrapper,
+  },
+  setup() {
+    const { createHint } = useHint();
+    return { createHint };
   },
   data(): ComponentData {
     return {
@@ -158,6 +164,17 @@ export default defineComponent({
     },
   },
   methods: {
+    async onPortViewLoadingState(state) {
+      this.loadingState = state;
+      if (state) {
+        // wait some time as otherwise the click on the node closes the hint via on click outside
+        await new Promise((r) => setTimeout(r, 100));
+        this.createHint({
+          hintId: HINTS.NODE_MONITOR,
+          referenceSelector: `#${EMBEDDED_CONTENT_PANEL_ID__BOTTOM}`,
+        });
+      }
+    },
     // select the first tab
     selectPort() {
       let { outPorts, kind: nodeKind } = this.singleSelectedNode;
@@ -219,13 +236,14 @@ export default defineComponent({
 
         <PortViewTabOutput
           v-if="!isViewTabSelected"
+          ref="portViewTabOutput"
           :project-id="projectId!"
           :workflow-id="workflowId"
           :selected-node="singleSelectedNode"
           :selected-port-index="selectedPortIndex!"
           :available-port-types="availablePortTypes"
           @alert="currentAlert = $event"
-          @loading-state-change="loadingState = $event"
+          @loading-state-change="onPortViewLoadingState($event)"
           @validation-error="currentValidationError = $event"
         />
       </template>

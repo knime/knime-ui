@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, watch } from "vue";
+import { computed, defineAsyncComponent, onMounted, watch } from "vue";
 import type { FunctionalComponent, SVGAttributes } from "vue";
 
+import { useHint } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
 import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
@@ -9,6 +10,7 @@ import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 import MetainfoIcon from "@/assets/metainfo.svg";
 import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import { useStore } from "@/composables/useStore";
+import { HINTS } from "@/hints/hints.config";
 import { useFeatures } from "@/plugins/feature-flags";
 import { TABS, type TabValues } from "@/store/panel";
 
@@ -20,6 +22,7 @@ type SidebarSection = {
   name: TabValues;
   title: string;
   icon: FunctionalComponent<SVGAttributes>;
+  class?: string;
   isActive: boolean;
   isExpanded: boolean;
   onClick: () => void;
@@ -84,6 +87,20 @@ const isTabActive = computed<(tabName: TabValues) => boolean>(
   () => store.getters["panel/isTabActive"],
 );
 
+const { createHint } = useHint();
+
+const hintIds = HINTS;
+
+const hintIsVisibleCondition = computed(() => !isTabActive.value("kai"));
+
+onMounted(() => {
+  createHint({
+    hintId: hintIds.K_AI,
+    // @ts-ignore
+    isVisibleCondition: hintIsVisibleCondition,
+  });
+});
+
 const activateSection = (tabName: TabValues) => {
   const isAlreadyActive = isTabActive.value(tabName);
   if (isAlreadyActive && expanded.value) {
@@ -130,6 +147,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         name: TABS.KAI,
         title: "K-AI",
         icon: AiIcon,
+        class: "k-ai-tab",
         isActive: isTabActive.value(TABS.KAI),
         isExpanded: expanded.value,
         onClick: () => activateSection(TABS.KAI),
@@ -160,7 +178,13 @@ const hasSection = (name: TabValues) => {
           v-for="section in sidebarSections"
           :key="section.title"
           :title="section.title"
-          :class="{ active: section.isActive, expanded: section.isExpanded }"
+          :class="[
+            section.class,
+            {
+              active: section.isActive,
+              expanded: section.isExpanded,
+            },
+          ]"
         >
           <input
             name="sidebar-tabs"

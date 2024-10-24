@@ -1,5 +1,7 @@
 import { createApp } from "vue";
 
+import { createHintSetup } from "@knime/components";
+
 import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
@@ -9,6 +11,7 @@ import {
   isDesktop,
   runInEnvironment,
 } from "./environment";
+import { HINT_CONFIGURATIONS } from "./hints/hints.config";
 import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
@@ -107,6 +110,8 @@ try {
   const connectionInfo = await apiURLResolver();
 
   await initJSONRPCClient(environment, connectionInfo, store);
+
+  createHintSetup({ hints: HINT_CONFIGURATIONS });
 
   // Create Vue app
   const app = createApp(KnimeUI);

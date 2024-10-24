@@ -4,7 +4,7 @@ import { formatTimeAgo } from "@vueuse/core";
 import { isEqual } from "lodash-es";
 import { useRouter } from "vue-router";
 
-import { Button, FileExplorer } from "@knime/components";
+import { Button, FileExplorer, useHint } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
 import CloudComponentIcon from "@knime/styles/img/icons/cloud-component.svg";
 import CloudWorkflowIcon from "@knime/styles/img/icons/cloud-workflow.svg";
@@ -17,6 +17,7 @@ import { API } from "@/api";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
+import { HINTS } from "@/hints/hints.config";
 import { getToastsProvider } from "@/plugins/toasts";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
 import { isLocalProvider } from "@/store/spaces/util";
@@ -51,11 +52,14 @@ const toFileExplorerItem = (
   meta: { recentWorkflow },
 });
 
+const recentWorkflowsHasBeenLoaded = ref(false);
+
 const getRecentWorkflows = async () => {
   const recentWorkflows =
     await API.desktop.updateAndGetMostRecentlyUsedProjects();
 
   items.value = recentWorkflows.map(toFileExplorerItem);
+  recentWorkflowsHasBeenLoaded.value = true;
 };
 
 const getSpaceProviderName = (recentWorkflow: RecentWorkflow) => {
@@ -111,6 +115,24 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   }
 };
 
+const createNewWorkflowButton = ref<InstanceType<typeof Button>>();
+
+const { createHint } = useHint();
+
+const showNewWorkflowHint = computed(
+  () => recentWorkflowsHasBeenLoaded.value && items.value.length === 0,
+);
+
+onMounted(() => {
+  createHint({
+    hintId: HINTS.NEW_WORKFLOW,
+    // @ts-ignore
+    referenceElement: createNewWorkflowButton,
+    // @ts-ignore
+    isVisibleCondition: showNewWorkflowHint,
+  });
+});
+
 const getIcon = (recentWorkflow: RecentWorkflow) => {
   const provider = getProvider(recentWorkflow);
 
@@ -149,6 +171,7 @@ const createWorkflowLocally = async () => {
     <PageTitle title="Recently used workflows and components">
       <template #append>
         <Button
+          ref="createNewWorkflowButton"
           compact
           primary
           class="create-workflow-button"

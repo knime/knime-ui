@@ -20,6 +20,7 @@ import { RESIZE_DEBOUNCE } from "./constants";
 import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
 import { useKanvasContextMenu } from "./useKanvasContextMenu";
+import { useKanvasHint } from "./useKanvasHint";
 import { useMouseWheelZooming } from "./useMouseWheelZooming";
 import { usePanning } from "./usePanning";
 
@@ -81,6 +82,8 @@ onMounted(() => {
   store.dispatch("canvas/initScrollContainerElement", rootEl.value);
   initResizeObserver();
 });
+
+useKanvasHint();
 
 onBeforeUnmount(() => {
   // Stop Resize Observer
