@@ -151,6 +151,8 @@ const apiLayer: UIExtensionAPILayer = {
   onDirtyStateChange: noop,
   onApplied: noop,
   setControlsVisibility: noop,
+  showDataValueView: noop,
+  closeDataValueView: noop,
 };
 
 const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));

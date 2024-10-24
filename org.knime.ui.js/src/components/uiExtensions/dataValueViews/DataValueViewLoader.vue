@@ -1,4 +1,4 @@
-<script lang="ts">
+<script setup lang="ts">
 /**
  * Dynamically loads a component that will render a data value view
  */
@@ -21,9 +21,7 @@ export interface Props {
   selectedRowIndex: number;
   selectedColIndex: number;
 }
-</script>
 
-<script setup lang="ts">
 const props = defineProps<Props>();
 
 const error = ref<any>(null);

@@ -1,4 +1,4 @@
-<script lang="ts">
+<script setup lang="ts">
 import { computed, ref } from "vue";
 import {
   type ClientRectObject,
@@ -17,9 +17,7 @@ import DataValueViewLoader, {
 export type Props = DataValueViewLoaderProps & {
   anchor: ClientRectObject;
 };
-</script>
 
-<script setup lang="ts">
 const props = defineProps<Props>();
 const dataValueViewElement = ref();
 const dataValueViewArrow = ref();

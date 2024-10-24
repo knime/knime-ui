@@ -139,6 +139,8 @@ const apiLayer: UIExtensionAPILayer = {
   imageGenerated: noop,
   setReportingContent: noop,
   sendAlert: noop,
+  showDataValueView: noop,
+  closeDataValueView: noop,
 };
 
 watch(
