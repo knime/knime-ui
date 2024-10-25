@@ -193,7 +193,7 @@ onUnmounted(() => {
 <template>
   <UIExtension
     v-if="!error && !isLoadingConfig"
-    :extension-config="extensionConfig!"
+    :extension-config="{ ...extensionConfig!, projectId: props.projectId }"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
