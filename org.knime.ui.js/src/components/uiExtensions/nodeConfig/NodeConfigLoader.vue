@@ -10,6 +10,7 @@ import { API } from "@/api";
 import { gatewayRpcClient } from "@/api/gateway-api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
@@ -28,6 +29,7 @@ const props = defineProps<Props>();
 // Even though there's a store usage, this component should be limited to
 // using only the nodeConfiguration store, to keep it as context-less as possible
 const store = useStore();
+const $toast = getToastsProvider();
 
 const { projectId, workflowId, selectedNode } = toRefs(props);
 const extensionConfig = ref<ExtensionConfig | null>(null);
@@ -134,11 +136,21 @@ const apiLayer: UIExtensionAPILayer = {
     areControlsVisible.value = shouldBeVisible;
   },
 
+  sendAlert: (alert) => {
+    consola.log("Alert received for NodeConfigLoader :>> ", alert);
+
+    $toast.show({
+      type: "error",
+      headline: "Invalid node settings",
+      message: alert.message?.[0],
+      autoRemove: true,
+    });
+  },
+
   // NOOP - not required by this embedding context for this type of UI Extension
   updateDataPointSelection: () => Promise.resolve(null),
   imageGenerated: noop,
   setReportingContent: noop,
-  sendAlert: noop,
   showDataValueView: noop,
   closeDataValueView: noop,
 };
