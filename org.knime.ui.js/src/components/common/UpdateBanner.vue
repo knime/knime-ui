@@ -152,10 +152,10 @@ section.footer-wrapper {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-family: "Roboto Condensed", sans-serif;
-      font-size: 24px;
+      font-family: Roboto, sans-serif;
+      font-size: 20px;
       color: var(--knime-masala);
-      font-weight: 700;
+      font-weight: 600;
     }
   }
 }
