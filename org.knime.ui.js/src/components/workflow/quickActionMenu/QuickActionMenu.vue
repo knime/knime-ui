@@ -141,6 +141,7 @@ const { nodeRelation } = toRefs(props);
       </template>
       <QuickBuildMenu
         v-else-if="menuMode == 'quick-build'"
+        :node-id="nodeId"
         @menu-back="setQuickAddMode"
       />
     </div>
@@ -151,23 +152,36 @@ const { nodeRelation } = toRefs(props);
 @import url("@/assets/mixins.css");
 
 .quick-add-node {
-  --quick-add-node-height: 450;
-  --quick-add-node-header-height: 73;
-
   margin-top: v-bind("marginTop");
 
   & .wrapper {
-    height: calc(var(--quick-add-node-height) * 1px);
     box-shadow: var(--shadow-elevation-1);
     background: var(--knime-gray-ultra-light);
     display: flex;
     flex-direction: column;
+    border-radius: 7px;
+    overflow: hidden;
 
     & .footer {
-      padding: 10px;
+      height: 46px;
       display: flex;
       justify-content: center;
+      align-items: center;
       border-top: 1px solid var(--knime-silver-sand);
+
+      & button {
+        height: 30px;
+        padding: 0 15px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 0.9;
+
+        & svg {
+          @mixin svg-icon-size 18;
+        }
+      }
     }
   }
 }

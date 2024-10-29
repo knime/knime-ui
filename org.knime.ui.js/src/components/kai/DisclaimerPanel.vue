@@ -9,15 +9,15 @@ const emit = defineEmits(["close"]);
 </script>
 
 <template>
-    <div class="disclaimer">
-      <div class="title">Disclaimer</div>
-      <p class="content">
-        {{ uiStrings.disclaimer }}
-      </p>
-    </div>
-    <Button primary compact class="close-button" @click="emit('close')">
-      Accept and close
-    </Button>
+  <div class="disclaimer">
+    <div class="title">Disclaimer</div>
+    <p class="content">
+      {{ uiStrings.disclaimer }}
+    </p>
+  </div>
+  <Button primary compact class="close-button" @click="emit('close')">
+    Accept and close
+  </Button>
 </template>
 
 <style lang="postcss" scoped>

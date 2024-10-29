@@ -9,17 +9,15 @@ const { authenticateWithHub, hubId } = useHubAuth();
 </script>
 
 <template>
-
-
-    <div class="login-panel">
-      <div class="slogan">
-        Log in to your KNIME Hub account<br />
-        to chat with our AI assistant.
-      </div>
-      <Button primary compact @click="authenticateWithHub"
-        >Login to {{ hubId }}</Button
-      >
+  <div class="login-panel">
+    <div class="slogan">
+      Log in to your KNIME Hub account<br />
+      to chat with our AI assistant.
     </div>
+    <Button primary compact @click="authenticateWithHub"
+      >Login to {{ hubId }}</Button
+    >
+  </div>
 </template>
 
 <style lang="postcss" scoped>

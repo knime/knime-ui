@@ -1,12 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import { Button, NodePreview } from "@knime/components";
 
-import { API } from "@/api";
 import {
-  NativeNodeInvariants,
   PortType,
 } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
@@ -18,10 +14,7 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
   createAvailablePortTypes,
-  createNodePortTemplate,
-  createNodeTemplate,
   createPort,
-  createSearchNodesResponse,
 } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import QuickActionMenu, {
@@ -59,10 +52,7 @@ describe("QuickActionMenu.vue", () => {
     props: FloatingMenu.props,
   };
 
-  const doMount = ({
-    addNodeMock = vi.fn(),
-    props = {},
-  } = {}) => {
+  const doMount = ({ addNodeMock = vi.fn(), props = {} } = {}) => {
     const defaultProps: QuickActionMenuProps = {
       nodeId: "node-id",
       position: {
@@ -128,7 +118,7 @@ describe("QuickActionMenu.vue", () => {
         },
         actions: {
           addNode: addNodeMock,
-        }
+        },
       },
     };
 

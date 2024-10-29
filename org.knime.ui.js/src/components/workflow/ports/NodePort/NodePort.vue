@@ -102,7 +102,7 @@ const {
   nodeId: props.nodeId,
   port: props.port,
 
-  onCanvasDrop: ({ altMode = false }: { altMode?: boolean }) => {
+  onCanvasDrop: () => {
     // ignore drop if quick add menu is disabled (e.g for metanode port bars)
     if (props.disableQuickNodeAdd) {
       return { removeConnector: true };
@@ -116,8 +116,7 @@ const {
         port: props.port,
         nodeRelation: props.direction === "out" ? "SUCCESSORS" : "PREDECESSORS",
         nodeId: props.nodeId,
-        positionOrigin: "mouse",
-        altMode
+        positionOrigin: "mouse"
       },
     });
 

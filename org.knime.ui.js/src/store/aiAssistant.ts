@@ -58,6 +58,8 @@ type AiAssistantEventPayload = {
   conversation_id: string;
 };
 
+const responseCallbacks = new Map<string, CallableFunction>();
+
 const createEmptyConversationState = (): ConversationState => {
   return {
     conversationId: null,
@@ -184,10 +186,16 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   async makeAiRequest(
     { commit, state, rootGetters },
-    { chainType, message, targetNodes }: { chainType: ChainType; message: Message; targetNodes: string[] },
+    {
+      chainType,
+      message,
+      targetNodes,
+    }: { chainType: ChainType; message: Message; targetNodes: string[] },
   ) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
-    const selectedNodes = targetNodes.length ? targetNodes : rootGetters["selection/selectedNodeIds"];
+    const selectedNodes = targetNodes.length
+      ? targetNodes
+      : rootGetters["selection/selectedNodeIds"];
 
     commit("setIsProcessing", { chainType, isProcessing: true });
     commit("setProjectAndWorkflowIds", { chainType, projectAndWorkflowIds });
@@ -221,6 +229,22 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         isError: true,
       });
     }
+  },
+  async makeQuickBuildRequest(
+    { dispatch, state, rootGetters },
+    { message, targetNodes }: { message: Message; targetNodes: string[] },
+  ) {
+    await dispatch("makeAiRequest", {
+      chainType: "build",
+      message,
+      targetNodes,
+    });
+
+    // Resolve/reject only after handleAiAssistantEvent receives a
+    // corresponding result or error.
+    return new Promise((resolve, reject) => {
+      responseCallbacks["build"] = { resolve, reject };
+    });
   },
   async submitFeedback(
     { state, rootGetters },
@@ -277,6 +301,9 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
             feedbackId: payload.interactionId,
           });
         }
+
+        responseCallbacks[chainType]?.resolve(payload);
+        responseCallbacks[chainType] = null;
         break;
       case "error":
         commit("clearChain", { chainType });
@@ -288,6 +315,9 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           content: payload.message,
           isError: true,
         });
+
+        responseCallbacks[chainType]?.reject(payload);
+        responseCallbacks[chainType] = null;
         break;
       case "status_update":
         commit("setStatusUpdate", {

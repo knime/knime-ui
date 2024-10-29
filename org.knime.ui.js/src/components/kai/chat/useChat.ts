@@ -106,9 +106,28 @@ const useChat = (chainType: ChainType) => {
     return lastUserMessage?.content ?? "";
   });
 
-  const sendMessage = ({message, targetNodes = []}: { message: string, targetNodes?: string[] }) => {
+  const sendMessage = ({
+    message,
+    targetNodes = [],
+  }: {
+    message: string;
+    targetNodes?: string[];
+  }) => {
     store.dispatch("aiAssistant/makeAiRequest", {
       chainType,
+      message,
+      targetNodes,
+    });
+  };
+
+  const makeQuickBuildRequest = async ({
+    message,
+    targetNodes = [],
+  }: {
+    message: string;
+    targetNodes?: string[];
+  }) => {
+    return await store.dispatch("aiAssistant/makeQuickBuildRequest", {
       message,
       targetNodes,
     });
@@ -133,6 +152,7 @@ const useChat = (chainType: ChainType) => {
     statusUpdate,
     lastUserMessage,
     sendMessage,
+    makeQuickBuildRequest,
     abortSendMessage,
   };
 };

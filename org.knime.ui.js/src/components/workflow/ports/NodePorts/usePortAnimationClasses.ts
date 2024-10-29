@@ -22,9 +22,7 @@ export const usePortAnimationClasses = (
     () => store.getters["workflow/isWritable"],
   );
 
-  const quickActionMenu = computed(
-    () => store.state.workflow.quickActionMenu,
-  );
+  const quickActionMenu = computed(() => store.state.workflow.quickActionMenu);
 
   const isQuickAddNodeMenuOpenInTheSameSide = (side: "in" | "out") => {
     return (

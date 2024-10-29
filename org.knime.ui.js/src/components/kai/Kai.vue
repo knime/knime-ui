@@ -4,13 +4,17 @@ import { useKaiPanels } from "./useKaiPanels";
 import type { KaiMode } from "./types";
 
 type Props = {
+  nodeId?: string | null;
   mode: Ref<KaiMode>;
 };
 
-const props = defineProps<Props>();
-const { mode } = toRefs(props);
+const props = withDefaults(defineProps<Props>(), {
+  nodeId: null,
+});
+const { nodeId, mode } = toRefs(props);
 
 const { component, componentListeners, componentProps } = useKaiPanels({
+  nodeId,
   mode,
 });
 </script>

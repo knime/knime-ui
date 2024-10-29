@@ -181,10 +181,7 @@ describe("QuickAddNodeMenu.vue", () => {
             portSize: 10,
           },
           $colors,
-        },
-        stubs: {
-          QuickAddNodeMenu: QuickAddNodeMenu,
-        },
+        }
       },
       attachTo: document.body,
     });

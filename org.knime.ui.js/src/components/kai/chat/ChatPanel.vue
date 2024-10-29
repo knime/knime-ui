@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
-import Chat from "./chat/Chat.vue";
-import type { ChainType } from "./types";
+import NodeDescriptionPortal from "../NodeDescriptionPortal.vue";
+import Chat from "./Chat.vue";
+import type { ChainType } from "../types";
 
 type Props = {
   chainType: ChainType;

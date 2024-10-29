@@ -2,7 +2,7 @@ import { computed, ref, type Ref } from "vue";
 
 import { useFeatures } from "@/plugins/feature-flags";
 
-import ChatPanel from "./ChatPanel.vue";
+import ChatPanel from "./chat/ChatPanel.vue";
 import DisclaimerPanel from "./DisclaimerPanel.vue";
 import ErrorPanel from "./ErrorPanel.vue";
 import InstallationPanel from "./InstallationPanel.vue";
@@ -12,11 +12,14 @@ import NoHubConfiguredPanel from "./NoHubConfiguredPanel.vue";
 import { useHubAuth } from "./useHubAuth";
 import { useKaiServer } from "./useKaiServer";
 import type { KaiMode } from "./types";
-import QuickBuildPanel from "./QuickBuildPanel.vue";
+import QuickBuild from "./quickBuild/QuickBuild.vue";
 
 const isDisclaimerOpen = ref(true);
 
-export const useKaiPanels = ({ mode }: { mode?: Ref<KaiMode> } = {}) => {
+export const useKaiPanels = ({
+  nodeId,
+  mode,
+}: { nodeId?: string | null; mode?: Ref<KaiMode> } = {}) => {
   const { isKaiInstalled: _isKaiInstalled } = useFeatures();
   const isKaiInstalled = _isKaiInstalled();
   const { isHubConfigured, isAuthenticated } = useHubAuth();
@@ -47,7 +50,7 @@ export const useKaiPanels = ({ mode }: { mode?: Ref<KaiMode> } = {}) => {
       return DisclaimerPanel;
     }
     if (mode?.value === "quick-build") {
-      return QuickBuildPanel;
+      return QuickBuild;
     }
 
     return ChatPanel;
@@ -62,11 +65,19 @@ export const useKaiPanels = ({ mode }: { mode?: Ref<KaiMode> } = {}) => {
   });
 
   const componentProps = computed(() => {
-    if (component.value !== ChatPanel) {
-      return {};
+    if (component.value === QuickBuild) {
+      return {
+        nodeId: nodeId,
+      };
     }
 
-    return { chainType: mode?.value === "build" ? "build" : "qa" };
+    if (component.value === ChatPanel) {
+      return {
+        chainType: mode?.value === "build" ? "build" : "qa",
+      };
+    }
+
+    return {};
   });
 
   return {

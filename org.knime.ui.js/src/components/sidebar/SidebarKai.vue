@@ -8,7 +8,7 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import Kai from "@/components/kai/Kai.vue";
 import type { ChainType } from "@/components/kai/types";
-import ChatPanel from "@/components/kai/ChatPanel.vue";
+import ChatPanel from "@/components/kai/chat/ChatPanel.vue";
 import { useKaiPanels } from "@/components/kai/useKaiPanels";
 
 const chainType = ref<ChainType>("qa");

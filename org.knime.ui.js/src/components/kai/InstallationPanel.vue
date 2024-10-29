@@ -15,34 +15,31 @@ const uiControls = computed(() => store.state.uiControls);
 </script>
 
 <template>
+  <div class="installation-panel">
+    <InstallAiIllustration />
+    <div class="slogan">
+      Our <span class="bold">KNIME AI Assistant</span> provides instant answers
+      to your questions, suggests nodes or even creates simple workflows.
+    </div>
 
+    <Button
+      v-if="uiControls.isKAISupported"
+      primary
+      compact
+      @click="installKai"
+    >
+      Install AI Assistant
+    </Button>
 
-    <div class="installation-panel">
-      <InstallAiIllustration />
+    <template v-else>
       <div class="slogan">
-        Our <span class="bold">KNIME AI Assistant</span> provides instant
-        answers to your questions, suggests nodes or even creates simple
-        workflows.
+        The KNIME AI Assistant is not available in the playground. To try its
+        capabilites, get the free and open source KNIME Analytics Platform.
       </div>
 
-      <Button
-        v-if="uiControls.isKAISupported"
-        primary
-        compact
-        @click="installKai"
-      >
-        Install AI Assistant
-      </Button>
-
-      <template v-else>
-        <div class="slogan">
-          The KNIME AI Assistant is not available in the playground. To try its
-          capabilites, get the free and open source KNIME Analytics Platform.
-        </div>
-
-        <DownloadAPButton compact src="k-ai-panel" />
-      </template>
-    </div>
+      <DownloadAPButton compact src="k-ai-panel" />
+    </template>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
