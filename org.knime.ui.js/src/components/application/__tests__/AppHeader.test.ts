@@ -95,6 +95,7 @@ describe("AppHeader.vue", () => {
           customHelpMenuEntries: {}, // To enable mounting the help menu
         },
         actions: { switchWorkflow: vi.fn() },
+        getters: { isUnknownProject: () => () => {} },
       },
       workflow: {
         actions: { closeProject: vi.fn() },
