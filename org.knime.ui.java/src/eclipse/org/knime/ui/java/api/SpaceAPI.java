@@ -674,7 +674,7 @@ final class SpaceAPI {
             return buildAncestorInfo(ancestorItemIds, hasNameChanged).toString();
         } catch (ResourceAccessException e) {
             throw new IOException(
-                "Could not retrieve ancestors for the selected project. Maybe it was deleted remotely?", e);
+                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName), e);
         }
     }
 

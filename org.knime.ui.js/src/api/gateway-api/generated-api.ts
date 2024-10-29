@@ -5453,29 +5453,12 @@ const space = function(rpcClient: RPCClient) {
             return rpcClient.call('SpaceService.deleteSchedulesForWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
-         * Get space item reference for a given space item.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         */
-        getSpaceItemReference(
-        	params: { spaceProviderId: string,  spaceId: string,  itemId: string  }
-        ): Promise<SpaceItemReference> {
-            const defaultParams = { 
-            }
-            
-            return rpcClient.call('SpaceService.getSpaceItemReference', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
-        },
-        /**
          * Mainly returns the spaces provided by this space-provider.
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {NetworkException} If a Gateway service failed due to a network error.
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         getSpaceProvider(
         	params: { spaceProviderId: string  }
@@ -5527,7 +5510,7 @@ const space = function(rpcClient: RPCClient) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
-         * @throws {NetworkException} If a Gateway service failed due to a network error.
+         * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
         listWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
