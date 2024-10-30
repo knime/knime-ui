@@ -23,10 +23,8 @@ const closeQuickActionMenu = () => {
   store.dispatch("workflow/closeQuickActionMenu");
 };
 
-
 const {
-  userQuery,
-  error,
+  errorMessage,
   result,
   sendMessage,
   isProcessing,
@@ -37,7 +35,21 @@ const {
 </script>
 
 <template>
-  <QuickBuildResult v-if="result" @close="closeQuickActionMenu" :message="result" />
+  <template v-if="result">
+    <QuickBuildResult
+      v-if="result.type === 'SUCCESS'"
+      @close="closeQuickActionMenu"
+      :message="result.message"
+    />
+    <QuickBuildInput
+      v-else-if="result.type === 'INPUT_NEEDED'"
+      :prompt="result.message"
+      :last-user-message="lastUserMessage"
+      :error-message="errorMessage"
+      @send-message="sendMessage"
+      @abort="abortSendMessage"
+    />
+  </template>
   <QuickBuildProcessing
     v-else-if="isProcessing"
     :status="statusUpdate"
@@ -45,9 +57,8 @@ const {
   />
   <QuickBuildInput
     v-else
-    :is-processing="isProcessing"
     :last-user-message="lastUserMessage"
-    :error="error"
+    :error-message="errorMessage"
     @send-message="sendMessage"
     @abort="abortSendMessage"
   />

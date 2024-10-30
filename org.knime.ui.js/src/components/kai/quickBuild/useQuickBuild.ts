@@ -2,12 +2,14 @@ import { ref, watch, type Ref } from "vue";
 import { useChat } from "../chat/useChat";
 import { useStore } from "vuex";
 
+type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" }
+
 export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
   const store = useStore();
 
   const userQuery = ref<string>("");
-  const error = ref<string>("");
-  const result = ref<string>("");
+  const errorMessage = ref<string>("");
+  const result = ref<Result | null>(null);
 
   const {
     isProcessing,
@@ -22,27 +24,26 @@ export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
     const targetNodes = nodeId.value ? [nodeId.value] : [];
 
     try {
-      const { message: _message } = await makeQuickBuildRequest({
+      result.value = await makeQuickBuildRequest({
         message,
         targetNodes,
       });
-      result.value = _message;
-    } catch (_error) {
-      error.value = _error.message;
+    } catch (error) {
+      errorMessage.value = error.message;
     }
   };
 
   watch(isProcessing, (value) => {
     if (value) {
-      store.dispatch("workflow/lockQuickActionMenu"); 
+      store.dispatch("workflow/lockQuickActionMenu");
     } else {
       store.dispatch("workflow/unlockQuickActionMenu");
     }
-  })
+  });
 
   return {
     userQuery,
-    error,
+    errorMessage,
     result,
     sendMessage,
     isProcessing,

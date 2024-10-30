@@ -231,7 +231,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     }
   },
   async makeQuickBuildRequest(
-    { dispatch, state, rootGetters },
+    { dispatch },
     { message, targetNodes }: { message: Message; targetNodes: string[] },
   ) {
     await dispatch("makeAiRequest", {

@@ -3,7 +3,7 @@ import Kai from "@/components/kai/Kai.vue";
 import { useQuickBuild } from "@/components/kai/quickBuild/useQuickBuild";
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
-import { computed, toRefs } from "vue";
+import { toRefs } from "vue";
 
 type Props = {
   nodeId?: string | null;
