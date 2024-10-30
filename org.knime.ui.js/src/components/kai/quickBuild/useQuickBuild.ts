@@ -1,7 +1,10 @@
-import { computed, ref, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import { useChat } from "../chat/useChat";
+import { useStore } from "vuex";
 
 export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
+  const store = useStore();
+
   const userQuery = ref<string>("");
   const error = ref<string>("");
   const result = ref<string>("");
@@ -28,6 +31,14 @@ export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
       error.value = _error.message;
     }
   };
+
+  watch(isProcessing, (value) => {
+    if (value) {
+      store.dispatch("workflow/lockQuickActionMenu"); 
+    } else {
+      store.dispatch("workflow/unlockQuickActionMenu");
+    }
+  })
 
   return {
     userQuery,

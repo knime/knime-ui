@@ -29,6 +29,7 @@ interface State {
 
   quickActionMenu: {
     isOpen: boolean;
+    isLocked: boolean;
     props: QuickActionMenuProps | null;
     events: {
       menuClose?: () => void;
@@ -52,6 +53,7 @@ export const state = (): State => ({
 
   quickActionMenu: {
     isOpen: false,
+    isLocked: false,
     props: null,
     events: {},
   },
@@ -97,6 +99,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   openQuickActionMenu({ commit, dispatch }, { props, events }) {
     commit("setQuickActionMenu", {
       isOpen: true,
+      isLocked: false,
       props,
       events: events
         ? events
@@ -104,14 +107,33 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  async closeQuickActionMenu({ commit, dispatch }) {
+  async closeQuickActionMenu({ state, commit, dispatch }, { force = false } = {}) {
+    if (state.quickActionMenu.isLocked && !force) {
+      return;
+    }
+
     commit("setQuickActionMenu", {
       isOpen: false,
+      isLocked: false,
       props: {},
       events: {},
     });
 
     await dispatch("canvas/focus", null, { root: true });
+  },
+
+  lockQuickActionMenu({ state, commit }) {
+    commit("setQuickActionMenu", {
+      ...state.quickActionMenu,
+      isLocked: true,
+    });
+  },
+
+  unlockQuickActionMenu({ state, commit }) {
+    commit("setQuickActionMenu", {
+      ...state.quickActionMenu,
+      isLocked: false,
+    });
   },
 };
 
