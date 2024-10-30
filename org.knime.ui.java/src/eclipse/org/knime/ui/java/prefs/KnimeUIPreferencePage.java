@@ -110,7 +110,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         };
 
         final var nodeDialogModeEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY,
-                "Node configuration dialog mode", 1, nodeConfigurationModeOptions, getFieldEditorParent());
+                "Node configuration dialog mode (experimental)", 1, nodeConfigurationModeOptions, getFieldEditorParent());
 
         addField(nodeDialogModeEditor);
     }

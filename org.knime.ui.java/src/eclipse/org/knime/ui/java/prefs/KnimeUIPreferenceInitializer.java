@@ -61,21 +61,11 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
     @Override
     public void initializeDefaultPreferences() {
         final var store = KnimeUIPreferences.PREF_STORE;
-
-        // Set the selected node collection to the starter nodes
         store.setDefault(KnimeUIPreferences.SELECTED_NODE_COLLECTION_PREF_KEY,
             KnimeUIPreferences.SELECTED_NODE_COLLECTION_STARTER_ID);
-
-        // Set scroll-to-scroll as default option
         store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY, KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL);
-
-        // Set always confirm node configuration changes as default option
         store.setDefault(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, true);
-
-        // Set always confirm close projects on perspective switch as default option
         store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
-
-        // Set node configuration dialog mode to "embedded" as default option
-        store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED);
+        store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED);
     }
 }
