@@ -18,6 +18,10 @@ export type UIExtensionLoadingState =
 
 export type ExtensionConfig = BaseExtensionConfig & {
   resourceInfo: { baseUrl?: string };
+  /**
+   * whether the ui-extension (dialog) supports a large mode or not
+   */
+  canBeEnlarged: boolean;
 };
 
 export type UIExtensionPushEventDispatcher = Parameters<

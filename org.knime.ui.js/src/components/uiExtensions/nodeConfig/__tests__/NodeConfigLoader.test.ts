@@ -126,6 +126,16 @@ describe("NodeConfigLoader.vue", () => {
     });
   });
 
+  it("sets initial dialog mode to small", async () => {
+    mockGetNodeDialog();
+    const { wrapper } = doMount();
+    await flushPromises();
+
+    expect(
+      wrapper.findComponent(UIExtension).props("extensionConfig").startEnlarged,
+    ).toBe(false);
+  });
+
   describe("apiLayer", () => {
     const getApiLayer = (wrapper: VueWrapper<any>) => {
       const uiExtension = wrapper.findComponent(UIExtension);

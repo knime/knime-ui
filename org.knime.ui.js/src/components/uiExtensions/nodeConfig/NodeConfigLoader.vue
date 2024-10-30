@@ -64,7 +64,7 @@ const loadExtensionConfig = async () => {
     };
   }
 
-  extensionConfig.value = _extensionConfig;
+  extensionConfig.value = { ..._extensionConfig, startEnlarged: false };
 
   store.commit(
     "nodeConfiguration/setActiveExtensionConfig",
