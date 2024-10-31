@@ -5,6 +5,7 @@ import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
+import { type Alert } from "@knime/ui-extension-service";
 
 import { API } from "@/api";
 import { gatewayRpcClient } from "@/api/gateway-api";
@@ -136,13 +137,13 @@ const apiLayer: UIExtensionAPILayer = {
     areControlsVisible.value = shouldBeVisible;
   },
 
-  sendAlert: (alert) => {
+  sendAlert: (alert: Alert) => {
     consola.log("Alert received for NodeConfigLoader :>> ", alert);
 
     $toast.show({
       type: "error",
       headline: "Invalid node settings",
-      message: alert.message?.[0],
+      message: alert.message ?? "",
       autoRemove: true,
     });
   },

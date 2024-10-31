@@ -9,16 +9,19 @@ import {
 
 import { UIExtension } from "@knime/ui-extension-renderer";
 import {
+  type Alert,
+  AlertType,
   ApplyState,
   DataServiceType,
   ViewState,
 } from "@knime/ui-extension-service";
 
 import { API } from "@/api";
+import { getToastsProvider } from "@/plugins/toasts";
 import * as applicationStore from "@/store/application";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import NodeConfigLoader from "../NodeConfigLoader.vue";
 
@@ -34,6 +37,8 @@ const mockGetNodeDialog = (additionalMocks?: object) => {
     ...additionalMocks,
   });
 };
+
+const toast = mockedObject(getToastsProvider());
 
 describe("NodeConfigLoader.vue", () => {
   const dummyNode = createNativeNode({
@@ -287,6 +292,28 @@ describe("NodeConfigLoader.vue", () => {
       await nextTick();
 
       expect(wrapper.find("#slotted-ctrls").exists()).toBe(false);
+    });
+
+    it("implements sendAlert", async () => {
+      mockGetNodeDialog();
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const alert1: Alert = {
+        nodeId: "root:1",
+        type: AlertType.ERROR,
+        nodeInfo: { nodeName: "The Node", nodeState: "" },
+        message: "There's an error in this node dialog",
+      };
+      apiLayer.sendAlert(alert1);
+
+      expect(toast.show).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: alert1.message,
+        }),
+      );
     });
   });
 });
