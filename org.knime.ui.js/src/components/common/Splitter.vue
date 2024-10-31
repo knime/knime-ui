@@ -206,6 +206,7 @@ function onBodyUp() {
       class="splitter"
       :class="{ active: isActive }"
       :title="splitterTitle"
+      :data-test-id="`${sizePane}-pane-splitter`"
       @mousedown="onSplitterMouseDown"
       @touchstart.passive="onSplitterTouchDown"
       @click="onSplitterClick"
