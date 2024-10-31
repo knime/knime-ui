@@ -17,9 +17,13 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  initialText: {
+    type: String,
+    default: "",
+  },
 });
 
-const { textarea, input } = useTextareaAutosize();
+const { textarea, input } = useTextareaAutosize({ input: props.initialText });
 
 const sendMessage = () => {
   if (input.value) {
@@ -40,11 +44,17 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 };
 
-const handleClick = () => {
+const handleSendButtonClick = () => {
   if (props.isProcessing) {
     emit("abort");
   } else {
     sendMessage();
+  }
+};
+
+const handleClick = (event) => {
+  if (event.target === event.currentTarget) {
+    textarea.value.focus();
   }
 };
 
@@ -55,7 +65,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
 </script>
 
 <template>
-  <div class="chat-controls">
+  <div class="chat-controls" @click="handleClick">
     <textarea
       ref="textarea"
       v-model="input"
@@ -67,7 +77,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       class="send-button"
       primary
       :disabled="disabled"
-      @click="handleClick"
+      @click="handleSendButtonClick"
     >
       <AbortIcon v-if="isProcessing" class="abort-icon" />
       <SendIcon v-else class="send-icon" />

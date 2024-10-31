@@ -107,7 +107,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  async closeQuickActionMenu({ state, commit, dispatch }, { force = false } = {}) {
+  async closeQuickActionMenu(
+    { state, commit, dispatch },
+    { force = false } = {},
+  ) {
     if (state.quickActionMenu.isLocked && !force) {
       return;
     }

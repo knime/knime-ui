@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ProgressBar } from "@knime/components";
-import { Button } from "@knime/components";
+import { Button, ProgressBar } from "@knime/components";
 import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
 
 type Props = {

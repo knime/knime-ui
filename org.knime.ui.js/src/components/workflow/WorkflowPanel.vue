@@ -7,8 +7,8 @@ import ContextMenu from "@/components/application/ContextMenu.vue";
 import SplitPanel from "@/components/common/SplitPanel.vue";
 import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
-import QuickActionMenu from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
+import QuickActionMenu from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
 import { useStore } from "@/composables/useStore";
 
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";

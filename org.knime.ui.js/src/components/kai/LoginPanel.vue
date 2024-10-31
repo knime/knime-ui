@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { Button } from "@knime/components";
 
-import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
-
 import { useHubAuth } from "./useHubAuth";
 
 const { authenticateWithHub, hubId } = useHubAuth();

@@ -1,18 +1,17 @@
-import { computed, ref, type Ref } from "vue";
+import { type Ref, computed, ref } from "vue";
 
 import { useFeatures } from "@/plugins/feature-flags";
 
-import ChatPanel from "./chat/ChatPanel.vue";
 import DisclaimerPanel from "./DisclaimerPanel.vue";
 import ErrorPanel from "./ErrorPanel.vue";
 import InstallationPanel from "./InstallationPanel.vue";
 import LoginPanel from "./LoginPanel.vue";
 import NoHubConfiguredPanel from "./NoHubConfiguredPanel.vue";
-
+import ChatPanel from "./chat/ChatPanel.vue";
+import QuickBuild from "./quickBuild/QuickBuild.vue";
+import type { KaiMode } from "./types";
 import { useHubAuth } from "./useHubAuth";
 import { useKaiServer } from "./useKaiServer";
-import type { KaiMode } from "./types";
-import QuickBuild from "./quickBuild/QuickBuild.vue";
 
 const isDisclaimerOpen = ref(true);
 
@@ -67,7 +66,7 @@ export const useKaiPanels = ({
   const componentProps = computed(() => {
     if (component.value === QuickBuild) {
       return {
-        nodeId: nodeId,
+        nodeId,
       };
     }
 
@@ -86,5 +85,3 @@ export const useKaiPanels = ({
     componentProps,
   };
 };
-
-useKaiPanels;

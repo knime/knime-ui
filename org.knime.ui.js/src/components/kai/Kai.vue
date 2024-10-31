@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { toRefs, type Ref } from "vue";
-import { useKaiPanels } from "./useKaiPanels";
+import { type Ref, toRefs } from "vue";
+
 import type { KaiMode } from "./types";
+import { useKaiPanels } from "./useKaiPanels";
 
 type Props = {
   nodeId?: string | null;
@@ -22,8 +23,8 @@ const { component, componentListeners, componentProps } = useKaiPanels({
 <template>
   <component
     :is="component"
-    v-on="componentListeners"
     v-bind="componentProps"
+    v-on="componentListeners"
   />
 </template>
 

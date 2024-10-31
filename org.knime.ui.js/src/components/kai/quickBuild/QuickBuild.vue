@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, toRefs, type Ref } from "vue";
-import { useQuickBuild } from "./useQuickBuild";
+import { type Ref, ref, toRefs } from "vue";
+import { useStore } from "vuex";
 
 import QuickBuildInput from "./QuickBuildInput.vue";
 import QuickBuildProcessing from "./QuickBuildProcessing.vue";
 import QuickBuildResult from "./QuickBuildResult.vue";
-import { useStore } from "vuex";
+import { useQuickBuild } from "./useQuickBuild";
 
 type Props = {
   nodeId?: Ref<string | null>;
@@ -35,11 +35,16 @@ const {
 </script>
 
 <template>
-  <template v-if="result">
+  <QuickBuildProcessing
+    v-if="isProcessing"
+    :status="statusUpdate"
+    @abort="abortSendMessage"
+  />
+  <template v-else-if="result">
     <QuickBuildResult
       v-if="result.type === 'SUCCESS'"
-      @close="closeQuickActionMenu"
       :message="result.message"
+      @close="closeQuickActionMenu"
     />
     <QuickBuildInput
       v-else-if="result.type === 'INPUT_NEEDED'"
@@ -50,11 +55,6 @@ const {
       @abort="abortSendMessage"
     />
   </template>
-  <QuickBuildProcessing
-    v-else-if="isProcessing"
-    :status="statusUpdate"
-    @abort="abortSendMessage"
-  />
   <QuickBuildInput
     v-else
     :last-user-message="lastUserMessage"

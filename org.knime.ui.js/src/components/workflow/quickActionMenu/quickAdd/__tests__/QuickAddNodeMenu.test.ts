@@ -181,7 +181,7 @@ describe("QuickAddNodeMenu.vue", () => {
             portSize: 10,
           },
           $colors,
-        }
+        },
       },
       attachTo: document.body,
     });

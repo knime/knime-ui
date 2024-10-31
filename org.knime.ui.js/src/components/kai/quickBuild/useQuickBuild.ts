@@ -1,13 +1,15 @@
-import { ref, watch, type Ref } from "vue";
-import { useChat } from "../chat/useChat";
+import { type Ref, ref, watch } from "vue";
 import { useStore } from "vuex";
 
-type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" }
+import { useChat } from "../chat/useChat";
+
+type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" };
+
+const userQuery = ref<string>("");
 
 export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
   const store = useStore();
 
-  const userQuery = ref<string>("");
   const errorMessage = ref<string>("");
   const result = ref<Result | null>(null);
 
@@ -20,10 +22,12 @@ export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
   } = useChat("build");
 
   const sendMessage = async ({ message }: { message: string }) => {
+    result.value = null;
     userQuery.value = message;
     const targetNodes = nodeId.value ? [nodeId.value] : [];
 
     try {
+      errorMessage.value = "";
       result.value = await makeQuickBuildRequest({
         message,
         targetNodes,

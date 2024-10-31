@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
+  type Ref,
   computed,
   onBeforeUnmount,
   onMounted,
-  type Ref,
   ref,
   toRefs,
   watch,

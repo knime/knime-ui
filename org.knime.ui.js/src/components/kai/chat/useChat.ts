@@ -120,14 +120,14 @@ const useChat = (chainType: ChainType) => {
     });
   };
 
-  const makeQuickBuildRequest = async ({
+  const makeQuickBuildRequest = ({
     message,
     targetNodes = [],
   }: {
     message: string;
     targetNodes?: string[];
   }) => {
-    return await store.dispatch("aiAssistant/makeQuickBuildRequest", {
+    return store.dispatch("aiAssistant/makeQuickBuildRequest", {
       message,
       targetNodes,
     });

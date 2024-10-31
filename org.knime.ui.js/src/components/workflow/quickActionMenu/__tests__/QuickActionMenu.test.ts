@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-
-import {
-  PortType,
-} from "@/api/gateway-api/generated-api";
+import { PortType } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as selectionStore from "@/store/selection";
@@ -12,11 +9,8 @@ import * as settingsStore from "@/store/settings";
 import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import {
-  createAvailablePortTypes,
-  createPort,
-} from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { createAvailablePortTypes, createPort } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
 import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";

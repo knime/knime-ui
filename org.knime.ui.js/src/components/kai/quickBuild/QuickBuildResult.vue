@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import Message from "../chat/message/Message.vue";
 import { Button } from "@knime/components";
 import CheckIcon from "@knime/styles/img/icons/check.svg";
+
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import Message from "../chat/message/Message.vue";
 
 type Props = {
   message: string;
@@ -25,12 +26,14 @@ defineEmits(["close"]);
 @import url("@/assets/mixins.css");
 
 .quick-build-result {
-  display: flex;
-  flex-direction: column;
+  text-align: right;
 
   & .button {
-    align-self: flex-end;
     margin-top: -20px;
+  }
+
+  & * {
+    text-align: initial;
   }
 }
 </style>

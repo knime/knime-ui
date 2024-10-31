@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import Kai from "@/components/kai/Kai.vue";
-import { useQuickBuild } from "@/components/kai/quickBuild/useQuickBuild";
+import { toRefs } from "vue";
+
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
-import { toRefs } from "vue";
+
+import Kai from "@/components/kai/Kai.vue";
+import { useQuickBuild } from "@/components/kai/quickBuild/useQuickBuild";
 
 type Props = {
   nodeId?: string | null;
@@ -28,7 +30,6 @@ const { isProcessing } = useQuickBuild({ nodeId });
     <div class="main">
       <Kai :node-id="nodeId" mode="quick-build" />
     </div>
-    <div v-if="!isProcessing" class="footer"></div>
   </div>
 </template>
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import ChatControls from "../chat/ChatControls.vue";
 import ErrorIcon from "@knime/styles/img/icons/circle-close.svg";
+
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import ChatControls from "../chat/ChatControls.vue";
+import Message from "../chat/message/Message.vue";
 
 type Props = {
   prompt?: string;
@@ -15,7 +17,12 @@ defineEmits(["send-message", "abort"]);
 
 <template>
   <div class="quick-build-input">
-    <Message v-if="prompt" :role="KaiMessage.RoleEnum.Assistant" :content="prompt" />
+    <Message
+      v-if="prompt"
+      class="prompt"
+      :role="KaiMessage.RoleEnum.Assistant"
+      :content="prompt"
+    />
     <ChatControls
       class="chat-controls"
       :last-user-message="lastUserMessage"
@@ -33,20 +40,24 @@ defineEmits(["send-message", "abort"]);
 @import url("@/assets/mixins.css");
 
 .quick-build-input {
- & .error {
-  margin-top: 10px;
-  color: var(--knime-coral);
-  font-size: 12px;
-  display: flex;
-
-  & svg {
-    @mixin svg-icon-size 15;
-
-    margin-top: -2px;
-    margin-right: 4px;
-    stroke: var(--knime-white);
-    fill:  var(--knime-coral);
+  & .prompt {
+    margin-bottom: -33px;
   }
- }
+
+  & .error {
+    margin-top: 10px;
+    color: var(--knime-coral);
+    font-size: 12px;
+    display: flex;
+
+    & svg {
+      @mixin svg-icon-size 15;
+
+      margin-top: -2px;
+      margin-right: 4px;
+      stroke: var(--knime-white);
+      fill: var(--knime-coral);
+    }
+  }
 }
 </style>

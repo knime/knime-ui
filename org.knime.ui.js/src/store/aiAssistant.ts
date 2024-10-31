@@ -243,7 +243,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     // Resolve/reject only after handleAiAssistantEvent receives a
     // corresponding result or error.
     return new Promise((resolve, reject) => {
-      responseCallbacks["build"] = { resolve, reject };
+      responseCallbacks.build = { resolve, reject };
     });
   },
   async submitFeedback(
