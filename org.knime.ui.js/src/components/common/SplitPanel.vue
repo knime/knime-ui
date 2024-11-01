@@ -16,6 +16,7 @@ interface Props {
   usePixel?: boolean;
   showSecondaryPanel?: boolean;
   keepElementOnClose?: boolean;
+  splitterId?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -160,6 +161,7 @@ watch(
   <Splitter
     v-model:percent="modelPercentSize"
     v-model:pixel="modelPixelSize"
+    :splitter-id="splitterId"
     :use-pixel="usePixel"
     :size-pane="sizePane"
     :is-horizontal="isHorizontal"

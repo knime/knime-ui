@@ -96,6 +96,7 @@ const closeContextMenu = (event: unknown) => {
       v-if="useEmbeddedDialogs"
       v-model:secondary-size="nodeDialogSize"
       data-test-id="node-config-split-panel"
+      splitter-id="node-config-split-panel"
       direction="right"
       use-pixel
       :secondary-snap-size="360"

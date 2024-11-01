@@ -22,6 +22,8 @@ const props = withDefaults(
     initialPixel?: number | string;
     splitterSize?: number;
     splitterTitle?: string;
+    //ID added for testing purposes to differentiate between splitters
+    splitterId?: string;
   }>(),
   {
     percent: null,
@@ -33,6 +35,7 @@ const props = withDefaults(
     initialPixel: 250,
     splitterSize: 8,
     splitterTitle: "",
+    splitterId: "",
   },
 );
 
@@ -204,9 +207,9 @@ function onBodyUp() {
     </div>
     <div
       class="splitter"
+      :splitter-id="splitterId"
       :class="{ active: isActive }"
       :title="splitterTitle"
-      data-test-id="pane-splitter"
       @mousedown="onSplitterMouseDown"
       @touchstart.passive="onSplitterTouchDown"
       @click="onSplitterClick"
