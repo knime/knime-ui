@@ -65,7 +65,7 @@ const mockedAPI = deepMocked(API);
 
 const $shortcuts = {
   isEnabled: () => true,
-  findByHotkey: () => ["quickAddNode"],
+  findByHotkey: () => ["quickActionMenu"],
   dispatch: vi.fn(),
 };
 
@@ -300,7 +300,7 @@ describe("QuickAddNodeMenu.vue", () => {
       await nextTick();
       const input = wrapper.find(".search-bar input");
       await input.trigger("keydown"); // key doesn't matter as its mocked
-      expect($shortcuts.dispatch).toHaveBeenCalledWith("quickAddNode");
+      expect($shortcuts.dispatch).toHaveBeenCalledWith("quickActionMenu");
     });
 
     it("adds node on pressing enter key", async () => {

@@ -13,7 +13,7 @@ import type {
 } from "../types";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
-  | "quickAddNode"
+  | "quickActionMenu"
   | "autoConnectNodesDefault"
   | "autoConnectNodesFlowVar"
   | "autoDisconnectNodesDefault"
@@ -62,7 +62,7 @@ const canAutoConnectOrDisconnect = ({ $store }: ShortcutConditionContext) => {
 };
 
 const workflowEditorShortcuts: WorkflowEditorShortcuts = {
-  quickAddNode: {
+  quickActionMenu: {
     text: "Quick add node",
     title: "Add new node",
     hotkey: ["CtrlOrCmd", "."],

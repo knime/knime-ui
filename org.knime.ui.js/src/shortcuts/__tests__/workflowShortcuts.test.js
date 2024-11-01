@@ -1043,7 +1043,7 @@ describe("workflowShortcuts", () => {
     });
   });
 
-  describe("quickAddNode", () => {
+  describe("quickActionMenu", () => {
     it.each([
       ["enables", true],
       ["disables", false],
@@ -1052,7 +1052,9 @@ describe("workflowShortcuts", () => {
         isWorkflowWritable: cond,
         singleSelectedNode: null,
       });
-      expect(workflowShortcuts.quickAddNode.condition({ $store })).toBe(cond);
+      expect(workflowShortcuts.quickActionMenu.condition({ $store })).toBe(
+        cond,
+      );
     });
 
     it("opens quick add node menu in global mode if no node is selected", () => {
@@ -1060,7 +1062,7 @@ describe("workflowShortcuts", () => {
         isWorkflowWritable: true,
         singleSelectedNode: null,
       });
-      workflowShortcuts.quickAddNode.execute({ $store });
+      workflowShortcuts.quickActionMenu.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openQuickActionMenu",
         {
@@ -1086,7 +1088,7 @@ describe("workflowShortcuts", () => {
         isWorkflowWritable: true,
         singleSelectedNode: mockNodeTemplate(1),
       });
-      workflowShortcuts.quickAddNode.execute({ $store });
+      workflowShortcuts.quickActionMenu.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openQuickActionMenu",
         {
@@ -1106,7 +1108,7 @@ describe("workflowShortcuts", () => {
         isWorkflowWritable: true,
         singleSelectedNode: mockNodeTemplate(3),
       });
-      workflowShortcuts.quickAddNode.execute({ $store });
+      workflowShortcuts.quickActionMenu.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openQuickActionMenu",
         {
@@ -1138,7 +1140,7 @@ describe("workflowShortcuts", () => {
           nodeRelation: "SUCCESSORS",
         },
       };
-      workflowShortcuts.quickAddNode.execute({ $store });
+      workflowShortcuts.quickActionMenu.execute({ $store });
       expect(mockDispatch).toHaveBeenCalledWith(
         "workflow/openQuickActionMenu",
         {

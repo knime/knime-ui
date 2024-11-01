@@ -199,7 +199,7 @@ describe("ContextMenu.vue", () => {
       "executeAll",
       "resetAll",
       "paste",
-      "quickAddNode",
+      "quickActionMenu",
       "addWorkflowAnnotation",
     ]);
   });
@@ -268,7 +268,7 @@ describe("ContextMenu.vue", () => {
           { metadata: { shortcutName: "cancelAll" } },
           { metadata: { shortcutName: "resetAll" }, separator: true },
           { metadata: { shortcutName: "paste" }, separator: true },
-          { metadata: { shortcutName: "quickAddNode" }, separator: true },
+          { metadata: { shortcutName: "quickActionMenu" }, separator: true },
           { metadata: { shortcutName: "addWorkflowAnnotation" } },
         ]),
       );

@@ -30,7 +30,7 @@ const defaultPortMock = createPort();
 
 const $shortcuts = {
   isEnabled: () => true,
-  findByHotkey: () => ["quickAddNode"],
+  findByHotkey: () => ["quickActionMenu"],
   dispatch: vi.fn(),
 };
 
