@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  type Ref,
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  toRefs,
-  watch,
-} from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from "vue";
 
 import { SearchInput } from "@knime/components";
 
@@ -37,8 +29,8 @@ export type QuickAddNodeMenuProps = {
   nodeId?: string | null;
   port?: NodePort | null;
   nodeRelation?: NodeRelation | null;
-  canvasPosition: Ref<XY>;
-  portIndex: Ref<number | null>;
+  canvasPosition: XY;
+  portIndex: number | null;
 };
 
 const props = withDefaults(defineProps<QuickAddNodeMenuProps>(), {

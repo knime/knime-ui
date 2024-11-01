@@ -26,6 +26,7 @@ defineEmits(["send-message", "abort"]);
     <ChatControls
       class="chat-controls"
       :last-user-message="lastUserMessage"
+      :initial-text="errorMessage ? lastUserMessage : ''"
       @send-message="$emit('send-message', $event)"
       @abort="$emit('abort')"
     />

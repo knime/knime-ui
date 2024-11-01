@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from "@knime/components";
 
-import { useHubAuth } from "./useHubAuth";
+import { useHubAuth } from "../useHubAuth";
 
 const { authenticateWithHub, hubId } = useHubAuth();
 </script>

@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 
 import { PortType } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import * as aiAssistantStore from "@/store/aiAssistant";
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as selectionStore from "@/store/selection";
 import * as settingsStore from "@/store/settings";
@@ -62,6 +63,7 @@ describe("QuickActionMenu.vue", () => {
     };
 
     const storeConfig = {
+      aiAssistant: aiAssistantStore,
       canvas: {
         state: () => ({
           zoomFactor: 1,

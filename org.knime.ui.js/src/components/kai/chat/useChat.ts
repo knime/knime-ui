@@ -1,6 +1,7 @@
 import { computed } from "vue";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useStore } from "@/composables/useStore";
 import type { Feedback, Message } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
@@ -27,6 +28,7 @@ const useChat = (chainType: ChainType) => {
   const { uiStrings } = useKaiServer();
 
   const store = useStore();
+  const { show: showConfirmDialog } = useConfirmDialog();
 
   const messagesWithSeparators = computed(() => {
     // Computes an array of messages interlaced with day separators.
@@ -133,12 +135,17 @@ const useChat = (chainType: ChainType) => {
     });
   };
 
-  const abortSendMessage = () => {
-    if (
-      confirm(
+  const abortSendMessage = async () => {
+    const { confirmed } = await showConfirmDialog({
+      title: "Confirm action",
+      message:
         "Are you sure you want to abort the request to the KNIME AI Assistant?",
-      )
-    ) {
+      buttons: [
+        { type: "cancel", label: "Cancel" },
+        { type: "confirm", label: "Confirm", flushRight: true },
+      ],
+    });
+    if (confirmed) {
       store.dispatch("aiAssistant/abortAiRequest", {
         chainType,
       });

@@ -5,11 +5,10 @@ import { useChat } from "../chat/useChat";
 
 type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" };
 
-const userQuery = ref<string>("");
-
-export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
+export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string | null> }) => {
   const store = useStore();
 
+  const userQuery = ref<string>("");
   const errorMessage = ref<string>("");
   const result = ref<Result | null>(null);
 
@@ -32,7 +31,7 @@ export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string> }) => {
         message,
         targetNodes,
       });
-    } catch (error) {
+    } catch (error: any) {
       errorMessage.value = error.message;
     }
   };

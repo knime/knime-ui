@@ -7,11 +7,12 @@ import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
-import Kai from "@/components/kai/Kai.vue";
-import ChatPanel from "@/components/kai/chat/ChatPanel.vue";
-import type { ChainType } from "@/components/kai/types";
-import { useKaiPanels } from "@/components/kai/useKaiPanels";
 import { useStore } from "@/composables/useStore";
+
+import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
+import Chat from "./chat/Chat.vue";
+import { useKaiPanels } from "./panels/useKaiPanels";
+import type { ChainType } from "./types";
 
 const chainType = ref<ChainType>("qa");
 
@@ -30,8 +31,8 @@ const deleteChatMenuItem = {
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
   item.metadata?.handler?.();
 
-const { component } = useKaiPanels();
-const showChatControls = computed(() => component.value === ChatPanel);
+const { panelComponent, panelComponentListeners } = useKaiPanels();
+const showChatControls = computed(() => !panelComponent.value);
 </script>
 
 <template>
@@ -58,7 +59,16 @@ const showChatControls = computed(() => component.value === ChatPanel);
       </template>
     </template>
 
-    <Kai :mode="chainType" />
+    <component
+      :is="panelComponent"
+      v-if="panelComponent"
+      v-on="panelComponentListeners"
+    />
+    <template v-else>
+      <Chat v-show="chainType === 'qa'" chain-type="qa" />
+      <Chat v-show="chainType === 'build'" chain-type="build" />
+      <NodeDescriptionPortal />
+    </template>
   </SidebarPanelLayout>
 </template>
 

@@ -48,7 +48,7 @@ const SidebarSpaceExplorer = defineAsyncComponent({
 });
 
 const SidebarKai = defineAsyncComponent({
-  loader: () => import("@/components/sidebar/SidebarKai.vue"),
+  loader: () => import("@/components/kai/KaiSidebar.vue"),
   loadingComponent: SidebarContentLoading,
 });
 

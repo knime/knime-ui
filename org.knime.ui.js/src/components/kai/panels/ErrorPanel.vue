@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button, LoadingIcon } from "@knime/components";
 
-import { useKaiServer } from "./useKaiServer";
+import { useKaiServer } from "../useKaiServer";
 
 const { fetchUiStrings, isLoading } = useKaiServer();
 </script>

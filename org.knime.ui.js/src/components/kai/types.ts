@@ -18,8 +18,6 @@ interface ExtensionWithNodes extends Extension {
 
 type ChainType = "qa" | "build";
 
-type KaiMode = ChainType | "quick-build";
-
 interface References {
   [refName: string]: string[];
 }
@@ -28,6 +26,5 @@ export type {
   NodeWithExtensionInfo,
   ExtensionWithNodes,
   ChainType,
-  KaiMode,
   References,
 };

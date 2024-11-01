@@ -7,17 +7,13 @@ import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 import type { NodeRelation } from "@/api/custom-types";
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
 import { useStore } from "@/composables/useStore";
-import { useFeatures } from "@/plugins/feature-flags";
 import * as $shapes from "@/style/shapes";
 import type { DragConnector } from "../ports/NodePort/types";
 
 import QuickAddNodeMenu from "./quickAdd/QuickAddNodeMenu.vue";
-import QuickBuildMenu from "./quickBuild/QuickBuildMenu.vue";
-
-const { isKaiInstalled: _isKaiInstalled } = useFeatures();
-const isKaiInstalled = _isKaiInstalled();
 
 export type QuickActionMenuProps = {
   nodeId?: string | null;
@@ -105,11 +101,11 @@ const marginTop = computed(() => {
 
 const { nodeRelation } = toRefs(props);
 
-const kaiAvailable = computed(
-  () =>
-    isKaiInstalled &&
-    props.nodeRelation === "SUCCESSORS" &&
-    props.port.typeId === "org.knime.core.node.BufferedDataTable",
+const isQuickBuildAvailableForPort = computed(() =>
+  store.getters["aiAssistant/isQuickBuildAvailableForPort"](
+    props.nodeRelation,
+    props.port?.typeId,
+  ),
 );
 </script>
 
@@ -144,14 +140,14 @@ const kaiAvailable = computed(
           :port-index="portIndex"
           @menu-close="$emit('menuClose')"
         />
-        <div v-if="kaiAvailable" class="footer">
+        <div v-if="isQuickBuildAvailableForPort" class="footer">
           <Button primary @click="setQuickBuildMode">
             <AiIcon />
             Build with K-AI
           </Button>
         </div>
       </template>
-      <QuickBuildMenu
+      <KaiQuickBuild
         v-else-if="menuMode == 'quick-build'"
         :node-id="nodeId"
         @menu-back="setQuickAddMode"

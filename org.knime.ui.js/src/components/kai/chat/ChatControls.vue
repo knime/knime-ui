@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
 
 import { FunctionButton } from "@knime/components";
@@ -23,7 +23,15 @@ const props = defineProps({
   },
 });
 
-const { textarea, input } = useTextareaAutosize({ input: props.initialText });
+const { textarea, input } = useTextareaAutosize();
+
+watch(
+  () => props.initialText,
+  () => {
+    input.value = props.initialText;
+  },
+  { immediate: true },
+);
 
 const sendMessage = () => {
   if (input.value) {

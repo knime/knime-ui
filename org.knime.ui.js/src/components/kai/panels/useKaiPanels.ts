@@ -1,24 +1,18 @@
-import { type Ref, computed, ref } from "vue";
+import { computed, ref } from "vue";
 
 import { useFeatures } from "@/plugins/feature-flags";
+import { useHubAuth } from "../useHubAuth";
+import { useKaiServer } from "../useKaiServer";
 
 import DisclaimerPanel from "./DisclaimerPanel.vue";
 import ErrorPanel from "./ErrorPanel.vue";
 import InstallationPanel from "./InstallationPanel.vue";
 import LoginPanel from "./LoginPanel.vue";
 import NoHubConfiguredPanel from "./NoHubConfiguredPanel.vue";
-import ChatPanel from "./chat/ChatPanel.vue";
-import QuickBuild from "./quickBuild/QuickBuild.vue";
-import type { KaiMode } from "./types";
-import { useHubAuth } from "./useHubAuth";
-import { useKaiServer } from "./useKaiServer";
 
 const isDisclaimerOpen = ref(true);
 
-export const useKaiPanels = ({
-  nodeId,
-  mode,
-}: { nodeId?: string | null; mode?: Ref<KaiMode> } = {}) => {
+export const useKaiPanels = () => {
   const { isKaiInstalled: _isKaiInstalled } = useFeatures();
   const isKaiInstalled = _isKaiInstalled();
   const { isHubConfigured, isAuthenticated } = useHubAuth();
@@ -31,8 +25,8 @@ export const useKaiPanels = ({
     () => hasDisclaimer.value && isDisclaimerOpen.value,
   );
 
-  // Dynamically select which component to show
-  const component = computed(() => {
+  // Dynamically select which panel to show
+  const panelComponent = computed(() => {
     if (!isKaiInstalled) {
       return InstallationPanel;
     }
@@ -48,40 +42,20 @@ export const useKaiPanels = ({
     if (showDisclaimer.value) {
       return DisclaimerPanel;
     }
-    if (mode?.value === "quick-build") {
-      return QuickBuild;
-    }
 
-    return ChatPanel;
+    return null;
   });
 
-  const componentListeners = computed(() => {
-    if (component.value === DisclaimerPanel) {
+  const panelComponentListeners = computed(() => {
+    if (panelComponent.value === DisclaimerPanel) {
       return { close: closeDisclaimer };
     } else {
       return {};
     }
   });
 
-  const componentProps = computed(() => {
-    if (component.value === QuickBuild) {
-      return {
-        nodeId,
-      };
-    }
-
-    if (component.value === ChatPanel) {
-      return {
-        chainType: mode?.value === "build" ? "build" : "qa",
-      };
-    }
-
-    return {};
-  });
-
   return {
-    component,
-    componentListeners,
-    componentProps,
+    panelComponent,
+    panelComponentListeners,
   };
 };
