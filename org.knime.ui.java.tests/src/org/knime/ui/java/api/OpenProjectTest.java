@@ -63,6 +63,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -138,6 +139,34 @@ class OpenProjectTest {
         assertThat(origin.getSpaceId()).isEqualTo("spaceId");
         assertThat(origin.getProviderId()).isEqualTo("providerId");
         assertThat(origin.getRelativePath().orElseThrow()).hasToString("relativePath");
+    }
+
+    @Test
+    void testRegisterProjectAndSetActive() throws IOException {
+        var appStateUpdater = new AppStateUpdater();
+        var appStateUpdateListener = mock(Runnable.class);
+        appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
+        var mruProjects = new MostRecentlyUsedProjects();
+        var pm = ProjectManager.getInstance();
+        DesktopAPI.injectDependency(pm);
+        DesktopAPI.injectDependency(appStateUpdater);
+        DesktopAPI.injectDependency(mruProjects);
+
+        m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
+        var project = ProjectFactory.createProject(m_wfm, "providerId", "spaceId", "itemId", "relativePath",
+            ProjectTypeEnum.WORKFLOW, "projectId");
+        OpenProject.registerProjectAndSetActive(project, m_wfm, SpaceProviderEnt.TypeEnum.LOCAL);
+
+        var projectIds = pm.getProjectIds();
+        assertThat(projectIds).as("Exactly one project is registered").hasSize(1);
+        assertThat(pm.isActiveProject(project.getID())).as("Project is active").isTrue();
+        assertThat(pm.getProject(projectIds.iterator().next()).get().getName()).as("Project name as expected")
+            .isEqualTo("workflow");
+
+        assertThat(mruProjects.get()).as("Exaclty on project was recently used").hasSize(1);
+        assertThat(mruProjects.get().get(0).name()).as("Project name as expected").isEqualTo("workflow");
+
+        verify(appStateUpdateListener).run();
     }
 
     @AfterEach
