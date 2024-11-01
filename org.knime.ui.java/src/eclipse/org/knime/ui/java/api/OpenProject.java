@@ -145,7 +145,8 @@ final class OpenProject {
         final var origin =
             ProjectFactory.getOriginFromHubSpaceLocationInfo(locationInfo, wfm, selectedVersion).orElse(null);
         final var project = DefaultProject.builder(wfm).setOrigin(origin).build();
-        registerProjectAndSetActiveAndUpdateAppState(project, wfm, WorkflowType.REMOTE);
+        // Provider type can only be Hub here
+        registerProjectAndSetActive(project, wfm, SpaceProviderEnt.TypeEnum.HUB);
 
         return true;
     }
@@ -189,13 +190,8 @@ final class OpenProject {
             throw new OpenProjectException("The project could not be loaded.");
         }
 
-        final var isServerProject =
-            spaceProviders.getProviderTypes().get(spaceProviderId) == SpaceProviderEnt.TypeEnum.SERVER;
-        if (!isServerProject) { // To not track KNIME Server projects as recently used
-            DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(projectAndWfm.project);
-        }
-        registerProjectAndSetActiveAndUpdateAppState(projectAndWfm.project, projectAndWfm.wfm,
-            space instanceof LocalWorkspace ? WorkflowType.LOCAL : WorkflowType.REMOTE);
+        final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
+        registerProjectAndSetActive(projectAndWfm.project, projectAndWfm.wfm, providerType);
     }
 
     @SuppressWarnings("serial")
@@ -211,15 +207,25 @@ final class OpenProject {
         }
     }
 
-    private static void registerProjectAndSetActiveAndUpdateAppState(final Project project, final WorkflowManager wfm,
-        final WorkflowType wfType) {
+    /**
+     * Registers the project with the {@link ProjectManager}, sets it as active, adds it to the most recently used and
+     * updates the app state.
+     */
+    static void registerProjectAndSetActive(final Project project, final WorkflowManager wfm,
+        final SpaceProviderEnt.TypeEnum providerType) {
         var pm = DesktopAPI.getDeps(ProjectManager.class);
         pm.addProject(project);
         pm.setProjectActive(project.getID());
-        // instrumentation
-        NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
-        // update application state
+
+        if (providerType != SpaceProviderEnt.TypeEnum.SERVER) {
+            DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(project);
+        }
+
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+
+        // Instrumentation
+        var wfType = providerType == SpaceProviderEnt.TypeEnum.LOCAL ? WorkflowType.LOCAL : WorkflowType.REMOTE;
+        NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
     }
 
     /*

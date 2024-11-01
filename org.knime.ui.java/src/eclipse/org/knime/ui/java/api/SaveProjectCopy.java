@@ -56,6 +56,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.function.FailableFunction;
 import org.eclipse.core.runtime.CoreException;
@@ -71,16 +72,15 @@ import org.knime.core.util.FileUtil;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProjectFactory;
 
 /**
@@ -250,8 +250,10 @@ final class SaveProjectCopy {
      * @param monitor The monitor to show the progress of this operation
      * @param wfm The Workflowmanager that will save the workflow
      * @param svg workflow SVG
+     *
+     * @return The saved workflow manager or {@code null} if the save operation failed
      */
-    private static boolean saveWorkflowCopy(final WorkflowContextV2 context, final IProgressMonitor monitor,
+    private static WorkflowManager saveWorkflowCopy(final WorkflowContextV2 context, final IProgressMonitor monitor,
         final WorkflowManager wfm, final String svg) {
         monitor.beginTask("Saving a workflow", IProgressMonitor.UNKNOWN);
 
@@ -261,11 +263,11 @@ final class SaveProjectCopy {
             DesktopAPUtil.showWarningAndLogError("Workflow save attempt",
                 "Saving the workflow didn't work: " + e.getMessage(), LOGGER, e);
             monitor.done();
-            return false;
+            return null;
         }
         saveWorkflowSvg(wfm.getName(), svg, context.getExecutorInfo().getLocalWorkflowPath());
         monitor.done();
-        return true;
+        return wfm;
     }
 
     /**
@@ -275,8 +277,10 @@ final class SaveProjectCopy {
      * @param monitor The monitor to show the progress of this operation
      * @param wfm The workflow manager that will save the component
      * @param svg workflow SVG
+     *
+     * @return The saved workflow manager or {@code null} if the save operation failed
      */
-    private static boolean saveComponentCopy(final IProgressMonitor monitor, final WorkflowManager wfm,
+    private static WorkflowManager saveComponentCopy(final IProgressMonitor monitor, final WorkflowManager wfm,
         final WorkflowContextV2 newContext) {
         monitor.beginTask("Saving a component template", IProgressMonitor.UNKNOWN);
         try {
@@ -290,29 +294,30 @@ final class SaveProjectCopy {
             final var message = "Saving the component didn't work";
             DesktopAPUtil.showWarningAndLogError(title, message, LOGGER, e);
             monitor.done();
-            return false;
+            return null;
         }
         monitor.done();
-        return true;
+        return wfm;
     }
 
     private static void saveAndReplaceProject(final WorkflowContextV2 oldContext, final WorkflowContextV2 newContext,
-        final Project project, final FailableFunction<IProgressMonitor, Boolean, InvocationTargetException> saveLogic) {
-        final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
-        final var result = DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic);
-
-        if (result.isEmpty() || Boolean.TRUE.equals(!result.get())) { // If saving has failed
-            FileUtil.deleteRecursively(newPath.toFile());
-        } else {
+        final Project project,
+        final FailableFunction<IProgressMonitor, WorkflowManager, InvocationTargetException> saveLogic) {
+        final Consumer<WorkflowManager> successHandler = wfm -> {
             if (oldContext.isTemporyWorkflowCopyMode()) { // If saved from a yellow bar editor
                 final var execInfo = oldContext.getExecutorInfo();
                 final var srcPath = execInfo.getLocalWorkflowPath();
                 FileUtil.deleteRecursively(srcPath.toFile());
             }
-            DesktopAPI.getDeps(ProjectManager.class).addProject(project);
-            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            //space provider always LOCAL, no check necessary
-            DesktopAPI.getDeps(MostRecentlyUsedProjects.class).add(project);
-        }
+            // Provider type can only be Local here
+            OpenProject.registerProjectAndSetActive(project, wfm, SpaceProviderEnt.TypeEnum.LOCAL);
+        };
+
+        final Runnable errorHandler = () -> {
+            final var newPath = newContext.getExecutorInfo().getLocalWorkflowPath();
+            FileUtil.deleteRecursively(newPath.toFile());
+        };
+
+        DesktopAPUtil.runWithProgress("Saving as", LOGGER, saveLogic).ifPresentOrElse(successHandler, errorHandler);
     }
 }
