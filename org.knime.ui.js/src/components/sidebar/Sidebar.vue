@@ -99,7 +99,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
   return [
     {
       name: TABS.CONTEXT_AWARE_DESCRIPTION,
-      title: "Description",
+      title: "Info",
       icon: MetainfoIcon,
       isActive: isTabActive.value(TABS.CONTEXT_AWARE_DESCRIPTION),
       isExpanded: expanded.value,
@@ -117,7 +117,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
 
     ...registerSidebarSection(uiControls.value.canAccessSpaceExplorer, {
       name: TABS.SPACE_EXPLORER,
-      title: "Space explorer",
+      title: "Explorer",
       icon: CubeIcon,
       isActive: isTabActive.value(TABS.SPACE_EXPLORER),
       isExpanded: expanded.value,
@@ -128,7 +128,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       $features.isKaiPermitted() && uiControls.value.canAccessKAIPanel,
       {
         name: TABS.KAI,
-        title: "K-AI AI assistant",
+        title: "K-AI",
         icon: AiIcon,
         isActive: isTabActive.value(TABS.KAI),
         isExpanded: expanded.value,
@@ -138,7 +138,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
 
     {
       name: TABS.WORKFLOW_MONITOR,
-      title: "Workflow monitor",
+      title: "Monitor",
       icon: WorkflowMonitorIcon,
       isActive: isTabActive.value(TABS.WORKFLOW_MONITOR),
       isExpanded: expanded.value,
@@ -171,6 +171,9 @@ const hasSection = (name: TabValues) => {
           />
           <span>
             <Component :is="section.icon" />
+          </span>
+          <span class="name">
+            {{ section.title }}
           </span>
         </label>
       </div>
@@ -229,8 +232,14 @@ const hasSection = (name: TabValues) => {
 }
 
 nav {
+  --bg-color: var(--knime-masala);
+  --bg-tabs-color: var(--knime-silver-sand);
+  --bg-tabs-color-active: var(--sidebar-background-color);
+  --bg-tabs-color-hover: var(--knime-white);
+  --fg-color: var(--knime-black);
+
   width: var(--app-side-bar-buttons-width);
-  background-color: var(--knime-black);
+  background-color: var(--bg-color);
 
   & > div {
     &:focus-within:has(:focus-visible) {
@@ -238,34 +247,51 @@ nav {
     }
 
     & label {
-      height: 50px;
-      width: 40px;
+      height: 52px;
+      width: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background-color: var(--knime-silver-sand);
-      border-bottom: 1px var(--knime-black) solid;
       transition: background-color 150ms ease-out;
+      background-color: var(--bg-tabs-color);
+      border-bottom: 1px solid var(--bg-color);
 
       & svg {
-        @mixin svg-icon-size 25;
+        @mixin svg-icon-size 16;
+
+        stroke: var(--fg-color);
+      }
+
+      & .name {
+        font-size: 9px;
+        font-weight: 500;
+        color: var(--fg-color);
       }
 
       &.active {
-        background-color: var(--sidebar-background-color);
+        position: relative;
+        background-color: var(--bg-tabs-color-active);
 
-        &.expanded {
-          background-color: var(--sidebar-background-color);
+        & .name {
+          color: var(--fg-color);
+        }
+
+        & svg {
+          stroke: var(--fg-color);
         }
       }
 
       &:hover {
-        background-color: var(--knime-gray-ultra-light);
+        background-color: var(--bg-tabs-color-hover);
         cursor: pointer;
 
+        & .name {
+          color: var(--fg-color);
+        }
+
         & svg {
-          stroke: var(--knime-masala);
+          stroke: var(--fg-color);
         }
       }
     }

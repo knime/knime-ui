@@ -67,7 +67,6 @@ defineEmits<Emits>();
 
 button {
   border: none;
-  border-left: 1px solid var(--knime-silver-sand);
   width: 10px;
   padding: 0;
   background-color: var(--sidebar-background-color);
