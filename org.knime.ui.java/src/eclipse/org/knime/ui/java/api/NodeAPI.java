@@ -63,6 +63,7 @@ import org.knime.core.node.workflow.NodeStateChangeListener;
 import org.knime.core.node.workflow.NodeStateEvent;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.ui.wrapper.NativeNodeContainerWrapper;
 import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
@@ -166,7 +167,8 @@ final class NodeAPI {
             // 'ui-extension' view
             final var nnc = ((NativeNodeContainer)nc);
             final var viewName = "Interactive View: " + nnc.getNodeViewName(0);
-            OpenNodeViewAction.openNodeView(nnc, new CEFNodeView(nnc, false, true), viewName);
+            OpenNodeViewAction.openNodeView(wrap(nnc),
+                new CEFNodeView(NativeNodeContainerWrapper.wrap(nnc), false, true), viewName);
         } else if (nc.getInteractiveWebViews().size() > 0 || nc.hasInteractiveView()) {
             // legacy js-view
             OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,

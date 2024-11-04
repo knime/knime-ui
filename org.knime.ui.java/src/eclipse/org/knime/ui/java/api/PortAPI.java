@@ -48,6 +48,7 @@
  */
 package org.knime.ui.java.api;
 
+import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 import static org.knime.ui.java.api.NodeAPI.checkIsNotNull;
 import static org.knime.ui.java.api.NodeAPI.getAppBoundsAsAWTRec;
 
@@ -91,7 +92,7 @@ final class PortAPI {
         var viewName = PortViewManager.getPortViewDescriptor(port.getPortType(), viewIdx.intValue())
             .map(PortViewDescriptor::label).orElse(null);
         var name = port.getPortName() + (viewName == null ? "" : (" (" + viewName + ")"));
-        Display.getDefault().asyncExec(() -> OpenNodeViewAction.openNodeView(nc, view, name));
+        Display.getDefault().asyncExec(() -> OpenNodeViewAction.openNodeView(wrap(nc), view, name));
     }
 
     /**
