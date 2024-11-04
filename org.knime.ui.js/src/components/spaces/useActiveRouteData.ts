@@ -15,15 +15,14 @@ export const useActiveRouteData = () => {
 
   const activeSpaceGroup = computed(() => {
     const { groupId } = $route.params;
-    const groups = activeSpaceProvider.value.spaceGroups ?? [];
 
-    return groups.find(({ id }) => id === groupId);
+    return store.state.spaces.allSpaceGroups[groupId as string];
   });
 
   const activeSpace = computed(() => {
     const { spaceId } = $route.params;
 
-    return activeSpaceGroup.value?.spaces.find(({ id }) => id === spaceId);
+    return store.state.spaces.allSpaces[spaceId as string];
   });
 
   const isShowingAllSpaces = computed(

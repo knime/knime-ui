@@ -3,12 +3,14 @@ import { useRoute, useRouter } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 export const useSpaceProviderAuth = () => {
   const store = useStore();
   const $router = useRouter();
   const $route = useRoute();
+  const $toast = getToastsProvider();
 
   const isLoadingProviders = computed(
     () => store.state.spaces.isLoadingProviders,
@@ -52,15 +54,21 @@ export const useSpaceProviderAuth = () => {
     try {
       const currentRoute = $route.fullPath;
 
-      await store.dispatch("spaces/connectProvider", { spaceProviderId });
+      const { isConnected } = await store.dispatch("spaces/connectProvider", {
+        spaceProviderId,
+      });
+
+      // login could have been cancelled
+      if (!isConnected) {
+        return;
+      }
 
       // if route updated while login was in progress then skip redirect
       if (currentRoute !== $route.fullPath) {
         return;
       }
 
-      const updatedProvider =
-        store.state.spaces.spaceProviders![spaceProvider.id];
+      const { groups } = store.state.spaces.providerIndex[spaceProvider.id];
 
       const routeParamsMap = {
         [SpaceProviderNS.TypeEnum.HUB]: {
@@ -69,7 +77,8 @@ export const useSpaceProviderAuth = () => {
         },
         [SpaceProviderNS.TypeEnum.SERVER]: {
           spaceProviderId: spaceProvider.id,
-          groupId: updatedProvider.spaceGroups.at(0)!.id,
+          // grab the first group
+          groupId: groups.values().next().value,
         },
       } as const;
 
@@ -81,6 +90,10 @@ export const useSpaceProviderAuth = () => {
       });
     } catch (error) {
       consola.error("Login failed", error);
+      $toast.show({
+        type: "error",
+        message: `Could not connect to ${spaceProvider.name}`,
+      });
     }
   };
 

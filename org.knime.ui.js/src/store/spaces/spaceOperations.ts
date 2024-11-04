@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import type { Router } from "vue-router";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
@@ -12,7 +13,6 @@ import {
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
-import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import type { RootStoreState } from "../types";
@@ -20,8 +20,6 @@ import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 import type { SpacesState } from "./index";
 import { isProjectOpen } from "./util";
-
-const $toast = getToastsProvider();
 
 export interface PathTriplet {
   spaceId: string;
@@ -90,7 +88,15 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return content;
     } catch (error) {
       if (retry) {
-        await dispatch("connectProvider", { spaceProviderId });
+        const { isConnected } = await dispatch("connectProvider", {
+          spaceProviderId,
+        });
+
+        // login got cancelled
+        if (!isConnected) {
+          throw error;
+        }
+
         const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
           spaceId,
           spaceProviderId,
@@ -136,14 +142,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async createSpace(
-    { commit, state },
+    { state },
     {
       spaceProviderId,
       spaceGroup,
       $router,
     }: { spaceProviderId: string; spaceGroup: SpaceGroup; $router: Router },
   ) {
-    const originalProvider = state.spaceProviders![spaceProviderId];
     const routeBefore = $router.currentRoute.value.fullPath;
 
     try {
@@ -152,16 +157,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceGroupName: spaceGroup.name,
       });
 
-      const updatedGroups = originalProvider.spaceGroups.map((group) =>
-        group.id === spaceGroup.id
-          ? { ...group, spaces: [...group.spaces, newSpace] }
-          : group,
-      );
-
-      commit("updateSpaceProvider", {
-        id: spaceProviderId,
-        value: { ...originalProvider, spaceGroups: updatedGroups },
-      });
+      state.allSpaces[newSpace.id] = {
+        ...newSpace,
+        spaceGroupId: spaceGroup.id,
+        providerId: spaceProviderId,
+        private: Boolean(newSpace._private),
+      };
+      state.providerIndex[spaceProviderId].spaces.add(newSpace.id);
 
       const routeNow = $router.currentRoute.value.fullPath;
 
@@ -176,60 +178,33 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
           },
         });
       }
-    } catch (error) {
+    } catch (_error) {
+      const error = _error instanceof Error ? _error : new Error(_error as any);
       consola.error("Error while creating space", { error });
 
-      // rollback the space providers state
-      commit("updateSpaceProvider", {
-        id: spaceProviderId,
-        value: originalProvider,
-      });
-
-      throw error;
+      throw new StoreActionException(error.message, error);
     }
   },
 
-  async renameSpace(
-    { commit, state },
-    { spaceProviderId, spaceId, spaceName },
-  ) {
-    const provider = state.spaceProviders![spaceProviderId];
+  async renameSpace({ state }, { spaceProviderId, spaceId, spaceName }) {
+    const originalName = state.allSpaces[spaceId].name;
     try {
-      const updatedGroups = provider.spaceGroups.map((group) => ({
-        ...group,
-        spaces: group.spaces.map((space) =>
-          space.id === spaceId ? { ...space, name: spaceName } : space,
-        ),
-      }));
-
-      commit("updateSpaceProvider", {
-        id: spaceProviderId,
-        value: { spaceGroups: updatedGroups },
-      });
+      state.allSpaces[spaceId].name = spaceName;
 
       await API.space.renameSpace({
         spaceProviderId,
         spaceId,
         spaceName,
       });
-      return Promise.resolve();
+
+      return spaceName;
     } catch (error) {
-      $toast.show({
-        type: "error",
-        headline: "Error while renaming space",
-        // @ts-ignore
-        message: error.message,
-        autoRemove: true,
-      });
       consola.error("Error while renaming space", { error });
 
-      // Rollback to the original spaceProvider state
-      commit("updateSpaceProvider", {
-        id: spaceProviderId,
-        value: provider,
-      });
+      // Rollback to the original name
+      state.allSpaces[spaceId].name = originalName;
 
-      return Promise.reject(error);
+      throw error;
     }
   },
 

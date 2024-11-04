@@ -6,7 +6,6 @@ import { FunctionButton, LoadingIcon } from "@knime/components";
 import LeaveIcon from "@knime/styles/img/icons/leave.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import type { SpaceGroup } from "@/api/gateway-api/generated-api";
 import {
   NavMenu,
   NavMenuItem,
@@ -26,6 +25,7 @@ const $router = useRouter();
 const $route = useRoute();
 
 const spaceProviders = computed(() => store.state.spaces.spaceProviders);
+const providerIndex = computed(() => store.state.spaces.providerIndex);
 
 const isLoadingProviders = computed(
   () => store.state.spaces.isLoadingProviders,
@@ -63,14 +63,18 @@ const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   }
 
   // local and server providers have a single group with a single space
-  const spaceGroup = spaceProvider.spaceGroups.at(0)!;
-  const spaceId = spaceGroup.spaces.at(0)!.id;
+  const spaceGroupId = providerIndex.value[spaceProvider.id].groups
+    .values()
+    .next().value;
+  const spaceId = providerIndex.value[spaceProvider.id].spaces
+    .values()
+    .next().value;
 
   $router.push({
     name: APP_ROUTES.Home.SpaceBrowsingPage,
     params: {
       spaceProviderId: spaceProvider.id,
-      groupId: spaceGroup.id,
+      groupId: spaceGroupId,
       spaceId,
       itemId: "root",
     },
@@ -78,7 +82,7 @@ const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
 };
 
 const onSpaceGroupClick = (
-  group: SpaceGroup,
+  group: SpaceProviderNS.SpaceGroup,
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ) => {
   $router.push({
@@ -96,7 +100,7 @@ const isSpaceGroupActive = (groupId: string) =>
 const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
 const isLoggedInHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
-  isHubProvider(spaceProvider) && spaceProvider.spaceGroups;
+  isHubProvider(spaceProvider) && providerIndex.value[spaceProvider.id];
 
 type SpaceProviderNavItems = NavMenuItemProps & {
   id: string;
@@ -113,18 +117,24 @@ type SpaceGroupsNavItems = NavMenuItemProps & {
 const getItemsForSpaceGroups = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ): SpaceGroupsNavItems[] => {
+  const spaceGroupIds = [...providerIndex.value[spaceProvider.id].groups];
+
   return isLoggedInHubProvider(spaceProvider)
-    ? spaceProvider.spaceGroups.map((group) => ({
-        id: group.id,
-        text: group.name,
-        active: isSpaceGroupActive(group.id),
-        highlighted: isSpaceGroupActive(group.id),
-        onClick: (event) => {
-          event.stopPropagation();
-          onSpaceGroupClick(group, spaceProvider);
-        },
-        metadata: { spaceGroup: group },
-      }))
+    ? spaceGroupIds.map((groupId) => {
+        const group = store.state.spaces.allSpaceGroups[groupId];
+
+        return {
+          id: group.id,
+          text: group.name,
+          active: isSpaceGroupActive(group.id),
+          highlighted: isSpaceGroupActive(group.id),
+          onClick: (event) => {
+            event.stopPropagation();
+            onSpaceGroupClick(group, spaceProvider);
+          },
+          metadata: { spaceGroup: group },
+        };
+      })
     : [];
 };
 

@@ -26,8 +26,6 @@ import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
 
-type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
-
 const $router = useRouter();
 const store = useStore();
 const $toast = getToastsProvider();
@@ -41,37 +39,42 @@ const { getSpaceGroupIcon, getSpaceProviderIcon } = useSpaceIcons();
 const isLoadingProviderSpaces = computed(
   () => store.state.spaces.isLoadingProviderSpaces,
 );
+const providerIndex = computed(() => store.state.spaces.providerIndex);
 
-const onSpaceCardClick = (space: SpaceWithGroupId) => {
+const onSpaceCardClick = (space: SpaceProviderNS.Space) => {
   $router.push({
     name: APP_ROUTES.Home.SpaceBrowsingPage,
     params: {
       spaceProviderId: activeSpaceProvider.value.id,
-      groupId: space.groupId,
+      groupId: space.spaceGroupId,
       spaceId: space.id,
       itemId: "root",
     },
   });
 };
 
+const activeProviderSpaces = computed(() => {
+  const spaceIds = [
+    ...providerIndex.value[activeSpaceProvider.value.id].spaces,
+  ];
+
+  return spaceIds.map((id) => store.state.spaces.allSpaces[id]);
+});
+
+const activeGroupSpaces = computed(() => {
+  return activeProviderSpaces.value.filter(
+    (space) => space.spaceGroupId === activeSpaceGroup.value.id,
+  );
+});
+
 const query = ref("");
 
 const isCreateSpaceDisabled = ref(false);
 
-const toSpaceWithGroupId =
-  (groupId: string) =>
-  (space: SpaceProviderNS.Space): SpaceWithGroupId => ({ ...space, groupId });
-
-const allSpaces = computed<Array<SpaceWithGroupId>>(() => {
-  const spacesFromAllGroups = activeSpaceProvider.value.spaceGroups.flatMap(
-    ({ spaces, id }) => spaces.map(toSpaceWithGroupId(id)),
-  );
-
-  const activeGroupSpaces = (activeSpaceGroup.value?.spaces ?? []).map(
-    toSpaceWithGroupId(activeSpaceGroup.value?.id ?? ""),
-  );
-
-  return isShowingAllSpaces.value ? spacesFromAllGroups : activeGroupSpaces;
+const allSpaces = computed(() => {
+  return isShowingAllSpaces.value
+    ? activeProviderSpaces.value
+    : activeGroupSpaces.value;
 });
 
 const filteredSpaces = computed(() =>

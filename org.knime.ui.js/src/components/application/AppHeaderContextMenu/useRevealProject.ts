@@ -8,11 +8,7 @@ import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { TABS } from "@/store/panel";
-import {
-  findSpaceGroupFromSpaceId,
-  isLocalProvider,
-  isServerProvider,
-} from "@/store/spaces/util";
+import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 import type { AppHeaderContextMenuItem } from "./types";
 
@@ -88,10 +84,8 @@ export const useRevealProject = (options: UseRevealProject) => {
   };
 
   const navigateToSpaceBrowsingPage = async (origin: SpaceItemReference) => {
-    const group = findSpaceGroupFromSpaceId(
-      store.state.spaces.spaceProviders ?? {},
-      origin.spaceId,
-    );
+    const groupId = store.state.spaces.allSpaces[origin.spaceId].spaceGroupId;
+    const group = store.state.spaces.allSpaceGroups[groupId];
 
     store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
 

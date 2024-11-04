@@ -107,14 +107,20 @@ const onSpaceChange = async ({
   const { spaceProviderId } = metadata;
 
   // handle sign in request
-  const { spaces: [firstSpace = null] = [] } = await store.dispatch(
-    "spaces/connectProvider",
-    { spaceProviderId },
-  );
+  const { didConnect } = await store.dispatch("spaces/connectProvider", {
+    spaceProviderId,
+  });
 
   // change to first space if we have one
-  if (firstSpace) {
-    setProjectPath(projectId, spaceProviderId!, firstSpace.id);
+  if (didConnect) {
+    const { providerIndex } = store.state.spaces;
+    const firstSpaceId = providerIndex[spaceProviderId].spaces
+      .values()
+      .next().value;
+
+    if (firstSpaceId) {
+      setProjectPath(projectId, spaceProviderId!, firstSpaceId);
+    }
   }
 };
 
@@ -122,43 +128,10 @@ const activeSpacePath = computed(
   () => store.state.spaces.projectPath[props.projectId],
 );
 
-const spaceProviders = computed(() => {
-  const spaceProviders = Object.values(store.state.spaces.spaceProviders ?? {});
-
-  return spaceProviders.map((provider) => {
-    const restructuredSpaceGroups: SpaceProviderNS.SpaceGroup[] = [];
-
-    (provider.spaceGroups ?? []).forEach((group) => {
-      if (group.type === SpaceProviderNS.UserTypeEnum.TEAM) {
-        restructuredSpaceGroups.push(group);
-        return;
-      }
-
-      const spacesByOwner: Record<string, SpaceProviderNS.Space[]> = {};
-
-      group.spaces.forEach((space) => {
-        if (!spacesByOwner[space.owner]) {
-          spacesByOwner[space.owner] = [];
-        }
-        spacesByOwner[space.owner].push(space);
-      });
-
-      Object.entries(spacesByOwner).forEach(([owner, spaces]) => {
-        restructuredSpaceGroups.push({
-          id: `${group.id}-${owner}`,
-          name: owner,
-          spaces,
-          type: SpaceProviderNS.UserTypeEnum.USER,
-        });
-      });
-    });
-
-    return {
-      ...provider,
-      spaceGroups: restructuredSpaceGroups,
-    };
-  });
-});
+const spaceProviders = computed(() => store.state.spaces.spaceProviders ?? {});
+const allSpaceGroups = computed(() => store.state.spaces.allSpaceGroups);
+const allSpaces = computed(() => store.state.spaces.allSpaces);
+const providerIndex = computed(() => store.state.spaces.providerIndex);
 
 const createProviderHeadlineMenuItem = (
   provider: SpaceProviderNS.SpaceProvider,
@@ -183,34 +156,35 @@ const createSignInMenuItem = (
   },
 });
 
-const spaceToMenuItem =
-  (provider: SpaceProviderNS.SpaceProvider) =>
-  (space: SpaceProviderNS.Space): MenuItem<SpaceMetadata> => {
-    const getIcon = () => {
-      if (provider.type !== SpaceProviderNS.TypeEnum.HUB) {
-        return null;
-      }
+const spaceToMenuItem = (
+  space: SpaceProviderNS.Space,
+): MenuItem<SpaceMetadata> => {
+  const provider = spaceProviders.value[space.providerId];
 
-      return getSpaceIcon(space);
-    };
+  const getIcon = () => {
+    if (provider.type !== SpaceProviderNS.TypeEnum.HUB) {
+      return null;
+    }
 
-    return {
-      text: space.name,
-      // eslint-disable-next-line no-undefined
-      icon: getIcon() ?? undefined,
-      selected:
-        provider.id === activeSpacePath.value?.spaceProviderId &&
-        space.id === activeSpacePath.value?.spaceId,
-      metadata: {
-        type: "space",
-        spaceProviderId: provider.id,
-        space,
-      },
-    };
+    return getSpaceIcon(space);
   };
 
+  return {
+    text: space.name,
+    // eslint-disable-next-line no-undefined
+    icon: getIcon() ?? undefined,
+    selected:
+      provider.id === activeSpacePath.value?.spaceProviderId &&
+      space.id === activeSpacePath.value?.spaceId,
+    metadata: {
+      type: "space",
+      spaceProviderId: provider.id,
+      space,
+    },
+  };
+};
+
 const createMenuEntries = (
-  groups: SpaceProviderNS.SpaceGroup[],
   provider: SpaceProviderNS.SpaceProvider,
 ): MenuItem<
   SpaceGroupMetadata | SpaceMetadata | SingleSpaceProviderMetadata
@@ -219,18 +193,27 @@ const createMenuEntries = (
   const shouldHaveChildren = () =>
     provider.type === SpaceProviderNS.TypeEnum.HUB;
 
-  return groups.map((group) => {
-    const isActiveProvider =
-      provider.id === activeSpacePath.value?.spaceProviderId;
+  const groupIds = [...providerIndex.value[provider.id].groups];
+  const spaceIds = [...providerIndex.value[provider.id].spaces];
+  const isActiveProvider =
+    provider.id === activeSpacePath.value?.spaceProviderId;
+
+  return groupIds.map((groupId) => {
+    const group = allSpaceGroups.value[groupId];
 
     if (shouldHaveChildren()) {
-      const isActiveSpaceInGroup = group.spaces.some(
-        (space) => space.id === activeSpacePath.value?.spaceId,
+      const children = spaceIds
+        .map((id) => allSpaces.value[id])
+        .filter((space) => space.spaceGroupId === groupId);
+
+      const isActiveSpaceInGroup = children.some(
+        ({ id, spaceGroupId }) =>
+          id === activeSpacePath.value?.spaceId && spaceGroupId === groupId,
       );
 
       return {
         text: group.name,
-        children: group.spaces.map(spaceToMenuItem(provider)),
+        children: children.map(spaceToMenuItem),
         icon: getSpaceGroupIcon(group),
         // cannot use the `selected` property because this is a parent item (which spawns a submenu)
         // and the `selected` property on these type of items messes up the styles (hover, focused, etc)
@@ -238,7 +221,7 @@ const createMenuEntries = (
       } satisfies MenuItem<SpaceGroupMetadata | SpaceMetadata>;
     }
 
-    const space = group.spaces.at(0)!;
+    const space = allSpaces.value[spaceIds.at(0)!];
 
     // item without children, refers to the main group of a single-group provider
     // e.g: local space and server space
@@ -273,7 +256,7 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
     ];
   }
 
-  const providers = Object.values(spaceProviders.value ?? {});
+  const providers = Object.values(spaceProviders.value);
 
   const getHeadline = (
     provider: SpaceProviderNS.SpaceProvider,
@@ -296,7 +279,7 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
 
     return base.concat(getHeadline(provider) ?? []).concat(
       provider.connected
-        ? createMenuEntries(provider.spaceGroups, provider)
+        ? createMenuEntries(provider)
         : // only add sign-in option for disconnected providers
           [createSignInMenuItem(provider)],
     );

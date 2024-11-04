@@ -14,6 +14,7 @@ import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.sv
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
 
@@ -21,6 +22,8 @@ export type ActionMenuItem = MenuItem & {
   id: string;
   execute: (() => void) | null;
 };
+
+const $toast = getToastsProvider();
 
 export const buildHubDownloadMenuItem = (
   dispatch: Dispatch,
@@ -129,10 +132,17 @@ export const buildHubUploadMenuItems = (
     (provider: SpaceProviderNS.SpaceProvider) => ({
       id: `connectToHub-${provider.id}`,
       text: formatSpaceProviderName(provider),
-      execute: () => {
-        dispatch("spaces/connectProvider", {
-          spaceProviderId: provider.id,
-        });
+      execute: async () => {
+        try {
+          await dispatch("spaces/connectProvider", {
+            spaceProviderId: provider.id,
+          });
+        } catch (error) {
+          $toast.show({
+            type: "error",
+            message: `Failed to connect to ${provider.name}`,
+          });
+        }
       },
     }),
   );

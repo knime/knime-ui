@@ -12,10 +12,13 @@ import type { RootStoreState } from "../types";
 
 import { localRootProjectPath } from "./caching";
 import type { SpacesState } from "./index";
-import { findSpaceById } from "./util";
 
 export interface State {
   spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
+  allSpaceGroups: Record<string, SpaceProviderNS.SpaceGroup>;
+  allSpaces: Record<string, SpaceProviderNS.Space>;
+  providerIndex: Record<string, { spaces: Set<string>; groups: Set<string> }>;
+
   isLoadingProviders: boolean;
   isConnectingToProvider: string | null;
   hasLoadedProviders: boolean;
@@ -30,6 +33,9 @@ declare module "./index" {
 export const state = (): State => ({
   // metadata of all available space providers and their spaces (including local)
   spaceProviders: null,
+  allSpaceGroups: {},
+  allSpaces: {},
+  providerIndex: {},
 
   isLoadingProviders: false,
   isConnectingToProvider: null,
@@ -76,11 +82,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   async loadLocalSpace({ dispatch, commit }) {
     consola.trace("action::loadLocalSpace");
 
-    const spacesData = await dispatch("fetchProviderSpaces", {
+    await dispatch("fetchProviderSpaces", {
       id: localRootProjectPath.spaceProviderId,
     });
-
-    consola.trace("action::loadLocalSpace. Loaded data", { spacesData });
 
     const localSpace = {
       id: "local",
@@ -88,7 +92,6 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       connected: true,
       connectionMode: "AUTOMATIC",
       local: true,
-      ...spacesData,
     };
 
     commit("setSpaceProviders", {
@@ -147,24 +150,19 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       consola.trace(
         "action::setAllSpaceProviders -> Fetching provider spaces",
-        {
-          connectedProviderIds,
-        },
+        { connectedProviderIds },
       );
 
+      commit("setSpaceProviders", spaceProviders);
+
       for (const id of connectedProviderIds) {
-        const spacesData = await dispatch("fetchProviderSpaces", { id });
-        spaceProviders[id] = {
-          ...spaceProviders[id],
-          ...spacesData,
-        };
+        await dispatch("fetchProviderSpaces", { id });
       }
 
       consola.trace(
         "action::setAllSpaceProviders -> Setting providers with space data",
         spaceProviders,
       );
-      commit("setSpaceProviders", spaceProviders);
       commit("setHasLoadedProviders", true);
     } catch (error) {
       commit("setHasLoadedProviders", false);
@@ -177,16 +175,51 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async fetchProviderSpaces(_, { id }) {
+  async fetchProviderSpaces({ state }, { id: spaceProviderId }) {
     try {
-      const data = await API.space.getSpaceProvider({ spaceProviderId: id });
+      const data = await API.space.getSpaceProvider({ spaceProviderId });
+
+      const { spaceGroups } = data;
+
+      // create index if it doesn't exist
+      if (!state.providerIndex[spaceProviderId]) {
+        state.providerIndex[spaceProviderId] = {
+          spaces: new Set(),
+          groups: new Set(),
+        };
+      }
+
+      const loadedSpaces: string[] = [];
+
+      spaceGroups.forEach((fullgroup) => {
+        const { spaces, ...normalizedGroup } = fullgroup;
+
+        state.allSpaceGroups[normalizedGroup.id] = {
+          ...normalizedGroup,
+          providerId: spaceProviderId,
+        };
+
+        state.providerIndex[spaceProviderId].groups.add(normalizedGroup.id);
+
+        spaces.forEach((space) => {
+          state.providerIndex[spaceProviderId].spaces.add(space.id);
+          loadedSpaces.push(space.id);
+
+          state.allSpaces[space.id] = {
+            ...space,
+            providerId: spaceProviderId,
+            spaceGroupId: normalizedGroup.id,
+            private: space._private ?? false,
+          };
+        });
+      });
 
       consola.info("action::fetchProviderSpaces", {
-        params: { id },
+        params: { spaceProviderId },
         response: data,
       });
 
-      return data;
+      return loadedSpaces;
     } catch (error) {
       const message = "Error fetching provider spaces";
       consola.error(`action::fetchProviderSpaces -> ${message}`, { error });
@@ -194,6 +227,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       if (error instanceof ServiceCallException) {
         throw new StoreActionException(message, error);
       }
+
       if (error instanceof NetworkException) {
         throw new StoreActionException("Connectivity problem", error);
       }
@@ -202,7 +236,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async reloadProviderSpaces({ commit, dispatch, state }, { id }) {
+  async reloadProviderSpaces({ dispatch, state }, { id }) {
     if (!state.spaceProviders) {
       return;
     }
@@ -210,13 +244,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     try {
       state.isLoadingProviderSpaces = true;
 
-      const spaceProvider = state.spaceProviders[id];
-      const spacesData = await dispatch("fetchProviderSpaces", { id });
-
-      commit("updateSpaceProvider", {
-        id,
-        value: { ...spaceProvider, ...spacesData },
-      });
+      await dispatch("fetchProviderSpaces", { id });
 
       state.isLoadingProviderSpaces = false;
     } catch (error) {
@@ -265,7 +293,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
   },
 
   getSpaceInfo:
-    (state, getters) =>
+    (state) =>
     (projectId: string): SpaceProviderNS.Space | {} => {
       // spaces data has not been cached or providers are not yet loaded
       if (
@@ -276,13 +304,7 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       }
 
       const { spaceId } = state.projectPath[projectId];
-      const spaceProvider: SpaceProviderNS.SpaceProvider =
-        getters.getProviderInfoFromProjectPath(projectId);
-
-      const space = findSpaceById(
-        { [spaceProvider.id]: spaceProvider },
-        spaceId,
-      );
+      const space = state.allSpaces[spaceId];
 
       return space ?? {};
     },

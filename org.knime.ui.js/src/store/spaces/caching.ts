@@ -12,7 +12,6 @@ import {
 } from "./common";
 import type { SpacesState } from "./index";
 import type { PathTriplet } from "./types";
-import { findSpaceById } from "./util";
 
 interface State {
   workflowGroupCache: Map<string, WorkflowGroupContent>;
@@ -106,9 +105,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         return;
       }
 
-      const isKnownSpace =
-        origin &&
-        Boolean(findSpaceById(state.spaceProviders ?? {}, origin.spaceId));
+      const isKnownSpace = origin && state.allSpaces[origin.spaceId];
 
       const projectPath = isKnownSpace
         ? {

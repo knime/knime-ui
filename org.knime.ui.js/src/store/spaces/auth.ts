@@ -6,6 +6,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
 import type { RootStoreState } from "../types";
 
+import { localRootProjectPath } from "./caching";
 import type { SpacesState } from "./index";
 
 export interface State {}
@@ -26,17 +27,20 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       const spaceProvider = await API.desktop.connectSpaceProvider({
         spaceProviderId,
       });
+
       // fetch the spaces if we are now connected
-      const spacesData = spaceProvider?.connected
-        ? await dispatch("fetchProviderSpaces", {
-            id: spaceProviderId,
-          })
-        : {};
+      if (spaceProvider?.connected) {
+        await dispatch("fetchProviderSpaces", { id: spaceProviderId });
+      }
+
       commit("updateSpaceProvider", {
         id: spaceProviderId,
-        value: { ...spaceProvider, ...spacesData },
+        value: spaceProvider,
       });
-      return spacesData;
+
+      return {
+        isConnected: spaceProvider?.connected,
+      };
     } catch (error) {
       consola.error("Error connecting to provider", { error });
       throw error;
@@ -62,30 +66,27 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       projectsWithDisconnectedProvider.forEach((projectId) =>
         commit("setProjectPath", {
           projectId,
-          value: {
-            spaceProviderId: "local",
-            spaceId: "local",
-            itemId: "root",
-          },
+          value: localRootProjectPath,
         }),
       );
 
       // update space provider state
-      const { spaceProviders } = state;
+      const spaceProviders = state.spaceProviders ?? {};
 
-      if (!spaceProviders) {
-        return null;
-      }
-
-      const { spaceGroups, ...otherProperties } =
-        spaceProviders[spaceProviderId];
+      state.providerIndex[spaceProviderId].groups.forEach((groupId) => {
+        delete state.allSpaceGroups[groupId];
+      });
+      state.providerIndex[spaceProviderId].spaces.forEach((spaceId) => {
+        delete state.allSpaces[spaceId];
+      });
+      state.providerIndex[spaceProviderId].groups.clear();
+      state.providerIndex[spaceProviderId].spaces.clear();
 
       commit("setSpaceProviders", {
         ...state.spaceProviders,
         [spaceProviderId]: {
-          ...otherProperties,
+          ...spaceProviders[spaceProviderId],
           connected: false,
-          spaceGroups: [],
         },
       });
 

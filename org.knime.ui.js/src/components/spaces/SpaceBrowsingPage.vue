@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
 import { isHubProvider } from "@/store/spaces/util";
@@ -77,6 +78,7 @@ const changeDirectory = async (pathId: string) => {
 const { breadcrumbs } = usePageBreadcrumbs();
 
 const { getSpaceIcon } = useSpaceIcons();
+const $toast = getToastsProvider();
 
 const title = computed(() => {
   // for Hub providers return the name of the space
@@ -99,18 +101,28 @@ const hubSpaceIcon = computed(() => {
 const errorOnHeader = ref("");
 const isEditing = ref(false);
 
-const onRenameSpace = (name: String) => {
+const onRenameSpace = async (name: String) => {
   errorOnHeader.value = "";
-  store
-    .dispatch("spaces/renameSpace", {
+
+  try {
+    await store.dispatch("spaces/renameSpace", {
       spaceProviderId: activeSpaceProvider.value.id,
       spaceId: activeSpace.value!.id,
       spaceName: name,
-    })
-    .catch((error) => {
-      errorOnHeader.value = error.message;
-      isEditing.value = true;
     });
+  } catch (_error) {
+    const error = _error instanceof Error ? _error : new Error(_error as any);
+
+    errorOnHeader.value = error.message;
+    isEditing.value = true;
+
+    $toast.show({
+      type: "error",
+      headline: "Error while renaming space",
+      message: error.message,
+      autoRemove: true,
+    });
+  }
 };
 </script>
 
@@ -148,7 +160,7 @@ const onRenameSpace = (name: String) => {
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
         :filter-query="filterQuery"
-        :click-outside-exception="$refs.actions as HTMLElement"
+        :click-outside-exception="$refs.actions as any"
         @change-directory="changeDirectory"
         @update:selected-item-ids="setCurrentSelectedItemIds($event)"
       />

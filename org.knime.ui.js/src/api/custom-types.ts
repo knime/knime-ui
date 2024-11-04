@@ -65,21 +65,22 @@ export namespace SpaceProviderNS {
 
   export interface Space extends Omit<_Space, "_private"> {
     private: boolean;
+    spaceGroupId: string;
+    providerId: string;
   }
 
-  export interface SpaceGroup extends _SpaceGroup {
-    spaces: Array<Space>;
+  export interface SpaceGroup extends Omit<_SpaceGroup, "spaces"> {
+    providerId: string;
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars
   export import UserTypeEnum = _SpaceGroupNS.TypeEnum;
 
-  export interface SpaceProvider extends _SpaceProvider {
+  export interface SpaceProvider extends Omit<_SpaceProvider, "spaceGroups"> {
     id: string;
     name: string;
     connected: boolean;
     connectionMode: "AUTHENTICATED" | "ANONYMOUS" | "AUTOMATIC";
-    spaceGroups: Array<SpaceGroup>;
     user?: { name: string };
   }
 }

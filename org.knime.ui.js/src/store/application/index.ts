@@ -9,7 +9,6 @@ import {
   type UpdateAvailableEvent,
   type XY,
 } from "@/api/gateway-api/generated-api";
-import { findSpaceById } from "@/store/spaces/util";
 import { nodeSize } from "@/style/shapes";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import type { RootStoreState } from "../types";
@@ -477,11 +476,9 @@ export const getters: GetterTree<ApplicationState, RootStoreState> = {
         return true;
       }
 
-      const spaceProviders = rootState.spaces.spaceProviders ?? {};
-
       // try to find a provider that contains the spaceId referenced
       // by the activeProject's origin
-      return !findSpaceById(spaceProviders, foundProject.origin!.spaceId);
+      return !rootState.spaces.allSpaces[foundProject.origin!.spaceId];
     };
   },
 

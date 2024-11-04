@@ -71,12 +71,12 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   const provider = spaceProviders.value[origin.providerId];
 
   if (!provider.connected) {
-    const connectedProvider = await store.dispatch("spaces/connectProvider", {
+    const { isConnected } = await store.dispatch("spaces/connectProvider", {
       spaceProviderId: provider.id,
     });
 
     // If login was cancelled don't continue
-    if (Object.keys(connectedProvider).length === 0) {
+    if (!isConnected) {
       return;
     }
   }
