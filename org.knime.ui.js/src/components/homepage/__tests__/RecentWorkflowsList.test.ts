@@ -7,6 +7,7 @@ import { API } from "@/api";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { getToastsProvider } from "@/plugins/toasts";
 import * as spacesStore from "@/store/spaces";
+import { cachedLocalSpaceProjectId } from "@/store/spaces";
 import { createSpaceProvider } from "@/test/factories";
 import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
 import RecentWorkflowsList from "../RecentWorkflowsList.vue";
@@ -71,6 +72,7 @@ describe("RecentWorkflowsList.vue", () => {
     });
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
+    const commitSpy = vi.spyOn($store, "commit");
 
     const wrapper = mount(RecentWorkflowsList, {
       global: {
@@ -84,7 +86,7 @@ describe("RecentWorkflowsList.vue", () => {
       [spaceProvider3.id]: spaceProvider3,
     });
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, $store, dispatchSpy, commitSpy };
   };
 
   const findAllByTestId = (wrapper: VueWrapper<any>, id: string) =>
@@ -210,6 +212,40 @@ describe("RecentWorkflowsList.vue", () => {
     expect(
       findAllByTestId(wrapper, "recent-workflow-provider").at(0)?.text(),
     ).toMatch("Provider 1");
+  });
+
+  it("should open the create workflow modal and dispatch fetchWorkflowGroupContent on button click", async () => {
+    const { wrapper, dispatchSpy, commitSpy } = doMount();
+
+    dispatchSpy.mockImplementationOnce((action) => {
+      if (action === "spaces/fetchWorkflowGroupContent") {
+        return Promise.resolve();
+      }
+      return Promise.resolve();
+    });
+
+    await flushPromises();
+
+    const createWorkflowButton = wrapper.find(".create-workflow-button");
+
+    expect(createWorkflowButton.exists()).toBe(true);
+
+    await createWorkflowButton.trigger("click");
+
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      "spaces/fetchWorkflowGroupContent",
+      {
+        projectId: cachedLocalSpaceProjectId,
+      },
+    );
+
+    expect(commitSpy).toHaveBeenCalledWith(
+      "spaces/setCreateWorkflowModalConfig",
+      {
+        isOpen: true,
+        projectId: cachedLocalSpaceProjectId,
+      },
+    );
   });
 
   it("should handle failure opening recent workflow", async () => {
