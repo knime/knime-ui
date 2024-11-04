@@ -207,7 +207,7 @@ function onBodyUp() {
     </div>
     <div
       class="splitter"
-      :splitter-id="splitterId"
+      :id="splitterId"
       :class="{ active: isActive }"
       :title="splitterTitle"
       @mousedown="onSplitterMouseDown"
