@@ -1,75 +1,34 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import {
-  type ClientRectObject,
-  arrow,
-  autoPlacement,
-  autoUpdate,
-  offset,
-  shift,
-  useFloating,
-} from "@floating-ui/vue";
+import { FunctionButton } from "@knime/components";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
 
 import DataValueViewLoader, {
   type Props as DataValueViewLoaderProps,
 } from "./DataValueViewLoader.vue";
 
 export type Props = DataValueViewLoaderProps & {
-  anchor: ClientRectObject;
+  isDragging: boolean;
 };
 
-const props = defineProps<Props>();
-const dataValueViewElement = ref();
-const dataValueViewArrow = ref();
-
-const { floatingStyles, middlewareData, placement } = useFloating(
-  computed(() => ({ getBoundingClientRect: () => props.anchor })),
-  dataValueViewElement,
-  {
-    placement: "top",
-    strategy: "fixed",
-    middleware: [
-      offset(18),
-      shift(),
-      autoPlacement({
-        allowedPlacements: ["top", "bottom"],
-      }),
-      arrow({ element: dataValueViewArrow }),
-    ],
-    whileElementsMounted: autoUpdate,
-  },
-);
+defineProps<Props>();
+const emit = defineEmits(["close"]);
 </script>
 
 <template>
-  <div
-    ref="dataValueViewElement"
-    class="data-value-view-element"
-    :style="floatingStyles"
-  >
+  <div class="data-value-view-element" draggable>
+    <FunctionButton compact class="close-button" @click="() => emit('close')">
+      <CloseIcon />
+    </FunctionButton>
     <DataValueViewLoader
+      :tabindex="-1"
       class="data-value-view-loader"
+      :style="isDragging ? { pointerEvents: 'none' } : {}"
       :project-id="projectId"
       :workflow-id="workflowId"
       :node-id="nodeId"
       :selected-port-index="selectedPortIndex"
       :selected-row-index="selectedRowIndex"
       :selected-col-index="selectedColIndex"
-    />
-    <div
-      ref="dataValueViewArrow"
-      :class="[
-        'data-value-view-arrow',
-        {
-          top: placement === 'bottom',
-          bottom: placement !== 'bottom',
-        },
-      ]"
-      :style="{
-        left:
-          middlewareData.arrow?.x != null ? `${middlewareData.arrow.x}px` : '',
-        top: middlewareData.arrow?.y != null ? `${middlewareData.arrow.y}` : '',
-      }"
     />
   </div>
 </template>
@@ -82,29 +41,17 @@ const { floatingStyles, middlewareData, placement } = useFloating(
   height: 400px;
   background-color: var(--knime-porcelain);
   box-shadow: var(--shadow-elevation-2);
-  padding: var(--space-8);
+  padding: var(--space-32) var(--space-8) var(--space-8);
+  cursor: move;
+
+  & .close-button {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+  }
 
   & .data-value-view-loader {
     border-radius: 8px;
-  }
-
-  & .data-value-view-arrow {
-    position: fixed;
-    width: 0;
-    height: 0;
-    border-left: 14px solid transparent;
-    border-right: 14px solid transparent;
-    pointer-events: none;
-
-    &.top {
-      top: -14px;
-      border-bottom: 14px solid var(--knime-porcelain);
-    }
-
-    &.bottom {
-      bottom: -14px;
-      border-top: 14px solid var(--knime-porcelain);
-    }
   }
 }
 </style>

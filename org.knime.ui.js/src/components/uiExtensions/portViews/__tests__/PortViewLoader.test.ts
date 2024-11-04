@@ -274,6 +274,7 @@ describe("PortViewLoader.vue", () => {
     });
 
     it("opens data value view when openDataValueView is called", async () => {
+      vi.useFakeTimers();
       mockGetPortView();
       const { wrapper } = doMount();
       await flushPromises();
@@ -303,13 +304,13 @@ describe("PortViewLoader.vue", () => {
       const dataValueViewWrapper = wrapper.findComponent(DataValueViewWrapper);
       expect(dataValueViewWrapper.exists()).toBe(true);
       expect(dataValueViewWrapper.props()).toEqual({
+        isDragging: false,
         projectId: "project-id",
         workflowId: "workflow-id",
         nodeId: "node1",
         selectedPortIndex: 0,
         selectedRowIndex: rowIndex,
         selectedColIndex: colIndex,
-        anchor,
       });
 
       apiLayer.showDataValueView({
@@ -323,9 +324,19 @@ describe("PortViewLoader.vue", () => {
       expect(dataValueViewWrapper.props().selectedColIndex).toBe(2);
 
       apiLayer.closeDataValueView();
-
+      await vi.runAllTimers();
       await flushPromises();
+      // Does not close the wrapper, since close is ignored closely after open
+      expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(true);
+
+      // Wait for the open to timeout
+      await vi.runAllTimers();
+      apiLayer.closeDataValueView();
+      await vi.runAllTimers();
+      await flushPromises();
+
       expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(false);
+      vi.useRealTimers();
     });
   });
 

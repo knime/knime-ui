@@ -1,15 +1,11 @@
 <script setup lang="ts">
 import { onUnmounted, ref, toRef, watch } from "vue";
-import { onClickOutside } from "@vueuse/core";
 
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
-import {
-  AlertType,
-  type DataValueViewConfig,
-} from "@knime/ui-extension-service";
+import { AlertType } from "@knime/ui-extension-service";
 
 import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
@@ -17,6 +13,7 @@ import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
 import DataValueViewWrapper from "../dataValueViews/DataValueViewWrapper.vue";
+import { useDataValueView } from "../dataValueViews/useDataValueView";
 
 /**
  * Dynamically loads a component that will render a Port's output view
@@ -73,13 +70,17 @@ const loadExtensionConfig = async () => {
 
 const noop = () => {}; // NOSONAR
 
-const dataValueViewConfig = ref<DataValueViewConfig | null>(null);
-const dataValueView = ref<HTMLElement | null>(null);
+const {
+  open: showDataValueView,
+  close: closeDataValueView,
+  element: dataValueView,
+  config: dataValueViewConfig,
+  styles: dataValueViewStyles,
+  isDragging,
+} = useDataValueView();
 
-const closeDataValueView = () => {
-  dataValueViewConfig.value = null;
-};
-
+const closeDataValueViewWithoutDelay = () =>
+  closeDataValueView({ withoutDelay: true });
 const apiLayer: UIExtensionAPILayer = {
   getResourceLocation: (path: string) => {
     return Promise.resolve(
@@ -89,9 +90,7 @@ const apiLayer: UIExtensionAPILayer = {
       ),
     );
   },
-  showDataValueView: (config) => {
-    dataValueViewConfig.value = config;
-  },
+  showDataValueView,
   closeDataValueView,
   callNodeDataService: async (params) => {
     const { serviceType, dataServiceRequest } = params;
@@ -154,11 +153,10 @@ const apiLayer: UIExtensionAPILayer = {
   setControlsVisibility: noop,
 };
 
-onClickOutside(dataValueView, closeDataValueView);
-
 watch(
   toRef(props, "uniquePortKey"),
   async () => {
+    closeDataValueViewWithoutDelay();
     try {
       error.value = null;
       isLoadingConfig.value = true;
@@ -204,13 +202,14 @@ onUnmounted(() => {
   <DataValueViewWrapper
     v-if="dataValueViewConfig"
     ref="dataValueView"
+    :style="dataValueViewStyles"
     :project-id="projectId"
     :workflow-id="workflowId"
     :node-id="selectedNode.id"
     :selected-port-index="selectedPortIndex"
     :selected-row-index="dataValueViewConfig.rowIndex"
     :selected-col-index="dataValueViewConfig.colIndex"
-    :unique-port-key="uniquePortKey"
-    :anchor="dataValueViewConfig.anchor"
+    :is-dragging="isDragging"
+    @close="closeDataValueViewWithoutDelay"
   />
 </template>
