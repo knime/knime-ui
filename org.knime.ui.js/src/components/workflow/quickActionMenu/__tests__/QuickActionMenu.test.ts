@@ -134,6 +134,8 @@ describe("QuickActionMenu.vue", () => {
         },
         stubs: {
           FloatingMenu: FloatingMenuStub,
+          KaiQuickBuild: true,
+          QuickAddNodeMenu: true,
         },
       },
       attachTo: document.body,

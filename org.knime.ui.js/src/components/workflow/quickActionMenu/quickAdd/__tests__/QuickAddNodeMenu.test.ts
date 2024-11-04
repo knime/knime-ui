@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { nextTick, ref } from "vue";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { Button, NodePreview } from "@knime/components";
@@ -84,8 +84,8 @@ describe("QuickAddNodeMenu.vue", () => {
   } = {}) => {
     const defaultProps: QuickAddNodeMenuProps = {
       nodeId: "node-id",
-      canvasPosition: ref({ x: 10, y: 10 }),
-      portIndex: ref(1),
+      canvasPosition: { x: 14.5, y: 10 },
+      portIndex: 1,
       port: createPort({
         index: 1,
         typeId: "org.knime.core.node.BufferedDataTable",
@@ -250,6 +250,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
       // update props
       await wrapper.setProps({
+        portIndex: 2,
         port: {
           index: 2,
           typeId: "org.some.otherPorType",
@@ -269,6 +270,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     it("adds node in global mode where no source port exists", async () => {
       const props = {
+        portIndex: null,
         nodeId: null,
         port: null,
         nodeRelation: null,
