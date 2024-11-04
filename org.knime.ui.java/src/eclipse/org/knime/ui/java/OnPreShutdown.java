@@ -59,7 +59,7 @@ public class OnPreShutdown implements PreShutdown {
 
     @Override
     public boolean onPreShutdown() {
-        var lifeCycle = LifeCycle.get();
+        final var lifeCycle = LifeCycle.get();
         if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
             // This is being called by the eclipse framework before any window is being closed.
             // And before we close the browser, we need, e.g., to ask the user to save (and save) all the workflows
@@ -67,14 +67,23 @@ public class OnPreShutdown implements PreShutdown {
             lifeCycle.saveState();
             // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
             // or the workflows need to be saved (through a respective event to the FE, see SaveAndCloseWorkflows)
-            if (!lifeCycle.getState().workflowsSaved()) {
-                lifeCycle.setStateTransition(StateTransition.WEB_APP_LOADED);
-                return false;
-            }
-            lifeCycle.suspend();
+            return lifeCycle.getState().workflowsSaved();
         }
-        lifeCycle.forceShutdown();
         return true;
     }
 
+
+    @Override
+    public void onShutdownAborted() {
+        LifeCycle.get().setStateTransition(StateTransition.WEB_APP_LOADED);
+    }
+
+    @Override
+    public void onShutdownContinued() {
+        final var lifeCycle = LifeCycle.get();
+        if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
+            lifeCycle.suspend();
+        }
+        lifeCycle.forceShutdown();
+    }
 }
