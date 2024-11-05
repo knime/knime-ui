@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
-import QuickAddNodeGhost from "../QuickAddNodeGhost.vue";
+import QuickActionMenuGhost from "../QuickActionMenuGhost.vue";
 
-describe("QuickAddNodeGhost.vue", () => {
+describe("QuickActionMenuGhost.vue", () => {
   const doMount = (
     props = {
       position: [5, 8],
       nodeRelation: "SUCCESSORS",
     },
   ) =>
-    shallowMount(QuickAddNodeGhost, {
+    shallowMount(QuickActionMenuGhost, {
       props,
       global: {
         mocks: {
