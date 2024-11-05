@@ -65,6 +65,7 @@ import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
+import org.knime.workbench.explorer.view.actions.GlobalRefreshAction;
 
 /**
  * Utility methods and constants to manage switching between Web UI and classic perspectives.
@@ -212,6 +213,21 @@ public final class PerspectiveUtil {
         Optional.ofNullable(ExplorerMountTable.getMountedContent().get(LOCAL_CONTENT_PROVIDER_ID))//
             .map(LocalWorkspaceContentProvider.class::cast)//
             .ifPresent(LocalWorkspaceContentProvider::refresh);
+    }
+
+    /**
+     * Refreshes all remote content providers, restarting any shutdown Fetchers. Fetchers are shut down while using
+     * ModernUI, but they need to periodically refresh when using Classic UI (ExplorerView).
+     */
+    public static void refreshRemoteContentProviders() {
+        if (PlatformUI.isWorkbenchRunning()) {
+            final var stores = ExplorerMountTable.getMountedContent() //
+                    .values().stream() //
+                    .filter(p -> p.isRemote() && p.isAuthenticated()) //
+                    .map(p -> p.getRootStore()).toList();
+            // jobs spawned by this action restart any "sleeping" Fetchers
+            GlobalRefreshAction.run(stores);
+        }
     }
 
     /**

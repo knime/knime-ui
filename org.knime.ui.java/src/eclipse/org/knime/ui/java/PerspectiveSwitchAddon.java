@@ -164,6 +164,9 @@ public final class PerspectiveSwitchAddon {
 
         // Keeps Classic UI in sync with the file system
         PerspectiveUtil.refreshLocalWorkspaceContentProvider();
+        // Enable the periodic Fetcher's again (Repository, Job, Schedule) that Classic UI Explorer View uses to keep
+        // up to date
+        PerspectiveUtil.refreshRemoteContentProviders();
 
         CEFSystemProperties.clearExternalMessagePump();
 
