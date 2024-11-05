@@ -7,7 +7,7 @@ import {
   toRefs,
   watchEffect,
 } from "vue";
-import { onClickOutside, unrefElement } from "@vueuse/core";
+import { onClickOutside, unrefElement, useWindowSize } from "@vueuse/core";
 import {
   type ClientRectObject,
   autoPlacement,
@@ -151,6 +151,31 @@ const useOpenClose = () => {
     open,
     config,
     anchor,
+  };
+};
+
+export const useDataValueViewSize = () => {
+  const WIDTH_PERCENTAGE = 0.35;
+  const MAX_WIDTH = 780;
+  const MIN_WIDTH = 380;
+  const ASPECT_RATIO = 1.6;
+  const { width: windowWidth } = useWindowSize();
+
+  const fraction = computed(() => windowWidth.value * WIDTH_PERCENTAGE);
+  const width = computed(() => {
+    if (fraction.value > MAX_WIDTH) {
+      return MAX_WIDTH;
+    }
+    if (fraction.value < MIN_WIDTH) {
+      return MIN_WIDTH;
+    }
+    return fraction.value;
+  });
+  const height = computed(() => width.value / ASPECT_RATIO);
+
+  return {
+    width,
+    height,
   };
 };
 

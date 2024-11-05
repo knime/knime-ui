@@ -6,6 +6,8 @@ import type { ClientRectObject } from "@floating-ui/vue";
 
 import type { DataValueViewConfig } from "@knime/ui-extension-service";
 
+import { useDataValueViewSize } from "../useDataValueView";
+
 import UseDataValueViewTestComponent from "./UseDataValueViewTestComponent.vue";
 
 describe("useDataValueView", () => {
@@ -148,4 +150,23 @@ describe("useDataValueView", () => {
       });
     });
   });
+});
+
+describe("useDataValueViewSize", () => {
+  it.each([
+    [3000, { width: 780, height: 487.5 }], // max width
+    [720 / 0.35 /** ~ 2057 */, { width: 720, height: 450 }], //
+    [1085, { width: 380, height: 237.5 }], // min width
+  ])(
+    "determines the data value view size from the windows width (%s px)",
+    (windowInnerWidth, { width: expectedWidth, height: expectedHeight }) => {
+      const { width, height } = useDataValueViewSize();
+
+      window.innerWidth = windowInnerWidth;
+      window.dispatchEvent(new Event("resize"));
+
+      expect(width.value).toBe(expectedWidth);
+      expect(height.value).toBe(expectedHeight);
+    },
+  );
 });
