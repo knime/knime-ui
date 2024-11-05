@@ -80,7 +80,7 @@ describe("Sidebar", () => {
     expect(wrapper.findComponent(Metainfo).exists()).toBe(true);
     expect(wrapper.findComponent(PlusIcon).exists()).toBe(true);
 
-    expect(wrapper.find('[title="Description"]').classes("active")).toBe(true);
+    expect(wrapper.find('[title="Info"]').classes("active")).toBe(true);
     expect(wrapper.find('[title="Nodes"]').classes("active")).toBe(false);
     wrapper.findAll("li").forEach((wp) => {
       expect(wp.classes("expanded")).toBe(true);
@@ -98,7 +98,7 @@ describe("Sidebar", () => {
   });
 
   it("clicking on open tab should close it", async () => {
-    const tabName = "Description";
+    const tabName = "Info";
     const { wrapper, activateTab } = doMount();
     await activateTab(tabName);
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(
@@ -109,11 +109,11 @@ describe("Sidebar", () => {
     expect(wrapper.find(`[title="${tabName}"]`).classes("expanded")).toBe(true);
   });
 
-  it("click on node repository icon when description panel is open closes both panels", async () => {
+  it("click on node repository icon when info panel is open closes both panels", async () => {
     const { $store, activateTab } = doMount();
     // open node repository
     await activateTab("Nodes");
-    // emulate opening the description panel
+    // emulate opening the info panel
     await $store.dispatch("panel/openExtensionPanel");
     expect($store.state.panel.isExtensionPanelOpen).toBe(true);
 
@@ -125,11 +125,11 @@ describe("Sidebar", () => {
     const { $store, activateTab } = doMount();
 
     await activateTab("Nodes");
-    // emulate opening the description panel
+    // emulate opening the info panel
     await $store.dispatch("panel/openExtensionPanel");
 
-    // back to Description
-    await activateTab("Description");
+    // back to Info
+    await activateTab("Info");
 
     // back to node repository
     await activateTab("Nodes");
@@ -148,7 +148,7 @@ describe("Sidebar", () => {
     });
 
     expect(wrapper.find('[title="Nodes"]').classes("active")).toBe(true);
-    expect(wrapper.find('[title="Description"]').classes("active")).toBe(false);
+    expect(wrapper.find('[title="Info"]').classes("active")).toBe(false);
     wrapper.findAll("li").forEach((wp) => {
       expect(wp.classes("expanded")).toBe(true);
     });
