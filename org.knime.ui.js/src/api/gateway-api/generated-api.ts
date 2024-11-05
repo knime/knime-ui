@@ -1576,6 +1576,12 @@ export interface KaiRequest {
     selectedNodes: Array<string>;
     /**
      *
+     * @type {XY}
+     * @memberof KaiRequest
+     */
+    startPosition?: XY;
+    /**
+     *
      * @type {Array<KaiMessage>}
      * @memberof KaiRequest
      */
