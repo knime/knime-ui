@@ -150,6 +150,7 @@ const isQuickBuildAvailableForPort = computed(() =>
       <KaiQuickBuild
         v-else-if="menuMode == 'quick-build'"
         :node-id="nodeId"
+        :start-position="position"
         @menu-back="setQuickAddMode"
       />
     </div>

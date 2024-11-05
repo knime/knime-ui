@@ -1,7 +1,7 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
-import type { KaiMessage } from "@/api/gateway-api/generated-api";
+import type { KaiMessage, XY } from "@/api/gateway-api/generated-api";
 import type { NodeWithExtensionInfo } from "@/components/kai/types";
 import { useFeatures } from "@/plugins/feature-flags";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
@@ -195,7 +195,13 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       chainType,
       message,
       targetNodes,
-    }: { chainType: ChainType; message: Message; targetNodes: string[] },
+      startPosition,
+    }: {
+      chainType: ChainType;
+      message: Message;
+      targetNodes: string[];
+      startPosition?: XY;
+    },
   ) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
     const selectedNodes = targetNodes.length
@@ -222,6 +228,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           workflowId,
           selectedNodes,
           messages,
+          startPosition,
         },
       });
     } catch (error) {
@@ -237,12 +244,13 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   async makeQuickBuildRequest(
     { dispatch },
-    { message, targetNodes }: { message: Message; targetNodes: string[] },
+    { message, targetNodes, startPosition }: { message: Message; targetNodes: string[], startPosition: XY },
   ) {
     await dispatch("makeAiRequest", {
       chainType: "build",
       message,
       targetNodes,
+      startPosition,
     });
 
     // Resolve/reject only after handleAiAssistantEvent receives a

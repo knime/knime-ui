@@ -1,24 +1,42 @@
 import { type Ref, ref, watch } from "vue";
 
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { useChat } from "../chat/useChat";
 
 type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" };
 
-export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string | null> }) => {
+export const useQuickBuild = ({
+  nodeId,
+  startPosition,
+}: {
+  nodeId: Ref<string | null>,
+  startPosition: Ref<XY>
+}) => {
   const store = useStore();
 
   const userQuery = ref("");
   const errorMessage = ref("");
   const result = ref<Result | null>(null);
 
-  const {
-    isProcessing,
-    lastUserMessage,
-    makeQuickBuildRequest,
-    abortSendMessage,
-    statusUpdate,
-  } = useChat("build");
+  const { isProcessing, lastUserMessage, abortSendMessage, statusUpdate } =
+    useChat("build");
+
+  const makeQuickBuildRequest = ({
+    message,
+    targetNodes,
+    startPosition,
+  }: {
+    message: string;
+    targetNodes: string[];
+    startPosition: XY;
+  }) => {
+    return store.dispatch("aiAssistant/makeQuickBuildRequest", {
+      message,
+      targetNodes,
+      startPosition,
+    });
+  };
 
   const sendMessage = async ({ message }: { message: string }) => {
     result.value = null;
@@ -30,6 +48,7 @@ export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string | null> }) => {
       result.value = await makeQuickBuildRequest({
         message,
         targetNodes,
+        startPosition: startPosition.value,
       });
     } catch (error: any) {
       errorMessage.value = error.message;

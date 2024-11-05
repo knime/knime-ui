@@ -4,6 +4,7 @@ import { toRefs } from "vue";
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
 
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 
 import { useKaiPanels } from "./panels/useKaiPanels";
@@ -13,7 +14,8 @@ import QuickBuildResult from "./quickBuild/QuickBuildResult.vue";
 import { useQuickBuild } from "./quickBuild/useQuickBuild";
 
 type Props = {
-  nodeId?: string | null;
+  nodeId: string | null;
+  startPosition: XY;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -22,7 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 defineEmits(["menuBack"]);
 
-const { nodeId } = toRefs(props);
+const { nodeId, startPosition } = toRefs(props);
 
 const store = useStore();
 
@@ -40,7 +42,7 @@ const {
   lastUserMessage,
   abortSendMessage,
   statusUpdate,
-} = useQuickBuild({ nodeId });
+} = useQuickBuild({ nodeId, startPosition });
 </script>
 
 <template>

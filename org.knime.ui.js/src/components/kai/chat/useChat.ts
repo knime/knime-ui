@@ -122,19 +122,6 @@ const useChat = (chainType: ChainType) => {
     });
   };
 
-  const makeQuickBuildRequest = ({
-    message,
-    targetNodes = [],
-  }: {
-    message: string;
-    targetNodes?: string[];
-  }) => {
-    return store.dispatch("aiAssistant/makeQuickBuildRequest", {
-      message,
-      targetNodes,
-    });
-  };
-
   const abortSendMessage = async () => {
     const { confirmed } = await showConfirmDialog({
       title: "Confirm action",
@@ -159,7 +146,6 @@ const useChat = (chainType: ChainType) => {
     statusUpdate,
     lastUserMessage,
     sendMessage,
-    makeQuickBuildRequest,
     abortSendMessage,
   };
 };
