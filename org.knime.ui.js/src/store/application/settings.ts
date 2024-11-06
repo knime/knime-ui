@@ -40,6 +40,10 @@ interface State {
    * Wheter to use embedded node configuration dialogs
    */
   useEmbeddedDialogs: boolean;
+  /*
+   * Wheter to use embedded node configuration dialogs
+   */
+  disableKai: boolean;
 }
 
 declare module "./index" {
@@ -55,6 +59,7 @@ export const state = (): State => ({
   devMode: false,
   isSubnodeLockingEnabled: false,
   useEmbeddedDialogs: true,
+  disableKai: true,
 });
 
 export const mutations: MutationTree<ApplicationState> = {
@@ -81,6 +86,9 @@ export const mutations: MutationTree<ApplicationState> = {
   },
   setUseEmbeddedDialogs(state, value) {
     state.useEmbeddedDialogs = value;
+  },
+  setDisableKai(state, value) {
+    state.disableKai = value;
   },
 };
 

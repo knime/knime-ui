@@ -209,6 +209,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   ...canvasModes.actions,
 
   // ----------------------------------------------------------------------------------------- //
+  // eslint-disable-next-line complexity
   replaceApplicationState(
     { commit, dispatch, state },
     applicationState: AppState,
@@ -279,6 +280,11 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
     if (applicationState.hasOwnProperty("useEmbeddedDialogs")) {
       commit("setUseEmbeddedDialogs", applicationState.useEmbeddedDialogs);
+    }
+
+    // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
+    if (applicationState.hasOwnProperty("disableKai")) {
+      commit("setDisableKai", applicationState.disableKai);
     }
 
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set

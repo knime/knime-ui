@@ -131,8 +131,8 @@ final class Init {
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
-        var kaiHandler = createKaiHandler(eventConsumer, spaceProviders);
-        var preferenceProvider = createPreferencesProvider();
+        var kaiHandler = createKaiHandler(eventConsumer, spaceProviders, appStateUpdater);
+        var preferenceProvider = createPreferencesProvider(kaiHandler);
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepo = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
@@ -233,7 +233,7 @@ final class Init {
         return new UpdatableSpaceProviders(localSpace);
     }
 
-    private static PreferencesProvider createPreferencesProvider() {
+    private static PreferencesProvider createPreferencesProvider(final KaiHandler kaiHandler) {
         return new PreferencesProvider() {
 
             @Override
@@ -375,14 +375,20 @@ final class Init {
     /**
      * @return A new K-AI handler instance or {@code null} if K-AI is not installed
      */
-    private static KaiHandler createKaiHandler(final EventConsumer eventConsumer, final SpaceProviders spaceProviders) {
+    private static KaiHandler createKaiHandler(final EventConsumer eventConsumer, final SpaceProviders spaceProviders,
+        final AppStateUpdater appStateUpdater) {
         AuthTokenProvider authTokenProvider = (projectId, hubId) -> {
             var spaceProvider = getSpaceProviderOrThrow(spaceProviders, hubId);
             var connection = spaceProvider.getConnection(false).orElseThrow(
                 () -> new CouldNotAuthorizeException("Could not authorize. Please log into %s.".formatted(hubId)));
             return connection.getAuthorization();
         };
-        return KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer, authTokenProvider).orElse(null);
+        var kaiHandler = KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer, authTokenProvider)//
+            .orElse(null); // null if K-AI is not installed
+        if (kaiHandler != null) {
+            kaiHandler.addIsKaiEnabledStateChangeListener(state -> appStateUpdater.updateAppState());
+        }
+        return kaiHandler;
     }
 
     /**

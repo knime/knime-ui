@@ -511,6 +511,12 @@ export interface AppState {
      */
     useEmbeddedDialogs?: boolean;
     /**
+     * TODO
+     * @type {boolean}
+     * @memberof AppState
+     */
+    disableKai?: boolean;
+    /**
      * Display name of currently active node collection. Compatible with \&quot;Search in {activeNodeCollection} nodes\&quot;.
      * @type {string}
      * @memberof AppState
