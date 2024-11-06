@@ -48,9 +48,22 @@
  */
 package org.knime.ui.java.api;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.NodeLogger;
+import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
 
@@ -97,14 +110,102 @@ final class SpaceDestinationPicker {
         m_fileName = defaultName;
     }
 
+    private final class RefreshJob extends Job {
+
+        private final RemoteExplorerFileStore m_store;
+
+        private RefreshJob(final RemoteExplorerFileStore store) {
+            super("Refresh remote content");
+            setUser(true);
+            m_store = store;
+        }
+
+        @Override
+        public boolean belongsTo(final Object family) {
+            return family == SpaceDestinationPicker.this;
+        }
+
+        @Override
+        protected IStatus run(final IProgressMonitor monitor) {
+            monitor.beginTask("Refreshing \"%s\"...".formatted(m_store.getMountID()), IProgressMonitor.UNKNOWN);
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+            m_store.refresh(true);
+            monitor.done();
+            return Status.OK_STATUS;
+        }
+
+        @Override
+        protected void canceling() {
+            super.canceling();
+            // we need to interrupt the thread, because the store refresh does not check the progress monitor for
+            // cancellation
+            getThread().interrupt();
+        }
+
+    }
+
     /**
      * Displays a modal dialog for picking a target folder or space.
      *
      * @return true if the dialog was closed and something is selected, false otherwise or cancelled
      */
-    public boolean open() {
+    public boolean open() { // NOSONAR accepted for now
         final var workbench = PlatformUI.getWorkbench();
         return workbench.getDisplay().syncCall(() -> { // NOSONAR
+
+            // Workaround, especially refreshing file stores, until we have a modern picker (NXT-2842)
+            // Fetchers are not active, so we need to make sure we refresh before showing the dialog
+            final var mountIDs = Arrays.stream(m_spaceProviders).collect(Collectors.toSet());
+            final var remotes = ExplorerMountTable.getMountedContent() //
+                .values().stream() //
+                // filter mounted with current space providers, to not refresh remotes that are not visible in
+                // ModernUI, if any
+                .filter(m -> mountIDs.contains(m.getMountID())) //
+                // we don't need to refresh local and currently unconnected
+                .filter(p -> p.isRemote() && p.isAuthenticated()) //
+                .map(p -> p.getRootStore()) //
+                .filter(RemoteExplorerFileStore.class::isInstance) //)
+                .map(RemoteExplorerFileStore.class::cast) //)
+                .toList();
+            if (!remotes.isEmpty()) {
+                // These refresh calls restart the "sleeping" Fetchers, which are not actively running in ModernUI
+                for (final var remote : remotes) {
+                    new RefreshJob(remote).schedule();
+                }
+                final var canceled = new AtomicBoolean(false);
+                try {
+                    workbench.getProgressService().busyCursorWhile(monitor -> { // NOSONAR complexity ok
+                        try {
+                            // We wait for our refresh jobs to finish.
+                            // In contrast to `new RefreshJob(...).run(monitor)`, this lets us cancel individual jobs
+                            // or the whole thing. For some reason, the former does not cancel jobs on "Cancel".
+                            Job.getJobManager().join(this, monitor);
+                        } catch (final OperationCanceledException e) { // NOSONAR we handle this exception
+                            // user hit cancel, suggest jobs to cancel as well. Unfortunately, it's not possible to
+                            // find the job's thread to interrupt it... :(
+                            for (final var job : Job.getJobManager().find(this)) {
+                                job.cancel();
+                            }
+                            // handle refresh cancelation as complete cancelation, i.e. not opening the picker, too
+                            canceled.set(true);
+                            return;
+                        }
+                    });
+                } catch (final InvocationTargetException e) {
+                    NodeLogger.getLogger(getClass())
+                        .warn("Failed to refresh remote content before opening dialog – content might be stale.", e);
+                } catch (final InterruptedException e) { // NOSONAR we recover from that
+                    // we got interrupted while waiting for refresh, so we cancel the whole thing
+                    canceled.set(true);
+                }
+                if (canceled.get()) {
+                    // user has chosen to cancel
+                    return false;
+                }
+            }
+
             final var shell = workbench.getModalDialogShellProvider().getShell();
             m_dialog = new DestinationSelectionDialog(shell, m_spaceProviders, null,
                 "Destination", m_operation.m_title, "Select the destination folder.",
