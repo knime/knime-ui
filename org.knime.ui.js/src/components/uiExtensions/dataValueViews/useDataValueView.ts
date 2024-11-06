@@ -5,6 +5,7 @@ import {
   reactive,
   ref,
   toRefs,
+  watch,
   watchEffect,
 } from "vue";
 import { onClickOutside, unrefElement, useWindowSize } from "@vueuse/core";
@@ -16,7 +17,10 @@ import {
   useFloating,
 } from "@floating-ui/vue";
 
-import type { DataValueViewConfig } from "@knime/ui-extension-service";
+import {
+  type DataValueViewConfig,
+  UIExtensionPushEvents,
+} from "@knime/ui-extension-service";
 
 type MaybeElement = HTMLElement | null | ComponentPublicInstance;
 
@@ -143,6 +147,21 @@ const useOpenClose = () => {
     }, DELAY_IGNORING_CLOSE);
   };
 
+  const addListener = (
+    listener: <T extends UIExtensionPushEvents.EventType>(
+      event: UIExtensionPushEvents.PushEvent<T>,
+    ) => void,
+  ) =>
+    watch(
+      () => config.value !== null,
+      (isShown) => {
+        listener({
+          eventType: UIExtensionPushEvents.EventTypes.DataValueViewShownEvent,
+          payload: isShown,
+        });
+      },
+    );
+
   return {
     /**
      * Calling this method will be ignored if open is called immediately beforehand or afterwards.
@@ -151,6 +170,7 @@ const useOpenClose = () => {
     open,
     config,
     anchor,
+    addListener,
   };
 };
 
@@ -186,7 +206,7 @@ export const useDataValueViewSize = () => {
 export const useDataValueView = () => {
   const element = ref<MaybeElement>(null);
 
-  const { close, open, config, anchor } = useOpenClose();
+  const { close, open, config, anchor, addListener } = useOpenClose();
   const { floatingStyles } = useFloatingDataValueView(element, {
     anchor,
   });
@@ -205,5 +225,6 @@ export const useDataValueView = () => {
     element,
     styles,
     isDragging,
+    addListener,
   };
 };

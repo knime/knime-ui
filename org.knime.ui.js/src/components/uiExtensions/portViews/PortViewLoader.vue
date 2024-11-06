@@ -77,6 +77,7 @@ const {
   config: dataValueViewConfig,
   styles: dataValueViewStyles,
   isDragging,
+  addListener: addDataValueViewPushEventListener,
 } = useDataValueView();
 
 const closeDataValueViewWithoutDelay = () =>
@@ -142,6 +143,7 @@ const apiLayer: UIExtensionAPILayer = {
       workflowId: props.workflowId,
       nodeId: props.selectedNode.id,
     };
+    addDataValueViewPushEventListener(dispatchPushEvent);
     const { addListener, removeListener } = useSelectionEvents();
     addListener(id, dispatchPushEvent);
     return () => {

@@ -277,9 +277,14 @@ describe("PortViewLoader.vue", () => {
       vi.useFakeTimers();
       mockGetPortView();
       const { wrapper } = doMount();
+
       await flushPromises();
 
       const apiLayer = getApiLayer(wrapper);
+      const dispatchPushEvent = vi.fn();
+      apiLayer.registerPushEventService({
+        dispatchPushEvent,
+      });
 
       const rowIndex = 0;
       const colIndex = 0;
@@ -313,6 +318,11 @@ describe("PortViewLoader.vue", () => {
         selectedColIndex: colIndex,
       });
 
+      expect(dispatchPushEvent).toHaveBeenCalledWith({
+        eventType: "DataValueViewShownEvent",
+        payload: true,
+      });
+
       apiLayer.showDataValueView({
         rowIndex: 1,
         colIndex: 2,
@@ -322,6 +332,7 @@ describe("PortViewLoader.vue", () => {
       await flushPromises();
       expect(dataValueViewWrapper.props().selectedRowIndex).toBe(1);
       expect(dataValueViewWrapper.props().selectedColIndex).toBe(2);
+      expect(dispatchPushEvent).toHaveBeenCalledTimes(1);
 
       apiLayer.closeDataValueView();
       await vi.runAllTimers();
@@ -336,6 +347,10 @@ describe("PortViewLoader.vue", () => {
       await flushPromises();
 
       expect(wrapper.findComponent(DataValueViewWrapper).exists()).toBe(false);
+      expect(dispatchPushEvent).toHaveBeenNthCalledWith(2, {
+        eventType: "DataValueViewShownEvent",
+        payload: false,
+      });
       vi.useRealTimers();
     });
   });
