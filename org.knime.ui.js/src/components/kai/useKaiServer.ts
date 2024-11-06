@@ -1,4 +1,4 @@
-import { computed, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 
 import { sleep } from "@knime/utils";
 
@@ -10,7 +10,6 @@ const SLEEP_AFTER_ERROR = 2000;
 const isServerAvailable = ref(false);
 const isLoading = ref(false);
 const uiStrings = reactive<Partial<KaiUiStrings>>({});
-const hasDisclaimer = computed(() => Boolean(uiStrings.disclaimer));
 
 const fetchUiStrings = async () => {
   if (isLoading.value) {
@@ -34,7 +33,6 @@ const fetchUiStrings = async () => {
 const useKaiServer = () => {
   return {
     uiStrings,
-    hasDisclaimer,
     isLoading,
     isServerAvailable,
     fetchUiStrings,

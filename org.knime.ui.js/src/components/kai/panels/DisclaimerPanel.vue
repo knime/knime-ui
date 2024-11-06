@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { Button } from "@knime/components";
+import { ref } from "vue";
 
-import { useKaiServer } from "../useKaiServer";
+import { Button, Checkbox } from "@knime/components";
 
-const { uiStrings } = useKaiServer();
+import { useDisclaimer } from "./useDisclaimer";
 
-const emit = defineEmits(["close"]);
+const { disclaimerText, closeDisclaimer } = useDisclaimer();
+const shouldNotAskAgain = ref(false);
+const close = () => closeDisclaimer(shouldNotAskAgain.value);
 </script>
 
 <template>
@@ -13,12 +15,15 @@ const emit = defineEmits(["close"]);
     <div class="main">
       <div class="title">Disclaimer</div>
       <p class="content">
-        {{ uiStrings.disclaimer }}
+        {{ disclaimerText }}
       </p>
     </div>
-    <Button primary compact class="close-button" @click="emit('close')">
-      Accept and continue
-    </Button>
+    <div class="controls">
+      <Checkbox v-model="shouldNotAskAgain" class="checkbox">
+        Do not show again
+      </Checkbox>
+      <Button primary compact @click="close"> Accept and continue </Button>
+    </div>
   </div>
 </template>
 
@@ -31,7 +36,6 @@ const emit = defineEmits(["close"]);
     background-color: var(--knime-white);
     position: relative;
     padding: var(--space-24) var(--space-16);
-    margin-bottom: var(--space-24);
 
     & .title {
       font-weight: 700;
@@ -43,8 +47,15 @@ const emit = defineEmits(["close"]);
     }
   }
 
-  & .close-button {
+  & .controls {
     align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+  }
+
+  & .checkbox {
+    font-size: 12px;
+    margin-top: var(--space-8);
   }
 }
 </style>

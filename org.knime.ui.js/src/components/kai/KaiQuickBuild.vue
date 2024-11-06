@@ -30,7 +30,7 @@ const closeQuickActionMenu = () => {
   store.dispatch("workflow/closeQuickActionMenu");
 };
 
-const { panelComponent, panelComponentListeners } = useKaiPanels();
+const { panelComponent } = useKaiPanels();
 
 const {
   errorMessage,
@@ -50,12 +50,7 @@ const {
       <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
     </div>
     <div class="main">
-      <component
-        :is="panelComponent"
-        v-if="panelComponent"
-        class="panel"
-        v-on="panelComponentListeners"
-      />
+      <component :is="panelComponent" v-if="panelComponent" class="panel" />
       <template v-else>
         <QuickBuildProcessing
           v-if="isProcessing"

@@ -31,7 +31,7 @@ const deleteChatMenuItem = {
 const onItemClick = (_: MouseEvent, item: MenuItem) =>
   item.metadata?.handler?.();
 
-const { panelComponent, panelComponentListeners } = useKaiPanels();
+const { panelComponent } = useKaiPanels();
 const showChatControls = computed(() => !panelComponent.value);
 </script>
 
@@ -59,11 +59,7 @@ const showChatControls = computed(() => !panelComponent.value);
       </template>
     </template>
 
-    <component
-      :is="panelComponent"
-      v-if="panelComponent"
-      v-on="panelComponentListeners"
-    />
+    <component :is="panelComponent" v-if="panelComponent" />
     <template v-else>
       <Chat v-show="chainType === 'qa'" chain-type="qa" />
       <Chat v-show="chainType === 'build'" chain-type="build" />

@@ -29,6 +29,12 @@ const useHubAuth = () => {
     );
   });
 
+  const userName = computed(() => {
+    return (
+      store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.user?.name ?? null
+    );
+  });
+
   const authenticateWithHub = () => {
     store.dispatch("spaces/connectProvider", { spaceProviderId: hubId.value });
   };
@@ -37,6 +43,7 @@ const useHubAuth = () => {
     isAuthenticated,
     isHubConfigured,
     hubId,
+    userName,
     authenticateWithHub,
   };
 };

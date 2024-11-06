@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import { useFeatures } from "@/plugins/feature-flags";
 import { useHubAuth } from "../useHubAuth";
@@ -9,21 +9,14 @@ import ErrorPanel from "./ErrorPanel.vue";
 import InstallationPanel from "./InstallationPanel.vue";
 import LoginPanel from "./LoginPanel.vue";
 import NoHubConfiguredPanel from "./NoHubConfiguredPanel.vue";
-
-const isDisclaimerOpen = ref(true);
+import { useDisclaimer } from "./useDisclaimer";
 
 export const useKaiPanels = () => {
   const { isKaiInstalled: _isKaiInstalled } = useFeatures();
   const isKaiInstalled = _isKaiInstalled();
   const { isHubConfigured, isAuthenticated } = useHubAuth();
-  const { isServerAvailable, hasDisclaimer } = useKaiServer();
-
-  const closeDisclaimer = () => {
-    isDisclaimerOpen.value = false;
-  };
-  const shouldShowDisclaimer = computed(
-    () => hasDisclaimer.value && isDisclaimerOpen.value,
-  );
+  const { isServerAvailable } = useKaiServer();
+  const { shouldShowDisclaimer } = useDisclaimer();
 
   // Dynamically select which panel to show
   const panelComponent = computed(() => {
@@ -46,16 +39,5 @@ export const useKaiPanels = () => {
     return null;
   });
 
-  const panelComponentListeners = computed(() => {
-    if (panelComponent.value === DisclaimerPanel) {
-      return { close: closeDisclaimer };
-    } else {
-      return {};
-    }
-  });
-
-  return {
-    panelComponent,
-    panelComponentListeners,
-  };
+  return { panelComponent };
 };
