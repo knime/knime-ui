@@ -183,19 +183,19 @@ final class ProjectAPI {
      */
     @API
     static void setProjectActiveAndEnsureItsLoaded(final String projectId) {
-        var wpm = ProjectManager.getInstance();
-        var wfm = wpm.getCachedProject(projectId).orElse(null);
+        var pm = ProjectManager.getInstance();
+        var wfm = pm.getCachedProject(projectId).orElse(null);
         if (wfm == null) {
             // workflow hasn't been loaded, yet -> open it
-            wfm = wpm.openAndCacheProject(projectId).orElse(null);
+            wfm = pm.openAndCacheProject(projectId).orElse(null);
             if (wfm != null) {
                 NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
             }
         }
         if (wfm != null) {
-            wpm.setProjectActive(projectId);
+            pm.setProjectActive(projectId);
         } else {
-            wpm.removeProject(projectId, w -> {});
+            pm.removeProject(projectId, w -> {});
             NodeLogger.getLogger(ProjectAPI.class)
                 .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();

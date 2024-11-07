@@ -111,7 +111,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * re-initializated after a {@link Suspend}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
- * @author Kai Franze, KNIME GmbH
+ * @author Kai Franze, KNIME GmbH, Germany
  */
 final class Init {
 
@@ -122,7 +122,6 @@ final class Init {
     }
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
-        // Create and set default service dependencies
         var projectManager = state.getProjectManager();
         var localSpace = state.getLocalWorkspace();
         var spaceProviders = createSpaceProviders(localSpace);
@@ -137,16 +136,16 @@ final class Init {
         var nodeRepo = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
 
+        // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
             kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
-
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
             state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects());
 
+        // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
-
         registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer, nodeCollections, nodeRepo);
 
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
@@ -192,12 +191,14 @@ final class Init {
                 appStateUpdater.updateAppState();
             }
         });
+
         // Update the app state when the mouse wheel action changes
         KnimeUIPreferences.setMouseWheelActionChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
                 appStateUpdater.updateAppState();
             }
         });
+
         KnimeUIPreferences.setConfirmNodeConfigChangesPrefChangeListener(appStateUpdater::updateAppState);
         KnimeUIPreferences.setExplorerMointPointChangeListener(() -> {
             spaceProviders.update();
@@ -233,6 +234,7 @@ final class Init {
 
     private static PreferencesProvider createPreferencesProvider() {
         return new PreferencesProvider() {
+
             @Override
             public Predicate<String> activeNodeCollection() {
                 return NodeCollectionUtil.getActiveNodeCollection();
@@ -257,6 +259,7 @@ final class Init {
             public boolean useEmbeddedDialogs() {
                 return KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED.equals(KnimeUIPreferences.getNodeDialogMode());
             }
+
         };
     }
 
@@ -369,23 +372,32 @@ final class Init {
 
     }
 
+    /**
+     * @return A new K-AI handler instance or {@code null} if K-AI is not installed
+     */
     private static KaiHandler createKaiHandler(final EventConsumer eventConsumer, final SpaceProviders spaceProviders) {
         AuthTokenProvider authTokenProvider = (projectId, hubId) -> {
-            var spaceProvider = spaceProviders.getProvidersMap().get(hubId);
-            if (spaceProvider == null) {
-                throw new CouldNotAuthorizeException(
-                    "Please add the %s to your hosted mountpoints and login to use K-AI.".formatted(hubId));
-            } else if (spaceProvider.getType() == TypeEnum.HUB) {
-                var connection = spaceProvider.getConnection(false).orElse(null);
-                if (connection != null) {
-                    return connection.getAuthorization();
-                }
-                throw new CouldNotAuthorizeException("Could not authorize. Please log into %s.".formatted(hubId));
-            }
-            throw new CouldNotAuthorizeException("Unexpected content provider for mount ID '%s'.".formatted(hubId));
+            var spaceProvider = getSpaceProviderOrThrow(spaceProviders, hubId);
+            var connection = spaceProvider.getConnection(false).orElseThrow(
+                () -> new CouldNotAuthorizeException("Could not authorize. Please log into %s.".formatted(hubId)));
+            return connection.getAuthorization();
         };
-        return KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer, authTokenProvider)//
-            .orElse(null); // null if K-AI is not installed
+        return KaiHandlerFactoryRegistry.createKaiHandler(eventConsumer, authTokenProvider).orElse(null);
+    }
+
+    /**
+     * @return The space provider for the given Hub ID
+     * @throws CouldNotAuthorizeException If the space provider could not be found or is not a Hub
+     */
+    private static SpaceProvider getSpaceProviderOrThrow(final SpaceProviders spaceProviders, final String hubId)
+        throws CouldNotAuthorizeException {
+        var spaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(hubId))
+            .orElseThrow(() -> new CouldNotAuthorizeException(
+                "Please add the %s to your hosted mountpoints and login to use K-AI.".formatted(hubId)));
+        if (spaceProvider.getType() != TypeEnum.HUB) {
+            throw new CouldNotAuthorizeException("Unexpected content provider for mount ID '%s'.".formatted(hubId));
+        }
+        return spaceProvider;
     }
 
 }
