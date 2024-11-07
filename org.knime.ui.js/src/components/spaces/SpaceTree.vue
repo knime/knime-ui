@@ -10,21 +10,56 @@ import {
   type TreeNodeOptions,
 } from "@knime/virtual-tree";
 
-import type { SpaceProviderNS } from "@/api/custom-types";
+import type {
+  FullSpacePath,
+  SpaceProviderId,
+  SpaceProviderNS,
+} from "@/api/custom-types";
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
+import { isLocalProvider } from "@/store/spaces/util";
 
+import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { spaceItemIconRenderer } from "./spaceItemIconRenderer";
 import { useSpaceIcons } from "./useSpaceIcons";
 
+type SpaceTreeItem = FullSpacePath & {
+  type: "item";
+  isWorkflowContainer: boolean;
+};
+
+type SpaceTreeGroup = {
+  type: "group";
+  groupData: SpaceProviderNS.SpaceGroup;
+};
+
+type SpaceTreeProvider = SpaceProviderId & {
+  type: "provider";
+};
+
+export type SpaceTreeSelection =
+  | SpaceTreeItem
+  | SpaceTreeGroup
+  | SpaceTreeProvider
+  | null;
+
 interface Props {
-  excludedSpaceProviderIds?: Array<string>;
+  providerRules?: {
+    restrictedTo?: Array<string>;
+    exclude?: Array<string>;
+  };
 }
 
+const LOCAL_SPACEPROVIDER_ID = "local";
+
 const props = withDefaults(defineProps<Props>(), {
-  excludedSpaceProviderIds: () => [],
+  providerRules: () => ({}),
 });
+
+const emit = defineEmits<{
+  selectChange: [value: SpaceTreeSelection];
+}>();
 
 const treeSource = ref<TreeNodeOptions[]>([]);
 const store = useStore();
@@ -74,21 +109,32 @@ const mapSpaceGroupToTreeNode = (
 
 const mapSpaceProviderToTreeNode = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
-): TreeNodeOptions => ({
-  nodeKey: `provider_${spaceProvider.id}`,
-  name: spaceProvider.name,
-  hasChildren: true,
-  icon: markRaw(getSpaceProviderIcon(spaceProvider)),
-  spaceProviderId: spaceProvider.id,
-  children: spaceProvider.spaceGroups?.map((group) =>
-    mapSpaceGroupToTreeNode(group, { spaceProviderId: spaceProvider.id }),
-  ),
-});
+): TreeNodeOptions => {
+  if (isLocalProvider(spaceProvider)) {
+    return mapSpacesToTreeNodes(spaceProvider.spaceGroups[0].spaces[0], {
+      spaceProviderId: spaceProvider.id,
+    });
+  } else {
+    return {
+      nodeKey: `provider_${spaceProvider.id}`,
+      name: formatSpaceProviderName(spaceProvider),
+      hasChildren: true,
+      icon: markRaw(getSpaceProviderIcon(spaceProvider)),
+      spaceProviderId: spaceProvider.id,
+      children: spaceProvider.spaceGroups?.map((group) =>
+        mapSpaceGroupToTreeNode(group, { spaceProviderId: spaceProvider.id }),
+      ),
+    };
+  }
+};
 
 const filteredSpaceProviders = computed(() => {
   const spaceProviders = Object.values(store.state.spaces.spaceProviders ?? {});
   return spaceProviders.filter(
-    ({ id }) => !props.excludedSpaceProviderIds.includes(id),
+    ({ id }) =>
+      (!props.providerRules.restrictedTo ||
+        props.providerRules.restrictedTo.includes(id)) &&
+      !props.providerRules.exclude?.includes(id),
   );
 });
 
@@ -175,10 +221,69 @@ const retryConnectProvider = (treeNodeKey: NodeKey) => {
   tree.value?.clearChildren(treeNodeKey);
   tree.value?.loadChildren(treeNodeKey);
 };
+
+const getSelectionType = (
+  selectedNode: BaseTreeNode | undefined,
+): "item" | "group" | "provider" | null => {
+  if (!selectedNode || typeof selectedNode.origin.nodeKey !== "string") {
+    return null;
+  }
+
+  const nodeKey: String = selectedNode.origin.nodeKey;
+  if (nodeKey.startsWith("item_") || nodeKey.startsWith("space_")) {
+    return "item";
+  }
+
+  if (nodeKey.startsWith("group_")) {
+    return "group";
+  }
+
+  if (nodeKey.startsWith("provider_")) {
+    return "provider";
+  }
+
+  return null;
+};
+
+const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
+  if (!node) {
+    emit("selectChange", null);
+    return;
+  }
+
+  const type = getSelectionType(node);
+  const { itemId, spaceId, spaceProviderId, groupData, hasChildren } =
+    node.origin;
+
+  if (type === "item") {
+    emit("selectChange", {
+      type,
+      itemId,
+      spaceId,
+      spaceProviderId,
+      isWorkflowContainer: hasChildren!,
+    });
+    return;
+  }
+
+  if (type === "group") {
+    emit("selectChange", { type, groupData });
+    return;
+  }
+
+  if (type === "provider") {
+    emit("selectChange", { type, spaceProviderId });
+  }
+};
 </script>
 
 <template>
-  <Tree ref="tree" :source="treeSource" :load-data="loadTreeLevel">
+  <Tree
+    ref="tree"
+    :source="treeSource"
+    :load-data="loadTreeLevel"
+    @select-change="onSelectChange"
+  >
     <template #loginFailed="{ treeNode }: { treeNode: BaseTreeNode }">
       <Pill variant="error" :title="treeNode.origin.title"
         ><CloseIcon /> {{ treeNode.name }}

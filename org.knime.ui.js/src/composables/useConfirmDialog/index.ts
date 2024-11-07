@@ -2,15 +2,21 @@ import { type VNode, computed, ref } from "vue";
 
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
-export type ConfirmDialogButton = {
-  type: "confirm" | "cancel";
+type ConfirmationButton = {
+  type: "confirm";
   label: string;
   flushRight?: boolean;
-  customHandler?: (actions: {
-    confirm: () => void;
-    cancel: () => void;
-  }) => void;
+  customHandler?: (actions: { confirm: () => void }) => void;
 };
+
+type CancellationButton = {
+  type: "cancel";
+  label: string;
+  flushRight?: boolean;
+  customHandler?: (actions: { cancel: () => void }) => void;
+};
+
+export type ConfirmDialogButton = ConfirmationButton | CancellationButton;
 
 type CommonConfig = {
   /**

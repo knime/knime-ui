@@ -25,6 +25,7 @@ import { DynamicEnvRenderer, isDesktop } from "@/environment";
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
 import ShortcutsOverviewDialog from "./application/ShortcutsOverviewDialog.vue";
+import DestinationPickerModal from "./spaces/DestinationPicker/DestinationPickerModal.vue";
 import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
 
 /**
@@ -203,6 +204,8 @@ const onCloseError = () => {
     <CreateWorkflowModal />
 
     <ShortcutsOverviewDialog />
+
+    <DestinationPickerModal />
 
     <ToastStack class="toast-stack" />
     <HintProvider />
