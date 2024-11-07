@@ -2,7 +2,7 @@ import { type Mock, beforeAll, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
-import { sleep } from "@knime/utils";
+import { FunctionButton } from "@knime/components";
 
 import { Node } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "@/store/application";
@@ -164,6 +164,7 @@ describe("NodeConfig", () => {
     });
 
     it("should toggle between large and small mode", async () => {
+      vi.useFakeTimers();
       const { wrapper, $store } = doMount({
         singleSelectedNodeMock: vi.fn().mockReturnValue(node),
       });
@@ -172,7 +173,7 @@ describe("NodeConfig", () => {
 
       expect(wrapper.classes()).toContain("small");
       expect(wrapper.find(".title-bar").exists()).toBe(false);
-      expect(wrapper.find(".toggle-display-mode-btn").exists()).toBe(false);
+      expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
 
       $store.commit("nodeConfiguration/setActiveNodeId", "root:1");
 
@@ -188,25 +189,18 @@ describe("NodeConfig", () => {
         canBeEnlarged: true,
       });
 
+      // @ts-ignore - start on Large Mode
+      await wrapper.vm.toggleLarge();
       await nextTick();
 
-      expect(wrapper.find(".toggle-display-mode-btn").exists()).toBe(true);
-
-      await wrapper.find(".toggle-display-mode-btn").trigger("click");
+      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+      await wrapper.findComponent(FunctionButton).trigger("click");
+      vi.runOnlyPendingTimers();
+      await nextTick();
 
       expect(wrapper.find(".title-bar").text()).toMatch("Mock Node");
-      expect(wrapper.classes()).toContain("large");
-      expect(showModal).toHaveBeenCalled();
-      expect(pushEventDispatcher).toHaveBeenCalledWith({
-        eventType: "DisplayModeEvent",
-        payload: { mode: "large" },
-      });
-
-      await wrapper.find(".toggle-display-mode-btn").trigger("click");
-      await sleep(0);
-
       expect(pushEventDispatcher).toHaveBeenCalledTimes(2);
-      expect(pushEventDispatcher).toHaveBeenLastCalledWith({
+      expect(pushEventDispatcher).toHaveBeenNthCalledWith(2, {
         eventType: "DisplayModeEvent",
         payload: { mode: "small" },
       });

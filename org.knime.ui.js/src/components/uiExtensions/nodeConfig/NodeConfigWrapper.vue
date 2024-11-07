@@ -12,12 +12,32 @@ import NodeConfigLayout from "./NodeConfigLayout.vue";
 
 const store = useStore();
 
+type Props = {
+  isLargeMode: boolean;
+};
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  toggleLarge: [];
+}>();
+
 const projectId = computed(() => store.state.application.activeProjectId!);
 const workflowId = computed(
   () => store.state.workflow.activeWorkflow!.info.containerId,
 );
 const selectedNode = computed<KnimeNode | null>(
   () => store.getters["selection/singleSelectedNode"],
+);
+const canBeEnlarged = computed(
+  () =>
+    store.state.nodeConfiguration.activeExtensionConfig?.canBeEnlarged ?? false,
+);
+
+const nodeName = computed<string>(() =>
+  store.getters["workflow/getNodeName"](
+    store.state.nodeConfiguration.activeNodeId,
+  ),
 );
 
 const activeNodeId = computed(() => store.state.nodeConfiguration.activeNodeId);
@@ -77,9 +97,13 @@ const rightPanelWidth = computed(
       :workflow-id="workflowId"
       :disabled="isConfigurationDisabled"
       :dirty-state="dirtyState"
+      :is-large-mode="props.isLargeMode"
+      :can-be-enlarged="canBeEnlarged"
+      :node-name="nodeName"
       @apply="applySettings(activeNode.id, $event)"
       @execute="executeActiveNode"
       @discard="discardSettings"
+      @toggle-large="emit('toggleLarge')"
     >
       <template #loading-skeleton>
         <AppRightPanelSkeleton :width="rightPanelWidth" />

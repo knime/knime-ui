@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Button } from "@knime/components";
+import { Button, FunctionButton } from "@knime/components";
+import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
 import {
   type APILayerDirtyState,
   ApplyState,
@@ -18,6 +19,9 @@ type Props = {
   workflowId: string;
   disabled: boolean;
   dirtyState: APILayerDirtyState;
+  nodeName: string;
+  canBeEnlarged: boolean;
+  isLargeMode: boolean;
 };
 
 const props = defineProps<Props>();
@@ -26,6 +30,7 @@ const emit = defineEmits<{
   apply: [execute: boolean];
   execute: [];
   discard: [];
+  toggleLarge: [];
 }>();
 
 const loadingState = ref<UIExtensionLoadingState | null>(null);
@@ -82,6 +87,14 @@ const onDiscard = () => {
       :selected-node="activeNode"
       @loading-state-change="loadingState = $event"
     >
+      <template #header>
+        <div v-if="!isLargeMode" class="header">
+          <h6>{{ nodeName }}</h6>
+          <FunctionButton v-if="canBeEnlarged" @click="emit('toggleLarge')">
+            <ArrowsExpandIcon />
+          </FunctionButton>
+        </div>
+      </template>
       <template #controls>
         <div v-if="isLoadingReady" ref="buttons" class="buttons">
           <Button
@@ -136,6 +149,21 @@ const onDiscard = () => {
   flex-direction: column;
   width: 100%;
   height: 100%;
+
+  & .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-8) var(--space-16) 5px;
+    border-bottom: 1px solid var(--knime-silver-sand);
+
+    & h6 {
+      margin: 0;
+      font-weight: 400;
+      font-size: 18px;
+      line-height: 36px;
+    }
+  }
 
   & .buttons {
     border-top: 1px solid var(--knime-silver-sand);

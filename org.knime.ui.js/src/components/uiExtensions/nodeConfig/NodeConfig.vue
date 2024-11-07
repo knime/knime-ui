@@ -3,7 +3,6 @@ import { computed, nextTick, ref } from "vue";
 
 import { FunctionButton } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
-import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
 import { UIExtensionPushEvents } from "@knime/ui-extension-service";
 import { sleep } from "@knime/utils";
 
@@ -72,18 +71,19 @@ const onDialogCancel = () => {
   >
     <div v-if="isLargeMode" class="title-bar">
       <h2>{{ nodeName }}</h2>
+      <FunctionButton
+        v-if="activeNode && canBeEnlarged && isLargeMode"
+        @click="toggleLarge"
+      >
+        <ArrowsCollapseIcon />
+      </FunctionButton>
     </div>
 
-    <FunctionButton
-      v-if="activeNode && canBeEnlarged"
-      compact
-      class="toggle-display-mode-btn"
-      @click="toggleLarge"
+    <NodeConfigWrapper
+      class="content-wrapper"
+      :is-large-mode="isLargeMode"
+      @toggle-large="toggleLarge"
     >
-      <Component :is="isLargeMode ? ArrowsCollapseIcon : ArrowsExpandIcon" />
-    </FunctionButton>
-
-    <NodeConfigWrapper class="content-wrapper">
       <template #inactive>
         <IncompatibleNodeConfigPlaceholder />
       </template>
@@ -112,12 +112,6 @@ dialog {
   width: 100%;
   background-color: var(--knime-gray-ultra-light);
 
-  & .toggle-display-mode-btn {
-    position: absolute;
-    z-index: 9;
-    top: var(--space-4);
-  }
-
   &.small {
     display: block;
     position: relative;
@@ -139,10 +133,12 @@ dialog {
 
     & .title-bar {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
       color: var(--knime-white);
       background-color: var(--knime-masala);
       max-width: 100%;
-      padding: 0 var(--space-12);
+      padding-left: var(--space-12);
       height: var(--title-bar-height);
 
       & h2 {

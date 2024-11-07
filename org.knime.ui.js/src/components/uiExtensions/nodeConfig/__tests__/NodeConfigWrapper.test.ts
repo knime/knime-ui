@@ -15,7 +15,7 @@ import { mockVuexStore } from "@/test/utils";
 import NodeConfigLayout from "../NodeConfigLayout.vue";
 import NodeConfigWrapper from "../NodeConfigWrapper.vue";
 
-describe("NodeConfigLayout.vue", () => {
+describe("NodeConfigWrapper.vue", () => {
   const projectId = "project1";
   const workflowId = "workflow1";
 
@@ -61,6 +61,12 @@ describe("NodeConfigLayout.vue", () => {
         [executedNode.id]: executedNode,
         [executingNode.id]: executingNode,
       },
+      nodeTemplates: {
+        [idleNode.templateId]: { name: "template" },
+        [configuredNode.templateId]: { name: "template" },
+        [executedNode.templateId]: { name: "template" },
+        [executingNode.templateId]: { name: "template" },
+      },
     });
 
     $store.commit("application/setActiveProjectId", projectId);
@@ -81,7 +87,11 @@ describe("NodeConfigLayout.vue", () => {
     $store: ReturnType<typeof createStore>;
   };
 
-  const doMount = ({ $store }: MountOpts = { $store: createStore() }) => {
+  const doMount = (
+    { $store }: MountOpts = {
+      $store: createStore(),
+    },
+  ) => {
     const wrapper = mount(NodeConfigWrapper, {
       global: {
         plugins: [$store],

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
+import { FunctionButton } from "@knime/components";
 import {
   type APILayerDirtyState,
   ApplyState,
@@ -34,6 +35,9 @@ describe("NodeConfigLayout.vue", () => {
       workflowId?: string;
       disabled?: boolean;
       dirtyState?: APILayerDirtyState;
+      nodeName?: string;
+      isLargeMode?: boolean;
+      canBeEnlarged?: boolean;
     };
   };
 
@@ -41,8 +45,11 @@ describe("NodeConfigLayout.vue", () => {
     activeNode: idleNode,
     projectId: "project1",
     workflowId: "workflow1",
-    dirtyState: { apply: ApplyState.CLEAN, view: ViewState.CLEAN },
     disabled: false,
+    dirtyState: { apply: ApplyState.CLEAN, view: ViewState.CLEAN },
+    nodeName: "Node1",
+    isLargeMode: false,
+    canBeEnlarged: false,
   };
 
   const doMount = ({ props }: MountOpts = {}) => {
@@ -51,7 +58,8 @@ describe("NodeConfigLayout.vue", () => {
       global: {
         stubs: {
           NodeConfigLoader: {
-            template: '<div><slot name="controls" /></div>',
+            template:
+              '<div><slot name="header" /><slot name="controls" /></div>',
           },
         },
       },
@@ -82,6 +90,38 @@ describe("NodeConfigLayout.vue", () => {
 
     return isDisabled !== undefined;
   };
+
+  describe("header", () => {
+    it("should show header button on small dialogs and toggle large", async () => {
+      const { wrapper } = doMount({
+        props: { canBeEnlarged: true, isLargeMode: false },
+      });
+
+      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+      await wrapper.findComponent(FunctionButton).trigger("click");
+
+      expect(wrapper.emitted("toggleLarge")).toBeDefined();
+    });
+
+    it("should not show header on large dialogs", () => {
+      const { wrapper } = doMount({
+        props: { canBeEnlarged: true, isLargeMode: true },
+      });
+
+      expect(wrapper.find(".header").exists()).toBe(false);
+      expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
+    });
+
+    it("should not show button on dialogs that cannot be enlarged", () => {
+      const { wrapper } = doMount({
+        props: { canBeEnlarged: false, isLargeMode: false },
+      });
+
+      expect(wrapper.find(".header").exists()).toBe(true);
+      expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
+    });
+  });
 
   describe("action buttons", () => {
     const setDirtyState = (

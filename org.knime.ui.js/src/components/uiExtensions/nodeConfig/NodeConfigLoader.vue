@@ -193,6 +193,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <slot name="header" />
   <UIExtension
     v-if="isConfigReady"
     :extension-config="extensionConfig!"
