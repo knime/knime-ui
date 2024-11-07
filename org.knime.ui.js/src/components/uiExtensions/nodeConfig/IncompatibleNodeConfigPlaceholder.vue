@@ -50,7 +50,7 @@ const openNodeConfiguration = () => {
 
       <Button with-border compact class="button" @click="openNodeConfiguration">
         <CogIcon />
-        <span>Open legacy dialog</span>
+        <span>Open dialog</span>
       </Button>
     </template>
 

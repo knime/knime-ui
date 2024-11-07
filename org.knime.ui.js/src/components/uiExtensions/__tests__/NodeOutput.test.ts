@@ -320,13 +320,9 @@ describe("NodeOutput.vue", () => {
         [
           "configured node",
           () => configuredUnsupportedNode,
-          "Execute and open legacy port view",
+          "Execute and open port view",
         ],
-        [
-          "executed node",
-          () => executedUnsupportedNode,
-          "Open legacy port view",
-        ],
+        ["executed node", () => executedUnsupportedNode, "Open port view"],
       ])("button properly displayed for %s", async (_, node, expectedText) => {
         const { wrapper } = doMount(storeWithNode(node()));
 

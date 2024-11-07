@@ -25,7 +25,7 @@ const emit = defineEmits<{
       @click="emit('openLegacyPortView', true)"
     >
       <PlayIcon />
-      Execute and open legacy port view
+      Execute and open port view
     </Button>
 
     <Button
@@ -35,7 +35,7 @@ const emit = defineEmits<{
       compact
       @click="emit('openLegacyPortView', false)"
     >
-      Open legacy port view
+      Open port view
     </Button>
   </div>
 </template>

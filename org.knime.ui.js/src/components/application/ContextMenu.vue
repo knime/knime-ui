@@ -173,7 +173,7 @@ const portViews = (): MenuItem[] => {
           separator: true,
         },
         {
-          text: "Open legacy port view",
+          text: "Open port view",
           metadata: {
             handler: () => {
               store.dispatch("workflow/openLegacyPortView", {

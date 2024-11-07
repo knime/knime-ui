@@ -78,7 +78,7 @@ const switchToJavaUI = () => {
           an error.
         </h2>
         <div class="message">
-          Hitting the reload button should bring you back to Modern UI.
+          Hitting the reload button should bring you back to UI.
         </div>
 
         <DynamicEnvRenderer value="DESKTOP">
