@@ -77,7 +77,8 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         };
 
         final var nodeRepoFilterEditor = new RadioGroupFieldEditor(KnimeUIPreferences.SELECTED_NODE_COLLECTION_PREF_KEY,
-                "Nodes included in the node repository and node recommendations", 1, nodeRepoFilterOptions, getFieldEditorParent());
+            "Nodes included in the node repository and node recommendations", 1, nodeRepoFilterOptions,
+            getFieldEditorParent());
 
         addField(nodeRepoFilterEditor);
 
@@ -88,29 +89,30 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         };
 
         final var scrollToZoomEditor = new RadioGroupFieldEditor(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY,
-                "Mouse wheel action", 1, scrollToZoomOptions, getFieldEditorParent());
+            "Mouse wheel action", 1, scrollToZoomOptions, getFieldEditorParent());
 
         addField(scrollToZoomEditor);
 
         /// Close project confirmation on interface switch
         final var confirmCloseProjectsOnSwitchEditor =
             new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY,
-                    "Ask for confirmation to close all open projects when switching between user interfaces", getFieldEditorParent());
+                "Ask for confirmation to close all open projects when switching between user interfaces",
+                getFieldEditorParent());
 
         addField(confirmCloseProjectsOnSwitchEditor);
 
         /// Confirmation for node config changes
         addField(new BooleanFieldEditor(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY,
-                "Always confirm node configuration changes", getFieldEditorParent()));
+            "Always confirm node configuration changes", getFieldEditorParent()));
 
         /// Node configuration dialog mode
         final var nodeConfigurationModeOptions = new String[][]{ //
-                new String[]{"Embedded inside application", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
-                new String[]{"Open in new window", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED} //
+            new String[]{"Open in new window", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED}, //
+            new String[]{"Embedded inside application (experimental)", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
         };
 
         final var nodeDialogModeEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY,
-                "Node configuration dialog mode (experimental)", 1, nodeConfigurationModeOptions, getFieldEditorParent());
+            "Node configuration dialog mode", 1, nodeConfigurationModeOptions, getFieldEditorParent());
 
         addField(nodeDialogModeEditor);
     }
