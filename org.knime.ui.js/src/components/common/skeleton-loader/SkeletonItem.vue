@@ -8,7 +8,7 @@ type Props = {
   height?: `${number}px` | `${number}%`;
   color1?: string;
   color2?: string;
-  type?: "generic" | "button" | "icon-button" | "rounded";
+  type?: "generic" | "button" | "icon-button" | "rounded-sm" | "rounded-md";
   loading?: boolean;
   repeat?: number;
 };
@@ -29,7 +29,8 @@ const borderRadius = computed(() => {
   const valueMap: Partial<Record<Required<Props>["type"], string>> = {
     button: "9999px",
     "icon-button": "50%",
-    rounded: "3px",
+    "rounded-sm": "4px",
+    "rounded-md": "8px",
   };
 
   return valueMap[props.type] ?? "initial";

@@ -10,6 +10,7 @@ import {
 } from "@knime/ui-extension-renderer";
 
 import { API } from "@/api";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import type { ExtensionConfig } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 
@@ -100,4 +101,5 @@ watch(
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
   />
+  <SkeletonItem v-else-if="isLoadingConfig" type="rounded-md" />
 </template>

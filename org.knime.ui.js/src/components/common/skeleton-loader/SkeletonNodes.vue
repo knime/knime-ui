@@ -24,13 +24,13 @@ withDefaults(defineProps<Props>(), {
           :color1="$colors.SilverSandSemi"
           width="60px"
           height="10px"
-          type="rounded"
+          type="rounded-sm"
         />
         <SkeletonItem
           :color1="$colors.SilverSandSemi"
           width="35px"
           height="35px"
-          type="rounded"
+          type="rounded-sm"
         />
       </template>
       <template v-else>

@@ -4,6 +4,7 @@ import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 import { UIExtension } from "@knime/ui-extension-renderer";
 
 import { API } from "@/api";
+import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import * as applicationStore from "@/store/application";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import DataValueViewLoader, { type Props } from "../DataValueViewLoader.vue";
@@ -63,10 +64,12 @@ describe("DataValueViewLoader.vue", () => {
       }),
     );
     expect(wrapper.findComponent(UIExtension).exists()).toBe(false);
+    expect(wrapper.findComponent(SkeletonItem).exists()).toBeTruthy();
 
     await flushPromises();
 
     expect(wrapper.findComponent(UIExtension).exists()).toBe(true);
+    expect(wrapper.findComponent(SkeletonItem).exists()).toBeFalsy();
   });
 
   it("does not show anything if an error occurs during loading", async () => {
