@@ -387,7 +387,7 @@ export const setProjectActiveAndEnsureItsLoaded = ({
     [projectId],
     "Failed to set project as active in the backend",
     false,
-    { block: false },
+    { block: true },
   );
 };
 

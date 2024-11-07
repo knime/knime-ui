@@ -60,8 +60,6 @@ import java.util.stream.Collector;
 
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NodeTimer;
-import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
@@ -234,17 +232,9 @@ public final class AppStatePersistor {
                 continue; // Skips the project if no origin or relative path were persisted
             }
             var project = deserializeProject(projectJson, localSpace);
-            var projectId = project.getID();
             pm.addProject(project);
             if (projectJson.get(ACTIVE).asBoolean()) {
-                var wfm = pm.openAndCacheProject(projectId).orElse(null);
-                if (wfm != null) {
-                    pm.setProjectActive(projectId);
-                    NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
-                } else {
-                    pm.removeProject(projectId, w -> {
-                    });
-                }
+                pm.setProjectActive(project.getID());
             }
         }
     }
