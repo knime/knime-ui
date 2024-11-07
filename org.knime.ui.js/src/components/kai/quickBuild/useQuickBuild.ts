@@ -10,8 +10,8 @@ export const useQuickBuild = ({
   nodeId,
   startPosition,
 }: {
-  nodeId: Ref<string | null>,
-  startPosition: Ref<XY>
+  nodeId: Ref<string | null>;
+  startPosition: Ref<XY>;
 }) => {
   const store = useStore();
 
@@ -21,6 +21,16 @@ export const useQuickBuild = ({
 
   const { isProcessing, lastUserMessage, abortSendMessage, statusUpdate } =
     useChat("build");
+
+  let enableBannerModeCalled = false;
+  const enableBannerMode = () => {
+    if (enableBannerModeCalled) {
+      return;
+    }
+
+    store.dispatch("workflow/enableBannerMode");
+    enableBannerModeCalled = true;
+  };
 
   const sendMessage = async ({ message }: { message: string }) => {
     result.value = null;
@@ -35,7 +45,6 @@ export const useQuickBuild = ({
         targetNodes,
         startPosition: startPosition.value,
       });
-      store.dispatch("workflow/hideConnector");
     } catch (error: any) {
       errorMessage.value = error.message;
     }
@@ -46,6 +55,18 @@ export const useQuickBuild = ({
       store.dispatch("workflow/lockQuickActionMenu");
     } else {
       store.dispatch("workflow/unlockQuickActionMenu");
+    }
+  });
+
+  watch(statusUpdate, (value) => {
+    if (value === "Building workflow...") {
+      enableBannerMode();
+    }
+  });
+
+  watch(result, (value) => {
+    if (value?.type === "SUCCESS") {
+      enableBannerMode();
     }
   });
 

@@ -248,7 +248,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         isError: true,
       });
 
-      return Promise.resolve()
+      return Promise.resolve();
     }
   },
   async submitFeedback(

@@ -51,8 +51,8 @@ defineEmits(["abort"]);
 
     & .cancel-button {
       padding: 0;
-      width: 30px;
-      height: 30px;
+      width: 26px;
+      height: 26px;
       border-color: var(--knime-silver-sand);
 
       &:hover {
@@ -60,9 +60,10 @@ defineEmits(["abort"]);
       }
 
       & svg {
-        @mixin svg-icon-size 18;
+        @mixin svg-icon-size 16;
 
-        margin-left: 5px;
+        margin-left: 4px;
+        margin-top: 1px;
       }
     }
   }

@@ -58,16 +58,13 @@ watch(
   display: inline-flex;
   flex-direction: row;
   margin-top: 5px;
+  gap: var(--space-8);
 
   & .button {
     width: 20px;
     height: 20px;
     padding: 0;
     position: relative;
-
-    &:first-child {
-      margin-right: 9px;
-    }
 
     & svg.icon {
       @mixin svg-icon-size 12;

@@ -47,7 +47,7 @@ const {
 
 <template>
   <div class="quick-build-menu">
-    <div v-if="!isProcessing" class="header">
+    <div v-if="!isProcessing && result?.type !== 'SUCCESS'" class="header">
       K-AI Build Mode
       <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
     </div>

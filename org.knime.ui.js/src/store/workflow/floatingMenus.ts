@@ -143,18 +143,18 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  hideConnector({ state, commit }) {
-    // commit("setQuickActionMenu", {
-    //   ...state.quickActionMenu,
-    //   hasConnector: false,
-    //   props: {
-    //     ...state.quickActionMenu.props,
-    //     position: {
-    //       x: state.quickActionMenu.props.position.x,
-    //       y: state.quickActionMenu.props.position.y + 100,
-    //     }
-    //   }
-    // });
+  enableBannerMode({ state, commit }) {
+    commit("setQuickActionMenu", {
+      ...state.quickActionMenu,
+      hasConnector: false,
+      props: {
+        ...state.quickActionMenu.props,
+        position: {
+          x: state.quickActionMenu.props!.position.x,
+          y: state.quickActionMenu.props!.position.y - 125,
+        },
+      },
+    });
   },
 };
 

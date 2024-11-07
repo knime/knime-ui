@@ -41,7 +41,9 @@ const setQuickBuildMode = () => (menuMode.value = "quick-build");
 
 const store = useStore();
 
-const hasConnector = computed(() => store.state.workflow.quickActionMenu.hasConnector);
+const hasConnector = computed(
+  () => store.state.workflow.quickActionMenu.hasConnector,
+);
 
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,

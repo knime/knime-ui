@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { Button } from "@knime/components";
-import CheckIcon from "@knime/styles/img/icons/check.svg";
+import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 
-import { KaiMessage } from "@/api/gateway-api/generated-api";
-import Message from "../chat/message/Message.vue";
+import FeedbackControls from "../chat/message/FeedbackControls.vue";
 
 type Props = {
   message: string;
@@ -15,10 +13,11 @@ defineEmits(["close"]);
 
 <template>
   <div class="quick-build-result">
-    <Message :role="KaiMessage.RoleEnum.Assistant" :content="message" />
-    <Button class="button" compact with-border @click="$emit('close')"
-      ><CheckIcon />Done</Button
-    >
+    <div class="knime-icon">
+      <KnimeIcon />
+    </div>
+    <div class="message">{{ message }}</div>
+    <FeedbackControls :submit-feedback="() => {}" show-controls />
   </div>
 </template>
 
@@ -26,14 +25,63 @@ defineEmits(["close"]);
 @import url("@/assets/mixins.css");
 
 .quick-build-result {
-  text-align: right;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-8);
 
-  & .button {
-    margin-top: -20px;
+  & .knime-icon {
+    background-color: var(--knime-white);
+    border-radius: 100%;
+    height: 26px;
+    width: 26px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.user {
+      left: auto;
+      right: 0;
+    }
+
+    & svg {
+      margin-top: -2px;
+
+      @mixin svg-icon-size 16;
+    }
+
+    &.user svg.assistant {
+      margin-top: -4px;
+    }
   }
 
-  & * {
-    text-align: initial;
+  & .message {
+    height: 26px;
+    line-height: 26px;
+    background-color: var(--knime-white);
+    color: var(--knime-masala);
+    border-radius: 5px;
+    padding: 0 var(--space-8);
+    flex-grow: 1;
+    font-size: 13px;
+  }
+
+  & .cancel-button {
+    padding: 0;
+    width: 26px;
+    height: 26px;
+    border-color: var(--knime-silver-sand);
+
+    &:hover {
+      background-color: var(--knime-silver-sand);
+    }
+
+    & svg {
+      @mixin svg-icon-size 16;
+
+      margin-left: 4px;
+      margin-top: 1px;
+    }
   }
 }
 </style>
