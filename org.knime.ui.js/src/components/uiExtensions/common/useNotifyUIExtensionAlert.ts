@@ -16,7 +16,7 @@ export const useNotifyUIExtensionAlert = () => {
     }
   };
 
-  const notify = (alert: Alert) => {
+  const notify = (alert: Alert, nodeConfig?: boolean) => {
     removeActiveToast();
 
     const toastType = alert.type === "warn" ? "warning" : "error";
@@ -26,7 +26,7 @@ export const useNotifyUIExtensionAlert = () => {
       : `${capitalize(toastType)} (${alert.nodeId})`;
 
     activeToastId.value = $toast.show({
-      headline,
+      headline: nodeConfig ? "Invalid node settings" : headline,
       message: alert.message,
       type: toastType,
       autoRemove: alert.type !== "error",

@@ -11,8 +11,8 @@ import { API } from "@/api";
 import { gatewayRpcClient } from "@/api/gateway-api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
+import { useNotifyUIExtensionAlert } from "../common/useNotifyUIExtensionAlert";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useUniqueNodeStateId } from "../common/useUniqueNodeStateId";
 
@@ -30,7 +30,7 @@ const props = defineProps<Props>();
 // Even though there's a store usage, this component should be limited to
 // using only the nodeConfiguration store, to keep it as context-less as possible
 const store = useStore();
-const $toast = getToastsProvider();
+const { notify } = useNotifyUIExtensionAlert();
 
 const { projectId, workflowId, selectedNode } = toRefs(props);
 const extensionConfig = ref<ExtensionConfig | null>(null);
@@ -140,12 +140,7 @@ const apiLayer: UIExtensionAPILayer = {
   sendAlert: (alert: Alert) => {
     consola.log("Alert received for NodeConfigLoader :>> ", alert);
 
-    $toast.show({
-      type: "error",
-      headline: "Invalid node settings",
-      message: alert.message ?? "",
-      autoRemove: true,
-    });
+    notify({ ...alert }, true);
   },
 
   // NOOP - not required by this embedding context for this type of UI Extension
