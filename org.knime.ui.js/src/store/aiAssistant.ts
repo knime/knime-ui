@@ -60,10 +60,10 @@ type AiAssistantEventPayload = {
   conversation_id: string;
 };
 
-let buildModeResponseCallback: {
-  resolve: CallableFunction;
-  reject: CallableFunction;
-} | null = null;
+const responseCallback: Record<
+  string,
+  { resolve: CallableFunction; reject: CallableFunction }
+> = {};
 
 const createEmptyConversationState = (): ConversationState => {
   return {
@@ -194,12 +194,12 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
     {
       chainType,
       message,
-      targetNodes,
+      targetNodes = [],
       startPosition,
     }: {
       chainType: ChainType;
       message: Message;
-      targetNodes: string[];
+      targetNodes?: string[];
       startPosition?: XY;
     },
   ) {
@@ -231,6 +231,13 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           startPosition,
         },
       });
+
+      // Resolve/reject only after handleAiAssistantEvent receives a
+      // corresponding result or error.
+      const { resolve, reject, promise } = createUnwrappedPromise();
+      responseCallback[chainType] = { resolve, reject };
+
+      return promise;
     } catch (error) {
       consola.error("makeAiRequest", error);
       commit("clearChain", { chainType });
@@ -240,24 +247,9 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
         content: "Sorry, something went wrong. Please try again later!",
         isError: true,
       });
-    }
-  },
-  async makeQuickBuildRequest(
-    { dispatch },
-    { message, targetNodes, startPosition }: { message: Message; targetNodes: string[], startPosition: XY },
-  ) {
-    await dispatch("makeAiRequest", {
-      chainType: "build",
-      message,
-      targetNodes,
-      startPosition,
-    });
 
-    // Resolve/reject only after handleAiAssistantEvent receives a
-    // corresponding result or error.
-    const { resolve, reject, promise } = createUnwrappedPromise();
-    buildModeResponseCallback = { resolve, reject };
-    return promise;
+      return Promise.resolve()
+    }
   },
   async submitFeedback(
     { state, rootGetters },
@@ -315,10 +307,8 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           });
         }
 
-        if (chainType === "build") {
-          buildModeResponseCallback?.resolve(payload);
-          buildModeResponseCallback = null;
-        }
+        responseCallback[chainType]?.resolve(payload);
+        delete responseCallback[chainType];
 
         break;
       case "error":
@@ -332,10 +322,8 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
           isError: true,
         });
 
-        if (chainType === "build") {
-          buildModeResponseCallback?.reject(payload);
-          buildModeResponseCallback = null;
-        }
+        responseCallback[chainType]?.reject(payload);
+        delete responseCallback[chainType];
 
         break;
       case "status_update":

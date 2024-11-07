@@ -22,22 +22,6 @@ export const useQuickBuild = ({
   const { isProcessing, lastUserMessage, abortSendMessage, statusUpdate } =
     useChat("build");
 
-  const makeQuickBuildRequest = ({
-    message,
-    targetNodes,
-    startPosition,
-  }: {
-    message: string;
-    targetNodes: string[];
-    startPosition: XY;
-  }) => {
-    return store.dispatch("aiAssistant/makeQuickBuildRequest", {
-      message,
-      targetNodes,
-      startPosition,
-    });
-  };
-
   const sendMessage = async ({ message }: { message: string }) => {
     result.value = null;
     userQuery.value = message;
@@ -45,11 +29,13 @@ export const useQuickBuild = ({
 
     try {
       errorMessage.value = "";
-      result.value = await makeQuickBuildRequest({
+      result.value = await store.dispatch("aiAssistant/makeAiRequest", {
+        chainType: "build",
         message,
         targetNodes,
         startPosition: startPosition.value,
       });
+      store.dispatch("workflow/hideConnector");
     } catch (error: any) {
       errorMessage.value = error.message;
     }

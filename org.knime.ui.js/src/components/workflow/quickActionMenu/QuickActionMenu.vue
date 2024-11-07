@@ -41,6 +41,8 @@ const setQuickBuildMode = () => (menuMode.value = "quick-build");
 
 const store = useStore();
 
+const hasConnector = computed(() => store.state.workflow.quickActionMenu.hasConnector);
+
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,
 );
@@ -122,6 +124,7 @@ const isQuickBuildAvailableForPort = computed(() =>
   >
     <!-- this will be portalled to the canvas -->
     <NodePortActiveConnector
+      v-if="hasConnector"
       :port="port"
       :targeted="false"
       :direction="nodeRelation === 'SUCCESSORS' ? 'out' : 'in'"
@@ -150,7 +153,7 @@ const isQuickBuildAvailableForPort = computed(() =>
       <KaiQuickBuild
         v-else-if="menuMode == 'quick-build'"
         :node-id="nodeId"
-        :start-position="position"
+        :start-position="canvasPosition"
         @menu-back="setQuickAddMode"
       />
     </div>

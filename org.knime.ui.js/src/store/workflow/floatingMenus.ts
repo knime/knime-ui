@@ -30,6 +30,7 @@ interface State {
   quickActionMenu: {
     isOpen: boolean;
     isLocked: boolean;
+    hasConnector: boolean;
     props: QuickActionMenuProps | null;
     events: {
       menuClose?: () => void;
@@ -54,6 +55,7 @@ export const state = (): State => ({
   quickActionMenu: {
     isOpen: false,
     isLocked: false,
+    hasConnector: true,
     props: null,
     events: {},
   },
@@ -100,6 +102,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     commit("setQuickActionMenu", {
       isOpen: true,
       isLocked: false,
+      hasConnector: true,
       props,
       events: events
         ? events
@@ -118,6 +121,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     commit("setQuickActionMenu", {
       isOpen: false,
       isLocked: false,
+      hasConnector: true,
       props: {},
       events: {},
     });
@@ -137,6 +141,20 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       ...state.quickActionMenu,
       isLocked: false,
     });
+  },
+
+  hideConnector({ state, commit }) {
+    // commit("setQuickActionMenu", {
+    //   ...state.quickActionMenu,
+    //   hasConnector: false,
+    //   props: {
+    //     ...state.quickActionMenu.props,
+    //     position: {
+    //       x: state.quickActionMenu.props.position.x,
+    //       y: state.quickActionMenu.props.position.y + 100,
+    //     }
+    //   }
+    // });
   },
 };
 
