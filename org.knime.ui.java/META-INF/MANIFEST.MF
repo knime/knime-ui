@@ -53,3 +53,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: org.knime.ui.java
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.knime.ui.java.UIPlugin
+Import-Package: com.fasterxml.jackson.dataformat.yaml;version="[2.16.0,3.0.0]"

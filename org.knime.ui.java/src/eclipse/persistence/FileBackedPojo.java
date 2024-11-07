@@ -1,6 +1,5 @@
 /*
  * ------------------------------------------------------------------------
- *
  *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.com; Email: contact@knime.com
  *
@@ -41,61 +40,63 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ---------------------------------------------------------------------
- *
- * History
- *   Jan 16, 2023 (hornm): created
+ * -------------------------------------------------------------------
  */
-package org.knime.ui.java.browser.lifecycle;
+package persistence;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.function.Supplier;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.Optional;
 
-import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.api.SaveAndCloseProjects;
-import org.knime.ui.java.util.UserDirectory;
-
-import persistence.AppStatePersistor;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
- * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
+ * Provide persistence of a POJO ("plain old java object") to a YAML file.
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @param <V>
  */
-@SuppressWarnings("restriction")
-final class SaveState {
+public class FileBackedPojo<V extends FileBackedPojo.Compatible> implements Persistence<V> {
 
-    private SaveState() {
-        //
+    private final Path m_filePath;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+
+    private final Class<V> m_clazz;
+
+    @SuppressWarnings("javadoc")
+    public FileBackedPojo(final Path filePath, final Class<V> clazz) {
+        m_clazz = clazz;
+        m_filePath = filePath;
     }
 
-    static LifeCycleStateInternal run(final LifeCycleStateInternal state) throws StateTransitionAbortedException {
-        final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        final var saveProjectsResult = state.saveAndCloseAllWorkflows();
 
-        if (saveProjectsResult.get() == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
-            throw new StateTransitionAbortedException();
+    @Override
+    public Optional<V> read() throws IOException {
+        try {
+            return Optional.of(MAPPER.readValue(m_filePath.toFile(), m_clazz));
+        } catch (FileNotFoundException e) { // NOSONAR
+            return Optional.empty();
         }
-
-        return new LifeCycleStateInternalAdapter(state) {
-
-            @Override
-            public boolean workflowsSaved() {
-                return saveProjectsResult.get() == SaveAndCloseProjects.State.SUCCESS;
-            }
-
-            @Override
-            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
-                return saveProjectsResult;
-            }
-
-            @Override
-            public String serializedAppState() {
-                return serializedAppState;
-            }
-
-        };
     }
 
+    @Override
+    public void write(final V value) throws IOException {
+        MAPPER.writeValue(m_filePath.toFile(), value);
+    }
+
+    /**
+     * A class extending this class will read/write unknown fields to this map.
+     */
+    public static class Compatible {
+
+        @JsonAnyGetter
+        @JsonAnySetter
+        private Map<String, Object> m_unknownProperties;
+
+    }
 }

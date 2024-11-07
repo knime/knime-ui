@@ -1,6 +1,5 @@
 /*
  * ------------------------------------------------------------------------
- *
  *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.com; Email: contact@knime.com
  *
@@ -41,61 +40,19 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * ---------------------------------------------------------------------
- *
- * History
- *   Jan 16, 2023 (hornm): created
+ * -------------------------------------------------------------------
  */
-package org.knime.ui.java.browser.lifecycle;
-
-import java.io.IOException;
-import java.util.function.Supplier;
-
-import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.api.SaveAndCloseProjects;
-import org.knime.ui.java.util.UserDirectory;
-
-import persistence.AppStatePersistor;
+package org.knime.ui.java.profile;
 
 /**
- * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
- *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * Aggregates several aspects of user-specific state. Each aspect is handled (read, persisted, ...) independently.
  */
-@SuppressWarnings("restriction")
-final class SaveState {
+public interface UserProfile {
 
-    private SaveState() {
-        //
-    }
+    InternalUsageTracking internalUsageTracking();
 
-    static LifeCycleStateInternal run(final LifeCycleStateInternal state) throws StateTransitionAbortedException {
-        final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        final var saveProjectsResult = state.saveAndCloseAllWorkflows();
-
-        if (saveProjectsResult.get() == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
-            throw new StateTransitionAbortedException();
-        }
-
-        return new LifeCycleStateInternalAdapter(state) {
-
-            @Override
-            public boolean workflowsSaved() {
-                return saveProjectsResult.get() == SaveAndCloseProjects.State.SUCCESS;
-            }
-
-            @Override
-            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
-                return saveProjectsResult;
-            }
-
-            @Override
-            public String serializedAppState() {
-                return serializedAppState;
-            }
-
-        };
+    static UserProfile of(InternalUsageTracking usageTracking) { // NOSONAR
+        return () -> usageTracking;
     }
 
 }

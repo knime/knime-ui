@@ -51,6 +51,7 @@ package org.knime.ui.java.browser.lifecycle;
 import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
@@ -99,6 +100,11 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     @Override
     public LocalWorkspace getLocalWorkspace() {
         return m_lifeCycleStateInternal.getLocalWorkspace();
+    }
+
+    @Override
+    public InternalUsageTracking getInternalUsageTracking() {
+        return m_lifeCycleStateInternal.getInternalUsageTracking();
     }
 
     @Override

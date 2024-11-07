@@ -60,6 +60,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
+import org.knime.ui.java.profile.UserProfile;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.NodeRepository;
@@ -145,7 +146,7 @@ public final class DesktopAPI {
                     try {
                         var res = invokeMethod(method, args);
                         event.set("result", MAPPER.valueToTree(res));
-                    } catch (Throwable e) {
+                    } catch (Throwable e) {  // NOSONAR
                         event.put("error", e.getMessage());
                     }
                     var eventConsumer = getDeps(EventConsumer.class);
@@ -197,6 +198,7 @@ public final class DesktopAPI {
      * @param localWorkspace
      * @param welcomeAPEndpoint
      * @param exampleProjects
+     * @param userProfile
      * @throws IllegalStateException if the dependencies have been already injected
      */
     public static void injectDependencies(final ProjectManager workflowProjectManager,
@@ -204,7 +206,8 @@ public final class DesktopAPI {
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
         final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace,
-        final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects) {
+        final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects,
+        UserProfile userProfile) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -222,6 +225,11 @@ public final class DesktopAPI {
         injectDependency(localWorkspace);
         DEPENDENCIES.put(WelcomeAPEndpoint.class, welcomeAPEndpoint);
         injectDependency(exampleProjects);
+        injectDependency(userProfile);
+    }
+
+    private static void injectDependency(UserProfile userProfile) {
+        DEPENDENCIES.put(UserProfile.class, userProfile);
     }
 
     /**
@@ -334,6 +342,5 @@ public final class DesktopAPI {
     static <T> T getDeps(final Class<T> clazz) {
         return (T)DEPENDENCIES.get(clazz);
     }
-
 
 }

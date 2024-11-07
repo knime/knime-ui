@@ -46,7 +46,7 @@
  * History
  *   Jan 17, 2023 (hornm): created
  */
-package org.knime.ui.java.util;
+package persistence;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,6 +67,9 @@ import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
 import com.fasterxml.jackson.databind.JsonNode;

@@ -68,6 +68,7 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
@@ -76,9 +77,12 @@ import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.util.AppStatePersistor;
+import persistence.AppStatePersistor;
+import persistence.Persistence;
+
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.ui.java.util.UserDirectory;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
@@ -111,6 +115,12 @@ final class Create {
         // Initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
 
+        var internalUsageTracking = UserDirectory.getInternalUsageTracking() //
+            .flatMap(Persistence::readOptional) //
+            .orElse(new InternalUsageTracking()); //
+
+        internalUsageTracking.trackUiCreated();
+
         // Initialize the workflow manager class -> mainly helps to indirectly trigger
         // `IEarlyStartup#runBeforeWFMClassLoaded()`
         WorkflowManager.ROOT.getClass();
@@ -123,35 +133,14 @@ final class Create {
 
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
 
-        // Load application state
         var projectManager = ProjectManager.getInstance();
         var mostRecentlyUsedProjects = new MostRecentlyUsedProjects();
         var localWorkspace = createLocalWorkspace();
         ProjectWorkflowMap.isActive = false;
         AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localWorkspace);
 
-        return new LifeCycleStateInternal() {
-
-            @Override
-            public ProjectManager getProjectManager() {
-                return projectManager;
-            }
-
-            @Override
-            public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
-                return mostRecentlyUsedProjects;
-            }
-
-            @Override
-            public LocalWorkspace getLocalWorkspace() {
-                return localWorkspace;
-            }
-
-            @Override
-            public WelcomeAPEndpoint getWelcomeApEndpoint() {
-                return WelcomeAPEndpoint.getInstance();
-            }
-        };
+        return LifeCycleStateInternal.of(projectManager, mostRecentlyUsedProjects, localWorkspace,
+            WelcomeAPEndpoint.getInstance(), internalUsageTracking);
     }
 
     private static void assertNoOpenClassicEditors() {

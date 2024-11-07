@@ -42,60 +42,30 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
- * History
- *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java.profile;
 
-import java.io.IOException;
-import java.util.function.Supplier;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.api.SaveAndCloseProjects;
-import org.knime.ui.java.util.UserDirectory;
-
-import persistence.AppStatePersistor;
+import persistence.FileBackedPojo;
 
 /**
- * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
- *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * Usage tracking used "internally" (i.e. in the AP) to control other aspects of the application.
  */
-@SuppressWarnings("restriction")
-final class SaveState {
+@SuppressWarnings("javadoc")
+public class InternalUsageTracking extends FileBackedPojo.Compatible {
 
-    private SaveState() {
-        //
+    @JsonProperty("timesUiCreated")
+    private int m_timesUiCreated;
+
+    @JsonIgnore
+    public int getTimesUiCreated() {
+        return m_timesUiCreated;
     }
 
-    static LifeCycleStateInternal run(final LifeCycleStateInternal state) throws StateTransitionAbortedException {
-        final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        final var saveProjectsResult = state.saveAndCloseAllWorkflows();
-
-        if (saveProjectsResult.get() == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
-            throw new StateTransitionAbortedException();
-        }
-
-        return new LifeCycleStateInternalAdapter(state) {
-
-            @Override
-            public boolean workflowsSaved() {
-                return saveProjectsResult.get() == SaveAndCloseProjects.State.SUCCESS;
-            }
-
-            @Override
-            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
-                return saveProjectsResult;
-            }
-
-            @Override
-            public String serializedAppState() {
-                return serializedAppState;
-            }
-
-        };
+    public void trackUiCreated() {
+        this.m_timesUiCreated = this.m_timesUiCreated + 1;
     }
 
 }

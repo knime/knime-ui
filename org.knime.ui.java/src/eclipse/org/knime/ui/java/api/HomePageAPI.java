@@ -46,11 +46,16 @@
 package org.knime.ui.java.api;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.product.rcp.intro.json.JSONCategory;
+import org.knime.product.rcp.intro.json.JSONTile;
+import org.knime.ui.java.profile.InternalUsageTracking;
+import org.knime.ui.java.profile.UserProfile;
 
 /**
  * Provide external content for the app home / entry page.
@@ -58,6 +63,15 @@ import org.knime.product.rcp.intro.json.JSONCategory;
  * @author Benjamin Moser, KNIME GmbH, Germany
  */
 final class HomePageAPI {
+
+    private static final List<ConditionalTile> conditionalTiles = List.of( //
+        ConditionalTile.of("c5-onboarding", 0, startsGreaterThan(1)), //
+        ConditionalTile.of("c5-onboarding", 1, startsGreaterThan(2)), //
+        ConditionalTile.of("c5-onboarding", 2, startsGreaterThan(5)), //
+        ConditionalTile.of("c5-onboarding", 3, startsGreaterThan(20)) //
+    );
+
+    private static final TileId defaultTile = new TileId("c4-modern-ui", 0);
 
     private HomePageAPI() {
         // Stateless
@@ -67,26 +81,76 @@ final class HomePageAPI {
      * Get the contents of the single tile in the home page sidebar.
      *
      * @return A map/record with plain-text properties of title, image, text, button label and button link URL.
-     * {@code null} if absent.
+     *         {@code null} if absent.
      */
     @API(runInUIThread = false)
     static Map<String, String> getHomePageTile() {
-        var categories = Optional.ofNullable(DesktopAPI.getDeps(WelcomeAPEndpoint.class)) //
-            .flatMap(endpoint -> endpoint.getCategories(true, null));
-        var firstTile = categories.stream() //
+        var endpoint = DesktopAPI.getDeps(WelcomeAPEndpoint.class);
+        if (endpoint == null) {
+            return null; // NOSONAR
+        }
+        var activeTileId = selectTile(DesktopAPI.getDeps(UserProfile.class));
+        return getTileContents(endpoint, activeTileId) //
+            .map(HomePageAPI::tileToMap) //
+            .orElse(null);
+    }
+
+    private static Optional<JSONTile> getTileContents(final WelcomeAPEndpoint endpoint, final TileId tile) {
+        var tiles = endpoint.getCategories(true, null) //
+            .stream() //
             .flatMap(Arrays::stream) //
-            .filter(cat -> cat.getId().equals("c4-modern-ui")) //
+            .filter(cat -> cat.getId().equals(tile.categoryId())) //
             .findFirst() //
             .map(JSONCategory::getTiles) //
-            .flatMap(tiles -> tiles.stream().findFirst());
-        return firstTile.map(tile -> {
-            return Map.of( //
-                "title", tile.getTitle(), //
-                "image", tile.getImage(), //
-                "text", tile.getText(), //
-                "button-text", tile.getButtonText(), //
-                "link", tile.getLink() //
-            );
-        }).orElse(null);
+            .orElse(List.of());
+        try {
+            return Optional.ofNullable(tiles.get(tile.index()));
+        } catch (IndexOutOfBoundsException e) { // NOSONAR
+            return Optional.empty();
+        }
+    }
+
+    private static TileId selectTile(final UserProfile profile) {
+        var usage = Optional.ofNullable(profile) //
+            .map(UserProfile::internalUsageTracking); //
+        if (usage.isEmpty()) {
+            return defaultTile;
+        }
+        return conditionalTiles.stream() //
+            .filter(tile -> tile.isActive().test(usage.get())) //
+            .findFirst() //
+            .map(ConditionalTile::id) //
+            .orElse(defaultTile);
+    }
+
+    private static Predicate<InternalUsageTracking> startsGreaterThan(final int numberOfStarts) {
+        return usage -> usage.getTimesUiCreated() >= numberOfStarts;
+    }
+
+    private static Map<String, String> tileToMap(final JSONTile tile) {
+        return Map.of( //
+            "title", tile.getTitle(), //
+            "image", tile.getImage(), //
+            "text", tile.getText(), //
+            "button-text", tile.getButtonText(), //
+            "link", tile.getLink() //
+        );
+    }
+
+    private record ConditionalTile(TileId id, Predicate<InternalUsageTracking> isActive) {
+        static ConditionalTile of(final String categoryId, final int index,
+            final Predicate<InternalUsageTracking> isActive) {
+            return new ConditionalTile(new TileId(categoryId, index), isActive);
+        }
+    }
+
+    /**
+     * Identifies a tile in the return JSON of the endpoint
+     *
+     * @param categoryId
+     * @param index
+     */
+    private record TileId(String categoryId, int index) {
+
     }
 }

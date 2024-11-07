@@ -72,11 +72,14 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
+import persistence.AppStatePersistor;
+
 /**
  * Tests methods in {@link AppStatePersistor}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings("java:S5960")
 public class AppStatePersistorTest {
 
     private static final String VALID_APP_STATE_WITH_PROJECT = """

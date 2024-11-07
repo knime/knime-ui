@@ -53,6 +53,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
@@ -67,9 +68,42 @@ import org.knime.ui.java.util.MostRecentlyUsedProjects;
  */
 public interface LifeCycleStateInternal extends LifeCycleState {
 
+    static LifeCycleStateInternal of(ProjectManager projectManager, MostRecentlyUsedProjects mostRecentlyUsedProjects,
+        LocalWorkspace localWorkspace, WelcomeAPEndpoint welcomeAPEndpoint, InternalUsageTracking internalUsageTracking) {
+
+        return new LifeCycleStateInternal() { // NOSONAR
+
+            @Override
+            public ProjectManager getProjectManager() {
+                return projectManager;
+            }
+
+            @Override
+            public MostRecentlyUsedProjects getMostRecentlyUsedProjects() {
+                return mostRecentlyUsedProjects;
+            }
+
+            @Override
+            public LocalWorkspace getLocalWorkspace() {
+                return localWorkspace;
+            }
+
+            @Override
+            public WelcomeAPEndpoint getWelcomeApEndpoint() {
+                return welcomeAPEndpoint;
+            }
+
+            @Override
+            public InternalUsageTracking getInternalUsageTracking() {
+                return internalUsageTracking;
+            }
+        };
+    }
+
     /**
      * @return the logic which saves and closes all workflows.
-     * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List, EventConsumer, SaveAndCloseProjects.PostProjectCloseAction)
+     * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List, EventConsumer,
+     *      SaveAndCloseProjects.PostProjectCloseAction)
      */
     default Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
         return null;
@@ -109,4 +143,5 @@ public interface LifeCycleStateInternal extends LifeCycleState {
      */
     LocalWorkspace getLocalWorkspace();
 
+    InternalUsageTracking getInternalUsageTracking();
 }

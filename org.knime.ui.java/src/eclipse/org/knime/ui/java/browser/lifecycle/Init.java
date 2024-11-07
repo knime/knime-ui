@@ -96,6 +96,7 @@ import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
+import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -142,7 +143,8 @@ final class Init {
             kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
-            state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects());
+            state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects(),
+            UserProfile.of(state.getInternalUsageTracking()));
 
         // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
@@ -224,8 +226,7 @@ final class Init {
      * @return a new event consumer instance forwarding events to java-script
      */
     private static EventConsumer createEventConsumer() {
-        return initializeJavaBrowserCommunication(SharedConstants.JSON_RPC_ACTION_ID,
-            SharedConstants.EVENT_ACTION_ID);
+        return initializeJavaBrowserCommunication(SharedConstants.JSON_RPC_ACTION_ID, SharedConstants.EVENT_ACTION_ID);
     }
 
     private static UpdatableSpaceProviders createSpaceProviders(final LocalWorkspace localSpace) {
@@ -300,8 +301,7 @@ final class Init {
         };
     }
 
-    private static String createEventMessage(final ObjectMapper mapper, final String name,
-        final Object payload) {
+    private static String createEventMessage(final ObjectMapper mapper, final String name, final Object payload) {
         var event = mapper.createObjectNode();
         try {
             return mapper.writeValueAsString(event.put("eventType", name).set("payload", mapper.valueToTree(payload)));
@@ -363,7 +363,7 @@ final class Init {
             m_spaceProvidersFromExtensionPoint.forEach(sp -> newProviders.putAll(sp.getProvidersMap()));
             m_providers = Collections.unmodifiableMap(newProviders);
             m_providerTypes = newProviders.entrySet().stream() //
-                    .collect(Collectors.toUnmodifiableMap(Entry::getKey, e -> e.getValue().getType()));
+                .collect(Collectors.toUnmodifiableMap(Entry::getKey, e -> e.getValue().getType()));
         }
 
         private static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {

@@ -43,59 +43,72 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
- * History
- *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser.lifecycle;
+package org.knime.ui.java.util;
 
 import java.io.IOException;
-import java.util.function.Supplier;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
+import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.api.SaveAndCloseProjects;
-import org.knime.ui.java.util.UserDirectory;
+import org.knime.core.util.EclipseUtil;
+import org.knime.gateway.impl.webui.modes.WebUIMode;
+import org.knime.ui.java.profile.InternalUsageTracking;
 
-import persistence.AppStatePersistor;
+import persistence.FileBackedPojo;
+import persistence.Persistence;
 
 /**
- * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
- *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * Provide access to the "KNIME User Directory" (for example {@code ~/.knime/}. Note that this is different from the
+ * "KNIME Home Directory", see {@link KNIMEConstants#getKNIMEHomeDir()}.
  */
-@SuppressWarnings("restriction")
-final class SaveState {
+public final class UserDirectory {
 
-    private SaveState() {
-        //
+    private UserDirectory() {
     }
 
-    static LifeCycleStateInternal run(final LifeCycleStateInternal state) throws StateTransitionAbortedException {
-        final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        final var saveProjectsResult = state.saveAndCloseAllWorkflows();
-
-        if (saveProjectsResult.get() == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
-            throw new StateTransitionAbortedException();
+    private static Optional<Path> getUserDirectory() {
+        var configuredPath = System.getProperty("org.knime.ui.userdirectory");
+        if (configuredPath != null) {
+            return Optional.of(Path.of(configuredPath));
         }
-
-        return new LifeCycleStateInternalAdapter(state) {
-
-            @Override
-            public boolean workflowsSaved() {
-                return saveProjectsResult.get() == SaveAndCloseProjects.State.SUCCESS;
+        if (!EclipseUtil.isRunFromSDK()) {
+            try {
+                return Optional.of(KNIMEConstants.getOrCreateKNIMEDir());
+            } catch (IOException e) {
+                NodeLogger.getLogger(UserDirectory.class).warn("Could not access user directory", e);
+                return Optional.empty();
             }
+        } else {
+            return Optional.empty();
+        }
+    }
 
-            @Override
-            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
-                return saveProjectsResult;
+    private static Optional<Path> getProfileDirectory() {
+        return getUserDirectory().map(userDir -> {
+            var path = userDir.resolve("profile");
+            if (!Files.exists(path)) {
+                try {
+                    Files.createDirectory(path);
+                } catch (IOException e) { // NOSONAR
+                    NodeLogger.getLogger(UserDirectory.class).warn("Could not create profile directory", e);
+                    return null;
+                }
             }
+            return path;
+        });
+    }
 
-            @Override
-            public String serializedAppState() {
-                return serializedAppState;
-            }
-
-        };
+    public static Optional<Persistence<InternalUsageTracking>> getInternalUsageTracking() {
+        if (WebUIMode.getMode() != WebUIMode.DEFAULT) {
+            return Optional.empty();
+        }
+        return getProfileDirectory() //
+            .map(path -> new FileBackedPojo<>( //
+                path.resolve("usage.yaml"), //
+                InternalUsageTracking.class));
     }
 
 }
