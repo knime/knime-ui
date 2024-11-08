@@ -1179,7 +1179,9 @@ describe("NodePort", () => {
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(true);
+          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
+            true,
+          );
         });
 
         it("disables quick-node-add feature via prop", async () => {
@@ -1191,7 +1193,9 @@ describe("NodePort", () => {
           });
           await startDragging({ wrapper });
 
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(false);
+          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
+            false,
+          );
         });
 
         it("does show quick add node ghost for flowVariables", async () => {
@@ -1204,7 +1208,9 @@ describe("NodePort", () => {
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(true);
+          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
+            true,
+          );
         });
 
         it("opens quick add node menu", async () => {
@@ -1213,7 +1219,9 @@ describe("NodePort", () => {
           await dragAboveTarget({ wrapper });
 
           // connector and QuickActionMenuGhost should be visible
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(true);
+          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
+            true,
+          );
           expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
           await wrapper.trigger("lostpointercapture");
@@ -1241,7 +1249,9 @@ describe("NodePort", () => {
           await dragAboveTarget({ wrapper });
 
           // connector and QuickActionMenuGhost should be visible
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(true);
+          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
+            true,
+          );
           expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
           // simulate open menu
@@ -1258,7 +1268,9 @@ describe("NodePort", () => {
           await wrapper.trigger("lostpointercapture");
 
           expect(wrapper.findComponent(Connector).exists()).toBe(false);
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(false);
+          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
+            false,
+          );
         });
 
         it("closes the quick add node menu", async () => {

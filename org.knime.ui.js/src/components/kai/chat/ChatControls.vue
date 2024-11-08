@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useTextareaAutosize } from "@vueuse/core";
 
 import { FunctionButton } from "@knime/components";
@@ -17,7 +17,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  initialText: {
+  text: {
     type: String,
     default: "",
   },
@@ -26,12 +26,16 @@ const props = defineProps({
 const { textarea, input } = useTextareaAutosize();
 
 watch(
-  () => props.initialText,
+  () => props.text,
   () => {
-    input.value = props.initialText;
+    input.value = props.text;
   },
   { immediate: true },
 );
+
+onMounted(() => {
+  textarea.value.focus();
+});
 
 const sendMessage = () => {
   if (input.value) {
@@ -104,6 +108,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
   background-color: white;
   border: 1px solid var(--knime-stone-gray);
   overflow: hidden;
+  cursor: text;
 
   & .textarea {
     font-size: 13px;

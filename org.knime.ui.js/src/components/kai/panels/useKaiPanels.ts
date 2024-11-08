@@ -21,7 +21,7 @@ export const useKaiPanels = () => {
   const closeDisclaimer = () => {
     isDisclaimerOpen.value = false;
   };
-  const showDisclaimer = computed(
+  const shouldShowDisclaimer = computed(
     () => hasDisclaimer.value && isDisclaimerOpen.value,
   );
 
@@ -39,7 +39,7 @@ export const useKaiPanels = () => {
     if (!isAuthenticated.value) {
       return LoginPanel;
     }
-    if (showDisclaimer.value) {
+    if (shouldShowDisclaimer.value) {
       return DisclaimerPanel;
     }
 

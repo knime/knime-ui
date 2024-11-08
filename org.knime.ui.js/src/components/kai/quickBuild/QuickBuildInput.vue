@@ -12,7 +12,10 @@ type Props = {
 };
 
 defineProps<Props>();
-defineEmits(["send-message", "abort"]);
+defineEmits<{
+  sendMessage: [value: { message: string }];
+  abort: [];
+}>();
 </script>
 
 <template>
@@ -26,8 +29,8 @@ defineEmits(["send-message", "abort"]);
     <ChatControls
       class="chat-controls"
       :last-user-message="lastUserMessage"
-      :initial-text="errorMessage ? lastUserMessage : ''"
-      @send-message="$emit('send-message', $event)"
+      :text="errorMessage ? lastUserMessage : ''"
+      @send-message="$emit('sendMessage', $event)"
       @abort="$emit('abort')"
     />
     <div v-if="errorMessage" class="error">

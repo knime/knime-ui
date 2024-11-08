@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { toRefs } from "vue";
-import { useStore } from "vuex";
 
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
+
+import { useStore } from "@/composables/useStore";
 
 import { useKaiPanels } from "./panels/useKaiPanels";
 import QuickBuildInput from "./quickBuild/QuickBuildInput.vue";
@@ -45,7 +46,7 @@ const {
 <template>
   <div class="quick-build-menu">
     <div v-if="!isProcessing" class="header">
-      KNIME AI build mode
+      K-AI Build Mode
       <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
     </div>
     <div class="main">
@@ -85,11 +86,11 @@ const {
 & .quick-build-menu {
   display: flex;
   flex-direction: column;
-  padding: 8px;
-  gap: 8px;
+  padding: var(--space-8);
+  gap: var(--space-8);
 
   & .header {
-    margin-top: -8px;
+    margin-top: calc(var(--space-8) * -1);
     height: 42px;
     display: flex;
     flex-direction: row;

@@ -1,6 +1,6 @@
 import { type Ref, ref, watch } from "vue";
-import { useStore } from "vuex";
 
+import { useStore } from "@/composables/useStore";
 import { useChat } from "../chat/useChat";
 
 type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" };
@@ -8,8 +8,8 @@ type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" };
 export const useQuickBuild = ({ nodeId }: { nodeId: Ref<string | null> }) => {
   const store = useStore();
 
-  const userQuery = ref<string>("");
-  const errorMessage = ref<string>("");
+  const userQuery = ref("");
+  const errorMessage = ref("");
   const result = ref<Result | null>(null);
 
   const {

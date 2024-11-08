@@ -34,10 +34,6 @@ defineEmits(["abort"]);
     margin-left: -8px;
     margin-right: -8px;
     margin-top: -8px;
-
-    & :deep(progress) {
-      --progress-bar-radius: 0;
-    }
   }
 
   & .main {

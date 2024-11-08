@@ -10,21 +10,15 @@ import * as settingsStore from "@/store/settings";
 import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { createAvailablePortTypes, createPort } from "@/test/factories";
+import {
+  PORT_TYPE_IDS,
+  createAvailablePortTypes,
+  createPort,
+} from "@/test/factories";
 import { mockVuexStore } from "@/test/utils";
 import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";
-
-vi.mock("@knime/components", async (importOriginal) => {
-  const actual = await importOriginal();
-
-  return {
-    // @ts-ignore
-    ...actual,
-    useToasts: vi.fn(),
-  };
-});
 
 const defaultPortMock = createPort();
 
@@ -56,7 +50,7 @@ describe("QuickActionMenu.vue", () => {
       },
       port: createPort({
         index: 1,
-        typeId: "org.knime.core.node.BufferedDataTable",
+        typeId: PORT_TYPE_IDS.BufferedDataTable,
         connectedVia: [],
       }),
       nodeRelation: "SUCCESSORS",

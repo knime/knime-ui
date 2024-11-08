@@ -167,7 +167,7 @@ const isQuickBuildAvailableForPort = computed(() =>
     background: var(--knime-gray-ultra-light);
     display: flex;
     flex-direction: column;
-    border-radius: 7px;
+    border-radius: 8px;
     overflow: hidden;
 
     & .footer {

@@ -17,7 +17,7 @@ const emit = defineEmits(["close"]);
       </p>
     </div>
     <Button primary compact class="close-button" @click="emit('close')">
-      Accept and close
+      Accept and continue
     </Button>
   </div>
 </template>
@@ -30,8 +30,8 @@ const emit = defineEmits(["close"]);
   & .main {
     background-color: var(--knime-white);
     position: relative;
-    padding: 20px 15px;
-    margin-bottom: 20px;
+    padding: var(--space-24) var(--space-16);
+    margin-bottom: var(--space-24);
 
     & .title {
       font-weight: 700;
