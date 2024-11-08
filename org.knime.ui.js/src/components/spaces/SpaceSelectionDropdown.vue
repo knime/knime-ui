@@ -383,6 +383,8 @@ const spaceIcon = computed(() => {
 @import url("@/assets/mixins.css");
 
 .space-selection-dropdown {
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
+
   & .dropdown-icon {
     margin-left: 5px;
     margin-top: 3px;

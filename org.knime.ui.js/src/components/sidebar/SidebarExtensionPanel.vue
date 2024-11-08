@@ -34,7 +34,7 @@ useEscapeStack({
   background-color: var(--knime-gray-ultra-light);
   position: fixed;
   left: 400px;
-  z-index: 4;
+  z-index: v-bind("$zIndices.layerDrawerPanel");
   border: solid var(--knime-silver-sand);
   border-width: 0 1px;
   height: calc(var(--app-main-content-height) - var(--app-toolbar-height));

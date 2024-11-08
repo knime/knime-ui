@@ -130,7 +130,7 @@ const openInNewWindow = () => {
   position: absolute;
   inset: 10px 0 0;
   margin: 0 auto;
-  z-index: 3;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
 
   & .detach-view {
     height: 20px;

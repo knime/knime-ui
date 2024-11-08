@@ -7,6 +7,7 @@ import type { ShortcutsService } from "@/shortcuts/types";
 import { RootStoreState } from "@/store/types";
 import * as colors from "@/style/colors";
 import * as shapes from "@/style/shapes";
+import * as zIndices from "@/style/z-indices";
 
 import type { EventBus } from "./event-bus";
 import type { Features } from "./feature-flags";
@@ -15,6 +16,7 @@ interface _ComponentCustomProperties {
   $bus: EventBus;
   $shapes: typeof shapes;
   $colors: typeof colors;
+  $zIndices: typeof zIndices;
   $features: Features;
   $shortcuts: ShortcutsService;
   $store: Store<RootStoreState>;

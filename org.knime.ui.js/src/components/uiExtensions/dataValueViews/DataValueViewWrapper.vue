@@ -53,7 +53,7 @@ const emit = defineEmits(["close"]);
 
 <style lang="postcss" scoped>
 .data-value-view-element {
-  z-index: 20;
+  z-index: v-bind("$zIndices.layerFloatingWindows");
   border-radius: 8px;
   background-color: var(--knime-porcelain);
   box-shadow: var(--shadow-elevation-2);

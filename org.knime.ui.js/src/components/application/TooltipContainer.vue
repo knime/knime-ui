@@ -106,7 +106,7 @@ export default {
 
 <style lang="postcss" scoped>
 .tooltip-container {
-  z-index: 2;
+  z-index: v-bind("$zIndices.layerCanvasTooltips");
   position: fixed;
   top: 0;
   height: 0;

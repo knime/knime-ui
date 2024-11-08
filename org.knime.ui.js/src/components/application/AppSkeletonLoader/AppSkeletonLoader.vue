@@ -144,7 +144,7 @@ watch(isLoading, (value) => {
   width: 100vw;
   height: 100vh;
   cursor: progress;
-  z-index: 9;
+  z-index: v-bind("$zIndices.layerAppSkeletonLoader");
   background: var(--knime-white);
   display: grid;
 

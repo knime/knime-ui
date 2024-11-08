@@ -39,7 +39,7 @@ const emit = defineEmits<{
   margin: auto;
   background: rgba(255 255 255 / 30%);
   backdrop-filter: blur(10px);
-  z-index: 9;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
 
   & span {
     text-align: center;

@@ -28,7 +28,6 @@ import DownloadAPButton from "../common/DownloadAPButton.vue";
 
 <style lang="postcss" scoped>
 .download-banner {
-  z-index: 1;
   background: var(--knime-masala);
   color: var(--knime-white);
   display: flex;

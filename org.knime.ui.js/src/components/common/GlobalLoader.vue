@@ -11,6 +11,7 @@ import {
 
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
+import { useConstants } from "@/composables/useConstants";
 import { type GlobalLoaderConfig } from "@/store/application/globalLoader";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
@@ -27,6 +28,8 @@ const isTextShown = ref<boolean>();
 const isIconShown = ref<boolean>();
 const setLoading = ref<(value: boolean) => any>();
 
+const { $zIndices } = useConstants();
+
 const overlayStyles = computed<CSSProperties>(() => {
   const positionMap = {
     fullscreen: "fixed",
@@ -34,7 +37,7 @@ const overlayStyles = computed<CSSProperties>(() => {
   } as const;
 
   const zIndexMap = {
-    fullscreen: "99",
+    fullscreen: $zIndices.layerGlobalLoadingOverlay,
     floating: "initial",
   };
 
@@ -45,7 +48,6 @@ const overlayStyles = computed<CSSProperties>(() => {
     // add the initial dimensions as css properties for later usage in the styles
     "--initial-width": "100%",
     "--initial-height": "100%",
-    "--global-loader-z-index": 99,
   };
 });
 
@@ -154,7 +156,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  z-index: var(--global-loader-z-index);
+  z-index: v-bind("$zIndices.layerGlobalErrorOverlay");
 
   & svg {
     @mixin svg-icon-size var(--global-loader-icon-size, 50);

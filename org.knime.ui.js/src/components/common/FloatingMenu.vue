@@ -249,7 +249,7 @@ onBeforeUnmount(() => {
 .floating-menu {
   position: absolute;
   display: block;
-  z-index: 10;
+  z-index: v-bind("$zIndices.layerExpandedMenus");
 
   &:focus {
     outline: none;

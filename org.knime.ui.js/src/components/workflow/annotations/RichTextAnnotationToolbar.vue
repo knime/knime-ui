@@ -224,6 +224,8 @@ const changeBorderColor = (color: string) => {
 @import url("@/assets/mixins.css");
 
 .editor-toolbar {
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
+
   display: flex;
   justify-content: center;
   background: var(--knime-white);

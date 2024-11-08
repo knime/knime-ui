@@ -269,7 +269,7 @@ watch(
       left: 0;
       top: 0;
       opacity: 0;
-      z-index: 1;
+      z-index: v-bind("$zIndices.layerStaticPanelDecorations");
     }
   }
 
@@ -354,7 +354,7 @@ watch(
     width: 100%;
     height: 100%;
     background-color: var(--will-snap-background-color);
-    z-index: 15;
+    z-index: v-bind("$zIndices.layerStaticPanelDecorations");
     overflow: hidden;
     white-space: nowrap;
   }

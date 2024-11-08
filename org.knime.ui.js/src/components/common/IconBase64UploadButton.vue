@@ -74,7 +74,13 @@ watch(modelValue, () => {
 <template>
   <div class="icon-uploader">
     <Button with-border compact @click="triggerInput"> Select file </Button>
-    <input ref="input" type="file" accept="image/png" @change="onChange" />
+    <input
+      ref="input"
+      type="file"
+      hidden
+      accept="image/png"
+      @change="onChange"
+    />
     <img
       v-if="modelValue"
       :src="modelValue"
@@ -93,14 +99,6 @@ watch(modelValue, () => {
     height: 16px;
     align-self: center;
     margin-left: 10px;
-  }
-
-  & input {
-    user-select: none;
-    display: flex;
-    opacity: 0;
-    position: absolute;
-    z-index: -1;
   }
 }
 </style>

@@ -145,7 +145,6 @@ export default defineComponent({
 
   & .scroller {
     position: relative;
-    z-index: 1;
     padding: 8px 10px 10px;
     overflow-y: auto;
     font-family: "Roboto Condensed", sans-serif;

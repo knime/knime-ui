@@ -316,20 +316,20 @@ export default defineComponent({
 
 <style lang="postcss" scoped>
 .toolbar-buttons {
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
+
   & .toolbar-actions-normal {
     display: flex;
     position: relative;
+    gap: var(--space-4);
 
     --theme-button-function-foreground-color-hover: var(--knime-white);
     --theme-button-function-background-color-hover: var(--knime-masala);
-
-    & .create-workflow-btn {
-      z-index: 2;
-    }
   }
 
   & .toolbar-actions-mini {
     display: flex;
+    gap: var(--space-4);
 
     /* the position root (relative) is the .sidebar-header */
 
@@ -339,21 +339,12 @@ export default defineComponent({
       position: absolute;
       left: 0;
       right: 100px;
-      z-index: 1;
     }
 
     /* Aligning text in the submenu */
     & :deep(button) {
       align-items: center;
     }
-  }
-
-  & :deep(.search-button) {
-    margin: 0 5px;
-  }
-
-  & .reload-button {
-    margin-right: 5px;
   }
 }
 </style>

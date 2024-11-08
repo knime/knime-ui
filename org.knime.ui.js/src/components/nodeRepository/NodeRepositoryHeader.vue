@@ -184,7 +184,7 @@ defineExpose({ focusSearchInput });
 
 .header {
   position: sticky;
-  z-index: 2;
+  z-index: v-bind("$zIndices.layerStaticPanelDecorations");
   top: 0;
   padding-bottom: var(--space-8);
 
@@ -236,6 +236,12 @@ defineExpose({ focusSearchInput });
       margin-bottom: 2px;
       margin-top: var(--space-4);
     }
+  }
+
+  & .display-modes-sub-menu {
+    --z-index-common-menu-items-expanded: v-bind(
+      "$zIndices.layerExpandedMenus"
+    );
   }
 
   & .repo-breadcrumb {

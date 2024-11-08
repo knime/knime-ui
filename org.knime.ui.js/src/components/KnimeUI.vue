@@ -244,6 +244,6 @@ const onCloseError = () => {
 }
 
 .toast-stack {
-  z-index: 9;
+  z-index: calc(v-bind("$zIndices.layerToasts"));
 }
 </style>

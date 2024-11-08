@@ -208,6 +208,10 @@ const onCanvasModeUpdate = (
   border-bottom: 1px solid var(--knime-silver-sand);
 
   & .control-list {
+    --z-index-common-menu-items-expanded: v-bind(
+      "$zIndices.layerExpandedMenus"
+    );
+
     display: flex;
     justify-content: center;
     align-items: center;

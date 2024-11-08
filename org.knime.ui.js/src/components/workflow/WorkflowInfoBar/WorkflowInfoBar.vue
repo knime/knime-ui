@@ -70,7 +70,7 @@ const containerType = computed(
   display: flex;
   flex-direction: column;
   position: absolute;
-  z-index: 1;
+  z-index: v-bind("$zIndices.layerCanvasInfo");
   pointer-events: none;
   user-select: none;
   justify-content: center;

@@ -146,7 +146,6 @@ onClickOutside(closeableTagsRef, () => {
 
   & .tags-popout-close {
     position: relative;
-    z-index: 1;
     border: none;
     width: 100%;
     padding: 0;

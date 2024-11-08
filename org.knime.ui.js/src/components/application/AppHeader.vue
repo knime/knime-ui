@@ -231,7 +231,7 @@ onMounted(() => {
         <div
           v-show="menuPosition"
           ref="menuWrapper"
-          :style="{ ...floatingStyles, zIndex: 3 }"
+          :style="{ ...floatingStyles, zIndex: $zIndices.layerExpandedMenus }"
         >
           <AppHeaderContextMenu
             v-if="menuPosition"

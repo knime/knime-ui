@@ -84,6 +84,8 @@ const emit = defineEmits<{
 }
 
 .type-submenu {
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
+
   & .dropdown-icon {
     margin-left: 5px;
     margin-right: 5px;

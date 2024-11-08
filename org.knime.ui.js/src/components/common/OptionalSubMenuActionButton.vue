@@ -64,6 +64,8 @@ withDefaults(defineProps<Props>(), {
 @import url("@/assets/mixins.css");
 
 .submenu-button {
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
+
   & .dropdown-icon {
     margin-left: 5px;
     margin-top: 3px;

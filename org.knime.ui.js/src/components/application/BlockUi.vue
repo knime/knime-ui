@@ -60,7 +60,7 @@ watch(block, () => {
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  z-index: 100;
+  z-index: calc(v-bind("$zIndices.layerBlockingOverlay"));
   position: fixed;
   width: 100vw;
   height: 100vh;

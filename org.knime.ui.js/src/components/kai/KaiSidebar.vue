@@ -70,6 +70,8 @@ const showChatControls = computed(() => !panelComponent.value);
 
 <style lang="postcss" scoped>
 .submenu {
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
+
   margin-left: 5px;
 }
 </style>

@@ -121,7 +121,7 @@ const switchToJavaUI = () => {
 
 .error-overlay {
   position: fixed;
-  z-index: 10;
+  z-index: v-bind("$zIndices.layerGlobalErrorOverlay");
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -138,7 +138,6 @@ const switchToJavaUI = () => {
 .content {
   position: fixed;
   padding: 20px 60px;
-  z-index: 0;
   width: 100%;
   height: 100%;
   display: flex;

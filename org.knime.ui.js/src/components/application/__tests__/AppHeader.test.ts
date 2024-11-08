@@ -117,7 +117,7 @@ describe("AppHeader.vue", () => {
     const $store = mockVuexStore(storeConfig);
     const wrapper = mount(AppHeader, {
       props,
-      global: { plugins: [$store] },
+      global: { plugins: [$store], mocks: { $zIndices: {} } },
     });
 
     return { storeConfig, wrapper, $store, $route, $shortcuts };

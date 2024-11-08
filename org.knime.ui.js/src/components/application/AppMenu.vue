@@ -108,9 +108,21 @@ const onItemClick = (_: MouseEvent, item: MenuItem) =>
 </script>
 
 <template>
-  <OptionalSubMenuActionButton
-    hide-dropdown
-    :item="menuItem"
-    @item-click="onItemClick"
-  />
+  <div>
+    <OptionalSubMenuActionButton
+      class="app-menu"
+      hide-dropdown
+      :item="menuItem"
+      @item-click="onItemClick"
+    />
+  </div>
 </template>
+
+<style lang="postcss" scoped>
+.app-menu {
+  /* make sure opening this menu is prioritized over app skeleton */
+  --z-index-common-menu-items-expanded: v-bind(
+    "$zIndices.layerPriorityElevation"
+  );
+}
+</style>

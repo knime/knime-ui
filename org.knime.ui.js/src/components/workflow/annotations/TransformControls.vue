@@ -224,7 +224,7 @@ export default defineComponent({
 <style lang="postcss" scoped>
 .transform-box {
   fill: transparent;
-  z-index: 1;
+  z-index: v-bind("$zIndices.layerMinorElevation");
 
   /*
     Because the transform box is portaled to be on top of annotations we need to

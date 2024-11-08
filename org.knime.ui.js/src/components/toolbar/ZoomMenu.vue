@@ -98,7 +98,7 @@ export default {
 
 .zoom {
   margin-left: auto;
-  z-index: 5;
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   & :deep(.submenu-toggle.expanded) {
     & .zoom-input {

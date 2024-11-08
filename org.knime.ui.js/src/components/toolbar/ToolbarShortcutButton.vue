@@ -101,6 +101,8 @@ const enabled = computed(() => $shortcuts.isEnabled(props.name));
 @import url("@/assets/mixins.css");
 
 .split-button {
+  --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
+
   display: inline-flex;
   margin-right: 5px;
   border-radius: var(
