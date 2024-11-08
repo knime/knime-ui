@@ -22,7 +22,7 @@ const props = withDefaults(
     initialPixel?: number | string;
     splitterSize?: number;
     splitterTitle?: string;
-    //ID added for testing purposes to differentiate between splitters
+    // ID added for testing purposes to differentiate between splitters
     splitterId?: string;
   }>(),
   {

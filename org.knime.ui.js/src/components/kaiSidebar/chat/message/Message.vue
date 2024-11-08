@@ -170,6 +170,17 @@ const showFeedbackControls = computed(() => !isUser.value && !props.isError);
         font-size: 1em;
       }
 
+      & pre,
+      & p:has(> code:only-child) {
+        border: 1px solid var(--knime-silver-sand);
+        padding: var(--space-4);
+      }
+
+      & code {
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
       & ul,
       & ol {
         list-style: none;
