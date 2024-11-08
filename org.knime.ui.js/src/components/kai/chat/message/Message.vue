@@ -6,7 +6,7 @@ import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import type { NodeWithExtensionInfo, References } from "../../types";
+import type { Message, StatusUpdate } from "@/store/aiAssistant";
 
 import FeedbackControls from "./FeedbackControls.vue";
 import KaiReferences from "./KaiReferences.vue";
@@ -19,22 +19,15 @@ import { useNodeTemplates } from "./useNodeTemplates";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
 
-interface Props {
-  role: KaiMessage.RoleEnum;
-  content?: string;
-  nodes?: NodeWithExtensionInfo[];
-  references?: References;
-  statusUpdate?: string;
-  submitFeedback?: CallableFunction | null;
-  isError?: boolean;
+interface Props extends Message {
+  statusUpdate?: StatusUpdate | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   content: "",
   nodes: () => [],
   references: () => ({}),
-  statusUpdate: "",
-  submitFeedback: null,
+  statusUpdate: null,
   isError: false,
 });
 
@@ -49,7 +42,9 @@ const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
 
 const isUser = computed(() => props.role === KaiMessage.RoleEnum.User);
 const htmlContent = computed(() => renderMarkdown(props.content));
-const showFeedbackControls = computed(() => !isUser.value && !props.isError);
+const showFeedbackControls = computed(
+  () => !isUser.value && !props.isError && props.interactionId,
+);
 </script>
 
 <template>
@@ -67,13 +62,13 @@ const showFeedbackControls = computed(() => !isUser.value && !props.isError);
       <MessagePlaceholder v-else />
       <SuggestedNodes :node-templates="nodeTemplates" />
       <SuggestedExtensions :extensions="uninstalledExtensions" />
-      <KaiStatus :status="statusUpdate" />
+      <KaiStatus :status="statusUpdate?.message" />
     </div>
     <div class="footer">
       <FeedbackControls
         v-if="showFeedbackControls"
         class="feedback-controls"
-        :submit-feedback="submitFeedback"
+        :interaction-id="interactionId!"
         :show-controls="isHovered"
       />
     </div>

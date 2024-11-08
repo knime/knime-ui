@@ -17,7 +17,7 @@ export interface Message extends KaiMessage {
   references?: {
     [refName: string]: string[];
   };
-  feedbackId?: string;
+  interactionId?: string;
   isError?: boolean;
   timestamp?: number;
 }
@@ -27,10 +27,15 @@ interface ProjectAndWorkflowIds {
   workflowId: string;
 }
 
+export interface StatusUpdate {
+  message: string;
+  type?: "INFO" | "WORKFLOW_BUILDING";
+}
+
 interface ConversationState {
   conversationId: string | null;
   messages: Message[];
-  statusUpdate: string | null;
+  statusUpdate: StatusUpdate | null;
   isProcessing: boolean;
   incomingTokens: string;
   projectAndWorkflowIds: ProjectAndWorkflowIds | null;
@@ -40,6 +45,7 @@ export interface AiAssistantState {
   hubID: string | null;
   qa: ConversationState;
   build: ConversationState;
+  processedInteractionIds: Set<string>;
 }
 
 export interface Feedback {
@@ -47,7 +53,10 @@ export interface Feedback {
   comment: string;
 }
 
-type ChainType = Exclude<keyof AiAssistantState, "hubID">;
+type ChainType = Exclude<
+  keyof AiAssistantState,
+  "hubID" | "processedInteractionIds"
+>;
 
 type AiAssistantEventPayload = {
   type: "token" | "result" | "error" | "status_update";
@@ -80,6 +89,7 @@ export const state = (): AiAssistantState => ({
   hubID: null,
   qa: createEmptyConversationState(),
   build: createEmptyConversationState(),
+  processedInteractionIds: new Set(),
 });
 export const mutations: MutationTree<AiAssistantState> = {
   setHubID(state, hubID) {
@@ -93,7 +103,7 @@ export const mutations: MutationTree<AiAssistantState> = {
       content: string;
       nodes: Message["nodes"];
       references: Message["references"];
-      feedbackId?: string;
+      interactionId?: string;
       isError?: boolean;
     },
   ) {
@@ -103,7 +113,7 @@ export const mutations: MutationTree<AiAssistantState> = {
       content,
       nodes,
       references,
-      feedbackId = "",
+      interactionId = "",
       isError = false,
     } = payload;
 
@@ -114,7 +124,7 @@ export const mutations: MutationTree<AiAssistantState> = {
       content,
       nodes,
       references,
-      feedbackId,
+      interactionId,
       isError,
       timestamp,
     });
@@ -131,7 +141,7 @@ export const mutations: MutationTree<AiAssistantState> = {
     {
       chainType,
       statusUpdate,
-    }: { chainType: ChainType; statusUpdate: string | null },
+    }: { chainType: ChainType; statusUpdate: StatusUpdate | null },
   ) {
     state[chainType].statusUpdate = statusUpdate;
   },
@@ -253,24 +263,16 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
   },
   async submitFeedback(
     { state, rootGetters },
-    {
-      chainType,
-      idx,
-      feedback,
-    }: { chainType: ChainType; idx: number; feedback: Feedback },
+    { interactionId, feedback }: { interactionId: string; feedback: Feedback },
   ) {
     const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
     const { projectId } = projectAndWorkflowIds;
 
-    const feedbackId = state[chainType].messages[idx].feedbackId;
-    if (!feedbackId) {
-      return;
-    }
-    delete state[chainType].messages[idx].feedbackId;
+    state.processedInteractionIds.add(interactionId);
 
     try {
       await API.kai.submitFeedback({
-        kaiFeedbackId: feedbackId,
+        kaiFeedbackId: interactionId,
         kaiFeedback: {
           projectId,
           isPositive: feedback.isPositive,
@@ -303,7 +305,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
             content: payload.message,
             nodes: payload.nodes,
             references: payload.references,
-            feedbackId: payload.interactionId,
+            interactionId: payload.interactionId,
           });
         }
 
@@ -329,7 +331,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       case "status_update":
         commit("setStatusUpdate", {
           chainType,
-          statusUpdate: payload.message,
+          statusUpdate: payload,
         });
         break;
     }
@@ -359,5 +361,9 @@ export const getters: GetterTree<AiAssistantState, RootStoreState> = {
         availablePortTypes[portTypeId]?.kind === "table"
       );
     };
+  },
+  isFeedbackProcessed(state) {
+    return (interactionId: string) =>
+      state.processedInteractionIds.has(interactionId);
   },
 };

@@ -7,7 +7,6 @@ import type { ChainType } from "@/components/kai/types";
 import type { Message } from "@/store/aiAssistant";
 import { mockVuexStore } from "@/test/utils";
 import { MessageSeparator, useChat } from "../useChat";
-import type { MessageWithFeedbackSubmit } from "../useChat";
 
 vi.mock("@/components/kai/useKaiServer.ts", () => ({
   useKaiServer: vi.fn().mockImplementation(() => ({
@@ -78,43 +77,12 @@ describe("useChat", () => {
   describe("messagesWithSeparators", () => {
     it("includes a welcome message as the first message", () => {
       const { messagesWithSeparators } = doMount();
-      expect(
-        (messagesWithSeparators[0] as MessageWithFeedbackSubmit).content,
-      ).toBe("welcome message");
-      expect(
-        (messagesWithSeparators[0] as MessageWithFeedbackSubmit).role,
-      ).toBe(KaiMessage.RoleEnum.Assistant);
-    });
-
-    it("maps raw messages to messages with submitFeedback function", () => {
-      const messages = [
-        { content: "message 1", role: KaiMessage.RoleEnum.User },
-        {
-          content: "message 2",
-          role: KaiMessage.RoleEnum.User,
-          feedbackId: "1",
-        },
-      ];
-      const feedback = { isPositive: true, comment: "" };
-
-      const { dispatchSpy, messagesWithSeparators } = doMount({ messages });
-      expect(
-        (messagesWithSeparators[0] as MessageWithFeedbackSubmit).submitFeedback,
-      ).toBeFalsy();
-      expect(
-        (messagesWithSeparators[1] as MessageWithFeedbackSubmit).submitFeedback,
-      ).toBeFalsy();
-
-      const submitFeedback = (
-        messagesWithSeparators[2] as MessageWithFeedbackSubmit
-      ).submitFeedback;
-      submitFeedback!(feedback);
-
-      expect(dispatchSpy).toHaveBeenCalledWith("aiAssistant/submitFeedback", {
-        chainType: "qa",
-        idx: 1,
-        feedback,
-      });
+      expect((messagesWithSeparators[0] as Message).content).toBe(
+        "welcome message",
+      );
+      expect((messagesWithSeparators[0] as Message).role).toBe(
+        KaiMessage.RoleEnum.Assistant,
+      );
     });
 
     it("adds day separators when the day changes between messages", () => {

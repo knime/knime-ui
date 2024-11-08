@@ -56,12 +56,13 @@ const {
       <template v-else>
         <QuickBuildProcessing
           v-if="isProcessing"
-          :status="statusUpdate"
+          :status="statusUpdate?.message ?? null"
           @abort="abortSendMessage"
         />
         <QuickBuildResult
           v-else-if="result?.type === 'SUCCESS'"
           :message="result.message"
+          :interaction-id="result.interactionId"
           @close="closeQuickActionMenu"
         />
         <QuickBuildInput

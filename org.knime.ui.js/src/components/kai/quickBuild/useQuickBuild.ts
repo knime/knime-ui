@@ -4,7 +4,11 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { useChat } from "../chat/useChat";
 
-type Result = { message: string; type: "SUCCESS" | "INPUT_NEEDED" };
+type Result = {
+  message: string;
+  type: "SUCCESS" | "INPUT_NEEDED";
+  interactionId: string;
+};
 
 export const useQuickBuild = ({
   nodeId,
@@ -58,11 +62,14 @@ export const useQuickBuild = ({
     }
   });
 
-  watch(statusUpdate, (value) => {
-    if (value === "Building workflow...") {
-      enableBannerMode();
-    }
-  });
+  watch(
+    () => statusUpdate.value?.type,
+    (value) => {
+      if (value === "WORKFLOW_BUILDING") {
+        enableBannerMode();
+      }
+    },
+  );
 
   watch(result, (value) => {
     if (value?.type === "SUCCESS") {

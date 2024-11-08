@@ -5,6 +5,7 @@ import FeedbackControls from "../chat/message/FeedbackControls.vue";
 
 type Props = {
   message: string;
+  interactionId: string;
 };
 
 defineProps<Props>();
@@ -17,7 +18,11 @@ defineEmits(["close"]);
       <KnimeIcon />
     </div>
     <div class="message">{{ message }}</div>
-    <FeedbackControls :submit-feedback="() => {}" show-controls />
+    <FeedbackControls
+      :interaction-id="interactionId"
+      show-controls
+      @feedback-submitted="$emit('close')"
+    />
   </div>
 </template>
 

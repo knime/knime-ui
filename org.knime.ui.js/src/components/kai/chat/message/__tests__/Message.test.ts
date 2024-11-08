@@ -6,6 +6,7 @@ import UserIcon from "@knime/styles/img/icons/user.svg";
 
 import { API } from "@/api";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
+import * as aiAssistantStore from "@/store/aiAssistant";
 import * as applicationStore from "@/store/application";
 import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import {
@@ -82,6 +83,7 @@ describe("Message.vue", () => {
 
   const doMount = ({ props }: { props?: Partial<ComponentProps> } = {}) => {
     const $store = mockVuexStore({
+      aiAssistant: aiAssistantStore,
       nodeTemplates: nodeTemplatesStore,
       application: applicationStore,
     });
@@ -178,7 +180,7 @@ describe("Message.vue", () => {
     it("should render kai status", () => {
       const { wrapper } = doMount({
         props: {
-          statusUpdate: "some status from KAI",
+          statusUpdate: { message: "some status from KAI" },
         },
       });
 
@@ -210,12 +212,12 @@ describe("Message.vue", () => {
   });
 
   it("should render feedback controls", async () => {
-    const submitFeedback = vi.fn();
+    const interactionId = "some-interaction-id";
     const { wrapper } = doMount({
       props: {
         role: KaiMessage.RoleEnum.User,
         isError: true,
-        submitFeedback,
+        interactionId,
       },
     });
 
@@ -227,8 +229,8 @@ describe("Message.vue", () => {
     });
 
     expect(wrapper.findComponent(FeedbackControls).exists()).toBe(true);
-    expect(
-      wrapper.findComponent(FeedbackControls).props("submitFeedback"),
-    ).toBe(submitFeedback);
+    expect(wrapper.findComponent(FeedbackControls).props("interactionId")).toBe(
+      interactionId,
+    );
   });
 });

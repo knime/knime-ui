@@ -1,36 +1,57 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 import { Button } from "@knime/components";
 import ThumbsDownIcon from "@knime/styles/img/icons/thumbs-down.svg";
 import ThumbsUpIcon from "@knime/styles/img/icons/thumbs-up.svg";
+import { sleep } from "@knime/utils";
+
+import { useStore } from "@/composables/useStore";
 
 const DELAY_TIME = 1000;
 
 interface Props {
-  submitFeedback: CallableFunction | null;
+  interactionId: string;
   showControls: boolean;
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits(["feedbackSubmitted"]);
 
+const store = useStore();
+
+const isFeedbackSubmitted = ref<Boolean>(false);
 const showThankYou = ref<Boolean>(false);
-
-watch(
-  () => props.submitFeedback,
-  (newValue) => {
-    if (!newValue) {
-      showThankYou.value = true;
-      setTimeout(() => {
-        showThankYou.value = false;
-      }, DELAY_TIME);
-    }
-  },
+const shouldRenderFeedbackControls = computed(
+  () =>
+    !isFeedbackSubmitted.value &&
+    props.interactionId &&
+    !store.getters["aiAssistant/isFeedbackProcessed"](props.interactionId),
 );
+
+const submitFeedback = async (feedback: {
+  isPositive: boolean;
+  comment: string;
+}) => {
+  store.dispatch("aiAssistant/submitFeedback", {
+    interactionId: props.interactionId,
+    feedback,
+  });
+  isFeedbackSubmitted.value = true;
+  emit("feedbackSubmitted");
+
+  showThankYou.value = true;
+  await sleep(DELAY_TIME);
+  showThankYou.value = false;
+};
 </script>
 
 <template>
-  <div v-show="showControls" v-if="submitFeedback" class="feedback-controls">
+  <div
+    v-show="showControls"
+    v-if="shouldRenderFeedbackControls"
+    class="feedback-controls"
+  >
     <Button
       class="button thumbs-up"
       @click="submitFeedback({ isPositive: true, comment: '' })"

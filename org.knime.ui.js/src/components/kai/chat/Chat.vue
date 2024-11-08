@@ -68,7 +68,7 @@ watch(
         key="processing"
         :role="KaiMessage.RoleEnum.Assistant"
         :content="incomingTokens"
-        :status-update="statusUpdate ?? ''"
+        :status-update="statusUpdate"
       />
     </SidebarPanelScrollContainer>
     <ChatControls

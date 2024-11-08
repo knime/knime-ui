@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useStore } from "@/composables/useStore";
-import type { Feedback, Message } from "@/store/aiAssistant";
+import type { Message } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
 import { useKaiServer } from "../useKaiServer";
 
@@ -16,13 +16,6 @@ class MessageSeparator {
     this.timestamp = timestamp;
   }
 }
-
-/**
- * Represents a chat message with optional feedback functionality.
- */
-type MessageWithFeedbackSubmit = Message & {
-  submitFeedback?: CallableFunction;
-};
 
 const useChat = (chainType: ChainType) => {
   const { uiStrings } = useKaiServer();
@@ -42,25 +35,10 @@ const useChat = (chainType: ChainType) => {
       timestamp: initialTimestamp,
     };
 
-    const allMessages: MessageWithFeedbackSubmit[] = [
+    const allMessages: Message[] = [
       // The first message is always a welcome message.
       welcomeMessage,
-      ...rawMessages.map((message, idx) => {
-        if (message.feedbackId) {
-          // Add submitFeedback function to messages with feedbackId.
-          return {
-            ...message,
-            submitFeedback: (feedback: Feedback) =>
-              store.dispatch("aiAssistant/submitFeedback", {
-                chainType,
-                idx,
-                feedback,
-              }),
-          };
-        } else {
-          return message;
-        }
-      }),
+      ...rawMessages,
     ];
 
     // Initialize array for messages and separators.
@@ -151,4 +129,3 @@ const useChat = (chainType: ChainType) => {
 };
 
 export { useChat, MessageSeparator };
-export type { MessageWithFeedbackSubmit };
