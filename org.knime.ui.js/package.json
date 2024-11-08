@@ -35,7 +35,7 @@
     "@knime/rich-text-editor": "^1.2.28",
     "@knime/styles": "^1.1.0",
     "@knime/ui-extension-renderer": "^1.1.30",
-    "@knime/ui-extension-service": "1.0.0",
+    "@knime/ui-extension-service": "1.0.1",
     "@knime/utils": "^1.0.17",
     "@knime/virtual-tree": "^1.2.2",
     "@open-rpc/client-js": "^1.8.1",
