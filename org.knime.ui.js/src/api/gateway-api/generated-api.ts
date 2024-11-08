@@ -511,11 +511,11 @@ export interface AppState {
      */
     useEmbeddedDialogs?: boolean;
     /**
-     * TODO
+     * Whether all K-AI-related features (chat sidebar, build mode, scripting assistance, etc.) are enabled.
      * @type {boolean}
      * @memberof AppState
      */
-    disableKai?: boolean;
+    isKaiEnabled?: boolean;
     /**
      * Display name of currently active node collection. Compatible with \&quot;Search in {activeNodeCollection} nodes\&quot;.
      * @type {string}
