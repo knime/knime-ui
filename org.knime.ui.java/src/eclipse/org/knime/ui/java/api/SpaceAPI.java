@@ -55,8 +55,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -65,8 +65,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -90,6 +88,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
+import org.knime.ui.java.util.FreshFileStoreResolver;
 import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
 import org.knime.workbench.explorer.dialogs.Validator;
@@ -207,9 +206,9 @@ final class SpaceAPI {
         final String destinationItemId, //
         final boolean excludeData //
     ) { // NOSONAR
-        final var sources = new SiblingItemLocators(sourceProviderId, sourceSpaceId,
+        final var sources = new Locator.Siblings(sourceProviderId, sourceSpaceId,
             Stream.of(sourceItemIdsParam).map(String.class::cast).toList());
-        final var destination = new ItemLocator(destinationProviderId, destinationSpaceId, destinationItemId);
+        final var destination = new Locator.Item(destinationProviderId, destinationSpaceId, destinationItemId);
         if (sources.itemIds().isEmpty()) {
             return true;
         }
@@ -246,17 +245,18 @@ final class SpaceAPI {
 
         // old upload/download flow
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
+        FreshFileStoreResolver.refreshContentProvidersWithProgress(Set.of(sources.providerId(), destination.providerId()));
         return ClassicAPCopyMoveLogic.copy( //
             shellProvider, //
             sources.provider(), //
-            toFileStores(sources), //
+            FreshFileStoreResolver.resolve(sources), //
             destination.provider(), //
-            toFileStore(destination), //
+            FreshFileStoreResolver.resolve(destination), //
             excludeData //
         );
     }
 
-    private static boolean performAsyncHubDownload(SiblingItemLocators source, ItemLocator destination)
+    private static boolean performAsyncHubDownload(Locator.Siblings source, Locator.Item destination)
         throws OperationNotAllowedException {
         final TransferResult result =
             source.space().downloadInto(source.itemIds(), (LocalWorkspace)destination.space(), destination.itemId());
@@ -267,25 +267,12 @@ final class SpaceAPI {
         return result.successful();
     }
 
-    private static List<AbstractExplorerFileStore> toFileStores(final SiblingItemLocators itemLocators) {
-        var space = itemLocators.space();
-        return itemLocators.itemIds().stream().map(item -> toFileStore(space, item)).toList();
-    }
-
-    private static AbstractExplorerFileStore toFileStore(final ItemLocator itemLocator) {
-        return toFileStore(itemLocator.space(), itemLocator.itemId());
-    }
-
-    private static AbstractExplorerFileStore toFileStore(final Space space, final String itemId) {
-        return ExplorerFileSystem.INSTANCE.getStore(space.toKnimeUrl(itemId));
-    }
-
-    private static boolean performAsyncHubUpload(SiblingItemLocators source, ItemLocator destination,
+    private static boolean performAsyncHubUpload(Locator.Siblings source, Locator.Item destination,
         boolean excludeData) throws OperationNotAllowedException {
         // show upload warning for public spaces
         final var spaceEnt = destination.space().toEntity();
         if (!spaceEnt.isPrivate()) {
-            var status = toFileStore(destination).getContentProvider().showUploadWarning(spaceEnt.getName());
+            var status = FreshFileStoreResolver.resolve(destination).getContentProvider().showUploadWarning(spaceEnt.getName());
             if (!status.isOK()) {
                 return false;
             }
@@ -360,9 +347,11 @@ final class SpaceAPI {
             return MoveOrCopyResult.SUCCESS.toString();
         }
 
-        final var sources = new SiblingItemLocators(spaceProviderId, sourceSpaceId,
+        final var sources = new Locator.Siblings(spaceProviderId, sourceSpaceId,
             Arrays.stream(sourceItemIdsParam).map(String.class::cast).toList());
-        final var destination = new ItemLocator(spaceProviderId, destinationSpaceId, destinationItemId);
+        final var destination = new Locator.Item(spaceProviderId, destinationSpaceId, destinationItemId);
+
+        var mountId = sources.provider().getId();
 
         if (sources.isLocal()) {
             // this is really an illegal argument, since we deal with remote copy/move
@@ -394,125 +383,6 @@ final class SpaceAPI {
 
     private enum MoveOrCopyResult {
             SUCCESS, COLLISION, FAILURE;
-    }
-
-    private static final class ItemLocator extends SpaceLocator {
-
-        private final String itemId;
-
-        /**
-         * @param providerId ID of the space provider containing the item
-         * @param spaceId ID of the space in provider with ID {@code spaceProviderId} containing the item
-         * @param itemId ID of the item contained in space with ID {@code spaceId}
-         */
-        private ItemLocator(String providerId, String spaceId, String itemId) {
-            super(providerId, spaceId);
-            this.itemId = itemId;
-        }
-
-        public String itemId() {
-            return itemId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            ItemLocator that = (ItemLocator)o;
-            return new EqualsBuilder().appendSuper(super.equals(o)).append(itemId, that.itemId).isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(itemId).toHashCode();
-        }
-    }
-
-    private static final class SiblingItemLocators extends SpaceLocator {
-        private final List<String> itemIds;
-
-        SiblingItemLocators(String providerId, String spaceId, List<String> itemIds) {
-            super(providerId, spaceId);
-            this.itemIds = itemIds;
-        }
-
-        public List<String> itemIds() {
-            return itemIds;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            SiblingItemLocators that = (SiblingItemLocators)o;
-            return new EqualsBuilder().appendSuper(super.equals(o)).append(itemIds, that.itemIds).isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(itemIds).toHashCode();
-        }
-    }
-
-    private static class SpaceLocator {
-        private final String m_providerId;
-
-        private final String m_spaceId;
-
-        private SpaceLocator(String providerId, String spaceId) {
-            this.m_providerId = providerId;
-            this.m_spaceId = spaceId;
-        }
-
-        SpaceProvider provider() {
-            return SpaceAPI.getSpaceProvider(this.providerId());
-        }
-
-        Space space() {
-            return this.provider().getSpace(this.spaceId());
-        }
-
-        boolean isLocal() {
-            return provider().getType() == TypeEnum.LOCAL;
-        }
-
-        boolean isHub() {
-            return provider().getType() == TypeEnum.HUB;
-        }
-
-        public String providerId() {
-            return m_providerId;
-        }
-
-        public String spaceId() {
-            return m_spaceId;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this)
-                return true;
-            if (obj == null || obj.getClass() != this.getClass())
-                return false;
-            var that = (SpaceLocator)obj;
-            return Objects.equals(this.m_providerId, that.m_providerId)
-                && Objects.equals(this.m_spaceId, that.m_spaceId);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(m_providerId, m_spaceId);
-        }
-
-        @Override
-        public String toString() {
-            return "SpaceLocator[" + "spaceProviderId=" + m_providerId + ", " + "spaceId=" + m_spaceId + ']';
-        }
-
     }
 
     /**
@@ -689,7 +559,7 @@ final class SpaceAPI {
         return space.editScheduleInfo(itemId, scheduleId);
     }
 
-    private static SpaceProvider getSpaceProvider(final String spaceProviderId) {
+    static SpaceProvider getSpaceProvider(final String spaceProviderId) {
         final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         if (spaceProviders == null) {
             throw new NoSuchElementException("Available space providers could not be determined.");
