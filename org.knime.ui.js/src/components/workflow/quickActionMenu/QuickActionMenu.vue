@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs } from "vue";
+import { computed } from "vue";
 
 import { Button } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
@@ -14,6 +14,7 @@ import * as $shapes from "@/style/shapes";
 import type { DragConnector } from "../ports/NodePort/types";
 
 import QuickAddNodeMenu from "./quickAdd/QuickAddNodeMenu.vue";
+import { useQuickActionMenu } from "./useQuickActionMenu";
 
 export type QuickActionMenuProps = {
   nodeId?: string | null;
@@ -34,10 +35,6 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
 const menuWidth = 360;
 
 defineEmits(["menuClose"]);
-
-const menuMode = ref<"quick-add" | "quick-build">("quick-add");
-const setQuickAddMode = () => (menuMode.value = "quick-add");
-const setQuickBuildMode = () => (menuMode.value = "quick-build");
 
 const store = useStore();
 
@@ -103,14 +100,12 @@ const marginTop = computed(() => {
   return `${marginTop}px`;
 });
 
-const { nodeRelation } = toRefs(props);
-
-const isQuickBuildAvailableForPort = computed(() =>
-  store.getters["aiAssistant/isQuickBuildAvailableForPort"](
-    props.nodeRelation,
-    props.port?.typeId,
-  ),
-);
+const {
+  menuMode,
+  setQuickAddMode,
+  setQuickBuildMode,
+  isQuickBuildAvailableForPort,
+} = useQuickActionMenu({ port: props.port, nodeRelation: props.nodeRelation });
 </script>
 
 <template>
