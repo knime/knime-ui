@@ -56,6 +56,7 @@ import org.knime.workbench.core.imports.ExtensionImport;
 import org.knime.workbench.core.imports.ImportForbiddenException;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.RepoObjectImport;
+import org.knime.workbench.core.imports.SecretImport;
 import org.knime.workbench.core.imports.URIImporter;
 import org.knime.workbench.core.imports.UpdateSiteInfo;
 
@@ -113,6 +114,11 @@ public class TestURIImporter implements URIImporter {
 
     @Override
     public Optional<RepoObjectImport> createRepoObjectImport(final URI uri) throws ImportForbiddenException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<SecretImport> createSecretImport(final URI uri) throws ImportForbiddenException {
         throw new UnsupportedOperationException();
     }
 
