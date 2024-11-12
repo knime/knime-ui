@@ -68,6 +68,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.knime.core.node.KNIMEComponentInformation;
@@ -153,7 +154,8 @@ public final class ImportURI {
             && repoObjectImport.getType() == RepoObjectType.Workflow) {
             var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
             var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
-            return OpenProject.openProjectCopy(repoObjectImport, selectedVersion);
+            Display.getDefault().asyncExec(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion));
+            return true;
         } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
             return checkAndInstallExtension(extensionImport);
         } else {
