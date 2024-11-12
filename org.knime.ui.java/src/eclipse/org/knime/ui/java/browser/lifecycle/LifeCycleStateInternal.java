@@ -53,12 +53,12 @@ import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
-import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 /**
@@ -68,8 +68,9 @@ import org.knime.ui.java.util.MostRecentlyUsedProjects;
  */
 public interface LifeCycleStateInternal extends LifeCycleState {
 
-    static LifeCycleStateInternal of(ProjectManager projectManager, MostRecentlyUsedProjects mostRecentlyUsedProjects,
-        LocalWorkspace localWorkspace, WelcomeAPEndpoint welcomeAPEndpoint, InternalUsageTracking internalUsageTracking) {
+    static LifeCycleStateInternal of(final ProjectManager projectManager,
+        final MostRecentlyUsedProjects mostRecentlyUsedProjects, final LocalWorkspace localWorkspace,
+        final WelcomeAPEndpoint welcomeAPEndpoint, final InternalUsageTracking internalUsageTracking) {
 
         return new LifeCycleStateInternal() { // NOSONAR
 

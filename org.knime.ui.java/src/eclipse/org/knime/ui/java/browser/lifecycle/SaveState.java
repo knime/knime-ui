@@ -48,12 +48,9 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.io.IOException;
 import java.util.function.Supplier;
 
-import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.api.SaveAndCloseProjects;
-import org.knime.ui.java.util.UserDirectory;
 
 import persistence.AppStatePersistor;
 
