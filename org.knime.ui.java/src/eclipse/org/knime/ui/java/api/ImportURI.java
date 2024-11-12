@@ -100,6 +100,7 @@ import org.knime.workbench.core.imports.ImportForbiddenException;
 import org.knime.workbench.core.imports.NodeImport;
 import org.knime.workbench.core.imports.RepoObjectImport;
 import org.knime.workbench.core.imports.RepoObjectImport.RepoObjectType;
+import org.knime.workbench.core.imports.SecretImport;
 import org.knime.workbench.core.imports.URIImporterFinder;
 import org.knime.workbench.core.imports.UpdateSiteInfo;
 import org.knime.workbench.editor2.InstallMissingNodesJob;
@@ -297,18 +298,7 @@ public final class ImportURI {
         entityImportInProgress = null;
 
         if (entityImport instanceof NodeImport nodeImport) {
-            switch (checkNodeAvailable(nodeImport)) {
-                case AVAILABLE:
-                    var key = getNodeFactoryKey(nodeImport.getFactoryId());
-                    return importNode(key, null, projectId, workflowId, canvasX, canvasY);
-                case NOT_INSTALLED:
-                    askToInstallExtension(nodeImport);
-                    return false;
-                case FORBIDDEN:
-                    MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Usage of node is restricted",
-                        "Usage of this node is restricted in this installation.");
-                    return false;
-            }
+            return checkAndImportNode(nodeImport, null, projectId, workflowId, canvasX, canvasY);
         } else if (entityImport instanceof RepoObjectImport repoObjectImport
             && repoObjectImport.getType() == RepoObjectType.WorkflowTemplate) {
             ImportAPI.importComponent(projectId, workflowId, repoObjectImport.getKnimeURI(), true, canvasX, canvasY);
@@ -317,6 +307,9 @@ public final class ImportURI {
             return OpenProject.openProjectCopy(repoObjectImport);
         } else if (entityImport instanceof FromFileEntityImport fromFileEntityImport) {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId,
+                canvasX, canvasY);
+        } else if (entityImport instanceof SecretImport secretImport) {
+            return importNodeFromSecretURI(secretImport, projectId, workflowId,
                 canvasX, canvasY);
         }
 
@@ -327,8 +320,7 @@ public final class ImportURI {
             AVAILABLE, NOT_INSTALLED, FORBIDDEN
     }
 
-    private static NodeAvailability checkNodeAvailable(final NodeImport nodeImport) {
-        final var factoryId = nodeImport.getFactoryId();
+    private static NodeAvailability checkNodeAvailable(final String factoryId) {
         final var nodeRepo = DesktopAPI.getDeps(NodeRepository.class);
         final var nodeTemplate = nodeRepo.getNodeTemplates(Collections.singletonList(factoryId), true).get(factoryId);
         if (nodeTemplate != null) {
@@ -412,6 +404,12 @@ public final class ImportURI {
         return false;
     }
 
+    private static boolean importNodeFromSecretURI(final SecretImport secretImport, final String projectId,
+        final String workflowId, final int canvasX, final int canvasY) {
+        return checkAndImportNode(secretImport.getNodeImport(), secretImport.getUri().toString(), projectId, workflowId,
+            canvasX, canvasY);
+    }
+
     private static boolean importNodeFromFileURI(final String uri, final String projectId, final String workflowId,
         final int canvasX, final int canvasY) {
         var nodeFactory = ConfigurableNodeFactoryMapper.getNodeFactory(uri);
@@ -419,6 +417,25 @@ public final class ImportURI {
             return false;
         }
         return importNode(null, uri, projectId, workflowId, canvasX, canvasY);
+    }
+
+    private static boolean checkAndImportNode(final NodeImport nodeImport, final String url, final String projectId,
+        final String workflowId, final int canvasX, final int canvasY) {
+        return switch (checkNodeAvailable(nodeImport.getFactoryId())) {
+            case AVAILABLE -> {
+                var key = getNodeFactoryKey(nodeImport.getFactoryId());
+                yield importNode(key, url, projectId, workflowId, canvasX, canvasY);
+            }
+            case NOT_INSTALLED -> {
+                askToInstallExtension(nodeImport);
+                yield false;
+            }
+            case FORBIDDEN -> {
+                MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Usage of node is restricted",
+                    "Usage of this node is restricted in this installation.");
+                yield false;
+            }
+        };
     }
 
     private static boolean importNode(final NodeFactoryKeyEnt nodeFactoryKey, final String url, final String projectId,
