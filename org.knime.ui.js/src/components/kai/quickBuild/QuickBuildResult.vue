@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 
-import FeedbackControls from "../chat/message/FeedbackControls.vue";
-
 type Props = {
   message: string;
   interactionId: string;
@@ -18,11 +16,6 @@ defineEmits(["close"]);
       <KnimeIcon />
     </div>
     <div class="message">{{ message }}</div>
-    <FeedbackControls
-      :interaction-id="interactionId"
-      show-controls
-      @feedback-submitted="$emit('close')"
-    />
   </div>
 </template>
 
