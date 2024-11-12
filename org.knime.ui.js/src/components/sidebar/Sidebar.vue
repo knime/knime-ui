@@ -112,6 +112,17 @@ const activateSection = (tabName: TabValues) => {
   store.dispatch("panel/closeExtensionPanel");
 };
 
+const isKaiEnabled = computed(() => store.state.application.isKaiEnabled)
+watch(
+  isKaiEnabled,
+  (newValue) => {
+    if (newValue === false && isTabActive.value(TABS.KAI)) {
+      // We switch over to the "Info" tab if K-AI gets disabled while the "K-AI" tab is active
+      activateSection(TABS.CONTEXT_AWARE_DESCRIPTION)
+    }
+  }
+)
+
 const sidebarSections = computed<Array<SidebarSection>>(() => {
   return [
     {
@@ -142,7 +153,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
     }),
 
     ...registerSidebarSection(
-      $features.isKaiPermitted() && uiControls.value.canAccessKAIPanel,
+      isKaiEnabled.value && $features.isKaiPermitted() && uiControls.value.canAccessKAIPanel,
       {
         name: TABS.KAI,
         title: "K-AI",

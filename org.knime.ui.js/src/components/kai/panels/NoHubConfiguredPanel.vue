@@ -10,7 +10,7 @@ const openPreferencePage = API.desktop.openAiAssistantPreferencePage;
   <div class="login-panel">
     <div class="slogan">Please select a Hub to which K-AI should connect.</div>
     <Button primary compact @click="openPreferencePage">
-      Open references
+      Open preferences
     </Button>
   </div>
 </template>

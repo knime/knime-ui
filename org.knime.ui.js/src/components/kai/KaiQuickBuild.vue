@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRefs } from "vue";
+import { computed, toRefs, watch } from "vue";
 
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
@@ -31,6 +31,17 @@ const store = useStore();
 const closeQuickActionMenu = () => {
   store.dispatch("workflow/closeQuickActionMenu");
 };
+
+const isKaiEnabled = computed(() => store.state.application.isKaiEnabled)
+watch(
+  isKaiEnabled,
+  (newValue) => {
+    if (newValue === false) {
+      // We close the Quick Action Menu if K-AI gets disabled while we're in Quick Build Mode
+      closeQuickActionMenu()
+    }
+  }
+)
 
 const { panelComponent } = useKaiPanels();
 

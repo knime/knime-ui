@@ -42,6 +42,7 @@ const hasConnector = computed(
   () => store.state.workflow.quickActionMenu.hasConnector,
 );
 
+const isKaiEnabled = computed(() => store.state.application.isKaiEnabled)
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,
 );
@@ -140,7 +141,7 @@ const {
           :port-index="portIndex"
           @menu-close="$emit('menuClose')"
         />
-        <div v-if="isQuickBuildAvailableForPort" class="footer">
+        <div v-if="isKaiEnabled && isQuickBuildAvailableForPort" class="footer">
           <Button primary @click="setQuickBuildMode">
             <AiIcon />
             Build with K-AI
