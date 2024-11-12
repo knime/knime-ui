@@ -26,14 +26,14 @@ export const useQuickBuild = ({
   const { isProcessing, lastUserMessage, abortSendMessage, statusUpdate } =
     useChat("build");
 
-  let enableBannerModeCalled = false;
-  const enableBannerMode = () => {
-    if (enableBannerModeCalled) {
+  let enableDetachedModeCalled = false;
+  const enableDetachedMode = () => {
+    if (enableDetachedModeCalled) {
       return;
     }
 
-    store.dispatch("workflow/enableBannerMode");
-    enableBannerModeCalled = true;
+    store.dispatch("workflow/enableDetachedMode");
+    enableDetachedModeCalled = true;
   };
 
   const sendMessage = async ({ message }: { message: string }) => {
@@ -66,14 +66,14 @@ export const useQuickBuild = ({
     () => statusUpdate.value?.type,
     (value) => {
       if (value === "WORKFLOW_BUILDING") {
-        enableBannerMode();
+        enableDetachedMode();
       }
     },
   );
 
   watch(result, (value) => {
     if (value?.type === "SUCCESS") {
-      enableBannerMode();
+      enableDetachedMode();
     }
   });
 

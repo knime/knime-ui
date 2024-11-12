@@ -143,7 +143,9 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  enableBannerMode({ state, commit }) {
+  enableDetachedMode({ state, commit }) {
+    const DETACHED_MODE_OFFSET = 125;
+
     commit("setQuickActionMenu", {
       ...state.quickActionMenu,
       hasConnector: false,
@@ -151,7 +153,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         ...state.quickActionMenu.props,
         position: {
           x: state.quickActionMenu.props!.position.x,
-          y: state.quickActionMenu.props!.position.y - 125,
+          y: state.quickActionMenu.props!.position.y - DETACHED_MODE_OFFSET,
         },
       },
     });
