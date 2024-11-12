@@ -221,11 +221,25 @@ final class SpaceAPI {
             }
         }
 
+        FreshFileStoreResolver
+            .refreshContentProvidersWithProgress(Set.of(sources.providerId(), destination.providerId()));
+        var sourceFileStores = FreshFileStoreResolver.resolve(sources);
+        var destinationFileStore = FreshFileStoreResolver.resolve(destination);
+
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
-                return performAsyncHubUpload(sources, destination, excludeData);
+                // TODO in principle, this could be called without filestores but there are
+                //  issues with a `root` destination item ID. Filestores have to be resolved anyway for call 
+                //  to `ClassicAPCopyMoveLogic` below.
+                return performAsyncHubUpload( //
+                    (LocalWorkspace)sources.space(), //
+                    destination.provider(), //
+                    destinationFileStore, //
+                    sources.itemIds(), //
+                    excludeData //
+                );
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
             } catch (Exception ex) { // NOSONAR
@@ -235,7 +249,12 @@ final class SpaceAPI {
             }
         } else if (!asyncDownloadDisabled && sources.isHub() && destination.isLocal()) {
             try {
-                return performAsyncHubDownload(sources, destination);
+                return performAsyncHubDownload( //
+                    sources.space(), //
+                    destination.provider(), //
+                    destinationFileStore, //
+                    sources.itemIds() //
+                );
             } catch (Exception ex) { // NOSONAR
                 LOGGER.error("Download error: " + ex.getMessage(), ex);
                 showErrorToast("Download error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
@@ -245,21 +264,22 @@ final class SpaceAPI {
 
         // old upload/download flow
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
-        FreshFileStoreResolver.refreshContentProvidersWithProgress(Set.of(sources.providerId(), destination.providerId()));
         return ClassicAPCopyMoveLogic.copy( //
             shellProvider, //
             sources.provider(), //
-            FreshFileStoreResolver.resolve(sources), //
+            sourceFileStores, //
             destination.provider(), //
-            FreshFileStoreResolver.resolve(destination), //
+            destinationFileStore, //
             excludeData //
         );
     }
 
-    private static boolean performAsyncHubDownload(Locator.Siblings source, Locator.Item destination)
+    private static boolean performAsyncHubDownload(final Space sourceSpace, final SpaceProvider targetSpaceProvider,
+        final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
         throws OperationNotAllowedException {
-        final TransferResult result =
-            source.space().downloadInto(source.itemIds(), (LocalWorkspace)destination.space(), destination.itemId());
+        final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
+        final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
+        final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
         if (result.errorTitleAndDescription() != null) {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
@@ -267,19 +287,22 @@ final class SpaceAPI {
         return result.successful();
     }
 
-    private static boolean performAsyncHubUpload(Locator.Siblings source, Locator.Item destination,
-        boolean excludeData) throws OperationNotAllowedException {
+    private static boolean performAsyncHubUpload(final LocalWorkspace localSource,
+        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
+        final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
+        final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
+        final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
+            .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
+        final var targetSpace = targetSpaceProvider.getSpace(targetSpaceAndId.spaceId());
+
         // show upload warning for public spaces
-        final var spaceEnt = destination.space().toEntity();
-        if (!spaceEnt.isPrivate()) {
-            var status = FreshFileStoreResolver.resolve(destination).getContentProvider().showUploadWarning(spaceEnt.getName());
-            if (!status.isOK()) {
-                return false;
-            }
+        final var spaceEnt = targetSpace.toEntity();
+        if (!spaceEnt.isPrivate().booleanValue()) {
+            remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
         }
 
-        final var result = destination.space().uploadFrom((LocalWorkspace)source.space(), source.itemIds(),
-            destination.itemId(), excludeData);
+        final TransferResult result =
+            targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
         if (result.errorTitleAndDescription() != null) {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
