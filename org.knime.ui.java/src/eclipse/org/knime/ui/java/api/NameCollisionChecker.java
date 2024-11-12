@@ -82,11 +82,7 @@ final class NameCollisionChecker {
         MOVE
     }
 
-    /** Dialog constant */
-    static final String CANCEL = "cancel";
-
     private NameCollisionChecker() {
-        // Utility method
     }
 
     /**
@@ -117,6 +113,17 @@ final class NameCollisionChecker {
         return itemNames //
             .filter(itemName -> space.containsItemWithName(destWorkflowGroupItemId, itemName)) //
             .toList();
+    }
+
+    /**
+     * Check for name collisions
+     * @param space The space to check in
+     * @param destinationItemId The item ID of the workflow group to check in
+     * @param itemNames The new item names to check whether they collide with anything already present
+     * @return {@code true} iff there is a name collision, {@code false} otherwise.
+     */
+    static boolean test(final Space space, final String destinationItemId, final List<String> itemNames) {
+        return itemNames.stream().anyMatch(itemName -> space.containsItemWithName(destinationItemId, itemName));
     }
 
     /**

@@ -51,28 +51,27 @@ package org.knime.ui.java.api;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.util.CheckUtils;
 import org.knime.core.ui.util.SWTUtilities;
-import org.knime.core.util.KnimeUrlType;
 import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
@@ -90,9 +89,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
-import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
 import org.knime.workbench.explorer.dialogs.Validator;
@@ -189,81 +186,47 @@ final class SpaceAPI {
         final Object[] itemIds, final String destWorkflowGroupItemId, final UsageContext context) {
         final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, destWorkflowGroupItemId, itemIds);
         return nameCollisions.isEmpty() ? Optional.of(Space.NameCollisionHandling.NOOP) : NameCollisionChecker //
-                    .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions, context);
+            .openDialogToSelectCollisionHandling(space, destWorkflowGroupItemId, nameCollisions, context);
     }
+
     /**
      * Copies space items from Local to Hub space or vice versa.
      *
-     * @param spaceProviderId provider ID of the source space
-     * @param spaceId ID of the source space
-     * @param arr array of item IDs
+     * @param sourceProviderId provider ID of the source space
+     * @param sourceSpaceId ID of the source space
+     * @param sourceItemIdsParam array of item IDs
      * @return {@code true} if all files could be uploaded, {@code false} otherwise
      */
     @API
-    static boolean copyBetweenSpaces(final String spaceProviderId, final String spaceId, final Object[] arr) { // NOSONAR
-        final List<String> itemIds = Stream.of(arr).map(String.class::cast).toList();
-        if (itemIds.isEmpty()) {
+    static boolean copyBetweenSpaces( //
+        final String sourceProviderId, //
+        final String sourceSpaceId, //
+        final Object[] sourceItemIdsParam, //
+        final String destinationProviderId, //
+        final String destinationSpaceId, //
+        final String destinationItemId, //
+        final boolean excludeData //
+    ) { // NOSONAR
+        final var sources = new SiblingItemLocators(sourceProviderId, sourceSpaceId,
+            Stream.of(sourceItemIdsParam).map(String.class::cast).toList());
+        final var destination = new ItemLocator(destinationProviderId, destinationSpaceId, destinationItemId);
+        if (sources.itemIds().isEmpty()) {
             return true;
         }
 
-        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
-        final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-
-        final boolean isUpload;
-        if (sourceSpace instanceof LocalWorkspace localSource) {
-            final var opened = findDirtyOpenedWorkflows(localSource, itemIds);
+        if (sources.isLocal()) {
+            final var opened = findDirtyOpenedWorkflows((LocalWorkspace)sources.space(), sources.itemIds());
             if (!opened.isEmpty()) {
                 showDirtyWorkflowsWarningToUser(opened);
                 return false;
             }
-            isUpload = true;
-        } else {
-            isUpload = false;
         }
-
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        final var mountIds = !isUpload ? new String[] { LocalWorkspace.LOCAL_WORKSPACE_ID.toUpperCase(Locale.ROOT) }
-            : spaceProviders.getProvidersMap().entrySet().stream() //
-                .filter(provider -> provider.getValue().getType() != TypeEnum.LOCAL
-                    && provider.getValue().getConnection(false).isPresent()) //
-                .map(Entry::getKey) //
-                .toArray(String[]::new);
-
-        if (mountIds.length == 0) {
-            DesktopAPUtil.showWarning("No Hub spaces available", "Please log into the Hub you want to upload to.");
-            return false;
-        }
-
-        final var destPicker = new SpaceDestinationPicker(mountIds, isUpload ? Operation.UPLOAD : Operation.DOWNLOAD);
-        if (!destPicker.open()) {
-            return false;
-        }
-        final var destInfo = destPicker.getSelectedDestination();
-
-        var destinationStore = destInfo.getDestination();
-        if (!destinationStore.fetchInfo().isWorkflowGroup()) {
-            destinationStore = CheckUtils.checkNotNull(destinationStore.getParent());
-        }
-
-        final var excludeData = destInfo.isExcludeData();
-        final var targetMountId = destinationStore.getMountID();
-        final SpaceProvider targetSpaceProvider;
-        final var isDownload = targetMountId.equalsIgnoreCase(LocalWorkspace.LOCAL_WORKSPACE_ID);
-        if (isDownload) {
-            targetSpaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider(DesktopAPI.getDeps(LocalWorkspace.class));
-        } else {
-            targetSpaceProvider = getSpaceProvider(targetMountId);
-        }
-
-        final var sourceType = sourceSpaceProvider.getType();
-        final var targetType = targetSpaceProvider.getType();
-
 
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
-        if (!asyncUploadDisabled && sourceSpace instanceof LocalWorkspace localSource && targetType == TypeEnum.HUB) {
+        if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
-                return performAsyncHubUpload(localSource, targetSpaceProvider, destinationStore, itemIds, excludeData);
+                return performAsyncHubUpload(sources, destination, excludeData);
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
             } catch (Exception ex) { // NOSONAR
@@ -271,9 +234,9 @@ final class SpaceAPI {
                 showErrorToast("Upload error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
                 return false;
             }
-        } else if (!asyncDownloadDisabled && sourceType == TypeEnum.HUB && isDownload) {
+        } else if (!asyncDownloadDisabled && sources.isHub() && destination.isLocal()) {
             try {
-                return performAsyncHubDownload(sourceSpace, targetSpaceProvider, destinationStore, itemIds);
+                return performAsyncHubDownload(sources, destination);
             } catch (Exception ex) { // NOSONAR
                 LOGGER.error("Download error: " + ex.getMessage(), ex);
                 showErrorToast("Download error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
@@ -283,46 +246,53 @@ final class SpaceAPI {
 
         // old upload/download flow
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
-        final var selection = itemIds.stream() //
-                .map(sourceSpace::toKnimeUrl) //
-                .map(ExplorerFileSystem.INSTANCE::getStore) //
-                .toList();
-        return ClassicAPCopyMoveLogic.copy(shellProvider, sourceSpaceProvider, selection, targetSpaceProvider,
-            destinationStore, excludeData);
+        return ClassicAPCopyMoveLogic.copy( //
+            shellProvider, //
+            sources.provider(), //
+            toFileStores(sources), //
+            destination.provider(), //
+            toFileStore(destination), //
+            excludeData //
+        );
     }
 
-    private static boolean performAsyncHubDownload(final Space sourceSpace, final SpaceProvider targetSpaceProvider,
-            final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
-            throws OperationNotAllowedException {
-        final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
-        final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
-        final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
+    private static boolean performAsyncHubDownload(SiblingItemLocators source, ItemLocator destination)
+        throws OperationNotAllowedException {
+        final TransferResult result =
+            source.space().downloadInto(source.itemIds(), (LocalWorkspace)destination.space(), destination.itemId());
         if (result.errorTitleAndDescription() != null) {
-            showErrorToast(result.errorTitleAndDescription().getFirst(),
-                result.errorTitleAndDescription().getSecond(), false);
+            showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
+                false);
         }
         return result.successful();
     }
 
-    private static boolean performAsyncHubUpload(final LocalWorkspace localSource,
-            final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
-            final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
-        final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
-        final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
-            .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
-        final var targetSpace = targetSpaceProvider.getSpace(targetSpaceAndId.spaceId());
+    private static List<AbstractExplorerFileStore> toFileStores(final SiblingItemLocators itemLocators) {
+        var space = itemLocators.space();
+        return itemLocators.itemIds().stream().map(item -> toFileStore(space, item)).toList();
+    }
 
+    private static AbstractExplorerFileStore toFileStore(final ItemLocator itemLocator) {
+        return toFileStore(itemLocator.space(), itemLocator.itemId());
+    }
+
+    private static AbstractExplorerFileStore toFileStore(final Space space, final String itemId) {
+        return ExplorerFileSystem.INSTANCE.getStore(space.toKnimeUrl(itemId));
+    }
+
+    private static boolean performAsyncHubUpload(SiblingItemLocators source, ItemLocator destination,
+        boolean excludeData) throws OperationNotAllowedException {
         // show upload warning for public spaces
-        final var spaceEnt = targetSpace.toEntity();
-        if (!spaceEnt.isPrivate().booleanValue()) {
-            var status = remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
+        final var spaceEnt = destination.space().toEntity();
+        if (!spaceEnt.isPrivate()) {
+            var status = toFileStore(destination).getContentProvider().showUploadWarning(spaceEnt.getName());
             if (!status.isOK()) {
                 return false;
             }
         }
 
-        final TransferResult result =
-                targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+        final var result = destination.space().uploadFrom((LocalWorkspace)source.space(), source.itemIds(),
+            destination.itemId(), excludeData);
         if (result.errorTitleAndDescription() != null) {
             showErrorToast(result.errorTitleAndDescription().getFirst(),
                 result.errorTitleAndDescription().getSecond(), false);
@@ -366,103 +336,182 @@ final class SpaceAPI {
     }
 
     /**
-     * Move or copy a set of space items from one folder into another one inside the same Hub (i.e., space provider).
+     * Move/copy space items within a non-local space provider.
      *
      * @param spaceProviderId space provider ID of the Hub
      * @param sourceSpaceId space ID of the source items
      * @param doCopy {@code true} for copying, {@code false} for moving
-     * @param sourceItemIds array of source item IDs
-     * @return {@code true} on success, {@code false} on failure or cancellation
+     * @param sourceItemIdsParam array of source item IDs
+     * @return
      */
     @API
-    static boolean moveOrCopyToSpace(final String spaceProviderId, final String sourceSpaceId, // NOSONAR complexity is OK
-            final boolean doCopy, final Object[] sourceItemIds) {
-        if (sourceItemIds.length == 0) {
-            return true;
+    static String moveOrCopyToSpace( //
+        final String spaceProviderId, //
+        final String sourceSpaceId, //
+        final boolean doCopy, //
+        final Object[] sourceItemIdsParam, //
+        final String destinationSpaceId, //
+        final String destinationItemId, //
+        final String nameCollisionHandlingParam //
+    ) {
+        if (sourceItemIdsParam.length == 0) {
+            return MoveOrCopyResult.SUCCESS.toString();
         }
-        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
-        final var sourceSpace = sourceSpaceProvider.getSpace(sourceSpaceId);
-        // this is really an illegal argument, since we deal with remote copy/move
-        if (sourceSpace instanceof LocalWorkspace) {
+
+        final var sources = new SiblingItemLocators(spaceProviderId, sourceSpaceId,
+            Arrays.stream(sourceItemIdsParam).map(String.class::cast).toList());
+        final var destination = new ItemLocator(spaceProviderId, destinationSpaceId, destinationItemId);
+
+        if (sources.isLocal()) {
+            // this is really an illegal argument, since we deal with remote copy/move
             final var copyText = doCopy ? "copy" : "move";
             DesktopAPUtil.showError("Cannot %s from the local space".formatted(copyText),
                 "Cannot move item(s) from the local space.");
-            return false;
+            return MoveOrCopyResult.FAILURE.toString();
         }
 
-        final var optDestination = pickDestinationFolder(spaceProviderId, doCopy);
-        if (optDestination.isEmpty()) {
-            return false;
-        }
-        final var destination = optDestination.get();
-
-        final var destinationProvider = getSpaceProvider(destination.spaceProviderId());
-        final var destinationWorkflowGroupItemId = destination.itemId();
-        final var destinationSpace = destinationProvider.getSpace(destination.spaceId());
-
-        final var optCollisionHandling =
-                determineNameCollisionHandling(destinationSpace, sourceItemIds, destinationWorkflowGroupItemId,
-                    doCopy ? UsageContext.COPY : UsageContext.MOVE);
-        if (optCollisionHandling.isEmpty()) {
-            return false;
+        var collisionHandling = NameCollisionHandling.of(nameCollisionHandlingParam);
+        Supplier<Boolean> hasCollision =
+            () -> NameCollisionChecker.test(destination.space(), destination.itemId(), sources.itemIds());
+        if (collisionHandling.isEmpty() && hasCollision.get()) {
+            // Clients (frontend) need to try again with a collision handling strategy parameter specified.
+            return MoveOrCopyResult.COLLISION.toString();
         }
 
         try {
-            final var itemIds = Arrays.stream(sourceItemIds).map(String.class::cast).toList();
-            final var collisionHandling = optCollisionHandling.get();
-            destinationSpace.moveOrCopyItems(itemIds, destinationWorkflowGroupItemId, collisionHandling, doCopy);
-            return true;
-        } catch (final IOException e) {
+            destination.space().moveOrCopyItems(sources.itemIds(), destination.itemId(),
+                collisionHandling.orElseThrow(), doCopy);
+        } catch (IOException e) {
             DesktopAPUtil.showAndLogError("Unable to %s item".formatted(doCopy ? "copy" : "move"),
                 "An unexpected exception occurred while %s the item".formatted(doCopy ? "copying" : "moving"),
                 NodeLogger.getLogger(SpaceAPI.class), e);
-            return false;
+            return MoveOrCopyResult.FAILURE.toString();
+        }
+        return MoveOrCopyResult.SUCCESS.toString();
+    }
+
+    private enum MoveOrCopyResult {
+            SUCCESS, COLLISION, FAILURE;
+    }
+
+    private static final class ItemLocator extends SpaceLocator {
+
+        private final String itemId;
+
+        /**
+         * @param providerId ID of the space provider containing the item
+         * @param spaceId ID of the space in provider with ID {@code spaceProviderId} containing the item
+         * @param itemId ID of the item contained in space with ID {@code spaceId}
+         */
+        private ItemLocator(String providerId, String spaceId, String itemId) {
+            super(providerId, spaceId);
+            this.itemId = itemId;
+        }
+
+        public String itemId() {
+            return itemId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            ItemLocator that = (ItemLocator)o;
+            return new EqualsBuilder().appendSuper(super.equals(o)).append(itemId, that.itemId).isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(itemId).toHashCode();
         }
     }
 
-    private static Optional<ItemIds> pickDestinationFolder(final String spaceProviderId, final boolean doCopy) {
-        // Obtain the destination space and workflow group item id via the classic SpaceDestinationPicker,
-        // but restrict available mount points to the source Hub.
-        // When ModernUI provides a destination picker, this detour is not needed anymore.
-        final var destPicker = new SpaceDestinationPicker(new String[] { spaceProviderId }, doCopy ? Operation.COPY :
-            Operation.MOVE);
-        if (!destPicker.open()) {
-            return Optional.empty();
+    private static final class SiblingItemLocators extends SpaceLocator {
+        private final List<String> itemIds;
+
+        SiblingItemLocators(String providerId, String spaceId, List<String> itemIds) {
+            super(providerId, spaceId);
+            this.itemIds = itemIds;
         }
-        final var destinationInfo = destPicker.getSelectedDestination();
-        final var destinationStore = destinationInfo.getDestination();
-        final var uri = destinationStore.toURI();
-        final var ids = resolveIds(DesktopAPI.getDeps(SpaceProviders.class), uri)
-                // we _just_ picked the destination from Hub, so it must be available...
-                .orElseThrow();
-        return Optional.of(ids);
+
+        public List<String> itemIds() {
+            return itemIds;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            SiblingItemLocators that = (SiblingItemLocators)o;
+            return new EqualsBuilder().appendSuper(super.equals(o)).append(itemIds, that.itemIds).isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(itemIds).toHashCode();
+        }
     }
 
-    /**
-     * Resolves an absolute KNIME URL to a triple of space provider ID, space ID and item ID.
-     *
-     * @param spaceProviders available space providers
-     * @param uri URL to be resolved
-     * @return triple of IDs if resolution succeeded, {@link Optional#empty()} otherwise
-     */
-    private static Optional<ItemIds> resolveIds(final SpaceProviders spaceProviders, final URI uri) {
-        if (KnimeUrlType.MOUNTPOINT_ABSOLUTE != KnimeUrlType.getType(uri)
-            .orElseThrow(() -> new IllegalArgumentException("Not a KNIME URL: \"%s\"".formatted(uri)))) {
-            throw new IllegalArgumentException("Not mountpoint-absolute: \"%s\"".formatted(uri));
-        }
-        final var mountId = uri.getAuthority();
-        final var providerId = "LOCAL".equals(mountId) ? SpaceProvider.LOCAL_SPACE_PROVIDER_ID : mountId;
-        final var provider = spaceProviders.getProvidersMap().get(providerId);
-        final var spaceAndItemIds = provider.resolveSpaceAndItemId(uri);
-        return spaceAndItemIds.map(ids -> new ItemIds(providerId, ids.spaceId(), ids.itemId()));
-    }
+    private static class SpaceLocator {
+        private final String m_providerId;
 
-    /**
-     * @param spaceProviderId ID of the space provider containing the item
-     * @param spaceId ID of the space in provider with ID {@code spaceProviderId} containing the item
-     * @param itemId ID of the item contained in space with ID {@code spaceId}
-     */
-    private record ItemIds(String spaceProviderId, String spaceId, String itemId) {}
+        private final String m_spaceId;
+
+        private SpaceLocator(String providerId, String spaceId) {
+            this.m_providerId = providerId;
+            this.m_spaceId = spaceId;
+        }
+
+        SpaceProvider provider() {
+            return SpaceAPI.getSpaceProvider(this.providerId());
+        }
+
+        Space space() {
+            return this.provider().getSpace(this.spaceId());
+        }
+
+        boolean isLocal() {
+            return provider().getType() == TypeEnum.LOCAL;
+        }
+
+        boolean isHub() {
+            return provider().getType() == TypeEnum.HUB;
+        }
+
+        public String providerId() {
+            return m_providerId;
+        }
+
+        public String spaceId() {
+            return m_spaceId;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+            if (obj == null || obj.getClass() != this.getClass())
+                return false;
+            var that = (SpaceLocator)obj;
+            return Objects.equals(this.m_providerId, that.m_providerId)
+                && Objects.equals(this.m_spaceId, that.m_spaceId);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(m_providerId, m_spaceId);
+        }
+
+        @Override
+        public String toString() {
+            return "SpaceLocator[" + "spaceProviderId=" + m_providerId + ", " + "spaceId=" + m_spaceId + ']';
+        }
+
+    }
 
     /**
      * Opens the website of an item in the web browser
@@ -547,7 +596,7 @@ final class SpaceAPI {
         if (!destInfo.isModifiable()) {
             DesktopAPUtil.showError("Read-only destination",
                 "The workflow cannot be saved since the selected destination is read-only: \""
-                        + destinationFileStore.getMountIDWithFullPath() + "\"");
+                    + destinationFileStore.getMountIDWithFullPath() + "\"");
             return null;
         }
         final var name = destination.name();
@@ -557,18 +606,17 @@ final class SpaceAPI {
 
         final var groupPath = org.eclipse.core.runtime.Path.forPosix(destinationFileStore.getFullName());
         final var workflowGroupItemId = space.getItemIdByURI(destinationFileStore.toURI()).orElseThrow();
-        final var nameCollisions = NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId,
-            Stream.of(name));
+        final var nameCollisions =
+            NameCollisionChecker.checkForNameCollisions(space, workflowGroupItemId, Stream.of(name));
         if (nameCollisions.isEmpty()) {
             return encodeSpaceItemEnt(space.saveJobAsWorkflow(groupPath, name, jobId));
         }
 
         final AtomicReference<NameCollisionHandling> collisionHandlingStrategyRef = new AtomicReference<>();
-        Display.getDefault().syncExec(() ->
-        NameCollisionChecker
-            .openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions, UsageContext.SAVE)
-                .ifPresent(collisionHandlingStrategyRef::set)
-        );
+        Display.getDefault()
+            .syncExec(() -> NameCollisionChecker
+                .openDialogToSelectCollisionHandling(space, workflowGroupItemId, nameCollisions, UsageContext.SAVE)
+                .ifPresent(collisionHandlingStrategyRef::set));
         final var strategy = collisionHandlingStrategyRef.get();
         if (strategy == null) {
             // aborted
@@ -616,7 +664,7 @@ final class SpaceAPI {
                     return "Only workflows or workflow groups can be selected as target.";
                 } else if (!info.isModifiable()) {
                     return "You have no write permissions for the selected "
-                            + (isWorkflow ? "workflow." : "workflow group.");
+                        + (isWorkflow ? "workflow." : "workflow group.");
                 }
 
                 dialog.setNameFieldEnabled(isWorkflowGroup);
@@ -634,7 +682,7 @@ final class SpaceAPI {
 
     @API
     static String editSchedule(final String spaceProviderId, final String spaceId, final String itemId,
-            final String scheduleId) throws ResourceAccessException {
+        final String scheduleId) throws ResourceAccessException {
         final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
         return space.editScheduleInfo(itemId, scheduleId);
     }
