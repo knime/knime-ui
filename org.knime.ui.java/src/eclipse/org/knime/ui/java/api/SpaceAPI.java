@@ -275,21 +275,21 @@ final class SpaceAPI {
     }
 
     private static boolean performAsyncHubDownload(final Space sourceSpace, final SpaceProvider targetSpaceProvider,
-        final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
-        throws OperationNotAllowedException {
+            final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
+            throws OperationNotAllowedException {
         final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
         final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
         final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
         if (result.errorTitleAndDescription() != null) {
-            showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
-                false);
+            showErrorToast(result.errorTitleAndDescription().getFirst(),
+                result.errorTitleAndDescription().getSecond(), false);
         }
         return result.successful();
     }
 
     private static boolean performAsyncHubUpload(final LocalWorkspace localSource,
-        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
-        final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
+            final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
+            final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
         final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
         final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
             .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
@@ -302,10 +302,10 @@ final class SpaceAPI {
         }
 
         final TransferResult result =
-            targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+                targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
         if (result.errorTitleAndDescription() != null) {
-            showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
-                false);
+            showErrorToast(result.errorTitleAndDescription().getFirst(),
+                result.errorTitleAndDescription().getSecond(), false);
         }
         return result.successful();
     }
@@ -337,8 +337,8 @@ final class SpaceAPI {
             final var localDir = localSource.toLocalAbsolutePath(null, itemId).orElseThrow();
             final var relPath = workspaceRoot.relativize(localDir);
             if (projects.getLocalProject(relPath) //
-                .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
-                .isPresent()) {
+                    .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
+                    .isPresent()) {
                 opened.add(FilenameUtils.separatorsToUnix(relPath.toString()));
             }
         }
