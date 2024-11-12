@@ -4,7 +4,7 @@ import type { SpaceTreeSelection } from "@/components/spaces/SpaceTree.vue";
 import { localRootProjectPath } from "@/store/spaces/caching";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
-type DestinationPickerConfig = {
+export type DestinationPickerConfig = {
   title?: string;
   description?: string;
   validate: (selection: SpaceTreeSelection) => {
@@ -17,7 +17,7 @@ type DestinationPickerConfig = {
   };
   askResetWorkflow?: boolean;
 };
-type DestinationPickerResult =
+export type DestinationPickerResult =
   | (Exclude<SpaceTreeSelection, null> & { resetWorkflow?: boolean })
   | null;
 

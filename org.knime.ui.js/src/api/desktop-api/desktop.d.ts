@@ -109,17 +109,29 @@ declare function getNameCollisionStrategy(
 ): "OVERWRITE" | "NOOP" | "AUTORENAME" | "CANCEL";
 
 declare function copyBetweenSpaces(
-  spaceProviderId: string,
-  spaceId: string,
-  itemIds: string[],
+  sourceProviderId: string,
+  sourceSpaceId: string,
+  sourceItemIds: string[],
+  destinationProviderId: string,
+  destinationSpaceId: string,
+  destinationItemId: string,
+  excludeData: boolean,
 ): boolean;
 
 declare function moveOrCopyToSpace(
   spaceProviderId: string,
-  spaceId: string,
+  sourceSpaceId: string,
   isCopy: boolean,
-  itemIds: string[],
-): boolean;
+  sourceItemIdsParam: string[],
+  destinationSpaceId: string,
+  destinationItemId: string,
+  nameCollisionHandlingParam:
+    | "OVERWRITE"
+    | "NOOP"
+    | "AUTORENAME"
+    | "CANCEL"
+    | null,
+): "SUCCESS" | "COLLISION" | "FAILURE";
 
 declare function openInBrowser(
   spaceProviderId: string,

@@ -175,18 +175,25 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
   {
     name: "copyBetweenSpaces",
     params: [
-      ["spaceProviderId", "provider1"],
-      ["spaceId", "space1"],
-      ["itemIds", ["123", "456"]],
+      ["sourceProviderId", "provider1"],
+      ["sourceSpaceId", "space1"],
+      ["sourceItemIds", ["123", "456"]],
+      ["destinationProviderId", "provider2"],
+      ["destinationSpaceId", "space2"],
+      ["destinationItemId", "123"],
+      ["excludeData", false],
     ],
   },
   {
     name: "moveOrCopyToSpace",
     params: [
       ["spaceProviderId", "provider1"],
-      ["spaceId", "space1"],
+      ["sourceSpaceId", "space1"],
       ["isCopy", false],
-      ["itemIds", ["123", "456"]],
+      ["sourceItemIds", ["123", "456"]],
+      ["destinationSpaceId", "destSpaceId"],
+      ["destinationItemId", "destItemId"],
+      ["nameCollisionHandling", "CANCEL"],
     ],
   },
   {

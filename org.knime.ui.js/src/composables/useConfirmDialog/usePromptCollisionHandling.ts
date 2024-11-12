@@ -1,13 +1,13 @@
-import { useConfirmDialog } from ".";
+import type { NameCollisionHandling } from "@/api/custom-types";
 
-type CollisionHandlingStrategy = "OVERWRITE" | "NOOP" | "AUTORENAME" | "CANCEL";
+import { useConfirmDialog } from ".";
 
 export const usePromptCollisionStrategies = () => {
   const { show: showConfirmDialog } = useConfirmDialog();
 
   const promptCollisionStrategies =
-    async (): Promise<CollisionHandlingStrategy> => {
-      let strategy: CollisionHandlingStrategy = "CANCEL";
+    async (): Promise<NameCollisionHandling> => {
+      let strategy: NameCollisionHandling = "CANCEL";
 
       const prompt = () =>
         showConfirmDialog({

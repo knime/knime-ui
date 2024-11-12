@@ -1,11 +1,31 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { API } from "@/api";
+import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
+
+vi.mock("@/components/spaces/DestinationPicker/useDestinationPicker", () => {
+  return {
+    useDestinationPicker: () => ({
+      presets: {
+        UPLOAD_PICKERCONFIG: {},
+        DOWNLOAD_PICKERCONFIG: {},
+      },
+      promptDestination: vi.fn().mockResolvedValue({
+        type: "item",
+        spaceProviderId: "mockDestinationSpaceProviderId",
+        spaceId: "mockDestinationSpaceId",
+        itemId: "mockDestinationItemId",
+        resetWorkflow: true,
+        isWorkflowContainer: true,
+      } satisfies DestinationPickerResult),
+    }),
+  };
+});
 
 describe("spaces::index", () => {
   describe("copyBetweenSpace", () => {
@@ -25,9 +45,13 @@ describe("spaces::index", () => {
         itemIds,
       });
       expect(mockedAPI.desktop.copyBetweenSpaces).toHaveBeenCalledWith({
-        spaceId: "local",
-        spaceProviderId: "local",
-        itemIds,
+        sourceProviderId: "local",
+        sourceSpaceId: "local",
+        sourceItemIds: itemIds,
+        destinationProviderId: "mockDestinationSpaceProviderId",
+        destinationSpaceId: "mockDestinationSpaceId",
+        destinationItemId: "mockDestinationItemId",
+        excludeData: true,
       });
     });
   });
@@ -35,7 +59,7 @@ describe("spaces::index", () => {
   describe("moveOrCopyToSpace", () => {
     it("should move items between spaces on same Hub", async () => {
       const itemIds = ["id1", "id2"];
-      mockedAPI.desktop.moveOrCopyToSpace.mockReturnValueOnce(true);
+      mockedAPI.desktop.moveOrCopyToSpace.mockReturnValueOnce("SUCCESS");
       const { store, dispatchSpy } = loadStore();
 
       const projectId = "project2";
@@ -51,10 +75,13 @@ describe("spaces::index", () => {
         itemIds,
       });
       expect(mockedAPI.desktop.moveOrCopyToSpace).toHaveBeenCalledWith({
-        spaceId: "space1",
+        sourceSpaceId: "space1",
         spaceProviderId: "hub1",
         isCopy: false,
-        itemIds,
+        sourceItemIds: itemIds,
+        destinationSpaceId: "mockDestinationSpaceId",
+        destinationItemId: "mockDestinationItemId",
+        nameCollisionHandling: null,
       });
       expect(dispatchSpy).toHaveBeenCalledWith(
         "spaces/fetchWorkflowGroupContent",

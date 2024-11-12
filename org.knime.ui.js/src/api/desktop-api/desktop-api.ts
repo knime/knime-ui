@@ -5,6 +5,7 @@ import {
   type AncestorInfo,
   type ExampleProject,
   type FullSpacePath,
+  type NameCollisionHandling,
   type RecentWorkflow,
   type SpaceId,
   type SpaceItemId,
@@ -517,13 +518,33 @@ export const getNameCollisionStrategy = ({
 };
 
 export const copyBetweenSpaces = ({
-  spaceProviderId = "local",
-  spaceId = "local",
-  itemIds,
-}: SpaceProviderId & SpaceId & { itemIds: string[] }) => {
+  sourceProviderId = "local",
+  sourceSpaceId = "local",
+  sourceItemIds,
+  destinationProviderId,
+  destinationSpaceId,
+  destinationItemId,
+  excludeData = false,
+}: {
+  sourceProviderId: SpaceProviderId["spaceProviderId"];
+  sourceSpaceId: SpaceId["spaceId"];
+  sourceItemIds: Array<SpaceItemId["itemId"]>;
+  destinationProviderId: SpaceProviderId["spaceProviderId"];
+  destinationSpaceId: SpaceId["spaceId"];
+  destinationItemId: SpaceItemId["itemId"];
+  excludeData?: boolean;
+}) => {
   return callBrowserFunction(
     window.copyBetweenSpaces,
-    [spaceProviderId, spaceId, itemIds],
+    [
+      sourceProviderId,
+      sourceSpaceId,
+      sourceItemIds,
+      destinationProviderId,
+      destinationSpaceId,
+      destinationItemId,
+      excludeData,
+    ],
     "Error uploading to Hub space",
     true,
     { block: true, darkenBackground: true },
@@ -532,14 +553,32 @@ export const copyBetweenSpaces = ({
 
 export const moveOrCopyToSpace = ({
   spaceProviderId,
-  spaceId,
+  sourceSpaceId,
   isCopy,
-  itemIds,
-}: SpaceProviderId & SpaceId & { isCopy: boolean } & { itemIds: string[] }) => {
+  sourceItemIds,
+  destinationSpaceId,
+  destinationItemId,
+  nameCollisionHandling,
+}: SpaceProviderId & { isCopy: boolean } & {
+  sourceSpaceId: SpaceId["spaceId"];
+  sourceItemIds: Array<SpaceItemId["itemId"]>;
+} & {
+  destinationSpaceId: SpaceId["spaceId"];
+  destinationItemId: SpaceItemId["itemId"];
+  nameCollisionHandling: NameCollisionHandling | null;
+}) => {
   const copyOrMove = isCopy ? "copying" : "moving";
   return callBrowserFunction(
     window.moveOrCopyToSpace,
-    [spaceProviderId, spaceId, isCopy, itemIds],
+    [
+      spaceProviderId,
+      sourceSpaceId,
+      isCopy,
+      sourceItemIds,
+      destinationSpaceId,
+      destinationItemId,
+      nameCollisionHandling,
+    ],
     `Error ${copyOrMove} to Hub space`,
     true,
     { block: true, darkenBackground: true },

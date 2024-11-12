@@ -188,3 +188,9 @@ export type AncestorInfo = {
   ancestorItemIds: string[];
   hasNameChanged: boolean;
 };
+
+export type NameCollisionHandling =
+  | "OVERWRITE"
+  | "NOOP"
+  | "AUTORENAME"
+  | "CANCEL";
