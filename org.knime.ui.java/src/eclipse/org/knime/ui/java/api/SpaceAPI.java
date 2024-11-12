@@ -114,13 +114,13 @@ final class SpaceAPI {
 
     private static boolean systemPropertyIsFalse(final String propertyName) {
         return Boolean.FALSE.toString() //
-                .equalsIgnoreCase(System.getProperty(propertyName));
+            .equalsIgnoreCase(System.getProperty(propertyName));
     }
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(SpaceAPI.class);
 
     private SpaceAPI() {
-       // stateless
+        // stateless
     }
 
     /**
@@ -294,8 +294,8 @@ final class SpaceAPI {
         final var result = destination.space().uploadFrom((LocalWorkspace)source.space(), source.itemIds(),
             destination.itemId(), excludeData);
         if (result.errorTitleAndDescription() != null) {
-            showErrorToast(result.errorTitleAndDescription().getFirst(),
-                result.errorTitleAndDescription().getSecond(), false);
+            showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
+                false);
         }
         return result.successful();
     }
@@ -327,8 +327,8 @@ final class SpaceAPI {
             final var localDir = localSource.toLocalAbsolutePath(null, itemId).orElseThrow();
             final var relPath = workspaceRoot.relativize(localDir);
             if (projects.getLocalProject(relPath) //
-                    .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
-                    .isPresent()) {
+                .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
+                .isPresent()) {
                 opened.add(FilenameUtils.separatorsToUnix(relPath.toString()));
             }
         }
@@ -342,7 +342,9 @@ final class SpaceAPI {
      * @param sourceSpaceId space ID of the source items
      * @param doCopy {@code true} for copying, {@code false} for moving
      * @param sourceItemIdsParam array of source item IDs
-     * @return
+     * @return {@code SUCCESS} if the operation was performed successfully. {@code COLLISION} if no collision handling
+     *         strategy was specified but a name collision occured - in this case the caller should try again with a
+     *         collision handling strategy. {@code FAILURE} if the operation failed.
      */
     @API
     static String moveOrCopyToSpace( //
