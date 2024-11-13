@@ -132,7 +132,7 @@ final class Init {
         var toastService = new ToastService(eventConsumer);
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var kaiHandler = createKaiHandler(eventConsumer, spaceProviders, appStateUpdater);
-        var preferenceProvider = createPreferencesProvider(kaiHandler);
+        var preferenceProvider = createPreferencesProvider();
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepo = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
@@ -233,7 +233,7 @@ final class Init {
         return new UpdatableSpaceProviders(localSpace);
     }
 
-    private static PreferencesProvider createPreferencesProvider(final KaiHandler kaiHandler) {
+    private static PreferencesProvider createPreferencesProvider() {
         return new PreferencesProvider() {
 
             @Override

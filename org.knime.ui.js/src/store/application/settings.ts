@@ -29,19 +29,19 @@ interface State {
    */
   scrollToZoomEnabled: boolean;
   /*
-   * If true, dev mode specifics buttons will be shown.
+   * If true, dev mode specific buttons will be shown.
    */
   devMode: boolean;
   /*
-   * Wheter to enable the locking of metanodes and components
+   * Whether to enable the locking of metanodes and components
    */
   isSubnodeLockingEnabled: boolean;
   /*
-   * Wheter to use embedded node configuration dialogs
+   * Whether to use embedded node configuration dialogs
    */
   useEmbeddedDialogs: boolean;
   /*
-   * Wheter to use embedded node configuration dialogs
+   * Whether all K-AI-related features are enabled
    */
   isKaiEnabled: boolean;
 }
