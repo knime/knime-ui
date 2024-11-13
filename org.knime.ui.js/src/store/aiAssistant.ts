@@ -3,7 +3,6 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { API } from "@/api";
 import type { KaiMessage, XY } from "@/api/gateway-api/generated-api";
 import type { NodeWithExtensionInfo } from "@/components/kai/types";
-import { useFeatures } from "@/plugins/feature-flags";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import type { RootStoreState } from "./types";
@@ -371,12 +370,9 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
 export const getters: GetterTree<AiAssistantState, RootStoreState> = {
   isQuickBuildAvailableForPort(state, getters, rootState) {
     return (nodeRelation: string, portTypeId: string | null) => {
-      const { isKaiInstalled: _isKaiInstalled } = useFeatures();
-      const isKaiInstalled = _isKaiInstalled();
       const availablePortTypes = rootState.application.availablePortTypes;
 
       return (
-        isKaiInstalled &&
         nodeRelation === "SUCCESSORS" &&
         portTypeId &&
         availablePortTypes[portTypeId]?.kind === "table"

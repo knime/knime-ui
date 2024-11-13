@@ -16,9 +16,7 @@ describe("Sidebar", () => {
   const doMount = ({
     props = {},
     isWorkflowEmptyMock = vi.fn().mockReturnValue(false),
-    mockFeatureFlags = {
-      isKaiPermitted: () => false,
-    },
+    isKaiEnabled = true,
   } = {}) => {
     const $store = mockVuexStore({
       panel: panelStore,
@@ -43,6 +41,7 @@ describe("Sidebar", () => {
         state: {
           ...applicationStore.state(),
           activeProjectId: "activeProject1",
+          isKaiEnabled,
         },
       },
       uiControls: uiControlsStore,
@@ -57,7 +56,6 @@ describe("Sidebar", () => {
       },
       global: {
         plugins: [$store],
-        mocks: { $features: mockFeatureFlags },
         stubs: {
           ContextAwareDescription: true,
           NodeRepository: true,
@@ -152,5 +150,10 @@ describe("Sidebar", () => {
     wrapper.findAll("li").forEach((wp) => {
       expect(wp.classes("expanded")).toBe(true);
     });
+  });
+
+  it("should hide the 'K-AI' tab if K-AI is disabled", () => {
+    const { wrapper } = doMount({ isKaiEnabled: false });
+    expect(wrapper.find('[title="K-AI"]').exists()).toBe(false);
   });
 });

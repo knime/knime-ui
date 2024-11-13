@@ -41,7 +41,11 @@ describe("QuickActionMenu.vue", () => {
     props: FloatingMenu.props,
   };
 
-  const doMount = ({ addNodeMock = vi.fn(), props = {} } = {}) => {
+  const doMount = ({
+    addNodeMock = vi.fn(),
+    props = {},
+    isKaiEnabled = true,
+  } = {}) => {
     const defaultProps: QuickActionMenuProps = {
       nodeId: "node-id",
       position: {
@@ -83,6 +87,7 @@ describe("QuickActionMenu.vue", () => {
           }),
           hasNodeCollectionActive: true,
           hasNodeRecommendationsEnabled: true,
+          isKaiEnabled,
         },
       },
       selection: selectionStore,
@@ -164,6 +169,20 @@ describe("QuickActionMenu.vue", () => {
         x: 14.5,
         y: 10,
       });
+    });
+
+    it("renders the 'Build with K-AI' button if K-AI is enabled", () => {
+      const { wrapper } = doMount();
+
+      const footer = wrapper.find(".footer");
+      expect(footer.text()).toContain("Build with K-AI");
+    });
+
+    it("does not render the 'Build with K-AI' button if K-AI is disabled", () => {
+      const { wrapper } = doMount({ isKaiEnabled: false });
+
+      const footer = wrapper.find(".footer");
+      expect(footer.exists()).toBe(false);
     });
   });
 });

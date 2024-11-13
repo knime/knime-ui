@@ -8,7 +8,6 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
 import { runInEnvironment } from "@/environment";
-import { features } from "@/plugins/feature-flags";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { ratioToZoomLevel } from "@/store/settings";
 import { encodeString } from "@/util/encodeString";
@@ -56,7 +55,7 @@ export const mutations: MutationTree<ApplicationState> = {
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
   async initializeApplication(
-    { state, rootState, commit, dispatch },
+    { rootState, commit, dispatch },
     { $router }: { $router: Router },
   ) {
     consola.trace("lifecycle::initializeApplication");
@@ -185,8 +184,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       },
     });
 
-    const { isKaiInstalled, isKaiPermitted } = features(state.featureFlags);
-    if (isKaiInstalled() && isKaiPermitted()) {
+    if (applicationState.isKaiEnabled) {
       kaiFetchUiStrings();
     }
   },

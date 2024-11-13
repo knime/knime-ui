@@ -5,15 +5,15 @@ import type { ApplicationState } from "@/store/application";
 import type { PluginInitFunction } from "./types";
 
 export type Features = {
-  isKaiPermitted: () => boolean;
-  isKaiInstalled: () => boolean;
+  // Example feature flag:
+  placeholderFeature: () => boolean;
 };
 
 const featureFlagsPrefix = "org.knime.ui.feature";
 
 const featureFlagDefaults = {
-  [`${featureFlagsPrefix}.ai_assistant`]: true,
-  [`${featureFlagsPrefix}.ai_assistant_installed`]: false,
+  // Example default:
+  [`${featureFlagsPrefix}.placeholder_feature`]: false,
 };
 
 const getFlagValue = (
@@ -26,9 +26,8 @@ const getFlagValue = (
 export const features: (
   featureFlags: ApplicationState["featureFlags"],
 ) => Features = (featureFlags) => ({
-  isKaiPermitted: () => getFlagValue(featureFlags, "ai_assistant"),
-
-  isKaiInstalled: () => getFlagValue(featureFlags, "ai_assistant_installed"),
+  // Example feature flag:
+  placeholderFeature: () => getFlagValue(featureFlags, "placeholder_feature"),
 });
 
 export const useFeatures: () => Features = () => {

@@ -20,7 +20,7 @@ export const useDisclaimer = () => {
     return `kai-persistently-hide-disclaimer-${encodeString(identifier)}`;
   });
 
-  const persistentlyHydeDisclaimer = computed(() =>
+  const persistentlyHideDisclaimer = computed(() =>
     localStorageKey.value
       ? Boolean(localStorage.getItem(localStorageKey.value))
       : false,
@@ -35,7 +35,7 @@ export const useDisclaimer = () => {
   };
 
   const shouldShowDisclaimer = computed(
-    () => _shouldShowDisclaimer.value && !persistentlyHydeDisclaimer.value,
+    () => _shouldShowDisclaimer.value && !persistentlyHideDisclaimer.value,
   );
 
   return { disclaimerText, closeDisclaimer, shouldShowDisclaimer };

@@ -32,16 +32,13 @@ const closeQuickActionMenu = () => {
   store.dispatch("workflow/closeQuickActionMenu");
 };
 
-const isKaiEnabled = computed(() => store.state.application.isKaiEnabled)
-watch(
-  isKaiEnabled,
-  (newValue) => {
-    if (newValue === false) {
-      // We close the Quick Action Menu if K-AI gets disabled while we're in Quick Build Mode
-      closeQuickActionMenu()
-    }
+const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
+watch(isKaiEnabled, (newValue) => {
+  if (newValue === false) {
+    // We close the Quick Action Menu if K-AI gets disabled while we're in Quick Build Mode
+    closeQuickActionMenu();
   }
-)
+});
 
 const { panelComponent } = useKaiPanels();
 

@@ -11,7 +11,6 @@ import MetainfoIcon from "@/assets/metainfo.svg";
 import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
-import { useFeatures } from "@/plugins/feature-flags";
 import { TABS, type TabValues } from "@/store/panel";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
@@ -60,7 +59,6 @@ const WorkflowMonitor = defineAsyncComponent({
   loadingComponent: SidebarContentLoading,
 });
 
-const $features = useFeatures();
 const store = useStore();
 const expanded = computed(() => store.state.panel.expanded);
 const isExtensionPanelOpen = computed(
@@ -112,16 +110,13 @@ const activateSection = (tabName: TabValues) => {
   store.dispatch("panel/closeExtensionPanel");
 };
 
-const isKaiEnabled = computed(() => store.state.application.isKaiEnabled)
-watch(
-  isKaiEnabled,
-  (newValue) => {
-    if (newValue === false && isTabActive.value(TABS.KAI)) {
-      // We switch over to the "Info" tab if K-AI gets disabled while the "K-AI" tab is active
-      activateSection(TABS.CONTEXT_AWARE_DESCRIPTION)
-    }
+const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
+watch(isKaiEnabled, (newValue) => {
+  if (newValue === false && isTabActive.value(TABS.KAI)) {
+    // We switch over to the "Info" tab if K-AI gets disabled while the "K-AI" tab is active
+    activateSection(TABS.CONTEXT_AWARE_DESCRIPTION);
   }
-)
+});
 
 const sidebarSections = computed<Array<SidebarSection>>(() => {
   return [
@@ -153,7 +148,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
     }),
 
     ...registerSidebarSection(
-      isKaiEnabled.value && $features.isKaiPermitted() && uiControls.value.canAccessKAIPanel,
+      isKaiEnabled.value && uiControls.value.canAccessKAIPanel,
       {
         name: TABS.KAI,
         title: "K-AI",

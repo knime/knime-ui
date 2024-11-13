@@ -42,7 +42,7 @@ const hasConnector = computed(
   () => store.state.workflow.quickActionMenu.hasConnector,
 );
 
-const isKaiEnabled = computed(() => store.state.application.isKaiEnabled)
+const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,
 );
