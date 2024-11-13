@@ -1,4 +1,12 @@
-import { type Mock, describe, expect, it, vi } from "vitest";
+import {
+  type Mock,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { shallowRef } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
@@ -62,7 +70,7 @@ const createMockEditor = (params: any) => {
   });
 };
 
-let mockEditor: ReturnType<typeof createMockEditor>;
+let mockEditor: ReturnType<typeof createMockEditor>, originalUserAgent;
 
 vi.mock("@tiptap/vue-3", () => {
   return {
@@ -85,13 +93,20 @@ describe("RichTextAnnotation.vue", () => {
     initialBorderColor: "#000",
   };
 
-  const doMount = ({ props = {} } = {}) => {
+  const doMount = ({ props = {}, isWebKitBrowser = false } = {}) => {
     const $store = mockVuexStore({
       canvas: {
         state: {
           zoomFactor: 1,
         },
       },
+    });
+
+    Object.defineProperty(navigator, "userAgent", {
+      value: isWebKitBrowser
+        ? "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15"
+        : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      writable: true,
     });
 
     const wrapper = mount(RichTextAnnotation, {
@@ -102,8 +117,20 @@ describe("RichTextAnnotation.vue", () => {
       },
     });
 
-    return { wrapper };
+    const AnnotationComponent = wrapper.find(".annotation-editor");
+
+    return { wrapper, AnnotationComponent };
   };
+
+  beforeEach(() => {
+    originalUserAgent = navigator.userAgent;
+  });
+
+  afterEach(() => {
+    Object.defineProperty(navigator, "userAgent", {
+      value: originalUserAgent,
+    });
+  });
 
   it("should render all options", () => {
     const { wrapper } = doMount();
@@ -260,6 +287,20 @@ describe("RichTextAnnotation.vue", () => {
       await someColorButton.trigger("click");
 
       expect(wrapper.emitted("changeBorderColor")[0][0]).toEqual(someColor);
+    });
+  });
+
+  describe("webkit vs NonWebkit", () => {
+    it("does not apply the webkit-style class when browser is not WebKit-based", () => {
+      const { AnnotationComponent } = doMount({ isWebKitBrowser: false });
+      expect(AnnotationComponent.classes()).not.toContain("webkit-style");
+    });
+
+    it("applies the webkit-style class when browser is WebKit-based", () => {
+      const { AnnotationComponent } = doMount({
+        isWebKitBrowser: true,
+      });
+      expect(AnnotationComponent.classes()).toContain("webkit-style");
     });
   });
 });

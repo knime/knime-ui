@@ -29,6 +29,12 @@ const emit = defineEmits<{
 const activeBorderColor = computed(
   () => previewBorderColor.value || props.initialBorderColor,
 );
+
+const isBrowserWebKit = computed(
+  () =>
+    Boolean(navigator.userAgent.match(/WebKit/i)) &&
+    !navigator.userAgent.match(/Chrome/i),
+);
 </script>
 
 <template>
@@ -37,6 +43,7 @@ const activeBorderColor = computed(
     @pointerdown="editable && $event.stopPropagation()"
   >
     <RichTextEditor
+      :class="{ 'webkit-style': isBrowserWebKit }"
       class="annotation-editor"
       :model-value="initialValue"
       :editable="editable"
@@ -104,6 +111,13 @@ const activeBorderColor = computed(
     &::after {
       display: none !important;
     }
+  }
+}
+
+.webkit-style {
+  /* stylelint-disable-next-line selector-class-pattern */
+  & :deep(.ProseMirror) {
+    position: static !important;
   }
 }
 </style>
