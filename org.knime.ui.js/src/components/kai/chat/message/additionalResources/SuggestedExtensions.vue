@@ -5,12 +5,10 @@ import { Button } from "@knime/components";
 import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
 import LinkIcon from "@knime/styles/img/icons/link-external.svg";
 
-import type { ExtensionWithNodes } from "../../types";
-
-import KaiCollapser from "./KaiCollapser.vue";
+import type { ExtensionWithNodes, Extensions } from "@/components/kai/types";
 
 interface Props {
-  extensions: { [key: string]: ExtensionWithNodes };
+  extensions: Extensions;
 }
 
 const props = defineProps<Props>();
@@ -32,14 +30,12 @@ const openNodeInBrowser = (
   <div v-if="hasExtensions" class="extensions">
     <div class="header"><ExtensionIcon /> Extensions</div>
 
-    <KaiCollapser
+    <div
       v-for="(extension, featureSymbolicName) in extensions"
       :key="featureSymbolicName"
       class="extension-collapser"
     >
-      <template #title>
-        <span class="title">{{ extension.featureName }}</span>
-      </template>
+      <div class="title">{{ extension.featureName }}</div>
       <ul>
         <li v-for="node in extension.nodes" :key="node.factoryName">
           <Button
@@ -52,7 +48,7 @@ const openNodeInBrowser = (
           </Button>
         </li>
       </ul>
-    </KaiCollapser>
+    </div>
   </div>
 </template>
 
@@ -60,8 +56,6 @@ const openNodeInBrowser = (
 @import url("@/assets/mixins.css");
 
 & .extensions {
-  margin-top: 30px;
-
   & .header {
     display: flex;
     font-size: 16px;
@@ -77,8 +71,6 @@ const openNodeInBrowser = (
   }
 
   & .extension-collapser {
-    background-color: var(--knime-white);
-
     & .title {
       font-size: 13px;
       font-weight: 700;

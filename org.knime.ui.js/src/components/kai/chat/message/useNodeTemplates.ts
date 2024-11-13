@@ -3,7 +3,11 @@ import { type Ref, ref, watch } from "vue";
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import type { ExtensionWithNodes, NodeWithExtensionInfo } from "../../types";
+import type {
+  ExtensionWithNodes,
+  Extensions,
+  NodeWithExtensionInfo,
+} from "../../types";
 
 /**
  * A Vue composition function that provides node templates based on given role and nodes.
@@ -24,7 +28,7 @@ const useNodeTemplates = ({
 }) => {
   // Reactive references to hold the node templates.
   const nodeTemplates = ref<NodeTemplateWithExtendedPorts[]>([]);
-  const uninstalledExtensions = ref<{ [key: string]: ExtensionWithNodes }>({});
+  const uninstalledExtensions = ref<Extensions>({});
 
   const store = useStore();
 
@@ -36,7 +40,7 @@ const useNodeTemplates = ({
         return;
       }
 
-      const _uninstalledExtensions: { [key: string]: ExtensionWithNodes } = {};
+      const _uninstalledExtensions: Extensions = {};
 
       const getUninstalledExtension = (
         node: NodeWithExtensionInfo,

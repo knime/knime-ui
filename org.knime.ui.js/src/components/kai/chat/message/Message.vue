@@ -12,8 +12,8 @@ import FeedbackControls from "./FeedbackControls.vue";
 import KaiReferences from "./KaiReferences.vue";
 import KaiStatus from "./KaiStatus.vue";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
-import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
+import AdditionalResources from "./additionalResources/AdditionalResources.vue";
 import { renderMarkdown } from "./markdown";
 import { useNodeTemplates } from "./useNodeTemplates";
 
@@ -27,6 +27,8 @@ const props = withDefaults(defineProps<Props>(), {
   content: "",
   nodes: () => [],
   references: () => ({}),
+  workflows: () => [],
+  components: () => [],
   statusUpdate: null,
   isError: false,
 });
@@ -61,7 +63,12 @@ const showFeedbackControls = computed(
       <div v-if="content" class="content" v-html="htmlContent" />
       <MessagePlaceholder v-else />
       <SuggestedNodes :node-templates="nodeTemplates" />
-      <SuggestedExtensions :extensions="uninstalledExtensions" />
+      <AdditionalResources
+        :extensions="uninstalledExtensions"
+        :components="components"
+        :workflows="workflows"
+        :references="references"
+      />
       <KaiStatus :status="statusUpdate?.message" />
     </div>
     <div class="footer">

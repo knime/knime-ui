@@ -16,6 +16,10 @@ interface ExtensionWithNodes extends Extension {
   nodes: Node[];
 }
 
+interface Extensions {
+  [key: string]: ExtensionWithNodes;
+}
+
 type ChainType = "qa" | "build";
 
 interface References {
@@ -25,6 +29,7 @@ interface References {
 export type {
   NodeWithExtensionInfo,
   ExtensionWithNodes,
+  Extensions,
   ChainType,
   References,
 };

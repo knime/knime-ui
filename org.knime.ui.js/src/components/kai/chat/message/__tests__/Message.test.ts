@@ -21,8 +21,8 @@ import KaiReferences from "../KaiReferences.vue";
 import KaiStatus from "../KaiStatus.vue";
 import Message from "../Message.vue";
 import MessagePlaceholder from "../MessagePlaceholder.vue";
-import SuggestedExtensions from "../SuggestedExtensions.vue";
 import SuggestedNodes from "../SuggestedNodes.vue";
+import AdditionalResources from "../additionalResources/AdditionalResources.vue";
 
 const mockedAPI = deepMocked(API);
 
@@ -131,7 +131,7 @@ describe("Message.vue", () => {
       expect(wrapper.findComponent(MessagePlaceholder).exists()).toBe(true);
     });
 
-    it("should render suggested nodes and extensions", async () => {
+    it("should render suggested nodes and AdditionalResources button", async () => {
       const { wrapper, $store } = doMount();
 
       await flushPromises();
@@ -141,7 +141,7 @@ describe("Message.vue", () => {
       ).toEqual([$store.state.nodeTemplates.cache[FACTORY_ID]]);
 
       expect(
-        wrapper.findComponent(SuggestedExtensions).props("extensions"),
+        wrapper.findComponent(AdditionalResources).props("extensions"),
       ).toEqual({
         [missingNodeWithExtensionInfo1.featureSymbolicName]: {
           featureName: missingNodeWithExtensionInfo1.featureName,

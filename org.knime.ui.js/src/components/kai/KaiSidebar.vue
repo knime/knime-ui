@@ -9,7 +9,7 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import { useStore } from "@/composables/useStore";
 
-import NodeDescriptionPortal from "./NodeDescriptionPortal.vue";
+import KaiExtensionPanel from "./KaiExtensionPanel.vue";
 import Chat from "./chat/Chat.vue";
 import { useKaiPanels } from "./panels/useKaiPanels";
 import type { ChainType } from "./types";
@@ -63,7 +63,7 @@ const showChatControls = computed(() => !panelComponent.value);
     <template v-else>
       <Chat v-show="chainType === 'qa'" chain-type="qa" />
       <Chat v-show="chainType === 'build'" chain-type="build" />
-      <NodeDescriptionPortal />
+      <KaiExtensionPanel />
     </template>
   </SidebarPanelLayout>
 </template>

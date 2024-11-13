@@ -12,11 +12,22 @@ import type { RootStoreState } from "./types";
  * This file contains the Vuex store module for the AI assistant.
  */
 
+export interface HubItem {
+  id: string;
+  title: string;
+  itemType: string;
+  description: string;
+  pathToResource: string;
+  url: string;
+}
+
 export interface Message extends KaiMessage {
   nodes?: NodeWithExtensionInfo[];
   references?: {
     [refName: string]: string[];
   };
+  workflows?: HubItem[];
+  components?: HubItem[];
   interactionId?: string;
   isError?: boolean;
   timestamp?: number;
@@ -63,6 +74,8 @@ type AiAssistantEventPayload = {
   payload: {
     message: Message;
     references: unknown;
+    workflows: HubItem[];
+    components: HubItem[];
     nodes: NodeWithExtensionInfo[];
     interactionId: string;
   };
@@ -103,6 +116,8 @@ export const mutations: MutationTree<AiAssistantState> = {
       content: string;
       nodes: Message["nodes"];
       references: Message["references"];
+      workflows: Message["workflows"];
+      components: Message["components"];
       interactionId?: string;
       isError?: boolean;
     },
@@ -113,6 +128,8 @@ export const mutations: MutationTree<AiAssistantState> = {
       content,
       nodes,
       references,
+      workflows,
+      components,
       interactionId = "",
       isError = false,
     } = payload;
@@ -124,6 +141,8 @@ export const mutations: MutationTree<AiAssistantState> = {
       content,
       nodes,
       references,
+      workflows,
+      components,
       interactionId,
       isError,
       timestamp,
@@ -305,6 +324,8 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
             content: payload.message,
             nodes: payload.nodes,
             references: payload.references,
+            workflows: payload.workflows,
+            components: payload.components,
             interactionId: payload.interactionId,
           });
         }

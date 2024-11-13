@@ -7,7 +7,7 @@ import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
-import { useNodeDescriptionPanel } from "../../useNodeDescriptionPanel";
+import { useKaiExtensionPanel } from "../../useKaiExtensionPanel";
 
 interface Props {
   nodeTemplates: NodeTemplateWithExtendedPorts[];
@@ -15,7 +15,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { toggleNodeDescription } = useNodeDescriptionPanel();
+const { toggleNodeDescription } = useKaiExtensionPanel();
 const addNodeToWorkflow = useAddNodeToWorkflow();
 
 const hasNodeTemplates = computed(() => props.nodeTemplates.length > 0);
