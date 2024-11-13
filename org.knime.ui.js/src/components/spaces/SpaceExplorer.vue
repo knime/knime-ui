@@ -18,14 +18,16 @@ import { matchesQuery } from "@/util/matchesQuery";
 
 import DeploymentsModal from "./DeploymentsModal/DeploymentsModal.vue";
 import SpaceExplorerBreadcrumbs from "./SpaceExplorerBreadcrumbs.vue";
-import { spaceItemIconRenderer } from "./spaceItemIconRenderer";
 import { useCustomDragPreview } from "./useCustomDragPreview";
 import { useDeleteItems } from "./useDeleteItems";
 import { useMovingItems } from "./useMovingItems";
+import { useSpaceIcons } from "./useSpaceIcons";
+
+const { getSpaceItemIcon } = useSpaceIcons();
 
 type FileExplorerItemWithMeta = FileExplorerItem<{ type: SpaceItem.TypeEnum }>;
-const itemIconRenderer = (item: FileExplorerItemWithMeta) =>
-  spaceItemIconRenderer(item.meta!.type);
+const itemIconRenderer = (item: FileExplorerItem) =>
+  getSpaceItemIcon((item as FileExplorerItemWithMeta).meta!.type);
 
 interface Props {
   projectId: string;

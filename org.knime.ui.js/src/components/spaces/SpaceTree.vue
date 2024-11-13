@@ -21,7 +21,6 @@ import { useStore } from "@/composables/useStore";
 import { isLocalProvider } from "@/store/spaces/util";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
-import { spaceItemIconRenderer } from "./spaceItemIconRenderer";
 import { useSpaceIcons } from "./useSpaceIcons";
 
 type SpaceTreeItem = FullSpacePath & {
@@ -51,8 +50,6 @@ interface Props {
   };
 }
 
-const LOCAL_SPACEPROVIDER_ID = "local";
-
 const props = withDefaults(defineProps<Props>(), {
   providerRules: () => ({}),
 });
@@ -61,19 +58,23 @@ const emit = defineEmits<{
   selectChange: [value: SpaceTreeSelection];
 }>();
 
-const treeSource = ref<TreeNodeOptions[]>([]);
 const store = useStore();
 
-const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } =
-  useSpaceIcons();
+const {
+  getSpaceIcon,
+  getSpaceProviderIcon,
+  getSpaceGroupIcon,
+  getSpaceItemIcon,
+} = useSpaceIcons();
 
 const mapSpaceItemsToTreeNodes = (
   spaceItem: SpaceItem,
   { spaceId, spaceProviderId },
 ) => ({
+  type: "item",
   nodeKey: `item_${spaceItem.id}`,
   name: spaceItem.name,
-  icon: markRaw(spaceItemIconRenderer(spaceItem.type)),
+  icon: markRaw(getSpaceItemIcon(spaceItem.type)),
   itemId: spaceItem.id,
   spaceId,
   spaceProviderId,
@@ -84,6 +85,7 @@ const mapSpacesToTreeNodes = (
   space: SpaceProviderNS.Space,
   { spaceProviderId },
 ) => ({
+  type: "item",
   nodeKey: `space_${space.id}`,
   name: space.name,
   icon: markRaw(getSpaceIcon(space)),
@@ -97,6 +99,7 @@ const mapSpaceGroupToTreeNode = (
   spaceGroup: SpaceProviderNS.SpaceGroup,
   { spaceProviderId },
 ) => ({
+  type: "group",
   nodeKey: `group_${spaceGroup.id}`,
   name: spaceGroup.name,
   hasChildren: true,
@@ -116,6 +119,7 @@ const mapSpaceProviderToTreeNode = (
     });
   } else {
     return {
+      type: "provider",
       nodeKey: `provider_${spaceProvider.id}`,
       name: formatSpaceProviderName(spaceProvider),
       hasChildren: true,
@@ -129,24 +133,29 @@ const mapSpaceProviderToTreeNode = (
 };
 
 const filteredSpaceProviders = computed(() => {
-  const spaceProviders = Object.values(store.state.spaces.spaceProviders ?? {});
-  return spaceProviders.filter(
-    ({ id }) =>
-      (!props.providerRules.restrictedTo ||
-        props.providerRules.restrictedTo.includes(id)) &&
-      !props.providerRules.exclude?.includes(id),
-  );
+  let spaceProviders = Object.values(store.state.spaces.spaceProviders ?? {});
+
+  if (props.providerRules.restrictedTo) {
+    spaceProviders = spaceProviders.filter(({ id }) =>
+      props.providerRules.restrictedTo!.includes(id),
+    );
+  }
+
+  if (props.providerRules.exclude) {
+    spaceProviders = spaceProviders.filter(
+      ({ id }) => !props.providerRules.exclude?.includes(id),
+    );
+  }
+  return spaceProviders;
 });
 
-treeSource.value = filteredSpaceProviders.value.map(mapSpaceProviderToTreeNode);
+const treeSource = ref<TreeNodeOptions[]>(
+  filteredSpaceProviders.value.map(mapSpaceProviderToTreeNode),
+);
 
-const loadTreeLevel = async (
-  treeNode: BaseTreeNode,
-  callback: (children: TreeNodeOptions[]) => void,
-) => {
-  const { spaceProviderId, spaceId, itemId } = treeNode.origin;
-
-  if (itemId && spaceId && spaceProviderId) {
+const loadWorkflowGroup = async (group: FullSpacePath, callback) => {
+  const { spaceProviderId, spaceId, itemId } = group;
+  try {
     const workflowGroupContent: WorkflowGroupContent = await store.dispatch(
       "spaces/fetchWorkflowGroupContentByIdTriplet",
       {
@@ -174,14 +183,26 @@ const loadTreeLevel = async (
         },
       ]);
     }
-    return;
+  } catch (error) {
+    callback([
+      {
+        nodeKey: `error_loadWorkflowGroup_${spaceProviderId}${spaceId}${itemId}`,
+        name: "Error loading folder",
+        customSlot: "empty",
+      },
+    ]);
   }
+};
 
+const connectProvider = async (
+  spaceProviderId: SpaceProviderId["spaceProviderId"],
+  callback,
+) => {
   const fail = (error?: unknown) => {
     callback([
       {
-        nodeKey: `error_connect_provider_${spaceProviderId}`,
-        name: "Connect failed…",
+        nodeKey: `error_connectProvider_${spaceProviderId}`,
+        name: "Could not connect. Please check the log for details.",
         title: error ? `Error: ${error}` : null,
         hasChildren: false,
         customSlot: "loginFailed",
@@ -189,29 +210,40 @@ const loadTreeLevel = async (
     ]);
   };
 
-  if (spaceProviderId) {
-    // handle sign in request
-    try {
-      const connectedProvider = await store.dispatch("spaces/connectProvider", {
-        spaceProviderId,
-      });
-      const isAuthenticated =
-        store.state.spaces.spaceProviders?.[spaceProviderId]?.connected;
-      if (isAuthenticated) {
-        callback(
-          connectedProvider.spaceGroups.map((group) =>
-            mapSpaceGroupToTreeNode(group, { spaceProviderId }),
-          ),
-        );
-        return;
-      }
-    } catch (error) {
-      fail(error);
+  // handle sign in request
+  try {
+    const connectedProvider = await store.dispatch("spaces/connectProvider", {
+      spaceProviderId,
+    });
+    const isAuthenticated =
+      store.state.spaces.spaceProviders?.[spaceProviderId]?.connected;
+    if (isAuthenticated) {
+      callback(
+        connectedProvider.spaceGroups.map((group) =>
+          mapSpaceGroupToTreeNode(group, { spaceProviderId }),
+        ),
+      );
       return;
     }
+  } catch (error) {
+    fail(error);
+    return;
+  }
 
-    // we just can assume it went not well, there is NO way to check that as the flow is java ui based only atm
-    fail();
+  // we just can assume it didn't go well, there is NO way to check as the flow is java ui based only atm
+  fail();
+};
+
+const loadTreeLevel = (
+  treeNode: BaseTreeNode,
+  callback: (children: TreeNodeOptions[]) => void,
+) => {
+  const { spaceProviderId, spaceId, itemId } = treeNode.origin;
+
+  if (itemId && spaceId && spaceProviderId) {
+    loadWorkflowGroup({ spaceProviderId, spaceId, itemId }, callback);
+  } else if (spaceProviderId) {
+    connectProvider(spaceProviderId, callback);
   }
 };
 
@@ -222,37 +254,13 @@ const retryConnectProvider = (treeNodeKey: NodeKey) => {
   tree.value?.loadChildren(treeNodeKey);
 };
 
-const getSelectionType = (
-  selectedNode: BaseTreeNode | undefined,
-): "item" | "group" | "provider" | null => {
-  if (!selectedNode || typeof selectedNode.origin.nodeKey !== "string") {
-    return null;
-  }
-
-  const nodeKey: String = selectedNode.origin.nodeKey;
-  if (nodeKey.startsWith("item_") || nodeKey.startsWith("space_")) {
-    return "item";
-  }
-
-  if (nodeKey.startsWith("group_")) {
-    return "group";
-  }
-
-  if (nodeKey.startsWith("provider_")) {
-    return "provider";
-  }
-
-  return null;
-};
-
 const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
   if (!node) {
     emit("selectChange", null);
     return;
   }
 
-  const type = getSelectionType(node);
-  const { itemId, spaceId, spaceProviderId, groupData, hasChildren } =
+  const { type, itemId, spaceId, spaceProviderId, groupData, hasChildren } =
     node.origin;
 
   if (type === "item") {
