@@ -160,6 +160,21 @@ const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
 const latestPublishedData = computed(
   () => store.state.nodeConfiguration.latestPublishedData,
 );
+const latestPublishedDataForThisNode = computed(() => {
+  if (latestPublishedData.value === null) {
+    return null;
+  }
+  const { projectId, workflowId, nodeId, data } = latestPublishedData.value;
+  if (
+    projectId !== props.projectId ||
+    workflowId !== props.workflowId ||
+    nodeId !== props.selectedNode.id
+  ) {
+    return null;
+  }
+  return data;
+});
+
 const dirtyState = computed(() => store.state.nodeConfiguration.dirtyState);
 
 const applySettings = (nodeId: string, execute?: boolean) => {
@@ -167,7 +182,7 @@ const applySettings = (nodeId: string, execute?: boolean) => {
 };
 
 watch(
-  latestPublishedData,
+  latestPublishedDataForThisNode,
   (data) => {
     updateViewData?.(data);
   },
@@ -226,7 +241,7 @@ onUnmounted(() => {
   <UIExtension
     v-if="!error && !isLoadingConfig && !hasToReexecute"
     :extension-config="extensionConfig!"
-    :initial-shared-data="latestPublishedData"
+    :initial-shared-data="latestPublishedDataForThisNode"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"

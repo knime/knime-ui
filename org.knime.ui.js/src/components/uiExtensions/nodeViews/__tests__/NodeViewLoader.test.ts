@@ -221,10 +221,22 @@ describe("NodeViewLoader.vue", () => {
       });
 
       $store.commit("nodeConfiguration/setLatestPublishedData", {
-        mock: "new-data",
+        data: { mock: "new-data" },
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        nodeId: "another node",
       });
-
       await nextTick();
+      expect(pushEventDispatcher).not.toHaveBeenCalled();
+
+      $store.commit("nodeConfiguration/setLatestPublishedData", {
+        data: { mock: "new-data" },
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        nodeId: "node1",
+      });
+      await nextTick();
+
       expect(pushEventDispatcher).toHaveBeenCalledWith({
         eventType: UIExtensionPushEvents.EventTypes.DataEvent,
         payload: { mock: "new-data" },

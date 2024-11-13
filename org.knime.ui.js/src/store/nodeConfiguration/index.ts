@@ -37,7 +37,12 @@ export interface NodeConfigurationState {
   activeNodeId: string | null;
   activeExtensionConfig: ExtensionConfig | null;
   dirtyState: APILayerDirtyState;
-  latestPublishedData: unknown | null;
+  latestPublishedData: {
+    data: unknown;
+    projectId: string;
+    workflowId: string;
+    nodeId: string;
+  } | null;
   pushEventDispatcher: UIExtensionPushEventDispatcher;
 }
 

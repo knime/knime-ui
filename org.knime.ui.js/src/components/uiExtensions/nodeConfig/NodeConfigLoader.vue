@@ -118,7 +118,12 @@ const apiLayer: UIExtensionAPILayer = {
 
   publishData: (data) => {
     consola.trace("NodeDialog :: publishData", data);
-    store.commit("nodeConfiguration/setLatestPublishedData", data);
+    store.commit("nodeConfiguration/setLatestPublishedData", {
+      data,
+      projectId: projectId.value,
+      workflowId: workflowId.value,
+      nodeId: selectedNode.value.id,
+    });
   },
 
   registerPushEventService: ({ dispatchPushEvent }) => {

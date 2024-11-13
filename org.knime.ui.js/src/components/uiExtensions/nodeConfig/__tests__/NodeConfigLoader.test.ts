@@ -219,7 +219,12 @@ describe("NodeConfigLoader.vue", () => {
       const apiLayer = getApiLayer(wrapper);
       apiLayer.publishData({ mock: "data" });
       expect($store.state.nodeConfiguration.latestPublishedData).toEqual({
-        mock: "data",
+        data: {
+          mock: "data",
+        },
+        projectId: "project-id",
+        workflowId: "workflow-id",
+        nodeId: "node1",
       });
     });
 
