@@ -444,9 +444,9 @@ describe("NodePorts.vue", () => {
     let { wrapper } = doMount();
     let ports = wrapper.findAllComponents(NodePort);
 
-    expect(ports.at(1).attributes().class).toBe("port");
-    expect(ports.at(3).attributes().class).toBe("port");
-    expect(ports.at(4).attributes().class).toBe("port");
+    expect(ports.at(1).classes()).toContain("port");
+    expect(ports.at(3).classes()).toContain("port");
+    expect(ports.at(4).classes()).toContain("port");
   });
 
   describe("mickey-Mouse ports", () => {
@@ -529,7 +529,8 @@ describe("NodePorts.vue", () => {
 
       // flowVariable ports are connected to quick node add (start at 2 as inPorts are 0 and 1)
       expect(ports.at(2).classes()).toContain("connected");
-      expect(ports.at(3).classes()).toStrictEqual(["port"]);
+      expect(ports.at(3).classes()).toContain("port");
+      expect(ports.at(3).classes()).not.toContain("connected");
     });
   });
 

@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 
-import { createHintSetup } from "@knime/components";
+import { setupHints } from "@knime/components";
 
 import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
@@ -111,7 +111,7 @@ try {
 
   await initJSONRPCClient(environment, connectionInfo, store);
 
-  createHintSetup({ hints: HINT_CONFIGURATIONS });
+  setupHints({ hints: HINT_CONFIGURATIONS });
 
   // Create Vue app
   const app = createApp(KnimeUI);

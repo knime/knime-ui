@@ -19,6 +19,7 @@ export const useKanvasHint = () => {
     if (isCompleted(HINTS.HIGHLIGHTED_OUTPUT_PORT)) {
       return;
     }
+
     const nodes = store.state.workflow.activeWorkflow?.nodes;
     const nodesWithOutPorts = Object.values(nodes ?? {}).filter(
       (node) => node.outPorts.length > 1,

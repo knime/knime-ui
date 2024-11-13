@@ -22,7 +22,7 @@ type SidebarSection = {
   name: TabValues;
   title: string;
   icon: FunctionalComponent<SVGAttributes>;
-  class?: string;
+  classes?: string[];
   isActive: boolean;
   isExpanded: boolean;
   onClick: () => void;
@@ -147,7 +147,7 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
         name: TABS.KAI,
         title: "K-AI",
         icon: AiIcon,
-        class: "k-ai-tab",
+        classes: ["k-ai-tab"],
         isActive: isTabActive.value(TABS.KAI),
         isExpanded: expanded.value,
         onClick: () => activateSection(TABS.KAI),
@@ -179,11 +179,8 @@ const hasSection = (name: TabValues) => {
           :key="section.title"
           :title="section.title"
           :class="[
-            section.class,
-            {
-              active: section.isActive,
-              expanded: section.isExpanded,
-            },
+            ...(section.classes ?? []),
+            { active: section.isActive, expanded: section.isExpanded },
           ]"
         >
           <input

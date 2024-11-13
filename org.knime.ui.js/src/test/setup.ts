@@ -39,6 +39,17 @@ vi.mock("lodash-es", async (importActual) => {
   };
 });
 
+vi.mock("@knime/components", async (importActual) => {
+  const actual = await importActual();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    setupHints: vi.fn(),
+    useHint: () => ({ createHint: vi.fn(), isCompleted: vi.fn(() => true) }),
+  };
+});
+
 class MockPointerEvent extends Event {
   clientX = null;
   clientY = null;
