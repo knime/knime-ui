@@ -396,8 +396,8 @@ final class SpaceAPI {
         }
 
         try {
-            destination.space().moveOrCopyItems(sources.itemIds(), destination.itemId(),
-                collisionHandling.orElseThrow(), doCopy);
+            var effectiveCollisionHandling = collisionHandling.orElse(NameCollisionHandling.NOOP);
+            destination.space().moveOrCopyItems(sources.itemIds(), destination.itemId(), effectiveCollisionHandling, doCopy);
         } catch (IOException e) {
             DesktopAPUtil.showAndLogError("Unable to %s item".formatted(doCopy ? "copy" : "move"),
                 "An unexpected exception occurred while %s the item".formatted(doCopy ? "copying" : "moving"),
