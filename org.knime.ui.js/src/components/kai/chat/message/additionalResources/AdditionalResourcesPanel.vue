@@ -29,12 +29,7 @@ const { additionalResources, closeKaiExtensionPanel } = useKaiExtensionPanel();
           <template #title> <ComponentIcon /> Components </template>
         </SuggestedHubItems>
         <SuggestedExtensions :extensions="additionalResources!.extensions" />
-        <References
-          v-for="(urls, referenceName) in additionalResources!.references"
-          :key="referenceName"
-          :urls="urls"
-          :title="referenceName as string"
-        />
+        <References :references="additionalResources!.references" />
       </div>
     </SidebarPanelScrollContainer>
   </SidebarPanelLayout>

@@ -3,12 +3,9 @@ import { computed } from "vue";
 
 import { Button } from "@knime/components";
 import DocumentationIcon from "@knime/styles/img/icons/file-text-stack.svg";
-import ForumIcon from "@knime/styles/img/icons/forum.svg";
-import LinkIcon from "@knime/styles/img/icons/link-external.svg";
 
 interface Props {
-  title: string;
-  urls: string[];
+  references: { [refName: string]: string[] };
 }
 
 const props = defineProps<Props>();
@@ -17,39 +14,35 @@ const openInBrowser = (url: string) => {
   window.open(url);
 };
 
-const shouldRender = computed(() => props.urls.length > 0);
-const isDocumentation = computed(() =>
-  props.title.toLowerCase().includes("documentation"),
-);
-const isForum = computed(() => props.title.toLowerCase().includes("forum"));
+const shouldRender = computed(() => Object.keys(props.references).length > 0);
 </script>
 
 <template>
-  <div v-if="shouldRender" class="hub-items">
+  <div v-if="shouldRender" class="references">
     <div class="title">
-      <ForumIcon v-if="isForum" />
-      <DocumentationIcon v-else-if="isDocumentation" />
-      {{ title }}
+      <DocumentationIcon />
+      Related topics
     </div>
-    <ul>
-      <li v-for="(url, index) in urls" :key="index">
-        <Button
-          class="button"
-          title="Open in KNIME Hub"
-          @click="openInBrowser(url)"
-        >
-          <div class="item-title">Link {{ index + 1 }}</div>
-          <LinkIcon />
-        </Button>
-      </li>
-    </ul>
+
+    <div
+      v-for="(urls, referenceName) in references"
+      :key="referenceName"
+      :urls="urls"
+    >
+      <span class="reference-name">{{ referenceName }}: </span>
+      <span v-for="(url, index) in urls" :key="index">
+        <Button class="button" @click="openInBrowser(url)"
+          >[{{ index + 1 }}]</Button
+        ><span v-if="index < urls.length - 1">, </span>
+      </span>
+    </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-& .hub-items {
+& .references {
   & .title {
     display: flex;
     font-size: 16px;
@@ -64,49 +57,17 @@ const isForum = computed(() => props.title.toLowerCase().includes("forum"));
     }
   }
 
-  & ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
+  & .reference-name {
+    font-weight: 700;
+  }
 
-    & li {
-      & .button {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: var(--space-4) var(--space-8) var(--space-4) var(--space-4);
-        text-align: initial;
-        border-radius: 0;
-        font-size: 11px;
-        font-weight: 400;
-        color: var(--knime-masala);
+  & .button {
+    all: unset;
+    cursor: pointer;
 
-        & .item-title {
-          flex: 1;
-        }
-
-        & svg {
-          @mixin svg-icon-size 12;
-
-          stroke: var(--knime-masala);
-          margin-right: 0;
-          margin-top: 2px;
-        }
-
-        &:hover,
-        &:focus-visible {
-          outline: none;
-          background-color: var(--theme-button-function-background-color-hover);
-
-          & svg {
-            stroke: var(--theme-button-function-foreground-color-hover);
-          }
-
-          & svg path[fill]:not([fill=""], [fill="none"]) {
-            fill: var(--theme-button-function-foreground-color-hover);
-          }
-        }
-      }
+    &:hover,
+    &:focus {
+      text-decoration: underline;
     }
   }
 }
