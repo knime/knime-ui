@@ -39,7 +39,9 @@ const nodeName = computed<string>(() =>
     store.state.nodeConfiguration.activeNodeId,
   ),
 );
-
+const useEmbeddedDialogs = computed(
+  () => store.state.application.useEmbeddedDialogs,
+);
 const activeNodeId = computed(() => store.state.nodeConfiguration.activeNodeId);
 const dirtyState = computed(() => store.state.nodeConfiguration.dirtyState);
 const activeNode = computed<NativeNode | null>(
@@ -82,6 +84,18 @@ watch(selectedNode, async (nextNode) => {
   // before changing the active node
   await store.dispatch("nodeConfiguration/autoApplySettings", { nextNode });
 });
+
+watch(
+  useEmbeddedDialogs,
+  () => {
+    if (useEmbeddedDialogs && !activeNodeId.value) {
+      store.commit("nodeConfiguration/setActiveNodeId", selectedNode.value?.id);
+    }
+  },
+  {
+    immediate: true,
+  },
+);
 
 const rightPanelWidth = computed(
   () => store.state.settings.settings.nodeDialogSize,
