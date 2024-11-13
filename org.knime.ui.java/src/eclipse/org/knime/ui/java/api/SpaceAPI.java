@@ -53,6 +53,7 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -96,6 +97,7 @@ import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
+import org.knime.workbench.explorer.view.AbstractContentProvider;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -219,22 +221,15 @@ final class SpaceAPI {
             }
         }
 
-        FreshFileStoreResolver
-            .refreshContentProvidersWithProgress(Set.of(sources.providerId(), destination.providerId()));
-        var sourceFileStores = FreshFileStoreResolver.resolve(sources);
-        var destinationFileStore = FreshFileStoreResolver.resolve(destination);
-
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
+        final var alreadyRefreshed = new HashSet<String>();
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
-                return performAsyncHubUpload( //
-                    (LocalWorkspace)sources.space(), //
-                    destination.provider(), //
-                    destinationFileStore, //
-                    sources.itemIds(), //
-                    excludeData //
-                );
+                // upload currently still requires a refresh for the "upload warning"
+                FreshFileStoreResolver.refreshContentProvidersWithProgress(Set.of(destination.providerId()));
+                alreadyRefreshed.add(destination.providerId());
+                return performAsyncHubUpload(sources, destination, excludeData);
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
             } catch (Exception ex) { // NOSONAR
@@ -244,12 +239,7 @@ final class SpaceAPI {
             }
         } else if (!asyncDownloadDisabled && sources.isHub() && destination.isLocal()) {
             try {
-                return performAsyncHubDownload( //
-                    sources.space(), //
-                    destination.provider(), //
-                    destinationFileStore, //
-                    sources.itemIds() //
-                );
+                return performAsyncHubDownload(sources, destination);
             } catch (Exception ex) { // NOSONAR
                 LOGGER.error("Download error: " + ex.getMessage(), ex);
                 showErrorToast("Download error", ex.getMessage() + "\n\nSee the KNIME Log for details", false);
@@ -258,6 +248,11 @@ final class SpaceAPI {
         }
 
         // old upload/download flow
+        var stillNeedsRefresh = new HashSet<>(Set.of(sources.providerId(), destination.providerId()));
+        stillNeedsRefresh.removeAll(alreadyRefreshed);
+        FreshFileStoreResolver.refreshContentProvidersWithProgress(stillNeedsRefresh);
+        var sourceFileStores = FreshFileStoreResolver.resolve(sources);
+        var destinationFileStore = FreshFileStoreResolver.resolve(destination);
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy( //
             shellProvider, //
@@ -269,12 +264,13 @@ final class SpaceAPI {
         );
     }
 
-    private static boolean performAsyncHubDownload(final Space sourceSpace, final SpaceProvider targetSpaceProvider,
-        final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
+    private static boolean performAsyncHubDownload(Locator.Siblings sources, Locator.Item destination)
         throws OperationNotAllowedException {
-        final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
-        final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
-        final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
+        final TransferResult result = sources.space().downloadInto( //
+            sources.itemIds(), //
+            (LocalWorkspace)destination.space(), //
+            destination.itemId()//
+        );
         if (result.errorTitleAndDescription() != null) {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
@@ -282,25 +278,24 @@ final class SpaceAPI {
         return result.successful();
     }
 
-    private static boolean performAsyncHubUpload(final LocalWorkspace localSource,
-        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
-        final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
-        final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
-        final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
-            .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
-        final var targetSpace = targetSpaceProvider.getSpace(targetSpaceAndId.spaceId());
-
+    private static boolean performAsyncHubUpload(Locator.Siblings sources, Locator.Item destination,
+        boolean excludeData) throws OperationNotAllowedException {
         // show upload warning for public spaces
-        final var spaceEnt = targetSpace.toEntity();
-        if (!spaceEnt.isPrivate().booleanValue()) {
-            var status = remoteDestination.getContentProvider().showUploadWarning(spaceEnt.getName());
+        if (!destination.space().toEntity().isPrivate()) {
+            // This information may be stale, FreshFileStoreResolver#refreshContentProviders has to be called not too long ago.
+            var contentProvider = FreshFileStoreResolver.resolve(destination).getContentProvider();
+            var status = contentProvider.showUploadWarning(destination.space().getName());
             if (!status.isOK()) {
                 return false;
             }
         }
 
-        final TransferResult result =
-            targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+        var result = destination.space().uploadFrom( //
+            (LocalWorkspace)sources.space(), //
+            sources.itemIds(), //
+            destination.itemId(), //
+            excludeData //
+        );
         if (result.errorTitleAndDescription() != null) {
             showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
                 false);
@@ -383,7 +378,7 @@ final class SpaceAPI {
 
         var collisionHandling = NameCollisionHandling.of(nameCollisionHandlingParam);
         if ( //
-            collisionHandling.isEmpty() //
+        collisionHandling.isEmpty() //
             && NameCollisionChecker.test(destination.space(), destination.itemId(), sources.itemIds()) //
         ) {
             // Clients (frontend) need to try again with a collision handling strategy parameter specified.
