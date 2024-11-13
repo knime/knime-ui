@@ -62,7 +62,7 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
     public void initializeDefaultPreferences() {
         final var store = KnimeUIPreferences.PREF_STORE;
         store.setDefault(KnimeUIPreferences.SELECTED_NODE_COLLECTION_PREF_KEY,
-            KnimeUIPreferences.SELECTED_NODE_COLLECTION_STARTER_ID);
+            KnimeUIPreferences.SELECTED_NODE_COLLECTION_NONE_ID);
         store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY, KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL);
         store.setDefault(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, true);
         store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
