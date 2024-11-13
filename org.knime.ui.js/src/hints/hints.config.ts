@@ -20,7 +20,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       hideButtons: true,
       video: [
         {
-          source: "/videos/5-4-Build-Mode-Small-Workflow.webm",
+          source: "/videos/5-4-Explain-Workflow.webm",
           type: "video/webm",
         },
       ],
@@ -35,7 +35,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       dependsOn: [HINTS.NEW_WORKFLOW],
       video: [
         {
-          source: "/videos/5-4-Explain-Workflow.webm",
+          source: "/videos/5-4-Build-Mode-Small-Workflow.webm",
           type: "video/webm",
         },
       ],
@@ -60,7 +60,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       align: "center",
     },
     [HINTS.HELP]: {
-      title: 'Find more resources via "Help"',
+      title: "Find more resources via “Help”",
       description:
         "Get quick access to resources like our self-paced courses, forum, cheat sheets, documentation, keyboard shortcuts and lots of examples on our Hub.",
       dependsOn: [HINTS.NODE_MONITOR],
