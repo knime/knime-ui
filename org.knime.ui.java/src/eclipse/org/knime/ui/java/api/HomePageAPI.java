@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
@@ -92,24 +91,23 @@ final class HomePageAPI {
     }
 
     private static List<ConditionalCategory> getConditionalCategories(WelcomeAPEndpoint endpoint) {
-        return endpoint.getCategories(true, null)
-                .stream()
-                .flatMap(Arrays::stream)
-                .map(JSONCategory::getId)
-                .flatMap(categoryId -> parseConditionalCategory(categoryId).stream())
-                .toList();
+        return endpoint.getCategories(true, null).stream().flatMap(Arrays::stream).map(JSONCategory::getId)
+            .flatMap(categoryId -> parseConditionalCategory(categoryId).stream()).toList();
     }
+
+    private static final Pattern PARAMETERS = Pattern.compile("(\\w+)=([^,]+)"); // NOSONAR not expecting non-ascii input
+
+    private static final Pattern SPLIT_PARAMETERS = Pattern.compile("--");
 
     /**
      * Given {@code foo--bar=13,qux=42}, yields map {@code bar->13, qux->42}
      */
     private static Map<String, String> parseParameters(String input) {
         Map<String, String> parameters = new HashMap<>();
-        String[] parts = input.split("--");
+        String[] parts = SPLIT_PARAMETERS.split(input);
         if (parts.length > 1) {
             String parameterPart = parts[1];
-            Pattern pattern = Pattern.compile("(\\w+)=([^,]+)");
-            Matcher matcher = pattern.matcher(parameterPart);
+            var matcher = PARAMETERS.matcher(parameterPart);
             while (matcher.find()) {
                 String key = matcher.group(1);
                 String value = matcher.group(2);
@@ -119,14 +117,13 @@ final class HomePageAPI {
         return parameters;
     }
 
-
     private static Optional<ConditionalCategory> parseConditionalCategory(final String categoryId) {
         var params = parseParameters(categoryId);
         if (params.isEmpty()) {
             return Optional.empty();
         }
-        var predicate = params.entrySet().stream()
-                .flatMap(entry -> parseParam(entry.getKey(), entry.getValue()).stream())
+        var predicate =
+            params.entrySet().stream().flatMap(entry -> parseParam(entry.getKey(), entry.getValue()).stream())
                 // careful: `x -> true` as identity only makes sense if case of empty stream is excluded above
                 // (an empty stream would yield a true predicate)
                 .reduce(x -> true, Predicate::and);
@@ -172,11 +169,11 @@ final class HomePageAPI {
         if (usage.isEmpty()) {
             return defaultTile;
         }
-         return getConditionalCategories(endpoint)
-                .stream().filter(conditionalCategory -> conditionalCategory.isActive().test(usage.get()))
-                .findFirst()
-                .map(conditionalCategory -> new TileId(conditionalCategory.id(), 0))
-                .orElse(defaultTile);
+        return getConditionalCategories(endpoint) //
+            .stream().filter(conditionalCategory -> conditionalCategory.isActive().test(usage.get())) //
+            .findFirst() //
+            .map(conditionalCategory -> new TileId(conditionalCategory.id(), 0)) //
+            .orElse(defaultTile);
     }
 
     private static Predicate<InternalUsageTracking> startsGreaterThan(final int numberOfStarts) {
