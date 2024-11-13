@@ -86,7 +86,7 @@ const openNodeInBrowser = (
           display: flex;
           align-items: center;
           width: 100%;
-          padding: var(--space-4) var(--space-8) var(--space-4) 0;
+          padding: var(--space-4) var(--space-8) var(--space-4) var(--space-4);
           text-align: initial;
           border-radius: 0;
           font-size: 11px;

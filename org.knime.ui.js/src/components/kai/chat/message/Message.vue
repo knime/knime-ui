@@ -9,7 +9,6 @@ import { KaiMessage } from "@/api/gateway-api/generated-api";
 import type { Message, StatusUpdate } from "@/store/aiAssistant";
 
 import FeedbackControls from "./FeedbackControls.vue";
-import KaiReferences from "./KaiReferences.vue";
 import KaiStatus from "./KaiStatus.vue";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
@@ -56,7 +55,6 @@ const showFeedbackControls = computed(
         <UserIcon v-if="isUser" />
         <KnimeIcon v-else />
       </div>
-      <KaiReferences :references="references" />
     </div>
     <div class="body" :class="{ user: isUser, error: isError }">
       <!-- eslint-disable vue/no-v-html  -->

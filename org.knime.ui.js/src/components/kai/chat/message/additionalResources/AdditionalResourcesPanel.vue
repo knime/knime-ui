@@ -7,6 +7,7 @@ import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayou
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
 import { useKaiExtensionPanel } from "@/components/kai/useKaiExtensionPanel";
 
+import References from "./References.vue";
 import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedHubItems from "./SuggestedHubItems.vue";
 
@@ -21,13 +22,19 @@ const { additionalResources, closeKaiExtensionPanel } = useKaiExtensionPanel();
     </template>
     <SidebarPanelScrollContainer>
       <div class="body">
-        <SuggestedHubItems :items="additionalResources.components">
+        <SuggestedHubItems :items="additionalResources!.components">
           <template #title> <WorkflowIcon /> Workflows </template>
         </SuggestedHubItems>
-        <SuggestedHubItems :items="additionalResources.workflows">
+        <SuggestedHubItems :items="additionalResources!.workflows">
           <template #title> <ComponentIcon /> Components </template>
         </SuggestedHubItems>
-        <SuggestedExtensions :extensions="additionalResources.extensions" />
+        <SuggestedExtensions :extensions="additionalResources!.extensions" />
+        <References
+          v-for="(urls, referenceName) in additionalResources!.references"
+          :key="referenceName"
+          :urls="urls"
+          :title="referenceName as string"
+        />
       </div>
     </SidebarPanelScrollContainer>
   </SidebarPanelLayout>
@@ -39,7 +46,7 @@ const { additionalResources, closeKaiExtensionPanel } = useKaiExtensionPanel();
     padding-top: var(--space-8);
     display: flex;
     flex-direction: column;
-    gap: var(--space-24)
+    gap: var(--space-32);
   }
 }
 </style>

@@ -2,36 +2,43 @@
 import { computed } from "vue";
 
 import { Button } from "@knime/components";
+import DocumentationIcon from "@knime/styles/img/icons/file-text-stack.svg";
+import ForumIcon from "@knime/styles/img/icons/forum.svg";
 import LinkIcon from "@knime/styles/img/icons/link-external.svg";
 
-import type { HubItem } from "@/store/aiAssistant";
-
 interface Props {
-  items: HubItem[];
+  title: string;
+  urls: string[];
 }
 
 const props = defineProps<Props>();
 
-const openInBrowser = (item: HubItem) => {
-  window.open(item.url);
+const openInBrowser = (url: string) => {
+  window.open(url);
 };
 
-const shouldRender = computed(() => props.items.length > 0);
+const shouldRender = computed(() => props.urls.length > 0);
+const isDocumentation = computed(() =>
+  props.title.toLowerCase().includes("documentation"),
+);
+const isForum = computed(() => props.title.toLowerCase().includes("forum"));
 </script>
 
 <template>
   <div v-if="shouldRender" class="hub-items">
     <div class="title">
-      <slot name="title" />
+      <ForumIcon v-if="isForum" />
+      <DocumentationIcon v-else-if="isDocumentation" />
+      {{ title }}
     </div>
     <ul>
-      <li v-for="item in items" :key="item.id">
+      <li v-for="(url, index) in urls" :key="index">
         <Button
           class="button"
           title="Open in KNIME Hub"
-          @click="openInBrowser(item)"
+          @click="openInBrowser(url)"
         >
-          <div class="item-title">{{ item.title }}</div>
+          <div class="item-title">Link {{ index + 1 }}</div>
           <LinkIcon />
         </Button>
       </li>
@@ -49,7 +56,7 @@ const shouldRender = computed(() => props.items.length > 0);
     font-weight: 700;
     margin-bottom: 10px;
 
-    & :slotted(svg) {
+    & svg {
       @mixin svg-icon-size 20;
 
       margin-top: -1px;

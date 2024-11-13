@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { Button } from "@knime/components";
-import LinkIcon from "@knime/styles/img/icons/link-external.svg";
+import { FunctionButton } from "@knime/components";
+import LinkIcon from "@knime/styles/img/icons/arrow-next-double.svg";
 
 import {
   type AdditionalResource,
@@ -11,11 +11,12 @@ import {
 
 const props = defineProps<AdditionalResource>();
 
-const { openAdditionalResources } = useKaiExtensionPanel();
-
-const handleClick = () => {
-  openAdditionalResources(props);
-};
+const {
+  openAdditionalResources,
+  panelMode,
+  additionalResources,
+  closeKaiExtensionPanel,
+} = useKaiExtensionPanel();
 
 const shouldRender = computed(() => {
   return (
@@ -24,14 +25,28 @@ const shouldRender = computed(() => {
     props.components.length
   );
 });
+
+const isActive = computed(
+  () =>
+    panelMode.value === "additional_resources" &&
+    additionalResources.value === props,
+);
+
+const handleClick = () => {
+  if (isActive.value) {
+    closeKaiExtensionPanel();
+  } else {
+    openAdditionalResources(props);
+  }
+};
 </script>
 
 <template>
   <div v-if="shouldRender" class="additional-resources">
-    <Button class="button" @click="handleClick">
-      Additional Resources
+    Additional Resources
+    <FunctionButton :active="isActive" @click="handleClick">
       <LinkIcon />
-    </Button>
+    </FunctionButton>
   </div>
 </template>
 
@@ -39,23 +54,19 @@ const shouldRender = computed(() => {
 @import url("@/assets/mixins.css");
 
 .additional-resources {
-  & .button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    text-align: initial;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--knime-masala);
-  }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: initial;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--knime-masala);
 
   & svg {
     @mixin svg-icon-size 20;
 
     stroke: var(--knime-masala);
-    margin-right: 0;
-    margin-top: 4px;
   }
 }
 </style>

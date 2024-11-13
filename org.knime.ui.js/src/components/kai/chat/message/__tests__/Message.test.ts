@@ -17,7 +17,6 @@ import {
 } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import FeedbackControls from "../FeedbackControls.vue";
-import KaiReferences from "../KaiReferences.vue";
 import KaiStatus from "../KaiStatus.vue";
 import Message from "../Message.vue";
 import MessagePlaceholder from "../MessagePlaceholder.vue";
@@ -112,9 +111,6 @@ describe("Message.vue", () => {
       expect(wrapper.find(".icon").classes()).not.toContain("user");
       expect(wrapper.findComponent(UserIcon).exists()).toBe(false);
       expect(wrapper.findComponent(KnimeIcon).exists()).toBe(true);
-      expect(wrapper.findComponent(KaiReferences).props("references")).toEqual(
-        defaultProps.references,
-      );
       expect(wrapper.find(".body").classes()).not.toContain("user");
       expect(wrapper.find(".content").text()).toMatch(defaultProps.content!);
       expect(wrapper.findComponent(MessagePlaceholder).exists()).toBe(false);
@@ -201,9 +197,6 @@ describe("Message.vue", () => {
       expect(wrapper.find(".icon").classes()).toContain("user");
       expect(wrapper.findComponent(UserIcon).exists()).toBe(true);
       expect(wrapper.findComponent(KnimeIcon).exists()).toBe(false);
-      expect(wrapper.findComponent(KaiReferences).props("references")).toEqual(
-        defaultProps.references,
-      );
       expect(wrapper.find(".body").classes()).toContain("user");
       expect(wrapper.find(".content").text()).toMatch(defaultProps.content!);
       expect(wrapper.findComponent(MessagePlaceholder).exists()).toBe(false);
