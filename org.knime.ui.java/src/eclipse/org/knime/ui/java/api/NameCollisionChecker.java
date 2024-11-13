@@ -117,13 +117,16 @@ final class NameCollisionChecker {
 
     /**
      * Check for name collisions
+     * 
      * @param space The space to check in
      * @param destinationItemId The item ID of the workflow group to check in
-     * @param itemNames The new item names to check whether they collide with anything already present
+     * @param itemIds The new item ids to check whether they collide with anything already present
      * @return {@code true} iff there is a name collision, {@code false} otherwise.
      */
-    static boolean test(final Space space, final String destinationItemId, final List<String> itemNames) {
-        return itemNames.stream().anyMatch(itemName -> space.containsItemWithName(destinationItemId, itemName));
+    static boolean test(final Space space, final String destinationItemId, final List<String> itemIds) {
+        return itemIds.stream() //
+            .map(space::getItemName) //
+            .anyMatch(itemName -> space.containsItemWithName(destinationItemId, itemName));
     }
 
     /**
