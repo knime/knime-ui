@@ -39,9 +39,6 @@ const nodeName = computed<string>(() =>
     store.state.nodeConfiguration.activeNodeId,
   ),
 );
-const useEmbeddedDialogs = computed(
-  () => store.state.application.useEmbeddedDialogs,
-);
 const activeNodeId = computed(() => store.state.nodeConfiguration.activeNodeId);
 const dirtyState = computed(() => store.state.nodeConfiguration.dirtyState);
 const activeNode = computed<NativeNode | null>(
@@ -64,33 +61,27 @@ const executeActiveNode = () => {
   store.dispatch("workflow/executeNodes", [activeNode.value!.id]);
 };
 
-watch(selectedNode, async (nextNode) => {
-  // skip selection of already active node
-  // e.g when re-selecting same node after cancelling the auto-apply prompt
-  if (activeNodeId?.value === nextNode?.id) {
-    return;
-  }
-
-  if (
-    dirtyState.value.apply === ApplyState.CLEAN ||
-    isConfigurationDisabled.value
-  ) {
-    // set the active node to be the next selected node
-    store.commit("nodeConfiguration/setActiveNodeId", nextNode?.id ?? null);
-    return;
-  }
-
-  // if the configuration state is dirty, attempt to auto apply the settings
-  // before changing the active node
-  await store.dispatch("nodeConfiguration/autoApplySettings", { nextNode });
-});
-
 watch(
-  useEmbeddedDialogs,
-  () => {
-    if (useEmbeddedDialogs && !activeNodeId.value) {
-      store.commit("nodeConfiguration/setActiveNodeId", selectedNode.value?.id);
+  selectedNode,
+  async (nextNode) => {
+    // skip selection of already active node
+    // e.g when re-selecting same node after cancelling the auto-apply prompt
+    if (activeNodeId?.value === nextNode?.id) {
+      return;
     }
+
+    if (
+      dirtyState.value.apply === ApplyState.CLEAN ||
+      isConfigurationDisabled.value
+    ) {
+      // set the active node to be the next selected node
+      store.commit("nodeConfiguration/setActiveNodeId", nextNode?.id ?? null);
+      return;
+    }
+
+    // if the configuration state is dirty, attempt to auto apply the settings
+    // before changing the active node
+    await store.dispatch("nodeConfiguration/autoApplySettings", { nextNode });
   },
   {
     immediate: true,
