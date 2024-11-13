@@ -235,7 +235,7 @@ export const getters: GetterTree<NodeConfigurationState, RootStoreState> = {
       return null;
     }
 
-    const node = rootState.workflow.activeWorkflow?.nodes[activeNodeId];
+    const node = rootState.workflow.activeWorkflow?.nodes?.[activeNodeId];
     return node &&
       isNativeNode(node) &&
       node.dialogType === Node.DialogTypeEnum.Web
