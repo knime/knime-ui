@@ -52,7 +52,7 @@ export const useKaiExtensionPanel = () => {
     }
   };
 
-  const openAdditionalResources = (_additionalResources) => {
+  const openAdditionalResources = (_additionalResources: AdditionalResource) => {
     additionalResources.value = _additionalResources;
     openKaiExtensionPanel("additional_resources");
   };

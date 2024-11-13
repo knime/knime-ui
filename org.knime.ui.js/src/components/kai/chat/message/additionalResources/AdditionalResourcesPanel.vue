@@ -11,8 +11,6 @@ import SuggestedExtensions from "./SuggestedExtensions.vue";
 import SuggestedHubItems from "./SuggestedHubItems.vue";
 
 const { additionalResources, closeKaiExtensionPanel } = useKaiExtensionPanel();
-
-const { workflows, extensions, components } = additionalResources.value!;
 </script>
 
 <template>
@@ -21,16 +19,27 @@ const { workflows, extensions, components } = additionalResources.value!;
       <h2>Additional Resources</h2>
       <CloseButton class="close-button" @close="closeKaiExtensionPanel" />
     </template>
-    <SidebarPanelScrollContainer class="node-info">
-      <SuggestedExtensions :extensions="extensions" />
-      <SuggestedHubItems :items="workflows">
-        <template #title> <ComponentIcon /> Components </template>
-      </SuggestedHubItems>
-      <SuggestedHubItems :items="components">
-        <template #title> <WorkflowIcon /> Workflows </template>
-      </SuggestedHubItems>
+    <SidebarPanelScrollContainer>
+      <div class="body">
+        <SuggestedHubItems :items="additionalResources.components">
+          <template #title> <WorkflowIcon /> Workflows </template>
+        </SuggestedHubItems>
+        <SuggestedHubItems :items="additionalResources.workflows">
+          <template #title> <ComponentIcon /> Components </template>
+        </SuggestedHubItems>
+        <SuggestedExtensions :extensions="additionalResources.extensions" />
+      </div>
     </SidebarPanelScrollContainer>
   </SidebarPanelLayout>
 </template>
 
-<style lang="postcss" scoped></style>
+<style lang="postcss" scoped>
+.additional-resources {
+  & .body {
+    padding-top: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24)
+  }
+}
+</style>

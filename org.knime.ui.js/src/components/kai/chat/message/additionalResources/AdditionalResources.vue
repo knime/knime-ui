@@ -44,7 +44,6 @@ const shouldRender = computed(() => {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: 5px 8px 5px 2px;
     text-align: initial;
     font-size: 16px;
     font-weight: 700;

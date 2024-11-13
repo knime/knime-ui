@@ -37,5 +37,3 @@ watch(isExtensionPanelOpen, (isOpen) => {
     </Transition>
   </Portal>
 </template>
-
-<style lang="postcss" scoped></style>

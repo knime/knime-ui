@@ -39,15 +39,13 @@ const openInBrowser = (item: HubItem) => {
 @import url("@/assets/mixins.css");
 
 & .hub-items {
-  margin-top: 30px;
-
-  & :deep(.title) {
+  & .title {
     display: flex;
     font-size: 16px;
     font-weight: 700;
     margin-bottom: 10px;
 
-    & svg {
+    & :slotted(svg) {
       @mixin svg-icon-size 20;
 
       margin-top: -1px;
@@ -65,7 +63,7 @@ const openInBrowser = (item: HubItem) => {
         display: flex;
         align-items: center;
         width: 100%;
-        padding: 5px 8px 5px 2px;
+        padding: var(--space-4) var(--space-8) var(--space-4) 0;
         text-align: initial;
         border-radius: 0;
         font-size: 11px;
