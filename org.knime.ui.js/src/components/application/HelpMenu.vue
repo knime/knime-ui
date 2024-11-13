@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 
 import type { MenuItem } from "@knime/components";
 import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
+import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
 import ForumIcon from "@knime/styles/img/icons/forum.svg";
 import GraduateHatIcon from "@knime/styles/img/icons/graduate-hat.svg";
@@ -89,9 +90,14 @@ const helpMenuItem = computed<MenuItem>(() => ({
     },
     {
       text: "Get help from the KNIME Community",
-      separator: true,
       icon: ForumIcon,
       href: buildExternalUrl("https://forum.knime.com/"),
+    },
+    {
+      text: "KNIME Hub",
+      separator: true,
+      icon: HubIcon,
+      href: buildExternalUrl("https://hub.knime.com/"),
     },
 
     // Add custom help menu entries if present
