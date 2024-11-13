@@ -67,7 +67,9 @@ import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.Sele
  * Destination folder/space picker for uploads.
  *
  * @author Leonard Wörteler, KNIME GmbH, Konstanz, Germany
+ * @deprecated
  */
+@Deprecated(forRemoval = true)
 final class SpaceDestinationPicker {
 
     public enum Operation {

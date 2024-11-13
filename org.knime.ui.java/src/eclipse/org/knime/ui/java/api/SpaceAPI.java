@@ -191,12 +191,10 @@ final class SpaceAPI {
     /**
      * Copies space items from Local to Hub space or vice versa.
      *
-     * @param sourceProviderId provider ID of the source space
-     * @param sourceSpaceId ID of the source space
-     * @param sourceItemIdsParam array of item IDs
      * @return {@code true} if all files could be uploaded, {@code false} otherwise
      */
     @API
+    @SuppressWarnings({"java:S1941", "java:S1142"})
     static boolean copyBetweenSpaces( //
         final String sourceProviderId, //
         final String sourceSpaceId, //
@@ -230,9 +228,6 @@ final class SpaceAPI {
         final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
-                // TODO in principle, this could be called without filestores but there are
-                //  issues with a `root` destination item ID. Filestores have to be resolved anyway for call 
-                //  to `ClassicAPCopyMoveLogic` below.
                 return performAsyncHubUpload( //
                     (LocalWorkspace)sources.space(), //
                     destination.provider(), //
@@ -275,21 +270,21 @@ final class SpaceAPI {
     }
 
     private static boolean performAsyncHubDownload(final Space sourceSpace, final SpaceProvider targetSpaceProvider,
-            final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
-            throws OperationNotAllowedException {
+        final AbstractExplorerFileStore destinationStore, final List<String> itemIds)
+        throws OperationNotAllowedException {
         final var localTarget = (LocalWorkspace)targetSpaceProvider.getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID);
         final var targetItemId = localTarget.getItemIdByURI(destinationStore.toURI()).orElseThrow();
         final TransferResult result = sourceSpace.downloadInto(itemIds, localTarget, targetItemId);
         if (result.errorTitleAndDescription() != null) {
-            showErrorToast(result.errorTitleAndDescription().getFirst(),
-                result.errorTitleAndDescription().getSecond(), false);
+            showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
+                false);
         }
         return result.successful();
     }
 
     private static boolean performAsyncHubUpload(final LocalWorkspace localSource,
-            final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
-            final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
+        final SpaceProvider targetSpaceProvider, final AbstractExplorerFileStore destinationStore,
+        final List<String> itemIds, final boolean excludeData) throws OperationNotAllowedException {
         final var remoteDestination = (RemoteExplorerFileStore)destinationStore;
         final var targetSpaceAndId = targetSpaceProvider.resolveSpaceAndItemId(remoteDestination.toIdURI()) //
             .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + remoteDestination));
@@ -305,10 +300,10 @@ final class SpaceAPI {
         }
 
         final TransferResult result =
-                targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
+            targetSpace.uploadFrom(localSource, itemIds, targetSpaceAndId.itemId(), excludeData);
         if (result.errorTitleAndDescription() != null) {
-            showErrorToast(result.errorTitleAndDescription().getFirst(),
-                result.errorTitleAndDescription().getSecond(), false);
+            showErrorToast(result.errorTitleAndDescription().getFirst(), result.errorTitleAndDescription().getSecond(),
+                false);
         }
         return result.successful();
     }
@@ -340,8 +335,8 @@ final class SpaceAPI {
             final var localDir = localSource.toLocalAbsolutePath(null, itemId).orElseThrow();
             final var relPath = workspaceRoot.relativize(localDir);
             if (projects.getLocalProject(relPath) //
-                    .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
-                    .isPresent()) {
+                .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
+                .isPresent()) {
                 opened.add(FilenameUtils.separatorsToUnix(relPath.toString()));
             }
         }
@@ -360,6 +355,7 @@ final class SpaceAPI {
      *         collision handling strategy. {@code FAILURE} if the operation failed.
      */
     @API
+    @SuppressWarnings({"java:S1941"})
     static String moveOrCopyToSpace( //
         final String spaceProviderId, //
         final String sourceSpaceId, //
@@ -377,8 +373,6 @@ final class SpaceAPI {
             Arrays.stream(sourceItemIdsParam).map(String.class::cast).toList());
         final var destination = new Locator.Item(spaceProviderId, destinationSpaceId, destinationItemId);
 
-        var mountId = sources.provider().getId();
-
         if (sources.isLocal()) {
             // this is really an illegal argument, since we deal with remote copy/move
             final var copyText = doCopy ? "copy" : "move";
@@ -388,16 +382,20 @@ final class SpaceAPI {
         }
 
         var collisionHandling = NameCollisionHandling.of(nameCollisionHandlingParam);
-        Supplier<Boolean> hasCollision =
-            () -> NameCollisionChecker.test(destination.space(), destination.itemId(), sources.itemIds());
-        if (collisionHandling.isEmpty() && hasCollision.get()) {
+        if ( //
+            collisionHandling.isEmpty() //
+            && NameCollisionChecker.test(destination.space(), destination.itemId(), sources.itemIds()) //
+        ) {
             // Clients (frontend) need to try again with a collision handling strategy parameter specified.
             return MoveOrCopyResult.COLLISION.toString();
         }
+        // If empty, there is no collision. Perform operation with "NOOP" strategy, which will fail in case
+        //  the operation itself determines a collision (unexpected case, this would be an implementation mistake).
+        var effectiveCollisionHandling = collisionHandling.orElse(NameCollisionHandling.NOOP);
 
         try {
-            var effectiveCollisionHandling = collisionHandling.orElse(NameCollisionHandling.NOOP);
-            destination.space().moveOrCopyItems(sources.itemIds(), destination.itemId(), effectiveCollisionHandling, doCopy);
+            destination.space().moveOrCopyItems(sources.itemIds(), destination.itemId(), effectiveCollisionHandling,
+                doCopy);
         } catch (IOException e) {
             DesktopAPUtil.showAndLogError("Unable to %s item".formatted(doCopy ? "copy" : "move"),
                 "An unexpected exception occurred while %s the item".formatted(doCopy ? "copying" : "moving"),
@@ -444,7 +442,6 @@ final class SpaceAPI {
      */
     @API
     static void openAPIDefinition(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
         final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         final var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
@@ -463,6 +460,7 @@ final class SpaceAPI {
      * @throws NoSuchElementException if there is no job for the given ids
      */
     @API
+    @SuppressWarnings({"java:S1142"})
     static String saveJobAsWorkflow(final String spaceProviderId, final String spaceId, final String itemId,
         final String jobId, final String jobName) throws ResourceAccessException {
 
