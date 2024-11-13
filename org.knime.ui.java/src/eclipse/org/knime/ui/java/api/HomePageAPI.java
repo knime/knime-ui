@@ -46,10 +46,13 @@
 package org.knime.ui.java.api;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.product.rcp.intro.json.JSONCategory;
@@ -63,13 +66,6 @@ import org.knime.ui.java.profile.UserProfile;
  * @author Benjamin Moser, KNIME GmbH, Germany
  */
 final class HomePageAPI {
-
-    private static final List<ConditionalTile> conditionalTiles = List.of( //
-        ConditionalTile.of("c5-onboarding", 0, startsGreaterThan(1)), //
-        ConditionalTile.of("c5-onboarding", 1, startsGreaterThan(2)), //
-        ConditionalTile.of("c5-onboarding", 2, startsGreaterThan(5)), //
-        ConditionalTile.of("c5-onboarding", 3, startsGreaterThan(20)) //
-    );
 
     private static final TileId defaultTile = new TileId("c4-modern-ui", 0);
 
@@ -89,10 +85,70 @@ final class HomePageAPI {
         if (endpoint == null) {
             return null; // NOSONAR
         }
-        var activeTileId = selectTile(DesktopAPI.getDeps(UserProfile.class));
+        var activeTileId = selectTile(endpoint, DesktopAPI.getDeps(UserProfile.class));
         return getTileContents(endpoint, activeTileId) //
             .map(HomePageAPI::tileToMap) //
             .orElse(null);
+    }
+
+    private static List<ConditionalCategory> getConditionalCategories(WelcomeAPEndpoint endpoint) {
+        return endpoint.getCategories(true, null)
+                .stream()
+                .flatMap(Arrays::stream)
+                .map(JSONCategory::getId)
+                .flatMap(categoryId -> parseConditionalCategory(categoryId).stream())
+                .toList();
+    }
+
+    /**
+     * Given {@code foo--bar=13,qux=42}, yields map {@code bar->13, qux->42}
+     */
+    private static Map<String, String> parseParameters(String input) {
+        Map<String, String> parameters = new HashMap<>();
+        String[] parts = input.split("--");
+        if (parts.length > 1) {
+            String parameterPart = parts[1];
+            Pattern pattern = Pattern.compile("(\\w+)=([^,]+)");
+            Matcher matcher = pattern.matcher(parameterPart);
+            while (matcher.find()) {
+                String key = matcher.group(1);
+                String value = matcher.group(2);
+                parameters.put(key, value);
+            }
+        }
+        return parameters;
+    }
+
+
+    private static Optional<ConditionalCategory> parseConditionalCategory(final String categoryId) {
+        var params = parseParameters(categoryId);
+        if (params.isEmpty()) {
+            return Optional.empty();
+        }
+        var predicate = params.entrySet().stream()
+                .flatMap(entry -> parseParam(entry.getKey(), entry.getValue()).stream())
+                // careful: `x -> true` as identity only makes sense if case of empty stream is excluded above
+                // (an empty stream would yield a true predicate)
+                .reduce(x -> true, Predicate::and);
+        return Optional.of(new ConditionalCategory(categoryId, predicate));
+    }
+
+    private static Optional<Predicate<InternalUsageTracking>> parseParam(String paramKey, String paramValue) {
+        if (paramKey.equals("startsLessEqualTo")) {
+            return parseInt(paramValue).map(HomePageAPI::startsLessEqualTo);
+        }
+        if (paramKey.equals("startsGreaterThan")) {
+            return parseInt(paramValue).map(HomePageAPI::startsGreaterThan);
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Integer> parseInt(String value) {
+        try {
+            return Optional.of(Integer.parseInt(value));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     private static Optional<JSONTile> getTileContents(final WelcomeAPEndpoint endpoint, final TileId tile) {
@@ -110,21 +166,25 @@ final class HomePageAPI {
         }
     }
 
-    private static TileId selectTile(final UserProfile profile) {
+    private static TileId selectTile(WelcomeAPEndpoint endpoint, final UserProfile profile) {
         var usage = Optional.ofNullable(profile) //
             .map(UserProfile::internalUsageTracking); //
         if (usage.isEmpty()) {
             return defaultTile;
         }
-        return conditionalTiles.stream() //
-            .filter(tile -> tile.isActive().test(usage.get())) //
-            .findFirst() //
-            .map(ConditionalTile::id) //
-            .orElse(defaultTile);
+         return getConditionalCategories(endpoint)
+                .stream().filter(conditionalCategory -> conditionalCategory.isActive().test(usage.get()))
+                .findFirst()
+                .map(conditionalCategory -> new TileId(conditionalCategory.id(), 0))
+                .orElse(defaultTile);
     }
 
     private static Predicate<InternalUsageTracking> startsGreaterThan(final int numberOfStarts) {
-        return usage -> usage.getTimesUiCreated() >= numberOfStarts;
+        return usage -> usage.getTimesUiCreated() > numberOfStarts;
+    }
+
+    private static Predicate<InternalUsageTracking> startsLessEqualTo(final int numberOfStarts) {
+        return usage -> usage.getTimesUiCreated() <= numberOfStarts;
     }
 
     private static Map<String, String> tileToMap(final JSONTile tile) {
@@ -137,11 +197,8 @@ final class HomePageAPI {
         );
     }
 
-    private record ConditionalTile(TileId id, Predicate<InternalUsageTracking> isActive) {
-        static ConditionalTile of(final String categoryId, final int index,
-            final Predicate<InternalUsageTracking> isActive) {
-            return new ConditionalTile(new TileId(categoryId, index), isActive);
-        }
+    private record ConditionalCategory(String id, Predicate<InternalUsageTracking> isActive) {
+
     }
 
     /**
