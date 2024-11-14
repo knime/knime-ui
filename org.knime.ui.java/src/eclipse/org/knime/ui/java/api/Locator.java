@@ -1,3 +1,48 @@
+/*
+ * ------------------------------------------------------------------------
+ *
+ *  Copyright by KNIME AG, Zurich, Switzerland
+ *  Website: http://www.knime.com; Email: contact@knime.com
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License, Version 3, as
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, see <http://www.gnu.org/licenses>.
+ *
+ *  Additional permission under GNU GPL version 3 section 7:
+ *
+ *  KNIME interoperates with ECLIPSE solely via ECLIPSE's plug-in APIs.
+ *  Hence, KNIME and ECLIPSE are both independent programs and are not
+ *  derived from each other. Should, however, the interpretation of the
+ *  GNU GPL Version 3 ("License") under any applicable laws result in
+ *  KNIME and ECLIPSE being a combined program, KNIME AG herewith grants
+ *  you the additional permission to use and propagate KNIME together with
+ *  ECLIPSE with only the license terms in place for ECLIPSE applying to
+ *  ECLIPSE and the GNU GPL Version 3 applying for KNIME, provided the
+ *  license terms of ECLIPSE themselves allow for the respective use and
+ *  propagation of ECLIPSE together with KNIME.
+ *
+ *  Additional permission relating to nodes for KNIME that extend the Node
+ *  Extension (and in particular that are based on subclasses of NodeModel,
+ *  NodeDialog, and NodeView) and that only interoperate with KNIME through
+ *  standard APIs ("Nodes"):
+ *  Nodes are deemed to be separate and independent programs and to not be
+ *  covered works.  Notwithstanding anything to the contrary in the
+ *  License, the License does not apply to Nodes, you are not required to
+ *  license Nodes under the License, and you are granted a license to
+ *  prepare and propagate Nodes, in each case even if such Nodes are
+ *  propagated with or for interoperation with KNIME.  The owner of a Node
+ *  may freely choose the license terms applicable to such Node, including
+ *  when such Node is propagated with or for interoperation with KNIME.
+ * ---------------------------------------------------------------------
+ */
 package org.knime.ui.java.api;
 
 import java.util.List;
@@ -6,79 +51,124 @@ import java.util.Objects;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 
-public class Locator {
-    public static final class Siblings extends SpaceLocator {
-        private final List<String> itemIds;
+/**
+ * Locate things in the Space Providers / Spaces / Items system.
+ */
+@SuppressWarnings("javadoc") // trivial constructors
+public final class Locator {
 
-        Siblings(String providerId, String spaceId, List<String> itemIds) {
+    private Locator() {
+
+    }
+
+    /**
+     * Locates an ordered collection of items in the same Space. This does not imply that they have the same parent
+     * item.
+     */
+    public static final class Siblings extends Space {
+        private final List<String> m_itemIds;
+
+        public Siblings(String providerId, String spaceId, List<String> itemIds) {
             super(providerId, spaceId);
-            this.itemIds = itemIds;
+            this.m_itemIds = itemIds;
         }
 
+        /**
+         * @return The item IDs
+         */
         public List<String> itemIds() {
-            return itemIds;
+            return m_itemIds;
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
+            if (this == o) {
                 return true;
-            if (o == null || getClass() != o.getClass())
+            }
+            if (o == null || getClass() != o.getClass()) {
                 return false;
+            }
             Siblings that = (Siblings)o;
-            return new EqualsBuilder().appendSuper(super.equals(o)).append(itemIds, that.itemIds).isEquals();
+            return new EqualsBuilder().appendSuper(super.equals(o)).append(m_itemIds, that.m_itemIds).isEquals();
         }
 
         @Override
         public int hashCode() {
-            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(itemIds).toHashCode();
+            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(m_itemIds).toHashCode();
         }
     }
 
-    static class SpaceLocator {
+    /**
+     * Locates a space, i.e. provider ID and space ID.
+     */
+    public static class Space {
+
         private final String m_providerId;
 
         private final String m_spaceId;
 
-        private SpaceLocator(String providerId, String spaceId) {
+        public Space(String providerId, String spaceId) {
             this.m_providerId = providerId;
             this.m_spaceId = spaceId;
         }
 
+        /**
+         * @return The {@link SpaceProvider} instance (requires
+         *         {@link org.knime.gateway.impl.webui.spaces.SpaceProviders} dependency).
+         */
         SpaceProvider provider() {
             return SpaceAPI.getSpaceProvider(this.providerId());
         }
 
-        public Space space() {
+        /**
+         * @return The {@link org.knime.gateway.impl.webui.spaces.Space} instance (requires
+         *         {@link org.knime.gateway.impl.webui.spaces.SpaceProviders} dependency).
+         */
+        public org.knime.gateway.impl.webui.spaces.Space space() {
             return this.provider().getSpace(this.spaceId());
         }
 
+        /**
+         * @return Whether this is a local space (requires {@link org.knime.gateway.impl.webui.spaces.SpaceProviders}
+         *         dependency).
+         */
         boolean isLocal() {
             return provider().getType() == SpaceProviderEnt.TypeEnum.LOCAL;
         }
 
-        boolean isHub() {
+        /**
+         * @return Whether this is a hub space (requires {@link org.knime.gateway.impl.webui.spaces.SpaceProviders}
+         *         dependency).
+         */
+        public boolean isHub() {
             return provider().getType() == SpaceProviderEnt.TypeEnum.HUB;
         }
 
+        /**
+         * @return The ID of the space provider (field access)
+         */
         public String providerId() {
             return m_providerId;
         }
 
+        /**
+         * @return The ID of the space (field access)
+         */
         public String spaceId() {
             return m_spaceId;
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == this)
+            if (obj == this) {
                 return true;
-            if (obj == null || obj.getClass() != this.getClass())
+            }
+            if (obj == null || obj.getClass() != this.getClass()) {
                 return false;
-            var that = (SpaceLocator)obj;
+            }
+            var that = (Space)obj;
             return Objects.equals(this.m_providerId, that.m_providerId)
                 && Objects.equals(this.m_spaceId, that.m_spaceId);
         }
@@ -95,37 +185,45 @@ public class Locator {
 
     }
 
-    public static final class Item extends SpaceLocator {
+    /**
+     * Locates a single item in a space of a provider.
+     */
+    public static final class Item extends Space {
 
-        private final String itemId;
+        private final String m_itemId;
 
         /**
          * @param providerId ID of the space provider containing the item
          * @param spaceId ID of the space in provider with ID {@code spaceProviderId} containing the item
          * @param itemId ID of the item contained in space with ID {@code spaceId}
          */
-        Item(String providerId, String spaceId, String itemId) {
+        public Item(String providerId, String spaceId, String itemId) {
             super(providerId, spaceId);
-            this.itemId = itemId;
+            this.m_itemId = itemId;
         }
 
+        /**
+         * @return The item ID (field access)
+         */
         public String itemId() {
-            return itemId;
+            return m_itemId;
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
+            if (this == o) {
                 return true;
-            if (o == null || getClass() != o.getClass())
+            }
+            if ((o == null) || (getClass() != o.getClass())) {
                 return false;
+            }
             Item that = (Item)o;
-            return new EqualsBuilder().appendSuper(super.equals(o)).append(itemId, that.itemId).isEquals();
+            return new EqualsBuilder().appendSuper(super.equals(o)).append(m_itemId, that.m_itemId).isEquals();
         }
 
         @Override
         public int hashCode() {
-            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(itemId).toHashCode();
+            return new HashCodeBuilder(17, 37).appendSuper(super.hashCode()).append(m_itemId).toHashCode();
         }
     }
 }
