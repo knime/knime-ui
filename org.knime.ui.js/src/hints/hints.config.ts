@@ -32,7 +32,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       title: "Add and connect nodes to  perform actions on data visually",
       description:
         'To perform an action on your data, drop the output port of a node to add and connect another node, e.g. the "Column Filter" node via the quick nodes adding panel.',
-      dependsOn: [HINTS.NEW_WORKFLOW],
+      dependsOn: [],
       video: [
         {
           source: "/videos/5-4-Build-Mode-Small-Workflow.webm",
@@ -43,11 +43,20 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       side: "bottom",
       align: "end",
     },
+    [HINTS.NODE_MONITOR]: {
+      title: "Get instant insights via the node monitor",
+      description:
+        "See directly the current output of a node as a table after execution. This allows you to quickly verify the results of the actions you did on your data.",
+      dependsOn: [HINTS.HIGHLIGHTED_OUTPUT_PORT],
+      hideButtons: true,
+      side: "top",
+      align: "start",
+    },
     [HINTS.K_AI]: {
       title: "Get guidance from KNIME's AI assistant",
       description:
         "K-AI can support you in building workflows, supporting your onboarding process by answering questions. In build mode, K-AI can directly build new workflows for you based on your text input.",
-      dependsOn: [HINTS.HIGHLIGHTED_OUTPUT_PORT],
+      dependsOn: [HINTS.NODE_MONITOR],
       referenceSelector: ".k-ai-tab",
       video: [
         {
@@ -63,16 +72,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       title: "Find more resources via “Help”",
       description:
         "Get quick access to resources like our self-paced courses, forum, cheat sheets, documentation, keyboard shortcuts and lots of examples on our Hub.",
-      dependsOn: [HINTS.NODE_MONITOR],
-      hideButtons: true,
-    },
-    [HINTS.NODE_MONITOR]: {
-      title: "Get instant insights via the node monitor",
-      description:
-        "See directly the current output of a node as a table after execution. This allows you to quickly verify the results of the actions you did on your data.",
       dependsOn: [HINTS.K_AI],
       hideButtons: true,
-      side: "top",
-      align: "start",
     },
   });

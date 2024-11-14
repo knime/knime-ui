@@ -52,14 +52,11 @@ const toFileExplorerItem = (
   meta: { recentWorkflow },
 });
 
-const recentWorkflowsHasBeenLoaded = ref(false);
-
 const getRecentWorkflows = async () => {
   const recentWorkflows =
     await API.desktop.updateAndGetMostRecentlyUsedProjects();
 
   items.value = recentWorkflows.map(toFileExplorerItem);
-  recentWorkflowsHasBeenLoaded.value = true;
 };
 
 const getSpaceProviderName = (recentWorkflow: RecentWorkflow) => {
@@ -119,17 +116,11 @@ const createNewWorkflowButton = ref<InstanceType<typeof Button>>();
 
 const { createHint } = useHint();
 
-const showNewWorkflowHint = computed(
-  () => recentWorkflowsHasBeenLoaded.value && items.value.length === 0,
-);
-
 onMounted(() => {
   createHint({
     hintId: HINTS.NEW_WORKFLOW,
     // @ts-ignore
     referenceElement: createNewWorkflowButton,
-    // @ts-ignore
-    isVisibleCondition: showNewWorkflowHint,
   });
 });
 
