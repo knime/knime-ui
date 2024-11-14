@@ -67,12 +67,12 @@ const {
   getSpaceItemIcon,
 } = useSpaceIcons();
 
-const mapSpaceItemsToTreeNodes = (
+const mapSpaceItemToTree = (
   spaceItem: SpaceItem,
   { spaceId, spaceProviderId },
 ) => ({
   type: "item",
-  nodeKey: `item_${spaceItem.id}`,
+  nodeKey: `item_${spaceProviderId}_${spaceId}_${spaceItem.id}`,
   name: spaceItem.name,
   icon: markRaw(getSpaceItemIcon(spaceItem.type)),
   itemId: spaceItem.id,
@@ -81,12 +81,9 @@ const mapSpaceItemsToTreeNodes = (
   hasChildren: spaceItem.type === SpaceItem.TypeEnum.WorkflowGroup,
 });
 
-const mapSpacesToTreeNodes = (
-  space: SpaceProviderNS.Space,
-  { spaceProviderId },
-) => ({
+const mapSpaceToTree = (space: SpaceProviderNS.Space, { spaceProviderId }) => ({
   type: "item",
-  nodeKey: `space_${space.id}`,
+  nodeKey: `space_${spaceProviderId}_${space.id}`,
   name: space.name,
   icon: markRaw(getSpaceIcon(space)),
   spaceId: space.id,
@@ -95,26 +92,26 @@ const mapSpacesToTreeNodes = (
   hasChildren: true,
 });
 
-const mapSpaceGroupToTreeNode = (
+const mapSpaceGroupToTree = (
   spaceGroup: SpaceProviderNS.SpaceGroup,
   { spaceProviderId },
 ) => ({
   type: "group",
-  nodeKey: `group_${spaceGroup.id}`,
+  nodeKey: `group_${spaceProviderId}_${spaceGroup.id}`,
   name: spaceGroup.name,
   hasChildren: true,
   icon: markRaw(getSpaceGroupIcon(spaceGroup)),
   groupData: spaceGroup,
   children: spaceGroup.spaces?.map((space) =>
-    mapSpacesToTreeNodes(space, { spaceProviderId }),
+    mapSpaceToTree(space, { spaceProviderId }),
   ),
 });
 
-const mapSpaceProviderToTreeNode = (
+const mapSpaceProviderToTree = (
   spaceProvider: SpaceProviderNS.SpaceProvider,
 ): TreeNodeOptions => {
   if (isLocalProvider(spaceProvider)) {
-    return mapSpacesToTreeNodes(spaceProvider.spaceGroups[0].spaces[0], {
+    return mapSpaceToTree(spaceProvider.spaceGroups[0].spaces[0], {
       spaceProviderId: spaceProvider.id,
     });
   } else {
@@ -126,7 +123,7 @@ const mapSpaceProviderToTreeNode = (
       icon: markRaw(getSpaceProviderIcon(spaceProvider)),
       spaceProviderId: spaceProvider.id,
       children: spaceProvider.spaceGroups?.map((group) =>
-        mapSpaceGroupToTreeNode(group, { spaceProviderId: spaceProvider.id }),
+        mapSpaceGroupToTree(group, { spaceProviderId: spaceProvider.id }),
       ),
     };
   }
@@ -150,7 +147,7 @@ const filteredSpaceProviders = computed(() => {
 });
 
 const treeSource = ref<TreeNodeOptions[]>(
-  filteredSpaceProviders.value.map(mapSpaceProviderToTreeNode),
+  filteredSpaceProviders.value.map(mapSpaceProviderToTree),
 );
 
 const loadWorkflowGroup = async (group: FullSpacePath, callback) => {
@@ -168,7 +165,7 @@ const loadWorkflowGroup = async (group: FullSpacePath, callback) => {
     if (workflowGroupContent.items.length > 0) {
       callback(
         workflowGroupContent.items.map((item) =>
-          mapSpaceItemsToTreeNodes(item, {
+          mapSpaceItemToTree(item, {
             spaceProviderId,
             spaceId,
           }),
@@ -220,7 +217,7 @@ const connectProvider = async (
     if (isAuthenticated) {
       callback(
         connectedProvider.spaceGroups.map((group) =>
-          mapSpaceGroupToTreeNode(group, { spaceProviderId }),
+          mapSpaceGroupToTree(group, { spaceProviderId }),
         ),
       );
       return;
