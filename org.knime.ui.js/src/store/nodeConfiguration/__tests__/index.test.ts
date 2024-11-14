@@ -205,12 +205,22 @@ describe("nodeConfiguration", () => {
       $store.commit("nodeConfiguration/setDirtyState", dirtyState);
       $store.commit("nodeConfiguration/setActiveNodeId", node1.id);
 
-      const result = await $store.dispatch(
-        "nodeConfiguration/autoApplySettings",
-        { nextNode: node2 },
-      );
+      const done = vi.fn();
 
-      expect(result).toBe(true);
+      $store
+        .dispatch("nodeConfiguration/autoApplySettings", {
+          nextNode: node2,
+        })
+        .then(done);
+
+      await flushPromises();
+
+      // emulate settings getting applied
+      await $store.dispatch("nodeConfiguration/setApplyComplete", true);
+      await flushPromises();
+
+      expect(done).toHaveBeenCalledWith(true);
+
       expect(dispatchSpy).toHaveBeenCalledWith(
         "nodeConfiguration/applySettings",
         { nodeId: node1.id },

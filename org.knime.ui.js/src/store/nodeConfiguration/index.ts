@@ -18,6 +18,7 @@ import {
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { runInEnvironment } from "@/environment";
+import { getToastsProvider } from "@/plugins/toasts";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import { isNativeNode, isNodeExecuting } from "@/util/nodeUtil";
 import type { RootStoreState } from "../types";
@@ -25,6 +26,8 @@ import type { RootStoreState } from "../types";
 export type UIExtensionPushEventDispatcher = Parameters<
   UIExtensionAPILayer["registerPushEventService"]
 >[0]["dispatchPushEvent"];
+
+const $toast = getToastsProvider();
 
 /**
  * Store used to synchronize / manage the shared state and actions
@@ -181,7 +184,20 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
         }
 
         if (modalResult === "apply") {
-          await dispatch("applySettings", { nodeId: activeNode.id });
+          const isApplied = await dispatch("applySettings", {
+            nodeId: activeNode.id,
+          });
+
+          if (!isApplied) {
+            $toast.show({
+              headline: "Failed to apply settings",
+              message:
+                "The configured settings were invalid, so the changes have been discarded.",
+              autoRemove: true,
+              type: "error",
+            });
+            await dispatch("discardSettings");
+          }
         } else {
           await dispatch("discardSettings");
         }
@@ -190,9 +206,9 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
         return true;
       },
 
-      BROWSER: () => {
+      BROWSER: async () => {
         if (activeNode) {
-          dispatch("applySettings", { nodeId: activeNode.id });
+          await dispatch("applySettings", { nodeId: activeNode.id });
         }
 
         commit("setActiveNodeId", nextNode?.id ?? null);
