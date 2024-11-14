@@ -60,7 +60,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -97,7 +96,6 @@ import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
-import org.knime.workbench.explorer.view.AbstractContentProvider;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -264,7 +262,7 @@ final class SpaceAPI {
         );
     }
 
-    private static boolean performAsyncHubDownload(Locator.Siblings sources, Locator.Item destination)
+    private static boolean performAsyncHubDownload(final Locator.Siblings sources, final Locator.Item destination)
         throws OperationNotAllowedException {
         final TransferResult result = sources.space().downloadInto( //
             sources.itemIds(), //
@@ -278,22 +276,27 @@ final class SpaceAPI {
         return result.successful();
     }
 
-    private static boolean performAsyncHubUpload(Locator.Siblings sources, Locator.Item destination,
-        boolean excludeData) throws OperationNotAllowedException {
+    private static boolean performAsyncHubUpload(final Locator.Siblings sources, final Locator.Item destination,
+        final boolean excludeData) throws OperationNotAllowedException {
         // show upload warning for public spaces
+        // This information may be stale, FreshFileStoreResolver#refreshContentProviders has to be called not too long ago.
+        var destinationFileStore = (RemoteExplorerFileStore)FreshFileStoreResolver.resolve(destination);
         if (!destination.space().toEntity().isPrivate()) {
-            // This information may be stale, FreshFileStoreResolver#refreshContentProviders has to be called not too long ago.
-            var contentProvider = FreshFileStoreResolver.resolve(destination).getContentProvider();
-            var status = contentProvider.showUploadWarning(destination.space().getName());
+            var status = destinationFileStore.getContentProvider().showUploadWarning(destination.space().getName());
             if (!status.isOK()) {
                 return false;
             }
         }
 
+        // this seems to be required, directly providing an item ID "root" does makes `uploadFrom` fail
+        // `root` has to somehow be solved to an item ID starting with * first.
+        final var targetSpaceAndId = destination.provider().resolveSpaceAndItemId(destinationFileStore.toIdURI()) //
+                .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + destinationFileStore));
+
         var result = destination.space().uploadFrom( //
             (LocalWorkspace)sources.space(), //
             sources.itemIds(), //
-            destination.itemId(), //
+            targetSpaceAndId.itemId(), //
             excludeData //
         );
         if (result.errorTitleAndDescription() != null) {
