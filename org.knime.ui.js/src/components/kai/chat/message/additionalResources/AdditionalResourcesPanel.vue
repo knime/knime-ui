@@ -22,10 +22,10 @@ const { additionalResources, closeKaiExtensionPanel } = useKaiExtensionPanel();
     </template>
     <SidebarPanelScrollContainer>
       <div class="body">
-        <SuggestedHubItems :items="additionalResources!.components">
+        <SuggestedHubItems :items="additionalResources!.workflows">
           <template #title> <WorkflowIcon /> Workflows </template>
         </SuggestedHubItems>
-        <SuggestedHubItems :items="additionalResources!.workflows">
+        <SuggestedHubItems :items="additionalResources!.components">
           <template #title> <ComponentIcon /> Components </template>
         </SuggestedHubItems>
         <SuggestedExtensions :extensions="additionalResources!.extensions" />
