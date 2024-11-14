@@ -33,8 +33,8 @@ const closeQuickActionMenu = () => {
 };
 
 const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
-watch(isKaiEnabled, (newValue) => {
-  if (newValue === false) {
+watch(isKaiEnabled, (enabled) => {
+  if (!enabled) {
     // We close the Quick Action Menu if K-AI gets disabled while we're in Quick Build Mode
     closeQuickActionMenu();
   }

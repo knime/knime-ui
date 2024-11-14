@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch } from "vue";
 
 import { Button } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
@@ -107,6 +107,12 @@ const {
   setQuickBuildMode,
   isQuickBuildAvailableForPort,
 } = useQuickActionMenu({ port: props.port, nodeRelation: props.nodeRelation });
+
+watch(isKaiEnabled, (enabled) => {
+  if (!enabled && menuMode.value === "quick-build") {
+    setQuickAddMode();
+  }
+});
 </script>
 
 <template>
