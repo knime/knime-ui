@@ -22,7 +22,7 @@ export const getHintConfiguration = (
       hideButtons: true,
       video: [
         {
-          source: videoUrlResolver("videos/5-4-Explain-Workflow.webm"),
+          source: videoUrlResolver("/videos/5-4-Explain-Workflow.webm"),
           type: "video/webm",
         },
       ],
@@ -37,7 +37,9 @@ export const getHintConfiguration = (
       dependsOn: [],
       video: [
         {
-          source: videoUrlResolver("videos/5-4-Build-Mode-Small-Workflow.webm"),
+          source: videoUrlResolver(
+            "/videos/5-4-Build-Mode-Small-Workflow.webm",
+          ),
           type: "video/webm",
         },
       ],
@@ -62,7 +64,7 @@ export const getHintConfiguration = (
       referenceSelector: ".k-ai-tab",
       video: [
         {
-          source: videoUrlResolver("videos/5-4-KAI-Building-Mode.webm"),
+          source: videoUrlResolver("/videos/5-4-KAI-Building-Mode.webm"),
           type: "video/webm",
         },
       ],

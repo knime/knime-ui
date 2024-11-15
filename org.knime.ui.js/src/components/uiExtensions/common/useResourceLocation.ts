@@ -14,7 +14,7 @@ export const setRestApiBaseUrl = (url: string) => {
   restAPIBaseURL = url;
 };
 
-export const useResourceLocation = (options: UseResourceLocationOptions) => {
+export const useResourceLocation = (options?: UseResourceLocationOptions) => {
   const store = useStore();
 
   const resourceLocationResolver = (path: string, baseUrl?: string) => {
@@ -30,7 +30,7 @@ export const useResourceLocation = (options: UseResourceLocationOptions) => {
   };
 
   const resourceLocation = computed(() => {
-    if (!options.extensionConfig.value) {
+    if (!options?.extensionConfig.value) {
       return "";
     }
 

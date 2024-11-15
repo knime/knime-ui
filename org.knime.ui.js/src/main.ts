@@ -1,7 +1,5 @@
 import { createApp } from "vue";
 
-import { setupHints } from "@knime/components";
-
 import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
@@ -11,7 +9,6 @@ import {
   isDesktop,
   runInEnvironment,
 } from "./environment";
-import { getHintConfiguration } from "./hints/hints.config";
 import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
@@ -136,14 +133,6 @@ try {
 
   app.use(store);
   app.use(router);
-
-  // hints
-  // * desktop: use absolute video urls because they are served next to 'http://org.knime.ui.js/index.html'
-  //   but the client side routing changes that url
-  // * browser: use relative video urls because they are still served relative to
-  //   the index.html but the url doesn't change despite client side routing (because it's in an iframe)
-  const hintVideoResolver = (url: string) => (isDesktop ? `/${url}` : url);
-  setupHints({ hints: getHintConfiguration(hintVideoResolver) });
 
   app.mount("#app");
 } catch (error) {
