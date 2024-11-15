@@ -11,8 +11,10 @@ export const HINTS = Object.freeze({
 type HintKeys = keyof typeof HINTS;
 type HintValues = (typeof HINTS)[HintKeys];
 
-export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
-  Object.freeze({
+export const getHintConfiguration = (
+  videoUrlResolver: (url: string) => string,
+): Record<HintValues, HintConfiguration> => {
+  return {
     [HINTS.NEW_WORKFLOW]: {
       title: "Create your first workflow",
       description:
@@ -20,7 +22,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       hideButtons: true,
       video: [
         {
-          source: "/videos/5-4-Explain-Workflow.webm",
+          source: videoUrlResolver("videos/5-4-Explain-Workflow.webm"),
           type: "video/webm",
         },
       ],
@@ -35,7 +37,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       dependsOn: [],
       video: [
         {
-          source: "/videos/5-4-Build-Mode-Small-Workflow.webm",
+          source: videoUrlResolver("videos/5-4-Build-Mode-Small-Workflow.webm"),
           type: "video/webm",
         },
       ],
@@ -60,7 +62,7 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       referenceSelector: ".k-ai-tab",
       video: [
         {
-          source: "/videos/5-4-KAI-Building-Mode.webm",
+          source: videoUrlResolver("videos/5-4-KAI-Building-Mode.webm"),
           type: "video/webm",
         },
       ],
@@ -75,4 +77,5 @@ export const HINT_CONFIGURATIONS: Record<HintValues, HintConfiguration> =
       dependsOn: [HINTS.K_AI],
       hideButtons: true,
     },
-  });
+  };
+};
