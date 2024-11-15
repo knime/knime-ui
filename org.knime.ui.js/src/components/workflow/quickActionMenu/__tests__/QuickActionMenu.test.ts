@@ -5,7 +5,7 @@ import { mount } from "@vue/test-utils";
 import { PortType } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import { useQuickActionMenu } from "@/components/workflow/quickActionMenu/useQuickActionMenu";
-import { useKai } from "@/composables/useKai";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import * as aiAssistantStore from "@/store/aiAssistant";
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as selectionStore from "@/store/selection";
@@ -23,7 +23,7 @@ import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";
 
-vi.mock("@/composables/useKai");
+vi.mock("@/composables/useIsKaiEnabled");
 vi.mock("@/components/workflow/quickActionMenu/useQuickActionMenu");
 
 const defaultPortMock = createPort();
@@ -127,7 +127,7 @@ describe("QuickActionMenu.vue", () => {
 
     const isKaiEnabledRef = ref(isKaiEnabled); // this one we can modify externally to affect the computed one
     const isKaiEnabledComputed = computed(() => isKaiEnabledRef.value);
-    vi.mocked(useKai).mockReturnValueOnce({
+    vi.mocked(useIsKaiEnabled).mockReturnValueOnce({
       isKaiEnabled: isKaiEnabledComputed,
     });
 

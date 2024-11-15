@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
   nodeId: null,
 });
 
-const emit = defineEmits(["menuBack"]);
+defineEmits(["menuBack"]);
 
 const { nodeId, startPosition } = toRefs(props);
 
@@ -30,9 +30,6 @@ const store = useStore();
 
 const closeQuickActionMenu = () => {
   store.dispatch("workflow/closeQuickActionMenu");
-};
-const switchToQuickAddMode = () => {
-  emit("menuBack");
 };
 
 const { panelComponent } = useKaiPanels();
@@ -52,7 +49,7 @@ const {
   <div class="quick-build-menu">
     <div v-if="!isProcessing && result?.type !== 'SUCCESS'" class="header">
       K-AI Build Mode
-      <Button with-border @click="switchToQuickAddMode"><GoBackIcon /></Button>
+      <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
     </div>
     <div class="main">
       <component :is="panelComponent" v-if="panelComponent" class="panel" />

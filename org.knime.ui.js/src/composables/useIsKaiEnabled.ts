@@ -2,7 +2,7 @@ import { computed } from "vue";
 
 import { useStore } from "./useStore";
 
-export const useKai = () => {
+export const useIsKaiEnabled = () => {
   const store = useStore();
   const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
 

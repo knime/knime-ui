@@ -9,7 +9,7 @@ import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 
 import MetainfoIcon from "@/assets/metainfo.svg";
 import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
-import { useKai } from "@/composables/useKai";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
 import { TABS, type TabValues } from "@/store/panel";
@@ -111,7 +111,7 @@ const activateSection = (tabName: TabValues) => {
   store.dispatch("panel/closeExtensionPanel");
 };
 
-const { isKaiEnabled } = useKai();
+const { isKaiEnabled } = useIsKaiEnabled();
 watch(isKaiEnabled, (enabled) => {
   if (!enabled && isTabActive.value(TABS.KAI)) {
     // We switch over to the "Info" tab if K-AI gets disabled while the "K-AI" tab is active

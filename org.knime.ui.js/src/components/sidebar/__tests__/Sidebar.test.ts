@@ -5,7 +5,7 @@ import { mount } from "@vue/test-utils";
 import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 
 import Metainfo from "@/assets/metainfo.svg";
-import { useKai } from "@/composables/useKai";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import * as applicationStore from "@/store/application";
 import * as nodeRepositoryStore from "@/store/nodeRepository";
 import * as panelStore from "@/store/panel";
@@ -14,7 +14,7 @@ import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import Sidebar from "../Sidebar.vue";
 import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
 
-vi.mock("@/composables/useKai");
+vi.mock("@/composables/useIsKaiEnabled");
 
 describe("Sidebar", () => {
   const doMount = ({
@@ -52,7 +52,7 @@ describe("Sidebar", () => {
 
     const isKaiEnabledRef = ref(isKaiEnabled); // this one we can modify externally to affect the computed one
     const isKaiEnabledComputed = computed(() => isKaiEnabledRef.value);
-    vi.mocked(useKai).mockReturnValueOnce({
+    vi.mocked(useIsKaiEnabled).mockReturnValueOnce({
       isKaiEnabled: isKaiEnabledComputed,
     });
 

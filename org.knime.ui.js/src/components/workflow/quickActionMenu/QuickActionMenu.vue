@@ -9,7 +9,7 @@ import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
-import { useKai } from "@/composables/useKai";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useStore } from "@/composables/useStore";
 import * as $shapes from "@/style/shapes";
 import type { DragConnector } from "../ports/NodePort/types";
@@ -108,7 +108,7 @@ const {
   isQuickBuildAvailableForPort,
 } = useQuickActionMenu({ port: props.port, nodeRelation: props.nodeRelation });
 
-const { isKaiEnabled } = useKai();
+const { isKaiEnabled } = useIsKaiEnabled();
 watch(
   isKaiEnabled,
   (enabled) => {
