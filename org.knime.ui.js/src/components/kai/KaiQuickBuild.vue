@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, watch } from "vue";
+import { toRefs } from "vue";
 
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
   nodeId: null,
 });
 
-defineEmits(["menuBack"]);
+const emit = defineEmits(["menuBack"]);
 
 const { nodeId, startPosition } = toRefs(props);
 
@@ -31,14 +31,9 @@ const store = useStore();
 const closeQuickActionMenu = () => {
   store.dispatch("workflow/closeQuickActionMenu");
 };
-
-const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
-watch(isKaiEnabled, (enabled) => {
-  if (!enabled) {
-    // We close the Quick Action Menu if K-AI gets disabled while we're in Quick Build Mode
-    closeQuickActionMenu();
-  }
-});
+const switchToQuickAddMode = () => {
+  emit("menuBack");
+};
 
 const { panelComponent } = useKaiPanels();
 
@@ -57,7 +52,7 @@ const {
   <div class="quick-build-menu">
     <div v-if="!isProcessing && result?.type !== 'SUCCESS'" class="header">
       K-AI Build Mode
-      <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
+      <Button with-border @click="switchToQuickAddMode"><GoBackIcon /></Button>
     </div>
     <div class="main">
       <component :is="panelComponent" v-if="panelComponent" class="panel" />

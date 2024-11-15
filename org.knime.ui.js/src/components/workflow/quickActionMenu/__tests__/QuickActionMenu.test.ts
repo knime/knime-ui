@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { computed, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { PortType } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import { useQuickActionMenu } from "@/components/workflow/quickActionMenu/useQuickActionMenu";
+import { useKai } from "@/composables/useKai";
 import * as aiAssistantStore from "@/store/aiAssistant";
 import * as quickAddNodesStore from "@/store/quickAddNodes";
 import * as selectionStore from "@/store/selection";
@@ -19,6 +22,9 @@ import { mockVuexStore } from "@/test/utils";
 import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";
+
+vi.mock("@/composables/useKai");
+vi.mock("@/components/workflow/quickActionMenu/useQuickActionMenu");
 
 const defaultPortMock = createPort();
 
@@ -45,6 +51,7 @@ describe("QuickActionMenu.vue", () => {
     addNodeMock = vi.fn(),
     props = {},
     isKaiEnabled = true,
+    initialMenuMode = "quick-add" as "quick-add" | "quick-build",
   } = {}) => {
     const defaultProps: QuickActionMenuProps = {
       nodeId: "node-id",
@@ -87,7 +94,6 @@ describe("QuickActionMenu.vue", () => {
           }),
           hasNodeCollectionActive: true,
           hasNodeRecommendationsEnabled: true,
-          isKaiEnabled,
         },
       },
       selection: selectionStore,
@@ -119,6 +125,23 @@ describe("QuickActionMenu.vue", () => {
 
     const $store = mockVuexStore(storeConfig);
 
+    const isKaiEnabledRef = ref(isKaiEnabled); // this one we can modify externally to affect the computed one
+    const isKaiEnabledComputed = computed(() => isKaiEnabledRef.value);
+    vi.mocked(useKai).mockReturnValueOnce({
+      isKaiEnabled: isKaiEnabledComputed,
+    });
+
+    const menuModeRef = ref<"quick-add" | "quick-build">(initialMenuMode);
+    const setQuickAddModeMock = vi.fn().mockImplementationOnce(() => {
+      menuModeRef.value = "quick-add";
+    });
+    vi.mocked(useQuickActionMenu).mockReturnValueOnce({
+      menuMode: menuModeRef,
+      setQuickAddMode: setQuickAddModeMock,
+      setQuickBuildMode: vi.fn(),
+      isQuickBuildAvailableForPort: true,
+    });
+
     const wrapper = mount(QuickActionMenu, {
       props: { ...defaultProps, ...props },
       global: {
@@ -145,6 +168,9 @@ describe("QuickActionMenu.vue", () => {
       $store,
       addNodeMock,
       $shortcuts,
+      isKaiEnabledRef,
+      menuModeRef,
+      setQuickAddModeMock,
     };
   };
 
@@ -152,7 +178,7 @@ describe("QuickActionMenu.vue", () => {
     vi.resetAllMocks();
   });
 
-  describe("visuals", () => {
+  describe("quickActionMenu", () => {
     it("re-emits menuClose", () => {
       const { wrapper } = doMount();
       wrapper.findComponent(FloatingMenuStub).vm.$emit("menuClose");
@@ -183,6 +209,34 @@ describe("QuickActionMenu.vue", () => {
 
       const footer = wrapper.find(".footer");
       expect(footer.exists()).toBe(false);
+    });
+
+    it("immediately switches to Quick Add mode from Quick Build mode if K-AI is disabled", async () => {
+      const { wrapper, setQuickAddModeMock } = doMount({
+        isKaiEnabled: false,
+        initialMenuMode: "quick-build",
+      });
+      await wrapper.vm.$nextTick();
+
+      expect(setQuickAddModeMock).toHaveBeenCalled();
+      expect(wrapper.find(".quick-build-mode").exists()).toBe(false);
+      expect(wrapper.find(".quick-add-mode").exists()).toBe(true);
+    });
+
+    it("switches to Quick Add mode from Quick Build mode when K-AI gets disabled while mounted", async () => {
+      const { wrapper, isKaiEnabledRef, setQuickAddModeMock } = doMount({
+        initialMenuMode: "quick-build",
+      });
+
+      expect(wrapper.find(".quick-build-mode").exists()).toBe(true);
+      expect(wrapper.find(".quick-add-mode").exists()).toBe(false);
+
+      isKaiEnabledRef.value = false;
+      await wrapper.vm.$nextTick();
+
+      expect(setQuickAddModeMock).toHaveBeenCalled();
+      expect(wrapper.find(".quick-build-mode").exists()).toBe(false);
+      expect(wrapper.find(".quick-add-mode").exists()).toBe(true);
     });
   });
 });

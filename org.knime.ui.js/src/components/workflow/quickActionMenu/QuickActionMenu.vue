@@ -9,6 +9,7 @@ import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
+import { useKai } from "@/composables/useKai";
 import { useStore } from "@/composables/useStore";
 import * as $shapes from "@/style/shapes";
 import type { DragConnector } from "../ports/NodePort/types";
@@ -42,7 +43,6 @@ const hasConnector = computed(
   () => store.state.workflow.quickActionMenu.hasConnector,
 );
 
-const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
 const availablePortTypes = computed(
   () => store.state.application.availablePortTypes,
 );
@@ -108,11 +108,18 @@ const {
   isQuickBuildAvailableForPort,
 } = useQuickActionMenu({ port: props.port, nodeRelation: props.nodeRelation });
 
-watch(isKaiEnabled, (enabled) => {
-  if (!enabled && menuMode.value === "quick-build") {
-    setQuickAddMode();
-  }
-});
+const { isKaiEnabled } = useKai();
+watch(
+  isKaiEnabled,
+  (enabled) => {
+    if (!enabled && menuMode.value === "quick-build") {
+      setQuickAddMode();
+    }
+  },
+  {
+    immediate: true, // do an initial check when the component is mounted
+  },
+);
 </script>
 
 <template>
@@ -145,6 +152,7 @@ watch(isKaiEnabled, (enabled) => {
           :node-relation="nodeRelation"
           :canvas-position="canvasPosition"
           :port-index="portIndex"
+          class="quick-add-mode"
           @menu-close="$emit('menuClose')"
         />
         <div v-if="isKaiEnabled && isQuickBuildAvailableForPort" class="footer">
@@ -158,6 +166,7 @@ watch(isKaiEnabled, (enabled) => {
         v-else-if="menuMode == 'quick-build'"
         :node-id="nodeId"
         :start-position="canvasPosition"
+        class="quick-build-mode"
         @menu-back="setQuickAddMode"
       />
     </div>

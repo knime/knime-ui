@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { computed, ref } from "vue";
 import { mount } from "@vue/test-utils";
 
 import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 
 import Metainfo from "@/assets/metainfo.svg";
+import { useKai } from "@/composables/useKai";
 import * as applicationStore from "@/store/application";
 import * as nodeRepositoryStore from "@/store/nodeRepository";
 import * as panelStore from "@/store/panel";
@@ -11,6 +13,8 @@ import * as uiControlsStore from "@/store/uiControls";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import Sidebar from "../Sidebar.vue";
 import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
+
+vi.mock("@/composables/useKai");
 
 describe("Sidebar", () => {
   const doMount = ({
@@ -41,10 +45,15 @@ describe("Sidebar", () => {
         state: {
           ...applicationStore.state(),
           activeProjectId: "activeProject1",
-          isKaiEnabled,
         },
       },
       uiControls: uiControlsStore,
+    });
+
+    const isKaiEnabledRef = ref(isKaiEnabled); // this one we can modify externally to affect the computed one
+    const isKaiEnabledComputed = computed(() => isKaiEnabledRef.value);
+    vi.mocked(useKai).mockReturnValueOnce({
+      isKaiEnabled: isKaiEnabledComputed,
     });
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
@@ -69,7 +78,14 @@ describe("Sidebar", () => {
       await wrapper.find(`[title="${tabName}"] > input`).trigger("click");
     };
 
-    return { wrapper, $store, dispatchSpy, commitSpy, activateTab };
+    return {
+      wrapper,
+      $store,
+      dispatchSpy,
+      commitSpy,
+      activateTab,
+      isKaiEnabledRef,
+    };
   };
 
   it("renders default", () => {
@@ -155,5 +171,16 @@ describe("Sidebar", () => {
   it("should hide the 'K-AI' tab if K-AI is disabled", () => {
     const { wrapper } = doMount({ isKaiEnabled: false });
     expect(wrapper.find('[title="K-AI"]').exists()).toBe(false);
+  });
+
+  it("should switch to the 'Info' tab from the 'K-AI' tab if K-AI gets disabled", async () => {
+    const { wrapper, activateTab, isKaiEnabledRef } = doMount();
+    await activateTab("K-AI");
+    expect(wrapper.find('[title="K-AI"]').classes("active")).toBe(true);
+
+    isKaiEnabledRef.value = false;
+
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[title="Info"]').classes("active")).toBe(true);
   });
 });
