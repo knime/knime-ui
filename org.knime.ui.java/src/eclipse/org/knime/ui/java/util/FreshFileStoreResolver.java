@@ -1,3 +1,48 @@
+/*
+ * ------------------------------------------------------------------------
+ *
+ *  Copyright by KNIME AG, Zurich, Switzerland
+ *  Website: http://www.knime.com; Email: contact@knime.com
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License, Version 3, as
+ *  published by the Free Software Foundation.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, see <http://www.gnu.org/licenses>.
+ *
+ *  Additional permission under GNU GPL version 3 section 7:
+ *
+ *  KNIME interoperates with ECLIPSE solely via ECLIPSE's plug-in APIs.
+ *  Hence, KNIME and ECLIPSE are both independent programs and are not
+ *  derived from each other. Should, however, the interpretation of the
+ *  GNU GPL Version 3 ("License") under any applicable laws result in
+ *  KNIME and ECLIPSE being a combined program, KNIME AG herewith grants
+ *  you the additional permission to use and propagate KNIME together with
+ *  ECLIPSE with only the license terms in place for ECLIPSE applying to
+ *  ECLIPSE and the GNU GPL Version 3 applying for KNIME, provided the
+ *  license terms of ECLIPSE themselves allow for the respective use and
+ *  propagation of ECLIPSE together with KNIME.
+ *
+ *  Additional permission relating to nodes for KNIME that extend the Node
+ *  Extension (and in particular that are based on subclasses of NodeModel,
+ *  NodeDialog, and NodeView) and that only interoperate with KNIME through
+ *  standard APIs ("Nodes"):
+ *  Nodes are deemed to be separate and independent programs and to not be
+ *  covered works.  Notwithstanding anything to the contrary in the
+ *  License, the License does not apply to Nodes, you are not required to
+ *  license Nodes under the License, and you are granted a license to
+ *  prepare and propagate Nodes, in each case even if such Nodes are
+ *  propagated with or for interoperation with KNIME.  The owner of a Node
+ *  may freely choose the license terms applicable to such Node, including
+ *  when such Node is propagated with or for interoperation with KNIME.
+ * ---------------------------------------------------------------------
+ */
 package org.knime.ui.java.util;
 
 import java.lang.reflect.InvocationTargetException;
@@ -5,22 +50,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.api.Locator;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
-import org.eclipse.core.runtime.IProgressMonitor;
-
-import org.eclipse.core.runtime.IStatus;
-
-import org.eclipse.core.runtime.OperationCanceledException;
-
-import org.eclipse.core.runtime.Status;
-
-import org.knime.core.node.NodeLogger;
-
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 import org.knime.workbench.explorer.view.AbstractContentProvider;
 
@@ -34,14 +74,20 @@ import org.knime.workbench.explorer.view.AbstractContentProvider;
  * refreshed before resolving. This is an expensive operation involving network I/O and should be avoided where
  * possible.
  */
-public class FreshFileStoreResolver {
+public final class FreshFileStoreResolver {
+
+    private FreshFileStoreResolver() {
+
+    }
+
+    @SuppressWarnings({"java:S1602"})
     public static List<AbstractExplorerFileStore> resolve(final Locator.Siblings items) {
         return items.itemIds().stream().map(itemId -> {
             return ExplorerFileSystem.INSTANCE.getStore(items.space().toKnimeUrl(itemId));
         }).toList();
     }
 
-    public static AbstractExplorerFileStore resolve(Locator.Item item) {
+    public static AbstractExplorerFileStore resolve(Locator.Destination item) {
         return ExplorerFileSystem.INSTANCE.getStore(item.space().toKnimeUrl(item.itemId()));
     }
 
@@ -63,7 +109,8 @@ public class FreshFileStoreResolver {
      * Refresh remote non-local content providers corresponding to the given mount IDs. There is no progress indication.
      * Call blocks until refresh is complete.
      *
-     * Note: Intentionally left unused because not sure yet which is better in combination with modern destination picker.
+     * Note: Intentionally left unused because not sure yet which is better in combination with modern destination
+     * picker.
      */
     public static void refreshContentProviders(final Set<String> mountIds) {
         var fileStores = findContentProviders(mountIds);
@@ -74,8 +121,9 @@ public class FreshFileStoreResolver {
     }
 
     /**
-     * Refresh remote non-local content providers corresponding to the given mount IDs. Progress is displayed as one Eclipse
-     * workbench job per provider, all belonging to a job family. Call blocks until all jobs are finished or cancelled.
+     * Refresh remote non-local content providers corresponding to the given mount IDs. Progress is displayed as one
+     * Eclipse workbench job per provider, all belonging to a job family. Call blocks until all jobs are finished or
+     * cancelled.
      */
     public static boolean refreshContentProvidersWithProgress(final Set<String> mountIds) {
         var fileStores = findContentProviders(mountIds);
@@ -92,7 +140,8 @@ public class FreshFileStoreResolver {
      * Wait for jobs belonging to {@code family} to finish. In contrast to `new RefreshJob(...).run(monitor)`, this lets
      * us cancel individual jobs or the whole thing. For some reason, the former does not cancel jobs on "Cancel".
      * 
-     * @param family see {@link Job#belongsTo(Object)} and {@link org.eclipse.core.runtime.jobs.IJobManager#join(Object, IProgressMonitor)}
+     * @param family see {@link Job#belongsTo(Object)} and
+     *            {@link org.eclipse.core.runtime.jobs.IJobManager#join(Object, IProgressMonitor)}
      * @return Whether the job family execution has been cancelled.
      */
     private static boolean joinOnJobFamily(Object family) {

@@ -100,10 +100,33 @@ public final class Locator {
         }
     }
 
+    public sealed interface Destination permits Space, Item {
+        String itemId();
+
+        static Destination of(String providerId, String spaceId, String itemId) {
+            if (org.knime.gateway.impl.webui.spaces.Space.ROOT_ITEM_ID.equals(itemId)) {
+                return new Space(providerId, spaceId);
+            } else {
+                return new Item(providerId, spaceId, itemId);
+            }
+        }
+
+        org.knime.gateway.impl.webui.spaces.Space space();
+
+        SpaceProvider provider();
+
+        boolean isHub();
+
+        boolean isLocal();
+
+    }
+
     /**
      * Locates a space, i.e. provider ID and space ID.
      */
-    public static class Space {
+    @SuppressWarnings({"java:S6217"})
+    public static sealed class Space
+            implements Destination permits Item, Siblings  {
 
         private final String m_providerId;
 
@@ -118,7 +141,7 @@ public final class Locator {
          * @return The {@link SpaceProvider} instance (requires
          *         {@link org.knime.gateway.impl.webui.spaces.SpaceProviders} dependency).
          */
-        SpaceProvider provider() {
+        public SpaceProvider provider() {
             return SpaceAPI.getSpaceProvider(this.providerId());
         }
 
@@ -134,7 +157,8 @@ public final class Locator {
          * @return Whether this is a local space (requires {@link org.knime.gateway.impl.webui.spaces.SpaceProviders}
          *         dependency).
          */
-        boolean isLocal() {
+        @Override
+        public boolean isLocal() {
             return provider().getType() == SpaceProviderEnt.TypeEnum.LOCAL;
         }
 
@@ -183,6 +207,10 @@ public final class Locator {
             return "SpaceLocator[" + "spaceProviderId=" + m_providerId + ", " + "spaceId=" + m_spaceId + ']';
         }
 
+        @Override
+        public String itemId() {
+            return spaceId();
+        }
     }
 
     /**
@@ -205,6 +233,7 @@ public final class Locator {
         /**
          * @return The item ID (field access)
          */
+        @Override
         public String itemId() {
             return m_itemId;
         }

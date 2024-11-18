@@ -50,10 +50,11 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -90,14 +91,13 @@ import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.FreshFileStoreResolver;
 import org.knime.ui.java.util.SpaceProvidersUtil;
+import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
 import org.knime.workbench.explorer.dialogs.Validator;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions around spaces.
@@ -206,7 +206,7 @@ final class SpaceAPI {
     ) { // NOSONAR
         final var sources = new Locator.Siblings(sourceProviderId, sourceSpaceId,
             Stream.of(sourceItemIdsParam).map(String.class::cast).toList());
-        final var destination = new Locator.Item(destinationProviderId, destinationSpaceId, destinationItemId);
+        final var destination = Locator.Destination.of(destinationProviderId, destinationSpaceId, destinationItemId);
         if (sources.itemIds().isEmpty()) {
             return true;
         }
@@ -221,12 +221,8 @@ final class SpaceAPI {
 
         final var asyncUploadDisabled = systemPropertyIsFalse(ASYNC_UPLOAD_FEATURE_FLAG);
         final var asyncDownloadDisabled = systemPropertyIsFalse(ASYNC_DOWNLOAD_FEATURE_FLAG);
-        final var alreadyRefreshed = new HashSet<String>();
         if (!asyncUploadDisabled && sources.isLocal() && destination.isHub()) {
             try {
-                // upload currently still requires a refresh for the "upload warning"
-                FreshFileStoreResolver.refreshContentProvidersWithProgress(Set.of(destination.providerId()));
-                alreadyRefreshed.add(destination.providerId());
                 return performAsyncHubUpload(sources, destination, excludeData);
             } catch (OperationNotAllowedException e) { // NOSONAR
                 // fall through to the default upload
@@ -246,9 +242,8 @@ final class SpaceAPI {
         }
 
         // old upload/download flow
-        var stillNeedsRefresh = new HashSet<>(Set.of(sources.providerId(), destination.providerId()));
-        stillNeedsRefresh.removeAll(alreadyRefreshed);
-        FreshFileStoreResolver.refreshContentProvidersWithProgress(stillNeedsRefresh);
+        FreshFileStoreResolver
+            .refreshContentProvidersWithProgress(Set.of(sources.providerId(), destination.provider().getId()));
         var sourceFileStores = FreshFileStoreResolver.resolve(sources);
         var destinationFileStore = FreshFileStoreResolver.resolve(destination);
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
@@ -262,8 +257,8 @@ final class SpaceAPI {
         );
     }
 
-    private static boolean performAsyncHubDownload(final Locator.Siblings sources, final Locator.Item destination)
-        throws OperationNotAllowedException {
+    private static boolean performAsyncHubDownload(final Locator.Siblings sources,
+        final Locator.Destination destination) throws OperationNotAllowedException {
         final TransferResult result = sources.space().downloadInto( //
             sources.itemIds(), //
             (LocalWorkspace)destination.space(), //
@@ -276,27 +271,17 @@ final class SpaceAPI {
         return result.successful();
     }
 
-    private static boolean performAsyncHubUpload(final Locator.Siblings sources, final Locator.Item destination,
+    private static boolean performAsyncHubUpload(final Locator.Siblings sources, final Locator.Destination destination,
         final boolean excludeData) throws OperationNotAllowedException {
-        // show upload warning for public spaces
-        // This information may be stale, FreshFileStoreResolver#refreshContentProviders has to be called not too long ago.
-        var destinationFileStore = (RemoteExplorerFileStore)FreshFileStoreResolver.resolve(destination);
-        if (!destination.space().toEntity().isPrivate()) {
-            var status = destinationFileStore.getContentProvider().showUploadWarning(destination.space().getName());
-            if (!status.isOK()) {
-                return false;
-            }
+        var uploadDeclined = !showUploadWarning(destination);
+        if (uploadDeclined) {
+            return false;
         }
-
-        // this seems to be required, directly providing an item ID "root" does makes `uploadFrom` fail
-        // `root` has to somehow be solved to an item ID starting with * first.
-        final var targetSpaceAndId = destination.provider().resolveSpaceAndItemId(destinationFileStore.toIdURI()) //
-                .orElseThrow(() -> new IllegalStateException("Could not resolve item ID of " + destinationFileStore));
 
         var result = destination.space().uploadFrom( //
             (LocalWorkspace)sources.space(), //
             sources.itemIds(), //
-            targetSpaceAndId.itemId(), //
+            destination.itemId(), //
             excludeData //
         );
         if (result.errorTitleAndDescription() != null) {
@@ -304,6 +289,19 @@ final class SpaceAPI {
                 false);
         }
         return result.successful();
+    }
+
+    private static boolean showUploadWarning(Locator.Destination destination) {
+        if (destination.space().toEntity().isPrivate()) { // NOSONAR
+            return true;
+        }
+        var contentProvider = ExplorerMountTable.getMountedContent().values().stream()
+                .filter(provider -> provider.getMountID().equals(destination.provider().getId())).findFirst();
+        if (contentProvider.isEmpty()) {
+            return true;
+        }
+        var response = contentProvider.get().showUploadWarning(destination.space().getName());
+        return response.isOK();
     }
 
     private static void showErrorToast(final String title, final String message, final boolean autoRemove) {
