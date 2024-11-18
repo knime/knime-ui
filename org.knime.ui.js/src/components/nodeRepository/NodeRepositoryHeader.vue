@@ -3,21 +3,16 @@ import { computed, ref } from "vue";
 
 import {
   type BreadcrumbItem,
-  FunctionButton,
   type MenuItem,
   SearchInput,
   SubMenu,
 } from "@knime/components";
-import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
-import FilterIcon from "@knime/styles/img/icons/filter.svg";
 import DisplayModeListIcon from "@knime/styles/img/icons/list.svg";
 import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
-import { API } from "@/api";
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import { useStore } from "@/composables/useStore";
-import { isDesktop } from "@/environment";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 import CloseableTagList from "./CloseableTagList.vue";
@@ -96,10 +91,6 @@ const setDisplayMode = (value: NodeRepositoryDisplayModesType) => {
   });
 };
 
-const openKnimeUIPreferencePage = () => {
-  API.desktop.openWebUIPreferencePage();
-};
-
 defineEmits<{ (e: "searchBarDownKey"): void }>();
 
 const searchBar = ref<InstanceType<typeof SearchInput>>();
@@ -136,19 +127,6 @@ defineExpose({ focusSearchInput });
               class="display-mode-icon"
             />
           </SubMenu>
-          <FunctionButton
-            v-if="isDesktop"
-            class="filter-button"
-            title="Open search filters"
-            :disabled="!nodeRepositoryLoaded"
-            @click="openKnimeUIPreferencePage"
-          >
-            <FilterCheckIcon
-              v-if="hasNodeCollectionActive"
-              class="filter-icon"
-            />
-            <FilterIcon v-else class="filter-icon" />
-          </FunctionButton>
         </div>
       </div>
       <SearchInput
