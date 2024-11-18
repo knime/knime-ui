@@ -2,7 +2,7 @@
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import type { MenuItem } from "@knime/components";
+import { type MenuItem } from "@knime/components";
 import HelpIcon from "@knime/styles/img/icons/circle-help.svg";
 import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
@@ -13,6 +13,7 @@ import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
 import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
 import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
+import Tooltip from "@knime/styles/img/icons/tooltip.svg";
 
 import { API } from "@/api";
 import InfoIcon from "@/assets/info.svg";
@@ -116,6 +117,21 @@ const helpMenuItem = computed<MenuItem>(() => ({
       separator: hasDismissedExamples.value && hasExampleWorkflows.value,
       metadata: {
         handler: () => (creditsModalActive.value = true),
+      },
+    },
+    {
+      text: "Reset onboarding hints",
+      icon: Tooltip,
+      metadata: {
+        handler: () => {
+          // TODO: move to useHint/useHintState add a clear method there
+          window.localStorage.removeItem("onboarding.hints.user");
+
+          $router.push({
+            name: APP_ROUTES.Home.GetStarted,
+            query: { skipLastVisitedPage: "true" },
+          });
+        },
       },
     },
     ...addConditionalMenuEntry(
