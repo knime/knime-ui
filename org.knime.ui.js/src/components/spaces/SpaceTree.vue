@@ -50,6 +50,8 @@ interface Props {
   };
 }
 
+const MAX_NAME_LENGTH = 300;
+
 const props = withDefaults(defineProps<Props>(), {
   providerRules: () => ({}),
 });
@@ -59,6 +61,12 @@ const emit = defineEmits<{
 }>();
 
 const store = useStore();
+
+const truncate = (text: string) => {
+  return text.length <= MAX_NAME_LENGTH
+    ? text
+    : `${text.slice(0, MAX_NAME_LENGTH)} …`;
+};
 
 const {
   getSpaceIcon,
@@ -73,7 +81,7 @@ const mapSpaceItemToTree = (
 ) => ({
   type: "item",
   nodeKey: `item_${spaceProviderId}_${spaceId}_${spaceItem.id}`,
-  name: spaceItem.name,
+  name: truncate(spaceItem.name),
   icon: markRaw(getSpaceItemIcon(spaceItem.type)),
   itemId: spaceItem.id,
   spaceId,
@@ -84,7 +92,7 @@ const mapSpaceItemToTree = (
 const mapSpaceToTree = (space: SpaceProviderNS.Space, { spaceProviderId }) => ({
   type: "item",
   nodeKey: `space_${spaceProviderId}_${space.id}`,
-  name: space.name,
+  name: truncate(space.name),
   icon: markRaw(getSpaceIcon(space)),
   spaceId: space.id,
   itemId: "root",
@@ -98,7 +106,7 @@ const mapSpaceGroupToTree = (
 ) => ({
   type: "group",
   nodeKey: `group_${spaceProviderId}_${spaceGroup.id}`,
-  name: spaceGroup.name,
+  name: truncate(spaceGroup.name),
   hasChildren: true,
   icon: markRaw(getSpaceGroupIcon(spaceGroup)),
   groupData: spaceGroup,
@@ -118,7 +126,7 @@ const mapSpaceProviderToTree = (
     return {
       type: "provider",
       nodeKey: `provider_${spaceProvider.id}`,
-      name: formatSpaceProviderName(spaceProvider),
+      name: truncate(formatSpaceProviderName(spaceProvider)),
       hasChildren: true,
       icon: markRaw(getSpaceProviderIcon(spaceProvider)),
       spaceProviderId: spaceProvider.id,
