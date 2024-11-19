@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { type Ref, computed, ref, watch } from "vue";
 
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
@@ -10,21 +10,26 @@ export const useQuickActionMenu = ({
   port,
   nodeRelation,
 }: {
-  port: NodePort | null;
-  nodeRelation: NodeRelation | null;
+  port: Ref<NodePort | null>;
+  nodeRelation: Ref<NodeRelation | null>;
 }) => {
   const setQuickAddMode = () => (menuMode.value = "quick-add");
   const setQuickBuildMode = () => (menuMode.value = "quick-build");
 
   const store = useStore();
 
-  const isQuickBuildAvailableForPort = store.getters[
-    "aiAssistant/isQuickBuildAvailableForPort"
-  ](nodeRelation, port?.typeId);
+  const isQuickBuildAvailableForPort = computed(() =>
+    store.getters["aiAssistant/isQuickBuildAvailableForPort"](
+      nodeRelation.value,
+      port.value?.typeId,
+    ),
+  );
 
-  if (!isQuickBuildAvailableForPort) {
-    menuMode.value = "quick-add";
-  }
+  watch(isQuickBuildAvailableForPort, (value) => {
+    if (!value) {
+      menuMode.value = "quick-add";
+    }
+  });
 
   return {
     menuMode,

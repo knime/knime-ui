@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, toRefs, watch } from "vue";
 
 import { Button } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
@@ -101,12 +101,14 @@ const marginTop = computed(() => {
   return `${marginTop}px`;
 });
 
+const { port, nodeRelation } = toRefs(props);
+
 const {
   menuMode,
   setQuickAddMode,
   setQuickBuildMode,
   isQuickBuildAvailableForPort,
-} = useQuickActionMenu({ port: props.port, nodeRelation: props.nodeRelation });
+} = useQuickActionMenu({ port, nodeRelation });
 
 const { isKaiEnabled } = useIsKaiEnabled();
 watch(
