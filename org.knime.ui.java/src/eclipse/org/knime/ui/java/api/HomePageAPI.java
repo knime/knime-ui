@@ -90,7 +90,7 @@ final class HomePageAPI {
             .orElse(null);
     }
 
-    private static List<ConditionalCategory> getConditionalCategories(WelcomeAPEndpoint endpoint) {
+    private static List<ConditionalCategory> getConditionalCategories(final WelcomeAPEndpoint endpoint) {
         return endpoint.getCategories(true, null).stream().flatMap(Arrays::stream).map(JSONCategory::getId)
             .flatMap(categoryId -> parseConditionalCategory(categoryId).stream()).toList();
     }
@@ -102,10 +102,10 @@ final class HomePageAPI {
     /**
      * Given {@code foo--bar=13,qux=42}, yields map {@code bar->13, qux->42}
      */
-    private static Map<String, String> parseParameters(String input) {
-        Map<String, String> parameters = new HashMap<>();
+    private static Map<String, String> parseParameters(final String input) {
         String[] parts = SPLIT_PARAMETERS.split(input);
         if (parts.length > 1) {
+            Map<String, String> parameters = new HashMap<>();
             String parameterPart = parts[1];
             var matcher = PARAMETERS.matcher(parameterPart);
             while (matcher.find()) {
@@ -113,34 +113,35 @@ final class HomePageAPI {
                 String value = matcher.group(2);
                 parameters.put(key, value);
             }
+            return parameters;
         }
-        return parameters;
+        return Map.of();
     }
 
-    private static Optional<ConditionalCategory> parseConditionalCategory(final String categoryId) {
+    static Optional<ConditionalCategory> parseConditionalCategory(final String categoryId) {
         var params = parseParameters(categoryId);
-        if (params.isEmpty()) {
+        if (params.isEmpty() || params.values().stream().anyMatch(s -> parseInt(s).isEmpty())) {
             return Optional.empty();
         }
         var predicate =
-            params.entrySet().stream().flatMap(entry -> parseParam(entry.getKey(), entry.getValue()).stream())
+            params.entrySet().stream().map(entry -> parseParam(entry.getKey(), entry.getValue()))
                 // careful: `x -> true` as identity only makes sense if case of empty stream is excluded above
                 // (an empty stream would yield a true predicate)
                 .reduce(x -> true, Predicate::and);
         return Optional.of(new ConditionalCategory(categoryId, predicate));
     }
 
-    private static Optional<Predicate<InternalUsageTracking>> parseParam(String paramKey, String paramValue) {
+    private static Predicate<InternalUsageTracking> parseParam(final String paramKey, final String paramValue) {
         if (paramKey.equals("startsLessEqualTo")) {
-            return parseInt(paramValue).map(HomePageAPI::startsLessEqualTo);
+            return startsLessEqualTo(Integer.parseInt(paramValue));
         }
         if (paramKey.equals("startsGreaterThan")) {
-            return parseInt(paramValue).map(HomePageAPI::startsGreaterThan);
+            return startsGreaterThan(Integer.parseInt(paramValue));
         }
-        return Optional.empty();
+        throw new IllegalArgumentException("Not a number: " + paramValue);
     }
 
-    private static Optional<Integer> parseInt(String value) {
+    private static Optional<Integer> parseInt(final String value) {
         try {
             return Optional.of(Integer.parseInt(value));
         } catch (NumberFormatException e) {
@@ -163,7 +164,7 @@ final class HomePageAPI {
         }
     }
 
-    private static TileId selectTile(WelcomeAPEndpoint endpoint, final UserProfile profile) {
+    private static TileId selectTile(final WelcomeAPEndpoint endpoint, final UserProfile profile) {
         var usage = Optional.ofNullable(profile) //
             .map(UserProfile::internalUsageTracking); //
         if (usage.isEmpty()) {
@@ -194,7 +195,7 @@ final class HomePageAPI {
         );
     }
 
-    private record ConditionalCategory(String id, Predicate<InternalUsageTracking> isActive) {
+    record ConditionalCategory(String id, Predicate<InternalUsageTracking> isActive) {
 
     }
 
