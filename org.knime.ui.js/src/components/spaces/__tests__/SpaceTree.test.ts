@@ -43,7 +43,7 @@ describe("SpaceTree.vue", () => {
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
     mockSpaceProvider = createSpaceProvider({
-      id: "provider",
+      id: "mockProviderId",
       type: SpaceProviderNS.TypeEnum.HUB,
     }),
   } = {}) => {
@@ -102,87 +102,120 @@ describe("SpaceTree.vue", () => {
         expect.objectContaining({
           name: "Mock Space Provider",
           spaceProviderId: "providerId",
-          children: expect.any(Array),
+          hasChildren: true,
           nodeKey: "provider_providerId",
         }),
       ]),
     );
   });
 
-  // it("should load descendent data", async () => {
-  //   const { wrapper, dispatchSpy } = await doMount();
+  it("provider: restrictTo", async () => {
+    const { wrapper } = await doMount({
+      mockSpaceProvider: createSpaceProvider({
+        id: "providerId",
+        name: "Mock Space Provider",
+        type: SpaceProviderNS.TypeEnum.HUB,
+      }),
+      props: {
+        providerRules: {
+          restrictedTo: ["providerId"],
+        },
+      },
+    });
+    await flushPromises();
 
-  //   //const callback = vi.fn();
-  //   wrapper.findAll(".tree-node")[0].trigger("click");
+    const providerNodes = wrapper.findAllComponents({ name: "TreeNode" });
+    expect(providerNodes.length).toBe(1);
+    expect(providerNodes?.at(0)?.vm.node.origin).toEqual(
+      expect.objectContaining({
+        spaceProviderId: "providerId",
+        type: "provider",
+      }),
+    );
+  });
 
-  //   // initial fetch of root has happened
-  //   // mockedAPI.space.listWorkflowGroup.mockResolvedValue({
-  //   //   path: [],
-  //   //   items: [],
-  //   // });
+  it("provider: exclude", async () => {
+    const { wrapper } = await doMount({
+      mockSpaceProvider: createSpaceProvider({
+        id: "providerId",
+        name: "Mock Space Provider",
+        type: SpaceProviderNS.TypeEnum.HUB,
+      }),
+      props: {
+        providerRules: {
+          exclude: ["providerId"],
+        },
+      },
+    });
+    await flushPromises();
 
-  //   await flushPromises;
+    const providerNodes = wrapper.findAllComponents({ name: "TreeNode" });
+    expect(providerNodes.length).toBe(1);
+    expect(providerNodes?.at(0)?.vm.node.origin).toEqual(
+      expect.objectContaining({
+        spaceProviderId: "local",
+        type: "item",
+      }),
+    );
+  });
 
-  //   expect(dispatchSpy).toHaveBeenLastCalledWith(
-  //     "spaces/fetchWorkflowGroupContentByIdTriplet",
-  //     {
-  //       spaceProviderId: "local",
-  //       spaceId: "Space 1",
-  //       itemId: "root",
-  //     },
-  //   );
-  // });
+  it("should load descendent data", async () => {
+    const { wrapper, dispatchSpy } = await doMount({
+      mockSpaceProvider: createSpaceProvider({
+        id: "someMockProviderId",
+        name: "Mock Space Provider",
+        type: SpaceProviderNS.TypeEnum.HUB,
+      }),
+    });
 
-  // describe("selection", () => {
-  //   it("should select a workflow", async () => {
-  //     const { wrapper, dispatchSpy } = await doMount();
+    const providerNodes = wrapper.findAllComponents({ name: "TreeNode" });
 
-  //     wrapper
-  //       .findComponent(FileExplorer)
-  //       .vm.$emit("openFile", createMockWorkflow());
+    dispatchSpy.mockClear();
+    await providerNodes[0].trigger("click");
+    await flushPromises();
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      "spaces/fetchWorkflowGroupContentByIdTriplet",
+      {
+        spaceProviderId: "local",
+        spaceId: "space1",
+        itemId: "root",
+      },
+    );
 
-  //     await nextTick();
+    dispatchSpy.mockClear();
+    await providerNodes[1].trigger("click");
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
+      id: "someMockProviderId",
+    });
+  });
 
-  //     expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
-  //       providerId: "local",
-  //       spaceId: "local",
-  //       itemId: "dummy",
-  //       $router: expect.anything(),
-  //     });
-  //   });
+  it("should connect provider", async () => {
+    const { wrapper, dispatchSpy } = await doMount({
+      mockSpaceProvider: createSpaceProvider({
+        id: "someMockProviderId",
+        name: "Mock Space Provider",
+        type: SpaceProviderNS.TypeEnum.HUB,
+        connected: false,
+      }),
+    });
 
-  // it("should select a folder", async () => {
-  //   const { wrapper, dispatchSpy } = await doMount();
+    const mockProviderNode = wrapper
+      .findAllComponents({ name: "TreeNode" })
+      .filter((providerNode) => {
+        const nodeOrigin = providerNode.vm.node.origin;
+        return (
+          nodeOrigin.type === "provider" &&
+          nodeOrigin.spaceProviderId === "someMockProviderId"
+        );
+      })
+      .at(0);
+    expect(mockProviderNode).toBeTruthy();
 
-  //   wrapper
-  //     .findComponent(FileExplorer)
-  //     .vm.$emit("openFile", createMockComponent());
-
-  //   await nextTick();
-
-  //   expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
-  //     providerId: "local",
-  //     spaceId: "local",
-  //     itemId: "dummy",
-  //     $router: expect.anything(),
-  //   });
-  // });
-
-  // it("should select a space provider", async () => {
-  //   const { wrapper, dispatchSpy } = await doMount();
-
-  //   wrapper
-  //     .findComponent(FileExplorer)
-  //     .vm.$emit("openFile", createMockComponent());
-
-  //   await nextTick();
-
-  //   expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
-  //     providerId: "local",
-  //     spaceId: "local",
-  //     itemId: "dummy",
-  //     $router: expect.anything(),
-  //   });
-  // });
-  // });
+    dispatchSpy.mockClear();
+    await mockProviderNode!.trigger("click");
+    await flushPromises();
+    expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
+      spaceProviderId: "someMockProviderId",
+    });
+  });
 });
