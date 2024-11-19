@@ -43,6 +43,8 @@ export type SpaceTreeSelection =
   | SpaceTreeProvider
   | null;
 
+type AddToTreeCallback = (children: TreeNodeOptions[]) => void;
+
 interface Props {
   providerRules?: {
     restrictedTo?: Array<string>;
@@ -130,9 +132,6 @@ const mapSpaceProviderToTree = (
       hasChildren: true,
       icon: markRaw(getSpaceProviderIcon(spaceProvider)),
       spaceProviderId: spaceProvider.id,
-      children: spaceProvider.spaceGroups?.map((group) =>
-        mapSpaceGroupToTree(group, { spaceProviderId: spaceProvider.id }),
-      ),
     };
   }
 };
@@ -158,7 +157,10 @@ const treeSource = ref<TreeNodeOptions[]>(
   filteredSpaceProviders.value.map(mapSpaceProviderToTree),
 );
 
-const loadWorkflowGroup = async (group: FullSpacePath, callback) => {
+const loadWorkflowGroup = async (
+  group: FullSpacePath,
+  addToTree: AddToTreeCallback,
+) => {
   const { spaceProviderId, spaceId, itemId } = group;
   try {
     const workflowGroupContent: WorkflowGroupContent = await store.dispatch(
@@ -171,7 +173,7 @@ const loadWorkflowGroup = async (group: FullSpacePath, callback) => {
     );
 
     if (workflowGroupContent.items.length > 0) {
-      callback(
+      addToTree(
         workflowGroupContent.items.map((item) =>
           mapSpaceItemToTree(item, {
             spaceProviderId,
@@ -180,54 +182,83 @@ const loadWorkflowGroup = async (group: FullSpacePath, callback) => {
         ),
       );
     } else {
-      callback([
+      addToTree([
         {
           nodeKey: `empty_${spaceProviderId}${spaceId}${itemId}`,
           name: "Folder is empty",
-          customSlot: "empty",
+          customSlot: "info",
         },
       ]);
     }
   } catch (error) {
-    callback([
+    addToTree([
       {
         nodeKey: `error_loadWorkflowGroup_${spaceProviderId}${spaceId}${itemId}`,
         name: "Error loading folder",
-        customSlot: "empty",
+        customSlot: "info",
       },
     ]);
   }
 };
 
-const connectProvider = async (
+const loadConnectedProvider = async (
   spaceProviderId: SpaceProviderId["spaceProviderId"],
-  callback,
+  addToTree: AddToTreeCallback,
+) => {
+  try {
+    await store.dispatch("spaces/reloadProviderSpaces", {
+      id: spaceProviderId,
+    });
+
+    addToTree(
+      store.state.spaces.spaceProviders![spaceProviderId].spaceGroups.map(
+        (group) => mapSpaceGroupToTree(group, { spaceProviderId }),
+      ),
+    );
+  } catch (error) {
+    addToTree([
+      {
+        nodeKey: `error_loadConnectedProvider_${spaceProviderId}`,
+        name: "Could not load. Please check the log for details.",
+        title: error ? `Error: ${error}` : null,
+        hasChildren: false,
+        customSlot: "providerFailed",
+      },
+    ]);
+  }
+};
+
+const isProviderConnected = (
+  spaceProviderId: SpaceProviderId["spaceProviderId"],
+) => store.state.spaces.spaceProviders?.[spaceProviderId]?.connected;
+
+const loadProvider = async (
+  spaceProviderId: SpaceProviderId["spaceProviderId"],
+  addToTree: AddToTreeCallback,
 ) => {
   const fail = (error?: unknown) => {
-    callback([
+    addToTree([
       {
-        nodeKey: `error_connectProvider_${spaceProviderId}`,
+        nodeKey: `error_loadProvider_${spaceProviderId}`,
         name: "Could not connect. Please check the log for details.",
         title: error ? `Error: ${error}` : null,
         hasChildren: false,
-        customSlot: "loginFailed",
+        customSlot: "providerFailed",
       },
     ]);
   };
 
   // handle sign in request
   try {
-    const { isConnected, providerData } = await store.dispatch(
-      "spaces/connectProvider",
-      { spaceProviderId },
-    );
+    const { isConnected, providerData } = isProviderConnected(spaceProviderId)
+      ? {
+          isConnected: true,
+          providerData: store.state.spaces.spaceProviders![spaceProviderId],
+        }
+      : await store.dispatch("spaces/connectProvider", { spaceProviderId });
 
     if (isConnected) {
-      callback(
-        providerData.spaceGroups.map((group) =>
-          mapSpaceGroupToTree(group, { spaceProviderId }),
-        ),
-      );
+      loadConnectedProvider(providerData.id, addToTree);
       return;
     }
   } catch (error) {
@@ -235,28 +266,46 @@ const connectProvider = async (
     return;
   }
 
-  // we just can assume it didn't go well, there is NO way to check as the flow is java ui based only atm
+  // no previous path lead to successfully loading the data
   fail();
 };
 
 const loadTreeLevel = (
   treeNode: BaseTreeNode,
-  callback: (children: TreeNodeOptions[]) => void,
+  addToTree: AddToTreeCallback,
 ) => {
   const { spaceProviderId, spaceId, itemId } = treeNode.origin;
 
   if (itemId && spaceId && spaceProviderId) {
-    loadWorkflowGroup({ spaceProviderId, spaceId, itemId }, callback);
-  } else if (spaceProviderId) {
-    connectProvider(spaceProviderId, callback);
+    loadWorkflowGroup({ spaceProviderId, spaceId, itemId }, addToTree);
+    return;
   }
+
+  if (spaceProviderId) {
+    loadProvider(spaceProviderId, addToTree);
+    return;
+  }
+
+  addToTree([
+    {
+      nodeKey: `error_loadWorkflowGroup_${spaceProviderId}${spaceId}${itemId}`,
+      name: "Error loading contents",
+      customSlot: "info",
+    },
+  ]);
 };
 
 const tree = ref<InstanceType<typeof Tree>>();
 
-const retryConnectProvider = (treeNodeKey: NodeKey) => {
+const retryLoadProvider = (treeNodeKey: NodeKey) => {
+  const RETRY_DELAY_MS = 200;
+
   tree.value?.clearChildren(treeNodeKey);
-  tree.value?.loadChildren(treeNodeKey);
+  // Use a short timeout, so the error briefly disappears visually,
+  // even if the retry fails as well
+  setTimeout(() => {
+    tree.value?.loadChildren(treeNodeKey);
+  }, RETRY_DELAY_MS);
 };
 
 const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
@@ -287,6 +336,8 @@ const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
   if (type === "provider") {
     emit("selectChange", { type, spaceProviderId });
   }
+
+  emit("selectChange", null);
 };
 </script>
 
@@ -297,7 +348,7 @@ const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
     :load-data="loadTreeLevel"
     @select-change="onSelectChange"
   >
-    <template #loginFailed="{ treeNode }: { treeNode: BaseTreeNode }">
+    <template #providerFailed="{ treeNode }: { treeNode: BaseTreeNode }">
       <Pill variant="error" :title="treeNode.origin.title"
         ><CloseIcon /> {{ treeNode.name }}
       </Pill>
@@ -305,18 +356,18 @@ const onSelectChange = ({ node }: { node: BaseTreeNode | undefined }) => {
         class="retry-button"
         compact
         with-border
-        @click="() => retryConnectProvider(treeNode.parentKey!)"
+        @click.stop="() => retryLoadProvider(treeNode.parentKey!)"
         >Retry</Button
       >
     </template>
-    <template #empty>
-      <span class="empty-folder">(Folder is empty)</span>
+    <template #info="{ treeNode }: { treeNode: BaseTreeNode }">
+      <span class="info-node">({{ treeNode.name }})</span>
     </template>
   </Tree>
 </template>
 
 <style lang="postcss" scoped>
-.empty-folder {
+.info-node {
   color: var(--knime-gray-dark);
   font-style: italic;
   pointer-events: none;
