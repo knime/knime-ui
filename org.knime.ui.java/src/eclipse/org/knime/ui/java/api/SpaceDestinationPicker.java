@@ -51,15 +51,10 @@ package org.knime.ui.java.api;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PlatformUI;
-import org.knime.ui.java.util.FreshFileStoreResolver;
-import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
+import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
 
@@ -116,15 +111,6 @@ final class SpaceDestinationPicker {
     public boolean open() { // NOSONAR accepted for now
         final var workbench = PlatformUI.getWorkbench();
         return workbench.getDisplay().syncCall(() -> { // NOSONAR
-
-            // Workaround, especially refreshing file stores, until we have a modern picker (NXT-2842)
-            // Fetchers are not active, so we need to make sure we refresh before showing the dialog
-            final var mountIDs = Arrays.stream(m_spaceProviders).collect(Collectors.toSet());
-            var cancelled = FreshFileStoreResolver.refreshContentProvidersWithProgress(mountIDs);
-            if (cancelled) {
-                return false;
-            }
-
             final var shell = workbench.getModalDialogShellProvider().getShell();
             m_dialog = new DestinationSelectionDialog(shell, m_spaceProviders, null,
                 "Destination", m_operation.m_title, "Select the destination folder.",

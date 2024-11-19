@@ -89,7 +89,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.FreshFileStoreResolver;
+import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
@@ -243,9 +243,9 @@ final class SpaceAPI {
 
         // old upload/download flow
         FreshFileStoreResolver
-            .refreshContentProvidersWithProgress(Set.of(sources.providerId(), destination.provider().getId()));
-        var sourceFileStores = FreshFileStoreResolver.resolve(sources);
-        var destinationFileStore = FreshFileStoreResolver.resolve(destination);
+            .refreshContentProvidersWithProgress(sources.providerId(), destination.provider().getId());
+        var sourceFileStores = sources.itemIds().stream().map(itemId -> FreshFileStoreResolver.resolve(sources.space().toKnimeUrl(itemId))).toList();
+        var destinationFileStore = FreshFileStoreResolver.resolve(destination.space().toKnimeUrl(destination.itemId()));
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy( //
             shellProvider, //
