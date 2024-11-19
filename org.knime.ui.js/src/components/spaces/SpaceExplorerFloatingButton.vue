@@ -23,5 +23,6 @@ withDefaults(defineProps<Props>(), {
   position: fixed;
   top: 265px;
   right: 32px;
+  z-index: v-bind("$zIndices.layerMinorElevation");
 }
 </style>

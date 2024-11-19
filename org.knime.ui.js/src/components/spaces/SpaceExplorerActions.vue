@@ -278,7 +278,6 @@ export default defineComponent({
         />
 
         <SpaceExplorerFloatingButton
-          class="create-workflow-btn"
           :title="createWorkflowButtonTitle"
           :disabled="createWorkflowAction.disabled"
           @click="createWorkflowAction.execute()"
