@@ -18,7 +18,7 @@ import type {
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { isLocalProvider } from "@/store/spaces/util";
+import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -214,17 +214,7 @@ const loadConnectedProvider = async (
   spaceProviderId: SpaceProviderId["spaceProviderId"],
   addToTree: AddToTreeCallback,
 ) => {
-  try {
-    await store.dispatch("spaces/reloadProviderSpaces", {
-      id: spaceProviderId,
-    });
-
-    addToTree(
-      store.state.spaces.spaceProviders![spaceProviderId].spaceGroups.map(
-        (group) => mapSpaceGroupToTree(group, { spaceProviderId }),
-      ),
-    );
-  } catch (error) {
+  const fail = (error?: unknown) => {
     addToTree([
       {
         nodeKey: `error_loadConnectedProvider_${spaceProviderId}`,
@@ -234,6 +224,43 @@ const loadConnectedProvider = async (
         customSlot: "providerFailed",
       },
     ]);
+  };
+  try {
+    const currentProvider = store.state.spaces.spaceProviders![spaceProviderId];
+
+    if (isServerProvider(currentProvider)) {
+      if (currentProvider.spaceGroups.length !== 1) {
+        consola.error(
+          "Unexpected server provider state: Expected exactly one spaceGroup",
+          currentProvider,
+        );
+        fail();
+        return;
+      }
+
+      addToTree(
+        currentProvider.spaceGroups[0].spaces.map((space) =>
+          mapSpaceToTree(space, { spaceProviderId }),
+        ),
+      );
+      return;
+    }
+
+    const reloadProviderSpaces = async () => {
+      await store.dispatch("spaces/reloadProviderSpaces", {
+        id: spaceProviderId,
+      });
+      return store.state.spaces.spaceProviders![spaceProviderId];
+    };
+
+    const reloadedrovider = await reloadProviderSpaces();
+    addToTree(
+      reloadedrovider.spaceGroups.map((group) =>
+        mapSpaceGroupToTree(group, { spaceProviderId }),
+      ),
+    );
+  } catch (error) {
+    fail(error);
   }
 };
 
