@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRefs } from "vue";
+import { computed, toRefs } from "vue";
 
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
@@ -43,11 +43,23 @@ const {
   abortSendMessage,
   statusUpdate,
 } = useQuickBuild({ nodeId, startPosition });
+
+const menuState = computed<"PROCESSING" | "RESULT" | "INPUT">(() => {
+  if (isProcessing.value) {
+    return "PROCESSING";
+  }
+  // Ideally, we would check for "SUCCESS" here. To be backwards compatible,
+  // we check for "INPUT_NEEDED" instead.
+  if (result?.value && result.value.type !== "INPUT_NEEDED") {
+    return "RESULT";
+  }
+  return "INPUT";
+});
 </script>
 
 <template>
   <div class="quick-build-menu">
-    <div v-if="!isProcessing && result?.type !== 'SUCCESS'" class="header">
+    <div v-if="menuState === 'INPUT'" class="header">
       K-AI Build Mode
       <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
     </div>
@@ -55,23 +67,22 @@ const {
       <component :is="panelComponent" v-if="panelComponent" class="panel" />
       <template v-else>
         <QuickBuildProcessing
-          v-if="isProcessing"
+          v-if="menuState === 'PROCESSING'"
           :status="statusUpdate?.message ?? null"
           @abort="abortSendMessage"
         />
         <QuickBuildResult
-          v-else-if="result?.type === 'SUCCESS'"
-          :message="result.message"
-          :interaction-id="result.interactionId"
+          v-if="menuState === 'RESULT'"
+          :message="result!.message"
+          :interaction-id="result!.interactionId"
           @close="closeQuickActionMenu"
         />
         <QuickBuildInput
-          v-else
+          v-if="menuState === 'INPUT'"
           :prompt="result?.message"
           :last-user-message="lastUserMessage"
           :error-message="errorMessage"
           @send-message="sendMessage"
-          @abort="abortSendMessage"
         />
       </template>
     </div>

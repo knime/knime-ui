@@ -33,6 +33,7 @@ defineEmits(["close"]);
     border-radius: 100%;
     height: 26px;
     width: 26px;
+    flex: none;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -54,14 +55,15 @@ defineEmits(["close"]);
   }
 
   & .message {
-    height: 26px;
-    line-height: 26px;
+    min-height: 26px;
     background-color: var(--knime-white);
     color: var(--knime-masala);
     border-radius: 5px;
-    padding: 0 var(--space-8);
+    padding: var(--space-4) var(--space-8);
     flex-grow: 1;
     font-size: 13px;
+    display: flex;
+    align-items: center;
   }
 
   & .cancel-button {

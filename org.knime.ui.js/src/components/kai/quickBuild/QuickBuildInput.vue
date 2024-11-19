@@ -14,7 +14,6 @@ type Props = {
 defineProps<Props>();
 defineEmits<{
   sendMessage: [value: { message: string }];
-  abort: [];
 }>();
 </script>
 
@@ -31,7 +30,6 @@ defineEmits<{
       :last-user-message="lastUserMessage"
       :text="errorMessage ? lastUserMessage : ''"
       @send-message="$emit('sendMessage', $event)"
-      @abort="$emit('abort')"
     />
     <div v-if="errorMessage" class="error">
       <ErrorIcon />

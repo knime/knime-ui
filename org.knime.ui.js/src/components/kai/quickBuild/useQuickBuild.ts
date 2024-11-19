@@ -49,6 +49,12 @@ export const useQuickBuild = ({
         targetNodes,
         startPosition: startPosition.value,
       });
+
+      // Ideally, we would check for "SUCCESS" here. To be backwards compatible,
+      // we check for "INPUT_NEEDED" instead.
+      if (result.value?.type !== "INPUT_NEEDED") {
+        enableDetachedMode();
+      }
     } catch (error: any) {
       errorMessage.value = error.message;
     }
@@ -70,12 +76,6 @@ export const useQuickBuild = ({
       }
     },
   );
-
-  watch(result, (value) => {
-    if (value?.type === "SUCCESS") {
-      enableDetachedMode();
-    }
-  });
 
   return {
     userQuery,
