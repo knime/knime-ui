@@ -298,7 +298,7 @@ final class SpaceAPI {
         var contentProvider = ExplorerMountTable.getMountedContent().values().stream()
                 .filter(provider -> provider.getMountID().equals(destination.provider().getId())).findFirst();
         if (contentProvider.isEmpty()) {
-            return true;
+            return false;
         }
         var response = contentProvider.get().showUploadWarning(destination.space().getName());
         return response.isOK();
