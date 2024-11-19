@@ -220,21 +220,22 @@ watch(
 
     /* Style refinement for Feature List; Ports, Options, Views  */
 
+    /* options with collapsibles */
     & :deep(h5) {
       font-size: 13px;
-      font-weight: 600;
       padding-left: 20px;
     }
 
+    /* port names */
     & :deep(h6) {
       font-size: 13px;
-      font-weight: 600;
       margin-bottom: 0;
     }
 
+    /* view sub headlines */
     & :deep(.name) {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 0;
     }
 

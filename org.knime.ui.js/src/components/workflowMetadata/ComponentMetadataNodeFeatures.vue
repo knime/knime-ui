@@ -166,7 +166,6 @@ const filterPortData = (fullPorts: PortEditorData[]) =>
 
     & h6 {
       font-size: 13px;
-      font-weight: 600;
     }
 
     & .content {
