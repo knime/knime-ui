@@ -202,11 +202,20 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         } else {
           // to resolve urls in browser application state to be
           // initialized and use the activeProjectId
-          const hintVideoResolver = (url: string) =>
-            resourceLocationResolver(
-              state.activeProjectId!,
-              `/org/knime/ui/js${url}`,
+          const hintVideoResolver = (url: string) => {
+            const activeProject = state.openProjects.find(
+              (project) => project.activeWorkflowId,
             );
+
+            if (!activeProject) {
+              return "";
+            }
+
+            return resourceLocationResolver(
+              activeProject.projectId,
+              `org/knime/ui/js${url}`,
+            );
+          };
 
           setupHints({ hints: getHintConfiguration(hintVideoResolver) });
         }
