@@ -10,34 +10,44 @@ type UseResourceLocationOptions = {
 
 let restAPIBaseURL = "";
 
+export const resourceLocationResolver = (
+  projectId: string,
+  path: string,
+  baseUrl?: string,
+) => {
+  consola.trace("resolving dynamic resource :: ", { path, baseUrl });
+
+  if (baseUrl) {
+    return `${baseUrl}${path}`;
+  } else {
+    return `${restAPIBaseURL}/jobs/${projectId}/workflow/wizard/web-resources/${path}`;
+  }
+};
+
 export const setRestApiBaseUrl = (url: string) => {
   restAPIBaseURL = url;
 };
 
-export const useResourceLocation = (options?: UseResourceLocationOptions) => {
+export const useResourceLocation = (options: UseResourceLocationOptions) => {
   const store = useStore();
 
-  const resourceLocationResolver = (path: string, baseUrl?: string) => {
-    consola.trace("resolving dynamic resource :: ", { path, baseUrl });
-
-    if (baseUrl) {
-      return `${baseUrl}${path}`;
-    } else {
-      const activeProjectId = store.state.application.activeProjectId;
-
-      return `${restAPIBaseURL}/jobs/${activeProjectId}/workflow/wizard/web-resources/${path}`;
-    }
-  };
+  const activeProjectId = computed(
+    () => store.state.application.activeProjectId,
+  );
 
   const resourceLocation = computed(() => {
-    if (!options?.extensionConfig.value) {
+    if (!options.extensionConfig.value || activeProjectId.value === null) {
       return "";
     }
 
     const { baseUrl, path } = options.extensionConfig.value.resourceInfo;
 
-    return resourceLocationResolver(path ?? "", baseUrl);
+    return resourceLocationResolver(activeProjectId.value, path ?? "", baseUrl);
   });
 
-  return { resourceLocation, resourceLocationResolver };
+  return {
+    resourceLocation,
+    resourceLocationResolver: (path: string, baseUrl?: string) =>
+      resourceLocationResolver(activeProjectId.value ?? "", path, baseUrl),
+  };
 };

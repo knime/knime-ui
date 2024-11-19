@@ -4,19 +4,20 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 import { setupHints } from "@knime/components";
 
 import { API } from "@/api";
-import type {
-  Workflow,
-  WorkflowSnapshot,
+import {
+  AppState,
+  type Workflow,
+  type WorkflowSnapshot,
 } from "@/api/gateway-api/generated-api";
 import { fetchUiStrings as kaiFetchUiStrings } from "@/components/kai/useKaiServer";
-import { isDesktop, runInEnvironment } from "@/environment";
+import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
+import { runInEnvironment } from "@/environment";
+import { getHintConfiguration } from "@/hints/hints.config";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { ratioToZoomLevel } from "@/store/settings";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
-import { getHintConfiguration } from "../..//hints/hints.config";
-import { useResourceLocation } from "../../components/uiExtensions/common/useResourceLocation";
 import type { RootStoreState } from "../types";
 
 import type { ApplicationState } from "./index";
@@ -59,7 +60,7 @@ export const mutations: MutationTree<ApplicationState> = {
 
 export const actions: ActionTree<ApplicationState, RootStoreState> = {
   async initializeApplication(
-    { rootState, commit, dispatch },
+    { state, rootState, commit, dispatch },
     { $router }: { $router: Router },
   ) {
     consola.trace("lifecycle::initializeApplication");
@@ -192,12 +193,25 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       kaiFetchUiStrings();
     }
 
-    // hints (this late as we need the store to resolve urls in browser and
-    // we need the application state to be initialized (activeProjectId))
-    const { resourceLocationResolver } = useResourceLocation();
-    const hintVideoResolver = (url: string) =>
-      isDesktop ? url : resourceLocationResolver(`/org/knime/ui/js${url}`);
-    setupHints({ hints: getHintConfiguration(hintVideoResolver) });
+    // setup hints for browser and use the url for videos based on the resource
+    // location resolver
+    runInEnvironment({
+      BROWSER: () => {
+        if (state.appMode === AppState.AppModeEnum.JobViewer) {
+          setupHints({ hints: {} });
+        } else {
+          // to resolve urls in browser application state to be
+          // initialized and use the activeProjectId
+          const hintVideoResolver = (url: string) =>
+            resourceLocationResolver(
+              state.activeProjectId!,
+              `/org/knime/ui/js${url}`,
+            );
+
+          setupHints({ hints: getHintConfiguration(hintVideoResolver) });
+        }
+      },
+    });
   },
 
   destroyApplication({ dispatch }) {
