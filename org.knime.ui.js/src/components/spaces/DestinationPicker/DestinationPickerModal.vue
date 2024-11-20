@@ -131,6 +131,7 @@ const showValidationHint = computed(
   overflow: auto;
   padding: 0 var(--modal-padding);
   margin: 0 calc(var(--modal-padding) * -1);
+  height: 100%;
 }
 
 .space-tree {

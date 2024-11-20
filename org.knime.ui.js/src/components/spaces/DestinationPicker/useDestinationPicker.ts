@@ -32,7 +32,7 @@ const defaults = {
 const presets = {
   UPLOAD_PICKERCONFIG: {
     title: "Upload to...",
-    description: "Select a upload destination folder:",
+    description: "Select an upload destination folder:",
     validate(selection) {
       return selection?.type === "item" && selection.isWorkflowContainer
         ? { valid: true }
