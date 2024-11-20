@@ -216,7 +216,7 @@ public final class Locator {
     /**
      * Locates a single item in a space of a provider.
      */
-    public static final class Item extends Space {
+    public static final class Item extends Space implements Destination {
 
         private final String m_itemId;
 
