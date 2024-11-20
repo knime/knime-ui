@@ -78,6 +78,8 @@ final class KnimeBrowserHealthChecker {
     private static final String EMPTY_SVG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"/>";
 
+    private static final int INTERVAL_IN_MS = 10_000;
+
     private static Timer browerHealthCheckTimer;
 
     static void setup(final Browser browser) {
@@ -104,7 +106,7 @@ final class KnimeBrowserHealthChecker {
                     });
                 }
             }
-        }, 5000, 5000);
+        }, INTERVAL_IN_MS, INTERVAL_IN_MS);
     }
 
     private static void handleUserInput(final int returnCode) {
