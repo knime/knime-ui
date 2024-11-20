@@ -19,7 +19,7 @@ import {
   buildDisplayDeploymentsMenuItem,
   buildExecuteWorkflowMenuItem,
   buildHubDownloadMenuItem,
-  buildHubUploadMenuItems,
+  buildHubUploadMenuItem,
   buildMoveToSpaceMenuItem,
   buildOpenAPIDefinitionMenuItem,
   buildOpenInBrowserMenuItem,
@@ -126,17 +126,15 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       props.selectedItemIds,
     );
 
-    const uploadAndConnectToHub = buildHubUploadMenuItems(
+    const uploadToHub = buildHubUploadMenuItem(
       store.dispatch,
-      store.getters["spaces/hasActiveHubSession"],
       props.projectId,
       props.selectedItemIds,
-      store.state.spaces.spaceProviders ?? {},
     );
 
     const getHubActions = () => {
       if (isLocal) {
-        return uploadAndConnectToHub;
+        return [uploadToHub];
       }
 
       if (isServer) {

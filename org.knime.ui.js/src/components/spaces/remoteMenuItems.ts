@@ -4,7 +4,6 @@ import type { Dispatch } from "vuex";
 import type { MenuItem } from "@knime/components";
 import CirclePlayIcon from "@knime/styles/img/icons/circle-play.svg";
 import CloudDownloadIcon from "@knime/styles/img/icons/cloud-download.svg";
-import CloudLoginIcon from "@knime/styles/img/icons/cloud-login.svg";
 import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
@@ -14,11 +13,6 @@ import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.sv
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
-import { getToastsProvider } from "@/plugins/toasts";
-
-import { formatSpaceProviderName } from "./formatSpaceProviderName";
-
-const $toast = getToastsProvider();
 
 export type ActionMenuItem = MenuItem & {
   id: string;
@@ -95,23 +89,18 @@ export const buildCopyToSpaceMenuItem = (
   };
 };
 
-export const buildHubUploadMenuItems = (
+export const buildHubUploadMenuItem = (
   dispatch: Dispatch,
-  hasActiveHubSession: boolean,
   projectId: string,
   selectedItems: string[],
-  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
-  // eslint-disable-next-line max-params
-): ActionMenuItem[] => {
+): ActionMenuItem => {
   const isSelectionEmpty = selectedItems.length === 0;
-  const uploadToRemote = {
+  return {
     id: "upload",
     text: "Upload",
     icon: CloudUploadIcon,
-    disabled: !hasActiveHubSession || isSelectionEmpty,
-    title: hasActiveHubSession
-      ? (isSelectionEmpty && "Select at least one file to upload.") || undefined
-      : "A connection to a hub is required to upload.",
+    disabled: isSelectionEmpty,
+    title: isSelectionEmpty ? "Select at least one file to upload." : undefined,
     execute: () => {
       dispatch("spaces/copyBetweenSpaces", {
         projectId,
@@ -119,66 +108,6 @@ export const buildHubUploadMenuItems = (
       });
     },
   };
-
-  const remoteSpaceProviders = Object.values(spaceProviders || {}).filter(
-    (provider) => provider.type !== SpaceProviderNS.TypeEnum.LOCAL,
-  );
-
-  const disconnectedSpaceProviders = remoteSpaceProviders.filter(
-    (provider) => !provider.connected,
-  );
-
-  const connectToHubItems = disconnectedSpaceProviders.map(
-    (provider: SpaceProviderNS.SpaceProvider) => ({
-      id: `connectToHub-${provider.id}`,
-      text: formatSpaceProviderName(provider),
-      execute: async () => {
-        try {
-          await dispatch("spaces/connectProvider", {
-            spaceProviderId: provider.id,
-          });
-        } catch (error) {
-          $toast.show({
-            type: "error",
-            message: `Could not connect to ${provider.name}`,
-          });
-        }
-      },
-    }),
-  );
-
-  // hide connectToHub if we don't have any items
-  if (connectToHubItems.length === 0) {
-    return [uploadToRemote];
-  }
-
-  const hasSingleDisconnectedProvider = disconnectedSpaceProviders.length === 1;
-
-  const [firstItem] = connectToHubItems;
-
-  const getConnectToHubText = () => {
-    if (!hasSingleDisconnectedProvider) {
-      return "Connect to";
-    }
-
-    const [provider] = disconnectedSpaceProviders;
-
-    return provider.type === BaseSpaceProvider.TypeEnum.HUB
-      ? "Connect to Hub"
-      : "Connect to Server";
-  };
-
-  const connectToHub = {
-    id: "connectToHub",
-    text: getConnectToHubText(),
-    icon: CloudLoginIcon,
-    // connect on click without submenu if there is only one remote hub known
-    execute: hasSingleDisconnectedProvider ? firstItem.execute : null,
-    // show list of disconnected hubs if we have multiple configured
-    children: hasSingleDisconnectedProvider ? undefined : connectToHubItems,
-  } satisfies ActionMenuItem;
-
-  return [uploadToRemote, connectToHub];
 };
 
 export const buildOpenInBrowserMenuItem = (

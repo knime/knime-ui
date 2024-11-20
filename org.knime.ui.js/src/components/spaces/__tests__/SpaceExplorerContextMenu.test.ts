@@ -8,7 +8,7 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import * as spacesStore from "@/store/spaces";
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { mockVuexStore } from "@/test/utils";
-import SpaceSelectionContextMenu from "../SpaceExplorerContextMenu.vue";
+import SpaceExplorerContextMenu from "../SpaceExplorerContextMenu.vue";
 
 const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
   local: createSpaceProvider({
@@ -43,7 +43,7 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
   }),
 };
 
-describe("SpaceSelectionContextMenu.vue", () => {
+describe("SpaceExplorerContextMenu.vue", () => {
   const doMount = ({ props = {}, spaceProviders = null } = {}) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
@@ -68,7 +68,7 @@ describe("SpaceSelectionContextMenu.vue", () => {
     const dispatchSpy = vi.spyOn($store, "dispatch");
     const commitSpy = vi.spyOn($store, "commit");
 
-    const wrapper = mount(SpaceSelectionContextMenu, {
+    const wrapper = mount(SpaceExplorerContextMenu, {
       props: {
         projectId,
         selectedItemIds: ["2342"],
@@ -114,14 +114,13 @@ describe("SpaceSelectionContextMenu.vue", () => {
 
     expect(wrapper.findComponent(MenuItems).exists()).toBe(true);
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items.length).toBe(6);
+    expect(items.length).toBe(5);
     expect(items.map((item) => item.text)).toStrictEqual([
       "rename",
       "delete",
       "Duplicate",
       "Export",
       "Upload",
-      "Connect to",
     ]);
   });
 
@@ -139,7 +138,6 @@ describe("SpaceSelectionContextMenu.vue", () => {
       "Duplicate",
       "Export",
       "Upload",
-      "Connect to",
     ]);
   });
 
@@ -224,114 +222,6 @@ describe("SpaceSelectionContextMenu.vue", () => {
     expect(closeContextMenu).toHaveBeenCalled();
   });
 
-  it("disables upload to hub if no space provider is connected", () => {
-    const { wrapper } = doMount({
-      props: {
-        selectedItemIds: ["2342", "3432"],
-        isMultipleSelectionActive: true,
-      },
-      spaceProviders: {
-        local: startSpaceProviders.local,
-        hub1: { ...startSpaceProviders.hub1, connected: false },
-      },
-    });
-
-    const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[3]).toStrictEqual(
-      expect.objectContaining({
-        disabled: true,
-        text: "Upload",
-      }),
-    );
-  });
-
-  it("enables upload to hub if some space provider is connected", () => {
-    const { wrapper } = doMount({
-      props: {
-        selectedItemIds: ["2342", "3432"],
-        isMultipleSelectionActive: true,
-      },
-      spaceProviders: {
-        local: startSpaceProviders.local,
-        hub1: { ...startSpaceProviders.hub1, connected: true },
-      },
-    });
-
-    const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[3]).toStrictEqual(
-      expect.objectContaining({
-        disabled: false,
-        text: "Upload",
-      }),
-    );
-  });
-
-  it("shows submenu to connect to", () => {
-    const { wrapper } = doMount({
-      props: {
-        selectedItemIds: ["2342", "3432"],
-        isMultipleSelectionActive: true,
-      },
-      spaceProviders: {
-        local: startSpaceProviders.local,
-        hub1: { ...startSpaceProviders.hub1, connected: false },
-        hub2: createSpaceProvider({
-          name: "Hub 2",
-          id: "hub2",
-          connectionMode: "AUTOMATIC",
-          connected: false,
-          local: false,
-          type: SpaceProviderNS.TypeEnum.HUB,
-        }),
-      },
-    });
-
-    const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items[4]).toStrictEqual(
-      expect.objectContaining({
-        text: "Connect to",
-        execute: null,
-        children: expect.arrayContaining([
-          expect.objectContaining({ text: startSpaceProviders.hub1.name }),
-          expect.objectContaining({ text: "Hub 2" }),
-        ]),
-      }),
-    );
-  });
-
-  it("connects to provider via submenu", async () => {
-    const closeContextMenu = vi.fn();
-    const { wrapper, dispatchSpy } = doMount({
-      props: {
-        selectedItemIds: ["2342", "3432"],
-        isMultipleSelectionActive: true,
-        closeContextMenu,
-      },
-      spaceProviders: {
-        local: startSpaceProviders.local,
-        hub1: { ...startSpaceProviders.hub1, connected: false },
-        hub2: {
-          name: "Hub 2",
-          id: "hub2",
-          connectionMode: "AUTOMATIC",
-          connected: false,
-          spaces: [],
-        },
-      },
-    });
-
-    const menuItems = wrapper.findComponent(MenuItems);
-    const items = menuItems.props("items");
-    const connectToHubItem = items[4].children[0];
-    menuItems.vm.$emit("item-click", null, connectToHubItem);
-    await nextTick();
-
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
-      spaceProviderId: "hub1",
-    });
-    expect(closeContextMenu).toHaveBeenCalled();
-  });
-
   it("calls upload to hub action on store if clicked", async () => {
     const closeContextMenu = vi.fn();
     const { wrapper, dispatchSpy } = doMount({
@@ -355,32 +245,6 @@ describe("SpaceSelectionContextMenu.vue", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/copyBetweenSpaces", {
       itemIds: ["2342", "3432"],
       projectId: "someProjectId",
-    });
-    expect(closeContextMenu).toHaveBeenCalled();
-  });
-
-  it("calls connect to hub action on store if clicked", async () => {
-    const closeContextMenu = vi.fn();
-    const { wrapper, dispatchSpy } = doMount({
-      props: {
-        selectedItemIds: ["2342", "3432"],
-        isMultipleSelectionActive: true,
-        closeContextMenu,
-      },
-      spaceProviders: {
-        local: startSpaceProviders.local,
-        hub1: { ...startSpaceProviders.hub1, connected: false },
-      },
-    });
-
-    const menuItems = wrapper.findComponent(MenuItems);
-    const items = menuItems.props("items");
-    const connectToHub = items[4];
-    menuItems.vm.$emit("item-click", null, connectToHub);
-    await nextTick();
-
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
-      spaceProviderId: "hub1",
     });
     expect(closeContextMenu).toHaveBeenCalled();
   });

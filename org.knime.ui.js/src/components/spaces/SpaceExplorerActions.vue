@@ -20,7 +20,7 @@ import SearchButton from "@/components/common/SearchButton.vue";
 import {
   buildCopyToSpaceMenuItem,
   buildHubDownloadMenuItem,
-  buildHubUploadMenuItems,
+  buildHubUploadMenuItem,
   buildMoveToSpaceMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
@@ -109,16 +109,14 @@ export default defineComponent({
       const { projectId } = this;
 
       const getLocalActions = () => {
-        const uploadAndConnectToHub = buildHubUploadMenuItems(
+        const uploadToHub = buildHubUploadMenuItem(
           this.$store.dispatch,
-          this.hasActiveHubSession,
           this.projectId,
           this.selectedItemIds,
-          this.spaceProviders,
         );
 
         if (this.isLocal) {
-          return uploadAndConnectToHub;
+          return [uploadToHub];
         }
 
         return [];
