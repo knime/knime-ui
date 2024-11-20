@@ -52,7 +52,7 @@ const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
 @import url("@/assets/mixins.css");
 
 & .nodes {
-  margin-top: 30px;
+  margin-top: var(--space-24);
 
   & .title {
     display: flex;
@@ -71,6 +71,7 @@ const handleEnterKey = (node: NodeTemplateWithExtendedPorts) => {
   & .node-list {
     margin-left: -5px;
     margin-right: -5px;
+    margin-bottom: 0;
   }
 }
 </style>

@@ -157,7 +157,10 @@ watch(
           class="quick-add-mode"
           @menu-close="$emit('menuClose')"
         />
-        <div v-if="true && isKaiEnabled && isQuickBuildAvailableForPort" class="footer">
+        <div
+          v-if="isKaiEnabled && isQuickBuildAvailableForPort"
+          class="footer"
+        >
           <Button primary @click="setQuickBuildMode">
             <AiIcon />
             Build with K-AI

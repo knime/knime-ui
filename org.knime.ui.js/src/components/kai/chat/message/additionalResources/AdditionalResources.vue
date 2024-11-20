@@ -62,6 +62,7 @@ const handleClick = () => {
   font-size: 16px;
   font-weight: 700;
   color: var(--knime-masala);
+  margin-top: var(--space-24);
 
   & svg {
     @mixin svg-icon-size 20;

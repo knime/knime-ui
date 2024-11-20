@@ -197,77 +197,73 @@ watch(
 </script>
 
 <template>
-    <div class="header">
-      <SearchInput
-        ref="search"
-        :disabled="!nodeRepositoryLoaded"
-        :model-value="$store.state.quickAddNodes.query"
-        placeholder="Search compatible nodes"
-        class="search-bar"
-        focus-on-mount
-        tabindex="0"
-        @update:model-value="
-          $store.dispatch('quickAddNodes/updateQuery', $event)
-        "
-        @focusin="selectedNode = null"
-        @keydown.enter.prevent.stop="searchEnterKey"
-        @keydown.down.prevent.stop="searchDownKey"
-        @keydown="searchHandleShortcuts"
-      />
-    </div>
-    <hr />
-    <template v-if="nodeRepositoryLoaded">
-      <QuickAddNodeDisabledWorkflowCoach
-        v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
-      />
-      <template v-else>
-        <QuickAddNodeSearchResults
-          v-if="searchIsActive"
-          ref="searchResults"
-          v-model:selected-node="selectedNode"
-          :display-mode="displayMode"
-          @nav-reached-top="($refs.search as any).focus()"
-          @add-node="addNode($event)"
-        />
-        <QuickAddNodeRecommendations
-          v-else
-          ref="recommendationResults"
-          v-model:selected-node="selectedNode"
-          :display-mode="displayMode"
-          @nav-reached-top="($refs.search as any).focus()"
-          @add-node="addNode($event)"
-        />
-      </template>
-    </template>
+  <div class="header">
+    <SearchInput
+      ref="search"
+      :disabled="!nodeRepositoryLoaded"
+      :model-value="$store.state.quickAddNodes.query"
+      placeholder="Search compatible nodes"
+      class="search-bar"
+      focus-on-mount
+      tabindex="0"
+      @update:model-value="$store.dispatch('quickAddNodes/updateQuery', $event)"
+      @focusin="selectedNode = null"
+      @keydown.enter.prevent.stop="searchEnterKey"
+      @keydown.down.prevent.stop="searchDownKey"
+      @keydown="searchHandleShortcuts"
+    />
+  </div>
+  <hr />
+  <template v-if="nodeRepositoryLoaded">
+    <QuickAddNodeDisabledWorkflowCoach
+      v-if="!hasNodeRecommendationsEnabled && !searchIsActive"
+    />
     <template v-else>
-      <NodeRepositoryLoader
-        :progress="nodeRepositoryLoadingProgress?.progress"
-        :extension-name="nodeRepositoryLoadingProgress?.extensionName"
+      <QuickAddNodeSearchResults
+        v-if="searchIsActive"
+        ref="searchResults"
+        v-model:selected-node="selectedNode"
+        :display-mode="displayMode"
+        @nav-reached-top="($refs.search as any).focus()"
+        @add-node="addNode($event)"
+      />
+      <QuickAddNodeRecommendations
+        v-else
+        ref="recommendationResults"
+        v-model:selected-node="selectedNode"
+        :display-mode="displayMode"
+        @nav-reached-top="($refs.search as any).focus()"
+        @add-node="addNode($event)"
       />
     </template>
+  </template>
+  <template v-else>
+    <NodeRepositoryLoader
+      :progress="nodeRepositoryLoadingProgress?.progress"
+      :extension-name="nodeRepositoryLoadingProgress?.extensionName"
+    />
+  </template>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
+&:focus {
+  outline: none;
+}
 
+& hr {
+  border: none;
+  border-top: 1px solid var(--knime-silver-sand);
+  margin: 0;
+}
 
-  &:focus {
-    outline: none;
-  }
+& .header {
+  padding: 10px;
+  flex: none;
+}
 
-  & hr {
-    border: none;
-    border-top: 1px solid var(--knime-silver-sand);
-    margin: 0;
-  }
-
-  & .header {
-    padding: 10px;
-    flex: none;
-  }
-
-  & :deep(.filtered-nodes-wrapper) {
-    border-top: none;
-  }
+& :deep(.filtered-nodes-wrapper) {
+  border-top: none;
+}
 </style>
