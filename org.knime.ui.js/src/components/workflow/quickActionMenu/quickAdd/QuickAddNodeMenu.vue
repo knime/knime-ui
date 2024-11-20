@@ -197,7 +197,6 @@ watch(
 </script>
 
 <template>
-  <div class="quick-add-node-menu">
     <div class="header">
       <SearchInput
         ref="search"
@@ -246,18 +245,12 @@ watch(
         :extension-name="nodeRepositoryLoadingProgress?.extensionName"
       />
     </template>
-  </div>
 </template>
 
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.quick-add-node-menu {
-  --quick-add-node-height: 375;
 
-  height: calc(var(--quick-add-node-height) * 1px);
-  display: flex;
-  flex-direction: column;
 
   &:focus {
     outline: none;
@@ -271,10 +264,10 @@ watch(
 
   & .header {
     padding: 10px;
+    flex: none;
   }
 
   & :deep(.filtered-nodes-wrapper) {
     border-top: none;
   }
-}
 </style>
