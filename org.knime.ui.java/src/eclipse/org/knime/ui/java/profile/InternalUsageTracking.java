@@ -45,10 +45,10 @@
  */
 package org.knime.ui.java.profile;
 
+import org.knime.ui.java.persistence.FileBackedPojo;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import persistence.FileBackedPojo;
 
 /**
  * Usage tracking used "internally" (i.e. in the AP) to control other aspects of the application.

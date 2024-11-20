@@ -51,8 +51,7 @@ package org.knime.ui.java.browser.lifecycle;
 import java.util.function.Supplier;
 
 import org.knime.ui.java.api.SaveAndCloseProjects;
-
-import persistence.AppStatePersistor;
+import org.knime.ui.java.persistence.AppStatePersistor;
 
 /**
  * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.

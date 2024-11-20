@@ -76,10 +76,9 @@ import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.ui.java.persistence.AppStatePersistor;
+import org.knime.ui.java.persistence.Persistence;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import persistence.AppStatePersistor;
-import persistence.Persistence;
-
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.UserDirectory;

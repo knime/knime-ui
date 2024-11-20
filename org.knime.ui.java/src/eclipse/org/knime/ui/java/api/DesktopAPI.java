@@ -103,7 +103,8 @@ public final class DesktopAPI {
         ComponentAPI.class, //
         EquoChromiumAPI.class, //
         CustomizationAPI.class, //
-        HomePageAPI.class //
+        HomePageAPI.class, //
+        UserProfileAPI.class //
     );
 
     // API endpoints which are only being registered when the AP is run for testing purposes.

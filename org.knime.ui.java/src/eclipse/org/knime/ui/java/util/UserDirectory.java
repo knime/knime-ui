@@ -55,10 +55,9 @@ import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.util.EclipseUtil;
 import org.knime.gateway.impl.webui.modes.WebUIMode;
+import org.knime.ui.java.persistence.FileBackedPojo;
+import org.knime.ui.java.persistence.Persistence;
 import org.knime.ui.java.profile.InternalUsageTracking;
-
-import persistence.FileBackedPojo;
-import persistence.Persistence;
 
 /**
  * Provide access to the "KNIME User Directory" (for example {@code ~/.knime/}. Note that this is different from the

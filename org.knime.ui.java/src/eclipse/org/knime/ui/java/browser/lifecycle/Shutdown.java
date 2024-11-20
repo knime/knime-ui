@@ -52,7 +52,7 @@ import java.io.IOException;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.core.node.NodeLogger;
-import persistence.AppStatePersistor;
+import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.UserDirectory;
 import org.osgi.service.prefs.BackingStoreException;

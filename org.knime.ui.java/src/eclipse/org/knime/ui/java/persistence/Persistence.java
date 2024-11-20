@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.com; Email: contact@knime.com
  *
@@ -40,63 +41,32 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * -------------------------------------------------------------------
+ * ---------------------------------------------------------------------
  */
-package persistence;
+package org.knime.ui.java.persistence;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.knime.core.node.NodeLogger;
 
 /**
- * Provide persistence of a POJO ("plain old java object") to a YAML file.
- *
+ * Persist (read/write) a {@code V}alue object.
  * @param <V>
  */
-public class FileBackedPojo<V extends FileBackedPojo.Compatible> implements Persistence<V> {
+public interface Persistence<V> {
 
-    private final Path m_filePath;
+    Optional<V> read() throws IOException;
 
-    private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+    void write(V value) throws IOException;
 
-    private final Class<V> m_clazz;
-
-    @SuppressWarnings("javadoc")
-    public FileBackedPojo(final Path filePath, final Class<V> clazz) {
-        m_clazz = clazz;
-        m_filePath = filePath;
-    }
-
-
-    @Override
-    public Optional<V> read() throws IOException {
+    default Optional<V> readOptional() {
         try {
-            return Optional.of(MAPPER.readValue(m_filePath.toFile(), m_clazz));
-        } catch (FileNotFoundException e) { // NOSONAR
+            return this.read();
+        } catch (IOException e) {
+            NodeLogger.getLogger(this.getClass()).warn("Could not read", e);
             return Optional.empty();
         }
     }
 
-    @Override
-    public void write(final V value) throws IOException {
-        MAPPER.writeValue(m_filePath.toFile(), value);
-    }
-
-    /**
-     * A class extending this class will read/write unknown fields to this map.
-     */
-    public static class Compatible {
-
-        @JsonAnyGetter
-        @JsonAnySetter
-        private Map<String, Object> m_unknownProperties;
-
-    }
 }
