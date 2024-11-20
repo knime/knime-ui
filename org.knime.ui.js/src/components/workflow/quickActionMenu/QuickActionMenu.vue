@@ -146,7 +146,7 @@ watch(
       :disable-quick-node-add="false"
       reset-replace-indicator-state-on-unmount
     />
-    <div class="wrapper" :class="menuMode">
+    <div :class="['wrapper', menuMode]">
       <template v-if="menuMode == 'quick-add'">
         <QuickAddNodeMenu
           :node-id="nodeId"
@@ -154,13 +154,9 @@ watch(
           :node-relation="nodeRelation"
           :canvas-position="canvasPosition"
           :port-index="portIndex"
-          class="quick-add-mode"
           @menu-close="$emit('menuClose')"
         />
-        <div
-          v-if="isKaiEnabled && isQuickBuildAvailableForPort"
-          class="footer"
-        >
+        <div v-if="isKaiEnabled && isQuickBuildAvailableForPort" class="footer">
           <Button primary @click="setQuickBuildMode">
             <AiIcon />
             Build with K-AI
@@ -171,7 +167,6 @@ watch(
         v-else-if="menuMode == 'quick-build'"
         :node-id="nodeId"
         :start-position="canvasPosition"
-        class="quick-build-mode"
         @menu-back="setQuickAddMode"
       />
     </div>

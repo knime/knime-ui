@@ -4,6 +4,7 @@ import { mount } from "@vue/test-utils";
 
 import { PortType } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import { useQuickActionMenu } from "@/components/workflow/quickActionMenu/useQuickActionMenu";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import * as aiAssistantStore from "@/store/aiAssistant";
@@ -22,6 +23,7 @@ import { mockVuexStore } from "@/test/utils";
 import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";
+import QuickAddNodeMenu from "../quickAdd/QuickAddNodeMenu.vue";
 
 vi.mock("@/composables/useIsKaiEnabled");
 vi.mock("@/components/workflow/quickActionMenu/useQuickActionMenu");
@@ -219,8 +221,8 @@ describe("QuickActionMenu.vue", () => {
       await wrapper.vm.$nextTick();
 
       expect(setQuickAddModeMock).toHaveBeenCalled();
-      expect(wrapper.find(".quick-build-mode").exists()).toBe(false);
-      expect(wrapper.find(".quick-add-mode").exists()).toBe(true);
+      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(false);
+      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
     });
 
     it("switches to Quick Add mode from Quick Build mode when K-AI gets disabled while mounted", async () => {
@@ -228,15 +230,15 @@ describe("QuickActionMenu.vue", () => {
         initialMenuMode: "quick-build",
       });
 
-      expect(wrapper.find(".quick-build-mode").exists()).toBe(true);
-      expect(wrapper.find(".quick-add-mode").exists()).toBe(false);
+      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(true);
+      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
 
       isKaiEnabledRef.value = false;
       await wrapper.vm.$nextTick();
 
       expect(setQuickAddModeMock).toHaveBeenCalled();
-      expect(wrapper.find(".quick-build-mode").exists()).toBe(false);
-      expect(wrapper.find(".quick-add-mode").exists()).toBe(true);
+      expect(wrapper.findComponent(KaiQuickBuild).exists()).toBe(false);
+      expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
     });
   });
 });
