@@ -117,6 +117,12 @@ try {
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
 
+  // use GTM plugin if gtmId is set
+  if (connectionInfo?.gtmId) {
+    const { createGtm } = await import("@gtm-support/vue-gtm");
+    app.use(createGtm({ id: connectionInfo.gtmId, defer: true }));
+  }
+
   runInEnvironment({
     BROWSER: () => {
       setRestApiBaseUrl(connectionInfo!.restApiBaseUrl!);
