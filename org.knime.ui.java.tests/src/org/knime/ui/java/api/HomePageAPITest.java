@@ -76,7 +76,9 @@ public class HomePageAPITest {
             new CategoryIdTest("onboarding--startsLessEqualTo=20,startsGreaterThan=5", 5, 20), //
             new CategoryIdTest("onboarding--startsGreaterThan=20", 20, -1), //
             new CategoryIdTest("onboarding--startsGreaterThan=20,", 20, -1), //
-            new CategoryIdTest("onboarding--startsGreaterThan=20,startsGreaterThan=30,", 30, -1) //
+            new CategoryIdTest("onboarding--startsGreaterThan=20,startsGreaterThan=30,", 30, -1), //
+            new CategoryIdTest("onboarding--startsgreaterthan=1,startslessequalto=5", 1, 5), //
+            new CategoryIdTest("onboarding--startsGreaterthan=1,startslessEqualTo=5", 1, 5) //
         );
         validConditionalCatIds.forEach(HomePageAPITest::testValidCategoryId);
 

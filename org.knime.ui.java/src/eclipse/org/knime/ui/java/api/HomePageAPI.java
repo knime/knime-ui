@@ -132,13 +132,13 @@ final class HomePageAPI {
     }
 
     private static Predicate<InternalUsageTracking> parseParam(final String paramKey, final String paramValue) {
-        if (paramKey.equals("startsLessEqualTo")) {
+        if ("startsLessEqualTo".equalsIgnoreCase(paramKey)) {
             return startsLessEqualTo(Integer.parseInt(paramValue));
         }
-        if (paramKey.equals("startsGreaterThan")) {
+        if ("startsGreaterThan".equalsIgnoreCase(paramKey)) {
             return startsGreaterThan(Integer.parseInt(paramValue));
         }
-        throw new IllegalArgumentException("Not a number: " + paramValue);
+        throw new IllegalArgumentException("Unknown key (" + paramKey + ") or not a number (" + paramValue + ")");
     }
 
     private static Optional<Integer> parseInt(final String value) {
