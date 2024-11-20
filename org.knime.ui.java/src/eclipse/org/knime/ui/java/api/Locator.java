@@ -70,7 +70,7 @@ public final class Locator {
     public static final class Siblings extends Space {
         private final List<String> m_itemIds;
 
-        public Siblings(String providerId, String spaceId, List<String> itemIds) {
+        public Siblings(final String providerId, final String spaceId, final List<String> itemIds) {
             super(providerId, spaceId);
             this.m_itemIds = itemIds;
         }
@@ -83,7 +83,7 @@ public final class Locator {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (this == o) {
                 return true;
             }
@@ -103,7 +103,7 @@ public final class Locator {
     public sealed interface Destination permits Space, Item {
         String itemId();
 
-        static Destination of(String providerId, String spaceId, String itemId) {
+        static Destination of(final String providerId, final String spaceId, final String itemId) {
             if (org.knime.gateway.impl.webui.spaces.Space.ROOT_ITEM_ID.equals(itemId)) {
                 return new Space(providerId, spaceId);
             } else {
@@ -125,14 +125,13 @@ public final class Locator {
      * Locates a space, i.e. provider ID and space ID.
      */
     @SuppressWarnings({"java:S6217"})
-    public static sealed class Space
-            implements Destination permits Item, Siblings  {
+    public static sealed class Space implements Destination permits Item, Siblings {
 
         private final String m_providerId;
 
         private final String m_spaceId;
 
-        public Space(String providerId, String spaceId) {
+        public Space(final String providerId, final String spaceId) {
             this.m_providerId = providerId;
             this.m_spaceId = spaceId;
         }
@@ -141,6 +140,7 @@ public final class Locator {
          * @return The {@link SpaceProvider} instance (requires
          *         {@link org.knime.gateway.impl.webui.spaces.SpaceProviders} dependency).
          */
+        @Override
         public SpaceProvider provider() {
             return SpaceAPI.getSpaceProvider(this.providerId());
         }
@@ -149,6 +149,7 @@ public final class Locator {
          * @return The {@link org.knime.gateway.impl.webui.spaces.Space} instance (requires
          *         {@link org.knime.gateway.impl.webui.spaces.SpaceProviders} dependency).
          */
+        @Override
         public org.knime.gateway.impl.webui.spaces.Space space() {
             return this.provider().getSpace(this.spaceId());
         }
@@ -166,6 +167,7 @@ public final class Locator {
          * @return Whether this is a hub space (requires {@link org.knime.gateway.impl.webui.spaces.SpaceProviders}
          *         dependency).
          */
+        @Override
         public boolean isHub() {
             return provider().getType() == SpaceProviderEnt.TypeEnum.HUB;
         }
@@ -185,7 +187,7 @@ public final class Locator {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (obj == this) {
                 return true;
             }
@@ -225,7 +227,7 @@ public final class Locator {
          * @param spaceId ID of the space in provider with ID {@code spaceProviderId} containing the item
          * @param itemId ID of the item contained in space with ID {@code spaceId}
          */
-        public Item(String providerId, String spaceId, String itemId) {
+        public Item(final String providerId, final String spaceId, final String itemId) {
             super(providerId, spaceId);
             this.m_itemId = itemId;
         }
@@ -239,7 +241,7 @@ public final class Locator {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (this == o) {
                 return true;
             }
