@@ -259,7 +259,13 @@ export const getters: GetterTree<NodeConfigurationState, RootStoreState> = {
       : null;
   },
 
-  isConfigurationDisabled(_, getters, rootState) {
+  isConfigurationDisabled(_, getters, rootState, rootGetters) {
+    const isWritable = rootGetters["workflow/isWritable"];
+
+    if (!isWritable) {
+      return true;
+    }
+
     const activeNode: NativeNode = getters.activeNode;
     const { canConfigureNodes } = rootState.uiControls;
 

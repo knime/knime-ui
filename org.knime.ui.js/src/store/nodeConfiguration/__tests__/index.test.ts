@@ -47,7 +47,7 @@ describe("nodeConfiguration", () => {
     runInEnvironment.mockClear();
   });
 
-  const loadStore = () => {
+  const loadStore = (isWritableWorkflow: boolean = true) => {
     const $store = mockVuexStore({
       nodeConfiguration: nodeConfigurationStore,
       application: applicationStore,
@@ -55,6 +55,7 @@ describe("nodeConfiguration", () => {
       uiControls: uiControlsStore,
       workflow: {
         ...workflowStore,
+        getters: { isWritable: () => isWritableWorkflow },
         actions: { executeNodes: () => {} },
       },
     });
@@ -255,6 +256,27 @@ describe("nodeConfiguration", () => {
 
       $store.commit("nodeConfiguration/setActiveNodeId", node1.id);
       expect(isDisabled()).toBe(false);
+
+      $store.commit("nodeConfiguration/setActiveNodeId", node2.id);
+      expect(isDisabled()).toBe(true);
+
+      $store.commit("nodeConfiguration/setActiveNodeId", node3.id);
+      expect(isDisabled()).toBe(true);
+
+      $store.commit("nodeConfiguration/setActiveNodeId", node4.id);
+      expect(isDisabled()).toBe(true);
+
+      $store.commit("nodeConfiguration/setActiveNodeId", node5.id);
+      expect(isDisabled()).toBe(true);
+    });
+
+    it("isConfigurationDisabled for non-writable workflows", () => {
+      const { $store } = loadStore(false);
+      const isDisabled = () =>
+        $store.getters["nodeConfiguration/isConfigurationDisabled"];
+
+      $store.commit("nodeConfiguration/setActiveNodeId", node1.id);
+      expect(isDisabled()).toBe(true);
 
       $store.commit("nodeConfiguration/setActiveNodeId", node2.id);
       expect(isDisabled()).toBe(true);
