@@ -81,7 +81,7 @@ public class OnPreShutdown implements PreShutdown {
     @Override
     public void onShutdownContinued() {
         final var lifeCycle = LifeCycle.get();
-        if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
+        if (lifeCycle.isLastStateTransition(StateTransition.SAVE_STATE)) {
             lifeCycle.suspend();
         }
         lifeCycle.forceShutdown();
