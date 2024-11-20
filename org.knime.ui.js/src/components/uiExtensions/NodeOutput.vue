@@ -36,7 +36,7 @@ export const runValidationChecks = ({
 interface ComponentData {
   loadingState: UIExtensionLoadingState | null;
   currentValidationError: ValidationError | null;
-  currentAlert: Alert | null;
+  currentNodeViewAlert: Alert | null;
   EMBEDDED_CONTENT_PANEL_ID__BOTTOM: typeof EMBEDDED_CONTENT_PANEL_ID__BOTTOM;
 }
 
@@ -61,7 +61,7 @@ export default defineComponent({
     return {
       currentValidationError: null,
       loadingState: null,
-      currentAlert: null,
+      currentNodeViewAlert: null,
       EMBEDDED_CONTENT_PANEL_ID__BOTTOM,
     };
   },
@@ -137,7 +137,6 @@ export default defineComponent({
         const isDifferentNode = next?.id !== prev?.id;
         if (!this.selectionValidationError && isDifferentNode) {
           this.selectPort();
-          this.currentAlert = null;
         }
       },
       deep: true,
@@ -160,7 +159,7 @@ export default defineComponent({
     currentValidationError() {
       // Validation takes precedence over any existing alert. So if a new
       // validation error is added we must reset the alert
-      this.currentAlert = null;
+      this.currentNodeViewAlert = null;
     },
   },
   methods: {
@@ -213,10 +212,13 @@ export default defineComponent({
     <div :id="EMBEDDED_CONTENT_PANEL_ID__BOTTOM" class="node-output-content">
       <LoadingIndicator v-if="showLoadingIndicator" :message="loadingMessage" />
 
-      <UIExtensionAlertsWrapper v-if="currentAlert" :alert="currentAlert" />
+      <UIExtensionAlertsWrapper
+        v-if="currentNodeViewAlert"
+        :alert="currentNodeViewAlert"
+      />
 
       <ValidationInfo
-        v-if="!currentAlert"
+        v-if="!currentNodeViewAlert"
         :validation-error="currentValidationError"
         :selected-node="singleSelectedNode"
         :selected-port-index="selectedPortIndex"
@@ -229,7 +231,7 @@ export default defineComponent({
           :workflow-id="workflowId"
           :selected-node="singleSelectedNode"
           :available-port-types="availablePortTypes"
-          @alert="currentAlert = $event"
+          @alert="currentNodeViewAlert = $event"
           @loading-state-change="loadingState = $event"
           @validation-error="currentValidationError = $event"
         />
@@ -242,7 +244,6 @@ export default defineComponent({
           :selected-node="singleSelectedNode"
           :selected-port-index="selectedPortIndex!"
           :available-port-types="availablePortTypes"
-          @alert="currentAlert = $event"
           @loading-state-change="onPortViewLoadingState($event)"
           @validation-error="currentValidationError = $event"
         />

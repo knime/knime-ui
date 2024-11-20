@@ -5,12 +5,11 @@ import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer";
-import { type Alert, AlertType } from "@knime/ui-extension-service";
+import { AlertType } from "@knime/ui-extension-service";
 
 import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
-import { useNotifyUIExtensionAlert } from "../common/useNotifyUIExtensionAlert";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
 import DataValueViewWrapper from "../dataValueViews/DataValueViewWrapper.vue";
@@ -33,7 +32,6 @@ const props = defineProps<Props>();
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
-  alert: [value: Alert | null];
 }>();
 
 const error = ref<any>(null);
@@ -45,8 +43,6 @@ let deactivateDataServicesFn: () => void;
 const { resourceLocation, resourceLocationResolver } = useResourceLocation({
   extensionConfig,
 });
-
-const { notify } = useNotifyUIExtensionAlert();
 
 const loadExtensionConfig = async () => {
   const portView = await API.port.getPortView({
@@ -134,13 +130,6 @@ const apiLayer: UIExtensionAPILayer = {
         value: "error",
         message: alert.subtitle ?? "",
       });
-
-      emit("alert", {
-        ...alert,
-        message: alert.subtitle,
-      });
-      notify({ ...alert, message: alert.subtitle });
-      error.value = alert;
     }
   },
 
