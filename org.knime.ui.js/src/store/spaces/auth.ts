@@ -3,6 +3,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
+import { StoreActionException } from "@/api/gateway-api/exceptions";
 import { APP_ROUTES } from "@/router/appRoutes";
 import type { RootStoreState } from "../types";
 
@@ -19,26 +20,51 @@ export const state = (): State => ({});
 export const mutations: MutationTree<SpacesState> = {};
 
 export const actions: ActionTree<SpacesState, RootStoreState> = {
-  async connectProvider({ dispatch, commit }, { spaceProviderId }) {
+  async connectProvider({ state, dispatch, commit }, { spaceProviderId }) {
     try {
       commit("setIsConnectingToProvider", spaceProviderId);
+
       // returns the provider metadata (but no spaces)
       const spaceProvider = await API.desktop.connectSpaceProvider({
         spaceProviderId,
       });
+
+      if (!spaceProvider) {
+        consola.error("action::connectProvider -> Invalid provider id", {
+          spaceProviderId,
+        });
+
+        const providerName =
+          state.spaceProviders?.[spaceProviderId]?.name ?? "remote";
+
+        const cause = new Error("Failed to connect");
+
+        throw new StoreActionException(
+          `Failed to connect to ${providerName}`,
+          cause,
+        );
+      }
+
       // fetch the spaces if we are now connected
-      const spacesData = spaceProvider?.connected
-        ? await dispatch("fetchProviderSpaces", {
-            id: spaceProviderId,
-          })
+      const spaceProviderData = spaceProvider?.connected
+        ? await dispatch("fetchProviderSpaces", { id: spaceProviderId })
         : {};
+
+      consola.info("action::connectProvider -> connected", {
+        spaceProvider,
+        spaceProviderData,
+      });
+
       commit("updateSpaceProvider", {
         id: spaceProviderId,
-        value: { ...spaceProvider, ...spacesData },
+        value: { ...spaceProvider, ...spaceProviderData },
       });
-      return spacesData;
+
+      return spaceProviderData;
     } catch (error) {
-      consola.error("Error connecting to provider", { error });
+      consola.error("action::connectProvider -> Error connecting to provider", {
+        error,
+      });
       throw error;
     } finally {
       commit("setIsConnectingToProvider", null);

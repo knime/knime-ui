@@ -2,13 +2,19 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import {
+  StoreActionException,
+  displayStoreActionExceptionMessage,
+} from "@/api/gateway-api/exceptions";
 import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 export const useSpaceProviderAuth = () => {
   const store = useStore();
   const $router = useRouter();
   const $route = useRoute();
+  const $toast = getToastsProvider();
 
   const isLoadingProviders = computed(
     () => store.state.spaces.isLoadingProviders,
@@ -49,6 +55,26 @@ export const useSpaceProviderAuth = () => {
       return;
     }
 
+    const showErrorToast = (error?: Error) => {
+      const showDefaultMessage = () =>
+        $toast.show({
+          type: "error",
+          message: `Could not connect to ${spaceProvider.name}`,
+        });
+
+      if (!error) {
+        showDefaultMessage();
+
+        return;
+      }
+
+      if (error instanceof StoreActionException) {
+        displayStoreActionExceptionMessage(error);
+      } else {
+        showDefaultMessage();
+      }
+    };
+
     try {
       const currentRoute = $route.fullPath;
 
@@ -80,7 +106,12 @@ export const useSpaceProviderAuth = () => {
         params: routeParams,
       });
     } catch (error) {
-      consola.error("Login failed", error);
+      consola.error("Failed to connect or load provider data", {
+        error,
+        spaceProviderId,
+      });
+
+      showErrorToast(error as Error);
     }
   };
 

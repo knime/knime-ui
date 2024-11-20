@@ -124,6 +124,10 @@ describe("spaces::spaceOperations", () => {
         hub1: {},
       };
 
+      mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
+        createSpaceProvider({ connected: true }),
+      );
+
       const error = new ServiceCallException({
         message: "Something wrong in the API",
       });
@@ -150,12 +154,46 @@ describe("spaces::spaceOperations", () => {
         hub1: {},
       };
 
+      mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
+        createSpaceProvider({ connected: true }),
+      );
+
       const error = new NetworkException({
         message: "Connection loss",
       });
 
       const expected = new StoreActionException("Connectivity problem", error);
 
+      mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
+
+      expect(() =>
+        store.dispatch("spaces/fetchWorkflowGroupContent", {
+          projectId: "myProject1",
+        }),
+      ).rejects.toThrowError(expected);
+    });
+
+    it("should forward errors when trying to connect `NetworkException`s", () => {
+      const { store } = loadStore();
+
+      store.state.spaces.spaceProviders = {
+        // @ts-ignore
+        hub1: {},
+      };
+
+      // null will indicate a failure when connecting to this provider
+      mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(null);
+
+      const error = new NetworkException({
+        message: "Connection loss",
+      });
+
+      const expected = new StoreActionException(
+        "Failed to connect to remote",
+        new Error(""),
+      );
+
+      // fail once so that it gets retried which will attempt to connect
       mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
 
       expect(() =>
@@ -280,7 +318,11 @@ describe("spaces::spaceOperations", () => {
       );
     });
 
+    // eslint-disable-next-line vitest/no-focused-tests
     it("should throw StoreActionException if content refresh fails after folder is created", () => {
+      mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
+        createSpaceProvider({ connected: true }),
+      );
       const { store } = loadStore();
 
       const ioErr = new ServiceCallException({

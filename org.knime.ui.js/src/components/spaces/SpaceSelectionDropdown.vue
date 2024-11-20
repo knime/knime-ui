@@ -11,6 +11,7 @@ import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
@@ -23,6 +24,7 @@ interface Props {
 
 const store = useStore();
 const props = withDefaults(defineProps<Props>(), { showText: true });
+const $toast = getToastsProvider();
 
 const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } =
   useSpaceIcons();
@@ -106,15 +108,26 @@ const onSpaceChange = async ({
 
   const { spaceProviderId } = metadata;
 
-  // handle sign in request
-  const { spaces: [firstSpace = null] = [] } = await store.dispatch(
-    "spaces/connectProvider",
-    { spaceProviderId },
-  );
+  try {
+    // handle sign in request
+    const { spaces: [firstSpace = null] = [] } = await store.dispatch(
+      "spaces/connectProvider",
+      { spaceProviderId },
+    );
 
-  // change to first space if we have one
-  if (firstSpace) {
-    setProjectPath(projectId, spaceProviderId!, firstSpace.id);
+    // change to first space if we have one
+    if (firstSpace) {
+      setProjectPath(projectId, spaceProviderId!, firstSpace.id);
+    }
+  } catch (error) {
+    consola.error("Failed to sign in from SpaceSelectionDropdown", { error });
+
+    const providerName =
+      store.state.spaces.spaceProviders?.[spaceProviderId]?.name ?? "remote";
+
+    $toast.show({
+      message: `Could not connect to ${providerName}`,
+    });
   }
 };
 

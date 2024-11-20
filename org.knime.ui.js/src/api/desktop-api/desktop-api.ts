@@ -430,7 +430,7 @@ export const getSpaceProviders = () => {
 
 export const connectSpaceProvider = async ({
   spaceProviderId,
-}: SpaceProviderId): Promise<SpaceProviderNS.SpaceProvider> => {
+}: SpaceProviderId): Promise<SpaceProviderNS.SpaceProvider | null> => {
   const providerData = await callBrowserFunction(
     window.connectSpaceProvider,
     [spaceProviderId],
@@ -439,7 +439,7 @@ export const connectSpaceProvider = async ({
     { block: true },
   );
 
-  return JSON.parse(providerData ?? "");
+  return providerData ? JSON.parse(providerData) : null;
 };
 
 export const disconnectSpaceProvider = ({

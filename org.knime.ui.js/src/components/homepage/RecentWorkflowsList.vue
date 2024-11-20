@@ -14,7 +14,7 @@ import TimeIcon from "@knime/styles/img/icons/time.svg";
 import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 
 import { API } from "@/api";
-import type { RecentWorkflow } from "@/api/custom-types";
+import type { RecentWorkflow, SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
@@ -68,6 +68,25 @@ onMounted(() => {
   getRecentWorkflows();
 });
 
+const tryConnectToProvider = async (
+  provider: SpaceProviderNS.SpaceProvider,
+) => {
+  try {
+    await store.dispatch("spaces/connectProvider", {
+      spaceProviderId: provider.id,
+    });
+
+    return true;
+  } catch (error) {
+    $toast.show({
+      type: "error",
+      message: `Could not connect to ${provider.name}`,
+    });
+
+    return false;
+  }
+};
+
 const openRecentWorkflow = async (item: FileExplorerItem) => {
   const {
     recentWorkflow: { origin },
@@ -77,12 +96,9 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   );
 
   if (!provider.connected) {
-    const connectedProvider = await store.dispatch("spaces/connectProvider", {
-      spaceProviderId: provider.id,
-    });
+    const isConnected = await tryConnectToProvider(provider);
 
-    // If login was cancelled don't continue
-    if (Object.keys(connectedProvider).length === 0) {
+    if (!isConnected) {
       return;
     }
   }

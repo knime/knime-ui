@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import type { Router } from "vue-router";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
@@ -90,7 +91,12 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return content;
     } catch (error) {
       if (retry) {
-        await dispatch("connectProvider", { spaceProviderId });
+        try {
+          await dispatch("connectProvider", { spaceProviderId });
+        } catch (error) {
+          throw error;
+        }
+
         const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
           spaceId,
           spaceProviderId,
