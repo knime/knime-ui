@@ -211,7 +211,7 @@ public final class Locator {
 
         @Override
         public String itemId() {
-            return spaceId();
+            return org.knime.gateway.impl.webui.spaces.Space.ROOT_ITEM_ID;
         }
     }
 
