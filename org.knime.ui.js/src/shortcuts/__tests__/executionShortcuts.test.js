@@ -48,12 +48,25 @@ describe("executionShortcuts", () => {
     });
 
     describe("selection", () => {
-      it("executeSelected", () => {
-        executionShortcuts.executeSelected.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
+      it("executeSelected", async () => {
+        mockDispatch.mockImplementationOnce(() => Promise.resolve(true));
+        await executionShortcuts.executeSelected.execute({ $store });
+        expect(mockDispatch).toHaveBeenLastCalledWith(
           "workflow/executeNodes",
           "selected",
         );
+      });
+
+      it("checks theres no unapplied settings before execution", async () => {
+        mockDispatch.mockImplementationOnce(() => Promise.resolve(false));
+        await executionShortcuts.executeSelected.execute({ $store });
+        expect(mockDispatch).toHaveBeenCalledWith(
+          "nodeConfiguration/autoApplySettings",
+          {
+            nextNodeId: undefined,
+          },
+        );
+        expect(mockDispatch).toHaveBeenCalledTimes(1);
       });
 
       it("executeAndOpenView", async () => {

@@ -91,7 +91,15 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["F7"],
     group: "execution",
     icon: ExecuteSelectedIcon,
-    execute: ({ $store, payload = {} }) => {
+    execute: async ({ $store, payload = {} }) => {
+      const canContinue = await $store.dispatch(
+        "nodeConfiguration/autoApplySettings",
+        { nextNodeId: payload?.metadata?.nodeId },
+      );
+
+      if (!canContinue) {
+        return;
+      }
       const selectedNodeId = payload?.metadata?.nodeId
         ? [payload?.metadata?.nodeId]
         : "selected";

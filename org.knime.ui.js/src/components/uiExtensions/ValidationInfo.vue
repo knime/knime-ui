@@ -102,8 +102,17 @@ const isPortExecuted = computed(() => {
   return state === "EXECUTED";
 });
 
-const onExecuteNode = () => {
+const onExecuteNode = async () => {
   if (props.selectedNode) {
+    const canContinue = await store.dispatch(
+      "nodeConfiguration/autoApplySettings",
+      { nextNodeId: props.selectedNode.id },
+    );
+
+    if (!canContinue) {
+      return;
+    }
+
     store.dispatch("workflow/executeNodes", [props.selectedNode.id]);
   }
 };

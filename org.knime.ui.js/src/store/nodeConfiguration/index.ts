@@ -9,7 +9,6 @@ import {
 } from "@knime/ui-extension-service";
 
 import { API } from "@/api";
-import type { KnimeNode } from "@/api/custom-types";
 import {
   type NativeNode,
   Node,
@@ -162,7 +161,7 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
 
   async autoApplySettings(
     { state, rootState, commit, dispatch, getters },
-    { nextNode }: { nextNode: KnimeNode | null },
+    { nextNodeId }: { nextNodeId: string | null },
   ) {
     const activeNode = getters.activeNode;
 
@@ -202,7 +201,7 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
           await dispatch("discardSettings");
         }
 
-        commit("setActiveNodeId", nextNode?.id ?? null);
+        commit("setActiveNodeId", nextNodeId ?? null);
         return true;
       },
 
@@ -211,7 +210,7 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
           await dispatch("applySettings", { nodeId: activeNode.id });
         }
 
-        commit("setActiveNodeId", nextNode?.id ?? null);
+        commit("setActiveNodeId", nextNodeId ?? null);
         return Promise.resolve(true);
       },
     });

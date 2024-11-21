@@ -81,7 +81,9 @@ watch(
 
     // if the configuration state is dirty, attempt to auto apply the settings
     // before changing the active node
-    await store.dispatch("nodeConfiguration/autoApplySettings", { nextNode });
+    await store.dispatch("nodeConfiguration/autoApplySettings", {
+      nextNodeId: nextNode?.id,
+    });
   },
   {
     immediate: true,

@@ -129,7 +129,7 @@ describe("nodeConfiguration", () => {
 
       $store
         .dispatch("nodeConfiguration/autoApplySettings", {
-          nextNode: node2,
+          nextNodeId: node2.id,
         })
         .then(done);
 
@@ -169,7 +169,7 @@ describe("nodeConfiguration", () => {
 
       $store
         .dispatch("nodeConfiguration/autoApplySettings", {
-          nextNode: node2,
+          nextNodeId: node2.id,
         })
         .then(done);
 
@@ -210,7 +210,7 @@ describe("nodeConfiguration", () => {
 
       $store
         .dispatch("nodeConfiguration/autoApplySettings", {
-          nextNode: node2,
+          nextNodeId: node2.id,
         })
         .then(done);
 

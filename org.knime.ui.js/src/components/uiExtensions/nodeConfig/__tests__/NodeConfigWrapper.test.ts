@@ -187,7 +187,7 @@ describe("NodeConfigWrapper.vue", () => {
     await selectNextNode($store, executedNode.id);
     expect(dispatchSpy).toHaveBeenCalledWith(
       "nodeConfiguration/autoApplySettings",
-      { nextNode: executedNode },
+      { nextNodeId: executedNode.id },
     );
     expect(commitSpy).not.toHaveBeenCalledWith(
       "nodeConfiguration/setActiveNode",
