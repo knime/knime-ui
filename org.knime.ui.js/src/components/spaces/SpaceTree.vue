@@ -112,9 +112,18 @@ const mapSpaceGroupToTree = (
   hasChildren: true,
   icon: markRaw(getSpaceGroupIcon(spaceGroup)),
   groupData: spaceGroup,
-  children: spaceGroup.spaces?.map((space) =>
-    mapSpaceToTree(space, { spaceProviderId }),
-  ),
+  children:
+    spaceGroup.spaces.length > 0
+      ? spaceGroup.spaces?.map((space) =>
+          mapSpaceToTree(space, { spaceProviderId }),
+        )
+      : [
+          {
+            nodeKey: `empty_${spaceProviderId}_${spaceGroup.id}`,
+            name: "Group is empty",
+            customSlot: "info",
+          },
+        ],
 });
 
 const mapSpaceProviderToTree = (
