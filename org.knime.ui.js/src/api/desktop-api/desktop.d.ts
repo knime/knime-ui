@@ -242,4 +242,4 @@ declare function getAncestorInfo(
   projectName: string,
 ): string;
 
-declare function getLocalStorageItems(): any;
+declare function getPersistedLocalStorageData(): any;

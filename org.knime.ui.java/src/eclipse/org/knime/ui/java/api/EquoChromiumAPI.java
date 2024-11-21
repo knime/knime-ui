@@ -77,7 +77,7 @@ public final class EquoChromiumAPI {
      * @return the local storage items persisted with the user profile, empty when to be removed from the local storage
      */
     @API
-    static Map<String, Object> getLocalStorageItems() {
+    static Map<String, Object> getPersistedLocalStorageData() {
         var userProfile = DesktopAPI.getDeps(UserProfile.class);
         return Map.of(UserProfile.UI_SETTINGS_LOCAL_STORAGE_KEY, userProfile.uiSettings(),
             UserProfile.ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY, userProfile.onboardingHintsSettings());

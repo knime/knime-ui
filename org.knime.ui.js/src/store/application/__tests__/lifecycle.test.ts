@@ -36,13 +36,13 @@ describe("application::lifecycle", () => {
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
       const { store, dispatchSpy, commitSpy, subscribeEvent } = loadStore();
       window.localStorage.setItem("foo", "bar");
-      const localStorageItems = {
+      const localStorageData = {
         settings1: { a: 1, b: 2 },
         settings2: { c: 3, d: 4 },
         foo: {}, // will be removed from local storage because it's empty
       };
-      mockedAPI.desktop.getLocalStorageItems.mockResolvedValue(
-        localStorageItems,
+      mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue(
+        localStorageData,
       );
       const exampleProjects = [{ name: "test" }];
       mockedAPI.desktop.getExampleProjects.mockResolvedValue(exampleProjects);
@@ -57,12 +57,12 @@ describe("application::lifecycle", () => {
       );
       expect(subscribeEvent).toHaveBeenCalled();
       expect(API.application.getState).toHaveBeenCalled();
-      expect(API.desktop.getLocalStorageItems).toHaveBeenCalled();
+      expect(API.desktop.getPersistedLocalStorageData).toHaveBeenCalled();
       expect(window.localStorage.getItem("settings1")).toBe(
-        JSON.stringify(localStorageItems.settings1),
+        JSON.stringify(localStorageData.settings1),
       );
       expect(window.localStorage.getItem("settings2")).toBe(
-        JSON.stringify(localStorageItems.settings2),
+        JSON.stringify(localStorageData.settings2),
       );
       expect(window.localStorage.getItem("foo")).toBeNull();
       expect(API.desktop.getExampleProjects).toHaveBeenCalled();

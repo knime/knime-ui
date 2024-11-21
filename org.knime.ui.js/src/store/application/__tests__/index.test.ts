@@ -148,7 +148,7 @@ describe("application::index", () => {
         project: "baz",
       });
 
-      mockedAPI.desktop.getLocalStorageItems.mockResolvedValue({});
+      mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue({});
       await store.dispatch("application/initializeApplication", {
         $router: router,
       });
@@ -422,7 +422,7 @@ describe("application::index", () => {
     it("should hide the menu when leaving the worklow page", async () => {
       const { store, dispatchSpy } = loadStore();
 
-      mockedAPI.desktop.getLocalStorageItems.mockResolvedValue({});
+      mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue({});
       await store.dispatch("application/initializeApplication", {
         $router: router,
       });

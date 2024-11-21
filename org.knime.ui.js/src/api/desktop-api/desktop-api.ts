@@ -946,11 +946,11 @@ export const getAncestorInfo = async ({
   return (data ? JSON.parse(data) : {}) as AncestorInfo;
 };
 
-export const getLocalStorageItems = () => {
+export const getPersistedLocalStorageData = () => {
   return callBrowserFunction(
-    window.getLocalStorageItems,
+    window.getPersistedLocalStorageData,
     [],
-    "Failed to get local storage items",
+    "Failed to get persisted local storage data",
     true,
     { block: false },
   );

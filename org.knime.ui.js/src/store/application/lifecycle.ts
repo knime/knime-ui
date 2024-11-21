@@ -68,16 +68,18 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // populate local storage from backend
     await runInEnvironment({
       DESKTOP: async () => {
-        await API.desktop.getLocalStorageItems().then((localStorageItems) =>
-          Object.entries(localStorageItems).forEach(([key, value]) => {
-            const ls = window?.localStorage;
-            if (Object.keys(value as any).length === 0) {
-              ls?.removeItem(key as string);
-            } else {
-              ls?.setItem(key as string, JSON.stringify(value));
-            }
-          }),
-        );
+        await API.desktop
+          .getPersistedLocalStorageData()
+          .then((localStorageItems) =>
+            Object.entries(localStorageItems).forEach(([key, value]) => {
+              const ls = window?.localStorage;
+              if (Object.keys(value as any).length === 0) {
+                ls?.removeItem(key as string);
+              } else {
+                ls?.setItem(key as string, JSON.stringify(value));
+              }
+            }),
+          );
       },
     });
 
