@@ -241,3 +241,5 @@ declare function getAncestorInfo(
   itemId: string,
   projectName: string,
 ): string;
+
+declare function getLocalStorageItems(): any;

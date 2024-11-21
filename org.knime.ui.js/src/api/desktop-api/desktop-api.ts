@@ -945,3 +945,13 @@ export const getAncestorInfo = async ({
   );
   return (data ? JSON.parse(data) : {}) as AncestorInfo;
 };
+
+export const getLocalStorageItems = () => {
+  return callBrowserFunction(
+    window.getLocalStorageItems,
+    [],
+    "Failed to get local storage items",
+    true,
+    { block: false },
+  );
+};

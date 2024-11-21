@@ -65,6 +65,22 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   ) {
     consola.trace("lifecycle::initializeApplication");
 
+    // populate local storage from backend
+    await runInEnvironment({
+      DESKTOP: async () => {
+        await API.desktop.getLocalStorageItems().then((localStorageItems) =>
+          Object.entries(localStorageItems).forEach(([key, value]) => {
+            const ls = window?.localStorage;
+            if (Object.keys(value as any).length === 0) {
+              ls?.removeItem(key as string);
+            } else {
+              ls?.setItem(key as string, JSON.stringify(value));
+            }
+          }),
+        );
+      },
+    });
+
     // Read settings saved in local storage
     await dispatch("settings/fetchSettings", {}, { root: true });
 
