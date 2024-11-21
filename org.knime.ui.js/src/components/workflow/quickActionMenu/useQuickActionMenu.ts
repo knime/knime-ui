@@ -25,11 +25,17 @@ export const useQuickActionMenu = ({
     ),
   );
 
-  watch(isQuickBuildAvailableForPort, (value) => {
-    if (!value) {
-      menuMode.value = "quick-add";
-    }
-  });
+  watch(
+    isQuickBuildAvailableForPort,
+    (value) => {
+      if (!value) {
+        setQuickAddMode();
+      }
+    },
+    {
+      immediate: true,
+    },
+  );
 
   return {
     menuMode,
