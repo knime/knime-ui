@@ -11,10 +11,9 @@ export const usePromptCollisionStrategies = () => {
 
       const prompt = () =>
         showConfirmDialog({
-          title: "Name collision handling",
+          title: "Name conflict",
           message:
-            "An item of this name already exists. Do you want to continue the operation?",
-
+            "An item of this name already exists in this location. Overwrite the existing item(s) or keep all by renaming automatically?",
           buttons: [
             {
               type: "cancel",
@@ -22,18 +21,18 @@ export const usePromptCollisionStrategies = () => {
             },
             {
               type: "confirm",
-              label: "Rename",
+              label: "Overwrite",
               flushRight: true,
               customHandler: ({ confirm }) => {
-                strategy = "AUTORENAME";
+                strategy = "OVERWRITE";
                 confirm();
               },
             },
             {
               type: "confirm",
-              label: "Overwrite",
+              label: "Rename",
               customHandler: ({ confirm }) => {
-                strategy = "OVERWRITE";
+                strategy = "AUTORENAME";
                 confirm();
               },
             },
