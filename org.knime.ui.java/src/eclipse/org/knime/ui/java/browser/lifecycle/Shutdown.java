@@ -48,14 +48,21 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.io.IOException;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.persistence.AppStatePersistor;
+import org.knime.ui.java.persistence.UserProfilePersistor;
+import org.knime.ui.java.profile.InternalUsage;
+import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.ui.java.util.UserDirectory;
 import org.osgi.service.prefs.BackingStoreException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The shutdown lifecycle state transition of the KNIME-UI. The {@link Suspend}-phase must have been run first.
@@ -63,6 +70,8 @@ import org.osgi.service.prefs.BackingStoreException;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 final class Shutdown {
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(Shutdown.class);
 
     private Shutdown() {
         //
@@ -72,24 +81,69 @@ final class Shutdown {
      * Runs the phase.
      *
      * @param state
+     * @param localStorageAccess
      */
-    static void run(final LifeCycleStateInternal state) {
+    static void run(final LifeCycleStateInternal state, final Function<String, String> localStorageAccess) {
         if (state != null) {
             AppStatePersistor.saveAppState(state.serializedAppState());
-            UserDirectory.getInternalUsageTracking().ifPresent(persistence -> {
-                try {
-                    persistence.write(state.getInternalUsageTracking());
-                } catch (IOException e) { // NOSONAR
-                    NodeLogger.getLogger(SaveState.class).warn("Could not save state", e);
-                }
-            });
+            saveUserProfile(state.getUserProfile(), localStorageAccess);
         }
         var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         prefs.putBoolean(SharedConstants.START_WEB_UI_PREF_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
         try {
             prefs.flush();
         } catch (BackingStoreException e) {
-            NodeLogger.getLogger(Shutdown.class).error(e);
+            LOGGER.error(e);
         }
+    }
+
+    private static void saveUserProfile(final UserProfile userProfile,
+        final Function<String, String> localStorageAccess) {
+        if (localStorageAccess != null) {
+            try {
+                var updatedUserProfile = updateUserProfileFromLocalStorage(userProfile, localStorageAccess);
+                UserProfilePersistor.saveUserProfile(updatedUserProfile);
+            } catch (JsonProcessingException e) {
+                LOGGER.error("Failed to save user profile", e);
+            }
+        } else {
+            LOGGER.error("Failed to save user profile, no local storage access");
+        }
+    }
+
+    private static UserProfile updateUserProfileFromLocalStorage(UserProfile userProfile,
+        final Function<String, String> localStorageAccess) throws JsonMappingException, JsonProcessingException {
+        var mapper = new ObjectMapper();
+        Map<String, String> uiSettings;
+        Map<String, String> onboardingHintsSettings;
+        var uiSettingsString = localStorageAccess.apply(UserProfile.UI_SETTINGS_LOCAL_STORAGE_KEY);
+        uiSettings = uiSettingsString != null ? mapper.readValue(uiSettingsString, Map.class) : Map.of();
+        var onboardingHintsSettingsString =
+            localStorageAccess.apply(UserProfile.ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY);
+        onboardingHintsSettings = onboardingHintsSettingsString != null
+            ? mapper.readValue(onboardingHintsSettingsString, Map.class) : Map.of();
+        userProfile = updateUserProfile(userProfile, uiSettings, onboardingHintsSettings);
+        return userProfile;
+    }
+
+    private static UserProfile updateUserProfile(final UserProfile userProfile, final Map<String, String> uiSettings,
+        final Map<String, String> onboardingHintsSettings) {
+        return new UserProfile() {
+
+            @Override
+            public Map<String, String> uiSettings() {
+                return uiSettings;
+            }
+
+            @Override
+            public Map<String, String> onboardingHintsSettings() {
+                return onboardingHintsSettings;
+            }
+
+            @Override
+            public InternalUsage internalUsage() {
+                return userProfile.internalUsage();
+            }
+        };
     }
 }

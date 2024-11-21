@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
-import org.knime.ui.java.profile.InternalUsageTracking;
+import org.knime.ui.java.profile.InternalUsage;
 
 /**
  * Tests functionality of HomePageAPI.
@@ -99,12 +99,12 @@ public class HomePageAPITest {
         assertThat(catId.id()).isEqualTo(catIdTest.id);
         assertThat(catId.isActive()).isNotNull();
         if (catIdTest.startsGreatThan >= 0) {
-            assertThat(catId.isActive().test(createTracking(catIdTest.startsGreatThan))).isFalse();
-            assertThat(catId.isActive().test(createTracking(catIdTest.startsGreatThan + 1))).isTrue();
+            assertThat(catId.isActive().test(createInternalUsage(catIdTest.startsGreatThan))).isFalse();
+            assertThat(catId.isActive().test(createInternalUsage(catIdTest.startsGreatThan + 1))).isTrue();
         }
         if (catIdTest.startsLessEqualTo >= 0) {
-            assertThat(catId.isActive().test(createTracking(catIdTest.startsLessEqualTo))).isTrue();
-            assertThat(catId.isActive().test(createTracking(catIdTest.startsLessEqualTo + 1))).isFalse();
+            assertThat(catId.isActive().test(createInternalUsage(catIdTest.startsLessEqualTo))).isTrue();
+            assertThat(catId.isActive().test(createInternalUsage(catIdTest.startsLessEqualTo + 1))).isFalse();
         }
     }
 
@@ -116,8 +116,8 @@ public class HomePageAPITest {
     private record CategoryIdTest(String id, int startsGreatThan, int startsLessEqualTo) {
     }
 
-    private static InternalUsageTracking createTracking(final int timesUiCreated) {
-        var res = new InternalUsageTracking();
+    private static InternalUsage createInternalUsage(final int timesUiCreated) {
+        var res = new InternalUsage();
         IntStream.range(0, timesUiCreated).forEach(i -> res.trackUiCreated());
         return res;
     }

@@ -146,7 +146,7 @@ class LifeCycleTest {
         assertThat(ServiceInstances.areServicesInitialized()).isFalse();
         assertThat(DesktopAPI.areDependenciesInjected()).isFalse();
 
-        lc.shutdown();
+        lc.shutdown(null);
         AppStatePersistorTest.assertAppStateFile();
     }
 
@@ -156,7 +156,7 @@ class LifeCycleTest {
         var biConsumer = mock(BiConsumer.class);
 
         lc.startup();
-        lc.shutdown(); // allowed directly after startup
+        lc.shutdown(null); // allowed directly after startup
 
         lc.resetLifeCycleState();
 
@@ -173,7 +173,7 @@ class LifeCycleTest {
         assertFails(() -> lc.reload());
         assertFails(() -> lc.saveState());
         assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown());
+        assertFails(() -> lc.shutdown(null));
 
         lc.init(false);
         assertFails(() -> lc.startup());
@@ -181,14 +181,14 @@ class LifeCycleTest {
         assertFails(() -> lc.reload());
         assertFails(() -> lc.saveState());
         assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown());
+        assertFails(() -> lc.shutdown(null));
 
         lc.webAppLoaded();
         assertFails(() -> lc.startup());
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown());
+        assertFails(() -> lc.shutdown(null));
 
         lc.saveState();
         assertFails(() -> lc.startup());
@@ -196,7 +196,7 @@ class LifeCycleTest {
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.shutdown());
+        assertFails(() -> lc.shutdown(null));
 
         lc.suspend();
         assertFails(() -> lc.startup());
@@ -209,7 +209,7 @@ class LifeCycleTest {
         lc.setStateTransition(StateTransition.SUSPEND);
         assertThat(lc.isLastStateTransition(StateTransition.SUSPEND)).isTrue();
 
-        lc.shutdown();
+        lc.shutdown(null);
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.webAppLoaded());
@@ -226,16 +226,16 @@ class LifeCycleTest {
         var lc = LifeCycle.get();
 
         lc.setStateTransition(StateTransition.CREATE);
-        lc.forceShutdown();
+        lc.forceShutdown(null);
 
         lc.setStateTransition(StateTransition.INIT);
-        lc.forceShutdown();
+        lc.forceShutdown(null);
 
         lc.setStateTransition(StateTransition.WEB_APP_LOADED);
-        lc.forceShutdown();
+        lc.forceShutdown(null);
 
         lc.setStateTransition(StateTransition.SUSPEND);
-        lc.forceShutdown();
+        lc.forceShutdown(null);
     }
 
     private static void assertFails(final Executable executable) {

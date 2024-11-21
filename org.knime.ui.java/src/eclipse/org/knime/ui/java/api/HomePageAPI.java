@@ -56,7 +56,7 @@ import java.util.regex.Pattern;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.product.rcp.intro.json.JSONCategory;
 import org.knime.product.rcp.intro.json.JSONTile;
-import org.knime.ui.java.profile.InternalUsageTracking;
+import org.knime.ui.java.profile.InternalUsage;
 import org.knime.ui.java.profile.UserProfile;
 
 /**
@@ -131,7 +131,7 @@ final class HomePageAPI {
         return Optional.of(new ConditionalCategory(categoryId, predicate));
     }
 
-    private static Predicate<InternalUsageTracking> parseParam(final String paramKey, final String paramValue) {
+    private static Predicate<InternalUsage> parseParam(final String paramKey, final String paramValue) {
         if ("startsLessEqualTo".equalsIgnoreCase(paramKey)) {
             return startsLessEqualTo(Integer.parseInt(paramValue));
         }
@@ -166,7 +166,7 @@ final class HomePageAPI {
 
     private static TileId selectTile(final WelcomeAPEndpoint endpoint, final UserProfile profile) {
         var usage = Optional.ofNullable(profile) //
-            .map(UserProfile::internalUsageTracking); //
+            .map(UserProfile::internalUsage); //
         if (usage.isEmpty()) {
             return defaultTile;
         }
@@ -177,11 +177,11 @@ final class HomePageAPI {
             .orElse(defaultTile);
     }
 
-    private static Predicate<InternalUsageTracking> startsGreaterThan(final int numberOfStarts) {
+    private static Predicate<InternalUsage> startsGreaterThan(final int numberOfStarts) {
         return usage -> usage.getTimesUiCreated() > numberOfStarts;
     }
 
-    private static Predicate<InternalUsageTracking> startsLessEqualTo(final int numberOfStarts) {
+    private static Predicate<InternalUsage> startsLessEqualTo(final int numberOfStarts) {
         return usage -> usage.getTimesUiCreated() <= numberOfStarts;
     }
 
@@ -195,7 +195,7 @@ final class HomePageAPI {
         );
     }
 
-    record ConditionalCategory(String id, Predicate<InternalUsageTracking> isActive) {
+    record ConditionalCategory(String id, Predicate<InternalUsage> isActive) {
 
     }
 

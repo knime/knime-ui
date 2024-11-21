@@ -51,6 +51,7 @@ package org.knime.ui.java.browser.lifecycle;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.LazyInitializer;
@@ -209,21 +210,27 @@ public final class LifeCycle {
     /**
      * Runs the shutdown-state-transition.
      *
+     * @param localStorageAccess a function that gives access to local storage items; function will return {@code null}
+     *            if there is no item for the given key
+     *
      * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
-    public void shutdown() {
-        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state), StateTransition.SUSPEND,
-            StateTransition.STARTUP);
+    public void shutdown(final Function<String, String> localStorageAccess) {
+        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state, localStorageAccess),
+            StateTransition.SUSPEND, StateTransition.STARTUP);
     }
 
     /**
      * Runs the shutdown-state-transition but doesn't check for the expected previous state-transition and swallows any
      * exception.
+     *
+     * @param localStorageAccess a function that gives access to local storage items; function will return {@code null}
+     *            if there is no item for the given key
      */
-    public void forceShutdown() {
+    public void forceShutdown(final Function<String, String> localStorageAccess) {
         doStateTransition(StateTransition.SHUTDOWN, () -> {
             try {
-                Shutdown.run(m_state);
+                Shutdown.run(m_state, localStorageAccess);
             } catch (Throwable e) { // NOSONAR we're shutting down anyway, so catch everything
                 getLogger().error("Unexpected problem on shutdown", e);
             }

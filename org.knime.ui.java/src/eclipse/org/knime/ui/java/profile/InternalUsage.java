@@ -1,5 +1,6 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME AG, Zurich, Switzerland
  *  Website: http://www.knime.com; Email: contact@knime.com
  *
@@ -40,63 +41,37 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * -------------------------------------------------------------------
+ * ---------------------------------------------------------------------
  */
-package org.knime.ui.java.persistence;
+package org.knime.ui.java.profile;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Provide persistence of a POJO ("plain old java object") to a YAML file.
- *
- * @param <V>
+ * Usage tracking used "internally" (i.e. in the AP) to control other aspects of the application.
  */
-public class FileBackedPojo<V extends FileBackedPojo.Compatible> implements Persistence<V> {
+@SuppressWarnings("javadoc")
+public class InternalUsage {
 
-    private final Path m_filePath;
+    @JsonProperty("timesUiCreated")
+    private int m_timesUiCreated;
 
-    private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+    @JsonAnyGetter
+    @JsonAnySetter
+    private Map<String, Object> m_unknownProperties;
 
-    private final Class<V> m_clazz;
-
-    @SuppressWarnings("javadoc")
-    public FileBackedPojo(final Path filePath, final Class<V> clazz) {
-        m_clazz = clazz;
-        m_filePath = filePath;
+    @JsonIgnore
+    public int getTimesUiCreated() {
+        return m_timesUiCreated;
     }
 
-
-    @Override
-    public Optional<V> read() throws IOException {
-        try {
-            return Optional.of(MAPPER.readValue(m_filePath.toFile(), m_clazz));
-        } catch (FileNotFoundException e) { // NOSONAR
-            return Optional.empty();
-        }
+    public void trackUiCreated() {
+        this.m_timesUiCreated = this.m_timesUiCreated + 1;
     }
 
-    @Override
-    public void write(final V value) throws IOException {
-        MAPPER.writeValue(m_filePath.toFile(), value);
-    }
-
-    /**
-     * A class extending this class will read/write unknown fields to this map.
-     */
-    public static class Compatible {
-
-        @JsonAnyGetter
-        @JsonAnySetter
-        private Map<String, Object> m_unknownProperties;
-
-    }
 }

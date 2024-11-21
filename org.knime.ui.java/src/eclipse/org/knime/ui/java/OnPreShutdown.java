@@ -49,6 +49,7 @@
 package org.knime.ui.java;
 
 import org.knime.product.rcp.shutdown.PreShutdown;
+import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
@@ -84,6 +85,6 @@ public class OnPreShutdown implements PreShutdown {
         if (lifeCycle.isLastStateTransition(StateTransition.SAVE_STATE)) {
             lifeCycle.suspend();
         }
-        lifeCycle.forceShutdown();
+        lifeCycle.forceShutdown(KnimeBrowserView::getLocalStorageItem);
     }
 }
