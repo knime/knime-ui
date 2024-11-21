@@ -50,15 +50,12 @@ package org.knime.ui.java.api;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -89,7 +86,6 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
@@ -97,7 +93,10 @@ import org.knime.workbench.explorer.dialogs.Validator;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions around spaces.
@@ -133,17 +132,21 @@ final class SpaceAPI {
     }
 
     /**
-     * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
+     * Tries to connect a space provider to its remote location if it's not connected already (i.e. essentially calls
+     * {@link SpaceProvider#connect()}. And returns the space provider information (no matter whether it has been
+     * connected already or not).
      *
-     * @return A JSON object with all the space information. Returns {@code null} otherwise.
+     * @return A JSON object with all the space provider information.
+     * @throws NoSuchElementException if there is no space provider for the given id
      */
     @API
     static String connectSpaceProvider(final String spaceProviderId) {
         final var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
-        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
-            return SpaceProvidersUtil.buildSpaceProviderObjectNode(spaceProvider, true).toPrettyString();
+        if (spaceProvider == null) {
+            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }
-        return null;
+        var isConnected = spaceProvider.getConnection(false).isPresent();
+        return SpaceProvidersUtil.buildSpaceProviderObjectNode(spaceProvider, !isConnected).toPrettyString();
     }
 
     /**
@@ -291,7 +294,7 @@ final class SpaceAPI {
         return result.successful();
     }
 
-    private static boolean showUploadWarning(Locator.Destination destination) {
+    private static boolean showUploadWarning(final Locator.Destination destination) {
         if (destination.space().toEntity().isPrivate()) { // NOSONAR
             return true;
         }
