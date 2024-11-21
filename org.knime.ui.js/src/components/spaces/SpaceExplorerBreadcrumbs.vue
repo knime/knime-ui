@@ -19,6 +19,7 @@ const breadcrumbItems = computed<Array<BreadcrumbItem>>(() => {
   const homeBreadcrumbItem = {
     icon: HouseIcon,
     id: "root",
+    title: "Home",
   };
 
   if (!props.activeWorkflowGroup) {
@@ -46,6 +47,7 @@ const breadcrumbItems = computed<Array<BreadcrumbItem>>(() => {
       text: pathItem.name,
       id: pathItem.id,
       clickable: index !== lastPathIndex,
+      title: pathItem.name,
     })),
   );
 });
@@ -93,6 +95,13 @@ const onBreadcrumbClick = ({ id }: BreadcrumbItem) => {
       &:hover {
         color: var(--knime-masala);
       }
+    }
+
+    & :deep(ul > li:not(:last-child) > span) {
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }

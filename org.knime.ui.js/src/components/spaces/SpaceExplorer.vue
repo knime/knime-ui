@@ -220,6 +220,7 @@ watch(isLoadingContent, () => {
   <div :class="mode" class="space-explorer">
     <SpaceExplorerBreadcrumbs
       :active-workflow-group="activeWorkflowGroup"
+      class="breadcrumb-container"
       @click="onChangeDirectory"
     />
 
@@ -294,5 +295,12 @@ watch(isLoadingContent, () => {
 
 .space-explorer {
   width: 100%;
+}
+
+.breadcrumb-container {
+  max-width: 900px;
+  width: 100%;
+  overflow-x: auto;
+  flex-shrink: 0;
 }
 </style>
