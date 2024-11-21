@@ -51,7 +51,7 @@ package org.knime.ui.java.browser.lifecycle;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.LazyInitializer;
@@ -215,7 +215,7 @@ public final class LifeCycle {
      *
      * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
-    public void shutdown(final Function<String, String> localStorageAccess) {
+    public void shutdown(final UnaryOperator<String> localStorageAccess) {
         doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state, localStorageAccess),
             StateTransition.SUSPEND, StateTransition.STARTUP);
     }
@@ -227,7 +227,7 @@ public final class LifeCycle {
      * @param localStorageAccess a function that gives access to local storage items; function will return {@code null}
      *            if there is no item for the given key
      */
-    public void forceShutdown(final Function<String, String> localStorageAccess) {
+    public void forceShutdown(final UnaryOperator<String> localStorageAccess) {
         doStateTransition(StateTransition.SHUTDOWN, () -> {
             try {
                 Shutdown.run(m_state, localStorageAccess);

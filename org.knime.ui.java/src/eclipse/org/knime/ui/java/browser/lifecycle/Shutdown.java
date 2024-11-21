@@ -49,7 +49,7 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.core.node.NodeLogger;
@@ -83,7 +83,7 @@ final class Shutdown {
      * @param state
      * @param localStorageAccess
      */
-    static void run(final LifeCycleStateInternal state, final Function<String, String> localStorageAccess) {
+    static void run(final LifeCycleStateInternal state, final UnaryOperator<String> localStorageAccess) {
         if (state != null) {
             AppStatePersistor.saveAppState(state.serializedAppState());
             saveUserProfile(state.getUserProfile(), localStorageAccess);
@@ -97,8 +97,7 @@ final class Shutdown {
         }
     }
 
-    private static void saveUserProfile(final UserProfile userProfile,
-        final Function<String, String> localStorageAccess) {
+    private static void saveUserProfile(final UserProfile userProfile, final UnaryOperator<String> localStorageAccess) {
         if (localStorageAccess != null) {
             try {
                 var updatedUserProfile = updateUserProfileFromLocalStorage(userProfile, localStorageAccess);
@@ -112,7 +111,7 @@ final class Shutdown {
     }
 
     private static UserProfile updateUserProfileFromLocalStorage(UserProfile userProfile,
-        final Function<String, String> localStorageAccess) throws JsonMappingException, JsonProcessingException {
+        final UnaryOperator<String> localStorageAccess) throws JsonMappingException, JsonProcessingException {
         var mapper = new ObjectMapper();
         Map<String, String> uiSettings;
         Map<String, String> onboardingHintsSettings;

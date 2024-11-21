@@ -157,17 +157,16 @@ public class KnimeBrowserView {
      * @return the value of the local storage item or {@code null} if not available or couldn't be accessed
      */
     public static String getLocalStorageItem(final String key) {
-        if (browser != null) {
-            if (!browser.isDisposed()) {
-                try {
-                    var item = ((ChromiumBrowser)browser.getWebBrowser()).getLocalStorage().getItem(key);
-                    if (item != null) {
-                        return item.get();
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e);
-                }
+        if (browser == null || browser.isDisposed()) {
+            return null;
+        }
+        try {
+            var item = ((ChromiumBrowser)browser.getWebBrowser()).getLocalStorage().getItem(key);
+            if (item != null) {
+                return item.get();
             }
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e);
         }
         return null;
     }
