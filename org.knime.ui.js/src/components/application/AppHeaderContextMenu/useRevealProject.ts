@@ -87,13 +87,15 @@ export const useRevealProject = (options: UseRevealProject) => {
     });
   };
 
-  const navigateToSpaceBrowsingPage = async (origin: SpaceItemReference) => {
+  const navigateToSpaceBrowsingPage = async (
+    origin: SpaceItemReference,
+    projectName: string,
+  ) => {
     const group = findSpaceGroupFromSpaceId(
       store.state.spaces.spaceProviders ?? {},
       origin.spaceId,
     );
-
-    store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
+    const { ancestorItemIds } = await getAncestorInfo(origin, projectName);
 
     await $router.push({
       name: APP_ROUTES.Home.SpaceBrowsingPage,
@@ -101,9 +103,11 @@ export const useRevealProject = (options: UseRevealProject) => {
         spaceProviderId: origin.providerId,
         spaceId: origin.spaceId,
         groupId: group?.id,
-        itemId: origin.ancestorItemIds?.at(0) ?? "root",
+        itemId: ancestorItemIds?.at(0) ?? "root",
       },
     });
+
+    store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
   };
 
   const displaySpaceExplorerSidebar = async (
@@ -216,7 +220,10 @@ export const useRevealProject = (options: UseRevealProject) => {
           }
 
           if (!activeProjectId.value) {
-            await navigateToSpaceBrowsingPage(foundProject.origin);
+            await navigateToSpaceBrowsingPage(
+              foundProject.origin,
+              foundProject.name,
+            );
             return;
           }
 
