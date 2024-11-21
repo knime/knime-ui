@@ -154,6 +154,7 @@ describe("SpacePageNavItems.vue", () => {
     it("should connect to provider and then navigate", async () => {
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce({
         ...hubProvider2,
+        connected: true,
         spaceGroups: [spaceGroup2],
       });
 

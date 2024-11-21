@@ -78,7 +78,13 @@ export const useSpaceProviderAuth = () => {
     try {
       const currentRoute = $route.fullPath;
 
-      await store.dispatch("spaces/connectProvider", { spaceProviderId });
+      const { isConnected } = await store.dispatch("spaces/connectProvider", {
+        spaceProviderId,
+      });
+
+      if (!isConnected) {
+        return;
+      }
 
       // if route updated while login was in progress then skip redirect
       if (currentRoute !== $route.fullPath) {

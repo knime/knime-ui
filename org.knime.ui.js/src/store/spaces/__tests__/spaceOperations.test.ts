@@ -318,7 +318,6 @@ describe("spaces::spaceOperations", () => {
       );
     });
 
-    // eslint-disable-next-line vitest/no-focused-tests
     it("should throw StoreActionException if content refresh fails after folder is created", () => {
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
         createSpaceProvider({ connected: true }),

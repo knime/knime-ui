@@ -110,10 +110,16 @@ const onSpaceChange = async ({
 
   try {
     // handle sign in request
-    const { spaces: [firstSpace = null] = [] } = await store.dispatch(
+    const { isConnected, providerData } = await store.dispatch(
       "spaces/connectProvider",
       { spaceProviderId },
     );
+
+    const { spaces: [firstSpace = null] = [] } = providerData;
+
+    if (!isConnected) {
+      return;
+    }
 
     // change to first space if we have one
     if (firstSpace) {
@@ -125,9 +131,7 @@ const onSpaceChange = async ({
     const providerName =
       store.state.spaces.spaceProviders?.[spaceProviderId]?.name ?? "remote";
 
-    $toast.show({
-      message: `Could not connect to ${providerName}`,
-    });
+    $toast.show({ message: `Could not connect to ${providerName}` });
   }
 };
 

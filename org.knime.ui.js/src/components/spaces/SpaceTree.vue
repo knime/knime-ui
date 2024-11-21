@@ -217,14 +217,14 @@ const connectProvider = async (
 
   // handle sign in request
   try {
-    const connectedProvider = await store.dispatch("spaces/connectProvider", {
-      spaceProviderId,
-    });
-    const isAuthenticated =
-      store.state.spaces.spaceProviders?.[spaceProviderId]?.connected;
-    if (isAuthenticated) {
+    const { isConnected, providerData } = await store.dispatch(
+      "spaces/connectProvider",
+      { spaceProviderId },
+    );
+
+    if (isConnected) {
       callback(
-        connectedProvider.spaceGroups.map((group) =>
+        providerData.spaceGroups.map((group) =>
           mapSpaceGroupToTree(group, { spaceProviderId }),
         ),
       );

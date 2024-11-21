@@ -45,22 +45,28 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         );
       }
 
-      // fetch the spaces if we are now connected
-      const spaceProviderData = spaceProvider?.connected
-        ? await dispatch("fetchProviderSpaces", { id: spaceProviderId })
-        : {};
+      if (!spaceProvider.connected) {
+        return { isConnected: false, providerData: null };
+      }
 
-      consola.info("action::connectProvider -> connected", {
+      // fetch the spaces if we are now connected
+      const spaceProviderData = await dispatch("fetchProviderSpaces", {
+        id: spaceProviderId,
+      });
+
+      consola.info("action::connectProvider -> updating space provider", {
         spaceProvider,
         spaceProviderData,
       });
 
+      const updatedProvider = { ...spaceProvider, ...spaceProviderData };
+
       commit("updateSpaceProvider", {
         id: spaceProviderId,
-        value: { ...spaceProvider, ...spaceProviderData },
+        value: updatedProvider,
       });
 
-      return spaceProviderData;
+      return { isConnected: true, providerData: updatedProvider };
     } catch (error) {
       consola.error("action::connectProvider -> Error connecting to provider", {
         error,

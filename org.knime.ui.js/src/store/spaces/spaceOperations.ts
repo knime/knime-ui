@@ -89,12 +89,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         });
 
       return content;
-    } catch (error) {
+    } catch (dataFetchError) {
       if (retry) {
-        try {
-          await dispatch("connectProvider", { spaceProviderId });
-        } catch (error) {
-          throw error;
+        const { isConnected } = await dispatch("connectProvider", {
+          spaceProviderId,
+        });
+
+        if (!isConnected) {
+          throw dataFetchError;
         }
 
         const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
@@ -107,9 +109,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         return content;
       } else {
         consola.error("Error trying to fetch workflow group content", {
-          error,
+          error: dataFetchError,
         });
-        throw error;
+        throw dataFetchError;
       }
     } finally {
       commit("setIsLoadingContent", false);

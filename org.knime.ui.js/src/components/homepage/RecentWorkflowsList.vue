@@ -72,11 +72,11 @@ const tryConnectToProvider = async (
   provider: SpaceProviderNS.SpaceProvider,
 ) => {
   try {
-    await store.dispatch("spaces/connectProvider", {
+    const { isConnected } = await store.dispatch("spaces/connectProvider", {
       spaceProviderId: provider.id,
     });
 
-    return true;
+    return isConnected;
   } catch (error) {
     $toast.show({
       type: "error",
