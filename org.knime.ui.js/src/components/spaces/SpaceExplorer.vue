@@ -232,6 +232,7 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
   <div :class="mode" class="space-explorer">
     <SpaceExplorerBreadcrumbs
       :active-workflow-group="activeWorkflowGroup"
+      class="breadcrumb-container"
       @click="onChangeDirectory"
     />
 
@@ -327,5 +328,12 @@ const { shouldShowCustomPreview, nodeTemplate, onDrag, onDragEnd } =
   --smartloader-bg: var(--knime-gray-ultra-light);
   --smartloader-icon-size: 30;
   --smartloader-z-index: 2;
+}
+
+.breadcrumb-container {
+  max-width: 900px;
+  width: 100%;
+  overflow-x: auto;
+  flex-shrink: 0;
 }
 </style>

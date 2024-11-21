@@ -12,6 +12,16 @@
     "1094544|postcss": {
       "decision": "ignore",
       "madeAt": 1699363284248
+    },
+    "1099596|dompurify": {
+      "decision": "ignore",
+      "madeAt": 1732614047176,
+      "expiresAt": 1735206037187
+    },
+    "1100055|dompurify": {
+      "decision": "ignore",
+      "madeAt": 1732614054905,
+      "expiresAt": 1735206037187
     }
   },
   "rules": {},
