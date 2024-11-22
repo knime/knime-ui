@@ -72,11 +72,13 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
           .getPersistedLocalStorageData()
           .then((localStorageItems) =>
             Object.entries(localStorageItems).forEach(([key, value]) => {
-              const ls = window?.localStorage;
               if (Object.keys(value as any).length === 0) {
-                ls?.removeItem(key as string);
+                window.localStorage.removeItem(key as string);
               } else {
-                ls?.setItem(key as string, JSON.stringify(value));
+                window.localStorage.setItem(
+                  key as string,
+                  JSON.stringify(value),
+                );
               }
             }),
           );
