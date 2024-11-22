@@ -78,7 +78,9 @@ final class KnimeBrowserHealthChecker {
     private static final String EMPTY_SVG =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"/>";
 
-    private static final int INTERVAL_IN_MS = 10_000;
+    private static final int INTERVAL_IN_MS = 5_000;
+
+    private static final int TIMEOUT_IN_SECONDS = 10;
 
     private static Timer browerHealthCheckTimer;
 
@@ -97,7 +99,7 @@ final class KnimeBrowserHealthChecker {
                 }
                 try {
                     CEFUtils.evaluateInBrowser((ChromiumBrowser)browser.getWebBrowser(), "return true;",
-                        Duration.ofSeconds(5));
+                        Duration.ofSeconds(TIMEOUT_IN_SECONDS));
                 } catch (TimeoutException ex) { // NOSONAR
                     Display.getDefault().syncExec(() -> {
                         var dialog = createMessageDialog();
