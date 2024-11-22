@@ -57,7 +57,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.profile.InternalUsage;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.ui.java.profile.UserProfile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,8 +82,8 @@ public final class UserProfilePersistor {
     private static final UserProfileFile<Map> ONBOARDING_HINTS_SETTINGS_FILE = new UserProfileFile<>(
         "onboarding-hints-settings.yaml", UserProfile::onboardingHintsSettings, Map::of, Map.class);
 
-    private static final UserProfileFile<InternalUsage> USAGE_FILE =
-        new UserProfileFile<>("usage.yaml", UserProfile::internalUsage, InternalUsage::new, InternalUsage.class);
+    private static final UserProfileFile<InternalUsageTracking> USAGE_FILE =
+        new UserProfileFile<>("usage.yaml", UserProfile::internalUsage, InternalUsageTracking::new, InternalUsageTracking.class);
 
     private UserProfilePersistor() {
         // utility
@@ -129,7 +129,7 @@ public final class UserProfilePersistor {
             }
 
             @Override
-            public InternalUsage internalUsage() {
+            public InternalUsageTracking internalUsage() {
                 return usage;
             }
         };
@@ -152,7 +152,7 @@ public final class UserProfilePersistor {
         }
 
         @Override
-        public InternalUsage internalUsage() {
+        public InternalUsageTracking internalUsage() {
             return USAGE_FILE.emptyValueSupplier.get();
         }
     };

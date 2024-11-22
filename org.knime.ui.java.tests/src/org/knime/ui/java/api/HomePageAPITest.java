@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
-import org.knime.ui.java.profile.InternalUsage;
+import org.knime.ui.java.profile.InternalUsageTracking;
 
 /**
  * Tests functionality of HomePageAPI.
@@ -116,8 +116,8 @@ public class HomePageAPITest {
     private record CategoryIdTest(String id, int startsGreatThan, int startsLessEqualTo) {
     }
 
-    private static InternalUsage createInternalUsage(final int timesUiCreated) {
-        var res = new InternalUsage();
+    private static InternalUsageTracking createInternalUsage(final int timesUiCreated) {
+        var res = new InternalUsageTracking();
         IntStream.range(0, timesUiCreated).forEach(i -> res.trackUiCreated());
         return res;
     }

@@ -56,7 +56,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Usage tracking used "internally" (i.e. in the AP) to control other aspects of the application.
  */
 @SuppressWarnings("javadoc")
-public class InternalUsage {
+public class InternalUsageTracking {
 
     @JsonProperty("timesUiCreated")
     private int m_timesUiCreated;

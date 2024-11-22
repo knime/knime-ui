@@ -62,9 +62,9 @@ public interface UserProfile {
     String ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY = "onboarding.hints.user";
 
     /**
-     * @return the {@link InternalUsage} instance
+     * @return the {@link InternalUsageTracking} instance
      */
-    InternalUsage internalUsage();
+    InternalUsageTracking internalUsage();
 
     /**
      * @return a map representing the ui-settings

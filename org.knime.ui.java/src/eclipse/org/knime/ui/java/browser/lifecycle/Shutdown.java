@@ -55,7 +55,7 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.persistence.UserProfilePersistor;
-import org.knime.ui.java.profile.InternalUsage;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.UserDirectory;
@@ -146,7 +146,7 @@ final class Shutdown {
             }
 
             @Override
-            public InternalUsage internalUsage() {
+            public InternalUsageTracking internalUsage() {
                 return userProfile.internalUsage();
             }
         };

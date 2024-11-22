@@ -59,7 +59,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.util.FileUtil;
-import org.knime.ui.java.profile.InternalUsage;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.ui.java.profile.UserProfile;
 
 /**
@@ -152,8 +152,8 @@ class UserProfilePersistorTest {
         return new UserProfile() {
 
             @Override
-            public InternalUsage internalUsage() {
-                var usage = new InternalUsage();
+            public InternalUsageTracking internalUsage() {
+                var usage = new InternalUsageTracking();
                 usage.trackUiCreated();
                 usage.trackUiCreated();
                 return usage;
