@@ -64,6 +64,7 @@ import org.knime.ui.java.util.UserDirectory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 
 /**
  * Utlity class to read and write the user profile to the file system.
@@ -74,7 +75,8 @@ public final class UserProfilePersistor {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(UserProfilePersistor.class);
 
-    private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+    private static final ObjectMapper MAPPER =
+        new ObjectMapper(YAMLFactory.builder().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER).build());
 
     private static final Optional<Path> USER_PROFILE_PATH = UserDirectory.getProfileDirectory();
 

@@ -107,19 +107,16 @@ class UserProfilePersistorTest {
         var profileDir = userDir.resolve("profile");
         var ui_settings = Files.readString(profileDir.resolve("ui-settings.yaml"));
         assertIsEqualIgnoreLineOrder(ui_settings, """
-                ---
                 setting2: "value2"
                 setting1: "value1"
                 """);
         var onboadingHintsSettings = Files.readString(profileDir.resolve("onboarding-hints-settings.yaml"));
         assertIsEqualIgnoreLineOrder(onboadingHintsSettings, """
-                ---
                 hint1: "value1"
                 hint2: "value2"
                 """);
         var usage = Files.readString(profileDir.resolve("usage.yaml"));
         assertIsEqualIgnoreLineOrder(usage, """
-                ---
                 timesUiCreated: 2
                 """);
 
@@ -142,7 +139,6 @@ class UserProfilePersistorTest {
         var profileDir = userDir.resolve("profile");
         Files.createDirectory(profileDir);
         Files.writeString(profileDir.resolve("usage.yaml"), """
-                ---
                 timesUiCreated: 2
                 unknownProperty: "blub"
                 """);
@@ -154,7 +150,6 @@ class UserProfilePersistorTest {
         UserProfilePersistor.saveUserProfile(userProfile);
         var uiSettings = Files.readString(profileDir.resolve("usage.yaml"));
         assertIsEqualIgnoreLineOrder(uiSettings, """
-                ---
                 timesUiCreated: 3
                 unknownProperty: "blub"
                 """);
