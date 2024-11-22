@@ -58,6 +58,7 @@ import org.knime.ui.java.persistence.UserProfilePersistor;
 import org.knime.ui.java.profile.InternalUsage;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.ui.java.util.UserDirectory;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -98,15 +99,20 @@ final class Shutdown {
     }
 
     private static void saveUserProfile(final UserProfile userProfile, final UnaryOperator<String> localStorageAccess) {
-        if (localStorageAccess != null) {
-            try {
-                var updatedUserProfile = updateUserProfileFromLocalStorage(userProfile, localStorageAccess);
-                UserProfilePersistor.saveUserProfile(updatedUserProfile);
-            } catch (JsonProcessingException e) {
-                LOGGER.error("Failed to save user profile", e);
-            }
-        } else {
+        var userProfilePath = UserDirectory.getProfileDirectory();
+        if (userProfilePath.isEmpty()) {
+            LOGGER.error("Can't write user profile. No user profile location set.");
+            return;
+        }
+        if (localStorageAccess == null) {
             LOGGER.error("Failed to save user profile, no local storage access");
+            return;
+        }
+        try {
+            var updatedUserProfile = updateUserProfileFromLocalStorage(userProfile, localStorageAccess);
+            UserProfilePersistor.saveUserProfile(updatedUserProfile, userProfilePath.get());
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to save user profile", e);
         }
     }
 

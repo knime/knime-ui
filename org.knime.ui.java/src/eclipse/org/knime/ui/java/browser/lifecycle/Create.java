@@ -78,8 +78,10 @@ import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.persistence.UserProfilePersistor;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
+import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.ui.java.util.UserDirectory;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
 import org.knime.workbench.workflowcoach.NodeRecommendationUpdater;
@@ -129,11 +131,21 @@ final class Create {
         var localWorkspace = createLocalWorkspace();
         ProjectWorkflowMap.isActive = false;
         AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localWorkspace);
-        var userProfile = UserProfilePersistor.loadUserProfile();
+        var userProfile = loadUserProfile();
         userProfile.internalUsage().trackUiCreated();
 
         return LifeCycleStateInternal.of(projectManager, mostRecentlyUsedProjects, localWorkspace,
             WelcomeAPEndpoint.getInstance(), userProfile);
+    }
+
+    private static UserProfile loadUserProfile() {
+        var userProfilePath = UserDirectory.getProfileDirectory();
+        var userProfile = userProfilePath.map(UserProfilePersistor::loadUserProfile)
+            .orElseGet(UserProfilePersistor::createEmptyUserProfile);
+        if (userProfilePath.isEmpty()) {
+            NodeLogger.getLogger(Create.class).error("Can't read user profile. No user profile location set.");
+        }
+        return userProfile;
     }
 
     private static void assertNoOpenClassicEditors() {

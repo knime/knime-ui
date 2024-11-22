@@ -53,14 +53,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.profile.InternalUsage;
 import org.knime.ui.java.profile.UserProfile;
-import org.knime.ui.java.util.UserDirectory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -77,8 +75,6 @@ public final class UserProfilePersistor {
 
     private static final ObjectMapper MAPPER =
         new ObjectMapper(YAMLFactory.builder().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER).build());
-
-    private static final Optional<Path> USER_PROFILE_PATH = UserDirectory.getProfileDirectory();
 
     private static final UserProfileFile<Map> UI_SETTINGS_FILE =
         new UserProfileFile<>("ui-settings.yaml", UserProfile::uiSettings, Map::of, Map.class);
@@ -97,30 +93,29 @@ public final class UserProfilePersistor {
      * Saves the user profile to the file system.
      *
      * @param userProfile
+     * @param profilePath
      */
-    public static void saveUserProfile(final UserProfile userProfile) {
-        USER_PROFILE_PATH
-            .ifPresent(path -> List.of(UI_SETTINGS_FILE, ONBOARDING_HINTS_SETTINGS_FILE, USAGE_FILE).forEach(f -> {
-                try {
-                    MAPPER.writeValue(path.resolve(f.fileName).toFile(), f.getValue.apply(userProfile));
-                } catch (IOException e) {
-                    LOGGER.error("Failed to write user profile file: " + f.fileName, e);
-                }
-            }));
+    public static void saveUserProfile(final UserProfile userProfile, final Path profilePath) {
+        List.of(UI_SETTINGS_FILE, ONBOARDING_HINTS_SETTINGS_FILE, USAGE_FILE).forEach(f -> {
+            try {
+                MAPPER.writeValue(profilePath.resolve(f.fileName).toFile(), f.getValue.apply(userProfile));
+            } catch (IOException e) {
+                LOGGER.error("Failed to write user profile file: " + f.fileName, e);
+            }
+        });
     }
 
     /**
      * Reads the user profile from the file system.
      *
+     * @param profilePath
+     *
      * @return a new instance of {@link UserProfile}
      */
-    public static UserProfile loadUserProfile() {
-        if (USER_PROFILE_PATH.isEmpty()) {
-            LOGGER.error("Can't read user profile. No user profile location set.");
-        }
-        var uiSettings = readUserProfileFile(UI_SETTINGS_FILE);
-        var onboardingHints = readUserProfileFile(ONBOARDING_HINTS_SETTINGS_FILE);
-        var usage = readUserProfileFile(USAGE_FILE);
+    public static UserProfile loadUserProfile(final Path profilePath) {
+        var uiSettings = readUserProfileFile(UI_SETTINGS_FILE, profilePath);
+        var onboardingHints = readUserProfileFile(ONBOARDING_HINTS_SETTINGS_FILE, profilePath);
+        var usage = readUserProfileFile(USAGE_FILE, profilePath);
         return new UserProfile() {
 
             @Override
@@ -140,18 +135,39 @@ public final class UserProfilePersistor {
         };
     }
 
-    private static <T> T readUserProfileFile(final UserProfileFile<T> upFile) {
-        return USER_PROFILE_PATH.map(path -> {
-            try {
-                var file = path.resolve(upFile.fileName);
-                if (Files.exists(file)) {
-                    return MAPPER.readValue(path.resolve(upFile.fileName).toFile(), upFile.type);
-                }
-            } catch (IOException e) {
-                LOGGER.error("Failed to read user profile file: " + upFile.fileName, e);
+    /**
+     * @return an instance representing an empty user profile
+     */
+    public static UserProfile createEmptyUserProfile() {
+       return new UserProfile() {
+
+        @Override
+        public Map<String, String> uiSettings() {
+            return UI_SETTINGS_FILE.emptyValueSupplier.get();
+        }
+
+        @Override
+        public Map<String, String> onboardingHintsSettings() {
+            return ONBOARDING_HINTS_SETTINGS_FILE.emptyValueSupplier.get();
+        }
+
+        @Override
+        public InternalUsage internalUsage() {
+            return USAGE_FILE.emptyValueSupplier.get();
+        }
+    };
+    }
+
+    private static <T> T readUserProfileFile(final UserProfileFile<T> upFile, final Path profilePath) {
+        try {
+            var file = profilePath.resolve(upFile.fileName);
+            if (Files.exists(file)) {
+                return MAPPER.readValue(profilePath.resolve(upFile.fileName).toFile(), upFile.type);
             }
-            return upFile.emptyValueSupplier.get();
-        }).orElseGet(upFile.emptyValueSupplier::get);
+        } catch (IOException e) {
+            LOGGER.error("Failed to read user profile file: " + upFile.fileName, e);
+        }
+        return upFile.emptyValueSupplier.get();
     }
 
     private record UserProfileFile<T>(String fileName, Function<UserProfile, T> getValue,
