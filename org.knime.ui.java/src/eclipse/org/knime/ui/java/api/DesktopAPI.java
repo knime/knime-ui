@@ -60,7 +60,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.profile.UserProfile;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.NodeRepository;
@@ -71,6 +70,7 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
+import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
@@ -147,6 +147,7 @@ public final class DesktopAPI {
                         var res = invokeMethod(method, args);
                         event.set("result", MAPPER.valueToTree(res));
                     } catch (Throwable e) {  // NOSONAR
+                        LOGGER.debug("Desktop API function call failed for '" + name + "'", e);
                         event.put("error", e.getMessage());
                     }
                     var eventConsumer = getDeps(EventConsumer.class);
@@ -207,7 +208,7 @@ public final class DesktopAPI {
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
         final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace,
         final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects,
-        UserProfile userProfile) {
+        final UserProfile userProfile) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -228,7 +229,7 @@ public final class DesktopAPI {
         injectDependency(userProfile);
     }
 
-    private static void injectDependency(UserProfile userProfile) {
+    private static void injectDependency(final UserProfile userProfile) {
         DEPENDENCIES.put(UserProfile.class, userProfile);
     }
 
