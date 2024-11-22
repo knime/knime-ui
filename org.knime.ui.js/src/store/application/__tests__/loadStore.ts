@@ -1,6 +1,7 @@
 import { type Mock, vi } from "vitest";
 
 import { API } from "@/api";
+import { APP_ROUTES } from "@/router/appRoutes";
 import * as applicationStore from "@/store/application";
 import * as selectionStore from "@/store/selection";
 import * as spacesStore from "@/store/spaces";
@@ -15,7 +16,7 @@ export const applicationState = {
   openProjects: [{ projectId: "foo", name: "bar" }],
 };
 
-type Options = { autoApplySettingsMock?: Mock<[], boolean> };
+type Options = { autoApplySettingsMock?: Mock<() => boolean> };
 export const loadStore = (options: Options = {}) => {
   mockedAPI.application.getState.mockReturnValue(applicationState);
   mockedAPI.desktop.getCustomHelpMenuEntries.mockResolvedValue({});
@@ -104,6 +105,7 @@ export const loadStore = (options: Options = {}) => {
 
   const mockRouter = {
     push: vi.fn(),
+    currentRoute: { value: { name: APP_ROUTES.WorkflowPage as string } },
   };
 
   return {

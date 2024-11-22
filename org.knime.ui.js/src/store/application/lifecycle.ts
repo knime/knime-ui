@@ -233,11 +233,18 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     consola.trace("action::setActiveProject");
     const { openProjects } = state;
 
+    const goHomeIfNoActiveProject = () => {
+      const { currentRoute } = $router;
+
+      if (currentRoute.value.name === APP_ROUTES.WorkflowPage) {
+        $router.push({ name: APP_ROUTES.Home.GetStarted });
+      }
+    };
+
     if (openProjects.length === 0) {
       consola.trace("action::setActiveProject -> No workflows opened");
-      await runInEnvironment({
-        DESKTOP: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
-      });
+      await runInEnvironment({ DESKTOP: goHomeIfNoActiveProject });
+
       return;
     }
 
@@ -248,9 +255,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       consola.trace(
         "action::setActiveProject -> No active project set. Redirecting home",
       );
-      await runInEnvironment({
-        DESKTOP: () => $router.push({ name: APP_ROUTES.Home.GetStarted }),
-      });
+      await runInEnvironment({ DESKTOP: goHomeIfNoActiveProject });
       return;
     }
 

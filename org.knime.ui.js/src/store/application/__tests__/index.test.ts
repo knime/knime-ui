@@ -228,6 +228,21 @@ describe("application::index", () => {
         name: APP_ROUTES.Home.GetStarted,
       });
     });
+
+    it("does not navigate to home page if already there when there are no open projects", async () => {
+      const state = { openProjects: [] };
+      const { store, mockRouter } = loadStore();
+      mockRouter.currentRoute.value.name = APP_ROUTES.Home.SpaceBrowsingPage;
+
+      await store.dispatch("application/replaceApplicationState", state);
+      await store.dispatch("application/setActiveProject", {
+        $router: mockRouter,
+      });
+
+      expect(mockRouter.push).not.toHaveBeenCalledWith({
+        name: APP_ROUTES.Home.GetStarted,
+      });
+    });
   });
 
   describe("context Menu", () => {
