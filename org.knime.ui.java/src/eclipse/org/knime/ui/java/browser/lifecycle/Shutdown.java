@@ -62,7 +62,6 @@ import org.knime.ui.java.util.UserDirectory;
 import org.osgi.service.prefs.BackingStoreException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -117,7 +116,7 @@ final class Shutdown {
     }
 
     private static UserProfile updateUserProfileFromLocalStorage(UserProfile userProfile,
-        final UnaryOperator<String> localStorageAccess) throws JsonMappingException, JsonProcessingException {
+        final UnaryOperator<String> localStorageAccess) throws JsonProcessingException {
         var mapper = new ObjectMapper();
         Map<String, String> uiSettings;
         Map<String, String> onboardingHintsSettings;

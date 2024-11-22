@@ -82,8 +82,8 @@ public final class UserProfilePersistor {
     private static final UserProfileFile<Map> ONBOARDING_HINTS_SETTINGS_FILE = new UserProfileFile<>(
         "onboarding-hints-settings.yaml", UserProfile::onboardingHintsSettings, Map::of, Map.class);
 
-    private static final UserProfileFile<InternalUsageTracking> USAGE_FILE =
-        new UserProfileFile<>("usage.yaml", UserProfile::internalUsage, InternalUsageTracking::new, InternalUsageTracking.class);
+    private static final UserProfileFile<InternalUsageTracking> USAGE_FILE = new UserProfileFile<>("usage.yaml",
+        UserProfile::internalUsage, InternalUsageTracking::new, InternalUsageTracking.class);
 
     private UserProfilePersistor() {
         // utility
@@ -139,23 +139,23 @@ public final class UserProfilePersistor {
      * @return an instance representing an empty user profile
      */
     public static UserProfile createEmptyUserProfile() {
-       return new UserProfile() {
+        return new UserProfile() {
 
-        @Override
-        public Map<String, String> uiSettings() {
-            return UI_SETTINGS_FILE.emptyValueSupplier.get();
-        }
+            @Override
+            public Map<String, String> uiSettings() {
+                return UI_SETTINGS_FILE.emptyValueSupplier.get();
+            }
 
-        @Override
-        public Map<String, String> onboardingHintsSettings() {
-            return ONBOARDING_HINTS_SETTINGS_FILE.emptyValueSupplier.get();
-        }
+            @Override
+            public Map<String, String> onboardingHintsSettings() {
+                return ONBOARDING_HINTS_SETTINGS_FILE.emptyValueSupplier.get();
+            }
 
-        @Override
-        public InternalUsageTracking internalUsage() {
-            return USAGE_FILE.emptyValueSupplier.get();
-        }
-    };
+            @Override
+            public InternalUsageTracking internalUsage() {
+                return USAGE_FILE.emptyValueSupplier.get();
+            }
+        };
     }
 
     private static <T> T readUserProfileFile(final UserProfileFile<T> upFile, final Path profilePath) {
