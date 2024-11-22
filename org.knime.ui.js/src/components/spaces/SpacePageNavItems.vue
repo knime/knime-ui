@@ -12,7 +12,6 @@ import {
   NavMenuItem,
   type NavMenuItemProps,
 } from "@/components/common/side-nav";
-import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { isHubProvider } from "@/store/spaces/util";
@@ -27,17 +26,13 @@ const $route = useRoute();
 
 const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 
-const isLoadingProviders = computed(
-  () => store.state.spaces.isLoadingProviders,
-);
-
 const {
+  isConnectingToProvider,
+  shouldShowLoading,
   connectAndNavigate,
   shouldShowLoginIndicator,
   shouldShowLogout,
-  isAuthDisabled,
   logout,
-  isConnectingToProvider,
 } = useSpaceProviderAuth();
 
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
@@ -151,6 +146,7 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
   <NavMenuItem
     v-for="item in providerItems"
     :key="item.id"
+    :data-test-id="item.id"
     :text="item.text"
     :active="item.active"
     :highlighted="item.highlighted"
@@ -172,14 +168,13 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
       </span>
 
       <LoadingIcon
-        v-if="isConnectingToProvider === item.metadata.spaceProvider.id"
+        v-if="shouldShowLoading(item.metadata.spaceProvider)"
         class="loading-indicator"
       />
 
       <FunctionButton
         v-if="shouldShowLogout(item.metadata.spaceProvider)"
         compact
-        :disabled="isAuthDisabled"
         @click.stop.prevent="logout(item.metadata.spaceProvider)"
       >
         <LeaveIcon />
@@ -194,6 +189,7 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
         <NavMenuItem
           v-for="child in getItemsForSpaceGroups(item.metadata.spaceProvider!)"
           :key="child.id"
+          :data-test-id="child.id"
           :text="child.text"
           :active="child.active"
           :highlighted="child.highlighted"
@@ -207,43 +203,9 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
       </NavMenu>
     </template>
   </NavMenuItem>
-
-  <div v-if="isLoadingProviders" class="menu-skeleton">
-    <div v-for="index in 4" :key="index" class="menu-skeleton-item">
-      <div class="skeleton-list">
-        <SkeletonItem
-          :color1="$colors.SilverSandSemi"
-          width="70%"
-          height="24px"
-        />
-        <SkeletonItem
-          :color1="$colors.SilverSandSemi"
-          width="70px"
-          height="24px"
-          type="button"
-        />
-      </div>
-    </div>
-  </div>
 </template>
 
 <style lang="postcss" scoped>
-.menu-skeleton {
-  padding: 0;
-
-  & .menu-skeleton-item {
-    display: flex;
-    flex-direction: column;
-
-    & .skeleton-list {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      padding: 5px 8px 8px;
-    }
-  }
-}
-
 .login-indicator {
   color: var(--knime-dove-gray);
   font-weight: 400;

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { SubMenu } from "@knime/components";
@@ -80,23 +81,22 @@ describe("SpaceSelectionDropdown.vue", () => {
 
   const doMount = ({ props = {}, spaceProviders = null }: MountOps = {}) => {
     const $store = mockVuexStore({
-      spaces: {
-        ...spacesStore,
-        ...{
-          state: {
-            workflowGroupCache: new Map(),
-            projectPath: {
-              someProjectId: {
-                spaceId: "local",
-                spaceProviderId: "local",
-                itemId: "root",
-              },
-            },
-            spaceProviders: spaceProviders || startSpaceProviders,
-          },
-        },
+      spaces: spacesStore,
+    });
+
+    $store.commit("spaces/setProjectPath", {
+      projectId: "someProjectId",
+      value: {
+        spaceId: "local",
+        spaceProviderId: "local",
+        itemId: "root",
       },
     });
+
+    $store.commit(
+      "spaces/setSpaceProviders",
+      spaceProviders || startSpaceProviders,
+    );
 
     const dispatchSpy = vi.spyOn($store, "dispatch");
     const commitSpy = vi.spyOn($store, "commit");
@@ -261,5 +261,49 @@ describe("SpaceSelectionDropdown.vue", () => {
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
       spaceProviderId: "hub2",
     });
+  });
+
+  it("renders loading state for a provider that is connecting", async () => {
+    const { wrapper, $store } = doMount({
+      spaceProviders: {
+        local: startSpaceProviders.local,
+        hub2: createSpaceProvider({
+          id: "hub2",
+          connected: false,
+          connectionMode: "AUTHENTICATED",
+          name: "Hub 2",
+        }),
+      },
+    });
+
+    $store.state.spaces.isConnectingToProvider = "hub2";
+
+    await nextTick();
+
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+
+    expect(menuItems.at(-1)!.text).toMatch("Loading");
+  });
+
+  it("renders loading state for a provider that is loading data", async () => {
+    const { wrapper, $store } = doMount({
+      spaceProviders: {
+        local: startSpaceProviders.local,
+        hub2: createSpaceProvider({
+          id: "hub2",
+          connected: true,
+          connectionMode: "AUTHENTICATED",
+          name: "Hub 2",
+        }),
+      },
+    });
+
+    $store.state.spaces.loadingProviderSpacesData.hub2 = true;
+
+    await nextTick();
+
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+
+    expect(menuItems.at(-1)!.text).toMatch("Loading");
   });
 });

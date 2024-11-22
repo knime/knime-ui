@@ -15,7 +15,7 @@ import {
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 
-import { fetchAllSpaceProvidersResponse, loadStore } from "./loadStore";
+import { loadStore } from "./loadStore";
 
 const mockedAPI = deepMocked(API);
 
@@ -28,6 +28,7 @@ describe("spaces::providers", () => {
     it("should call the desktop api", async () => {
       const { store } = loadStore();
 
+      mockedAPI.desktop.getSpaceProviders.mockResolvedValue(undefined);
       await store.dispatch("spaces/fetchAllSpaceProviders");
 
       expect(store.state.spaces.isLoadingProviders).toBe(true);
@@ -37,69 +38,190 @@ describe("spaces::providers", () => {
 
   describe("setAllSpaceProviders", () => {
     it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
-      const mockFetchAllProvidersResponse: typeof fetchAllSpaceProvidersResponse =
-        {
-          ...fetchAllSpaceProvidersResponse,
-          hub1: {
+      const spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
+        hub1: createSpaceProvider(
+          {
             id: "hub1",
             connected: true,
             name: "Hub 1",
-            connectionMode: "AUTOMATIC",
+            connectionMode: "AUTHENTICATED",
             type: SpaceProviderNS.TypeEnum.HUB,
           },
-        };
+          false,
+        ),
+        hub2: createSpaceProvider(
+          {
+            id: "hub2",
+            connected: true,
+            name: "Hub 2",
+            connectionMode: "AUTHENTICATED",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          },
+          false,
+        ),
+        hub3: createSpaceProvider(
+          {
+            id: "hub3",
+            connected: false,
+            name: "Hub 3",
+            connectionMode: "AUTHENTICATED",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          },
+          false,
+        ),
+      };
 
-      const { store } = loadStore({ mockFetchAllProvidersResponse });
+      const mockGroup = createSpaceGroup({
+        id: "group-1",
+        spaces: [createSpace({ id: "space-1" })],
+      });
 
-      await store.dispatch("spaces/fetchAllSpaceProviders");
-      expect(store.state.spaces.isLoadingProviders).toBe(true);
+      mockedAPI.space.getSpaceProvider.mockImplementation(() =>
+        Promise.resolve({ spaceGroups: [mockGroup] }),
+      );
+
+      const { store } = loadStore({
+        mockFetchAllProvidersResponse: spaceProviders,
+      });
+
+      const promise = store.dispatch(
+        "spaces/setAllSpaceProviders",
+        spaceProviders,
+      );
+
+      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(true);
+      expect(store.state.spaces.loadingProviderSpacesData.hub2).toBe(true);
+      expect(store.state.spaces.loadingProviderSpacesData.hub3).toBeUndefined();
 
       await flushPromises();
 
-      expect(store.state.spaces.isLoadingProviders).toBe(false);
-      expect(store.state.spaces.spaceProviders).toEqual(
-        mockFetchAllProvidersResponse,
-      );
-      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
-        spaceProviderId: "local",
+      await expect(promise).resolves.toEqual({
+        successfulProviderIds: ["hub1", "hub2"],
+        failedProviderIds: [],
+      });
+
+      expect(store.state.spaces.spaceProviders!.hub1).toEqual({
+        ...spaceProviders.hub1,
+        spaceGroups: [mockGroup],
+      });
+      expect(store.state.spaces.spaceProviders!.hub2).toEqual({
+        ...spaceProviders.hub2,
+        spaceGroups: [mockGroup],
+      });
+      expect(store.state.spaces.spaceProviders!.hub3).toEqual({
+        ...spaceProviders.hub3,
+        spaceGroups: [],
       });
       expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
+      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+        spaceProviderId: "hub2",
+      });
+      expect(mockedAPI.space.getSpaceProvider).not.toHaveBeenCalledWith({
+        spaceProviderId: "hub3",
+      });
     });
 
-    it("should keep user data set by connectProvider", async () => {
-      const mockFetchAllProvidersResponse: typeof fetchAllSpaceProvidersResponse =
-        {
-          ...fetchAllSpaceProvidersResponse,
-          hub1: {
+    it("should handle errors when loading provider data", async () => {
+      const spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
+        hub1: createSpaceProvider(
+          {
             id: "hub1",
             connected: true,
             name: "Hub 1",
-            connectionMode: "AUTOMATIC",
+            connectionMode: "AUTHENTICATED",
             type: SpaceProviderNS.TypeEnum.HUB,
           },
-        };
-      const { store } = loadStore({ mockFetchAllProvidersResponse });
-
-      const mockUser = { name: "John Doe" };
-      store.state.spaces.spaceProviders = {
-        // @ts-ignore
-        hub1: {
-          user: mockUser,
-        },
+          false,
+        ),
+        hub2: createSpaceProvider(
+          {
+            id: "hub2",
+            connected: true,
+            name: "Hub 2",
+            connectionMode: "AUTHENTICATED",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          },
+          false,
+        ),
+        hub3: createSpaceProvider(
+          {
+            id: "hub3",
+            connected: false,
+            name: "Hub 3",
+            connectionMode: "AUTHENTICATED",
+            type: SpaceProviderNS.TypeEnum.HUB,
+          },
+          false,
+        ),
       };
 
-      await store.dispatch("spaces/fetchAllSpaceProviders");
+      const mockGroup = createSpaceGroup({
+        id: "group-1",
+        spaces: [createSpace({ id: "space-1" })],
+      });
 
-      expect(store.state.spaces.spaceProviders!.hub1.user).toEqual(mockUser);
+      mockedAPI.space.getSpaceProvider.mockImplementation(
+        // @ts-ignore
+        ({ spaceProviderId }) => {
+          if (spaceProviderId === "hub2") {
+            return Promise.reject(new Error("Failed to load spaces"));
+          } else {
+            return Promise.resolve({ spaceGroups: [mockGroup] });
+          }
+        },
+      );
+
+      const { store } = loadStore({
+        mockFetchAllProvidersResponse: spaceProviders,
+      });
+
+      const promise = store.dispatch(
+        "spaces/setAllSpaceProviders",
+        spaceProviders,
+      );
+
+      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(true);
+      expect(store.state.spaces.loadingProviderSpacesData.hub2).toBe(true);
+      expect(store.state.spaces.loadingProviderSpacesData.hub3).toBeUndefined();
+
+      await flushPromises();
+
+      await expect(promise).resolves.toEqual({
+        successfulProviderIds: ["hub1"],
+        failedProviderIds: ["hub2"],
+      });
+
+      expect(store.state.spaces.spaceProviders!.hub1).toEqual({
+        ...spaceProviders.hub1,
+        spaceGroups: [mockGroup],
+      });
+      expect(store.state.spaces.spaceProviders!.hub2).toEqual({
+        ...spaceProviders.hub2,
+        connected: false,
+        spaceGroups: [],
+      });
+      expect(store.state.spaces.spaceProviders!.hub3).toEqual({
+        ...spaceProviders.hub3,
+        spaceGroups: [],
+      });
+      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+        spaceProviderId: "hub1",
+      });
+      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+        spaceProviderId: "hub2",
+      });
+      expect(mockedAPI.space.getSpaceProvider).not.toHaveBeenCalledWith({
+        spaceProviderId: "hub3",
+      });
     });
   });
 
   describe("fetchProviderSpaces", () => {
     it("should fetch spaces", async () => {
       const { store } = loadStore();
-      const mockSpace = { name: "mock space", description: "" };
+      const mockSpace = createSpace({ name: "mock space", description: "" });
 
       store.state.spaces.spaceProviders = {
         hub1: createSpaceProvider({
@@ -108,26 +230,35 @@ describe("spaces::providers", () => {
         }),
       };
 
-      mockedAPI.space.getSpaceProvider.mockResolvedValue({
-        spaces: [mockSpace],
-      });
+      const mockResponse = {
+        spaceGroups: [
+          createSpaceGroup({
+            spaces: [mockSpace],
+          }),
+        ],
+      };
 
-      const data = await store.dispatch("spaces/fetchProviderSpaces", {
+      mockedAPI.space.getSpaceProvider.mockResolvedValue(mockResponse);
+
+      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBeFalsy();
+
+      const promise = store.dispatch("spaces/fetchProviderSpaces", {
         id: "hub1",
       });
+
+      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(true);
+
+      await flushPromises();
+      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(false);
 
       expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
 
-      expect(data).toEqual(
-        expect.objectContaining({
-          spaces: [mockSpace],
-        }),
-      );
+      expect(promise).resolves.toEqual(mockResponse);
     });
 
-    it("should handle `ServiceCallException`s", () => {
+    it("should handle `ServiceCallException`s", async () => {
       const { store } = loadStore();
 
       store.state.spaces.spaceProviders = {
@@ -153,6 +284,10 @@ describe("spaces::providers", () => {
           id: "hub1",
         }),
       ).rejects.toThrowError(expected);
+
+      await flushPromises();
+
+      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(false);
     });
 
     it("should handle `NetworkException`s", () => {
@@ -391,11 +526,19 @@ describe("spaces::providers", () => {
 
       expect(store.state.spaces.spaceProviders[provider.id]).toEqual(provider);
 
-      expect(store.state.spaces.isLoadingProviderSpaces).toBe(false);
+      expect(
+        store.state.spaces.loadingProviderSpacesData[provider.id],
+      ).toBeFalsy();
 
       store.dispatch("spaces/reloadProviderSpaces", { id: provider.id });
-      expect(store.state.spaces.isLoadingProviderSpaces).toBe(true);
+      expect(store.state.spaces.loadingProviderSpacesData[provider.id]).toBe(
+        true,
+      );
       await flushPromises();
+
+      expect(
+        store.state.spaces.loadingProviderSpacesData[provider.id],
+      ).toBeFalsy();
 
       expect(store.state.spaces.spaceProviders[provider.id]).toEqual({
         ...provider,

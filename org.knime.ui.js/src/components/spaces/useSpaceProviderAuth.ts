@@ -16,8 +16,8 @@ export const useSpaceProviderAuth = () => {
   const $route = useRoute();
   const $toast = getToastsProvider();
 
-  const isLoadingProviders = computed(
-    () => store.state.spaces.isLoadingProviders,
+  const loadingProviderSpacesData = computed(
+    () => store.state.spaces.loadingProviderSpacesData,
   );
 
   const isConnectingToProvider = computed(
@@ -27,8 +27,15 @@ export const useSpaceProviderAuth = () => {
   const canLogin = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
     spaceProvider.connectionMode !== "AUTOMATIC" && !spaceProvider.connected;
 
+  const isProviderLoadingData = (
+    spaceProvider: SpaceProviderNS.SpaceProvider,
+  ) => loadingProviderSpacesData.value[spaceProvider.id];
+
   const shouldShowLogout = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
-    spaceProvider.connectionMode === "AUTHENTICATED" && spaceProvider.connected;
+    spaceProvider.connectionMode === "AUTHENTICATED" &&
+    spaceProvider.connected &&
+    store.state.spaces.hasLoadedProviders &&
+    !isProviderLoadingData(spaceProvider);
 
   const shouldShowLoginIndicator = (
     spaceProvider: SpaceProviderNS.SpaceProvider,
@@ -40,9 +47,9 @@ export const useSpaceProviderAuth = () => {
     );
   };
 
-  const isAuthDisabled = computed(
-    () => isLoadingProviders.value || Boolean(isConnectingToProvider.value),
-  );
+  const shouldShowLoading = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
+    isConnectingToProvider.value === spaceProvider.id ||
+    isProviderLoadingData(spaceProvider);
 
   const connectAndNavigate = async (
     spaceProvider: SpaceProviderNS.SpaceProvider,
@@ -130,7 +137,7 @@ export const useSpaceProviderAuth = () => {
 
   return {
     isConnectingToProvider,
-    isAuthDisabled,
+    shouldShowLoading,
     connectAndNavigate,
     logout,
     shouldShowLoginIndicator,

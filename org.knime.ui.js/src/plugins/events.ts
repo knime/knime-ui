@@ -312,7 +312,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       $bus.emit(`desktop-api-function-result-${payload.name}`, payload);
     },
 
-    SpaceProvidersChangedEvent(payload) {
+    async SpaceProvidersChangedEvent(payload) {
       consola.info("events::SpaceProvidersChangedEvent", payload);
 
       if ("error" in payload) {
@@ -323,7 +323,29 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         return;
       }
 
-      $store.dispatch("spaces/setAllSpaceProviders", payload.result);
+      try {
+        const { failedProviderIds } = (await $store.dispatch(
+          "spaces/setAllSpaceProviders",
+          payload.result,
+        )) as { successfulProviderIds: string[]; failedProviderIds: string[] };
+
+        if (failedProviderIds.length > 0) {
+          const providerNames = failedProviderIds
+            .map((id) => `- ${payload.result[id].name}`)
+            .join("\n");
+
+          $toast.show({
+            type: "error",
+            headline: "Failed loading spaces",
+            message: `Could not load spaces for:\n${providerNames}`,
+          });
+        }
+      } catch (error) {
+        consola.error(
+          "events::SpaceProvidersChangedEvent -> unexpected error",
+          { error },
+        );
+      }
     },
   });
 };

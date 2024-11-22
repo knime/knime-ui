@@ -37,6 +37,7 @@ export const createSpaceGroup = (
 
 export const createSpaceProvider = (
   data: Partial<SpaceProviderNS.SpaceProvider> = {},
+  withGroupData = true,
 ): SpaceProviderNS.SpaceProvider => {
   const baseGroups = data?.spaceGroups ?? [createSpaceGroup()];
 
@@ -48,6 +49,11 @@ export const createSpaceProvider = (
     type: SpaceProviderNS.TypeEnum.LOCAL,
     spaceGroups: baseGroups,
   };
+
+  if (!withGroupData) {
+    const { spaceGroups, ...rest } = merge(base, data);
+    return { ...rest, spaceGroups: [] };
+  }
 
   return merge(base, data);
 };

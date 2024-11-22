@@ -32,15 +32,15 @@ const $router = useRouter();
 const store = useStore();
 const $toast = getToastsProvider();
 
-const { activeSpaceProvider, activeSpaceGroup, isShowingAllSpaces } =
-  useActiveRouteData();
+const {
+  activeSpaceProvider,
+  activeSpaceGroup,
+  isShowingAllSpaces,
+  isLoadingSpacesData,
+} = useActiveRouteData();
 
 const { breadcrumbs } = usePageBreadcrumbs();
 const { getSpaceGroupIcon, getSpaceProviderIcon } = useSpaceIcons();
-
-const isLoadingProviderSpaces = computed(
-  () => store.state.spaces.isLoadingProviderSpaces,
-);
 
 const onSpaceCardClick = (space: SpaceWithGroupId) => {
   $router.push({
@@ -160,7 +160,7 @@ const reload = async () => {
 
     <template #content>
       <div class="cards">
-        <template v-if="!isLoadingProviderSpaces">
+        <template v-if="!isLoadingSpacesData">
           <SpaceCard
             v-for="(space, id) of filteredSpaces"
             :key="id"

@@ -32,10 +32,17 @@ export const useActiveRouteData = () => {
       $route.params.groupId === "all",
   );
 
+  const isLoadingSpacesData = computed(() => {
+    const { loadingProviderSpacesData } = store.state.spaces;
+
+    return loadingProviderSpacesData[activeSpaceProvider.value.id];
+  });
+
   return {
     activeSpaceProvider,
     activeSpaceGroup,
     activeSpace,
     isShowingAllSpaces,
+    isLoadingSpacesData,
   };
 };

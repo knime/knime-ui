@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 
-import { LoadingIcon, SubMenu } from "@knime/components";
+import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
@@ -115,7 +115,7 @@ const onSpaceChange = async ({
       { spaceProviderId },
     );
 
-    const { spaces: [firstSpace = null] = [] } = providerData;
+    const { spaces: [firstSpace = null] = [] } = providerData ?? {};
 
     if (!isConnected) {
       return;
@@ -131,7 +131,10 @@ const onSpaceChange = async ({
     const providerName =
       store.state.spaces.spaceProviders?.[spaceProviderId]?.name ?? "remote";
 
-    $toast.show({ message: `Could not connect to ${providerName}` });
+    $toast.show({
+      type: "error",
+      message: `Could not connect to ${providerName}`,
+    });
   }
 };
 
@@ -276,20 +279,6 @@ const createMenuEntries = (
 };
 
 const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
-  const isLoading =
-    store.state.spaces.isLoadingProviders ||
-    store.state.spaces.isConnectingToProvider;
-
-  if (isLoading) {
-    return [
-      {
-        text: "Loading…",
-        disabled: true,
-        icon: LoadingIcon as any,
-      },
-    ];
-  }
-
   const providers = Object.values(spaceProviders.value ?? {});
 
   const getHeadline = (
@@ -308,15 +297,40 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
     return createProviderHeadlineMenuItem(provider);
   };
 
+  const getProviderMenuEntries = (
+    provider: SpaceProviderNS.SpaceProvider,
+  ): MenuItem[] => {
+    const { isConnectingToProvider, loadingProviderSpacesData } =
+      store.state.spaces;
+
+    const isLoading =
+      isConnectingToProvider === provider.id ||
+      loadingProviderSpacesData[provider.id];
+
+    if (isLoading) {
+      return [
+        {
+          text: "Loading…",
+          selected: false,
+          sectionHeadline: false,
+          separator: false,
+        },
+      ];
+    }
+
+    if (provider.connected) {
+      return createMenuEntries(provider.spaceGroups, provider);
+    }
+
+    return [createSignInMenuItem(provider)];
+  };
+
   return providers.flatMap((provider) => {
     const base: Array<MenuItem<AllMetadata>> = [];
 
-    return base.concat(getHeadline(provider) ?? []).concat(
-      provider.connected
-        ? createMenuEntries(provider.spaceGroups, provider)
-        : // only add sign-in option for disconnected providers
-          [createSignInMenuItem(provider)],
-    );
+    return base
+      .concat(getHeadline(provider) ?? [])
+      .concat(getProviderMenuEntries(provider));
   });
 });
 

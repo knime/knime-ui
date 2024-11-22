@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
+import { nextTick } from "vue";
+import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
+
+import { FunctionButton } from "@knime/components";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
@@ -45,6 +48,7 @@ describe("SpacePageNavItems.vue", () => {
     id: "provider1",
     name: "Some hub space",
     type: SpaceProviderNS.TypeEnum.HUB,
+    connectionMode: "AUTHENTICATED",
     spaceGroups: [spaceGroup1],
   });
 
@@ -74,10 +78,12 @@ describe("SpacePageNavItems.vue", () => {
     const dispatchSpy = vi.spyOn($store, "dispatch");
 
     $store.commit("spaces/setSpaceProviders", {
-      [localProvider.id]: localProvider,
-      [hubProvider1.id]: hubProvider1,
-      [hubProvider2.id]: hubProvider2,
+      // copy data to not mutate global variables
+      [localProvider.id]: { ...localProvider },
+      [hubProvider1.id]: { ...hubProvider1 },
+      [hubProvider2.id]: { ...hubProvider2 },
     });
+    $store.state.spaces.hasLoadedProviders = true;
 
     const wrapper = mount(SpacePageNavItems, {
       global: {
@@ -88,15 +94,36 @@ describe("SpacePageNavItems.vue", () => {
     return { wrapper, $store, dispatchSpy };
   };
 
+  const getMenuItemByDataTestId = (
+    wrapper: VueWrapper<any>,
+    dataTestId: string,
+  ) => {
+    return wrapper
+      .find(`[data-test-id="${dataTestId}"]`)
+      .findComponent(NavMenuItem);
+  };
+
   it("should render items", () => {
     const { wrapper } = doMount();
 
     expect(wrapper.findAllComponents(NavMenuItem).length).toBe(4);
 
-    const firstItem = wrapper.findAllComponents(NavMenuItem).at(0)!.props();
-    const secondItem = wrapper.findAllComponents(NavMenuItem).at(1)!.props();
-    const thirdItem = wrapper.findAllComponents(NavMenuItem).at(2)!.props();
-    const fourthItem = wrapper.findAllComponents(NavMenuItem).at(3)!.props();
+    const firstItem = getMenuItemByDataTestId(
+      wrapper,
+      localProvider.id,
+    ).props();
+
+    const secondItem = getMenuItemByDataTestId(
+      wrapper,
+      hubProvider1.id,
+    ).props();
+
+    const thirdItem = getMenuItemByDataTestId(wrapper, spaceGroup1.id).props();
+
+    const fourthItem = getMenuItemByDataTestId(
+      wrapper,
+      hubProvider2.id,
+    ).props();
 
     expect(firstItem).toEqual(
       expect.objectContaining({
@@ -138,7 +165,7 @@ describe("SpacePageNavItems.vue", () => {
   describe("item", () => {
     it("should navigate to local space when clicking", () => {
       const { wrapper } = doMount();
-      wrapper.findAllComponents(NavMenuItem).at(0)?.vm.$emit("click");
+      getMenuItemByDataTestId(wrapper, localProvider.id).vm.$emit("click");
 
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.Home.SpaceBrowsingPage,
@@ -160,7 +187,7 @@ describe("SpacePageNavItems.vue", () => {
 
       const { wrapper, dispatchSpy } = doMount();
 
-      wrapper.findAllComponents(NavMenuItem).at(3)?.vm.$emit("click");
+      getMenuItemByDataTestId(wrapper, hubProvider2.id).vm.$emit("click");
       await flushPromises();
 
       expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
@@ -173,6 +200,96 @@ describe("SpacePageNavItems.vue", () => {
           spaceProviderId: hubProvider2.id,
           groupId: "all",
         },
+      });
+    });
+
+    describe("logout button", () => {
+      it("should show for correct providers", async () => {
+        const { wrapper, $store } = doMount();
+
+        const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
+        const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
+        const thirdItem = getMenuItemByDataTestId(wrapper, spaceGroup1.id);
+        const fourthItem = getMenuItemByDataTestId(wrapper, hubProvider2.id);
+
+        expect(firstItem.findComponent(FunctionButton).exists()).toBe(false);
+        expect(secondItem.findComponent(FunctionButton).exists()).toBe(true);
+        expect(thirdItem.findComponent(FunctionButton).exists()).toBe(false);
+        expect(fourthItem.findComponent(FunctionButton).exists()).toBe(false);
+
+        $store.state.spaces.spaceProviders[hubProvider1.id].connected = false;
+        await nextTick();
+        expect(secondItem.findComponent(FunctionButton).exists()).toBe(false);
+      });
+
+      it("should hide logout button when provider data is loading", async () => {
+        const { wrapper, $store } = doMount();
+
+        const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
+        const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
+        const thirdItem = getMenuItemByDataTestId(wrapper, spaceGroup1.id);
+        const fourthItem = getMenuItemByDataTestId(wrapper, hubProvider2.id);
+
+        expect(firstItem.findComponent(FunctionButton).exists()).toBe(false);
+        expect(secondItem.findComponent(FunctionButton).exists()).toBe(true);
+        expect(thirdItem.findComponent(FunctionButton).exists()).toBe(false);
+        expect(fourthItem.findComponent(FunctionButton).exists()).toBe(false);
+
+        $store.state.spaces.loadingProviderSpacesData[hubProvider1.id] = true;
+        await nextTick();
+        expect(secondItem.findComponent(FunctionButton).exists()).toBe(false);
+      });
+    });
+
+    describe("loading state", () => {
+      it("should show when provider data is loading", async () => {
+        const { wrapper, $store } = doMount();
+
+        const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
+        const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
+        const thirdItem = getMenuItemByDataTestId(wrapper, spaceGroup1.id);
+        const fourthItem = getMenuItemByDataTestId(wrapper, hubProvider2.id);
+
+        $store.state.spaces.loadingProviderSpacesData[hubProvider1.id] = true;
+        await nextTick();
+
+        expect(firstItem.find(".loading-indicator").exists()).toBe(false);
+        expect(secondItem.find(".loading-indicator").exists()).toBe(true);
+        expect(thirdItem.find(".loading-indicator").exists()).toBe(false);
+        expect(fourthItem.find(".loading-indicator").exists()).toBe(false);
+
+        $store.state.spaces.loadingProviderSpacesData[hubProvider1.id] = false;
+        await nextTick();
+
+        expect(firstItem.find(".loading-indicator").exists()).toBe(false);
+        expect(secondItem.find(".loading-indicator").exists()).toBe(false);
+        expect(thirdItem.find(".loading-indicator").exists()).toBe(false);
+        expect(fourthItem.find(".loading-indicator").exists()).toBe(false);
+      });
+
+      it("should show when provider is connecting", async () => {
+        const { wrapper, $store } = doMount();
+
+        const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
+        const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
+        const thirdItem = getMenuItemByDataTestId(wrapper, spaceGroup1.id);
+        const fourthItem = getMenuItemByDataTestId(wrapper, hubProvider2.id);
+
+        $store.state.spaces.isConnectingToProvider = hubProvider1.id;
+        await nextTick();
+
+        expect(firstItem.find(".loading-indicator").exists()).toBe(false);
+        expect(secondItem.find(".loading-indicator").exists()).toBe(true);
+        expect(thirdItem.find(".loading-indicator").exists()).toBe(false);
+        expect(fourthItem.find(".loading-indicator").exists()).toBe(false);
+
+        $store.state.spaces.isConnectingToProvider = null;
+        await nextTick();
+
+        expect(firstItem.find(".loading-indicator").exists()).toBe(false);
+        expect(secondItem.find(".loading-indicator").exists()).toBe(false);
+        expect(thirdItem.find(".loading-indicator").exists()).toBe(false);
+        expect(fourthItem.find(".loading-indicator").exists()).toBe(false);
       });
     });
   });

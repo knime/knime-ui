@@ -8,6 +8,7 @@ import {
   ServiceCallException,
   type SpaceItemReference,
 } from "@/api/gateway-api/generated-api";
+import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import type { RootStoreState } from "../types";
 
 import { localRootProjectPath } from "./caching";
@@ -15,12 +16,27 @@ import type { SpacesState } from "./index";
 import { findSpaceById } from "./util";
 
 export interface State {
+  /**
+   * Record of all the providers currently available
+   */
   spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
+  /**
+   * Loading state used when fetching all the providers' basic info (without their data)
+   */
   isLoadingProviders: boolean;
+  /**
+   * Loading state used when authenticating to a provider
+   */
   isConnectingToProvider: string | null;
+  /**
+   * Indicates whether the initial provider fetch has been successful
+   */
   hasLoadedProviders: boolean;
-
-  isLoadingProviderSpaces: boolean;
+  /**
+   * Record of loading state which indicates which provider is currently loading
+   * its spaces data
+   */
+  loadingProviderSpacesData: Record<string, boolean>;
 }
 
 declare module "./index" {
@@ -30,17 +46,22 @@ declare module "./index" {
 export const state = (): State => ({
   // metadata of all available space providers and their spaces (including local)
   spaceProviders: null,
-
   isLoadingProviders: false,
   isConnectingToProvider: null,
   hasLoadedProviders: false,
-
-  isLoadingProviderSpaces: false,
+  loadingProviderSpacesData: {},
 });
 
 export const mutations: MutationTree<SpacesState> = {
   setIsLoadingProviders(state, value: boolean) {
     state.isLoadingProviders = value;
+  },
+
+  setLoadingProviderData(
+    state,
+    { id, loading }: { id: string; loading: boolean },
+  ) {
+    state.loadingProviderSpacesData[id] = loading;
   },
 
   setIsConnectingToProvider(state, value: string | null) {
@@ -133,52 +154,79 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     API.desktop.getSpaceProviders();
   },
 
-  async setAllSpaceProviders(
+  setAllSpaceProviders(
     { commit, dispatch },
     spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
   ) {
-    try {
-      const connectedProviderIds = Object.values(spaceProviders)
-        .filter(
-          ({ connected, connectionMode }) =>
-            connected || connectionMode === "AUTOMATIC",
-        )
-        .map(({ id }) => id);
+    const connectedProviderIds = Object.values(spaceProviders)
+      .filter(
+        ({ connected, connectionMode }) =>
+          connected || connectionMode === "AUTOMATIC",
+      )
+      .map(({ id }) => id);
 
-      consola.trace(
-        "action::setAllSpaceProviders -> Fetching provider spaces",
-        {
-          connectedProviderIds,
-        },
-      );
+    // add the providers without data to make them visible
+    commit("setSpaceProviders", spaceProviders);
+    commit("setIsLoadingProviders", false);
 
-      for (const id of connectedProviderIds) {
-        const spacesData = await dispatch("fetchProviderSpaces", { id });
-        spaceProviders[id] = {
-          ...spaceProviders[id],
-          ...spacesData,
-        };
-      }
+    consola.trace("action::setAllSpaceProviders -> Fetching provider spaces", {
+      connectedProviderIds,
+    });
 
-      consola.trace(
-        "action::setAllSpaceProviders -> Setting providers with space data",
-        spaceProviders,
-      );
-      commit("setSpaceProviders", spaceProviders);
-      commit("setHasLoadedProviders", true);
-    } catch (error) {
-      commit("setHasLoadedProviders", false);
-      consola.error("action::setAllSpaceProviders. Error fetching providers", {
-        error,
-      });
-      throw error;
-    } finally {
-      commit("setIsLoadingProviders", false);
+    const successfulProviderIds: string[] = [];
+    const failedProviderIds: string[] = [];
+
+    const { promise, resolve } = createUnwrappedPromise<{
+      successfulProviderIds: string[];
+      failedProviderIds: string[];
+    }>();
+
+    const dataLoadQueue: Promise<unknown>[] = [];
+
+    for (const id of connectedProviderIds) {
+      const loadDataPromise = dispatch("fetchProviderSpaces", { id })
+        .then((spacesData) => {
+          successfulProviderIds.push(id);
+          commit("updateSpaceProvider", {
+            id,
+            value: { ...spaceProviders[id], ...spacesData },
+          });
+
+          consola.info(
+            "action::setAllSpaceProviders -> updated provider spaces",
+            { spacesData, updatedProvider: spaceProviders[id] },
+          );
+        })
+        .catch((error) => {
+          failedProviderIds.push(id);
+
+          consola.error(
+            "action::setAllSpaceProviders -> Failed to load provider spaces",
+            { spaceProviderId: id, error },
+          );
+
+          // set as disconnected so that user re-attempts the data fetch on login
+          commit("updateSpaceProvider", {
+            id,
+            value: { ...spaceProviders[id], connected: false },
+          });
+        });
+
+      dataLoadQueue.push(loadDataPromise);
     }
+
+    Promise.allSettled(dataLoadQueue).then(() => {
+      commit("setHasLoadedProviders", true);
+      resolve({ successfulProviderIds, failedProviderIds });
+    });
+
+    return promise;
   },
 
-  async fetchProviderSpaces(_, { id }) {
+  async fetchProviderSpaces({ commit }, { id }) {
     try {
+      commit("setLoadingProviderData", { id, loading: true });
+
       const data = await API.space.getSpaceProvider({ spaceProviderId: id });
 
       consola.info("action::fetchProviderSpaces", {
@@ -199,6 +247,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       }
 
       throw error;
+    } finally {
+      commit("setLoadingProviderData", { id, loading: false });
     }
   },
 
@@ -208,7 +258,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
 
     try {
-      state.isLoadingProviderSpaces = true;
+      consola.trace(
+        "action::reloadProviderSpaces -> reloading provider spaces",
+        { spaceProviderId: id },
+      );
 
       const spaceProvider = state.spaceProviders[id];
       const spacesData = await dispatch("fetchProviderSpaces", { id });
@@ -217,10 +270,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         id,
         value: { ...spaceProvider, ...spacesData },
       });
-
-      state.isLoadingProviderSpaces = false;
     } catch (error) {
-      state.isLoadingProviderSpaces = false;
       consola.error(
         "action::reloadProviderSpaces -> Error reloading provider spaces",
         { error },
