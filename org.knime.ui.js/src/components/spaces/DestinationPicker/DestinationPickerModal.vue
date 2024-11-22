@@ -120,6 +120,9 @@ const showValidationHint = computed(
 
   & :deep(.notice) {
     overflow: hidden;
+
+    /* workaround to have a transparent notice until it gets refactored to a single slot -> NXT-3131 */
+    background-color: transparent !important;
     height: 100%;
   }
 }
