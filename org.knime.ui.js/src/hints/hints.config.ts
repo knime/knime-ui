@@ -31,9 +31,9 @@ export const getHintConfiguration = (
       align: "end",
     },
     [HINTS.HIGHLIGHTED_OUTPUT_PORT]: {
-      title: "Add and connect nodes to  perform actions on data visually",
+      title: "Add and connect nodes to perform actions on data",
       description:
-        'To perform an action on your data, drop the output port of a node to add and connect another node, e.g. the "Column Filter" node via the quick nodes adding panel.',
+        "To perform an action on your data, drag and drop the output port of a node into the canvas. Then select a node, e.g. the “Column Filter” node, from the quick nodes adding panel to add it to your workflow.",
       dependsOn: [],
       video: [
         {
@@ -48,18 +48,18 @@ export const getHintConfiguration = (
       align: "end",
     },
     [HINTS.NODE_MONITOR]: {
-      title: "Get instant insights via the node monitor",
+      title: "View the results of data tasks",
       description:
-        "See directly the current output of a node as a table after execution. This allows you to quickly verify the results of the actions you did on your data.",
+        "See the current output of a node as a table, an image, or a visualization. This allows you to quickly verify the results of the actions you did on your data.",
       dependsOn: [HINTS.HIGHLIGHTED_OUTPUT_PORT],
       hideButtons: true,
       side: "top",
       align: "start",
     },
     [HINTS.K_AI]: {
-      title: "Get guidance from KNIME's AI assistant",
+      title: "Ask KNIME’s AI assistant (K-AI) for guidance",
       description:
-        "K-AI can support you in building workflows, supporting your onboarding process by answering questions. In build mode, K-AI can directly build new workflows for you based on your text input.",
+        "K-AI can help you in building workflows and support your work by answering questions. Try the build mode to let K-AI add new nodes to your workflow based on your text input.",
       dependsOn: [HINTS.NODE_MONITOR],
       referenceSelector: ".k-ai-tab",
       video: [
