@@ -145,7 +145,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
         // node configuration changes (if any)
         const canContinue = await dispatch(
           "nodeConfiguration/autoApplySettings",
-          { nextNode: null },
+          { nextNodeId: null },
           { root: true },
         );
 

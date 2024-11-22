@@ -39,7 +39,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
 
     const canContinue = await dispatch(
       "nodeConfiguration/autoApplySettings",
-      { nextNode: null },
+      { nextNodeId: null },
       { root: true },
     );
 
