@@ -87,27 +87,6 @@ export const useRevealProject = (options: UseRevealProject) => {
     });
   };
 
-  const tryGetAncestorInfo = async (
-    origin: SpaceItemReference,
-    projectName: string,
-  ): Promise<AncestorInfo> => {
-    try {
-      const { hasNameChanged, ancestorItemIds } = await getAncestorInfo(
-        origin,
-        projectName,
-      );
-
-      return { hasNameChanged, ancestorItemIds };
-    } catch (error) {
-      consola.log("Could not retrieve ancestor information", error);
-      $toast.show({
-        type: "error",
-        message: `Could not retrieve ancestor information for ${projectName}`,
-      });
-      return { ancestorItemIds: [], hasNameChanged: false };
-    }
-  };
-
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
     projectName: string,
@@ -116,7 +95,7 @@ export const useRevealProject = (options: UseRevealProject) => {
       store.state.spaces.spaceProviders ?? {},
       origin.spaceId,
     );
-    const { ancestorItemIds } = await tryGetAncestorInfo(origin, projectName);
+    const { ancestorItemIds } = await getAncestorInfo(origin, projectName);
 
     await $router.push({
       name: APP_ROUTES.Home.SpaceBrowsingPage,
@@ -149,7 +128,7 @@ export const useRevealProject = (options: UseRevealProject) => {
     }
 
     const { providerId, spaceId, itemId } = origin;
-    const { hasNameChanged, ancestorItemIds } = await tryGetAncestorInfo(
+    const { hasNameChanged, ancestorItemIds } = await getAncestorInfo(
       origin,
       projectName,
     );
