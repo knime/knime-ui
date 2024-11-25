@@ -191,10 +191,13 @@ public final class LifeCycle {
     /**
      * Runs the save-state-state-transition.
      *
+     * @param localStorageAccess a function that gives access to local storage items; function will return {@code null}
+     *            if there is no item for the given key
+     *
      * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
-    public void saveState() {
-        doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state),
+    public void saveState(final UnaryOperator<String> localStorageAccess) {
+        doStateTransition(StateTransition.SAVE_STATE, () -> m_state = SaveState.run(m_state, localStorageAccess),
             StateTransition.WEB_APP_LOADED);
     }
 
@@ -210,27 +213,21 @@ public final class LifeCycle {
     /**
      * Runs the shutdown-state-transition.
      *
-     * @param localStorageAccess a function that gives access to local storage items; function will return {@code null}
-     *            if there is no item for the given key
-     *
      * @throws IllegalStateException if the state transition failed because of an unexpected life cycle state
      */
-    public void shutdown(final UnaryOperator<String> localStorageAccess) {
-        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state, localStorageAccess),
+    public void shutdown() {
+        doStateTransition(StateTransition.SHUTDOWN, () -> Shutdown.run(m_state),
             StateTransition.SUSPEND, StateTransition.STARTUP);
     }
 
     /**
      * Runs the shutdown-state-transition but doesn't check for the expected previous state-transition and swallows any
      * exception.
-     *
-     * @param localStorageAccess a function that gives access to local storage items; function will return {@code null}
-     *            if there is no item for the given key
      */
-    public void forceShutdown(final UnaryOperator<String> localStorageAccess) {
+    public void forceShutdown() {
         doStateTransition(StateTransition.SHUTDOWN, () -> {
             try {
-                Shutdown.run(m_state, localStorageAccess);
+                Shutdown.run(m_state);
             } catch (Throwable e) { // NOSONAR we're shutting down anyway, so catch everything
                 getLogger().error("Unexpected problem on shutdown", e);
             }

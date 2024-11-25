@@ -137,7 +137,7 @@ class LifeCycleTest {
         assertStateTransition(lc, StateTransition.WEB_APP_LOADED, StateTransition.SAVE_STATE);
 
         AppStatePersistorTest.openWorkflowProject();
-        lc.saveState();
+        lc.saveState(null);
         assertStateTransition(lc, StateTransition.SAVE_STATE, StateTransition.SUSPEND);
         assertThat(lc.getState().workflowsSaved()).isTrue();
 
@@ -146,7 +146,7 @@ class LifeCycleTest {
         assertThat(ServiceInstances.areServicesInitialized()).isFalse();
         assertThat(DesktopAPI.areDependenciesInjected()).isFalse();
 
-        lc.shutdown(null);
+        lc.shutdown();
         AppStatePersistorTest.assertAppStateFile();
     }
 
@@ -156,14 +156,14 @@ class LifeCycleTest {
         var biConsumer = mock(BiConsumer.class);
 
         lc.startup();
-        lc.shutdown(null); // allowed directly after startup
+        lc.shutdown(); // allowed directly after startup
 
         lc.resetLifeCycleState();
 
         lc.startup();
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.webAppLoaded());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
 
         CEFPlugin.setMiddlewareService(mock(IMiddlewareService.class));
@@ -171,50 +171,50 @@ class LifeCycleTest {
         assertFails(() -> lc.startup());
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown(null));
+        assertFails(() -> lc.shutdown());
 
         lc.init(false);
         assertFails(() -> lc.startup());
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown(null));
+        assertFails(() -> lc.shutdown());
 
         lc.webAppLoaded();
         assertFails(() -> lc.startup());
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown(null));
+        assertFails(() -> lc.shutdown());
 
-        lc.saveState();
+        lc.saveState(null);
         assertFails(() -> lc.startup());
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.shutdown(null));
+        assertFails(() -> lc.shutdown());
 
         lc.suspend();
         assertFails(() -> lc.startup());
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         lc.init(false); // init is allowed here again
 
         lc.setStateTransition(StateTransition.SUSPEND);
         assertThat(lc.isLastStateTransition(StateTransition.SUSPEND)).isTrue();
 
-        lc.shutdown(null);
+        lc.shutdown();
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
     }
 
@@ -226,16 +226,16 @@ class LifeCycleTest {
         var lc = LifeCycle.get();
 
         lc.setStateTransition(StateTransition.CREATE);
-        lc.forceShutdown(null);
+        lc.forceShutdown();
 
         lc.setStateTransition(StateTransition.INIT);
-        lc.forceShutdown(null);
+        lc.forceShutdown();
 
         lc.setStateTransition(StateTransition.WEB_APP_LOADED);
-        lc.forceShutdown(null);
+        lc.forceShutdown();
 
         lc.setStateTransition(StateTransition.SUSPEND);
-        lc.forceShutdown(null);
+        lc.forceShutdown();
     }
 
     private static void assertFails(final Executable executable) {

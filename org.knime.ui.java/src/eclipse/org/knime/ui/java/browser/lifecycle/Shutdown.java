@@ -48,21 +48,14 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
-import java.util.Map;
-import java.util.function.UnaryOperator;
-
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.persistence.UserProfilePersistor;
-import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.UserDirectory;
 import org.osgi.service.prefs.BackingStoreException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The shutdown lifecycle state transition of the KNIME-UI. The {@link Suspend}-phase must have been run first.
@@ -83,10 +76,10 @@ final class Shutdown {
      * @param state
      * @param localStorageAccess
      */
-    static void run(final LifeCycleStateInternal state, final UnaryOperator<String> localStorageAccess) {
+    static void run(final LifeCycleStateInternal state) {
         if (state != null) {
             AppStatePersistor.saveAppState(state.serializedAppState());
-            saveUserProfile(state.getUserProfile(), localStorageAccess);
+            saveUserProfile(state.getUserProfile());
         }
         var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         prefs.putBoolean(SharedConstants.START_WEB_UI_PREF_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
@@ -97,57 +90,13 @@ final class Shutdown {
         }
     }
 
-    private static void saveUserProfile(final UserProfile userProfile, final UnaryOperator<String> localStorageAccess) {
+    private static void saveUserProfile(final UserProfile userProfile) {
         var userProfilePath = UserDirectory.getProfileDirectory();
         if (userProfilePath.isEmpty()) {
             LOGGER.error("Can't write user profile. No user profile location set.");
             return;
         }
-        if (localStorageAccess == null) {
-            LOGGER.error("Failed to save user profile, no local storage access");
-            return;
-        }
-        try {
-            var updatedUserProfile = updateUserProfileFromLocalStorage(userProfile, localStorageAccess);
-            UserProfilePersistor.saveUserProfile(updatedUserProfile, userProfilePath.get());
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Failed to save user profile", e);
-        }
+        UserProfilePersistor.saveUserProfile(userProfile, userProfilePath.get());
     }
 
-    private static UserProfile updateUserProfileFromLocalStorage(UserProfile userProfile,
-        final UnaryOperator<String> localStorageAccess) throws JsonProcessingException {
-        var mapper = new ObjectMapper();
-        Map<String, String> uiSettings;
-        Map<String, String> onboardingHintsSettings;
-        var uiSettingsString = localStorageAccess.apply(UserProfile.UI_SETTINGS_LOCAL_STORAGE_KEY);
-        uiSettings = uiSettingsString != null ? mapper.readValue(uiSettingsString, Map.class) : Map.of();
-        var onboardingHintsSettingsString =
-            localStorageAccess.apply(UserProfile.ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY);
-        onboardingHintsSettings = onboardingHintsSettingsString != null
-            ? mapper.readValue(onboardingHintsSettingsString, Map.class) : Map.of();
-        userProfile = updateUserProfile(userProfile, uiSettings, onboardingHintsSettings);
-        return userProfile;
-    }
-
-    private static UserProfile updateUserProfile(final UserProfile userProfile, final Map<String, String> uiSettings,
-        final Map<String, String> onboardingHintsSettings) {
-        return new UserProfile() {
-
-            @Override
-            public Map<String, String> uiSettings() {
-                return uiSettings;
-            }
-
-            @Override
-            public Map<String, String> onboardingHintsSettings() {
-                return onboardingHintsSettings;
-            }
-
-            @Override
-            public InternalUsageTracking internalUsage() {
-                return userProfile.internalUsage();
-            }
-        };
-    }
 }
