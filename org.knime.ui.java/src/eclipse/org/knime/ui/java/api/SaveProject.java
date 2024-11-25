@@ -76,7 +76,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.DesktopAPUtil.OverwriteRemotelyResult;
-import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
@@ -218,12 +218,12 @@ final class SaveProject {
             throw new IllegalStateException("Can only save temporary copies to Server or Hub.");
         }
 
-        final var remoteMountpointURI = context.getMountpointURI().orElseThrow();
-        final var remoteStore = ExplorerFileSystem.INSTANCE.getStore(remoteMountpointURI);
+        var remoteMountpointURI = context.getMountpointURI().orElseThrow();
+        var remoteStore = FreshFileStoreResolver.resolveAndRefreshWithProgress(remoteMountpointURI);
 
-        final var fetchInfo = remoteStore.fetchInfo();
-        if (fetchInfo.exists()) {
-            if (!fetchInfo.isModifiable()) {
+        final var fetchedInfo = remoteStore.fetchInfo();
+        if (fetchedInfo.exists()) {
+            if (!fetchedInfo.isModifiable()) {
                 DesktopAPUtil.showError("Workflow not writable",
                     "You don't have permissions to overwrite the workflow. Use \"Save As...\" in order to save it to "
                     + "a different location.");
@@ -231,7 +231,6 @@ final class SaveProject {
             }
 
             final var location = context.getLocationType() == LocationType.SERVER_REPOSITORY ? "Server" : "Hub";
-
             final var resultRef = new AtomicReference<Pair<OverwriteRemotelyResult, String>>();
             Display.getDefault().syncExec(
                 () -> resultRef.set(DesktopAPUtil.openOverwriteRemotelyDialog(remoteStore, location)));
@@ -244,7 +243,6 @@ final class SaveProject {
 
             if (answer == OverwriteRemotelyResult.OVERWRITE_WITH_SNAPSHOT) {
                 try {
-                    // TODO this should be done in the `SpaceProvider`
                     ((RemoteExplorerFileStore)remoteStore).createSnapshot(dialogResult.getSecond());
                 } catch (final CoreException e) {
                     final var msg = "Unable to create snapshot before overwriting the workflow:\n" + e.getMessage()

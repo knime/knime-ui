@@ -103,7 +103,7 @@ import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
 import org.knime.workbench.explorer.dialogs.Validator;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
-import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
+import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.view.AbstractContentProvider;
 import org.knime.workbench.explorer.view.ContentObject;
 
@@ -235,7 +235,7 @@ final class ManipulateComponents {
         cmd.execute(wfKey, null);
 
         // ChangeComponentHubVersionCommand does not check canExecute of the actual update command
-        cmd.setCommandToExecute(getUpdateComponentCommand(component)); // TODO: NXT-2173, Remove and replace it
+        cmd.setCommandToExecute(getUpdateComponentCommand(component));
         try {
             cmd.execute(wfKey, null);
         } catch (final OperationNotAllowedException | NotASubWorkflowException | NodeNotFoundException e) {
@@ -298,7 +298,7 @@ final class ManipulateComponents {
     }
 
     /**
-     * TODO: NXT-2173, Remove it
+     * @deprecated See NXT-2173
      */
     private static WorkflowCommandAdapter getUpdateComponentCommand(final SubNodeContainer component) {
         final var componentID = component.getID();
@@ -331,7 +331,7 @@ final class ManipulateComponents {
      */
     private static Optional<HubSpaceLocationInfo> queryHubInfo(final URI uri) {
         return Optional.ofNullable(uri) //
-                .map(ExplorerFileSystem.INSTANCE::getStore) //
+                .map(FreshFileStoreResolver::resolveAndRefreshWithProgress) //
                 .flatMap(AbstractExplorerFileStore::locationInfo) //
                 .flatMap(info -> ClassUtils.castOptional(HubSpaceLocationInfo.class, info));
     }
