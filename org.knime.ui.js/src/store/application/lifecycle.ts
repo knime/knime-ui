@@ -235,8 +235,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     const goHomeIfNoActiveProject = () => {
       const { currentRoute } = $router;
-
-      if (currentRoute.value.name === APP_ROUTES.WorkflowPage) {
+      if (
+        !currentRoute.value.name ||
+        currentRoute.value.name === APP_ROUTES.WorkflowPage
+      ) {
         $router.push({ name: APP_ROUTES.Home.GetStarted });
       }
     };
