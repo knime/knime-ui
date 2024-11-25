@@ -144,7 +144,12 @@ final class EclipseUIAPI {
      */
     @API
     static void checkForUpdates() {
-        DesktopAPI.getDeps(UpdateStateProvider.class).checkForUpdates();
+        var updateStateProvider = DesktopAPI.getDeps(UpdateStateProvider.class);
+        // can be null when, e.g., switching from classic to modern UI
+        // where we don't want to check for updates
+        if (updateStateProvider != null) {
+            updateStateProvider.checkForUpdates();
+        }
     }
 
     /**
