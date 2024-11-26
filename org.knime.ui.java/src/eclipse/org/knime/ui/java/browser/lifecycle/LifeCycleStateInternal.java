@@ -106,7 +106,7 @@ public interface LifeCycleStateInternal extends LifeCycleState {
      * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List, EventConsumer,
      *      SaveAndCloseProjects.PostProjectCloseAction)
      */
-    default Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
+    default Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
         return null;
     }
 

@@ -151,7 +151,7 @@ final class Init {
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
             @Override
-            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
+            public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
                 return () -> {
                     var projectIds = projectManager.getProjectIds();
                     return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer,

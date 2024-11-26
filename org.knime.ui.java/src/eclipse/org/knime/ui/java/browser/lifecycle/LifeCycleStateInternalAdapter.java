@@ -73,8 +73,8 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     }
 
     @Override
-    public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
-        return m_lifeCycleStateInternal.saveAndCloseAllWorkflows();
+    public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
+        return m_lifeCycleStateInternal.getSaveAndCloseAllProjectsFunction();
     }
 
     @Override

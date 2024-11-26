@@ -80,22 +80,24 @@ final class SaveState {
         final UnaryOperator<String> localStorageAccess) throws StateTransitionAbortedException {
         final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
             AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        final var saveProjectsResult = state.saveAndCloseAllWorkflows();
-        if (saveProjectsResult.get() == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
+        final var saveProjectsFunction = state.getSaveAndCloseAllProjectsFunction();
+        final var saveProjectsResult = saveProjectsFunction.get();
+        if (saveProjectsResult == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
             throw new StateTransitionAbortedException();
         }
+
         var updatedUserProfile = updateUserProfileFromLocalStorage(state.getUserProfile(), localStorageAccess);
 
         return new LifeCycleStateInternalAdapter(state) {
 
             @Override
             public boolean workflowsSaved() {
-                return saveProjectsResult.get() == SaveAndCloseProjects.State.SUCCESS;
+                return saveProjectsResult == SaveAndCloseProjects.State.SUCCESS;
             }
 
             @Override
-            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
-                return saveProjectsResult;
+            public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
+                return saveProjectsFunction;
             }
 
             @Override
