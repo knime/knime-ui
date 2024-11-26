@@ -55,7 +55,6 @@ import java.util.function.UnaryOperator;
 import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.persistence.AppStatePersistor;
-import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.ui.java.profile.UserProfile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -71,6 +70,8 @@ final class SaveState {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveState.class);
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     private SaveState() {
         //
     }
@@ -80,11 +81,10 @@ final class SaveState {
         final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
             AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
         final var saveProjectsResult = state.saveAndCloseAllWorkflows();
-        var updatedUserProfile = updateUserProfileFromLocalStorage(state.getUserProfile(), localStorageAccess);
-
         if (saveProjectsResult.get() == SaveAndCloseProjects.State.CANCEL_OR_FAIL) {
             throw new StateTransitionAbortedException();
         }
+        var updatedUserProfile = updateUserProfileFromLocalStorage(state.getUserProfile(), localStorageAccess);
 
         return new LifeCycleStateInternalAdapter(state) {
 
@@ -117,42 +117,21 @@ final class SaveState {
             LOGGER.error("Failed to save user profile, no local storage access");
             return userProfile;
         }
-        var mapper = new ObjectMapper();
-        Map<String, String> uiSettings;
-        Map<String, String> onboardingHintsSettings;
         var uiSettingsString = localStorageAccess.apply(UserProfile.UI_SETTINGS_LOCAL_STORAGE_KEY);
+        var onboardingHintsSettingsString =
+            localStorageAccess.apply(UserProfile.ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY);
         try {
-            uiSettings = uiSettingsString != null ? mapper.readValue(uiSettingsString, Map.class) : Map.of();
-            var onboardingHintsSettingsString =
-                localStorageAccess.apply(UserProfile.ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY);
-            onboardingHintsSettings = onboardingHintsSettingsString != null
-                ? mapper.readValue(onboardingHintsSettingsString, Map.class) : Map.of();
-            return updateUserProfile(userProfile, uiSettings, onboardingHintsSettings);
+            Map<String, String> uiSettings = uiSettingsString != null //
+                ? MAPPER.readValue(uiSettingsString, Map.class) //
+                : Map.of();
+            Map<String, String> onboardingHintsSettings = onboardingHintsSettingsString != null //
+                ? MAPPER.readValue(onboardingHintsSettingsString, Map.class) //
+                : Map.of();
+            return UserProfile.of(userProfile, uiSettings, onboardingHintsSettings);
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to save user profile", e);
             return userProfile;
         }
-    }
-
-    private static UserProfile updateUserProfile(final UserProfile userProfile, final Map<String, String> uiSettings,
-        final Map<String, String> onboardingHintsSettings) {
-        return new UserProfile() {
-
-            @Override
-            public Map<String, String> uiSettings() {
-                return uiSettings;
-            }
-
-            @Override
-            public Map<String, String> onboardingHintsSettings() {
-                return onboardingHintsSettings;
-            }
-
-            @Override
-            public InternalUsageTracking internalUsage() {
-                return userProfile.internalUsage();
-            }
-        };
     }
 
 }

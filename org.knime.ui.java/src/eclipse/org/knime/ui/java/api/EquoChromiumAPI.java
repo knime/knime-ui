@@ -79,8 +79,10 @@ public final class EquoChromiumAPI {
     @API
     static Map<String, Object> getPersistedLocalStorageData() {
         var userProfile = DesktopAPI.getDeps(UserProfile.class);
-        return Map.of(UserProfile.UI_SETTINGS_LOCAL_STORAGE_KEY, userProfile.uiSettings(),
-            UserProfile.ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY, userProfile.onboardingHintsSettings());
+        return Map.of( //
+            UserProfile.UI_SETTINGS_LOCAL_STORAGE_KEY, userProfile.uiSettings(), //
+            UserProfile.ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY, userProfile.onboardingHintsSettings() //
+        );
     }
 
 }

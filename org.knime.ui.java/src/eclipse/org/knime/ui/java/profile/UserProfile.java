@@ -61,6 +61,27 @@ public interface UserProfile {
      */
     String ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY = "onboarding.hints.user";
 
+    static UserProfile of(final UserProfile userProfile, final Map<String, String> uiSettings,
+            final Map<String, String> onboardingHintsSettings) {
+        return new UserProfile() {
+
+            @Override
+            public Map<String, String> uiSettings() {
+                return uiSettings;
+            }
+
+            @Override
+            public Map<String, String> onboardingHintsSettings() {
+                return onboardingHintsSettings;
+            }
+
+            @Override
+            public InternalUsageTracking internalUsage() {
+                return userProfile.internalUsage();
+            }
+        };
+    }
+
     /**
      * @return the {@link InternalUsageTracking} instance
      */
