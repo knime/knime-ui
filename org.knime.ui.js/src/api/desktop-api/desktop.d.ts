@@ -235,11 +235,6 @@ declare function getHomePageTile(): Record<string, string>;
 
 declare function getExampleProjects(): string;
 
-declare function getAncestorInfo(
-  spaceProviderId: string,
-  spaceId: string,
-  itemId: string,
-  projectName: string,
-): string;
+declare function getAncestorInfo(projectId: string): string;
 
 declare function getPersistedLocalStorageData(): any;

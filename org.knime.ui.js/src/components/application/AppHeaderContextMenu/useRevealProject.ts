@@ -61,7 +61,7 @@ export const useRevealProject = (options: UseRevealProject) => {
 
   const getAncestorInfo = (
     origin: SpaceItemReference,
-    projectName: string,
+    projectId: string,
   ): Promise<AncestorInfo> => {
     const provider = store.state.spaces.spaceProviders?.[origin.providerId];
 
@@ -80,22 +80,22 @@ export const useRevealProject = (options: UseRevealProject) => {
 
     // Throws error if the ancestor item IDs could not be retrieved
     return API.desktop.getAncestorInfo({
-      spaceProviderId: origin.providerId,
-      spaceId: origin.spaceId,
-      itemId: origin.itemId,
-      projectName,
+      projectId,
     });
   };
 
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
-    projectName: string,
+    projectId: string,
   ) => {
     const group = findSpaceGroupFromSpaceId(
       store.state.spaces.spaceProviders ?? {},
       origin.spaceId,
     );
-    const { ancestorItemIds } = await getAncestorInfo(origin, projectName);
+    const { hasNameChanged, ancestorItemIds } = await getAncestorInfo(
+      origin,
+      projectId,
+    );
 
     await $router.push({
       name: APP_ROUTES.Home.SpaceBrowsingPage,
@@ -112,7 +112,7 @@ export const useRevealProject = (options: UseRevealProject) => {
 
   const displaySpaceExplorerSidebar = async (
     origin: SpaceItemReference,
-    projectName: string,
+    projectId: string,
   ) => {
     if (!activeProjectId.value) {
       return;
@@ -130,7 +130,7 @@ export const useRevealProject = (options: UseRevealProject) => {
     const { providerId, spaceId, itemId } = origin;
     const { hasNameChanged, ancestorItemIds } = await getAncestorInfo(
       origin,
-      projectName,
+      projectId,
     );
 
     const currentPath = store.state.spaces.projectPath[activeProjectId.value];
@@ -219,17 +219,22 @@ export const useRevealProject = (options: UseRevealProject) => {
             return;
           }
 
+          if (!options.projectId.value) {
+            consola.error("No project ID provided, this should not happen");
+            return;
+          }
+
           if (!activeProjectId.value) {
             await navigateToSpaceBrowsingPage(
               foundProject.origin,
-              foundProject.name,
+              options.projectId.value,
             );
             return;
           }
 
           await displaySpaceExplorerSidebar(
             foundProject.origin,
-            foundProject.name,
+            options.projectId.value,
           );
         } catch (error) {
           consola.error("Error revealing project in Space Explorer: ", error);

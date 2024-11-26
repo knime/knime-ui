@@ -48,8 +48,6 @@
  */
 package org.knime.ui.java.api;
 
-import static org.knime.ui.java.api.DesktopAPI.MAPPER;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,8 +93,6 @@ import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions around spaces.
@@ -592,40 +588,6 @@ final class SpaceAPI {
             throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }
         return spaceProvider;
-    }
-
-    /**
-     * Retrieves ancestor information necessary to reveal a project in the space explorer
-     *
-     * @param spaceProviderId
-     * @param spaceId
-     * @param itemId
-     * @param projectName
-     * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not
-     * @throws IOException If the ancestors could not be retrieved
-     */
-    @API
-    static String getAncestorInfo(final String spaceProviderId, final String spaceId, final String itemId,
-        final String projectName) throws IOException {
-        try {
-            final var space =
-                SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
-            final var ancestorItemIds = space.getAncestorItemIds(itemId);
-            final var mostRecentProjectName = space.getItemName(itemId);
-            final var hasNameChanged = !projectName.equals(mostRecentProjectName);
-
-            return buildAncestorInfo(ancestorItemIds, hasNameChanged).toString();
-        } catch (ResourceAccessException e) {
-            throw new IOException(
-                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName), e);
-        }
-    }
-
-    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final boolean hasNameChanged) {
-        final var objectNode = MAPPER.createObjectNode();
-        final var arrayNode = objectNode.putArray("ancestorItemIds");
-        ancestorItemIds.forEach(arrayNode::add);
-        return objectNode.put("hasNameChanged", hasNameChanged);
     }
 
 }
