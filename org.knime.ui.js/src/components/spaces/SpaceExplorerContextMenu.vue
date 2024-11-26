@@ -134,7 +134,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
 
     const getHubActions = () => {
       if (isLocal) {
-        return [uploadToHub];
+        return [uploadToHub, moveToSpace, copyToSpace];
       }
 
       if (isServer) {

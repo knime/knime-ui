@@ -381,14 +381,6 @@ final class SpaceAPI {
             Arrays.stream(sourceItemIdsParam).map(String.class::cast).toList());
         final var destination = new Locator.Item(spaceProviderId, destinationSpaceId, destinationItemId);
 
-        if (sources.isLocal()) {
-            // this is really an illegal argument, since we deal with remote copy/move
-            final var copyText = doCopy ? "copy" : "move";
-            DesktopAPUtil.showError("Cannot %s from the local space".formatted(copyText),
-                "Cannot move item(s) from the local space.");
-            return MoveOrCopyResult.FAILURE.toString();
-        }
-
         var collisionHandling = NameCollisionHandling.of(nameCollisionHandlingParam);
         if ( //
         collisionHandling.isEmpty() //
