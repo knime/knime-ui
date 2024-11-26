@@ -1,4 +1,5 @@
 import { createApp } from "vue";
+import { createGtm } from "@gtm-support/vue-gtm";
 
 import { setupHints } from "@knime/components";
 
@@ -119,7 +120,6 @@ try {
 
   // use GTM plugin if gtmId is set
   if (connectionInfo?.gtmId) {
-    const { createGtm } = await import("@gtm-support/vue-gtm");
     app.use(createGtm({ id: connectionInfo.gtmId, defer: true }));
   }
 
