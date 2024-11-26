@@ -3,7 +3,11 @@ import applicationShortcuts from "./applicationShortcuts";
 import canvasShortcuts from "./canvasShortcuts";
 import componentOrMetanodeShortcuts from "./componentOrMetanodeShortcuts";
 import executionShortcuts from "./executionShortcuts";
-import { selectionShortcuts, sidePanelShortcuts } from "./miscShortcuts";
+import {
+  selectionShortcuts,
+  sidePanelShortcuts,
+  uiScaleShortcuts,
+} from "./miscShortcuts";
 import type { ShortcutConditionContext } from "./types";
 import workflowShortcuts from "./workflowShortcuts";
 
@@ -60,6 +64,7 @@ const shortcuts: ShortcutsRegistry = {
     },
   ),
   ...sidePanelShortcuts,
+  ...uiScaleShortcuts,
 };
 
 export default shortcuts;

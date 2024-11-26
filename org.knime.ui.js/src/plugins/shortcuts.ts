@@ -143,7 +143,10 @@ export const createShortcutsService = ({
     const shortcut = shortcuts[shortcutName];
 
     if (!shortcut) {
-      consola.warn("shortcuts::dispatch -> Shortcut not found");
+      consola.warn("shortcuts::dispatch -> Shortcut not found", {
+        shortcuts,
+        shortcutName,
+      });
       throw new Error(`Shortcut ${shortcutName} doesn't exist`);
     }
 
@@ -183,12 +186,25 @@ export const createShortcutsService = ({
     });
   };
 
+  const getText: ShortcutsService["getText"] = (shortcutName) => {
+    const shortcut = getByName(shortcutName);
+
+    if (!shortcut || !shortcut.text) {
+      return "";
+    }
+
+    return typeof shortcut.text === "function"
+      ? shortcut.text({ $store })
+      : shortcut.text;
+  };
+
   const $shortcuts: ShortcutsService = {
     isEnabled,
     dispatch,
     preventDefault,
     findByHotkey,
     get,
+    getText,
   };
 
   return $shortcuts;

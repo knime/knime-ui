@@ -35,6 +35,7 @@ const $shortcuts = {
   get: () => ({}),
   isEnabled: vi.fn(),
   dispatch: vi.fn(),
+  getText: vi.fn(),
 };
 
 vi.mock("@/plugins/shortcuts", () => ({

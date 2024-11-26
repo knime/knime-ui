@@ -114,6 +114,7 @@ export type ShortcutsService = {
   preventDefault: (shortcutName: ShortcutName) => boolean;
   findByHotkey: (event: KeyboardEvent) => string[];
   get: (shortcutName: ShortcutName) => FormattedShortcut;
+  getText: (shortcutName: ShortcutName) => string;
 };
 
 export type UnionToShortcutRegistry<T extends string> = {
