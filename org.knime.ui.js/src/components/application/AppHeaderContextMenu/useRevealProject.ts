@@ -20,10 +20,9 @@ type UseRevealProject = {
   projectId: Ref<string | null>;
 };
 
-const useErrorToast = () => {
+const useToast = () => {
   let previousToastId: string;
   const store = useStore();
-
   const $toast = getToastsProvider();
 
   const showErrorToast = () => {
@@ -41,12 +40,24 @@ const useErrorToast = () => {
     });
   };
 
-  return { showErrorToast };
+  const showWarningToast = (projectName: string) => {
+    if (previousToastId) {
+      $toast.remove(previousToastId);
+    }
+
+    previousToastId = $toast.show({
+      type: "warning",
+      headline: "Name has changed",
+      message: `The project "${projectName}" name's has changed on the remote Hub`,
+      autoRemove: true,
+    });
+  };
+
+  return { showErrorToast, showWarningToast };
 };
 
 export const useRevealProject = (options: UseRevealProject) => {
   const store = useStore();
-  const $toast = getToastsProvider();
   const $router = useRouter();
 
   const openProjects = computed(() => store.state.application.openProjects);
@@ -84,6 +95,8 @@ export const useRevealProject = (options: UseRevealProject) => {
     });
   };
 
+  const { showWarningToast } = useToast();
+
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
     projectId: string,
@@ -108,6 +121,10 @@ export const useRevealProject = (options: UseRevealProject) => {
     });
 
     store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
+
+    if (hasNameChanged) {
+      showWarningToast(projectId);
+    }
   };
 
   const displaySpaceExplorerSidebar = async (
@@ -166,18 +183,12 @@ export const useRevealProject = (options: UseRevealProject) => {
       store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
     }
 
-    // Notify user in case the project name changed
     if (hasNameChanged) {
-      $toast.show({
-        type: "warning",
-        headline: "Name has changed",
-        message: `The project "${options.projectId.value}" name's has changed on the remote Hub`,
-        autoRemove: true,
-      });
+      showWarningToast(projectId);
     }
   };
 
-  const { showErrorToast } = useErrorToast();
+  const { showErrorToast } = useToast();
 
   const canRevealProject = computed(() => {
     const foundProject = openProjects.value.find(
