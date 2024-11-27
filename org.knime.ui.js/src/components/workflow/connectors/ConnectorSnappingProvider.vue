@@ -114,6 +114,7 @@ export default {
       "closePortTypeMenu",
     ]),
     ...mapMutations("workflow", ["setPortTypeMenuPreviewPort"]),
+    ...mapActions("nodeConfiguration", ["autoApplySettings"]),
     onConnectorStart({ validConnectionTargets, startNodeId }) {
       // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
       // e.g.: Metanode portbar ports can always be connected to (provided they're "compatible")
@@ -292,10 +293,16 @@ export default {
             destPort: startPort,
           };
     },
-    onConnectorDrop(event) {
+    async onConnectorDrop(event) {
       // copy over the target port as the async backend calls might come after it has been set to null by
       // onConnectorEnd()
       let targetPort = { ...this.targetPort };
+
+      const canContinue = await this.autoApplySettings({ nextNodeId: this.id });
+      if (!canContinue) {
+        return;
+      }
+
       const {
         detail: { startNode, startPort, isCompatible },
       } = event;
@@ -340,14 +347,13 @@ export default {
         const [typeId] =
           targetPort.validPortGroups[firstPortGroup].supportedPortTypeIds;
         const side = targetPort.side;
-        this.addPortAndConnectIt({
+        return this.addPortAndConnectIt({
           typeId,
           portGroup: firstPortGroup === "default" ? null : firstPortGroup,
           side,
           startNode,
           startPort,
         });
-        return;
       }
       // show menu to the user to select the portGroup and the type
       const [x, y] = targetPort.snapPosition;

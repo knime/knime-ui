@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
 import * as $shapes from "@/style/shapes";
@@ -75,6 +75,11 @@ describe("ConnectorSnappingProvider.vue", () => {
         },
         mutations: {
           setPortTypeMenuPreviewPort: setPortTypeMenuPreviewPortMock,
+        },
+      },
+      nodeConfiguration: {
+        actions: {
+          autoApplySettings: vi.fn().mockResolvedValue(true),
         },
       },
     });
@@ -379,6 +384,8 @@ describe("ConnectorSnappingProvider.vue", () => {
               startPort: 1,
             },
           });
+
+          await flushPromises();
 
           expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
             nodeId: "root",

@@ -432,8 +432,7 @@ describe("Node", () => {
     it("renders NodeActionBar at correct position", async () => {
       const { wrapper } = doMount({ props });
 
-      wrapper.find(".hover-container").trigger("mouseenter");
-      await nextTick();
+      await wrapper.find(".hover-container").trigger("mouseenter");
 
       expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
         nodeId: "root:1",
@@ -620,9 +619,9 @@ describe("Node", () => {
   describe("node hover", () => {
     let wrapper: VueWrapper;
 
-    const triggerHover = (wrapper: VueWrapper, hover: boolean) => {
+    const triggerHover = async (wrapper: VueWrapper, hover: boolean) => {
       const eventName = hover ? "enter" : "leave";
-      wrapper.find(".hover-container").trigger(`mouse${eventName}`);
+      await wrapper.find(".hover-container").trigger(`mouse${eventName}`);
     };
 
     beforeEach(() => {
@@ -631,15 +630,13 @@ describe("Node", () => {
     });
 
     it("increases the size of the hover-container on hover", async () => {
-      triggerHover(wrapper, false);
-      await nextTick();
+      await triggerHover(wrapper, false);
 
       const smallHoverWidth = Number(
         wrapper.find(".hover-area").attributes("width"),
       );
 
-      triggerHover(wrapper, true);
-      await nextTick();
+      await triggerHover(wrapper, true);
 
       const largeHoverWidth = Number(
         wrapper.find(".hover-area").attributes("width"),
@@ -649,7 +646,7 @@ describe("Node", () => {
     });
 
     it("fits the hover-area to the node name", async () => {
-      triggerHover(wrapper, true);
+      await triggerHover(wrapper, true);
       const { y: oldY, height: oldHeight } = wrapper
         .find(".hover-area")
         .attributes();
@@ -664,27 +661,23 @@ describe("Node", () => {
     });
 
     it("shows shadows", async () => {
-      triggerHover(wrapper, true);
-      await nextTick();
+      await triggerHover(wrapper, true);
 
       expect(wrapper.findComponent(NodeState).classes()).toContain("hover");
       expect(wrapper.findComponent(NodeTorso).classes()).toContain("hover");
     });
 
     it("leaving hover container unsets hover", async () => {
-      triggerHover(wrapper, false);
-      await nextTick();
+      await triggerHover(wrapper, false);
 
       expect(wrapper.findComponent(NodeTorso).classes()).not.toContain("hover");
     });
 
     describe("action bar", () => {
       it("is portalled and it needs MouseLeave Listener", async () => {
-        triggerHover(wrapper, true);
-        await nextTick();
+        await triggerHover(wrapper, true);
 
-        wrapper.findComponent(NodeActionBar).trigger("mouseleave");
-        await nextTick();
+        await wrapper.findComponent(NodeActionBar).trigger("mouseleave");
 
         expect(wrapper.findComponent(NodeTorso).classes()).not.toContain(
           "hover",
@@ -692,8 +685,7 @@ describe("Node", () => {
       });
 
       it("shows selection plane and action buttons", async () => {
-        triggerHover(wrapper, true);
-        await nextTick();
+        await triggerHover(wrapper, true);
 
         const actionBar = wrapper.findComponent(NodeActionBar);
 
@@ -721,8 +713,7 @@ describe("Node", () => {
         $store.state.application.useEmbeddedDialogs = true;
         await nextTick();
 
-        triggerHover(wrapper, true);
-        await nextTick();
+        await triggerHover(wrapper, true);
 
         const actionBar = wrapper.findComponent(NodeActionBar);
 
@@ -735,8 +726,7 @@ describe("Node", () => {
         $store.state.application.useEmbeddedDialogs = false;
         await nextTick();
 
-        triggerHover(wrapper, true);
-        await nextTick();
+        await triggerHover(wrapper, true);
 
         expect(actionBar.props()).toEqual(
           expect.objectContaining({
@@ -753,8 +743,7 @@ describe("Node", () => {
         $store.state.application.useEmbeddedDialogs = true;
         await nextTick();
 
-        triggerHover(wrapper, true);
-        await nextTick();
+        await triggerHover(wrapper, true);
 
         const actionBar = wrapper.findComponent(NodeActionBar);
 
@@ -767,8 +756,7 @@ describe("Node", () => {
         $store.state.application.useEmbeddedDialogs = false;
         await nextTick();
 
-        triggerHover(wrapper, true);
-        await nextTick();
+        await triggerHover(wrapper, true);
 
         expect(actionBar.props()).toEqual(
           expect.objectContaining({
@@ -779,8 +767,7 @@ describe("Node", () => {
     });
 
     it("enlargens the hover area to include ports", async () => {
-      triggerHover(wrapper, true);
-      await nextTick();
+      await triggerHover(wrapper, true);
 
       const previousHoverHeight = Number(
         wrapper.find(".hover-area").attributes("height"),
@@ -801,8 +788,7 @@ describe("Node", () => {
     });
 
     it("forwards hover state to children", async () => {
-      triggerHover(wrapper, true);
-      await nextTick();
+      await triggerHover(wrapper, true);
 
       expect(wrapper.findComponent(NodePorts).props("hover")).toBe(true);
     });
@@ -834,11 +820,9 @@ describe("Node", () => {
     });
 
     it("forwards connector hover state to children", async () => {
-      wrapper
+      await wrapper
         .find(".hover-container")
         .trigger("connector-enter", { preventDefault: vi.fn() });
-
-      await nextTick();
 
       expect(wrapper.findComponent(NodePorts).props("connectorHover")).toBe(
         true,
@@ -859,13 +843,12 @@ describe("Node", () => {
         .vm.$emit("updatePortPositions", mockPortPositions);
 
       // connector enters
-      wrapper
+      await wrapper
         .find(".hover-container")
         .trigger("connector-enter", { preventDefault: vi.fn() });
-      await nextTick();
 
       // connector moves
-      wrapper.find(".hover-container").trigger("connector-move", {
+      await wrapper.find(".hover-container").trigger("connector-move", {
         detail: {
           x: commonNode.position.x + 10,
           y: commonNode.position.y + 10,
@@ -873,8 +856,6 @@ describe("Node", () => {
           onSnapCallback: () => ({ didSnap: true }),
         },
       });
-
-      await nextTick();
 
       // target port's side should match that of the connector-move event
       // target port's index is 0 because there's only 1 port (from mock port positions)
@@ -1125,8 +1106,10 @@ describe("Node", () => {
     );
 
     it("should handle contextmenu events", async () => {
-      wrapper.findComponent(NodeName).trigger("pointerdown", { button: 2 });
-      await nextTick();
+      await wrapper
+        .findComponent(NodeName)
+        .trigger("pointerdown", { button: 2 });
+
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
         expect.stringMatching("root:1"),
@@ -1137,8 +1120,8 @@ describe("Node", () => {
     });
 
     it("should handle click events", async () => {
-      wrapper.findComponent(NodeName).trigger("click", { button: 0 });
-      await nextTick();
+      await wrapper.findComponent(NodeName).trigger("click", { button: 0 });
+
       expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
         expect.anything(),
         expect.stringMatching("root:1"),

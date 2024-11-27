@@ -19,7 +19,7 @@ describe("useUniqueNodeStateId", () => {
     });
 
     expect(uniqueNodeConfigId.value).toBe(
-      "project1__workflow1::org.knime.base.node.MockNodeFactory_root:1_13",
+      "project1__workflow1::org.knime.base.node.MockNodeFactory_root:1_inports-1_content-13",
     );
   });
 

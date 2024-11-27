@@ -15,7 +15,7 @@ describe("workflow::nodeInteractions", () => {
       info: { containerId: "root" },
     });
 
-    store.dispatch("workflow/connectNodes", {
+    await store.dispatch("workflow/connectNodes", {
       sourceNode: "source:1",
       sourcePort: 0,
       destNode: "dest:1",
@@ -83,7 +83,7 @@ describe("workflow::nodeInteractions", () => {
 
     it("should add nodes based from a space", async () => {
       const { store } = await setupStoreWithWorkflow();
-      store.dispatch("workflow/addNode", {
+      await store.dispatch("workflow/addNode", {
         position: { x: 7, y: 31 },
         nodeFactory: "factory",
         sourceNodeId: null,
@@ -112,7 +112,7 @@ describe("workflow::nodeInteractions", () => {
     it("should add components from a space", async () => {
       const { store } = await setupStoreWithWorkflow();
       mockedAPI.desktop.importComponent.mockReturnValueOnce("new-node");
-      store.dispatch("workflow/addNode", {
+      await store.dispatch("workflow/addNode", {
         position: { x: 7, y: 31 },
         nodeFactory: null,
         isComponent: true,
@@ -136,7 +136,7 @@ describe("workflow::nodeInteractions", () => {
     it("should adjust the position of the node to grid positions", async () => {
       const { store } = await setupStoreWithWorkflow();
 
-      store.dispatch("workflow/addNode", {
+      await store.dispatch("workflow/addNode", {
         position: { x: 7, y: 31 },
         nodeFactory: "factory",
       });
@@ -195,7 +195,7 @@ describe("workflow::nodeInteractions", () => {
         typeId: "porty",
         portGroup: "group",
       };
-      store.dispatch("workflow/addNodePort", payload);
+      await store.dispatch("workflow/addNodePort", payload);
 
       expect(mockedAPI.workflowCommand.AddPort).toHaveBeenCalledWith({
         projectId: "foo",
@@ -220,7 +220,7 @@ describe("workflow::nodeInteractions", () => {
         projectId: "foo",
         info: { containerId: "root" },
       });
-      store.dispatch("workflow/removeNodePort", payload);
+      await store.dispatch("workflow/removeNodePort", payload);
 
       expect(mockedAPI.workflowCommand.RemovePort).toHaveBeenCalledWith({
         nodeId: payload.nodeId,

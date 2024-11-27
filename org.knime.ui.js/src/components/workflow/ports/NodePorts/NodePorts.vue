@@ -156,7 +156,7 @@ const isPlaceholderPortTargeted = (side: "input" | "output") => {
     : isPortTargeted(props.outPorts.length, "out");
 };
 
-const addPort = ({
+const addPort = async ({
   side,
   typeId,
   portGroup,
@@ -171,29 +171,49 @@ const addPort = ({
 
   portSelectionState.setModificationInProgress(true);
 
-  store
-    .dispatch("workflow/addNodePort", {
-      nodeId: props.nodeId,
-      side,
-      typeId,
-      portGroup,
-    })
-    .then(() => {
-      // AddPortPlaceholder may be removed after adding a port
-      if (!canAddPort.value[side]) {
-        const sidePorts = side === "input" ? props.inPorts : props.outPorts;
-        updateSelection(`${side}-${sidePorts.length - 1}`);
-      }
-    })
-    .finally(() => {
-      portSelectionState.setModificationInProgress(false);
-    });
+  const canContinue = await store.dispatch(
+    "nodeConfiguration/autoApplySettings",
+    {
+      nextNodeId: props.nodeId,
+    },
+  );
+  if (!canContinue) {
+    portSelectionState.setModificationInProgress(false);
+    return;
+  }
+
+  await store.dispatch("workflow/addNodePort", {
+    nodeId: props.nodeId,
+    side,
+    typeId,
+    portGroup,
+  });
+
+  // AddPortPlaceholder may be removed after adding a port
+  if (!canAddPort.value[side]) {
+    const sidePorts = side === "input" ? props.inPorts : props.outPorts;
+    updateSelection(`${side}-${sidePorts.length - 1}`);
+  }
+
+  portSelectionState.setModificationInProgress(false);
 };
 
-const removePort = (
+const removePort = async (
   { portGroupId, index }: NodePortType,
   side: "input" | "output",
 ) => {
+  const canContinue = await store.dispatch(
+    "nodeConfiguration/autoApplySettings",
+    {
+      nextNodeId: props.nodeId,
+    },
+  );
+
+  if (!canContinue) {
+    portSelectionState.setModificationInProgress(false);
+    return;
+  }
+
   store.dispatch("workflow/removeNodePort", {
     nodeId: props.nodeId,
     side,

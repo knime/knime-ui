@@ -4,6 +4,7 @@ import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import * as applicationStore from "@/store/application";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import * as selectionStore from "@/store/selection";
 import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
@@ -35,6 +36,9 @@ describe("NodePorts.vue", () => {
     isWorkflowWritable = true,
     quickActionMenu = {},
     customProps = {},
+    // adding/removing a node will trigger autoApplySettings prompt.
+    // This flag resolves the prompt. true: port will be added/removed, false: port will not be added/removed
+    applyOrDiscardSettings = true,
   } = {}) => {
     let defaultProps = {
       inPorts: [
@@ -73,6 +77,12 @@ describe("NodePorts.vue", () => {
         getters: {
           getNodeById: () => getNodeByIdMock,
           isWritable: () => isWorkflowWritable,
+        },
+      },
+      nodeConfiguration: {
+        ...nodeConfigurationStore,
+        actions: {
+          autoApplySettings: vi.fn().mockResolvedValue(applyOrDiscardSettings),
         },
       },
       selection: selectionStore,
@@ -605,7 +615,7 @@ describe("NodePorts.vue", () => {
     });
 
     describe.each(["metanode", "component"])("add ports for %s", (nodeKind) => {
-      it.each(["input", "output"])("on %s side", (side) => {
+      it.each(["input", "output"])("on %s side", async (side) => {
         let { wrapper, addNodePortMock } = doMount({
           customProps: { nodeKind },
         });
@@ -617,6 +627,8 @@ describe("NodePorts.vue", () => {
           portGroup: "table",
         });
 
+        await flushPromises();
+
         expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
           nodeId: "root:1",
           side,
@@ -626,55 +638,89 @@ describe("NodePorts.vue", () => {
       });
     });
 
-    it.each(["input", "output"])("add dynamic ports on %s side", (side) => {
-      let { wrapper, addNodePortMock } = doMount({
+    it.each(["input", "output"])(
+      "add dynamic ports on %s side",
+      async (side) => {
+        const { wrapper, addNodePortMock } = doMount({
+          customProps: {
+            nodeKind: "node",
+            portGroups: {
+              group1: {
+                canAddInPort: true,
+                canAddOutPort: true,
+                supportedPortTypeIds: ["type1"],
+              },
+            },
+          },
+        });
+
+        const addPortButton = wrapper
+          .findAllComponents(AddPortPlaceholder)
+          .at(side === "input" ? 0 : 1);
+        addPortButton.vm.$emit("add-port", {
+          typeId: "type1",
+          portGroup: "group1",
+        });
+
+        await flushPromises();
+
+        expect(addNodePortMock).toBeCalledTimes(1);
+
+        expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
+          nodeId: "root:1",
+          side,
+          typeId: "type1",
+          portGroup: "group1",
+        });
+      },
+    );
+
+    it.each(["input", "output"])(
+      "do not add dynamic ports on %s side if user cancels the applySettings prompt",
+      async (side) => {
+        let { wrapper, addNodePortMock } = doMount({
+          customProps: {
+            nodeKind: "node",
+            portGroups: {
+              group1: {
+                canAddInPort: true,
+                canAddOutPort: true,
+                supportedPortTypeIds: ["type1"],
+              },
+            },
+          },
+          applyOrDiscardSettings: false,
+        });
+
+        let addPortButton = wrapper
+          .findAllComponents(AddPortPlaceholder)
+          .at(side === "input" ? 0 : 1);
+        addPortButton.vm.$emit("add-port", {
+          typeId: "type1",
+          portGroup: "group1",
+        });
+
+        await flushPromises();
+
+        expect(addNodePortMock).not.toHaveBeenCalled();
+      },
+    );
+
+    it("port addition locks modifications", async () => {
+      let { wrapper, addNodePortMock, $store } = doMount({
         customProps: {
           nodeKind: "node",
           portGroups: {
             group1: {
               canAddInPort: true,
-              canAddOutPort: true,
-              supportedPortTypeIds: ["type1"],
-            },
-          },
-        },
-      });
-      let addPortButton = wrapper
-        .findAllComponents(AddPortPlaceholder)
-        .at(side === "input" ? 0 : 1);
-      addPortButton.vm.$emit("add-port", {
-        typeId: "type1",
-        portGroup: "group1",
-      });
-
-      expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
-        nodeId: "root:1",
-        side,
-        typeId: "type1",
-        portGroup: "group1",
-      });
-    });
-
-    it("port deletion locks modifications", async () => {
-      let { wrapper, addNodePortMock } = doMount({
-        customProps: {
-          nodeKind: "node",
-          portGroups: {
-            group1: {
-              canAddInPort: true,
               supportedPortTypeIds: ["type1"],
             },
           },
         },
       });
 
-      let resolveAddPort = null;
-      addNodePortMock.mockReturnValueOnce(
-        new Promise((resolve) => {
-          resolveAddPort = resolve;
-        }),
-      );
-      let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(0);
+      const addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(0);
+
       addPortButton.vm.$emit("add-port", {
         typeId: "type1",
         portGroup: "group1",
@@ -685,20 +731,30 @@ describe("NodePorts.vue", () => {
         typeId: "type1",
         portGroup: "group1",
       });
+
       // more add-port events before first is finished
       addPortButton.vm.$emit("add-port", {
         typeId: "type1",
         portGroup: "group1",
       });
+
+      expect(
+        $store.state.selection.activeNodePorts.isModificationInProgress,
+      ).toBeTruthy();
+
+      await flushPromises();
       expect(addNodePortMock).toBeCalledTimes(1);
 
-      resolveAddPort();
-      await flushPromises();
+      expect(
+        $store.state.selection.activeNodePorts.isModificationInProgress,
+      ).toBeFalsy();
+
       addPortButton.vm.$emit("add-port", {
         typeId: "type1",
         portGroup: "group1",
       });
-      resolveAddPort();
+
+      await flushPromises();
       expect(addNodePortMock).toBeCalledTimes(2);
     });
 
@@ -765,7 +821,7 @@ describe("NodePorts.vue", () => {
     describe.each(["metanode", "component"])(
       "remove port on %s",
       (nodeKind) => {
-        it.each(["input", "output"])("from %s side", (side) => {
+        it.each(["input", "output"])("from %s side", async (side) => {
           const inPorts = [
             mockPort({ index: 0, connectedVia: ["inA"] }),
             mockPort({ index: 1 }),
@@ -786,6 +842,8 @@ describe("NodePorts.vue", () => {
             .at(side === "input" ? 1 : 3);
           port.vm.$emit("remove");
 
+          await flushPromises();
+
           expect(removeNodePortMock).toHaveBeenCalledWith(expect.anything(), {
             index: 1,
             nodeId: "root:1",
@@ -796,37 +854,75 @@ describe("NodePorts.vue", () => {
       },
     );
 
-    it.each(["input", "output"])("remove dynamic ports on %s side", (side) => {
-      const inPorts = [
-        mockPort({ index: 0, connectedVia: ["inA"] }),
-        mockPort({ index: 1, portGroupId: "group1" }),
-      ];
-      const outPorts = [
-        mockPort({ index: 0, outgoing: true, connectedVia: ["outA"] }),
-        mockPort({ index: 1, outgoing: true, portGroupId: "group1" }),
-      ];
-      let { wrapper, removeNodePortMock } = doMount({
-        customProps: {
-          nodeKind: "node",
-          portGroups: {
-            group1: {},
+    it.each(["input", "output"])(
+      "remove dynamic ports on %s side",
+      async (side) => {
+        const inPorts = [
+          mockPort({ index: 0, connectedVia: ["inA"] }),
+          mockPort({ index: 1, portGroupId: "group1" }),
+        ];
+        const outPorts = [
+          mockPort({ index: 0, outgoing: true, connectedVia: ["outA"] }),
+          mockPort({ index: 1, outgoing: true, portGroupId: "group1" }),
+        ];
+        let { wrapper, removeNodePortMock } = doMount({
+          customProps: {
+            nodeKind: "node",
+            portGroups: {
+              group1: {},
+            },
+            inPorts,
+            outPorts,
           },
-          inPorts,
-          outPorts,
-        },
-      });
-      let port = wrapper
-        .findAllComponents(NodePort)
-        .at(side === "input" ? 1 : 3);
-      port.vm.$emit("remove");
+        });
+        let port = wrapper
+          .findAllComponents(NodePort)
+          .at(side === "input" ? 1 : 3);
+        port.vm.$emit("remove");
 
-      expect(removeNodePortMock).toHaveBeenCalledWith(expect.anything(), {
-        nodeId: "root:1",
-        side,
-        index: 1,
-        portGroup: "group1",
-      });
-    });
+        await flushPromises();
+
+        expect(removeNodePortMock).toHaveBeenCalledWith(expect.anything(), {
+          nodeId: "root:1",
+          side,
+          index: 1,
+          portGroup: "group1",
+        });
+      },
+    );
+
+    it.each(["input", "output"])(
+      "do not remove dynamic ports on %s side, when users cancels the applySettings prompt",
+      async (side) => {
+        const inPorts = [
+          mockPort({ index: 0, connectedVia: ["inA"] }),
+          mockPort({ index: 1, portGroupId: "group1" }),
+        ];
+        const outPorts = [
+          mockPort({ index: 0, outgoing: true, connectedVia: ["outA"] }),
+          mockPort({ index: 1, outgoing: true, portGroupId: "group1" }),
+        ];
+        let { wrapper, removeNodePortMock } = doMount({
+          customProps: {
+            nodeKind: "node",
+            portGroups: {
+              group1: {},
+            },
+            inPorts,
+            outPorts,
+          },
+          applyOrDiscardSettings: false,
+        });
+        let port = wrapper
+          .findAllComponents(NodePort)
+          .at(side === "input" ? 1 : 3);
+        port.vm.$emit("remove");
+
+        await flushPromises();
+
+        expect(removeNodePortMock).not.toHaveBeenCalled();
+      },
+    );
   });
 
   it.each([
@@ -834,7 +930,7 @@ describe("NodePorts.vue", () => {
     [{ index: 0, side: "out" }, [false, true]],
     [{ index: 1, side: "in" }, [false, false]],
     [{ index: 1, side: "out" }, [false, false]],
-  ])("target input port", (targetPort, result) => {
+  ])("target %s port", (targetPort, result) => {
     // use only on port on each side
     const inPorts = [mockPort({ index: 0, connectedVia: ["inA"] })];
     const outPorts = [

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
+import { mount } from "@vue/test-utils";
 import type { Store } from "vuex";
 
 import { ApplyState, ViewState } from "@knime/ui-extension-service";
@@ -105,9 +105,8 @@ describe("NodeConfigWrapper.vue", () => {
   };
 
   const selectNextNode = async ($store: Store<any>, nodeId: string) => {
-    $store.dispatch("selection/deselectAllObjects");
-    $store.dispatch("selection/selectNode", nodeId);
-    await flushPromises();
+    await $store.dispatch("selection/deselectAllObjects");
+    await $store.dispatch("selection/selectNode", nodeId);
   };
 
   it("sets NodeConfigLayout props", () => {
