@@ -16,6 +16,19 @@ export const useNotifyUIExtensionAlert = () => {
     }
   };
 
+  // TODO: UIEXT-2287 Remove this once the Alert API of UI Extensions is reworked
+  const invalidSubtitles = [
+    "Expand for details", // Message for too long warnings
+    "Something went wrong", // Default error message
+    "",
+  ];
+  const extractValidSubtitle = (alert: Alert) => {
+    if (!alert.subtitle || invalidSubtitles.includes(alert.subtitle)) {
+      return null;
+    }
+    return alert.subtitle;
+  };
+
   const notify = (alert: Alert, nodeConfig?: boolean) => {
     removeActiveToast();
 
@@ -25,9 +38,12 @@ export const useNotifyUIExtensionAlert = () => {
       ? `${alert.nodeInfo?.nodeName} (${alert.nodeId})`
       : `${capitalize(toastType)} (${alert.nodeId})`;
 
+    const validSubtitle = extractValidSubtitle(alert);
     activeToastId.value = $toast.show({
       headline: nodeConfig ? "Invalid node settings" : headline,
-      message: alert.message,
+      message: validSubtitle
+        ? `${validSubtitle}\n\n${alert.message}`
+        : alert.message,
       type: toastType,
       autoRemove: alert.type !== "error",
     });
