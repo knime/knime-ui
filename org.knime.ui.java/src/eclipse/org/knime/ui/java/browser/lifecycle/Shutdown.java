@@ -48,11 +48,11 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import java.io.IOException;
+
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.knime.core.node.NodeLogger;
-import org.knime.ui.java.persistence.AppStatePersistor;
-import org.knime.ui.java.persistence.UserProfilePersistor;
-import org.knime.ui.java.profile.UserProfile;
+import persistence.AppStatePersistor;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.UserDirectory;
 import org.osgi.service.prefs.BackingStoreException;
@@ -64,8 +64,6 @@ import org.osgi.service.prefs.BackingStoreException;
  */
 final class Shutdown {
 
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(Shutdown.class);
-
     private Shutdown() {
         //
     }
@@ -74,29 +72,24 @@ final class Shutdown {
      * Runs the phase.
      *
      * @param state
-     * @param localStorageAccess
      */
     static void run(final LifeCycleStateInternal state) {
         if (state != null) {
             AppStatePersistor.saveAppState(state.serializedAppState());
-            saveUserProfile(state.getUserProfile());
+            UserDirectory.getInternalUsageTracking().ifPresent(persistence -> {
+                try {
+                    persistence.write(state.getInternalUsageTracking());
+                } catch (IOException e) { // NOSONAR
+                    NodeLogger.getLogger(SaveState.class).warn("Could not save state", e);
+                }
+            });
         }
         var prefs = ConfigurationScope.INSTANCE.getNode(SharedConstants.PREFERENCE_NODE_QUALIFIER);
         prefs.putBoolean(SharedConstants.START_WEB_UI_PREF_KEY, !PerspectiveUtil.isClassicPerspectiveActive());
         try {
             prefs.flush();
         } catch (BackingStoreException e) {
-            LOGGER.error(e);
+            NodeLogger.getLogger(Shutdown.class).error(e);
         }
     }
-
-    private static void saveUserProfile(final UserProfile userProfile) {
-        var userProfilePath = UserDirectory.getProfileDirectory();
-        if (userProfilePath.isEmpty()) {
-            LOGGER.error("Can't write user profile. No user profile location set.");
-            return;
-        }
-        UserProfilePersistor.saveUserProfile(userProfile, userProfilePath.get());
-    }
-
 }

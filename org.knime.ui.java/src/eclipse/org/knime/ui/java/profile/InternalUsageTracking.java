@@ -45,25 +45,19 @@
  */
 package org.knime.ui.java.profile;
 
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import persistence.FileBackedPojo;
 
 /**
  * Usage tracking used "internally" (i.e. in the AP) to control other aspects of the application.
  */
 @SuppressWarnings("javadoc")
-public class InternalUsageTracking {
+public class InternalUsageTracking extends FileBackedPojo.Compatible {
 
     @JsonProperty("timesUiCreated")
     private int m_timesUiCreated;
-
-    @JsonAnyGetter
-    @JsonAnySetter
-    private Map<String, Object> m_unknownProperties;
 
     @JsonIgnore
     public int getTimesUiCreated() {

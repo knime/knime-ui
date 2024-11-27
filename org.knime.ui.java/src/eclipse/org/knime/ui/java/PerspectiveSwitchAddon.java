@@ -151,7 +151,7 @@ public final class PerspectiveSwitchAddon {
         ProjectWorkflowMap.isActive = true;
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
-            lifeCycle.saveState(KnimeBrowserView::getLocalStorageItem); // Aborts perspective switch if not all project could be saved and closed
+            lifeCycle.saveState(); // Aborts perspective switch if not all project could be saved and closed
             lifeCycle.suspend();
         }
 

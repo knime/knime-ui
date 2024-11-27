@@ -70,8 +70,9 @@ import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
+
+import persistence.AppStatePersistor;
 
 /**
  * Tests methods in {@link AppStatePersistor}.

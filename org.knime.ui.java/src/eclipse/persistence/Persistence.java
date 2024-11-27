@@ -42,32 +42,31 @@
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
- *
- * History
- *   Apr 17, 2024 (hornm): created
  */
-package org.knime.ui.java.api;
+package persistence;
 
-import org.knime.js.cef.CEFZoomSync;
+import java.io.IOException;
+import java.util.Optional;
+
+import org.knime.core.node.NodeLogger;
 
 /**
- * API functions concerning the Equo Chromium browser.
- *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * Persist (read/write) a {@code V}alue object.
+ * @param <V>
  */
-@SuppressWarnings("restriction")
-public final class EquoChromiumAPI {
+public interface Persistence<V> {
 
-    private EquoChromiumAPI() {
-        //
-    }
+    Optional<V> read() throws IOException;
 
-    /**
-     * @see CEFZoomSync#set(double)
-     */
-    @API
-    static void setZoomLevel(final double zoomLevel) {
-        CEFZoomSync.set(zoomLevel);
+    void write(V value) throws IOException;
+
+    default Optional<V> readOptional() {
+        try {
+            return this.read();
+        } catch (IOException e) {
+            NodeLogger.getLogger(this.getClass()).warn("Could not read", e);
+            return Optional.empty();
+        }
     }
 
 }

@@ -72,7 +72,7 @@ final class Suspend {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state) {
         DesktopAPI.disposeDependencies();
         ServiceInstances.disposeAllServiceInstancesAndDependencies();
-        disposeAllProjects(state.getProjectManager());
+        disposeAllProjects();
         KnimeUIPreferences.unsetAllListeners();
         var listener = state.getJobChangeListener();
         Job.getJobManager().removeJobChangeListener(listener);
@@ -85,7 +85,8 @@ final class Suspend {
         };
     }
 
-    private static void disposeAllProjects(final ProjectManager pm) {
+    private static void disposeAllProjects() {
+        var pm = ProjectManager.getInstance();
         // dispose all projects that are used by the UI
         for (var projectId : pm.getProjectIds()) {
             pm.getCachedProject(projectId).ifPresent(t -> {

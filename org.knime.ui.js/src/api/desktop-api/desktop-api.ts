@@ -940,13 +940,3 @@ export const getAncestorInfo = async ({ projectId }: { projectId: string }) => {
   );
   return (data ? JSON.parse(data) : {}) as AncestorInfo;
 };
-
-export const getPersistedLocalStorageData = () => {
-  return callBrowserFunction(
-    window.getPersistedLocalStorageData,
-    [],
-    "Failed to get persisted local storage data",
-    true,
-    { block: false },
-  );
-};

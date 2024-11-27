@@ -51,11 +51,11 @@ package org.knime.ui.java.browser.lifecycle;
 import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
-import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 
 /**
@@ -73,8 +73,8 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     }
 
     @Override
-    public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
-        return m_lifeCycleStateInternal.getSaveAndCloseAllProjectsFunction();
+    public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
+        return m_lifeCycleStateInternal.saveAndCloseAllWorkflows();
     }
 
     @Override
@@ -103,8 +103,8 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     }
 
     @Override
-    public UserProfile getUserProfile() {
-        return m_lifeCycleStateInternal.getUserProfile();
+    public InternalUsageTracking getInternalUsageTracking() {
+        return m_lifeCycleStateInternal.getInternalUsageTracking();
     }
 
     @Override

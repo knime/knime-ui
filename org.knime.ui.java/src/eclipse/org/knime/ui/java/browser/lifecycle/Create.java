@@ -68,6 +68,7 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.ui.java.profile.InternalUsageTracking;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
@@ -75,10 +76,10 @@ import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
-import org.knime.ui.java.persistence.AppStatePersistor;
-import org.knime.ui.java.persistence.UserProfilePersistor;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.profile.UserProfile;
+import persistence.AppStatePersistor;
+import persistence.Persistence;
+
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.ui.java.util.UserDirectory;
@@ -114,6 +115,12 @@ final class Create {
         // Initialize the node timer with the currently active 'perspective'
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(KnimeUIPreferences.getSelectedNodeCollection());
 
+        var internalUsageTracking = UserDirectory.getInternalUsageTracking() //
+            .flatMap(Persistence::readOptional) //
+            .orElse(new InternalUsageTracking()); //
+
+        internalUsageTracking.trackUiCreated();
+
         // Initialize the workflow manager class -> mainly helps to indirectly trigger
         // `IEarlyStartup#runBeforeWFMClassLoaded()`
         WorkflowManager.ROOT.getClass();
@@ -131,21 +138,9 @@ final class Create {
         var localWorkspace = createLocalWorkspace();
         ProjectWorkflowMap.isActive = false;
         AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localWorkspace);
-        var userProfile = loadUserProfile();
-        userProfile.internalUsage().trackUiCreated();
 
         return LifeCycleStateInternal.of(projectManager, mostRecentlyUsedProjects, localWorkspace,
-            WelcomeAPEndpoint.getInstance(), userProfile);
-    }
-
-    private static UserProfile loadUserProfile() {
-        var userProfilePath = UserDirectory.getProfileDirectory();
-        var userProfile = userProfilePath.map(UserProfilePersistor::loadUserProfile)
-            .orElseGet(UserProfilePersistor::createEmptyUserProfile);
-        if (userProfilePath.isEmpty()) {
-            NodeLogger.getLogger(Create.class).error("Can't read user profile. No user profile location set.");
-        }
-        return userProfile;
+            WelcomeAPEndpoint.getInstance(), internalUsageTracking);
     }
 
     private static void assertNoOpenClassicEditors() {

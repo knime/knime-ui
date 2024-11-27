@@ -44,57 +44,15 @@
  */
 package org.knime.ui.java.profile;
 
-import java.util.Map;
-
 /**
  * Aggregates several aspects of user-specific state. Each aspect is handled (read, persisted, ...) independently.
  */
 public interface UserProfile {
 
-    /**
-     * The key used to store the ui-settings in the browser's local storage.
-     */
-    String UI_SETTINGS_LOCAL_STORAGE_KEY = "knime-ui-settings";
+    InternalUsageTracking internalUsageTracking();
 
-    /**
-     * The key used to store the onboarding hints settings in the browser's local storage.
-     */
-    String ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY = "onboarding.hints.user";
-
-    static UserProfile of(final UserProfile userProfile, final Map<String, String> uiSettings,
-            final Map<String, String> onboardingHintsSettings) {
-        return new UserProfile() {
-
-            @Override
-            public Map<String, String> uiSettings() {
-                return uiSettings;
-            }
-
-            @Override
-            public Map<String, String> onboardingHintsSettings() {
-                return onboardingHintsSettings;
-            }
-
-            @Override
-            public InternalUsageTracking internalUsage() {
-                return userProfile.internalUsage();
-            }
-        };
+    static UserProfile of(InternalUsageTracking usageTracking) { // NOSONAR
+        return () -> usageTracking;
     }
-
-    /**
-     * @return the {@link InternalUsageTracking} instance
-     */
-    InternalUsageTracking internalUsage();
-
-    /**
-     * @return a map representing the ui-settings
-     */
-    Map<String, String> uiSettings();
-
-    /**
-     * @return a map representing the onboarding hints settings
-     */
-    Map<String, String> onboardingHintsSettings();
 
 }

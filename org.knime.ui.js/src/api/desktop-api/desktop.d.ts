@@ -236,5 +236,3 @@ declare function getHomePageTile(): Record<string, string>;
 declare function getExampleProjects(): string;
 
 declare function getAncestorInfo(projectId: string): string;
-
-declare function getPersistedLocalStorageData(): any;
