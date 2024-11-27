@@ -80,12 +80,9 @@ import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
-import org.knime.ui.java.browser.lifecycle.LifeCycle;
-import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
-import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -153,28 +150,12 @@ final class ProjectAPI {
     /**
      * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
-     *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
-     *            after the projects have been saved ('PostProjectCloseAction').
+     *            by n svg-strings
      */
     @API
     static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore) {
         var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, postProjectCloseAction -> { // NOSONAR
-            switch (postProjectCloseAction) {
-                case SWITCH_PERSPECTIVE -> PerspectiveUtil.switchToJavaUI();
-                case SHUTDOWN -> { // NOSONAR
-                    var lifeCycle = LifeCycle.get();
-                    if (lifeCycle.isLastStateTransition(StateTransition.WEB_APP_LOADED)) {
-                        // we skip the save-state state-transition because once we arrive here save-state has definitely
-                        // been called; otherwise we wouldn't get here
-                        lifeCycle.setStateTransition(StateTransition.SAVE_STATE);
-                    }
-                    lifeCycle.suspend();
-                    PlatformUI.getWorkbench().close();
-                }
-                default -> DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            }
-        }, progressService);
+        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, progressService);
     }
 
     /**

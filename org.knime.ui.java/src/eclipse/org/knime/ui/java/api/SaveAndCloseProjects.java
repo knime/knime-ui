@@ -57,12 +57,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -86,16 +86,10 @@ import org.knime.ui.java.util.DesktopAPUtil;
  */
 public final class SaveAndCloseProjects {
 
+    static AtomicReference<State> projectsSavedState = new AtomicReference<State>();
+
     private SaveAndCloseProjects() {
         // utility
-    }
-
-    /**
-     * The action to be carried out after the projects have been successfully saved and closed.
-     */
-    @SuppressWarnings("javadoc")
-    public enum PostProjectCloseAction {
-            SWITCH_PERSPECTIVE, SHUTDOWN, UPDATE_APP_STATE
     }
 
     /**
@@ -104,14 +98,10 @@ public final class SaveAndCloseProjects {
      *
      * @param projectIdsAndSvgsAndMore Array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
-     *            by n svg-strings. And there is one last string at the very end describing the action to be carried out
-     *            after the projects have been saved ('PostProjectCloseAction').
-     * @param runPostProjectCloseAction Callback to the the provided post-project-close-action, will not be executed if
-     *            saving the projects failed for any project.
+     *            by n svg-strings
      * @param progressService Displays the progress
      */
-    static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore,
-        final Consumer<PostProjectCloseAction> runPostProjectCloseAction, final IProgressService progressService) { // NOSONAR
+    static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore, final IProgressService progressService) { // NOSONAR
         var count = ((Double)projectIdsAndSvgsAndMore[0]).intValue();
         var firstFailure = new AtomicReference<Optional<String>>();
         var projectIds = Arrays.copyOfRange(projectIdsAndSvgsAndMore, 1, count + 1, String[].class);
@@ -124,14 +114,9 @@ public final class SaveAndCloseProjects {
             // Make the first project active which couldn't be saved
             optFailure.ifPresent(projectId -> ProjectManager.getInstance().setProjectActive(projectId));
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
-            return; // Don't proceed with 'PostProjectCloseAction' on failure
-        }
-
-        var postProjectCloseAction = PostProjectCloseAction.valueOf((String)projectIdsAndSvgsAndMore[count * 2 + 1]);
-        if (postProjectCloseAction == PostProjectCloseAction.UPDATE_APP_STATE) {
-            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            projectsSavedState.set(State.CANCEL_OR_FAIL);
         } else {
-            runPostProjectCloseAction.accept(postProjectCloseAction);
+            projectsSavedState.set(State.SUCCESS);
         }
     }
 
@@ -139,7 +124,6 @@ public final class SaveAndCloseProjects {
      * Resulting state of a save-and-close process.
      */
     public enum State {
-
             /**
              * The closing process has been cancelled or has failed
              */
@@ -148,27 +132,20 @@ public final class SaveAndCloseProjects {
             /**
              * Projects were saved successfully (or did not need to be saved)
              */
-            SUCCESS,
-
-            /**
-             * The projects require to be saved (in which case, an event is triggered to save and close the projects)
-             */
-            NEEDS_SAVE
+            SUCCESS
     }
 
     /**
      * Closes the given projects (project-ids) and asks the user to save the projects with unsaved changes. Also asks
-     * the user to cancel executing projects. If the user wants to save the projects, it will send a
-     * 'SaveAndCloseProjectsEvent' to the FE. If the user doesn't want to save the projects, it just closes them. If the
+     * the user to cancel executing projects. If the user doesn't want to save the projects, it just closes them. If the
      * user aborts, nothing will be done.
      *
      * @param projectIds
      * @param eventConsumer
-     * @param action
-     * @return The projects state from this function. Only not saving the projects yields {@code State.SUCESS}.
+     * @return The projects state from this function
      */
     public static State saveAndCloseProjectsInteractively(final List<String> projectIds,
-        final EventConsumer eventConsumer, final PostProjectCloseAction action) {
+        final EventConsumer eventConsumer) {
         var projectManager = ProjectManager.getInstance();
         var dirtyProjectIds = projectIds.stream() //
             .filter(id -> projectManager.getCachedProject(id).map(WorkflowManager::isDirty).orElse(false)) //
@@ -180,9 +157,22 @@ public final class SaveAndCloseProjects {
         return switch (shallSaveProjects) {
             case YES -> { // NOSONAR
                 if (promptCancelExecution(dirtyWfms)) {
-                    sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer, action);
+                    projectsSavedState.set(null);
+                    sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer);
+                    var display = Display.getCurrent();
+                    // wait to receive the FE call while running the event loop
+                    while (projectsSavedState.get() == null) {
+                        try {
+                            if (!display.readAndDispatch()) {
+                                display.sleep();
+                            }
+                        } catch (Throwable e) {
+                            NodeLogger.getLogger(SaveAndCloseProjects.class).error("Error while saving project(s)", e);
+                            yield State.CANCEL_OR_FAIL;
+                        }
+                    }
                 }
-                yield State.NEEDS_SAVE;
+                yield projectsSavedState.get();
             }
             case NO -> CloseProject.closeProjects(projectIds) ? State.SUCCESS : State.CANCEL_OR_FAIL;
             default -> State.CANCEL_OR_FAIL;
@@ -201,7 +191,7 @@ public final class SaveAndCloseProjects {
         final AtomicReference<Optional<String>> firstFailure, final IProgressService progressService) {
         IRunnableWithProgress saveRunnable = monitor -> saveProjects(projectIds, svgs, firstFailure, monitor);
         try {
-            progressService.run(true, false, saveRunnable);
+            progressService.busyCursorWhile(saveRunnable);
         } catch (InvocationTargetException e) {
             NodeLogger.getLogger(SaveAndCloseProjects.class).error("Saving workflow failed", e);
             firstFailure.compareAndExchange(null, Optional.empty());
@@ -237,11 +227,10 @@ public final class SaveAndCloseProjects {
     }
 
     private static void sendSaveAndCloseProjectsEventToFrontend(final String[] dirtyProjectIds,
-        final EventConsumer eventConsumer, final PostProjectCloseAction action) {
+        final EventConsumer eventConsumer) {
         var projectIdsJson = MAPPER.createArrayNode();
         Arrays.stream(dirtyProjectIds).forEach(projectIdsJson::add);
         var paramsJson = MAPPER.createArrayNode();
-        paramsJson.add(action.name());
         var event = MAPPER.createObjectNode();
         event.set("projectIds", projectIdsJson);
         event.set("params", paramsJson);

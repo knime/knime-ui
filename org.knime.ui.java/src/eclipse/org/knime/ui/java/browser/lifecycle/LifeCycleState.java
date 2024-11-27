@@ -55,11 +55,4 @@ package org.knime.ui.java.browser.lifecycle;
  */
 public interface LifeCycleState {
 
-    /**
-     * @return whether workflows have been saved successfully. Manipulated in the {@link SaveState}-phase.
-     */
-    default boolean workflowsSaved() {
-        return false;
-    }
-
 }
