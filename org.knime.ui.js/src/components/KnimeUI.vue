@@ -216,6 +216,8 @@ const onCloseError = () => {
 
 <style lang="postcss" scoped>
 #knime-ui {
+  --z-index-base-popover: v-bind("$zIndices.layerToasts");
+
   display: grid;
   grid-template:
     "header" min-content
