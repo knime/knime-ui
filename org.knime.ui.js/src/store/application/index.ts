@@ -279,6 +279,11 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
 
     // Note: since it's a boolean value, a truthy check won't work because the `false` value won't be set
     if (applicationState.hasOwnProperty("useEmbeddedDialogs")) {
+      // if setting has changed, discard any possible pending changes in a node configuration
+      if (!applicationState.useEmbeddedDialogs) {
+        dispatch("nodeConfiguration/discardSettings", null, { root: true });
+      }
+
       commit("setUseEmbeddedDialogs", applicationState.useEmbeddedDialogs);
     }
 
