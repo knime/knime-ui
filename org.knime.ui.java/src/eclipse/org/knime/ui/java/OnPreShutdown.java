@@ -66,9 +66,8 @@ public class OnPreShutdown implements PreShutdown {
             // And before we close the browser, we need, e.g., to ask the user to save (and save) all the workflows
             // (or abort the shutdown, if the user cancels).
             lifeCycle.saveState(KnimeBrowserView::getLocalStorageItem);
-            // cancel if the workflows haven't been saved (yet). Either because the saving has been cancelled
-            // or the workflows need to be saved (through a respective event to the FE, see SaveAndCloseWorkflows)
-            return lifeCycle.getState().workflowsSaved();
+            // cancel if the workflows haven't been saved (yet) because the saving has been cancelled or failed
+            return lifeCycle.isLastStateTransition(StateTransition.SAVE_STATE);
         }
         return true;
     }

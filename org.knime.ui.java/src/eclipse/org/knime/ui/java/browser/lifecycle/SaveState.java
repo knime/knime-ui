@@ -80,10 +80,6 @@ final class SaveState {
         final UnaryOperator<String> localStorageAccess) throws StateTransitionAbortedException {
         final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
             AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
-        // needs to be called before calling the 'save-and-close-projects'-function below because
-        // it somehow interferes with the 'save projects' event sent to the browser and causes the AP
-        // to freeze on shutdown (not 100% understood, unfortunately) in case of dirty projects
-        var updatedUserProfile = updateUserProfileFromLocalStorage(state.getUserProfile(), localStorageAccess);
 
         final var saveProjectsFunction = state.getSaveAndCloseAllProjectsFunction();
         final var saveProjectsResult = saveProjectsFunction.get();
@@ -91,12 +87,9 @@ final class SaveState {
             throw new StateTransitionAbortedException();
         }
 
-        return new LifeCycleStateInternalAdapter(state) {
+        var updatedUserProfile = updateUserProfileFromLocalStorage(state.getUserProfile(), localStorageAccess);
 
-            @Override
-            public boolean workflowsSaved() {
-                return saveProjectsResult == SaveAndCloseProjects.State.SUCCESS;
-            }
+        return new LifeCycleStateInternalAdapter(state) {
 
             @Override
             public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {

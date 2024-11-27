@@ -51,14 +51,11 @@ package org.knime.ui.java.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.knime.ui.java.api.SaveProjectTest.assertWorkflowSaved;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -68,9 +65,7 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.util.ProjectFactory;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -100,38 +95,22 @@ class SaveAndCloseProjectsTest {
             pm.openAndCacheProject(projectId);
         }
 
-        var appStateUpdater = new AppStateUpdater();
-        var appStateUpdateListener = mock(Runnable.class);
-        appStateUpdater.addAppStateChangedListener(appStateUpdateListener);
-        DesktopAPI.injectDependency(appStateUpdater);
-
         var progressService = mock(IProgressService.class);
         Mockito.doAnswer(invocation -> {
-            var runnable = (IRunnableWithProgress)invocation.getArgument(2);
+            var runnable = (IRunnableWithProgress)invocation.getArgument(0);
             runnable.run(new NullProgressMonitor());
             return null;
-        }).when(progressService).run(eq(true), eq(false), ArgumentMatchers.any());
+        }).when(progressService).busyCursorWhile(ArgumentMatchers.any());
 
-        Consumer<PostProjectCloseAction> postWorkflowCloseActionConsumer = mock(Consumer.class);
-
+        SaveAndCloseProjects.projectsSavedState.set(null);
         SaveAndCloseProjects.saveAndCloseProjects(
-            new Object[]{3.0, "projectId1", "projectId2", "projectId3", "svg1", "svg2", "svg3", "UPDATE_APP_STATE"},
-            postWorkflowCloseActionConsumer, progressService);
+            new Object[]{3.0, "projectId1", "projectId2", "projectId3", "svg1", "svg2", "svg3"}, progressService);
 
         for (int i = 1; i <= 3; i++) {
             assertWorkflowSaved(wfms.get(i - 1), "svg" + i);
             assertWorkflowClosed(wfms.get(i - 1), "projectId" + i);
         }
-        verify(appStateUpdateListener).run();
-
-        // check the other post workflow closed actions
-        SaveAndCloseProjects.saveAndCloseProjects(new Object[]{1.0, "projectId1", "svg1", "SWITCH_PERSPECTIVE"},
-            postWorkflowCloseActionConsumer, progressService);
-        verify(postWorkflowCloseActionConsumer).accept(PostProjectCloseAction.SWITCH_PERSPECTIVE);
-
-        SaveAndCloseProjects.saveAndCloseProjects(new Object[]{1.0, "projectId1", "svg1", "SHUTDOWN"},
-            postWorkflowCloseActionConsumer, progressService);
-        verify(postWorkflowCloseActionConsumer).accept(PostProjectCloseAction.SHUTDOWN);
+        assertThat(SaveAndCloseProjects.projectsSavedState.get()).isEqualTo(SaveAndCloseProjects.State.SUCCESS);
     }
 
     private static void assertWorkflowClosed(final WorkflowManager wfm, final String projectId) {

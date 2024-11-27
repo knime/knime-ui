@@ -123,7 +123,6 @@ class LifeCycleTest {
         assertStateTransition(lc, StateTransition.INIT, StateTransition.WEB_APP_LOADED);
         assertThat(ServiceInstances.areServicesInitialized()).isFalse();
         assertThat(DesktopAPI.areDependenciesInjected()).isTrue();
-        assertThat(lc.getState().workflowsSaved()).isFalse();
 
         // test that multiple calls of the same life cycle transitions doesn't have an effect
         lc.init(true);
@@ -139,7 +138,6 @@ class LifeCycleTest {
         AppStatePersistorTest.openWorkflowProject();
         lc.saveState(null);
         assertStateTransition(lc, StateTransition.SAVE_STATE, StateTransition.SUSPEND);
-        assertThat(lc.getState().workflowsSaved()).isTrue();
 
         lc.suspend();
         assertStateTransition(lc, StateTransition.SUSPEND, StateTransition.SHUTDOWN);

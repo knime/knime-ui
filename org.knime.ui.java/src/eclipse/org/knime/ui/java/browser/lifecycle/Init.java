@@ -94,7 +94,6 @@ import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
-import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
@@ -154,8 +153,7 @@ final class Init {
             public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
                 return () -> {
                     var projectIds = projectManager.getProjectIds();
-                    return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer,
-                        PostProjectCloseAction.SHUTDOWN);
+                    return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer);
                 };
             }
 
