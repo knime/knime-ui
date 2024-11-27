@@ -55,7 +55,8 @@ export const uiScaleShortcuts: UiScaleShortcuts = {
   },
   resetUiScale: {
     text: "Reset interface scale",
-    hotkey: ["CtrlOrCmd", "Alt", "0-0"],
+    hotkey: ["CtrlOrCmd", "Alt", "0"],
+    additionalHotkeys: [{ key: ["CtrlOrCmd", "Alt", "0-0"], visible: false }], // range matches Digit0 Key instead of event.code
     execute: ({ $store }) => $store.dispatch("settings/resetUiScale"),
   },
 };
