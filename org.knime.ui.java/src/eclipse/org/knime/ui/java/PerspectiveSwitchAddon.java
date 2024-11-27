@@ -144,16 +144,17 @@ public final class PerspectiveSwitchAddon {
     }
 
     private void onSwitchToJavaUI() {
-        NodeTimer.GLOBAL_TIMER.incJavaUIPerspectiveSwitch();
-        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(GlobalNodeStats.CLASSIC_PERSPECTIVE_PLACEHOLDER);
-        KnimeBrowserView.clearView();
         // this needs to happen before lifeCycle.suspend is called
         ProjectWorkflowMap.isActive = true;
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
-            lifeCycle.saveState(KnimeBrowserView::getLocalStorageItem); // Aborts perspective switch if not all project could be saved and closed
+            lifeCycle.saveState(KnimeBrowserView::getLocalStorageItem);
             lifeCycle.suspend();
         }
+
+        NodeTimer.GLOBAL_TIMER.incJavaUIPerspectiveSwitch();
+        NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(GlobalNodeStats.CLASSIC_PERSPECTIVE_PLACEHOLDER);
+        KnimeBrowserView.clearView();
 
         setTrimsAndMenuVisible(true, m_modelService, m_app);
 

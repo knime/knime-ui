@@ -47,7 +47,6 @@ package org.knime.ui.java.browser;
 
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -160,15 +159,23 @@ public class KnimeBrowserView {
         if (browser == null || browser.isDisposed()) {
             return null;
         }
-        try {
-            var item = ((ChromiumBrowser)browser.getWebBrowser()).getLocalStorage().getItem(key);
-            if (item != null) {
-                return item.get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e);
+        var item = ((ChromiumBrowser)browser.getWebBrowser()).getLocalStorage().getItem(key);
+        if (item == null) {
+            return null;
         }
-        return null;
+        var display = browser.getDisplay();
+        // run event loop to be able to retrieve the items from the FE
+        // (and not block the FE to not be able to communicate anything back to the BE anymore)
+        while (item.getNow(null) == null) {
+            try {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            } catch (Throwable e) {
+                LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e);
+            }
+        }
+        return item.getNow(null);
     }
 
     @PostConstruct
