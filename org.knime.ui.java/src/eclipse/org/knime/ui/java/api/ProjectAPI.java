@@ -383,21 +383,24 @@ final class ProjectAPI {
             final var space = SpaceProviders.getSpace(providers, origin.getProviderId(), origin.getSpaceId());
             final var ancestorItemIds = space.getAncestorItemIds(origin.getItemId());
 
-            final var spaceProjectName = space.getItemName(origin.getItemId());
-            final var hasNameChanged = !spaceProjectName.equals(project.getName());
+            final var remoteProjectName = space.getItemName(origin.getItemId());
+            final var hasNameChanged = !remoteProjectName.equals(project.getName());
 
-            return buildAncestorInfo(ancestorItemIds, hasNameChanged).toString();
+            return buildAncestorInfo(ancestorItemIds, hasNameChanged ? remoteProjectName : null).toString();
         } catch (ResourceAccessException e) {
             throw new IOException(
                 "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(project.getName()), e);
         }
     }
 
-    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final boolean hasNameChanged) {
+    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final String newProjectName) {
         final var objectNode = MAPPER.createObjectNode();
         final var arrayNode = objectNode.putArray("ancestorItemIds");
         ancestorItemIds.forEach(arrayNode::add);
-        return objectNode.put("hasNameChanged", hasNameChanged);
+        if (newProjectName != null) {
+            objectNode.put("newProjectName", newProjectName);
+        }
+        return objectNode;
     }
 
 }

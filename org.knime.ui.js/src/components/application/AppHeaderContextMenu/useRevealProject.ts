@@ -40,7 +40,7 @@ const useToast = () => {
     });
   };
 
-  const showWarningToast = (projectName: string) => {
+  const showWarningToast = (newProjectName: string) => {
     if (previousToastId) {
       $toast.remove(previousToastId);
     }
@@ -48,7 +48,7 @@ const useToast = () => {
     previousToastId = $toast.show({
       type: "warning",
       headline: "Name has changed",
-      message: `The project "${projectName}" name has changed on the remote Hub`,
+      message: `The project name has changed to "${newProjectName}" on the remote Hub`,
       autoRemove: true,
     });
   };
@@ -77,16 +77,16 @@ export const useRevealProject = (options: UseRevealProject) => {
     const provider = store.state.spaces.spaceProviders?.[origin.providerId];
 
     if (!provider) {
-      return Promise.resolve({ hasNameChanged: false, ancestorItemIds: [] });
+      return Promise.resolve({ newProjectName: null, ancestorItemIds: [] });
     }
 
     if (isLocalProvider(provider)) {
       return origin.ancestorItemIds
         ? Promise.resolve({
-            hasNameChanged: false,
+            newProjectName: null,
             ancestorItemIds: origin.ancestorItemIds,
           })
-        : Promise.resolve({ hasNameChanged: false, ancestorItemIds: [] });
+        : Promise.resolve({ newProjectName: null, ancestorItemIds: [] });
     }
 
     // Throws error if the ancestor item IDs could not be retrieved
@@ -95,7 +95,7 @@ export const useRevealProject = (options: UseRevealProject) => {
     });
   };
 
-  const { showWarningToast } = useToast();
+  const { showWarningToast, showErrorToast } = useToast();
 
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
@@ -105,7 +105,7 @@ export const useRevealProject = (options: UseRevealProject) => {
       store.state.spaces.spaceProviders ?? {},
       origin.spaceId,
     );
-    const { hasNameChanged, ancestorItemIds } = await getAncestorInfo(
+    const { newProjectName, ancestorItemIds } = await getAncestorInfo(
       origin,
       projectId,
     );
@@ -122,8 +122,8 @@ export const useRevealProject = (options: UseRevealProject) => {
 
     store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
 
-    if (hasNameChanged) {
-      showWarningToast(projectId);
+    if (newProjectName) {
+      showWarningToast(newProjectName);
     }
   };
 
@@ -145,7 +145,7 @@ export const useRevealProject = (options: UseRevealProject) => {
     }
 
     const { providerId, spaceId, itemId } = origin;
-    const { hasNameChanged, ancestorItemIds } = await getAncestorInfo(
+    const { newProjectName, ancestorItemIds } = await getAncestorInfo(
       origin,
       projectId,
     );
@@ -183,12 +183,10 @@ export const useRevealProject = (options: UseRevealProject) => {
       store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
     }
 
-    if (hasNameChanged) {
-      showWarningToast(projectId);
+    if (newProjectName) {
+      showWarningToast(newProjectName);
     }
   };
-
-  const { showErrorToast } = useToast();
 
   const canRevealProject = computed(() => {
     const foundProject = openProjects.value.find(
