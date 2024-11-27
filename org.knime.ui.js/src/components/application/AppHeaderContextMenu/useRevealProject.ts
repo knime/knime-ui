@@ -48,7 +48,7 @@ const useToast = () => {
     previousToastId = $toast.show({
       type: "warning",
       headline: "Name has changed",
-      message: `The project "${projectName}" name's has changed on the remote Hub`,
+      message: `The project "${projectName}" name has changed on the remote Hub`,
       autoRemove: true,
     });
   };
@@ -231,7 +231,7 @@ export const useRevealProject = (options: UseRevealProject) => {
           }
 
           if (!options.projectId.value) {
-            consola.error("No project ID provided, this should not happen");
+            consola.error("Unexpected error. Project ID not provided");
             return;
           }
 
