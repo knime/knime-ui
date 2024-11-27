@@ -49,6 +49,7 @@
 package org.knime.ui.java.api;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
+import static org.knime.gateway.api.util.CoreUtil.hasAndCanOpenNodeView;
 
 import javax.swing.SwingUtilities;
 
@@ -132,7 +133,11 @@ final class NodeAPI {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
 
-        if (nc.getNodeContainerState().isExecuted()) {
+        var hasAndCanOpenView = hasAndCanOpenNodeView(nc);
+        if (hasAndCanOpenView == null) {
+            NodeLogger.getLogger(NodeAPI.class).error("Node with id '%s' has no view to open".formatted(nodeId));
+            return;
+        } else if (Boolean.TRUE.equals(hasAndCanOpenNodeView(nc))) {
             task.run();
             return;
         }
