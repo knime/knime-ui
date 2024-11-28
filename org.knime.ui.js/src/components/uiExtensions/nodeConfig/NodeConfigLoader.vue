@@ -145,7 +145,10 @@ const apiLayer: UIExtensionAPILayer = {
   sendAlert: (alert: Alert) => {
     consola.log("Alert received for NodeConfigLoader :>> ", alert);
 
-    notify({ ...alert }, true);
+    notify(alert, {
+      isNodeConfig: true,
+      nodeId: selectedNode.value.id,
+    });
   },
 
   // NOOP - not required by this embedding context for this type of UI Extension

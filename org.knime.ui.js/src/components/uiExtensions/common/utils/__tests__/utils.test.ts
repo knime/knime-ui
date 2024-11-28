@@ -4,7 +4,7 @@ import {
   EMBEDDED_CONTENT_PANEL_ID__BOTTOM,
   EMBEDDED_CONTENT_PANEL_ID__RIGHT,
   isUIExtensionFocused,
-} from "../utils";
+} from "..";
 
 describe("utils", () => {
   const createElement = (id: string) => {

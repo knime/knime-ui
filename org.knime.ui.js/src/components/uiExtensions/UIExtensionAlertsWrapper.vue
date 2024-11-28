@@ -6,6 +6,8 @@ import { useNotifyUIExtensionAlert } from "./common/useNotifyUIExtensionAlert";
 
 type Props = {
   alert: Alert;
+  nodeId: string;
+  nodeName?: string;
 };
 
 defineProps<Props>();
@@ -14,7 +16,16 @@ const { notify } = useNotifyUIExtensionAlert();
 </script>
 
 <template>
-  <UIExtensionAlerts class="alerts" :alert="alert" @display="notify(alert)" />
+  <UIExtensionAlerts
+    class="alerts"
+    :alert="alert"
+    @display="
+      notify(alert, {
+        nodeId,
+        nodeName,
+      })
+    "
+  />
 </template>
 
 <style lang="postcss">

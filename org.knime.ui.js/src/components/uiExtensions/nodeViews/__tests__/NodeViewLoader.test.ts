@@ -199,14 +199,12 @@ describe("NodeViewLoader.vue", () => {
       const apiLayer = getApiLayer(wrapper);
 
       const alert1: Alert = {
-        nodeId: "root:1",
-        type: AlertType.WARN,
-        nodeInfo: { nodeName: "The Node", nodeState: "" },
+        type: AlertType.ERROR,
         message: "There's an warning in this node",
       };
       apiLayer.sendAlert(alert1);
 
-      expect(wrapper.emitted("alert")![1][0]).toEqual(alert1);
+      expect(wrapper.emitted("alert")![1][0]).toEqual({ alert: alert1 });
     });
 
     it("implements registerPushEventService to set the event dispatcher to update the view data", async () => {

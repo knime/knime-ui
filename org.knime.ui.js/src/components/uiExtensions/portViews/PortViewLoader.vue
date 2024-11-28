@@ -12,6 +12,7 @@ import type { KnimeNode } from "@/api/custom-types";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
 import { useSelectionEvents } from "../common/useSelectionEvents";
+import { getMessage } from "../common/utils/uiExtensionAlert";
 import DataValueViewWrapper from "../dataValueViews/DataValueViewWrapper.vue";
 import { useDataValueView } from "../dataValueViews/useDataValueView";
 
@@ -128,7 +129,7 @@ const apiLayer: UIExtensionAPILayer = {
     if (alert.type === AlertType.ERROR) {
       emit("loadingStateChange", {
         value: "error",
-        message: alert.subtitle ?? "",
+        message: getMessage(alert),
       });
     }
   },

@@ -64,7 +64,7 @@ const uiControls = computed(() => store.state.uiControls);
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
   validationError: [value: ValidationError | null];
-  alert: [value: Alert | null];
+  alert: [{ alert: Alert; nodeName?: string } | null];
 }>();
 
 const nodeErrors = computed(() => {

@@ -38,7 +38,7 @@ const store = useStore();
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
-  alert: [value: Alert | null];
+  alert: [{ alert: Alert; nodeName?: string } | null];
 }>();
 
 const error = ref<any>(null);
@@ -120,7 +120,10 @@ const apiLayer: UIExtensionAPILayer = {
 
   sendAlert: (alert) => {
     consola.log("Alert received for NodeView :>> ", alert);
-    emit("alert", alert);
+    emit("alert", {
+      alert,
+      nodeName: extensionConfig.value?.nodeInfo?.nodeName,
+    });
   },
 
   registerPushEventService: ({ dispatchPushEvent }) => {

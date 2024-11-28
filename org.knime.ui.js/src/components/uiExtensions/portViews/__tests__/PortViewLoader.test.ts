@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { UIExtension } from "@knime/ui-extension-renderer";
+import { AlertType, UIExtension } from "@knime/ui-extension-renderer";
 
 import { API } from "@/api";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
@@ -367,7 +367,10 @@ describe("PortViewLoader.vue", () => {
       const props = uiExtension.props();
 
       // data errors from the BE would come in via the sendAlert apiLayer
-      props.apiLayer.sendAlert({ subtitle: "mock error", type: "error" });
+      props.apiLayer.sendAlert({
+        message: "mock error",
+        type: AlertType.ERROR,
+      });
 
       const emittedEvents = wrapper.emitted("loadingStateChange");
       expect(emittedEvents![emittedEvents!.length - 1][0]).toEqual({
@@ -387,7 +390,10 @@ describe("PortViewLoader.vue", () => {
       const props = uiExtension.props();
 
       // data errors from the BE would come in via the sendAlert apiLayer
-      props.apiLayer.sendAlert({ subtitle: "mock error" });
+      props.apiLayer.sendAlert({
+        type: AlertType.ERROR,
+        message: "mock error",
+      });
 
       await wrapper.setProps({
         selectedViewIndex: 2,

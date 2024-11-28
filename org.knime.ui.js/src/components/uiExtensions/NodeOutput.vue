@@ -36,7 +36,7 @@ export const runValidationChecks = ({
 interface ComponentData {
   loadingState: UIExtensionLoadingState | null;
   currentValidationError: ValidationError | null;
-  currentNodeViewAlert: Alert | null;
+  currentNodeViewAlert: { alert: Alert; nodeName?: string } | null;
   EMBEDDED_CONTENT_PANEL_ID__BOTTOM: typeof EMBEDDED_CONTENT_PANEL_ID__BOTTOM;
 }
 
@@ -214,7 +214,9 @@ export default defineComponent({
 
       <UIExtensionAlertsWrapper
         v-if="currentNodeViewAlert"
-        :alert="currentNodeViewAlert"
+        :alert="currentNodeViewAlert.alert"
+        :node-id="singleSelectedNode.id"
+        :node-name="currentNodeViewAlert.nodeName"
       />
 
       <ValidationInfo
