@@ -139,7 +139,7 @@ describe("WorkflowInfoBar.vue", () => {
     const { wrapper } = doMount({ workflow, origin });
 
     expect(wrapper.text()).toMatch(
-      `This is an outdated version of this workflow (Currently viewing: "${origin.version.title}")`,
+      `You are currently viewing version "${origin.version.title}" of this workflow.`,
     );
   });
 });
