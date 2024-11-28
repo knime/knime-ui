@@ -46,9 +46,8 @@ const containerType = computed(
       </span>
 
       <span v-else-if="isDesktop && origin?.version" class="linked">
-        This is an outdated version of this workflow (Currently viewing: "{{
-          origin?.version.title
-        }}").
+        You are currently viewing version "{{ origin?.version.title }}" of this
+        workflow.
       </span>
     </div>
 
