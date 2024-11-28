@@ -142,7 +142,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       }
 
       if (selectionContainsFile) {
-        return [downloadToLocalSpace, moveToSpace];
+        return [downloadToLocalSpace, moveToSpace, copyToSpace];
       }
 
       return [downloadToLocalSpace, moveToSpace, copyToSpace, openInBrowser];
