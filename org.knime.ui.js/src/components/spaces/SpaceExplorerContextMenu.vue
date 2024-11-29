@@ -26,7 +26,11 @@ import {
   buildOpenPermissionsDialog,
 } from "@/components/spaces/remoteMenuItems";
 import { useStore } from "@/composables/useStore";
-import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
+import {
+  isHubProvider,
+  isLocalProvider,
+  isServerProvider,
+} from "@/store/spaces/util";
 
 const store = useStore();
 
@@ -85,6 +89,10 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       getProviderInfoFromProjectPath.value(props.projectId),
     );
 
+    const isHub = isHubProvider(
+      getProviderInfoFromProjectPath.value(props.projectId),
+    );
+
     const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
       props.projectId,
       props.selectedItemIds,
@@ -100,7 +108,6 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       props.selectedItemIds,
     );
 
-    // ... to space on same space provider as source
     const moveToSpace = buildMoveToSpaceMenuItem(
       store.dispatch,
       props.projectId,
@@ -132,22 +139,6 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       props.selectedItemIds,
     );
 
-    const getHubActions = () => {
-      if (isLocal) {
-        return [uploadToHub, moveToSpace, copyToSpace];
-      }
-
-      if (isServer) {
-        return [];
-      }
-
-      if (selectionContainsFile) {
-        return [downloadToLocalSpace, moveToSpace, copyToSpace];
-      }
-
-      return [downloadToLocalSpace, moveToSpace, copyToSpace, openInBrowser];
-    };
-
     const displayDeployments = buildDisplayDeploymentsMenuItem(
       store.dispatch,
       props.projectId,
@@ -166,25 +157,6 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       props.projectId,
       props.selectedItemIds,
     );
-
-    const getServerActions = () => {
-      if (!isServer) {
-        return [];
-      }
-
-      if (!selectionContainsWorkflow) {
-        return [openInBrowser, openPermissionsDialog];
-      }
-
-      return [
-        downloadToLocalSpace,
-        executeWorkflow,
-        displayDeployments,
-        openInBrowser,
-        openAPIDefinition,
-        openPermissionsDialog,
-      ];
-    };
 
     const createExportItemOption = (
       dispatch: Dispatch,
@@ -227,40 +199,85 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
     const renameOptionTitle = anchorItem.isOpen
       ? `Open ${openFileType} cannot be renamed`
       : "";
+    const renameItem = createRenameOption(anchorItem, {
+      title: renameOptionTitle,
+      icon: RenameIcon,
+      hotkeyText: hotkeys.formatHotkeys(["F2"]),
+    });
 
-    const contextMenuItems = [
-      // hide rename for multiple selected items
+    const deleteItem = createDeleteOption(anchorItem, {
+      title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
+      icon: DeleteIcon,
+      hotkeyText: hotkeys.formatHotkeys(["Delete"]),
+    });
+
+    const exportItem = createExportItemOption(
+      store.dispatch,
+      props.projectId,
+      props.selectedItemIds,
+    );
+
+    // prettier-ignore
+    return [
       ...valueOrEmpty(
         !isMultipleSelectionActive,
-        createRenameOption(anchorItem, {
-          title: renameOptionTitle,
-          icon: RenameIcon,
-          hotkeyText: hotkeys.formatHotkeys(["F2"]),
-        }),
+        renameItem
       ),
 
-      createDeleteOption(anchorItem, {
-        title: anchorItem.canBeDeleted ? "" : "Open folders cannot be deleted",
-        icon: DeleteIcon,
-        hotkeyText: hotkeys.formatHotkeys(["Delete"]),
-      }),
+      deleteItem,
 
       createDuplicateItemOption(),
 
       ...valueOrEmpty(
         isLocal,
-        createExportItemOption(
-          store.dispatch,
-          props.projectId,
-          props.selectedItemIds,
-        ),
+        exportItem
       ),
 
-      ...getHubActions(),
-      ...getServerActions(),
-    ];
+      ...valueOrEmpty(
+        isLocal,
+        uploadToHub
+      ),
 
-    return contextMenuItems;
+      ...valueOrEmpty(
+        isLocal || isHub,
+        moveToSpace
+      ),
+
+      ...valueOrEmpty(
+        isLocal || isHub,
+        copyToSpace
+      ),
+
+      ...valueOrEmpty(
+        isLocal || isHub || (isServer && selectionContainsWorkflow),
+        downloadToLocalSpace,
+      ),
+
+      ...valueOrEmpty(
+        (isHub && !selectionContainsFile) || isServer,
+        openInBrowser,
+      ),
+
+      ...valueOrEmpty(
+        isServer && selectionContainsWorkflow,
+        executeWorkflow
+      ),
+
+      ...valueOrEmpty(
+        isServer && selectionContainsWorkflow,
+        displayDeployments,
+      ),
+
+      ...valueOrEmpty(
+        isServer,
+        openAPIDefinition
+      ),
+
+      ...valueOrEmpty(
+        isServer,
+        openPermissionsDialog
+      ),
+    ];
   },
 );
 </script>
