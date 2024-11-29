@@ -186,9 +186,13 @@ watch(
     if (newPort && newPort?.index !== oldPort?.index) {
       // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
       await store.dispatch("quickAddNodes/clearSearchParams");
+
       // update type id for next search (if one was active it got reset by index change)
       // this needs to be done in all cases as clearSearchParams resets it
       store.commit("quickAddNodes/setPortTypeId", newPort.typeId);
+      // also update the node relation, as it will be 'null' otherwise
+      store.commit("quickAddNodes/setSearchNodeRelation", props.nodeRelation);
+
       // fetch new recommendations
       await fetchNodeRecommendations();
     }
