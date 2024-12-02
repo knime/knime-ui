@@ -46,7 +46,7 @@
  * History
  *   Jan 17, 2023 (hornm): created
  */
-package persistence;
+package org.knime.ui.java.persistence;
 
 import java.io.IOException;
 import java.nio.file.Files;

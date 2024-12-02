@@ -54,11 +54,6 @@ import java.util.Optional;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.util.EclipseUtil;
-import org.knime.gateway.impl.webui.modes.WebUIMode;
-import org.knime.ui.java.profile.InternalUsageTracking;
-
-import persistence.FileBackedPojo;
-import persistence.Persistence;
 
 /**
  * Provide access to the "KNIME User Directory" (for example {@code ~/.knime/}. Note that this is different from the
@@ -66,7 +61,10 @@ import persistence.Persistence;
  */
 public final class UserDirectory {
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(UserDirectory.class);
+
     private UserDirectory() {
+        // utility class
     }
 
     private static Optional<Path> getUserDirectory() {
@@ -78,7 +76,7 @@ public final class UserDirectory {
             try {
                 return Optional.of(KNIMEConstants.getOrCreateKNIMEDir());
             } catch (IOException e) {
-                NodeLogger.getLogger(UserDirectory.class).warn("Could not access user directory", e);
+                LOGGER.error("Could not access user directory", e);
                 return Optional.empty();
             }
         } else {
@@ -86,29 +84,24 @@ public final class UserDirectory {
         }
     }
 
-    private static Optional<Path> getProfileDirectory() {
+    /**
+     * Returns the user's profile directory or creates a new one if it does not exist.
+     *
+     * @return
+     */
+    public static Optional<Path> getProfileDirectory() {
         return getUserDirectory().map(userDir -> {
             var path = userDir.resolve("profile");
             if (!Files.exists(path)) {
                 try {
                     Files.createDirectory(path);
                 } catch (IOException e) { // NOSONAR
-                    NodeLogger.getLogger(UserDirectory.class).warn("Could not create profile directory", e);
+                    LOGGER.error("Could not create profile directory at %s".formatted(path), e);
                     return null;
                 }
             }
             return path;
         });
-    }
-
-    public static Optional<Persistence<InternalUsageTracking>> getInternalUsageTracking() {
-        if (WebUIMode.getMode() != WebUIMode.DEFAULT) {
-            return Optional.empty();
-        }
-        return getProfileDirectory() //
-            .map(path -> new FileBackedPojo<>( //
-                path.resolve("usage.yaml"), //
-                InternalUsageTracking.class));
     }
 
 }

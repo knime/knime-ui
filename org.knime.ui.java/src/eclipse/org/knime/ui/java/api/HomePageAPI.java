@@ -166,7 +166,7 @@ final class HomePageAPI {
 
     private static TileId selectTile(final WelcomeAPEndpoint endpoint, final UserProfile profile) {
         var usage = Optional.ofNullable(profile) //
-            .map(UserProfile::internalUsageTracking); //
+            .map(UserProfile::internalUsage); //
         if (usage.isEmpty()) {
             return defaultTile;
         }
