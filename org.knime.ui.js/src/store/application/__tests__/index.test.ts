@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import type { Store } from "vuex";
 
+import { API } from "@/api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
 import type { RootStoreState } from "@/store/types";
@@ -15,10 +16,12 @@ import {
   createWorkflow,
   createWorkflowAnnotation,
 } from "@/test/factories";
-import { mockedObject } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 
 import { applicationState, loadStore } from "./loadStore";
+
+const mockedAPI = deepMocked(API);
 
 vi.mock("@/util/workflowNavigationService", () => {
   return {
@@ -145,6 +148,7 @@ describe("application::index", () => {
         project: "baz",
       });
 
+      mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue({});
       await store.dispatch("application/initializeApplication", {
         $router: router,
       });
@@ -418,6 +422,7 @@ describe("application::index", () => {
     it("should hide the menu when leaving the worklow page", async () => {
       const { store, dispatchSpy } = loadStore();
 
+      mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue({});
       await store.dispatch("application/initializeApplication", {
         $router: router,
       });

@@ -96,7 +96,6 @@ import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.api.SaveAndCloseProjects.PostProjectCloseAction;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
-import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -143,8 +142,7 @@ final class Init {
             kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
-            state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects(),
-            UserProfile.of(state.getInternalUsageTracking()));
+            state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
 
         // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
@@ -153,7 +151,7 @@ final class Init {
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
             @Override
-            public Supplier<SaveAndCloseProjects.State> saveAndCloseAllWorkflows() {
+            public Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
                 return () -> {
                     var projectIds = projectManager.getProjectIds();
                     return SaveAndCloseProjects.saveAndCloseProjectsInteractively(projectIds, eventConsumer,

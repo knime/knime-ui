@@ -137,7 +137,7 @@ class LifeCycleTest {
         assertStateTransition(lc, StateTransition.WEB_APP_LOADED, StateTransition.SAVE_STATE);
 
         AppStatePersistorTest.openWorkflowProject();
-        lc.saveState();
+        lc.saveState(null);
         assertStateTransition(lc, StateTransition.SAVE_STATE, StateTransition.SUSPEND);
         assertThat(lc.getState().workflowsSaved()).isTrue();
 
@@ -163,7 +163,7 @@ class LifeCycleTest {
         lc.startup();
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.webAppLoaded());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
 
         CEFPlugin.setMiddlewareService(mock(IMiddlewareService.class));
@@ -171,7 +171,7 @@ class LifeCycleTest {
         assertFails(() -> lc.startup());
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
         assertFails(() -> lc.shutdown());
 
@@ -179,7 +179,7 @@ class LifeCycleTest {
         assertFails(() -> lc.startup());
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
         assertFails(() -> lc.shutdown());
 
@@ -190,7 +190,7 @@ class LifeCycleTest {
         assertFails(() -> lc.suspend());
         assertFails(() -> lc.shutdown());
 
-        lc.saveState();
+        lc.saveState(null);
         assertFails(() -> lc.startup());
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
@@ -203,7 +203,7 @@ class LifeCycleTest {
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         lc.init(false); // init is allowed here again
 
         lc.setStateTransition(StateTransition.SUSPEND);
@@ -214,7 +214,7 @@ class LifeCycleTest {
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.webAppLoaded());
         assertFails(() -> lc.reload());
-        assertFails(() -> lc.saveState());
+        assertFails(() -> lc.saveState(null));
         assertFails(() -> lc.suspend());
     }
 

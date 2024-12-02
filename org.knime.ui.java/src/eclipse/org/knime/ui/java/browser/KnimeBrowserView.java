@@ -47,6 +47,7 @@ package org.knime.ui.java.browser;
 
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -63,6 +64,7 @@ import org.knime.js.cef.CEFUtils;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
+import com.equo.chromium.ChromiumBrowser;
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.WindowEvent;
 
@@ -146,6 +148,27 @@ public class KnimeBrowserView {
             }
             viewInitializer = null; // NOSONAR
         }
+    }
+
+    /**
+     * Gives access to the local storage items of the browser.
+     *
+     * @param key
+     * @return the value of the local storage item or {@code null} if not available or couldn't be accessed
+     */
+    public static String getLocalStorageItem(final String key) {
+        if (browser == null || browser.isDisposed()) {
+            return null;
+        }
+        try {
+            var item = ((ChromiumBrowser)browser.getWebBrowser()).getLocalStorage().getItem(key);
+            if (item != null) {
+                return item.get();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e);
+        }
+        return null;
     }
 
     @PostConstruct
