@@ -92,6 +92,7 @@ import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadMetaNodeTemplateRunnable;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
@@ -226,9 +227,8 @@ public final class DesktopAPUtil {
     private static WorkflowContextV2 createWorkflowContext(final Space space, final String itemId, final Path path) {
         final var mountId = space.toKnimeUrl(itemId).getAuthority();
         final var location = space.getLocationInfo(itemId);
-
         // TODO A local space root makes no sense for temp-copy mode, remove this workaround when AP-22097 is closed.
-        final var localSpaceRoot = location instanceof RestLocationInfo ? path.getParent() : space.getLocalRootPath();
+        final var localSpaceRoot = getLocalRoot(space, location, path) ;
         return WorkflowContextV2.builder() //
             .withAnalyticsPlatformExecutor(builder -> builder //
                 .withCurrentUserAsUserId() //
@@ -236,6 +236,16 @@ public final class DesktopAPUtil {
                 .withMountpoint(mountId, localSpaceRoot)) //
             .withLocation(location) //
             .build();
+    }
+
+    private static Path getLocalRoot(final Space space, final LocationInfo location, final Path path) {
+        if (space instanceof LocalWorkspace localSpace) {
+            return localSpace.getLocalRootPath();
+        }
+        if (location instanceof RestLocationInfo) {
+            return path.getParent();
+        }
+        return Path.of("/").toAbsolutePath();
     }
 
     /**
