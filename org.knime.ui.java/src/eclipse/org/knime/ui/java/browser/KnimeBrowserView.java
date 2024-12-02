@@ -45,8 +45,11 @@
  */
 package org.knime.ui.java.browser;
 
+import static org.knime.ui.java.util.DesktopAPUtil.assertUiThread;
+import static org.knime.ui.java.util.DesktopAPUtil.runUiEventLoopUntilValueAvailable;
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
+import java.time.Duration;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -156,6 +159,7 @@ public class KnimeBrowserView {
      * @return the value of the local storage item or {@code null} if not available or couldn't be accessed
      */
     public static String getLocalStorageItem(final String key) {
+        assertUiThread();
         if (browser == null || browser.isDisposed()) {
             return null;
         }
@@ -163,19 +167,14 @@ public class KnimeBrowserView {
         if (item == null) {
             return null;
         }
-        var display = browser.getDisplay();
         // run event loop to be able to retrieve the items from the FE
         // (and not block the FE to not be able to communicate anything back to the BE anymore)
-        while (item.getNow(null) == null) {
-            try {
-                if (!display.readAndDispatch()) {
-                    display.sleep();
-                }
-            } catch (Throwable e) {
-                LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e);
-            }
-        }
-        return item.getNow(null);
+        return runUiEventLoopUntilValueAvailable(browser.getDisplay(), Duration.ofSeconds(5), () -> item.getNow(null),
+            e -> LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e))
+                .orElseGet(() -> {
+                    item.cancel(true);
+                    return null;
+                });
     }
 
     @PostConstruct
