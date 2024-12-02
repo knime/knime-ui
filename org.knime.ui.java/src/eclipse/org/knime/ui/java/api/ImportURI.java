@@ -94,6 +94,7 @@ import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
+import org.knime.js.cef.CEFZoomSync;
 import org.knime.workbench.core.imports.EntityImport;
 import org.knime.workbench.core.imports.ExtensionImport;
 import org.knime.workbench.core.imports.ImportForbiddenException;
@@ -155,6 +156,7 @@ public final class ImportURI {
             var hubSpaceLocationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
             var selectedVersion = getWorkflowVersion(repoObjectImport, hubSpaceLocationInfo);
             Display.getDefault().asyncExec(() -> OpenProject.openProjectCopy(repoObjectImport, selectedVersion));
+            CEFZoomSync.set();
             return true;
         } else if (entityImportInProgress instanceof ExtensionImport extensionImport) {
             return checkAndInstallExtension(extensionImport);
@@ -319,7 +321,7 @@ public final class ImportURI {
             return importNodeFromFileURI((fromFileEntityImport).m_path.toUri().toString(), projectId, workflowId,
                 canvasX, canvasY);
         }
-
+        CEFZoomSync.set();
         return false;
     }
 
