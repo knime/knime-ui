@@ -49,8 +49,10 @@
 package org.knime.ui.java.api;
 
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
+import static org.knime.ui.java.util.DesktopAPUtil.assertUiThread;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -156,21 +158,15 @@ public final class SaveAndCloseProjects {
         var shallSaveProjects = promptWhetherToSaveProjects(dirtyWfms);
         return switch (shallSaveProjects) {
             case YES -> { // NOSONAR
+                assertUiThread();
                 if (promptCancelExecution(dirtyWfms)) {
                     projectsSavedState.set(null);
                     sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer);
-                    var display = Display.getCurrent();
                     // wait to receive the FE call while running the event loop
-                    while (projectsSavedState.get() == null) {
-                        try {
-                            if (!display.readAndDispatch()) {
-                                display.sleep();
-                            }
-                        } catch (Throwable e) {
-                            NodeLogger.getLogger(SaveAndCloseProjects.class).error("Error while saving project(s)", e);
-                            yield State.CANCEL_OR_FAIL;
-                        }
-                    }
+                    yield DesktopAPUtil.runUiEventLoopUntilValueAvailable(Display.getCurrent(), Duration.ofMinutes(1),
+                        projectsSavedState::get,
+                        e -> NodeLogger.getLogger(SaveAndCloseProjects.class).error("Error while saving project(s)", e))
+                        .orElse(State.CANCEL_OR_FAIL);
                 }
                 yield projectsSavedState.get();
             }

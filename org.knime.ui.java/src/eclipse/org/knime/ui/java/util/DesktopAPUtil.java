@@ -52,13 +52,16 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -678,6 +681,46 @@ public final class DesktopAPUtil {
         page.openEditor(input, WorkflowEditor.ID, false);
 
         return true;
+    }
+
+    /**
+     * Asserts that the current thread is the UI thread.
+     *
+     * @throws AssertionError if the current thread is not the UI thread
+     */
+    public static void assertUiThread() {
+        assert Display.getCurrent().getThread() == Thread.currentThread() : "Must be called from the UI thread";
+    }
+
+    /**
+     * Runs the UI event loop until the given value supplier returns a non-null value or the timeout is reached.
+     *
+     * @param display The display to run the event loop on.
+     * @param timeout The maximum time to wait for the value.
+     * @param valueSupplier The supplier to get the value from.
+     * @param onError The consumer to handle any errors that occur during the event loop.
+     * @param <T> The type of the value to return.
+     * @return An optional containing the value if it was obtained before the timeout without any error, otherwise an
+     *         empty optional.
+     */
+    public static <T> Optional<T> runUiEventLoopUntilValueAvailable(final Display display, final Duration timeout,
+        final Supplier<T> valueSupplier, final Consumer<Throwable> onError) {
+        T value = null;
+        var timeoutTime = System.currentTimeMillis() + timeout.toMillis();
+        while ((value = valueSupplier.get()) == null) {
+            try {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            } catch (Throwable e) {
+                onError.accept(e);
+            }
+            if (System.currentTimeMillis() > timeoutTime) {
+                onError.accept(new TimeoutException());
+                break;
+            }
+        }
+        return Optional.ofNullable(value);
     }
 
 }

@@ -87,7 +87,7 @@ public final class UserDirectory {
     /**
      * Returns the user's profile directory or creates a new one if it does not exist.
      *
-     * @return
+     * @return the user's profile directory or an empty optional if it could not be accessed or created
      */
     public static Optional<Path> getProfileDirectory() {
         return getUserDirectory().map(userDir -> {
