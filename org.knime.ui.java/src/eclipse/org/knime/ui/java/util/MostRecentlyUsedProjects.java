@@ -94,12 +94,12 @@ public final class MostRecentlyUsedProjects {
      * @param project
      */
     public void add(final RecentlyUsedProject project) {
-        var id = getId(project.origin());
-        if (m_projects.containsKey(id)) {
+        var projectKey = getKey(project.origin());
+        if (m_projects.containsKey(projectKey)) {
             // ensures that the newly added entry is inserted at the bottom of the 'list'
-            m_projects.remove(id);
+            m_projects.remove(projectKey);
         }
-        m_projects.put(id, project);
+        m_projects.put(projectKey, project);
     }
 
     /**
@@ -137,20 +137,20 @@ public final class MostRecentlyUsedProjects {
             }
         }
 
-        var id = getId(providerId, spaceId, itemId);
-        var project = m_projects.get(id);
+        var projectKey = getKey(providerId, spaceId, itemId);
+        var project = m_projects.get(projectKey);
         if (project == null) {
             return;
         }
-        m_projects.put(id, new RecentlyUsedProject(newName == null || newName.isEmpty() ? project.name() : newName,
+        m_projects.put(projectKey, new RecentlyUsedProject(newName == null || newName.isEmpty() ? project.name() : newName,
             newOrigin == null ? project.origin() : newOrigin, project.timeUsed()));
     }
 
-    private static String getId(final Origin origin) {
-        return getId(origin.getProviderId(), origin.getSpaceId(), origin.getItemId());
+    private static String getKey(final Origin origin) {
+        return getKey(origin.getProviderId(), origin.getSpaceId(), origin.getItemId());
     }
 
-    private static String getId(final String providerId, final String spaceId, final String itemId) {
+    private static String getKey(final String providerId, final String spaceId, final String itemId) {
         return format("%s_%s_%s", providerId, spaceId, itemId);
     }
 
