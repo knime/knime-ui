@@ -423,8 +423,8 @@ final class SpaceAPI {
             final var ancestorItemIds = space.getAncestorItemIds(itemId);
             // The known project name may be outdated. Return the new name to check this e.g. on "Reveal in Space
             // Explorer" and display a notification.
-            final var remoteProjectName = space.getItemName(itemId);
-            return buildAncestorInfo(ancestorItemIds, remoteProjectName).toString();
+            final var itemName = space.getItemName(itemId);
+            return buildAncestorInfo(ancestorItemIds, itemName).toString();
         } catch (ResourceAccessException e) {
             // The project name may have changed on the remote side, so for an informative message, the name as
             // currently known by the application is used.
@@ -435,11 +435,11 @@ final class SpaceAPI {
         }
     }
 
-    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final String remoteProjectName) {
+    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final String itemName) {
         final var objectNode = MAPPER.createObjectNode();
         final var arrayNode = objectNode.putArray("ancestorItemIds");
         ancestorItemIds.forEach(arrayNode::add);
-        objectNode.put("remoteProjectName", remoteProjectName);
+        objectNode.put("itemName", itemName);
         return objectNode;
     }
 

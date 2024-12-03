@@ -186,7 +186,7 @@ export type NodeCategoryWithExtendedPorts = NodeCategory & {
 
 export type AncestorInfo = {
   ancestorItemIds: string[];
-  newProjectName: string | null;
+  itemName: string | null;
 };
 
 export type NameCollisionHandling =

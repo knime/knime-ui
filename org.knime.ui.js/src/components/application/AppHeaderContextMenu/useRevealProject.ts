@@ -1,4 +1,4 @@
-import { type Ref, computed, watch } from "vue";
+import { type MaybeRefOrGetter, computed, toValue, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { API } from "@/api";
@@ -17,7 +17,7 @@ import {
 import type { AppHeaderContextMenuItem } from "./types";
 
 type UseRevealProject = {
-  projectId: Ref<string | null>;
+  projectId: MaybeRefOrGetter<string | null>;
 };
 
 const useToast = () => {
@@ -40,7 +40,7 @@ const useToast = () => {
     });
   };
 
-  const showWarningToast = (newProjectName: string) => {
+  const showWarningToast = (newItemName: string, oldItemName: string) => {
     if (previousToastId) {
       $toast.remove(previousToastId);
     }
@@ -48,7 +48,7 @@ const useToast = () => {
     previousToastId = $toast.show({
       type: "warning",
       headline: "Name has changed",
-      message: `The project name has changed to "${newProjectName}" on the remote Hub`,
+      message: `The project name has changed from "${oldItemName}" to "${newItemName}" on the remote Hub`,
       autoRemove: true,
     });
   };
@@ -72,43 +72,55 @@ export const useRevealProject = (options: UseRevealProject) => {
 
   const getAncestorInfo = (
     origin: SpaceItemReference,
-    projectId: string,
   ): Promise<AncestorInfo> => {
     const provider = store.state.spaces.spaceProviders?.[origin.providerId];
 
     if (!provider) {
-      return Promise.resolve({ newProjectName: null, ancestorItemIds: [] });
+      return Promise.resolve({ itemName: null, ancestorItemIds: [] });
     }
 
     if (isLocalProvider(provider)) {
       return origin.ancestorItemIds
         ? Promise.resolve({
-            newProjectName: null,
+            itemName: null,
             ancestorItemIds: origin.ancestorItemIds,
           })
-        : Promise.resolve({ newProjectName: null, ancestorItemIds: [] });
+        : Promise.resolve({ itemName: null, ancestorItemIds: [] });
     }
 
     // Throws error if the ancestor item IDs could not be retrieved
     return API.desktop.getAncestorInfo({
-      projectId,
+      providerId: origin.providerId,
+      spaceId: origin.spaceId,
+      itemId: origin.itemId,
     });
   };
 
   const { showWarningToast, showErrorToast } = useToast();
 
+  const checkIfNameHasChangedAndShowWarning = (
+    newItemName: string | null,
+    oldItemName: string | null,
+  ) => {
+    if (
+      newItemName !== null &&
+      oldItemName !== null &&
+      newItemName !== oldItemName
+    ) {
+      showWarningToast(newItemName, oldItemName);
+    }
+  };
+
   const navigateToSpaceBrowsingPage = async (
     origin: SpaceItemReference,
-    projectId: string,
+    itemName: string | null,
   ) => {
     const group = findSpaceGroupFromSpaceId(
       store.state.spaces.spaceProviders ?? {},
       origin.spaceId,
     );
-    const { newProjectName, ancestorItemIds } = await getAncestorInfo(
-      origin,
-      projectId,
-    );
+    const { itemName: updatedItemName, ancestorItemIds } =
+      await getAncestorInfo(origin);
 
     await $router.push({
       name: APP_ROUTES.Home.SpaceBrowsingPage,
@@ -122,14 +134,12 @@ export const useRevealProject = (options: UseRevealProject) => {
 
     store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
 
-    if (newProjectName) {
-      showWarningToast(newProjectName);
-    }
+    checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
   };
 
   const displaySpaceExplorerSidebar = async (
     origin: SpaceItemReference,
-    projectId: string,
+    itemName: string | null,
   ) => {
     if (!activeProjectId.value) {
       return;
@@ -145,10 +155,8 @@ export const useRevealProject = (options: UseRevealProject) => {
     }
 
     const { providerId, spaceId, itemId } = origin;
-    const { newProjectName, ancestorItemIds } = await getAncestorInfo(
-      origin,
-      projectId,
-    );
+    const { itemName: updatedItemName, ancestorItemIds } =
+      await getAncestorInfo(origin);
 
     const currentPath = store.state.spaces.projectPath[activeProjectId.value];
     const nextItemId = ancestorItemIds?.at(0) ?? "root";
@@ -183,14 +191,12 @@ export const useRevealProject = (options: UseRevealProject) => {
       store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
     }
 
-    if (newProjectName) {
-      showWarningToast(newProjectName);
-    }
+    checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
   };
 
   const canRevealProject = computed(() => {
     const foundProject = openProjects.value.find(
-      ({ projectId }) => projectId === options.projectId.value,
+      ({ projectId }) => projectId === toValue(options.projectId),
     );
 
     // cannot reveal unknown projects (aka no origin, or not related to our current providers)
@@ -214,8 +220,13 @@ export const useRevealProject = (options: UseRevealProject) => {
     metadata: {
       onClick: async () => {
         try {
+          if (!toValue(options.projectId)) {
+            consola.error("Unexpected error. Project ID not provided");
+            return;
+          }
+
           const foundProject = openProjects.value.find(
-            ({ projectId }) => projectId === options.projectId.value,
+            ({ projectId }) => projectId === toValue(options.projectId),
           );
 
           if (
@@ -228,22 +239,17 @@ export const useRevealProject = (options: UseRevealProject) => {
             return;
           }
 
-          if (!options.projectId.value) {
-            consola.error("Unexpected error. Project ID not provided");
-            return;
-          }
-
           if (!activeProjectId.value) {
             await navigateToSpaceBrowsingPage(
               foundProject.origin,
-              options.projectId.value,
+              foundProject.name,
             );
             return;
           }
 
           await displaySpaceExplorerSidebar(
             foundProject.origin,
-            options.projectId.value,
+            foundProject.name,
           );
         } catch (error) {
           consola.error("Error revealing project in Space Explorer: ", error);
