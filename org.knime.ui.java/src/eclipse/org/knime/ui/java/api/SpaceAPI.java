@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.api;
 
+import static org.knime.ui.java.api.DesktopAPI.MAPPER;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,6 +74,7 @@ import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -93,6 +96,8 @@ import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions around spaces.
@@ -401,8 +406,46 @@ final class SpaceAPI {
     }
 
     private enum MoveOrCopyResult {
-            SUCCESS, COLLISION, FAILURE;
+        SUCCESS, COLLISION, FAILURE;
     }
+
+    /**
+     * Retrieves ancestor information necessary to reveal a project in the space explorer
+     * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not
+     * @throws IOException If the ancestors could not be retrieved
+     */
+    @API
+    @SuppressWarnings("javadoc")
+    static String getAncestorInfo(final String providerId, final String spaceId, final String itemId) throws IOException {
+        final var providers = DesktopAPI.getDeps(SpaceProviders.class);
+        try {
+            final var space = SpaceProviders.getSpace(providers, providerId, spaceId);
+            final var ancestorItemIds = space.getAncestorItemIds(itemId);
+            // The known project name may be outdated. Return the new name to check this e.g. on "Reveal in Space
+            // Explorer" and display a notification.
+            final var remoteProjectName = space.getItemName(itemId); // TODO also always return this and check FE side for name change
+            return buildAncestorInfo(ancestorItemIds, remoteProjectName).toString();
+        } catch (ResourceAccessException e) {
+            // The project name may have changed on the remote side, so for an informative message, the name as
+            // currently known by the application is used.
+            final var projectName = DesktopAPI.getDeps(ProjectManager.class).getProject(providerId, spaceId, itemId)
+                    .map(Project::getName).orElse("the project");
+            throw new IOException(
+                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName), e);
+        }
+    }
+
+    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final String newProjectName) {
+        final var objectNode = MAPPER.createObjectNode();
+        final var arrayNode = objectNode.putArray("ancestorItemIds");
+        ancestorItemIds.forEach(arrayNode::add);
+        if (newProjectName != null) {
+            objectNode.put("newProjectName", newProjectName);
+        }
+        return objectNode;
+    }
+
+
 
     /**
      * Opens the website of an item in the web browser

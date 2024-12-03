@@ -71,7 +71,6 @@ import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
-import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -90,7 +89,6 @@ import org.knime.workbench.ui.wrapper.WrappedNodeDialog;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
@@ -361,46 +359,6 @@ final class ProjectAPI {
         return Collector.of(MAPPER::createArrayNode, ArrayNode::addPOJO, (n1, n2) -> {
             throw new UnsupportedOperationException();
         });
-    }
-
-    /**
-     * Retrieves ancestor information necessary to reveal a project in the space explorer
-     *
-     * @param projectId
-     *
-     * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not
-     * @throws IOException If the ancestors could not be retrieved
-     */
-    @API
-    static String getAncestorInfo(final String projectId) throws IOException {
-        final var pm = DesktopAPI.getDeps(ProjectManager.class);
-        final var providers = DesktopAPI.getDeps(SpaceProviders.class);
-
-        final var project = pm.getProject(projectId).orElseThrow();
-        final var origin = project.getOrigin().orElseThrow();
-
-        try {
-            final var space = SpaceProviders.getSpace(providers, origin.getProviderId(), origin.getSpaceId());
-            final var ancestorItemIds = space.getAncestorItemIds(origin.getItemId());
-
-            final var remoteProjectName = space.getItemName(origin.getItemId());
-            final var hasNameChanged = !remoteProjectName.equals(project.getName());
-
-            return buildAncestorInfo(ancestorItemIds, hasNameChanged ? remoteProjectName : null).toString();
-        } catch (ResourceAccessException e) {
-            throw new IOException(
-                "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(project.getName()), e);
-        }
-    }
-
-    private static ObjectNode buildAncestorInfo(final List<String> ancestorItemIds, final String newProjectName) {
-        final var objectNode = MAPPER.createObjectNode();
-        final var arrayNode = objectNode.putArray("ancestorItemIds");
-        ancestorItemIds.forEach(arrayNode::add);
-        if (newProjectName != null) {
-            objectNode.put("newProjectName", newProjectName);
-        }
-        return objectNode;
     }
 
 }

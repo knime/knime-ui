@@ -930,10 +930,18 @@ export const getExampleProjects = async () => {
   return (data ? JSON.parse(data) : []) as Array<ExampleProject>;
 };
 
-export const getAncestorInfo = async ({ projectId }: { projectId: string }) => {
+export const getAncestorInfo = async ({
+  providerId,
+  spaceId,
+  itemId,
+}: {
+  providerId: string;
+  spaceId: string;
+  itemId: string;
+}) => {
   const data = await callBrowserFunction(
     window.getAncestorInfo,
-    [projectId],
+    [providerId, spaceId, itemId],
     "Failed to fetch ancestor item IDs",
     true,
     { block: false },
