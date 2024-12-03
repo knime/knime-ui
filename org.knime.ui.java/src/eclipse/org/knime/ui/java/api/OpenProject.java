@@ -165,7 +165,7 @@ final class OpenProject {
 
         final Space space;
         try {
-            space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+            space = spaceProviders.getSpace(spaceProviderId, spaceId);
         } catch (NoSuchElementException e) {
             throw new OpenProjectException("The space could not be accessed.", e);
         }

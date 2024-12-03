@@ -91,7 +91,7 @@ final class ImportAPI {
     @API
     static String[] importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
         var itemIds = IMPORT_WORKFLOWS.importItems(space, itemId);
         if (itemIds != null && itemIds.length > 0) {
             NodeTimer.GLOBAL_TIMER.incWorkflowImport();
@@ -107,7 +107,7 @@ final class ImportAPI {
     @API
     static String[] importFiles(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
         return IMPORT_FILES.importItems(space, itemId);
     }
 
@@ -137,7 +137,7 @@ final class ImportAPI {
     static String importComponent(final String spaceProviderId, final String spaceId, final String itemId,
         final String projectId, final String workflowId, final double x, final double y) {
         var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        var space = SpaceProviders.getSpace(spaceProviders, spaceProviderId, spaceId);
+        var space = spaceProviders.getSpace(spaceProviderId, spaceId);
         var uri = space.toKnimeUrl(itemId);
         var isRemoteLocation = !SpaceProvider.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
         return importComponent(projectId, workflowId, uri, isRemoteLocation, x, y);

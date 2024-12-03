@@ -77,7 +77,7 @@ final class ExportAPI {
      */
     @API
     static boolean exportSpaceItem(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var space = SpaceProviders.getSpace(DesktopAPI.getDeps(SpaceProviders.class), spaceProviderId, spaceId);
+        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
         final var success = openExportWizard(space, itemId);
         if (success) {
             NodeTimer.GLOBAL_TIMER.incWorkflowExport();

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
-   <extension-point id="SpaceProviders" name="Space Providers" schema="schema/SpaceProviders.exsd"/>
-
    <extension
          point="org.eclipse.ui.views">
       <e4view
