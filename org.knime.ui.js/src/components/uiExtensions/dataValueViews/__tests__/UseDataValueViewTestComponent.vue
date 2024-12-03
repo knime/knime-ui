@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { useDataValueView } from "../useDataValueView";
 
-const { open, close, config, element, isDragging, styles } = useDataValueView();
+const { open, close, config, element } = useDataValueView();
 
-defineExpose({ open, close, styles });
+defineExpose({ open, close });
 </script>
 
 <template>
-  <div
-    v-if="config"
-    id="data-value-view"
-    ref="element"
-    :is-dragging="isDragging"
-  />
+  <div v-if="config" id="data-value-view" ref="element" />
 </template>

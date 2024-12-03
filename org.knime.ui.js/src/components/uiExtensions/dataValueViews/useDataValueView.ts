@@ -4,7 +4,6 @@ import {
   computed,
   reactive,
   ref,
-  toRefs,
   watch,
   watchEffect,
 } from "vue";
@@ -25,7 +24,7 @@ import {
 type MaybeElement = HTMLElement | null | ComponentPublicInstance;
 
 const INITIAL_OFFSET = 20;
-const useFloatingDataValueView = (
+export const useFloatingDataValueView = (
   dataValueViewElement: Ref<MaybeElement>,
   { anchor }: { anchor: Ref<null | ClientRectObject> },
 ) =>
@@ -60,34 +59,63 @@ const useFloatingDataValueView = (
     },
   );
 
-const useDraggableElement = (element: Ref<MaybeElement>) => {
-  const state = reactive({
-    isDragging: false,
-    left: 0,
+export type BoundingBoxInset = "top" | "left";
+export type BoundingBoxDimension = "width" | "height";
+export type BoundingBox = Record<
+  BoundingBoxInset | BoundingBoxDimension,
+  number
+>;
+
+export const useDraggableResizableRectState = () => {
+  const state: BoundingBox = reactive({
     top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
   });
+
+  const setRect = (rect: Partial<BoundingBox>) => {
+    Object.entries(rect).forEach(([key, value]) => {
+      if (typeof value !== "undefined") {
+        state[key] = value;
+      }
+    });
+  };
+
+  return { setRect, state: ref(state) };
+};
+
+export const useDraggableElement = (
+  element: Ref<MaybeElement>,
+  rectState: Ref<BoundingBox>,
+  setRect: (rect: Partial<BoundingBox>) => void,
+) => {
+  const isDragging = ref(false);
 
   let startX = 0;
   let startY = 0;
 
   const onMouseMove = (event: MouseEvent) => {
-    if (state.isDragging) {
-      state.left = event.clientX - startX;
-      state.top = event.clientY - startY;
+    if (isDragging.value) {
+      setRect({
+        left: event.clientX - startX,
+        top: event.clientY - startY,
+      });
       event.preventDefault();
     }
   };
 
   const onMouseUp = () => {
-    state.isDragging = false;
+    isDragging.value = false;
     window.removeEventListener("mouseup", onMouseUp);
     window.removeEventListener("mousemove", onMouseMove);
   };
 
   const onMouseDown = (event: MouseEvent) => {
-    state.isDragging = true;
-    startX = event.clientX - state.left;
-    startY = event.clientY - state.top;
+    isDragging.value = true;
+    const { left, top } = rectState.value;
+    startX = event.clientX - left;
+    startY = event.clientY - top;
     window.addEventListener("mouseup", onMouseUp);
     window.addEventListener("mousemove", onMouseMove);
     event.preventDefault();
@@ -98,10 +126,12 @@ const useDraggableElement = (element: Ref<MaybeElement>) => {
       "mousedown",
       onMouseDown,
     );
-    state.left = 0;
-    state.top = 0;
+    setRect({
+      left: 0,
+      top: 0,
+    });
   });
-  return toRefs(state);
+  return { isDragging };
 };
 
 /**
@@ -196,26 +226,21 @@ export const useDataValueViewSize = () => {
   return {
     width,
     height,
+    minSize: {
+      width: MIN_WIDTH,
+      height: MIN_WIDTH / ASPECT_RATIO,
+    },
   };
 };
 
 /**
  * Composable for opening and closing a data value view.
- * The data value view is a floating element that is draggable and closed when clicking outside of it.
+ * The data value view is closed when clicking outside of it.
  */
 export const useDataValueView = () => {
   const element = ref<MaybeElement>(null);
 
   const { close, open, config, anchor, addListener } = useOpenClose();
-  const { floatingStyles } = useFloatingDataValueView(element, {
-    anchor,
-  });
-  const { left, top, isDragging } = useDraggableElement(element);
-  const styles = computed(() => ({
-    ...floatingStyles.value,
-    left: `${left.value}px`,
-    top: `${top.value}px`,
-  }));
 
   onClickOutside(element, () => close());
   return {
@@ -223,8 +248,7 @@ export const useDataValueView = () => {
     open,
     config,
     element,
-    styles,
-    isDragging,
+    anchor,
     addListener,
   };
 };

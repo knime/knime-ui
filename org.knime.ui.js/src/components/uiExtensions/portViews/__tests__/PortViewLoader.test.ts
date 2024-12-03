@@ -57,6 +57,17 @@ describe("PortViewLoader.vue", () => {
     });
   };
 
+  const mockGetDataValueView = (additionalMocks?: object) => {
+    mockedAPI.port.getDataValueView.mockResolvedValue({
+      resourceInfo: {
+        type: "SHADOW_APP",
+        baseUrl: "baseUrl/",
+        path: "path",
+      },
+      ...additionalMocks,
+    });
+  };
+
   const doMount = (customProps = {}) => {
     const $store = mockVuexStore({
       application: applicationStore,
@@ -276,6 +287,7 @@ describe("PortViewLoader.vue", () => {
     it("opens data value view when openDataValueView is called", async () => {
       vi.useFakeTimers();
       mockGetPortView();
+      mockGetDataValueView();
       const { wrapper } = doMount();
 
       await flushPromises();
@@ -308,15 +320,16 @@ describe("PortViewLoader.vue", () => {
       await flushPromises();
       const dataValueViewWrapper = wrapper.findComponent(DataValueViewWrapper);
       expect(dataValueViewWrapper.exists()).toBe(true);
-      expect(dataValueViewWrapper.props()).toEqual({
-        isDragging: false,
-        projectId: "project-id",
-        workflowId: "workflow-id",
-        nodeId: "node1",
-        selectedPortIndex: 0,
-        selectedRowIndex: rowIndex,
-        selectedColIndex: colIndex,
-      });
+      expect(dataValueViewWrapper.props()).toStrictEqual(
+        expect.objectContaining({
+          projectId: "project-id",
+          workflowId: "workflow-id",
+          nodeId: "node1",
+          selectedPortIndex: 0,
+          selectedRowIndex: rowIndex,
+          selectedColIndex: colIndex,
+        }),
+      );
 
       expect(dispatchPushEvent).toHaveBeenCalledWith({
         eventType: "DataValueViewShownEvent",

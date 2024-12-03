@@ -76,8 +76,7 @@ const {
   close: closeDataValueView,
   element: dataValueView,
   config: dataValueViewConfig,
-  styles: dataValueViewStyles,
-  isDragging,
+  anchor: dataValueViewAnchor,
   addListener: addDataValueViewPushEventListener,
 } = useDataValueView();
 
@@ -205,14 +204,13 @@ onUnmounted(() => {
   <DataValueViewWrapper
     v-if="dataValueViewConfig"
     ref="dataValueView"
-    :style="dataValueViewStyles"
+    :anchor="toRef(dataValueViewAnchor)"
     :project-id="projectId"
     :workflow-id="workflowId"
     :node-id="selectedNode.id"
     :selected-port-index="selectedPortIndex"
     :selected-row-index="dataValueViewConfig.rowIndex"
     :selected-col-index="dataValueViewConfig.colIndex"
-    :is-dragging="isDragging"
     @close="closeDataValueViewWithoutDelay"
   />
 </template>

@@ -92,64 +92,6 @@ describe("useDataValueView", () => {
       expect(getDataValueView().exists()).toBe(false);
     });
   });
-
-  describe("dragging the data value view", () => {
-    let dataValueView: ReturnType<typeof testComponent.find>;
-
-    beforeEach(async () => {
-      vi.useFakeTimers();
-      testComponent.vm.open(config);
-      await vi.runAllTimers();
-
-      dataValueView = testComponent.find("#data-value-view");
-
-      await dataValueView.trigger("mousedown");
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    const moveMouse = (x: number, y: number) =>
-      window.dispatchEvent(
-        new MouseEvent("mousemove", { clientX: x, clientY: y }),
-      );
-
-    it("drags the data value view", async () => {
-      expect(dataValueView.attributes("is-dragging")).toBe("true");
-
-      moveMouse(10, 10);
-      moveMouse(10, -20);
-      await flushPromises();
-
-      expect(testComponent.vm.styles.left).toBe("10px");
-      expect(testComponent.vm.styles.top).toBe("-20px");
-
-      await window.dispatchEvent(new Event("mouseup"));
-      expect(dataValueView.attributes("is-dragging")).toBe("false");
-    });
-
-    describe("keeping the position", () => {
-      beforeEach(async () => {
-        moveMouse(10, 10);
-        await flushPromises();
-        await window.dispatchEvent(new Event("mouseup"));
-      });
-
-      it("keeps the position when calling open on an already opened data value view", async () => {
-        testComponent.vm.open({ ...config, rowIndex: 1 });
-        await flushPromises();
-        expect(testComponent.vm.styles.left).toBe("10px");
-      });
-
-      it("resets the position when closing and reopening the data value view", async () => {
-        testComponent.vm.close();
-        await vi.runAllTimers();
-        testComponent.vm.open(config);
-        expect(testComponent.vm.styles.left).toBe("0px");
-      });
-    });
-  });
 });
 
 describe("useDataValueViewSize", () => {
