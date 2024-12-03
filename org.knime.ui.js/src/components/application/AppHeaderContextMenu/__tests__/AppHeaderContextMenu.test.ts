@@ -289,7 +289,7 @@ describe("AppHeaderContextMenu.vue", () => {
       async (_, project, expectedPath) => {
         mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
           ancestorItemIds: [],
-          hasNameChanged: false,
+          itemName: null,
         });
 
         const { wrapper, $store } = await doMount({
@@ -353,7 +353,7 @@ describe("AppHeaderContextMenu.vue", () => {
 
       mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
         ancestorItemIds: [],
-        hasNameChanged: false,
+        itemName: null,
       });
 
       const { wrapper } = await doMount({
@@ -373,7 +373,7 @@ describe("AppHeaderContextMenu.vue", () => {
 
       mockedAPI.desktop.getAncestorInfo.mockResolvedValue({
         ancestorItemIds: ["3"],
-        hasNameChanged: false,
+        itemName: null,
       });
 
       const { wrapper, $store } = await doMount({
