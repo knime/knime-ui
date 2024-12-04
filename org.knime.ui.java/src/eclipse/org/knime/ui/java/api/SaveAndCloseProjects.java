@@ -64,7 +64,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
@@ -163,7 +162,7 @@ public final class SaveAndCloseProjects {
                     projectsSavedState.set(null);
                     sendSaveAndCloseProjectsEventToFrontend(dirtyProjectIds, eventConsumer);
                     // wait to receive the FE call while running the event loop
-                    yield DesktopAPUtil.runUiEventLoopUntilValueAvailable(Display.getCurrent(), Duration.ofMinutes(1),
+                    yield DesktopAPUtil.runUiEventLoopUntilValueAvailable(Duration.ofMinutes(1),
                         projectsSavedState::get,
                         e -> NodeLogger.getLogger(SaveAndCloseProjects.class).error("Error while saving project(s)", e))
                         .orElse(State.CANCEL_OR_FAIL);

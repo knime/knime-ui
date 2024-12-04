@@ -169,7 +169,7 @@ public class KnimeBrowserView {
         }
         // run event loop to be able to retrieve the items from the FE
         // (and not block the FE to not be able to communicate anything back to the BE anymore)
-        return runUiEventLoopUntilValueAvailable(browser.getDisplay(), Duration.ofSeconds(5), () -> item.getNow(null),
+        return runUiEventLoopUntilValueAvailable(Duration.ofSeconds(5), () -> item.getNow(null),
             e -> LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e))
                 .orElseGet(() -> {
                     item.cancel(true);
