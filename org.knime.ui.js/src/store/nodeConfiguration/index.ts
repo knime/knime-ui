@@ -245,6 +245,10 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
   resetDirtyState({ dispatch }) {
     dispatch("discardSettings");
   },
+
+  updateTimestamp({ commit }) {
+    commit("setTimestamp", Date.now());
+  },
 };
 
 export const getters: GetterTree<NodeConfigurationState, RootStoreState> = {

@@ -237,7 +237,7 @@ export default defineComponent({
           :project-id="projectId!"
           :workflow-id="workflowId"
           :selected-node="singleSelectedNode"
-          :timestamp="timestamp!"
+          :timestamp="timestamp || 0"
           :available-port-types="availablePortTypes"
           @alert="currentNodeViewAlert = $event"
           @loading-state-change="loadingState = $event"

@@ -92,12 +92,15 @@ final class NodeAPI {
      *
      * @param projectId
      * @param nodeId
+     * @return whether the node settings have changed
      */
     @API
-    static void openNodeDialog(final String projectId, final String nodeId) {
+    static boolean openNodeDialog(final String projectId, final String nodeId) {
         final var nc = DefaultServiceUtil.getNodeContainer(projectId, new NodeIDEnt(nodeId));
         checkIsNotNull(nc, projectId, nodeId);
+        var oldSettings = nc.getNodeSettings();
         NodeContainerEditPart.openNodeDialog(wrap(nc));
+        return !oldSettings.equals(nc.getNodeSettings());
     }
 
     /**
