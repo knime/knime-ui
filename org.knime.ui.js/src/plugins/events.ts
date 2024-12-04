@@ -149,8 +149,8 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   });
 
   API.desktop.registerEventHandlers({
-    async SaveAndCloseProjectsEvent({ projectIds, params = [] }) {
-      consola.info("events::SaveAndCloseProjectsEvent", { projectIds, params });
+    async SaveAndCloseProjectsEvent({ projectIds }) {
+      consola.info("events::SaveAndCloseProjectsEvent", { projectIds });
 
       await $store.dispatch("application/updateGlobalLoader", {
         loading: true,
@@ -193,8 +193,6 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
           totalProjects,
           projectIds,
           svgSnapshots,
-          // send over any parameters that are sent in the event payload, or empty in case none
-          params,
         });
       } catch (error) {
         consola.error(

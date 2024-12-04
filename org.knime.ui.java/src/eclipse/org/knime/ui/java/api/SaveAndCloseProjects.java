@@ -98,16 +98,16 @@ public final class SaveAndCloseProjects {
      * Saves and closes the projects represented by the given project-ids. Project-ids that don't reference an opened
      * workflow will just be ignored.
      *
-     * @param projectIdsAndSvgsAndMore Array containing the project-ids and svgs of the projects to save. The very first
+     * @param projectIdsAndSvgs Array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings
      * @param progressService Displays the progress
      */
-    static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore, final IProgressService progressService) { // NOSONAR
-        var count = ((Double)projectIdsAndSvgsAndMore[0]).intValue();
+    static void saveAndCloseProjects(final Object[] projectIdsAndSvgs, final IProgressService progressService) { // NOSONAR
+        var count = ((Double)projectIdsAndSvgs[0]).intValue();
         var firstFailure = new AtomicReference<Optional<String>>();
-        var projectIds = Arrays.copyOfRange(projectIdsAndSvgsAndMore, 1, count + 1, String[].class);
-        var svgs = Arrays.copyOfRange(projectIdsAndSvgsAndMore, count + 1, count * 2 + 1, String[].class);
+        var projectIds = Arrays.copyOfRange(projectIdsAndSvgs, 1, count + 1, String[].class);
+        var svgs = Arrays.copyOfRange(projectIdsAndSvgs, count + 1, count * 2 + 1, String[].class);
         saveProjectsWithProgressBar(projectIds, svgs, firstFailure, progressService);
 
         final var optFailure = firstFailure.get();
