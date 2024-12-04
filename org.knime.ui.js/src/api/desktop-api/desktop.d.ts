@@ -7,7 +7,7 @@ declare function checkForUpdates(): void;
 declare function openUrlInExternalBrowser(url: string): void;
 declare function openInstallExtensionsDialog(): void;
 declare function openWebUIPreferencePage(): void;
-declare function openNodeDialog(projectId: string, nodeId: string): void;
+declare function openNodeDialog(projectId: string, nodeId: string): boolean;
 
 declare function openLinkComponentDialog(
   projectId: string,

@@ -48,6 +48,11 @@ describe("workflow store: desktop interactions", () => {
     const store = mockVuexStore({
       workflow: await import("@/store/workflow"),
       application: await import("@/store/application"),
+      selection: {
+        getters: {
+          singleSelectedNode: () => "TestNode",
+        },
+      },
       canvas: {
         state: {
           getScrollContainerElement: () => mockCanvasWrapperEl,
@@ -97,6 +102,29 @@ describe("workflow store: desktop interactions", () => {
         nodeId: "node x",
         projectId: "foo",
       });
+    });
+
+    it("calls openNodeDialog from API and update if node settings have changed", async () => {
+      mockedAPI.desktop.openNodeDialog.mockImplementation(() =>
+        Promise.resolve(true),
+      );
+
+      const { store, dispatchSpy } = await loadStore();
+
+      store.commit(
+        "workflow/setActiveWorkflow",
+        createWorkflow({ projectId: "foo" }),
+      );
+      await store.dispatch("workflow/openNodeConfiguration", "node x");
+
+      expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
+        nodeId: "node x",
+        projectId: "foo",
+      });
+      expect(dispatchSpy).toHaveBeenLastCalledWith(
+        "nodeConfiguration/updateTimestamp",
+        null,
+      );
     });
 
     it("calls openFlowVariableConfiguration from API", async () => {
