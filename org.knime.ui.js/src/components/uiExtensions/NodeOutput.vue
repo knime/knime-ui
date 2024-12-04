@@ -8,6 +8,7 @@ import type { Alert } from "@knime/ui-extension-service";
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { HINTS } from "@/hints/hints.config";
 import type { ApplicationState } from "@/store/application";
+import type { NodeConfigurationState } from "@/store/nodeConfiguration";
 import type { NodeOutputTabIdentifier } from "@/store/selection";
 import type { WorkflowState } from "@/store/workflow";
 
@@ -75,6 +76,10 @@ export default defineComponent({
     ...mapState("workflow", {
       workflowId: (state: unknown) =>
         (state as WorkflowState).activeWorkflow!.info.containerId,
+    }),
+    ...mapState("nodeConfiguration", {
+      timestamp: (state: unknown) =>
+        (state as NodeConfigurationState).timestamp,
     }),
     ...mapGetters("selection", ["selectedNodes", "singleSelectedNode"]),
 
@@ -230,6 +235,7 @@ export default defineComponent({
           :project-id="projectId!"
           :workflow-id="workflowId"
           :selected-node="singleSelectedNode"
+          :timestamp="timestamp!"
           :available-port-types="availablePortTypes"
           @alert="currentNodeViewAlert = $event"
           @loading-state-change="loadingState = $event"

@@ -79,11 +79,17 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
   },
 
   /* See docs in API */
-  openNodeConfiguration({ state }, nodeId) {
-    API.desktop.openNodeDialog({
+  async openNodeConfiguration({ state, rootGetters, commit }, nodeId) {
+    const settingsChanged = await API.desktop.openNodeDialog({
       projectId: state.activeWorkflow!.projectId,
       nodeId,
     });
+
+    // after dialog is closed, check if the node was selected and rerender port views
+    const selectedNode = rootGetters["selection/singleSelectedNode"];
+    if (settingsChanged && selectedNode) {
+      commit("nodeConfiguration/setTimestamp", Date.now(), { root: true });
+    }
   },
 
   /* See docs in API */

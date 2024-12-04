@@ -46,6 +46,7 @@ export interface NodeConfigurationState {
     nodeId: string;
   } | null;
   pushEventDispatcher: UIExtensionPushEventDispatcher;
+  timestamp: number | null;
 }
 
 export const state = (): NodeConfigurationState => ({
@@ -57,6 +58,7 @@ export const state = (): NodeConfigurationState => ({
   },
   latestPublishedData: null,
   pushEventDispatcher: () => {},
+  timestamp: null,
 });
 
 let unwrappedPromise = createUnwrappedPromise<boolean>();
@@ -129,6 +131,9 @@ export const mutations: MutationTree<NodeConfigurationState> = {
   },
   setActiveExtensionConfig(state, value) {
     state.activeExtensionConfig = value;
+  },
+  setTimestamp(state, value) {
+    state.timestamp = value;
   },
 };
 
