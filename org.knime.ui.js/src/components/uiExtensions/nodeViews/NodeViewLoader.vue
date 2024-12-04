@@ -28,6 +28,7 @@ type Props = {
   projectId: string;
   workflowId: string;
   selectedNode: NativeNode;
+  timestamp: number;
 };
 
 const props = defineProps<Props>();

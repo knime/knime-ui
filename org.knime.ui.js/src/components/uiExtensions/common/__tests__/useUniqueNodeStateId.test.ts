@@ -32,10 +32,11 @@ describe("useUniqueNodeStateId", () => {
           state: { executionState: NodeState.ExecutionStateEnum.EXECUTED },
         }),
       ),
+      timestamp: ref(1),
     });
 
     expect(uniqueNodeViewId.value).toMatch(
-      "project1__workflow1::root:1_EXECUTED",
+      "project1__workflow1::root:1_EXECUTED_1",
     );
   });
 });

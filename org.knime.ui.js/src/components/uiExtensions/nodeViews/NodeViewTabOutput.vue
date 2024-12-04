@@ -52,6 +52,7 @@ type Props = {
   projectId: string;
   workflowId: string;
   selectedNode: NativeNode;
+  timestamp: number;
   availablePortTypes: AvailablePortTypes;
 };
 
@@ -110,6 +111,7 @@ const openInNewWindow = () => {
       :project-id="projectId"
       :workflow-id="workflowId"
       :selected-node="selectedNode"
+      :timestamp="timestamp"
       @loading-state-change="emit('loadingStateChange', $event)"
       @alert="emit('alert', $event)"
     />

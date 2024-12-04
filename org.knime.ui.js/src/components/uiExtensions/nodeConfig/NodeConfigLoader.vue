@@ -118,6 +118,7 @@ const apiLayer: UIExtensionAPILayer = {
 
   publishData: (data) => {
     consola.trace("NodeDialog :: publishData", data);
+    store.commit("nodeConfiguration/setTimestamp", Date.now(), { root: true });
     store.commit("nodeConfiguration/setLatestPublishedData", {
       data,
       projectId: projectId.value,
