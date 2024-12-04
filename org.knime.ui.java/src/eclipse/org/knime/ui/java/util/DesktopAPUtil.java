@@ -695,7 +695,6 @@ public final class DesktopAPUtil {
     /**
      * Runs the UI event loop until the given value supplier returns a non-null value or the timeout is reached.
      *
-     * @param display The display to run the event loop on.
      * @param timeout The maximum time to wait for the value.
      * @param valueSupplier The supplier to get the value from.
      * @param onError The consumer to handle any errors that occur during the event loop.
@@ -703,10 +702,11 @@ public final class DesktopAPUtil {
      * @return An optional containing the value if it was obtained before the timeout without any error, otherwise an
      *         empty optional.
      */
-    public static <T> Optional<T> runUiEventLoopUntilValueAvailable(final Display display, final Duration timeout,
+    public static <T> Optional<T> runUiEventLoopUntilValueAvailable(final Duration timeout,
         final Supplier<T> valueSupplier, final Consumer<Throwable> onError) {
         T value = null;
         var timeoutTime = System.currentTimeMillis() + timeout.toMillis();
+        var display = Display.getCurrent();
         while ((value = valueSupplier.get()) == null) {
             try {
                 if (!display.readAndDispatch()) {
