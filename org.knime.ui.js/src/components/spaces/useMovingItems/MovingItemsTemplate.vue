@@ -15,14 +15,16 @@ const copyOrMove = computed(() => (props.isCopy ? "copy" : "move"));
 
 <template>
   <div>
-    <p>Following workflows are opened:</p>
+    <p>The following items are currently open:</p>
     <ul>
       <li v-for="(name, index) in openedItemNames" :key="index">
         <WorkflowIcon />
         {{ name }}
       </li>
     </ul>
-    <p>To {{ copyOrMove }} your selected items, they have to be closed first</p>
+    <!-- avoid whitespace at beginning of text -->
+    <!-- prettier-ignore -->
+    <p>To {{ copyOrMove }} the selected items, these have to be closed first.</p>
   </div>
 </template>
 
