@@ -16,7 +16,7 @@ export const getHeadline = (toastType: string, nodeInfo: NodeInfoParam) => {
   if (nodeInfo.isNodeConfig) {
     return "Invalid node settings";
   }
-  const nodeNameOrAlertType = nodeInfo.nodeName || capitalize(toastType);
+  const nodeNameOrAlertType = nodeInfo.nodeName || capitalize(toastType); // NOSONAR
   return `${nodeNameOrAlertType} (${nodeInfo.nodeId})`;
 };
 
