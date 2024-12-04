@@ -406,17 +406,18 @@ final class SpaceAPI {
     }
 
     private enum MoveOrCopyResult {
-        SUCCESS, COLLISION, FAILURE;
+            SUCCESS, COLLISION, FAILURE;
     }
 
     /**
      * Retrieves ancestor information necessary to reveal a project in the space explorer
+     *
      * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not
      * @throws IOException If the ancestors could not be retrieved
      */
     @API
-    @SuppressWarnings("javadoc")
-    static String getAncestorInfo(final String providerId, final String spaceId, final String itemId) throws IOException {
+    static String getAncestorInfo(final String providerId, final String spaceId, final String itemId)
+        throws IOException {
         final var providers = DesktopAPI.getDeps(SpaceProviders.class);
         try {
             final var space = SpaceProviders.getSpace(providers, providerId, spaceId);
@@ -428,8 +429,10 @@ final class SpaceAPI {
         } catch (ResourceAccessException e) {
             // The project name may have changed on the remote side, so for an informative message, the name as
             // currently known by the application is used.
-            final var projectName = DesktopAPI.getDeps(ProjectManager.class).getProject(providerId, spaceId, itemId)
-                    .map(Project::getName).orElse("the project");
+            final var projectName = DesktopAPI.getDeps(ProjectManager.class) //
+                .getProject(providerId, spaceId, itemId) //
+                .map(Project::getName) //
+                .orElse("the project");
             throw new IOException(
                 "Failed to reveal '%s' in space. Maybe it was deleted remotely?".formatted(projectName), e);
         }
@@ -442,8 +445,6 @@ final class SpaceAPI {
         objectNode.put("itemName", itemName);
         return objectNode;
     }
-
-
 
     /**
      * Opens the website of an item in the web browser
