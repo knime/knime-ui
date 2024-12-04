@@ -633,16 +633,14 @@ export const saveAndCloseProjects = ({
   totalProjects,
   projectIds,
   svgSnapshots,
-  params,
 }: {
   totalProjects: number;
   projectIds: string[];
   svgSnapshots: Array<string | null>;
-  params: any[];
 }) => {
   return callBrowserFunction(
     window.saveAndCloseProjects,
-    [totalProjects, ...projectIds, ...svgSnapshots, ...params],
+    [totalProjects, ...projectIds, ...svgSnapshots],
     "Could not save and close all workflows",
     false,
     { block: true },

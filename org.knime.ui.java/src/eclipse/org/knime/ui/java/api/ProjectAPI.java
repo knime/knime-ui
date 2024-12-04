@@ -146,14 +146,14 @@ final class ProjectAPI {
     }
 
     /**
-     * @param projectIdsAndSvgsAndMore array containing the project-ids and svgs of the projects to save. The very first
+     * @param projectIdsAndSvgs array containing the project-ids and svgs of the projects to save. The very first
      *            entry contains the number of projects to save, e.g., n. Followed by n projects-ids (strings), followed
      *            by n svg-strings
      */
     @API
-    static void saveAndCloseProjects(final Object[] projectIdsAndSvgsAndMore) {
+    static void saveAndCloseProjects(final Object[] projectIdsAndSvgs) {
         var progressService = PlatformUI.getWorkbench().getProgressService();
-        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgsAndMore, progressService);
+        SaveAndCloseProjects.saveAndCloseProjects(projectIdsAndSvgs, progressService);
     }
 
     /**
