@@ -2,7 +2,6 @@
 import { computed, onUnmounted, ref } from "vue";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
-import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
 import SpaceExplorerActions from "@/components/spaces/SpaceExplorerActions.vue";
 import SpaceSelectionDropdown from "@/components/spaces/SpaceSelectionDropdown.vue";
@@ -30,7 +29,7 @@ const changeDirectory = async (pathId: string) => {
 </script>
 
 <template>
-  <SidebarPanelLayout>
+  <SidebarPanelLayout class="sidebar-space-explorer-panel-layout">
     <template #header>
       <SpaceSelectionDropdown :project-id="activeProjectId!" />
 
@@ -46,25 +45,31 @@ const changeDirectory = async (pathId: string) => {
         "
       />
     </template>
-    <SidebarPanelScrollContainer>
-      <SpaceExplorer
-        v-if="activeProjectId"
-        mode="mini"
-        :filter-query="filterQuery"
-        :project-id="activeProjectId"
-        :selected-item-ids="currentSelectedItemIds"
-        :click-outside-exception="$refs.actions as HTMLElement"
-        @change-directory="changeDirectory"
-        @update:selected-item-ids="
-          store.commit('spaces/setCurrentSelectedItemIds', $event)
-        "
-      />
-    </SidebarPanelScrollContainer>
+    <SpaceExplorer
+      v-if="activeProjectId"
+      mode="mini"
+      :filter-query="filterQuery"
+      :project-id="activeProjectId"
+      :selected-item-ids="currentSelectedItemIds"
+      :click-outside-exception="$refs.actions as HTMLElement"
+      @change-directory="changeDirectory"
+      @update:selected-item-ids="
+        store.commit('spaces/setCurrentSelectedItemIds', $event)
+      "
+    />
   </SidebarPanelLayout>
 </template>
 
 <style lang="postcss" scoped>
 .actions {
   margin-left: auto;
+}
+
+.sidebar-space-explorer-panel-layout {
+  padding-right: 0;
+}
+
+:deep(.space-explorer .virtual-scrollcontainer) {
+  padding-right: var(--sidebar-panel-padding);
 }
 </style>

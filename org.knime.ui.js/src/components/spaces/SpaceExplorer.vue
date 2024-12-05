@@ -32,6 +32,7 @@ const itemIconRenderer = (item: FileExplorerItem) =>
 interface Props {
   projectId: string;
   mode?: "normal" | "mini";
+  virtual?: boolean;
   selectedItemIds: string[];
   clickOutsideException?: HTMLElement | null;
   filterQuery?: string;
@@ -39,6 +40,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
+  virtual: true,
   clickOutsideException: null,
   filterQuery: "",
 });
@@ -225,6 +227,7 @@ watch(isLoadingContent, () => {
         aria-label="Current workflow group in Space Explorer"
         :selected-item-ids="selectedItemIds"
         :mode="mode"
+        :virtual
         :items="filteredFileExplorerItems"
         :is-root-folder="activeWorkflowGroup.path.length === 0"
         :full-path="fullPath"
@@ -289,7 +292,11 @@ watch(isLoadingContent, () => {
 @import url("@/assets/mixins.css");
 
 .space-explorer {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  height: 100%;
+  min-height: 100px;
 }
 
 .breadcrumb-container {

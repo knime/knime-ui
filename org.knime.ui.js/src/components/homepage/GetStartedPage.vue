@@ -19,7 +19,7 @@ import RecentWorkflowsList from "./RecentWorkflowsList.vue";
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  background-color: var(--knime-gray-ultra-light);
+  background-color: var(--knime-porcelain);
   border-left: 1px solid var(--knime-silver-sand);
 
   & .header {

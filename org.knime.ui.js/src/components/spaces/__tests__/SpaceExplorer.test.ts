@@ -175,7 +175,7 @@ describe("SpaceExplorer.vue", () => {
     };
 
     const wrapper = mount(SpaceExplorer, {
-      props: { selectedItemIds: [], projectId: "", ...props },
+      props: { selectedItemIds: [], projectId: "", virtual: false, ...props },
       global: {
         plugins: [store],
         stubs: { NuxtLink: true, FocusTrap: true, NodePreview: true },
@@ -398,9 +398,7 @@ describe("SpaceExplorer.vue", () => {
 
   it("should filter items when filter field is used", async () => {
     const { wrapper } = await doMountAndLoad();
-
-    wrapper.setProps({ filterQuery: "folder 2" });
-    await nextTick();
+    await wrapper.setProps({ filterQuery: "folder 2" });
     expect(wrapper.findComponent(FileExplorer).props("items")[0].name).toBe(
       "Folder 2",
     );

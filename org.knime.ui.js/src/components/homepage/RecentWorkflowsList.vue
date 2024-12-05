@@ -256,6 +256,7 @@ const createWorkflowLocally = async () => {
 
   & .item-content {
     display: flex;
+    width: 100%;
     justify-content: space-between;
 
     & .item-meta {
