@@ -342,9 +342,7 @@ describe("AppHeaderContextMenu.vue", () => {
 
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);
       expect(wrapper.findComponent(MenuItems).props("items")).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ text: "Close project" }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ text: "Close" })]),
       );
     });
 
@@ -362,9 +360,7 @@ describe("AppHeaderContextMenu.vue", () => {
 
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);
       expect(wrapper.findComponent(MenuItems).props("items")).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ text: "Close project" }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ text: "Close" })]),
       );
     });
 

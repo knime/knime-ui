@@ -49,7 +49,7 @@ const switchActiveProject = (
 
 const applicationShortcuts: ApplicationShortcuts = {
   closeProject: {
-    text: "Close workflow",
+    text: "Close workflow/component",
     hotkey: ["CtrlOrCmd", "W"],
     group: "general",
     execute: ({ $store }) =>

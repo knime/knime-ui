@@ -32,7 +32,7 @@ const { revealProjectMenuOption } = useRevealProject({
 const contextMenuItems = computed(() => [
   ...revealProjectMenuOption.value,
   {
-    text: "Close project",
+    text: "Close",
     metadata: {
       onClick: () => {
         store.dispatch("workflow/closeProject", props.projectId);

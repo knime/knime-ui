@@ -24,6 +24,7 @@ import { isLocalProvider } from "@/store/spaces/util";
 import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
 
 import PageTitle from "./PageTitle.vue";
+import RecentWorkflowContextMenu from "./RecentWorkflowContextMenu.vue";
 
 type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 
@@ -194,7 +195,6 @@ const createWorkflowLocally = async () => {
     <div class="list" data-test-id="recent-workflows">
       <FileExplorer
         :items="items"
-        disable-context-menu
         disable-multi-select
         disable-dragging
         @open-file="openRecentWorkflow"
@@ -237,6 +237,14 @@ const createWorkflowLocally = async () => {
               </span>
             </div>
           </div>
+        </template>
+
+        <template #contextMenu="{ anchor, onItemClick, closeContextMenu }">
+          <RecentWorkflowContextMenu
+            :anchor="anchor"
+            :on-item-click="onItemClick"
+            :close-context-menu="closeContextMenu"
+          />
         </template>
       </FileExplorer>
     </div>

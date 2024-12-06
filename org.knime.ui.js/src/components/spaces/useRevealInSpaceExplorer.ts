@@ -1,0 +1,247 @@
+import { computed, watch } from "vue";
+import { useRouter } from "vue-router";
+
+import { API } from "@/api";
+import type { AncestorInfo } from "@/api/custom-types";
+import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
+import { getToastsProvider } from "@/plugins/toasts";
+import { APP_ROUTES } from "@/router/appRoutes";
+import { TABS } from "@/store/panel";
+import {
+  findSpaceGroupFromSpaceId,
+  isLocalProvider,
+  isServerProvider,
+} from "@/store/spaces/util";
+
+const DEFAULT_GROUP_ID = "defaultGroupId";
+const ROOT_ITEM_ID = "root";
+
+export const useRevealToasts = () => {
+  let previousToastId: string;
+  const store = useStore();
+  const $toast = getToastsProvider();
+
+  const showErrorToast = () => {
+    if (previousToastId) {
+      $toast.remove(previousToastId);
+    }
+
+    store.commit("spaces/setCurrentSelectedItemIds", []);
+
+    previousToastId = $toast.show({
+      type: "error",
+      headline: "Project not found",
+      message: "Could not reveal project in Space Explorer.",
+      autoRemove: true,
+    });
+  };
+
+  const showLoginErrorToast = (providerName: string) => {
+    $toast.show({
+      type: "error",
+      message: `Could not connect to ${providerName}`,
+    });
+  };
+
+  const showWarningToast = (newItemName: string, oldItemName: string) => {
+    if (previousToastId) {
+      $toast.remove(previousToastId);
+    }
+
+    previousToastId = $toast.show({
+      type: "warning",
+      headline: "Name has changed",
+      message: `The project name has changed from "${oldItemName}" to "${newItemName}" on the remote Hub`,
+      autoRemove: true,
+    });
+  };
+
+  return { showErrorToast, showWarningToast, showLoginErrorToast };
+};
+
+export const useRevealInSpaceExplorer = () => {
+  const router = useRouter();
+  const store = useStore();
+  const { showWarningToast, showErrorToast, showLoginErrorToast } =
+    useRevealToasts();
+
+  const activeProjectId = computed(
+    () => store.state.application.activeProjectId,
+  );
+  const spaceProviders = computed(() => store.state.spaces.spaceProviders);
+
+  const canRevealItem = (origin: SpaceItemReference): boolean => {
+    const provider = spaceProviders.value?.[origin.providerId];
+
+    if (!provider) {
+      return false; // Cannot check if Server project without provider
+    }
+
+    // Only reveal projects that are not Server projects
+    return !isServerProvider(provider);
+  };
+
+  // Fetch ancestor info
+  const getAncestorInfo = (
+    origin: SpaceItemReference,
+  ): Promise<AncestorInfo> => {
+    const provider = store.state.spaces.spaceProviders?.[origin.providerId];
+
+    if (!provider) {
+      return Promise.resolve({ itemName: null, ancestorItemIds: [] });
+    }
+
+    if (isLocalProvider(provider)) {
+      return origin.ancestorItemIds
+        ? Promise.resolve({
+            itemName: null,
+            ancestorItemIds: origin.ancestorItemIds,
+          })
+        : Promise.resolve({ itemName: null, ancestorItemIds: [] });
+    }
+
+    // Throws error if the ancestor item IDs could not be retrieved
+    return API.desktop.getAncestorInfo({
+      providerId: origin.providerId,
+      spaceId: origin.spaceId,
+      itemId: origin.itemId,
+    });
+  };
+
+  const checkIfNameHasChangedAndShowWarning = (
+    newItemName: string | null,
+    oldItemName: string | null,
+  ) => {
+    if (
+      newItemName !== null &&
+      oldItemName !== null &&
+      newItemName !== oldItemName
+    ) {
+      showWarningToast(newItemName, oldItemName);
+    }
+  };
+
+  const navigateToSpaceBrowsingPage = async (
+    origin: SpaceItemReference,
+    itemName: string | null,
+  ) => {
+    const group = findSpaceGroupFromSpaceId(
+      store.state.spaces.spaceProviders ?? {},
+      origin.spaceId,
+    );
+    const { itemName: updatedItemName, ancestorItemIds } =
+      await getAncestorInfo(origin);
+
+    await router.push({
+      name: APP_ROUTES.Home.SpaceBrowsingPage,
+      params: {
+        spaceProviderId: origin.providerId,
+        spaceId: origin.spaceId,
+        groupId: group?.id ?? DEFAULT_GROUP_ID,
+        itemId: ancestorItemIds?.at(0) ?? ROOT_ITEM_ID,
+      },
+    });
+
+    store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
+
+    checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
+  };
+
+  const displayInSidebarSpaceExplorer = async (
+    origin: SpaceItemReference,
+    itemName: string | null,
+  ) => {
+    if (!activeProjectId.value) {
+      return;
+    }
+
+    if (
+      store.state.panel.activeTab[activeProjectId.value] !== TABS.SPACE_EXPLORER
+    ) {
+      await store.dispatch(
+        "panel/setCurrentProjectActiveTab",
+        TABS.SPACE_EXPLORER,
+      );
+    }
+
+    const { providerId, spaceId, itemId } = origin;
+    const { itemName: updatedItemName, ancestorItemIds } =
+      await getAncestorInfo(origin);
+
+    const currentPath = store.state.spaces.projectPath[activeProjectId.value];
+    const nextItemId = ancestorItemIds?.at(0) ?? ROOT_ITEM_ID;
+
+    if (
+      currentPath?.itemId !== nextItemId ||
+      currentPath?.spaceId !== spaceId ||
+      currentPath?.spaceProviderId !== providerId
+    ) {
+      // project belongs to a different path than the current one for this project
+      // so we must change the path
+      store.commit("spaces/setProjectPath", {
+        projectId: activeProjectId.value,
+        value: {
+          spaceId,
+          spaceProviderId: providerId,
+          itemId: nextItemId,
+        },
+      });
+
+      // And make sure it selects the item AFTER the content of the new path has been loaded
+      const unWatch = watch(
+        () => store.state.spaces.isLoadingContent,
+        (isLoading, wasLoading) => {
+          if (wasLoading && !isLoading) {
+            store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+            unWatch();
+          }
+        },
+      );
+    } else {
+      store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+    }
+
+    checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
+  };
+
+  const revealInSpaceExplorer = async (
+    origin: SpaceItemReference,
+    projectName: string = "",
+  ) => {
+    try {
+      if (!canRevealItem(origin)) {
+        showErrorToast();
+        return;
+      }
+
+      const provider = spaceProviders.value?.[origin.providerId]!;
+      // try connect to provider if we are not connected
+      if (!provider.connected) {
+        const { isConnected } = await store.dispatch("spaces/connectProvider", {
+          spaceProviderId: provider.id,
+        });
+        if (!isConnected) {
+          showLoginErrorToast(provider.name);
+          return;
+        }
+      }
+
+      store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
+
+      if (!activeProjectId.value) {
+        // No active project, navigate to Space Browsing Page
+        await navigateToSpaceBrowsingPage(origin, projectName);
+        return;
+      }
+
+      // Active project exists, display Space Explorer
+      await displayInSidebarSpaceExplorer(origin, projectName);
+    } catch (error) {
+      consola.error("Could not reveal in Space Explorer:", error);
+      showErrorToast();
+    }
+  };
+
+  return { revealInSpaceExplorer, canRevealItem };
+};
