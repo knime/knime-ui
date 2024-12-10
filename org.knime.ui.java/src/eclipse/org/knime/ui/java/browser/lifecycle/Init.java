@@ -137,6 +137,8 @@ final class Init {
         var nodeRepo = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
 
+        // TODO: Set default service dependency for 'SpaceItemChangeProvider' here
+
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
