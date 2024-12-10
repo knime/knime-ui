@@ -331,7 +331,7 @@ final class ProjectAPI {
             .put("svg", svg) //
             .set("origin", MAPPER.createObjectNode() //
                 .put("itemId", itemId) //
-                .put("spaceId", LocalWorkspace.LOCAL_WORKSPACE_ID) //
+                .put("spaceId", LocalWorkspace.LOCAL_SPACE_ID) //
                 .put("providerId", SpaceProvider.LOCAL_SPACE_PROVIDER_ID) //
             );
     }

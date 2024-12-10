@@ -81,7 +81,6 @@ import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.ProjectFactory;
 
 /**
  * Helper class to save a copy of a project, for instance
@@ -230,7 +229,7 @@ final class SaveProjectCopy {
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId, final String projectSVG,
         final LocalWorkspace localSpace) {
         final var project =
-            ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
+            Project.of(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, project,
             monitor -> saveWorkflowCopy(newContext, monitor, wfm, projectSVG));
     }
@@ -239,7 +238,7 @@ final class SaveProjectCopy {
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
         final LocalWorkspace localSpace) {
         final var project =
-            ProjectFactory.createProject(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
+            Project.of(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, project, monitor -> saveComponentCopy(monitor, wfm, newContext));
     }
 

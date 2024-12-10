@@ -64,9 +64,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.util.ProjectFactory;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -77,20 +77,17 @@ import org.mockito.Mockito;
  */
 class SaveAndCloseProjectsTest {
 
-    private List<WorkflowManager> m_wfms;
-
     @Test
     void testSaveAndCloseWorkflows() throws IOException, InvocationTargetException, InterruptedException {
         var wfm1 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm2 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfm3 = WorkflowManagerUtil.createEmptyWorkflow();
         var wfms = List.of(wfm1, wfm2, wfm3);
-        m_wfms = wfms;
         assertThat(wfm1.isDirty()).isTrue();
         var pm = ProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
-            pm.addProject(ProjectFactory.createProject(wfms.get(i - 1), "providerId",
+            pm.addProject(Project.of(wfms.get(i - 1), "providerId",
                 "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, projectId));
             pm.openAndCacheProject(projectId);
         }

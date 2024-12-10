@@ -61,6 +61,7 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
@@ -68,7 +69,6 @@ import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtilTest;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
-import org.knime.ui.java.util.ProjectFactory;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
@@ -85,7 +85,7 @@ class ProjectAPITest {
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var wpm = ProjectManager.getInstance();
-        wpm.addProject(ProjectFactory.createProject(m_wfm, "providerId", "spaceId", "itemId",
+        wpm.addProject(Project.of(m_wfm, "providerId", "spaceId", "itemId",
             "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
 
         ProjectAPI.setProjectActiveAndEnsureItsLoaded("projectId");

@@ -106,8 +106,8 @@ public final class LocalSpaceUtil {
 
             @Override
             public Optional<SpaceAndItemId> resolveSpaceAndItemId(final URI uri) {
-                return getSpace(LocalWorkspace.LOCAL_WORKSPACE_ID).getItemIdByURI(uri) //
-                    .map(itemId -> new SpaceAndItemId(LocalWorkspace.LOCAL_WORKSPACE_ID, itemId));
+                return getSpace(LocalWorkspace.LOCAL_SPACE_ID).getItemIdByURI(uri) //
+                    .map(itemId -> new SpaceAndItemId(LocalWorkspace.LOCAL_SPACE_ID, itemId));
             }
 
             @Override
@@ -139,7 +139,7 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getSpaceId() {
-                return LocalWorkspace.LOCAL_WORKSPACE_ID;
+                return LocalWorkspace.LOCAL_SPACE_ID;
             }
 
             @Override
@@ -171,7 +171,7 @@ public final class LocalSpaceUtil {
      */
     public static boolean isLocalSpace(final String spaceProviderId, final String spaceId) {
         return spaceProviderId.equals(SpaceProvider.LOCAL_SPACE_PROVIDER_ID)
-            && spaceId.equals(LocalWorkspace.LOCAL_WORKSPACE_ID);
+            && spaceId.equals(LocalWorkspace.LOCAL_SPACE_ID);
     }
 
     /**

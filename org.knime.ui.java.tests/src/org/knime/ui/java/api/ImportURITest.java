@@ -62,6 +62,7 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
@@ -69,7 +70,6 @@ import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.testing.util.WorkflowManagerUtil;
-import org.knime.ui.java.util.ProjectFactory;
 
 /**
  * Tests methods in {@link ImportURI}.
@@ -108,7 +108,7 @@ class ImportURITest {
     private void importURIAtWorkflowCanvasAndAssert(final String uri) throws IOException {
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
-            ProjectManager.getInstance().addProject(ProjectFactory.createProject(wfm,
+            ProjectManager.getInstance().addProject(Project.of(wfm,
                 "providerID", "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
                 new WorkflowMiddleware(ProjectManager.getInstance(), null));
