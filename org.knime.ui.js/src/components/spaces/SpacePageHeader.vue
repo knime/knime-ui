@@ -15,7 +15,7 @@ type Props = {
   title: string;
   breadcrumbs: Array<BreadcrumbItem>;
   isEditable: boolean;
-  blacklistedNames: Array<string>;
+  blacklistedNames?: Array<string>;
   error?: string;
   isEditing?: boolean;
 };
@@ -24,6 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
   isEditing: false,
   // eslint-disable-next-line no-undefined
   error: undefined,
+  blacklistedNames: () => [],
 });
 
 const emit = defineEmits<{
@@ -34,11 +35,16 @@ const emit = defineEmits<{
 
 const spaceName = ref(props.title);
 const blacklistedNames = ref(props.blacklistedNames);
-const { isValid, errorMessage, cleanedName } = useNameValidator({
+const {
+  isValid: isNameValid,
+  errorMessage: nameValidationError,
+  cleanedName,
+} = useNameValidator({
   blacklistedNames,
   name: spaceName,
 });
 const titleRef = ref<HTMLTextAreaElement | null>(null);
+const h2Ref = ref<HTMLHeadingElement | null>(null);
 
 const onFocus = () => {
   emit("update:isEditing", true);
@@ -51,13 +57,13 @@ watch(toRef(props, "isEditing"), () => {
 });
 
 const onSubmit = () => {
-  if (!isValid.value) {
+  if (!isNameValid.value) {
     return;
   }
   titleRef.value?.blur();
   emit("update:isEditing", false);
 
-  if (spaceName.value !== props.title) {
+  if (cleanedName.value !== props.title) {
     emit("submit", cleanedName.value);
   }
 };
@@ -69,7 +75,7 @@ const onCancel = () => {
   emit("cancel");
 };
 
-onClickOutside(titleRef, () => {
+onClickOutside(h2Ref, () => {
   if (props.isEditing) {
     onSubmit();
   }
@@ -83,7 +89,7 @@ onClickOutside(titleRef, () => {
     @click-item="(item: BreadcrumbItem) => item.onClick?.()"
   />
 
-  <h2 class="title-container">
+  <h2 ref="h2Ref" class="title-container">
     <slot v-if="$slots.icon" name="icon" class="icon" />
     <span v-if="!isEditable" :title="title">{{ title }}</span>
     <div v-else class="title-editable-wrapper">
@@ -98,10 +104,12 @@ onClickOutside(titleRef, () => {
         @keydown.esc="onCancel"
       />
       <span v-if="error" class="msg-error">{{ error }}</span>
-      <span v-else-if="!isValid" class="msg-error">{{ errorMessage }}</span>
+      <span v-else-if="!isNameValid" class="msg-error">{{
+        nameValidationError
+      }}</span>
       <FunctionButton
         :class="{ hidden: !isEditing }"
-        :disabled="!isValid"
+        :disabled="!isNameValid"
         title="Save"
         primary
         @click="onSubmit"

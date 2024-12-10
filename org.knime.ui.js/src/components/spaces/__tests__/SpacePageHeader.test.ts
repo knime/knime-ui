@@ -199,4 +199,19 @@ describe("SpacePageHeader.vue", () => {
 
     expect(wrapper.emitted("submit")).toBeUndefined();
   });
+
+  it("should display and error and not submit if there are validation errors", async () => {
+    const { wrapper } = doMount(true, true);
+    const textArea = wrapper.find("textarea");
+
+    textArea.element.value = "Invalid name.//%";
+    textArea.trigger("input");
+    await nextTick();
+
+    expect(wrapper.find(".msg-error").exists()).toBe(true);
+
+    wrapper.findAllComponents(FunctionButton).at(0)!.vm.$emit("click");
+
+    expect(wrapper.emitted("submit")).toBeUndefined();
+  });
 });
