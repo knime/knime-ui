@@ -150,7 +150,6 @@ const displayContextMenu = (event: MouseEvent) => {
 onClickOutside(menuWrapper, hideMenu);
 
 const tabWrapper = ref<HTMLElement | null>(null);
-
 watch(
   activeProjectTab,
   async () => {

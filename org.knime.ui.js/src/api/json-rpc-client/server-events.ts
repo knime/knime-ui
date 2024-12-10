@@ -1,7 +1,4 @@
-type ServerEvent = {
-  eventType: string;
-  payload: any;
-};
+type ServerEvent = { eventType: string; payload: any };
 
 type ServerEventError = {
   message: string;

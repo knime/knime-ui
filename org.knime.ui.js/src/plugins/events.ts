@@ -146,6 +146,10 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
       useSelectionEvents().notifyListeners(event);
     },
+
+    ProviderResourceChangedEvent(event) {
+      consola.info("<<< events::ProviderResourceChangedEvent", event);
+    },
   });
 
   API.desktop.registerEventHandlers({

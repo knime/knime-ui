@@ -98,7 +98,6 @@ import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.NodeCollectionUtil;
 import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
@@ -344,7 +343,7 @@ final class Init {
         public UpdatableSpaceProviders(final LocalSpace localSpace, final ToastService toastService) {
             m_localSpaceProvider = LocalSpaceUtil.createLocalSpaceProvider(localSpace);
             m_spaceProvidersFromExtensionPoint.forEach(providers -> providers.getProvidersMap().values()
-                .forEach(provider -> initializeSpaceProvider(provider, toastService)));
+                    .forEach(provider -> initializeSpaceProvider(provider, toastService)));
             update(toastService);
         }
 

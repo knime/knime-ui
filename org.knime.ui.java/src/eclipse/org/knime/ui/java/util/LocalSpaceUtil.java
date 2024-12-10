@@ -46,21 +46,12 @@
  */
 package org.knime.ui.java.util;
 
-import java.net.URI;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 
-import org.knime.gateway.api.webui.entity.SpaceGroupEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
-import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.Project;
-import org.knime.gateway.impl.webui.spaces.SpaceGroup;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 
@@ -71,60 +62,6 @@ public final class LocalSpaceUtil {
 
     private LocalSpaceUtil() {
         // Utility class
-    }
-
-    /**
-     * @param localSpace the local space instance
-     * @return A {@link SpaceProvider} instance providing the {@link LocalSpace}
-     */
-    public static SpaceProvider createLocalSpaceProvider(final LocalSpace localSpace) {
-        return new SpaceProvider() { // NOSONAR
-            @Override
-            public void init(final Consumer<String> loginErrorHandler) {
-                // do nothing
-            }
-
-            @Override
-            public String getId() {
-                return LOCAL_SPACE_PROVIDER_ID;
-            }
-
-            @Override
-            public SpaceProviderEnt toEntity() {
-                return EntityFactory.Space.buildSpaceProviderEnt(SpaceProviderEnt.TypeEnum.LOCAL,
-                    List.of(getLocalSpaceGroup(localSpace).toEntity()));
-            }
-
-            @Override
-            public LocalSpace getSpace(final String spaceId) {
-                return Optional.of(localSpace).filter(space -> space.getId().equals(spaceId)).orElseThrow();
-            }
-
-            @Override
-            public TypeEnum getType() {
-                return TypeEnum.LOCAL;
-            }
-
-            @Override
-            public String getName() {
-                return "Local space";
-            }
-
-            @Override
-            public Optional<SpaceAndItemId> resolveSpaceAndItemId(final URI uri) {
-                return getSpace(LocalSpace.LOCAL_SPACE_ID).getItemIdByURI(uri) //
-                    .map(itemId -> new SpaceAndItemId(LocalSpace.LOCAL_SPACE_ID, itemId));
-            }
-
-            @Override
-            public SpaceGroup<LocalSpace> getSpaceGroup(final String spaceGroupName) {
-                var localGroup = getLocalSpaceGroup(localSpace);
-                if(!spaceGroupName.equals(localGroup.getName())) {
-                    throw new NoSuchElementException("No group found with name " + spaceGroupName);
-                }
-                return localGroup;
-            }
-        };
     }
 
     /**
@@ -178,40 +115,4 @@ public final class LocalSpaceUtil {
         return projectName + "_" + UUID.randomUUID();
     }
 
-    /**
-     * Creates a Space Group for the local space provider
-     *
-     * @param localSpace
-     * @return a SpaceGroup that represents the local group
-     */
-    public static SpaceGroup<LocalSpace> getLocalSpaceGroup(final LocalSpace localSpace) {
-        return new SpaceGroup<>() {  // NOSONAR
-
-            static final String ID = "Local-space-id";
-
-            static final String NAME = "local";
-
-            @Override
-            public SpaceGroupEnt toEntity() {
-                return EntityFactory.Space.buildSpaceGroupEnt(ID, NAME, SpaceGroupEnt.TypeEnum.USER,
-                    List.of(localSpace.toEntity()));
-            }
-
-            @Override
-            public String getName() {
-                return NAME;
-            }
-
-            @Override
-            public SpaceGroupType getType() {
-                return SpaceGroupType.USER;
-            }
-
-            @Override
-            public List<LocalSpace> getSpaces() {
-                return List.of(localSpace);
-            }
-
-        };
-    }
 }

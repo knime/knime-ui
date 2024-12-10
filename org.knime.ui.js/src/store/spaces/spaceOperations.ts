@@ -28,6 +28,7 @@ interface State {
   isLoadingContent: boolean;
   activeRenamedItemId: string;
   currentSelectedItemIds: string[];
+  previousTriplet: PathTriplet | null;
 }
 
 declare module "./index" {
@@ -38,6 +39,7 @@ export const state = (): State => ({
   isLoadingContent: false,
   activeRenamedItemId: "",
   currentSelectedItemIds: [],
+  previousTriplet: null,
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -51,6 +53,10 @@ export const mutations: MutationTree<SpacesState> = {
 
   setCurrentSelectedItemIds(state, itemIds) {
     state.currentSelectedItemIds = itemIds;
+  },
+
+  setPreviousTriplet(state, triplet: PathTriplet) {
+    state.previousTriplet = triplet;
   },
 };
 
@@ -104,17 +110,50 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return [];
     }
 
-    const { spaceId, spaceProviderId, itemId } = pathTriplet;
-
-    const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
-      spaceId,
-      spaceProviderId,
-      itemId,
-    });
-
+    const content = await dispatch(
+      "fetchWorkflowGroupContentByIdTriplet",
+      pathTriplet,
+    );
     commit("setWorkflowGroupContent", { projectId, content });
 
     return content;
+  },
+
+  /**
+   * To start listening to hub resource changed events
+   */
+  subscribeResourceChangedEventListener({ commit, state }, { projectId }) {
+    const pathTriplet = state.projectPath[projectId];
+    if (!pathTriplet) {
+      return;
+    }
+
+    const { spaceId, spaceProviderId: providerId, itemId } = pathTriplet;
+    const currentProvider = state.spaceProviders![providerId];
+
+    API.event.subscribeEvent({
+      providerId,
+      spaceId,
+      itemId,
+      typeId: "ProviderResourceChangedEventType",
+    });
+
+    commit("setPreviousTriplet", pathTriplet);
+  },
+
+  /**
+   * To stop listing to hub resource changed events
+   */
+  unsubscribeResourceChangedEventListener({ state }) {
+    if (state.previousTriplet) {
+      const { spaceProviderId, spaceId, itemId } = state.previousTriplet;
+      API.event.unsubscribeEventListener({
+        providerId: spaceProviderId,
+        spaceId,
+        itemId,
+        typeId: "ProviderResourceChangedEventType",
+      });
+    }
   },
 
   changeDirectory({ getters, commit }, { projectId, pathId }) {
