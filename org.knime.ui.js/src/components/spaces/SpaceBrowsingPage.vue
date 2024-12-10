@@ -96,6 +96,14 @@ const hubSpaceIcon = computed(() => {
   return getSpaceIcon(activeSpace.value!);
 });
 
+const existingSpaceNames = computed<Array<string>>(() => {
+  return (
+    activeSpaceGroup.value?.spaces
+      .filter((space) => space.name !== activeSpace.value?.name)
+      .map((space) => space.name) ?? []
+  );
+});
+
 const errorOnHeader = ref("");
 const isEditing = ref(false);
 
@@ -122,6 +130,7 @@ const onRenameSpace = (name: String) => {
         :title="title"
         :breadcrumbs="breadcrumbs"
         :is-editable="isHubProvider(activeSpaceProvider)"
+        :blacklisted-names="existingSpaceNames"
         :error="errorOnHeader"
         @submit="onRenameSpace"
         @cancel="errorOnHeader = ''"

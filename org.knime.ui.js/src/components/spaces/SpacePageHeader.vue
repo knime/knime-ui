@@ -6,6 +6,7 @@ import {
   Breadcrumb,
   type BreadcrumbItem,
   FunctionButton,
+  useNameValidator,
 } from "@knime/components";
 import SaveIcon from "@knime/styles/img/icons/check.svg";
 import CancelIcon from "@knime/styles/img/icons/close.svg";
@@ -14,6 +15,7 @@ type Props = {
   title: string;
   breadcrumbs: Array<BreadcrumbItem>;
   isEditable: boolean;
+  blacklistedNames: Array<string>;
   error?: string;
   isEditing?: boolean;
 };
@@ -31,6 +33,11 @@ const emit = defineEmits<{
 }>();
 
 const spaceName = ref(props.title);
+const blacklistedNames = ref(props.blacklistedNames);
+const { isValid, errorMessage, cleanedName } = useNameValidator({
+  blacklistedNames,
+  name: spaceName,
+});
 const titleRef = ref<HTMLTextAreaElement | null>(null);
 
 const onFocus = () => {
@@ -44,12 +51,14 @@ watch(toRef(props, "isEditing"), () => {
 });
 
 const onSubmit = () => {
-  spaceName.value = spaceName.value.trim();
+  if (!isValid.value) {
+    return;
+  }
   titleRef.value?.blur();
   emit("update:isEditing", false);
 
   if (spaceName.value !== props.title) {
-    emit("submit", spaceName.value);
+    emit("submit", cleanedName.value);
   }
 };
 
@@ -85,12 +94,14 @@ onClickOutside(titleRef, () => {
         rows="1"
         :class="{ editing: isEditing }"
         @focus="onFocus"
-        @keydown.enter="onSubmit"
+        @keydown.enter.prevent="onSubmit"
         @keydown.esc="onCancel"
       />
       <span v-if="error" class="msg-error">{{ error }}</span>
+      <span v-else-if="!isValid" class="msg-error">{{ errorMessage }}</span>
       <FunctionButton
         :class="{ hidden: !isEditing }"
+        :disabled="!isValid"
         title="Save"
         primary
         @click="onSubmit"
