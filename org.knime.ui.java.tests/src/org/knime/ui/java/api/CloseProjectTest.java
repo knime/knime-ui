@@ -77,6 +77,7 @@ import org.knime.ui.java.util.ProjectFactory;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings({"java:S5960", "java:S1192"})
 class CloseProjectTest {
 
     private List<WorkflowManager> m_wfms;

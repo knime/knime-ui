@@ -312,30 +312,30 @@ final class SpaceAPI {
         DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, title, message, autoRemove);
     }
 
+    @Deprecated(forRemoval = true)  // this should be done by frontend in the future
     private static void showDirtyWorkflowsWarningToUser(final List<String> opened) {
         final var numOpened = opened.size();
         final var list = opened.stream().limit(5) //
-            .map(path -> " \u2022 " + StringUtils.abbreviateMiddle(path, "...", 64)) //
+            .map(path -> " • " + StringUtils.abbreviateMiddle(path, "...", 64)) //
             .collect(Collectors.joining("\n"));
         final boolean single = numOpened == 1;
         showErrorToast("Cannot upload unsaved workflows/components",
             (single ? "One item you've selected is currently open with unsaved changes:\n\n"
                 : "Some items you've selected are currently open with unsaved changes:\n\n") + list
-                + (numOpened > 5 ? ("\n \u2022 ... (" + (numOpened - 5) + " more)") : "") + "\n\n"
+                + (numOpened > 5 ? ("\n • ... (" + (numOpened - 5) + " more)") : "") + "\n\n"
                 + (single ? "Please save it or exclude it from the upload."
                     : "Please save them or exclude them from the upload."),
             false);
     }
 
-    private static List<String> findDirtyOpenedWorkflows(final LocalWorkspace localSource, final List<String> itemIds) {
-        final var projects = DesktopAPI.getDeps(ProjectManager.class);
-        final var workspaceRoot = localSource.getLocalRootPath();
+    private static List<String> findDirtyOpenedWorkflows(final LocalWorkspace space, final List<String> itemIds) {
+        final var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         final var opened = new ArrayList<String>();
         for (final var itemId : itemIds) {
-            final var localDir = localSource.toLocalAbsolutePath(null, itemId).orElseThrow();
-            final var relPath = workspaceRoot.relativize(localDir);
-            if (projects.getLocalProject(relPath) //
-                .filter(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)) //
+            final var localDir = space.toLocalAbsolutePath(null, itemId).orElseThrow();
+            final var relPath = space.getLocalRootPath().relativize(localDir);
+            if (projectManager.getLocalProject(relPath) //
+                .filter(id -> projectManager.getDirtyProjectsMap().getOrDefault(id, false)) //
                 .isPresent()) {
                 opened.add(FilenameUtils.separatorsToUnix(relPath.toString()));
             }
