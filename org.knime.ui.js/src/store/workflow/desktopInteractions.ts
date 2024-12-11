@@ -1,6 +1,7 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
@@ -21,9 +22,10 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
     async saveProject() {
       const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
 
-      const workflowPreviewSvg =
-        (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
-        "";
+      const workflowPreviewSvg = canvasRendererUtils.isWebGLRenderer()
+        ? ""
+        : (await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()) ??
+          "";
 
       await API.desktop.saveProject({ projectId, workflowPreviewSvg });
     },

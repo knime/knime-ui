@@ -14,6 +14,7 @@ import {
   type UpdateAvailableEvent,
   type XY,
 } from "@/api/gateway-api/generated-api";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useCanvasStore } from "@/store/canvas";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -25,6 +26,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { nodeSize } from "@/style/shapes";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
+import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 
 import { useCanvasModesStore } from "./canvasModes";
 import { useDirtyProjectsTrackingStore } from "./dirtyProjectsTracking";
@@ -363,6 +365,17 @@ export const useApplicationStore = defineStore("application", {
 
       if (useFloatingMenusStore().portTypeMenu.isOpen) {
         useFloatingMenusStore().portTypeMenu.events.menuClose?.();
+      }
+
+      if (canvasRendererUtils.isWebGLRenderer()) {
+        const { isOpen } = this.contextMenu;
+
+        this.contextMenu = {
+          isOpen: !isOpen,
+          position: isOpen ? null : useWebGLCanvasStore().canvasAnchor.anchor,
+        };
+
+        return;
       }
 
       // close an open menu

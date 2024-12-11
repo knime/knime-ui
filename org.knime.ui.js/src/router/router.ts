@@ -4,7 +4,7 @@ import {
   createWebHistory,
 } from "vue-router";
 
-import WorkflowPage from "@/components/workflow/WorkflowPage.vue";
+import WorkflowPage from "@/components/workflowEditor/WorkflowPage.vue";
 import { environment } from "@/environment";
 
 import { APP_ROUTES } from "./appRoutes";

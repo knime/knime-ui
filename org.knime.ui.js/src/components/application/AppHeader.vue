@@ -6,6 +6,7 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
 import { Carousel, FunctionButton, useHint } from "@knime/components";
+import BrushIcon from "@knime/styles/img/icons/brush.svg";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 import HouseIcon from "@knime/styles/img/icons/house.svg";
@@ -22,6 +23,7 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { canvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
 import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
@@ -51,6 +53,8 @@ const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
 const { openProjects, activeProjectId } = storeToRefs(useApplicationStore());
 const { dirtyProjectsMap } = storeToRefs(useDirtyProjectsTrackingStore());
 const { devMode } = storeToRefs(useApplicationSettingsStore());
+
+const isFrontendDevEnv = import.meta.env.DEV;
 
 const hasWorkflowLoadingError = computed(() =>
   Boolean(useWorkflowStore().error),
@@ -88,7 +92,7 @@ const setupResizeListener = () => {
 
 setupResizeListener();
 
-const reloadApp = () => location.reload();
+const reloadApp = () => (window.location.href = "/");
 
 const openInspector = () => {
   const remoteDebuggingPort =
@@ -177,6 +181,11 @@ onMounted(() => {
     referenceElement: helpMenu,
   });
 });
+
+const toggleCanvasRenderer = () => {
+  canvasRendererUtils.toggleCanvasRenderer();
+  reloadApp();
+};
 </script>
 
 <template>
@@ -258,6 +267,16 @@ onMounted(() => {
       </div>
 
       <div class="buttons">
+        <FunctionButton
+          v-if="devMode && isFrontendDevEnv"
+          class="header-button no-text"
+          data-test-id="dev-mode-only"
+          title="Toggle renderer"
+          @click="toggleCanvasRenderer()"
+        >
+          <BrushIcon />
+        </FunctionButton>
+
         <FunctionButton
           v-if="devMode"
           class="header-button no-text"

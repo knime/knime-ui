@@ -2,9 +2,10 @@ import { URL, fileURLToPath } from "node:url";
 
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
-import { ViteUserConfig } from "vitest/config";
+import { UserConfig } from "vitest/config";
 import vueDevTools from "vite-plugin-vue-devtools";
 import svgLoader from "vite-svg-loader";
+import { isCustomElement, transformAssetUrls } from "vue3-pixi";
 
 // @ts-ignore
 import { svgoConfig } from "@knime/styles/config/svgo.config";
@@ -12,8 +13,19 @@ import { svgoConfig } from "@knime/styles/config/svgo.config";
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
-  const config: ViteUserConfig = {
-    plugins: [vue(), svgLoader({ svgoConfig }), vueDevTools()],
+  const config: UserConfig = {
+    plugins: [
+      vue({
+        template: {
+          // support for custom elements and remove the unknown element warnings
+          compilerOptions: { isCustomElement },
+          // support for asset url conversion
+          transformAssetUrls,
+        },
+      }),
+      svgLoader({ svgoConfig }),
+      vueDevTools(),
+    ],
 
     build: {
       target: "esnext",

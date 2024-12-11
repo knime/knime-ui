@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
-import type { QuickActionMenuProps } from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
+import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { useCanvasStore } from "@/store/canvas";
 
 type FloatingMenusState = {

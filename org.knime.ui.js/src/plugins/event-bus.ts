@@ -5,6 +5,20 @@ import type { NodePort } from "@/api/gateway-api/generated-api";
 
 import type { PluginInitFunction } from "./types";
 
+export type PreviewMode = "show" | "hide" | "clear" | null;
+
+export type SelectionPreviewEvents = {
+  [key: `bendpoint-selection-preview-${string}__${string}`]: {
+    index: number;
+    preview: PreviewMode;
+  };
+
+  [key: `node-selection-preview-${string}`]: {
+    id: string;
+    preview: PreviewMode;
+  };
+};
+
 type BusEvents = {
   "selection-pointerdown": PointerEvent;
   "selection-pointerup": PointerEvent;
@@ -29,7 +43,7 @@ type BusEvents = {
       }
     | undefined;
   "unblock-ui": undefined;
-};
+} & SelectionPreviewEvents;
 
 const emitter = mitt<BusEvents>();
 
