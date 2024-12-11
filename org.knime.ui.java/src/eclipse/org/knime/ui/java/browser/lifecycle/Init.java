@@ -70,6 +70,7 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.HubResourceChangeProvider;
 import org.knime.gateway.impl.webui.NodeCollections;
 import org.knime.gateway.impl.webui.NodeFactoryProvider;
 import org.knime.gateway.impl.webui.NodeRepository;
@@ -136,13 +137,13 @@ final class Init {
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepo = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
+        var hubResourceChangeProvider = new HubResourceChangeProvider();
 
-        // TODO: Set default service dependency for 'HubResourceChangeProvider' here
 
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
-            kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
+            kaiHandler, nodeCollections, nodeRepo, selectionEventBus, hubResourceChangeProvider);
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
             state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects(),
