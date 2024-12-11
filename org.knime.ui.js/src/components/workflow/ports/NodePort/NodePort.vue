@@ -9,9 +9,9 @@ import Port from "@/components/common/Port.vue";
 import { type TooltipDefinition, useTooltip } from "@/composables/useTooltip";
 import * as $shapes from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
+import NodePortActiveConnector from "../NodePortActiveConnector.vue";
 
 import NodePortActions from "./NodePortActions.vue";
-import NodePortActiveConnector from "./NodePortActiveConnector.vue";
 import { usePortDragging } from "./usePortDragging";
 
 interface Props {
@@ -175,11 +175,11 @@ onClickOutside(tooltipRef, onClose, { capture: false });
 
     <NodePortActiveConnector
       :port="port"
-      :targeted="targeted"
+      :show-connection-replacement="targeted"
       :direction="direction"
       :drag-connector="dragConnector"
       :did-drag-to-compatible-target="didDragToCompatibleTarget"
-      :disable-quick-node-add="disableQuickNodeAdd"
+      :disable-quick-action="disableQuickNodeAdd"
     />
   </g>
 </template>

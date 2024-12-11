@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
-import QuickActionMenuGhost from "../QuickActionMenuGhost.vue";
+import NodePortActiveConnectorDecoration from "../NodePortActiveConnectorDecoration.vue";
 
-describe("QuickActionMenuGhost.vue", () => {
+describe("NodePortActiveConnectorDecoration.vue", () => {
   const doMount = (
     props = {
       position: [5, 8],
       nodeRelation: "SUCCESSORS",
     },
   ) =>
-    shallowMount(QuickActionMenuGhost, {
+    shallowMount(NodePortActiveConnectorDecoration, {
       props,
       global: {
         mocks: {

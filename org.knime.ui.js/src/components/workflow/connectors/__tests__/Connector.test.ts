@@ -171,6 +171,34 @@ describe("Connector.vue", () => {
     return { wrapper, $store, dispatchSpy, connection };
   };
 
+  it("should set data attribute for connection id", () => {
+    const { sourceNode, destNode, connection } = createConnectedNodes(
+      createNativeNode({
+        id: "root:3",
+        position: { x: 2, y: 2 },
+      }),
+
+      createMetanode({ id: "root:4", position: { x: 10, y: 4 } }),
+      0,
+      0,
+    );
+
+    const workflow = createWorkflow({
+      nodes: {
+        [sourceNode.id]: sourceNode,
+        [destNode.id]: destNode,
+      },
+      connections: {
+        [connection.id]: connection,
+      },
+    });
+    const { $store } = createStore({ workflow });
+
+    const { wrapper } = doMount({ customStore: $store, props: connection });
+    expect(wrapper.attributes("data-connector-id")).toBeDefined();
+    expect(wrapper.attributes("data-connector-id")).toBe("root:4_0");
+  });
+
   describe("attached to a metanode", () => {
     it("draws a path between table ports", () => {
       const { sourceNode, destNode, connection } = createConnectedNodes(

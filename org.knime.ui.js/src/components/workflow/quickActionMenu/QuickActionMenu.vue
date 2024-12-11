@@ -8,7 +8,7 @@ import type { NodeRelation } from "@/api/custom-types";
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
-import NodePortActiveConnector from "@/components/workflow/ports/NodePort/NodePortActiveConnector.vue";
+import NodePortActiveConnector from "@/components/workflow/ports/NodePortActiveConnector.vue";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useStore } from "@/composables/useStore";
 import * as $shapes from "@/style/shapes";
@@ -139,13 +139,10 @@ watch(
     <NodePortActiveConnector
       v-if="hasConnector"
       :port="port"
-      :targeted="false"
       :direction="nodeRelation === 'SUCCESSORS' ? 'out' : 'in'"
       :drag-connector="fakePortConnector"
-      :did-drag-to-compatible-target="false"
-      :disable-quick-node-add="false"
-      reset-replace-indicator-state-on-unmount
     />
+
     <div :class="['wrapper', menuMode]">
       <template v-if="menuMode == 'quick-add'">
         <QuickAddNodeMenu

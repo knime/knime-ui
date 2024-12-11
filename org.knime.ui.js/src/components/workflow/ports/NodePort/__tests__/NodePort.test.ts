@@ -1,3 +1,4 @@
+/* eslint-disable func-style */
 /* eslint-disable max-lines */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
@@ -6,7 +7,6 @@ import { mount } from "@vue/test-utils";
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
 import Connector from "@/components/workflow/connectors/Connector.vue";
-import QuickActionMenuGhost from "@/components/workflow/quickActionMenu/QuickActionMenuGhost.vue";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
 import * as workflowStore from "@/store/workflow";
@@ -14,9 +14,10 @@ import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { deepMocked, mockVuexStore } from "@/test/utils";
 import * as compatibleConnections from "@/util/compatibleConnections";
+import NodePortActiveConnector from "../../NodePortActiveConnector.vue";
+import NodePortActiveConnectorDecoration from "../../NodePortActiveConnectorDecoration.vue";
 import NodePort from "../NodePort.vue";
 import NodePortActions from "../NodePortActions.vue";
-import NodePortActiveConnector from "../NodePortActiveConnector.vue";
 
 const detectConnectionCircleSpy = vi
   .spyOn(compatibleConnections, "detectConnectionCircle")
@@ -1179,9 +1180,9 @@ describe("NodePort", () => {
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
-            true,
-          );
+          expect(
+            wrapper.findComponent(NodePortActiveConnectorDecoration).exists(),
+          ).toBe(true);
         });
 
         it("disables quick-node-add feature via prop", async () => {
@@ -1193,9 +1194,9 @@ describe("NodePort", () => {
           });
           await startDragging({ wrapper });
 
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
-            false,
-          );
+          expect(
+            wrapper.findComponent(NodePortActiveConnectorDecoration).exists(),
+          ).toBe(false);
         });
 
         it("does show quick add node ghost for flowVariables", async () => {
@@ -1208,9 +1209,9 @@ describe("NodePort", () => {
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
-            true,
-          );
+          expect(
+            wrapper.findComponent(NodePortActiveConnectorDecoration).exists(),
+          ).toBe(true);
         });
 
         it("opens quick add node menu", async () => {
@@ -1218,10 +1219,10 @@ describe("NodePort", () => {
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
-          // connector and QuickActionMenuGhost should be visible
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
-            true,
-          );
+          // connector and NodePortActiveConnectorDecoration should be visible
+          expect(
+            wrapper.findComponent(NodePortActiveConnectorDecoration).exists(),
+          ).toBe(true);
           expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
           await wrapper.trigger("lostpointercapture");
@@ -1248,10 +1249,10 @@ describe("NodePort", () => {
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
-          // connector and QuickActionMenuGhost should be visible
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
-            true,
-          );
+          // connector and NodePortActiveConnectorDecoration should be visible
+          expect(
+            wrapper.findComponent(NodePortActiveConnectorDecoration).exists(),
+          ).toBe(true);
           expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
           // simulate open menu
@@ -1268,9 +1269,9 @@ describe("NodePort", () => {
           await wrapper.trigger("lostpointercapture");
 
           expect(wrapper.findComponent(Connector).exists()).toBe(false);
-          expect(wrapper.findComponent(QuickActionMenuGhost).exists()).toBe(
-            false,
-          );
+          expect(
+            wrapper.findComponent(NodePortActiveConnectorDecoration).exists(),
+          ).toBe(false);
         });
 
         it("closes the quick add node menu", async () => {
