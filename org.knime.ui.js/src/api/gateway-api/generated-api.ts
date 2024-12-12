@@ -1406,6 +1406,70 @@ export interface Extension {
 
 
 /**
+ * Event to update the state of the space explorer.
+ * @export
+ * @interface HubResourceChangedEvent
+ */
+export interface HubResourceChangedEvent extends Event {
+
+    /**
+     *
+     * @type {string}
+     * @memberof HubResourceChangedEvent
+     */
+    providerId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof HubResourceChangedEvent
+     */
+    spaceId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof HubResourceChangedEvent
+     */
+    itemId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof HubResourceChangedEvent
+     */
+    payload: string;
+
+}
+
+
+/**
+ * The event type to register for the respective event.
+ * @export
+ * @interface HubResourceChangedEventType
+ */
+export interface HubResourceChangedEventType extends EventType {
+
+    /**
+     *
+     * @type {string}
+     * @memberof HubResourceChangedEventType
+     */
+    providerId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof HubResourceChangedEventType
+     */
+    spaceId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof HubResourceChangedEventType
+     */
+    itemId: string;
+
+}
+
+
+/**
  * Inserts a node on top of an existing connection
  * @export
  * @interface InsertNodeCommand
@@ -6122,6 +6186,7 @@ export type EventParams =
     | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
     | (ProjectDisposedEventType & { typeId: 'ProjectDisposedEventType' })
     | (WorkflowMonitorStateChangeEventType & { typeId: 'WorkflowMonitorStateChangeEventType' })
+    | (HubResourceChangedEventType & { typeId: 'HubResourceChangedEventType' })
 ;
 
 export interface EventHandlers {
@@ -6134,6 +6199,7 @@ export interface EventHandlers {
     ShowToastEvent?(payload: ShowToastEvent): void;
     ProjectDisposedEvent?(payload: ProjectDisposedEvent): void;
     WorkflowMonitorStateChangeEvent?(payload: WorkflowMonitorStateChangeEvent): void;
+    HubResourceChangedEvent?(payload: HubResourceChangedEvent): void;
     SelectionEvent?(payload: SelectionEvent): void;
 }
 

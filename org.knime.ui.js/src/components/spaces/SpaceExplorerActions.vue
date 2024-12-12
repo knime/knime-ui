@@ -249,6 +249,7 @@ export default defineComponent({
       if (projectId === null) {
         return;
       }
+
       this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
         projectId,
       });

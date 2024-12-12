@@ -20,7 +20,7 @@ import type { RootStoreState } from "../types";
 
 import { globalSpaceBrowserProjectId } from "./common";
 import type { SpacesState } from "./index";
-import { isProjectOpen } from "./util";
+import { isHubProvider, isProjectOpen } from "./util";
 
 const $toast = getToastsProvider();
 
@@ -34,6 +34,7 @@ interface State {
   isLoadingContent: boolean;
   activeRenamedItemId: string;
   currentSelectedItemIds: string[];
+  currentSubscription: PathTriplet | null;
 }
 
 declare module "./index" {
@@ -44,6 +45,7 @@ export const state = (): State => ({
   isLoadingContent: false,
   activeRenamedItemId: "",
   currentSelectedItemIds: [],
+  currentSubscription: null,
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -57,6 +59,10 @@ export const mutations: MutationTree<SpacesState> = {
 
   setCurrentSelectedItemIds(state, itemIds) {
     state.currentSelectedItemIds = itemIds;
+  },
+
+  setCurrentSubscription(state, triplet: PathTriplet) {
+    state.currentSubscription = triplet;
   },
 };
 
@@ -119,22 +125,61 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async fetchWorkflowGroupContent({ commit, state, dispatch }, { projectId }) {
+    consola.info("Fetching workflow group content", { projectId });
     const pathTriplet = state.projectPath[projectId];
     if (!pathTriplet) {
       return [];
     }
 
-    const { spaceId, spaceProviderId, itemId } = pathTriplet;
-
-    const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
-      spaceId,
-      spaceProviderId,
-      itemId,
-    });
-
+    const content = await dispatch(
+      "fetchWorkflowGroupContentByIdTriplet",
+      pathTriplet,
+    );
     commit("setWorkflowGroupContent", { projectId, content });
 
     return content;
+  },
+
+  /**
+   * Get notified when a resource has changed. The currently active subscription will be saved.
+   *
+   * @param projectId Indicates the currently active tab
+   */
+  subscribeResourceChangedEventListener({ commit, state }, { projectId }) {
+    const pathTriplet = state.projectPath[projectId];
+    if (!pathTriplet) {
+      return;
+    }
+
+    const { spaceId, spaceProviderId: providerId, itemId } = pathTriplet;
+    const currentProvider = state.spaceProviders![providerId];
+
+    // Currently only Hub providers are of interest
+    if (isHubProvider(currentProvider)) {
+      API.event.subscribeEvent({
+        providerId,
+        spaceId,
+        itemId,
+        typeId: "HubResourceChangedEventType",
+      });
+
+      commit("setCurrentSubscription", pathTriplet);
+    }
+  },
+
+  /**
+   * Unsubscribe from the currently active resource changed event listener.
+   */
+  unsubscribeResourceChangedEventListener({ state }) {
+    if (state.currentSubscription) {
+      const { spaceProviderId, spaceId, itemId } = state.currentSubscription;
+      API.event.unsubscribeEventListener({
+        providerId: spaceProviderId,
+        spaceId,
+        itemId,
+        typeId: "HubResourceChangedEventType",
+      });
+    }
   },
 
   changeDirectory({ getters, commit }, { projectId, pathId }) {

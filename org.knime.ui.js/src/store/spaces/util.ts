@@ -1,6 +1,8 @@
 import { SpaceProviderNS, type WorkflowOrigin } from "@/api/custom-types";
 import type { Project } from "@/api/gateway-api/generated-api";
 
+import type { PathTriplet } from "./types";
+
 export const findSpaceById = (
   spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
   spaceId: string,
@@ -44,5 +46,24 @@ export const isProjectOpen = (
     project.origin?.spaceId === referenceOrigin.spaceId &&
     project.origin?.itemId === referenceOrigin.itemId &&
     isLocalProvider(spaceProvider)
+  );
+};
+
+export const tripletsAreEqual = (
+  left: PathTriplet | null,
+  right: PathTriplet | null,
+) => {
+  if (left === null && right === null) {
+    return true;
+  }
+
+  if (left === null || right === null) {
+    return false;
+  }
+
+  return (
+    left.spaceProviderId === right.spaceProviderId &&
+    left.spaceId === right.spaceId &&
+    left.itemId === right.itemId
   );
 };

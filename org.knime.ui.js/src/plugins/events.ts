@@ -1,8 +1,11 @@
+import { toRaw } from "vue";
 import type { Store } from "vuex";
 
 import { API } from "@/api";
+import type { HubResourceChangedEvent } from "@/api/gateway-api/generated-api";
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
+import { tripletsAreEqual } from "@/store/spaces/util";
 import type { RootStoreState } from "@/store/types";
 import { nodeSize } from "@/style/shapes";
 import { notifyPatch } from "@/util/event-syncer";
@@ -145,6 +148,24 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       consola.info("events::SelectionEvent", event);
 
       useSelectionEvents().notifyListeners(event);
+    },
+
+    HubResourceChangedEvent(event: HubResourceChangedEvent) {
+      const { providerId: spaceProviderId, spaceId, itemId } = event;
+      const pathTriplet = { spaceProviderId, spaceId, itemId };
+      const projectPath = $store.state.spaces.projectPath;
+      const currentSubscription = $store.state.spaces.currentSubscription;
+
+      // Find the project ID for the current path triplet
+      const projectId = Object.keys(projectPath).find((key) => {
+        const currentPath = toRaw(projectPath[key]);
+        return tripletsAreEqual(currentPath, pathTriplet);
+      });
+
+      // Only dispatch the action if the event matches the current subscription
+      if (tripletsAreEqual(currentSubscription, pathTriplet)) {
+        $store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
+      }
     },
   });
 
