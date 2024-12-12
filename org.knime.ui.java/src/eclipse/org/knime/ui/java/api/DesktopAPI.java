@@ -62,6 +62,7 @@ import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.impl.webui.HubResourceChangeProvider;
 import org.knime.gateway.impl.webui.NodeRepository;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
@@ -200,15 +201,24 @@ public final class DesktopAPI {
      * @param welcomeAPEndpoint
      * @param exampleProjects
      * @param userProfile
+     * @param hubResourceChangeProvider
      * @throws IllegalStateException if the dependencies have been already injected
      */
-    public static void injectDependencies(final ProjectManager workflowProjectManager,
-        final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
-        final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
-        final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
-        final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace,
-        final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects,
-        final UserProfile userProfile) {
+    public static void injectDependencies( // NOSONAR: Many parameters is acceptable here
+        final ProjectManager workflowProjectManager, //
+        final AppStateUpdater appStateUpdater, //
+        final SpaceProviders spaceProviders, //
+        final UpdateStateProvider updateStateProvider, //
+        final EventConsumer eventConsumer, //
+        final WorkflowMiddleware workflowMiddleware, //
+        final ToastService toastService, //
+        final NodeRepository nodeRepo, //
+        final MostRecentlyUsedProjects mruProjects, //
+        final LocalWorkspace localWorkspace, //
+        final WelcomeAPEndpoint welcomeAPEndpoint, //
+        final ExampleProjects exampleProjects, //
+        final UserProfile userProfile, //
+        final HubResourceChangeProvider hubResourceChangeProvider) {
         if (areDependenciesInjected()) {
             throw new IllegalStateException("Desktop API dependencies are already injected");
         }
@@ -227,6 +237,7 @@ public final class DesktopAPI {
         DEPENDENCIES.put(WelcomeAPEndpoint.class, welcomeAPEndpoint);
         injectDependency(exampleProjects);
         injectDependency(userProfile);
+        DEPENDENCIES.put(HubResourceChangeProvider.class, hubResourceChangeProvider);
     }
 
     private static void injectDependency(final UserProfile userProfile) {
@@ -298,7 +309,7 @@ public final class DesktopAPI {
 
     /**
      * @return whether dependencies already have been injected via
-     *         {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}
+     *         {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer, WorkflowMiddleware, ToastService, NodeRepository, MostRecentlyUsedProjects, LocalWorkspace, WelcomeAPEndpoint, ExampleProjects, UserProfile, HubResourceChangeProvider)}
      */
     public static boolean areDependenciesInjected() {
         return !DEPENDENCIES.isEmpty();
@@ -333,7 +344,7 @@ public final class DesktopAPI {
 
     /**
      * Gives access to registered dependency-instances (see
-     * {@link #injectDependencies(AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}).
+     * {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer, WorkflowMiddleware, ToastService, NodeRepository, MostRecentlyUsedProjects, LocalWorkspace, WelcomeAPEndpoint, ExampleProjects, UserProfile, HubResourceChangeProvider)}).
      *
      * @param <T>
      * @param clazz

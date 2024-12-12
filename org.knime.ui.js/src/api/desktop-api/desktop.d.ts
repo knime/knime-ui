@@ -240,3 +240,5 @@ declare function getAncestorInfo(
   spaceId: string,
   itemId: string,
 ): string;
+
+declare function emitHubResourceChangedEventForTesting(payload: string): void;

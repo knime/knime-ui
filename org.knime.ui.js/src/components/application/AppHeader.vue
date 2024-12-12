@@ -4,6 +4,7 @@ import { onClickOutside } from "@vueuse/core";
 import { useRoute, useRouter } from "vue-router";
 
 import { Carousel, FunctionButton, useHint } from "@knime/components";
+import ActivityIcon from "@knime/styles/img/icons/activity.svg";
 import CodeHtmlIcon from "@knime/styles/img/icons/code-html.svg";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 import HouseIcon from "@knime/styles/img/icons/house.svg";
@@ -151,6 +152,12 @@ onClickOutside(menuWrapper, hideMenu);
 
 const tabWrapper = ref<HTMLElement | null>(null);
 
+const emitHubResourceChangedEvent = () => {
+  API.desktop.emitHubResourceChangedEvent({
+    payload: "AppHeader::emitHubResourceChangedEvent",
+  });
+};
+
 watch(
   activeProjectTab,
   async () => {
@@ -275,6 +282,16 @@ onMounted(() => {
           @click="reloadApp()"
         >
           <ReloadIcon />
+        </FunctionButton>
+
+        <FunctionButton
+          v-if="devMode"
+          class="header-button no-text"
+          data-test-id="dev-mode-only"
+          title="Emit Hub Resource Changed Event (DEV MODE ONLY)"
+          @click="emitHubResourceChangedEvent()"
+        >
+          <ActivityIcon />
         </FunctionButton>
 
         <HelpMenu ref="helpMenu" data-test-id="app-header-help-menu" />

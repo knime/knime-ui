@@ -147,7 +147,7 @@ final class Init {
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
             state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects(),
-            UserProfile.of(state.getInternalUsageTracking()));
+            UserProfile.of(state.getInternalUsageTracking()), hubResourceChangeProvider);
 
         // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);

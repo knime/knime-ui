@@ -51,13 +51,14 @@ package org.knime.ui.java.api;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.gateway.api.webui.entity.HubResourceChangedEventEnt;
 import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
+import org.knime.gateway.impl.webui.HubResourceChangeProvider;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.util.TestingUtil;
@@ -140,13 +141,13 @@ final class TestingAPI {
             Collections.emptyList() : //
             StreamSupport.stream(newReleases.spliterator(), false)//
                 .map(TestingAPI::createUpdateInfo)//
-                .collect(Collectors.toList());
+                .toList();
         JsonNode bugfixes = updateStateNode.get("bugfixes");
         List<String> bugfixesList = bugfixes == null ? //
             Collections.emptyList() : //
             StreamSupport.stream(bugfixes.spliterator(), false)//
                 .map(JsonNode::textValue)//
-                .collect(Collectors.toList());
+                .toList();
 
         DesktopAPI.getDeps(UpdateStateProvider.class).emitUpdateNotificationsForTesting(newReleasesList, bugfixesList);
     }
@@ -154,6 +155,17 @@ final class TestingAPI {
     private static UpdateInfo createUpdateInfo(final JsonNode jsonNode) {
         return new UpdateInfo(null, jsonNode.get("name").textValue(), jsonNode.get("shortName").textValue(),
             jsonNode.get("isUpdatePossible").booleanValue());
+    }
+
+    /**
+     * Function used to emit {@link HubResourceChangedEventEnt} for testing.
+     *
+     * @param payload
+     */
+    @API
+    static void emitHubResourceChangedEventForTesting(final String payload) {
+        final var provider = DesktopAPI.getDeps(HubResourceChangeProvider.class);
+        provider.notifyEventListeners(payload);
     }
 
 }

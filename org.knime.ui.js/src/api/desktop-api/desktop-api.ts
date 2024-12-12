@@ -948,3 +948,17 @@ export const getAncestorInfo = async ({
   );
   return (data ? JSON.parse(data) : {}) as AncestorInfo;
 };
+
+export const emitHubResourceChangedEvent = ({
+  payload,
+}: {
+  payload: string;
+}) => {
+  return callBrowserFunction(
+    window.emitHubResourceChangedEventForTesting,
+    [payload],
+    "Failed to emit hub resource changed event",
+    false,
+    { block: false },
+  );
+};
