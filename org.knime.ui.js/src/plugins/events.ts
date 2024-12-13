@@ -2,7 +2,10 @@ import { toRaw } from "vue";
 import type { Store } from "vuex";
 
 import { API } from "@/api";
-import type { HubResourceChangedEvent } from "@/api/gateway-api/generated-api";
+import type {
+  HubResourceChangedEvent,
+  SpaceItemChangedEvent,
+} from "@/api/gateway-api/generated-api";
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { tripletsAreEqual } from "@/store/spaces/util";
@@ -11,7 +14,7 @@ import { nodeSize } from "@/style/shapes";
 import { notifyPatch } from "@/util/event-syncer";
 
 import { $bus } from "./event-bus";
-import type { PluginInitFunction } from "./types";
+import { type PluginInitFunction, isSpaceItemChangedEvent } from "./types";
 
 const init: PluginInitFunction = ({ $store, $router, $toast }) => {
   API.event.registerEventHandlers({
@@ -151,20 +154,27 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     },
 
     HubResourceChangedEvent(event: HubResourceChangedEvent) {
-      const { providerId: spaceProviderId, spaceId, itemId } = event;
-      const pathTriplet = { spaceProviderId, spaceId, itemId };
-      const projectPath = $store.state.spaces.projectPath;
-      const currentSubscription = $store.state.spaces.currentSubscription;
+      if (isSpaceItemChangedEvent(event)) {
+        consola.info("events::SpaceItemChangedEvent");
+        const {
+          providerId: spaceProviderId,
+          spaceId,
+          itemId,
+        } = event as SpaceItemChangedEvent;
+        const pathTriplet = { spaceProviderId, spaceId, itemId };
+        const projectPath = $store.state.spaces.projectPath;
+        const currentSubscription = $store.state.spaces.currentSubscription;
 
-      // Find the project ID for the current path triplet
-      const projectId = Object.keys(projectPath).find((key) => {
-        const currentPath = toRaw(projectPath[key]);
-        return tripletsAreEqual(currentPath, pathTriplet);
-      });
+        // Find the project ID for the current path triplet
+        const projectId = Object.keys(projectPath).find((key) => {
+          const currentPath = toRaw(projectPath[key]);
+          return tripletsAreEqual(currentPath, pathTriplet);
+        });
 
-      // Only dispatch the action if the event matches the current subscription
-      if (tripletsAreEqual(currentSubscription, pathTriplet)) {
-        $store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
+        // Only dispatch the action if the event matches the current subscription
+        if (tripletsAreEqual(currentSubscription, pathTriplet)) {
+          $store.dispatch("spaces/fetchWorkflowGroupContent", { projectId });
+        }
       }
     },
   });

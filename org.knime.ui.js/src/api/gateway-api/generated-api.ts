@@ -1406,65 +1406,23 @@ export interface Extension {
 
 
 /**
- * Event to update the state of the space explorer.
+ * Abstract event for all events related to hub resource changed events.
  * @export
  * @interface HubResourceChangedEvent
  */
 export interface HubResourceChangedEvent extends Event {
 
-    /**
-     *
-     * @type {string}
-     * @memberof HubResourceChangedEvent
-     */
-    providerId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof HubResourceChangedEvent
-     */
-    spaceId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof HubResourceChangedEvent
-     */
-    itemId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof HubResourceChangedEvent
-     */
-    payload: string;
 
 }
 
 
 /**
- * The event type to register for the respective event.
+ * Abstract type for all events related to hub resource changed events.
  * @export
  * @interface HubResourceChangedEventType
  */
 export interface HubResourceChangedEventType extends EventType {
 
-    /**
-     *
-     * @type {string}
-     * @memberof HubResourceChangedEventType
-     */
-    providerId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof HubResourceChangedEventType
-     */
-    spaceId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof HubResourceChangedEventType
-     */
-    itemId: string;
 
 }
 
@@ -3599,6 +3557,64 @@ export namespace SpaceItem {
         Data = 'Data'
     }
 }
+/**
+ * Event for changes to a hub space item.
+ * @export
+ * @interface SpaceItemChangedEvent
+ */
+export interface SpaceItemChangedEvent extends HubResourceChangedEvent {
+
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEvent
+     */
+    providerId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEvent
+     */
+    spaceId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEvent
+     */
+    itemId: string;
+
+}
+
+
+/**
+ * The event type to register for the respective event.
+ * @export
+ * @interface SpaceItemChangedEventType
+ */
+export interface SpaceItemChangedEventType extends HubResourceChangedEventType {
+
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEventType
+     */
+    providerId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEventType
+     */
+    spaceId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEventType
+     */
+    itemId: string;
+
+}
+
+
 /**
  * Describes from where a workflow or component project originates.
  * @export
@@ -6186,7 +6202,7 @@ export type EventParams =
     | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
     | (ProjectDisposedEventType & { typeId: 'ProjectDisposedEventType' })
     | (WorkflowMonitorStateChangeEventType & { typeId: 'WorkflowMonitorStateChangeEventType' })
-    | (HubResourceChangedEventType & { typeId: 'HubResourceChangedEventType' })
+    | (HubResourceChangedEventType & { typeId: 'HubResourceChangedEventType' | 'SpaceItemChangedEventType' })
 ;
 
 export interface EventHandlers {

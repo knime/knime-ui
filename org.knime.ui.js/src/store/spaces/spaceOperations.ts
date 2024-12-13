@@ -10,6 +10,7 @@ import {
   ServiceCallException,
   SpaceGroup,
   SpaceItem,
+  type SpaceItemChangedEventType,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
@@ -156,11 +157,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
     // Currently only Hub providers are of interest
     if (isHubProvider(currentProvider)) {
-      API.event.subscribeEvent({
+      const event: SpaceItemChangedEventType = {
         providerId,
         spaceId,
         itemId,
-        typeId: "HubResourceChangedEventType",
+      };
+      API.event.subscribeEvent({
+        ...event,
+        typeId: "SpaceItemChangedEventType",
       });
 
       commit("setCurrentSubscription", pathTriplet);
@@ -173,11 +177,14 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   unsubscribeResourceChangedEventListener({ state }) {
     if (state.currentSubscription) {
       const { spaceProviderId, spaceId, itemId } = state.currentSubscription;
-      API.event.unsubscribeEventListener({
+      const event: SpaceItemChangedEventType = {
         providerId: spaceProviderId,
         spaceId,
         itemId,
-        typeId: "HubResourceChangedEventType",
+      };
+      API.event.unsubscribeEventListener({
+        ...event,
+        typeId: "SpaceItemChangedEventType",
       });
     }
   },

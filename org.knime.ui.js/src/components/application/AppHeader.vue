@@ -153,9 +153,7 @@ onClickOutside(menuWrapper, hideMenu);
 const tabWrapper = ref<HTMLElement | null>(null);
 
 const emitHubResourceChangedEvent = () => {
-  API.desktop.emitHubResourceChangedEvent({
-    payload: "AppHeader::emitHubResourceChangedEvent",
-  });
+  API.desktop.emitHubResourceChangedEvent();
 };
 
 watch(

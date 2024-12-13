@@ -159,13 +159,10 @@ final class TestingAPI {
 
     /**
      * Function used to emit {@link HubResourceChangedEventEnt} for testing.
-     *
-     * @param payload
      */
     @API
-    static void emitHubResourceChangedEventForTesting(final String payload) {
-        final var provider = DesktopAPI.getDeps(HubResourceChangeProvider.class);
-        provider.notifyEventListeners(payload);
+    static void emitHubResourceChangedEventForTesting() {
+        DesktopAPI.getDeps(HubResourceChangeProvider.class).notifyEventListeners();
     }
 
 }

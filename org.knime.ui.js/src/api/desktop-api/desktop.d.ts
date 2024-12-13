@@ -241,4 +241,4 @@ declare function getAncestorInfo(
   itemId: string,
 ): string;
 
-declare function emitHubResourceChangedEventForTesting(payload: string): void;
+declare function emitHubResourceChangedEventForTesting(): void;
