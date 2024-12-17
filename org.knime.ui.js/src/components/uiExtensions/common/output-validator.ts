@@ -106,7 +106,7 @@ export const validateSelection: ValidationFn<{
         type: "NODE",
         code: "NO_NODE_SELECTED",
         message:
-          "To show the node output, please select a configured or executed node.",
+          "Select a configured or executed node to show the node output.",
       },
     };
   }
