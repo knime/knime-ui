@@ -50,7 +50,7 @@ const onChange = async (e: Event) => {
     $toast.show({
       type: "error",
       headline: "Invalid icon",
-      message: `Please choose a smaller file, this one exceeds the maximum file Size of ${
+      message: `Choose a smaller file. This one exceeds the maximum file size of ${
         // eslint-disable-next-line no-magic-numbers
         maxFileSize / 1024
       }kb`,

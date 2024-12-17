@@ -210,7 +210,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
           headline: "Error saving your work",
           type: "error",
           message:
-            "There was a problem saving one of your projects. Please try again or save them individually",
+            "There was a problem saving one of the workflows. Try again or save them individually.",
         });
       }
 

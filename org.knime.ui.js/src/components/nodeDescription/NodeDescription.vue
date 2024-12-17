@@ -187,7 +187,7 @@ watch(
           />
         </template>
       </template>
-      <div v-else class="placeholder no-node">Please select a node</div>
+      <div v-else class="placeholder no-node">Select a node</div>
     </SidebarPanelScrollContainer>
   </SidebarPanelLayout>
 </template>

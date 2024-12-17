@@ -272,7 +272,7 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
       commit("pushMessage", {
         chainType,
         role: "assistant",
-        content: "Sorry, something went wrong. Please try again later!",
+        content: "Something went wrong. Try again later.",
         isError: true,
       });
 

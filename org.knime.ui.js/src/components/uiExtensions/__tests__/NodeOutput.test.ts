@@ -136,7 +136,7 @@ describe("NodeOutput.vue", () => {
       const { wrapper } = doMount(store);
 
       expect(validationInfoMessage(wrapper)).toBe(
-        "To show the node output, please select only one node.",
+        "Select only one node to show the node output.",
       );
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
       expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);

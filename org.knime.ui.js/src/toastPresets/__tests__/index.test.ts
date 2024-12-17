@@ -52,8 +52,7 @@ describe("toastPresets", () => {
         autoRemove: false,
         headline: "Connection lost",
         id: "__CONNECTION_LOSTCONNECTION_LOST",
-        message:
-          "Please, check your internet connection and try refreshing the page",
+        message: "Check your internet connection and refresh the page.",
         type: "error",
       });
     });
@@ -132,7 +131,7 @@ describe("toastPresets", () => {
         [
           "renameItemFailed",
           "Rename failed",
-          'Could not rename the selected item with the new name "undefined". Please, try again',
+          'Could not rename the selected item to "undefined". Try again later.',
         ],
         [
           "renameSpaceFailed",

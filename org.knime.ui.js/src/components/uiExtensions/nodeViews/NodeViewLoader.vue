@@ -237,7 +237,7 @@ onUnmounted(() => {
 <template>
   <ExecuteButton
     v-if="!error && !isLoadingConfig && hasToReexecute"
-    message="To preview the node, please apply your changes and re-execute the node"
+    message="To preview the node, apply your changes and re-execute it."
     button-label="Apply & execute"
     @execute-node="applySettings(selectedNode.id, true)"
   />

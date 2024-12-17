@@ -158,7 +158,7 @@ describe("NodeDescription", () => {
     expect(wrapper.findComponent(Description).exists()).toBe(false);
     expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
     const placeholder = wrapper.find(".placeholder");
-    expect(placeholder.text()).toBe("Please select a node");
+    expect(placeholder.text()).toBe("Select a node");
   });
 
   it("should fetch a component description", async () => {

@@ -59,7 +59,7 @@ const isView = computed(() => {
 
 const executeButtonMessage = computed(() => {
   const messageTemplate = (kind: string) =>
-    `To show the ${kind}, please execute the selected node.`;
+    `To show the ${kind}, execute the selected node.`;
 
   return messageTemplate(isView.value ? "view" : "port output");
 });
@@ -132,8 +132,8 @@ const openLegacyPortView = (executeNode: boolean) => {
   <div v-if="validationError" class="info-wrapper">
     <template v-if="isUnsupportedView">
       <template v-if="!uiControls.canOpenLegacyPortViews">
-        This port view is not supported in the browser. Please download the
-        KNIME Analytics Platform to see the content in the desktop application
+        This port view is not supported in the browser. Download KNIME Analytics
+        Platform to view the content in the desktop application.
       </template>
 
       <span v-else>{{ validationError.message }}</span>

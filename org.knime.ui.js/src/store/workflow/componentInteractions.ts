@@ -138,10 +138,10 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
         id: `${TOAST_ID_PREFIX}__ERROR`,
         headline: TOAST_HEADLINE,
         problemDetails: {
-          title: `Couldn't update linked ${pluralize(
+          title: `Could not update the linked ${pluralize(
             "component",
             nodeIds.length,
-          )}. Please try again.`,
+          )}. Try again later.`,
           details: result.details,
         },
       });

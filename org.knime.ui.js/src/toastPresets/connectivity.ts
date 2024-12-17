@@ -29,8 +29,7 @@ export const getPresets = (
       $toast.show({
         id: `${CONNECTION_LOST_TOAST_ID_PREFIX}CONNECTION_LOST`,
         headline: "Connection lost",
-        message:
-          "Please, check your internet connection and try refreshing the page",
+        message: "Check your internet connection and refresh the page.",
         type: "error",
         autoRemove: false,
       }),

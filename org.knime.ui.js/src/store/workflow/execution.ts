@@ -141,7 +141,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     if (validationResult?.error) {
       showDetachErrorToast(
         validationResult.error.message ||
-          "Please check the output port view for details",
+          "Check the output port view for details.",
       );
       return;
     }

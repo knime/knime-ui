@@ -378,7 +378,7 @@ describe("workflow::componentInteractions", () => {
     expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "error",
-        message: "Couldn't update linked components. Please try again.",
+        message: "Could not update the linked components. Try again later.",
       }),
     );
     expect(

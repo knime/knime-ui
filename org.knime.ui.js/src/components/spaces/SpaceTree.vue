@@ -218,7 +218,7 @@ const loadConnectedProvider = async (
     addToTree([
       {
         nodeKey: `error_loadConnectedProvider_${spaceProviderId}`,
-        name: "Could not load. Please check the log for details.",
+        name: "Could not load. Check the log for details.",
         title: error ? `Error: ${error}` : null,
         hasChildren: false,
         customSlot: "providerFailed",
@@ -276,7 +276,7 @@ const loadProvider = async (
     addToTree([
       {
         nodeKey: `error_loadProvider_${spaceProviderId}`,
-        name: "Could not connect. Please check the log for details.",
+        name: "Could not load. Check the log for details.",
         title: error ? `Error: ${error}` : null,
         hasChildren: false,
         customSlot: "providerFailed",

@@ -74,17 +74,15 @@ const switchToJavaUI = () => {
 
       <div class="header" @click="emit('close')">
         <h2>
-          <WarningIcon /> Sorry, the KNIME Analytics Platform has stopped due to
-          an error.
+          <WarningIcon /> KNIME Analytics Platform has stopped due to an error.
         </h2>
         <div class="message">
-          Hitting the reload button should bring you back to UI.
+          Hit the reload button to go back to the previous state,
         </div>
 
         <DynamicEnvRenderer value="DESKTOP">
           <div class="message">
-            You could also switch back to Classic UI via the button on the top
-            right.
+            or switch to Classic UI via the option in the Menu.
           </div>
         </DynamicEnvRenderer>
       </div>

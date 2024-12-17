@@ -9,7 +9,7 @@ const { fetchUiStrings, isLoading } = useKaiServer();
 <template>
   <div class="error-panel">
     <div class="slogan">
-      Our AI assistant is currently not available. Please try again later.
+      The AI assistant is currently unavailable. Try again later.
     </div>
     <div class="note">
       Please note:<br />

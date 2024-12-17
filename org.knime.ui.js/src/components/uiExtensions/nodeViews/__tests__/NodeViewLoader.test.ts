@@ -304,7 +304,7 @@ describe("NodeViewLoader.vue", () => {
 
     expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
     expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
-      "To preview the node, please apply your changes and re-execute the node",
+      "To preview the node, apply your changes and re-execute it.",
     );
     expect(wrapper.findComponent(ExecuteButton).props("buttonLabel")).toBe(
       "Apply & execute",

@@ -117,7 +117,7 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
         getToastsProvider().show({
           id: "__FLOWVAR_DETACH_SHORTCUT_FAILED",
           headline: "Error detaching flow variable view",
-          message: "Please execute the node.",
+          message: "Execute the selected node first.",
           type: "error",
         });
       }

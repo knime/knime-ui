@@ -99,7 +99,7 @@ describe("output-validator", () => {
       error: {
         type: "NODE",
         code: "MULTIPLE_NODES_SELECTED",
-        message: "To show the node output, please select only one node.",
+        message: "Select only one node to show the node output.",
       },
     });
   });
@@ -184,7 +184,7 @@ describe("output-validator", () => {
       error: {
         type: "NODE",
         code: "NODE_UNCONFIGURED",
-        message: "Please first configure the selected node.",
+        message: "Configure the selected node first.",
       },
     });
   });
@@ -213,7 +213,7 @@ describe("output-validator", () => {
       error: {
         type: "NODE",
         code: "NODE_UNCONFIGURED",
-        message: "Please first configure the selected node.",
+        message: "Configure the selected node first.",
       },
     });
   });

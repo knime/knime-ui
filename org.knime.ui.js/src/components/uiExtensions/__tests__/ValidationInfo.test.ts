@@ -267,7 +267,7 @@ describe("ValidationInfo.vue", () => {
       // first metanode - single configured port
       expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
       expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
-        "To show the port output, please execute the selected node.",
+        "To show the port output, execute the selected node.",
       );
 
       // second metanode - no ports
@@ -316,7 +316,7 @@ describe("ValidationInfo.vue", () => {
 
       expect(wrapper.findComponent(ExecuteButton).exists()).toBe(true);
       expect(wrapper.findComponent(ExecuteButton).props("message")).toBe(
-        "To show the view, please execute the selected node.",
+        "To show the view, execute the selected node.",
       );
       expect(wrapper.findComponent(ExecuteButton).props("buttonLabel")).toBe(
         "Execute",
