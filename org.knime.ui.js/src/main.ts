@@ -18,7 +18,6 @@ import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
 import { router } from "./router/router";
 import { store } from "./store";
-
 import "./assets/index.css";
 
 // Setup logger for production

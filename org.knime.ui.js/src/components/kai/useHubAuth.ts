@@ -2,13 +2,12 @@ import { computed } from "vue";
 
 import { useStore } from "@/composables/useStore";
 import { isBrowser, runInEnvironment } from "@/environment";
-import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/toastPresets";
 
 let isHubIdFetched = false;
 
 const useHubAuth = () => {
   const store = useStore();
-  const $toast = getToastsProvider();
 
   runInEnvironment({
     DESKTOP: () => {
@@ -37,16 +36,17 @@ const useHubAuth = () => {
     );
   });
 
+  const { toastPresets } = getToastPresets();
+
   const authenticateWithHub = async () => {
     try {
       await store.dispatch("spaces/connectProvider", {
         spaceProviderId: hubId.value,
       });
     } catch (error) {
-      $toast.show({
-        type: "error",
-        message: "Could not connect to Hub",
-      });
+      const providerName =
+        store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.name;
+      toastPresets.spaces.auth.connectFailed({ error, providerName });
     }
   };
 

@@ -1,9 +1,8 @@
-import { version } from "vue";
-import { merge } from "lodash-es";
-
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
 
 import { getToastsProvider } from "@/plugins/toasts";
+
+import { copyErrorReportToClipboard } from "./copyErrorReportToClipboard";
 
 type ProblemDetails = {
   title: string;
@@ -12,31 +11,6 @@ type ProblemDetails = {
 };
 
 const $toast = getToastsProvider();
-
-const toEnumeratedObject = (obj) => {
-  return Object.getOwnPropertyNames(obj).reduce((acc, cur) => {
-    acc[cur] = obj[cur];
-    return acc;
-  }, {});
-};
-
-export const copyReportToClipboard = (data: object = {}) => {
-  const general = {
-    app: "KnimeUI",
-    vueVersion: version,
-    timestamp: new Date().toISOString(),
-  };
-
-  return navigator.clipboard.writeText(
-    JSON.stringify(
-      merge(general, data),
-      // Error object's properties are non-enumerable, and would by default be omitted in the serialization
-      (_, value) =>
-        value instanceof Error ? toEnumeratedObject(value) : value,
-      2,
-    ),
-  );
-};
 
 const formatToastMessage = ({
   errorHint,
@@ -62,7 +36,7 @@ const formatToastMessage = ({
   return message.join("");
 };
 
-export const showErrorToast = ({
+export const showProblemDetailsErrorToast = ({
   id = "__ERROR_TOAST_ID",
   headline,
   errorHint,
@@ -88,7 +62,7 @@ export const showErrorToast = ({
           buttons: [
             {
               callback: () => {
-                copyReportToClipboard({
+                copyErrorReportToClipboard({
                   errorContext: headline,
                   problemDetails,
                   error,

@@ -9,7 +9,7 @@ module.exports = {
   globals: {
     consola: false,
   },
-  ignorePatterns: ["generated-api.ts"],
+  ignorePatterns: ["generated-api.ts", "generated-exceptions.ts"],
   env: { browser: true, node: true },
   settings: {
     "import/resolver": {

@@ -253,9 +253,9 @@ const loadConnectedProvider = async (
       return store.state.spaces.spaceProviders![spaceProviderId];
     };
 
-    const reloadedrovider = await reloadProviderSpaces();
+    const reloadedProvider = await reloadProviderSpaces();
     addToTree(
-      reloadedrovider.spaceGroups.map((group) =>
+      reloadedProvider.spaceGroups.map((group) =>
         mapSpaceGroupToTree(group, { spaceProviderId }),
       ),
     );

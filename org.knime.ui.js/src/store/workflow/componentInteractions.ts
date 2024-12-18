@@ -5,7 +5,7 @@ import LoadIcon from "@knime/styles/img/icons/load.svg";
 import { API } from "@/api";
 import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
-import { showErrorToast } from "@/util/errorHandling";
+import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
 import type { RootStoreState } from "../types";
 
 import type { WorkflowState } from "./index";
@@ -134,7 +134,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     $toast.remove(updateStartedToastId);
 
     if (result.status === UpdateLinkedComponentsResult.StatusEnum.Error) {
-      showErrorToast({
+      showProblemDetailsErrorToast({
         id: `${TOAST_ID_PREFIX}__ERROR`,
         headline: TOAST_HEADLINE,
         problemDetails: {

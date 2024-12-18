@@ -3,11 +3,6 @@ import { flushPromises } from "@vue/test-utils";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
-import { StoreActionException } from "@/api/gateway-api/exceptions";
-import {
-  NetworkException,
-  ServiceCallException,
-} from "@/api/gateway-api/generated-api";
 import {
   createSpace,
   createSpaceGroup,
@@ -256,63 +251,6 @@ describe("spaces::providers", () => {
       });
 
       expect(promise).resolves.toEqual(mockResponse);
-    });
-
-    it("should handle `ServiceCallException`s", async () => {
-      const { store } = loadStore();
-
-      store.state.spaces.spaceProviders = {
-        hub1: createSpaceProvider({
-          id: "hub1",
-          name: "Hub 1",
-        }),
-      };
-
-      const error = new ServiceCallException({
-        message: "Something wrong in the API",
-      });
-
-      const expected = new StoreActionException(
-        "Error fetching provider spaces",
-        error,
-      );
-
-      mockedAPI.space.getSpaceProvider.mockRejectedValue(error);
-
-      expect(() =>
-        store.dispatch("spaces/fetchProviderSpaces", {
-          id: "hub1",
-        }),
-      ).rejects.toThrowError(expected);
-
-      await flushPromises();
-
-      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(false);
-    });
-
-    it("should handle `NetworkException`s", () => {
-      const { store } = loadStore();
-
-      store.state.spaces.spaceProviders = {
-        hub1: createSpaceProvider({
-          id: "hub1",
-          name: "Hub 1",
-        }),
-      };
-
-      const error = new NetworkException({
-        message: "Connection loss",
-      });
-
-      const expected = new StoreActionException("Connectivity problem", error);
-
-      mockedAPI.space.getSpaceProvider.mockRejectedValue(error);
-
-      expect(() =>
-        store.dispatch("spaces/fetchProviderSpaces", {
-          id: "hub1",
-        }),
-      ).rejects.toThrowError(expected);
     });
   });
 

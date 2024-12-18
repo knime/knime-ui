@@ -2,12 +2,7 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
-import { StoreActionException } from "@/api/gateway-api/exceptions";
-import {
-  NetworkException,
-  ServiceCallException,
-  type SpaceItemReference,
-} from "@/api/gateway-api/generated-api";
+import { type SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 import type { RootStoreState } from "../types";
 
@@ -236,15 +231,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       return data;
     } catch (error) {
-      const message = "Error fetching provider spaces";
-      consola.error(`action::fetchProviderSpaces -> ${message}`, { error });
-
-      if (error instanceof ServiceCallException) {
-        throw new StoreActionException(message, error);
-      }
-      if (error instanceof NetworkException) {
-        throw new StoreActionException("Connectivity problem", error);
-      }
+      consola.error(
+        "action::fetchProviderSpaces -> Error fetching provider spaces",
+        { error },
+      );
 
       throw error;
     } finally {

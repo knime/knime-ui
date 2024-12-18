@@ -6,6 +6,7 @@ import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { globalSpaceBrowserProjectId } from "@/store/spaces";
 import { isHubProvider } from "@/store/spaces/util";
+import { getToastPresets } from "@/toastPresets";
 
 import SpaceExplorer from "./SpaceExplorer.vue";
 import SpaceExplorerActions from "./SpaceExplorerActions.vue";
@@ -18,6 +19,7 @@ import { useSpaceIcons } from "./useSpaceIcons";
 const store = useStore();
 const $route = useRoute();
 const $router = useRouter();
+const { toastPresets } = getToastPresets();
 
 const currentSelectedItemIds = computed(
   () => store.state.spaces.currentSelectedItemIds,
@@ -107,18 +109,19 @@ const existingSpaceNames = computed<Array<string>>(() => {
 const errorOnHeader = ref("");
 const isEditing = ref(false);
 
-const onRenameSpace = (name: String) => {
+const onRenameSpace = async (name: string) => {
   errorOnHeader.value = "";
-  store
-    .dispatch("spaces/renameSpace", {
+  try {
+    await store.dispatch("spaces/renameSpace", {
       spaceProviderId: activeSpaceProvider.value.id,
       spaceId: activeSpace.value!.id,
       spaceName: name,
-    })
-    .catch((error) => {
-      errorOnHeader.value = error.message;
-      isEditing.value = true;
     });
+  } catch (error) {
+    errorOnHeader.value = (error as Error).message;
+    isEditing.value = true;
+    toastPresets.spaces.crud.renameSpaceFailed({ error });
+  }
 };
 </script>
 

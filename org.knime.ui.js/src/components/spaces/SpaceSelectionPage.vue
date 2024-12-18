@@ -6,15 +6,11 @@ import { FunctionButton } from "@knime/components";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import type { SpaceProviderNS } from "@/api/custom-types";
-import {
-  StoreActionException,
-  displayStoreActionExceptionMessage,
-} from "@/api/gateway-api/exceptions";
 import SearchButton from "@/components/common/SearchButton.vue";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { getToastPresets } from "@/toastPresets";
 import { matchesQuery } from "@/util/matchesQuery";
 
 import SpaceCard from "./SpaceCard.vue";
@@ -30,7 +26,6 @@ type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 
 const $router = useRouter();
 const store = useStore();
-const $toast = getToastsProvider();
 
 const {
   activeSpaceProvider,
@@ -94,6 +89,8 @@ const icon = computed(() =>
     : activeSpaceGroup.value && getSpaceGroupIcon(activeSpaceGroup.value),
 );
 
+const { toastPresets } = getToastPresets();
+
 const createSpace = async () => {
   isCreateSpaceDisabled.value = true;
 
@@ -104,13 +101,7 @@ const createSpace = async () => {
       $router,
     });
   } catch (error) {
-    $toast.show({
-      type: "error",
-      headline: "Error while creating space",
-      // @ts-ignore
-      message: error.message,
-      autoRemove: true,
-    });
+    toastPresets.spaces.crud.createSpaceFailed({ error });
   } finally {
     isCreateSpaceDisabled.value = false;
   }
@@ -122,11 +113,7 @@ const reload = async () => {
       id: activeSpaceProvider.value.id,
     });
   } catch (error) {
-    if (error instanceof StoreActionException) {
-      displayStoreActionExceptionMessage(error);
-      return;
-    }
-    throw error; // Bubble up to global error handler
+    toastPresets.spaces.crud.reloadProviderSpacesFailed({ error });
   }
 };
 </script>

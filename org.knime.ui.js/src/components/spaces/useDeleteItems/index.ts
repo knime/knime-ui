@@ -6,6 +6,7 @@ import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { useStore } from "@/composables/useStore";
+import { getToastPresets } from "@/toastPresets";
 
 import DeleteItemTemplate from "./DeleteItemTemplate.vue";
 
@@ -57,11 +58,16 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
     if (confirmed) {
       const itemIds = items.map(({ id }) => id);
 
-      await store.dispatch("spaces/deleteItems", {
-        projectId: options.projectId,
-        itemIds,
-        $router,
-      });
+      try {
+        await store.dispatch("spaces/deleteItems", {
+          projectId: options.projectId,
+          itemIds,
+          $router,
+        });
+      } catch (error) {
+        const { toastPresets } = getToastPresets();
+        toastPresets.spaces.crud.deleteItemsFailed({ error });
+      }
     }
   };
 

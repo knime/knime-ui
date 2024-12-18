@@ -7,16 +7,13 @@ import { SubMenu } from "@knime/components";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
-import {
-  StoreActionException,
-  displayStoreActionExceptionMessage,
-} from "@/api/gateway-api/exceptions";
-import { ServiceCallException } from "@/api/gateway-api/generated-api";
+import { ServiceCallException } from "@/api/gateway-api/generated-exceptions";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import * as spacesStore from "@/store/spaces";
 import type { RootStoreState } from "@/store/types";
 import { createSpace, createSpaceProvider } from "@/test/factories";
 import { deepMocked, mockVuexStore } from "@/test/utils";
+import { getToastPresets } from "@/toastPresets";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 
@@ -322,6 +319,12 @@ describe("SpaceExplorerActions.vue", () => {
     it.each([["createFolder", "spaces/createFolder", {}]])(
       "should handle failure when executing action %s via store",
       async (actionId, storeAction, params) => {
+        const { toastPresets } = getToastPresets();
+        const createFolderFailed = vi.spyOn(
+          toastPresets.spaces.crud,
+          "createFolderFailed",
+        );
+
         const { wrapper, store, projectId, dispatchSpy } = doMount({
           props: { mode: "mini" },
         });
@@ -339,10 +342,7 @@ describe("SpaceExplorerActions.vue", () => {
         subMenu.vm.$emit("item-click", null, item);
 
         dispatchSpy.mockRejectedValueOnce(
-          new StoreActionException(
-            "something went wrong",
-            new ServiceCallException({ message: "IO issue" }),
-          ),
+          new ServiceCallException({ message: "IO issue" }),
         );
 
         expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
@@ -352,7 +352,7 @@ describe("SpaceExplorerActions.vue", () => {
 
         await flushPromises();
 
-        expect(displayStoreActionExceptionMessage).toHaveBeenCalled();
+        expect(createFolderFailed).toHaveBeenCalled();
       },
     );
 

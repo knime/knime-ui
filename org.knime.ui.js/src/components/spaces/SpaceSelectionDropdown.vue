@@ -11,8 +11,8 @@ import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
+import { getToastPresets } from "@/toastPresets";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
@@ -24,7 +24,7 @@ interface Props {
 
 const store = useStore();
 const props = withDefaults(defineProps<Props>(), { showText: true });
-const $toast = getToastsProvider();
+const { toastPresets } = getToastPresets();
 
 const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } =
   useSpaceIcons();
@@ -131,10 +131,7 @@ const onSpaceChange = async ({
     const providerName =
       store.state.spaces.spaceProviders?.[spaceProviderId]?.name ?? "remote";
 
-    $toast.show({
-      type: "error",
-      message: `Could not connect to ${providerName}`,
-    });
+    toastPresets.spaces.auth.connectFailed({ error, providerName });
   }
 };
 

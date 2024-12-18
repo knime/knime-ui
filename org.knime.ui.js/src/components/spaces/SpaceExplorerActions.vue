@@ -7,10 +7,6 @@ import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
-import {
-  StoreActionException,
-  displayStoreActionExceptionMessage,
-} from "@/api/gateway-api/exceptions";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 import AddFileIcon from "@/assets/add-file.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
@@ -25,6 +21,7 @@ import {
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
 import { isLocalProvider } from "@/store/spaces/util";
+import { getToastPresets } from "@/toastPresets";
 
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 import type { ActionMenuItem } from "./remoteMenuItems";
@@ -65,6 +62,11 @@ export default defineComponent({
   },
 
   emits: ["importedItemIds", "update:filterQuery"],
+
+  setup() {
+    const { toastPresets } = getToastPresets();
+    return { toastPresets };
+  },
 
   computed: {
     ...mapGetters("spaces", [
@@ -180,11 +182,7 @@ export default defineComponent({
             try {
               await this.$store.dispatch("spaces/createFolder", { projectId });
             } catch (error) {
-              if (error instanceof StoreActionException) {
-                displayStoreActionExceptionMessage(error);
-              } else {
-                throw error; // For now: re-throw for global error handling
-              }
+              this.toastPresets.spaces.crud.createFolderFailed({ error });
             }
           },
         },

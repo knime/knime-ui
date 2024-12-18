@@ -13,6 +13,7 @@ import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.sv
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import { getToastPresets } from "@/toastPresets";
 
 export type ActionMenuItem = MenuItem & {
   id: string;
@@ -56,12 +57,17 @@ export const buildMoveToSpaceMenuItem = (
     icon: MoveToSpaceIcon,
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one item to move." : undefined,
-    execute: () => {
-      dispatch("spaces/moveOrCopyToSpace", {
-        projectId,
-        isCopy: false,
-        itemIds: selectedItems,
-      });
+    execute: async () => {
+      try {
+        await dispatch("spaces/moveOrCopyToSpace", {
+          projectId,
+          isCopy: false,
+          itemIds: selectedItems,
+        });
+      } catch (error) {
+        const { toastPresets } = getToastPresets();
+        toastPresets.spaces.crud.moveItemsFailed({ error });
+      }
     },
   };
 };
@@ -79,12 +85,17 @@ export const buildCopyToSpaceMenuItem = (
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one item to copy." : undefined,
     separator: true,
-    execute: () => {
-      dispatch("spaces/moveOrCopyToSpace", {
-        projectId,
-        isCopy: true,
-        itemIds: selectedItems,
-      });
+    execute: async () => {
+      try {
+        await dispatch("spaces/moveOrCopyToSpace", {
+          projectId,
+          isCopy: true,
+          itemIds: selectedItems,
+        });
+      } catch (error) {
+        const { toastPresets } = getToastPresets();
+        toastPresets.spaces.crud.copyItemsFailed({ error });
+      }
     },
   };
 };

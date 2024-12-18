@@ -18,9 +18,9 @@ import type { RecentWorkflow, SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
-import { getToastsProvider } from "@/plugins/toasts";
 import { cachedLocalSpaceProjectId } from "@/store/spaces";
 import { isLocalProvider } from "@/store/spaces/util";
+import { getToastPresets } from "@/toastPresets";
 import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
 
 import PageTitle from "./PageTitle.vue";
@@ -31,7 +31,7 @@ type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 const items = ref<RecentWorkflowItem[]>([]);
 const store = useStore();
 const $router = useRouter();
-const $toast = getToastsProvider();
+const { toastPresets } = getToastPresets();
 
 const spaceProviders = computed(() => store.state.spaces.spaceProviders ?? {});
 
@@ -79,9 +79,9 @@ const tryConnectToProvider = async (
 
     return isConnected;
   } catch (error) {
-    $toast.show({
-      type: "error",
-      message: `Could not connect to ${provider.name}`,
+    toastPresets.spaces.auth.connectFailed({
+      error,
+      providerName: provider.name,
     });
 
     return false;
@@ -112,11 +112,7 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   } catch (error) {
     consola.error("Could not open recent workflow:", error);
 
-    $toast.show({
-      type: "warning",
-      headline: "Could not open workflow",
-      message: `${error}`,
-    });
+    toastPresets.app.openProjectFailed({ error });
 
     items.value = items.value.filter(
       (item) => !isEqual(item.meta?.recentWorkflow.origin, origin),

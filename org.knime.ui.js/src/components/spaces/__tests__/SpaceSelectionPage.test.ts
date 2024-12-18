@@ -4,10 +4,7 @@ import { mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import {
-  StoreActionException,
-  displayStoreActionExceptionMessage,
-} from "@/api/gateway-api/exceptions";
+import { NetworkException } from "@/api/gateway-api/generated-exceptions";
 import SearchButton from "@/components/common/SearchButton.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as spacesStore from "@/store/spaces";
@@ -17,6 +14,7 @@ import {
   createSpaceProvider,
 } from "@/test/factories";
 import { mockVuexStore } from "@/test/utils";
+import { getToastPresets } from "@/toastPresets";
 import SpaceCard from "../SpaceCard.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";
@@ -61,6 +59,8 @@ describe("SpaceSelectionPage.vue", () => {
       spaces: spacesStore,
     });
 
+    const { toastPresets } = getToastPresets();
+
     $store.commit("spaces/setSpaceProviders", {
       [spaceProvider.id]: spaceProvider,
     });
@@ -77,7 +77,14 @@ describe("SpaceSelectionPage.vue", () => {
       },
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy, $router: mockRouter };
+    return {
+      wrapper,
+      $store,
+      dispatchSpy,
+      commitSpy,
+      $router: mockRouter,
+      toastPresets,
+    };
   };
 
   beforeEach(() => {
@@ -98,24 +105,11 @@ describe("SpaceSelectionPage.vue", () => {
     });
 
     it("should reload spaces", async () => {
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, dispatchSpy, toastPresets } = doMount();
 
-      await wrapper.find(".reload-button").trigger("click");
-
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
-        id: spaceProvider.id,
-      });
-
-      expect(displayStoreActionExceptionMessage).not.toHaveBeenCalled();
-    });
-
-    it("should show error when reloading spaces", async () => {
-      const { wrapper, dispatchSpy } = doMount();
-
-      dispatchSpy.mockImplementationOnce(() =>
-        Promise.reject(
-          new StoreActionException("Connectivity issue", new Error("failed")),
-        ),
+      const reloadProviderSpacesFailedSpy = vi.spyOn(
+        toastPresets.spaces.crud,
+        "reloadProviderSpacesFailed",
       );
 
       await wrapper.find(".reload-button").trigger("click");
@@ -124,7 +118,28 @@ describe("SpaceSelectionPage.vue", () => {
         id: spaceProvider.id,
       });
 
-      expect(displayStoreActionExceptionMessage).toHaveBeenCalled();
+      expect(reloadProviderSpacesFailedSpy).not.toHaveBeenCalled();
+    });
+
+    it("should show error when reloading spaces", async () => {
+      const { wrapper, dispatchSpy, toastPresets } = doMount();
+
+      const reloadProviderSpacesFailedSpy = vi.spyOn(
+        toastPresets.spaces.crud,
+        "reloadProviderSpacesFailed",
+      );
+
+      dispatchSpy.mockImplementationOnce(() =>
+        Promise.reject(new NetworkException({ message: "Connectivity issue" })),
+      );
+
+      await wrapper.find(".reload-button").trigger("click");
+
+      expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
+        id: spaceProvider.id,
+      });
+
+      expect(reloadProviderSpacesFailedSpy).toHaveBeenCalled();
     });
 
     it("should render correctly", () => {

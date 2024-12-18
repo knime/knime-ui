@@ -11,13 +11,13 @@ import type { ExampleProject } from "@/api/custom-types";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/toastPresets";
 
 import PageTitle from "./PageTitle.vue";
 
 const store = useStore();
 const $router = useRouter();
-const $toast = getToastsProvider();
+const { toastPresets } = getToastPresets();
 
 const exampleProjects = computed(() => store.state.application.exampleProjects);
 const settings = computed(() => store.state.settings.settings);
@@ -36,11 +36,7 @@ const onExampleClick = async (example: ExampleProject) => {
   } catch (error) {
     consola.error("could not open example workflow", error);
 
-    $toast.show({
-      type: "warning",
-      headline: "Could not open workflow",
-      message: "The workflow might not exist anymore or be corrupted",
-    });
+    toastPresets.app.openProjectFailed({ error });
 
     const newExampleProjects = exampleProjects.value.filter(
       (item) => !isEqual(item.origin, example.origin),

@@ -3,7 +3,7 @@ import { h } from "vue";
 
 import { API } from "@/api";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/toastPresets";
 
 import MovingItemsTemplate from "./MovingItemsTemplate.vue";
 
@@ -24,7 +24,7 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
     return store.state.spaces.projectPath[options.projectId.value ?? ""];
   });
 
-  const $toast = getToastsProvider();
+  const { toastPresets } = getToastPresets();
 
   const onMoveItems = async ({
     sourceItems,
@@ -61,9 +61,8 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
         (workflow) => workflow.name,
       );
 
-      $toast.show({
-        headline: "Could not move items",
-        type: "warning",
+      toastPresets.spaces.crud.moveOrCopyOpenItemsWarning({
+        isCopy,
         component: createModalTemplate({
           isCopy,
           openedItemNames: openedWorkflowsNames.concat(isInsideFolderNames),
@@ -100,7 +99,7 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
     }
 
     try {
-      // remove ghosts regardless of sucess criteria. yields better results on slow operations
+      // remove ghosts regardless of success criteria. yields better results on slow operations
       // which will show a loading overlay anyway after a certain time threshold
       onComplete(true);
 
@@ -115,11 +114,11 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
       const copyOrMove = isCopy ? "copying" : "moving";
       consola.error(`There was a problem ${copyOrMove} the items`, { error });
 
-      $toast.show({
-        type: "error",
-        headline: "There was a problem moving your files",
-        message: (error as any).message,
-      });
+      if (isCopy) {
+        toastPresets.spaces.crud.copyItemsFailed({ error });
+      } else {
+        toastPresets.spaces.crud.moveItemsFailed({ error });
+      }
     }
   };
 

@@ -12,7 +12,7 @@ import {
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
+import { getToastPresets } from "@/toastPresets";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { matchesQuery } from "@/util/matchesQuery";
 
@@ -50,7 +50,7 @@ const $emit = defineEmits<{
 
 const store = useStore();
 const $router = useRouter();
-const $toast = getToastsProvider();
+const { toastPresets } = getToastPresets();
 
 const projectId = toRef(props, "projectId");
 
@@ -159,34 +159,29 @@ const onOpenFile = async ({ id }: FileExplorerItem) => {
   } catch (error) {
     consola.error("Could not open selected workflow:", error);
 
-    $toast.show({
-      type: "warning",
-      headline: "Could not open workflow",
-      message: `${error}`,
-    });
+    toastPresets.app.openProjectFailed({ error });
   }
 };
 
-const onRenameFile = ({
+const onRenameFile = async ({
   itemId,
   newName,
 }: {
   itemId: string;
   newName: string;
 }) => {
-  store
-    .dispatch("spaces/renameItem", {
+  try {
+    await store.dispatch("spaces/renameItem", {
       projectId: props.projectId,
       itemId,
       newName,
-    })
-    .catch(() => {
-      $toast.show({
-        type: "error",
-        headline: "Rename failed",
-        message: `Could not rename the selected item with the new name "${newName}". Please, try again`,
-      });
     });
+  } catch (error) {
+    toastPresets.spaces.crud.renameItemFailed({
+      error,
+      newName,
+    });
+  }
 };
 
 const { onDeleteItems } = useDeleteItems({

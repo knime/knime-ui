@@ -7,7 +7,6 @@ import {
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
-import { showErrorToast } from "@/util/errorHandling";
 import type { RootStoreState } from "../types";
 
 import * as auth from "./auth";
@@ -159,13 +158,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         await dispatch("fetchWorkflowGroupContent", { projectId });
       }
     } catch (error) {
-      showErrorToast({
-        headline: `Error ${isCopy ? "copying" : "moving"} items`,
-        problemDetails: {
-          title: "The operation failed unexpectedly.",
-        },
-        error,
-      });
+      consola.error(
+        `action::moveOrCopyToSpace -> Error ${
+          isCopy ? "copying" : "moving"
+        } items`,
+        { error },
+      );
+      throw error;
     }
   },
 

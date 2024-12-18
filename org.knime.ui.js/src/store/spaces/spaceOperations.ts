@@ -4,16 +4,12 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
-import { StoreActionException } from "@/api/gateway-api/exceptions";
 import {
-  NetworkException,
-  ServiceCallException,
   SpaceGroup,
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
-import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 import type { RootStoreState } from "../types";
@@ -21,8 +17,6 @@ import type { RootStoreState } from "../types";
 import { globalSpaceBrowserProjectId } from "./common";
 import type { SpacesState } from "./index";
 import { isProjectOpen } from "./util";
-
-const $toast = getToastsProvider();
 
 export interface PathTriplet {
   spaceId: string;
@@ -68,25 +62,11 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   ) {
     try {
       commit("setIsLoadingContent", true);
-      const content = await API.space
-        .listWorkflowGroup({
-          spaceProviderId,
-          spaceId,
-          itemId,
-        })
-        .catch((error) => {
-          if (error instanceof ServiceCallException) {
-            throw new StoreActionException(
-              "Error while fetching workflow group content",
-              error,
-            );
-          }
-          if (error instanceof NetworkException) {
-            throw new StoreActionException("Connectivity problem", error);
-          }
-
-          throw error;
-        });
+      const content = await API.space.listWorkflowGroup({
+        spaceProviderId,
+        spaceId,
+        itemId,
+      });
 
       return content;
     } catch (dataFetchError) {
@@ -220,15 +200,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceId,
         spaceName,
       });
-      return Promise.resolve();
     } catch (error) {
-      $toast.show({
-        type: "error",
-        headline: "Error while renaming space",
-        // @ts-ignore
-        message: error.message,
-        autoRemove: true,
-      });
       consola.error("Error while renaming space", { error });
 
       // Rollback to the original spaceProvider state
@@ -237,7 +209,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         value: provider,
       });
 
-      return Promise.reject(error);
+      throw error;
     }
   },
 
@@ -281,13 +253,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         itemId,
       })
       .catch((error) => {
-        const message = "Error while creating folder";
         commit("setIsLoadingContent", false);
-        consola.error(message, { error });
-
-        if (error instanceof ServiceCallException) {
-          throw new StoreActionException("Error while creating folder", error);
-        }
+        consola.error("Error while creating folder", { error });
 
         throw error;
       });
@@ -336,6 +303,15 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceId,
         itemId,
       });
+    } catch (error) {
+      consola.error(
+        `Error openProject providerId: ${providerId} spaceId: ${spaceId} itemId: ${itemId}`,
+        providerId,
+        spaceId,
+        itemId,
+        error,
+      );
+      throw error;
     } finally {
       $bus.emit("unblock-ui");
     }

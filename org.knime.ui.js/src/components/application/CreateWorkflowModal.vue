@@ -12,6 +12,7 @@ import {
 
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
+import { getToastPresets } from "@/toastPresets";
 
 const NAME_TEMPLATE = "KNIME_project";
 
@@ -83,6 +84,9 @@ const onSubmit = async () => {
   } catch (error) {
     isSubmitted.value = false;
     consola.error("There was an error creating the workflow", error);
+    closeModal();
+    const { toastPresets } = getToastPresets();
+    toastPresets.spaces.crud.createWorkflowFailed({ error });
   }
 };
 

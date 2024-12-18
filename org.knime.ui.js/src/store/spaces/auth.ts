@@ -3,7 +3,6 @@ import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
-import { StoreActionException } from "@/api/gateway-api/exceptions";
 import { APP_ROUTES } from "@/router/appRoutes";
 import type { RootStoreState } from "../types";
 
@@ -37,12 +36,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         const providerName =
           state.spaceProviders?.[spaceProviderId]?.name ?? "remote";
 
-        const cause = new Error("Failed to connect");
-
-        throw new StoreActionException(
-          `Failed to connect to ${providerName}`,
-          cause,
-        );
+        throw new Error(`Failed to connect to ${providerName}`);
       }
 
       if (!spaceProvider.connected) {

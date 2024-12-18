@@ -5,7 +5,6 @@ import { API } from "@/api";
 import type { AncestorInfo } from "@/api/custom-types";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
-import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { TABS } from "@/store/panel";
 import {
@@ -13,58 +12,15 @@ import {
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
+import { getToastPresets } from "@/toastPresets";
 
 const DEFAULT_GROUP_ID = "defaultGroupId";
 const ROOT_ITEM_ID = "root";
 
-export const useRevealToasts = () => {
-  let previousToastId: string;
-  const store = useStore();
-  const $toast = getToastsProvider();
-
-  const showErrorToast = () => {
-    if (previousToastId) {
-      $toast.remove(previousToastId);
-    }
-
-    store.commit("spaces/setCurrentSelectedItemIds", []);
-
-    previousToastId = $toast.show({
-      type: "error",
-      headline: "Project not found",
-      message: "Could not reveal project in Space Explorer.",
-      autoRemove: true,
-    });
-  };
-
-  const showLoginErrorToast = (providerName: string) => {
-    $toast.show({
-      type: "error",
-      message: `Could not connect to ${providerName}`,
-    });
-  };
-
-  const showWarningToast = (newItemName: string, oldItemName: string) => {
-    if (previousToastId) {
-      $toast.remove(previousToastId);
-    }
-
-    previousToastId = $toast.show({
-      type: "warning",
-      headline: "Name has changed",
-      message: `The project name has changed from "${oldItemName}" to "${newItemName}" on the remote Hub`,
-      autoRemove: true,
-    });
-  };
-
-  return { showErrorToast, showWarningToast, showLoginErrorToast };
-};
-
 export const useRevealInSpaceExplorer = () => {
   const router = useRouter();
   const store = useStore();
-  const { showWarningToast, showErrorToast, showLoginErrorToast } =
-    useRevealToasts();
+  const { toastPresets } = getToastPresets();
 
   const activeProjectId = computed(
     () => store.state.application.activeProjectId,
@@ -109,6 +65,11 @@ export const useRevealInSpaceExplorer = () => {
     });
   };
 
+  const resetSelectedItemAndShowError = (error: unknown = null) => {
+    store.commit("spaces/setCurrentSelectedItemIds", []);
+    toastPresets.spaces.reveal.revealProjectFailed({ error });
+  };
+
   const checkIfNameHasChangedAndShowWarning = (
     newItemName: string | null,
     oldItemName: string | null,
@@ -118,7 +79,7 @@ export const useRevealInSpaceExplorer = () => {
       oldItemName !== null &&
       newItemName !== oldItemName
     ) {
-      showWarningToast(newItemName, oldItemName);
+      toastPresets.spaces.reveal.nameHasChanged({ newItemName, oldItemName });
     }
   };
 
@@ -211,7 +172,7 @@ export const useRevealInSpaceExplorer = () => {
   ) => {
     try {
       if (!canRevealItem(origin)) {
-        showErrorToast();
+        resetSelectedItemAndShowError();
         return;
       }
 
@@ -222,7 +183,10 @@ export const useRevealInSpaceExplorer = () => {
           spaceProviderId: provider.id,
         });
         if (!isConnected) {
-          showLoginErrorToast(provider.name);
+          toastPresets.spaces.auth.connectFailed({
+            error: null,
+            providerName: provider.name,
+          });
           return;
         }
       }
@@ -239,9 +203,12 @@ export const useRevealInSpaceExplorer = () => {
       await displayInSidebarSpaceExplorer(origin, projectName);
     } catch (error) {
       consola.error("Could not reveal in Space Explorer:", error);
-      showErrorToast();
+      resetSelectedItemAndShowError(error);
     }
   };
 
-  return { revealInSpaceExplorer, canRevealItem };
+  return {
+    revealInSpaceExplorer,
+    canRevealItem,
+  };
 };

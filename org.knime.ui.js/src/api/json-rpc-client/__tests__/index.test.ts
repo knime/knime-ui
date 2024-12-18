@@ -4,8 +4,9 @@ import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
-import { getToastsProvider } from "@/plugins/toasts";
-import { mockVuexStore, mockedObject } from "@/test/utils";
+import { mockVuexStore } from "@/test/utils";
+import { getToastPresets } from "@/toastPresets";
+import { initJSONRPCClient } from "../index";
 import { serverEventHandler } from "../server-events";
 
 vi.mock("@/plugins/event-bus", () => ({
@@ -19,8 +20,6 @@ vi.mock("../server-events", () => ({
   registerEventHandler: () => {},
   serverEventHandler: vi.fn(),
 }));
-
-const toast = mockedObject(getToastsProvider());
 
 const addEventListener = vi.fn();
 
@@ -59,7 +58,7 @@ describe("rpc client initialization", () => {
       expect(() => {
         return initJSONRPCClient(
           "DESKTOP",
-          { url: "", jobId: "", restApiBaseUrl: "", sessionId: "" },
+          { url: "", restApiBaseUrl: "", sessionId: "" },
           store,
         );
       }).rejects.toThrow("Could not access EquoComm service. Aborting");
@@ -87,7 +86,7 @@ describe("rpc client initialization", () => {
 
       await initJSONRPCClient(
         "DESKTOP",
-        { url: "", jobId: "", restApiBaseUrl: "", sessionId: "" },
+        { url: "", restApiBaseUrl: "", sessionId: "" },
         store,
       );
 
@@ -115,13 +114,21 @@ describe("rpc client initialization", () => {
     it("should attach listeners for connection loss", async () => {
       const spy = vi.spyOn(window, "addEventListener");
       const busEmitSpy = vi.spyOn($bus, "emit");
-      const { initJSONRPCClient } = await import("../index");
+
+      const { toastPresets } = getToastPresets();
+      const connectionLossToastSpy = vi.spyOn(
+        toastPresets.connectivity,
+        "connectionLoss",
+      );
+      const connectionRestoredToastSpy = vi.spyOn(
+        toastPresets.connectivity,
+        "connectionRestored",
+      );
 
       await initJSONRPCClient(
         "BROWSER",
         {
           url: "wss://localhost:1000",
-          jobId: "",
           restApiBaseUrl: "",
           sessionId: "",
         },
@@ -143,12 +150,7 @@ describe("rpc client initialization", () => {
 
       window.dispatchEvent(new Event("offline"));
 
-      expect(toast.show).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Please, check your internet connection and try refreshing the page",
-        }),
-      );
+      expect(connectionLossToastSpy).toHaveBeenCalled();
 
       await flushPromises();
       await nextTick();
@@ -158,11 +160,7 @@ describe("rpc client initialization", () => {
 
       window.dispatchEvent(new Event("online"));
 
-      expect(toast.show).toHaveBeenCalledWith(
-        expect.objectContaining({
-          headline: "Connection restored",
-        }),
-      );
+      expect(connectionRestoredToastSpy).toHaveBeenCalled();
 
       expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
     });

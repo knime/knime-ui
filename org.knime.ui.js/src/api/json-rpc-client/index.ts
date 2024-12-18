@@ -2,8 +2,8 @@ import { Client, RequestManager } from "@open-rpc/client-js";
 import type { Store } from "vuex";
 
 import { $bus } from "@/plugins/event-bus";
-import { getToastsProvider } from "@/plugins/toasts";
 import type { RootStoreState } from "@/store/types";
+import { getToastPresets } from "@/toastPresets";
 
 import { DesktopAPTransport } from "./DesktopAPTransport";
 import { WebSocketTransport } from "./WebSocketTransport";
@@ -15,14 +15,14 @@ import {
 
 let jsonRPCClient: Client;
 
-const $toast = getToastsProvider();
-
 export type ConnectionInfo = {
   url: string;
   restApiBaseUrl: string;
   sessionId: string;
   gtmId?: string;
 };
+
+const { toastPresets } = getToastPresets();
 
 const initDesktopClient = () => {
   if (!window.EquoCommService) {
@@ -72,58 +72,34 @@ const setupServerEventListener = (ws: WebSocket) => {
   });
 };
 
-const handleConnectionLoss = (ws: WebSocket, store: Store<RootStoreState>) => {
-  const CONNECTION_LOST_TOAST_ID = "__CONNECTION_LOST";
-  const onConnectionLost = (headline: string, message: string) => {
-    // prevent user interactions
-    $bus.emit("block-ui");
-
-    $toast.show({
-      id: CONNECTION_LOST_TOAST_ID,
-      headline,
-      message,
-      type: "error",
-      autoRemove: false,
-    });
-  };
-
-  const onConnectionRestored = () => {
-    $bus.emit("unblock-ui");
-
-    $toast.removeBy((toast) =>
-      (toast.id ?? "").startsWith(CONNECTION_LOST_TOAST_ID),
-    );
-
-    $toast.show({
-      type: "success",
-      headline: "Connection restored",
-    });
-  };
-
+const handleConnectionChanges = (
+  ws: WebSocket,
+  store: Store<RootStoreState>,
+) => {
   ws.addEventListener("close", (wsCloseEvent) => {
     consola.error("Websocket closed: ", wsCloseEvent);
-    const isSessionExpired =
-      wsCloseEvent.reason?.toLowerCase() === "proxy close";
-
-    const headline = isSessionExpired ? "Session expired" : "Connection lost";
-    const message = isSessionExpired
-      ? "Refresh the page to reactivate the session."
-      : "Connection lost. Try again later.";
 
     store.commit("application/setIsLoadingApp", false);
     store.commit("application/setIsLoadingWorkflow", false);
-    onConnectionLost(headline, message);
+
+    // prevent user interactions
+    $bus.emit("block-ui");
+
+    const { toastPresets } = getToastPresets();
+    toastPresets.connectivity.websocketClosed({ wsCloseEvent });
   });
 
   window.addEventListener("offline", () => {
-    onConnectionLost(
-      "Connection lost",
-      "Please, check your internet connection and try refreshing the page",
-    );
+    // prevent user interactions
+    $bus.emit("block-ui");
+
+    toastPresets.connectivity.connectionLoss();
   });
 
   window.addEventListener("online", () => {
-    onConnectionRestored();
+    $bus.emit("unblock-ui");
+
+    toastPresets.connectivity.connectionRestored();
   });
 };
 
@@ -184,7 +160,7 @@ const initBrowserClient = (
       // setup server event handler and other events on the WS transport
       setupServerEventListener(connection);
 
-      handleConnectionLoss(connection, store);
+      handleConnectionChanges(connection, store);
 
       // initialize the client and request manager to start the WS connection
       const requestManager = new RequestManager([transport]);

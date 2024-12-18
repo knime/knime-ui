@@ -2,11 +2,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { API } from "@/api";
-import { StoreActionException } from "@/api/gateway-api/exceptions";
 import {
   NetworkException,
   ServiceCallException,
-} from "@/api/gateway-api/generated-api";
+} from "@/api/gateway-api/generated-exceptions";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
@@ -116,63 +115,6 @@ describe("spaces::spaceOperations", () => {
       ).rejects.toThrow("Error fetching content second time");
     });
 
-    it("should handle `ServiceCalException`s", () => {
-      const { store } = loadStore();
-
-      store.state.spaces.spaceProviders = {
-        // @ts-ignore
-        hub1: {},
-      };
-
-      mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
-        createSpaceProvider({ connected: true }),
-      );
-
-      const error = new ServiceCallException({
-        message: "Something wrong in the API",
-      });
-
-      const expected = new StoreActionException(
-        "Error while fetching workflow group content",
-        error,
-      );
-
-      mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
-
-      expect(() =>
-        store.dispatch("spaces/fetchWorkflowGroupContent", {
-          projectId: "myProject1",
-        }),
-      ).rejects.toThrowError(expected);
-    });
-
-    it("should handle `NetworkException`s", () => {
-      const { store } = loadStore();
-
-      store.state.spaces.spaceProviders = {
-        // @ts-ignore
-        hub1: {},
-      };
-
-      mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
-        createSpaceProvider({ connected: true }),
-      );
-
-      const error = new NetworkException({
-        message: "Connection loss",
-      });
-
-      const expected = new StoreActionException("Connectivity problem", error);
-
-      mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
-
-      expect(() =>
-        store.dispatch("spaces/fetchWorkflowGroupContent", {
-          projectId: "myProject1",
-        }),
-      ).rejects.toThrowError(expected);
-    });
-
     it("should forward errors when trying to connect `NetworkException`s", () => {
       const { store } = loadStore();
 
@@ -185,13 +127,8 @@ describe("spaces::spaceOperations", () => {
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(null);
 
       const error = new NetworkException({
-        message: "Connection loss",
+        message: "Failed to connect to remote",
       });
-
-      const expected = new StoreActionException(
-        "Failed to connect to remote",
-        new Error(""),
-      );
 
       // fail once so that it gets retried which will attempt to connect
       mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
@@ -200,7 +137,7 @@ describe("spaces::spaceOperations", () => {
         store.dispatch("spaces/fetchWorkflowGroupContent", {
           projectId: "myProject1",
         }),
-      ).rejects.toThrowError(expected);
+      ).rejects.toThrowError(error);
     });
   });
 
@@ -313,9 +250,7 @@ describe("spaces::spaceOperations", () => {
 
       expect(() =>
         store.dispatch("spaces/createFolder", { projectId: "project2" }),
-      ).rejects.toThrow(
-        new StoreActionException("Error while creating folder", ioErr),
-      );
+      ).rejects.toThrow(ioErr);
     });
 
     it("should throw StoreActionException if content refresh fails after folder is created", () => {
@@ -342,12 +277,7 @@ describe("spaces::spaceOperations", () => {
 
       expect(() =>
         store.dispatch("spaces/createFolder", { projectId: "project2" }),
-      ).rejects.toThrow(
-        new StoreActionException(
-          "Error while fetching workflow group content",
-          ioErr,
-        ),
-      );
+      ).rejects.toThrow(ioErr);
     });
   });
 
