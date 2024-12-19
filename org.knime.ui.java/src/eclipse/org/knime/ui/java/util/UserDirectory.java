@@ -90,7 +90,7 @@ public final class UserDirectory {
      * @return the user's profile directory or an empty optional if it could not be accessed or created
      */
     public static Optional<Path> getProfileDirectory() {
-        return getUserDirectory().map(userDir -> {
+        return getUserDirectory().map(userDir -> {  // NOSONAR
             var path = userDir.resolve("profile");
             if (!Files.exists(path)) {
                 try {

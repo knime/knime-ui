@@ -143,7 +143,7 @@ final class NameCollisionChecker {
             .map(srcPath ->
                 checkForNameCollisionInDir(space, srcPath.getFileName().toString(), destWorkflowGroupItemId))//
             .flatMap(Optional::stream)//
-            .collect(Collectors.toList());
+            .toList();
     }
 
     /**

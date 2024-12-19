@@ -189,7 +189,7 @@ public final class LocalSpaceUtil {
      * @return a SpaceGroup that represents the local group
      */
     public static SpaceGroup<LocalWorkspace> getLocalSpaceGroup(final LocalWorkspace localSpace) {
-        return new SpaceGroup<>() {
+        return new SpaceGroup<>() {  // NOSONAR
 
             static final String ID = "Local-space-id";
 

@@ -246,7 +246,7 @@ public final class ImportURI {
             return true; // Changed from false with AP-20962 to not open the extension page in a browser again
         } else {
             final String[] dialogButtonLabels = {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
-            MessageDialog dialog = new MessageDialog(SWTUtilities.getActiveShell(), "Install Extension?", null,
+            var dialog = new MessageDialog(SWTUtilities.getActiveShell(), "Install Extension?", null,
                 "Do you want to search and install the extension '" + featureName + "'?", MessageDialog.QUESTION,
                 dialogButtonLabels, 0);
             if ((dialog.open() == 0) && AbstractP2Action.checkSDKAndReadOnly()) {
@@ -259,7 +259,7 @@ public final class ImportURI {
     }
 
     private static void showPopup(final String text, final String msg, final int swtIcon) {
-        MessageBox mb = new MessageBox(SWTUtilities.getActiveShell(), swtIcon);
+        var mb = new MessageBox(SWTUtilities.getActiveShell(), swtIcon);
         mb.setText(text);
         mb.setMessage(msg);
         mb.open();
@@ -341,12 +341,11 @@ public final class ImportURI {
     }
 
     private static void askToInstallExtension(final NodeImport nodeImport) {
-        String featureName = nodeImport.getFeatureName();
-        String featureSymbolicName = nodeImport.getFeatureSymbolicName();
+        var featureName = nodeImport.getFeatureName();
+        var featureSymbolicName = nodeImport.getFeatureSymbolicName();
         //try installing the missing extension
         String[] dialogButtonLabels = {IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
-        Shell shell = SWTUtilities.getActiveShell();
-        // TODO: derive feature name from feature symbolic name (TODO)
+        var shell = SWTUtilities.getActiveShell();
         var dialog = new MessageDialog(shell, "The KNIME Extension for the node is not installed!", null,
             "The extension '" + featureName + "' is not installed. Do you want to search and install it?"
                 + "\n\nNote: Please drag and drop the node again once the installation process is finished.",

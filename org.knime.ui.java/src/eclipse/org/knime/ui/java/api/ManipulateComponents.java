@@ -300,6 +300,7 @@ final class ManipulateComponents {
     /**
      * @deprecated See NXT-2173
      */
+    @Deprecated
     private static WorkflowCommandAdapter getUpdateComponentCommand(final SubNodeContainer component) {
         final var componentID = component.getID();
         final var wfm = component.getParent();

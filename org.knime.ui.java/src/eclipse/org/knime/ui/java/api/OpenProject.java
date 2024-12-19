@@ -104,7 +104,7 @@ final class OpenProject {
         try {
             DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
                 monitor -> openProjectWithProgress(spaceProviderId, spaceId, itemId, monitor));
-        } catch (Exception e) {
+        } catch (Exception e) {  // NOSONAR
             LOGGER.error("Failed to open project", e);
             throw new IOException(e.getMessage(), e);
         }

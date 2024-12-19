@@ -141,7 +141,7 @@ public final class DesktopAPI {
             var method = apiMethod.method;
             var name = method.getName();
             functionCaller.accept(name, args -> { // NOSONAR
-                Runnable invokeMethod = () -> {
+                Runnable invokeMethod = () -> { // NOSONAR
                     var event = MAPPER.createObjectNode().put("name", name);
                     try {
                         var res = invokeMethod(method, args);
@@ -202,6 +202,7 @@ public final class DesktopAPI {
      * @param userProfile
      * @throws IllegalStateException if the dependencies have been already injected
      */
+    @SuppressWarnings({"java:S107"})  // parameter count
     public static void injectDependencies(final ProjectManager workflowProjectManager,
         final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,

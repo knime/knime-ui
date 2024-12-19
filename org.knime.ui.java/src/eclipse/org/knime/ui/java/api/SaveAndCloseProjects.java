@@ -88,7 +88,7 @@ import org.knime.ui.java.util.DesktopAPUtil;
  */
 public final class SaveAndCloseProjects {
 
-    static AtomicReference<State> projectsSavedState = new AtomicReference<State>();
+    static AtomicReference<State> projectsSavedState = new AtomicReference<>();
 
     private SaveAndCloseProjects() {
         // utility

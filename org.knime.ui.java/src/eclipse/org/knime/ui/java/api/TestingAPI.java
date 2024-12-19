@@ -140,13 +140,13 @@ final class TestingAPI {
             Collections.emptyList() : //
             StreamSupport.stream(newReleases.spliterator(), false)//
                 .map(TestingAPI::createUpdateInfo)//
-                .collect(Collectors.toList());
+                .toList();
         JsonNode bugfixes = updateStateNode.get("bugfixes");
         List<String> bugfixesList = bugfixes == null ? //
             Collections.emptyList() : //
             StreamSupport.stream(bugfixes.spliterator(), false)//
                 .map(JsonNode::textValue)//
-                .collect(Collectors.toList());
+                .toList();
 
         DesktopAPI.getDeps(UpdateStateProvider.class).emitUpdateNotificationsForTesting(newReleasesList, bugfixesList);
     }

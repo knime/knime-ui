@@ -131,8 +131,8 @@ public final class AppStartupCompleteAddon {
             List<MMenuElement> children = mc.getChildren();
             // if there is a menu contribution with exactly one menu which in
             // turn is empty
-            if (children.size() == 1 && children.get(0) instanceof MMenu
-                && ((MMenu)children.get(0)).getChildren().isEmpty()) {
+            if (children.size() == 1 && children.get(0) instanceof MMenu firstChild
+                && (firstChild).getChildren().isEmpty()) {
                 mc.setVisible(false);
                 mc.setToBeRendered(false);
             }

@@ -199,7 +199,7 @@ public final class ProjectFactory {
         final var context = wfm.getContextV2();
         final var apExecInfo = (AnalyticsPlatformExecutorInfo)context.getExecutorInfo();
         final var versionInfo = selectedVersion.map(ProjectFactory::buildVersionInfo);
-        return Optional.of(new Project.Origin() {
+        return Optional.of(new Project.Origin() {  // NOSONAR
 
             @Override
             public String getProviderId() {

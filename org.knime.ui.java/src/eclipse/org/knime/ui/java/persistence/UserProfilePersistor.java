@@ -69,6 +69,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings({"java:S3750"}) // un-parameterised map types
 public final class UserProfilePersistor {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(UserProfilePersistor.class);
@@ -171,7 +172,7 @@ public final class UserProfilePersistor {
     }
 
     private record UserProfileFile<T>(String fileName, Function<UserProfile, T> getValue,
-        Supplier<T> emptyValueSupplier, Class<T> type) {
+            Supplier<T> emptyValueSupplier, Class<T> type) {
         //
     }
 

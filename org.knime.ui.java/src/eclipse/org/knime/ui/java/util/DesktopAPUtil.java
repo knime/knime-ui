@@ -216,7 +216,7 @@ public final class DesktopAPUtil {
         if (wfm != null && wfm.isEncrypted()) { // In case a locked component is opened
             final var prompt = new GUIWorkflowCipherPrompt(true);
             var unlocked = Display.getDefault().syncCall(() -> wfm.unlock(prompt));
-            if (!unlocked) { // If a locked component cannot be opened
+            if (!unlocked) { // If a locked component cannot be opened  // NOSONAR
                 final var title = "Component could not be opened";
                 final var message = "Component could not be opened: Access denied";
                 showError(title, message);
@@ -285,7 +285,7 @@ public final class DesktopAPUtil {
      * @return {@code true} if the user accepted the question, {@code false} otherwise
      */
     public static boolean openQuestion(final String title, final String message) {
-        final AtomicBoolean res = new AtomicBoolean();
+        final var res = new AtomicBoolean();
         Display.getDefault().syncExec(() -> {
             @SuppressWarnings("restriction")
             var sh = org.knime.core.ui.util.SWTUtilities.getActiveShell();
@@ -485,7 +485,7 @@ public final class DesktopAPUtil {
             PlatformUI.getWorkbench().getProgressService().busyCursorWhile(monitor -> {
                 try {
                     consumer.accept(monitor);
-                } catch (Throwable e) {
+                } catch (Throwable e) {  // NOSONAR
                     // arguments to `busyCursorWhile` are only allowed to throw InvocationTargetExceptions
                     throw new InvocationTargetException(e);
                 }
@@ -722,7 +722,7 @@ public final class DesktopAPUtil {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
-            } catch (Throwable e) {
+            } catch (Throwable e) {  // NOSONAR
                 onError.accept(e);
             }
             if (System.currentTimeMillis() > timeoutTime) {

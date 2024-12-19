@@ -230,7 +230,7 @@ final class Init {
     }
 
     private static PreferencesProvider createPreferencesProvider() {
-        return new PreferencesProvider() {
+        return new PreferencesProvider() {   // NOSONAR
 
             @Override
             public Predicate<String> activeNodeCollection() {

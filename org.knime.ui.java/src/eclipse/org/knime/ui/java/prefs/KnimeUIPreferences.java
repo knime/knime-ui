@@ -95,7 +95,7 @@ public final class KnimeUIPreferences {
     private static Runnable explorerMountPointChangeListener;
 
     static {
-        PREF_STORE.addPropertyChangeListener(event -> {
+        PREF_STORE.addPropertyChangeListener(event -> { // NOSONAR
             if (SELECTED_NODE_COLLECTION_PREF_KEY.equals(event.getProperty())) {
                 updateLastUsedPerspectiveAndNotifyListener(event);
             }

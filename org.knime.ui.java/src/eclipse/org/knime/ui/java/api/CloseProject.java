@@ -109,7 +109,7 @@ public final class CloseProject {
      * @param projectIds the ids of the projects to close
      * @return {@code false} if at least one project wasn't closed successfully otherwise {@code true}
      */
-    public static boolean closeProjects(final Collection<String> projectIds) {
+    public static boolean closeProjects(final Iterable<String> projectIds) {
         var success = true;
         for (var projectId : projectIds) {
             success &= closeProject(projectId);

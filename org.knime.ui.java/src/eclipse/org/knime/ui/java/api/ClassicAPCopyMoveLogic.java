@@ -91,6 +91,8 @@ import org.knime.workbench.explorer.view.dialogs.OverwriteAndMergeInfo;
  *
  * @author Leonard Wörteler, KNIME GmbH, Konstanz, Germany
  */
+@Deprecated
+@SuppressWarnings({"java:S3776", "java:S1541", "java:S1192", "java:S134"}) // complexity
 final class ClassicAPCopyMoveLogic {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(ClassicAPCopyMoveLogic.class);
