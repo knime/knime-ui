@@ -89,7 +89,7 @@ competent court at the domicile of the Licensee.
    </license>
 
    <requires>
-      <import feature="org.knime.features.gateway" version="5.4.0" match="compatible"/>
+      <import feature="org.knime.features.gateway" version="5.5.0" match="compatible"/>
    </requires>
 
    <plugin
