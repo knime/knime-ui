@@ -68,20 +68,29 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     // populate local storage from backend
     await runInEnvironment({
       DESKTOP: async () => {
-        await API.desktop
-          .getPersistedLocalStorageData()
-          .then((localStorageItems) =>
-            Object.entries(localStorageItems).forEach(([key, value]) => {
-              if (Object.keys(value as any).length === 0) {
-                window.localStorage.removeItem(key as string);
-              } else {
-                window.localStorage.setItem(
-                  key as string,
-                  JSON.stringify(value),
-                );
-              }
-            }),
-          );
+        consola.trace("lifecycle::getting persisted local storage data");
+        const RETRY_DELAY_MS = 50;
+        // TODO: NXT-989 remove this delay once desktop calls are made via the
+        // EquoComm service
+        await retryAsyncCall(
+          () =>
+            API.desktop
+              .getPersistedLocalStorageData()
+              .then((localStorageItems) =>
+                Object.entries(localStorageItems).forEach(([key, value]) => {
+                  if (Object.keys(value as any).length === 0) {
+                    window.localStorage.removeItem(key as string);
+                  } else {
+                    window.localStorage.setItem(
+                      key as string,
+                      JSON.stringify(value),
+                    );
+                  }
+                }),
+              ),
+          RETRY_DELAY_MS,
+          100,
+        );
       },
     });
 
@@ -92,16 +101,8 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
     await runInEnvironment({
       DESKTOP: async () => {
         consola.trace("lifecycle::setting zoom level");
-        const RETRY_DELAY_MS = 50;
-        // TODO: NXT-989 remove this delay once desktop calls are made via the
-        // EquoComm service
-        await retryAsyncCall(
-          () =>
-            API.desktop.setZoomLevel(
-              ratioToZoomLevel(rootState.settings.settings.uiScale),
-            ),
-          RETRY_DELAY_MS,
-          100,
+        await API.desktop.setZoomLevel(
+          ratioToZoomLevel(rootState.settings.settings.uiScale),
         );
       },
     });
