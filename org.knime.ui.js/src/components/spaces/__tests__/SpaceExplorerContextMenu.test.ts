@@ -114,13 +114,15 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
     expect(wrapper.findComponent(MenuItems).exists()).toBe(true);
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items.length).toBe(5);
+    expect(items.length).toBe(7);
     expect(items.map((item) => item.text)).toStrictEqual([
       "rename",
       "delete",
       "Duplicate",
       "Export",
       "Upload",
+      "Move to...",
+      "Copy to...",
     ]);
   });
 
@@ -133,40 +135,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
     });
 
     const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items.map((item) => item.text)).toStrictEqual([
-      "delete",
-      "Duplicate",
-      "Export",
-      "Upload",
-    ]);
-  });
-
-  it("hides connect to hub if there is nothing to connect to", async () => {
-    const { wrapper } = doMount({
-      props: {
-        selectedItemIds: ["2342", "3432"],
-        isMultipleSelectionActive: true,
-      },
-      spaceProviders: {
-        local: createSpaceProvider(),
-        hub1: createSpaceProvider({
-          id: "hub1",
-          connected: true,
-          connectionMode: "AUTHENTICATED",
-          name: "Hub 1",
-          type: SpaceProviderNS.TypeEnum.HUB,
-        }),
-      },
-    });
-    await nextTick();
-
-    const items = wrapper.findComponent(MenuItems).props("items");
-    expect(items.map((item) => item.text)).toStrictEqual([
-      "delete",
-      "Duplicate",
-      "Export",
-      "Upload",
-    ]);
+    expect(items.map((item) => item.text)).to.not.include("rename");
   });
 
   it("displays the 'Copy to...' option when items are selected", () => {

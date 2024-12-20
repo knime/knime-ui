@@ -249,7 +249,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       ),
 
       ...valueOrEmpty(
-        isLocal || isHub || (isServer && selectionContainsWorkflow),
+        isHub || (isServer && selectionContainsWorkflow),
         downloadToLocalSpace,
       ),
 
