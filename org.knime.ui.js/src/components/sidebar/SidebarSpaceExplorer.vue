@@ -70,6 +70,6 @@ const changeDirectory = async (pathId: string) => {
 }
 
 :deep(.space-explorer .virtual-scrollcontainer) {
-  padding-right: var(--sidebar-panel-padding);
+  padding-right: var(--space-4);
 }
 </style>
