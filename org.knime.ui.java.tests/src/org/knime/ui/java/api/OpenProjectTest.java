@@ -87,9 +87,9 @@ class OpenProjectTest {
     @Test
     @DisabledIfSystemProperty(named = "java.awt.headless", matches = "true")
     void testOpenWorkflowInWebUIOnly() throws Exception {
-        var localWorkspace = LocalSpaceUtilTest.createLocalWorkspace();
+        var localSpace = LocalSpaceUtilTest.createLocalSpace();
         var spaceProvider = mock(SpaceProvider.class);
-        when(spaceProvider.getSpace("local")).thenReturn(localWorkspace);
+        when(spaceProvider.getSpace("local")).thenReturn(localSpace);
         var spaceProviders = mock(SpaceProviders.class);
         when(spaceProviders.getProvidersMap()).thenReturn(Map.of("local", spaceProvider));
         var eventConsumer = mock(EventConsumer.class);
@@ -103,9 +103,9 @@ class OpenProjectTest {
         DesktopAPI.injectDependency(spaceProviders);
         DesktopAPI.injectDependency(eventConsumer);
         DesktopAPI.injectDependency(mruProjects);
-        DesktopAPI.injectDependency(localWorkspace);
+        DesktopAPI.injectDependency(localSpace);
 
-        var itemId = localWorkspace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
+        var itemId = localSpace.listWorkflowGroup(Space.ROOT_ITEM_ID).getItems().get(0).getId();
 
         var monitor = new NullProgressMonitor();
         assertThatThrownBy(() -> OpenProject.openProjectWithProgress("local", "local", "does-not-exist", monitor))

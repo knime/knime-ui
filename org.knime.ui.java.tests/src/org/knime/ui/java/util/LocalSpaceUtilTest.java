@@ -55,7 +55,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 
 /**
  * Tests methods in {@link LocalSpaceUtil}.
@@ -67,8 +67,8 @@ public class LocalSpaceUtilTest {
 
     @Test
     public void testGetLocalOrigin() throws IOException {
-        var localSpace = createLocalWorkspace();
-        var root = localSpace.getLocalRootPath();
+        var localSpace = createLocalSpace();
+        var root = localSpace.getRootPath();
 
         var origin = LocalSpaceUtil.getLocalOrigin(root.resolve("test"), localSpace);
         assertThat(origin.getItemId()).isNotNull();
@@ -81,7 +81,7 @@ public class LocalSpaceUtilTest {
 
     @Test
     public void createSpaceIsNotSupported() throws IOException {
-        var group = LocalSpaceUtil.getLocalSpaceGroup(createLocalWorkspace());
+        var group = LocalSpaceUtil.getLocalSpaceGroup(createLocalSpace());
         assertThatThrownBy(group::createSpace).isInstanceOf(UnsupportedOperationException.class);
     }
 
@@ -89,8 +89,8 @@ public class LocalSpaceUtilTest {
      * @return a local workspace instance for testing purposes
      * @throws IOException
      */
-    public static LocalWorkspace createLocalWorkspace() throws IOException {
-        return new LocalWorkspace(CoreUtil.resolveToFile("/files/test_workspace", LocalSpaceUtilTest.class).toPath());
+    public static LocalSpace createLocalSpace() throws IOException {
+        return new LocalSpace(CoreUtil.resolveToFile("/files/test_workspace", LocalSpaceUtilTest.class).toPath());
     }
 
 }

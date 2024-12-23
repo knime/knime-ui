@@ -51,7 +51,6 @@ package org.knime.ui.java.api;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
@@ -59,7 +58,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.UpdateAvailableEventEnt;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.TestingUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -104,10 +103,10 @@ final class TestingAPI {
                 return projectId;
             }).toList();
         TestingUtil.initAppForTesting(projectIds, activeProjectId.get(),
-            // the workspace is lazily supplied since it's not available, yet,
+            // the local space is lazily supplied since it's not available, yet,
             // when this desktop API function is being called
             // -> it will become available as soon as LifeCycle.init is called
-            () -> DesktopAPI.getDeps(LocalWorkspace.class));
+            () -> DesktopAPI.getDeps(LocalSpace.class));
     }
 
     /**

@@ -55,7 +55,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.profile.UserProfile;
@@ -69,7 +69,7 @@ import org.knime.ui.java.util.MostRecentlyUsedProjects;
 public interface LifeCycleStateInternal extends LifeCycleState {
 
     static LifeCycleStateInternal of(final ProjectManager projectManager,
-        final MostRecentlyUsedProjects mostRecentlyUsedProjects, final LocalWorkspace localWorkspace,
+        final MostRecentlyUsedProjects mostRecentlyUsedProjects, final LocalSpace localSpace,
         final WelcomeAPEndpoint welcomeAPEndpoint, final UserProfile userProfile) {
 
         return new LifeCycleStateInternal() { // NOSONAR
@@ -85,8 +85,8 @@ public interface LifeCycleStateInternal extends LifeCycleState {
             }
 
             @Override
-            public LocalWorkspace getLocalWorkspace() {
-                return localWorkspace;
+            public LocalSpace getLocalSpace() {
+                return localSpace;
             }
 
             @Override
@@ -140,9 +140,9 @@ public interface LifeCycleStateInternal extends LifeCycleState {
     MostRecentlyUsedProjects getMostRecentlyUsedProjects();
 
     /**
-     * @return the local workspace instance to be passed between life cycle phases
+     * @return the local space instance to be passed between life cycle phases
      */
-    LocalWorkspace getLocalWorkspace();
+    LocalSpace getLocalSpace();
 
     /**
      * @return the user profile instance to be passed between life cycle phases

@@ -71,7 +71,7 @@ import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
@@ -99,7 +99,7 @@ public class AppStatePersistorTest {
             }""".formatted( //
         KNIMEConstants.VERSION, //
         SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
-        LocalWorkspace.LOCAL_SPACE_ID //
+        LocalSpace.LOCAL_SPACE_ID //
     );
 
     private static final String VALID_APP_STATE_WITH_RECENTLY_USED_PROJECTS = """
@@ -127,7 +127,7 @@ public class AppStatePersistorTest {
               } ]
             }""".formatted(KNIMEConstants.VERSION, OffsetDateTime.MAX,
             SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
-            LocalWorkspace.LOCAL_SPACE_ID, //
+            LocalSpace.LOCAL_SPACE_ID, //
             OffsetDateTime.MAX);
 
     private static final String VALID_APP_STATE_WITHOUT_PROJECT = """
@@ -149,7 +149,7 @@ public class AppStatePersistorTest {
               } ]
             }""".formatted(KNIMEConstants.VERSION, //
         SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
-        LocalWorkspace.LOCAL_SPACE_ID);
+        LocalSpace.LOCAL_SPACE_ID);
 
     private static final String INVALID_APP_STATE_NO_ORIGIN = """
             {
@@ -160,7 +160,7 @@ public class AppStatePersistorTest {
               } ]
             }""".formatted(KNIMEConstants.VERSION);
 
-    private LocalWorkspace m_space;
+    private LocalSpace m_space;
 
     /**
      * The ID of the single item in {@link this#m_space}
@@ -214,7 +214,7 @@ public class AppStatePersistorTest {
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
         var proj1 = new RecentlyUsedProject("name1", createOrigin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID,
-                LocalWorkspace.LOCAL_SPACE_ID,
+                LocalSpace.LOCAL_SPACE_ID,
                 itemId), OffsetDateTime.MAX);
         var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         mruProjects.add(proj1);
@@ -230,7 +230,7 @@ public class AppStatePersistorTest {
         var loadedProj1 = loadedMRUProjects.get().get(0);
         assertThat(loadedProj1.name()).isEqualTo("name1");
         assertThat(loadedProj1.origin().getItemId())
-            .isEqualTo(localSpace.getItemId(localSpace.getLocalRootPath().resolve(Path.of("relPath"))));
+            .isEqualTo(localSpace.getItemId(localSpace.getRootPath().resolve(Path.of("relPath"))));
         var loadedProj2 = loadedMRUProjects.get().get(1);
         assertThat(loadedProj2.name()).isEqualTo("name2");
         assertThat(loadedProj2.origin().getItemId()).isEqualTo("iid2");
@@ -240,7 +240,7 @@ public class AppStatePersistorTest {
     @BeforeEach
     void setUp() throws IOException {
         var localSpacePath = PathUtils.createTempDir("workspace");
-        var localSpace = new LocalWorkspace(localSpacePath);
+        var localSpace = new LocalSpace(localSpacePath);
         itemId = localSpace.createWorkflow(Space.ROOT_ITEM_ID, "relPath").getId();
         m_space = localSpace;
     }
@@ -258,7 +258,7 @@ public class AppStatePersistorTest {
         when(project.getID()).thenReturn("test_id");
         when(project.getName()).thenReturn("Test Project");
         var origin = mock(Origin.class);
-        when(origin.getSpaceId()).thenReturn(LocalWorkspace.LOCAL_SPACE_ID);
+        when(origin.getSpaceId()).thenReturn(LocalSpace.LOCAL_SPACE_ID);
         when(origin.getProviderId()).thenReturn(SpaceProvider.LOCAL_SPACE_PROVIDER_ID);
         when(origin.getItemId()).thenReturn(itemId);
         when(project.getOrigin()).thenReturn(Optional.of(origin));

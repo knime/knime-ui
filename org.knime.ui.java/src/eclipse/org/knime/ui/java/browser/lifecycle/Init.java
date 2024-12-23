@@ -88,7 +88,7 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.js.cef.nodeview.CEFNodeView;
@@ -123,7 +123,10 @@ final class Init {
 
     static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
         var projectManager = state.getProjectManager();
-        var localSpace = state.getLocalWorkspace();
+        var localSpace = state.getLocalSpace();
+        var spaceProviders = createSpaceProviders(localSpace);
+        var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
+        var appStateUpdater = new AppStateUpdater();
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
         var spaceProviders = createSpaceProviders(localSpace, toastService);
@@ -142,7 +145,7 @@ final class Init {
             kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
-            state.getLocalWorkspace(), state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
+            state.getLocalSpace(), state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
 
         // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
@@ -227,7 +230,7 @@ final class Init {
         return initializeJavaBrowserCommunication(SharedConstants.JSON_RPC_ACTION_ID, SharedConstants.EVENT_ACTION_ID);
     }
 
-    private static UpdatableSpaceProviders createSpaceProviders(final LocalWorkspace localSpace,
+    private static UpdatableSpaceProviders createSpaceProviders(final LocalSpace localSpace,
         final ToastService toastService) {
         return new UpdatableSpaceProviders(localSpace, toastService);
     }
@@ -331,7 +334,7 @@ final class Init {
 
     private static final class UpdatableSpaceProviders implements SpaceProviders {
 
-        private final SpaceProvider m_localWorkspaceProvider;
+        private final SpaceProvider m_localSpaceProvider;
 
         private final List<SpaceProviders> m_spaceProvidersFromExtensionPoint = getSpaceProvidersFromExtensionPoint();
 
@@ -341,8 +344,8 @@ final class Init {
         // thread-safe through synchronized access
         private Map<String, SpaceProviderEnt.TypeEnum> m_providerTypes = Map.of();
 
-        public UpdatableSpaceProviders(final LocalWorkspace localSpace, final ToastService toastService) {
-            m_localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider(localSpace);
+        public UpdatableSpaceProviders(final LocalSpace localSpace, final ToastService toastService) {
+            m_localSpaceProvider = LocalSpaceUtil.createLocalSpaceProvider(localSpace);
             m_spaceProvidersFromExtensionPoint.forEach(providers -> providers.getProvidersMap().values()
                 .forEach(provider -> initializeSpaceProvider(provider, toastService)));
             update(toastService);
@@ -360,7 +363,7 @@ final class Init {
 
         synchronized void update(final ToastService toastService) {
             final var newProviders = new LinkedHashMap<String, SpaceProvider>();
-            newProviders.put(m_localWorkspaceProvider.getId(), m_localWorkspaceProvider);
+            newProviders.put(m_localSpaceProvider.getId(), m_localSpaceProvider);
             m_spaceProvidersFromExtensionPoint.forEach(sp -> {
                 var providersMap = sp.getProvidersMap();
                 providersMap.values().forEach(provider -> initializeSpaceProvider(provider, toastService));

@@ -60,7 +60,7 @@ import java.util.function.Predicate;
 import org.knime.core.node.util.CheckUtils;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 
 /**
  * Utility class to be able to keep track of the most recently used projects.
@@ -126,7 +126,7 @@ public final class MostRecentlyUsedProjects {
      * @param localSpace
      */
     public void updateOriginAndName(final String providerId, final String spaceId, final String itemId,
-        final String newName, final LocalWorkspace localSpace) {
+        final String newName, final LocalSpace localSpace) {
 
         Origin newOrigin = null;
         if (LocalSpaceUtil.isLocalSpace(providerId, spaceId)) {

@@ -52,7 +52,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.profile.UserProfile;
@@ -98,8 +98,8 @@ class LifeCycleStateInternalAdapter implements LifeCycleStateInternal {
     }
 
     @Override
-    public LocalWorkspace getLocalWorkspace() {
-        return m_lifeCycleStateInternal.getLocalWorkspace();
+    public LocalSpace getLocalSpace() {
+        return m_lifeCycleStateInternal.getLocalSpace();
     }
 
     @Override

@@ -68,7 +68,7 @@ import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
 import org.knime.ui.java.util.ExampleProjects;
@@ -196,7 +196,7 @@ public final class DesktopAPI {
      * @param toastService
      * @param nodeRepo
      * @param mruProjects
-     * @param localWorkspace
+     * @param localSpace
      * @param welcomeAPEndpoint
      * @param exampleProjects
      * @param userProfile
@@ -207,7 +207,7 @@ public final class DesktopAPI {
         final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
-        final MostRecentlyUsedProjects mruProjects, final LocalWorkspace localWorkspace,
+        final MostRecentlyUsedProjects mruProjects, final LocalSpace localSpace,
         final WelcomeAPEndpoint welcomeAPEndpoint, final ExampleProjects exampleProjects,
         final UserProfile userProfile) {
         if (areDependenciesInjected()) {
@@ -224,7 +224,7 @@ public final class DesktopAPI {
             DEPENDENCIES.put(UpdateStateProvider.class, updateStateProvider);
         }
         injectDependency(mruProjects);
-        injectDependency(localWorkspace);
+        injectDependency(localSpace);
         DEPENDENCIES.put(WelcomeAPEndpoint.class, welcomeAPEndpoint);
         injectDependency(exampleProjects);
         injectDependency(userProfile);
@@ -246,10 +246,10 @@ public final class DesktopAPI {
     /**
      * Add individual dependency for testing purposes.
      *
-     * @param localWorkspace
+     * @param localSpace
      */
-    static void injectDependency(final LocalWorkspace localWorkspace) {
-        DEPENDENCIES.put(LocalWorkspace.class, localWorkspace);
+    static void injectDependency(final LocalSpace localSpace) {
+        DEPENDENCIES.put(LocalSpace.class, localSpace);
     }
 
     /**

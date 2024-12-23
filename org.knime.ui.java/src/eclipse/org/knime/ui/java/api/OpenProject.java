@@ -67,7 +67,7 @@ import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.workbench.core.imports.RepoObjectImport;
@@ -236,7 +236,7 @@ final class OpenProject {
      */
     private static ProjectAndWorkflowManager getAndUpdateWorkflowServiceProject(final Space space,
         final String spaceProviderId, final String spaceId, final String itemId, final ProjectTypeEnum projectType) {
-        if (space instanceof LocalWorkspace localSpace) {
+        if (space instanceof LocalSpace localSpace) {
             var pm = DesktopAPI.getDeps(ProjectManager.class);
             var path = localSpace.toLocalAbsolutePath(new ExecutionMonitor(), itemId).orElse(null);
             var project = WorkflowServiceProjects.getProject(path).flatMap(pm::getProject).orElse(null);
@@ -263,9 +263,9 @@ final class OpenProject {
             return null;
         }
         String relativePath = null;
-        if (space instanceof LocalWorkspace localWorkspace) {
+        if (space instanceof LocalSpace localSpace) {
             var wfPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
-            relativePath = localWorkspace.getLocalRootPath().relativize(wfPath).toString();
+            relativePath = localSpace.getRootPath().relativize(wfPath).toString();
         }
 
         var project = Project.of(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);

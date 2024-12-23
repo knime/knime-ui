@@ -84,7 +84,7 @@ final class ImportAPI {
     }
 
     /**
-     * Import workflows into a workspace and save them to the specified location.
+     * Import workflows into a space and save them to the specified location.
      *
      * @return the ids of the imported items or {@code null} if the import failed
      */
@@ -100,7 +100,7 @@ final class ImportAPI {
     }
 
     /**
-     * Import data files into a workspace and save them to the specified location.
+     * Import data files into a space and save them to the specified location.
      *
      * @return the ids of the imported items or {@code null} if the import failed
      */

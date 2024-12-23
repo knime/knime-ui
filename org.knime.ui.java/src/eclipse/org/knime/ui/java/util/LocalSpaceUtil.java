@@ -62,7 +62,7 @@ import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.webui.spaces.SpaceGroup;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 
 /**
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
@@ -74,10 +74,10 @@ public final class LocalSpaceUtil {
     }
 
     /**
-     * @param localSpace the local workspace instance
-     * @return A {@link SpaceProvider} instance providing the {@link LocalWorkspace}
+     * @param localSpace the local space instance
+     * @return A {@link SpaceProvider} instance providing the {@link LocalSpace}
      */
-    public static SpaceProvider createLocalWorkspaceProvider(final LocalWorkspace localSpace) {
+    public static SpaceProvider createLocalSpaceProvider(final LocalSpace localSpace) {
         return new SpaceProvider() { // NOSONAR
             @Override
             public void init(final Consumer<String> loginErrorHandler) {
@@ -96,7 +96,7 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public LocalWorkspace getSpace(final String spaceId) {
+            public LocalSpace getSpace(final String spaceId) {
                 return Optional.of(localSpace).filter(space -> space.getId().equals(spaceId)).orElseThrow();
             }
 
@@ -112,12 +112,12 @@ public final class LocalSpaceUtil {
 
             @Override
             public Optional<SpaceAndItemId> resolveSpaceAndItemId(final URI uri) {
-                return getSpace(LocalWorkspace.LOCAL_SPACE_ID).getItemIdByURI(uri) //
-                    .map(itemId -> new SpaceAndItemId(LocalWorkspace.LOCAL_SPACE_ID, itemId));
+                return getSpace(LocalSpace.LOCAL_SPACE_ID).getItemIdByURI(uri) //
+                    .map(itemId -> new SpaceAndItemId(LocalSpace.LOCAL_SPACE_ID, itemId));
             }
 
             @Override
-            public SpaceGroup<LocalWorkspace> getSpaceGroup(final String spaceGroupName) {
+            public SpaceGroup<LocalSpace> getSpaceGroup(final String spaceGroupName) {
                 var localGroup = getLocalSpaceGroup(localSpace);
                 if(!spaceGroupName.equals(localGroup.getName())) {
                     throw new NoSuchElementException("No group found with name " + spaceGroupName);
@@ -131,10 +131,10 @@ public final class LocalSpaceUtil {
      * Obtain the {@link org.knime.gateway.impl.project.Project.Origin} of a workflow project on the local file system
      *
      * @param absolutePath The path of the workflow project
-     * @param localSpace the local workspace instance
+     * @param localSpace the local space instance
      * @return The {@link org.knime.gateway.impl.project.Project.Origin} of the workflow project.
      */
-    public static Project.Origin getLocalOrigin(final Path absolutePath, final LocalWorkspace localSpace) {
+    public static Project.Origin getLocalOrigin(final Path absolutePath, final LocalSpace localSpace) {
         var relativePath = toRelativePath(absolutePath, localSpace);
         var itemId = localSpace.getItemId(absolutePath);
         return new Project.Origin() { // NOSONAR
@@ -145,7 +145,7 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getSpaceId() {
-                return LocalWorkspace.LOCAL_SPACE_ID;
+                return LocalSpace.LOCAL_SPACE_ID;
             }
 
             @Override
@@ -160,19 +160,19 @@ public final class LocalSpaceUtil {
         };
     }
 
-    private static Path toRelativePath(final Path absolutePath, final LocalWorkspace localSpace) {
-        return localSpace.getLocalRootPath().relativize(absolutePath);
+    private static Path toRelativePath(final Path absolutePath, final LocalSpace localSpace) {
+        return localSpace.getRootPath().relativize(absolutePath);
     }
 
     /**
      * @param spaceProviderId
      * @param spaceId
-     * @return Returns {@code true} if both parameters indicate we work within the {@link LocalWorkspace}, {@code false}
+     * @return Returns {@code true} if both parameters indicate we work within the {@link LocalSpace}, {@code false}
      *         otherwise.
      */
     public static boolean isLocalSpace(final String spaceProviderId, final String spaceId) {
         return spaceProviderId.equals(SpaceProvider.LOCAL_SPACE_PROVIDER_ID)
-            && spaceId.equals(LocalWorkspace.LOCAL_SPACE_ID);
+            && spaceId.equals(LocalSpace.LOCAL_SPACE_ID);
     }
 
     /**
@@ -184,12 +184,12 @@ public final class LocalSpaceUtil {
     }
 
     /**
-     * Creates a Space Group for the local environment
+     * Creates a Space Group for the local space provider
      *
      * @param localSpace
      * @return a SpaceGroup that represents the local group
      */
-    public static SpaceGroup<LocalWorkspace> getLocalSpaceGroup(final LocalWorkspace localSpace) {
+    public static SpaceGroup<LocalSpace> getLocalSpaceGroup(final LocalSpace localSpace) {
         return new SpaceGroup<>() {  // NOSONAR
 
             static final String ID = "Local-space-id";
@@ -213,7 +213,7 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public List<LocalWorkspace> getSpaces() {
+            public List<LocalSpace> getSpaces() {
                 return List.of(localSpace);
             }
 

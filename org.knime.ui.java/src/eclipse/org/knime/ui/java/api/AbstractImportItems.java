@@ -65,7 +65,7 @@ import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
- * Abstract helper class to import files or workflows into a given workspace.
+ * Abstract helper class to import files or workflows into a given {@link Space}.
  *
  * @author Kai Franze, KNIME GmbH
  */

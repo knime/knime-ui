@@ -58,7 +58,7 @@ import java.util.List;
 public interface ExampleProjects {
 
     /**
-     * @return list of relative paths pointing add workflows in the local workspace
+     * @return list of relative paths pointing to workflows in the local space
      */
     List<String> getRelativeExampleProjectPaths();
 

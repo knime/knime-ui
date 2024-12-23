@@ -82,7 +82,7 @@ final class SaveState {
             AppStatePersistor.serializeAppState(
                     state.getProjectManager(),
                     state.getMostRecentlyUsedProjects(),
-                    state.getLocalWorkspace()
+                    state.getLocalSpace()
             );
 
         final var saveProjectsFunction = state.getSaveAndCloseAllProjectsFunction();

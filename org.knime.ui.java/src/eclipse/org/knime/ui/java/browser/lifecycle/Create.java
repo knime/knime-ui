@@ -69,7 +69,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
@@ -128,13 +128,13 @@ final class Create {
 
         var projectManager = ProjectManager.getInstance();
         var mostRecentlyUsedProjects = new MostRecentlyUsedProjects();
-        var localWorkspace = createLocalWorkspace();
+        var localSpace = createLocalSpace();
         ProjectWorkflowMap.isActive = false;
-        AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localWorkspace);
+        AppStatePersistor.loadAppState(projectManager, mostRecentlyUsedProjects, localSpace);
         var userProfile = loadUserProfile();
         userProfile.internalUsage().trackUiCreated();
 
-        return LifeCycleStateInternal.of(projectManager, mostRecentlyUsedProjects, localWorkspace,
+        return LifeCycleStateInternal.of(projectManager, mostRecentlyUsedProjects, localSpace,
             WelcomeAPEndpoint.getInstance(), userProfile);
     }
 
@@ -191,9 +191,9 @@ final class Create {
         );
     }
 
-    private static LocalWorkspace createLocalWorkspace() {
+    private static LocalSpace createLocalSpace() {
         var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
-        return new LocalWorkspace(localWorkspaceRootPath);
+        return new LocalSpace(localWorkspaceRootPath);
     }
 
 }

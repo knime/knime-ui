@@ -64,7 +64,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -86,11 +86,11 @@ public final class TestingUtil {
      *
      * @param projectIds projects to be available as tabs
      * @param activeProjectId the active tab
-     * @param localSpaceSupplier the lazily supplied local workspace (might not be available at the time this method is
+     * @param localSpaceSupplier the lazily supplied local space (might not be available at the time this method is
      *            called)
      */
     public static void initAppForTesting(final List<String> projectIds, final String activeProjectId,
-        final Supplier<LocalWorkspace> localSpaceSupplier) {
+        final Supplier<LocalSpace> localSpaceSupplier) {
         clearAppForTesting();
         TestingUtil.addToProjectManagerForTesting(projectIds, activeProjectId, localSpaceSupplier);
         KnimeBrowserView.initViewForTesting();
@@ -110,7 +110,7 @@ public final class TestingUtil {
     }
 
     private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId,
-        final Supplier<LocalWorkspace> localSpaceSupplier) {
+        final Supplier<LocalSpace> localSpaceSupplier) {
         var wpm = ProjectManager.getInstance();
         projectIds.stream().forEach(projectId -> wpm.addProject(new Project() { // NOSONAR
 

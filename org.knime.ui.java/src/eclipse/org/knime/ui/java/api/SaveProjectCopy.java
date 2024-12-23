@@ -78,7 +78,7 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -131,7 +131,7 @@ final class SaveProjectCopy {
                 return;
             }
 
-            var localSpace = DesktopAPI.getDeps(LocalWorkspace.class);
+            var localSpace = DesktopAPI.getDeps(LocalSpace.class);
             if (wfm.isComponentProjectWFM()) {
                 saveAndReplaceComponentProject(oldContext, newContext, wfm, projectId, localSpace);
             } else {
@@ -166,7 +166,7 @@ final class SaveProjectCopy {
             return null;
         }
 
-        var localSpace = DesktopAPI.getDeps(LocalWorkspace.class);
+        var localSpace = DesktopAPI.getDeps(LocalSpace.class);
         final var destWorkflowGroupItemId = localSpace.getItemId(destWorkflowGroupPath);
         var fileName = destPicker.getTextInput();
         final var collisionHandling = getNameCollisionStrategy(fileName, destWorkflowGroupItemId, localSpace);
@@ -196,7 +196,7 @@ final class SaveProjectCopy {
             .withAnalyticsPlatformExecutor(exec -> exec //
                 .withCurrentUserAsUserId() //
                 .withLocalWorkflowPath(newPath) //
-                .withMountpoint(localSpace.getId().toUpperCase(Locale.US), localSpace.getLocalRootPath()) //
+                .withMountpoint(localSpace.getId().toUpperCase(Locale.US), localSpace.getRootPath()) //
                 .withTempFolder(oldContext.getExecutorInfo().getTempFolder())) //
             .withLocalLocation() //
             .build();
@@ -218,22 +218,22 @@ final class SaveProjectCopy {
     }
 
     private static NameCollisionHandling getNameCollisionStrategy(final String fileName,
-        final String workflowGroupItemId, final LocalWorkspace localWorkspace) {
+        final String workflowGroupItemId, final LocalSpace localSpace) {
         var nameCollisions = NameCollisionChecker//
-            .checkForNameCollisionInDir(localWorkspace, fileName, workflowGroupItemId)//
+            .checkForNameCollisionInDir(localSpace, fileName, workflowGroupItemId)//
             .stream()//
             .toList();
         if (nameCollisions.isEmpty()) {
             return NameCollisionHandling.NOOP;
         } else {
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(localWorkspace, workflowGroupItemId,
+            return NameCollisionChecker.openDialogToSelectCollisionHandling(localSpace, workflowGroupItemId,
                 nameCollisions, UsageContext.SAVE).orElse(null);
         }
     }
 
     private static void saveAndReplaceWorkflowProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId, final String projectSVG,
-        final LocalWorkspace localSpace) {
+        final LocalSpace localSpace) {
         final var project =
             Project.of(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, project,
@@ -242,7 +242,7 @@ final class SaveProjectCopy {
 
     private static void saveAndReplaceComponentProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
-        final LocalWorkspace localSpace) {
+        final LocalSpace localSpace) {
         final var project =
             Project.of(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, project, monitor -> saveComponentCopy(monitor, wfm, newContext));

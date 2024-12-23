@@ -84,7 +84,7 @@ import org.knime.gateway.impl.webui.spaces.Space.TransferResult;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.SpaceProvidersUtil;
@@ -216,7 +216,7 @@ final class SpaceAPI {
         }
 
         if (sources.isLocal()) {
-            final var opened = findDirtyOpenedWorkflows((LocalWorkspace)sources.space(), sources.itemIds());
+            final var opened = findDirtyOpenedWorkflows((LocalSpace)sources.space(), sources.itemIds());
             if (!opened.isEmpty()) {
                 showDirtyWorkflowsWarningToUser(opened);
                 return false;
@@ -265,7 +265,7 @@ final class SpaceAPI {
         final Locator.Destination destination) throws OperationNotAllowedException {
         final TransferResult result = sources.space().downloadInto( //
             sources.itemIds(), //
-            (LocalWorkspace)destination.space(), //
+            (LocalSpace)destination.space(), //
             destination.itemId()//
         );
         if (result.errorTitleAndDescription() != null) {
@@ -283,7 +283,7 @@ final class SpaceAPI {
         }
 
         var result = destination.space().uploadFrom( //
-            (LocalWorkspace)sources.space(), //
+            (LocalSpace)sources.space(), //
             sources.itemIds(), //
             destination.itemId(), //
             excludeData //
@@ -328,14 +328,14 @@ final class SpaceAPI {
             false);
     }
 
-    private static List<String> findDirtyOpenedWorkflows(final LocalWorkspace space, final List<String> itemIds) {
+    private static List<String> findDirtyOpenedWorkflows(final LocalSpace space, final List<String> itemIds) {
         final var projects = DesktopAPI.getDeps(ProjectManager.class);
-        final var spaceRoot = space.getLocalRootPath();
+        final var spaceRoot = space.getRootPath();
         final var dirtyAndOpen = new ArrayList<String>();
         for (final var itemId : itemIds) {
             var openProjectWithId = projects.getProject( //
                 SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
-                LocalWorkspace.LOCAL_SPACE_ID, //
+                LocalSpace.LOCAL_SPACE_ID, //
                 itemId //
             );
             var isDirty = openProjectWithId //

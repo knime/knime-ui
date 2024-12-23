@@ -95,7 +95,7 @@ import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.LoadMetaNodeTemplateRunnable;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
@@ -242,8 +242,8 @@ public final class DesktopAPUtil {
     }
 
     private static Path getLocalRoot(final Space space, final LocationInfo location, final Path path) {
-        if (space instanceof LocalWorkspace localSpace) {
-            return localSpace.getLocalRootPath();
+        if (space instanceof LocalSpace localSpace) {
+            return localSpace.getRootPath();
         }
         if (location instanceof RestLocationInfo) {
             return path.getParent();

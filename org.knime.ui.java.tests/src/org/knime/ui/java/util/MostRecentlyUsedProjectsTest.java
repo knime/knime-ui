@@ -63,7 +63,7 @@ import org.knime.gateway.impl.project.DefaultProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
@@ -132,14 +132,14 @@ public class MostRecentlyUsedProjectsTest {
 
     /**
      * Tests
-     * {@link MostRecentlyUsedProjects#updateOriginAndName(String, String, String, String, org.knime.gateway.impl.webui.spaces.local.LocalWorkspace)}.
+     * {@link MostRecentlyUsedProjects#updateOriginAndName(String, String, String, String, LocalSpace)}.
      *
      * @throws IOException
      * @throws OperationNotAllowedException
      */
     @Test
     void testUpdateOriginAndName() throws IOException, OperationNotAllowedException {
-        var localSpace = new LocalWorkspace(FileUtil.createTempDir("testUpdateOriginAndName").toPath());
+        var localSpace = new LocalSpace(FileUtil.createTempDir("testUpdateOriginAndName").toPath());
         var wfId = localSpace.createWorkflow("root", "simple").getId();
         var groupId = localSpace.createWorkflowGroup("root").getId();
         localSpace.renameItem(groupId, "group");

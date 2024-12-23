@@ -78,7 +78,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -239,7 +239,7 @@ final class ProjectAPI {
     @API
     static String updateAndGetMostRecentlyUsedProjects() {
         var mruProjects = DesktopAPI.getDeps(MostRecentlyUsedProjects.class);
-        var localSpace = DesktopAPI.getDeps(LocalWorkspace.class);
+        var localSpace = DesktopAPI.getDeps(LocalSpace.class);
         mruProjects.removeIf(p -> wasRemovedFromLocalSpace(p.origin(), localSpace));
         return reverseList(mruProjects.get()).stream() //
             .map(p -> MAPPER.createObjectNode() //
@@ -259,7 +259,7 @@ final class ProjectAPI {
         return res;
     }
 
-    private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalWorkspace localSpace) {
+    private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalSpace localSpace) {
         if (LocalSpaceUtil.isLocalSpace(origin.getProviderId(), origin.getSpaceId())) {
             return localSpace.toLocalAbsolutePath(null, origin.getItemId()).isEmpty();
         } else {
@@ -291,7 +291,7 @@ final class ProjectAPI {
     static void updateMostRecentlyUsedProject(final String providerId, final String spaceId, final String itemId,
         final String newName) {
         DesktopAPI.getDeps(MostRecentlyUsedProjects.class).updateOriginAndName(providerId, spaceId, itemId, newName,
-            DesktopAPI.getDeps(LocalWorkspace.class));
+            DesktopAPI.getDeps(LocalSpace.class));
     }
 
     /**
@@ -299,17 +299,17 @@ final class ProjectAPI {
      */
     @API
     static String getExampleProjects() {
-        var localWorkspace = DesktopAPI.getDeps(LocalWorkspace.class);
+        var localSpace = DesktopAPI.getDeps(LocalSpace.class);
         var exampleProjects = DesktopAPI.getDeps(ExampleProjects.class);
         return exampleProjects.getRelativeExampleProjectPaths().stream() //
-            .map(s -> localWorkspace.getLocalRootPath().resolve(Path.of(s))) //
+            .map(s -> localSpace.getRootPath().resolve(Path.of(s))) //
             .filter(Files::exists) //
-            .map(f -> createExampleProjectJson(f, localWorkspace)) //
+            .map(f -> createExampleProjectJson(f, localSpace)) //
             .filter(Objects::nonNull) //
             .collect(arrayNodeCollector()).toPrettyString();
     }
 
-    private static JsonNode createExampleProjectJson(final Path workflowDir, final LocalWorkspace localWorkspace) {
+    private static JsonNode createExampleProjectJson(final Path workflowDir, final LocalSpace localSpace) {
         var svgFile = workflowDir.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE);
         byte[] svg;
         try {
@@ -321,7 +321,7 @@ final class ProjectAPI {
         }
         var name = workflowDir.getFileName().toString();
         var svgEncoded = Base64.getEncoder().encodeToString(svg);
-        var itemId = localWorkspace.getItemId(workflowDir);
+        var itemId = localSpace.getItemId(workflowDir);
         return createExampleProjectJson(name, svgEncoded, itemId);
     }
 
@@ -331,7 +331,7 @@ final class ProjectAPI {
             .put("svg", svg) //
             .set("origin", MAPPER.createObjectNode() //
                 .put("itemId", itemId) //
-                .put("spaceId", LocalWorkspace.LOCAL_SPACE_ID) //
+                .put("spaceId", LocalSpace.LOCAL_SPACE_ID) //
                 .put("providerId", SpaceProvider.LOCAL_SPACE_PROVIDER_ID) //
             );
     }

@@ -63,12 +63,12 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
- * Import data files into a workspace and save them to the specified location.
+ * Import data files into a space and save them to the specified location.
  *
  * @author Kai Franze, KNIME GmbH
  */
@@ -97,7 +97,7 @@ class ImportFiles extends AbstractImportItems {
     protected List<SpaceItemEnt> importItems(final IProgressMonitor monitor, final Space space,
         final String workflowGroupItemId, final List<Path> srcPaths,
         final Space.NameCollisionHandling collisionHandling) {
-        final var name = ClassUtils.castOptional(LocalWorkspace.class, space) //
+        final var name = ClassUtils.castOptional(LocalSpace.class, space) //
             .map(local -> local.getItemName(workflowGroupItemId)) //
             .orElse(space.getName());
         monitor.beginTask(String.format("Importing %d files into \"%s\"", srcPaths.size(), name),

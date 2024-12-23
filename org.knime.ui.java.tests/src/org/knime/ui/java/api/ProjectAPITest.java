@@ -63,7 +63,7 @@ import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtilTest;
@@ -97,11 +97,11 @@ class ProjectAPITest {
     @Test
     void testUpdateAndGetMostRecentlyUsedProjects() throws IOException {
         var mruProjects = new MostRecentlyUsedProjects();
-        var localSpace = LocalSpaceUtilTest.createLocalWorkspace();
+        var localSpace = LocalSpaceUtilTest.createLocalSpace();
         var proj1 =
             new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
         var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
-        var itemId = localSpace.getItemId(localSpace.getLocalRootPath().resolve("simple"));
+        var itemId = localSpace.getItemId(localSpace.getRootPath().resolve("simple"));
         var proj3 = new RecentlyUsedProject("name3", createOrigin("local", "local", itemId), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
@@ -156,7 +156,7 @@ class ProjectAPITest {
     @Test
     void testGetExampleProjects() throws IOException {
         ExampleProjects exampleProjects = () -> List.of("wfDir1", "wfDir2");
-        var localSpace = createLocalWorkspace();
+        var localSpace = createLocalSpace();
         DesktopAPI.injectDependency(localSpace);
         DesktopAPI.injectDependency(exampleProjects);
 
@@ -171,7 +171,7 @@ class ProjectAPITest {
         assertThat(res.get(0).get("origin").has("providerId"));
     }
 
-    private static LocalWorkspace createLocalWorkspace() throws IOException {
+    private static LocalSpace createLocalSpace() throws IOException {
         var root = Files.createTempDirectory("application_service_test");
         var wfDir1 = root.resolve("wfDir1");
         Files.createDirectory(wfDir1);
@@ -179,7 +179,7 @@ class ProjectAPITest {
         var wfDir2 = root.resolve("wfDir2");
         Files.createDirectory(wfDir2);
         Files.writeString(wfDir2.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), "svg file content 2");
-        return new LocalWorkspace(root);
+        return new LocalSpace(root);
     }
 
     @AfterEach

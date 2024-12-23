@@ -68,13 +68,13 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
-import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.workbench.ui.workflow.metadata.MetaInfoFile;
 
 /**
- * Import workflows into a workspace and save them to the specified location.
+ * Import workflows into a space and save them to the specified location.
  *
  * @author Kai Franze, KNIME GmbH
  */
@@ -113,7 +113,7 @@ class ImportWorkflows extends AbstractImportItems {
         final var archiveFilePath = srcPaths.get(0);
 
         // avoid reading the repository item again
-        final var name = ClassUtils.castOptional(LocalWorkspace.class, space) //
+        final var name = ClassUtils.castOptional(LocalSpace.class, space) //
                 .map(local -> '"' + local.getItemName(workflowGroupItemId) + '"') //
                 .orElse("Hub space \"" + space.getName() + '"');
         monitor.beginTask(String.format("Importing %d files into %s", srcPaths.size(), name), IProgressMonitor.UNKNOWN);
