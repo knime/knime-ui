@@ -140,7 +140,7 @@ final class SpaceAPI {
      * @return A JSON object with all the space provider information.
      * @throws NoSuchElementException if there is no space provider for the given id
      */
-    @API
+    @API(runInUIThread = false)
     static String connectSpaceProvider(final String spaceProviderId) {
         final var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
         if (spaceProvider == null) {
