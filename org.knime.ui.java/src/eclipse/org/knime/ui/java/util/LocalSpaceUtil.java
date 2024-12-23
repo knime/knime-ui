@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.knime.gateway.api.webui.entity.SpaceGroupEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
@@ -78,6 +79,11 @@ public final class LocalSpaceUtil {
      */
     public static SpaceProvider createLocalWorkspaceProvider(final LocalWorkspace localSpace) {
         return new SpaceProvider() { // NOSONAR
+            @Override
+            public void init(final Consumer<String> loginErrorHandler) {
+                // do nothing
+            }
+
             @Override
             public String getId() {
                 return LOCAL_SPACE_PROVIDER_ID;

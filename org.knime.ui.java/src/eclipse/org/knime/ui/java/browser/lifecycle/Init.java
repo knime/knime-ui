@@ -66,6 +66,7 @@ import org.knime.core.node.NodeFactory;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.util.auth.CouldNotAuthorizeException;
 import org.knime.gateway.api.util.ExtPointUtil;
+import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
@@ -123,11 +124,11 @@ final class Init {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
         var projectManager = state.getProjectManager();
         var localSpace = state.getLocalWorkspace();
-        var spaceProviders = createSpaceProviders(localSpace);
-        var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
-        var appStateUpdater = new AppStateUpdater();
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
+        var spaceProviders = createSpaceProviders(localSpace, toastService);
+        var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
+        var appStateUpdater = new AppStateUpdater();
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
         var kaiHandler = createKaiHandler(eventConsumer, spaceProviders, appStateUpdater);
         var preferenceProvider = createPreferencesProvider();
@@ -145,7 +146,8 @@ final class Init {
 
         // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
-        registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer, nodeCollections, nodeRepo);
+        registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer, nodeCollections, nodeRepo,
+            toastService);
 
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
@@ -176,7 +178,7 @@ final class Init {
 
     private static void registerPreferenceListeners(final AppStateUpdater appStateUpdater,
         final UpdatableSpaceProviders spaceProviders, final EventConsumer eventConsumer,
-        final NodeCollections nodeCollections, final NodeRepository nodeRepo) {
+        final NodeCollections nodeCollections, final NodeRepository nodeRepo, final ToastService toastService) {
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
@@ -199,7 +201,7 @@ final class Init {
 
         KnimeUIPreferences.setConfirmNodeConfigChangesPrefChangeListener(appStateUpdater::updateAppState);
         KnimeUIPreferences.setExplorerMointPointChangeListener(() -> {
-            spaceProviders.update();
+            spaceProviders.update(toastService);
             SpaceProvidersUtil.sendSpaceProvidersChangedEvent(spaceProviders, eventConsumer);
         });
 
@@ -225,8 +227,9 @@ final class Init {
         return initializeJavaBrowserCommunication(SharedConstants.JSON_RPC_ACTION_ID, SharedConstants.EVENT_ACTION_ID);
     }
 
-    private static UpdatableSpaceProviders createSpaceProviders(final LocalWorkspace localSpace) {
-        return new UpdatableSpaceProviders(localSpace);
+    private static UpdatableSpaceProviders createSpaceProviders(final LocalWorkspace localSpace,
+        final ToastService toastService) {
+        return new UpdatableSpaceProviders(localSpace, toastService);
     }
 
     private static PreferencesProvider createPreferencesProvider() {
@@ -338,9 +341,11 @@ final class Init {
         // thread-safe through synchronized access
         private Map<String, SpaceProviderEnt.TypeEnum> m_providerTypes = Map.of();
 
-        public UpdatableSpaceProviders(final LocalWorkspace localSpace) {
+        public UpdatableSpaceProviders(final LocalWorkspace localSpace, final ToastService toastService) {
             m_localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider(localSpace);
-            update();
+            m_spaceProvidersFromExtensionPoint.forEach(providers -> providers.getProvidersMap().values()
+                .forEach(provider -> initializeSpaceProvider(provider, toastService)));
+            update(toastService);
         }
 
         @Override
@@ -353,10 +358,14 @@ final class Init {
             return m_providerTypes;
         }
 
-        synchronized void update() {
+        synchronized void update(final ToastService toastService) {
             final var newProviders = new LinkedHashMap<String, SpaceProvider>();
             newProviders.put(m_localWorkspaceProvider.getId(), m_localWorkspaceProvider);
-            m_spaceProvidersFromExtensionPoint.forEach(sp -> newProviders.putAll(sp.getProvidersMap()));
+            m_spaceProvidersFromExtensionPoint.forEach(sp -> {
+                var providersMap = sp.getProvidersMap();
+                providersMap.values().forEach(provider -> initializeSpaceProvider(provider, toastService));
+                newProviders.putAll(providersMap);
+            });
             m_providers = Collections.unmodifiableMap(newProviders);
             m_providerTypes = newProviders.entrySet().stream() //
                 .collect(Collectors.toUnmodifiableMap(Entry::getKey, e -> e.getValue().getType()));
@@ -366,6 +375,12 @@ final class Init {
             return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
         }
 
+        private static SpaceProvider initializeSpaceProvider(final SpaceProvider provider,
+            final ToastService toastService) {
+            provider.init(loginErrorMessage -> toastService.showToast(ShowToastEventEnt.TypeEnum.ERROR, "Login failed",
+                loginErrorMessage, false));
+            return provider;
+        }
     }
 
     /**
