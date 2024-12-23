@@ -74,7 +74,6 @@ public class LocalSpaceUtilTest {
         assertThat(origin.getItemId()).isNotNull();
         assertThat(origin.getSpaceId()).isEqualTo("local");
         assertThat(origin.getProviderId()).isEqualTo("local");
-        assertThat(origin.getRelativePath().get()).hasToString("test");
 
         assertThat(LocalSpaceUtil.isLocalSpace("local", "local")).isTrue();
     }

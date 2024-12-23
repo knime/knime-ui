@@ -138,7 +138,6 @@ class OpenProjectTest {
         assertThat(origin.getItemId()).isEqualTo("itemId");
         assertThat(origin.getSpaceId()).isEqualTo("spaceId");
         assertThat(origin.getProviderId()).isEqualTo("providerId");
-        assertThat(origin.getRelativePath().orElseThrow()).hasToString("relativePath");
     }
 
     @Test

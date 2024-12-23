@@ -80,11 +80,11 @@ public class MostRecentlyUsedProjectsTest {
     @Test
     void testAddAndGetRecentlyUsedProjects() {
         var mruProjects = new MostRecentlyUsedProjects();
-        var proj1 = new RecentlyUsedProject("name1", createOrigin("pid", "sid", "iid", "relPath"), OffsetDateTime.MAX);
+        var proj1 = new RecentlyUsedProject("name1", createOrigin("pid", "sid", "iid"), OffsetDateTime.MAX);
         var proj2 =
-            new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
-        var proj3 = new RecentlyUsedProject("name3", createOrigin("pid", "sid", "iid3", "relPath"), OffsetDateTime.MAX);
-        var proj4 = new RecentlyUsedProject("name4", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+            new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
+        var proj3 = new RecentlyUsedProject("name3", createOrigin("pid", "sid", "iid3"), OffsetDateTime.MAX);
+        var proj4 = new RecentlyUsedProject("name4", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
         assertThat(mruProjects.get()).isEqualTo(List.of(proj1, proj2));
@@ -105,7 +105,7 @@ public class MostRecentlyUsedProjectsTest {
         var wfm = WorkflowManagerUtil.createEmptyWorkflow();
         mruProjects.add(DefaultProject.builder(wfm).build());
         assertThat(mruProjects.get()).as("projects without origin are omitted").isEmpty();
-        var origin = createOrigin("1", "2", "3", null);
+        var origin = createOrigin("1", "2", "3");
         mruProjects.add(DefaultProject.builder(wfm).setOrigin(origin).build());
         assertThat(mruProjects.get()).hasSize(1);
         assertThat(mruProjects.get().get(0).name()).isEqualTo("workflow");
@@ -119,8 +119,8 @@ public class MostRecentlyUsedProjectsTest {
     @Test
     void testRemoveIf() {
         var mruProjects = new MostRecentlyUsedProjects();
-        var proj1 = new RecentlyUsedProject("name1", createOrigin("pid", "sid", "iid", "relPath"), OffsetDateTime.MAX);
-        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+        var proj1 = new RecentlyUsedProject("name1", createOrigin("pid", "sid", "iid"), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
 
@@ -147,7 +147,7 @@ public class MostRecentlyUsedProjectsTest {
         localSpace.listWorkflowGroup(groupId);
 
         var mruProjects = new MostRecentlyUsedProjects();
-        var proj = new RecentlyUsedProject("name1", createOrigin("local", "local", wfId, "simple"), OffsetDateTime.MAX);
+        var proj = new RecentlyUsedProject("name1", createOrigin("local", "local", wfId), OffsetDateTime.MAX);
         mruProjects.add(proj);
 
         mruProjects.updateOriginAndName("local", "local", wfId, "newName", localSpace);
@@ -155,10 +155,8 @@ public class MostRecentlyUsedProjectsTest {
 
         mruProjects.updateOriginAndName("local", "local", groupId, "newName", localSpace);
 
-        assertThat(mruProjects.get().get(0).origin().getRelativePath().orElse(null)).isEqualTo("simple");
         localSpace.moveOrCopyItems(List.of(wfId), groupId, NameCollisionHandling.NOOP, false);
         mruProjects.updateOriginAndName("local", "local", wfId, null, localSpace);
-        assertThat(mruProjects.get().get(0).origin().getRelativePath().orElse(null)).isEqualTo("group/simple");
     }
 
     /**
@@ -167,11 +165,9 @@ public class MostRecentlyUsedProjectsTest {
      * @param providerId
      * @param spaceId
      * @param itemId
-     * @param relativePath
      * @return a new instance
      */
-    public static Origin createOrigin(final String providerId, final String spaceId, final String itemId,
-        final String relativePath) {
+    public static Origin createOrigin(final String providerId, final String spaceId, final String itemId) {
         return new Origin() {
 
             @Override
@@ -192,11 +188,6 @@ public class MostRecentlyUsedProjectsTest {
             @Override
             public Optional<ProjectTypeEnum> getProjectType() {
                 return Optional.of(ProjectTypeEnum.WORKFLOW);
-            }
-
-            @Override
-            public Optional<String> getRelativePath() {
-                return Optional.ofNullable(relativePath);
             }
 
         };

@@ -154,11 +154,6 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public Optional<String> getRelativePath() {
-                return Optional.of(relativePath.toString());
-            }
-
-            @Override
             public Optional<ProjectTypeEnum> getProjectType() {
                 return localSpace.getProjectType(getItemId());
             }

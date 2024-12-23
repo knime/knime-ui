@@ -49,7 +49,6 @@
 package org.knime.ui.java.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.knime.ui.java.util.LocalSpaceUtilTest.createLocalWorkspace;
 import static org.knime.ui.java.util.MostRecentlyUsedProjectsTest.createOrigin;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -63,12 +62,16 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.KNIMEConstants;
+import org.knime.core.util.PathUtils;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
+import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
@@ -88,12 +91,16 @@ public class AppStatePersistorTest {
                 "name" : "Test Project",
                 "active" : false,
                 "origin" : {
-                  "providerId" : "local",
-                  "spaceId" : "test_space_id",
-                  "relativePath" : "a/relative/path"
+                  "providerId" : "%s",
+                  "spaceId" : "%s",
+                  "relativePath" : "relPath"
                 }
               } ]
-            }""".formatted(KNIMEConstants.VERSION);
+            }""".formatted( //
+        KNIMEConstants.VERSION, //
+        SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
+        LocalWorkspace.LOCAL_SPACE_ID //
+    );
 
     private static final String VALID_APP_STATE_WITH_RECENTLY_USED_PROJECTS = """
             {
@@ -103,8 +110,8 @@ public class AppStatePersistorTest {
                 "name" : "name1",
                 "timeUsed" : "%s",
                 "origin" : {
-                  "providerId" : "pid",
-                  "spaceId" : "sid",
+                  "providerId" : "%s",
+                  "spaceId" : "%s",
                   "projectType" : "WORKFLOW",
                   "relativePath" : "relPath"
                 }
@@ -118,7 +125,10 @@ public class AppStatePersistorTest {
                   "itemId" : "iid2"
                 }
               } ]
-            }""".formatted(KNIMEConstants.VERSION, OffsetDateTime.MAX, OffsetDateTime.MAX);
+            }""".formatted(KNIMEConstants.VERSION, OffsetDateTime.MAX,
+            SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
+            LocalWorkspace.LOCAL_SPACE_ID, //
+            OffsetDateTime.MAX);
 
     private static final String VALID_APP_STATE_WITHOUT_PROJECT = """
             {
@@ -133,11 +143,13 @@ public class AppStatePersistorTest {
                 "name" : "Test Project",
                 "active" : false,
                 "origin" : {
-                  "providerId" : "local",
-                  "spaceId" : "test_space_id"
+                  "providerId" : "%s",
+                  "spaceId" : "%s"
                 }
               } ]
-            }""".formatted(KNIMEConstants.VERSION);
+            }""".formatted(KNIMEConstants.VERSION, //
+        SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
+        LocalWorkspace.LOCAL_SPACE_ID);
 
     private static final String INVALID_APP_STATE_NO_ORIGIN = """
             {
@@ -148,19 +160,26 @@ public class AppStatePersistorTest {
               } ]
             }""".formatted(KNIMEConstants.VERSION);
 
+    private LocalWorkspace m_space;
+
+    /**
+     * The ID of the single item in {@link this#m_space}
+     */
+    private static String itemId;
+
     @Test
     void testSaveAndLoadAppState() throws IOException {
         openWorkflowProject();
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
-        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects);
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
         AppStatePersistor.saveAppState(appStateString);
         assertAppStateFile(VALID_APP_STATE_WITH_PROJECT);
 
         pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
 
-        AppStatePersistor.loadAppState(pm, mruProjects, createLocalWorkspace());
-        var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects);
+        AppStatePersistor.loadAppState(pm, mruProjects, m_space);
+        var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
         assertThat(appStateStringNew).as("Assert the valid app state was saved and loaded").isEqualTo(appStateString);
     }
 
@@ -171,9 +190,10 @@ public class AppStatePersistorTest {
 
         var pm = ProjectManager.getInstance();
         var mruProjcts = new MostRecentlyUsedProjects();
-        AppStatePersistor.loadAppState(pm, mruProjcts, createLocalWorkspace());
-        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjcts);
-        assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
+        AppStatePersistor.loadAppState(pm, mruProjcts, m_space);
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjcts, m_space);
+        assertThat(appStateString).as("Assert the invalid app state wasn't loaded")
+            .isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
     }
 
     @Test
@@ -183,36 +203,46 @@ public class AppStatePersistorTest {
 
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
-        AppStatePersistor.loadAppState(pm, mruProjects, createLocalWorkspace());
-        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects);
-        assertThat(appStateString).as("Assert the invalid app state wasn't loaded").isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
+        AppStatePersistor.loadAppState(pm, mruProjects, m_space);
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
+        assertThat(appStateString).as("Assert the invalid app state wasn't loaded")
+            .isEqualTo(VALID_APP_STATE_WITHOUT_PROJECT);
     }
 
     @Test
     void testSaveAndLoadAppStateWithMostRecentlyUsedProjects() throws IOException {
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
-        var proj1 = new RecentlyUsedProject("name1", createOrigin("pid", "sid", "iid", "relPath"), OffsetDateTime.MAX);
-        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+        var proj1 = new RecentlyUsedProject("name1", createOrigin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID,
+                LocalWorkspace.LOCAL_SPACE_ID,
+                itemId), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
-        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects);
+        var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
         AppStatePersistor.saveAppState(appStateString);
         assertAppStateFile(VALID_APP_STATE_WITH_RECENTLY_USED_PROJECTS);
 
-        var loadedMrulProjects = new MostRecentlyUsedProjects();
-        var localSpace = createLocalWorkspace();
-        AppStatePersistor.loadAppState(pm, loadedMrulProjects, localSpace);
-        assertThat(loadedMrulProjects.get()).hasSize(2);
-        var loadedProj1 = loadedMrulProjects.get().get(0);
+        var loadedMRUProjects = new MostRecentlyUsedProjects();
+        var localSpace = m_space;
+        AppStatePersistor.loadAppState(pm, loadedMRUProjects, localSpace);
+        assertThat(loadedMRUProjects.get()).hasSize(2);
+        var loadedProj1 = loadedMRUProjects.get().get(0);
         assertThat(loadedProj1.name()).isEqualTo("name1");
         assertThat(loadedProj1.origin().getItemId())
             .isEqualTo(localSpace.getItemId(localSpace.getLocalRootPath().resolve(Path.of("relPath"))));
-        assertThat(loadedProj1.origin().getRelativePath().get()).isEqualTo("relPath");
-        var loadedProj2 = loadedMrulProjects.get().get(1);
+        var loadedProj2 = loadedMRUProjects.get().get(1);
         assertThat(loadedProj2.name()).isEqualTo("name2");
         assertThat(loadedProj2.origin().getItemId()).isEqualTo("iid2");
 
+    }
+
+    @BeforeEach
+    void setUp() throws IOException {
+        var localSpacePath = PathUtils.createTempDir("workspace");
+        var localSpace = new LocalWorkspace(localSpacePath);
+        itemId = localSpace.createWorkflow(Space.ROOT_ITEM_ID, "relPath").getId();
+        m_space = localSpace;
     }
 
     @AfterEach
@@ -222,15 +252,15 @@ public class AppStatePersistorTest {
     }
 
     @SuppressWarnings("javadoc")
-    public static void openWorkflowProject() {
+    public static void openWorkflowProject() throws IOException {
         var pm = ProjectManager.getInstance();
         var project = mock(Project.class);
         when(project.getID()).thenReturn("test_id");
         when(project.getName()).thenReturn("Test Project");
         var origin = mock(Origin.class);
-        when(origin.getSpaceId()).thenReturn("test_space_id");
+        when(origin.getSpaceId()).thenReturn(LocalWorkspace.LOCAL_SPACE_ID);
         when(origin.getProviderId()).thenReturn(SpaceProvider.LOCAL_SPACE_PROVIDER_ID);
-        when(origin.getRelativePath()).thenReturn(Optional.of("a/relative/path"));
+        when(origin.getItemId()).thenReturn(itemId);
         when(project.getOrigin()).thenReturn(Optional.of(origin));
         pm.addProject(project);
     }
@@ -244,6 +274,10 @@ public class AppStatePersistorTest {
         var appStateJson = new String(Files.readAllBytes(Paths.get(KNIMEConstants.getKNIMEHomeDir(), "app_state.json")),
             StandardCharsets.UTF_8);
         assertThat(appStateJson).as("Assert app state file as expected").isEqualTo(appStateString);
+    }
+
+    public static void assertAppStateFileExists() {
+        assertThat(Files.exists(Paths.get(KNIMEConstants.getKNIMEHomeDir(), "app_state.json"))).isTrue();
     }
 
 }

@@ -145,7 +145,7 @@ class LifeCycleTest {
         assertThat(DesktopAPI.areDependenciesInjected()).isFalse();
 
         lc.shutdown();
-        AppStatePersistorTest.assertAppStateFile();
+         AppStatePersistorTest.assertAppStateFileExists();
     }
 
     @Test

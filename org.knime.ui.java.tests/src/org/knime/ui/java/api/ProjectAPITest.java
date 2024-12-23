@@ -99,10 +99,10 @@ class ProjectAPITest {
         var mruProjects = new MostRecentlyUsedProjects();
         var localSpace = LocalSpaceUtilTest.createLocalWorkspace();
         var proj1 =
-            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid", "relPath"), OffsetDateTime.MAX);
-        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         var itemId = localSpace.getItemId(localSpace.getLocalRootPath().resolve("simple"));
-        var proj3 = new RecentlyUsedProject("name3", createOrigin("local", "local", itemId, null), OffsetDateTime.MAX);
+        var proj3 = new RecentlyUsedProject("name3", createOrigin("local", "local", itemId), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
         mruProjects.add(proj3);
@@ -138,8 +138,8 @@ class ProjectAPITest {
     void testRemoveMostRecentlyUsedProject() {
         var mruProjects = new MostRecentlyUsedProjects();
         var proj1 =
-            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid", "relPath"), OffsetDateTime.MAX);
-        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2", null), OffsetDateTime.MAX);
+            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
+        var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
 

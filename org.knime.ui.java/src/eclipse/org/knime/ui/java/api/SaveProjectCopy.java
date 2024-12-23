@@ -77,6 +77,7 @@ import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalWorkspace;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.api.SpaceDestinationPicker.Operation;
@@ -85,8 +86,8 @@ import org.knime.ui.java.util.DesktopAPUtil;
 /**
  * Helper class to save a copy of a project, for instance
  * <ul>
- *     <li>Save an opened remote workflow project locally</li>
- *     <li>Save a copy of a local project under a different name ("Save As...")</li>
+ * <li>Save an opened remote workflow project locally</li>
+ * <li>Save a copy of a local project under a different name ("Save As...")</li>
  * </ul>
  *
  * Note: the project copy will replace the original one in the {@link ProjectManager}.
@@ -179,8 +180,13 @@ final class SaveProjectCopy {
             if (path.equals(srcPath)) {
                 return oldContext; // Simply overwrite the current location,
             }
-            final var relativePath = localSpace.getLocalRootPath().relativize(path);
-            if (DesktopAPI.getDeps(ProjectManager.class).getLocalProject(relativePath).isPresent()) {
+
+            var openProject = DesktopAPI.getDeps(ProjectManager.class).getProject( //
+                SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
+                localSpace.getId(), //
+                localSpace.getItemId(path) //
+            );
+            if (openProject.isPresent()) {
                 throw new IOException("Project <%s> is opened and can't be overwritten.".formatted(fileName));
             }
         }

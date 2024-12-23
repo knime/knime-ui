@@ -79,7 +79,11 @@ final class SaveState {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state,
         final UnaryOperator<String> localStorageAccess) throws StateTransitionAbortedException {
         final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
-            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects());
+            AppStatePersistor.serializeAppState(
+                    state.getProjectManager(),
+                    state.getMostRecentlyUsedProjects(),
+                    state.getLocalWorkspace()
+            );
 
         final var saveProjectsFunction = state.getSaveAndCloseAllProjectsFunction();
         final var saveProjectsResult = saveProjectsFunction.get();

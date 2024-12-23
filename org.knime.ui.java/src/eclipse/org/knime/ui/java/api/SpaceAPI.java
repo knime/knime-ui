@@ -329,18 +329,26 @@ final class SpaceAPI {
     }
 
     private static List<String> findDirtyOpenedWorkflows(final LocalWorkspace space, final List<String> itemIds) {
-        final var projectManager = DesktopAPI.getDeps(ProjectManager.class);
-        final var opened = new ArrayList<String>();
+        final var projects = DesktopAPI.getDeps(ProjectManager.class);
+        final var spaceRoot = space.getLocalRootPath();
+        final var dirtyAndOpen = new ArrayList<String>();
         for (final var itemId : itemIds) {
-            final var localDir = space.toLocalAbsolutePath(null, itemId).orElseThrow();
-            final var relPath = space.getLocalRootPath().relativize(localDir);
-            if (projectManager.getLocalProject(relPath) //
-                .filter(id -> projectManager.getDirtyProjectsMap().getOrDefault(id, false)) //
-                .isPresent()) {
-                opened.add(FilenameUtils.separatorsToUnix(relPath.toString()));
+            var openProjectWithId = projects.getProject( //
+                SpaceProvider.LOCAL_SPACE_PROVIDER_ID, //
+                LocalWorkspace.LOCAL_SPACE_ID, //
+                itemId //
+            );
+            var isDirty = openProjectWithId //
+                    .map(Project::getID) //
+                    .map(id -> projects.getDirtyProjectsMap().getOrDefault(id, false))
+                    .orElse(false);
+            if (isDirty) {
+                final var localDir = space.toLocalAbsolutePath(null, itemId).orElseThrow();
+                final var relPath = spaceRoot.relativize(localDir);
+                dirtyAndOpen.add(FilenameUtils.separatorsToUnix(relPath.toString()));
             }
         }
-        return opened;
+        return dirtyAndOpen;
     }
 
     /**
