@@ -18,15 +18,15 @@ export const useQuickActionMenu = ({
 
   const store = useStore();
 
-  const isQuickBuildAvailableForPort = computed(() =>
-    store.getters["aiAssistant/isQuickBuildAvailableForPort"](
+  const isQuickBuildModeAvailable = computed(() =>
+    store.getters["aiAssistant/isQuickBuildModeAvailable"](
       nodeRelation.value,
       port.value?.typeId,
     ),
   );
 
   watch(
-    isQuickBuildAvailableForPort,
+    isQuickBuildModeAvailable,
     (value) => {
       if (!value) {
         setQuickAddMode();
@@ -41,6 +41,6 @@ export const useQuickActionMenu = ({
     menuMode,
     setQuickAddMode,
     setQuickBuildMode,
-    isQuickBuildAvailableForPort,
+    isQuickBuildModeAvailable,
   };
 };

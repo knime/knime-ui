@@ -1,3 +1,4 @@
+import { isEmpty, isUndefined } from "lodash-es";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
@@ -368,14 +369,37 @@ export const actions: ActionTree<AiAssistantState, RootStoreState> = {
 };
 
 export const getters: GetterTree<AiAssistantState, RootStoreState> = {
-  isQuickBuildAvailableForPort(state, getters, rootState) {
-    return (nodeRelation: string, portTypeId: string | null) => {
+  isQuickBuildModeAvailable(state, getters, rootState, rootGetters) {
+    return (nodeRelation: string, portTypeId: string | undefined) => {
+      const supportedPortKinds = ["table"];
+
+      const selectedNodes = rootGetters["selection/selectedNodes"];
       const availablePortTypes = rootState.application.availablePortTypes;
 
+      // 1. Starting from scratch (e.g. double-click on canvas)
+      if (isEmpty(selectedNodes) && isUndefined(portTypeId)) {
+        return true;
+      }
+
+      // 2. Multiple nodes selected (e.g. keyboard shortcut with multiple nodes selected)
+      if (selectedNodes.length > 1) {
+        let portKinds = selectedNodes
+          .flatMap((node) => node.outPorts)
+          .map((port) => availablePortTypes[port.typeId]?.kind)
+          .filter((portKind) => portKind !== "flowVariable");
+        portKinds = [...new Set(portKinds)];
+
+        const areSelectedPortKindsSupported = portKinds.every((portKind) =>
+          supportedPortKinds.includes(portKind as string),
+        );
+        return areSelectedPortKindsSupported;
+      }
+
+      // 3. Starting from a single outport
       return (
         nodeRelation === "SUCCESSORS" &&
         portTypeId &&
-        availablePortTypes[portTypeId]?.kind === "table"
+        supportedPortKinds.includes(availablePortTypes[portTypeId]?.kind)
       );
     };
   },

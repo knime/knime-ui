@@ -141,7 +141,7 @@ describe("QuickActionMenu.vue", () => {
       menuMode: menuModeRef,
       setQuickAddMode: setQuickAddModeMock,
       setQuickBuildMode: vi.fn(),
-      isQuickBuildAvailableForPort: true,
+      isQuickBuildModeAvailable: computed(() => true),
     });
 
     const wrapper = mount(QuickActionMenu, {

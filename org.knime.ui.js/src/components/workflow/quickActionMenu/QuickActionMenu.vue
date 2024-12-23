@@ -107,7 +107,7 @@ const {
   menuMode,
   setQuickAddMode,
   setQuickBuildMode,
-  isQuickBuildAvailableForPort,
+  isQuickBuildModeAvailable,
 } = useQuickActionMenu({ port, nodeRelation });
 
 const { isKaiEnabled } = useIsKaiEnabled();
@@ -153,7 +153,7 @@ watch(
           :port-index="portIndex"
           @menu-close="$emit('menuClose')"
         />
-        <div v-if="isKaiEnabled && isQuickBuildAvailableForPort" class="footer">
+        <div v-if="isKaiEnabled && isQuickBuildModeAvailable" class="footer">
           <Button primary @click="setQuickBuildMode">
             <AiIcon />
             Build with K-AI
