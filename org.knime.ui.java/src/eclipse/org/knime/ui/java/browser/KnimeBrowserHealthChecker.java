@@ -82,40 +82,62 @@ final class KnimeBrowserHealthChecker {
 
     private static final int TIMEOUT_IN_SECONDS = 10;
 
-    private static Timer browerHealthCheckTimer;
+    private final ChromiumBrowser m_browser;
 
-    static void setup(final Browser browser) {
-        if (Boolean.getBoolean("org.knime.ui.disable_healthchecker")) {
-            return;
+    private Timer m_timer = null;
+
+    KnimeBrowserHealthChecker(final Browser browser) {
+        if (!Boolean.getBoolean("org.knime.ui.disable_healthchecker")) {
+            m_browser = (ChromiumBrowser)browser.getWebBrowser();
+            start();
+        } else {
+            m_browser = null;
         }
+    }
 
-        browerHealthCheckTimer = new Timer("KNIME Browser Health Checker", true); // Daemon thread
-        browerHealthCheckTimer.scheduleAtFixedRate(new TimerTask() {
+    private void start() {
+        m_timer = new Timer("KNIME Browser Health Checker", true); // Daemon thread
+        m_timer.schedule(createTimerTask(), INTERVAL_IN_MS, INTERVAL_IN_MS);
+    }
+
+    private TimerTask createTimerTask() {
+
+        return new TimerTask() {
 
             @Override
             public void run() {
-                if (!KnimeBrowserView.isInitialized || browser == null) {
+                if (!KnimeBrowserView.isInitialized || m_browser == null) {
                     return;
                 }
                 try {
-                    CEFUtils.evaluateInBrowser((ChromiumBrowser)browser.getWebBrowser(), "return true;",
-                        Duration.ofSeconds(TIMEOUT_IN_SECONDS));
+                    CEFUtils.evaluateInBrowser(m_browser, "return true;", Duration.ofSeconds(TIMEOUT_IN_SECONDS));
                 } catch (TimeoutException ex) { // NOSONAR
-                    Display.getDefault().syncExec(() -> {
-                        var dialog = createMessageDialog();
-                        var returnCode = dialog.open();
-                        handleUserInput(returnCode);
-                    });
+                    cancel();
+                    if (shallContinueHealthChecker()) {
+                        // re-start health checker
+                        start();
+                    }
                 }
             }
-        }, INTERVAL_IN_MS, INTERVAL_IN_MS);
+        };
     }
 
-    private static void handleUserInput(final int returnCode) {
-        if (returnCode == 0) {
-            saveAndCloseProjects();
-            PlatformUI.getWorkbench().restart();
-        }
+    private static boolean shallContinueHealthChecker() {
+        return Display.getDefault().syncCall(() -> {
+            var dialog = createMessageDialog();
+            var returnCode = dialog.open();
+            if (returnCode == 0) {
+                saveAndRestart();
+                return false;
+            } else {
+                return true;
+            }
+        });
+    }
+
+    private static void saveAndRestart() {
+        saveAndCloseProjects();
+        PlatformUI.getWorkbench().restart();
     }
 
     private static void saveAndCloseProjects() {
@@ -134,15 +156,11 @@ final class KnimeBrowserHealthChecker {
             new String[]{"Save and restart", "Wait for the UI to respond"}, 1);
     }
 
-    static void cancel() {
-        if (browerHealthCheckTimer != null) {
-            browerHealthCheckTimer.cancel();
-            browerHealthCheckTimer = null;
+    void cancel() {
+        if (m_timer != null) {
+            m_timer.cancel();
+            m_timer = null;
         }
-    }
-
-    private KnimeBrowserHealthChecker() {
-        // utility
     }
 
 }
