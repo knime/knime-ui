@@ -5,9 +5,11 @@ import {
   onBeforeUnmount,
   watch,
 } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
 import { isInputElement } from "@/util/isInputElement";
 import {
   type SelectedPortContext,
@@ -42,14 +44,11 @@ type UsePortKeyboardNavigationOptions = {
 export const usePortKeyboardNavigation = (
   options: UsePortKeyboardNavigationOptions,
 ) => {
-  const store = useStore();
-
-  const getScrollContainerElement = computed(
-    () => store.state.canvas.getScrollContainerElement,
-  );
+  const { getScrollContainerElement } = storeToRefs(useCanvasStore());
+  const { activeNodePorts } = storeToRefs(useSelectionStore());
 
   const isActiveNodePortsInstance = computed(
-    () => store.state.selection.activeNodePorts.nodeId === options.nodeId,
+    () => activeNodePorts.value.nodeId === options.nodeId,
   );
 
   const { node, isMetanode } = useNodeInfo({ nodeId: options.nodeId });

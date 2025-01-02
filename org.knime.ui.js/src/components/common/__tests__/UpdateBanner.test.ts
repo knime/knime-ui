@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
+import { API } from "@api";
 import { debounce } from "lodash-es";
 
 import { Button } from "@knime/components";
 
-import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 import UpdateBanner from "../UpdateBanner.vue";
 

@@ -1,5 +1,13 @@
-import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { storeToRefs } from "pinia";
+
+import {
+  AddNodeCommand,
+  type NodeFactoryKey,
+} from "@/api/gateway-api/generated-api";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { geometry } from "@/util/geometry";
 
 /**
@@ -7,31 +15,35 @@ import { geometry } from "@/util/geometry";
  * It was ripped out of DraggableNodeTemplate where this code was used for the double click action.
  */
 export const useAddNodeToWorkflow = () => {
-  const store = useStore();
+  const { isWritable, activeWorkflow } = storeToRefs(useWorkflowStore());
 
-  return ({ nodeFactory }: { nodeFactory: NodeFactoryKey }) => {
+  return ({ nodeFactory }: { nodeFactory?: NodeFactoryKey }) => {
     // do not try to add a node to a read only workflow
-    if (!store.getters["workflow/isWritable"]) {
+    if (!isWritable.value) {
       return;
     }
 
-    const singleSelectedNode = store.getters["selection/singleSelectedNode"];
-    const getVisibleFrame = store.getters["canvas/getVisibleFrame"];
-    const { activeWorkflow } = store.state.workflow;
+    const { singleSelectedNode } = storeToRefs(useSelectionStore());
+    const { getVisibleFrame } = storeToRefs(useCanvasStore());
 
-    const position = singleSelectedNode
+    const position = singleSelectedNode.value
       ? {
           // eslint-disable-next-line no-magic-numbers
-          x: singleSelectedNode.position.x + 120,
-          y: singleSelectedNode.position.y,
+          x: singleSelectedNode.value.position.x + 120,
+          y: singleSelectedNode.value.position.y,
         }
       : geometry.findFreeSpaceAroundCenterWithFallback({
-          visibleFrame: getVisibleFrame(),
-          nodes: activeWorkflow!.nodes,
+          visibleFrame: getVisibleFrame.value,
+          nodes: activeWorkflow.value!.nodes,
         });
-    const sourceNodeId = singleSelectedNode?.id ?? null;
-    const nodeRelation = singleSelectedNode ? "SUCCESSORS" : null;
-    store.dispatch("workflow/addNode", {
+    // eslint-disable-next-line no-undefined
+    const sourceNodeId = singleSelectedNode.value?.id ?? undefined;
+    const nodeRelation = singleSelectedNode.value
+      ? AddNodeCommand.NodeRelationEnum.SUCCESSORS
+      : // eslint-disable-next-line no-undefined
+        undefined;
+
+    useNodeInteractionsStore().addNode({
       position,
       nodeFactory,
       sourceNodeId,

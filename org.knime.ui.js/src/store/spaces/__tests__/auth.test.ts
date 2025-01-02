@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
@@ -21,7 +21,7 @@ describe("spaces::auth", () => {
 
   describe("connectProvider", () => {
     it("should fetch user and provider spaces data and update state", async () => {
-      const { store } = loadStore();
+      const { spaceAuthStore, spaceProvidersStore } = loadStore();
       const mockSpaceProvider = {
         id: "hub1",
         connected: true,
@@ -33,13 +33,13 @@ describe("spaces::auth", () => {
         ],
       });
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         // @ts-ignore
         hub1: {},
       };
       mockedAPI.space.getSpaceProvider.mockResolvedValue(mockSpaces);
       mockedAPI.desktop.connectSpaceProvider.mockReturnValue(mockSpaceProvider);
-      await store.dispatch("spaces/connectProvider", {
+      await spaceAuthStore.connectProvider({
         spaceProviderId: "hub1",
       });
 
@@ -49,18 +49,18 @@ describe("spaces::auth", () => {
       expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
-      expect(store.state.spaces.spaceProviders!.hub1.user).toEqual(
+      expect(spaceProvidersStore.spaceProviders!.hub1.user).toEqual(
         mockSpaceProvider.user,
       );
-      expect(store.state.spaces.spaceProviders!.hub1.spaceGroups).toEqual(
+      expect(spaceProvidersStore.spaceProviders!.hub1.spaceGroups).toEqual(
         mockSpaces.spaceGroups,
       );
     });
 
     it("should not fetch provider spaces data if the user is null", async () => {
-      const { store } = loadStore();
+      const { spaceAuthStore, spaceProvidersStore } = loadStore();
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         // @ts-ignore
         hub1: {},
       };
@@ -69,7 +69,7 @@ describe("spaces::auth", () => {
         id: "hub1",
         connected: false,
       });
-      await store.dispatch("spaces/connectProvider", {
+      await spaceAuthStore.connectProvider({
         spaceProviderId: "hub1",
       });
 
@@ -82,7 +82,8 @@ describe("spaces::auth", () => {
 
   describe("disconnectProvider", () => {
     it("should disconnect provider and clear spaces and user data", async () => {
-      const { store } = loadStore();
+      const { spaceAuthStore, spaceCachingStore, spaceProvidersStore } =
+        loadStore();
 
       const fullProvider = createSpaceProvider({
         name: "Hub 1",
@@ -100,13 +101,16 @@ describe("spaces::auth", () => {
         ],
       });
 
-      store.state.spaces.projectPath.projectInHub1 = {
-        spaceId: "mock space",
-        spaceProviderId: "hub1",
-        itemId: "someFolderX",
-      };
+      spaceCachingStore.setProjectPath({
+        projectId: "projectInHub1",
+        value: {
+          spaceId: "mock space",
+          spaceProviderId: "hub1",
+          itemId: "someFolderX",
+        },
+      });
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         hub1: fullProvider,
       };
 
@@ -117,27 +121,28 @@ describe("spaces::auth", () => {
         spaceGroups: [],
       };
 
-      await store.dispatch("spaces/disconnectProvider", {
+      await spaceAuthStore.disconnectProvider({
         spaceProviderId: "hub1",
         $router: { push: vi.fn(), currentRoute: { value: { name: "" } } },
       });
-      expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
+      expect(spaceProvidersStore.spaceProviders.hub1).toEqual(expectedProvider);
 
       // reset projects that were connected to that hub to local
-      expect(store.state.spaces.projectPath.projectInHub1).toStrictEqual({
+      expect(spaceCachingStore.projectPath.projectInHub1).toStrictEqual({
         spaceId: "local",
         spaceProviderId: "local",
         itemId: "root",
       });
 
       // but keep others
-      expect(store.state.spaces.projectPath.myProject1.spaceId).toBe(
+      expect(spaceCachingStore.projectPath.myProject1.spaceId).toBe(
         "mockSpaceId",
       );
     });
 
     it("should navigate to get started page when currently displayed provider gets disconnected", async () => {
-      const { store } = loadStore();
+      const { spaceAuthStore, spaceCachingStore, spaceProvidersStore } =
+        loadStore();
 
       const fullProvider = createSpaceProvider({
         name: "Hub 1",
@@ -155,13 +160,13 @@ describe("spaces::auth", () => {
         ],
       });
 
-      store.state.spaces.projectPath.projectInHub1 = {
+      spaceCachingStore.projectPath.projectInHub1 = {
         spaceId: "mock space",
         spaceProviderId: "hub1",
         itemId: "someFolderX",
       };
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         hub1: fullProvider,
       };
 
@@ -173,11 +178,12 @@ describe("spaces::auth", () => {
       };
 
       const routerPush = vi.fn();
-      await store.dispatch("spaces/disconnectProvider", {
+      await spaceAuthStore.disconnectProvider({
         spaceProviderId: "hub1",
         $router: {
           push: routerPush,
           currentRoute: {
+            // @ts-ignore
             value: {
               name: APP_ROUTES.Home.SpaceBrowsingPage,
               params: { spaceProviderId: "hub1" },
@@ -185,20 +191,20 @@ describe("spaces::auth", () => {
           },
         },
       });
-      expect(store.state.spaces.spaceProviders.hub1).toEqual(expectedProvider);
+      expect(spaceProvidersStore.spaceProviders.hub1).toEqual(expectedProvider);
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.Home.GetStarted,
       });
 
       // reset projects that were connected to that hub to local
-      expect(store.state.spaces.projectPath.projectInHub1).toStrictEqual({
+      expect(spaceCachingStore.projectPath.projectInHub1).toStrictEqual({
         spaceId: "local",
         spaceProviderId: "local",
         itemId: "root",
       });
 
       // but keep others
-      expect(store.state.spaces.projectPath.myProject1.spaceId).toBe(
+      expect(spaceCachingStore.projectPath.myProject1.spaceId).toBe(
         "mockSpaceId",
       );
     });

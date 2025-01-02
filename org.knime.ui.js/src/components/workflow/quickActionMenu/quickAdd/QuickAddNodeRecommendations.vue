@@ -1,10 +1,11 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
-import { mapState } from "vuex";
+import { mapState } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
+import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 export default defineComponent({
@@ -27,12 +28,12 @@ export default defineComponent({
     },
   },
   emits: ["update:selectedNode", "addNode", "navReachedTop"],
-  expose: ["focusFirst"],
+  // FIXME: why does this cause issues?
+  // expose: ["focusFirst"],
   computed: {
-    ...mapState("quickAddNodes", ["recommendedNodes"]),
-
+    ...mapState(useQuickAddNodesStore, ["recommendedNodes"]),
     hasRecommendations() {
-      return this.recommendedNodes?.length > 0;
+      return this.recommendedNodes.length > 0;
     },
   },
   methods: {

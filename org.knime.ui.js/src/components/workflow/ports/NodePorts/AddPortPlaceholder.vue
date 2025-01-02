@@ -1,11 +1,11 @@
 <script lang="ts">
 import { type PropType, defineComponent, nextTick } from "vue";
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
 
 import type { NodePortGroups } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
-import type { WorkflowState } from "@/store/workflow";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 
 import type { MenuItemWithPort, TargetPort } from "./types";
 
@@ -36,7 +36,7 @@ export default defineComponent({
       required: true,
     },
     side: {
-      type: String,
+      type: String as PropType<"input" | "output">,
       required: true,
       validator: (side: string) => ["input", "output"].includes(side),
     },
@@ -65,17 +65,18 @@ export default defineComponent({
     },
   },
   emits: ["addPort"],
-  expose: ["isMenuOpen", "onClick"],
+  // FIXME: why does this cause issues?
+  // expose: ["isMenuOpen", "onClick"],
+
   data: (): ComponentData => ({
     transitionEnabled: true,
     closeTimeout: null,
   }),
   computed: {
-    ...mapState("workflow", {
-      portTypeMenu: (state: unknown) => (state as WorkflowState).portTypeMenu,
-    }),
-
-    addPortPlaceholderPath: () => addPortPlaceholderPath,
+    ...mapState(useFloatingMenusStore, ["portTypeMenu"]),
+    addPortPlaceholderPath() {
+      return addPortPlaceholderPath;
+    },
     validPortGroups() {
       if (!this.portGroups) {
         return null;
@@ -113,7 +114,7 @@ export default defineComponent({
       get() {
         return this.portTypeMenu.previewPort;
       },
-      set(value: WorkflowState["portTypeMenu"]) {
+      set(value: any) {
         this.setPortTypeMenuPreviewPort(value);
       },
     },
@@ -138,8 +139,11 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions("workflow", ["openPortTypeMenu", "closePortTypeMenu"]),
-    ...mapMutations("workflow", ["setPortTypeMenuPreviewPort"]),
+    ...mapActions(useFloatingMenusStore, [
+      "openPortTypeMenu",
+      "closePortTypeMenu",
+      "setPortTypeMenuPreviewPort",
+    ]),
     openMenu() {
       // find the position in coordinates relative to the origin
       let position = {

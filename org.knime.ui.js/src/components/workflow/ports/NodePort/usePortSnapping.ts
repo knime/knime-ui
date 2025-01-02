@@ -1,8 +1,10 @@
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import type { AvailablePortTypes, NodePortGroups } from "@/api/custom-types";
+import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   type Direction,
   checkCompatibleConnectionAndPort,
@@ -27,13 +29,9 @@ const isPlaceholderPort = (
 ): port is PlaceholderPort => (port as PlaceholderPort).isPlaceHolderPort;
 
 export const usePortSnapping = () => {
-  const store = useStore();
-  const connections = computed(
-    () => store.state.workflow.activeWorkflow!.connections,
-  );
-  const availablePortTypes = computed<AvailablePortTypes>(
-    () => store.state.application.availablePortTypes,
-  );
+  const { activeWorkflow } = storeToRefs(useWorkflowStore());
+  const { availablePortTypes } = storeToRefs(useApplicationStore());
+  const connections = computed(() => activeWorkflow.value!.connections);
 
   const shouldPortSnap = ({
     sourcePort,

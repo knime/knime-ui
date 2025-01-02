@@ -1,38 +1,37 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useEventListener } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import { FunctionButton } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
 import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
 
-import type { NativeNode } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { EMBEDDED_CONTENT_PANEL_ID__RIGHT } from "../common/utils";
 
 import IncompatibleNodeConfigPlaceholder from "./IncompatibleNodeConfigPlaceholder.vue";
 import NodeConfigWrapper from "./NodeConfigWrapper.vue";
 
-const store = useStore();
-
-const activeNode = computed<NativeNode | null>(
-  () => store.getters["nodeConfiguration/activeNode"],
+const nodeConfigurationStore = useNodeConfigurationStore();
+const { activeNode, activeExtensionConfig } = storeToRefs(
+  nodeConfigurationStore,
 );
+const { getNodeName } = storeToRefs(useNodeInteractionsStore());
 
 const canBeEnlarged = computed(
-  () => store.state.nodeConfiguration.activeExtensionConfig?.canBeEnlarged,
+  () => activeExtensionConfig.value?.canBeEnlarged,
 );
 
 const panel = ref<HTMLDialogElement>();
 const nodeName = computed(() =>
-  activeNode.value
-    ? store.getters["workflow/getNodeName"](activeNode.value.id)
-    : "",
+  activeNode.value ? getNodeName.value(activeNode.value.id) : "",
 );
 
 const isLargeMode = computed<boolean>({
-  get: () => store.state.nodeConfiguration.isLargeMode,
-  set: (value) => (store.state.nodeConfiguration.isLargeMode = value),
+  get: () => nodeConfigurationStore.isLargeMode,
+  set: (value) => (nodeConfigurationStore.isLargeMode = value),
 });
 
 watch(isLargeMode, () => {
@@ -41,7 +40,8 @@ watch(isLargeMode, () => {
   } else {
     panel.value!.close();
   }
-  store.state.nodeConfiguration.pushEventDispatcher({
+
+  nodeConfigurationStore.pushEventDispatcher({
     eventType:
       "DisplayModeEvent" satisfies UIExtensionPushEvents.KnownEventType,
     payload: { mode: isLargeMode.value ? "large" : "small" },
@@ -55,6 +55,7 @@ const onDialogCancel = () => {
 const onExpandConfig = () => {
   isLargeMode.value = true;
 };
+
 useEventListener(panel, "click", (event) => {
   if (event.target === panel.value) {
     onDialogCancel();

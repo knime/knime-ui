@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import {
   Button,
@@ -10,25 +11,32 @@ import {
   useNameValidator,
 } from "@knime/components";
 
-import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useSpacesStore } from "@/store/spaces/spaces";
 import { getToastPresets } from "@/toastPresets";
 
 const NAME_TEMPLATE = "KNIME_project";
 
-const store = useStore();
-
 const isSubmitted = ref(false);
-const inputRef = ref<InstanceType<typeof InputField>>(null);
+const inputRef = ref<InstanceType<typeof InputField>>();
 const workflowName = ref(NAME_TEMPLATE);
 
+const spacesStore = useSpacesStore();
+const { createWorkflowModalConfig } = storeToRefs(spacesStore);
+
 const isCreateWorkflowModalOpen = computed(
-  () => store.state.spaces.createWorkflowModalConfig.isOpen,
+  () => createWorkflowModalConfig.value.isOpen,
 );
 
-const activeSpace = computed<WorkflowGroupContent>(() =>
-  store.getters["spaces/getWorkflowGroupContent"](
-    store.state.spaces.createWorkflowModalConfig.projectId,
+const { createWorkflow, openProject } = useSpaceOperationsStore();
+
+const spaceCachingStore = useSpaceCachingStore();
+const { getWorkflowGroupContent, projectPath } = storeToRefs(spaceCachingStore);
+
+const activeSpace = computed(() =>
+  getWorkflowGroupContent.value(
+    spacesStore.createWorkflowModalConfig.projectId ?? "",
   ),
 );
 const existingWorkflowNames = computed<Array<string>>(() => {
@@ -46,7 +54,8 @@ const closeModal = () => {
   if (isSubmitted.value) {
     return;
   }
-  store.commit("spaces/setCreateWorkflowModalConfig", {
+
+  spacesStore.setCreateWorkflowModalConfig({
     isOpen: false,
     projectId: null,
   });
@@ -58,17 +67,16 @@ const onSubmit = async () => {
   }
   isSubmitted.value = true;
   try {
-    const { projectId } = store.state.spaces.createWorkflowModalConfig;
+    const { projectId } = spacesStore.createWorkflowModalConfig;
 
     if (!projectId) {
       consola.error("project id not found. cannot create workflow");
       return;
     }
 
-    const { spaceProviderId, spaceId } =
-      store.state.spaces.projectPath[projectId];
+    const { spaceProviderId, spaceId } = projectPath.value[projectId];
 
-    const { id: itemId } = await store.dispatch("spaces/createWorkflow", {
+    const { id: itemId } = await createWorkflow({
       projectId,
       workflowName: cleanedName.value,
     });
@@ -76,7 +84,7 @@ const onSubmit = async () => {
     isSubmitted.value = false;
     closeModal();
 
-    await store.dispatch("spaces/openProject", {
+    await openProject({
       providerId: spaceProviderId,
       spaceId,
       itemId,

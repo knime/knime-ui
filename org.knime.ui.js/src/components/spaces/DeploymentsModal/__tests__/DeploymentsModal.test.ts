@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { Modal } from "@knime/components";
 
-import { API } from "@/api";
-import * as spacesStore from "@/store/spaces";
 import { createJob, createSchedule } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import DeploymentsModal from "../DeploymentsModal.vue";
 
 const mockedAPI = deepMocked(API);
@@ -44,35 +44,30 @@ describe("DeploymentsModal.vue", () => {
     mockedAPI.space.listJobsForWorkflow.mockResolvedValue({ jobs });
     mockedAPI.space.listSchedulesForWorkflow.mockResolvedValue({ schedules });
 
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("spaces/setDeploymentsModalConfig", {
+    mockedStores.spacesStore.setDeploymentsModalConfig({
       isOpen,
       name,
     });
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
-
     const wrapper = mount(DeploymentsModal, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: { BaseModal: true },
       },
       attachTo: document.body,
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy };
+    return { wrapper, mockedStores };
   };
 
   it("opens a deployments modal", async () => {
-    const { wrapper, $store } = doMount({ isOpen: false, name: null });
+    const { wrapper, mockedStores } = doMount({ isOpen: false, name: null });
 
     expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
 
-    $store.commit("spaces/setDeploymentsModalConfig", {
+    mockedStores.spacesStore.setDeploymentsModalConfig({
       isOpen: true,
       name: "Schedules and jobs of Workflow",
     });
@@ -82,17 +77,19 @@ describe("DeploymentsModal.vue", () => {
   });
 
   it("closes a deployments modal", async () => {
-    const { wrapper, commitSpy } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     wrapper.findComponent(Modal).trigger("cancel");
     await nextTick();
 
     expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
-    expect(commitSpy).toHaveBeenCalledWith("spaces/setDeploymentsModalConfig", {
+    expect(
+      mockedStores.spacesStore.setDeploymentsModalConfig,
+    ).toHaveBeenCalledWith({
       isOpen: false,
-      name: null,
-      projectId: null,
-      itemId: null,
+      name: "",
+      projectId: "",
+      itemId: "",
     });
   });
 

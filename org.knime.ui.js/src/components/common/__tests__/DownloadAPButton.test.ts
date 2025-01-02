@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import * as applicationStore from "@/store/application";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import DownloadAPButton from "../DownloadAPButton.vue";
 
 describe("Download AP Button", () => {
@@ -13,12 +12,8 @@ describe("Download AP Button", () => {
   };
 
   const doMount = ({ propsOverrides = {} }: MountOptions = {}) => {
-    const $store = mockVuexStore({
-      application: {
-        ...applicationStore,
-        analyticsPlatformDownloadURL: "testUrl.com",
-      },
-    });
+    const mockedStores = mockStores();
+    mockedStores.applicationStore.analyticsPlatformDownloadURL = "testUrl.com";
 
     const props = {
       ...defaultProps,
@@ -28,20 +23,20 @@ describe("Download AP Button", () => {
     const wrapper = mount(DownloadAPButton, {
       props,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, props, $store };
+    return { wrapper, props, mockedStores };
   };
 
   it("includes utm parameter", () => {
     const src = "test_location";
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       propsOverrides: { src },
     });
     expect(wrapper.attributes().href).toBe(
-      `${$store.state.application.analyticsPlatformDownloadURL}?src=${src}`,
+      `${mockedStores.applicationStore.analyticsPlatformDownloadURL}?src=${src}`,
     );
   });
 });

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useMoveObject } from "@/composables/useMoveObject";
-import { useStore } from "@/composables/useStore";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 interface Props {
   id: string;
@@ -16,18 +19,13 @@ const DRAG_TARGET_SELECTOR = ".node-torso-wrapper";
 const props = defineProps<Props>();
 let lastHitTarget: Element | null = null;
 
-const store = useStore();
-const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
-const hasAbortedDrag = computed(() => store.state.workflow.hasAbortedDrag);
-const isDragging = computed(() => store.state.workflow.isDragging);
-
-const isNodeConnected = computed(
-  () => store.getters["workflow/isNodeConnected"],
-);
-const getNodeById = computed(() => store.getters["workflow/getNodeById"]);
-
-const isNodeSelected = computed(
-  () => store.getters["selection/isNodeSelected"],
+const movingStore = useMovingStore();
+const { movePreviewDelta, isDragging, hasAbortedDrag } =
+  storeToRefs(movingStore);
+const selectionStore = useSelectionStore();
+const { isNodeSelected } = storeToRefs(selectionStore);
+const { isNodeConnected, getNodeById } = storeToRefs(
+  useNodeInteractionsStore(),
 );
 
 const container = ref<SVGGElement | null>(null);
@@ -47,7 +45,7 @@ const dragContainer = computed(() => {
 });
 
 const moveNode = () => {
-  store.dispatch("workflow/moveObjects");
+  movingStore.moveObjects();
 };
 
 const notifyNodeDraggingListeners = (x: number, y: number) => {
@@ -69,7 +67,7 @@ const notifyNodeDraggingListeners = (x: number, y: number) => {
   }
 
   if (!isSameTarget && hitTarget) {
-    const { inPorts = [], outPorts = [] } = getNodeById.value(props.id);
+    const { inPorts = [], outPorts = [] } = getNodeById.value(props.id)!;
     const isEventIgnored = hitTarget.dispatchEvent(
       new CustomEvent("node-dragging-enter", {
         bubbles: true,
@@ -91,9 +89,9 @@ const { createPointerDownHandler } = useMoveObject({
 
   onMoveStartCallback: () => {
     if (!isNodeSelected.value(props.id)) {
-      store.dispatch("selection/deselectAllObjects");
+      selectionStore.deselectAllObjects();
     }
-    store.dispatch("selection/selectNode", props.id);
+    selectionStore.selectNode(props.id);
   },
 
   onMoveCallback: (ptrMoveEvent) => {
@@ -144,7 +142,7 @@ useEscapeStack({
   alwaysActive: true,
   onEscape: () => {
     if (isDragging.value) {
-      store.dispatch("workflow/abortDrag");
+      movingStore.abortDrag();
     }
   },
 });

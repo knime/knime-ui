@@ -1,46 +1,36 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-import type { Store } from "vuex";
 
 import {
   ComponentNodeAndDescription,
   type WorkflowMonitorState,
 } from "@/api/gateway-api/generated-api";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
-import * as workflowMonitorStore from "@/store/workflowMonitor";
 import {
   createComponentNode,
   createNativeNode,
   createWorkflow,
   createWorkflowMonitorMessage,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import WorkflowMonitorContent from "../WorkflowMonitorContent.vue";
 import WorkflowMonitorMessage from "../WorkflowMonitorMessage.vue";
 
 describe("WorkflowMonitorContent.vue", () => {
   const doMount = () => {
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      workflowMonitor: workflowMonitorStore,
-      nodeTemplates: nodeTemplatesStore,
-      selection: selectionStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("workflowMonitor/setHasLoaded", true);
+    mockedStores.workflowMonitorStore.setHasLoaded(true);
 
     const wrapper = mount(WorkflowMonitorContent, {
-      global: { plugins: [$store] },
+      global: { plugins: [mockedStores.testingPinia] },
       attachTo: document.body,
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
-  const initState = async ($store: Store<any>) => {
+  const initState = async (mockedStores: ReturnType<typeof mockStores>) => {
     const node1 = createNativeNode({ id: "root:1" });
     const node2 = createNativeNode({ id: "root:2" });
 
@@ -63,12 +53,14 @@ describe("WorkflowMonitorContent.vue", () => {
       nodes: { [node1.id]: node1, [node2.id]: node2 },
     });
 
-    $store.commit("workflowMonitor/setCurrentState", workflowMonitorState);
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    mockedStores.workflowMonitorStore.setCurrentState(workflowMonitorState);
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
   };
 
-  const initStateComponent = async ($store: Store<any>) => {
+  const initStateComponent = async (
+    mockedStores: ReturnType<typeof mockStores>,
+  ) => {
     const component1 = createComponentNode({ id: "root:1" });
 
     const workflowMonitorState: WorkflowMonitorState = {
@@ -104,19 +96,19 @@ describe("WorkflowMonitorContent.vue", () => {
       nodes: { [component1.id]: component1 },
     });
 
-    $store.commit("workflowMonitor/setCurrentState", workflowMonitorState);
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    mockedStores.workflowMonitorStore.setCurrentState(workflowMonitorState);
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
   };
 
   it("should render", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     expect(wrapper.find(".empty-message").exists()).toBe(true);
     expect(wrapper.find("[data-test-id='errors']").isVisible()).toBe(false);
     expect(wrapper.find("[data-test-id='warnings']").isVisible()).toBe(false);
 
-    await initState($store);
+    await initState(mockedStores);
 
     expect(wrapper.find(".empty-message").exists()).toBe(false);
     expect(wrapper.find("[data-test-id='errors']").isVisible()).toBe(true);
@@ -124,9 +116,9 @@ describe("WorkflowMonitorContent.vue", () => {
   });
 
   it("should show component info", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
-    await initStateComponent($store);
+    await initStateComponent(mockedStores);
 
     const errors = wrapper.find("[data-test-id='errors']");
     const warnings = wrapper.find("[data-test-id='warnings']");
@@ -144,11 +136,9 @@ describe("WorkflowMonitorContent.vue", () => {
   });
 
   it("should call action to navigate to issue", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-
-    await initState($store);
+    await initState(mockedStores);
 
     wrapper
       .find('[data-test-id="errors"]')
@@ -157,16 +147,17 @@ describe("WorkflowMonitorContent.vue", () => {
 
     await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "workflowMonitor/navigateToIssue",
-      { message: $store.state.workflowMonitor.currentState.errors.at(0) },
-    );
+    expect(
+      mockedStores.workflowMonitorStore.navigateToIssue,
+    ).toHaveBeenCalledWith({
+      message: mockedStores.workflowMonitorStore.currentState.errors.at(0),
+    });
   });
 
   it("should set the prop to highlight messages", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
-    await initState($store);
+    await initState(mockedStores);
 
     expect(
       wrapper
@@ -175,7 +166,8 @@ describe("WorkflowMonitorContent.vue", () => {
         .props("isHighlighted"),
     ).toBe(false);
 
-    await $store.dispatch("selection/selectNode", "root:1");
+    mockedStores.selectionStore.selectNode("root:1");
+    await nextTick();
 
     expect(
       wrapper

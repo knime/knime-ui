@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
 import ThumbsDownIcon from "@knime/styles/img/icons/thumbs-down.svg";
 import ThumbsUpIcon from "@knime/styles/img/icons/thumbs-up.svg";
 import { sleep } from "@knime/utils";
 
-import { useStore } from "@/composables/useStore";
+import { useAIAssistantStore } from "@/store/aiAssistant";
 
 const DELAY_TIME = 1000;
 
@@ -17,8 +18,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits(["feedbackSubmitted"]);
-
-const store = useStore();
+const { isFeedbackProcessed } = storeToRefs(useAIAssistantStore());
+const { submitFeedback } = useAIAssistantStore();
 
 const isFeedbackSubmitted = ref<Boolean>(false);
 const showThankYou = ref<Boolean>(false);
@@ -26,14 +27,14 @@ const shouldRenderFeedbackControls = computed(
   () =>
     !isFeedbackSubmitted.value &&
     props.interactionId &&
-    !store.getters["aiAssistant/isFeedbackProcessed"](props.interactionId),
+    !isFeedbackProcessed.value(props.interactionId),
 );
 
-const submitFeedback = async (feedback: {
+const clickSubmitFeedback = async (feedback: {
   isPositive: boolean;
   comment: string;
 }) => {
-  store.dispatch("aiAssistant/submitFeedback", {
+  submitFeedback({
     interactionId: props.interactionId,
     feedback,
   });
@@ -54,13 +55,13 @@ const submitFeedback = async (feedback: {
   >
     <Button
       class="button thumbs-up"
-      @click="submitFeedback({ isPositive: true, comment: '' })"
+      @click="clickSubmitFeedback({ isPositive: true, comment: '' })"
     >
       <ThumbsUpIcon class="icon" />
     </Button>
     <Button
       class="button thumbs-down"
-      @click="submitFeedback({ isPositive: false, comment: '' })"
+      @click="clickSubmitFeedback({ isPositive: false, comment: '' })"
     >
       <ThumbsDownIcon class="icon" />
     </Button>

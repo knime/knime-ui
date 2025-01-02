@@ -1,15 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as selectionStore from "@/store/selection";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import * as $shapes from "@/style/shapes";
 import { createPort, createWorkflow } from "@/test/factories";
-import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockBoundingRect } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import MoveableMetaNodePortBarContainer from "../MoveableMetaNodePortBarContainer.vue";
 
 const mockedAPI = deepMocked(API);
@@ -25,7 +23,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
     boundsIn = null,
     boundsOut = null,
     outPorts = null,
-    screenToCanvasCoordinatesMock = vi.fn().mockReturnValue(() => [0, 0]),
+    screenToCanvasCoordinatesMock = vi.fn(() => [0, 0]),
   } = {}) => {
     const createMockMoveDirective = () => {
       let handlers = {};
@@ -42,31 +40,13 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
 
     const mockMoveDirective = createMockMoveDirective();
 
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      selection: selectionStore,
-      canvas: {
-        state: { zoomFactor: 1, isMoveLocked: false },
-        getters: {
-          screenToCanvasCoordinates: screenToCanvasCoordinatesMock,
-        },
-      },
-      aiAssistant: {
-        state: { build: { isProcessing: false } },
-      },
-      application: {
-        state() {
-          return {
-            ...applicationStore.state(),
-            canvasMode: "selection",
-          };
-        },
-      },
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
+    mockedStores.canvasStore.screenToCanvasCoordinates =
+      screenToCanvasCoordinatesMock;
+    mockedStores.canvasModesStore.canvasMode = "selection";
+    mockedStores.aiAssistantStore.build = { isProcessing: false };
 
-    $store.commit(
-      "workflow/setActiveWorkflow",
+    mockedStores.workflowStore.setActiveWorkflow(
       createWorkflow({
         metaInPorts: {
           ports: [createPort()],
@@ -79,7 +59,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       }),
     );
 
-    $store.commit("workflow/setCalculatedMetanodePortBarBounds", {
+    mockedStores.workflowStore.setCalculatedMetanodePortBarBounds({
       in: {
         x: 5,
         y: 8,
@@ -94,15 +74,12 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       },
     });
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
-
     const finalProps = { ...defaultProps, ...props };
     const wrapper = mount(MoveableMetaNodePortBarContainer, {
       props: finalProps,
       global: {
         mocks: { $shapes, ...mocks },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
@@ -114,7 +91,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       right: bounds.width,
     });
 
-    return { wrapper, $store, mockMoveDirective, dispatchSpy, commitSpy };
+    return { wrapper, mockedStores, mockMoveDirective };
   };
 
   const startPortBarDrag = (
@@ -147,10 +124,11 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
     });
 
     it("deselects all objects on movement of unselected port bar", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       // add something to selection
-      await $store.dispatch("selection/selectNode", "root:1");
+      mockedStores.selectionStore.selectNode("root:1");
+      await nextTick();
 
       startPortBarDrag(wrapper, {
         clientX: 199,
@@ -160,17 +138,18 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
       await flushPromises();
 
       // node was unselected
-      expect($store.state.selection.selectedNodes).toEqual({});
-      expect($store.state.selection.selectedMetanodePortBars).toEqual({
+      expect(mockedStores.selectionStore.selectedNodes).toEqual({});
+      expect(mockedStores.selectionStore.selectedMetanodePortBars).toEqual({
         in: true,
       });
     });
 
     it("does not deselect annotation when annotation is already selected", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
-      await $store.dispatch("selection/selectMetanodePortBar", "in");
-      expect($store.state.selection.selectedMetanodePortBars).toEqual({
+      mockedStores.selectionStore.selectMetanodePortBar("in");
+      await nextTick();
+      expect(mockedStores.selectionStore.selectedMetanodePortBars).toEqual({
         in: true,
       });
 
@@ -180,7 +159,7 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
         shiftKey: false,
       });
 
-      expect($store.state.selection.selectedMetanodePortBars).toEqual({
+      expect(mockedStores.selectionStore.selectedMetanodePortBars).toEqual({
         in: true,
       });
     });
@@ -200,10 +179,10 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
         right: bounds.width,
       });
 
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { type: "in" },
         boundsIn: bounds,
-        screenToCanvasCoordinatesMock: vi.fn(() => ([x, y]) => [x, y]),
+        screenToCanvasCoordinatesMock: vi.fn(([x, y]) => [x, y]),
       });
 
       const clickPosition = { clientX: 85, clientY: 85 };
@@ -214,11 +193,11 @@ describe("MoveableMetaNodePortBarContainer.vue", () => {
 
       await flushPromises();
 
-      expect($store.state.workflow.isDragging).toBe(true);
+      expect(mockedStores.movingStore.isDragging).toBe(true);
 
       moveTo({ ...movePosition });
 
-      expect($store.state.workflow.movePreviewDelta).toEqual({
+      expect(mockedStores.movingStore.movePreviewDelta).toEqual({
         x: 130,
         y: 130,
       });

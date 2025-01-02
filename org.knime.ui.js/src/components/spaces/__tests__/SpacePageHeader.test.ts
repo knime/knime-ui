@@ -4,16 +4,13 @@ import { mount } from "@vue/test-utils";
 
 import { Breadcrumb, FunctionButton } from "@knime/components";
 
-import * as spacesStore from "@/store/spaces";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import SpacePageHeader from "../SpacePageHeader.vue";
 
 describe("SpacePageHeader.vue", () => {
   const title = "title test";
   const doMount = (isEditable: boolean, isEditing: boolean = false) => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-    });
+    const mockedStores = mockStores();
 
     const wrapper = mount(SpacePageHeader, {
       props: {
@@ -24,7 +21,7 @@ describe("SpacePageHeader.vue", () => {
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("should render an editable title", () => {

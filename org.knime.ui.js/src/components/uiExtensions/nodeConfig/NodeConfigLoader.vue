@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onUnmounted, ref, toRefs, watch } from "vue";
+import { API } from "@api";
 
 import { type Alert } from "@knime/ui-extension-renderer/api";
 import {
@@ -7,10 +8,9 @@ import {
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
 import { gatewayRpcClient } from "@/api/gateway-api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useNotifyUIExtensionAlert } from "../common/useNotifyUIExtensionAlert";
 import { useResourceLocation } from "../common/useResourceLocation";
@@ -29,7 +29,7 @@ const props = defineProps<Props>();
 
 // Even though there's a store usage, this component should be limited to
 // using only the nodeConfiguration store, to keep it as context-less as possible
-const store = useStore();
+const nodeConfigurationStore = useNodeConfigurationStore();
 const { notify } = useNotifyUIExtensionAlert();
 
 const { projectId, workflowId, selectedNode } = toRefs(props);
@@ -69,10 +69,7 @@ const loadExtensionConfig = async () => {
 
   extensionConfig.value = { ..._extensionConfig, startEnlarged: false };
 
-  store.commit(
-    "nodeConfiguration/setActiveExtensionConfig",
-    extensionConfig.value,
-  );
+  nodeConfigurationStore.setActiveExtensionConfig(extensionConfig.value);
 };
 
 const { uniqueNodeConfigId } = useUniqueNodeStateId(toRefs(props));
@@ -118,8 +115,8 @@ const apiLayer: UIExtensionAPILayer = {
 
   publishData: (data) => {
     consola.trace("NodeDialog :: publishData", data);
-    store.dispatch("nodeConfiguration/updateTimestamp");
-    store.commit("nodeConfiguration/setLatestPublishedData", {
+    nodeConfigurationStore.updateTimestamp();
+    nodeConfigurationStore.setLatestPublishedData({
       data,
       projectId: projectId.value,
       workflowId: workflowId.value,
@@ -128,16 +125,16 @@ const apiLayer: UIExtensionAPILayer = {
   },
 
   registerPushEventService: ({ dispatchPushEvent }) => {
-    store.commit("nodeConfiguration/setPushEventDispatcher", dispatchPushEvent);
+    nodeConfigurationStore.setPushEventDispatcher(dispatchPushEvent);
 
     return () => {};
   },
 
   onDirtyStateChange: (dirtyState) =>
-    store.commit("nodeConfiguration/setDirtyState", dirtyState),
+    nodeConfigurationStore.setDirtyState(dirtyState),
 
   onApplied: (payload) =>
-    store.dispatch("nodeConfiguration/setApplyComplete", payload.isApplied),
+    nodeConfigurationStore.setApplyComplete(payload.isApplied),
 
   setControlsVisibility: ({ shouldBeVisible }) => {
     areControlsVisible.value = shouldBeVisible;
@@ -165,8 +162,8 @@ watch(
   async () => {
     try {
       isConfigReady.value = false;
-      store.commit("nodeConfiguration/setActiveExtensionConfig", null);
-      store.dispatch("nodeConfiguration/resetDirtyState");
+      nodeConfigurationStore.setActiveExtensionConfig(null);
+      nodeConfigurationStore.resetDirtyState();
 
       emit("loadingStateChange", {
         value: "loading",
@@ -196,7 +193,7 @@ watch(
 );
 
 onUnmounted(() => {
-  store.commit("nodeConfiguration/setActiveExtensionConfig", null);
+  nodeConfigurationStore.setActiveExtensionConfig(null);
   deactivateDataServicesFn?.();
 });
 </script>

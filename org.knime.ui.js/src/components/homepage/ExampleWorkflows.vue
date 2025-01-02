@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { isEqual } from "lodash-es";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import { Button } from "@knime/components";
@@ -10,17 +11,21 @@ import CloseIcon from "@knime/styles/img/icons/close.svg";
 import type { ExampleProject } from "@/api/custom-types";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useSettingsStore } from "@/store/settings";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 
 import PageTitle from "./PageTitle.vue";
 
-const store = useStore();
+const { exampleProjects } = storeToRefs(useApplicationStore());
+const { setExampleProjects } = useApplicationStore();
+const { settings } = storeToRefs(useSettingsStore());
+const { updateSetting } = useSettingsStore();
+const { openProject } = useSpaceOperationsStore();
 const $router = useRouter();
 const { toastPresets } = getToastPresets();
 
-const exampleProjects = computed(() => store.state.application.exampleProjects);
-const settings = computed(() => store.state.settings.settings);
 const shouldShowExampleWorkflows = computed(
   () =>
     exampleProjects.value.length > 0 &&
@@ -29,7 +34,7 @@ const shouldShowExampleWorkflows = computed(
 
 const onExampleClick = async (example: ExampleProject) => {
   try {
-    await store.dispatch("spaces/openProject", {
+    await openProject({
       ...example.origin,
       $router,
     });
@@ -41,12 +46,12 @@ const onExampleClick = async (example: ExampleProject) => {
     const newExampleProjects = exampleProjects.value.filter(
       (item) => !isEqual(item.origin, example.origin),
     );
-    store.commit("application/setExampleProjects", newExampleProjects);
+    setExampleProjects(newExampleProjects);
   }
 };
 
 const dismissExamples = () => {
-  store.dispatch("settings/updateSetting", {
+  updateSetting({
     key: "shouldShowExampleWorkflows",
     value: false,
   });

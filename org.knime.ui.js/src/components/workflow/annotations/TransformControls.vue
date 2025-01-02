@@ -1,8 +1,10 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
-import { mapGetters, mapState } from "vuex";
+import { mapState } from "pinia";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
+import { useCanvasStore } from "@/store/canvas";
+import { useMovingStore } from "@/store/workflow/moving";
 
 import {
   DIRECTIONS,
@@ -51,9 +53,8 @@ export default defineComponent({
   },
 
   computed: {
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapState("canvas", ["zoomFactor"]),
-    ...mapState("workflow", ["movePreviewDelta"]),
+    ...mapState(useCanvasStore, ["zoomFactor", "screenToCanvasCoordinates"]),
+    ...mapState(useMovingStore, ["movePreviewDelta"]),
 
     focusPlaneOffset() {
       const isSelected = this.showSelection;

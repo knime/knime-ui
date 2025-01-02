@@ -1,6 +1,6 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapState } from "vuex";
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import MoveableAnnotationContainer from "@/components/workflow/annotations/MoveableAnnotationContainer.vue";
 import WorkflowAnnotation from "@/components/workflow/annotations/WorkflowAnnotation.vue";
@@ -9,76 +9,60 @@ import ConnectorLabel from "@/components/workflow/connectors/ConnectorLabel.vue"
 import MoveableNodeContainer from "@/components/workflow/node/MoveableNodeContainer.vue";
 import Node from "@/components/workflow/node/Node.vue";
 import MetaNodePortBars from "@/components/workflow/ports/MetaNodePortBars.vue";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useSelectionStore } from "@/store/selection";
+import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
-export default defineComponent({
-  components: {
-    WorkflowPortalLayers,
-    Node,
-    Connector,
-    WorkflowAnnotation,
-    MetaNodePortBars,
-    ConnectorLabel,
-    MoveableNodeContainer,
-    MoveableAnnotationContainer,
-  },
+const { activeWorkflow: workflow } = storeToRefs(useWorkflowStore());
+const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
+  useNodeInteractionsStore(),
+);
+const { editableAnnotationId } = storeToRefs(useAnnotationInteractionsStore());
+const { isNodeSelected } = storeToRefs(useSelectionStore());
+const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
 
-  expose: ["applyNodeSelectionPreview", "applyAnnotationSelectionPreview"],
+// TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
+const sortedNodes = computed(() => {
+  let selected: any[] = [];
+  let unselected: any[] = [];
 
-  computed: {
-    ...mapState("workflow", {
-      workflow: "activeWorkflow",
-      editableAnnotationId: "editableAnnotationId",
-    }),
-
-    ...mapGetters("selection", ["isNodeSelected"]),
-    ...mapGetters("application", ["hasAnnotationModeEnabled"]),
-    // Sort nodes so that selected nodes are rendered in front
-    // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
-    sortedNodes() {
-      let selected: any[] = [];
-      let unselected: any[] = [];
-
-      for (const nodeId of Object.keys(this.workflow.nodes)) {
-        if (this.isNodeSelected(nodeId)) {
-          selected.push(this.workflow.nodes[nodeId]);
-        } else {
-          unselected.push(this.workflow.nodes[nodeId]);
-        }
-      }
-      return [...unselected, ...selected];
-    },
-  },
-
-  methods: {
-    applyNodeSelectionPreview({
-      nodeId,
-      type,
-    }: {
-      nodeId: string;
-      type: string;
-    }) {
-      (
-        this.$refs[`node-${nodeId}`] as Array<InstanceType<typeof Node>>
-      )[0].setSelectionPreview(type);
-    },
-
-    applyAnnotationSelectionPreview({
-      annotationId,
-      type,
-    }: {
-      annotationId: string;
-      type: "hide" | "show" | "clear" | null;
-    }) {
-      (
-        this.$refs[`annotation-${annotationId}`] as Array<
-          InstanceType<typeof WorkflowAnnotation>
-        >
-      )[0].setSelectionPreview(type);
-    },
-  },
+  for (const nodeId of Object.keys(workflow.value!.nodes)) {
+    if (isNodeSelected.value(nodeId)) {
+      selected.push(workflow.value!.nodes[nodeId]);
+    } else {
+      unselected.push(workflow.value!.nodes[nodeId]);
+    }
+  }
+  return [...unselected, ...selected];
 });
+
+const nodeRefs = ref<Record<string, any>>({});
+const annotationRefs = ref<Record<string, any>>({});
+
+const applyNodeSelectionPreview = ({
+  nodeId,
+  type,
+}: {
+  nodeId: string;
+  type: string;
+}) => {
+  nodeRefs.value[`node-${nodeId}`].setSelectionPreview(type);
+};
+
+const applyAnnotationSelectionPreview = ({
+  annotationId,
+  type,
+}: {
+  annotationId: string;
+  type: "hide" | "show" | "clear" | null;
+}) => {
+  annotationRefs.value[`annotation-${annotationId}`].setSelectionPreview(type);
+};
+defineExpose({ applyNodeSelectionPreview, applyAnnotationSelectionPreview });
 </script>
 
 <template>
@@ -86,7 +70,7 @@ export default defineComponent({
     <WorkflowPortalLayers>
       <template #workflowAnnotation>
         <MoveableAnnotationContainer
-          v-for="annotation of workflow.workflowAnnotations"
+          v-for="annotation of workflow!.workflowAnnotations"
           :id="annotation.id"
           :key="`annotation-${annotation.id}`"
           :class="{ disabled: hasAnnotationModeEnabled }"
@@ -94,7 +78,7 @@ export default defineComponent({
         >
           <WorkflowAnnotation
             v-if="editableAnnotationId !== annotation.id"
-            :ref="`annotation-${annotation.id}`"
+            :ref="(el) => (annotationRefs[`annotation-${annotation.id}`] = el)"
             :annotation="annotation"
           />
 
@@ -110,7 +94,7 @@ export default defineComponent({
       <template #connector>
         <!-- connector.id is NOT unique. Hence we use a custom key -->
         <Connector
-          v-for="connector of workflow.connections"
+          v-for="connector of workflow!.connections"
           :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
           :ref="`connector-${connector.id}`"
           :class="{ disabled: hasAnnotationModeEnabled }"
@@ -120,7 +104,7 @@ export default defineComponent({
 
       <template #metaNodePortBars>
         <MetaNodePortBars
-          v-if="workflow.info.containerType === 'metanode'"
+          v-if="workflow!.info.containerType === 'metanode'"
           :class="{ disabled: hasAnnotationModeEnabled }"
         />
       </template>
@@ -136,12 +120,12 @@ export default defineComponent({
         >
           <template #default="{ position }">
             <Node
-              :ref="`node-${node.id}`"
+              :ref="(el) => (nodeRefs[`node-${node.id}`] = el)"
               :class="{ disabled: hasAnnotationModeEnabled }"
               v-bind="node"
-              :icon="$store.getters['workflow/getNodeIcon'](node.id)"
-              :name="$store.getters['workflow/getNodeName'](node.id)"
-              :type="$store.getters['workflow/getNodeType'](node.id)"
+              :icon="getNodeIcon(node.id)"
+              :name="getNodeName(node.id)"
+              :type="getNodeType(node.id)"
               :position="position"
             />
           </template>
@@ -150,7 +134,7 @@ export default defineComponent({
 
       <template #connectorLabel>
         <ConnectorLabel
-          v-for="(connector, id) of workflow.connections"
+          v-for="(connector, id) of workflow!.connections"
           :key="`connector-label-${id}`"
           v-bind="connector"
         />

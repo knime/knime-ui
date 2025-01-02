@@ -1,10 +1,12 @@
-import { computed, ref } from "vue";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
-import { useStore } from "vuex";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
+import { useCanvasStore } from "@/store/canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as shapes from "@/style/shapes";
 import {
   type Direction,
@@ -56,7 +58,10 @@ const isSignificantMove = (startPosition: XY, newPosition: XY) => {
 };
 
 export const usePortDragging = (params: Params) => {
-  const store = useStore();
+  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+  const { isWritable: isWorkflowWritable, activeWorkflow } = storeToRefs(
+    useWorkflowStore(),
+  );
 
   let lastHitTarget: {
     element?: Element;
@@ -91,13 +96,6 @@ export const usePortDragging = (params: Params) => {
   });
 
   const { shouldPortSnap } = usePortSnapping();
-
-  const screenToCanvasCoordinates = computed(
-    () => store.getters["canvas/screenToCanvasCoordinates"],
-  );
-  const isWorkflowWritable = computed(
-    () => store.getters["workflow/isWritable"],
-  );
 
   let startPosition: XY | null = null;
   const onPointerDown = (event: PointerEvent) => {
@@ -141,7 +139,7 @@ export const usePortDragging = (params: Params) => {
     const validConnectionTargets = detectConnectionCircle({
       downstreamConnection: params.direction === "out",
       startNode: params.nodeId,
-      workflow: store.state.workflow.activeWorkflow,
+      workflow: activeWorkflow.value!,
     });
 
     // signal start of connecting phase

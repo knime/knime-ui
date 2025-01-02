@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import DraggableNodeTemplate from "@/components/nodeRepository/DraggableNodeTemplate.vue";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
-import { useStore } from "@/composables/useStore";
+import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 import type { NavReachedEvent } from "./NodeList.vue";
@@ -32,43 +33,22 @@ const emit = defineEmits<{
   (e: "navReachedTop", event: NavReachedEvent): void;
 }>();
 
-const store = useStore();
-
-const nodes = computed(() => store.state.nodeRepository.nodes);
-const query = computed(() => store.state.nodeRepository.query);
-const showDescriptionForNode = computed(
-  () => store.state.nodeRepository.showDescriptionForNode,
-);
-const selectedTags = computed(() => store.state.nodeRepository.selectedTags);
-const totalNumFilteredNodesFound = computed(
-  () => store.state.nodeRepository.totalNumFilteredNodesFound,
-);
-const isLoadingSearchResults = computed(
-  () => store.state.nodeRepository.isLoadingSearchResults,
-);
+const nodeRepositoryStore = useNodeRepositoryStore();
+const {
+  nodes,
+  query,
+  showDescriptionForNode,
+  selectedTags,
+  totalNumFilteredNodesFound,
+  isLoadingSearchResults,
+  searchScrollPosition,
+  selectedNode,
+} = storeToRefs(nodeRepositoryStore);
 
 const addNodeToWorkflow = useAddNodeToWorkflow();
 
-const searchScrollPosition = computed({
-  get() {
-    return store.state.nodeRepository.searchScrollPosition;
-  },
-  set(value) {
-    store.commit("nodeRepository/setSearchScrollPosition", value);
-  },
-});
-const selectedNode = computed({
-  get() {
-    return store.state.nodeRepository.selectedNode;
-  },
-  set(value) {
-    store.commit("nodeRepository/setSelectedNode", value);
-  },
-});
-
 const searchActions = {
-  searchNodesNextPage: () =>
-    store.dispatch("nodeRepository/searchNodesNextPage"),
+  searchNodesNextPage: () => nodeRepositoryStore.searchNodesNextPage(),
 };
 
 const searchResults = ref<InstanceType<typeof SearchResults>>();

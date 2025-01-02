@@ -1,105 +1,105 @@
-import { describe, expect, it, vi } from "vitest";
-import { nextTick } from "vue";
+import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
 
 import { SearchInput } from "@knime/components";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-import * as settingsStore from "@/store/settings";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import type { NodeRepositoryState } from "@/store/nodeRepository";
+import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import CloseableTagList from "../CloseableTagList.vue";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
 
-describe("NodeRepositoryHeader", () => {
-  const doMount = ({
-    searchIsActive = null,
-    nodesPerTag = null,
-    selectedTags = null,
-    query = null,
-    nodeRepositoryLoadedMock = true,
-    hasNodeCollectionActiveMock = null,
-    activeNodeCollectionMock = "",
-  } = {}) => {
-    const searchNodesMock = vi.fn();
-    const setSelectedTagsMock = vi.fn();
-    const clearSearchParamsMock = vi.fn();
-    const updateQueryMock = vi.fn();
+const defaultNodesPerTag = [
+  {
+    tag: "myTag1",
+    nodes: [
+      createNodeTemplateWithExtendedPorts({ id: "node3" }),
+      createNodeTemplateWithExtendedPorts({ id: "node4" }),
+    ],
+  },
+];
 
-    const $store = mockVuexStore({
-      nodeRepository: {
-        state: {
-          nodesPerTag: nodesPerTag ?? [
-            {
-              tag: "myTag1",
-              nodes: [
-                {
-                  id: "node3",
-                  name: "Node 3",
-                },
-                {
-                  id: "node4",
-                  name: "Node 4",
-                },
-              ],
-            },
-          ],
-          totalNumTopNodes: 2,
-          selectedTags: selectedTags ?? ["myTag2"],
-          query: query ?? "",
-          scrollPosition: 100,
-          selectedNode: {
-            id: 1,
-            name: "Test",
-            nodeFactory: {
-              className: "some.class.name",
-              settings: "",
-            },
-          },
-        },
-        actions: {
-          searchNodes: searchNodesMock,
-          setSelectedTags: setSelectedTagsMock,
-          clearSearchParams: clearSearchParamsMock,
-          updateQuery: updateQueryMock,
-        },
-        getters: {
-          searchIsActive: searchIsActive ?? (() => true),
-          tagsOfVisibleNodes() {
-            return ["myTag1", "myTag2"];
-          },
-        },
-      },
-      settings: settingsStore,
-      application: {
-        state: {
-          activeProjectId: "project1",
-          nodeRepositoryLoaded: nodeRepositoryLoadedMock,
-          hasNodeCollectionActive: hasNodeCollectionActiveMock,
-          activeNodeCollection: activeNodeCollectionMock,
-        },
-      },
+describe("NodeRepositoryHeader", () => {
+  type MountOpts = {
+    searchIsActive?: boolean;
+    nodesPerTag?: NodeRepositoryState["nodesPerTag"];
+    selectedTags?: string[];
+    query?: string;
+    nodeRepositoryLoaded?: boolean;
+    hasNodeCollectionActive?: boolean;
+    activeNodeCollection?: string;
+  };
+
+  const doMount = ({
+    searchIsActive = true,
+    nodesPerTag,
+    selectedTags,
+    query,
+    nodeRepositoryLoaded = true,
+    hasNodeCollectionActive = false,
+    activeNodeCollection = "",
+  }: MountOpts = {}) => {
+    const {
+      nodeRepositoryStore,
+      testingPinia,
+      applicationStore,
+      applicationSettingsStore,
+      lifecycleStore,
+      panelStore,
+    } = mockStores();
+
+    nodeRepositoryStore.setNodesPerTags({
+      groupedNodes: nodesPerTag ?? defaultNodesPerTag,
+      append: false,
     });
+
+    nodeRepositoryStore.setTotalNumNodesFound(2);
+    nodeRepositoryStore.setTagScrollPosition(100);
+    nodeRepositoryStore.setSelectedNode(
+      createNodeTemplateWithExtendedPorts({ id: "node1" }),
+    );
+
+    nodeRepositoryStore.setSelectedTags(selectedTags ?? ["myTag2"]);
+
+    // @ts-expect-error
+    nodeRepositoryStore.searchIsActive = searchIsActive;
+    // @ts-expect-error
+    nodeRepositoryStore.tagsOfVisibleNodes = ["myTag1", "myTag2"];
+    // @ts-expect-error
+    nodeRepositoryStore.isNodeVisible = true;
+
+    if (query) {
+      nodeRepositoryStore.setQuery(query);
+    }
+
+    applicationStore.setActiveProjectId("project1");
+
+    applicationStore.nodeRepositoryLoaded = nodeRepositoryLoaded;
+
+    applicationSettingsStore.setHasNodeCollectionActive(
+      hasNodeCollectionActive,
+    );
+    applicationSettingsStore.setActiveNodeCollection(activeNodeCollection);
 
     const wrapper = shallowMount(NodeRepositoryHeader, {
       global: {
-        plugins: [$store],
+        plugins: [testingPinia],
       },
     });
 
     return {
       wrapper,
-      $store,
-      searchNodesMock,
-      setSelectedTagsMock,
-      clearSearchParamsMock,
-      updateQueryMock,
+      nodeRepositoryStore,
+      lifecycleStore,
+      panelStore,
     };
   };
 
   describe("renders", () => {
     it("renders header", () => {
       const { wrapper } = doMount({
-        searchIsActive: () => false,
+        searchIsActive: false,
       });
 
       expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
@@ -125,7 +125,7 @@ describe("NodeRepositoryHeader", () => {
 
     it("doesn't render CloseableTagList when no tags are selected and no search is active", () => {
       const { wrapper } = doMount({
-        searchIsActive: () => false,
+        searchIsActive: false,
       });
       expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
     });
@@ -139,12 +139,12 @@ describe("NodeRepositoryHeader", () => {
     });
 
     it("selects tag on click", () => {
-      const { wrapper, setSelectedTagsMock } = doMount();
+      const { wrapper, nodeRepositoryStore } = doMount();
       wrapper
         .findComponent(CloseableTagList)
         .vm.$emit("update:modelValue", ["myTag1", "myTag2"]);
 
-      expect(setSelectedTagsMock).toHaveBeenCalledWith(expect.anything(), [
+      expect(nodeRepositoryStore.selectedTags).toStrictEqual([
         "myTag1",
         "myTag2",
       ]);
@@ -153,7 +153,7 @@ describe("NodeRepositoryHeader", () => {
 
   describe("tag de-selection", () => {
     it("de-selects tag and clears search using back to Repository link", () => {
-      const { wrapper, clearSearchParamsMock } = doMount();
+      const { wrapper, nodeRepositoryStore } = doMount();
       expect(wrapper.findComponent(ActionBreadcrumb).props("items")).toEqual([
         { id: "clear", text: "Nodes" },
         { text: "Results" },
@@ -161,23 +161,19 @@ describe("NodeRepositoryHeader", () => {
       wrapper
         .findComponent(ActionBreadcrumb)
         .vm.$emit("click", { id: "clear" });
-      expect(clearSearchParamsMock).toHaveBeenCalled();
+      expect(nodeRepositoryStore.clearSearchParams).toHaveBeenCalled();
     });
   });
 
   describe("search for nodes", () => {
-    it("updates query on SearchInput input", async () => {
-      const { wrapper, updateQueryMock } = doMount();
+    it("updates query on SearchInput input", () => {
+      const { wrapper, nodeRepositoryStore } = doMount();
 
       wrapper
         .findComponent(SearchInput)
         .vm.$emit("update:modelValue", "myquery");
-      await nextTick();
 
-      expect(updateQueryMock).toHaveBeenCalledWith(
-        expect.anything(),
-        "myquery",
-      );
+      expect(nodeRepositoryStore.query).toBe("myquery");
     });
 
     it("links back to repository view on search/filter results", () => {
@@ -193,13 +189,13 @@ describe("NodeRepositoryHeader", () => {
     });
 
     it("uses collection name when a collection is active", () => {
-      const activeNodeCollectionMock = "Test Collection";
+      const activeNodeCollection = "Test Collection";
       const { wrapper } = doMount({
-        hasNodeCollectionActiveMock: "test",
-        activeNodeCollectionMock,
+        hasNodeCollectionActive: true,
+        activeNodeCollection,
       });
       expect(wrapper.findComponent(SearchInput).props("placeholder")).includes(
-        activeNodeCollectionMock,
+        activeNodeCollection,
       );
     });
   });

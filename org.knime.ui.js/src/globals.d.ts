@@ -12,7 +12,6 @@ declare global {
       ) => any;
     };
 
-    Vue: any;
     store: any;
     router: any;
   }

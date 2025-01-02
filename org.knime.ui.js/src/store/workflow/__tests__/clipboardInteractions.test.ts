@@ -7,10 +7,14 @@ import {
   vi,
 } from "vitest";
 import { nextTick } from "vue";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { getToastsProvider } from "@/plugins/toasts";
-import { createConnection } from "@/test/factories";
+import {
+  createConnection,
+  createWorkflow,
+  createWorkflowAnnotation,
+} from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { pastePartsAt } from "@/util/pasteToWorkflow";
 
@@ -55,7 +59,7 @@ describe("workflow::clipboardInteractions", () => {
     return clipboardMock;
   };
 
-  it.each([["Copy"], ["Cut"]])(
+  it.each([["Copy"], ["Cut"]] as const)(
     "executes <%s> command",
     async (command: "Copy" | "Cut") => {
       const stringifiedPayload = JSON.stringify({
@@ -68,55 +72,59 @@ describe("workflow::clipboardInteractions", () => {
       });
 
       const clipboardMock = createClipboardMock();
-      const { store } = await loadStore();
+      const { workflowStore, selectionStore, clipboardInteractionsStore } =
+        loadStore();
 
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "my project",
-        info: { containerId: "root" },
-        nodes: {
-          foo: {
-            id: "foo",
-            position: { x: 0, y: 0 },
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "my project",
+          info: { containerId: "root" },
+          nodes: {
+            foo: {
+              id: "foo",
+              position: { x: 0, y: 0 },
+            },
+            bar: {
+              id: "bar",
+              position: { x: 50, y: 50 },
+            },
           },
-          bar: {
-            id: "bar",
-            position: { x: 50, y: 50 },
+          connections: {
+            connection1: createConnection({
+              bendpoints: [
+                { x: 10, y: 10 },
+                { x: 20, y: 20 },
+              ],
+            }),
+            connection2: createConnection({
+              bendpoints: [{ x: 10, y: 10 }],
+            }),
           },
-        },
-        connections: {
-          connection1: createConnection({
-            bendpoints: [
-              { x: 10, y: 10 },
-              { x: 20, y: 20 },
-            ],
-          }),
-          connection2: createConnection({
-            bendpoints: [{ x: 10, y: 10 }],
-          }),
-        },
-        workflowAnnotations: [
-          {
-            id: "root:2_1",
-            text: "Test",
-            bounds: { x: 10, y: 10, height: 10, width: 10 },
-          },
-          {
-            id: "root:2_2",
-            text: "Test1",
-            bounds: { x: 20, y: 20, height: 20, width: 20 },
-          },
-        ],
-      });
+          workflowAnnotations: [
+            createWorkflowAnnotation({
+              id: "root:2_1",
+              text: { value: "Test" },
+              bounds: { x: 10, y: 10, height: 10, width: 10 },
+            }),
+            createWorkflowAnnotation({
+              id: "root:2_2",
+              text: { value: "Test1" },
+              bounds: { x: 20, y: 20, height: 20, width: 20 },
+            }),
+          ],
+        }),
+      );
 
-      await store.dispatch("selection/selectAllObjects");
-      await store.dispatch("selection/selectBendpoints", [
+      selectionStore.selectAllObjects();
+      selectionStore.selectBendpoints([
         "connection1__0",
         "connection1__1",
         "connection2__0",
       ]);
       await nextTick();
-      await store.dispatch("workflow/copyOrCutWorkflowParts", {
-        command: command.toLowerCase(),
+
+      await clipboardInteractionsStore.copyOrCutWorkflowParts({
+        command: command.toLowerCase() as "cut" | "copy",
       });
 
       expect(mockedAPI.workflowCommand[command]).toHaveBeenCalledWith({
@@ -160,6 +168,7 @@ describe("workflow::clipboardInteractions", () => {
 
     const clipboardMock = createClipboardMock();
     navigator.clipboard.writeText
+      // @ts-ignore
       .mockImplementationOnce((text) => {
         clipboardMock.setContent(JSON.parse(text));
       })
@@ -169,54 +178,58 @@ describe("workflow::clipboardInteractions", () => {
         throw error;
       });
 
-    const { store } = await loadStore();
+    const { workflowStore, selectionStore, clipboardInteractionsStore } =
+      loadStore();
 
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "my project",
-      info: { containerId: "root" },
-      nodes: {
-        foo: {
-          id: "foo",
-          position: { x: 0, y: 0 },
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        projectId: "my project",
+        info: { containerId: "root" },
+        nodes: {
+          foo: {
+            id: "foo",
+            position: { x: 0, y: 0 },
+          },
+          bar: {
+            id: "bar",
+            position: { x: 50, y: 50 },
+          },
         },
-        bar: {
-          id: "bar",
-          position: { x: 50, y: 50 },
+        connections: {
+          connection1: createConnection({
+            bendpoints: [
+              { x: 10, y: 10 },
+              { x: 20, y: 20 },
+            ],
+          }),
+          connection2: createConnection({
+            bendpoints: [{ x: 10, y: 10 }],
+          }),
         },
-      },
-      connections: {
-        connection1: createConnection({
-          bendpoints: [
-            { x: 10, y: 10 },
-            { x: 20, y: 20 },
-          ],
-        }),
-        connection2: createConnection({
-          bendpoints: [{ x: 10, y: 10 }],
-        }),
-      },
-      workflowAnnotations: [
-        {
-          id: "root:2_1",
-          text: "Test",
-          bounds: { x: 10, y: 10, height: 10, width: 10 },
-        },
-        {
-          id: "root:2_2",
-          text: "Test1",
-          bounds: { x: 20, y: 20, height: 20, width: 20 },
-        },
-      ],
-    });
+        workflowAnnotations: [
+          createWorkflowAnnotation({
+            id: "root:2_1",
+            text: { value: "Test" },
+            bounds: { x: 10, y: 10, height: 10, width: 10 },
+          }),
+          createWorkflowAnnotation({
+            id: "root:2_2",
+            text: { value: "Test1" },
+            bounds: { x: 20, y: 20, height: 20, width: 20 },
+          }),
+        ],
+      }),
+    );
 
-    await store.dispatch("selection/selectAllObjects");
-    await store.dispatch("selection/selectBendpoints", [
+    selectionStore.selectAllObjects();
+    selectionStore.selectBendpoints([
       "connection1__0",
       "connection1__1",
       "connection2__0",
     ]);
     await nextTick();
-    await store.dispatch("workflow/copyOrCutWorkflowParts", {
+
+    await clipboardInteractionsStore.copyOrCutWorkflowParts({
       command: "copy",
     });
 
@@ -242,7 +255,7 @@ describe("workflow::clipboardInteractions", () => {
   });
 
   describe("executes paste command", () => {
-    const setupStoreForPaste = async (
+    const setupStoreForPaste = (
       cacheClipboardContentId: string | null = null,
     ) => {
       // register "pasteWorkflowParts" API function
@@ -251,16 +264,33 @@ describe("workflow::clipboardInteractions", () => {
         annotationIds: ["root:2_1"],
       });
 
-      const { store } = await loadStore();
+      const {
+        workflowStore,
+        clipboardInteractionsStore,
+        selectionStore,
+        canvasStore,
+      } = loadStore();
+
+      // @ts-ignore - mock pinia getter
+      canvasStore.getVisibleFrame = {
+        left: -500,
+        top: -500,
+        width: 1000,
+        height: 1000,
+      };
 
       // set up workflow
-      const workflow = {
+      const workflow = createWorkflow({
         projectId: "my project",
         info: { containerId: "root" },
         nodes: { foo: { id: "foo" }, bar: { id: "bar" } },
-        workflowAnnotations: ["root:2_1", "root:2_2"],
-      };
-      store.commit("workflow/setActiveWorkflow", workflow);
+        workflowAnnotations: [
+          createWorkflowAnnotation({ id: "root:2_1" }),
+          createWorkflowAnnotation({ id: "root:2_2" }),
+        ],
+      });
+
+      workflowStore.setActiveWorkflow(workflow);
 
       // mock current clipboard content
       const clipboardMock = createClipboardMock(
@@ -279,29 +309,32 @@ describe("workflow::clipboardInteractions", () => {
       const doAfterPasteMock = vi.fn();
       mockedPastePartsAt.mockReturnValue({
         position: { x: 5, y: 5 },
-        doAfterPaste: doAfterPasteMock,
       });
 
       // mock previous copy paste state
-      store.commit("workflow/setCopyPaste", {
+      clipboardInteractionsStore.setCopyPaste({
+        // @ts-ignore
         dummy: null,
       });
 
       // Start pasting
       const startPaste = (payload = {}) =>
-        store.dispatch("workflow/pasteWorkflowParts", payload);
+        clipboardInteractionsStore.pasteWorkflowParts(payload);
 
       return {
         startPaste,
         clipboardMock,
         workflow,
         doAfterPasteMock,
-        store,
+        clipboardInteractionsStore,
+        selectionStore,
+        canvasStore,
       };
     };
 
-    it("calls partePartsAt", async () => {
-      const { startPaste, clipboardMock } = await setupStoreForPaste();
+    it("calls pastePartsAt", async () => {
+      const { startPaste, clipboardMock } = setupStoreForPaste();
+
       await startPaste();
 
       expect(mockedPastePartsAt).toHaveBeenCalledWith({
@@ -313,16 +346,16 @@ describe("workflow::clipboardInteractions", () => {
         },
         clipboardContent: clipboardMock.getContent(),
         isWorkflowEmpty: false,
-        dispatch: expect.any(Function),
       });
     });
 
     it("uses clipboard cache if content has cacheId", async () => {
       const cacheClipboardContentId = "clipboard_id_1";
-      const { startPaste, store } = await setupStoreForPaste(
+      const { startPaste, clipboardInteractionsStore } = setupStoreForPaste(
         cacheClipboardContentId,
       );
-      store.commit("workflow/setClipboardContentCache", {
+
+      clipboardInteractionsStore.setClipboardContentCache({
         cacheClipboardContentId,
         clipboardContent: JSON.stringify({
           objectBounds: {
@@ -343,7 +376,7 @@ describe("workflow::clipboardInteractions", () => {
     });
 
     it("pastes at given position", async () => {
-      const { startPaste } = await setupStoreForPaste();
+      const { startPaste } = setupStoreForPaste();
       await startPaste({ position: { x: 100, y: 100 } });
 
       expect(mockedPastePartsAt).not.toHaveBeenCalled();
@@ -357,10 +390,10 @@ describe("workflow::clipboardInteractions", () => {
     });
 
     it("stores pastes boundary", async () => {
-      const { store, startPaste } = await setupStoreForPaste();
+      const { clipboardInteractionsStore, startPaste } = setupStoreForPaste();
       await startPaste();
 
-      expect(store.state.workflow.copyPaste).toStrictEqual({
+      expect(clipboardInteractionsStore.copyPaste).toStrictEqual({
         dummy: null,
         lastPasteBounds: {
           left: 5,
@@ -372,7 +405,7 @@ describe("workflow::clipboardInteractions", () => {
     });
 
     it("calls paste API function", async () => {
-      const { startPaste } = await setupStoreForPaste();
+      const { startPaste } = setupStoreForPaste();
       await startPaste();
 
       expect(mockedAPI.workflowCommand.Paste).toHaveBeenCalledWith({
@@ -383,19 +416,12 @@ describe("workflow::clipboardInteractions", () => {
       });
     });
 
-    it("calls after paste hook", async () => {
-      const { startPaste, doAfterPasteMock } = await setupStoreForPaste();
-      await startPaste();
-
-      expect(doAfterPasteMock).toHaveBeenCalled();
-    });
-
     it("selects nodes afterwards", async () => {
-      const { startPaste, store } = await setupStoreForPaste();
+      const { startPaste, selectionStore } = await setupStoreForPaste();
       await startPaste();
 
-      expect(store.state.selection.selectedNodes.foo).toBeFalsy();
-      expect(store.state.selection.selectedNodes.bar).toBe(true);
+      expect(selectionStore.selectedNodes.foo).toBeFalsy();
+      expect(selectionStore.selectedNodes.bar).toBe(true);
     });
   });
 });

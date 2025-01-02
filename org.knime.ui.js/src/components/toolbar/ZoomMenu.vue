@@ -1,8 +1,10 @@
 <script>
-import { mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
 
 import { SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+
+import { useCanvasStore } from "@/store/canvas";
 
 /**
  * ZoomMenu offers predefined zoom levels and an input field to enter custom zoom levels
@@ -19,7 +21,7 @@ export default {
     },
   },
   computed: {
-    ...mapState("canvas", ["zoomFactor"]),
+    ...mapState(useCanvasStore, ["zoomFactor"]),
     zoomInputValue() {
       return `${Math.round(this.zoomFactor * 100)}%`;
     },
@@ -37,12 +39,13 @@ export default {
     },
   },
   methods: {
+    ...mapActions(useCanvasStore, ["zoomCentered"]),
     onZoomInputEnter(e) {
       // '100' or '100%' works
       let newZoomFactor = parseInt(e.target.value, 10) / 100;
 
       if (!isNaN(newZoomFactor)) {
-        this.$store.dispatch("canvas/zoomCentered", { factor: newZoomFactor });
+        this.zoomCentered({ factor: newZoomFactor });
       }
 
       // de-focus input. Resets and formats zoom level
@@ -64,7 +67,7 @@ export default {
     },
     onWheel(e) {
       const delta = e.deltaY < 0 ? 1 : -1;
-      this.$store.dispatch("canvas/zoomCentered", { delta });
+      this.zoomCentered({ delta });
     },
   },
 };

@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { Node } from "@/api/gateway-api/generated-api";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
 import * as applicationStore from "@/store/application";

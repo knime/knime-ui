@@ -5,7 +5,7 @@ import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 
 import { useKaiPanels } from "./panels/useKaiPanels";
 import QuickBuildInput from "./quickBuild/QuickBuildInput.vue";
@@ -25,12 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
 defineEmits(["menuBack"]);
 
 const { nodeId, startPosition } = toRefs(props);
-
-const store = useStore();
-
-const closeQuickActionMenu = () => {
-  store.dispatch("workflow/closeQuickActionMenu");
-};
+const { closeQuickActionMenu } = useFloatingMenusStore();
 
 const { panelComponent } = useKaiPanels();
 

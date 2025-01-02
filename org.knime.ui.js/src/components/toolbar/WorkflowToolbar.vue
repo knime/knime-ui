@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { type MenuItem, SubMenu } from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 
-import type { KnimeNode } from "@/api/custom-types";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
-import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
+import { useApplicationStore } from "@/store/application/application";
+import {
+  type CanvasMode,
+  useCanvasModesStore,
+} from "@/store/application/canvasModes";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
@@ -21,31 +28,15 @@ import ZoomMenu from "./ZoomMenu.vue";
  */
 
 const $shortcuts = useShortcuts();
-const store = useStore();
-const uiControls = computed(() => store.state.uiControls);
-
-const workflow = computed(() => store.state.workflow.activeWorkflow);
-const activeProjectId = computed(() => store.state.application.activeProjectId);
-
-const isWorkflowEmpty = computed<boolean>(
-  () => store.getters["workflow/isWorkflowEmpty"],
+const uiControls = useUIControlsStore();
+const { activeProjectId, isUnknownProject } = storeToRefs(
+  useApplicationStore(),
 );
-
-const selectedNodes = computed<Array<KnimeNode>>(
-  () => store.getters["selection/selectedNodes"],
-);
-const hasAnnotationModeEnabled = computed<boolean>(
-  () => store.getters["application/hasAnnotationModeEnabled"],
-);
-const hasSelectionModeEnabled = computed<boolean>(
-  () => store.getters["application/hasSelectionModeEnabled"],
-);
-const hasPanModeEnabled = computed<boolean>(
-  () => store.getters["application/hasPanModeEnabled"],
-);
-const isUnknownProject = computed<(id: string) => boolean>(
-  () => store.getters["application/isUnknownProject"],
-);
+const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
+const canvasModesStore = useCanvasModesStore();
+const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
+  storeToRefs(canvasModesStore);
 
 const canvasModes = computed<Array<MenuItem>>(() => {
   const canvasModeShortcuts: Array<{
@@ -65,7 +56,7 @@ const canvasModes = computed<Array<MenuItem>>(() => {
 
     const shortcutText =
       typeof shortcut.text === "function"
-        ? shortcut.text({ $store: store })
+        ? shortcut.text()
         : shortcut.text ?? "";
 
     return {
@@ -78,7 +69,7 @@ const canvasModes = computed<Array<MenuItem>>(() => {
 });
 
 const hasBreadcrumb = computed(() => {
-  return (workflow.value?.parents?.length ?? 0) > 0;
+  return (activeWorkflow.value?.parents?.length ?? 0) > 0;
 });
 
 const hideText = computed<Partial<Record<ShortcutName, boolean>>>(() => ({
@@ -107,11 +98,11 @@ const toolbarDropdowns = computed<
 });
 
 const toolbarButtons = computed(() => {
-  if (!workflow.value || !activeProjectId.value) {
+  if (!activeWorkflow.value || !activeProjectId.value) {
     return [];
   }
 
-  if (!workflow.value || !uiControls.value.canEditWorkflow) {
+  if (!activeWorkflow.value || !uiControls.canEditWorkflow) {
     return [];
   }
 
@@ -152,9 +143,9 @@ const toolbarButtons = computed(() => {
 
 const onCanvasModeUpdate = (
   _: unknown,
-  { metadata: { id } }: { metadata: { id: string } },
+  { metadata: { id } }: { metadata: { id: CanvasMode } },
 ) => {
-  store.dispatch("application/switchCanvasMode", id);
+  canvasModesStore.switchCanvasMode(id);
 };
 </script>
 
@@ -177,7 +168,11 @@ const onCanvasModeUpdate = (
       </div>
     </transition-group>
 
-    <WorkflowBreadcrumb v-if="hasBreadcrumb" class="breadcrumb" />
+    <WorkflowBreadcrumb
+      v-if="hasBreadcrumb && activeWorkflow"
+      :workflow="activeWorkflow"
+      class="breadcrumb"
+    />
 
     <div class="control-list">
       <SubMenu
@@ -191,7 +186,7 @@ const onCanvasModeUpdate = (
         <ArrowMoveIcon v-else-if="hasPanModeEnabled" />
       </SubMenu>
 
-      <ZoomMenu v-if="workflow" :disabled="isWorkflowEmpty" />
+      <ZoomMenu v-if="activeWorkflow" :disabled="isWorkflowEmpty" />
     </div>
   </div>
 </template>

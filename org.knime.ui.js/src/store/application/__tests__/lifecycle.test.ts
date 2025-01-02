@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
 
-import { API } from "@/api";
 import { runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { routes } from "@/router/router";
@@ -31,10 +31,12 @@ describe("application::lifecycle", () => {
   describe("application Lifecycle", () => {
     it("initialization (DESKTOP)", async () => {
       const router = getRouter();
+
       // @ts-ignore
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
-      const { store, dispatchSpy, commitSpy, subscribeEvent } = loadStore();
+      const { lifecycleStore, applicationStore, spaceProvidersStore } =
+        loadStore();
       window.localStorage.setItem("foo", "bar");
       const localStorageData = {
         settings1: { a: 1, b: 2 },
@@ -46,18 +48,14 @@ describe("application::lifecycle", () => {
       );
       const exampleProjects = [{ name: "test" }];
       mockedAPI.desktop.getExampleProjects.mockResolvedValue(exampleProjects);
-      await store.dispatch("application/initializeApplication", {
+      await lifecycleStore.initializeApplication({
         $router: router,
       });
 
-      expect(commitSpy).not.toHaveBeenCalledWith(
-        "application/setIsLoadingApp",
-        expect.anything(),
-        undefined,
-      );
-      expect(subscribeEvent).toHaveBeenCalled();
-      expect(API.application.getState).toHaveBeenCalled();
-      expect(API.desktop.getPersistedLocalStorageData).toHaveBeenCalled();
+      expect(lifecycleStore.setIsLoadingApp).not.toHaveBeenCalled();
+      expect(mockedAPI.event.subscribeEvent).toHaveBeenCalled();
+      expect(mockedAPI.application.getState).toHaveBeenCalled();
+      expect(mockedAPI.desktop.getPersistedLocalStorageData).toHaveBeenCalled();
       expect(window.localStorage.getItem("settings1")).toBe(
         JSON.stringify(localStorageData.settings1),
       );
@@ -65,26 +63,17 @@ describe("application::lifecycle", () => {
         JSON.stringify(localStorageData.settings2),
       );
       expect(window.localStorage.getItem("foo")).toBeNull();
-      expect(API.desktop.getExampleProjects).toHaveBeenCalled();
-      expect(commitSpy).toHaveBeenCalledWith(
-        "application/setExampleProjects",
-        exampleProjects,
-        undefined,
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/replaceApplicationState",
+      expect(mockedAPI.desktop.getExampleProjects).toHaveBeenCalled();
+
+      expect(applicationStore.exampleProjects).toEqual(exampleProjects);
+
+      expect(applicationStore.replaceApplicationState).toHaveBeenCalledWith(
         applicationState,
       );
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "spaces/loadLocalSpace",
-        expect.anything(),
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "spaces/fetchAllSpaceProviders",
-        expect.anything(),
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith("application/setActiveProject", {
+      expect(spaceProvidersStore.loadLocalSpace).toHaveBeenCalled();
+      expect(spaceProvidersStore.fetchAllSpaceProviders).toHaveBeenCalled();
+      expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
       });
     });
@@ -95,47 +84,36 @@ describe("application::lifecycle", () => {
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
 
-      const { store, dispatchSpy, commitSpy, subscribeEvent } = loadStore();
-      await store.dispatch("application/initializeApplication", {
+      const { lifecycleStore, spaceProvidersStore, applicationStore } =
+        loadStore();
+      await lifecycleStore.initializeApplication({
         $router: router,
       });
 
-      expect(commitSpy).toHaveBeenCalledWith(
-        "application/setIsLoadingApp",
-        true,
-        undefined,
-      );
+      expect(lifecycleStore.setIsLoadingApp).toHaveBeenCalledWith(true);
 
-      expect(subscribeEvent).toHaveBeenCalled();
-      expect(API.application.getState).toHaveBeenCalled();
+      expect(mockedAPI.event.subscribeEvent).toHaveBeenCalled();
+      expect(mockedAPI.application.getState).toHaveBeenCalled();
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "spaces/loadLocalSpace",
-        expect.anything(),
-      );
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "spaces/fetchAllSpaceProviders",
-        expect.anything(),
-      );
+      expect(spaceProvidersStore.loadLocalSpace).not.toHaveBeenCalled();
+      expect(spaceProvidersStore.fetchAllSpaceProviders).not.toHaveBeenCalled();
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/replaceApplicationState",
+      expect(applicationStore.replaceApplicationState).toHaveBeenCalledWith(
         applicationState,
       );
-      expect(dispatchSpy).toHaveBeenCalledWith("application/setActiveProject", {
+      expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
       });
     });
 
-    it("destroy application", async () => {
-      const { store, dispatchSpy, unsubscribeEventListener } = loadStore();
-      await store.dispatch("application/destroyApplication");
+    it("destroy application", () => {
+      const { lifecycleStore } = loadStore();
+      lifecycleStore.destroyApplication();
 
-      expect(unsubscribeEventListener).toHaveBeenCalled();
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/unloadActiveWorkflow",
-        { clearWorkflow: true },
-      );
+      expect(mockedAPI.event.unsubscribeEventListener).toHaveBeenCalled();
+      expect(lifecycleStore.unloadActiveWorkflow).toHaveBeenCalledWith({
+        clearWorkflow: true,
+      });
     });
   });
 
@@ -146,44 +124,40 @@ describe("application::lifecycle", () => {
       lifecycleBus.once("onWorkflowLoaded", onWorkflowLoaded);
 
       const mockWorkflow = createWorkflow();
-      const { store, loadWorkflow, subscribeEvent, dispatchSpy } = loadStore();
+      const { lifecycleStore, workflowStore } = loadStore();
 
       expect(onWorkflowLoaded).not.toHaveBeenCalled();
 
-      loadWorkflow.mockResolvedValue({
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({
         workflow: mockWorkflow,
         snapshotId: "snap",
       });
 
-      await store.dispatch("application/loadWorkflow", {
+      await lifecycleStore.loadWorkflow({
         projectId: mockWorkflow.projectId,
       });
 
       expect(onWorkflowLoaded).toHaveBeenCalled();
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/beforeSetActivateWorkflow",
-        { workflow: mockWorkflow },
-      );
+      expect(lifecycleStore.beforeSetActivateWorkflow).toHaveBeenCalledWith({
+        workflow: mockWorkflow,
+      });
 
-      expect(loadWorkflow).toHaveBeenCalledWith(
+      expect(mockedAPI.workflow.getWorkflow).toHaveBeenCalledWith(
         expect.objectContaining({
           workflowId: mockWorkflow.info.containerId,
           projectId: mockWorkflow.projectId,
         }),
       );
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/afterSetActivateWorkflow",
-        undefined,
-      );
+      expect(lifecycleStore.afterSetActivateWorkflow).toHaveBeenCalled();
 
       expect(
         deepMocked(API).desktop.setProjectActiveAndEnsureItsLoaded,
       ).toHaveBeenCalledWith({ projectId: mockWorkflow.projectId });
-      expect(store.state.workflow.activeWorkflow).toStrictEqual(mockWorkflow);
-      expect(store.state.workflow.activeSnapshotId).toBe("snap");
-      expect(subscribeEvent).toHaveBeenCalledWith({
+      expect(workflowStore.activeWorkflow).toStrictEqual(mockWorkflow);
+      expect(workflowStore.activeSnapshotId).toBe("snap");
+      expect(mockedAPI.event.subscribeEvent).toHaveBeenCalledWith({
         typeId: "WorkflowChangedEventType",
         projectId: mockWorkflow.projectId,
         workflowId: mockWorkflow.info.containerId,
@@ -192,27 +166,27 @@ describe("application::lifecycle", () => {
     });
 
     it("loads inner workflow successfully", async () => {
-      const { store, loadWorkflow, subscribeEvent } = loadStore();
-      loadWorkflow.mockResolvedValue({
+      const { lifecycleStore, workflowStore } = loadStore();
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({
         workflow: { dummy: true, info: { containerId: "root" }, nodes: [] },
       });
-      await store.dispatch("application/loadWorkflow", {
+      await lifecycleStore.loadWorkflow({
         projectId: "wf2",
         workflowId: "root:0:123",
       });
 
-      expect(loadWorkflow).toHaveBeenCalledWith(
+      expect(mockedAPI.workflow.getWorkflow).toHaveBeenCalledWith(
         expect.objectContaining({ workflowId: "root:0:123", projectId: "wf2" }),
       );
 
-      expect(store.state.workflow.activeWorkflow).toStrictEqual({
+      expect(workflowStore.activeWorkflow).toStrictEqual({
         dummy: true,
         info: { containerId: "root" },
         nodes: [],
         projectId: "wf2",
       });
 
-      expect(subscribeEvent).toHaveBeenCalledWith({
+      expect(mockedAPI.event.subscribeEvent).toHaveBeenCalledWith({
         typeId: "WorkflowChangedEventType",
         projectId: "wf2",
         workflowId: "root",
@@ -220,46 +194,45 @@ describe("application::lifecycle", () => {
     });
 
     it("unloads workflow when another one is loaded", async () => {
-      const { store, loadWorkflow, unsubscribeEventListener } = loadStore();
-      loadWorkflow.mockResolvedValue({
+      const { lifecycleStore, workflowStore, selectionStore } = loadStore();
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({
         workflow: { dummy: true, info: { containerId: "root" }, nodes: [] },
         snapshotId: "snap",
       });
-      await store.dispatch("application/loadWorkflow", {
+      await lifecycleStore.loadWorkflow({
         projectId: "wf1",
         workflowId: "root:0:12",
       });
 
-      await store.dispatch("application/unloadActiveWorkflow", {
+      await lifecycleStore.unloadActiveWorkflow({
         clearWorkflow: true,
       });
 
-      expect(unsubscribeEventListener).toHaveBeenCalledWith({
+      expect(mockedAPI.event.unsubscribeEventListener).toHaveBeenCalledWith({
         typeId: "WorkflowChangedEventType",
         projectId: "wf1",
         workflowId: "root",
         snapshotId: "snap",
       });
-      expect(store.state.workflow.activeWorkflow).toBeNull();
-      expect(store.state.selection.selectedConnections).toEqual({});
-      expect(store.state.selection.selectedNodes).toEqual({});
+      expect(workflowStore.activeWorkflow).toBeNull();
+      expect(selectionStore.selectedConnections).toEqual({});
+      expect(selectionStore.selectedNodes).toEqual({});
     });
 
     it("does not unload if there is no active workflow", async () => {
-      const { store, unsubscribeEventListener } = loadStore();
-      store.state.workflow.activeWorkflow = null;
-      await store.dispatch("application/unloadActiveWorkflow", {
+      const { lifecycleStore, workflowStore } = loadStore();
+      workflowStore.activeWorkflow = null;
+      await lifecycleStore.unloadActiveWorkflow({
         clearWorkflow: false,
       });
 
-      expect(unsubscribeEventListener).not.toHaveBeenCalled();
+      expect(mockedAPI.event.unsubscribeEventListener).not.toHaveBeenCalled();
     });
 
     it("force closes projects on call", async () => {
-      const { store } = loadStore();
-      await store.dispatch("application/forceCloseProjects", {
+      const { applicationStore } = loadStore();
+      await applicationStore.forceCloseProjects({
         projectIds: ["projectTest1"],
-        force: true,
       });
 
       expect(mockedAPI.desktop.forceCloseProjects).toHaveBeenCalledWith({
@@ -275,51 +248,46 @@ describe("application::lifecycle", () => {
       );
       lifecycleBus.once("onWorkflowLoaded", () => busSpy("onWorkflowLoaded"));
 
-      const { store, dispatchSpy, commitSpy } = loadStore();
-      store.state.workflow.activeWorkflow = null;
+      const {
+        lifecycleStore,
+        workflowStore,
+        canvasStateTrackingStore,
+        applicationStore,
+      } = loadStore();
+      workflowStore.activeWorkflow = null;
 
-      store.commit("application/setSavedCanvasStates", {
+      canvasStateTrackingStore.setSavedCanvasStates({
         project: "1",
         workflow: "root",
+        zoomFactor: 1,
       });
 
-      await store.dispatch("application/switchWorkflow", {
+      await lifecycleStore.switchWorkflow({
         newWorkflow: { projectId: "1", workflowId: "root" },
       });
 
       expect(busSpy).toHaveBeenNthCalledWith(1, "beforeLoadWorkflow");
       expect(busSpy).toHaveBeenNthCalledWith(2, "onWorkflowLoaded");
 
-      expect(commitSpy).toHaveBeenCalledWith(
-        "application/setIsLoadingWorkflow",
-        true,
-        undefined,
-      );
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "application/saveCanvasState",
-      );
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "workflow/unloadActiveWorkflow",
-      );
+      expect(lifecycleStore.setIsLoadingWorkflow).toHaveBeenCalledWith(true);
+      expect(canvasStateTrackingStore.saveCanvasState).not.toHaveBeenCalled();
+      expect(lifecycleStore.unloadActiveWorkflow).not.toHaveBeenCalled();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("application/loadWorkflow", {
+      expect(lifecycleStore.loadWorkflow).toHaveBeenCalledWith({
         projectId: "1",
         workflowId: "root",
       });
-      expect(store.state.application.activeProjectId).toBe("1");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/restoreCanvasState",
-        undefined,
-      );
+      expect(applicationStore.activeProjectId).toBe("1");
+      expect(canvasStateTrackingStore.restoreCanvasState).toHaveBeenCalled();
     });
   });
 
   describe("load workflows on navigation", () => {
     it("should unload workflows when leaving the worklow page", async () => {
       const router = getRouter();
-      const { store, dispatchSpy, commitSpy } = loadStore();
+      const { lifecycleStore } = loadStore();
 
-      await store.dispatch("application/initializeApplication", {
+      await lifecycleStore.initializeApplication({
         $router: router,
       });
 
@@ -328,17 +296,14 @@ describe("application::lifecycle", () => {
         params: { projectId: "foo", workflowId: "bar" },
       });
 
-      commitSpy.mockClear();
       await router.push({ name: APP_ROUTES.Home.GetStarted });
 
-      expect(dispatchSpy).toHaveBeenCalledWith("application/switchWorkflow", {
+      expect(lifecycleStore.switchWorkflow).toHaveBeenLastCalledWith({
         newWorkflow: null,
       });
 
-      expect(commitSpy).not.toHaveBeenCalledWith(
-        "application/setIsLoadingWorkflow",
+      expect(lifecycleStore.setIsLoadingWorkflow).not.toHaveBeenLastCalledWith(
         true,
-        undefined,
       );
 
       expect(router.currentRoute.value.name).toBe(APP_ROUTES.Home.GetStarted);
@@ -346,11 +311,13 @@ describe("application::lifecycle", () => {
 
     it("should prevent navigation when auto-apply node configuration is cancelled", async () => {
       const router = getRouter();
-      const { store, dispatchSpy, commitSpy } = loadStore({
-        autoApplySettingsMock: vi.fn(() => false),
-      });
+      const { lifecycleStore, nodeConfigurationStore } = loadStore();
 
-      await store.dispatch("application/initializeApplication", {
+      vi.mocked(
+        nodeConfigurationStore.autoApplySettings,
+      ).mockImplementationOnce(() => Promise.resolve(false));
+
+      await lifecycleStore.initializeApplication({
         $router: router,
       });
 
@@ -359,15 +326,11 @@ describe("application::lifecycle", () => {
         params: { projectId: "foo", workflowId: "bar" },
       });
 
-      commitSpy.mockClear();
       await router.push({ name: APP_ROUTES.Home.GetStarted });
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "application/switchWorkflow",
-        {
-          newWorkflow: null,
-        },
-      );
+      expect(lifecycleStore.switchWorkflow).not.toHaveBeenCalledWith({
+        newWorkflow: null,
+      });
 
       expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
     });
@@ -378,9 +341,9 @@ describe("application::lifecycle", () => {
         name: APP_ROUTES.Home.GetStarted,
       });
 
-      const { store, dispatchSpy } = loadStore();
+      const { lifecycleStore } = loadStore();
 
-      await store.dispatch("application/initializeApplication", {
+      await lifecycleStore.initializeApplication({
         $router: router,
       });
 
@@ -389,7 +352,7 @@ describe("application::lifecycle", () => {
         params: { projectId: "foo", workflowId: "bar" },
       });
 
-      expect(dispatchSpy).toHaveBeenCalledWith("application/switchWorkflow", {
+      expect(lifecycleStore.switchWorkflow).toHaveBeenCalledWith({
         newWorkflow: { projectId: "foo", workflowId: "bar" },
       });
 

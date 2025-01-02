@@ -6,12 +6,10 @@ import { mount } from "@vue/test-utils";
 import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import { $bus } from "@/plugins/event-bus";
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import { geometry } from "@/util/geometry";
 import MetaNodePortBar from "../MetaNodePortBar.vue";
 import NodePort from "../NodePort/NodePort.vue";
@@ -31,38 +29,26 @@ describe("MetaNodePortBar.vue", () => {
       containerId: "metanode:1",
     };
 
-    const $store = mockVuexStore({
-      selection: selectionStore,
-      workflow: workflowStore,
-      canvas: {
-        state: {},
-        getters: {
-          contentBounds() {
-            return {
-              left: 0,
-              top: 0,
-              width: 500,
-              height,
-            };
-          },
-        },
-      },
-    });
+    const mockedStores = mockStores();
+    mockedStores.canvasStore.contentBounds = {
+      left: 0,
+      top: 0,
+      width: 500,
+      height,
+    };
 
     const ports = props.ports ?? defaultProps.ports;
 
-    $store.commit(
-      "workflow/setActiveWorkflow",
+    mockedStores.workflowStore.setActiveWorkflow(
       createWorkflow({
         metaInPorts: { ports, bounds },
         metaOutPorts: { ports, bounds },
       }),
     );
 
-    $store.commit(
-      "workflow/setCalculatedMetanodePortBarBounds",
+    mockedStores.workflowStore.setCalculatedMetanodePortBarBounds(
       geometry.calculateMetaNodePortBarBounds(
-        $store.state.workflow.activeWorkflow,
+        mockedStores.workflowStore.activeWorkflow!,
       ),
     );
 
@@ -70,12 +56,12 @@ describe("MetaNodePortBar.vue", () => {
       props: { ...defaultProps, ...props },
       global: {
         mocks: { $shapes, $colors, $bus },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: { NodePort: true },
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   describe.each(["in" as const, "out" as const])('type "%s"', (type) => {
@@ -152,11 +138,13 @@ describe("MetaNodePortBar.vue", () => {
 
     it("selects port bar on click", async () => {
       const bounds = { x: 100, y: 100, width: 10, height: 300 };
-      const { wrapper, $store } = doMount({ props: { type }, bounds });
+      const { wrapper, mockedStores } = doMount({ props: { type }, bounds });
 
       await wrapper.find(".hover-area").trigger("click");
 
-      expect($store.state.selection.selectedMetanodePortBars).toStrictEqual({
+      expect(
+        mockedStores.selectionStore.selectedMetanodePortBars,
+      ).toStrictEqual({
         [type]: true,
       });
 

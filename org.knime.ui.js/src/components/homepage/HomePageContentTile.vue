@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
+import { API } from "@api";
+import { storeToRefs } from "pinia";
 
 import { Button, FunctionButton, Pill } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
-import { API } from "@/api";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
 
-const store = useStore();
-const isVisible = computed(
-  () => !store.state.application.dismissedHomePageTile,
-);
+const applicationStore = useApplicationStore();
+const { dismissedHomePageTile } = storeToRefs(applicationStore);
 
 type ContentTileData = Awaited<ReturnType<typeof API.desktop.getHomePageTile>>;
 const data = ref<ContentTileData | null>(null);
@@ -23,7 +22,7 @@ const fetchData = async () => {
 };
 
 onMounted(() => {
-  if (!isVisible.value) {
+  if (dismissedHomePageTile.value) {
     return;
   }
 
@@ -31,12 +30,12 @@ onMounted(() => {
 });
 
 const dismissTile = () => {
-  store.commit("application/setDismissedHomePageTole", true);
+  applicationStore.dismissedHomePageTile = true;
 };
 </script>
 
 <template>
-  <div v-if="data && isVisible" class="content-tile-wrapper">
+  <div v-if="data && !dismissedHomePageTile" class="content-tile-wrapper">
     <img class="image" :src="data.image" :alt="data.title" />
     <FunctionButton class="close" compact @click="dismissTile">
       <CloseIcon />

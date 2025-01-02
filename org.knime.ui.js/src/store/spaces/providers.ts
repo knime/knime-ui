@@ -1,20 +1,18 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
-import { type SpaceItemReference } from "@/api/gateway-api/generated-api";
+import { useApplicationStore } from "@/store/application/application";
+import { findSpaceById } from "@/store/spaces/util";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
-import type { RootStoreState } from "../types";
 
-import { localRootProjectPath } from "./caching";
-import type { SpacesState } from "./index";
-import { findSpaceById } from "./util";
+import { localRootProjectPath, useSpaceCachingStore } from "./caching";
 
-export interface State {
+export interface ProvidersState {
   /**
    * Record of all the providers currently available
    */
-  spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
+  spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> | null;
   /**
    * Loading state used when fetching all the providers' basic info (without their data)
    */
@@ -34,296 +32,289 @@ export interface State {
   loadingProviderSpacesData: Record<string, boolean>;
 }
 
-declare module "./index" {
-  interface SpacesState extends State {}
-}
+export const useSpaceProvidersStore = defineStore("space.providers", {
+  state: (): ProvidersState => ({
+    // metadata of all available space providers and their spaces (including local)
+    spaceProviders: null,
+    isLoadingProviders: false,
+    isConnectingToProvider: null,
+    hasLoadedProviders: false,
+    loadingProviderSpacesData: {},
+  }),
+  actions: {
+    setIsLoadingProviders(isLoadingProviders: boolean) {
+      this.isLoadingProviders = isLoadingProviders;
+    },
 
-export const state = (): State => ({
-  // metadata of all available space providers and their spaces (including local)
-  spaceProviders: null,
-  isLoadingProviders: false,
-  isConnectingToProvider: null,
-  hasLoadedProviders: false,
-  loadingProviderSpacesData: {},
-});
+    setLoadingProviderData({ id, loading }: { id: string; loading: boolean }) {
+      this.loadingProviderSpacesData[id] = loading;
+    },
 
-export const mutations: MutationTree<SpacesState> = {
-  setIsLoadingProviders(state, value: boolean) {
-    state.isLoadingProviders = value;
-  },
+    setIsConnectingToProvider(isConnectingToProvider: string | null) {
+      this.isConnectingToProvider = isConnectingToProvider;
+    },
 
-  setLoadingProviderData(
-    state,
-    { id, loading }: { id: string; loading: boolean },
-  ) {
-    state.loadingProviderSpacesData[id] = loading;
-  },
+    setHasLoadedProviders(hasLoadedProviders: boolean) {
+      this.hasLoadedProviders = hasLoadedProviders;
+    },
 
-  setIsConnectingToProvider(state, value: string | null) {
-    state.isConnectingToProvider = value;
-  },
-
-  setHasLoadedProviders(state, value: boolean) {
-    state.hasLoadedProviders = value;
-  },
-
-  updateSpaceProvider(
-    state,
-    {
+    updateSpaceProvider({
       id,
       value,
-    }: { id: string; value: Partial<SpaceProviderNS.SpaceProvider> },
-  ) {
-    state.spaceProviders = {
-      ...state.spaceProviders,
-      [id]: { ...(state.spaceProviders ?? {})[id], ...value },
-    };
-  },
+    }: {
+      id: string;
+      value: Partial<SpaceProviderNS.SpaceProvider>;
+    }) {
+      this.spaceProviders = {
+        ...this.spaceProviders,
+        [id]: { ...(this.spaceProviders ?? {})[id], ...value },
+      };
+    },
 
-  setSpaceProviders(
-    state,
-    value: Record<string, SpaceProviderNS.SpaceProvider>,
-  ) {
-    state.spaceProviders = value;
-  },
-};
+    setSpaceProviders(
+      spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> | null,
+    ) {
+      this.spaceProviders = spaceProviders;
+    },
 
-export const actions: ActionTree<SpacesState, RootStoreState> = {
-  async loadLocalSpace({ dispatch, commit }) {
-    consola.trace("action::loadLocalSpace");
+    async loadLocalSpace() {
+      consola.trace("action::loadLocalSpace");
 
-    const spacesData = await dispatch("fetchProviderSpaces", {
-      id: localRootProjectPath.spaceProviderId,
-    });
+      const spacesData = await this.fetchProviderSpaces({
+        id: localRootProjectPath.spaceProviderId,
+      });
 
-    consola.trace("action::loadLocalSpace. Loaded data", { spacesData });
+      consola.trace("action::loadLocalSpace. Loaded data", { spacesData });
 
-    const localSpace = {
-      id: "local",
-      name: "Local space",
-      connected: true,
-      connectionMode: "AUTOMATIC",
-      local: true,
-      ...spacesData,
-    };
+      const localSpace: SpaceProviderNS.SpaceProvider = {
+        id: "local",
+        name: "Local space",
+        connected: true,
+        connectionMode: "AUTOMATIC",
+        ...spacesData,
+      };
 
-    commit("setSpaceProviders", {
-      [localRootProjectPath.spaceProviderId]: localSpace,
-    });
-  },
+      this.setSpaceProviders({
+        [localRootProjectPath.spaceProviderId]: localSpace,
+      });
+    },
 
-  refreshSpaceProviders(
-    { state, commit, dispatch },
-    { keepLocalSpace = true } = {},
-  ) {
-    if (state.isLoadingProviders) {
-      return;
-    }
+    refreshSpaceProviders({ keepLocalSpace = true } = {}) {
+      if (this.isLoadingProviders) {
+        return;
+      }
 
-    if (state.spaceProviders) {
-      const localSpace =
-        state.spaceProviders[localRootProjectPath.spaceProviderId];
+      if (this.spaceProviders) {
+        const localSpace =
+          this.spaceProviders[localRootProjectPath.spaceProviderId];
 
-      const spaceProviders = keepLocalSpace
-        ? { [localRootProjectPath.spaceProviderId]: localSpace }
-        : null;
+        const spaceProviders = keepLocalSpace
+          ? { [localRootProjectPath.spaceProviderId]: localSpace }
+          : null;
 
-      commit("setSpaceProviders", spaceProviders);
-    }
+        this.setSpaceProviders(spaceProviders);
+      }
 
-    dispatch("fetchAllSpaceProviders");
-  },
+      this.fetchAllSpaceProviders();
+    },
 
-  fetchAllSpaceProviders({ commit, state }) {
-    if (state.isLoadingProviders) {
-      return;
-    }
+    fetchAllSpaceProviders() {
+      if (this.isLoadingProviders) {
+        return;
+      }
 
-    commit("setIsLoadingProviders", true);
+      this.setIsLoadingProviders(true);
 
-    consola.trace("action::fetchAllSpaceProviders");
+      consola.trace("action::fetchAllSpaceProviders");
 
-    // provider fetch happens async, so the payload will be received via a
-    // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
-    // action
-    API.desktop.getSpaceProviders();
-  },
+      // provider fetch happens async, so the payload will be received via a
+      // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
+      // action
+      API.desktop.getSpaceProviders();
+    },
 
-  setAllSpaceProviders(
-    { commit, dispatch },
-    spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
-  ) {
-    const connectedProviderIds = Object.values(spaceProviders)
-      .filter(
-        ({ connected, connectionMode }) =>
-          connected || connectionMode === "AUTOMATIC",
-      )
-      .map(({ id }) => id);
+    setAllSpaceProviders(
+      spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
+    ) {
+      const connectedProviderIds = Object.values(spaceProviders)
+        .filter(
+          ({ connected, connectionMode }) =>
+            connected || connectionMode === "AUTOMATIC",
+        )
+        .map(({ id }) => id);
 
-    // add the providers without data to make them visible
-    commit("setSpaceProviders", spaceProviders);
-    commit("setIsLoadingProviders", false);
+      // add the providers without data to make them visible
+      this.setSpaceProviders(spaceProviders);
+      this.setIsLoadingProviders(false);
 
-    consola.trace("action::setAllSpaceProviders -> Fetching provider spaces", {
-      connectedProviderIds,
-    });
+      consola.trace(
+        "action::setAllSpaceProviders -> Fetching provider spaces",
+        {
+          connectedProviderIds,
+        },
+      );
 
-    const successfulProviderIds: string[] = [];
-    const failedProviderIds: string[] = [];
+      const successfulProviderIds: string[] = [];
+      const failedProviderIds: string[] = [];
 
-    const { promise, resolve } = createUnwrappedPromise<{
-      successfulProviderIds: string[];
-      failedProviderIds: string[];
-    }>();
+      const { promise, resolve } = createUnwrappedPromise<{
+        successfulProviderIds: string[];
+        failedProviderIds: string[];
+      }>();
 
-    const dataLoadQueue: Promise<unknown>[] = [];
+      const dataLoadQueue: Promise<unknown>[] = [];
 
-    for (const id of connectedProviderIds) {
-      const loadDataPromise = dispatch("fetchProviderSpaces", { id })
-        .then((spacesData) => {
-          successfulProviderIds.push(id);
-          commit("updateSpaceProvider", {
-            id,
-            value: { ...spaceProviders[id], ...spacesData },
+      for (const id of connectedProviderIds) {
+        const loadDataPromise = this.fetchProviderSpaces({ id })
+          .then((spacesData) => {
+            successfulProviderIds.push(id);
+            this.updateSpaceProvider({
+              id,
+              value: { ...spaceProviders[id], ...spacesData },
+            });
+
+            consola.info(
+              "action::setAllSpaceProviders -> updated provider spaces",
+              { spacesData, updatedProvider: spaceProviders[id] },
+            );
+          })
+          .catch((error) => {
+            failedProviderIds.push(id);
+
+            consola.error(
+              "action::setAllSpaceProviders -> Failed to load provider spaces",
+              { spaceProviderId: id, error },
+            );
+
+            // set as disconnected so that user re-attempts the data fetch on login
+            this.updateSpaceProvider({
+              id,
+              value: { ...spaceProviders[id], connected: false },
+            });
           });
 
-          consola.info(
-            "action::setAllSpaceProviders -> updated provider spaces",
-            { spacesData, updatedProvider: spaceProviders[id] },
-          );
-        })
-        .catch((error) => {
-          failedProviderIds.push(id);
+        dataLoadQueue.push(loadDataPromise);
+      }
 
-          consola.error(
-            "action::setAllSpaceProviders -> Failed to load provider spaces",
-            { spaceProviderId: id, error },
-          );
+      Promise.allSettled(dataLoadQueue).then(() => {
+        this.setHasLoadedProviders(true);
+        resolve({ successfulProviderIds, failedProviderIds });
+      });
 
-          // set as disconnected so that user re-attempts the data fetch on login
-          commit("updateSpaceProvider", {
-            id,
-            value: { ...spaceProviders[id], connected: false },
-          });
+      return promise;
+    },
+
+    async fetchProviderSpaces({ id }: { id: string }) {
+      try {
+        this.setLoadingProviderData({ id, loading: true });
+
+        const data = await API.space.getSpaceProvider({ spaceProviderId: id });
+
+        consola.info("action::fetchProviderSpaces", {
+          params: { id },
+          response: data,
         });
 
-      dataLoadQueue.push(loadDataPromise);
-    }
+        return data;
+      } catch (error) {
+        consola.error(
+          "action::fetchProviderSpaces -> Error fetching provider spaces",
+          { error },
+        );
 
-    Promise.allSettled(dataLoadQueue).then(() => {
-      commit("setHasLoadedProviders", true);
-      resolve({ successfulProviderIds, failedProviderIds });
-    });
-
-    return promise;
-  },
-
-  async fetchProviderSpaces({ commit }, { id }) {
-    try {
-      commit("setLoadingProviderData", { id, loading: true });
-
-      const data = await API.space.getSpaceProvider({ spaceProviderId: id });
-
-      consola.info("action::fetchProviderSpaces", {
-        params: { id },
-        response: data,
-      });
-
-      return data;
-    } catch (error) {
-      consola.error(
-        "action::fetchProviderSpaces -> Error fetching provider spaces",
-        { error },
-      );
-
-      throw error;
-    } finally {
-      commit("setLoadingProviderData", { id, loading: false });
-    }
-  },
-
-  async reloadProviderSpaces({ commit, dispatch, state }, { id }) {
-    if (!state.spaceProviders) {
-      return;
-    }
-
-    try {
-      consola.trace(
-        "action::reloadProviderSpaces -> reloading provider spaces",
-        { spaceProviderId: id },
-      );
-
-      const spaceProvider = state.spaceProviders[id];
-      const spacesData = await dispatch("fetchProviderSpaces", { id });
-
-      commit("updateSpaceProvider", {
-        id,
-        value: { ...spaceProvider, ...spacesData },
-      });
-    } catch (error) {
-      consola.error(
-        "action::reloadProviderSpaces -> Error reloading provider spaces",
-        { error },
-      );
-      throw error;
-    }
-  },
-};
-
-export const getters: GetterTree<SpacesState, RootStoreState> = {
-  getProviderInfoFromProjectPath:
-    (state) =>
-    (projectId: string): SpaceProviderNS.SpaceProvider | {} => {
-      // spaces data has not been cached or providers are not yet loaded
-      if (
-        !state.projectPath.hasOwnProperty(projectId) ||
-        !state.spaceProviders
-      ) {
-        return {};
+        throw error;
+      } finally {
+        this.setLoadingProviderData({ id, loading: false });
       }
-
-      const { spaceProviderId } = state.projectPath[projectId];
-
-      return state.spaceProviders[spaceProviderId] || {};
     },
 
-  activeProjectProvider: (state, _getters, rootState, rootGetters) => {
-    const isUnknownProject: (projectId: string) => boolean =
-      rootGetters["application/isUnknownProject"];
-
-    if (isUnknownProject(rootState.application.activeProjectId ?? "")) {
-      return null;
-    }
-
-    const activeProjectOrigin: SpaceItemReference =
-      rootGetters["application/activeProjectOrigin"];
-
-    const providers = state.spaceProviders ?? {};
-    const activeProjectProvider = providers[activeProjectOrigin.providerId];
-
-    return activeProjectProvider ?? null;
-  },
-
-  getSpaceInfo:
-    (state, getters) =>
-    (projectId: string): SpaceProviderNS.Space | {} => {
-      // spaces data has not been cached or providers are not yet loaded
-      if (
-        !state.projectPath.hasOwnProperty(projectId) ||
-        !state.spaceProviders
-      ) {
-        return {};
+    async reloadProviderSpaces({ id }: { id: string }) {
+      if (!this.spaceProviders) {
+        return;
       }
 
-      const { spaceId } = state.projectPath[projectId];
-      const spaceProvider: SpaceProviderNS.SpaceProvider =
-        getters.getProviderInfoFromProjectPath(projectId);
+      try {
+        consola.trace(
+          "action::reloadProviderSpaces -> reloading provider spaces",
+          { spaceProviderId: id },
+        );
 
-      const space = findSpaceById(
-        { [spaceProvider.id]: spaceProvider },
-        spaceId,
-      );
+        const spaceProvider = this.spaceProviders[id];
+        const spacesData = await this.fetchProviderSpaces({ id });
 
-      return space ?? {};
+        this.updateSpaceProvider({
+          id,
+          value: { ...spaceProvider, ...spacesData },
+        });
+      } catch (error) {
+        consola.error(
+          "action::reloadProviderSpaces -> Error reloading provider spaces",
+          { error },
+        );
+        throw error;
+      }
     },
-};
+  },
+  getters: {
+    getProviderInfoFromProjectPath:
+      (state) =>
+      (projectId: string): SpaceProviderNS.SpaceProvider | null => {
+        // spaces data has not been cached or providers are not yet loaded
+        if (
+          !useSpaceCachingStore().projectPath.hasOwnProperty(projectId) ||
+          !state.spaceProviders
+        ) {
+          return null;
+        }
+
+        const { spaceProviderId } =
+          useSpaceCachingStore().projectPath[projectId];
+
+        return state.spaceProviders[spaceProviderId] || null;
+      },
+
+    activeProjectProvider: (state) => {
+      const isUnknownProject: (projectId: string) => boolean =
+        useApplicationStore().isUnknownProject;
+
+      if (isUnknownProject(useApplicationStore().activeProjectId ?? "")) {
+        return null;
+      }
+
+      const activeProjectOrigin = useApplicationStore().activeProjectOrigin;
+
+      if (!activeProjectOrigin) {
+        return null;
+      }
+
+      const providers = state.spaceProviders ?? {};
+      const activeProjectProvider = providers[activeProjectOrigin.providerId];
+
+      return activeProjectProvider ?? null;
+    },
+
+    getSpaceInfo(state) {
+      return (projectId: string): SpaceProviderNS.Space | null => {
+        // spaces data has not been cached or providers are not yet loaded
+        if (
+          !useSpaceCachingStore().projectPath.hasOwnProperty(projectId) ||
+          !state.spaceProviders
+        ) {
+          return null;
+        }
+
+        const { spaceId } = useSpaceCachingStore().projectPath[projectId];
+        const spaceProvider = this.getProviderInfoFromProjectPath(
+          projectId,
+        ) as SpaceProviderNS.SpaceProvider;
+
+        const space = findSpaceById(
+          { [spaceProvider.id]: spaceProvider },
+          spaceId,
+        );
+
+        return space ?? null;
+      };
+    },
+  },
+});

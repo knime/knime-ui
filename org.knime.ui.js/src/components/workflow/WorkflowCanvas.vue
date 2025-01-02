@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import SelectionRectangle from "@/components/workflow/SelectionRectangle/SelectionRectangle.vue";
 import Workflow from "@/components/workflow/Workflow.vue";
@@ -8,25 +9,21 @@ import AnnotationRectangle from "@/components/workflow/annotations/AnnotationRec
 import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
 import KanvasFilters from "@/components/workflow/kanvas/KanvasFilters.vue";
 import { useDropNode } from "@/composables/useDropNode";
-import { useStore } from "@/composables/useStore";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
-const store = useStore();
+const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
+const { hasAnnotationModeEnabled } = storeToRefs(useCanvasModesStore());
+const { fillScreen, screenToCanvasCoordinates } = useCanvasStore();
+const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
+
 const { onDrop, onDragOver } = useDropNode();
 const kanvas = ref<InstanceType<typeof Kanvas>>();
-
-const isDraggingNodeTemplate = computed(
-  () => store.state.nodeTemplates.isDraggingNodeTemplate,
-);
-const workflowCanvasState = computed(
-  () => store.getters["application/workflowCanvasState"],
-);
-
-const hasAnnotationModeEnabled = computed(
-  () => store.getters["application/hasAnnotationModeEnabled"],
-);
-const isWorkflowEmpty = computed(
-  () => store.getters["workflow/isWorkflowEmpty"],
-);
 
 watch(
   isWorkflowEmpty,
@@ -36,7 +33,7 @@ watch(
       // call to action: move nodes onto workflow
       // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
       await nextTick();
-      store.dispatch("canvas/fillScreen");
+      fillScreen();
     }
   },
   { immediate: true },
@@ -47,7 +44,7 @@ onMounted(() => {
     // put canvas into fillScreen view after loading the workflow
     // if there isn't a saved canvas state for it
     if (!workflowCanvasState.value) {
-      store.dispatch("canvas/fillScreen");
+      fillScreen();
     }
   });
 });
@@ -70,7 +67,7 @@ const onContainerSizeUpdated = async () => {
     await nextTick();
 
     // scroll to center
-    store.dispatch("canvas/fillScreen");
+    fillScreen();
   }
 };
 
@@ -80,14 +77,10 @@ const openQuickActionMenu = (event: MouseEvent) => {
     return;
   }
 
-  const [x, y] = store.getters["canvas/screenToCanvasCoordinates"]([
-    event.clientX,
-    event.clientY,
-  ]);
+  const [x, y] = screenToCanvasCoordinates([event.clientX, event.clientY]);
 
-  store.dispatch("workflow/openQuickActionMenu", {
+  useFloatingMenusStore().openQuickActionMenu({
     props: { position: { x, y } },
-    event,
   });
 };
 </script>

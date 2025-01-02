@@ -9,10 +9,11 @@ import Port from "@/components/common/Port.vue";
 import Connector from "@/components/workflow/connectors/Connector.vue";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { $bus } from "@/plugins/event-bus";
-import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { createWorkflow } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import * as compatibleConnections from "@/util/compatibleConnections";
 import NodePortActiveConnector from "../../NodePortActiveConnector.vue";
 import NodePortActiveConnectorDecoration from "../../NodePortActiveConnectorDecoration.vue";
@@ -63,76 +64,37 @@ describe("NodePort", () => {
   };
 
   const doMount = ({ isWorkflowWritable = true, props = {} } = {}) => {
-    const storeConfig = {
-      workflow: {
-        state: {
-          activeWorkflow: "workflowRef",
+    const mockedStores = mockStores();
+    mockedStores.canvasStore.screenToCanvasCoordinates = (input) => input;
 
-          portTypeMenu: {
-            isOpen: false,
-            props: {},
-          },
+    mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
+    mockedStores.workflowStore.isWritable = isWorkflowWritable;
 
-          quickActionMenu: {
-            isOpen: false,
-            props: {
-              port: {},
-            },
-          },
-        },
-        mutations: workflowStore.mutations,
-        actions: {
-          connectNodes: vi.fn(),
-          openQuickActionMenu: workflowStore.actions.openQuickActionMenu,
-          closeQuickActionMenu: workflowStore.actions.closeQuickActionMenu,
-          removeContainerNodePort: vi.fn(),
-        },
-        getters: {
-          isWritable() {
-            return isWorkflowWritable;
-          },
-          isDragging(state) {
-            return state.isDragging;
-          },
-        },
+    mockedStores.applicationStore.availablePortTypes = {
+      table: {
+        kind: "table",
       },
-      canvas: {
-        getters: {
-          screenToCanvasCoordinates: () => (input) => input,
-        },
+      flowVariable: {
+        kind: "flowVariable",
       },
-      application: {
-        state: {
-          availablePortTypes: {
-            table: {
-              kind: "table",
-            },
-            flowVariable: {
-              kind: "flowVariable",
-            },
-            generic: {
-              kind: "generic",
-            },
-            other: {
-              kind: "other",
-            },
-            specific: {
-              kind: "specific",
-              compatibleTypes: ["flowVariable"],
-            },
-          },
-        },
+      generic: {
+        kind: "generic",
+      },
+      other: {
+        kind: "other",
+      },
+      specific: {
+        kind: "specific",
+        compatibleTypes: ["flowVariable"],
       },
     };
-
-    const $store = mockVuexStore(storeConfig);
 
     const wrapper = mount(NodePort, {
       props: { ...defaultProps, ...props },
       global: {
         mocks: { $shapes, $colors },
         provide,
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: {
           Portal: { template: "<div><slot /></div>" },
           // NodePortActiveConnector: true
@@ -141,7 +103,7 @@ describe("NodePort", () => {
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   afterEach(() => {
@@ -265,13 +227,13 @@ describe("NodePort", () => {
     });
 
     it("shows tooltips on table ports", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       wrapper.trigger("mouseenter");
       await nextTick();
       vi.runAllTimers();
 
-      expect($store.state.workflow.tooltip).toEqual({
+      expect(mockedStores.workflowStore.tooltip).toEqual({
         anchorPoint: { x: 123, y: 456 },
         text: "text",
         title: "title",
@@ -286,11 +248,11 @@ describe("NodePort", () => {
 
       wrapper.trigger("mouseleave");
       await nextTick();
-      expect($store.state.workflow.tooltip).toBeNull();
+      expect(mockedStores.workflowStore.tooltip).toBeNull();
     });
 
     it("shows tooltips for non-table ports", async () => {
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: {
           port: { ...defaultProps.port, typeId: "flowVariable" },
         },
@@ -299,7 +261,7 @@ describe("NodePort", () => {
       vi.runAllTimers();
       await nextTick();
 
-      expect($store.state.workflow.tooltip).toEqual({
+      expect(mockedStores.workflowStore.tooltip).toEqual({
         anchorPoint: { x: 123, y: 456 },
         text: "text",
         title: "title",
@@ -478,7 +440,7 @@ describe("NodePort", () => {
       it.each(["out", "in"])(
         "does circle detection for %s-port",
         async (portDirection) => {
-          const { wrapper } = doMount({
+          const { wrapper, mockedStores } = doMount({
             props: { direction: portDirection },
           });
 
@@ -488,7 +450,7 @@ describe("NodePort", () => {
           expect(detectConnectionCircleSpy).toHaveBeenCalledWith({
             downstreamConnection: portDirection === "out",
             startNode: "node:1",
-            workflow: "workflowRef",
+            workflow: mockedStores.workflowStore.activeWorkflow,
           });
 
           expect(mockBus.emit).toHaveBeenCalledWith("connector-start", {
@@ -1006,13 +968,13 @@ describe("NodePort", () => {
             connectedVia: ["mock:connection"],
           };
 
-          const { wrapper, $store } = doMount({
+          const { wrapper, mockedStores } = doMount({
             props: {
               direction: "out",
               port: { ...defaultProps.port, ...port },
             },
           });
-          $store.state.workflow.activeWorkflow = {
+          mockedStores.workflowStore.activeWorkflow = {
             connections: {
               "mock:connection": {
                 allowedActions: { canDelete: false },
@@ -1215,7 +1177,9 @@ describe("NodePort", () => {
         });
 
         it("opens quick add node menu", async () => {
-          const { wrapper, $store } = doMount({ props: { direction: "out" } });
+          const { wrapper, mockedStores } = doMount({
+            props: { direction: "out" },
+          });
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
@@ -1227,7 +1191,7 @@ describe("NodePort", () => {
 
           await wrapper.trigger("lostpointercapture");
 
-          expect($store.state.workflow.quickActionMenu).toEqual(
+          expect(mockedStores.floatingMenusStore.quickActionMenu).toEqual(
             expect.objectContaining({
               isOpen: true,
               props: {
@@ -1245,7 +1209,9 @@ describe("NodePort", () => {
         });
 
         it("remove connector and ghost on pointer release even if menu is open", async () => {
-          const { wrapper, $store } = doMount({ props: { direction: "out" } });
+          const { wrapper, mockedStores } = doMount({
+            props: { direction: "out" },
+          });
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
@@ -1256,7 +1222,7 @@ describe("NodePort", () => {
           expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
           // simulate open menu
-          $store.state.workflow.quickActionMenu = {
+          mockedStores.floatingMenusStore.quickActionMenu = {
             isOpen: true,
             props: {
               nodeId: defaultProps.nodeId,
@@ -1275,7 +1241,9 @@ describe("NodePort", () => {
         });
 
         it("closes the quick add node menu", async () => {
-          const { wrapper, $store } = doMount({ props: { direction: "out" } });
+          const { wrapper, mockedStores } = doMount({
+            props: { direction: "out" },
+          });
           await startDragging({ wrapper });
           await dragAboveTarget({ wrapper });
 
@@ -1283,11 +1251,13 @@ describe("NodePort", () => {
           await wrapper.trigger("lostpointercapture");
 
           // call close
-          $store.state.workflow.quickActionMenu.events.menuClose();
+          mockedStores.floatingMenusStore.quickActionMenu.events.menuClose();
           await nextTick();
 
           // see if close went good
-          expect($store.state.workflow.quickActionMenu.isOpen).toBe(false);
+          expect(mockedStores.floatingMenusStore.quickActionMenu.isOpen).toBe(
+            false,
+          );
         });
       });
     });

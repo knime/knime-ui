@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRaw, toRef, toRefs } from "vue";
+import { API } from "@api";
 
-import { API } from "@/api";
 import {
   type Link,
   type ProjectMetadata,
@@ -93,7 +93,7 @@ const openWorkflowConfiguration = () => {
 };
 
 const wrapper = ref<InstanceType<typeof SidebarPanelLayout>>();
-const wrapperElement = computed<HTMLElement>(() => wrapper.value?.$el);
+const wrapperElement = computed<HTMLDivElement>(() => wrapper.value?.$el!);
 
 const { saveContent } = useSaveMetadata({
   metadataDraft,

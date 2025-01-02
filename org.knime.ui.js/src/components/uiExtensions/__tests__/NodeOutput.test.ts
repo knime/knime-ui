@@ -2,15 +2,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
-import type { Store } from "vuex";
 
 import { Button } from "@knime/components";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { Node, NodeState, PortType } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as selectionStore from "@/store/selection";
-import * as uiControlsStore from "@/store/uiControls";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -19,8 +15,9 @@ import {
   createMetanode,
   createNativeNode,
   createPort,
+  createWorkflow,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import ExecuteButton from "../ExecuteButton.vue";
 import LoadingIndicator from "../LoadingIndicator.vue";
 import NodeOutput from "../NodeOutput.vue";
@@ -49,62 +46,46 @@ describe("NodeOutput.vue", () => {
     }),
   };
 
-  const createStore = ({
+  const createStores = ({
     nodes = dummyNodes,
     selectedNodeIds = ["node1"],
     isDragging = false,
-    executeNodes = vi.fn(),
-    openLegacyPortView = vi.fn(),
   } = {}) => {
-    const workflow = {
-      mutations: {
-        update(state, action) {
-          action(state);
+    const mockedStores = mockStores();
+    mockedStores.workflowStore.setActiveWorkflow(
+      createWorkflow({
+        nodes,
+        info: {
+          containerId: "workflowId",
         },
-      },
-      state: {
-        activeWorkflow: {
-          nodes,
-          state: {},
-          info: {
-            containerId: "workflowId",
-          },
-        },
-        isDragging,
-      },
-      actions: { executeNodes, openLegacyPortView },
-    };
+      }),
+    );
+    mockedStores.movingStore.isDragging = isDragging;
 
-    const $store = mockVuexStore({
-      workflow,
-      application: applicationStore,
-      selection: selectionStore,
-      uiControls: uiControlsStore,
-    });
-
-    $store.commit(
-      "application/setAvailablePortTypes",
+    mockedStores.applicationStore.setAvailablePortTypes(
       createAvailablePortTypes({
         unsupported: { kind: PortType.KindEnum.Other, name: "unsupported" },
       }),
     );
-    $store.commit("application/setActiveProjectId", "projectId");
-    $store.commit("selection/addNodesToSelection", selectedNodeIds);
-    return $store;
+    mockedStores.applicationStore.setActiveProjectId("projectId");
+    mockedStores.selectionStore.addNodesToSelection(selectedNodeIds);
+    return mockedStores;
   };
 
-  const doMount = (store: Store<any> | null = null) => {
-    const $store = store || createStore();
+  const doMount = (
+    _mockedStores: ReturnType<typeof mockStores> | null = null,
+  ) => {
+    const mockedStores = _mockedStores || createStores();
 
     const wrapper = mount(NodeOutput, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: { $shapes, $colors },
         stubs: { PortViewLoader: true, NodeViewLoader: true },
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   const validationInfoMessage = (wrapper: VueWrapper<any>) =>
@@ -112,8 +93,8 @@ describe("NodeOutput.vue", () => {
 
   describe("selection check", () => {
     it("should render placeholder if no node is selected", () => {
-      const store = createStore({ selectedNodeIds: [] });
-      const { wrapper } = doMount(store);
+      const mockedStores = createStores({ selectedNodeIds: [] });
+      const { wrapper } = doMount(mockedStores);
 
       expect(validationInfoMessage(wrapper)).toBe(
         "Select a configured or executed node to show the node output.",
@@ -130,8 +111,11 @@ describe("NodeOutput.vue", () => {
         node2: { ...dummyNodes.node1, id: "node2" },
       };
 
-      const store = createStore({ selectedNodeIds: ["node1", "node2"], nodes });
-      const { wrapper } = doMount(store);
+      const mockedStores = createStores({
+        selectedNodeIds: ["node1", "node2"],
+        nodes,
+      });
+      const { wrapper } = doMount(mockedStores);
 
       expect(validationInfoMessage(wrapper)).toBe(
         "Select only one node to show the node output.",
@@ -149,12 +133,12 @@ describe("NodeOutput.vue", () => {
       outPorts: dummyNodes.node1.outPorts,
     });
 
-    const store = createStore({
+    const mockedStores = createStores({
       selectedNodeIds: ["root:2"],
       nodes: { [node.id]: node },
     });
 
-    const { wrapper } = doMount(store);
+    const { wrapper } = doMount(mockedStores);
     const portView = wrapper.findComponent(PortViewTabOutput);
 
     expect(wrapper.findComponent(LoadingIndicator).exists()).toBe(false);
@@ -180,12 +164,12 @@ describe("NodeOutput.vue", () => {
         outPorts: dummyNodes.node1.outPorts,
       });
 
-      const store = createStore({
+      const mockedStores = createStores({
         selectedNodeIds: ["root:2"],
         nodes: { [node.id]: node },
       });
 
-      const { wrapper } = doMount(store);
+      const { wrapper } = doMount(mockedStores);
 
       await nextTick();
 
@@ -193,7 +177,7 @@ describe("NodeOutput.vue", () => {
         wrapper.findComponent(ValidationInfo).props("validationError"),
       ).toBeNull();
 
-      store.state.workflow.activeWorkflow.nodes[node.id].state = {
+      mockedStores.workflowStore.activeWorkflow!.nodes[node.id].state = {
         executionState: NodeState.ExecutionStateEnum.IDLE,
       };
 
@@ -205,7 +189,7 @@ describe("NodeOutput.vue", () => {
     });
 
     it("should remove validation info when error node becomes valid", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       await nextTick();
 
@@ -213,7 +197,9 @@ describe("NodeOutput.vue", () => {
         wrapper.findComponent(ValidationInfo).props("validationError"),
       ).toEqual(expect.objectContaining({ code: "NODE_UNCONFIGURED" }));
 
-      $store.state.workflow.activeWorkflow.nodes[dummyNodes.node1.id].state = {
+      mockedStores.workflowStore.activeWorkflow!.nodes[
+        dummyNodes.node1.id
+      ].state = {
         executionState: NodeState.ExecutionStateEnum.CONFIGURED,
       };
 
@@ -237,11 +223,11 @@ describe("NodeOutput.vue", () => {
         kind: Node.KindEnum.Metanode,
         outPorts: [dummyNodes.node1.outPorts[0]],
       });
-      const store = createStore({
+      const mockedStores = createStores({
         nodes: { [node1.id]: node1, [node2.id]: node2 },
         selectedNodeIds: [node1.id],
       });
-      const { wrapper } = doMount(store);
+      const { wrapper } = doMount(mockedStores);
 
       // port should initially be 1 because regular nodes by default select the second port
       // since the first is the flowVariable port
@@ -250,8 +236,8 @@ describe("NodeOutput.vue", () => {
       ).toBe(1);
 
       // change from node1 -> node2
-      store.commit("selection/clearSelection");
-      store.commit("selection/addNodesToSelection", ["node2"]);
+      mockedStores.selectionStore.clearSelection();
+      mockedStores.selectionStore.addNodesToSelection(["node2"]);
       await nextTick();
 
       // the port should change to 0 because metanode has a single port
@@ -285,16 +271,15 @@ describe("NodeOutput.vue", () => {
         allowedActions: { canExecute: false },
       });
 
-      const storeWithNode = (node: KnimeNode) =>
-        createStore({
+      const storesWithNode = (node: KnimeNode) =>
+        createStores({
           nodes: { [node.id]: node },
           selectedNodeIds: [node.id],
         });
 
       it("shows button if no supported view available", async () => {
-        const $store = storeWithNode(configuredUnsupportedNode);
-        const dispatchSpy = vi.spyOn($store, "dispatch");
-        const { wrapper } = doMount($store);
+        const mockedStores = storesWithNode(configuredUnsupportedNode);
+        const { wrapper } = doMount(mockedStores);
 
         await nextTick();
 
@@ -304,14 +289,13 @@ describe("NodeOutput.vue", () => {
 
         expect(button.exists()).toBe(true);
         await button.trigger("click");
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "workflow/openLegacyPortView",
-          {
-            nodeId: "1",
-            portIndex: 1,
-            executeNode: true,
-          },
-        );
+        expect(
+          mockedStores.executionStore.openLegacyPortView,
+        ).toHaveBeenCalledWith({
+          nodeId: "1",
+          portIndex: 1,
+          executeNode: true,
+        });
       });
 
       it.each([
@@ -322,7 +306,7 @@ describe("NodeOutput.vue", () => {
         ],
         ["executed node", () => executedUnsupportedNode, "Open port view"],
       ])("button properly displayed for %s", async (_, node, expectedText) => {
-        const { wrapper } = doMount(storeWithNode(node()));
+        const { wrapper } = doMount(storesWithNode(node()));
 
         await nextTick();
 
@@ -384,11 +368,11 @@ describe("NodeOutput.vue", () => {
       it("selects the proper tab when handling nodes with views", async () => {
         const node2 = createNativeNode({ ...nodeWithView, id: "6" });
 
-        const store = createStore({
+        const mockedStores = createStores({
           nodes: { [nodeWithView.id]: nodeWithView, [node2.id]: node2 },
           selectedNodeIds: [nodeWithView.id],
         });
-        const { wrapper } = doMount(store);
+        const { wrapper } = doMount(mockedStores);
 
         // start from the right tab
         wrapper.findComponent(PortTabs).vm.$emit("update:modelValue", "view");
@@ -396,8 +380,8 @@ describe("NodeOutput.vue", () => {
         expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
 
         // select other node
-        store.commit("selection/clearSelection");
-        store.commit("selection/addNodesToSelection", [node2.id]);
+        mockedStores.selectionStore.clearSelection();
+        mockedStores.selectionStore.addNodesToSelection([node2.id]);
 
         await nextTick();
 
@@ -424,11 +408,11 @@ describe("NodeOutput.vue", () => {
         ["metanode", () => metanode, 0],
       ])("default ports %s", async (_, getNode, expectedPort) => {
         const node = getNode();
-        const store = createStore({
+        const mockedStores = createStores({
           nodes: { [node.id]: node },
           selectedNodeIds: [node.id],
         });
-        const { wrapper } = doMount(store);
+        const { wrapper } = doMount(mockedStores);
         await nextTick();
 
         expect(
@@ -437,7 +421,7 @@ describe("NodeOutput.vue", () => {
       });
 
       it("selects port when node changes", async () => {
-        const store = createStore({
+        const mockedStores = createStores({
           nodes: {
             [nodeWithPorts.id]: nodeWithPorts,
             [nodeWithManyPorts.id]: nodeWithManyPorts,
@@ -445,7 +429,7 @@ describe("NodeOutput.vue", () => {
           selectedNodeIds: [nodeWithPorts.id],
         });
 
-        const { wrapper } = doMount(store);
+        const { wrapper } = doMount(mockedStores);
         await nextTick();
 
         // first port is selected by default
@@ -463,8 +447,8 @@ describe("NodeOutput.vue", () => {
         ).toBe(0);
 
         // change selection to nodeWithManyPorts
-        await store.dispatch("selection/deselectAllObjects");
-        await store.dispatch("selection/selectNode", nodeWithManyPorts.id);
+        await mockedStores.selectionStore.deselectAllObjects();
+        await mockedStores.selectionStore.selectNode(nodeWithManyPorts.id);
 
         // default port was selected after node changed
         expect(
@@ -480,10 +464,11 @@ describe("NodeOutput.vue", () => {
         ).toBe(0);
 
         // only modify state of the selected node w/o changing to another node
-        store.state.workflow.activeWorkflow.nodes[nodeWithManyPorts.id] = {
-          ...nodeWithManyPorts,
-          state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
-        } satisfies KnimeNode;
+        mockedStores.workflowStore.activeWorkflow!.nodes[nodeWithManyPorts.id] =
+          {
+            ...nodeWithManyPorts,
+            state: { executionState: NodeState.ExecutionStateEnum.CONFIGURED },
+          } satisfies KnimeNode;
 
         await nextTick();
 
@@ -519,11 +504,11 @@ describe("NodeOutput.vue", () => {
         const node1 = getNode1();
         const node2 = getNode2();
 
-        const store = createStore({
+        const mockedStores = createStores({
           nodes: { [node1.id]: node1, [node2.id]: node2 },
           selectedNodeIds: [node1.id],
         });
-        const { wrapper } = doMount(store);
+        const { wrapper } = doMount(mockedStores);
 
         // start from the right port (tab values are strings)
         wrapper
@@ -532,8 +517,8 @@ describe("NodeOutput.vue", () => {
         await nextTick();
 
         // select other node
-        store.commit("selection/clearSelection");
-        store.commit("selection/addNodesToSelection", [node2.id]);
+        mockedStores.selectionStore.clearSelection();
+        mockedStores.selectionStore.addNodesToSelection([node2.id]);
 
         await nextTick();
 

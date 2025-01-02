@@ -5,7 +5,7 @@ import { NodeTorsoNormal } from "@knime/components";
 
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeTorso from "../NodeTorso.vue";
 import NodeTorsoForbidden from "../NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "../NodeTorsoMetanode.vue";
@@ -14,23 +14,16 @@ import NodeTorsoUnknown from "../NodeTorsoUnknown.vue";
 
 describe("NodeTorso.vue", () => {
   const doShallowMount = (props, { writable = true } = {}) => {
-    const $store = mockVuexStore({
-      workflow: {
-        getters: {
-          isWritable() {
-            return writable;
-          },
-        },
-      },
-    });
+    const mockedStores = mockStores();
+    mockedStores.workflowStore.isWritable = writable;
 
     return shallowMount(NodeTorso, {
       props,
       global: {
+        plugins: [mockedStores.testingPinia],
         mocks: {
           $shapes,
           $colors,
-          $store,
         },
       },
     });

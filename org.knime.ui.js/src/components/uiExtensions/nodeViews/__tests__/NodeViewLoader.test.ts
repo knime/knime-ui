@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import type {
   Alert,
@@ -10,12 +11,10 @@ import type {
 } from "@knime/ui-extension-renderer/api";
 import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import ExecuteButton from "../../ExecuteButton.vue";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
@@ -49,6 +48,7 @@ describe("NodeViewLoader.vue", () => {
     projectId: "project-id",
     workflowId: "workflow-id",
     selectedNode: dummyNode,
+    timestamp: 0,
   };
 
   afterEach(() => {
@@ -56,17 +56,17 @@ describe("NodeViewLoader.vue", () => {
   });
 
   const doMount = () => {
-    const $store = mockVuexStore({
-      application: applicationStore,
-      nodeConfiguration: nodeConfigurationStore,
-    });
+    const mockedStores = mockStores();
 
     const wrapper = mount(NodeViewLoader, {
       props,
-      global: { plugins: [$store], stubs: { UIExtension: true } },
+      global: {
+        plugins: [mockedStores.testingPinia],
+        stubs: { UIExtension: true },
+      },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("should load nodeView on mount", () => {
@@ -148,9 +148,9 @@ describe("NodeViewLoader.vue", () => {
       });
 
       setRestApiBaseUrl("API_URL_BASE");
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
-      $store.commit("application/setActiveProjectId", "project1");
+      mockedStores.applicationStore.setActiveProjectId("project1");
 
       const apiLayer = getApiLayer(wrapper);
 
@@ -207,7 +207,7 @@ describe("NodeViewLoader.vue", () => {
 
     it("implements registerPushEventService to set the event dispatcher to update the view data", async () => {
       mockGetNodeView();
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
 
       const apiLayer = getApiLayer(wrapper);
@@ -216,7 +216,7 @@ describe("NodeViewLoader.vue", () => {
         dispatchPushEvent: pushEventDispatcher,
       });
 
-      $store.commit("nodeConfiguration/setLatestPublishedData", {
+      mockedStores.nodeConfigurationStore.setLatestPublishedData({
         data: { mock: "new-data" },
         projectId: "project-id",
         workflowId: "workflow-id",
@@ -225,7 +225,7 @@ describe("NodeViewLoader.vue", () => {
       await nextTick();
       expect(pushEventDispatcher).not.toHaveBeenCalled();
 
-      $store.commit("nodeConfiguration/setLatestPublishedData", {
+      mockedStores.nodeConfigurationStore.setLatestPublishedData({
         data: { mock: "new-data" },
         projectId: "project-id",
         workflowId: "workflow-id",
@@ -288,13 +288,13 @@ describe("NodeViewLoader.vue", () => {
 
   it("should render execute button if view should re-execute based on node config dirty state", async () => {
     mockGetNodeView();
-    const { wrapper, $store } = doMount();
+    const { wrapper, mockedStores } = doMount();
     await flushPromises();
 
     expect(wrapper.findComponent(ExecuteButton).exists()).toBe(false);
     expect(wrapper.findComponent(UIExtension).exists()).toBe(true);
 
-    $store.commit("nodeConfiguration/setDirtyState", {
+    mockedStores.nodeConfigurationStore.setDirtyState({
       apply: "configured" satisfies ApplyState,
       view: "configured" satisfies ViewState,
     });

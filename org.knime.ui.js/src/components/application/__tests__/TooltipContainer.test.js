@@ -3,45 +3,27 @@ import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import Tooltip from "../Tooltip.vue";
 import TooltipContainer from "../TooltipContainer.vue";
 
 describe("TooltipContainer", () => {
   let doShallowMount,
     wrapper,
-    $store,
-    storeConfig,
-    tooltip,
+    $mockedStores,
     kanvasElement,
     screenFromCanvasCoordinatesMock;
 
   beforeEach(() => {
     wrapper = null;
-    $store = null;
+    $mockedStores = null;
     screenFromCanvasCoordinatesMock = vi
       .fn()
       .mockImplementation(({ x, y }) => ({ x: x * 2, y: y * 2 }));
-    storeConfig = {
-      canvas: {
-        getters: {
-          screenFromCanvasCoordinates: () => screenFromCanvasCoordinatesMock,
-        },
-        state: {
-          zoomFactor: 1,
-        },
-      },
-      workflow: {
-        mutations: {
-          setTooltip: (state, tooltip) => {
-            state.tooltip = tooltip;
-          },
-        },
-        state: {
-          tooltip,
-        },
-      },
-    };
+
+    $mockedStores = mockStores();
+    $mockedStores.canvasStore.screenFromCanvasCoordinates =
+      screenFromCanvasCoordinatesMock;
 
     kanvasElement = {
       scrollLeft: 0,
@@ -56,10 +38,9 @@ describe("TooltipContainer", () => {
     };
 
     doShallowMount = () => {
-      $store = mockVuexStore(storeConfig);
       wrapper = shallowMount(TooltipContainer, {
         global: {
-          plugins: [$store],
+          plugins: [$mockedStores.testingPinia],
           mocks: { $shapes },
         },
       });
@@ -81,11 +62,11 @@ describe("TooltipContainer", () => {
     };
 
     doShallowMount();
-    $store.commit("workflow/setTooltip", tooltip);
+    $mockedStores.workflowStore.setTooltip(tooltip);
     await nextTick();
 
     wrapper.findComponent(Tooltip).trigger("mouseleave");
-    expect(storeConfig.workflow.state.tooltip).toBeNull();
+    expect($mockedStores.workflowStore.tooltip).toBeNull();
   });
 
   describe("positioning", () => {
@@ -97,7 +78,7 @@ describe("TooltipContainer", () => {
       };
 
       doShallowMount();
-      $store.commit("workflow/setTooltip", tooltip);
+      $mockedStores.workflowStore.setTooltip(tooltip);
       await nextTick();
 
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
@@ -108,7 +89,7 @@ describe("TooltipContainer", () => {
     });
 
     it("scales gap in relation to sqrt of zoomFactor", async () => {
-      storeConfig.canvas.state.zoomFactor = 9; // 900%
+      $mockedStores.canvasStore.zoomFactor = 9; // 900%
       let tooltip = {
         anchorPoint: { x: 0, y: 0 },
         position: { x: 0, y: 0 },
@@ -116,7 +97,7 @@ describe("TooltipContainer", () => {
       };
 
       doShallowMount();
-      $store.commit("workflow/setTooltip", tooltip);
+      $mockedStores.workflowStore.setTooltip(tooltip);
       await nextTick();
 
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
@@ -134,7 +115,7 @@ describe("TooltipContainer", () => {
         hoverable: true,
       };
       doShallowMount();
-      $store.commit("workflow/setTooltip", tooltip);
+      $mockedStores.workflowStore.setTooltip(tooltip);
       await nextTick();
 
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
@@ -155,7 +136,7 @@ describe("TooltipContainer", () => {
       };
 
       doShallowMount();
-      $store.commit("workflow/setTooltip", tooltip);
+      $mockedStores.workflowStore.setTooltip(tooltip);
       await nextTick();
 
       expect(kanvasElement.addEventListener).toHaveBeenCalledWith(
@@ -164,7 +145,7 @@ describe("TooltipContainer", () => {
       );
 
       // test that it doesn't set another scroll listener
-      $store.commit("workflow/setTooltip", { ...tooltip });
+      $mockedStores.workflowStore.setTooltip({ ...tooltip });
       await nextTick();
       expect(kanvasElement.addEventListener).toHaveBeenCalledTimes(1);
     });
@@ -175,10 +156,10 @@ describe("TooltipContainer", () => {
       };
 
       doShallowMount();
-      $store.commit("workflow/setTooltip", tooltip);
+      $mockedStores.workflowStore.setTooltip(tooltip);
       await nextTick();
 
-      $store.commit("workflow/setTooltip", null);
+      $mockedStores.workflowStore.setTooltip(null);
       await nextTick();
 
       expect(kanvasElement.removeEventListener).toHaveBeenCalledWith(
@@ -204,7 +185,7 @@ describe("TooltipContainer", () => {
       };
 
       doShallowMount();
-      $store.commit("workflow/setTooltip", tooltip);
+      $mockedStores.workflowStore.setTooltip(tooltip);
       await nextTick();
       expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
         x: 20,

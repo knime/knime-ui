@@ -1,18 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
-import type { Store } from "vuex";
+import { API } from "@api";
 
 import { SubMenu } from "@knime/components";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { ServiceCallException } from "@/api/gateway-api/generated-exceptions";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-import * as spacesStore from "@/store/spaces";
-import type { RootStoreState } from "@/store/types";
 import { createSpace, createSpaceProvider } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { getToastPresets } from "@/toastPresets";
 import SpaceExplorerActions from "../SpaceExplorerActions.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
@@ -29,17 +27,26 @@ mockedAPI.space.createWorkflowGroup.mockResolvedValue({
 });
 
 vi.mock("@/api/gateway-api/exceptions");
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    useToasts: vi.fn(),
+  };
+});
+
+vi.mock("vue-router", async (importOriginal) => ({
+  ...(await importOriginal()),
+  useRouter: vi.fn(() => ({ push: vi.fn() })),
+  useRoute: vi.fn(),
+}));
 
 describe("SpaceExplorerActions.vue", () => {
   const doMount = ({ props = {} } = {}) => {
-    const store = mockVuexStore({
-      spaces: spacesStore,
-    });
-
+    const mockedStores = mockStores();
     const projectId = "someProjectId";
-
-    const dispatchSpy = vi.spyOn(store, "dispatch");
-    const commitSpy = vi.spyOn(store, "commit");
 
     const wrapper = mount(SpaceExplorerActions, {
       props: {
@@ -48,20 +55,20 @@ describe("SpaceExplorerActions.vue", () => {
         ...props,
       },
       global: {
-        plugins: [store],
+        plugins: [mockedStores.testingPinia],
         mocks: { $shortcuts: { get: vi.fn(() => ({})) } },
       },
     });
 
-    return { wrapper, store, dispatchSpy, commitSpy, projectId };
+    return { wrapper, mockedStores, projectId };
   };
 
   const setupStoreWithProvider = async (
-    store: Store<RootStoreState>,
+    mockedStores: ReturnType<typeof mockStores>,
     projectId: string,
     providerType: SpaceProviderNS.TypeEnum,
   ) => {
-    store.commit("spaces/setProjectPath", {
+    mockedStores.spaceCachingStore.setProjectPath({
       projectId,
       value: {
         spaceId: "space1",
@@ -83,7 +90,7 @@ describe("SpaceExplorerActions.vue", () => {
       ],
     });
 
-    store.commit("spaces/setSpaceProviders", {
+    mockedStores.spaceProvidersStore.setSpaceProviders({
       [provider.id]: provider,
     });
 
@@ -92,10 +99,10 @@ describe("SpaceExplorerActions.vue", () => {
 
   describe("normal mode", () => {
     it("should render actions for local space", async () => {
-      const { wrapper, store, projectId } = doMount();
+      const { wrapper, mockedStores, projectId } = doMount();
 
       await setupStoreWithProvider(
-        store,
+        mockedStores,
         projectId,
         SpaceProviderNS.TypeEnum.LOCAL,
       );
@@ -154,58 +161,52 @@ describe("SpaceExplorerActions.vue", () => {
     });
 
     it.each([
-      ["createFolder", "spaces/createFolder", {}],
-      [
-        "downloadToLocalSpace",
-        "spaces/copyBetweenSpaces",
-        { itemIds: ["934383"] },
-      ],
-      ["importFiles", "spaces/importToWorkflowGroup", { importType: "FILES" }],
-      [
-        "importWorkflow",
-        "spaces/importToWorkflowGroup",
-        { importType: "WORKFLOW" },
-      ],
+      ["createFolder", "createFolder", {}],
+      ["downloadToLocalSpace", "copyBetweenSpaces", { itemIds: ["934383"] }],
+      ["importFiles", "importToWorkflowGroup", { importType: "FILES" }],
+      ["importWorkflow", "importToWorkflowGroup", { importType: "WORKFLOW" }],
     ])("should call %s store action", async (actionId, storeAction, params) => {
-      const { wrapper, store, dispatchSpy, projectId } = doMount();
+      const { wrapper, mockedStores, projectId } = doMount();
 
       await setupStoreWithProvider(
-        store,
+        mockedStores,
         projectId,
         SpaceProviderNS.TypeEnum.HUB,
       );
 
       wrapper.find(`#${actionId}`).trigger("click");
-      expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
+      expect(
+        mockedStores.spaceOperationsStore[storeAction] ??
+          mockedStores.spacesStore[storeAction],
+      ).toHaveBeenCalledWith({
         projectId: "someProjectId",
         ...params,
       });
     });
 
     it("should open create workflow dialog  when clicking on the relevant action", () => {
-      const { wrapper, commitSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       wrapper.findComponent(SpaceExplorerFloatingButton).vm.$emit("click");
-      expect(commitSpy).toHaveBeenCalledWith(
-        "spaces/setCreateWorkflowModalConfig",
-        {
-          isOpen: true,
-          projectId: "someProjectId",
-        },
-      );
+      expect(
+        mockedStores.spacesStore.setCreateWorkflowModalConfig,
+      ).toHaveBeenCalledWith({
+        isOpen: true,
+        projectId: "someProjectId",
+      });
     });
   });
 
   describe("mini mode", () => {
     it("should render actions for local space", async () => {
-      const { wrapper, projectId, store } = doMount({
+      const { wrapper, projectId, mockedStores } = doMount({
         props: {
           mode: "mini",
         },
       });
 
       await setupStoreWithProvider(
-        store,
+        mockedStores,
         projectId,
         SpaceProviderNS.TypeEnum.LOCAL,
       );
@@ -231,12 +232,12 @@ describe("SpaceExplorerActions.vue", () => {
     });
 
     it("should render actions for hub", async () => {
-      const { wrapper, store, projectId } = doMount({
+      const { wrapper, mockedStores, projectId } = doMount({
         props: { mode: "mini" },
       });
 
       await setupStoreWithProvider(
-        store,
+        mockedStores,
         projectId,
         SpaceProviderNS.TypeEnum.HUB,
       );
@@ -282,23 +283,19 @@ describe("SpaceExplorerActions.vue", () => {
     });
 
     it.each([
-      ["createFolder", "spaces/createFolder", {}],
-      ["upload", "spaces/copyBetweenSpaces", { itemIds: ["934383"] }],
-      ["importFiles", "spaces/importToWorkflowGroup", { importType: "FILES" }],
-      [
-        "importWorkflow",
-        "spaces/importToWorkflowGroup",
-        { importType: "WORKFLOW" },
-      ],
+      ["createFolder", "createFolder", {}],
+      ["upload", "copyBetweenSpaces", { itemIds: ["934383"] }],
+      ["importFiles", "importToWorkflowGroup", { importType: "FILES" }],
+      ["importWorkflow", "importToWorkflowGroup", { importType: "WORKFLOW" }],
     ])(
       "should execute action %s via store",
       async (actionId, storeAction, params) => {
-        const { wrapper, store, projectId, dispatchSpy } = doMount({
+        const { wrapper, mockedStores, projectId } = doMount({
           props: { mode: "mini" },
         });
 
         await setupStoreWithProvider(
-          store,
+          mockedStores,
           projectId,
           SpaceProviderNS.TypeEnum.LOCAL,
         );
@@ -309,15 +306,18 @@ describe("SpaceExplorerActions.vue", () => {
           .find((item) => item.id === actionId);
         subMenu.vm.$emit("item-click", null, item);
 
-        expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
+        expect(
+          mockedStores.spaceOperationsStore[storeAction] ??
+            mockedStores.spacesStore[storeAction],
+        ).toHaveBeenCalledWith({
           projectId: "someProjectId",
           ...params,
         });
       },
     );
 
-    it.each([["createFolder", "spaces/createFolder", {}]])(
-      "should handle failure when executing action %s via store",
+    it.each([["createFolder", "createFolder", {}]])(
+      "should handle failure when executing '%s' store-action",
       async (actionId, storeAction, params) => {
         const { toastPresets } = getToastPresets();
         const createFolderFailed = vi.spyOn(
@@ -325,14 +325,18 @@ describe("SpaceExplorerActions.vue", () => {
           "createFolderFailed",
         );
 
-        const { wrapper, store, projectId, dispatchSpy } = doMount({
+        const { wrapper, mockedStores, projectId } = doMount({
           props: { mode: "mini" },
         });
 
         await setupStoreWithProvider(
-          store,
+          mockedStores,
           projectId,
           SpaceProviderNS.TypeEnum.LOCAL,
+        );
+
+        mockedStores.spaceOperationsStore[storeAction].mockRejectedValueOnce(
+          new ServiceCallException({ message: "IO issue" }),
         );
 
         const subMenu = wrapper.findComponent(SubMenu);
@@ -341,11 +345,9 @@ describe("SpaceExplorerActions.vue", () => {
           .find((item) => item.id === actionId);
         subMenu.vm.$emit("item-click", null, item);
 
-        dispatchSpy.mockRejectedValueOnce(
-          new ServiceCallException({ message: "IO issue" }),
-        );
-
-        expect(dispatchSpy).toHaveBeenCalledWith(storeAction, {
+        expect(
+          mockedStores.spaceOperationsStore[storeAction],
+        ).toHaveBeenCalledWith({
           projectId: "someProjectId",
           ...params,
         });
@@ -364,14 +366,14 @@ describe("SpaceExplorerActions.vue", () => {
       async (_name, menuId, apiName) => {
         // @ts-ignore
         mockedAPI.desktop[apiName].mockResolvedValue(["item1", "item2"]);
-        const { wrapper, store, projectId } = doMount({
+        const { wrapper, mockedStores, projectId } = doMount({
           props: { mode: "mini" },
         });
 
         mockedAPI.space.listWorkflowGroup.mockResolvedValue([]);
 
         await setupStoreWithProvider(
-          store,
+          mockedStores,
           projectId,
           SpaceProviderNS.TypeEnum.LOCAL,
         );
@@ -384,7 +386,7 @@ describe("SpaceExplorerActions.vue", () => {
 
         subMenu.vm.$emit("item-click", null, item);
 
-        await new Promise((r) => setTimeout(r, 0));
+        await flushPromises();
 
         expect(wrapper.emitted("importedItemIds")).toStrictEqual([
           [["item1", "item2"]],

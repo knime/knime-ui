@@ -1,15 +1,13 @@
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { mergePortBarBounds } from "@/util/workflowUtil";
 
-import { useStore } from "./useStore";
-
 export const usePortBarPositions = () => {
-  const store = useStore();
-  const workflow = computed(() => store.state.workflow.activeWorkflow);
-  const calculatedBounds = computed(
-    () => store.state.workflow.calculatedMetanodePortBarBounds,
-  );
+  const {
+    activeWorkflow: workflow,
+    calculatedMetanodePortBarBounds: calculatedBounds,
+  } = storeToRefs(useWorkflowStore());
 
   const getPorts = (isOutgoing: boolean) => {
     return isOutgoing

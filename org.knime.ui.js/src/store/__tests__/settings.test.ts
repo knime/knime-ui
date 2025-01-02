@@ -1,60 +1,46 @@
 /* eslint-disable max-lines */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import { UI_SCALE_STEPSIZE, ratioToZoomLevel } from "../settings";
-import * as settingsStoreConfig from "../settings";
+import { UI_SCALE_STEPSIZE, ratioToZoomLevel } from "@/store/settings";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
-const loadStore = () => {
-  const store = mockVuexStore({
-    settings: {
-      ...settingsStoreConfig,
-    },
-  });
-
-  return { store };
-};
-
-describe("actions", () => {
-  afterEach(() => {
+describe("settings store", () => {
+  beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("increases ui scale", async () => {
-    const { store } = loadStore();
+    const { settingsStore } = mockStores();
 
-    await store.dispatch("settings/increaseUiScale");
-    expect(store.state.settings.settings.uiScale).toBe(1.0 + UI_SCALE_STEPSIZE);
-    await store.dispatch("settings/increaseUiScale");
-    expect(store.state.settings.settings.uiScale).toBe(
-      1.0 + 2 * UI_SCALE_STEPSIZE,
-    );
+    await settingsStore.increaseUiScale();
+    expect(settingsStore.settings.uiScale).toBe(1.0 + UI_SCALE_STEPSIZE);
+    await settingsStore.increaseUiScale();
+    expect(settingsStore.settings.uiScale).toBe(1.0 + 2 * UI_SCALE_STEPSIZE);
 
     expect(mockedAPI.desktop.setZoomLevel).toBeCalledTimes(2);
   });
 
   it("decreases ui scale", async () => {
-    const { store } = loadStore();
+    const { settingsStore } = mockStores();
 
-    await store.dispatch("settings/decreaseUiScale");
-    expect(store.state.settings.settings.uiScale).toBe(1.0 - UI_SCALE_STEPSIZE);
-    await store.dispatch("settings/decreaseUiScale");
-    expect(store.state.settings.settings.uiScale).toBe(
-      1.0 - 2 * UI_SCALE_STEPSIZE,
-    );
+    await settingsStore.decreaseUiScale();
+    expect(settingsStore.settings.uiScale).toBe(1.0 - UI_SCALE_STEPSIZE);
+    await settingsStore.decreaseUiScale();
+    expect(settingsStore.settings.uiScale).toBe(1.0 - 2 * UI_SCALE_STEPSIZE);
 
     expect(mockedAPI.desktop.setZoomLevel).toBeCalledTimes(2);
   });
 
   it("resets ui scale", async () => {
-    const { store } = loadStore();
+    const { settingsStore } = mockStores();
 
-    store.state.settings.settings.uiScale = 2.331;
-    await store.dispatch("settings/resetUiScale");
-    expect(store.state.settings.settings.uiScale).toBe(1.0);
+    settingsStore.settings.uiScale = 2.331;
+    await settingsStore.resetUiScale();
+    expect(settingsStore.settings.uiScale).toBe(1.0);
 
     expect(mockedAPI.desktop.setZoomLevel).toBeCalledTimes(1);
   });

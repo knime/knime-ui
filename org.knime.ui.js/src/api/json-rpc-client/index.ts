@@ -1,8 +1,7 @@
 import { Client, RequestManager } from "@open-rpc/client-js";
-import type { Store } from "vuex";
 
 import { $bus } from "@/plugins/event-bus";
-import type { RootStoreState } from "@/store/types";
+import { useLifecycleStore } from "@/store/application/lifecycle";
 import { getToastPresets } from "@/toastPresets";
 
 import { DesktopAPTransport } from "./DesktopAPTransport";
@@ -71,15 +70,12 @@ const setupServerEventListener = (ws: WebSocket) => {
   });
 };
 
-const handleConnectionChanges = (
-  ws: WebSocket,
-  store: Store<RootStoreState>,
-) => {
+const handleConnectionChanges = (ws: WebSocket) => {
   ws.addEventListener("close", (wsCloseEvent) => {
     consola.error("Websocket closed: ", wsCloseEvent);
 
-    store.commit("application/setIsLoadingApp", false);
-    store.commit("application/setIsLoadingWorkflow", false);
+    useLifecycleStore().setIsLoadingApp(false);
+    useLifecycleStore().setIsLoadingWorkflow(false);
 
     // prevent user interactions
     $bus.emit("block-ui");
@@ -103,7 +99,7 @@ const handleConnectionChanges = (
 };
 
 const setupActivityHeartbeat = (ws: WebSocket) => {
-  // move sending hearbeats to the worker thread because timers will be
+  // move sending heartbeats to the worker thread because timers will be
   // throttled when the page is in the background
   // see: https://developer.chrome.com/blog/timer-throttling-in-chrome-88/
   const activityWorker = new Worker(new URL("./activity", import.meta.url), {
@@ -134,10 +130,7 @@ const setupActivityHeartbeat = (ws: WebSocket) => {
   });
 };
 
-const initBrowserClient = (
-  connectionInfo: ConnectionInfo,
-  store: Store<RootStoreState>,
-) =>
+const initBrowserClient = (connectionInfo: ConnectionInfo) =>
   new Promise((resolve, reject) => {
     try {
       if (!connectionInfo) {
@@ -159,7 +152,7 @@ const initBrowserClient = (
       // setup server event handler and other events on the WS transport
       setupServerEventListener(connection);
 
-      handleConnectionChanges(connection, store);
+      handleConnectionChanges(connection);
 
       // initialize the client and request manager to start the WS connection
       const requestManager = new RequestManager([transport]);
@@ -179,13 +172,12 @@ const getRPCClientInstance = () => jsonRPCClient;
 const initJSONRPCClient = async (
   mode: "BROWSER" | "DESKTOP",
   connectionInfo: ConnectionInfo | null,
-  store: Store<RootStoreState>,
 ) => {
   try {
     const clientInitializer =
       mode === "DESKTOP"
         ? initDesktopClient()
-        : initBrowserClient(connectionInfo!, store);
+        : initBrowserClient(connectionInfo!);
 
     await clientInitializer;
 

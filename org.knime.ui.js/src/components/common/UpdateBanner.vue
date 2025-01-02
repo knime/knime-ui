@@ -1,11 +1,11 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
+import { API } from "@api";
 import { debounce } from "lodash-es";
 
 import { Button, FunctionButton } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 
-import { API } from "@/api";
 import type { UpdateAvailableEvent } from "@/api/gateway-api/generated-api";
 
 const DOWNLOAD_URL = "https://www.knime.com/downloads?src=knimeappmodernui";

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import * as applicationStore from "@/store/application";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import DataValueViewLoader, { type Props } from "../DataValueViewLoader.vue";
 
 const mockedAPI = deepMocked(API);
@@ -37,16 +37,17 @@ describe("DataValueViewLoader.vue", () => {
   };
 
   const doMount = (customProps = {}) => {
-    const $store = mockVuexStore({
-      application: applicationStore,
-    });
+    const mockedStores = mockStores();
 
     const wrapper = shallowMount(DataValueViewLoader, {
       props: { ...props, ...customProps },
-      global: { plugins: [$store], stubs: { UIExtension: true } },
+      global: {
+        plugins: [mockedStores.testingPinia],
+        stubs: { UIExtension: true },
+      },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("loads data value view on mount", async () => {

@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
+import { createTestingPinia } from "@pinia/testing";
 
 import { MenuItems } from "@knime/components";
 
-import { API } from "@/api";
-import { RecentWorkflow, SpaceProviderNS } from "@/api/custom-types";
+import { type RecentWorkflow, SpaceProviderNS } from "@/api/custom-types";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
-import * as applicationStore from "@/store/application";
-import * as panelStore from "@/store/panel";
-import * as spacesStore from "@/store/spaces";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { createSpace, createSpaceProvider } from "@/test/factories";
-import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
 import RecentWorkflowContextMenu from "../RecentWorkflowContextMenu.vue";
 
 const routerPush = vi.fn();
@@ -215,25 +215,24 @@ describe("RecentWorkflowContextMenu.vue", () => {
       recentWorkflow: defaultRecentWorkflow,
     },
   ) => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-      application: applicationStore,
-      panel: panelStore,
-    });
-
-    $store.state.spaces.spaceProviders = PROVIDERS;
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
     const wrapper = mount(RecentWorkflowContextMenu, {
       props: { ...defaultProps(recentWorkflow) },
       global: {
-        plugins: [$store],
+        plugins: [
+          createTestingPinia({
+            stubActions: false,
+            createSpy: vi.fn,
+            initialState: {
+              "space.providers": { spaceProviders: PROVIDERS },
+            },
+          }),
+        ],
       },
     });
 
     await nextTick();
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper };
   };
 
   it("should render properly", async () => {
@@ -269,11 +268,11 @@ describe("RecentWorkflowContextMenu.vue", () => {
     });
 
     it("should not display option for server projects", async () => {
-      const { wrapper, $store } = await doMount({
+      const { wrapper } = await doMount({
         recentWorkflow: recentWorkflows.serverProject,
       });
 
-      $store.state.spaces.spaceProviders = PROVIDERS;
+      useSpaceProvidersStore().spaceProviders = PROVIDERS;
 
       await nextTick();
 
@@ -286,7 +285,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
         itemName: null,
       });
 
-      const { wrapper, $store } = await doMount({
+      const { wrapper } = await doMount({
         recentWorkflow: recentWorkflows.hubProjectNested,
       });
 
@@ -298,13 +297,14 @@ describe("RecentWorkflowContextMenu.vue", () => {
 
       // fetch is done in SpaceExplorer on change of ProjectPath
       // simulate loading being done:
-      $store.state.spaces.isLoadingContent = true;
+      const spaceOperationsStore = useSpaceOperationsStore();
+      spaceOperationsStore.isLoadingContent = true;
       await nextTick();
 
-      $store.state.spaces.isLoadingContent = false;
+      spaceOperationsStore.isLoadingContent = false;
       await nextTick();
 
-      expect($store.state.spaces.currentSelectedItemIds).toEqual([
+      expect(spaceOperationsStore.currentSelectedItemIds).toEqual([
         recentWorkflows.hubProjectNested.origin?.itemId,
       ]);
     });
@@ -334,7 +334,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
 
     it("should reveal project in SpaceBrowsingPage", async () => {
       const project = recentWorkflows.localProjectNestedDeep!;
-      const { wrapper, $store } = await doMount({
+      const { wrapper } = await doMount({
         recentWorkflow: project,
       });
 
@@ -353,7 +353,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
         },
       });
 
-      expect($store.state.spaces.currentSelectedItemIds).toEqual([
+      expect(useSpaceOperationsStore().currentSelectedItemIds).toEqual([
         project.origin?.itemId,
       ]);
     });

@@ -1,9 +1,13 @@
+/* eslint-disable func-style */
+import type { Mock } from "node:test";
+
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import FloatingMenu from "../FloatingMenu.vue";
 
 const useFocusTrapMock = {
@@ -30,6 +34,15 @@ vi.mock("@vueuse/integrations/useFocusTrap", () => {
 });
 
 describe("FloatingMenu.vue", () => {
+  type MountOpts = {
+    props?: any;
+    contentHeight?: number;
+    contentWidth?: number;
+    isDraggingNodeInCanvas?: false;
+    isDraggingNodeTemplate?: false;
+    screenFromCanvasCoordinatesMock?: Mock<() => XY>;
+  };
+
   const doMount = ({
     props = {},
     // Mock menu content bounds
@@ -37,8 +50,8 @@ describe("FloatingMenu.vue", () => {
     contentWidth = 10,
     isDraggingNodeInCanvas = false,
     isDraggingNodeTemplate = false,
-    screenFromCanvasCoordinatesMock = null,
-  } = {}) => {
+    screenFromCanvasCoordinatesMock,
+  }: MountOpts = {}) => {
     const defaultProps = {
       canvasPosition: {
         x: 20,
@@ -73,52 +86,29 @@ describe("FloatingMenu.vue", () => {
       removeEventListener(...args);
     });
 
+    const mockedStores = mockStores();
+    mockedStores.nodeTemplatesStore.isDraggingNodeTemplate =
+      isDraggingNodeTemplate;
+    mockedStores.movingStore.isDragging = isDraggingNodeInCanvas;
+
     // Mock screenFromCanvasCoordinates
-    const defaultScreenFromCanvasCoordinatesMock = vi
-      .fn()
-      .mockImplementation(({ zoomFactor }) => ({ x, y }) => ({
-        x: x * zoomFactor,
-        y: y * zoomFactor,
-      }));
+    const defaultScreenFromCanvasCoordinatesMock = vi.fn(({ x, y }) => ({
+      x: x * mockedStores.canvasStore.zoomFactor,
+      y: y * mockedStores.canvasStore.zoomFactor,
+    }));
 
-    const mutations = {
-      canvas: { setInteractionsEnabled: vi.fn() },
-    };
+    // @ts-ignore
+    mockedStores.canvasStore.screenFromCanvasCoordinates =
+      screenFromCanvasCoordinatesMock ?? defaultScreenFromCanvasCoordinatesMock;
 
-    const storeConfig = {
-      canvas: {
-        state: {
-          zoomFactor: 1,
-        },
-        getters: {
-          screenFromCanvasCoordinates:
-            screenFromCanvasCoordinatesMock ??
-            defaultScreenFromCanvasCoordinatesMock,
-        },
-        mutations: mutations.canvas,
-      },
-      nodeTemplates: {
-        state: {
-          isDraggingNodeTemplate,
-        },
-      },
-      workflow: {
-        state: {
-          isDragging: isDraggingNodeInCanvas,
-        },
-      },
-    };
-
-    const $store = mockVuexStore(storeConfig);
     const wrapper = shallowMount(FloatingMenu, {
       props: { ...defaultProps, ...props },
-      global: { plugins: [$store] },
+      global: { plugins: [mockedStores.testingPinia] },
     });
 
     return {
       wrapper,
-      $store,
-      mutations,
+      mockedStores,
       mockKanvas,
       getBoundingClientRect,
       screenFromCanvasCoordinatesMock,
@@ -126,7 +116,9 @@ describe("FloatingMenu.vue", () => {
   };
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    const kanvas = document.getElementById("kanvas")!;
+    kanvas?.remove(); // clean-up attached event listeners
+    vi.clearAllMocks();
   });
 
   describe("close menu", () => {
@@ -164,8 +156,8 @@ describe("FloatingMenu.vue", () => {
     });
 
     it("closes menu when a node is dragged in the canvas", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.workflow.isDragging = true;
+      const { wrapper, mockedStores } = doMount();
+      mockedStores.movingStore.isDragging = true;
 
       await nextTick();
       expect(wrapper.emitted("menuClose")).toBeDefined();
@@ -246,10 +238,10 @@ describe("FloatingMenu.vue", () => {
     });
 
     it("re-position on zoom factor update", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await nextTick();
 
-      $store.state.canvas.zoomFactor = 2;
+      mockedStores.canvasStore.zoomFactor = 2;
       await nextTick();
 
       expect(wrapper.attributes("style")).toMatch("left: 40px;");
@@ -259,28 +251,13 @@ describe("FloatingMenu.vue", () => {
     it("re-position on canvas scroll", async () => {
       const screenFromCanvasCoordinatesMock = vi
         .fn()
-        .mockImplementationOnce(() => {
-          let wasCalledOnce = false;
-          return () => {
-            // eslint-disable-next-line vitest/no-conditional-tests
-            if (!wasCalledOnce) {
-              wasCalledOnce = true;
-              return {
-                x: 20,
-                y: 20,
-              };
-            }
-
-            return {
-              x: 50,
-              y: 50,
-            };
-          };
-        });
+        .mockImplementationOnce(() => ({ x: 20, y: 20 }))
+        .mockImplementationOnce(() => ({ x: 50, y: 50 }));
 
       const { wrapper, getBoundingClientRect } = doMount({
         screenFromCanvasCoordinatesMock,
       });
+
       await nextTick();
 
       expect(wrapper.attributes("style")).toContain("left: 20px");
@@ -304,10 +281,11 @@ describe("FloatingMenu.vue", () => {
     });
 
     it("disable interactions when the prop is set", () => {
-      const { mutations } = doMount({ props: { disableInteractions: true } });
+      const { mockedStores } = doMount({
+        props: { disableInteractions: true },
+      });
 
-      expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
-        expect.anything(),
+      expect(mockedStores.canvasStore.setInteractionsEnabled).toBeCalledWith(
         false,
       );
     });
@@ -315,10 +293,13 @@ describe("FloatingMenu.vue", () => {
 
   describe("clean up", () => {
     it("removes scroll listener", async () => {
-      const { wrapper } = doMount();
+      const { wrapper } = doMount({
+        screenFromCanvasCoordinatesMock: vi.fn(() => ({ x: 0, y: 0 })),
+      });
       await nextTick();
 
       wrapper.unmount();
+      await nextTick();
 
       const kanvas = document.getElementById("kanvas")!;
 
@@ -331,11 +312,10 @@ describe("FloatingMenu.vue", () => {
     });
 
     it("enables interactions", () => {
-      const { wrapper, mutations } = doMount();
+      const { wrapper, mockedStores } = doMount();
       wrapper.unmount();
 
-      expect(mutations.canvas.setInteractionsEnabled).toBeCalledWith(
-        expect.anything(),
+      expect(mockedStores.canvasStore.setInteractionsEnabled).toBeCalledWith(
         true,
       );
     });

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onUnmounted, ref, toRef, watch } from "vue";
+import { API } from "@api";
 
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";

@@ -1,12 +1,10 @@
-import type { ActionTree, MutationTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
-import type { RootStoreState } from "@/store/types";
 
 /**
  * Store that manages UI settings, for now saved to local storage
  */
-
 export type NodeRepositoryDisplayModesType = "icon" | "list" | "tree";
 
 const SETTINGS_KEY = "knime-ui-settings";
@@ -46,59 +44,61 @@ const saveItem = (key: string, value: any) => {
   window?.localStorage?.setItem(key, JSON.stringify(value));
 };
 
-export const state = (): SettingsState => ({
-  settings: defaults,
+export const useSettingsStore = defineStore("settings", {
+  state: (): SettingsState => ({
+    settings: defaults,
+  }),
+  actions: {
+    updateAllSettings(settings: SettingsState["settings"]) {
+      this.settings = settings;
+    },
+
+    fetchSettings() {
+      const settings = loadItem(SETTINGS_KEY);
+
+      this.updateAllSettings({ ...defaults, ...(settings ?? {}) });
+    },
+
+    updateSetting(payload: { key: string; value: any }) {
+      this.updateAllSettings({
+        ...this.settings,
+        [payload.key]: payload.value,
+      });
+
+      saveItem(SETTINGS_KEY, this.settings);
+    },
+
+    async increaseUiScale() {
+      const newScale = parseFloat(
+        (this.settings.uiScale + UI_SCALE_STEPSIZE).toFixed(2),
+      );
+      await API.desktop.setZoomLevel(ratioToZoomLevel(newScale));
+
+      this.updateSetting({
+        key: "uiScale",
+        value: newScale,
+      });
+    },
+
+    async decreaseUiScale() {
+      const newScale = parseFloat(
+        (this.settings.uiScale - UI_SCALE_STEPSIZE).toFixed(2),
+      );
+      await API.desktop.setZoomLevel(ratioToZoomLevel(newScale));
+
+      this.updateSetting({
+        key: "uiScale",
+        value: newScale,
+      });
+    },
+
+    async resetUiScale() {
+      await API.desktop.setZoomLevel(0);
+
+      this.updateSetting({
+        key: "uiScale",
+        value: 1.0,
+      });
+    },
+  },
 });
-
-export const mutations: MutationTree<SettingsState> = {
-  updateAllSettings(state, payload) {
-    state.settings = payload;
-  },
-};
-
-export const actions: ActionTree<SettingsState, RootStoreState> = {
-  fetchSettings({ commit }) {
-    const settings = loadItem(SETTINGS_KEY);
-
-    commit("updateAllSettings", { ...defaults, ...(settings ?? {}) });
-  },
-
-  updateSetting({ state, commit }, payload: { key: string; value: any }) {
-    commit("updateAllSettings", {
-      ...state.settings,
-      [payload.key]: payload.value,
-    });
-    saveItem(SETTINGS_KEY, state.settings);
-  },
-
-  async increaseUiScale({ state, dispatch }) {
-    const newScale = parseFloat(
-      (state.settings.uiScale + UI_SCALE_STEPSIZE).toFixed(2),
-    );
-    await API.desktop.setZoomLevel(ratioToZoomLevel(newScale));
-
-    dispatch("updateSetting", {
-      key: "uiScale",
-      value: newScale,
-    });
-  },
-  async decreaseUiScale({ state, dispatch }) {
-    const newScale = parseFloat(
-      (state.settings.uiScale - UI_SCALE_STEPSIZE).toFixed(2),
-    );
-    await API.desktop.setZoomLevel(ratioToZoomLevel(newScale));
-
-    dispatch("updateSetting", {
-      key: "uiScale",
-      value: newScale,
-    });
-  },
-  async resetUiScale({ dispatch }) {
-    await API.desktop.setZoomLevel(0);
-
-    dispatch("updateSetting", {
-      key: "uiScale",
-      value: 1.0,
-    });
-  },
-};

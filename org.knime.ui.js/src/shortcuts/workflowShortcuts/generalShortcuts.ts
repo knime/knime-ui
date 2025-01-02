@@ -8,6 +8,16 @@ import type { KnimeNode } from "@/api/custom-types";
 import type { Connection } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { useApplicationStore } from "@/store/application/application";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInteractions";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { UnionToShortcutRegistry } from "../types";
 
 type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<
@@ -29,24 +39,24 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["CtrlOrCmd", "S"],
     group: "general",
     icon: SaveIcon,
-    execute: ({ $store }) => {
-      const isUnknownProject = $store.getters["application/isUnknownProject"];
-      const activeProjectId = $store.state.application.activeProjectId;
+    execute: () => {
+      const { isUnknownProject, activeProjectId } = useApplicationStore();
 
       if (isUnknownProject(activeProjectId)) {
-        $store.dispatch("workflow/saveProjectAs");
+        useDesktopInteractionsStore().saveProjectAs();
       } else {
-        $store.dispatch("workflow/saveProject");
+        useDesktopInteractionsStore().saveProject();
       }
     },
-    condition: ({ $store }) => {
-      const activeProjectId = $store.state.application.activeProjectId;
+    condition: () => {
+      const { activeProjectId, isDirtyActiveProject, activeProjectOrigin } =
+        useApplicationStore();
+      const { isLocalSaveSupported } = useUIControlsStore();
 
-      return (
+      return Boolean(
         activeProjectId &&
-        $store.state.uiControls.isLocalSaveSupported &&
-        ($store.getters["application/isDirtyActiveProject"] ||
-          !$store.getters["application/activeProjectOrigin"])
+          isLocalSaveSupported &&
+          (isDirtyActiveProject || !activeProjectOrigin),
       );
     },
   },
@@ -54,26 +64,26 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     title: "Save workflow as",
     text: "Save as…",
     icon: SaveAsIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/saveProjectAs"),
-    condition: ({ $store }) => $store.state.uiControls.isLocalSaveSupported,
+    execute: () => useDesktopInteractionsStore().saveProjectAs(),
+    condition: () => useUIControlsStore().isLocalSaveSupported,
   },
   undo: {
     title: "Undo",
     hotkey: ["CtrlOrCmd", "Z"],
     group: "general",
     icon: UndoIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/undo"),
-    condition: ({ $store }) =>
-      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canUndo),
+    execute: () => useWorkflowStore().undo(),
+    condition: () =>
+      Boolean(useWorkflowStore().activeWorkflow?.allowedActions?.canUndo),
   },
   redo: {
     title: "Redo",
     hotkey: ["CtrlOrCmd", "Shift", "Z"],
     group: "general",
     icon: RedoIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/redo"),
-    condition: ({ $store }) =>
-      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canRedo),
+    execute: () => useWorkflowStore().redo(),
+    condition: () =>
+      Boolean(useWorkflowStore().activeWorkflow?.allowedActions?.canRedo),
   },
   deleteSelected: {
     text: "Delete",
@@ -81,36 +91,37 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["Delete"],
     group: "general",
     icon: DeleteIcon,
-    execute: ({ $store }) => {
-      if ($store.state.selection.activeNodePorts.selectedPort) {
-        $store.dispatch("workflow/deleteSelectedPort");
+    execute: () => {
+      const workflowStore = useWorkflowStore();
+      if (useSelectionStore().activeNodePorts.selectedPort) {
+        workflowStore.deleteSelectedPort();
       } else {
-        $store.dispatch("workflow/deleteSelectedObjects");
+        workflowStore.deleteSelectedObjects();
       }
     },
-    condition({ $store }) {
-      if (!$store.getters["workflow/isWritable"]) {
+    condition() {
+      const workflowStore = useWorkflowStore();
+      const selectionStore = useSelectionStore();
+
+      if (!workflowStore.isWritable) {
         return false;
       }
 
       // enable depending on the selected NodePort
-      if ($store.state.selection.activeNodePorts.selectedPort) {
-        return !$store.state.selection.activeNodePorts.isModificationInProgress;
+      if (selectionStore.activeNodePorts.selectedPort) {
+        return !selectionStore.activeNodePorts.isModificationInProgress;
       }
 
       // disable while dragging
-      if ($store.state.workflow.isDragging) {
+      if (useMovingStore().isDragging) {
         return false;
       }
 
-      const selectedNodes: Array<KnimeNode> =
-        $store.getters["selection/selectedNodes"];
+      const selectedNodes: Array<KnimeNode> = selectionStore.getSelectedNodes;
       const selectedConnections: Array<Connection> =
-        $store.getters["selection/selectedConnections"];
-      const selectedAnnotations =
-        $store.getters["selection/selectedAnnotations"];
-      const selectedBendpoints =
-        $store.getters["selection/selectedBendpointIds"];
+        selectionStore.getSelectedConnections;
+      const selectedAnnotations = selectionStore.getSelectedAnnotations;
+      const selectedBendpoints = selectionStore.selectedBendpointIds;
 
       // disable if nothing selected
       if (
@@ -138,20 +149,20 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["CtrlOrCmd", "C"],
     group: "general",
     allowEventDefault: true,
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "copy" }),
-    condition: ({ $store }) => {
+    execute: () =>
+      useClipboardInteractionsStore().copyOrCutWorkflowParts({
+        command: "copy",
+      }),
+    condition: () => {
       if (isUIExtensionFocused()) {
         return false;
       }
 
-      const selectedNodes = Object.keys(
-        $store.getters["selection/selectedNodes"],
-      );
-      const selectedAnnotations =
-        $store.getters["selection/selectedAnnotations"];
+      const selectionStore = useSelectionStore();
+      const selectedNodes = selectionStore.getSelectedNodes;
+      const selectedAnnotations = selectionStore.getSelectedAnnotations;
 
-      const kanvas = $store.state.canvas.getScrollContainerElement();
+      const kanvas = useCanvasStore().getScrollContainerElement();
       const kanvasIsActiveElement = document.activeElement === kanvas;
       const textSelectionIsEmpty = window?.getSelection()?.toString() === "";
       const isSomethingSelected =
@@ -159,7 +170,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
 
       return (
         isSomethingSelected &&
-        $store.state.application.hasClipboardSupport &&
+        useApplicationSettingsStore().hasClipboardSupport &&
         (textSelectionIsEmpty || kanvasIsActiveElement)
       );
     },
@@ -169,20 +180,22 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     title: "Cut selection",
     hotkey: ["CtrlOrCmd", "X"],
     group: "general",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/copyOrCutWorkflowParts", { command: "cut" }),
-    condition: ({ $store }) => {
-      const selectedNodes = Object.keys(
-        $store.getters["selection/selectedNodes"],
-      );
-      const selectedAnnotations =
-        $store.getters["selection/selectedAnnotations"];
+    execute: () =>
+      useClipboardInteractionsStore().copyOrCutWorkflowParts({
+        command: "cut",
+      }),
+    condition: () => {
+      const selectionStore = useSelectionStore();
+      const selectedNodes = selectionStore.getSelectedNodes;
+      const selectedAnnotations = selectionStore.getSelectedAnnotations;
+
       const isSomethingSelected =
         selectedNodes.length !== 0 || selectedAnnotations.length !== 0;
+
       return (
         isSomethingSelected &&
-        $store.getters["workflow/isWritable"] &&
-        $store.state.application.hasClipboardSupport
+        useWorkflowStore().isWritable &&
+        useApplicationSettingsStore().hasClipboardSupport
       );
     },
   },
@@ -191,13 +204,13 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     title: "Paste from clipboard",
     hotkey: ["CtrlOrCmd", "V"],
     group: "general",
-    execute: ({ $store, payload }) =>
-      $store.dispatch("workflow/pasteWorkflowParts", {
+    execute: ({ payload }) =>
+      useClipboardInteractionsStore().pasteWorkflowParts({
         position: payload?.metadata?.position,
       }),
-    condition: ({ $store }) =>
-      $store.getters["workflow/isWritable"] &&
-      $store.state.application.hasClipboardSupport,
+    condition: () =>
+      useWorkflowStore().isWritable &&
+      useApplicationSettingsStore().hasClipboardSupport,
   },
   export: {
     title: "Export",
@@ -205,21 +218,17 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     icon: FileExportIcon,
     hotkey: ["CtrlOrCmd", "E"],
     group: "general",
-    execute: ({ $store }) => {
-      const activeProjectOrigin =
-        $store.getters["application/activeProjectOrigin"];
-      const activeProjectId =
-        activeProjectOrigin?.projectId ||
-        $store.state.application.activeProjectId;
+    execute: () => {
+      const { activeProjectId, activeProjectOrigin } = useApplicationStore();
 
-      $store.dispatch("spaces/exportSpaceItem", {
-        projectId: activeProjectId,
-        itemId: activeProjectOrigin?.itemId,
+      useSpaceOperationsStore().exportSpaceItem({
+        projectId: activeProjectId!,
+        itemId: activeProjectOrigin!.itemId,
       });
     },
-    condition: ({ $store }) => {
-      const activeProjectId = $store.state.application.activeProjectId;
-      return Boolean(activeProjectId);
+    condition: () => {
+      const { activeProjectId, activeProjectOrigin } = useApplicationStore();
+      return Boolean(activeProjectId && activeProjectOrigin);
     },
   },
 };

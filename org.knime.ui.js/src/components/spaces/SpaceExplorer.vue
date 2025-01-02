@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, toRef, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import { FileExplorer, NodePreview } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
 
-import {
-  SpaceItem,
-  type WorkflowGroupContent,
-} from "@/api/gateway-api/generated-api";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import SpaceExplorerContextMenu from "@/components/spaces/SpaceExplorerContextMenu.vue";
-import { useStore } from "@/composables/useStore";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 import { matchesQuery } from "@/util/matchesQuery";
@@ -50,38 +49,31 @@ const $emit = defineEmits<{
   "update:selectedItemIds": [selectedItemIds: string[]];
 }>();
 
-const store = useStore();
+const {
+  isLoadingContent,
+  activeRenamedItemId,
+  getOpenedWorkflowItems,
+  getOpenedFolderItems,
+} = storeToRefs(useSpaceOperationsStore());
+const { fetchWorkflowGroupContent, openProject, renameItem } =
+  useSpaceOperationsStore();
+const { getWorkflowGroupContent, projectPath } = storeToRefs(
+  useSpaceCachingStore(),
+);
 const $router = useRouter();
 const { toastPresets } = getToastPresets();
 
 const projectId = toRef(props, "projectId");
 
-// spaces
-const isLoadingContent = computed(() => store.state.spaces.isLoadingContent);
-const activeRenamedItemId = computed(
-  () => store.state.spaces.activeRenamedItemId,
+const activeWorkflowGroup = computed(() =>
+  getWorkflowGroupContent.value(props.projectId),
 );
-const getOpenedWorkflowItems = computed(
-  () => store.getters["spaces/getOpenedWorkflowItems"],
+const openedWorkflowItems = computed(() =>
+  getOpenedWorkflowItems.value(props.projectId),
 );
-const getOpenedFolderItems = computed(
-  () => store.getters["spaces/getOpenedFolderItems"],
+const openedFolderItems = computed(() =>
+  getOpenedFolderItems.value(props.projectId),
 );
-const getWorkflowGroupContent = computed(
-  () => store.getters["spaces/getWorkflowGroupContent"],
-);
-
-const activeWorkflowGroup = computed<WorkflowGroupContent | null>(() => {
-  return getWorkflowGroupContent.value(props.projectId);
-});
-
-const openedWorkflowItems = computed<string[]>(() => {
-  return getOpenedWorkflowItems.value(props.projectId);
-});
-
-const openedFolderItems = computed<string[]>(() => {
-  return getOpenedFolderItems.value(props.projectId);
-});
 
 const fileExplorerItems = computed<Array<FileExplorerItemWithMeta>>(() => {
   if (!activeWorkflowGroup.value) {
@@ -123,21 +115,21 @@ const fullPath = computed(() => {
   return ["home"].concat(path.map(({ name }) => name)).join("/");
 });
 
-const fetchWorkflowGroupContent = async () => {
+const fetchWorkflowGroupContents = async () => {
   if (props.projectId === null) {
     return;
   }
 
-  await store.dispatch("spaces/fetchWorkflowGroupContent", {
+  await fetchWorkflowGroupContent({
     projectId: props.projectId,
   });
 };
 
 // spaceId and itemId (folder) are based on the projectId but might change even with the same projectId (change dir)
 watch(
-  computed(() => store.state.spaces.projectPath[props.projectId]),
+  computed(() => projectPath.value[props.projectId]),
   async () => {
-    await fetchWorkflowGroupContent();
+    await fetchWorkflowGroupContents();
   },
   { immediate: true, deep: true },
 );
@@ -147,11 +139,10 @@ const onChangeDirectory = (pathId: string) => {
 };
 
 const onOpenFile = async ({ id }: FileExplorerItem) => {
-  const { spaceProviderId, spaceId } =
-    store.state.spaces.projectPath[props.projectId];
+  const { spaceProviderId, spaceId } = projectPath.value[props.projectId];
 
   try {
-    await store.dispatch("spaces/openProject", {
+    await openProject({
       providerId: spaceProviderId,
       spaceId,
       itemId: id,
@@ -165,25 +156,23 @@ const onOpenFile = async ({ id }: FileExplorerItem) => {
   }
 };
 
-const onRenameFile = async ({
+const onRenameFile = ({
   itemId,
   newName,
 }: {
   itemId: string;
   newName: string;
 }) => {
-  try {
-    await store.dispatch("spaces/renameItem", {
-      projectId: props.projectId,
-      itemId,
-      newName,
-    });
-  } catch (error) {
+  renameItem({
+    projectId: props.projectId,
+    itemId,
+    newName,
+  }).catch((error: any) => {
     toastPresets.spaces.crud.renameItemFailed({
       error,
       newName,
     });
-  }
+  });
 };
 
 const { onDeleteItems } = useDeleteItems({

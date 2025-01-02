@@ -1,16 +1,20 @@
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 
-import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 
 export const useActiveRouteData = () => {
+  const { spaceProviders, loadingProviderSpacesData } = storeToRefs(
+    useSpaceProvidersStore(),
+  );
   const $route = useRoute();
-  const store = useStore();
 
   const activeSpaceProvider = computed(() => {
-    const spaceProviders = store.state.spaces.spaceProviders ?? {};
-    return spaceProviders[$route.params.spaceProviderId as string];
+    return (spaceProviders.value ?? {})[
+      $route.params.spaceProviderId as string
+    ];
   });
 
   const activeSpaceGroup = computed(() => {
@@ -33,9 +37,7 @@ export const useActiveRouteData = () => {
   );
 
   const isLoadingSpacesData = computed(() => {
-    const { loadingProviderSpacesData } = store.state.spaces;
-
-    return loadingProviderSpacesData[activeSpaceProvider.value.id];
+    return loadingProviderSpacesData.value[activeSpaceProvider.value.id];
   });
 
   return {

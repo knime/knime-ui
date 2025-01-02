@@ -1,104 +1,59 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import * as shapes from "@/style/shapes";
+import { createWorkflowAnnotation } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import annotationShortcuts from "../annotationShortcuts";
 
 describe("annotationShortcuts", () => {
-  const mockSelectedNode = { id: "root:0", allowedActions: {} };
+  const createStore = () => {
+    const {
+      workflowStore,
+      selectionStore,
+      annotationInteractionsStore,
+      canvasModesStore,
+    } = mockStores();
 
-  const createStore = ({
-    containerType = "project",
-    selectedNodes = [],
-    selectedConnections = [],
-    selectedAnnotations = [],
-    singleSelectedNode = mockSelectedNode,
-    isWorkflowWritable = true,
-    getScrollContainerElement = vi.fn(),
-    getNodeById = vi.fn(),
-    getVisibleFrame = vi
-      .fn()
-      .mockReturnValue({ left: -500, top: -500, width: 1000, height: 1000 }),
-  } = {}) => {
-    const mockDispatch = vi.fn();
-    const $store = {
-      dispatch: mockDispatch,
-      state: {
-        application: {
-          activeProjectId: "activeTestProjectId",
-          hasClipboardSupport: true,
-        },
-        workflow: {
-          activeWorkflow: {
-            allowedActions: {},
-            info: {
-              containerType,
-            },
-            nodes: {
-              node1: {
-                position: {
-                  x: 300,
-                  y: 200,
-                },
-              },
-            },
-            parents: [
-              {
-                containerId: "root:parent",
-              },
-              {
-                containerId: "direct:parent:id",
-              },
-            ],
-          },
-          quickActionMenu: {
-            isOpen: false,
-            props: {},
-            events: {},
-          },
-        },
-        canvas: {
-          getScrollContainerElement,
-        },
+    const annotation1 = createWorkflowAnnotation({
+      id: "annotation:1",
+      bounds: { x: 40, y: 10, width: 20, height: 20 },
+    });
+
+    workflowStore.activeWorkflow = {
+      allowedActions: {},
+      info: {
+        containerType: "project",
       },
-      getters: {
-        "selection/selectedNodes": selectedNodes,
-        "selection/selectedConnections": selectedConnections,
-        "selection/singleSelectedNode": singleSelectedNode,
-        "selection/selectedAnnotations": selectedAnnotations,
-        "workflow/isWritable": isWorkflowWritable,
-        "workflow/getNodeById": getNodeById,
-        "canvas/getVisibleFrame": getVisibleFrame,
-        "application/activeProjectOrigin": {
-          providerId: "some-provider",
-          spaceId: "some-space",
-        },
-      },
+      workflowAnnotations: [annotation1],
     };
 
-    return { mockDispatch, $store };
+    return {
+      workflowStore,
+      selectionStore,
+      annotationInteractionsStore,
+      canvasModesStore,
+    };
   };
 
   describe("execute", () => {
     it("should dispatch action to add annotation", () => {
-      const { $store, mockDispatch } = createStore();
+      const { annotationInteractionsStore } = createStore();
 
       const position = { x: 10, y: 10 };
       annotationShortcuts.addWorkflowAnnotation.execute({
-        $store,
         payload: { metadata: { position } },
       });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/addWorkflowAnnotation",
-        {
-          bounds: {
-            x: 10,
-            y: 10,
-            width: shapes.defaultAddWorkflowAnnotationWidth,
-            height: shapes.defaultAddWorkflowAnnotationHeight,
-          },
+      expect(
+        annotationInteractionsStore.addWorkflowAnnotation,
+      ).toHaveBeenCalledWith({
+        bounds: {
+          x: 10,
+          y: 10,
+          width: shapes.defaultAddWorkflowAnnotationWidth,
+          height: shapes.defaultAddWorkflowAnnotationHeight,
         },
-      );
+      });
     });
 
     it.each([
@@ -107,7 +62,7 @@ describe("annotationShortcuts", () => {
       ["sendAnnotationBackward"],
       ["sendAnnotationToBack"],
     ])("should dispatch %s to reorder annotation", (shortcutName) => {
-      const { $store, mockDispatch } = createStore();
+      const { annotationInteractionsStore } = createStore();
 
       const actions = {
         bringAnnotationToFront:
@@ -121,22 +76,18 @@ describe("annotationShortcuts", () => {
       };
       const action = actions[shortcutName];
 
-      annotationShortcuts[shortcutName].execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/reorderWorkflowAnnotation",
-        { action },
-      );
+      annotationShortcuts[shortcutName].execute();
+      expect(
+        annotationInteractionsStore.reorderWorkflowAnnotation,
+      ).toHaveBeenCalledWith({ action });
     });
   });
 
   it("should dispatch action to switch to annotation mode", () => {
-    const { $store, mockDispatch } = createStore();
+    const { canvasModesStore } = createStore();
 
-    annotationShortcuts.switchToAnnotationMode.execute({
-      $store,
-    });
-    expect(mockDispatch).toHaveBeenCalledWith(
-      "application/switchCanvasMode",
+    annotationShortcuts.switchToAnnotationMode.execute();
+    expect(canvasModesStore.switchCanvasMode).toHaveBeenCalledWith(
       "annotation",
     );
   });
@@ -150,33 +101,25 @@ describe("annotationShortcuts", () => {
     ])(
       "should check selected annotations when trying to %s",
       (shortcutName) => {
-        const { $store } = createStore();
+        const { selectionStore, workflowStore } = createStore();
 
-        expect(annotationShortcuts[shortcutName].condition({ $store })).toBe(
-          false,
-        );
-
-        $store.getters["selection/selectedAnnotations"] = [
-          { id: "mock-annotation" },
-        ];
-        expect(annotationShortcuts[shortcutName].condition({ $store })).toBe(
-          true,
-        );
-
-        $store.getters["workflow/isWritable"] = false;
-        expect(annotationShortcuts[shortcutName].condition({ $store })).toBe(
-          false,
-        );
+        expect(annotationShortcuts[shortcutName].condition()).toBe(false);
+        selectionStore.selectedAnnotations = {
+          "annotation:1": true,
+        };
+        expect(annotationShortcuts[shortcutName].condition()).toBe(true);
+        // @ts-expect-error: Getter is read only
+        workflowStore.isWritable = false;
+        expect(annotationShortcuts[shortcutName].condition()).toBe(false);
       },
     );
 
     it("cannot add annotation when workflow is not writable", () => {
-      const { $store } = createStore();
-      $store.getters["workflow/isWritable"] = false;
+      const { workflowStore } = createStore();
 
-      expect(
-        annotationShortcuts.addWorkflowAnnotation.condition({ $store }),
-      ).toBe(false);
+      // @ts-expect-error: Getter is read only
+      workflowStore.isWritable = false;
+      expect(annotationShortcuts.addWorkflowAnnotation.condition()).toBe(false);
     });
   });
 });

@@ -1,7 +1,9 @@
 import { computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NativeNode, NodePort } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
 import type { SelectedPortIdentifier } from "@/util/portSelection";
 
 import { useNodeInfo } from "./useNodeInfo";
@@ -13,42 +15,43 @@ type UsePortSelectionOptions = {
 };
 
 export const usePortSelection = (options: UsePortSelectionOptions) => {
-  const store = useStore();
-
   const { isComponent, isMetanode } = useNodeInfo({ nodeId: options.nodeId });
 
+  const selectionStore = useSelectionStore();
+  const { activeNodePorts } = storeToRefs(selectionStore);
+
   const isActiveNodePortsInstance = computed(
-    () => store.state.selection.activeNodePorts.nodeId === options.nodeId,
+    () => activeNodePorts.value.nodeId === options.nodeId,
   );
 
   const isModificationInProgress = computed(
-    () => store.state.selection.activeNodePorts.isModificationInProgress,
+    () => activeNodePorts.value.isModificationInProgress,
   );
 
   const currentlySelectedPort = computed(() => {
     if (isActiveNodePortsInstance.value) {
-      return store.state.selection.activeNodePorts.selectedPort;
+      return activeNodePorts.value.selectedPort;
     }
 
     return null;
   });
 
   const updateSelection = (selectedPort: SelectedPortIdentifier) => {
-    store.commit("selection/updateActiveNodePorts", {
+    selectionStore.updateActiveNodePorts({
       nodeId: options.nodeId,
       selectedPort,
     });
   };
 
   const clearSelection = () => {
-    store.commit("selection/updateActiveNodePorts", {
+    selectionStore.updateActiveNodePorts({
       nodeId: null,
       selectedPort: null,
     });
   };
 
   const setModificationInProgress = (value: boolean) => {
-    store.commit("selection/updateActiveNodePorts", {
+    selectionStore.updateActiveNodePorts({
       isModificationInProgress: value,
     });
   };
@@ -76,7 +79,7 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
     }
   };
 
-  const isDragging = computed(() => store.state.workflow.isDragging);
+  const { isDragging } = storeToRefs(useMovingStore());
 
   watch(isDragging, (isDragging, wasDragging) => {
     if (isActiveNodePortsInstance.value && isDragging && !wasDragging) {

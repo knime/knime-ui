@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { API } from "@api";
 
 import { type MenuItem } from "@knime/components";
 import ExtensionsIcon from "@knime/styles/img/icons/extension.svg";
@@ -10,13 +11,11 @@ import PerspectiveSwitchIcon from "@knime/styles/img/icons/perspective-switch.sv
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import SwitchIcon from "@knime/styles/img/icons/switch.svg";
 
-import { API } from "@/api";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
+import { useSettingsStore } from "@/store/settings";
 
-const store = useStore();
 const $shortcuts = useShortcuts();
 
 const shortcutToMenuItem = (name: ShortcutName): MenuItem => ({
@@ -83,7 +82,7 @@ const menuItem = computed<MenuItem>(() => {
       },
       {
         text: `Interface scale — ${(
-          100 * store.state.settings.settings.uiScale
+          100 * useSettingsStore().settings.uiScale
         ).toFixed(0)}%`,
         icon: LensIcon,
         children: [

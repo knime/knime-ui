@@ -10,29 +10,30 @@ import OpenViewIcon from "@/assets/open-view.svg";
 import PauseLoopIcon from "@/assets/pause-execution.svg";
 import ResumeLoopIcon from "@/assets/resume-execution.svg";
 import StepLoopIcon from "@/assets/step-execution.svg";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useExecutionStore } from "@/store/workflow/execution";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { isNativeNode } from "@/util/nodeUtil";
 
-import type {
-  ShortcutConditionContext,
-  ShortcutExecuteContext,
-  UnionToShortcutRegistry,
-} from "./types";
+import type { ShortcutExecuteContext, UnionToShortcutRegistry } from "./types";
 
-const executeAndOpenViewHelper = ({
-  $store,
-  payload = {},
-}: ShortcutExecuteContext) => {
+const executeAndOpenViewHelper = ({ payload = {} }: ShortcutExecuteContext) => {
   const { nodeId } = payload.metadata || {};
-  const selectedNodeId =
-    nodeId || $store.getters["selection/singleSelectedNode"].id;
-  $store.dispatch("workflow/executeNodeAndOpenView", selectedNodeId);
+  const selectedNodeId = nodeId || useSelectionStore().singleSelectedNode?.id;
+
+  useExecutionStore().executeNodeAndOpenView(selectedNodeId);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-extra-parens
-const canExecuteAndOpenView = ({ $store }: ShortcutConditionContext) =>
-  $store.state.uiControls.canDetachNodeViews &&
-  $store.getters["selection/singleSelectedNode"] &&
-  ($store.getters["selection/singleSelectedNode"].allowedActions.canExecute ||
-    $store.getters["selection/singleSelectedNode"].allowedActions.canOpenView);
+const canExecuteAndOpenView = () =>
+  useUIControlsStore().canDetachNodeViews &&
+  Boolean(useSelectionStore().singleSelectedNode) &&
+  Boolean(
+    useSelectionStore().singleSelectedNode!.allowedActions?.canExecute ||
+      useSelectionStore().singleSelectedNode!.allowedActions?.canOpenView,
+  );
 
 type ExecutionShortcuts = UnionToShortcutRegistry<
   | "executeAll"
@@ -58,9 +59,9 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["Shift", "F7"],
     group: "execution",
     icon: ExecuteAllIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/executeNodes", "all"),
-    condition: ({ $store }) =>
-      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canExecute),
+    execute: () => useExecutionStore().executeNodes("all"),
+    condition: () =>
+      Boolean(useWorkflowStore().activeWorkflow?.allowedActions?.canExecute),
   },
   cancelAll: {
     text: "Cancel all",
@@ -68,10 +69,9 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["Shift", "F9"],
     group: "execution",
     icon: CancelAllIcon,
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/cancelNodeExecution", "all"),
-    condition: ({ $store }) =>
-      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canCancel),
+    execute: () => useExecutionStore().cancelNodeExecution("all"),
+    condition: () =>
+      Boolean(useWorkflowStore().activeWorkflow?.allowedActions?.canCancel),
   },
   resetAll: {
     text: "Reset all",
@@ -79,9 +79,9 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["Shift", "F8"],
     group: "execution",
     icon: ResetAllIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/resetNodes", "all"),
-    condition: ({ $store }) =>
-      Boolean($store.state.workflow.activeWorkflow?.allowedActions?.canReset),
+    execute: () => useExecutionStore().resetNodes("all"),
+    condition: () =>
+      Boolean(useWorkflowStore().activeWorkflow?.allowedActions?.canReset),
   },
 
   // selected nodes (multiple)
@@ -91,11 +91,10 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["F7"],
     group: "execution",
     icon: ExecuteSelectedIcon,
-    execute: async ({ $store, payload = {} }) => {
-      const canContinue = await $store.dispatch(
-        "nodeConfiguration/autoApplySettings",
-        { nextNodeId: payload?.metadata?.nodeId },
-      );
+    execute: async ({ payload = {} }) => {
+      const canContinue = await useNodeConfigurationStore().autoApplySettings({
+        nextNodeId: payload?.metadata?.nodeId,
+      });
 
       if (!canContinue) {
         return;
@@ -103,16 +102,16 @@ const executionShortcuts: ExecutionShortcuts = {
       const selectedNodeId = payload?.metadata?.nodeId
         ? [payload?.metadata?.nodeId]
         : "selected";
-      $store.dispatch("workflow/executeNodes", selectedNodeId);
+      useExecutionStore().executeNodes(selectedNodeId);
     },
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedNodes"].some(
+    condition: () =>
+      useSelectionStore().getSelectedNodes.some(
         (node: KnimeNode) => node.allowedActions?.canExecute,
       ),
   },
   executeAndOpenView: {
-    text: ({ $store }) =>
-      $store.getters["selection/singleSelectedNode"].allowedActions.canExecute
+    text: () =>
+      useSelectionStore().singleSelectedNode?.allowedActions?.canExecute
         ? "Execute and open view"
         : "Open view",
     description: "Open view",
@@ -128,14 +127,14 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["F9"],
     group: "execution",
     icon: CancelSelectedIcon,
-    execute: ({ $store, payload = {} }) => {
+    execute: ({ payload = {} }) => {
       const selectedNodeId = payload?.metadata?.nodeId
         ? [payload?.metadata?.nodeId]
         : "selected";
-      $store.dispatch("workflow/cancelNodeExecution", selectedNodeId);
+      useExecutionStore().cancelNodeExecution(selectedNodeId);
     },
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedNodes"].some(
+    condition: () =>
+      useSelectionStore().getSelectedNodes.some(
         (node: KnimeNode) => node.allowedActions?.canCancel,
       ),
   },
@@ -145,14 +144,14 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["F8"],
     group: "execution",
     icon: ResetSelectedIcon,
-    execute: ({ $store, payload = {} }) => {
+    execute: ({ payload = {} }) => {
       const selectedNodeId = payload?.metadata?.nodeId
         ? [payload?.metadata?.nodeId]
         : "selected";
-      $store.dispatch("workflow/resetNodes", selectedNodeId);
+      useExecutionStore().resetNodes(selectedNodeId);
     },
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedNodes"].some(
+    condition: () =>
+      useSelectionStore().getSelectedNodes.some(
         (node: KnimeNode) => node.allowedActions?.canReset,
       ),
   },
@@ -164,15 +163,19 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["CtrlOrCmd", "Alt", "F8"],
     group: "execution",
     icon: ResumeLoopIcon,
-    execute: ({ $store, payload = {} }) => {
+    execute: ({ payload = {} }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/resumeLoopExecution", selectedNodeId);
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
+      useExecutionStore().resumeLoopExecution(selectedNodeId);
     },
-    condition: ({ $store }) =>
-      $store.getters["selection/singleSelectedNode"]?.loopInfo?.allowedActions
-        ?.canResume,
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode || !isNativeNode(selectedNode)) {
+        return false;
+      }
+      return Boolean(selectedNode.loopInfo?.allowedActions?.canResume);
+    },
   },
   pauseLoopExecution: {
     text: "Pause loop",
@@ -180,15 +183,19 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["CtrlOrCmd", "Alt", "F7"],
     group: "execution",
     icon: PauseLoopIcon,
-    execute: ({ $store, payload = {} }) => {
+    execute: ({ payload = {} }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/pauseLoopExecution", selectedNodeId);
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
+      useExecutionStore().pauseLoopExecution(selectedNodeId);
     },
-    condition: ({ $store }) =>
-      $store.getters["selection/singleSelectedNode"]?.loopInfo?.allowedActions
-        ?.canPause,
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode || !isNativeNode(selectedNode)) {
+        return false;
+      }
+      return Boolean(selectedNode.loopInfo?.allowedActions?.canPause);
+    },
   },
   stepLoopExecution: {
     text: "Step loop",
@@ -196,15 +203,19 @@ const executionShortcuts: ExecutionShortcuts = {
     hotkey: ["CtrlOrCmd", "Alt", "F6"],
     group: "execution",
     icon: StepLoopIcon,
-    execute: ({ $store, payload = {} }) => {
+    execute: ({ payload = {} }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/stepLoopExecution", selectedNodeId);
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
+      useExecutionStore().stepLoopExecution(selectedNodeId);
     },
-    condition: ({ $store }) =>
-      $store.getters["selection/singleSelectedNode"]?.loopInfo?.allowedActions
-        ?.canStep,
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode || !isNativeNode(selectedNode)) {
+        return false;
+      }
+      return Boolean(selectedNode.loopInfo?.allowedActions?.canStep);
+    },
   },
 };
 

@@ -1,7 +1,8 @@
 import { type MaybeRefOrGetter, computed, toValue } from "vue";
+import { storeToRefs } from "pinia";
 
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
 
 import type { AppHeaderContextMenuItem } from "./types";
 
@@ -10,14 +11,9 @@ type UseRevealProject = {
 };
 
 export const useRevealProject = (options: UseRevealProject) => {
-  const store = useStore();
   const { canRevealItem, revealInSpaceExplorer } = useRevealInSpaceExplorer();
 
-  const openProjects = computed(() => store.state.application.openProjects);
-
-  const isUnknownProject = computed<(projectId: string) => boolean>(
-    () => store.getters["application/isUnknownProject"],
-  );
+  const { openProjects, isUnknownProject } = storeToRefs(useApplicationStore());
 
   const canRevealProject = computed(() => {
     const foundProject = openProjects.value.find(

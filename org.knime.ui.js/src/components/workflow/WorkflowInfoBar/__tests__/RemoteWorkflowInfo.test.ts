@@ -3,10 +3,6 @@ import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import { SpaceProviderNS, type Workflow } from "@/api/custom-types";
-import * as applicationStore from "@/store/application";
-import * as spacesStore from "@/store/spaces";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import {
   createProject,
   createSpace,
@@ -14,7 +10,7 @@ import {
   createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
 
 describe("RemoteWorkflowInfo.vue", () => {
@@ -47,19 +43,14 @@ describe("RemoteWorkflowInfo.vue", () => {
     workflow: Workflow;
     activeProjectId: string;
   }) => {
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      application: applicationStore,
-      spaces: spacesStore,
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("application/setActiveProjectId", activeProjectId);
-    $store.commit("application/setOpenProjects", openProjects);
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    mockedStores.applicationStore.setActiveProjectId(activeProjectId);
+    mockedStores.applicationStore.setOpenProjects(openProjects);
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
 
     // update providers state to stay in sync with application state
-    $store.state.spaces.spaceProviders = {
+    mockedStores.spaceProvidersStore.spaceProviders = {
       [openProjects.at(1)!.origin!.providerId]: createSpaceProvider({
         id: "hub-provider1",
         name: "Hub space",
@@ -78,11 +69,11 @@ describe("RemoteWorkflowInfo.vue", () => {
 
     const wrapper = mount(RemoteWorkflowInfo, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("should display banner for projects with unknown origin", () => {
@@ -108,14 +99,14 @@ describe("RemoteWorkflowInfo.vue", () => {
       info: { containerId: activeProjectId },
     });
 
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       workflow,
       activeProjectId,
     });
 
     expect(wrapper.find(".banner").exists()).toBe(true);
 
-    $store.commit("application/setOpenProjects", []);
+    mockedStores.applicationStore.setOpenProjects([]);
     await nextTick();
 
     expect(wrapper.find(".banner").exists()).toBe(false);
@@ -135,12 +126,12 @@ describe("RemoteWorkflowInfo.vue", () => {
       info: { containerId: activeProjectId },
     });
 
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       workflow,
       activeProjectId,
     });
 
-    $store.commit("application/setOpenProjects", [project]);
+    mockedStores.applicationStore.setOpenProjects([project]);
     await nextTick();
 
     expect(wrapper.find(".banner").exists()).toBe(true);
@@ -186,12 +177,12 @@ describe("RemoteWorkflowInfo.vue", () => {
       info: { containerId: activeProjectId },
     });
 
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       workflow,
       activeProjectId,
     });
 
-    $store.state.uiControls.shouldDisplayRemoteWorkflowInfoBar = false;
+    mockedStores.uiControlsStore.shouldDisplayRemoteWorkflowInfoBar = false;
     await nextTick();
 
     expect(wrapper.find(".banner").exists()).toBe(false);

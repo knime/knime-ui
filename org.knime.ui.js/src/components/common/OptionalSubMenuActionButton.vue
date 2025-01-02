@@ -6,14 +6,14 @@ import { Button, SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
-interface Props {
+type Props = {
   item: MenuItem;
   hideDropdown?: boolean;
-}
+};
 
-interface Emits {
-  (e: "click", item: MenuItem): void;
-}
+type Emits = {
+  click: [item: MenuItem];
+};
 
 defineEmits<Emits>();
 withDefaults(defineProps<Props>(), {

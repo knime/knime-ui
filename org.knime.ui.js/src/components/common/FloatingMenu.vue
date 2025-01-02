@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  toRef,
-  watch,
-} from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, toRef, watch } from "vue";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
+import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useStore } from "@/composables/useStore";
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { useMovingStore } from "@/store/workflow/moving";
 
 /*
  * The FloatingMenu component is a container that can be sticked to a position on the canvas,
@@ -71,17 +66,11 @@ const emit = defineEmits(["menuClose"]);
 
 const absolutePosition = ref({ left: 0, top: 0 });
 
-const store = useStore();
+const { isDragging: isDraggingNodeInCanvas } = storeToRefs(useMovingStore());
+const canvasStore = useCanvasStore();
 
-const screenFromCanvasCoordinates = computed(
-  () => store.getters["canvas/screenFromCanvasCoordinates"],
-);
-
-const zoomFactor = computed(() => store.state.canvas.zoomFactor);
-const isDraggingNodeTemplate = computed(
-  () => store.state.nodeTemplates.isDraggingNodeTemplate,
-);
-const isDraggingNodeInCanvas = computed(() => store.state.workflow.isDragging);
+const { zoomFactor } = storeToRefs(canvasStore);
+const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
 
 const rootEl = ref<HTMLDivElement | null>(null);
 
@@ -130,7 +119,7 @@ const setAbsolutePosition = () => {
   }
 
   // get position relative to the window
-  let { x: left, y: top } = screenFromCanvasCoordinates.value(
+  let { x: left, y: top } = canvasStore.screenFromCanvasCoordinates(
     props.canvasPosition,
   );
 
@@ -207,7 +196,7 @@ useResizeObserver(rootEl, () => {
 onMounted(() => {
   setAbsolutePosition();
   if (props.disableInteractions) {
-    store.commit("canvas/setInteractionsEnabled", false);
+    canvasStore.setInteractionsEnabled(false);
   }
 
   let kanvas = document.getElementById("kanvas")!;
@@ -224,7 +213,7 @@ if (props.closeOnEscape) {
 
 onBeforeUnmount(() => {
   deactivateFocusTrap();
-  store.commit("canvas/setInteractionsEnabled", true);
+  canvasStore.setInteractionsEnabled(true);
 
   // if kanvas currently exists (workflow is open) remove scroll event listener
   let kanvas = document.getElementById("kanvas")!;

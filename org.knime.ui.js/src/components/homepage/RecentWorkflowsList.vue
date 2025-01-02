@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { formatTimeAgo } from "@vueuse/core";
+import { API } from "@api";
 import { isEqual } from "lodash-es";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
 import { Button, FileExplorer, useHint } from "@knime/components";
@@ -13,12 +15,14 @@ import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import TimeIcon from "@knime/styles/img/icons/time.svg";
 import WorkflowIcon from "@knime/styles/img/icons/workflow.svg";
 
-import { API } from "@/api";
 import type { RecentWorkflow, SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItemReference } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
-import { cachedLocalSpaceProjectId } from "@/store/spaces";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { cachedLocalSpaceProjectId } from "@/store/spaces/common";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useSpacesStore } from "@/store/spaces/spaces";
 import { isLocalProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 import { formatSpaceProviderName } from "../spaces/formatSpaceProviderName";
@@ -29,14 +33,15 @@ import RecentWorkflowContextMenu from "./RecentWorkflowContextMenu.vue";
 type RecentWorkflowItem = FileExplorerItem<{ recentWorkflow: RecentWorkflow }>;
 
 const items = ref<RecentWorkflowItem[]>([]);
-const store = useStore();
+const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
+const { connectProvider } = useSpaceAuthStore();
+const { openProject, fetchWorkflowGroupContent } = useSpaceOperationsStore();
+const { setCreateWorkflowModalConfig } = useSpacesStore();
 const $router = useRouter();
 const { toastPresets } = getToastPresets();
 
-const spaceProviders = computed(() => store.state.spaces.spaceProviders ?? {});
-
 const getProvider = (recentWorkflow: RecentWorkflow) => {
-  return spaceProviders.value[recentWorkflow.origin.providerId];
+  return (spaceProviders.value ?? {})[recentWorkflow.origin.providerId];
 };
 
 const toFileExplorerItem = (
@@ -73,7 +78,7 @@ const tryConnectToProvider = async (
   provider: SpaceProviderNS.SpaceProvider,
 ) => {
   try {
-    const { isConnected } = await store.dispatch("spaces/connectProvider", {
+    const { isConnected } = await connectProvider({
       spaceProviderId: provider.id,
     });
 
@@ -105,7 +110,7 @@ const openRecentWorkflow = async (item: FileExplorerItem) => {
   }
 
   try {
-    await store.dispatch("spaces/openProject", {
+    await openProject({
       ...origin,
       $router,
     });
@@ -159,11 +164,11 @@ const getIcon = (recentWorkflow: RecentWorkflow) => {
 };
 
 const createWorkflowLocally = async () => {
-  await store.dispatch("spaces/fetchWorkflowGroupContent", {
+  await fetchWorkflowGroupContent({
     projectId: cachedLocalSpaceProjectId,
   });
 
-  store.commit("spaces/setCreateWorkflowModalConfig", {
+  setCreateWorkflowModalConfig({
     isOpen: true,
     projectId: cachedLocalSpaceProjectId,
   });

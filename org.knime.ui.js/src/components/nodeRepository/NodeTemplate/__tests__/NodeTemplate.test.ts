@@ -4,24 +4,21 @@ import { mount } from "@vue/test-utils";
 import { FunctionButton } from "@knime/components";
 import CircleHelp from "@knime/styles/img/icons/circle-help.svg";
 
+import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
 import NodeTemplate, { type Props } from "../NodeTemplate.vue";
 import NodeTemplateIconMode from "../NodeTemplateIconMode.vue";
 import NodeTemplateListMode from "../NodeTemplateListMode.vue";
 
 describe("NodeTemplate.vue", () => {
-  const defaultProps: {
-    nodeTemplate: Object;
-    isSelected: Boolean;
-    isHighlighted: Boolean;
-    showFloatingHelpIcon: Boolean;
-  } = {
-    nodeTemplate: {
+  const defaultProps: Props = {
+    nodeTemplate: createNodeTemplateWithExtendedPorts({
       id: "node_1",
       name: "Test",
-    },
+    }),
     isSelected: false,
     isHighlighted: false,
     showFloatingHelpIcon: true,
+    isDescriptionActive: false,
   };
 
   type MountOpts = { props?: Partial<Props>; mocks?: Record<string, unknown> };
@@ -37,14 +34,14 @@ describe("NodeTemplate.vue", () => {
     return { wrapper };
   };
 
-  it("emits event when help icon is clicked", async () => {
+  it("emits event when help icon is clicked", () => {
     const { wrapper } = doMount();
 
     expect(
       wrapper.findComponent(FunctionButton).findComponent(CircleHelp).exists(),
     ).toBe(true);
 
-    await wrapper.findComponent(FunctionButton).vm.$emit("click");
+    wrapper.findComponent(FunctionButton).vm.$emit("click");
 
     expect(wrapper.emitted("helpIconClick")).toBeDefined();
   });

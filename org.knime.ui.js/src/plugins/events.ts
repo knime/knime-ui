@@ -1,16 +1,28 @@
-import type { Store } from "vuex";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { fetchUiStrings } from "@/components/kai/useKaiServer";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
-import type { RootStoreState } from "@/store/types";
+import {
+  type AiAssistantEvent,
+  useAIAssistantStore,
+} from "@/store/aiAssistant";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
+import { useGlobalLoaderStore } from "@/store/application/globalLoader";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
+import { useCanvasStore } from "@/store/canvas";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { nodeSize } from "@/style/shapes";
 import { notifyPatch } from "@/util/event-syncer";
 
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
 
-const init: PluginInitFunction = ({ $store, $router, $toast }) => {
+const init: PluginInitFunction = ({ $router, $toast }) => {
   API.event.registerEventHandlers({
     /**
      * Is a generic event, that holds multiple events (names separated by ':')
@@ -39,7 +51,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       ops.forEach((op) => {
         op.path = `/activeWorkflow${op.path}`;
       });
-      $store.dispatch("workflow/patch.apply", ops);
+      useWorkflowStore()["patch.apply"](ops);
 
       if (snapshotId) {
         notifyPatch(snapshotId);
@@ -50,10 +62,10 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
      * Is triggered by the backend, whenever a new state update of the workflow monitor is made
      * Sends a list of json-patch operations to update the frontend's state
      */
-    async WorkflowMonitorStateChangeEvent({ patch }) {
+    WorkflowMonitorStateChangeEvent({ patch }) {
       consola.info("events::WorkflowMonitorStateChangeEvent", { patch });
 
-      if (!$store.state.workflowMonitor.isActive) {
+      if (!useWorkflowMonitorStore().isActive) {
         // ignore events that could be lagging behind and are not needed anymore
         return;
       }
@@ -65,8 +77,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         op.path = `/currentState${op.path}`;
       });
 
-      await $store.dispatch("workflowMonitor/patch.apply", ops);
-      $store.dispatch("workflowMonitor/ProjectDirtyStateEvent");
+      useWorkflowMonitorStore()["patch.apply"](ops);
     },
 
     /**
@@ -80,9 +91,11 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       });
 
       if (shouldReplace) {
-        $store.dispatch("application/setDirtyProjectsMap", dirtyProjectsMap);
+        useDirtyProjectsTrackingStore().dirtyProjectsMap = dirtyProjectsMap!;
       } else {
-        $store.dispatch("application/updateDirtyProjectsMap", dirtyProjectsMap);
+        useDirtyProjectsTrackingStore().updateDirtyProjectsMap(
+          dirtyProjectsMap!,
+        );
       }
     },
 
@@ -93,14 +106,14 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     AppStateChangedEvent({ appState }) {
       consola.info("events::AppStateChangedEvent", { appState });
 
-      $store.dispatch("application/replaceApplicationState", appState);
+      useApplicationStore().replaceApplicationState(appState);
       if (appState.openProjects) {
-        $store.dispatch("application/setActiveProject", { $router });
+        useLifecycleStore().setActiveProject({ $router });
       }
 
       // In case a `SaveAndCloseProjectsEvent` was received before, which might've triggered
       // an `AppStateChangedEvent` later, then we make sure to clean up the busy state here
-      $store.dispatch("application/updateGlobalLoader", { loading: false });
+      useGlobalLoaderStore().updateGlobalLoader({ loading: false });
     },
 
     // Is triggered by the backend, whenever there are AP updates available
@@ -108,7 +121,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       consola.info("events::UpdateAvailableEvent", { newReleases, bugfixes });
 
       if (newReleases || bugfixes) {
-        $store.commit("application/setAvailableUpdates", {
+        useApplicationStore().setAvailableUpdates({
           newReleases,
           bugfixes,
         });
@@ -117,9 +130,9 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
     // Sends a progress information about node repository being loaded
     NodeRepositoryLoadingProgressEvent({ progress, extensionName }) {
-      $store.commit("application/setNodeRepositoryLoadingProgress", {
-        progress,
-        extensionName,
+      useApplicationStore().setNodeRepositoryLoadingProgress({
+        progress: progress ?? 0,
+        extensionName: extensionName ?? "",
       });
     },
 
@@ -156,20 +169,18 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     async SaveAndCloseProjectsEvent({ projectIds }) {
       consola.info("events::SaveAndCloseProjectsEvent", { projectIds });
 
-      await $store.dispatch("application/updateGlobalLoader", {
+      useGlobalLoaderStore().updateGlobalLoader({
         loading: true,
       });
 
       const resolveSnapshot = async (
-        $store: Store<RootStoreState>,
         projectId: string,
         activeProjectId: string | undefined,
       ): Promise<string | null> => {
         try {
           return projectId === activeProjectId
-            ? await $store.dispatch("application/getActiveWorkflowSnapshot")
-            : await $store.dispatch(
-                "application/getRootWorkflowSnapshotByProjectId",
+            ? await useWorkflowPreviewSnapshotsStore().getActiveWorkflowSnapshot()
+            : useWorkflowPreviewSnapshotsStore().getRootWorkflowSnapshotByProjectId(
                 { projectId },
               );
         } catch (error) {
@@ -183,10 +194,10 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
         }
       };
 
-      const activeProjectId = $store.state.workflow.activeWorkflow?.projectId;
+      const activeProjectId = useWorkflowStore().activeWorkflow?.projectId;
 
       const svgSnapshotResolvePromises = projectIds.map((projectId) =>
-        resolveSnapshot($store, projectId, activeProjectId),
+        resolveSnapshot(projectId, activeProjectId),
       );
 
       try {
@@ -206,7 +217,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
         // if BE fails we're back in control in the UI, so we should remove the
         // loader overlay which blocks user interaction
-        await $store.dispatch("application/updateGlobalLoader", {
+        useGlobalLoaderStore().updateGlobalLoader({
           loading: false,
         });
 
@@ -220,17 +231,11 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
       try {
         for (const closingProjectId of projectIds) {
-          await $store.dispatch(
-            "application/removeCanvasState",
-            closingProjectId,
-            { root: true },
-          );
+          useCanvasStateTrackingStore().removeCanvasState(closingProjectId);
 
-          await $store.dispatch(
-            "application/removeFromRootWorkflowSnapshots",
-            { projectId: closingProjectId },
-            { root: true },
-          );
+          useWorkflowPreviewSnapshotsStore().removeFromRootWorkflowSnapshots({
+            projectId: closingProjectId,
+          });
         }
       } catch (error) {
         // since this event fires when the user is either shutting down the AP or
@@ -250,14 +255,15 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       consola.info("events::ImportURIEvent", { x, y });
 
       const el = document.elementFromPoint(x, y);
-      const kanvas = $store.state.canvas.getScrollContainerElement();
+      const kanvas = useCanvasStore().getScrollContainerElement();
 
       if (kanvas && kanvas.contains(el)) {
-        const [canvasX, canvasY] = $store.getters[
-          "canvas/screenToCanvasCoordinates"
-        ]([x, y]);
+        const [canvasX, canvasY] = useCanvasStore().screenToCanvasCoordinates([
+          x,
+          y,
+        ]);
 
-        const workflow = $store.state.workflow.activeWorkflow;
+        const workflow = useWorkflowStore().activeWorkflow;
 
         API.desktop.importURIAtWorkflowCanvas({
           uri: null,
@@ -284,7 +290,7 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
 
       // TODO: Use progress UI component to display update progress (NXT-2860)
       // As long as we are not FINISHED we will show the loader
-      $store.dispatch("application/updateGlobalLoader", {
+      useGlobalLoaderStore().updateGlobalLoader({
         loading: isLoading,
         displayMode: "floating",
         loadingMode: "normal",
@@ -296,16 +302,16 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
     AiAssistantEvent({ chainType, data }) {
       consola.info("events::AiAssistantEvent", { chainType, data });
 
-      $store.dispatch("aiAssistant/handleAiAssistantEvent", {
+      useAIAssistantStore().handleAiAssistantEvent({
         chainType,
-        data,
+        data: data as AiAssistantEvent,
       });
     },
 
     AiAssistantServerChangedEvent() {
       consola.info("events::AiAssistantServerChangedEvent");
 
-      $store.dispatch("aiAssistant/getHubID");
+      useAIAssistantStore().getHubID();
       fetchUiStrings();
     },
 
@@ -320,16 +326,19 @@ const init: PluginInitFunction = ({ $store, $router, $toast }) => {
       if ("error" in payload) {
         consola.error("Error fetching space providers", payload.error);
 
-        $store.commit("spaces/setIsLoadingProviders", false);
-        $store.commit("setHasLoadedProviders", false);
+        useSpaceProvidersStore().setIsLoadingProviders(false);
+        useSpaceProvidersStore().setHasLoadedProviders(false);
         return;
       }
 
       try {
-        const { failedProviderIds } = (await $store.dispatch(
-          "spaces/setAllSpaceProviders",
-          payload.result,
-        )) as { successfulProviderIds: string[]; failedProviderIds: string[] };
+        const { failedProviderIds } =
+          (await useSpaceProvidersStore().setAllSpaceProviders(
+            payload.result,
+          )) as {
+            successfulProviderIds: string[];
+            failedProviderIds: string[];
+          };
 
         if (failedProviderIds.length > 0) {
           const providerNames = failedProviderIds

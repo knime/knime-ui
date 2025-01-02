@@ -1,14 +1,12 @@
 import { type Ref, ref, watch } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import {
+  type AiAssistantBuildEventPayload,
+  useAIAssistantStore,
+} from "@/store/aiAssistant";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useChat } from "../chat/useChat";
-
-type Result = {
-  message: string;
-  type: "SUCCESS" | "INPUT_NEEDED";
-  interactionId: string;
-};
 
 export const useQuickBuild = ({
   nodeId,
@@ -17,22 +15,24 @@ export const useQuickBuild = ({
   nodeId: Ref<string | null>;
   startPosition: Ref<XY>;
 }) => {
-  const store = useStore();
+  const { enableDetachedMode, lockQuickActionMenu, unlockQuickActionMenu } =
+    useFloatingMenusStore();
+  const { makeAiRequest } = useAIAssistantStore();
 
   const userQuery = ref("");
   const errorMessage = ref("");
-  const result = ref<Result | null>(null);
+  const result = ref<AiAssistantBuildEventPayload | null>(null);
 
   const { isProcessing, lastUserMessage, abortSendMessage, statusUpdate } =
     useChat("build");
 
   let enableDetachedModeCalled = false;
-  const enableDetachedMode = () => {
+  const enableDetachedModeFn = () => {
     if (enableDetachedModeCalled) {
       return;
     }
 
-    store.dispatch("workflow/enableDetachedMode");
+    enableDetachedMode();
     enableDetachedModeCalled = true;
   };
 
@@ -43,17 +43,17 @@ export const useQuickBuild = ({
 
     try {
       errorMessage.value = "";
-      result.value = await store.dispatch("aiAssistant/makeAiRequest", {
+      result.value = (await makeAiRequest({
         chainType: "build",
         message,
         targetNodes,
         startPosition: startPosition.value,
-      });
+      })) as AiAssistantBuildEventPayload;
 
       // Ideally, we would check for "SUCCESS" here. To be backwards compatible,
       // we check for "INPUT_NEEDED" instead.
       if (result.value?.type !== "INPUT_NEEDED") {
-        enableDetachedMode();
+        enableDetachedModeFn();
       }
     } catch (error: any) {
       errorMessage.value = error.message;
@@ -62,9 +62,9 @@ export const useQuickBuild = ({
 
   watch(isProcessing, (value) => {
     if (value) {
-      store.dispatch("workflow/lockQuickActionMenu");
+      lockQuickActionMenu();
     } else {
-      store.dispatch("workflow/unlockQuickActionMenu");
+      unlockQuickActionMenu();
     }
   });
 
@@ -72,7 +72,7 @@ export const useQuickBuild = ({
     () => statusUpdate.value?.type,
     (value) => {
       if (value === "WORKFLOW_BUILDING") {
-        enableDetachedMode();
+        enableDetachedModeFn();
       }
     },
   );

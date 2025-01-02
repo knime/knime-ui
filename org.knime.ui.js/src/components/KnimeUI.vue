@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  computed,
   defineAsyncComponent,
   onBeforeMount,
   onBeforeUnmount,
@@ -19,8 +18,12 @@ import HotkeyHandler from "@/components/application/HotkeyHandler.vue";
 import GlobalLoader from "@/components/common/GlobalLoader.vue";
 import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import ConfirmDialog from "@/composables/useConfirmDialog/ConfirmDialog.vue";
-import { useStore } from "@/composables/useStore";
 import { DynamicEnvRenderer, isDesktop } from "@/environment";
+import { useApplicationStore } from "@/store/application/application";
+import { useGlobalLoaderStore } from "@/store/application/globalLoader";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
@@ -44,20 +47,19 @@ const error = ref<{ message: string; stack?: string } | null>(null);
 
 const $router = useRouter();
 const $route = useRoute();
-const store = useStore();
-const availableUpdates = computed(
-  () => store.state.application.availableUpdates,
-);
-const devMode = computed(() => store.state.application.devMode);
 
-const uiControls = computed(() => store.state.uiControls);
+const applicationStore = useApplicationStore();
+const globalLoaderStore = useGlobalLoaderStore();
+const lifecycleStore = useLifecycleStore();
+const applicationSettingsStore = useApplicationSettingsStore();
+const uiControls = useUIControlsStore();
 
 const setContentHeight = () => {
   let mainContentHeight = "100vh";
 
   if (isDesktop) {
     mainContentHeight = "calc(100vh - var(--app-header-height))";
-  } else if (uiControls.value.shouldDisplayDownloadAPButton) {
+  } else if (uiControls.shouldDisplayDownloadAPButton) {
     mainContentHeight = "calc(100vh - var(--app-download-banner-height))";
   }
 
@@ -70,7 +72,7 @@ const setContentHeight = () => {
 const setup = async () => {
   try {
     await Promise.all([
-      store.dispatch("application/initializeApplication", { $router }),
+      lifecycleStore.initializeApplication({ $router }),
 
       // These fonts will be pre-loaded at application startup with the given font-weights,
       // to prevent text-jumping
@@ -99,7 +101,7 @@ useGlobalErrorReporting();
 
 const checkClipboardSupport = async () => {
   if (isDesktop) {
-    store.commit("application/setHasClipboardSupport", true);
+    applicationSettingsStore.setHasClipboardSupport(true);
     return;
   }
 
@@ -124,7 +126,7 @@ const checkClipboardSupport = async () => {
     }
   }
 
-  store.commit("application/setHasClipboardSupport", hasClipboardSupport);
+  applicationSettingsStore.setHasClipboardSupport(hasClipboardSupport);
 };
 
 onBeforeMount(async () => {
@@ -136,15 +138,15 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  store.dispatch("application/destroyApplication");
+  lifecycleStore.destroyApplication();
 });
 
 const onDismissUpdateBanner = () => {
-  store.commit("application/setDismissedUpdateBanner", true);
+  applicationStore.setDismissedUpdateBanner(true);
 };
 
 const onCloseError = () => {
-  if (devMode.value) {
+  if (applicationSettingsStore.devMode) {
     error.value = null;
   }
 };
@@ -172,8 +174,8 @@ const onCloseError = () => {
       <div
         :class="[
           $route.meta.showUpdateBanner &&
-          availableUpdates &&
-          !store.state.application.dismissedUpdateBanner
+          applicationStore.availableUpdates &&
+          !applicationStore.dismissedUpdateBanner
             ? 'main-content-with-banner'
             : 'main-content',
         ]"
@@ -187,15 +189,15 @@ const onCloseError = () => {
       class="download-banner"
     />
 
-    <GlobalLoader v-bind="$store.state.application.globalLoader" />
+    <GlobalLoader v-bind="globalLoaderStore.globalLoader" />
 
     <UpdateBanner
       v-if="
         $route.meta.showUpdateBanner &&
-        availableUpdates &&
-        !store.state.application.dismissedUpdateBanner
+        applicationStore.availableUpdates &&
+        !applicationStore.dismissedUpdateBanner
       "
-      :available-updates="availableUpdates"
+      :available-updates="applicationStore.availableUpdates"
       @dismiss="onDismissUpdateBanner"
     />
 

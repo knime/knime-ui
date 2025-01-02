@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import {
   NodeState,
   UpdateLinkedComponentsResult,
@@ -21,18 +22,21 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should link components", async () => {
-    const { store } = await loadStore();
-    const dispatchSpy = vi.spyOn(store, "dispatch");
-    store.commit("workflow/setActiveWorkflow", createWorkflow());
+    const { workflowStore, componentInteractionsStore, spaceOperationsStore } =
+      loadStore();
 
-    await store.dispatch("workflow/linkComponent", { nodeId: "root:2" });
+    const spy = vi.spyOn(spaceOperationsStore, "fetchWorkflowGroupContent");
+
+    workflowStore.setActiveWorkflow(createWorkflow());
+
+    await componentInteractionsStore.linkComponent({ nodeId: "root:2" });
     expect(mockedAPI.desktop.openLinkComponentDialog).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
     });
 
-    expect(dispatchSpy).not.toHaveBeenCalledWith(
+    expect(spy).not.toHaveBeenCalledWith(
       "spaces/fetchWorkflowGroupContent",
       expect.anything(),
       expect.anything(),
@@ -40,29 +44,24 @@ describe("workflow::componentInteractions", () => {
 
     mockedAPI.desktop.openLinkComponentDialog.mockReturnValueOnce(true);
 
-    await store.dispatch("workflow/linkComponent", { nodeId: "root:2" });
+    await componentInteractionsStore.linkComponent({ nodeId: "root:2" });
     expect(mockedAPI.desktop.openLinkComponentDialog).toHaveBeenCalledWith({
       projectId: "project1",
       workflowId: "root",
       nodeId: "root:2",
     });
 
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "spaces/fetchWorkflowGroupContent",
-      expect.anything(),
-      expect.anything(),
-    );
+    expect(spy).toHaveBeenCalled();
   });
 
   describe("check for component updates", () => {
     it("should not check for updates if workflow does not contain linked components", async () => {
-      const { store } = await loadStore();
-      store.commit(
-        "workflow/setActiveWorkflow",
+      const { workflowStore, componentInteractionsStore } = loadStore();
+      workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: false } }),
       );
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: true,
       });
 
@@ -73,15 +72,14 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should not show any toasts if 'auto' is true and there are no updates", async () => {
-      const { store } = await loadStore();
-      store.commit(
-        "workflow/setActiveWorkflow",
+      const { workflowStore, componentInteractionsStore } = loadStore();
+      workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
 
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce([]);
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValue([]);
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: true,
       });
 
@@ -89,15 +87,15 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should show toast when there are no updates and auto is false", async () => {
-      const { store } = await loadStore();
-      store.commit(
-        "workflow/setActiveWorkflow",
+      const { workflowStore, componentInteractionsStore } = loadStore();
+
+      workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
 
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce([]);
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValue([]);
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: false,
       });
 
@@ -110,30 +108,39 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should show toast when there are updates", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, componentInteractionsStore } = loadStore();
       const workflow = createWorkflow({
         info: { containsLinkedComponents: true },
       });
-      store.commit("workflow/setActiveWorkflow", workflow);
 
-      const dispatchSpy = vi.spyOn(store, "dispatch");
+      workflowStore.setActiveWorkflow(workflow);
+
+      const clearToastsSpy = vi.spyOn(
+        componentInteractionsStore,
+        "clearComponentUpdateToasts",
+      );
+      const updateComponentsSpy = vi.spyOn(
+        componentInteractionsStore,
+        "updateComponents",
+      );
 
       const nodeIdAndIsExecuted = [
         { id: "root:1", isExecuted: false },
         { id: "root:2", isExecuted: false },
         { id: "root:3", isExecuted: false },
       ];
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValue(
         nodeIdAndIsExecuted,
       );
 
-      mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
+      mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValue({
         status: UpdateLinkedComponentsResult.StatusEnum.Success,
       });
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: true,
       });
+      await flushPromises();
 
       expect(toast.show).toHaveBeenCalledOnce();
       expect(toast.show).toHaveBeenCalledWith(
@@ -154,18 +161,13 @@ describe("workflow::componentInteractions", () => {
       // @ts-expect-error
       await buttonCallback();
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "workflow/clearComponentUpdateToasts",
-        undefined,
-      );
+      expect(clearToastsSpy).toHaveBeenCalled();
       const nodeIds = nodeIdAndIsExecuted.map((item) => item.id);
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateComponents", {
-        nodeIds,
-      });
+      expect(updateComponentsSpy).toHaveBeenCalledWith({ nodeIds });
     });
 
     it("should show toast when there are updates (executed components)", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, componentInteractionsStore } = loadStore();
       const workflow = createWorkflow({
         info: { containsLinkedComponents: true },
         nodes: {
@@ -183,18 +185,18 @@ describe("workflow::componentInteractions", () => {
           }),
         },
       });
-      store.commit("workflow/setActiveWorkflow", workflow);
+      workflowStore.setActiveWorkflow(workflow);
 
       const nodeIdAndIsExecuted = [
         { id: "root:1", isExecuted: false },
         { id: "root:2", isExecuted: false },
         { id: "root:3", isExecuted: true },
       ];
-      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
+      mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValue(
         nodeIdAndIsExecuted,
       );
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: true,
       });
 
@@ -211,9 +213,8 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should show toast when there are issues checking for updates", async () => {
-      const { store } = await loadStore();
-      store.commit(
-        "workflow/setActiveWorkflow",
+      const { workflowStore, componentInteractionsStore } = loadStore();
+      workflowStore.setActiveWorkflow(
         createWorkflow({ info: { containsLinkedComponents: true } }),
       );
 
@@ -221,9 +222,7 @@ describe("workflow::componentInteractions", () => {
         new Error("anything"),
       );
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
-        silent: false,
-      });
+      await componentInteractionsStore.checkForLinkedComponentUpdates();
 
       expect(toast.show).toHaveBeenCalledOnce();
       expect(toast.show).toHaveBeenCalledWith(
@@ -235,18 +234,18 @@ describe("workflow::componentInteractions", () => {
     });
 
     it("should not show the update check notification for the same project more than once", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, componentInteractionsStore } = loadStore();
       const workflow = createWorkflow({
         info: { containsLinkedComponents: true },
       });
-      store.commit("workflow/setActiveWorkflow", workflow);
+      workflowStore.setActiveWorkflow(workflow);
 
       const nodeIds = ["root:1", "root:2", "root:3"];
       mockedAPI.workflow.getUpdatableLinkedComponents.mockResolvedValueOnce(
         nodeIds,
       );
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: true,
       });
 
@@ -262,7 +261,7 @@ describe("workflow::componentInteractions", () => {
       mockedAPI.workflow.getUpdatableLinkedComponents.mockClear();
       toast.show.mockClear();
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: true,
       });
 
@@ -276,11 +275,11 @@ describe("workflow::componentInteractions", () => {
       toast.show.mockClear();
 
       // clear state that remembers whether to show/hide notifications
-      await store.dispatch("workflow/clearProcessedUpdateNotification", {
+      await componentInteractionsStore.clearProcessedUpdateNotification({
         projectId: workflow.projectId,
       });
 
-      await store.dispatch("workflow/checkForLinkedComponentUpdates", {
+      await componentInteractionsStore.checkForLinkedComponentUpdates({
         auto: true,
       });
 
@@ -295,14 +294,14 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should update components (success)", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", createWorkflow());
+    const { workflowStore, componentInteractionsStore } = loadStore();
+    workflowStore.setActiveWorkflow(createWorkflow());
 
-    mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
+    mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValue({
       status: UpdateLinkedComponentsResult.StatusEnum.Success,
     });
 
-    await store.dispatch("workflow/updateComponents", {
+    await componentInteractionsStore.updateComponents({
       nodeIds: ["root:2", "root:1"],
     });
     expect(toast.show).toHaveBeenCalledTimes(2);
@@ -327,14 +326,14 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should update components (unchanged)", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", createWorkflow());
+    const { workflowStore, componentInteractionsStore } = loadStore();
+    workflowStore.setActiveWorkflow(createWorkflow());
 
     mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
       status: UpdateLinkedComponentsResult.StatusEnum.Unchanged,
     });
 
-    await store.dispatch("workflow/updateComponents", {
+    await componentInteractionsStore.updateComponents({
       nodeIds: ["root:2", "root:1"],
     });
     expect(toast.show).toHaveBeenCalledTimes(2);
@@ -359,14 +358,14 @@ describe("workflow::componentInteractions", () => {
   });
 
   it("should update components (error)", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", createWorkflow());
+    const { workflowStore, componentInteractionsStore } = loadStore();
+    workflowStore.setActiveWorkflow(createWorkflow());
 
     mockedAPI.workflowCommand.UpdateLinkedComponents.mockResolvedValueOnce({
       status: UpdateLinkedComponentsResult.StatusEnum.Error,
     });
 
-    await store.dispatch("workflow/updateComponents", {
+    await componentInteractionsStore.updateComponents({
       nodeIds: ["root:2", "root:1"],
     });
     expect(toast.show).toHaveBeenCalledTimes(2);
@@ -390,11 +389,11 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should unlink component", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", createWorkflow());
+  it("should unlink component", () => {
+    const { workflowStore, componentInteractionsStore } = loadStore();
+    workflowStore.setActiveWorkflow(createWorkflow());
 
-    store.dispatch("workflow/unlinkComponent", { nodeId: "root:2" });
+    componentInteractionsStore.unlinkComponent({ nodeId: "root:2" });
     expect(
       mockedAPI.workflowCommand.UpdateComponentLinkInformation,
     ).toHaveBeenCalledWith({
@@ -404,11 +403,11 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should change hub item version", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", createWorkflow());
+  it("should change hub item version", () => {
+    const { workflowStore, componentInteractionsStore } = loadStore();
+    workflowStore.setActiveWorkflow(createWorkflow());
 
-    store.dispatch("workflow/changeHubItemVersion", { nodeId: "root:2" });
+    componentInteractionsStore.changeHubItemVersion({ nodeId: "root:2" });
     expect(
       mockedAPI.desktop.openChangeComponentHubItemVersionDialog,
     ).toHaveBeenCalledWith({
@@ -418,11 +417,11 @@ describe("workflow::componentInteractions", () => {
     });
   });
 
-  it("should change component link type", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", createWorkflow());
+  it("should change component link type", () => {
+    const { workflowStore, componentInteractionsStore } = loadStore();
+    workflowStore.setActiveWorkflow(createWorkflow());
 
-    store.dispatch("workflow/changeComponentLinkType", { nodeId: "root:2" });
+    componentInteractionsStore.changeComponentLinkType({ nodeId: "root:2" });
     expect(
       mockedAPI.desktop.openChangeComponentLinkTypeDialog,
     ).toHaveBeenCalledWith({

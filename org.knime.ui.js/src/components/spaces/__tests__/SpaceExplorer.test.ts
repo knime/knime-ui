@@ -2,19 +2,23 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 import { useRoute } from "vue-router";
 
 import { Breadcrumb, FileExplorer, NodePreview } from "@knime/components";
 import type { FileExplorerItem } from "@knime/components";
 
-import { API } from "@/api";
-import { type Project, SpaceItem } from "@/api/gateway-api/generated-api";
+import {
+  NativeNodeInvariants,
+  type Project,
+  SpaceItem,
+} from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
-import * as spacesStore from "@/store/spaces";
 import { createProject, createSpaceProvider } from "@/test/factories";
-import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import SpaceExplorer from "../SpaceExplorer.vue";
 
 const mockedAPI = deepMocked(API);
@@ -79,7 +83,8 @@ vi.mock("@knime/components", async (importOriginal) => {
   };
 });
 
-vi.mock("vue-router", () => ({
+vi.mock("vue-router", async (importOriginal) => ({
+  ...(await importOriginal()),
   useRouter: vi.fn(() => ({ push: () => {} })),
   useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage, params: {} })),
 }));
@@ -93,7 +98,7 @@ describe("SpaceExplorer.vue", () => {
     mockGetSpaceItems = null,
     openProjects = [] as Project[],
     fileExtensionToNodeTemplateId = {},
-    isWriteableMock = vi.fn().mockReturnValue(true),
+    isWriteable = true,
   } = {}) => {
     if (mockGetSpaceItems) {
       mockedAPI.space.listWorkflowGroup.mockImplementation(mockGetSpaceItems);
@@ -102,52 +107,45 @@ describe("SpaceExplorer.vue", () => {
     }
     mockedAPI.space.createWorkflow.mockResolvedValue({ type: "Workflow" });
 
-    const store = mockVuexStore({
-      spaces: spacesStore,
-      application: {
-        state: {
-          openProjects,
-          fileExtensionToNodeTemplateId,
-        },
-        actions: {
-          updateGlobalLoader: vi.fn(),
-          forceCloseProjects: vi.fn(),
-        },
-      },
-      workflow: {
-        actions: {
-          addNode: () => {},
-        },
-        getters: {
-          isWritable: isWriteableMock,
-        },
-      },
-      canvas: {
-        getters: {
-          screenToCanvasCoordinates: vi.fn().mockReturnValue(() => [5, 5]),
-        },
-        state: {
-          getScrollContainerElement: vi
-            .fn()
-            .mockReturnValue({ contains: vi.fn().mockReturnValue(true) }),
-        },
-      },
-      nodeTemplates: {
-        actions: {
-          getSingleNodeTemplate: vi.fn().mockReturnValue({
-            id: "test.id",
-            name: "test.test",
-            type: "type",
-            inPorts: [],
-            outPorts: [],
-            icon: "data:image/icon",
-          }),
-        },
-      },
+    const mockedStores = mockStores();
+
+    mockedStores.applicationStore.$patch({
+      openProjects,
+      fileExtensionToNodeTemplateId,
     });
 
+    vi.mocked(
+      mockedStores.applicationStore.forceCloseProjects,
+    ).mockImplementation(vi.fn());
+    vi.mocked(
+      mockedStores.globalLoaderStore.updateGlobalLoader,
+    ).mockImplementation(vi.fn());
+    vi.mocked(mockedStores.nodeInteractionsStore.addNode).mockResolvedValue(
+      "mockNewNodeId",
+    );
+    // @ts-expect-error
+    mockedStores.workflowStore.isWritable = isWriteable;
+    // @ts-expect-error
+    mockedStores.canvasStore.screenToCanvasCoordinates = vi
+      .fn()
+      .mockReturnValue([5, 5]);
+    vi.mocked(
+      mockedStores.nodeTemplatesStore.getSingleNodeTemplate,
+    ).mockResolvedValue({
+      id: "test.id",
+      name: "test.test",
+      type: NativeNodeInvariants.TypeEnum.Other,
+      inPorts: [],
+      outPorts: [],
+      icon: "data:image/icon",
+    });
+
+    mockedStores.canvasStore.getScrollContainerElement().contains = vi
+      .fn()
+      .mockReturnValue(true);
+
     // default state of default project
-    store.state.spaces.projectPath = {
+    mockedStores.spaceCachingStore.projectPath = {
       someProjectId: {
         spaceId: "local",
         spaceProviderId: "local",
@@ -159,13 +157,10 @@ describe("SpaceExplorer.vue", () => {
     const other = createSpaceProvider({
       id: "provider",
     });
-    store.commit("spaces/setSpaceProviders", {
+    mockedStores.spaceProvidersStore.setSpaceProviders({
       [local.id]: local,
       [other.id]: other,
     });
-
-    const dispatchSpy = vi.spyOn(store, "dispatch");
-    const commitSpy = vi.spyOn(store, "commit");
 
     const $shortcuts = {
       get: vi.fn().mockImplementation((name) => ({
@@ -177,7 +172,7 @@ describe("SpaceExplorer.vue", () => {
     const wrapper = mount(SpaceExplorer, {
       props: { selectedItemIds: [], projectId: "", virtual: false, ...props },
       global: {
-        plugins: [store],
+        plugins: [mockedStores.testingPinia],
         stubs: { NuxtLink: true, FocusTrap: true, NodePreview: true },
         mocks: {
           $shortcuts,
@@ -186,7 +181,7 @@ describe("SpaceExplorer.vue", () => {
       },
     });
 
-    return { wrapper, store, dispatchSpy, commitSpy };
+    return { wrapper, mockedStores };
   };
 
   const doMountAndLoad = async ({
@@ -198,7 +193,7 @@ describe("SpaceExplorer.vue", () => {
     mockGetSpaceItems = null,
     openProjects = [] as Project[],
     fileExtensionToNodeTemplateId = {},
-    isWriteableMock = vi.fn().mockReturnValue(true),
+    isWriteable = true,
   } = {}) => {
     const mountResult = doMount({
       props,
@@ -206,16 +201,17 @@ describe("SpaceExplorer.vue", () => {
       mockGetSpaceItems,
       openProjects,
       fileExtensionToNodeTemplateId,
-      isWriteableMock,
+      isWriteable,
     });
 
-    await new Promise((r) => setTimeout(r, 0));
+    await flushPromises();
 
     return mountResult;
   };
 
   it("should load root directory data on created", async () => {
     const { wrapper } = await doMountAndLoad();
+    await flushPromises();
 
     expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
     expect(wrapper.findComponent(FileExplorer).props("items")).toEqual(
@@ -237,7 +233,7 @@ describe("SpaceExplorer.vue", () => {
   });
 
   it("should load data on projectId change", async () => {
-    const { wrapper, store } = await doMountAndLoad();
+    const { wrapper, mockedStores } = await doMountAndLoad();
 
     // initial fetch of root has happened
     mockedAPI.space.listWorkflowGroup.mockResolvedValue({
@@ -245,7 +241,7 @@ describe("SpaceExplorer.vue", () => {
       items: [],
     });
 
-    store.commit("spaces/setProjectPath", {
+    mockedStores.spaceCachingStore.setProjectPath({
       projectId: "anotherProject",
       value: {
         spaceProviderId: "provider",
@@ -272,7 +268,7 @@ describe("SpaceExplorer.vue", () => {
   ])(
     "should load data on changes to the current projectPath values %s",
     async (projectPathKey, projectPathValue) => {
-      const { store } = await doMountAndLoad();
+      const { mockedStores } = await doMountAndLoad();
 
       // initial fetch of root has happened
       mockedAPI.space.listWorkflowGroup.mockResolvedValue({
@@ -280,10 +276,10 @@ describe("SpaceExplorer.vue", () => {
         items: [],
       });
 
-      store.commit("spaces/setProjectPath", {
+      mockedStores.spaceCachingStore.setProjectPath({
         projectId: "someProjectId",
         value: {
-          ...store.state.spaces.projectPath.someProjectId,
+          ...mockedStores.spaceCachingStore.projectPath.someProjectId,
           [projectPathKey]: projectPathValue,
         },
       });
@@ -302,7 +298,7 @@ describe("SpaceExplorer.vue", () => {
 
       wrapper.findComponent(FileExplorer).vm.$emit("changeDirectory", "1234");
 
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
       expect(wrapper.emitted("changeDirectory")![0][0]).toBe("1234");
     });
 
@@ -363,7 +359,7 @@ describe("SpaceExplorer.vue", () => {
   });
 
   it("should open a workflow", async () => {
-    const { wrapper, dispatchSpy } = await doMountAndLoad();
+    const { wrapper, mockedStores } = await doMountAndLoad();
 
     wrapper
       .findComponent(FileExplorer)
@@ -371,7 +367,7 @@ describe("SpaceExplorer.vue", () => {
 
     await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
+    expect(mockedStores.spaceOperationsStore.openProject).toHaveBeenCalledWith({
       providerId: "local",
       spaceId: "local",
       itemId: "dummy",
@@ -380,7 +376,7 @@ describe("SpaceExplorer.vue", () => {
   });
 
   it("should open a shared component", async () => {
-    const { wrapper, dispatchSpy } = await doMountAndLoad();
+    const { wrapper, mockedStores } = await doMountAndLoad();
 
     wrapper
       .findComponent(FileExplorer)
@@ -388,7 +384,7 @@ describe("SpaceExplorer.vue", () => {
 
     await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
+    expect(mockedStores.spaceOperationsStore.openProject).toHaveBeenCalledWith({
       providerId: "local",
       spaceId: "local",
       itemId: "dummy",
@@ -406,17 +402,19 @@ describe("SpaceExplorer.vue", () => {
 
   describe("renaming", () => {
     it("should rename items", async () => {
-      const { wrapper, dispatchSpy } = await doMountAndLoad();
+      const { wrapper, mockedStores } = await doMountAndLoad();
       const itemId = "12345";
       const newName = "some name";
       wrapper
         .findComponent(FileExplorer)
         .vm.$emit("renameFile", { itemId, newName });
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/renameItem", {
-        projectId: "someProjectId",
-        itemId,
-        newName,
-      });
+      expect(mockedStores.spaceOperationsStore.renameItem).toHaveBeenCalledWith(
+        {
+          projectId: "someProjectId",
+          itemId,
+          newName,
+        },
+      );
     });
 
     it("should not allow renaming open workflows or folders with open workflows", async () => {
@@ -455,7 +453,7 @@ describe("SpaceExplorer.vue", () => {
       // makes sure we disregard any strategy and always choose "AUTORENAME" when "moving" into "." (i.e. duplicating)
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("NOOP");
 
-      const { wrapper, dispatchSpy } = await doMountAndLoad();
+      const { wrapper, mockedStores } = await doMountAndLoad();
 
       const sourceItems = ["id1", "id2"];
 
@@ -465,7 +463,9 @@ describe("SpaceExplorer.vue", () => {
       // @ts-expect-error
       wrapper.vm.onDuplicateItems(sourceItems);
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/moveOrCopyItems", {
+      expect(
+        mockedStores.spaceOperationsStore.moveOrCopyItems,
+      ).toHaveBeenNthCalledWith(1, {
         projectId: "someProjectId",
         itemIds: sourceItems,
         destWorkflowGroupItemId: "root",
@@ -549,23 +549,23 @@ describe("SpaceExplorer.vue", () => {
           projectId: "testPID3",
         },
       ];
-      const { wrapper, dispatchSpy } = await doMountAndLoad({ openProjects });
+      const { wrapper, mockedStores } = await doMountAndLoad({ openProjects });
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
       confirm();
       await flushPromises();
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "spaces/deleteItems", {
+      expect(
+        mockedStores.spaceOperationsStore.deleteItems,
+      ).toHaveBeenNthCalledWith(1, {
         itemIds: ["item0"],
         projectId: "someProjectId",
         $router: expect.anything(),
       });
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(
-        4,
-        "application/forceCloseProjects",
-        { projectIds: [openProjects[0].projectId] },
-      );
+      expect(
+        mockedStores.applicationStore.forceCloseProjects,
+      ).toHaveBeenNthCalledWith(1, { projectIds: [openProjects[0].projectId] });
     });
 
     it("should not delete item on negative response", async () => {
@@ -578,24 +578,29 @@ describe("SpaceExplorer.vue", () => {
         }),
       ];
       vi.spyOn(window, "confirm").mockImplementation(() => false);
-      const { wrapper, dispatchSpy } = await doMountAndLoad();
+      const { wrapper, mockedStores } = await doMountAndLoad();
 
       wrapper.findComponent(FileExplorer).vm.$emit("deleteItems", { items });
 
       cancel();
       await flushPromises();
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/deleteItems", {
+      expect(
+        mockedStores.spaceOperationsStore.deleteItems,
+      ).not.toHaveBeenCalledWith({
         itemIds: ["item0"],
       });
+      expect(
+        mockedStores.spaceOperationsStore.deleteItems,
+      ).not.toHaveBeenCalled();
     });
   });
 
   describe("move items", () => {
     it("should move items", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
-      const { wrapper, dispatchSpy } = await doMountAndLoad();
-      await new Promise((r) => setTimeout(r, 0));
+      const { wrapper, mockedStores } = await doMountAndLoad();
+      await flushPromises();
 
       const sourceItems = ["id1", "id2"];
       const targetItem = "group1";
@@ -605,7 +610,9 @@ describe("SpaceExplorer.vue", () => {
         .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyItems", {
+      expect(
+        mockedStores.spaceOperationsStore.moveOrCopyItems,
+      ).toHaveBeenCalledWith({
         projectId: "someProjectId",
         itemIds: sourceItems,
         destWorkflowGroupItemId: targetItem,
@@ -619,14 +626,14 @@ describe("SpaceExplorer.vue", () => {
 
     it("should move items to root", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
-      const { wrapper, dispatchSpy } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { projectId: "someProjectId" },
         mockResponse: {
           ...fetchWorkflowGroupContentResponse,
           path: [{ id: "currentDirectoryId", name: "Current Directory" }],
         },
       });
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
 
       const sourceItems = ["id1", "id2"];
       const targetItem = "..";
@@ -638,7 +645,9 @@ describe("SpaceExplorer.vue", () => {
       });
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyItems", {
+      expect(
+        mockedStores.spaceOperationsStore.moveOrCopyItems,
+      ).toHaveBeenCalledWith({
         itemIds: sourceItems,
         projectId: "someProjectId",
         destWorkflowGroupItemId: "root",
@@ -651,7 +660,7 @@ describe("SpaceExplorer.vue", () => {
 
     it("should move items back to the parent directory", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
-      const { wrapper, dispatchSpy } = await doMount({
+      const { wrapper, mockedStores } = await doMount({
         props: { projectId: "someProjectId" },
         mockResponse: {
           ...fetchWorkflowGroupContentResponse,
@@ -662,7 +671,7 @@ describe("SpaceExplorer.vue", () => {
         },
       });
 
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
 
       const sourceItems = ["id1", "id2"];
       const targetItem = "..";
@@ -672,7 +681,9 @@ describe("SpaceExplorer.vue", () => {
         .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyItems", {
+      expect(
+        mockedStores.spaceOperationsStore.moveOrCopyItems,
+      ).toHaveBeenCalledWith({
         itemIds: sourceItems,
         projectId: "someProjectId",
         destWorkflowGroupItemId: "parentId",
@@ -685,10 +696,10 @@ describe("SpaceExplorer.vue", () => {
 
     it("should not move items if collision handling returns cancel", async () => {
       mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("CANCEL");
-      const { wrapper, dispatchSpy } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { projectId: "someProjectId" },
       });
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
 
       const sourceItems = ["id1", "id2"];
       const targetItem = "group1";
@@ -697,7 +708,9 @@ describe("SpaceExplorer.vue", () => {
         .findComponent(FileExplorer)
         .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/moveOrCopyItems", {
+      expect(
+        mockedStores.spaceOperationsStore.moveOrCopyItems,
+      ).not.toHaveBeenCalledWith({
         itemIds: sourceItems,
         destWorkflowGroupItemId: targetItem,
         collisionStrategy: "CANCEL",
@@ -721,7 +734,7 @@ describe("SpaceExplorer.vue", () => {
         openProjects,
         props: { projectId: "someProjectId" },
       });
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
 
       const sourceItems = ["id1", "id2"];
       const targetItem = "group1";
@@ -755,7 +768,7 @@ describe("SpaceExplorer.vue", () => {
         params: {},
       }));
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, dispatchSpy } = await doMountAndLoad();
+      const { wrapper, mockedStores } = await doMountAndLoad();
 
       // mockRoute.name = APP_ROUTES.SpaceBrowsingPage;
 
@@ -773,18 +786,15 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "workflow/addNode",
-        expect.anything(),
-      );
+      expect(mockedStores.nodeInteractionsStore.addNode).not.toHaveBeenCalled();
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
     });
 
     it("should not add a node to canvas if a workflow is not writable", async () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
-        isWriteableMock: vi.fn(() => false),
+      const { wrapper, mockedStores } = await doMountAndLoad({
+        isWriteable: false,
         fileExtensionToNodeTemplateId: {
           test: "org.knime.test.test.nodeFactory",
         },
@@ -799,10 +809,6 @@ describe("SpaceExplorer.vue", () => {
           ],
         },
       });
-
-      store.state.spaces.activeSpaceProvider = {
-        id: "local",
-      };
 
       const event = new MouseEvent("dragend") as DragEvent;
 
@@ -819,17 +825,14 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "workflow/addNode",
-        expect.anything(),
-      );
+      expect(mockedStores.nodeInteractionsStore.addNode).not.toHaveBeenCalled();
       await nextTick();
       expect(onComplete).toHaveBeenCalledWith(false);
     });
 
     it("should add a node to canvas when dragged from the file explorer", async () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
+      const { wrapper, mockedStores } = await doMountAndLoad({
         fileExtensionToNodeTemplateId: {
           test: "org.knime.test.test.nodeFactory",
         },
@@ -844,10 +847,6 @@ describe("SpaceExplorer.vue", () => {
           ],
         },
       });
-
-      store.state.spaces.activeSpaceProvider = {
-        id: "local",
-      };
 
       const event = new MouseEvent("dragend") as DragEvent;
 
@@ -864,7 +863,9 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "workflow/addNode", {
+      expect(
+        mockedStores.nodeInteractionsStore.addNode,
+      ).toHaveBeenNthCalledWith(1, {
         nodeFactory: {
           className: "org.knime.test.test.nodeFactory",
         },
@@ -876,14 +877,14 @@ describe("SpaceExplorer.vue", () => {
         },
         isComponent: false,
       });
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);
     });
 
     it("should add a component to canvas when dragged from the file explorer", async () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
-      const { wrapper, store, dispatchSpy } = await doMountAndLoad({
-        // components don't have an extenssion associated to them
+      const { wrapper, mockedStores } = await doMountAndLoad({
+        // components don't have an extension associated to them
         fileExtensionToNodeTemplateId: {},
         mockResponse: {
           path: [],
@@ -896,10 +897,6 @@ describe("SpaceExplorer.vue", () => {
           ],
         },
       });
-
-      store.state.spaces.activeSpaceProvider = {
-        id: "local",
-      };
 
       const event = new MouseEvent("dragend") as DragEvent;
       const sourceItem = createMockWorkflow({
@@ -917,8 +914,10 @@ describe("SpaceExplorer.vue", () => {
         onComplete,
       });
 
-      expect(dispatchSpy).toHaveBeenNthCalledWith(3, "workflow/addNode", {
-        nodeFactory: null,
+      expect(
+        mockedStores.nodeInteractionsStore.addNode,
+      ).toHaveBeenNthCalledWith(1, {
+        nodeFactory: undefined,
         position: { x: 5, y: 5 },
         spaceItemReference: {
           itemId: "0",
@@ -927,7 +926,7 @@ describe("SpaceExplorer.vue", () => {
         },
         isComponent: true,
       });
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);
     });
 
@@ -935,7 +934,7 @@ describe("SpaceExplorer.vue", () => {
       document.elementFromPoint = vi
         .fn()
         .mockReturnValue({ id: "someElementThatIsNotNull" });
-      const { wrapper, store } = await doMountAndLoad({
+      const { wrapper } = await doMountAndLoad({
         fileExtensionToNodeTemplateId: {
           test: "org.knime.test.test.nodeFactory",
         },
@@ -951,10 +950,6 @@ describe("SpaceExplorer.vue", () => {
         },
       });
 
-      store.state.spaces.activeSpaceProvider = {
-        id: "local",
-      };
-
       const item = createMockWorkflow({
         id: "0",
         name: "testfile.test",
@@ -963,7 +958,7 @@ describe("SpaceExplorer.vue", () => {
 
       wrapper.findComponent(FileExplorer).vm.$emit("drag", { event, item });
 
-      await new Promise((r) => setTimeout(r, 0));
+      await flushPromises();
       expect(wrapper.findComponent(NodePreview).exists()).toBe(true);
     });
   });

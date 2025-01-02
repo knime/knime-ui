@@ -1,23 +1,25 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { reactive, ref } from "vue";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
 import type {
   NodeCategoryWithExtendedPorts,
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
+import { useNodeSearch } from "@/store/common/useNodeSearch";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
 
-import * as nodeSearch from "./common/nodeSearch";
-import type { RootStoreState } from "./types";
+import { useApplicationStore } from "./application/application";
+import { useNodeTemplatesStore } from "./nodeTemplates/nodeTemplates";
+import { useSettingsStore } from "./settings";
 
 /**
  * Store that manages node repository state.
  */
-
 const tagPageSize = 3;
 const firstLoadOffset = 6;
 
-export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
+export interface NodeRepositoryState {
   nodesPerTag: Array<{
     tag: string;
     nodes: NodeTemplateWithExtendedPorts[];
@@ -34,134 +36,139 @@ export interface NodeRepositoryState extends nodeSearch.CommonNodeSearchState {
   treeExpandedKeys: Set<string>;
 }
 
-export const state = (): NodeRepositoryState => ({
-  ...nodeSearch.state(),
+export const useNodeRepositoryStore = defineStore("nodeRepository", () => {
+  const nodeSearch = useNodeSearch();
 
   /* tags */
-  nodesPerTag: [],
-  totalNumTags: null,
-  tagPage: 0,
-  tagScrollPosition: 0,
+  const nodesPerTag = ref<
+    Array<{
+      tag: string;
+      nodes: NodeTemplateWithExtendedPorts[];
+    }>
+  >([]);
+
+  const totalNumTags = ref<number | null>(null);
+  const tagPage = ref(0);
+  const tagScrollPosition = ref(0);
 
   /* node interaction */
-  selectedNode: null,
-  showDescriptionForNode: null,
+  const selectedNode = ref<NodeTemplateWithExtendedPorts | null>(null);
+  const showDescriptionForNode = ref<NodeTemplateWithExtendedPorts | null>(
+    null,
+  );
 
   /** tree */
-  nodeCategoryCache: new Map(),
-  treeExpandedKeys: new Set(),
-});
+  const nodeCategoryCache = reactive<
+    Map<string, NodeCategoryWithExtendedPorts>
+  >(new Map());
+  const treeExpandedKeys = reactive<Set<string>>(new Set());
 
-export const mutations: MutationTree<NodeRepositoryState> = {
-  ...nodeSearch.mutations,
+  const setTagPage = (pageNumber: number) => {
+    tagPage.value = pageNumber;
+  };
 
-  setTagPage(state, pageNumber) {
-    state.tagPage = pageNumber;
-  },
-
-  setNodesPerTags(state, { groupedNodes, append }) {
-    state.nodesPerTag = append
-      ? state.nodesPerTag.concat(groupedNodes)
+  const setNodesPerTags = ({
+    groupedNodes,
+    append,
+  }: {
+    groupedNodes: NodeRepositoryState["nodesPerTag"];
+    append: boolean;
+  }) => {
+    nodesPerTag.value = append
+      ? nodesPerTag.value.concat(groupedNodes)
       : groupedNodes;
-  },
+  };
 
-  setTotalNumTags(state, totalNumTags) {
-    state.totalNumTags = totalNumTags;
-  },
+  const setTotalNumTags = (_totalNumTags: number | null) => {
+    totalNumTags.value = _totalNumTags;
+  };
 
-  setTagScrollPosition(state, value) {
-    state.tagScrollPosition = value;
-  },
+  const setTagScrollPosition = (value: number) => {
+    tagScrollPosition.value = value;
+  };
 
-  setSelectedNode(state, node) {
-    state.selectedNode = node;
-  },
+  const setSelectedNode = (node: NodeTemplateWithExtendedPorts | null) => {
+    selectedNode.value = node;
+  };
 
-  setShowDescriptionForNode(state, node) {
-    state.showDescriptionForNode = node;
-  },
+  const setShowDescriptionForNode = (
+    node: NodeTemplateWithExtendedPorts | null,
+  ) => {
+    showDescriptionForNode.value = node;
+  };
 
-  updateNodeCategoryCache(
-    state,
-    {
-      categoryPath,
-      nodeCategory,
-    }: { categoryPath: string[]; nodeCategory: NodeCategoryWithExtendedPorts },
-  ) {
-    state.nodeCategoryCache.set(categoryPath.join("/"), nodeCategory);
-  },
+  const updateNodeCategoryCache = ({
+    categoryPath,
+    nodeCategory,
+  }: {
+    categoryPath: string[];
+    nodeCategory: NodeCategoryWithExtendedPorts;
+  }) => {
+    nodeCategoryCache.set(categoryPath.join("/"), nodeCategory);
+  };
 
-  resetNodeCategoryCache(state) {
-    state.nodeCategoryCache = new Map();
-  },
+  const resetNodeCategoryCache = () => {
+    nodeCategoryCache.clear();
+  };
 
-  addTreeExpandedKey(state, key) {
-    state.treeExpandedKeys.add(key);
-  },
+  const addTreeExpandedKey = (key: string) => {
+    treeExpandedKeys.add(key);
+  };
 
-  removeTreeExpandedKey(state, key) {
-    state.treeExpandedKeys.delete(key);
-  },
+  const removeTreeExpandedKey = (key: string) => {
+    treeExpandedKeys.delete(key);
+  };
 
-  resetTreeExpandedKeys(state) {
-    state.treeExpandedKeys = new Set();
-  },
-};
+  const resetTreeExpandedKeys = () => {
+    treeExpandedKeys.clear();
+  };
 
-export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
-  ...nodeSearch.actions,
-
-  async getNodeCategory(
-    { state, rootState, dispatch, commit },
-    { categoryPath }: { categoryPath: string[] },
-  ) {
-    // use cache if available
+  const getNodeCategory = async ({
+    categoryPath,
+  }: {
+    categoryPath: string[];
+  }): Promise<NodeCategoryWithExtendedPorts> => {
     const path = categoryPath.join("/");
-    if (state.nodeCategoryCache.has(path)) {
-      return state.nodeCategoryCache.get(path);
+    if (nodeCategoryCache.has(path)) {
+      return nodeCategoryCache.get(path)!;
     }
 
     const nodeCategoryResult = await API.noderepository.getNodeCategory({
       categoryPath,
     });
 
-    const { availablePortTypes } = rootState.application;
-    const nodesWithMappedPorts = nodeCategoryResult.nodes?.map(
-      toNodeTemplateWithExtendedPorts(availablePortTypes),
+    const nodesWithMappedPorts = (nodeCategoryResult.nodes ?? []).map(
+      toNodeTemplateWithExtendedPorts(useApplicationStore().availablePortTypes),
     );
 
-    // contribute to the node templates cache
-    dispatch(
-      "nodeTemplates/updateCacheFromSearchResults",
-      { nodeTemplates: nodesWithMappedPorts },
-      { root: true },
-    );
+    useNodeTemplatesStore().updateCacheFromSearchResults({
+      nodeTemplates: nodesWithMappedPorts,
+    });
 
     const result = {
       ...nodeCategoryResult,
       nodes: nodesWithMappedPorts,
     };
 
-    // cache the results
-    commit("updateNodeCategoryCache", { categoryPath, nodeCategory: result });
+    updateNodeCategoryCache({ categoryPath, nodeCategory: result });
 
     return result;
-  },
+  };
 
-  async getAllNodes({ commit, dispatch, state, rootState }, { append }) {
-    if (state.nodesPerTag.length === state.totalNumTags) {
+  const getAllNodes = async ({ append }: { append: boolean }) => {
+    if (nodesPerTag.value.length === totalNumTags.value) {
       return;
     }
     const tagsOffset = append
-      ? firstLoadOffset + state.tagPage * tagPageSize
+      ? firstLoadOffset + tagPage.value * tagPageSize
       : 0;
     const tagsLimit = append ? tagPageSize : firstLoadOffset;
 
     if (append) {
-      commit("setTagPage", state.tagPage + 1);
+      setTagPage(tagPage.value + 1);
     } else {
-      commit("setNodeSearchPage", 0);
-      commit("setTagPage", 0);
+      nodeSearch.setNodeSearchPage(0);
+      setTagPage(0);
     }
 
     const { totalNumGroups, groups } =
@@ -172,76 +179,100 @@ export const actions: ActionTree<NodeRepositoryState, RootStoreState> = {
         fullTemplateInfo: true,
       });
 
-    const { availablePortTypes } = rootState.application;
     const withMappedPorts = groups.map(({ nodes, tag }) => ({
-      nodes: nodes.map(toNodeTemplateWithExtendedPorts(availablePortTypes)),
+      nodes: nodes.map(
+        toNodeTemplateWithExtendedPorts(
+          useApplicationStore().availablePortTypes,
+        ),
+      ),
       tag,
     }));
 
-    // contribute to the node templates cache
-    dispatch(
-      "nodeTemplates/updateCacheFromSearchResults",
-      { nodeTemplates: withMappedPorts.flatMap(({ nodes }) => nodes) },
-      { root: true },
+    useNodeTemplatesStore().updateCacheFromSearchResults({
+      nodeTemplates: withMappedPorts.flatMap(({ nodes }) => nodes),
+    });
+
+    setTotalNumTags(totalNumGroups);
+    setNodesPerTags({ groupedNodes: withMappedPorts, append });
+  };
+
+  const clearTagResults = () => {
+    setNodesPerTags({ groupedNodes: [], append: false });
+    setTotalNumTags(null);
+    setTagPage(0);
+    setTagScrollPosition(0);
+  };
+
+  const clearTree = () => {
+    resetNodeCategoryCache();
+    resetTreeExpandedKeys();
+  };
+
+  const resetSearchAndTags = async () => {
+    if (nodeSearch.searchIsActive.value) {
+      nodeSearch.clearSearchResults();
+      await nodeSearch.searchNodesDebounced();
+    }
+    clearTagResults();
+    clearTree();
+    getAllNodes({ append: false });
+  };
+
+  const nodesPerTagContainNodeId = (nodeId: string) => {
+    return nodesPerTag.value.some((tag) =>
+      tag.nodes.some((node) => node.id === nodeId),
     );
+  };
 
-    commit("setTotalNumTags", totalNumGroups);
-    commit("setNodesPerTags", { groupedNodes: withMappedPorts, append });
-  },
+  const treeContainsNodeId = (nodeId: string) => {
+    return [...treeExpandedKeys].some(
+      (nodeKey) =>
+        nodeCategoryCache
+          .get(nodeKey)
+          ?.nodes?.some((node) => node.id === nodeId),
+    );
+  };
 
-  clearTagResults({ commit }) {
-    commit("setNodesPerTags", { groupedNodes: [], append: false });
-    commit("setTotalNumTags", null);
-    commit("setTagPage", 0);
-    commit("setTagScrollPosition", 0);
-  },
-
-  clearTree({ commit }) {
-    commit("resetNodeCategoryCache");
-    commit("resetTreeExpandedKeys");
-  },
-
-  async resetSearchTagsAndTree({ dispatch, getters }) {
-    if (getters.searchIsActive) {
-      await dispatch("clearSearchResults");
-      await dispatch("searchNodesDebounced");
-    }
-    // Always clear the tag and tree data
-    await dispatch("clearTagResults");
-    await dispatch("clearTree");
-    await dispatch("getAllNodes", { append: false });
-  },
-};
-
-export const getters: GetterTree<NodeRepositoryState, RootStoreState> = {
-  ...nodeSearch.getters,
-
-  nodesPerTagContainNodeId(state) {
-    return (nodeId: string) =>
-      state.nodesPerTag.some((tag) =>
-        tag.nodes.some((node) => node.id === nodeId),
-      );
-  },
-
-  treeContainsNodeId(state: NodeRepositoryState) {
-    return (nodeId: string) =>
-      [...state.treeExpandedKeys].some(
-        (nodeKey) =>
-          state.nodeCategoryCache
-            ?.get(nodeKey)
-            ?.nodes?.some((node) => node.id === nodeId),
-      );
-  },
-
-  isNodeVisible: (state, getters, rootState) => (nodeId: string) => {
-    if (getters.searchIsActive) {
-      return getters.searchResultsContainNodeId(nodeId);
+  const isNodeVisible = (nodeId: string) => {
+    if (nodeSearch.searchIsActive.value) {
+      return nodeSearch.searchResultsContainNodeId(nodeId);
     }
 
-    if (rootState.settings.settings.nodeRepositoryDisplayMode === "tree") {
-      return getters.treeContainsNodeId(nodeId);
+    if (useSettingsStore().settings.nodeRepositoryDisplayMode === "tree") {
+      return treeContainsNodeId(nodeId);
     }
 
-    return getters.nodesPerTagContainNodeId(nodeId);
-  },
-};
+    return nodesPerTagContainNodeId(nodeId);
+  };
+
+  return {
+    ...nodeSearch,
+    nodesPerTag,
+    totalNumTags,
+    tagPage,
+    tagScrollPosition,
+    selectedNode,
+    showDescriptionForNode,
+    nodeCategoryCache,
+    treeExpandedKeys,
+    setTagPage,
+    setNodesPerTags,
+    setTotalNumTags,
+    setTagScrollPosition,
+    setSelectedNode,
+    setShowDescriptionForNode,
+    updateNodeCategoryCache,
+    resetNodeCategoryCache,
+    addTreeExpandedKey,
+    removeTreeExpandedKey,
+    resetTreeExpandedKeys,
+    getNodeCategory,
+    getAllNodes,
+    clearTagResults,
+    clearTree,
+    resetSearchAndTags,
+    nodesPerTagContainNodeId,
+    treeContainsNodeId,
+    isNodeVisible,
+  };
+});

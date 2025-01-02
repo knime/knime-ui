@@ -1,12 +1,17 @@
-import { computed, watch } from "vue";
+import { watch } from "vue";
+import { API } from "@api";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
-import { API } from "@/api";
 import type { AncestorInfo } from "@/api/custom-types";
 import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { TABS } from "@/store/panel";
+import { useApplicationStore } from "@/store/application/application";
+import { TABS, usePanelStore } from "@/store/panel";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import {
   findSpaceGroupFromSpaceId,
   isLocalProvider,
@@ -18,14 +23,18 @@ const DEFAULT_GROUP_ID = "defaultGroupId";
 const ROOT_ITEM_ID = "root";
 
 export const useRevealInSpaceExplorer = () => {
-  const router = useRouter();
-  const store = useStore();
-  const { toastPresets } = getToastPresets();
+  const { isLoadingContent } = storeToRefs(useSpaceOperationsStore());
+  const { setCurrentSelectedItemIds } = useSpaceOperationsStore();
+  const { activeProjectId } = storeToRefs(useApplicationStore());
+  const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
+  const { activeTab } = storeToRefs(usePanelStore());
+  const { setCurrentProjectActiveTab } = usePanelStore();
+  const { projectPath } = storeToRefs(useSpaceCachingStore());
+  const { setProjectPath } = useSpaceCachingStore();
+  const { connectProvider } = useSpaceAuthStore();
 
-  const activeProjectId = computed(
-    () => store.state.application.activeProjectId,
-  );
-  const spaceProviders = computed(() => store.state.spaces.spaceProviders);
+  const router = useRouter();
+  const { toastPresets } = getToastPresets();
 
   const canRevealItem = (origin: SpaceItemReference): boolean => {
     const provider = spaceProviders.value?.[origin.providerId];
@@ -42,7 +51,7 @@ export const useRevealInSpaceExplorer = () => {
   const getAncestorInfo = (
     origin: SpaceItemReference,
   ): Promise<AncestorInfo> => {
-    const provider = store.state.spaces.spaceProviders?.[origin.providerId];
+    const provider = spaceProviders.value?.[origin.providerId];
 
     if (!provider) {
       return Promise.resolve({ itemName: null, ancestorItemIds: [] });
@@ -66,7 +75,7 @@ export const useRevealInSpaceExplorer = () => {
   };
 
   const resetSelectedItemAndShowError = (error: unknown = null) => {
-    store.commit("spaces/setCurrentSelectedItemIds", []);
+    setCurrentSelectedItemIds([]);
     toastPresets.spaces.reveal.revealProjectFailed({ error });
   };
 
@@ -88,7 +97,7 @@ export const useRevealInSpaceExplorer = () => {
     itemName: string | null,
   ) => {
     const group = findSpaceGroupFromSpaceId(
-      store.state.spaces.spaceProviders ?? {},
+      spaceProviders.value ?? {},
       origin.spaceId,
     );
     const { itemName: updatedItemName, ancestorItemIds } =
@@ -104,7 +113,7 @@ export const useRevealInSpaceExplorer = () => {
       },
     });
 
-    store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
+    setCurrentSelectedItemIds([origin.itemId]);
 
     checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
   };
@@ -117,20 +126,15 @@ export const useRevealInSpaceExplorer = () => {
       return;
     }
 
-    if (
-      store.state.panel.activeTab[activeProjectId.value] !== TABS.SPACE_EXPLORER
-    ) {
-      await store.dispatch(
-        "panel/setCurrentProjectActiveTab",
-        TABS.SPACE_EXPLORER,
-      );
+    if (activeTab.value[activeProjectId.value] !== TABS.SPACE_EXPLORER) {
+      setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
     }
 
     const { providerId, spaceId, itemId } = origin;
     const { itemName: updatedItemName, ancestorItemIds } =
       await getAncestorInfo(origin);
 
-    const currentPath = store.state.spaces.projectPath[activeProjectId.value];
+    const currentPath = projectPath.value[activeProjectId.value];
     const nextItemId = ancestorItemIds?.at(0) ?? ROOT_ITEM_ID;
 
     if (
@@ -140,7 +144,7 @@ export const useRevealInSpaceExplorer = () => {
     ) {
       // project belongs to a different path than the current one for this project
       // so we must change the path
-      store.commit("spaces/setProjectPath", {
+      setProjectPath({
         projectId: activeProjectId.value,
         value: {
           spaceId,
@@ -151,16 +155,16 @@ export const useRevealInSpaceExplorer = () => {
 
       // And make sure it selects the item AFTER the content of the new path has been loaded
       const unWatch = watch(
-        () => store.state.spaces.isLoadingContent,
+        () => isLoadingContent.value,
         (isLoading, wasLoading) => {
           if (wasLoading && !isLoading) {
-            store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+            setCurrentSelectedItemIds([itemId]);
             unWatch();
           }
         },
       );
     } else {
-      store.commit("spaces/setCurrentSelectedItemIds", [itemId]);
+      setCurrentSelectedItemIds([itemId]);
     }
 
     checkIfNameHasChangedAndShowWarning(updatedItemName, itemName);
@@ -179,7 +183,7 @@ export const useRevealInSpaceExplorer = () => {
       const provider = spaceProviders.value?.[origin.providerId]!;
       // try connect to provider if we are not connected
       if (!provider.connected) {
-        const { isConnected } = await store.dispatch("spaces/connectProvider", {
+        const { isConnected } = await connectProvider({
           spaceProviderId: provider.id,
         });
         if (!isConnected) {
@@ -191,7 +195,7 @@ export const useRevealInSpaceExplorer = () => {
         }
       }
 
-      store.commit("spaces/setCurrentSelectedItemIds", [origin.itemId]);
+      setCurrentSelectedItemIds([origin.itemId]);
 
       if (!activeProjectId.value) {
         // No active project, navigate to Space Browsing Page

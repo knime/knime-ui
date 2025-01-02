@@ -5,9 +5,12 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { MenuItems } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import * as spacesStore from "@/store/spaces";
-import { createSpace, createSpaceProvider } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import {
+  createSpace,
+  createSpaceGroup,
+  createSpaceProvider,
+} from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import SpaceExplorerContextMenu from "../SpaceExplorerContextMenu.vue";
 
 const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
@@ -17,13 +20,17 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connectionMode: "AUTOMATIC",
     name: "Local Space",
     type: SpaceProviderNS.TypeEnum.LOCAL,
-    spaces: [
-      {
-        id: "local",
-        name: "Local Space",
-        owner: "local",
-        private: false,
-      },
+    spaceGroups: [
+      createSpaceGroup({
+        spaces: [
+          {
+            id: "local",
+            name: "Local Space",
+            owner: "local",
+            private: false,
+          },
+        ],
+      }),
     ],
   }),
   hub1: createSpaceProvider({
@@ -39,25 +46,28 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
     connectionMode: "AUTOMATIC",
     name: "Server 1",
     type: SpaceProviderNS.TypeEnum.SERVER,
-    spaces: [createSpace({ id: "serverSpace1" })],
+    spaceGroups: [
+      createSpaceGroup({
+        spaces: [createSpace({ id: "serverSpace1" })],
+      }),
+    ],
   }),
 };
 
 describe("SpaceExplorerContextMenu.vue", () => {
+  type ComponentProps = InstanceType<typeof SpaceExplorerContextMenu>["$props"];
   const doMount = ({
     props = {},
-    spaceProviders = null,
+    spaceProviders,
   }: {
-    props?: Partial<InstanceType<typeof SpaceExplorerContextMenu>["$props"]>;
-    spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
+    props?: Partial<ComponentProps>;
+    spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider>;
   } = {}) => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-    });
+    const mockedStores = mockStores();
 
     const projectId = "someProjectId";
 
-    $store.commit("spaces/setProjectPath", {
+    mockedStores.spaceCachingStore.setProjectPath({
       projectId,
       value: {
         spaceId: "local",
@@ -66,13 +76,9 @@ describe("SpaceExplorerContextMenu.vue", () => {
       },
     });
 
-    $store.commit(
-      "spaces/setSpaceProviders",
+    mockedStores.spaceProvidersStore.setSpaceProviders(
       spaceProviders || startSpaceProviders,
     );
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
 
     const wrapper = mount(SpaceExplorerContextMenu, {
       props: {
@@ -89,6 +95,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
           .fn()
           .mockReturnValue({ id: "duplicate", text: "duplicate" }),
         anchor: {
+          // @ts-ignore Partial mock
           item: {
             name: "item-name",
             isOpen: false,
@@ -104,11 +111,11 @@ describe("SpaceExplorerContextMenu.vue", () => {
         ...props,
       },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy };
+    return { wrapper, mockedStores };
   };
 
   beforeEach(() => {
@@ -145,7 +152,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
   });
 
   it("displays the 'Copy to...' option when items are selected", async () => {
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       props: {
         selectedItemIds: ["2342"],
         isMultipleSelectionActive: false,
@@ -160,7 +167,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
         },
       },
     });
-    $store.commit("spaces/setProjectPath", {
+    mockedStores.spaceCachingStore.setProjectPath({
       projectId: "someHubProjectId",
       value: {
         spaceId: "someHubSpace",
@@ -177,7 +184,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
   it("calls copy to space action on store when 'Copy to...' is clicked", async () => {
     const closeContextMenu = vi.fn();
-    const { wrapper, dispatchSpy, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       props: {
         selectedItemIds: ["2342"],
         isMultipleSelectionActive: false,
@@ -193,7 +200,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
         },
       },
     });
-    $store.commit("spaces/setProjectPath", {
+    mockedStores.spaceCachingStore.setProjectPath({
       projectId: "someHubProjectId",
       value: {
         spaceId: "someHubSpace",
@@ -213,7 +220,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
     menuItems.vm.$emit("item-click", null, copyToSpace);
     await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyToSpace", {
+    expect(mockedStores.spacesStore.moveOrCopyToSpace).toHaveBeenCalledWith({
       itemIds: ["2342"],
       projectId: "someHubProjectId",
       isCopy: true,
@@ -223,7 +230,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
   it("calls upload to hub action on store if clicked", async () => {
     const closeContextMenu = vi.fn();
-    const { wrapper, dispatchSpy } = doMount({
+    const { wrapper, mockedStores } = doMount({
       props: {
         selectedItemIds: ["2342", "3432"],
         isMultipleSelectionActive: true,
@@ -241,7 +248,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
     menuItems.vm.$emit("item-click", null, uploadToHub);
     await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/copyBetweenSpaces", {
+    expect(mockedStores.spacesStore.copyBetweenSpaces).toHaveBeenCalledWith({
       itemIds: ["2342", "3432"],
       projectId: "someProjectId",
     });

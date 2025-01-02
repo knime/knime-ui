@@ -5,7 +5,7 @@ import type { FileExplorerItem } from "@knime/components";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import { useStore } from "@/composables/useStore";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 
 import DeleteItemTemplate from "./DeleteItemTemplate.vue";
@@ -21,7 +21,7 @@ type UseDeleteItemsOptions = {
 };
 
 export const useDeleteItems = (options: UseDeleteItemsOptions) => {
-  const store = useStore();
+  const { deleteItems } = useSpaceOperationsStore();
   const $router = useRouter();
 
   const { itemIconRenderer } = options;
@@ -59,7 +59,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
       const itemIds = items.map(({ id }) => id);
 
       try {
-        await store.dispatch("spaces/deleteItems", {
+        await deleteItems({
           projectId: options.projectId.value,
           itemIds,
           $router,

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import { useSelectionEvents } from "../../common/useSelectionEvents";
 import DataValueViewWrapper from "../../dataValueViews/DataValueViewWrapper.vue";
@@ -69,16 +69,17 @@ describe("PortViewLoader.vue", () => {
   };
 
   const doMount = (customProps = {}) => {
-    const $store = mockVuexStore({
-      application: applicationStore,
-    });
+    const mockedStores = mockStores();
 
     const wrapper = mount(PortViewLoader, {
       props: { ...props, ...customProps },
-      global: { plugins: [$store], stubs: { UIExtension: true } },
+      global: {
+        plugins: [mockedStores.testingPinia],
+        stubs: { UIExtension: true },
+      },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("should load port view on mount", () => {
@@ -199,9 +200,9 @@ describe("PortViewLoader.vue", () => {
       });
 
       setRestApiBaseUrl("API_URL_BASE");
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
-      $store.commit("application/setActiveProjectId", "project1");
+      mockedStores.applicationStore.setActiveProjectId("project1");
 
       const apiLayer = getApiLayer(wrapper);
 

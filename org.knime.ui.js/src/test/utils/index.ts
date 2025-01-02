@@ -1,6 +1,5 @@
 import type { MockedObject } from "vitest";
 
-export * from "./mockVuexStore";
 export * from "./create-deep-mock";
 export * from "./withPorts";
 export * from "./withoutKeys";

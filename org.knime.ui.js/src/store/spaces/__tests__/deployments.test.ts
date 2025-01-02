@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 
 import {
@@ -18,17 +18,17 @@ describe("spaces::deployments", () => {
 
   describe("deployments", () => {
     it("should fetch jobs", async () => {
-      const itemId = ["id1"];
-      const { store } = loadStore();
+      const itemId = "mockItemId1";
+      const { deploymentsStore, spaceCachingStore } = loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "server",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/fetchJobs", {
+      await deploymentsStore.fetchJobs({
         projectId,
         itemId,
       });
@@ -38,21 +38,21 @@ describe("spaces::deployments", () => {
         spaceProviderId: "server",
         itemId,
       });
-      expect(store.state.spaces.jobs).toEqual(listJobsForWorkflowResponse);
+      expect(deploymentsStore.jobs).toEqual(listJobsForWorkflowResponse);
     });
 
     it("should fetch schedules", async () => {
-      const itemId = ["id1"];
-      const { store } = loadStore();
+      const itemId = "mockItemId1";
+      const { deploymentsStore, spaceCachingStore } = loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "server",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/fetchSchedules", {
+      await deploymentsStore.fetchSchedules({
         projectId,
         itemId,
       });
@@ -62,34 +62,34 @@ describe("spaces::deployments", () => {
         spaceProviderId: "server",
         itemId,
       });
-      expect(store.state.spaces.schedules).toEqual(
+      expect(deploymentsStore.schedules).toEqual(
         listSchedulesForWorkflowResponse,
       );
     });
 
     it("should display deployments", async () => {
-      const itemId = ["id1"];
+      const itemId = "mockItemId1";
       const itemName = "Item name";
-      const { store } = loadStore();
+      const { deploymentsStore, spaceCachingStore, spacesStore } = loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "server",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/displayDeployments", {
+      await deploymentsStore.displayDeployments({
         projectId,
         itemId,
         itemName,
       });
 
-      expect(store.state.spaces.jobs).toEqual(listJobsForWorkflowResponse);
-      expect(store.state.spaces.schedules).toEqual(
+      expect(deploymentsStore.jobs).toEqual(listJobsForWorkflowResponse);
+      expect(deploymentsStore.schedules).toEqual(
         listSchedulesForWorkflowResponse,
       );
-      expect(store.state.spaces.deploymentsModalConfig).toEqual({
+      expect(spacesStore.deploymentsModalConfig).toEqual({
         isOpen: true,
         name: itemName,
         itemId,
@@ -98,26 +98,26 @@ describe("spaces::deployments", () => {
     });
 
     it("should delete job and fetch schedules if job was created by a schedule", async () => {
-      const itemId = ["id1"];
+      const itemId = "mockItemId1";
       const itemName = "Item name";
       const jobId = "job1";
       const schedulerId = "scheduler1";
-      const { store } = loadStore();
+      const { deploymentsStore, spaceCachingStore } = loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "server",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/displayDeployments", {
+      await deploymentsStore.displayDeployments({
         projectId,
         itemId,
         itemName,
       });
 
-      await store.dispatch("spaces/deleteJob", { jobId, schedulerId });
+      await deploymentsStore.deleteJob({ jobId, schedulerId });
       expect(mockedAPI.space.deleteJobsForWorkflow).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "server",
@@ -139,27 +139,27 @@ describe("spaces::deployments", () => {
     });
 
     it("should delete job and fetch only jobs", async () => {
-      const itemId = ["id1"];
+      const itemId = "mockItemId1";
       const itemName = "Item name";
       const jobId = "job1";
-      const schedulerId = null;
-      const { store } = loadStore();
+      const schedulerId = "";
+      const { deploymentsStore, spaceCachingStore } = loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "server",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/displayDeployments", {
+      await deploymentsStore.displayDeployments({
         projectId,
         itemId,
         itemName,
       });
       expect(mockedAPI.space.listSchedulesForWorkflow).toHaveBeenCalledOnce();
 
-      await store.dispatch("spaces/deleteJob", { jobId, schedulerId });
+      await deploymentsStore.deleteJob({ jobId, schedulerId });
       expect(mockedAPI.space.deleteJobsForWorkflow).toHaveBeenCalledWith({
         spaceId: "local",
         spaceProviderId: "server",
@@ -175,27 +175,28 @@ describe("spaces::deployments", () => {
     });
 
     it("should save job as a workflow", async () => {
-      const itemId = ["id1"];
+      const itemId = "mockItemId1";
       const itemName = "Item name";
       const jobId = "job1";
       const jobName = "myjob";
 
       mockedAPI.desktop.saveJobAsWorkflow.mockReturnValueOnce("newWorkflowId");
-      const { store, dispatchSpy } = loadStore();
+      const { deploymentsStore, spaceCachingStore, spaceOperationsStore } =
+        loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "server",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/displayDeployments", {
+      await deploymentsStore.displayDeployments({
         projectId,
         itemId,
         itemName,
       });
-      await store.dispatch("spaces/saveJobAsWorkflow", { jobId, jobName });
+      await deploymentsStore.saveJobAsWorkflow({ jobId, jobName });
 
       expect(mockedAPI.desktop.saveJobAsWorkflow).toHaveBeenCalledWith({
         spaceId: "local",
@@ -205,10 +206,9 @@ describe("spaces::deployments", () => {
         jobName,
       });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "spaces/fetchWorkflowGroupContent",
-        { projectId },
-      );
+      expect(
+        spaceOperationsStore.fetchWorkflowGroupContent,
+      ).toHaveBeenCalledWith({ projectId });
     });
   });
 });

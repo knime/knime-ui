@@ -1,21 +1,19 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref } from "vue";
 import throttle from "raf-throttle";
-import { useStore } from "vuex";
 
 import { $bus } from "@/plugins/event-bus";
 import { useShortcuts } from "@/plugins/shortcuts";
-import type { RootStoreState } from "@/store/types";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useCanvasStore } from "@/store/canvas";
 
 const startPosition = reactive({ x: 0, y: 0 });
 const endPosition = reactive({ x: 0, y: 0 });
 const pointerId = ref<number | null>(null);
 
 const $shortcuts = useShortcuts();
-const store = useStore<RootStoreState>();
-const screenToCanvasCoordinates = computed(
-  () => store.getters["canvas/screenToCanvasCoordinates"],
-);
+const { screenToCanvasCoordinates } = useCanvasStore();
+const { switchCanvasMode } = useCanvasModesStore();
 
 const selectionBounds = computed(() => {
   return {
@@ -31,7 +29,7 @@ const startAnnotationDrag = (event: PointerEvent) => {
   pointerId.value = event.pointerId;
   (event.target as HTMLElement).setPointerCapture(event.pointerId);
 
-  [startPosition.x, startPosition.y] = screenToCanvasCoordinates.value([
+  [startPosition.x, startPosition.y] = screenToCanvasCoordinates([
     event.clientX,
     event.clientY,
   ]);
@@ -44,7 +42,7 @@ const updateAnnotationDrag = throttle(function (e) {
     return;
   }
 
-  [endPosition.x, endPosition.y] = screenToCanvasCoordinates.value([
+  [endPosition.x, endPosition.y] = screenToCanvasCoordinates([
     e.clientX,
     e.clientY,
   ]);
@@ -71,7 +69,7 @@ const stopAnnotationDrag = throttle(function (event) {
         height,
       },
     });
-    store.dispatch("application/switchCanvasMode", "selection");
+    switchCanvasMode("selection");
   }, 0);
 });
 

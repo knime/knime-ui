@@ -1,34 +1,33 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Modal } from "@knime/components";
 import DeploymentIcon from "@knime/styles/img/icons/deployment.svg";
 
-import { useStore } from "@/composables/useStore";
+import { useDeploymentsStore } from "@/store/spaces/deployments";
+import { useSpacesStore } from "@/store/spaces/spaces";
 
 const JobsTable = defineAsyncComponent(() => import("./JobsTable.vue"));
 const SchedulesTable = defineAsyncComponent(
   () => import("./SchedulesTable.vue"),
 );
 
-const store = useStore();
+const { jobs, schedules } = storeToRefs(useDeploymentsStore());
+const { deploymentsModalConfig } = storeToRefs(useSpacesStore());
+const { setDeploymentsModalConfig } = useSpacesStore();
 
 const isDeploymentModalOpen = computed(
-  () => store.state.spaces.deploymentsModalConfig.isOpen,
+  () => deploymentsModalConfig.value.isOpen,
 );
-const selectedItemName = computed(
-  () =>
-    `Schedules and jobs of “${store.state.spaces.deploymentsModalConfig.name}”`,
-);
-const jobs = computed(() => store.state.spaces.jobs);
-const schedules = computed(() => store.state.spaces.schedules);
+const selectedItemName = `Schedules and jobs of “${deploymentsModalConfig.value.name}”`;
 
 const closeModal = () => {
-  store.commit("spaces/setDeploymentsModalConfig", {
+  setDeploymentsModalConfig({
     isOpen: false,
-    name: null,
-    projectId: null,
-    itemId: null,
+    name: "",
+    projectId: "",
+    itemId: "",
   });
 };
 </script>

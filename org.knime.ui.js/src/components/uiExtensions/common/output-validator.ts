@@ -358,14 +358,12 @@ export const validateNodeExecuted: ValidationFn<{
   return next(context);
 };
 
-type MiddlewareFn<TEnv, TCxt> = (
+type MiddlewareFn<TEnv> = (
   environment: TEnv,
-  next: NextFn<TCxt>,
-) => (context: TCxt) => ReturnType<ValidationFn<TCxt>>;
+  next: NextFn<TEnv>,
+) => () => ReturnType<ValidationFn<TEnv>>;
 
-type MiddlewareMappingFn<TEnv, TCxt> = (
-  fn: ValidationFn<TCxt>,
-) => MiddlewareFn<TEnv, TCxt>;
+type MiddlewareMappingFn<TEnv> = (fn: ValidationFn<TEnv>) => MiddlewareFn<TEnv>;
 
 type MiddlewarePipe = () => ValidationResult | null;
 
@@ -380,13 +378,13 @@ type MiddlewarePipe = () => ValidationResult | null;
  * have executed, or it will return a different value if any function performed an early exit
  */
 export const buildMiddleware =
-  <TEnv, TCxt>(...middlewares: Array<ValidationFn>) =>
+  <TEnv>(...middlewares: Array<ValidationFn>) =>
   (env: TEnv): MiddlewarePipe => {
     // convert a simple function into a middleware function
     // by partially applying environment and next before calling the given function along with the context
-    const toMiddlewareFn: MiddlewareMappingFn<TEnv, TCxt> =
-      (fn) => (environment, next) => (context) =>
-        fn({ ...environment, ...context }, next);
+    const toMiddlewareFn: MiddlewareMappingFn<TEnv> =
+      (fn) => (environment, next) => () =>
+        fn({ ...environment }, next);
 
     const runFinal = (context?: any) => context;
 

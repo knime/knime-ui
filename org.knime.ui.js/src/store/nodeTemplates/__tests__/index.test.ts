@@ -1,16 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
+import { createTestingPinia } from "@pinia/testing";
 
-import { API } from "@/api";
-import * as applicationStore from "@/store/application";
+import { useApplicationStore } from "@/store/application/application";
 import {
   NODE_FACTORIES,
   createAvailablePortTypes,
   createNodeTemplate,
   createNodeTemplateWithExtendedPorts,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
 import { toNodeTemplateWithExtendedPorts } from "@/util/portDataMapper";
-import * as nodeTemplatesStore from "../index";
+import { useNodeTemplatesStore } from "../nodeTemplates";
 
 const mockedAPI = deepMocked(API);
 
@@ -36,14 +37,14 @@ describe("nodeTemplates", () => {
   };
 
   const loadStore = () => {
-    const $store = mockVuexStore({
-      nodeTemplates: nodeTemplatesStore,
-      application: applicationStore,
+    const testingPinia = createTestingPinia({
+      stubActions: false,
+      createSpy: vi.fn,
     });
 
-    $store.commit("application/setAvailablePortTypes", availablePortTypes);
+    useApplicationStore(testingPinia).setAvailablePortTypes(availablePortTypes);
 
-    return { $store };
+    return { nodeTemplatesStore: useNodeTemplatesStore(testingPinia) };
   };
 
   beforeEach(() => {
@@ -65,17 +66,17 @@ describe("nodeTemplates", () => {
         nodeTemplate3.id,
       ];
 
-      const { $store } = loadStore();
+      const { nodeTemplatesStore } = loadStore();
 
-      expect($store.state.nodeTemplates.cache).toEqual({});
+      expect(nodeTemplatesStore.cache).toEqual({});
 
-      const result1 = await $store.dispatch("nodeTemplates/getNodeTemplates", {
+      const result1 = await nodeTemplatesStore.getNodeTemplates({
         nodeTemplateIds,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
 
-      expect($store.state.nodeTemplates.cache).toEqual({
+      expect(nodeTemplatesStore.cache).toEqual({
         [nodeTemplate1.id]:
           toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate1),
         [nodeTemplate2.id]:
@@ -84,7 +85,7 @@ describe("nodeTemplates", () => {
           toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate3),
       });
 
-      const result2 = await $store.dispatch("nodeTemplates/getNodeTemplates", {
+      const result2 = await nodeTemplatesStore.getNodeTemplates({
         nodeTemplateIds,
       });
 
@@ -104,14 +105,14 @@ describe("nodeTemplates", () => {
           [nodeTemplate3.id]: nodeTemplate3,
         });
 
-      const { $store } = loadStore();
+      const { nodeTemplatesStore } = loadStore();
 
-      expect($store.state.nodeTemplates.cache).toEqual({});
+      expect(nodeTemplatesStore.cache).toEqual({});
 
       const request1 = [nodeTemplate1.id, nodeTemplate2.id];
       const request2 = [nodeTemplate1.id, nodeTemplate2.id, nodeTemplate3.id];
 
-      await $store.dispatch("nodeTemplates/getNodeTemplates", {
+      await nodeTemplatesStore.getNodeTemplates({
         nodeTemplateIds: request1,
       });
 
@@ -119,7 +120,7 @@ describe("nodeTemplates", () => {
         nodeTemplateIds: request1,
       });
 
-      await $store.dispatch("nodeTemplates/getNodeTemplates", {
+      await nodeTemplatesStore.getNodeTemplates({
         nodeTemplateIds: request2,
       });
 
@@ -130,7 +131,7 @@ describe("nodeTemplates", () => {
     });
 
     it("should remove duplicate template ids before fetching", async () => {
-      const { $store } = loadStore();
+      const { nodeTemplatesStore } = loadStore();
       const nodeTemplateIds = [
         nodeTemplate1.id,
         nodeTemplate1.id,
@@ -143,7 +144,7 @@ describe("nodeTemplates", () => {
         nodeTemplate3.id,
       ];
 
-      await $store.dispatch("nodeTemplates/getNodeTemplates", {
+      await nodeTemplatesStore.getNodeTemplates({
         nodeTemplateIds,
       });
 
@@ -153,9 +154,9 @@ describe("nodeTemplates", () => {
     });
 
     it("should return missing template ids", async () => {
-      const { $store } = loadStore();
+      const { nodeTemplatesStore } = loadStore();
 
-      expect($store.state.nodeTemplates.cache).toEqual({});
+      expect(nodeTemplatesStore.cache).toEqual({});
 
       const nodeTemplateIds = [
         nodeTemplate1.id,
@@ -165,10 +166,9 @@ describe("nodeTemplates", () => {
         NODE_FACTORIES.GoogleSheetsReaderFactory,
       ];
 
-      const { found, missing } = await $store.dispatch(
-        "nodeTemplates/getNodeTemplates",
-        { nodeTemplateIds },
-      );
+      const { found, missing } = await nodeTemplatesStore.getNodeTemplates({
+        nodeTemplateIds,
+      });
 
       expect(found).toEqual({
         [nodeTemplate1.id]:
@@ -189,14 +189,13 @@ describe("nodeTemplates", () => {
         [nodeTemplate1.id]: nodeTemplate1,
       });
 
-      const { $store } = loadStore();
+      const { nodeTemplatesStore } = loadStore();
 
-      expect($store.state.nodeTemplates.cache).toEqual({});
+      expect(nodeTemplatesStore.cache).toEqual({});
 
-      const result = await $store.dispatch(
-        "nodeTemplates/getSingleNodeTemplate",
-        { nodeTemplateId: nodeTemplate1.id },
-      );
+      const result = await nodeTemplatesStore.getSingleNodeTemplate({
+        nodeTemplateId: nodeTemplate1.id,
+      });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
 
@@ -204,28 +203,27 @@ describe("nodeTemplates", () => {
         toNodeTemplateWithExtendedPorts(availablePortTypes)(nodeTemplate1),
       );
 
-      await $store.dispatch("nodeTemplates/getSingleNodeTemplate", {
+      await nodeTemplatesStore.getSingleNodeTemplate({
         nodeTemplateId: nodeTemplate1.id,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
     });
 
-    it("should return empty object when template is missing", async () => {
+    it("should return null when template is missing", async () => {
       mockedAPI.noderepository.getNodeTemplates.mockResolvedValueOnce({});
 
-      const { $store } = loadStore();
+      const { nodeTemplatesStore } = loadStore();
 
-      expect($store.state.nodeTemplates.cache).toEqual({});
+      expect(nodeTemplatesStore.cache).toEqual({});
 
-      const result = await $store.dispatch(
-        "nodeTemplates/getSingleNodeTemplate",
-        { nodeTemplateId: nodeTemplate1.id },
-      );
+      const result = await nodeTemplatesStore.getSingleNodeTemplate({
+        nodeTemplateId: nodeTemplate1.id,
+      });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
 
-      expect(result).toEqual({});
+      expect(result).toBeNull();
     });
   });
 
@@ -234,15 +232,13 @@ describe("nodeTemplates", () => {
       [nodeTemplate1.id]: nodeTemplate1,
     });
 
-    const { $store } = loadStore();
+    const { nodeTemplatesStore } = loadStore();
 
-    await $store.dispatch("nodeTemplates/getSingleNodeTemplate", {
+    await nodeTemplatesStore.getSingleNodeTemplate({
       nodeTemplateId: nodeTemplate1.id,
     });
 
-    expect(Object.keys($store.state.nodeTemplates.cache)).toEqual([
-      nodeTemplate1.id,
-    ]);
+    expect(Object.keys(nodeTemplatesStore.cache)).toEqual([nodeTemplate1.id]);
 
     const newTemplates = [
       createNodeTemplateWithExtendedPorts({
@@ -250,11 +246,11 @@ describe("nodeTemplates", () => {
       }),
     ];
 
-    $store.dispatch("nodeTemplates/updateCacheFromSearchResults", {
+    nodeTemplatesStore.updateCacheFromSearchResults({
       nodeTemplates: newTemplates,
     });
 
-    expect(Object.keys($store.state.nodeTemplates.cache)).toEqual([
+    expect(Object.keys(nodeTemplatesStore.cache)).toEqual([
       nodeTemplate1.id,
       "some-new-candidate",
     ]);

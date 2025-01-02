@@ -50,15 +50,15 @@ function isUnknownGatewayException(e: unknown): e is { message: string, data: Ob
 };
 
 const exceptionClassMapping = {
-    "ServiceCallException": ServiceCallException,
-    "NetworkException": NetworkException,
-    "NodeDescriptionNotAvailableException": NodeDescriptionNotAvailableException,
-    "NodeNotFoundException": NodeNotFoundException,
-    "NoSuchElementException": NoSuchElementException,
-    "NotASubWorkflowException": NotASubWorkflowException,
-    "InvalidRequestException": InvalidRequestException,
-    "OperationNotAllowedException": OperationNotAllowedException,
-    "IOException": IOException,
+    ServiceCallException,
+    NetworkException,
+    NodeDescriptionNotAvailableException,
+    NodeNotFoundException,
+    NoSuchElementException,
+    NotASubWorkflowException,
+    InvalidRequestException,
+    OperationNotAllowedException,
+    IOException,
 } as const;
 
 export function mapToExceptionClass(e: unknown) {

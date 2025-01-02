@@ -1,5 +1,9 @@
 <script>
-import { mapActions, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
+
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 /**
  * Renderless component that provides all the computed/data/methods necessary for the connector snapping logic.
@@ -63,7 +67,8 @@ export default {
   }),
 
   computed: {
-    ...mapState("workflow", ["portTypeMenu"]),
+    ...mapState(useFloatingMenusStore, ["portTypeMenu"]),
+
     /**
      * Divides the height of the container into partitions
      * that divide the space between ports by half
@@ -107,14 +112,14 @@ export default {
   },
 
   methods: {
-    ...mapActions("workflow", [
-      "connectNodes",
-      "addNodePort",
+    ...mapActions(useFloatingMenusStore, [
       "openPortTypeMenu",
       "closePortTypeMenu",
+      "setPortTypeMenuPreviewPort",
     ]),
-    ...mapMutations("workflow", ["setPortTypeMenuPreviewPort"]),
-    ...mapActions("nodeConfiguration", ["autoApplySettings"]),
+    ...mapActions(useNodeInteractionsStore, ["connectNodes", "addNodePort"]),
+    ...mapActions(useNodeConfigurationStore, ["autoApplySettings"]),
+
     onConnectorStart({ validConnectionTargets, startNodeId }) {
       // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
       // e.g.: Metanode portbar ports can always be connected to (provided they're "compatible")

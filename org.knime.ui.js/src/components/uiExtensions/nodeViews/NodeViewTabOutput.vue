@@ -7,7 +7,8 @@ import type { Alert } from "@knime/ui-extension-renderer/api";
 
 import type { AvailablePortTypes } from "@/api/custom-types";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useExecutionStore } from "@/store/workflow/execution";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
@@ -58,9 +59,7 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const store = useStore();
-
-const uiControls = computed(() => store.state.uiControls);
+const uiControls = useUIControlsStore();
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
@@ -86,7 +85,7 @@ watch(
 );
 
 const openInNewWindow = () => {
-  store.dispatch("workflow/executeNodeAndOpenView", props.selectedNode.id);
+  useExecutionStore().executeNodeAndOpenView(props.selectedNode.id);
 };
 </script>
 

@@ -8,8 +8,9 @@ import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 import type { SpaceProviderNS } from "@/api/custom-types";
 import SearchButton from "@/components/common/SearchButton.vue";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 import { matchesQuery } from "@/util/matchesQuery";
 
@@ -24,8 +25,9 @@ import { useSpaceIcons } from "./useSpaceIcons";
 
 type SpaceWithGroupId = SpaceProviderNS.Space & { groupId: string };
 
+const { createSpace } = useSpaceOperationsStore();
+const { reloadProviderSpaces } = useSpaceProvidersStore();
 const $router = useRouter();
-const store = useStore();
 
 const {
   activeSpaceProvider,
@@ -91,13 +93,13 @@ const icon = computed(() =>
 
 const { toastPresets } = getToastPresets();
 
-const createSpace = async () => {
+const onSpaceExplorerFloatingButtonClick = async () => {
   isCreateSpaceDisabled.value = true;
 
   try {
-    await store.dispatch("spaces/createSpace", {
+    await createSpace({
       spaceProviderId: activeSpaceProvider.value.id,
-      spaceGroup: activeSpaceGroup.value,
+      spaceGroup: activeSpaceGroup.value!,
       $router,
     });
   } catch (error) {
@@ -109,7 +111,7 @@ const createSpace = async () => {
 
 const reload = async () => {
   try {
-    await store.dispatch("spaces/reloadProviderSpaces", {
+    await reloadProviderSpaces({
       id: activeSpaceProvider.value.id,
     });
   } catch (error) {
@@ -141,7 +143,7 @@ const reload = async () => {
         v-if="!isShowingAllSpaces"
         :disabled="isCreateSpaceDisabled"
         title="Create new space"
-        @click="createSpace"
+        @click="onSpaceExplorerFloatingButtonClick"
       />
     </template>
 

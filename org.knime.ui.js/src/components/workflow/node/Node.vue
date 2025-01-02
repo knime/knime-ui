@@ -1,8 +1,7 @@
 <script>
 /* eslint-disable max-lines */
 // TODO: NXT-1069 split up this file
-
-import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
 
@@ -10,6 +9,16 @@ import ConnectorSnappingProvider from "@/components/workflow/connectors/Connecto
 import { NodePorts } from "@/components/workflow/ports/NodePorts";
 import { KNIME_MIME } from "@/composables/useDropNode";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useApplicationStore } from "@/store/application/application";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import NodeActionBar from "./NodeActionBar.vue";
 import NodeHoverSizeProvider from "./NodeHoverSizeProvider.vue";
@@ -210,16 +219,24 @@ export default {
     };
   },
   computed: {
-    ...mapState("application", {
-      projectId: "activeProjectId",
-      useEmbeddedDialogs: "useEmbeddedDialogs",
-    }),
-    ...mapState("workflow", ["isDragging"]),
-    ...mapState("selection", ["shouldHideSelection"]),
-    ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
-    ...mapGetters("workflow", ["isWritable"]),
-    ...mapGetters("application", ["hasAnnotationModeEnabled"]),
-    ...mapGetters("nodeConfiguration", ["canBeEnlarged"]),
+    ...mapState(useUIControlsStore, [
+      "canLockAndUnlockSubnodes",
+      "canConfigureNodes",
+    ]),
+    ...mapState(useApplicationStore, { projectId: "activeProjectId" }),
+    ...mapState(useApplicationSettingsStore, [
+      "useEmbeddedDialogs",
+      "hasAnnotationModeEnabled",
+    ]),
+    ...mapState(useMovingStore, ["isDragging"]),
+    ...mapState(useSelectionStore, [
+      "getFocusedObject",
+      "isNodeSelected",
+      "singleSelectedNode",
+      "shouldHideSelection",
+    ]),
+    ...mapState(useWorkflowStore, ["isWritable"]),
+    ...mapState(useNodeConfigurationStore, ["isLargeMode", "canBeEnlarged"]),
 
     /**
      * Width of the node selection plane. It accounts not only for the node margins
@@ -278,7 +295,7 @@ export default {
     },
 
     showFocus() {
-      return this.$store.getters["selection/focusedObject"]?.id === this.id;
+      return this.getFocusedObject?.id === this.id;
     },
 
     isExecuting() {
@@ -304,17 +321,17 @@ export default {
     },
   },
   methods: {
-    ...mapActions("workflow", [
-      "openNodeConfiguration",
-      "replaceNode",
-      "resetDragState",
-    ]),
-    ...mapActions("selection", [
+    ...mapActions(useApplicationStore, ["toggleContextMenu"]),
+    ...mapActions(useNodeInteractionsStore, ["replaceNode"]),
+    ...mapActions(useComponentInteractionsStore, ["unlockSubnode"]),
+    ...mapActions(useDesktopInteractionsStore, ["openNodeConfiguration"]),
+    ...mapActions(useSelectionStore, [
       "selectNode",
       "deselectAllObjects",
       "deselectNode",
     ]),
-    ...mapMutations("workflow", ["setIsDragging"]),
+    ...mapActions(useMovingStore, ["setIsDragging", "resetDragState"]),
+    ...mapActions(useNodeConfigurationStore, ["setIsLargeMode"]),
 
     onLeaveHoverArea(e) {
       const actionBarElement = this.$refs.actionbar?.$el;
@@ -358,14 +375,8 @@ export default {
         !isMetanode;
 
       if (isOpeningContainerNode) {
-        if (
-          this.isLocked &&
-          this.$store.state.uiControls.canLockAndUnlockSubnodes
-        ) {
-          const isUnlocked = await this.$store.dispatch(
-            "workflow/unlockSubnode",
-            { nodeId: this.id },
-          );
+        if (this.isLocked && this.canLockAndUnlockSubnodes) {
+          const isUnlocked = await this.unlockSubnode({ nodeId: this.id });
 
           if (!isUnlocked) {
             return;
@@ -380,7 +391,7 @@ export default {
         return;
       }
 
-      if (!this.$store.state.uiControls.canConfigureNodes) {
+      if (!this.canConfigureNodes) {
         return;
       }
 
@@ -390,7 +401,7 @@ export default {
       }
 
       if (canOpenAsModal) {
-        this.$store.state.nodeConfiguration.isLargeMode = true;
+        this.setIsLargeMode(true);
       }
 
       if (this.dialogType === "web" && this.useEmbeddedDialogs) {
@@ -446,7 +457,7 @@ export default {
         this.selectNode(this.id);
       }
 
-      this.$store.dispatch("application/toggleContextMenu", { event });
+      this.toggleContextMenu({ event });
     },
 
     onTorsoDragEnter(dragEvent) {

@@ -1,109 +1,110 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
-} from "@/store/spaces";
+} from "@/store/spaces/common";
+import { createWorkflow } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import applicationShortcuts from "../applicationShortcuts";
 
 describe("applicationShortcuts", () => {
-  let mockDispatch, mockCommit, $store;
+  const createStore = () => {
+    const {
+      applicationStore,
+      workflowStore,
+      spacesStore,
+      spaceCachingStore,
+      desktopInteractionsStore,
+    } = mockStores();
 
-  beforeEach(() => {
-    mockDispatch = vi.fn();
-    mockCommit = vi.fn();
-    $store = {
-      dispatch: mockDispatch,
-      commit: mockCommit,
-      state: {
-        application: {
-          activeProjectId: "1",
-        },
-        workflow: {
-          activeWorkflow: {
-            projectId: "1",
-          },
-        },
-        spaces: {
-          projectPath: {},
-        },
-      },
-      getters: {
-        "application/isUnknownProject": () => false,
-      },
+    applicationStore.activeProjectId = "project1";
+    workflowStore.activeWorkflow = createWorkflow();
+    spaceCachingStore.projectPath = {};
+    // @ts-expect-error: Getter is read only
+    applicationStore.isUnknownProject = () => false;
+
+    return {
+      applicationStore,
+      workflowStore,
+      spacesStore,
+      spaceCachingStore,
+      desktopInteractionsStore,
     };
-  });
+  };
 
   describe("createWorkflow", () => {
     it("should work when project is open", () => {
-      applicationShortcuts.createWorkflow.execute({ $store });
-      expect(mockCommit).toHaveBeenCalledWith(
-        "spaces/setCreateWorkflowModalConfig",
-        {
-          isOpen: true,
-          projectId: "1",
-        },
-      );
+      const { spacesStore } = createStore();
+
+      applicationShortcuts.createWorkflow.execute();
+
+      expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
+        isOpen: true,
+        projectId: "project1",
+      });
     });
 
     it("should work when project is from unknown origin", () => {
-      $store.state.spaces.projectPath = { [cachedLocalSpaceProjectId]: {} };
-      $store.getters["application/isUnknownProject"] = () => true;
-      applicationShortcuts.createWorkflow.execute({ $store });
-      expect(mockCommit).toHaveBeenCalledWith(
-        "spaces/setCreateWorkflowModalConfig",
-        {
-          isOpen: true,
-          projectId: cachedLocalSpaceProjectId,
-        },
-      );
+      const { applicationStore, spacesStore, spaceCachingStore } =
+        createStore();
+
+      spaceCachingStore.projectPath = { [cachedLocalSpaceProjectId]: {} };
+      applicationStore.isUnknownProject = () => true;
+      applicationShortcuts.createWorkflow.execute();
+
+      expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
+        isOpen: true,
+        projectId: cachedLocalSpaceProjectId,
+      });
     });
 
     it("should work when no project is open AND user is browsing space", () => {
-      $store.state.spaces.projectPath = { [globalSpaceBrowserProjectId]: {} };
-      $store.state.application.activeProjectId = null;
+      const { applicationStore, spacesStore, spaceCachingStore } =
+        createStore();
 
-      applicationShortcuts.createWorkflow.execute({ $store });
+      spaceCachingStore.projectPath = { [globalSpaceBrowserProjectId]: {} };
+      applicationStore.activeProjectId = null;
+      applicationShortcuts.createWorkflow.execute();
 
-      expect(mockCommit).toHaveBeenCalledWith(
-        "spaces/setCreateWorkflowModalConfig",
-        {
-          isOpen: true,
-          projectId: globalSpaceBrowserProjectId,
-        },
-      );
+      expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
+        isOpen: true,
+        projectId: globalSpaceBrowserProjectId,
+      });
     });
 
     it("should work when no project is open AND user is NOT browsing any space", () => {
-      $store.state.spaces.projectPath = { [cachedLocalSpaceProjectId]: {} };
-      $store.state.application.activeProjectId = null;
+      const { applicationStore, spacesStore, spaceCachingStore } =
+        createStore();
 
-      applicationShortcuts.createWorkflow.execute({ $store });
-      expect(mockCommit).toHaveBeenCalledWith(
-        "spaces/setCreateWorkflowModalConfig",
-        {
-          isOpen: true,
-          projectId: cachedLocalSpaceProjectId,
-        },
-      );
+      spaceCachingStore.projectPath = { [cachedLocalSpaceProjectId]: {} };
+      applicationStore.activeProjectId = null;
+      applicationShortcuts.createWorkflow.execute();
+
+      expect(spacesStore.setCreateWorkflowModalConfig).toHaveBeenCalledWith({
+        isOpen: true,
+        projectId: cachedLocalSpaceProjectId,
+      });
     });
   });
 
   describe("closeProject", () => {
     it("execute", () => {
-      applicationShortcuts.closeProject.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("workflow/closeProject", "1");
+      const { desktopInteractionsStore } = createStore();
+
+      applicationShortcuts.closeProject.execute();
+      expect(desktopInteractionsStore.closeProject).toHaveBeenCalledWith(
+        "project1",
+      );
     });
 
     it("condition", () => {
-      expect(applicationShortcuts.closeProject.condition({ $store })).toBe(
-        true,
-      );
-      $store.state.workflow.activeWorkflow.projectId = null;
-      expect(
-        applicationShortcuts.closeProject.condition({ $store }),
-      ).toBeFalsy();
+      const { workflowStore } = createStore();
+
+      expect(applicationShortcuts.closeProject.condition()).toBe(true);
+      workflowStore.activeWorkflow.projectId = null;
+      expect(applicationShortcuts.closeProject.condition()).toBeFalsy();
     });
   });
 
@@ -116,15 +117,16 @@ describe("applicationShortcuts", () => {
     ])(
       "execute switchToNextWorkflow (%s -> %s)",
       (activeProjectId, expectedProjectId) => {
+        const { applicationStore } = createStore();
         const $router = { push: vi.fn() };
-        $store.state.application.openProjects = [
+
+        applicationStore.openProjects = [
           { projectId: "A" },
           { projectId: "B" },
           { projectId: "C" },
         ];
-
-        $store.state.application.activeProjectId = activeProjectId;
-        applicationShortcuts.switchToNextWorkflow.execute({ $store, $router });
+        applicationStore.activeProjectId = activeProjectId;
+        applicationShortcuts.switchToNextWorkflow.execute({ $router });
 
         const routeName =
           expectedProjectId === null
@@ -154,15 +156,16 @@ describe("applicationShortcuts", () => {
     ])(
       "execute switchToPreviousWorkflow (%s -> %s)",
       (activeProjectId, expectedProjectId) => {
+        const { applicationStore } = createStore();
         const $router = { push: vi.fn() };
-        $store.state.application.openProjects = [
+
+        applicationStore.openProjects = [
           { projectId: "A" },
           { projectId: "B" },
           { projectId: "C" },
         ];
-        $store.state.application.activeProjectId = activeProjectId;
+        applicationStore.activeProjectId = activeProjectId;
         applicationShortcuts.switchToPreviousWorkflow.execute({
-          $store,
           $router,
         });
 

@@ -6,7 +6,7 @@ import { NodeFeatureList } from "@knime/components";
 import { type NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import CloseButton from "@/components/common/CloseButton.vue";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import { useStore } from "@/composables/useStore";
+import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
 import type {
   ComponentNodeDescriptionWithExtendedPorts,
   NativeNodeDescriptionWithExtendedPorts,
@@ -38,8 +38,7 @@ const props = withDefaults(defineProps<Props>(), {
   showCloseButton: false,
 });
 
-const store = useStore();
-
+const nodeDescriptionStore = useNodeDescriptionStore();
 const isLoading = ref(false);
 const emit = defineEmits<(e: "close") => void>();
 
@@ -73,9 +72,11 @@ const loadNativeNodeDescription = async () => {
   isLoading.value = true;
 
   try {
-    descriptionData.value = await store.dispatch(
-      "nodeDescription/getNativeNodeDescription",
-      { factoryId: params.value.id, nodeFactory: params.value.nodeFactory },
+    descriptionData.value = await nodeDescriptionStore.getNativeNodeDescription(
+      {
+        factoryId: params.value.id,
+        nodeFactory: params.value.nodeFactory!,
+      },
     );
   } catch (error) {
     consola.error("NodeDescription::Problem fetching NativeNode description", {
@@ -95,10 +96,9 @@ const loadComponentDescription = async () => {
   isLoading.value = true;
 
   try {
-    descriptionData.value = await store.dispatch(
-      "nodeDescription/getComponentDescription",
-      { nodeId: params.value.id },
-    );
+    descriptionData.value = await nodeDescriptionStore.getComponentDescription({
+      nodeId: params.value.id,
+    });
   } catch (error) {
     consola.error("NodeDescription::Problem fetching Component description", {
       params,

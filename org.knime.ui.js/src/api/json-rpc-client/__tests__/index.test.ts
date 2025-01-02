@@ -4,7 +4,6 @@ import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
-import { mockVuexStore } from "@/test/utils";
 import { getToastPresets } from "@/toastPresets";
 import { initJSONRPCClient } from "../index";
 import { serverEventHandler } from "../server-events";
@@ -42,8 +41,6 @@ vi.mock("@open-rpc/client-js", async () => {
 });
 
 describe("rpc client initialization", () => {
-  const store = mockVuexStore({});
-
   beforeEach(() => {
     vi.resetModules();
   });
@@ -56,11 +53,11 @@ describe("rpc client initialization", () => {
       window.EquoCommService = undefined;
 
       expect(() => {
-        return initJSONRPCClient(
-          "DESKTOP",
-          { url: "", restApiBaseUrl: "", sessionId: "" },
-          store,
-        );
+        return initJSONRPCClient("DESKTOP", {
+          url: "",
+          restApiBaseUrl: "",
+          sessionId: "",
+        });
       }).rejects.toThrow("Could not access EquoComm service. Aborting");
     });
 
@@ -84,11 +81,11 @@ describe("rpc client initialization", () => {
       // @ts-expect-error
       window.EquoCommService = EquoCommService;
 
-      await initJSONRPCClient(
-        "DESKTOP",
-        { url: "", restApiBaseUrl: "", sessionId: "" },
-        store,
-      );
+      await initJSONRPCClient("DESKTOP", {
+        url: "",
+        restApiBaseUrl: "",
+        sessionId: "",
+      });
 
       expect(EquoCommService.on).toHaveBeenCalledWith(
         JAVA_EVENT_ACTION_ID,
@@ -107,7 +104,7 @@ describe("rpc client initialization", () => {
     it("should check for connection info", async () => {
       const { initJSONRPCClient } = await import("../index");
       expect(() => {
-        return initJSONRPCClient("BROWSER", null, store);
+        return initJSONRPCClient("BROWSER", null);
       }).rejects.toThrow("Missing connection info");
     });
 
@@ -125,15 +122,11 @@ describe("rpc client initialization", () => {
         "connectionRestored",
       );
 
-      await initJSONRPCClient(
-        "BROWSER",
-        {
-          url: "wss://localhost:1000",
-          restApiBaseUrl: "",
-          sessionId: "",
-        },
-        store,
-      );
+      await initJSONRPCClient("BROWSER", {
+        url: "wss://localhost:1000",
+        restApiBaseUrl: "",
+        sessionId: "",
+      });
 
       expect(addEventListener).toHaveBeenCalledWith(
         "message",

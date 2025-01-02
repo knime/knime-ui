@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 
-import type { KnimeNode } from "@/api/custom-types";
-import { type NativeNode } from "@/api/gateway-api/generated-api";
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useSelectionStore } from "@/store/selection";
+import { useSettingsStore } from "@/store/settings";
+import { useExecutionStore } from "@/store/workflow/execution";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import NodeConfigLayout from "./NodeConfigLayout.vue";
-
-const store = useStore();
 
 type Props = {
   isLargeMode: boolean;
@@ -19,43 +22,39 @@ const emit = defineEmits<{
   expand: [];
 }>();
 
-const projectId = computed(() => store.state.application.activeProjectId!);
-const workflowId = computed(
-  () => store.state.workflow.activeWorkflow!.info.containerId,
-);
-const selectedNode = computed<KnimeNode | null>(
-  () => store.getters["selection/singleSelectedNode"],
-);
+const { activeProjectId: projectId } = storeToRefs(useApplicationStore());
+const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const { singleSelectedNode: selectedNode } = storeToRefs(useSelectionStore());
+const nodeConfigurationStore = useNodeConfigurationStore();
+const {
+  activeExtensionConfig,
+  activeNodeId,
+  dirtyState,
+  activeNode,
+  isConfigurationDisabled,
+} = storeToRefs(nodeConfigurationStore);
+
+const workflowId = computed(() => activeWorkflow.value!.info.containerId);
 const canBeEnlarged = computed(
-  () =>
-    store.state.nodeConfiguration.activeExtensionConfig?.canBeEnlarged ?? false,
+  () => activeExtensionConfig.value?.canBeEnlarged ?? false,
 );
 
 const nodeName = computed<string>(() =>
-  store.getters["workflow/getNodeName"](
-    store.state.nodeConfiguration.activeNodeId,
-  ),
-);
-const activeNodeId = computed(() => store.state.nodeConfiguration.activeNodeId);
-const dirtyState = computed(() => store.state.nodeConfiguration.dirtyState);
-const activeNode = computed<NativeNode | null>(
-  () => store.getters["nodeConfiguration/activeNode"],
-);
-
-const isConfigurationDisabled = computed<boolean>(
-  () => store.getters["nodeConfiguration/isConfigurationDisabled"],
+  activeNodeId.value
+    ? useNodeInteractionsStore().getNodeName(activeNodeId.value)
+    : "",
 );
 
 const applySettings = (nodeId: string, execute?: boolean) => {
-  store.dispatch("nodeConfiguration/applySettings", { nodeId, execute });
+  nodeConfigurationStore.applySettings({ nodeId, execute });
 };
 
 const discardSettings = () => {
-  store.dispatch("nodeConfiguration/discardSettings");
+  nodeConfigurationStore.discardSettings();
 };
 
 const executeActiveNode = () => {
-  store.dispatch("workflow/executeNodes", [activeNode.value!.id]);
+  useExecutionStore().executeNodes([activeNode.value!.id]);
 };
 
 watch(
@@ -69,14 +68,14 @@ watch(
 
     if (dirtyState.value.apply === "clean" || isConfigurationDisabled.value) {
       // set the active node to be the next selected node
-      store.commit("nodeConfiguration/setActiveNodeId", nextNode?.id ?? null);
+      nodeConfigurationStore.setActiveNodeId(nextNode?.id ?? null);
       return;
     }
 
     // if the configuration state is dirty, attempt to auto apply the settings
     // before changing the active node
-    await store.dispatch("nodeConfiguration/autoApplySettings", {
-      nextNodeId: nextNode?.id,
+    await nodeConfigurationStore.autoApplySettings({
+      nextNodeId: nextNode?.id ?? null,
     });
   },
   {
@@ -84,9 +83,9 @@ watch(
   },
 );
 
-const rightPanelWidth = computed(
-  () => store.state.settings.settings.nodeDialogSize,
-);
+const { settings } = storeToRefs(useSettingsStore());
+
+const rightPanelWidth = computed(() => settings.value.nodeDialogSize);
 </script>
 
 <template>
@@ -94,7 +93,7 @@ const rightPanelWidth = computed(
     <NodeConfigLayout
       v-if="activeNode"
       :active-node="activeNode"
-      :project-id="projectId"
+      :project-id="projectId!"
       :workflow-id="workflowId"
       :disabled="isConfigurationDisabled"
       :dirty-state="dirtyState"

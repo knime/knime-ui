@@ -12,7 +12,7 @@ import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 const NODES_PER_ROW_ICON_MODE = 3;
 const NODES_PER_ROW_LIST_MODE = 1;
 
-interface Props {
+export interface Props {
   nodes: Array<NodeTemplateWithExtendedPorts>;
   hasMoreNodes?: boolean;
   displayMode?: NodeRepositoryDisplayModesType;

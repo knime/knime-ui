@@ -1,17 +1,19 @@
+import { API } from "@api";
 import { isEmpty, isUndefined } from "lodash-es";
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
-import type { KaiMessage, XY } from "@/api/gateway-api/generated-api";
+import type { NodeRelation } from "@/api/custom-types";
+import { KaiMessage, type XY } from "@/api/gateway-api/generated-api";
 import type { NodeWithExtensionInfo } from "@/components/kai/types";
+import { useApplicationStore } from "@/store/application/application";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
-import type { RootStoreState } from "./types";
+import { useSelectionStore } from "./selection";
 
 /**
- * This file contains the Vuex store module for the AI assistant.
+ * This file contains the store module for the AI assistant.
  */
-
 export interface HubItem {
   id: string;
   title: string;
@@ -69,18 +71,48 @@ type ChainType = Exclude<
   "hubID" | "processedInteractionIds"
 >;
 
-type AiAssistantEventPayload = {
-  type: "token" | "result" | "error" | "status_update";
-  payload: {
-    message: Message;
-    references: unknown;
-    workflows: HubItem[];
-    components: HubItem[];
-    nodes: NodeWithExtensionInfo[];
-    interactionId: string;
-  };
-  conversation_id: string;
+type AiAssistantQAEventPayload = {
+  message: string;
+  references: Message["references"];
+  workflows: Message["workflows"];
+  components: Message["components"];
+  nodes: NodeWithExtensionInfo[];
+  interactionId: string;
 };
+
+export type AiAssistantBuildEventPayload = {
+  message: string;
+  interactionId: string;
+  type: "SUCCESS" | "INPUT_NEEDED";
+  references: never;
+  workflows: never;
+  components: never;
+  nodes: never;
+};
+
+export type AiAssistantEvent =
+  | {
+      type: "result";
+      payload: AiAssistantQAEventPayload | AiAssistantBuildEventPayload;
+      conversation_id: string;
+    }
+  | {
+      type: "token";
+      payload: string;
+      conversation_id: string;
+    }
+  | {
+      type: "status_update";
+      payload: StatusUpdate;
+      conversation_id: string;
+    }
+  | {
+      type: "error";
+      payload: {
+        message: string;
+      };
+      conversation_id: string;
+    };
 
 const responseCallback: Record<
   string,
@@ -98,313 +130,334 @@ const createEmptyConversationState = (): ConversationState => {
   };
 };
 
-export const state = (): AiAssistantState => ({
-  hubID: null,
-  qa: createEmptyConversationState(),
-  build: createEmptyConversationState(),
-  processedInteractionIds: new Set(),
-});
-export const mutations: MutationTree<AiAssistantState> = {
-  setHubID(state, hubID) {
-    state.hubID = hubID;
-  },
-  pushMessage(
-    state,
-    payload: {
+export const useAIAssistantStore = defineStore("aiAssistant", {
+  state: (): AiAssistantState => ({
+    hubID: null,
+    qa: createEmptyConversationState(),
+    build: createEmptyConversationState(),
+    processedInteractionIds: new Set(),
+  }),
+  actions: {
+    setHubID(hubID: string | null) {
+      this.hubID = hubID;
+    },
+
+    pushMessage(payload: {
       chainType: ChainType;
       role: Message["role"];
       content: string;
-      nodes: Message["nodes"];
-      references: Message["references"];
-      workflows: Message["workflows"];
-      components: Message["components"];
+      nodes?: Message["nodes"];
+      references?: Message["references"];
+      workflows?: Message["workflows"];
+      components?: Message["components"];
       interactionId?: string;
       isError?: boolean;
+    }) {
+      const {
+        chainType,
+        role,
+        content,
+        nodes,
+        references,
+        workflows,
+        components,
+        interactionId = "",
+        isError = false,
+      } = payload;
+
+      const timestamp = Date.now();
+
+      this[chainType].messages.push({
+        role,
+        content,
+        nodes,
+        references,
+        workflows,
+        components,
+        interactionId,
+        isError,
+        timestamp,
+      });
     },
-  ) {
-    const {
-      chainType,
-      role,
-      content,
-      nodes,
-      references,
-      workflows,
-      components,
-      interactionId = "",
-      isError = false,
-    } = payload;
 
-    const timestamp = Date.now();
+    popUserQuery({ chainType }: { chainType: ChainType }) {
+      const messages = this[chainType].messages;
+      const lastMessage = messages.at(-1);
+      if (lastMessage?.role === "user") {
+        messages.pop();
+      }
+    },
 
-    state[chainType].messages.push({
-      role,
-      content,
-      nodes,
-      references,
-      workflows,
-      components,
-      interactionId,
-      isError,
-      timestamp,
-    });
-  },
-  popUserQuery(state, { chainType }: { chainType: ChainType }) {
-    const messages = state[chainType].messages;
-    const lastMessage = messages.at(-1);
-    if (lastMessage?.role === "user") {
-      messages.pop();
-    }
-  },
-  setStatusUpdate(
-    state,
-    {
+    setStatusUpdate({
       chainType,
       statusUpdate,
-    }: { chainType: ChainType; statusUpdate: StatusUpdate | null },
-  ) {
-    state[chainType].statusUpdate = statusUpdate;
-  },
-  setIsProcessing(
-    state,
-    {
+    }: {
+      chainType: ChainType;
+      statusUpdate: StatusUpdate | null;
+    }) {
+      this[chainType].statusUpdate = statusUpdate;
+    },
+
+    setIsProcessing({
       chainType,
       isProcessing,
-    }: { chainType: ChainType; isProcessing: boolean },
-  ) {
-    state[chainType].isProcessing = isProcessing;
-  },
-  addToken(
-    state,
-    { chainType, token }: { chainType: ChainType; token: string },
-  ) {
-    state[chainType].incomingTokens += token;
-  },
-  setProjectAndWorkflowIds(
-    state,
-    {
+    }: {
+      chainType: ChainType;
+      isProcessing: boolean;
+    }) {
+      this[chainType].isProcessing = isProcessing;
+    },
+
+    addToken({ chainType, token }: { chainType: ChainType; token: string }) {
+      this[chainType].incomingTokens += token;
+    },
+
+    setProjectAndWorkflowIds({
       chainType,
       projectAndWorkflowIds,
     }: {
       chainType: ChainType;
       projectAndWorkflowIds: { workflowId: string; projectId: string };
+    }) {
+      this[chainType].projectAndWorkflowIds = projectAndWorkflowIds;
     },
-  ) {
-    state[chainType].projectAndWorkflowIds = projectAndWorkflowIds;
-  },
-  clearChain(state, { chainType }: { chainType: ChainType }) {
-    state[chainType].isProcessing = false;
-    state[chainType].incomingTokens = "";
-    state[chainType].statusUpdate = null;
-    state[chainType].projectAndWorkflowIds = null;
-  },
-  clearConversation(state, { chainType }: { chainType: ChainType }) {
-    state[chainType] = createEmptyConversationState();
-  },
-  setConversationId(
-    state,
-    {
+
+    clearChain({ chainType }: { chainType: ChainType }) {
+      this[chainType].isProcessing = false;
+      this[chainType].incomingTokens = "";
+      this[chainType].statusUpdate = null;
+      this[chainType].projectAndWorkflowIds = null;
+    },
+
+    clearConversation({ chainType }: { chainType: ChainType }) {
+      this[chainType] = createEmptyConversationState();
+    },
+
+    setConversationId({
       chainType,
       conversationId,
-    }: { chainType: ChainType; conversationId: string | null },
-  ) {
-    state[chainType].conversationId = conversationId;
-  },
-};
+    }: {
+      chainType: ChainType;
+      conversationId: string | null;
+    }) {
+      this[chainType].conversationId = conversationId;
+    },
 
-export const actions: ActionTree<AiAssistantState, RootStoreState> = {
-  async getHubID({ commit }) {
-    commit("setHubID", await API.desktop.getHubID());
-  },
-  clearConversation({ commit }, { chainType }: { chainType: ChainType }) {
-    commit("clearConversation", { chainType });
-  },
-  async makeAiRequest(
-    { commit, state, rootGetters },
-    {
+    async getHubID() {
+      this.setHubID(await API.desktop.getHubID());
+    },
+
+    async makeAiRequest({
       chainType,
       message,
       targetNodes = [],
       startPosition,
     }: {
       chainType: ChainType;
-      message: Message;
+      message: string;
       targetNodes?: string[];
       startPosition?: XY;
-    },
-  ) {
-    const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
-    const selectedNodes = targetNodes.length
-      ? targetNodes
-      : rootGetters["selection/selectedNodeIds"];
+    }) {
+      const projectAndWorkflowIds = useWorkflowStore().getProjectAndWorkflowIds;
+      const selectedNodes = targetNodes.length
+        ? targetNodes
+        : useSelectionStore().selectedNodeIds;
 
-    commit("setIsProcessing", { chainType, isProcessing: true });
-    commit("setProjectAndWorkflowIds", { chainType, projectAndWorkflowIds });
-    commit("pushMessage", { chainType, role: "user", content: message });
-
-    const messages = state[chainType].messages.map(({ role, content }) => ({
-      role,
-      content,
-    }));
-
-    const conversationId = state[chainType].conversationId;
-    const { projectId, workflowId } = projectAndWorkflowIds;
-    try {
-      await API.kai.makeAiRequest({
-        kaiChainId: chainType,
-        kaiRequest: {
-          ...(conversationId && { conversationId }),
-          projectId,
-          workflowId,
-          selectedNodes,
-          messages,
-          startPosition,
-        },
-      });
-
-      // Resolve/reject only after handleAiAssistantEvent receives a
-      // corresponding result or error.
-      const { resolve, reject, promise } = createUnwrappedPromise();
-      responseCallback[chainType] = { resolve, reject };
-
-      return promise;
-    } catch (error) {
-      consola.error("makeAiRequest", error);
-      commit("clearChain", { chainType });
-      commit("pushMessage", {
+      this.setIsProcessing({ chainType, isProcessing: true });
+      this.setProjectAndWorkflowIds({ chainType, projectAndWorkflowIds });
+      this.pushMessage({
         chainType,
-        role: "assistant",
-        content: "Something went wrong. Try again later.",
-        isError: true,
+        role: KaiMessage.RoleEnum.User,
+        content: message,
       });
 
-      return Promise.resolve();
-    }
-  },
-  async submitFeedback(
-    { state, rootGetters },
-    { interactionId, feedback }: { interactionId: string; feedback: Feedback },
-  ) {
-    const projectAndWorkflowIds = rootGetters["workflow/projectAndWorkflowIds"];
-    const { projectId } = projectAndWorkflowIds;
+      const messages = this[chainType].messages.map(({ role, content }) => ({
+        role,
+        content,
+      }));
 
-    state.processedInteractionIds.add(interactionId);
+      const conversationId = this[chainType].conversationId;
+      const { projectId, workflowId } = projectAndWorkflowIds;
+      try {
+        await API.kai.makeAiRequest({
+          kaiChainId: chainType,
+          kaiRequest: {
+            ...(conversationId && { conversationId }),
+            projectId,
+            workflowId,
+            selectedNodes,
+            messages,
+            startPosition,
+          },
+        });
 
-    try {
-      await API.kai.submitFeedback({
-        kaiFeedbackId: interactionId,
-        kaiFeedback: {
-          projectId,
-          isPositive: feedback.isPositive,
-          comment: feedback.comment,
-        },
-      });
-    } catch (error) {
-      consola.error("submitFeedback", error);
-    }
-  },
-  handleAiAssistantEvent(
-    { commit },
-    {
-      chainType,
-      data: { type, payload, conversation_id: conversationId },
-    }: { chainType: ChainType; data: AiAssistantEventPayload },
-  ) {
-    switch (type) {
-      case "token":
-        commit("addToken", { chainType, token: payload });
-        break;
-      case "result":
-        commit("clearChain", { chainType });
-        commit("setConversationId", { chainType, conversationId });
+        // Resolve/reject only after handleAiAssistantEvent receives a
+        // corresponding result or error.
+        const { resolve, reject, promise } = createUnwrappedPromise<
+          AiAssistantQAEventPayload | AiAssistantBuildEventPayload
+        >();
+        responseCallback[chainType] = { resolve, reject };
 
-        if (payload.message) {
-          commit("pushMessage", {
-            chainType,
-            role: "assistant",
-            content: payload.message,
-            nodes: payload.nodes,
-            references: payload.references,
-            workflows: payload.workflows,
-            components: payload.components,
-            interactionId: payload.interactionId,
-          });
-        }
-
-        responseCallback[chainType]?.resolve(payload);
-        delete responseCallback[chainType];
-
-        break;
-      case "error":
-        commit("clearChain", { chainType });
-        commit("setConversationId", { chainType, conversationId });
-
-        commit("pushMessage", {
+        return promise;
+      } catch (error) {
+        consola.error("makeAiRequest", error);
+        this.clearChain({ chainType });
+        this.pushMessage({
           chainType,
-          role: "assistant",
-          content: payload.message,
+          role: KaiMessage.RoleEnum.Assistant,
+          content: "Something went wrong. Try again later.",
           isError: true,
         });
 
-        responseCallback[chainType]?.reject(payload);
-        delete responseCallback[chainType];
+        throw error;
+      }
+    },
 
-        break;
-      case "status_update":
-        commit("setStatusUpdate", {
-          chainType,
-          statusUpdate: payload,
+    async submitFeedback({
+      interactionId,
+      feedback,
+    }: {
+      interactionId: string;
+      feedback: Feedback;
+    }) {
+      const projectAndWorkflowIds = useWorkflowStore().getProjectAndWorkflowIds;
+      const { projectId } = projectAndWorkflowIds;
+
+      this.processedInteractionIds.add(interactionId);
+
+      try {
+        await API.kai.submitFeedback({
+          kaiFeedbackId: interactionId,
+          kaiFeedback: {
+            projectId,
+            isPositive: feedback.isPositive,
+            comment: feedback.comment,
+          },
         });
-        break;
-    }
-  },
-  async abortAiRequest({ commit }, { chainType }: { chainType: ChainType }) {
-    try {
-      await API.kai.abortAiRequest({ kaiChainId: chainType });
-    } catch (error) {
-      consola.error("abortAiRequest", error);
-      commit("clearChain", { chainType });
-    }
-    commit("popUserQuery", { chainType });
-  },
-};
-
-export const getters: GetterTree<AiAssistantState, RootStoreState> = {
-  isQuickBuildModeAvailable(state, getters, rootState, rootGetters) {
-    return (nodeRelation: string, portTypeId: string | undefined) => {
-      const supportedPortKinds = ["table"];
-
-      const selectedNodes = rootGetters["selection/selectedNodes"];
-      const availablePortTypes = rootState.application.availablePortTypes;
-
-      // 1. Starting from scratch (e.g. double-click on canvas)
-      if (isEmpty(selectedNodes) && isUndefined(portTypeId)) {
-        return true;
+      } catch (error) {
+        consola.error("submitFeedback", error);
       }
+    },
 
-      // 2. Multiple nodes selected (e.g. keyboard shortcut with multiple nodes selected)
-      if (selectedNodes.length > 1) {
-        let portKinds = selectedNodes
-          .flatMap((node) => node.outPorts)
-          .map((port) => availablePortTypes[port.typeId]?.kind)
-          .filter((portKind) => portKind !== "flowVariable");
-        portKinds = [...new Set(portKinds)];
+    handleAiAssistantEvent({
+      chainType,
+      data: { type, payload, conversation_id: conversationId },
+    }: {
+      chainType: ChainType;
+      data: AiAssistantEvent;
+    }) {
+      switch (type) {
+        case "token":
+          this.addToken({ chainType, token: payload });
+          break;
 
-        const areSelectedPortKindsSupported = portKinds.every((portKind) =>
-          supportedPortKinds.includes(portKind as string),
+        case "result":
+          this.clearChain({ chainType });
+          this.setConversationId({ chainType, conversationId });
+
+          if (payload.message) {
+            this.pushMessage({
+              chainType,
+              role: KaiMessage.RoleEnum.Assistant,
+              content: payload.message,
+              nodes: payload.nodes,
+              references: payload.references,
+              workflows: payload.workflows,
+              components: payload.components,
+              interactionId: payload.interactionId,
+            });
+          }
+
+          responseCallback[chainType]?.resolve(payload);
+          delete responseCallback[chainType];
+          break;
+
+        case "error":
+          this.clearChain({ chainType });
+          this.setConversationId({ chainType, conversationId });
+
+          this.pushMessage({
+            chainType,
+            role: KaiMessage.RoleEnum.Assistant,
+            content: payload.message,
+            isError: true,
+          });
+
+          responseCallback[chainType]?.reject(payload);
+          delete responseCallback[chainType];
+          break;
+
+        case "status_update":
+          this.setStatusUpdate({
+            chainType,
+            statusUpdate: payload,
+          });
+          break;
+      }
+    },
+
+    async abortAiRequest({ chainType }: { chainType: ChainType }) {
+      try {
+        await API.kai.abortAiRequest({ kaiChainId: chainType });
+      } catch (error) {
+        consola.error("abortAiRequest", error);
+        this.clearChain({ chainType });
+      }
+      this.popUserQuery({ chainType });
+    },
+  },
+  getters: {
+    isQuickBuildAvailableForPort: () => {
+      return (nodeRelation: string | null, portTypeId: string | null) => {
+        return (
+          nodeRelation === "SUCCESSORS" &&
+          portTypeId &&
+          useApplicationStore().availablePortTypes[portTypeId]?.kind === "table"
         );
-        return areSelectedPortKindsSupported;
-      }
+      };
+    },
 
-      // 3. Starting from a single outport
+    isFeedbackProcessed: (state) => {
+      return (interactionId: string) =>
+        state.processedInteractionIds.has(interactionId);
+    },
+
+    isQuickBuildModeAvailable: () => {
       return (
-        nodeRelation === "SUCCESSORS" &&
-        portTypeId &&
-        supportedPortKinds.includes(availablePortTypes[portTypeId]?.kind)
-      );
-    };
+        nodeRelation: NodeRelation | null,
+        portTypeId: string | undefined,
+      ) => {
+        const supportedPortKinds = ["table"];
+
+        const { getSelectedNodes: selectedNodes } = useSelectionStore();
+        const { availablePortTypes } = useApplicationStore();
+
+        // 1. Starting from scratch (e.g. double-click on canvas)
+        if (isEmpty(selectedNodes) && isUndefined(portTypeId)) {
+          return true;
+        }
+
+        // 2. Multiple nodes selected (e.g. keyboard shortcut with multiple nodes selected)
+        if (selectedNodes.length > 1) {
+          let portKinds = selectedNodes
+            .flatMap((node) => node.outPorts)
+            .map((port) => availablePortTypes[port.typeId]?.kind)
+            .filter((portKind) => portKind !== "flowVariable");
+          portKinds = [...new Set(portKinds)];
+
+          const areSelectedPortKindsSupported = portKinds.every((portKind) =>
+            supportedPortKinds.includes(portKind as string),
+          );
+          return areSelectedPortKindsSupported;
+        }
+
+        // 3. Starting from a single outport
+        return (
+          nodeRelation === "SUCCESSORS" &&
+          portTypeId &&
+          supportedPortKinds.includes(availablePortTypes[portTypeId]?.kind)
+        );
+      };
+    },
   },
-  isFeedbackProcessed(state) {
-    return (interactionId: string) =>
-      state.processedInteractionIds.has(interactionId);
-  },
-};
+});

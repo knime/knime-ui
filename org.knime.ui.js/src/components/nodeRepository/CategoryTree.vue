@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import {
   type BaseTreeNode,
@@ -15,17 +16,18 @@ import type {
 } from "@/api/custom-types";
 import type { CategoryMetadata } from "@/api/gateway-api/generated-api";
 import { useAddNodeToWorkflow } from "@/components/nodeRepository/useAddNodeToWorkflow";
-import { useStore } from "@/composables/useStore";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { hasAllObjectPropertiesDefined } from "@/util/hasAllObjectPropertiesDefined";
 
 import DraggableNodeTemplate from "./DraggableNodeTemplate.vue";
 import type { NavigationKey } from "./NodeList.vue";
 
 const mapCategoryToTreeNode = (
-  category: Required<CategoryMetadata>,
+  category: CategoryMetadata,
 ): TreeNodeOptions => ({
-  nodeKey: category.path.join("/"),
-  name: category.displayName,
+  nodeKey: category.path!.join("/"),
+  name: category.displayName!,
   hasChildren: true,
 });
 
@@ -48,8 +50,6 @@ const emit = defineEmits<{
   navReachedTop: [{ key: NavigationKey }];
 }>();
 
-const store = useStore();
-
 const treeSource = ref<TreeNodeOptions[]>([]);
 const initialExpandedKeys = ref<string[]>([]);
 
@@ -62,12 +62,12 @@ const loadTreeNodesFromCache = (
   }
 
   const mapCategoryToTreeNodeWithChildren = (
-    category: Required<CategoryMetadata>,
+    category: CategoryMetadata,
   ): TreeNodeOptions => ({
     ...mapCategoryToTreeNode(category),
     children: loadTreeNodesFromCache(
       nodeCategoryCache,
-      category.path.join("/"),
+      category.path!.join("/"),
     ),
   });
 
@@ -82,24 +82,24 @@ const loadTreeNodesFromCache = (
   return [...treeCategories, ...treeNodes];
 };
 
-const fetchRootCategories = async () => {
-  const { childCategories } = await store.dispatch(
-    "nodeRepository/getNodeCategory",
-    {
-      categoryPath: [],
-    },
-  );
+const nodeRepositoryStore = useNodeRepositoryStore();
+const { nodeCategoryCache, treeExpandedKeys, showDescriptionForNode } =
+  storeToRefs(nodeRepositoryStore);
 
-  treeSource.value = childCategories.map(mapCategoryToTreeNode);
+const fetchRootCategories = async () => {
+  const { childCategories } = await nodeRepositoryStore.getNodeCategory({
+    categoryPath: [],
+  });
+
+  treeSource.value = childCategories!.map(mapCategoryToTreeNode);
 };
 
 onMounted(async () => {
   // this component only gets mounted AFTER the node repo has loaded
   // (nodeRepositoryLoaded) thats why we can be sure we can fetch nodes
   // use cache
-  const { nodeCategoryCache } = store.state.nodeRepository;
-  treeSource.value = loadTreeNodesFromCache(nodeCategoryCache);
-  initialExpandedKeys.value = [...store.state.nodeRepository.treeExpandedKeys];
+  treeSource.value = loadTreeNodesFromCache(nodeCategoryCache.value);
+  initialExpandedKeys.value = [...treeExpandedKeys.value];
 
   if (treeSource.value.length > 0) {
     return;
@@ -117,42 +117,36 @@ const focusFirst = () => {
 const onExpandChange = (value: EventParams) => {
   const nodeKey = value.node.key.toString();
   if (value.state) {
-    store.commit("nodeRepository/addTreeExpandedKey", nodeKey);
+    nodeRepositoryStore.addTreeExpandedKey(nodeKey);
   } else {
-    store.commit("nodeRepository/removeTreeExpandedKey", nodeKey);
+    nodeRepositoryStore.removeTreeExpandedKey(nodeKey);
   }
 };
 
-watch(
-  () => store.state.application.hasNodeCollectionActive,
-  async (isActive, wasActive) => {
-    if (isActive !== wasActive) {
-      await store.dispatch("nodeRepository/clearTree");
-      fetchRootCategories();
-      // reset expanded keys otherwise they are kept (but we have no data anymore)
-      initialExpandedKeys.value = [];
-    }
-  },
-);
+const { hasNodeCollectionActive } = storeToRefs(useApplicationSettingsStore());
+
+watch(hasNodeCollectionActive, (isActive, wasActive) => {
+  if (isActive !== wasActive) {
+    nodeRepositoryStore.clearTree();
+    fetchRootCategories();
+    // reset expanded keys otherwise they are kept (but we have no data anymore)
+    initialExpandedKeys.value = [];
+  }
+});
 
 const loadTreeLevel = async (
   treeNode: BaseTreeNode,
   callback: (children: TreeNodeOptions[]) => void,
 ) => {
-  const { childCategories, nodes } = await store.dispatch(
-    "nodeRepository/getNodeCategory",
-    { categoryPath: treeNode.key.toString().split("/") },
-  );
+  const { childCategories, nodes } = await nodeRepositoryStore.getNodeCategory({
+    categoryPath: treeNode.key.toString().split("/"),
+  });
 
   callback([
-    ...childCategories.map(mapCategoryToTreeNode),
-    ...nodes.map(mapNodeToTreeNode),
+    ...childCategories!.map(mapCategoryToTreeNode),
+    ...nodes!.map(mapNodeToTreeNode),
   ]);
 };
-
-const showDescriptionForNode = computed(
-  () => store.state.nodeRepository.showDescriptionForNode,
-);
 
 const onShowNodeDescription = (treeNode: BaseTreeNode) => {
   const { nodeTemplate } = treeNode.origin;

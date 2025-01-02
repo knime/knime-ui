@@ -1,10 +1,8 @@
 import { RouteLocation, Router } from "vue-router";
-import { Store } from "vuex";
 
 import type { ToastService } from "@knime/components";
 
 import type { ShortcutsService } from "@/shortcuts/types";
-import { RootStoreState } from "@/store/types";
 import * as colors from "@/style/colors";
 import * as shapes from "@/style/shapes";
 import * as zIndices from "@/style/z-indices";
@@ -19,7 +17,6 @@ interface _ComponentCustomProperties {
   $zIndices: typeof zIndices;
   $features: Features;
   $shortcuts: ShortcutsService;
-  $store: Store<RootStoreState>;
   $router: Router;
   $route: RouteLocation;
   $toast: ToastService;

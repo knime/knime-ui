@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, version } from "vue";
+import { API } from "@api";
 
 import { Button, FunctionButton } from "@knime/components";
 import CheckIcon from "@knime/styles/img/icons/check.svg";
@@ -8,7 +9,6 @@ import CopyIcon from "@knime/styles/img/icons/copy.svg";
 import SwitchIcon from "@knime/styles/img/icons/perspective-switch.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
-import { API } from "@/api";
 import DynamicEnvRenderer from "@/environment/DynamicEnvRenderer.vue";
 import { copyErrorReportToClipboard } from "@/util/copyErrorReportToClipboard";
 

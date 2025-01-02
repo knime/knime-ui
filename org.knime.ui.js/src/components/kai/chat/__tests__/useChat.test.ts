@@ -5,7 +5,7 @@ import { mount } from "@vue/test-utils";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import type { ChainType } from "@/components/kai/types";
 import type { Message } from "@/store/aiAssistant";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { MessageSeparator, useChat } from "../useChat";
 
 vi.mock("@/components/kai/useKaiServer.ts", () => ({
@@ -28,32 +28,23 @@ describe("useChat", () => {
     chainType = "qa",
     messages = [],
   }: { chainType?: ChainType; messages?: Message[] } = {}) => {
-    const storeConfig = {
-      aiAssistant: {
-        state: {
-          hubID: null,
-          qa: {
-            conversationId: null,
-            messages,
-            statusUpdate: null,
-            isProcessing: false,
-            incomingTokens: "",
-            projectAndWorkflowIds: null,
-          },
-          build: {
-            conversationId: null,
-            messages: [],
-            statusUpdate: null,
-            isProcessing: false,
-            incomingTokens: "",
-            projectAndWorkflowIds: null,
-          },
-        },
-        actions: {},
-      },
+    const mockedStores = mockStores();
+    mockedStores.aiAssistantStore.build = {
+      conversationId: null,
+      messages: [],
+      statusUpdate: null,
+      isProcessing: false,
+      incomingTokens: "",
+      projectAndWorkflowIds: null,
     };
-    const $store = mockVuexStore(storeConfig);
-    const dispatchSpy = vi.spyOn($store, "dispatch");
+    mockedStores.aiAssistantStore.qa = {
+      conversationId: null,
+      messages,
+      statusUpdate: null,
+      isProcessing: false,
+      incomingTokens: "",
+      projectAndWorkflowIds: null,
+    };
 
     const TestComponent = defineComponent({
       setup() {
@@ -63,14 +54,14 @@ describe("useChat", () => {
     });
 
     const wrapper = mount(TestComponent, {
-      global: { plugins: [$store] },
+      global: { plugins: [mockedStores.testingPinia] },
     });
 
     const { messagesWithSeparators } = wrapper.vm;
 
     return {
       messagesWithSeparators,
-      dispatchSpy,
+      mockedStores,
     };
   };
 

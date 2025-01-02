@@ -1,18 +1,16 @@
 <script lang="ts" setup>
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useStore } from "@/composables/useStore";
+import { usePanelStore } from "@/store/panel";
 
-const store = useStore();
-const isExtensionPanelOpen = computed(
-  () => store.state.panel.isExtensionPanelOpen,
-);
+const panelStore = usePanelStore();
+const { isExtensionPanelOpen } = storeToRefs(panelStore);
 
 useEscapeStack({
   onEscape() {
-    if (store.state.panel.isExtensionPanelOpen) {
-      store.dispatch("panel/closeExtensionPanel");
+    if (isExtensionPanelOpen.value) {
+      panelStore.closeExtensionPanel();
     }
   },
   alwaysActive: true,

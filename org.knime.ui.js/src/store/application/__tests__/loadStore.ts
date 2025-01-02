@@ -1,14 +1,22 @@
-import { type Mock, vi } from "vitest";
+import { vi } from "vitest";
+import { API } from "@api";
+import { createTestingPinia } from "@pinia/testing";
 
-import { API } from "@/api";
 import { APP_ROUTES } from "@/router/appRoutes";
-import * as applicationStore from "@/store/application";
-import * as selectionStore from "@/store/selection";
-import * as spacesStore from "@/store/spaces";
-import type { RootStoreState } from "@/store/types";
-import * as workflowStore from "@/store/workflow";
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import { useSelectionStore } from "@/store/selection";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createWorkflow } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { useApplicationStore } from "../application";
+import { useCanvasStateTrackingStore } from "../canvasStateTracking";
+import { useLifecycleStore } from "../lifecycle";
+import { useApplicationSettingsStore } from "../settings";
+import { useWorkflowPreviewSnapshotsStore } from "../workflowPreviewSnapshots";
 
 const mockedAPI = deepMocked(API);
 
@@ -16,8 +24,7 @@ export const applicationState = {
   openProjects: [{ projectId: "foo", name: "bar" }],
 };
 
-type Options = { autoApplySettingsMock?: Mock<() => boolean> };
-export const loadStore = (options: Options = {}) => {
+export const loadStore = () => {
   mockedAPI.application.getState.mockReturnValue(applicationState);
   mockedAPI.desktop.getCustomHelpMenuEntries.mockResolvedValue({});
   mockedAPI.desktop.getExampleProjects.mockResolvedValue([]);
@@ -26,82 +33,40 @@ export const loadStore = (options: Options = {}) => {
   const loadWorkflow = deepMocked(API).workflow.getWorkflow;
   loadWorkflow.mockResolvedValue({ workflow: { info: { containerId: "" } } });
 
-  const autoApplySettingsMock =
-    options.autoApplySettingsMock ?? vi.fn(() => true);
+  const testingPinia = createTestingPinia({
+    stubActions: false,
+    createSpy: vi.fn,
+  });
 
-  const actions = {
-    canvas: {
-      restoreScrollState: vi.fn(),
-    },
-    spaces: {
-      fetchAllSpaceProviders: vi.fn(),
-    },
-    nodeConfiguration: {
-      autoApplySettings: autoApplySettingsMock,
-    },
-  };
+  const applicationStore = useApplicationStore(testingPinia);
+  const lifecycleStore = useLifecycleStore(testingPinia);
+  const canvasStateTrackingStore = useCanvasStateTrackingStore(testingPinia);
+  const workflowStore = useWorkflowStore(testingPinia);
+  const nodeRepositoryStore = useNodeRepositoryStore(testingPinia);
+  const workflowPreviewSnapshotsStore =
+    useWorkflowPreviewSnapshotsStore(testingPinia);
 
-  const getters = {
-    canvas: {
-      getCanvasScrollState: vi.fn(() => () => ({ mockCanvasState: true })),
-      getCenterOfScrollContainer: vi.fn(() => () => ({ x: 10, y: 10 })),
-      screenToCanvasCoordinates: vi.fn(() => ([x, y]: [number, number]) => [
-        x,
-        y,
-      ]),
-    },
-  };
-
-  const storeConfig = {
-    application: applicationStore,
-    workflow: workflowStore,
-    nodeRepository: {
-      actions: {
-        closeDescriptionPanel: vi.fn(),
-        resetSearchTagsAndTree: vi.fn(),
-      },
-    },
-    spaces: {
-      ...spacesStore,
-      actions: {
-        ...spacesStore.actions,
-        ...actions.spaces,
-      },
-    },
-    canvas: {
-      state: {
-        getScrollContainerElement: vi.fn(() => {
-          const div = document.createElement("div");
-          div.appendChild(
-            document.createElementNS("http://www.w3.org/2000/svg", "svg"),
-          );
-          return div;
-        }),
-      },
-      getters: getters.canvas,
-      actions: actions.canvas,
-    },
-    selection: selectionStore,
-    settings: {
-      state: {
-        settings: {
-          uiScale: 1.0,
-        },
-      },
-    },
-    nodeConfiguration: {
-      actions: actions.nodeConfiguration,
-    },
-  };
-
-  const store = mockVuexStore<RootStoreState>(storeConfig);
-  store.commit(
-    "workflow/setActiveWorkflow",
-    createWorkflow({ projectId: "foo" }),
+  const canvasStore = useCanvasStore(testingPinia);
+  const kanvas = document.createElement("div");
+  kanvas.setAttribute("id", "kanvas");
+  kanvas.scrollTo = vi.fn();
+  kanvas.appendChild(
+    document.createElementNS("http://www.w3.org/2000/svg", "svg"),
   );
+  canvasStore.setScrollContainerElement(kanvas);
 
-  const dispatchSpy = vi.spyOn(store, "dispatch");
-  const commitSpy = vi.spyOn(store, "commit");
+  // @ts-ignore
+  canvasStore.screenToCanvasCoordinates = ([x, y]) => [x, y];
+
+  const selectionStore = useSelectionStore(testingPinia);
+  const applicationSettingsStore = useApplicationSettingsStore(testingPinia);
+  const nodeConfigurationStore = useNodeConfigurationStore(testingPinia);
+  const spaceProvidersStore = useSpaceProvidersStore(testingPinia);
+  const floatingMenusStore = useFloatingMenusStore(testingPinia);
+
+  workflowStore.setActiveWorkflow(
+    createWorkflow({ projectId: "project1", info: { containerId: "root" } }),
+  );
 
   const mockRouter = {
     push: vi.fn(),
@@ -109,14 +74,18 @@ export const loadStore = (options: Options = {}) => {
   };
 
   return {
-    store,
-    dispatchSpy,
-    commitSpy,
+    applicationStore,
+    lifecycleStore,
+    canvasStateTrackingStore,
+    workflowStore,
+    nodeRepositoryStore,
+    canvasStore,
+    selectionStore,
+    applicationSettingsStore,
+    nodeConfigurationStore,
+    spaceProvidersStore,
+    workflowPreviewSnapshotsStore,
     mockRouter,
-    mockedGetters: getters,
-    mockedActions: actions,
-    loadWorkflow,
-    subscribeEvent: API.event.subscribeEvent,
-    unsubscribeEventListener: API.event.unsubscribeEventListener,
+    floatingMenusStore,
   };
 };

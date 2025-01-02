@@ -7,7 +7,7 @@ import { computed, provide } from "vue";
 import type { NodePort as NodePortType } from "@/api/gateway-api/generated-api";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
-import { useStore } from "@/composables/useStore";
+import { useSelectionStore } from "@/store/selection";
 import { portSize } from "@/style/shapes";
 
 import NodePort from "./NodePort/NodePort.vue";
@@ -41,11 +41,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const isOutgoing = computed(() => props.type === "out");
 
-const store = useStore();
+const { isMetaNodePortBarSelected, selectMetanodePortBar } =
+  useSelectionStore();
 
-const isSelected = computed(() =>
-  store.getters["selection/isMetaNodePortBarSelected"](props.type),
-);
+const isSelected = computed(() => isMetaNodePortBarSelected(props.type));
 
 const position = computed(() => ({
   x: portBarXPos(isOutgoing.value),
@@ -80,7 +79,7 @@ const barPosition = computed(() =>
 );
 
 const selectBar = () => {
-  store.dispatch("selection/selectMetanodePortBar", props.type);
+  selectMetanodePortBar(props.type);
 };
 </script>
 

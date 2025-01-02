@@ -1,10 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import * as selectionStore from "@/store/selection";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeLabel from "../NodeLabel.vue";
 import NodeLabelEditor from "../NodeLabelEditor.vue";
 import NodeLabelText from "../NodeLabelText.vue";
@@ -23,47 +22,34 @@ describe("NodeLabel", () => {
     },
   };
 
-  const doShallowMount = ({ props = {}, $store }) => {
+  const doShallowMount = ({
+    props = {},
+    initialLabelEditorNodeId = "root:2",
+  } = {}) => {
+    const mockedStores = mockStores();
+    mockedStores.nodeInteractionsStore.labelEditorNodeId =
+      initialLabelEditorNodeId;
+
     const wrapper = shallowMount(NodeLabel, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: { $shapes },
       },
     });
 
-    return wrapper;
+    return { wrapper, mockedStores };
   };
 
   describe("handles text", () => {
-    let storeConfig, wrapper;
-
-    beforeEach(() => {
-      storeConfig = {
-        workflow: {
-          state: {
-            labelEditorNodeId: "root:2",
-          },
-          actions: {
-            openLabelEditor: vi.fn(),
-            closeLabelEditor: vi.fn(),
-            renameNodeLabel: vi.fn(),
-          },
-        },
-        selection: selectionStore,
-      };
-
-      const $store = mockVuexStore(storeConfig);
-
-      wrapper = doShallowMount({ $store });
-    });
-
     it("should render properly", () => {
+      const { wrapper } = doShallowMount();
       expect(wrapper.findComponent(NodeLabelText).exists()).toBe(true);
       expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);
     });
 
     it("should forward props", () => {
+      const { wrapper } = doShallowMount();
       expect(wrapper.findComponent(NodeLabelText).props()).toEqual(
         expect.objectContaining({
           value: defaultProps.value,
@@ -75,11 +61,15 @@ describe("NodeLabel", () => {
     });
 
     it("should handle a name change request", () => {
+      const { wrapper, mockedStores } = doShallowMount();
       wrapper.findComponent(NodeLabelText).vm.$emit("request-edit");
-      expect(storeConfig.workflow.actions.openLabelEditor).toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.openLabelEditor,
+      ).toHaveBeenCalled();
     });
 
     it("should pass correct port offset based on number of ports", async () => {
+      const { wrapper } = doShallowMount();
       await wrapper.setProps({ numberOfPorts: 2 });
       expect(wrapper.vm.portOffset).toBe(0);
 
@@ -88,6 +78,7 @@ describe("NodeLabel", () => {
     });
 
     it("should pass correct port offset for metanode based on number of ports", async () => {
+      const { wrapper } = doShallowMount();
       await wrapper.setProps({ kind: "metanode" });
       await wrapper.setProps({ numberOfPorts: 2 });
       expect(wrapper.vm.portOffset).toBe(0);
@@ -98,38 +89,27 @@ describe("NodeLabel", () => {
   });
 
   describe("handles editor", () => {
-    let storeConfig, wrapper, $store;
-
-    beforeEach(() => {
-      storeConfig = {
-        workflow: {
-          state: {
-            labelEditorNodeId: "root:1",
-          },
-          actions: {
-            openLabelEditor: vi.fn(),
-            closeLabelEditor: vi.fn(),
-            renameNodeLabel: vi.fn(),
-          },
-        },
-        selection: selectionStore,
-      };
-
-      $store = mockVuexStore(storeConfig);
-
-      wrapper = doShallowMount({ $store });
-    });
-
     it("should render properly", () => {
+      const { wrapper } = doShallowMount({
+        initialLabelEditorNodeId: "root:1",
+      });
       expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(true);
       expect(wrapper.findComponent(NodeLabelText).exists()).toBe(false);
     });
 
     it("should portal editor when visible", () => {
+      const { wrapper } = doShallowMount({
+        initialLabelEditorNodeId: "root:1",
+      });
+
       expect(wrapper.findComponent({ name: "Portal" }).exists()).toBe(true);
     });
 
     it("should forward props", () => {
+      const { wrapper } = doShallowMount({
+        initialLabelEditorNodeId: "root:1",
+      });
+
       expect(wrapper.findComponent(NodeLabelEditor).props()).toEqual(
         expect.objectContaining({
           nodeId: defaultProps.nodeId,
@@ -144,9 +124,14 @@ describe("NodeLabel", () => {
       vi.useFakeTimers();
       const saveEventPayload = { newLabel: "New label" };
 
+      const { wrapper, mockedStores } = doShallowMount({
+        initialLabelEditorNodeId: "root:1",
+      });
+
       wrapper.findComponent(NodeLabelEditor).vm.$emit("save", saveEventPayload);
-      expect(storeConfig.workflow.actions.renameNodeLabel).toHaveBeenCalledWith(
-        expect.any(Object),
+      expect(
+        mockedStores.nodeInteractionsStore.renameNodeLabel,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           nodeId: defaultProps.nodeId,
           label: saveEventPayload.newLabel,
@@ -154,10 +139,12 @@ describe("NodeLabel", () => {
       );
 
       vi.runAllTimers();
-      expect(storeConfig.workflow.actions.closeLabelEditor).toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.closeLabelEditor,
+      ).toHaveBeenCalled();
 
       // emulate editor being closed from store
-      $store.state.workflow.labelEditorNodeId = null;
+      mockedStores.nodeInteractionsStore.labelEditorNodeId = null;
 
       await nextTick();
       expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);
@@ -165,12 +152,18 @@ describe("NodeLabel", () => {
     });
 
     it("should handle closing the editor", async () => {
+      const { wrapper, mockedStores } = doShallowMount({
+        initialLabelEditorNodeId: "root:1",
+      });
+
       wrapper.findComponent(NodeLabelEditor).vm.$emit("cancel");
 
-      expect(storeConfig.workflow.actions.closeLabelEditor).toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.closeLabelEditor,
+      ).toHaveBeenCalled();
 
       // emulate editor being closed from store
-      $store.state.workflow.labelEditorNodeId = null;
+      mockedStores.nodeInteractionsStore.labelEditorNodeId = null;
 
       await nextTick();
       expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);

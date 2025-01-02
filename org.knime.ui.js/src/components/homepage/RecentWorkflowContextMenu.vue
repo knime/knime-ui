@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import {
   type FileExplorerContextMenu,
@@ -9,7 +10,7 @@ import {
 import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
-import { useStore } from "@/composables/useStore";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 
 export type ActionMenuItem = MenuItem & {
   id: string;
@@ -23,7 +24,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const store = useStore();
+const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 const { revealInSpaceExplorer, canRevealItem } = useRevealInSpaceExplorer();
 
 const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
@@ -40,8 +41,7 @@ const valueOrEmpty = <T,>(condition: boolean, value: T) =>
 
 const recentWorkflowContextMenuItems = computed(() => {
   const recentWorkflow = props.anchor.item.meta?.recentWorkflow;
-  const provider =
-    store.state.spaces.spaceProviders?.[recentWorkflow.origin.providerId];
+  const provider = spaceProviders.value?.[recentWorkflow.origin.providerId];
   const isConnected = provider?.connected;
 
   const revealInSpaceOption: ActionMenuItem = {

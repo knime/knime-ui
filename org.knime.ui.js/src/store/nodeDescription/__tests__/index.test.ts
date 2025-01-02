@@ -1,7 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 /* eslint-disable max-lines */
-import { API } from "@/api";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
+import { createTestingPinia } from "@pinia/testing";
+
 import { PortType } from "@/api/gateway-api/generated-api";
 import {
   NODE_FACTORIES,
@@ -9,7 +10,8 @@ import {
   createComponentNodeDescription,
   createNativeNodeDescription,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore, withPorts } from "@/test/utils";
+import { deepMocked, withPorts } from "@/test/utils";
+import { useNodeDescriptionStore } from "../nodeDescription";
 
 const getNodeDescriptionResponse = createNativeNodeDescription();
 const getComponentDescriptionResponse = createComponentNodeDescription();
@@ -17,7 +19,7 @@ const getComponentDescriptionResponse = createComponentNodeDescription();
 const mockedAPI = deepMocked(API);
 
 describe("nodeDescription", () => {
-  const createStore = async () => {
+  const createStore = () => {
     const availablePortTypes = createAvailablePortTypes({
       "org.knime.core.node.BufferedDataTable": {
         name: "table",
@@ -36,33 +38,25 @@ describe("nodeDescription", () => {
       },
     });
 
-    const store = mockVuexStore({
-      nodeDescription: await import("@/store/nodeDescription"),
-      workflow: {
-        activeWorkflow: {
-          projectId: "project1",
-          info: { containerId: "workflow1" },
+    const pinia = createTestingPinia({
+      stubActions: false,
+      createSpy: vi.fn,
+      initialState: {
+        workflow: {
+          activeWorkflow: {
+            projectId: "mockProjectId1",
+            info: { containerId: "mockWorkflow1" },
+          },
         },
-        getters: {
-          projectAndWorkflowIds: () => ({
-            projectId: "project1",
-            workflowId: "workflow1",
-          }),
-        },
-      },
-      application: {
-        state: {
+        application: {
           availablePortTypes,
         },
       },
     });
 
-    const dispatchSpy = vi.spyOn(store, "dispatch");
-
     return {
-      dispatchSpy,
       availablePortTypes,
-      store,
+      nodeDescriptionStore: useNodeDescriptionStore(pinia),
     };
   };
 
@@ -78,7 +72,7 @@ describe("nodeDescription", () => {
     });
 
     it("should fetch a description for a native node", async () => {
-      const { store, availablePortTypes } = await createStore();
+      const { nodeDescriptionStore, availablePortTypes } = await createStore();
       const params = {
         factoryId: NODE_FACTORIES.ExcelTableReaderNodeFactory,
         nodeFactory: {
@@ -87,8 +81,7 @@ describe("nodeDescription", () => {
         },
       };
 
-      const result = await store.dispatch(
-        "nodeDescription/getNativeNodeDescription",
+      const result = await nodeDescriptionStore.getNativeNodeDescription(
         params,
       );
 
@@ -132,7 +125,7 @@ describe("nodeDescription", () => {
     });
 
     it("should cache node descriptions", async () => {
-      const { store } = await createStore();
+      const { nodeDescriptionStore } = await createStore();
       const params = {
         factoryId: NODE_FACTORIES.ExcelTableReaderNodeFactory,
         nodeFactory: {
@@ -141,14 +134,17 @@ describe("nodeDescription", () => {
         },
       };
 
-      await store.dispatch("nodeDescription/getNativeNodeDescription", params);
-      await store.dispatch("nodeDescription/getNativeNodeDescription", params);
-      await store.dispatch("nodeDescription/getNativeNodeDescription", params);
+      const initialResult = await nodeDescriptionStore.getNativeNodeDescription(
+        params,
+      );
+      await nodeDescriptionStore.getNativeNodeDescription(params);
+      const cachedResult = await nodeDescriptionStore.getNativeNodeDescription(
+        params,
+      );
 
       expect(mockedAPI.node.getNodeDescription).toHaveBeenCalledOnce();
-      expect(store.state.nodeDescription.cache.has(params.factoryId)).toBe(
-        true,
-      );
+      expect(nodeDescriptionStore.cache.has(params.factoryId)).toBe(true);
+      expect(cachedResult).toEqual(initialResult);
     });
   });
 
@@ -160,13 +156,10 @@ describe("nodeDescription", () => {
     });
 
     it("should fetch a description for a component node", async () => {
-      const { store } = await createStore();
+      const { nodeDescriptionStore } = await createStore();
       const params = { nodeId: "root1:1" };
 
-      const result = await store.dispatch(
-        "nodeDescription/getComponentDescription",
-        params,
-      );
+      const result = await nodeDescriptionStore.getComponentDescription(params);
 
       const inPorts = [
         {
@@ -287,7 +280,11 @@ describe("nodeDescription", () => {
         },
       ];
 
-      expect(mockedAPI.node.getComponentDescription).toHaveBeenCalled();
+      expect(mockedAPI.node.getComponentDescription).toHaveBeenCalledWith({
+        nodeId: "root1:1",
+        projectId: "mockProjectId1",
+        workflowId: "mockWorkflow1",
+      });
       expect(result).toEqual({
         ...result,
         inPorts,

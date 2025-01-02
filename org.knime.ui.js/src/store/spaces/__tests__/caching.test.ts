@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
+import {
+  SpaceItem,
+  type SpaceItemReference,
+} from "@/api/gateway-api/generated-api";
 import {
   createSpace,
   createSpaceGroup,
@@ -13,7 +16,7 @@ import { loadStore } from "./loadStore";
 describe("spaces::caching", () => {
   describe("actions", () => {
     it("should sync state of projectPaths with openProjects", async () => {
-      const { store } = loadStore();
+      const { spaceCachingStore, spaceProvidersStore } = loadStore();
 
       const hub4 = createSpaceProvider({
         id: "hub4",
@@ -25,12 +28,12 @@ describe("spaces::caching", () => {
         ],
       });
 
-      store.commit("spaces/setSpaceProviders", {
+      spaceProvidersStore.setSpaceProviders({
         [hub4.id]: hub4,
       });
 
       // project that should be removed (not part of openProjects anymore)
-      store.state.spaces.projectPath.oldProject = {
+      spaceCachingStore.projectPath.oldProject = {
         spaceId: "space3",
         spaceProviderId: "hub2",
         itemId: "someFolder",
@@ -40,9 +43,11 @@ describe("spaces::caching", () => {
       const openProjects: {
         projectId: string;
         origin: Omit<SpaceItemReference, "itemId">; // TODO: remove this field from the API its outdated
+        name: string;
       }[] = [
         {
           projectId: "myProject1",
+          name: "My Project 1",
           origin: {
             providerId: "hub2",
             spaceId: "space4",
@@ -51,6 +56,7 @@ describe("spaces::caching", () => {
         },
         {
           projectId: "newProject3",
+          name: "New Project 3",
           origin: {
             providerId: "hub4",
             spaceId: "space6",
@@ -59,6 +65,7 @@ describe("spaces::caching", () => {
         },
         {
           projectId: "newProject4",
+          name: "New Project 4",
           origin: {
             providerId: "hub4",
             spaceId: "space6",
@@ -67,28 +74,29 @@ describe("spaces::caching", () => {
         },
       ];
 
-      await store.dispatch("spaces/syncPathWithOpenProjects", {
+      await spaceCachingStore.syncPathWithOpenProjects({
+        // @ts-ignore
         openProjects,
       });
 
       // remove project
-      expect(store.state.spaces.projectPath.oldProject).toBeUndefined();
+      expect(spaceCachingStore.projectPath.oldProject).toBeUndefined();
 
       // add new project
-      expect(store.state.spaces.projectPath.newProject3).toStrictEqual({
+      expect(spaceCachingStore.projectPath.newProject3).toStrictEqual({
         spaceProviderId: "hub4",
         spaceId: "space6",
         itemId: "folderX",
       });
 
-      expect(store.state.spaces.projectPath.newProject4).toStrictEqual({
+      expect(spaceCachingStore.projectPath.newProject4).toStrictEqual({
         spaceProviderId: "hub4",
         spaceId: "space6",
         itemId: "root",
       });
 
       // does NOT update values of already open project (keep user surf state)
-      expect(store.state.spaces.projectPath.myProject1).toStrictEqual({
+      expect(spaceCachingStore.projectPath.myProject1).toStrictEqual({
         spaceProviderId: "mockProviderId",
         spaceId: "mockSpaceId",
         itemId: "bar",
@@ -96,15 +104,14 @@ describe("spaces::caching", () => {
     });
 
     it('should use fallback to "root" when ancestorItemIds is missing', async () => {
-      const { store } = loadStore();
+      const { spaceCachingStore, spaceProvidersStore } = loadStore();
 
       const hub1 = createSpaceProvider({
         id: "hub1",
         type: SpaceProviderNS.TypeEnum.HUB,
-        spaces: [createSpace({ id: "space1" })],
       });
 
-      store.commit("spaces/setSpaceProviders", {
+      spaceProvidersStore.setSpaceProviders({
         [hub1.id]: hub1,
       });
 
@@ -122,11 +129,12 @@ describe("spaces::caching", () => {
         },
       ];
 
-      await store.dispatch("spaces/syncPathWithOpenProjects", {
+      await spaceCachingStore.syncPathWithOpenProjects({
+        // @ts-ignore
         openProjects,
       });
 
-      expect(store.state.spaces.projectPath.myProject2).toStrictEqual({
+      expect(spaceCachingStore.projectPath.myProject2).toStrictEqual({
         spaceProviderId: "hub1",
         spaceId: "space1",
         itemId: "root",
@@ -134,15 +142,22 @@ describe("spaces::caching", () => {
     });
 
     it("should fallback to local when open project refers to an unknown space", async () => {
-      const { store } = loadStore();
+      const { spaceCachingStore, spaceProvidersStore } = loadStore();
 
       const hub1 = createSpaceProvider({
         id: "hub1",
         type: SpaceProviderNS.TypeEnum.HUB,
-        spaces: [createSpace({ id: "space1" }), createSpace({ id: "space2" })],
+        spaceGroups: [
+          createSpaceGroup({
+            spaces: [
+              createSpace({ id: "space1" }),
+              createSpace({ id: "space2" }),
+            ],
+          }),
+        ],
       });
 
-      store.commit("spaces/setSpaceProviders", {
+      spaceProvidersStore.setSpaceProviders({
         [hub1.id]: hub1,
       });
 
@@ -159,11 +174,12 @@ describe("spaces::caching", () => {
         },
       ];
 
-      await store.dispatch("spaces/syncPathWithOpenProjects", {
+      await spaceCachingStore.syncPathWithOpenProjects({
+        // @ts-ignore
         openProjects,
       });
 
-      expect(store.state.spaces.projectPath.myProject2).toStrictEqual({
+      expect(spaceCachingStore.projectPath.myProject2).toStrictEqual({
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "root",
@@ -171,13 +187,14 @@ describe("spaces::caching", () => {
     });
 
     it("should take the local root for default with a workflow without origin", async () => {
-      const { store } = loadStore();
+      const { spaceCachingStore } = loadStore();
 
-      await store.dispatch("spaces/syncPathWithOpenProjects", {
+      await spaceCachingStore.syncPathWithOpenProjects({
+        // @ts-ignore
         openProjects: [{ projectId: "myProject1" }],
       });
 
-      expect(store.state.spaces.projectPath.myProject1).toStrictEqual({
+      expect(spaceCachingStore.projectPath.myProject1).toStrictEqual({
         spaceProviderId: "mockProviderId",
         spaceId: "mockSpaceId",
         itemId: "bar",
@@ -187,24 +204,45 @@ describe("spaces::caching", () => {
 
   describe("getters", () => {
     it("should getWorkflowGroupContent by projectId", async () => {
-      const { store } = loadStore();
+      const { spaceCachingStore } = loadStore();
 
-      await store.dispatch("spaces/syncPathWithOpenProjects", {
+      await spaceCachingStore.syncPathWithOpenProjects({
+        // @ts-ignore
         openProjects: [{ projectId: "myProject1" }],
       });
 
-      store.commit("spaces/setWorkflowGroupContent", {
+      spaceCachingStore.setWorkflowGroupContent({
         projectId: "myProject1",
-        content: { items: [], path: [] },
+        content: {
+          items: [
+            {
+              id: "mockSpaceItemId1",
+              name: "Mock Space Item",
+              type: SpaceItem.TypeEnum.Workflow,
+            },
+          ],
+          path: [
+            { id: "pathSeg1Id", name: "Mock Seg 1" },
+            { id: "pathSeg2Id", name: "Mock Seg 2" },
+          ],
+        },
       });
 
-      expect(
-        store.getters["spaces/getWorkflowGroupContent"]("unknown"),
-      ).toBeNull();
+      expect(spaceCachingStore.getWorkflowGroupContent("unknown")).toBeNull();
 
-      expect(
-        store.getters["spaces/getWorkflowGroupContent"]("myProject1"),
-      ).toEqual({ items: [], path: [] });
+      expect(spaceCachingStore.getWorkflowGroupContent("myProject1")).toEqual({
+        items: [
+          {
+            id: "mockSpaceItemId1",
+            name: "Mock Space Item",
+            type: SpaceItem.TypeEnum.Workflow,
+          },
+        ],
+        path: [
+          { id: "pathSeg1Id", name: "Mock Seg 1" },
+          { id: "pathSeg2Id", name: "Mock Seg 2" },
+        ],
+      });
     });
   });
 });

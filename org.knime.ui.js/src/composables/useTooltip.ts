@@ -1,5 +1,7 @@
 import { type ComputedRef, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useStore } from "vuex";
+import { storeToRefs } from "pinia";
+
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 export const entryDelay = 750;
 
@@ -23,27 +25,26 @@ export const useTooltip = (params: {
   tooltip: ComputedRef<TooltipDefinition | null>;
 }) => {
   const elemRef = ref<HTMLElement | null>(null);
-  const store = useStore();
+  const workflowStore = useWorkflowStore();
+  const { tooltip } = storeToRefs(workflowStore);
+
   let removeTooltipWatcher: (() => void) | null;
   // eslint-disable-next-line one-var
   let tooltipTimeout: number;
 
   // takes care of removing the tooltip watcher even if the tooltip got closed from any other component (set null)
-  store.watch(
-    (state) => state.workflow.tooltip,
-    (value) => {
-      if (value === null) {
-        removeTooltipWatcher?.();
-      }
-    },
-  );
+  watch(tooltip, (value) => {
+    if (value === null) {
+      removeTooltipWatcher?.();
+    }
+  });
 
   const showTooltip = () => {
     // add watcher to component's "tooltip" property
     const removeWatcher = watch(
       params.tooltip,
       (value) => {
-        store.commit("workflow/setTooltip", value);
+        workflowStore.setTooltip(value);
       },
       { immediate: true },
     );
@@ -89,8 +90,8 @@ export const useTooltip = (params: {
       }
     }
     // remove tooltip
-    store.commit("workflow/setTooltip", null);
-    // NOTE: watcher will be removed by watch of $store.state.workflow.tooltip
+    workflowStore.setTooltip(null);
+    // NOTE: watcher will be removed by watch of workflow.tooltip
   };
 
   onMounted(() => {
@@ -111,7 +112,7 @@ export const useTooltip = (params: {
     elemRef.value.removeEventListener("mouseleave", onTooltipMouseLeave);
 
     if (removeTooltipWatcher) {
-      store.commit("workflow/setTooltip", null);
+      workflowStore.setTooltip(null);
     }
   });
 

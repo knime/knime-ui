@@ -1,12 +1,13 @@
 /* eslint-disable max-lines */
-import { type Mock, afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { createWorkflow } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import SelectionRectangle from "../SelectionRectangle.vue";
 import { findObjectsForSelection } from "../findObjectsForSelection";
 
@@ -14,18 +15,21 @@ vi.mock("../findObjectsForSelection", () => ({
   findObjectsForSelection: vi.fn(),
 }));
 
-const findObjectsForSelectionMock = findObjectsForSelection as Mock<
-  Parameters<typeof findObjectsForSelection>,
-  ReturnType<typeof findObjectsForSelection>
->;
+const findObjectsForSelectionMock = vi.mocked(findObjectsForSelection);
 
 describe("SelectionRectangle", () => {
+  type MountOpts = {
+    props?: any;
+    selectedNodeIds?: string[];
+    selectedAnnotationIds?: string[];
+    selectedBendpointIds?: string[];
+  };
   const doMount = ({
     props = {},
-    selectedNodeIds = vi.fn(() => []),
-    selectedAnnotationIds = vi.fn(() => []),
-    selectedBendpointIds = vi.fn(() => []),
-  } = {}) => {
+    selectedNodeIds = [],
+    selectedAnnotationIds = [],
+    selectedBendpointIds = [],
+  }: MountOpts = {}) => {
     findObjectsForSelectionMock.mockReturnValue({
       nodesInside: ["inside-1", "inside-2"],
       nodesOutside: ["outside-1", "outside-2"],
@@ -35,46 +39,26 @@ describe("SelectionRectangle", () => {
       bendpointsOutside: [],
     });
 
-    const workflow = { nodes: {} };
+    const workflow = createWorkflow();
 
-    const storeConfig = {
-      workflow: {
-        state: {
-          activeWorkflow: workflow,
-        },
-      },
-      canvas: {
-        getters: {
-          screenToCanvasCoordinates: () =>
-            vi.fn().mockImplementation(([x, y]) => [x, y]),
-        },
-      },
-      selection: {
-        getters: {
-          selectedNodeIds,
-          selectedAnnotationIds,
-          selectedBendpointIds,
-        },
-        actions: {
-          selectNodes: vi.fn(),
-          deselectNodes: vi.fn(),
-          deselectAllObjects: vi.fn(),
-          selectAnnotations: vi.fn(),
-          deselectAnnotations: vi.fn(),
-          selectBendpoints: vi.fn(),
-          deselectBendpoints: vi.fn(),
-        },
-        mutations: {
-          setDidStartRectangleSelection: vi.fn(),
-        },
-      },
-    };
+    const mockedStores = mockStores();
+    // @ts-ignore
+    mockedStores.selectionStore.selectedNodeIds = selectedNodeIds;
+    // @ts-ignore
+    mockedStores.selectionStore.selectedAnnotationIds = selectedAnnotationIds;
+    // @ts-ignore
+    mockedStores.selectionStore.selectedBendpointIds = selectedBendpointIds;
+    // @ts-ignore
+    mockedStores.canvasStore.screenToCanvasCoordinates = vi
+      .fn()
+      .mockImplementation(([x, y]) => [x, y]);
 
-    const $store = mockVuexStore(storeConfig);
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
+
     const wrapper = shallowMount(SelectionRectangle, {
       props,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: {
           $shapes,
           $colors,
@@ -93,6 +77,11 @@ describe("SelectionRectangle", () => {
       clientY,
       shiftKey = false,
       pointerId = null,
+    }: {
+      clientX: number;
+      clientY: number;
+      shiftKey?: boolean;
+      pointerId?: number | null;
     }) => {
       $bus.emit("selection-pointerdown", {
         pointerId: pointerId || 1,
@@ -113,7 +102,15 @@ describe("SelectionRectangle", () => {
       });
     };
 
-    const pointerMove = ({ clientX, clientY, pointerId = null }) => {
+    const pointerMove = ({
+      clientX,
+      clientY,
+      pointerId = null,
+    }: {
+      clientX: number;
+      clientY: number;
+      pointerId?: number | null;
+    }) => {
       $bus.emit("selection-pointermove", {
         pointerId: pointerId || 1,
         clientX,
@@ -148,8 +145,7 @@ describe("SelectionRectangle", () => {
       pointerDown,
       pointerMove,
       pointerUp,
-      $store,
-      storeConfig,
+      mockedStores,
       workflow,
     };
   };
@@ -159,12 +155,12 @@ describe("SelectionRectangle", () => {
   });
 
   it("all object are deselected on start", async () => {
-    const { pointerDown, storeConfig } = doMount();
+    const { pointerDown, mockedStores } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
     await nextTick();
 
-    expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
+    expect(mockedStores.selectionStore.deselectAllObjects).toBeCalled();
   });
 
   it("appears on pointerDown, disappears on pointerUp", async () => {
@@ -236,7 +232,7 @@ describe("SelectionRectangle", () => {
 
       const selectionPreviewEvents = wrapper.emitted("nodeSelectionPreview");
       // skip first two events that select those nodes
-      expect(selectionPreviewEvents.slice(2)).toStrictEqual([
+      expect(selectionPreviewEvents!.slice(2)).toStrictEqual([
         [
           {
             nodeId: "inside-1",
@@ -253,13 +249,13 @@ describe("SelectionRectangle", () => {
     });
 
     it("selects nodes on pointer up", async () => {
-      const { pointerUp, storeConfig } = await mountAndSelect();
+      const { pointerUp, mockedStores } = await mountAndSelect();
       pointerUp();
 
-      expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(
-        expect.anything(),
-        ["inside-1", "inside-2"],
-      );
+      expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledWith([
+        "inside-1",
+        "inside-2",
+      ]);
     });
 
     it("shows selection preview for included annotations", async () => {
@@ -297,7 +293,7 @@ describe("SelectionRectangle", () => {
         "annotationSelectionPreview",
       );
 
-      expect(selectionPreviewEvents.slice(2)).toStrictEqual([
+      expect(selectionPreviewEvents!.slice(2)).toStrictEqual([
         [
           {
             annotationId: "ann-inside-1",
@@ -314,30 +310,27 @@ describe("SelectionRectangle", () => {
     });
 
     it("selects annotations on pointer up", async () => {
-      const { pointerUp, storeConfig } = await mountAndSelect();
+      const { pointerUp, mockedStores } = await mountAndSelect();
       pointerUp();
 
       expect(
-        storeConfig.selection.actions.selectAnnotations,
-      ).toHaveBeenCalledWith(expect.anything(), [
-        "ann-inside-1",
-        "ann-inside-2",
-      ]);
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledWith(["ann-inside-1", "ann-inside-2"]);
     });
 
     it("sets didStartRectangleSelection to true when rectangle selection updates", async () => {
-      const { pointerDown, pointerMove, storeConfig } = await mountAndSelect();
+      const { pointerDown, pointerMove, mockedStores } = await mountAndSelect();
       pointerDown({ clientX: 10, clientY: 10 });
       pointerMove({ clientX: 300, clientY: 300 });
       await nextTick();
 
       expect(
-        storeConfig.selection.mutations.setDidStartRectangleSelection,
-      ).toHaveBeenCalledWith(expect.anything(), true);
+        mockedStores.selectionStore.setDidStartRectangleSelection,
+      ).toHaveBeenCalledWith(true);
     });
 
     it("sets didStartRectangleSelection to false when rectangle selection ends", async () => {
-      const { pointerDown, pointerMove, pointerUp, storeConfig } =
+      const { pointerDown, pointerMove, pointerUp, mockedStores } =
         await mountAndSelect();
       pointerDown({ clientX: 10, clientY: 10 });
       pointerMove({ clientX: 300, clientY: 300 });
@@ -345,17 +338,17 @@ describe("SelectionRectangle", () => {
       pointerUp();
 
       expect(
-        storeConfig.selection.mutations.setDidStartRectangleSelection,
-      ).toHaveBeenCalledWith(expect.anything(), false);
+        mockedStores.selectionStore.setDidStartRectangleSelection,
+      ).toHaveBeenCalledWith(false);
     });
   });
 
   describe("de-Selection with Shift", () => {
     const mountAndSelect = async () => {
       const mountResult = doMount({
-        selectedNodeIds: vi.fn(() => ["inside-1", "inside-2"]),
-        selectedAnnotationIds: vi.fn(() => ["ann-inside-1", "ann-inside-2"]),
-        selectedBendpointIds: vi.fn(() => ["connection1__0"]),
+        selectedNodeIds: ["inside-1", "inside-2"],
+        selectedAnnotationIds: ["ann-inside-1", "ann-inside-2"],
+        selectedBendpointIds: ["connection1__0"],
       });
 
       mountResult.pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
@@ -367,9 +360,9 @@ describe("SelectionRectangle", () => {
     };
 
     it("no global deselection", async () => {
-      const { storeConfig } = await mountAndSelect();
+      const { mockedStores } = await mountAndSelect();
       expect(
-        storeConfig.selection.actions.deselectAllObjects,
+        mockedStores.selectionStore.deselectAllObjects,
       ).not.toHaveBeenCalled();
     });
 
@@ -397,32 +390,33 @@ describe("SelectionRectangle", () => {
         const { wrapper, pointerUp } = await mountAndSelect();
         pointerUp();
 
-        expect(wrapper.emitted("nodeSelectionPreview").slice(2)).toStrictEqual([
+        expect(wrapper.emitted("nodeSelectionPreview")!.slice(2)).toStrictEqual(
           [
-            {
-              nodeId: "inside-1",
-              type: "clear",
-            },
+            [
+              {
+                nodeId: "inside-1",
+                type: "clear",
+              },
+            ],
+            [
+              {
+                nodeId: "inside-2",
+                type: "clear",
+              },
+            ],
           ],
-          [
-            {
-              nodeId: "inside-2",
-              type: "clear",
-            },
-          ],
-        ]);
+        );
       });
 
       it("pointerup deselects nodes", async () => {
-        const { pointerUp, storeConfig } = await mountAndSelect();
+        const { pointerUp, mockedStores } = await mountAndSelect();
         pointerUp();
 
-        expect(
-          storeConfig.selection.actions.selectNodes,
-        ).not.toHaveBeenCalled();
-        expect(
-          storeConfig.selection.actions.deselectNodes,
-        ).toHaveBeenCalledWith(expect.anything(), ["inside-1", "inside-2"]);
+        expect(mockedStores.selectionStore.selectNodes).not.toHaveBeenCalled();
+        expect(mockedStores.selectionStore.deselectNodes).toHaveBeenCalledWith([
+          "inside-1",
+          "inside-2",
+        ]);
       });
     });
 
@@ -450,7 +444,7 @@ describe("SelectionRectangle", () => {
         pointerUp();
 
         expect(
-          wrapper.emitted("annotationSelectionPreview").slice(2),
+          wrapper.emitted("annotationSelectionPreview")!.slice(2),
         ).toStrictEqual([
           [
             {
@@ -468,27 +462,24 @@ describe("SelectionRectangle", () => {
       });
 
       it("pointerup deselects annotations", async () => {
-        const { pointerUp, storeConfig } = await mountAndSelect();
+        const { pointerUp, mockedStores } = await mountAndSelect();
         pointerUp();
 
         expect(
-          storeConfig.selection.actions.selectAnnotations,
+          mockedStores.selectionStore.selectAnnotations,
         ).not.toHaveBeenCalled();
         expect(
-          storeConfig.selection.actions.deselectAnnotations,
-        ).toHaveBeenCalledWith(expect.anything(), [
-          "ann-inside-1",
-          "ann-inside-2",
-        ]);
+          mockedStores.selectionStore.deselectAnnotations,
+        ).toHaveBeenCalledWith(["ann-inside-1", "ann-inside-2"]);
       });
     });
   });
 
   describe("selection with shift", () => {
     it("adds nodes to selection with shift", async () => {
-      const { storeConfig, pointerDown, pointerMove, pointerUp, wrapper } =
+      const { mockedStores, pointerDown, pointerMove, pointerUp, wrapper } =
         doMount({
-          selectedNodeIds: vi.fn(() => ["root:1"]),
+          selectedNodeIds: ["root:1"],
         });
 
       pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
@@ -511,16 +502,16 @@ describe("SelectionRectangle", () => {
       ]);
 
       pointerUp();
-      expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(
-        expect.anything(),
-        ["inside-1", "inside-2"],
-      );
+      expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledWith([
+        "inside-1",
+        "inside-2",
+      ]);
     });
 
     it("adds annotations to selection with shift", async () => {
-      const { storeConfig, pointerDown, pointerMove, pointerUp, wrapper } =
+      const { mockedStores, pointerDown, pointerMove, pointerUp, wrapper } =
         doMount({
-          selectedAnnotationIds: vi.fn(() => ["root:1"]),
+          selectedAnnotationIds: ["root:1"],
         });
 
       pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
@@ -544,11 +535,8 @@ describe("SelectionRectangle", () => {
 
       pointerUp();
       expect(
-        storeConfig.selection.actions.selectAnnotations,
-      ).toHaveBeenCalledWith(expect.anything(), [
-        "ann-inside-1",
-        "ann-inside-2",
-      ]);
+        mockedStores.selectionStore.selectAnnotations,
+      ).toHaveBeenCalledWith(["ann-inside-1", "ann-inside-2"]);
     });
   });
 
@@ -563,23 +551,21 @@ describe("SelectionRectangle", () => {
     });
 
     it("does nothing if move is called but selection is not active", async () => {
-      const { wrapper, pointerMove, pointerUp, storeConfig } = doMount();
+      const { wrapper, pointerMove, pointerUp, mockedStores } = doMount();
       // pointerDown is missing
       pointerMove({ clientX: 300, clientY: 300 });
       await nextTick();
       pointerUp();
       expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
       expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();
-      expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(
-        0,
-      );
+      expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledTimes(0);
       expect(
-        storeConfig.selection.actions.selectAnnotations,
+        mockedStores.selectionStore.selectAnnotations,
       ).toHaveBeenCalledTimes(0);
     });
 
     it("does nothing if pointerId is different", async () => {
-      const { wrapper, pointerDown, pointerMove, pointerUp, storeConfig } =
+      const { wrapper, pointerDown, pointerMove, pointerUp, mockedStores } =
         doMount();
 
       pointerDown({ clientX: 300, clientY: 300, pointerId: 22 });
@@ -588,11 +574,9 @@ describe("SelectionRectangle", () => {
       pointerUp();
       expect(wrapper.emitted("nodeSelectionPreview")).toBeFalsy();
       expect(wrapper.emitted("annotationSelectionPreview")).toBeFalsy();
-      expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(
-        0,
-      );
+      expect(mockedStores.selectionStore.selectNodes).toHaveBeenCalledTimes(0);
       expect(
-        storeConfig.selection.actions.selectAnnotations,
+        mockedStores.selectionStore.selectAnnotations,
       ).toHaveBeenCalledTimes(0);
     });
   });

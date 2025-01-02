@@ -10,13 +10,13 @@ export const useDisclaimer = () => {
   const { uiStrings } = useKaiServer();
   const disclaimerText = computed(() => uiStrings.disclaimer);
 
-  const { hubId, userName } = useHubAuth();
+  const { hubID, userName } = useHubAuth();
 
   const localStorageKey = computed(() => {
-    if (!hubId.value || !userName.value || !disclaimerText.value) {
+    if (!hubID.value || !userName.value || !disclaimerText.value) {
       return null;
     }
-    const identifier = `${hubId.value}${userName.value}${disclaimerText.value}`;
+    const identifier = `${hubID.value}${userName.value}${disclaimerText.value}`;
     return `kai-persistently-hide-disclaimer-${encodeString(identifier)}`;
   });
 

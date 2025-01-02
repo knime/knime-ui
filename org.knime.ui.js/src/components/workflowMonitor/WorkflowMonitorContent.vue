@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Pill } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/circle-close.svg";
@@ -7,19 +8,17 @@ import JoyIcon from "@knime/styles/img/icons/joy.svg";
 import WarningIcon from "@knime/styles/img/icons/sign-warning.svg";
 
 import type { WorkflowMonitorMessage as WorkflowMonitorMessageType } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { useSelectionStore } from "@/store/selection";
+import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import * as $colors from "@/style/colors";
 
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
 
-const store = useStore();
-
-const selectedNodes = computed(() => store.state.selection.selectedNodes);
-const workflowMonitorState = computed(
-  () => store.state.workflowMonitor.currentState,
-);
-
-const hasLoaded = computed(() => store.state.workflowMonitor.hasLoaded);
+const { selectedNodes } = storeToRefs(useSelectionStore());
+const workflowMonitorStore = useWorkflowMonitorStore();
+const { currentState: workflowMonitorState, hasLoaded } =
+  storeToRefs(workflowMonitorStore);
 
 const errors = computed(() => workflowMonitorState.value.errors);
 const warnings = computed(() => workflowMonitorState.value.warnings);
@@ -35,11 +34,11 @@ const shouldDisplayEmptyMessage = computed(() => {
 });
 
 const getTemplate = (templateId: string) => {
-  return store.state.nodeTemplates.cache[templateId];
+  return useNodeTemplatesStore().cache[templateId];
 };
 
 const navigateToIssue = async (message: WorkflowMonitorMessageType) => {
-  await store.dispatch("workflowMonitor/navigateToIssue", { message });
+  await workflowMonitorStore.navigateToIssue({ message });
 };
 
 const isFromNestedNode = (message: WorkflowMonitorMessageType) => {

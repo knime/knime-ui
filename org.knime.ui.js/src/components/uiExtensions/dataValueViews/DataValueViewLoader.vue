@@ -3,13 +3,13 @@
  * Dynamically loads a component that will render a data value view
  */
 import { ref, toRef, watch } from "vue";
+import { API } from "@api";
 
 import {
   UIExtension,
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import type { ExtensionConfig } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";

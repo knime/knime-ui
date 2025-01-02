@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { groupBy } from "lodash-es";
-import { useStore } from "vuex";
+import { storeToRefs } from "pinia";
 
 import { Modal, SearchInput } from "@knime/components";
 import ArrowRightIcon from "@knime/styles/img/icons/arrow-right.svg";
@@ -16,6 +16,7 @@ import type {
   Shortcut,
   ShortcutGroups,
 } from "@/shortcuts/types";
+import { useApplicationStore } from "@/store/application/application";
 import { matchesQuery } from "@/util/matchesQuery";
 
 type ShortcutGroupsWithOthers = ShortcutGroups | "others";
@@ -56,15 +57,13 @@ const getGroupHeading = (key: ShortcutGroupsWithOthers) => {
   return groupNamesMap[key];
 };
 
-const store = useStore();
-const isOpen = computed(
-  () => store.state.application.isShortcutsOverviewDialogOpen,
-);
+const applicationStore = useApplicationStore();
+const { isShortcutsOverviewDialogOpen: isOpen } = storeToRefs(applicationStore);
 
 const searchQuery = ref("");
 
 const closeModal = () => {
-  store.commit("application/setIsShortcutsOverviewDialogOpen", false);
+  applicationStore.setIsShortcutsOverviewDialogOpen(false);
   searchQuery.value = "";
 };
 

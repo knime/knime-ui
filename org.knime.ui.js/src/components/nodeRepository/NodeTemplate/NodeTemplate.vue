@@ -12,7 +12,7 @@ import NodeTemplateListMode from "./NodeTemplateListMode.vue";
 /**
  * Basic NodeTemplate without any drag or insert features. This component should stay reusable.
  */
-export type Props = {
+export interface Props {
   /**
    * Additional to the properties of the NodeTemplate from the gateway API, this object
    * contains the port information (color and kind) which was mapped from the store
@@ -23,7 +23,7 @@ export type Props = {
   isDescriptionActive: boolean;
   isHighlighted?: boolean;
   showFloatingHelpIcon?: boolean;
-};
+}
 
 const props = withDefaults(defineProps<Props>(), {
   displayMode: "icon",

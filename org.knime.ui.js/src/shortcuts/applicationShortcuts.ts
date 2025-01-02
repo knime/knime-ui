@@ -1,12 +1,16 @@
 import type { Router } from "vue-router";
-import type { Store } from "vuex";
 
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useApplicationStore } from "@/store/application/application";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
 import {
   cachedLocalSpaceProjectId,
   globalSpaceBrowserProjectId,
-} from "@/store/spaces";
-import type { RootStoreState } from "@/store/types";
+} from "@/store/spaces/common";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useSpacesStore } from "@/store/spaces/spaces";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import type { UnionToShortcutRegistry } from "./types";
 
@@ -21,12 +25,8 @@ declare module "./index" {
   interface ShortcutsRegistry extends ApplicationShortcuts {}
 }
 
-const switchActiveProject = (
-  store: Store<RootStoreState>,
-  router: Router,
-  offset: -1 | 1,
-) => {
-  const { openProjects, activeProjectId } = store.state.application;
+const switchActiveProject = (router: Router, offset: -1 | 1) => {
+  const { openProjects, activeProjectId } = useApplicationStore();
 
   type Ids = (string | null)[];
   const allIds = ([null] as Ids).concat(openProjects.map((p) => p.projectId));
@@ -52,21 +52,19 @@ const applicationShortcuts: ApplicationShortcuts = {
     text: "Close workflow/component",
     hotkey: ["CtrlOrCmd", "W"],
     group: "general",
-    execute: ({ $store }) =>
-      $store.dispatch(
-        "workflow/closeProject",
-        $store.state.workflow.activeWorkflow?.projectId,
+    execute: () =>
+      useDesktopInteractionsStore().closeProject(
+        useWorkflowStore().activeWorkflow!.projectId,
       ),
-    condition: ({ $store }) =>
-      $store.state.workflow.activeWorkflow?.projectId !== null,
+    condition: () => useWorkflowStore().activeWorkflow?.projectId !== null,
   },
   createWorkflow: {
     text: "Create workflow",
     hotkey: ["CtrlOrCmd", "N"],
     group: "general",
-    execute: ({ $store }) => {
-      const { activeProjectId } = $store.state.application;
-      const { projectPath } = $store.state.spaces;
+    execute: () => {
+      const { activeProjectId } = useApplicationStore();
+      const { projectPath } = useSpaceCachingStore();
 
       const globalSpaceBrowserProject =
         projectPath[globalSpaceBrowserProjectId] && globalSpaceBrowserProjectId;
@@ -75,33 +73,33 @@ const applicationShortcuts: ApplicationShortcuts = {
         projectPath[cachedLocalSpaceProjectId] && cachedLocalSpaceProjectId;
 
       const isUnknownProject =
-        $store.getters["application/isUnknownProject"](activeProjectId);
+        useApplicationStore().isUnknownProject(activeProjectId);
 
       const projectId = isUnknownProject
         ? localSpaceProject
         : activeProjectId ?? globalSpaceBrowserProject ?? localSpaceProject;
 
-      $store.commit("spaces/setCreateWorkflowModalConfig", {
+      useSpacesStore().setCreateWorkflowModalConfig({
         isOpen: true,
         projectId,
       });
     },
-    condition: ({ $store }) => !$store.state.spaces.isLoadingContent,
+    condition: () => !useSpaceOperationsStore().isLoadingContent,
   },
   switchToNextWorkflow: {
     text: "Switch to next opened workflow",
     hotkey: ["Ctrl", "Tab"],
     group: "general",
-    execute: ({ $store, $router }) => {
-      switchActiveProject($store, $router, 1);
+    execute: ({ $router }) => {
+      switchActiveProject($router, 1);
     },
   },
   switchToPreviousWorkflow: {
     text: "Switch to previous opened workflow",
     hotkey: ["Ctrl", "Shift", "Tab"],
     group: "general",
-    execute: ({ $store, $router }) => {
-      switchActiveProject($store, $router, -1);
+    execute: ({ $router }) => {
+      switchActiveProject($router, -1);
     },
   },
 };

@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import type { Level } from "@tiptap/extension-heading";
 import type { Editor } from "@tiptap/vue-3";
-import { useStore } from "vuex";
+import { storeToRefs } from "pinia";
 
 import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
 import type { EditorTools } from "@knime/rich-text-editor";
@@ -12,6 +12,7 @@ import { type HotkeysNS, hotkeys } from "@knime/utils";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
+import { useCanvasStore } from "@/store/canvas";
 import * as $shapes from "@/style/shapes";
 
 import ColorIcon from "./ColorIcon.vue";
@@ -24,8 +25,6 @@ interface Props {
   annotationBounds: Bounds;
   activeBorderColor: string;
 }
-
-const store = useStore();
 
 const props = defineProps<Props>();
 
@@ -103,7 +102,7 @@ const selectedHeadingText = computed(
   () => headingPresets.value.find((heading) => heading.selected)?.text,
 );
 
-const zoomFactor = computed(() => store.state.canvas.zoomFactor);
+const { zoomFactor } = storeToRefs(useCanvasStore());
 
 const toolbarItemPadding = 8;
 const toolbarItemGap = 4;
@@ -177,7 +176,7 @@ const changeBorderColor = (color: string) => {
 
       <FunctionButton
         v-for="tool of primaryTools"
-        :key="tool.icon"
+        :key="tool.id"
         :active="tool.active ? tool.active() : false"
         :title="`${tool.name} – ${hotkeys.formatHotkeys(tool.hotkey ?? [])}`"
         :disabled="tool.disabled?.()"

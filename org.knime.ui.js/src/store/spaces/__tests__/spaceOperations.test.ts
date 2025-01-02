@@ -1,7 +1,8 @@
 /* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import {
   NetworkException,
   ServiceCallException,
@@ -28,9 +29,9 @@ describe("spaces::spaceOperations", () => {
 
   describe("fetchWorkflowGroupContent", () => {
     it("should fetch items correctly and set the spaceId and spaceProviderId if not set", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      await store.dispatch("spaces/fetchWorkflowGroupContent", {
+      await spaceOperationsStore.fetchWorkflowGroupContent({
         projectId: "myProject1",
       });
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
@@ -40,16 +41,17 @@ describe("spaces::spaceOperations", () => {
       });
 
       expect(
-        store.state.spaces.workflowGroupCache.get(
-          JSON.stringify(store.state.spaces.projectPath.myProject1),
+        spaceCachingStore.workflowGroupCache.get(
+          JSON.stringify(spaceCachingStore.projectPath.myProject1),
         ),
       ).toEqual(fetchWorkflowGroupContentResponse);
     });
 
     it("should retry fetch once", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceProvidersStore, spaceCachingStore } =
+        loadStore();
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         // @ts-ignore
         hub1: {},
       };
@@ -67,7 +69,7 @@ describe("spaces::spaceOperations", () => {
         new Error("Error fetching content"),
       );
 
-      await store.dispatch("spaces/fetchWorkflowGroupContent", {
+      await spaceOperationsStore.fetchWorkflowGroupContent({
         projectId: "myProject1",
       });
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith({
@@ -77,20 +79,20 @@ describe("spaces::spaceOperations", () => {
       });
 
       expect(
-        store.state.spaces.workflowGroupCache.get(
-          JSON.stringify(store.state.spaces.projectPath.myProject1),
+        spaceCachingStore.workflowGroupCache.get(
+          JSON.stringify(spaceCachingStore.projectPath.myProject1),
         ),
       ).toEqual(fetchWorkflowGroupContentResponse);
     });
 
-    it("should throw if it fails more than once", () => {
-      const { store } = loadStore();
+    it("should throw if it fails more than once", async () => {
+      const { spaceOperationsStore, spaceProvidersStore } = loadStore();
 
       // mute consola
       // @ts-ignore
       consola.error = () => {};
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         // @ts-ignore
         hub1: {},
       };
@@ -108,17 +110,17 @@ describe("spaces::spaceOperations", () => {
         .mockRejectedValueOnce(new Error("Error fetching content first time"))
         .mockRejectedValueOnce(new Error("Error fetching content second time"));
 
-      expect(() =>
-        store.dispatch("spaces/fetchWorkflowGroupContent", {
+      await expect(() =>
+        spaceOperationsStore.fetchWorkflowGroupContent({
           projectId: "myProject1",
         }),
       ).rejects.toThrow("Error fetching content second time");
     });
 
-    it("should forward errors when trying to connect `NetworkException`s", () => {
-      const { store } = loadStore();
+    it("should forward errors when trying to connect `NetworkException`s", async () => {
+      const { spaceOperationsStore, spaceProvidersStore } = loadStore();
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         // @ts-ignore
         hub1: {},
       };
@@ -133,8 +135,8 @@ describe("spaces::spaceOperations", () => {
       // fail once so that it gets retried which will attempt to connect
       mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);
 
-      expect(() =>
-        store.dispatch("spaces/fetchWorkflowGroupContent", {
+      await expect(() =>
+        spaceOperationsStore.fetchWorkflowGroupContent({
           projectId: "myProject1",
         }),
       ).rejects.toThrowError(error);
@@ -143,44 +145,44 @@ describe("spaces::spaceOperations", () => {
 
   describe("changeDirectory", () => {
     it("should change to another directory", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      await store.dispatch("spaces/changeDirectory", {
+      await spaceOperationsStore.changeDirectory({
         projectId: "myProject1",
         pathId: "baz",
       });
 
       // changed project path itemId
-      expect(store.state.spaces.projectPath.myProject1.itemId).toBe("baz");
+      expect(spaceCachingStore.projectPath.myProject1.itemId).toBe("baz");
     });
 
     it("should change to a parent directory", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      store.state.spaces.workflowGroupCache.set(
-        JSON.stringify(store.state.spaces.projectPath.myProject1),
+      spaceCachingStore.workflowGroupCache.set(
+        JSON.stringify(spaceCachingStore.projectPath.myProject1),
         // @ts-ignore
         { path: [{ id: "level1" }, { id: "level2" }] },
       );
 
-      await store.dispatch("spaces/changeDirectory", {
+      await spaceOperationsStore.changeDirectory({
         projectId: "myProject1",
         pathId: "..",
       });
 
-      expect(store.state.spaces.projectPath.myProject1.itemId).toBe("level1");
+      expect(spaceCachingStore.projectPath.myProject1.itemId).toBe("level1");
     });
   });
 
   describe("createWorkflow", () => {
     it("should create a new workflow", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
       mockedAPI.space.createWorkflow.mockResolvedValue({
         id: "NewFile",
         type: "Workflow",
       });
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
@@ -188,7 +190,7 @@ describe("spaces::spaceOperations", () => {
 
       const workflowName = "workflow 1";
 
-      await store.dispatch("spaces/createWorkflow", {
+      await spaceOperationsStore.createWorkflow({
         projectId: "project2",
         workflowName,
       });
@@ -212,20 +214,20 @@ describe("spaces::spaceOperations", () => {
 
   describe("createFolder", () => {
     it("should create a new folder", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
       mockedAPI.space.createWorkflowGroup.mockResolvedValue({
         id: "NewFolder",
         type: "WorkflowGroup",
       });
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/createFolder", { projectId: "project2" });
-      expect(store.state.spaces.activeRenamedItemId).toBe("NewFolder");
+      await spaceOperationsStore.createFolder({ projectId: "project2" });
+      expect(spaceOperationsStore.activeRenamedItemId).toBe("NewFolder");
       expect(mockedAPI.space.createWorkflowGroup).toHaveBeenCalledWith(
         expect.objectContaining({ spaceId: "local", itemId: "level2" }),
       );
@@ -234,30 +236,30 @@ describe("spaces::spaceOperations", () => {
       );
     });
 
-    it("should throw StoreActionException if folder fails to create", () => {
-      const { store } = loadStore();
+    it("should throw StoreActionException if folder fails to create", async () => {
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
       const ioErr = new ServiceCallException({
         message: "something failed with IO",
       });
       mockedAPI.space.createWorkflowGroup.mockRejectedValueOnce(ioErr);
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      expect(() =>
-        store.dispatch("spaces/createFolder", { projectId: "project2" }),
+      await expect(() =>
+        spaceOperationsStore.createFolder({ projectId: "project2" }),
       ).rejects.toThrow(ioErr);
     });
 
-    it("should throw StoreActionException if content refresh fails after folder is created", () => {
+    it("should throw StoreActionException if content refresh fails after folder is created", async () => {
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(
         createSpaceProvider({ connected: true }),
       );
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
       const ioErr = new ServiceCallException({
         message: "something failed with IO",
@@ -269,29 +271,29 @@ describe("spaces::spaceOperations", () => {
 
       mockedAPI.space.listWorkflowGroup.mockRejectedValue(ioErr);
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      expect(() =>
-        store.dispatch("spaces/createFolder", { projectId: "project2" }),
+      await expect(() =>
+        spaceOperationsStore.createFolder({ projectId: "project2" }),
       ).rejects.toThrow(ioErr);
     });
   });
 
   describe("openProject", () => {
     it("should open workflow", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/openProject", {
+      await spaceOperationsStore.openProject({
         providerId: "local",
         spaceId: "local",
         itemId: "foobar",
@@ -309,9 +311,9 @@ describe("spaces::spaceOperations", () => {
     });
 
     it("should fail to open workflow", async () => {
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "something",
@@ -322,7 +324,7 @@ describe("spaces::spaceOperations", () => {
       );
 
       await expect(() =>
-        store.dispatch("spaces/openProject", {
+        spaceOperationsStore.openProject({
           providerId: "local",
           spaceId: "local",
           itemId: "foobar",
@@ -337,24 +339,26 @@ describe("spaces::spaceOperations", () => {
           origin: { providerId: "local", spaceId: "local", itemId: "dummy" },
         }),
       ];
-      const { store } = loadStore({ openProjects });
+      const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
+        loadStore({ openProjects });
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "folder1",
       };
 
-      store.commit("spaces/setSpaceProviders", {
+      spaceProvidersStore.setSpaceProviders({
         local: createSpaceProvider(),
       });
 
       const mockRouter = { push: vi.fn() };
 
-      await store.dispatch("spaces/openProject", {
+      await spaceOperationsStore.openProject({
         providerId: "local",
         spaceId: "local",
         itemId: "dummy",
+        // @ts-ignore
         $router: mockRouter,
       });
 
@@ -367,20 +371,22 @@ describe("spaces::spaceOperations", () => {
   });
 
   describe("importToWorkflowGroup", () => {
-    it("should import files", () => {
+    it("should import files", async () => {
       mockedAPI.desktop.importFiles.mockResolvedValue(["file1"]);
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level1",
       };
 
-      store.dispatch("spaces/importToWorkflowGroup", {
+      spaceOperationsStore.importToWorkflowGroup({
         projectId: "project2",
         importType: "FILES",
       });
+      await flushPromises();
+
       expect(mockedAPI.desktop.importFiles).toHaveBeenCalledWith({
         itemId: "level1",
         spaceId: "local",
@@ -388,19 +394,21 @@ describe("spaces::spaceOperations", () => {
       });
     });
 
-    it("should import workflows", () => {
+    it("should import workflows", async () => {
       mockedAPI.desktop.importWorkflows.mockResolvedValue(["wf1"]);
-      const { store } = loadStore();
-      store.state.spaces.projectPath.project2 = {
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      store.dispatch("spaces/importToWorkflowGroup", {
+      spaceOperationsStore.importToWorkflowGroup({
         projectId: "project2",
         importType: "WORKFLOW",
       });
+      await flushPromises();
+
       expect(mockedAPI.desktop.importWorkflows).toHaveBeenCalledWith({
         itemId: "level2",
         spaceId: "local",
@@ -410,18 +418,20 @@ describe("spaces::spaceOperations", () => {
   });
 
   describe("exportSpaceItem", () => {
-    it("should export workflows", () => {
-      const { store } = loadStore();
-      store.state.spaces.projectPath.project2 = {
+    it("should export workflows", async () => {
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      store.dispatch("spaces/exportSpaceItem", {
+      spaceOperationsStore.exportSpaceItem({
         projectId: "project2",
         itemId: "level2",
       });
+      await flushPromises();
+
       expect(mockedAPI.desktop.exportSpaceItem).toHaveBeenCalledWith({
         itemId: "level2",
         spaceId: "local",
@@ -433,19 +443,24 @@ describe("spaces::spaceOperations", () => {
   describe("deleteItems", () => {
     it("should delete items", async () => {
       const itemIds = ["item0", "item1"];
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
+        loadStore();
       const spaceId = "local";
       const spaceProviderId = "local";
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId,
         spaceId,
         itemId: "level2",
       };
+      spaceProvidersStore.setSpaceProviders({
+        [spaceProviderId]: createSpaceProvider(),
+      });
 
-      await store.dispatch("spaces/deleteItems", {
+      await spaceOperationsStore.deleteItems({
         projectId: "project2",
         itemIds,
+        // @ts-ignore
         $router: {},
       });
 
@@ -479,33 +494,38 @@ describe("spaces::spaceOperations", () => {
         }),
       ];
 
-      const { store, dispatchSpy } = loadStore({
+      const {
+        spaceOperationsStore,
+        spaceCachingStore,
+        spaceProvidersStore,
+        applicationStore,
+      } = loadStore({
         openProjects,
         forceCloseProjects: vi.fn(() => "project2"),
       });
 
-      store.state.spaces.projectPath.project2 = {
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: localProvider.id,
         spaceId: space.id,
         itemId: "level2",
       };
 
-      store.commit("spaces/setSpaceProviders", {
+      spaceProvidersStore.setSpaceProviders({
         [localProvider.id]: localProvider,
       });
 
       const $router = { push: vi.fn() };
 
-      await store.dispatch("spaces/deleteItems", {
+      await spaceOperationsStore.deleteItems({
         projectId: "project2",
         itemIds,
+        // @ts-ignore
         $router,
       });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/forceCloseProjects",
-        { projectIds: ["project1"] },
-      );
+      expect(applicationStore.forceCloseProjects).toHaveBeenCalledWith({
+        projectIds: ["project1"],
+      });
 
       expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
         spaceId: "local",
@@ -523,18 +543,24 @@ describe("spaces::spaceOperations", () => {
       const itemIds = ["item0", "item1"];
       const projectId = "project2";
 
-      const { store, dispatchSpy } = loadStore();
-      store.state.spaces.projectPath.project2 = {
+      const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
+        loadStore();
+      spaceCachingStore.projectPath.project2 = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
+      spaceProvidersStore.setSpaceProviders({
+        local: createSpaceProvider(),
+      });
 
-      await store.dispatch("spaces/deleteItems", { projectId, itemIds });
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "spaces/fetchWorkflowGroupContent",
-        { projectId },
+      await spaceOperationsStore.deleteItems(
+        // @ts-ignore
+        { projectId, itemIds },
       );
+      expect(
+        spaceOperationsStore.fetchWorkflowGroupContent,
+      ).toHaveBeenCalledWith({ projectId });
     });
   });
 
@@ -544,20 +570,21 @@ describe("spaces::spaceOperations", () => {
       const destWorkflowGroupItemId = "group1";
       const collisionStrategy = "OVERWRITE";
 
-      const { store } = loadStore();
+      const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/moveOrCopyItems", {
+      await spaceOperationsStore.moveOrCopyItems({
         projectId,
         itemIds,
         destWorkflowGroupItemId,
         collisionStrategy,
+        isCopy: false,
       });
       expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledWith({
         spaceProviderId: "local",
@@ -565,6 +592,7 @@ describe("spaces::spaceOperations", () => {
         itemIds,
         destWorkflowGroupItemId,
         collisionHandling: collisionStrategy,
+        copy: false,
       });
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
         expect.objectContaining({ itemId: "level2" }),
@@ -575,87 +603,87 @@ describe("spaces::spaceOperations", () => {
   describe("getters", () => {
     describe("pathToItemId", () => {
       it("should return path as itemId", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore } = loadStore();
         const projectId = "something";
 
-        const result = store.getters["spaces/pathToItemId"](projectId, "baz");
+        const result = spaceOperationsStore.pathToItemId(projectId, "baz");
         expect(result).toBe("baz");
       });
 
       it("should change to a parent directory", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "level1" }, { id: "level2" }] },
         );
 
-        const result = store.getters["spaces/pathToItemId"](projectId, "..");
+        const result = spaceOperationsStore.pathToItemId(projectId, "..");
         expect(result).toBe("level1");
       });
     });
 
     describe("parentWorkflowGroupId", () => {
       it("should return the correct parent id for a root path", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore, spaceCachingStore } = loadStore();
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           { path: [] },
         );
 
         expect(
-          store.getters["spaces/parentWorkflowGroupId"](projectId),
+          spaceOperationsStore.parentWorkflowGroupId(projectId),
         ).toBeNull();
       });
 
       it("should return the correct parent id for a path 1 level below root", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore, spaceCachingStore } = loadStore();
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "path1" }] },
         );
 
-        expect(store.getters["spaces/parentWorkflowGroupId"](projectId)).toBe(
+        expect(spaceOperationsStore.parentWorkflowGroupId(projectId)).toBe(
           "root",
         );
       });
 
       it("should return the correct parent id for a nested level", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore, spaceCachingStore } = loadStore();
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "path1" }, { id: "path2" }] },
         );
 
-        expect(store.getters["spaces/parentWorkflowGroupId"](projectId)).toBe(
+        expect(spaceOperationsStore.parentWorkflowGroupId(projectId)).toBe(
           "path1",
         );
       });
@@ -663,39 +691,39 @@ describe("spaces::spaceOperations", () => {
 
     describe("currentWorkflowGroupId", () => {
       it("should return the correct id for a root path", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore, spaceCachingStore } = loadStore();
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           { path: [] },
         );
 
-        expect(store.getters["spaces/currentWorkflowGroupId"](projectId)).toBe(
+        expect(spaceOperationsStore.currentWorkflowGroupId(projectId)).toBe(
           "root",
         );
       });
 
       it("should return the correct id a child path", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore, spaceCachingStore } = loadStore();
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           { path: [{ id: "path1" }] },
         );
 
-        expect(store.getters["spaces/currentWorkflowGroupId"](projectId)).toBe(
+        expect(spaceOperationsStore.currentWorkflowGroupId(projectId)).toBe(
           "path1",
         );
       });
@@ -712,27 +740,29 @@ describe("spaces::spaceOperations", () => {
           }),
         ];
 
-        const { store } = loadStore({ openProjects });
+        const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
+          loadStore({ openProjects });
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
 
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           fetchWorkflowGroupContentResponse,
         );
 
-        store.commit("spaces/setSpaceProviders", {
+        spaceProvidersStore.setSpaceProviders({
           local: createSpaceProvider(),
         });
 
-        expect(
-          store.getters["spaces/getOpenedWorkflowItems"](projectId),
-        ).toEqual(["4", "8"]);
+        expect(spaceOperationsStore.getOpenedWorkflowItems(projectId)).toEqual([
+          "4",
+          "8",
+        ]);
       });
     });
 
@@ -766,39 +796,42 @@ describe("spaces::spaceOperations", () => {
           type: "WorkflowGroup",
         });
 
-        const { store } = loadStore({ openProjects });
+        const { spaceOperationsStore, spaceProvidersStore, spaceCachingStore } =
+          loadStore({ openProjects });
 
-        store.commit("spaces/setSpaceProviders", {
+        spaceProvidersStore.setSpaceProviders({
           local: createSpaceProvider(),
         });
 
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "local",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           activeWorkflowGroup,
         );
 
-        expect(store.getters["spaces/getOpenedFolderItems"](projectId)).toEqual(
-          ["2", "5"],
-        );
+        expect(spaceOperationsStore.getOpenedFolderItems(projectId)).toEqual([
+          "2",
+          "5",
+        ]);
       });
     });
 
     describe("selectionContainsFile", () => {
       it("return whether a file is selected", () => {
-        const { store } = loadStore();
+        const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
+          loadStore();
         const projectId = "project2";
-        store.state.spaces.projectPath[projectId] = {
+        spaceCachingStore.projectPath[projectId] = {
           spaceProviderId: "private",
           spaceId: "local",
           itemId: "level2",
         };
-        store.state.spaces.spaceProviders = {
+        spaceProvidersStore.spaceProviders = {
           private: {
             // @ts-ignore
             spaces: [{ id: "local" }],
@@ -822,17 +855,17 @@ describe("spaces::spaceOperations", () => {
           ],
         };
 
-        store.state.spaces.workflowGroupCache.set(
-          JSON.stringify(store.state.spaces.projectPath[projectId]),
+        spaceCachingStore.workflowGroupCache.set(
+          JSON.stringify(spaceCachingStore.projectPath[projectId]),
           // @ts-ignore
           activeWorkflowGroup,
         );
 
         expect(
-          store.getters["spaces/selectionContainsFile"](projectId, ["2"]),
+          spaceOperationsStore.selectionContainsFile(projectId, ["2"]),
         ).toBeFalsy();
         expect(
-          store.getters["spaces/selectionContainsFile"](projectId, ["1"]),
+          spaceOperationsStore.selectionContainsFile(projectId, ["1"]),
         ).toBeTruthy();
       });
     });

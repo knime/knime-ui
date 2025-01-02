@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
 
@@ -9,36 +10,33 @@ import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas.vue";
 import PortTypeMenu from "@/components/workflow/ports/NodePorts/PortTypeMenu.vue";
 import QuickActionMenu from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSelectionStore } from "@/store/selection";
+import { useSettingsStore } from "@/store/settings";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 
-const store = useStore();
+const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
+const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
+const { portTypeMenu, quickActionMenu } = storeToRefs(useFloatingMenusStore());
+const applicationStore = useApplicationStore();
 
-const useEmbeddedDialogs = computed(
-  () => store.state.application.useEmbeddedDialogs,
-);
-const workflow = computed(() => store.state.workflow.activeWorkflow);
-const activeWorkflowId = computed(
-  () => store.state.workflow.activeWorkflow!.info.containerId,
-);
-const portTypeMenu = computed(() => store.state.workflow.portTypeMenu);
-const quickActionMenu = computed(() => store.state.workflow.quickActionMenu);
-const contextMenu = computed(() => store.state.application.contextMenu);
-const isWritable = computed(() => store.getters["workflow/isWritable"]);
+const { contextMenu, activeProjectId } = storeToRefs(applicationStore);
+const { selectedNodeIds } = useSelectionStore();
+const { hasAnnotationModeEnabled } = useCanvasModesStore();
 
-const selectedNodeIds = computed(
-  () => store.getters["selection/selectedNodeIds"],
-);
-const hasAnnotationModeEnabled = computed(
-  () => store.getters["application/hasAnnotationModeEnabled"],
-);
+const activeWorkflowId = computed(() => activeWorkflow.value!.info.containerId);
+
 const nodeDialogSize = computed({
   get() {
-    return store.state.settings.settings.nodeDialogSize;
+    return useSettingsStore().settings.nodeDialogSize;
   },
   set(value: number) {
-    store.dispatch("settings/updateSetting", {
+    useSettingsStore().updateSetting({
       key: "nodeDialogSize",
       value,
     });
@@ -51,9 +49,9 @@ watch(selectedNodeIds, () => {
   }
 });
 
-const closeContextMenu = (event: unknown) => {
+const closeContextMenu = (event?: MouseEvent) => {
   if (contextMenu.value.isOpen) {
-    store.dispatch("application/toggleContextMenu", { event });
+    applicationStore.toggleContextMenu({ event });
   }
 };
 </script>
@@ -107,16 +105,13 @@ const closeContextMenu = (event: unknown) => {
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
       instead of diffing old and new workflow.
     -->
-      <WorkflowCanvas :key="`${workflow!.projectId}-${activeWorkflowId}`" />
+      <WorkflowCanvas :key="`${activeProjectId}-${activeWorkflowId}`" />
       <template #secondary>
         <NodeConfig />
       </template>
     </SplitPanel>
 
-    <WorkflowCanvas
-      v-else
-      :key="`${workflow!.projectId}-${activeWorkflowId}`"
-    />
+    <WorkflowCanvas v-else :key="`${activeProjectId}-${activeWorkflowId}`" />
   </div>
 </template>
 

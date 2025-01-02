@@ -5,9 +5,9 @@ import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
 import type {
   Node,
   NodePort as NodePortType,
-  PortGroup,
 } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import NodePort from "../NodePort/NodePort.vue";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
@@ -59,8 +59,6 @@ type PortPositions = {
 const emit = defineEmits<{
   updatePortPositions: [value: PortPositions];
 }>();
-
-const store = useStore();
 
 const { isComponent, isMetanode } = useNodeInfo({ nodeId: props.nodeId });
 
@@ -156,6 +154,9 @@ const isPlaceholderPortTargeted = (side: "input" | "output") => {
     : isPortTargeted(props.outPorts.length, "out");
 };
 
+const nodeInteractionsStore = useNodeInteractionsStore();
+const nodeConfigurationStore = useNodeConfigurationStore();
+
 const addPort = async ({
   side,
   typeId,
@@ -163,7 +164,7 @@ const addPort = async ({
 }: {
   side: "input" | "output";
   typeId: string;
-  portGroup: PortGroup;
+  portGroup: string;
 }) => {
   if (portSelectionState.isModificationInProgress.value) {
     return;
@@ -171,54 +172,53 @@ const addPort = async ({
 
   portSelectionState.setModificationInProgress(true);
 
-  const canContinue = await store.dispatch(
-    "nodeConfiguration/autoApplySettings",
-    {
-      nextNodeId: props.nodeId,
-    },
-  );
+  const canContinue = await nodeConfigurationStore.autoApplySettings({
+    nextNodeId: props.nodeId,
+  });
+
   if (!canContinue) {
     portSelectionState.setModificationInProgress(false);
     return;
   }
 
-  await store.dispatch("workflow/addNodePort", {
-    nodeId: props.nodeId,
-    side,
-    typeId,
-    portGroup,
-  });
+  try {
+    await nodeInteractionsStore.addNodePort({
+      nodeId: props.nodeId,
+      side,
+      typeId,
+      portGroup,
+    });
 
-  // AddPortPlaceholder may be removed after adding a port
-  if (!canAddPort.value[side]) {
-    const sidePorts = side === "input" ? props.inPorts : props.outPorts;
-    updateSelection(`${side}-${sidePorts.length - 1}`);
+    // AddPortPlaceholder may be removed after adding a port
+    if (!canAddPort.value[side]) {
+      const sidePorts = side === "input" ? props.inPorts : props.outPorts;
+      updateSelection(`${side}-${sidePorts.length - 1}`);
+    }
+  } catch (error) {
+    consola.error("Failed to add port", { error });
+  } finally {
+    portSelectionState.setModificationInProgress(false);
   }
-
-  portSelectionState.setModificationInProgress(false);
 };
 
 const removePort = async (
   { portGroupId, index }: NodePortType,
   side: "input" | "output",
 ) => {
-  const canContinue = await store.dispatch(
-    "nodeConfiguration/autoApplySettings",
-    {
-      nextNodeId: props.nodeId,
-    },
-  );
+  const canContinue = await nodeConfigurationStore.autoApplySettings({
+    nextNodeId: props.nodeId,
+  });
 
   if (!canContinue) {
     portSelectionState.setModificationInProgress(false);
     return;
   }
 
-  store.dispatch("workflow/removeNodePort", {
+  nodeInteractionsStore.removeNodePort({
     nodeId: props.nodeId,
     side,
     index,
-    portGroup: portGroupId,
+    portGroup: portGroupId!,
   });
 
   clearSelection();

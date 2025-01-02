@@ -1,91 +1,95 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
+import { createWorkflow } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import executionShortcuts from "../executionShortcuts";
 
 describe("executionShortcuts", () => {
-  let mockDispatch, $store;
+  const createStore = () => {
+    const {
+      workflowStore,
+      selectionStore,
+      executionStore,
+      nodeConfigurationStore,
+    } = mockStores();
 
-  beforeEach(() => {
-    mockDispatch = vi.fn();
-    $store = {
-      dispatch: mockDispatch,
-      state: {
-        workflow: {
-          activeWorkflow: {
-            allowedActions: {},
-          },
-        },
-      },
-      getters: {
-        "selection/selectedNodes": [],
-        "selection/singleSelectedNode": null,
-      },
+    workflowStore.activeWorkflow = createWorkflow({
+      allowedActions: { canExecute: false },
+    });
+
+    return {
+      workflowStore,
+      selectionStore,
+      executionStore,
+      nodeConfigurationStore,
     };
-  });
+  };
 
   describe("execute", () => {
     describe("all", () => {
       it("executeAll", () => {
-        executionShortcuts.executeAll.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/executeNodes",
-          "all",
-        );
+        const { executionStore } = createStore();
+
+        executionShortcuts.executeAll.execute();
+        expect(executionStore.executeNodes).toHaveBeenCalledWith("all");
       });
 
       it("cancelAll", () => {
-        executionShortcuts.cancelAll.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/cancelNodeExecution",
-          "all",
-        );
+        const { executionStore } = createStore();
+
+        executionShortcuts.cancelAll.execute();
+        expect(executionStore.cancelNodeExecution).toHaveBeenCalledWith("all");
       });
 
       it("resetAll", () => {
-        executionShortcuts.resetAll.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith("workflow/resetNodes", "all");
+        const { executionStore } = createStore();
+
+        executionShortcuts.resetAll.execute();
+        expect(executionStore.resetNodes).toHaveBeenCalledWith("all");
       });
     });
 
     describe("selection", () => {
       it("executeSelected", async () => {
-        mockDispatch.mockImplementationOnce(() => Promise.resolve(true));
-        await executionShortcuts.executeSelected.execute({ $store });
-        expect(mockDispatch).toHaveBeenLastCalledWith(
-          "workflow/executeNodes",
+        const { executionStore, nodeConfigurationStore } = createStore();
+
+        nodeConfigurationStore.autoApplySettings.mockResolvedValue(true);
+        await executionShortcuts.executeSelected.execute({ payload: {} });
+        expect(executionStore.executeNodes).toHaveBeenLastCalledWith(
           "selected",
         );
       });
 
       it("checks theres no unapplied settings before execution", async () => {
-        mockDispatch.mockImplementationOnce(() => Promise.resolve(false));
-        await executionShortcuts.executeSelected.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "nodeConfiguration/autoApplySettings",
-          {
-            nextNodeId: undefined,
-          },
-        );
-        expect(mockDispatch).toHaveBeenCalledTimes(1);
+        const { nodeConfigurationStore } = createStore();
+
+        nodeConfigurationStore.autoApplySettings.mockResolvedValue(false);
+        await executionShortcuts.executeSelected.execute({ payload: {} });
+        expect(nodeConfigurationStore.autoApplySettings).toHaveBeenCalledWith({
+          nextNodeId: undefined,
+        });
       });
 
       it("executeAndOpenView", async () => {
-        $store.getters["selection/singleSelectedNode"] = {
+        const { executionStore, selectionStore } = createStore();
+
+        selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {
             canExecute: true,
             canOpenView: true,
           },
         };
-        await executionShortcuts.executeAndOpenView.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/executeNodeAndOpenView",
+        await executionShortcuts.executeAndOpenView.execute({ payload: {} });
+        expect(executionStore.executeNodeAndOpenView).toHaveBeenCalledWith(
           "root:0",
         );
       });
 
       it("executeAndOpenView with passed nodeId", async () => {
-        $store.getters["selection/singleSelectedNode"] = {
+        const { executionStore, selectionStore } = createStore();
+
+        selectionStore.singleSelectedNode = {
           id: "root:0",
           allowedActions: {
             canExecute: true,
@@ -93,59 +97,65 @@ describe("executionShortcuts", () => {
           },
         };
         await executionShortcuts.executeAndOpenView.execute({
-          $store,
           payload: { metadata: { nodeId: "test:id" } },
         });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/executeNodeAndOpenView",
+        expect(executionStore.executeNodeAndOpenView).toHaveBeenCalledWith(
           "test:id",
         );
       });
 
       it("cancelSelected", () => {
-        executionShortcuts.cancelSelected.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/cancelNodeExecution",
+        const { executionStore } = createStore();
+
+        executionShortcuts.cancelSelected.execute({ payload: {} });
+        expect(executionStore.cancelNodeExecution).toHaveBeenCalledWith(
           "selected",
         );
       });
 
       it("resetSelected", () => {
-        executionShortcuts.resetSelected.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/resetNodes",
-          "selected",
-        );
+        const { executionStore } = createStore();
+
+        executionShortcuts.resetSelected.execute({ payload: {} });
+        expect(executionStore.resetNodes).toHaveBeenCalledWith("selected");
       });
     });
 
     describe("single selection", () => {
-      beforeEach(() => {
-        $store.getters["selection/singleSelectedNode"] = { id: "root:3" };
-      });
+      const createStore = () => {
+        const { workflowStore, selectionStore, executionStore } = mockStores();
+
+        workflowStore.activeWorkflow = createWorkflow({ allowedActions: {} });
+        selectionStore.singleSelectedNode = { id: "root:3" };
+
+        return {
+          executionStore,
+        };
+      };
 
       it("resumeLoopExecution", () => {
-        executionShortcuts.resumeLoopExecution.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/resumeLoopExecution",
+        const { executionStore } = createStore();
+
+        executionShortcuts.resumeLoopExecution.execute({ payload: {} });
+        expect(executionStore.resumeLoopExecution).toHaveBeenCalledWith(
           "root:3",
         );
       });
 
       it("pauseLoopExecution", () => {
-        executionShortcuts.pauseLoopExecution.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/pauseLoopExecution",
+        const { executionStore } = createStore();
+
+        executionShortcuts.pauseLoopExecution.execute({ payload: {} });
+        expect(executionStore.pauseLoopExecution).toHaveBeenCalledWith(
           "root:3",
         );
       });
 
       it("stepLoopExecution", () => {
-        executionShortcuts.stepLoopExecution.execute({ $store });
-        expect(mockDispatch).toHaveBeenCalledWith(
-          "workflow/stepLoopExecution",
-          "root:3",
-        );
+        const { executionStore } = createStore();
+
+        executionShortcuts.stepLoopExecution.execute({ payload: {} });
+        expect(executionStore.stepLoopExecution).toHaveBeenCalledWith("root:3");
       });
     });
   });
@@ -153,115 +163,112 @@ describe("executionShortcuts", () => {
   describe("condition", () => {
     describe("all", () => {
       it("executeAll", () => {
-        expect(executionShortcuts.executeAll.condition({ $store })).toBeFalsy();
-        $store.state.workflow.activeWorkflow.allowedActions.canExecute = true;
-        expect(executionShortcuts.executeAll.condition({ $store })).toBe(true);
+        const { workflowStore } = createStore();
+
+        expect(executionShortcuts.executeAll.condition()).toBeFalsy();
+        workflowStore.activeWorkflow.allowedActions.canExecute = true;
+        expect(executionShortcuts.executeAll.condition()).toBe(true);
       });
 
       it("cancelAll", () => {
-        expect(executionShortcuts.cancelAll.condition({ $store })).toBeFalsy();
-        $store.state.workflow.activeWorkflow.allowedActions.canCancel = true;
-        expect(executionShortcuts.cancelAll.condition({ $store })).toBe(true);
+        const { workflowStore } = createStore();
+
+        expect(executionShortcuts.cancelAll.condition()).toBeFalsy();
+        workflowStore.activeWorkflow.allowedActions.canCancel = true;
+        expect(executionShortcuts.cancelAll.condition()).toBe(true);
       });
 
       it("resetAll", () => {
-        expect(executionShortcuts.resetAll.condition({ $store })).toBeFalsy();
-        $store.state.workflow.activeWorkflow.allowedActions.canReset = true;
-        expect(executionShortcuts.resetAll.condition({ $store })).toBe(true);
+        const { workflowStore } = createStore();
+
+        expect(executionShortcuts.resetAll.condition()).toBeFalsy();
+        workflowStore.activeWorkflow.allowedActions.canReset = true;
+        expect(executionShortcuts.resetAll.condition()).toBe(true);
       });
     });
 
     describe("selection", () => {
       it("executeSelected", () => {
-        expect(
-          executionShortcuts.executeSelected.condition({ $store }),
-        ).toBeFalsy();
-        $store.getters["selection/selectedNodes"] = [
+        const { selectionStore } = createStore();
+
+        expect(executionShortcuts.executeSelected.condition()).toBeFalsy();
+        selectionStore.getSelectedNodes = [
           {
             allowedActions: { canExecute: true },
           },
         ];
-        expect(executionShortcuts.executeSelected.condition({ $store })).toBe(
-          true,
-        );
+        expect(executionShortcuts.executeSelected.condition()).toBe(true);
       });
 
       it("cancelSelected", () => {
-        expect(
-          executionShortcuts.cancelSelected.condition({ $store }),
-        ).toBeFalsy();
-        $store.getters["selection/selectedNodes"] = [
+        const { selectionStore } = createStore();
+
+        expect(executionShortcuts.cancelSelected.condition()).toBeFalsy();
+        selectionStore.getSelectedNodes = [
           {
             allowedActions: { canCancel: true },
           },
         ];
-        expect(executionShortcuts.cancelSelected.condition({ $store })).toBe(
-          true,
-        );
+        expect(executionShortcuts.cancelSelected.condition()).toBe(true);
       });
 
       it("resetSelected", () => {
-        expect(
-          executionShortcuts.resetSelected.condition({ $store }),
-        ).toBeFalsy();
-        $store.getters["selection/selectedNodes"] = [
+        const { selectionStore } = createStore();
+
+        expect(executionShortcuts.resetSelected.condition()).toBeFalsy();
+        selectionStore.getSelectedNodes = [
           {
             allowedActions: { canReset: true },
           },
         ];
-        expect(executionShortcuts.resetSelected.condition({ $store })).toBe(
-          true,
-        );
+        expect(executionShortcuts.resetSelected.condition()).toBe(true);
       });
     });
 
     describe("single selection", () => {
       it("resumeLoopExecution", () => {
-        expect(
-          executionShortcuts.resumeLoopExecution.condition({ $store }),
-        ).toBeFalsy();
-        $store.getters["selection/singleSelectedNode"] = {
+        const { selectionStore } = createStore();
+
+        expect(executionShortcuts.resumeLoopExecution.condition()).toBeFalsy();
+        selectionStore.singleSelectedNode = {
+          kind: "node",
           loopInfo: {
             allowedActions: {
               canResume: true,
             },
           },
         };
-        expect(
-          executionShortcuts.resumeLoopExecution.condition({ $store }),
-        ).toBe(true);
+        expect(executionShortcuts.resumeLoopExecution.condition()).toBe(true);
       });
 
       it("pauseLoopExecution", () => {
-        expect(
-          executionShortcuts.pauseLoopExecution.condition({ $store }),
-        ).toBeFalsy();
-        $store.getters["selection/singleSelectedNode"] = {
+        const { selectionStore } = createStore();
+
+        expect(executionShortcuts.pauseLoopExecution.condition()).toBeFalsy();
+        selectionStore.singleSelectedNode = {
+          kind: "node",
           loopInfo: {
             allowedActions: {
               canPause: true,
             },
           },
         };
-        expect(
-          executionShortcuts.pauseLoopExecution.condition({ $store }),
-        ).toBe(true);
+        expect(executionShortcuts.pauseLoopExecution.condition()).toBe(true);
       });
 
       it("stepLoopExecution", () => {
-        expect(
-          executionShortcuts.stepLoopExecution.condition({ $store }),
-        ).toBeFalsy();
-        $store.getters["selection/singleSelectedNode"] = {
+        const { selectionStore } = createStore();
+
+        expect(executionShortcuts.stepLoopExecution.condition()).toBeFalsy();
+        selectionStore.singleSelectedNode = {
+          kind: "node",
           loopInfo: {
             allowedActions: {
               canStep: true,
             },
           },
         };
-        expect(executionShortcuts.stepLoopExecution.condition({ $store })).toBe(
-          true,
-        );
+        expect(executionShortcuts.stepLoopExecution.condition()).toBe(true);
       });
     });
   });

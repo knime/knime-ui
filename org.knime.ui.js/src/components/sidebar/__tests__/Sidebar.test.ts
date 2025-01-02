@@ -6,11 +6,8 @@ import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 
 import Metainfo from "@/assets/metainfo.svg";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
-import * as applicationStore from "@/store/application";
-import * as nodeRepositoryStore from "@/store/nodeRepository";
-import * as panelStore from "@/store/panel";
-import * as uiControlsStore from "@/store/uiControls";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { createNativeNode } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import Sidebar from "../Sidebar.vue";
 import SidebarExtensionPanel from "../SidebarExtensionPanel.vue";
 
@@ -19,35 +16,27 @@ vi.mock("@/composables/useIsKaiEnabled");
 describe("Sidebar", () => {
   const doMount = ({
     props = {},
-    isWorkflowEmptyMock = vi.fn().mockReturnValue(false),
+    isWorkflowEmpty = false,
     isKaiEnabled = true,
   } = {}) => {
-    const $store = mockVuexStore({
-      panel: panelStore,
-      nodeRepository: nodeRepositoryStore,
-      workflow: {
-        state: {
-          activeWorkflow: {
-            projectMetadata: {
-              title: "title",
-            },
-            info: {
-              name: "fileName",
-              containerType: "project",
-            },
-          },
-        },
-        getters: {
-          isWorkflowEmpty: isWorkflowEmptyMock,
-        },
+    const { testingPinia, panelStore, workflowStore, applicationStore } =
+      mockStores();
+
+    applicationStore.setActiveProjectId("activeProject1");
+
+    workflowStore.setActiveWorkflow({
+      projectId: "activeProject1",
+      projectMetadata: {},
+      info: {
+        name: "fileName",
+        containerType: "project" as any,
+        containerId: "cntId",
       },
-      application: {
-        state: {
-          ...applicationStore.state(),
-          activeProjectId: "activeProject1",
-        },
-      },
-      uiControls: uiControlsStore,
+      nodeTemplates: {},
+      connections: {},
+      workflowAnnotations: [],
+      dirty: false,
+      nodes: isWorkflowEmpty ? {} : { "root:1": createNativeNode() },
     });
 
     const isKaiEnabledRef = ref(isKaiEnabled); // this one we can modify externally to affect the computed one
@@ -56,15 +45,12 @@ describe("Sidebar", () => {
       isKaiEnabled: isKaiEnabledComputed,
     });
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
-
     const wrapper = mount(Sidebar, {
       props: {
         ...props,
       },
       global: {
-        plugins: [$store],
+        plugins: [testingPinia],
         stubs: {
           ContextAwareDescription: true,
           NodeRepository: true,
@@ -80,9 +66,7 @@ describe("Sidebar", () => {
 
     return {
       wrapper,
-      $store,
-      dispatchSpy,
-      commitSpy,
+      panelStore,
       activateTab,
       isKaiEnabledRef,
     };
@@ -124,23 +108,23 @@ describe("Sidebar", () => {
   });
 
   it("click on node repository icon when info panel is open closes both panels", async () => {
-    const { $store, activateTab } = doMount();
+    const { panelStore, activateTab } = doMount();
     // open node repository
     await activateTab("Nodes");
     // emulate opening the info panel
-    await $store.dispatch("panel/openExtensionPanel");
-    expect($store.state.panel.isExtensionPanelOpen).toBe(true);
+    panelStore.openExtensionPanel();
+    expect(panelStore.isExtensionPanelOpen).toBe(true);
 
     await activateTab("Nodes");
-    expect($store.state.panel.isExtensionPanelOpen).toBe(false);
+    expect(panelStore.isExtensionPanelOpen).toBe(false);
   });
 
   it("click on a different tab when extension panel is open, closes the extension panel", async () => {
-    const { $store, activateTab } = doMount();
+    const { panelStore, activateTab } = doMount();
 
     await activateTab("Nodes");
     // emulate opening the info panel
-    await $store.dispatch("panel/openExtensionPanel");
+    panelStore.openExtensionPanel();
 
     // back to Info
     await activateTab("Info");
@@ -148,7 +132,7 @@ describe("Sidebar", () => {
     // back to node repository
     await activateTab("Nodes");
 
-    expect($store.state.panel.isExtensionPanelOpen).toBe(false);
+    expect(panelStore.isExtensionPanelOpen).toBe(false);
   });
 
   it("has portal for extension panel", () => {
@@ -158,7 +142,7 @@ describe("Sidebar", () => {
 
   it("should show node repository if workflow is empty", () => {
     const { wrapper } = doMount({
-      isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+      isWorkflowEmpty: true,
     });
 
     expect(wrapper.find('[title="Nodes"]').classes("active")).toBe(true);

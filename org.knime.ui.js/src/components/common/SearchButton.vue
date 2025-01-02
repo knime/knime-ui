@@ -7,10 +7,10 @@ import { navigatorUtils } from "@knime/utils";
 /**
  * A function button that toggles a input field that can be used for search/filter queries.
  */
-interface Props {
+type Props = {
   modelValue: string;
   placeholder?: string;
-}
+};
 
 withDefaults(defineProps<Props>(), {
   placeholder: "Search",

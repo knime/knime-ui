@@ -1,6 +1,7 @@
 import { type Ref, computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
 
 import type { ExtensionConfig } from "./types";
 
@@ -29,11 +30,7 @@ export const setRestApiBaseUrl = (url: string) => {
 };
 
 export const useResourceLocation = (options: UseResourceLocationOptions) => {
-  const store = useStore();
-
-  const activeProjectId = computed(
-    () => store.state.application.activeProjectId,
-  );
+  const { activeProjectId } = storeToRefs(useApplicationStore());
 
   const resourceLocation = computed(() => {
     if (!options.extensionConfig.value || activeProjectId.value === null) {

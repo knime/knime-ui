@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
-import type { Store } from "vuex";
 
 import { SubMenu } from "@knime/components";
 
@@ -9,19 +8,14 @@ import type { Workflow } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { createShortcutsService } from "@/plugins/shortcuts";
 import { router } from "@/router/router";
-import * as applicationStore from "@/store/application";
-import * as canvasStore from "@/store/canvas";
-import * as selectionStore from "@/store/selection";
-import * as spacesStore from "@/store/spaces";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import {
   createProject,
   createSpace,
+  createSpaceGroup,
   createSpaceProvider,
   createWorkflow,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import ToolbarShortcutButton from "../ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "../WorkflowBreadcrumb.vue";
 import WorkflowToolbar from "../WorkflowToolbar.vue";
@@ -39,17 +33,9 @@ vi.mock("@knime/components", async (importOriginal) => {
 
 describe("WorkflowToolbar.vue", () => {
   const doMount = () => {
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      application: applicationStore,
-      selection: selectionStore,
-      canvas: canvasStore,
-      spaces: spacesStore,
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
 
     const $shortcuts = createShortcutsService({
-      $store,
       $router: router,
       // @ts-expect-error
       $toast: {},
@@ -57,14 +43,14 @@ describe("WorkflowToolbar.vue", () => {
 
     const wrapper = mount(WorkflowToolbar, {
       global: {
-        plugins: [$store, router],
+        plugins: [mockedStores.testingPinia, router],
         mocks: {
           $shortcuts,
         },
       },
     });
 
-    return { wrapper, $store, $shortcuts };
+    return { wrapper, $shortcuts, ...mockedStores };
   };
 
   const toNameProp = (tab) => tab.props("name");
@@ -76,6 +62,7 @@ describe("WorkflowToolbar.vue", () => {
       const shortcutButtons = wrapper.findAllComponents(ToolbarShortcutButton);
       expect(
         shortcutButtons.map((button) => button.props("name")),
+        // @ts-ignore
       ).toStrictEqual(wrapper.vm.toolbarButtons);
     });
 
@@ -89,8 +76,8 @@ describe("WorkflowToolbar.vue", () => {
   describe("zoom", () => {
     it("renders zoomMenu", async () => {
       const workflow = createWorkflow();
-      const { wrapper, $store } = doMount();
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      const { wrapper, workflowStore } = doMount();
+      workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
       expect(wrapper.findComponent(ZoomMenu).exists()).toBe(true);
@@ -107,8 +94,8 @@ describe("WorkflowToolbar.vue", () => {
       const workflow = createWorkflow();
       workflow.nodes = {};
       workflow.workflowAnnotations = [];
-      const { wrapper, $store } = doMount();
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      const { wrapper, workflowStore } = doMount();
+      workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
       expect(wrapper.findComponent(ZoomMenu).props("disabled")).toBe(true);
@@ -124,8 +111,8 @@ describe("WorkflowToolbar.vue", () => {
 
     it("hides breadcrumb by default", async () => {
       const workflow = createWorkflow();
-      const { wrapper, $store } = doMount();
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      const { wrapper, workflowStore } = doMount();
+      workflowStore.setActiveWorkflow(workflow);
       await nextTick();
       expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
     });
@@ -139,8 +126,8 @@ describe("WorkflowToolbar.vue", () => {
           containerType: WorkflowInfo.ContainerTypeEnum.Project,
         },
       ];
-      const { wrapper, $store } = doMount();
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      const { wrapper, workflowStore } = doMount();
+      workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
       expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
@@ -149,15 +136,15 @@ describe("WorkflowToolbar.vue", () => {
 
   describe("visibility of toolbar items", () => {
     const setupStore = async ({
-      $store,
+      mockedStores,
       workflow,
     }: {
-      $store: Store<any>;
+      mockedStores: ReturnType<typeof mockStores>;
       workflow: Workflow;
     }) => {
       // create a workflow to set active
       // const workflow = createWorkflow();
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      mockedStores.workflowStore.setActiveWorkflow(workflow);
 
       // create open projects matching the workflow that is active (by projectId)
       const openProjects = [
@@ -170,17 +157,19 @@ describe("WorkflowToolbar.vue", () => {
           },
         }),
       ];
-      $store.commit("application/setOpenProjects", openProjects);
+      mockedStores.applicationStore.setOpenProjects(openProjects);
 
       // set the project as active
-      $store.commit("application/setActiveProjectId", workflow.projectId);
+      mockedStores.applicationStore.setActiveProjectId(workflow.projectId);
 
       // set space providers containing a space that matches the one in the
       // active workflow origin
-      $store.commit("spaces/setSpaceProviders", {
+      mockedStores.spaceProvidersStore.setSpaceProviders({
         "hub-provider1": createSpaceProvider({
           id: "hub-provider1",
-          spaces: [createSpace({ id: "space1" })],
+          spaceGroups: [
+            createSpaceGroup({ spaces: [createSpace({ id: "space1" })] }),
+          ],
         }),
       });
 
@@ -197,9 +186,9 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows menu items if no node is selected and not inside a component", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, $shortcuts, ...mockedStores } = doMount();
 
-      await setupStore({ $store, workflow: createWorkflow() });
+      await setupStore({ mockedStores, workflow: createWorkflow() });
 
       const toolbarShortcuts = wrapper
         .findAllComponents(ToolbarShortcutButton)
@@ -216,10 +205,10 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows menu items if workflow is an unknown project", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, workflowStore, applicationStore } = doMount();
 
       const workflow = createWorkflow();
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      workflowStore.setActiveWorkflow(workflow);
 
       const openProjects = [
         createProject({
@@ -227,8 +216,8 @@ describe("WorkflowToolbar.vue", () => {
         }),
       ];
 
-      $store.commit("application/setOpenProjects", openProjects);
-      $store.commit("application/setActiveProjectId", workflow.projectId);
+      applicationStore.setOpenProjects(openProjects);
+      applicationStore.setActiveProjectId(workflow.projectId);
 
       await nextTick();
 
@@ -247,11 +236,11 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows layout editor button if inside a component", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, $shortcuts, ...mockedStores } = doMount();
       const workflow = createWorkflow({
         info: { containerType: WorkflowInfo.ContainerTypeEnum.Component },
       });
-      await setupStore({ $store, workflow });
+      await setupStore({ mockedStores, workflow });
 
       const toolbarShortcuts = wrapper
         .findAllComponents(ToolbarShortcutButton)
@@ -261,11 +250,13 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows correct menu items if one node is selected", async () => {
-      const { wrapper, $store } = doMount();
-
+      const { wrapper, $shortcuts, ...mockedStores } = doMount();
       const workflow = createWorkflow();
-      await setupStore({ $store, workflow });
-      await $store.dispatch("selection/selectNode", ["root:1"]);
+      await setupStore({ mockedStores, workflow });
+
+      mockedStores.selectionStore.selectNode("root:1");
+
+      await nextTick();
 
       const toolbarShortcuts = wrapper
         .findAllComponents(ToolbarShortcutButton)
@@ -284,11 +275,13 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("shows correct menu items if multiple nodes are selected", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, $shortcuts, ...mockedStores } = doMount();
 
       const workflow = createWorkflow();
-      await setupStore({ $store, workflow });
-      await $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
+      await setupStore({ mockedStores, workflow });
+      mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
+
+      await nextTick();
 
       const toolbarShortcuts = wrapper
         .findAllComponents(ToolbarShortcutButton)
@@ -331,13 +324,13 @@ describe("WorkflowToolbar.vue", () => {
     });
 
     it("should change the canvas mode", () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, canvasModesStore } = doMount();
 
       wrapper
         .findComponent(SubMenu)
         .vm.$emit("item-click", {}, { metadata: { id: "annotation" } });
 
-      expect($store.state.application.canvasMode).toBe("annotation");
+      expect(canvasModesStore.canvasMode).toBe("annotation");
     });
   });
 });

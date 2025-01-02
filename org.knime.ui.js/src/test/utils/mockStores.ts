@@ -1,0 +1,136 @@
+import { vi } from "vitest";
+import { createTestingPinia } from "@pinia/testing";
+
+import { useAIAssistantStore } from "@/store/aiAssistant";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
+import { useGlobalLoaderStore } from "@/store/application/globalLoader";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
+import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { usePanelStore } from "@/store/panel";
+import { useQuickAddNodesStore } from "@/store/quickAddNodes";
+import { useSelectionStore } from "@/store/selection";
+import { useSettingsStore } from "@/store/settings";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useDeploymentsStore } from "@/store/spaces/deployments";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useSpacesStore } from "@/store/spaces/spaces";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
+import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInteractions";
+import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
+import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useExecutionStore } from "@/store/workflow/execution";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
+
+export const mockStores = ({ stubActions = false } = {}) => {
+  const testingPinia = createTestingPinia({
+    createSpy: vi.fn,
+    stubActions,
+  });
+
+  const applicationStore = useApplicationStore(testingPinia);
+  const applicationSettingsStore = useApplicationSettingsStore(testingPinia);
+  const canvasModesStore = useCanvasModesStore(testingPinia);
+  const canvasStateTrackingStore = useCanvasStateTrackingStore(testingPinia);
+  const dirtyProjectsTrackingStore =
+    useDirtyProjectsTrackingStore(testingPinia);
+  const globalLoaderStore = useGlobalLoaderStore(testingPinia);
+  const lifecycleStore = useLifecycleStore(testingPinia);
+  const workflowPreviewSnapshotsStore =
+    useWorkflowPreviewSnapshotsStore(testingPinia);
+  const nodeConfigurationStore = useNodeConfigurationStore(testingPinia);
+  const nodeDescriptionStore = useNodeDescriptionStore(testingPinia);
+  const nodeTemplatesStore = useNodeTemplatesStore(testingPinia);
+  const spaceAuthStore = useSpaceAuthStore(testingPinia);
+  const spaceCachingStore = useSpaceCachingStore(testingPinia);
+  const deploymentsStore = useDeploymentsStore(testingPinia);
+  const spaceProvidersStore = useSpaceProvidersStore(testingPinia);
+  const spaceOperationsStore = useSpaceOperationsStore(testingPinia);
+  const spacesStore = useSpacesStore(testingPinia);
+  const uiControlsStore = useUIControlsStore(testingPinia);
+  const annotationInteractionsStore =
+    useAnnotationInteractionsStore(testingPinia);
+  const clipboardInteractionsStore =
+    useClipboardInteractionsStore(testingPinia);
+  const componentInteractionsStore =
+    useComponentInteractionsStore(testingPinia);
+  const connectionInteractionsStore =
+    useConnectionInteractionsStore(testingPinia);
+  const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
+  const executionStore = useExecutionStore(testingPinia);
+  const floatingMenusStore = useFloatingMenusStore(testingPinia);
+  const movingStore = useMovingStore(testingPinia);
+  const nodeInteractionsStore = useNodeInteractionsStore(testingPinia);
+  const workflowStore = useWorkflowStore(testingPinia);
+  const workflowMonitorStore = useWorkflowMonitorStore(testingPinia);
+  const aiAssistantStore = useAIAssistantStore(testingPinia);
+  const canvasStore = useCanvasStore(testingPinia);
+  const nodeRepositoryStore = useNodeRepositoryStore(testingPinia);
+  const panelStore = usePanelStore(testingPinia);
+  const quickAddNodesStore = useQuickAddNodesStore(testingPinia);
+  const selectionStore = useSelectionStore(testingPinia);
+  const settingsStore = useSettingsStore(testingPinia);
+
+  uiControlsStore.init();
+
+  const kanvas = document.createElement("div");
+  kanvas.setAttribute("id", "kanvas");
+  kanvas.scrollTo = vi.fn();
+  canvasStore.setScrollContainerElement(kanvas);
+
+  return {
+    testingPinia,
+    applicationStore,
+    applicationSettingsStore,
+    canvasModesStore,
+    canvasStateTrackingStore,
+    dirtyProjectsTrackingStore,
+    globalLoaderStore,
+    lifecycleStore,
+    workflowPreviewSnapshotsStore,
+    nodeConfigurationStore,
+    nodeDescriptionStore,
+    nodeTemplatesStore,
+    spaceAuthStore,
+    spaceCachingStore,
+    deploymentsStore,
+    spaceProvidersStore,
+    spaceOperationsStore,
+    spacesStore,
+    uiControlsStore,
+    annotationInteractionsStore,
+    clipboardInteractionsStore,
+    componentInteractionsStore,
+    connectionInteractionsStore,
+    desktopInteractionsStore,
+    executionStore,
+    floatingMenusStore,
+    movingStore,
+    nodeInteractionsStore,
+    workflowStore,
+    workflowMonitorStore,
+    aiAssistantStore,
+    canvasStore,
+    nodeRepositoryStore,
+    panelStore,
+    quickAddNodesStore,
+    selectionStore,
+    settingsStore,
+  };
+};

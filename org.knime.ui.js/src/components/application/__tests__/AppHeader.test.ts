@@ -1,17 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { API } from "@api";
 import { useRoute } from "vue-router";
 
 import { FunctionButton } from "@knime/components";
 
-import { API } from "@/api";
 import type { Project } from "@/api/gateway-api/generated-api";
 import CloseIcon from "@/assets/cancel.svg";
 import CloseButton from "@/components/common/CloseButton.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSettingsStore } from "@/store/settings";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { createProject } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import AppHeader from "../AppHeader.vue";
 import { AppHeaderContextMenu } from "../AppHeaderContextMenu";
 import AppHeaderTab from "../AppHeaderTab.vue";
@@ -25,6 +32,7 @@ vi.mock("vue-router", async (importOriginal) => {
   const actual = await importOriginal();
 
   return {
+    // @ts-ignore
     ...actual,
     useRouter: vi.fn(() => ({ push: routerPush })),
     useRoute: vi.fn(() => ({ name: APP_ROUTES.WorkflowPage, params: {} })),
@@ -84,44 +92,44 @@ describe("AppHeader.vue", () => {
       2: true,
       3: false,
     };
-    const storeConfig = {
-      application: {
-        state: {
-          openProjects,
-          activeProjectId: "1",
-          devMode: false,
-          isLoadingWorkflow,
-          dirtyProjectsMap,
-          exampleProjects: [],
-          customHelpMenuEntries: {}, // To enable mounting the help menu
-        },
-        actions: { switchWorkflow: vi.fn() },
-        getters: { isUnknownProject: () => () => {} },
-      },
-      workflow: {
-        actions: { closeProject: vi.fn() },
-      },
-      settings: {
-        state: {
-          settings: {
-            uiScale: 1.0,
-          },
-        },
-      },
-      spaces: {
-        state: {
-          spaceProviders: {},
-        },
-      },
-    };
 
-    const $store = mockVuexStore(storeConfig);
+    const mockedStores = mockStores();
+    mockedStores.applicationStore.setOpenProjects(openProjects);
+    mockedStores.applicationStore.setActiveProjectId("1");
+    mockedStores.applicationStore.setExampleProjects([]);
+    mockedStores.applicationStore.setCustomHelpMenuEntries({}); // To enable mounting the help menu
+
+    // @ts-expect-error
+    mockedStores.applicationStore.isUnknownProject = vi
+      .fn()
+      .mockReturnValue(false);
+
+    useApplicationSettingsStore().devMode = false;
+
+    useSettingsStore().settings.uiScale = 1.0;
+
+    useSpaceProvidersStore().spaceProviders = {};
+
+    const lifecycleStore = useLifecycleStore();
+    lifecycleStore.isLoadingWorkflow = isLoadingWorkflow;
+    lifecycleStore.switchWorkflow = vi.fn();
+
+    useDirtyProjectsTrackingStore().dirtyProjectsMap = dirtyProjectsMap;
+
     const wrapper = mount(AppHeader, {
       props,
-      global: { plugins: [$store], mocks: { $zIndices: {} } },
+      global: {
+        plugins: [mockedStores.testingPinia],
+        mocks: { $zIndices: {} },
+      },
     });
 
-    return { storeConfig, wrapper, $store, $route, $shortcuts };
+    return {
+      wrapper,
+      $route,
+      $shortcuts,
+      openProjects,
+    };
   };
 
   describe("tabs", () => {
@@ -133,19 +141,18 @@ describe("AppHeader.vue", () => {
     });
 
     it("allows to close workflow", () => {
-      const { wrapper, storeConfig } = doMount();
+      const { wrapper } = doMount();
 
       expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
       wrapper.findAllComponents(CloseButton).at(1)!.trigger("click");
-      expect(storeConfig.workflow.actions.closeProject).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(useDesktopInteractionsStore().closeProject).toHaveBeenCalledWith(
         "2",
       );
     });
 
     it("should navigate to workflow", () => {
-      const { wrapper, storeConfig } = doMount();
-      const projectId = storeConfig.application.state.openProjects[2].projectId;
+      const { wrapper, openProjects } = doMount();
+      const projectId = openProjects[2].projectId;
 
       wrapper.findAll(".tab-item").at(2)!.trigger("click");
       expect(routerPush).toHaveBeenCalledWith({
@@ -181,6 +188,7 @@ describe("AppHeader.vue", () => {
     });
 
     it("updates the active tab when the activeProject changes", async () => {
+      // @ts-ignore
       useRoute.mockReturnValueOnce({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: "2" },
@@ -195,6 +203,7 @@ describe("AppHeader.vue", () => {
     });
 
     it("scrolls into active tab", async () => {
+      // @ts-ignore
       useRoute.mockReturnValueOnce({
         name: APP_ROUTES.WorkflowPage,
         params: { projectId: "2" },
@@ -236,12 +245,13 @@ describe("AppHeader.vue", () => {
     });
 
     it("hides all dev mode buttons if dev mode is disabled", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper } = doMount();
       expect(
         wrapper.find('[data-test-id="dev-mode-only"]').exists(),
       ).toBeFalsy();
 
-      $store.state.application.devMode = true;
+      useApplicationSettingsStore().devMode = true;
+
       await nextTick();
 
       expect(

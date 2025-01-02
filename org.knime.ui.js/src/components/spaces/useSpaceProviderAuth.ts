@@ -1,25 +1,24 @@
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { isHubProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
 export const useSpaceProviderAuth = () => {
-  const store = useStore();
+  const {
+    loadingProviderSpacesData,
+    isConnectingToProvider,
+    hasLoadedProviders,
+    spaceProviders,
+  } = storeToRefs(useSpaceProvidersStore());
+  const { connectProvider, disconnectProvider } = useSpaceAuthStore();
   const $router = useRouter();
   const $route = useRoute();
   const { toastPresets } = getToastPresets();
-
-  const loadingProviderSpacesData = computed(
-    () => store.state.spaces.loadingProviderSpacesData,
-  );
-
-  const isConnectingToProvider = computed(
-    () => store.state.spaces.isConnectingToProvider,
-  );
 
   const canLogin = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
     spaceProvider.connectionMode !== "AUTOMATIC" && !spaceProvider.connected;
@@ -31,7 +30,7 @@ export const useSpaceProviderAuth = () => {
   const shouldShowLogout = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
     spaceProvider.connectionMode === "AUTHENTICATED" &&
     spaceProvider.connected &&
-    store.state.spaces.hasLoadedProviders &&
+    hasLoadedProviders.value &&
     !isProviderLoadingData(spaceProvider);
 
   const shouldShowLoginIndicator = (
@@ -62,7 +61,7 @@ export const useSpaceProviderAuth = () => {
     try {
       const currentRoute = $route.fullPath;
 
-      const { isConnected } = await store.dispatch("spaces/connectProvider", {
+      const { isConnected } = await connectProvider({
         spaceProviderId,
       });
 
@@ -75,8 +74,7 @@ export const useSpaceProviderAuth = () => {
         return;
       }
 
-      const updatedProvider =
-        store.state.spaces.spaceProviders![spaceProviderId];
+      const updatedProvider = spaceProviders.value![spaceProvider.id];
 
       // If it’s Hub, go to the space selection overview.
       if (isHubProvider(updatedProvider)) {
@@ -116,7 +114,7 @@ export const useSpaceProviderAuth = () => {
   };
 
   const logout = async (spaceProvider: SpaceProviderNS.SpaceProvider) => {
-    await store.dispatch("spaces/disconnectProvider", {
+    await disconnectProvider({
       spaceProviderId: spaceProvider.id,
       $router,
     });

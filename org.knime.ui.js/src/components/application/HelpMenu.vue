@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from "vue";
+import { API } from "@api";
 import { useRouter } from "vue-router";
 
 import type { MenuItem } from "@knime/components";
@@ -14,11 +15,11 @@ import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
 import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
 
-import { API } from "@/api";
 import InfoIcon from "@/assets/info.svg";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
-import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useApplicationStore } from "@/store/application/application";
+import { useSettingsStore } from "@/store/settings";
 
 const OpenSourceCreditsModal = defineAsyncComponent(
   () => import("./OpenSourceCreditsModal.vue"),
@@ -28,11 +29,12 @@ const buildExternalUrl = (url: string) => {
   return `${url}?src=knimeappmodernui`;
 };
 
-const store = useStore();
+const applicationStore = useApplicationStore();
+const settingsStore = useSettingsStore();
 const $router = useRouter();
 
 const customHelpMenuEntries = computed(() => {
-  const records = store.state.application.customHelpMenuEntries;
+  const records = applicationStore.customHelpMenuEntries;
   return Object.keys(records).map((key, idx) => ({
     text: key,
     separator: idx === Object.keys(records).length - 1,
@@ -44,10 +46,10 @@ const customHelpMenuEntries = computed(() => {
 const creditsModalActive = ref(false);
 
 const hasExampleWorkflows = computed(
-  () => store.state.application.exampleProjects.length > 0,
+  () => applicationStore.exampleProjects.length > 0,
 );
 const hasDismissedExamples = computed(
-  () => !store.state.settings.settings.shouldShowExampleWorkflows,
+  () => !settingsStore.settings.shouldShowExampleWorkflows,
 );
 
 const addConditionalMenuEntry = (condition: boolean, item: MenuItem) => {
@@ -64,8 +66,7 @@ const helpMenuItem = computed<MenuItem>(() => ({
       separator: true,
       icon: ShortcutsIcon,
       metadata: {
-        handler: () =>
-          store.commit("application/setIsShortcutsOverviewDialogOpen", true),
+        handler: () => applicationStore.setIsShortcutsOverviewDialogOpen(true),
       },
     },
     {
@@ -124,8 +125,8 @@ const helpMenuItem = computed<MenuItem>(() => ({
         text: "Restore examples on home tab",
         icon: Steps123Icon,
         metadata: {
-          handler: async () => {
-            await store.dispatch("settings/updateSetting", {
+          handler: () => {
+            settingsStore.updateSetting({
               key: "shouldShowExampleWorkflows",
               value: true,
             });

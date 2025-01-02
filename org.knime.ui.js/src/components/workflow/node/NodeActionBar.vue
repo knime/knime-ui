@@ -11,9 +11,9 @@ import ResetIcon from "@/assets/reset-all.svg";
 import ResumeIcon from "@/assets/resume-execution.svg";
 import StepIcon from "@/assets/step-execution.svg";
 import ActionBar from "@/components/common/ActionBar.vue";
-import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 /**
  *  Displays a bar of action buttons above nodes
@@ -138,18 +138,17 @@ const actions = computed<Record<string, Action>>(() => {
   } as const;
 });
 
-const store = useStore();
-const uiControls = computed(() => store.state.uiControls);
+const uiControls = useUIControlsStore();
 
 type Actions = typeof actions.value;
 
 const visibleActions = computed<Action[]>(() => {
-  if (!uiControls.value.canEditWorkflow) {
+  if (!uiControls.canEditWorkflow) {
     return [];
   }
 
   const conditionMap: Record<keyof Actions, boolean> = {
-    configureNode: props.canConfigure && uiControls.value.canConfigureNodes,
+    configureNode: props.canConfigure && uiControls.canConfigureNodes,
 
     // plain execution
     execute: !props.canPause && !props.canResume,
@@ -163,7 +162,7 @@ const visibleActions = computed<Action[]>(() => {
     reset: true,
 
     // other
-    openView: props.canOpenView !== null && uiControls.value.canDetachNodeViews,
+    openView: props.canOpenView !== null && uiControls.canDetachNodeViews,
   };
 
   return (

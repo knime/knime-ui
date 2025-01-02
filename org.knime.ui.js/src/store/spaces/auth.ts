@@ -1,160 +1,165 @@
+import { API } from "@api";
+import { defineStore } from "pinia";
 import type { Router } from "vue-router";
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { APP_ROUTES } from "@/router/appRoutes";
-import type { RootStoreState } from "../types";
 
-import type { SpacesState } from "./index";
+import { useSpaceCachingStore } from "./caching";
+import { useSpaceProvidersStore } from "./providers";
 
-export interface State {}
+export const useSpaceAuthStore = defineStore("space.auth", {
+  actions: {
+    async connectProvider({
+      spaceProviderId,
+    }: {
+      spaceProviderId: string;
+    }): Promise<
+      | { isConnected: true; providerData: SpaceProviderNS.SpaceProvider }
+      | { isConnected: false; providerData: null }
+    > {
+      const providersStore = useSpaceProvidersStore();
 
-declare module "./index" {
-  interface SpacesState extends State {}
-}
-
-export const state = (): State => ({});
-
-export const mutations: MutationTree<SpacesState> = {};
-
-export const actions: ActionTree<SpacesState, RootStoreState> = {
-  async connectProvider({ state, dispatch, commit }, { spaceProviderId }) {
-    try {
-      commit("setIsConnectingToProvider", spaceProviderId);
-
-      // returns the provider metadata (but no spaces)
-      const spaceProvider = await API.desktop.connectSpaceProvider({
-        spaceProviderId,
-      });
-
-      if (!spaceProvider) {
-        consola.error("action::connectProvider -> Invalid provider id", {
+      try {
+        providersStore.setIsConnectingToProvider(spaceProviderId);
+        // returns the provider metadata (but no spaces)
+        const spaceProvider = await API.desktop.connectSpaceProvider({
           spaceProviderId,
         });
 
-        const providerName =
-          state.spaceProviders?.[spaceProviderId]?.name ?? "remote";
+        if (!spaceProvider) {
+          consola.error("action::connectProvider -> Invalid provider id", {
+            spaceProviderId,
+          });
 
-        throw new Error(`Failed to connect to ${providerName}`);
-      }
+          const providerName =
+            providersStore.spaceProviders?.[spaceProviderId]?.name ?? "remote";
 
-      if (!spaceProvider.connected) {
-        return { isConnected: false, providerData: null };
-      }
+          throw new Error(`Failed to connect to ${providerName}`);
+        }
 
-      // fetch the spaces if we are now connected
-      const spaceProviderData = await dispatch("fetchProviderSpaces", {
-        id: spaceProviderId,
-      });
+        if (!spaceProvider.connected) {
+          return { isConnected: false, providerData: null };
+        }
 
-      if (spaceProviderData?.spaceGroups.length === 0) {
-        throw new Error("You are not part of any team.");
-      }
+        // fetch the spaces if we are now connected
+        const spaceProviderData = await providersStore.fetchProviderSpaces({
+          id: spaceProviderId,
+        });
 
-      consola.info("action::connectProvider -> updating space provider", {
-        spaceProvider,
-        spaceProviderData,
-      });
+        if (spaceProviderData?.spaceGroups.length === 0) {
+          throw new Error("You are not part of any team.");
+        }
 
-      const updatedProvider = { ...spaceProvider, ...spaceProviderData };
+        consola.info("action::connectProvider -> updating space provider", {
+          spaceProvider,
+          spaceProviderData,
+        });
 
-      commit("updateSpaceProvider", {
-        id: spaceProviderId,
-        value: updatedProvider,
-      });
+        const updatedProvider = { ...spaceProvider, ...spaceProviderData };
 
-      return { isConnected: true, providerData: updatedProvider };
-    } catch (error) {
-      consola.error("action::connectProvider -> Error connecting to provider", {
-        error,
-      });
-      throw error;
-    } finally {
-      commit("setIsConnectingToProvider", null);
-    }
-  },
+        providersStore.updateSpaceProvider({
+          id: spaceProviderId,
+          value: updatedProvider,
+        });
 
-  async disconnectProvider(
-    { commit, state },
-    { spaceProviderId, $router }: { spaceProviderId: string; $router: Router },
-  ) {
-    try {
-      await API.desktop.disconnectSpaceProvider({ spaceProviderId });
-
-      const projectsWithDisconnectedProvider = Object.entries(
-        state.projectPath,
-      ).flatMap(([projectId, path]) =>
-        path.spaceProviderId === spaceProviderId ? [projectId] : [],
-      );
-
-      // update project paths that used this space provider
-      projectsWithDisconnectedProvider.forEach((projectId) =>
-        commit("setProjectPath", {
-          projectId,
-          value: {
-            spaceProviderId: "local",
-            spaceId: "local",
-            itemId: "root",
+        return { isConnected: true, providerData: updatedProvider };
+      } catch (error) {
+        consola.error(
+          "action::connectProvider -> Error connecting to provider",
+          {
+            error,
           },
-        }),
-      );
+        );
+        throw error;
+      } finally {
+        providersStore.setIsConnectingToProvider(null);
+      }
+    },
 
-      // update space provider state
-      const { spaceProviders } = state;
+    async disconnectProvider({
+      spaceProviderId,
+      $router,
+    }: {
+      spaceProviderId: string;
+      $router: Router;
+    }) {
+      const providersStore = useSpaceProvidersStore();
 
-      if (!spaceProviders) {
-        return null;
+      try {
+        await API.desktop.disconnectSpaceProvider({ spaceProviderId });
+
+        const projectsWithDisconnectedProvider = Object.entries(
+          useSpaceCachingStore().projectPath,
+        ).flatMap(([projectId, path]) =>
+          path.spaceProviderId === spaceProviderId ? [projectId] : [],
+        );
+
+        // update project paths that used this space provider
+        projectsWithDisconnectedProvider.forEach((projectId) =>
+          useSpaceCachingStore().setProjectPath({
+            projectId,
+            value: {
+              spaceProviderId: "local",
+              spaceId: "local",
+              itemId: "root",
+            },
+          }),
+        );
+
+        // update space provider state
+        if (!providersStore.spaceProviders) {
+          return null;
+        }
+
+        const { spaceGroups, ...otherProperties } =
+          providersStore.spaceProviders[spaceProviderId];
+
+        providersStore.setSpaceProviders({
+          ...providersStore.spaceProviders,
+          [spaceProviderId]: {
+            ...otherProperties,
+            connected: false,
+            spaceGroups: [],
+          },
+        });
+
+        const { currentRoute } = $router;
+        const regex = new RegExp(
+          `${APP_ROUTES.Home.SpaceBrowsingPage}|${APP_ROUTES.Home.SpaceSelectionPage}`,
+        );
+        const isProviderRelatedPage = regex.test(
+          currentRoute.value.name as string,
+        );
+
+        if (
+          isProviderRelatedPage &&
+          currentRoute.value.params?.spaceProviderId === spaceProviderId
+        ) {
+          $router.push({ name: APP_ROUTES.Home.GetStarted });
+        }
+
+        return spaceProviderId;
+      } catch (error) {
+        consola.error("Error disconnecting from provider", { error });
+        throw error;
+      }
+    },
+  },
+  getters: {
+    hasActiveHubSession(): boolean {
+      const providersStore = useSpaceProvidersStore();
+
+      if (!providersStore.spaceProviders) {
+        return false;
       }
 
-      const { spaceGroups, ...otherProperties } =
-        spaceProviders[spaceProviderId];
-
-      commit("setSpaceProviders", {
-        ...state.spaceProviders,
-        [spaceProviderId]: {
-          ...otherProperties,
-          connected: false,
-          spaceGroups: [],
-        },
-      });
-
-      const { currentRoute } = $router;
-
-      const regex = new RegExp(
-        `${APP_ROUTES.Home.SpaceBrowsingPage}|${APP_ROUTES.Home.SpaceSelectionPage}`,
+      return Boolean(
+        Object.values(providersStore.spaceProviders).find(
+          ({ connected, type }) =>
+            type !== SpaceProviderNS.TypeEnum.LOCAL && connected,
+        ),
       );
-
-      const isProviderRelatedPage = regex.test(
-        currentRoute.value.name as string,
-      );
-
-      if (
-        isProviderRelatedPage &&
-        currentRoute.value.params?.spaceProviderId === spaceProviderId
-      ) {
-        $router.push({ name: APP_ROUTES.Home.GetStarted });
-      }
-
-      return spaceProviderId;
-    } catch (error) {
-      consola.error("Error disconnecting from provider", { error });
-      throw error;
-    }
+    },
   },
-};
-
-export const getters: GetterTree<SpacesState, RootStoreState> = {
-  hasActiveHubSession({ spaceProviders }) {
-    if (!spaceProviders) {
-      return false;
-    }
-
-    return Boolean(
-      Object.values(spaceProviders).find(
-        ({ connected, type }) =>
-          type !== SpaceProviderNS.TypeEnum.LOCAL && connected,
-      ),
-    );
-  },
-};
+});

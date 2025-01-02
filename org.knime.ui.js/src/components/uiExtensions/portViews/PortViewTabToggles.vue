@@ -9,7 +9,7 @@ import type {
   PortViewDescriptor,
   PortViewDescriptorMapping,
 } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
 type Props = {
@@ -24,9 +24,7 @@ const props = defineProps<Props>();
 
 const emit = defineEmits(["openViewInNewWindow"]);
 
-const store = useStore();
-
-const uiControls = computed(() => store.state.uiControls);
+const uiControls = useUIControlsStore();
 
 const activeView = ref<number | null>(null);
 

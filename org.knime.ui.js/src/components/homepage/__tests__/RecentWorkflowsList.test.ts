@@ -1,15 +1,19 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
+import { createTestingPinia } from "@pinia/testing";
 
 import { FileExplorer } from "@knime/components";
 
-import { API } from "@/api";
 import type { RecentWorkflow } from "@/api/custom-types";
 import { getToastsProvider } from "@/plugins/toasts";
-import * as spacesStore from "@/store/spaces";
-import { cachedLocalSpaceProjectId } from "@/store/spaces";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { cachedLocalSpaceProjectId } from "@/store/spaces/common";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useSpacesStore } from "@/store/spaces/spaces";
 import { createSpaceProvider } from "@/test/factories";
-import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
 import RecentWorkflowsList from "../RecentWorkflowsList.vue";
 
 const routerPush = vi.fn();
@@ -48,6 +52,7 @@ const toast = mockedObject(getToastsProvider());
 describe("RecentWorkflowsList.vue", () => {
   beforeAll(() => {
     vi.setSystemTime(new Date("2024-09-05T10:00:00"));
+    vi.clearAllMocks();
   });
 
   const spaceProvider1 = createSpaceProvider({
@@ -67,26 +72,24 @@ describe("RecentWorkflowsList.vue", () => {
   });
 
   const doMount = () => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-    });
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
-
     const wrapper = mount(RecentWorkflowsList, {
       global: {
-        plugins: [$store],
+        plugins: [
+          createTestingPinia({
+            stubActions: false,
+            createSpy: vi.fn,
+          }),
+        ],
       },
     });
 
-    $store.commit("spaces/setSpaceProviders", {
+    useSpaceProvidersStore().setSpaceProviders({
       [spaceProvider1.id]: spaceProvider1,
       [spaceProvider2.id]: spaceProvider2,
       [spaceProvider3.id]: spaceProvider3,
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy };
+    return { wrapper };
   };
 
   const findAllByTestId = (wrapper: VueWrapper<any>, id: string) =>
@@ -146,9 +149,9 @@ describe("RecentWorkflowsList.vue", () => {
   });
 
   it("should display '…' when provider is missing for a recent workflow", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper } = doMount();
 
-    $store.commit("spaces/setSpaceProviders", {});
+    useSpaceProvidersStore().setSpaceProviders({});
 
     mockedAPI.desktop.updateAndGetMostRecentlyUsedProjects.mockResolvedValueOnce(
       [
@@ -173,7 +176,7 @@ describe("RecentWorkflowsList.vue", () => {
   });
 
   it("should open recent workflow", async () => {
-    const { wrapper, dispatchSpy } = doMount();
+    const { wrapper } = doMount();
 
     await flushPromises();
 
@@ -181,7 +184,7 @@ describe("RecentWorkflowsList.vue", () => {
       meta: { recentWorkflow: recentWorkflows.at(1) },
     });
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
+    expect(useSpaceOperationsStore().openProject).toHaveBeenCalledWith({
       ...recentWorkflows.at(1)?.origin,
       $router: expect.anything(),
     });
@@ -193,7 +196,7 @@ describe("RecentWorkflowsList.vue", () => {
       origin: { providerId: "provider3", spaceId: "space1", itemId: "item1" },
       timeUsed: new Date("2024-09-01T09:00:00").toISOString(),
     };
-    const { wrapper, dispatchSpy } = doMount();
+    const { wrapper } = doMount();
 
     await flushPromises();
 
@@ -201,7 +204,7 @@ describe("RecentWorkflowsList.vue", () => {
       meta: { recentWorkflow: notConnectedWorkflow },
     });
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
+    expect(useSpaceAuthStore().connectProvider).toHaveBeenCalledWith({
       spaceProviderId: notConnectedWorkflow.origin.providerId,
     });
   });
@@ -215,14 +218,12 @@ describe("RecentWorkflowsList.vue", () => {
   });
 
   it("should open the create workflow modal and dispatch fetchWorkflowGroupContent on button click", async () => {
-    const { wrapper, dispatchSpy, commitSpy } = doMount();
+    const { wrapper } = doMount();
+    const spaceOperationsStore = useSpaceOperationsStore();
 
-    dispatchSpy.mockImplementationOnce((action) => {
-      if (action === "spaces/fetchWorkflowGroupContent") {
-        return Promise.resolve();
-      }
-      return Promise.resolve();
-    });
+    vi.mocked(
+      spaceOperationsStore.fetchWorkflowGroupContent,
+    ).mockResolvedValueOnce([]);
 
     await flushPromises();
 
@@ -232,36 +233,33 @@ describe("RecentWorkflowsList.vue", () => {
 
     await createWorkflowButton.trigger("click");
 
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "spaces/fetchWorkflowGroupContent",
+    expect(spaceOperationsStore.fetchWorkflowGroupContent).toHaveBeenCalledWith(
       {
         projectId: cachedLocalSpaceProjectId,
       },
     );
 
-    expect(commitSpy).toHaveBeenCalledWith(
-      "spaces/setCreateWorkflowModalConfig",
-      {
-        isOpen: true,
-        projectId: cachedLocalSpaceProjectId,
-      },
-    );
+    expect(useSpacesStore().setCreateWorkflowModalConfig).toHaveBeenCalledWith({
+      isOpen: true,
+      projectId: cachedLocalSpaceProjectId,
+    });
   });
 
   it("should handle failure opening recent workflow", async () => {
-    const { wrapper, dispatchSpy } = doMount();
+    const { wrapper } = doMount();
 
     await flushPromises();
 
     expect(findAllByTestId(wrapper, "recent-workflow-name").length).toBe(3);
 
-    dispatchSpy.mockImplementationOnce(() =>
+    vi.mocked(useSpaceOperationsStore().openProject).mockImplementation(() =>
       Promise.reject(new Error("failure opening recent workflow")),
     );
 
     wrapper.findComponent(FileExplorer).vm.$emit("openFile", {
       meta: { recentWorkflow: recentWorkflows.at(1) },
     });
+    await flushPromises();
 
     expect(toast.show).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { API } from "@api";
+
 import { Button } from "@knime/components";
 
-import { API } from "@/api";
 
 const openPreferencePage = API.desktop.openAiAssistantPreferencePage;
 </script>

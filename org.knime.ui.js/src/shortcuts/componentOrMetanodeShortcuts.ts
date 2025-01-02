@@ -3,15 +3,23 @@ import LayoutIcon from "@knime/styles/img/icons/layout-editor.svg";
 import CreateMetanode from "@knime/styles/img/icons/metanode-add.svg";
 
 import type { KnimeNode } from "@/api/custom-types";
-import type { ComponentNode } from "@/api/gateway-api/generated-api";
+import {
+  CollapseCommand,
+  type ComponentNode,
+  type MetaNode,
+} from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { isNodeComponent } from "@/util/nodeUtil";
+import { useApplicationStore } from "@/store/application/application";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import { isComponentProject } from "@/util/projectUtil";
 
-import type {
-  ShortcutConditionContext,
-  UnionToShortcutRegistry,
-} from "./types";
+import type { UnionToShortcutRegistry } from "./types";
 
 type ComponentOrMetanodeShortcuts = UnionToShortcutRegistry<
   | "createMetanode"
@@ -39,40 +47,57 @@ declare module "./index" {
 const isComponent = (node?: KnimeNode): node is ComponentNode =>
   Boolean(node && isNodeComponent(node));
 
+const isMetanode = (node?: KnimeNode): node is MetaNode =>
+  Boolean(node && isNodeMetaNode(node));
+
 const isLinkedComponent = (node?: KnimeNode) =>
   Boolean(isComponent(node) && node.link);
 
-const canExpand =
-  (kind: "metanode" | "component") =>
-  ({ $store }: ShortcutConditionContext) => {
-    const selectedNode = $store.getters["selection/singleSelectedNode"];
+const canExpand = (kind: "metanode" | "component") => {
+  const selectedNode = useSelectionStore().singleSelectedNode;
 
-    if (
-      !$store.getters["workflow/isWritable"] ||
-      selectedNode?.link ||
-      selectedNode?.isLocked
-    ) {
-      return false;
-    }
+  if (!selectedNode) {
+    return false;
+  }
 
+  if (!isComponent(selectedNode) && !isMetanode(selectedNode)) {
+    return false;
+  }
+
+  if (
+    !useWorkflowStore().isWritable ||
+    selectedNode?.link ||
+    selectedNode?.isLocked
+  ) {
+    return false;
+  }
+
+  return (
+    selectedNode?.kind === kind &&
+    selectedNode?.allowedActions?.canExpand !== "false"
+  );
+};
+
+const canOpen = (kind: "metanode" | "component") => {
+  const selectedNode = useSelectionStore().singleSelectedNode;
+
+  if (!selectedNode) {
+    return false;
+  }
+
+  if (!isComponent(selectedNode) && !isMetanode(selectedNode)) {
+    return false;
+  }
+
+  if (selectedNode?.isLocked) {
     return (
-      selectedNode?.kind === kind &&
-      selectedNode?.allowedActions.canExpand !== "false"
+      selectedNode.kind === kind &&
+      useUIControlsStore().canLockAndUnlockSubnodes
     );
-  };
+  }
 
-const canOpen =
-  (kind: "metanode" | "component") =>
-  ({ $store }: ShortcutConditionContext) => {
-    const selectedNode = $store.getters["selection/singleSelectedNode"];
-    const { uiControls } = $store.state;
-
-    if (selectedNode?.isLocked) {
-      return selectedNode.kind === kind && uiControls.canLockAndUnlockSubnodes;
-    }
-
-    return selectedNode?.kind === kind;
-  };
+  return selectedNode?.kind === kind;
+};
 
 const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   createMetanode: {
@@ -81,22 +106,19 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "G"],
     group: "componentAndMetanode",
     icon: CreateMetanode,
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/collapseToContainer", {
-        containerType: "metanode",
+    execute: () =>
+      useWorkflowStore().collapseToContainer({
+        containerType: CollapseCommand.ContainerTypeEnum.Metanode,
       }),
-    condition({ $store }) {
-      if (!$store.getters["workflow/isWritable"]) {
-        return false;
-      }
+    condition: () => {
+      const selectedNodes = useSelectionStore().getSelectedNodes.length;
+      const canCollapseSelectedNodes =
+        useSelectionStore().getSelectedNodes.every(
+          (node: KnimeNode) => node.allowedActions?.canCollapse !== "false",
+        );
+      const isWritable = useWorkflowStore().isWritable;
 
-      if (!$store.getters["selection/selectedNodes"].length) {
-        return false;
-      }
-
-      return $store.getters["selection/selectedNodes"].every(
-        (node: KnimeNode) => node.allowedActions?.canCollapse !== "false",
-      );
+      return isWritable && canCollapseSelectedNodes && Boolean(selectedNodes);
     },
   },
   createComponent: {
@@ -105,36 +127,42 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "J"],
     group: "componentAndMetanode",
     icon: CreateComponent,
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/collapseToContainer", {
-        containerType: "component",
+    execute: () =>
+      useWorkflowStore().collapseToContainer({
+        containerType: CollapseCommand.ContainerTypeEnum.Component,
       }),
-    condition({ $store }) {
-      if (!$store.getters["workflow/isWritable"]) {
-        return false;
-      }
+    condition: () => {
+      const selectedNodes = useSelectionStore().getSelectedNodes.length;
+      const canCollapseSelectedNodes =
+        useSelectionStore().getSelectedNodes.every(
+          (node: KnimeNode) => node.allowedActions?.canCollapse !== "false",
+        );
+      const isWritable = useWorkflowStore().isWritable;
 
-      if (!$store.getters["selection/selectedNodes"].length) {
-        return false;
-      }
-
-      return $store.getters["selection/selectedNodes"].every(
-        (node: KnimeNode) => node.allowedActions?.canCollapse !== "false",
-      );
+      return isWritable && canCollapseSelectedNodes && Boolean(selectedNodes);
     },
   },
   openComponentOrMetanode: {
-    text: ({ $store }) =>
-      `Open ${$store.getters["selection/singleSelectedNode"]?.kind}`,
+    text: () => `Open ${useSelectionStore().singleSelectedNode?.kind}`,
     hotkey: ["CtrlOrCmd", "Alt", "Enter"],
     group: "componentAndMetanode",
     description: "Open component or metanode",
-    execute: async ({ $store, $router }) => {
-      const projectId = $store.state.application.activeProjectId;
-      const { isLocked, id } = $store.getters["selection/singleSelectedNode"];
+    execute: async ({ $router }) => {
+      const projectId = useApplicationStore().activeProjectId;
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode) {
+        return false;
+      }
+
+      if (!isComponent(selectedNode) && !isMetanode(selectedNode)) {
+        return;
+      }
+
+      const { isLocked, id } = selectedNode;
 
       if (isLocked) {
-        const isUnlocked = await $store.dispatch("workflow/unlockSubnode", {
+        const isUnlocked = await useComponentInteractionsStore().unlockSubnode({
           nodeId: id,
         });
 
@@ -148,20 +176,18 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         params: { projectId, workflowId: id },
       });
     },
-    condition: ({ $store }) => {
-      return (
-        canOpen("component")({ $store }) || canOpen("metanode")({ $store })
-      );
+    condition: () => {
+      return canOpen("component") || canOpen("metanode");
     },
   },
   openParentWorkflow: {
     hotkey: ["CtrlOrCmd", "Alt", "Shift", "Enter"],
     text: "Open parent workflow",
     group: "componentAndMetanode",
-    execute: ({ $store, $router }) => {
-      const projectId = $store.state.application.activeProjectId;
+    execute: ({ $router }) => {
+      const projectId = useApplicationStore().activeProjectId;
       const activeWorkflowParents =
-        $store.state.workflow.activeWorkflow?.parents ?? [];
+        useWorkflowStore().activeWorkflow?.parents ?? [];
 
       const id = activeWorkflowParents.at(-1)?.containerId;
 
@@ -172,9 +198,8 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
         replace: true,
       });
     },
-    condition: ({ $store }) => {
-      const activeWorkflowParents =
-        $store.state.workflow.activeWorkflow?.parents;
+    condition: () => {
+      const activeWorkflowParents = useWorkflowStore().activeWorkflow?.parents;
 
       return (activeWorkflowParents ?? []).length > 0;
     },
@@ -184,105 +209,142 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     title: "Expand metanode",
     hotkey: ["CtrlOrCmd", "Shift", "G"],
     group: "componentAndMetanode",
-    execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
-    condition: canExpand("metanode"),
+    execute: () => useWorkflowStore().expandContainerNode(),
+    condition: () => canExpand("metanode"),
   },
   expandComponent: {
     text: "Expand component",
     title: "Expand component",
     hotkey: ["CtrlOrCmd", "Shift", "J"],
     group: "componentAndMetanode",
-    execute: ({ $store }) => $store.dispatch("workflow/expandContainerNode"),
-    condition: canExpand("component"),
+    execute: () => useWorkflowStore().expandContainerNode(),
+    condition: () => canExpand("component"),
   },
   editName: {
-    text: ({ $store }) =>
-      `Rename ${$store.getters["selection/singleSelectedNode"]?.kind}`,
+    text: () => `Rename ${useSelectionStore().singleSelectedNode?.kind}`,
     hotkey: ["Shift", "F2"],
     group: "componentAndMetanode",
     description: "Rename component or metanode",
-    execute: ({ $store }) =>
-      $store.dispatch(
-        "workflow/openNameEditor",
-        $store.getters["selection/singleSelectedNode"].id,
+    execute: () =>
+      useNodeInteractionsStore().openNameEditor(
+        useSelectionStore().singleSelectedNode!.id,
       ),
-    condition: ({ $store }) =>
-      ["metanode", "component"].includes(
-        $store.getters["selection/singleSelectedNode"]?.kind,
-      ) &&
-      !$store.getters["selection/singleSelectedNode"]?.link &&
-      $store.getters["workflow/isWritable"],
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+      const isWritable = useWorkflowStore().isWritable;
+
+      if (!selectedNode) {
+        return false;
+      }
+
+      return (
+        isWritable &&
+        (isComponent(selectedNode) || isMetanode(selectedNode)) &&
+        !isLinkedComponent(selectedNode)
+      );
+    },
   },
   linkComponent: {
     text: "Share",
     title: "Share component",
-    execute: ({ $store, payload = null }) => {
+    execute: ({ payload = null }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
 
-      $store.dispatch("workflow/linkComponent", { nodeId: selectedNodeId });
+      useComponentInteractionsStore().linkComponent({ nodeId: selectedNodeId });
     },
-    condition: ({ $store }) =>
-      $store.getters["workflow/isWritable"] &&
-      isComponent($store.getters["selection/singleSelectedNode"]) &&
-      !isLinkedComponent($store.getters["selection/singleSelectedNode"]) &&
-      $store.state.uiControls.canDoComponentSharingOperations,
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode) {
+        return false;
+      }
+
+      return (
+        useWorkflowStore().isWritable &&
+        isComponent(selectedNode) &&
+        !isLinkedComponent(selectedNode) &&
+        useUIControlsStore().canDoComponentSharingOperations
+      );
+    },
   },
   updateComponent: {
     text: "Update component",
     title: "Update component",
-    execute: ({ $store, payload = null }) => {
+    execute: ({ payload = null }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
 
-      $store.dispatch("workflow/updateComponents", {
+      useComponentInteractionsStore().updateComponents({
         nodeIds: [selectedNodeId],
       });
     },
-    condition: ({ $store }) =>
-      $store.getters["workflow/isWritable"] &&
-      isLinkedComponent($store.getters["selection/singleSelectedNode"]) &&
-      $store.state.uiControls.canDoComponentSharingOperations,
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode) {
+        return false;
+      }
+
+      return (
+        useWorkflowStore().isWritable &&
+        isLinkedComponent(selectedNode) &&
+        useUIControlsStore().canDoComponentSharingOperations
+      );
+    },
   },
   unlinkComponent: {
     text: "Disconnect link",
     title: "Unlink component",
-    execute: ({ $store, payload = null }) => {
+    execute: ({ payload = null }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/unlinkComponent", { nodeId: selectedNodeId });
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
+
+      useComponentInteractionsStore().unlinkComponent({
+        nodeId: selectedNodeId,
+      });
     },
-    condition: ({ $store }) =>
-      $store.getters["workflow/isWritable"] &&
-      isLinkedComponent($store.getters["selection/singleSelectedNode"]) &&
-      $store.state.uiControls.canDoComponentSharingOperations,
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode) {
+        return false;
+      }
+
+      return (
+        useWorkflowStore().isWritable &&
+        isLinkedComponent(selectedNode) &&
+        useUIControlsStore().canDoComponentSharingOperations
+      );
+    },
   },
   changeHubItemVersion: {
     text: "Change KNIME Hub item version",
     title: "Change KNIME Hub item version",
-    execute: ({ $store, payload = null }) => {
+    execute: ({ payload = null }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
 
-      $store.dispatch("workflow/changeHubItemVersion", {
+      useComponentInteractionsStore().changeHubItemVersion({
         nodeId: selectedNodeId,
       });
     },
-    condition: ({ $store }) => {
-      const isWritable = $store.getters["workflow/isWritable"];
-      const node = $store.getters["selection/singleSelectedNode"];
+    condition: () => {
+      const isWritable = useWorkflowStore().isWritable;
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode) {
+        return false;
+      }
+
       const isHubItemVersionChangeable =
-        isComponent(node) &&
-        isLinkedComponent(node) &&
-        node.link?.isHubItemVersionChangeable;
+        isComponent(selectedNode) &&
+        isLinkedComponent(selectedNode) &&
+        selectedNode.link?.isHubItemVersionChangeable;
 
       return (
         isWritable &&
-        $store.state.uiControls.canDoComponentSharingOperations &&
+        useUIControlsStore().canDoComponentSharingOperations &&
         isHubItemVersionChangeable
       );
     },
@@ -290,29 +352,31 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   changeComponentLinkType: {
     text: "Change link type",
     title: "Change component link type",
-    execute: ({ $store, payload = null }) => {
+    execute: ({ payload = null }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode?.id;
 
-      $store.dispatch("workflow/changeComponentLinkType", {
+      useComponentInteractionsStore().changeComponentLinkType({
         nodeId: selectedNodeId,
       });
     },
-    condition: ({ $store }) => {
-      const isWritable = $store.getters["workflow/isWritable"];
+    condition: () => {
+      const isWritable = useWorkflowStore().isWritable;
+      const selectedNode = useSelectionStore().singleSelectedNode;
 
-      const node: KnimeNode = $store.getters["selection/singleSelectedNode"];
+      if (!selectedNode) {
+        return false;
+      }
 
       const isLinkTypeChangeable =
-        isComponent(node) &&
-        isLinkedComponent(node) &&
-        node.link?.isLinkTypeChangeable;
+        isComponent(selectedNode) &&
+        isLinkedComponent(selectedNode) &&
+        selectedNode.link?.isLinkTypeChangeable;
 
       return (
         isWritable &&
-        isLinkTypeChangeable &&
-        $store.state.uiControls.canDoComponentSharingOperations
+        Boolean(isLinkTypeChangeable) &&
+        useUIControlsStore().canDoComponentSharingOperations
       );
     },
   },
@@ -322,16 +386,15 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
-    execute: ({ $store }) => $store.dispatch("workflow/openLayoutEditor"),
-    condition: ({ $store }) => {
-      const workflow = $store.state.workflow.activeWorkflow!;
-
-      const isWritable = $store.getters["workflow/isWritable"];
+    execute: () => useDesktopInteractionsStore().openLayoutEditor(),
+    condition: () => {
+      const workflow = useWorkflowStore().activeWorkflow!;
+      const isWritable = useWorkflowStore().isWritable;
 
       return (
         isWritable &&
-        isComponentProject(workflow) &&
-        $store.state.uiControls.canOpenComponentLayoutEditor
+        Boolean(isComponentProject(workflow)) &&
+        useUIControlsStore().canOpenComponentLayoutEditor
       );
     },
   },
@@ -342,52 +405,66 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     hotkey: ["CtrlOrCmd", "Shift", "D"],
     group: "componentAndMetanode",
     icon: LayoutIcon,
-    execute: ({ $store }) => {
-      const nodeId = $store.getters["selection/singleSelectedNode"]?.id;
-      $store.dispatch("workflow/openLayoutEditorByNodeId", { nodeId });
+    execute: () => {
+      const nodeId = useSelectionStore().singleSelectedNode?.id ?? "";
+
+      useDesktopInteractionsStore().openLayoutEditorByNodeId({ nodeId });
     },
-    condition: ({ $store }) => {
-      const selectedNode = $store.getters["selection/singleSelectedNode"];
-      const isWritable = $store.getters["workflow/isWritable"];
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+      const isWritable = useWorkflowStore().isWritable;
+
+      if (!selectedNode) {
+        return false;
+      }
 
       return (
         isWritable &&
         isComponent(selectedNode) &&
         !selectedNode?.isLocked &&
         !isLinkedComponent(selectedNode) &&
-        $store.state.uiControls.canOpenComponentLayoutEditor
+        useUIControlsStore().canOpenComponentLayoutEditor
       );
     },
   },
   checkForComponentUpdates: {
     text: "Check for linked component updates",
     title: "Check for linked component updates",
-    execute: ({ $store }) => {
+    execute: () => {
       // Get available updates
-      $store.dispatch("workflow/checkForLinkedComponentUpdates");
+      useComponentInteractionsStore().checkForLinkedComponentUpdates;
     },
-    condition: ({ $store }) => {
+    condition: () => {
       const { containsLinkedComponents } =
-        $store.state.workflow.activeWorkflow!.info;
+        useWorkflowStore().activeWorkflow!.info;
+      const isWritable = useWorkflowStore().isWritable;
 
-      const isWritable = $store.getters["workflow/isWritable"];
-      return containsLinkedComponents && isWritable;
+      return Boolean(containsLinkedComponents) && isWritable;
     },
   },
   lockSubnode: {
     text: "Lock",
     title: "Set password protection",
-    execute: ({ $store }) => {
-      const nodeId = $store.getters["selection/singleSelectedNode"]?.id;
-      $store.dispatch("workflow/lockSubnode", { nodeId });
+    execute: () => {
+      const nodeId = useSelectionStore().singleSelectedNode!.id;
+
+      useComponentInteractionsStore().lockSubnode({ nodeId });
     },
-    condition: ({ $store }) => {
-      const selectedNode = $store.getters["selection/singleSelectedNode"];
+    condition: () => {
+      const selectedNode = useSelectionStore().singleSelectedNode;
+
+      if (!selectedNode) {
+        return false;
+      }
+
+      if (!isComponent(selectedNode) || !isMetanode(selectedNode)) {
+        return false;
+      }
 
       return (
         selectedNode &&
         !selectedNode.isLocked &&
-        $store.state.uiControls.canLockAndUnlockSubnodes
+        useUIControlsStore().canLockAndUnlockSubnodes
       );
     },
   },

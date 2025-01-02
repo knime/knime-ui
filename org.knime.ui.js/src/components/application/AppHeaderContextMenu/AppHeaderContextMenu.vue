@@ -4,12 +4,12 @@ import { computed, toRef } from "vue";
 import { type MenuItem, MenuItems } from "@knime/components";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 
 import { useRevealProject } from "./useRevealProject";
 
 type Props = {
-  projectId: string | null;
+  projectId: string;
   position: XY | null;
 };
 
@@ -23,8 +23,6 @@ const emit = defineEmits<{
   itemClick: [item: AppHeaderContextMenuItem];
 }>();
 
-const store = useStore();
-
 const { revealProjectMenuOption } = useRevealProject({
   projectId: toRef(props, "projectId"),
 });
@@ -35,7 +33,7 @@ const contextMenuItems = computed(() => [
     text: "Close",
     metadata: {
       onClick: () => {
-        store.dispatch("workflow/closeProject", props.projectId);
+        useDesktopInteractionsStore().closeProject(props.projectId);
       },
     },
   },

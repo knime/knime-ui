@@ -5,7 +5,7 @@ import { VueWrapper, mount } from "@vue/test-utils";
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { createSlottedChildComponent } from "@/test/utils/slottedChildComponent";
 import TransformControls, {
   TRANSFORM_RECT_OFFSET,
@@ -64,7 +64,7 @@ describe("TransformControls.vue", () => {
 
   const doMount = ({
     props = {},
-    screenToCanvasCoordinatesMock = vi.fn().mockReturnValue(() => [5, 5]),
+    screenToCanvasCoordinatesMock = vi.fn(() => [5, 5]),
   } = {}) => {
     const { renderSlot, getSlottedChildComponent } =
       createSlottedChildComponent({
@@ -74,31 +74,24 @@ describe("TransformControls.vue", () => {
         </foreignObject>`,
       });
 
-    const $store = mockVuexStore({
-      workflow: {
-        state: {
-          movePreviewDelta: { x: 0, y: 0 },
-        },
-      },
-      canvas: {
-        getters: {
-          screenToCanvasCoordinates: screenToCanvasCoordinatesMock,
-        },
-        state: {
-          zoomFactor: 1,
-        },
-      },
-    });
+    const mockedStores = mockStores();
+    mockedStores.movingStore.movePreviewDelta = { x: 0, y: 0 };
+    // @ts-ignore
+    mockedStores.canvasStore.screenToCanvasCoordinates =
+      screenToCanvasCoordinatesMock;
 
     const wrapper = mount(TransformControls, {
       props: { ...defaultProps, ...props },
       slots: {
         default: renderSlot,
       },
-      global: { plugins: [$store], mocks: { $shapes, $colors } },
+      global: {
+        plugins: [mockedStores.testingPinia],
+        mocks: { $shapes, $colors },
+      },
     });
 
-    return { wrapper, getSlottedChildComponent, $store };
+    return { wrapper, getSlottedChildComponent, mockedStores };
   };
 
   const startDraggingControl = (
@@ -184,7 +177,7 @@ describe("TransformControls.vue", () => {
     'should transform direction "%s" correctly',
     (direction) => {
       const { wrapper } = doMount({
-        screenToCanvasCoordinatesMock: vi.fn(() => () => [20, 20]),
+        screenToCanvasCoordinatesMock: vi.fn(() => [20, 20]),
         props: { showTransformControls: true },
       });
       const { initialValue: bounds } = defaultProps;
@@ -254,12 +247,14 @@ describe("TransformControls.vue", () => {
   });
 
   it("should add move deltas to the selection plane", async () => {
-    const { wrapper, $store } = doMount({ props: { showSelection: true } });
+    const { wrapper, mockedStores } = doMount({
+      props: { showSelection: true },
+    });
 
     expect(wrapper.find("rect").attributes("x")).toBe("9");
     expect(wrapper.find("rect").attributes("y")).toBe("9");
 
-    $store.state.workflow.movePreviewDelta = { x: 100, y: 100 };
+    mockedStores.movingStore.movePreviewDelta = { x: 100, y: 100 };
 
     await nextTick();
 
@@ -268,7 +263,7 @@ describe("TransformControls.vue", () => {
   });
 
   it("should add offset to the focus plane if the selection plane is visible", async () => {
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       props: { showFocus: true, showSelection: true },
     });
 
@@ -277,7 +272,7 @@ describe("TransformControls.vue", () => {
     expect(wrapper.find("rect").attributes("width")).toBe("110");
     expect(wrapper.find("rect").attributes("height")).toBe("110");
 
-    $store.state.workflow.movePreviewDelta = { x: 100, y: 100 };
+    mockedStores.movingStore.movePreviewDelta = { x: 100, y: 100 };
 
     await nextTick();
 

@@ -1,8 +1,9 @@
-<script lang="ts">
-import { type PropType, defineComponent } from "vue";
-import { mapActions, mapMutations, mapState } from "vuex";
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
+import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 import type { NavReachedEvent } from "./NodeList.vue";
@@ -10,91 +11,79 @@ import NodesGroupedByTags from "./NodesGroupedByTags.vue";
 import ScrollViewContainer from "./ScrollViewContainer.vue";
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 
-type NodesGroupedByTagsComponentRef = Array<
-  InstanceType<typeof NodesGroupedByTags>
->;
+type Props = {
+  displayMode?: NodeRepositoryDisplayModesType;
+};
 
-export default defineComponent({
-  components: {
-    NodesGroupedByTags,
-    ScrollViewContainer,
-  },
-  props: {
-    displayMode: {
-      type: String as PropType<NodeRepositoryDisplayModesType>,
-      default: "icon",
-    },
-  },
-  emits: ["showNodeDescription", "navReachedTop"],
-  setup() {
-    const addNodeToWorkflow = useAddNodeToWorkflow();
-    return { addNodeToWorkflow };
-  },
-  computed: {
-    ...mapState("nodeRepository", [
-      "showDescriptionForNode",
-      "tagScrollPosition",
-      "nodesPerTag",
-    ]),
-    selectedNode: {
-      get() {
-        return this.$store.state.nodeRepository.selectedNode;
-      },
-      set(value: NodeTemplateWithExtendedPorts | null) {
-        this.$store.commit("nodeRepository/setSelectedNode", value);
-      },
-    },
-    displayModeSupported() {
-      if (this.displayMode === "tree") {
-        return "list";
-      }
-      return this.displayMode;
-    },
-  },
-  expose: ["focusFirst"],
-  methods: {
-    ...mapActions("nodeRepository", ["getAllNodes", "setSelectedTags"]),
-    ...mapMutations("nodeRepository", ["setTagScrollPosition"]),
+const props = withDefaults(defineProps<Props>(), { displayMode: "icon" });
 
-    onScrollBottom() {
-      this.getAllNodes({ append: true });
-    },
-    onSaveScrollPosition(position: number) {
-      this.setTagScrollPosition(position);
-    },
-    onSelectTag(tag: string) {
-      this.setSelectedTags([tag]);
-    },
-    onNavReachedEnd(index: number, event: NavReachedEvent) {
-      const tags = this.$refs.tags as NodesGroupedByTagsComponentRef;
-      const tag = tags?.[index + 1];
-      if (tag) {
-        tag.focusFirst(event);
-      }
-    },
-    onNavReachedTop(index: number, event: NavReachedEvent) {
-      if (index === 0) {
-        this.$emit("navReachedTop", event);
-      } else {
-        const tags = this.$refs.tags as NodesGroupedByTagsComponentRef;
-        const tag = tags?.[index - 1];
-        if (tag) {
-          tag.focusLast(event);
-        }
-      }
-    },
-    onHelpKey(node: NodeTemplateWithExtendedPorts) {
-      this.$emit("showNodeDescription", {
-        nodeTemplate: node,
-        isDescriptionActive: this.showDescriptionForNode?.id === node.id,
-      });
-    },
-    focusFirst() {
-      const tags = this.$refs.tags as NodesGroupedByTagsComponentRef;
-      tags?.[0].focusFirst();
-    },
-  },
+const emit = defineEmits(["showNodeDescription", "navReachedTop"]);
+
+const addNodeToWorkflow = useAddNodeToWorkflow();
+
+const nodeRepositoryStore = useNodeRepositoryStore();
+const { showDescriptionForNode, tagScrollPosition, nodesPerTag, selectedNode } =
+  storeToRefs(nodeRepositoryStore);
+
+const displayModeSupported = computed(() => {
+  if (props.displayMode === "tree") {
+    return "list";
+  }
+  return props.displayMode;
 });
+
+const getAllNodes = async (append: boolean) => {
+  await nodeRepositoryStore.getAllNodes({ append });
+};
+
+const setTagScrollPosition = (position: number) => {
+  nodeRepositoryStore.setTagScrollPosition(position);
+};
+
+const onScrollBottom = () => {
+  getAllNodes(true);
+};
+
+const onSaveScrollPosition = (position: number) => {
+  setTagScrollPosition(position);
+};
+
+const onSelectTag = (tag: string) => {
+  nodeRepositoryStore.updateSelectedTags([tag]);
+};
+
+const tags = ref<InstanceType<typeof NodesGroupedByTags>[]>([]);
+
+const onNavReachedEnd = (index: number, event: NavReachedEvent) => {
+  const tag = tags.value?.[index + 1];
+  if (tag) {
+    tag.focusFirst(event);
+  }
+};
+
+const onNavReachedTop = (index: number, event: NavReachedEvent) => {
+  if (index === 0) {
+    emit("navReachedTop", event);
+  } else {
+    const tag = tags.value?.[index - 1];
+    if (tag) {
+      tag.focusLast(event);
+    }
+  }
+};
+
+const onHelpKey = (node: NodeTemplateWithExtendedPorts) => {
+  emit("showNodeDescription", {
+    nodeTemplate: node,
+    isDescriptionActive: showDescriptionForNode.value?.id === node.id,
+  });
+};
+
+const focusFirst = () => {
+  tags.value?.[0].focusFirst();
+};
+
+defineExpose({ focusFirst });
 </script>
 
 <template>

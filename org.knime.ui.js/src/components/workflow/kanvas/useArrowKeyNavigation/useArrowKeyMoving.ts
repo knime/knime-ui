@@ -1,9 +1,11 @@
-import { type Ref, computed } from "vue";
+import { type Ref } from "vue";
 import { type Fn, useEventListener } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
 
-import { useStore } from "@/composables/useStore";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { gridSize } from "@/style/shapes";
 
 type UseArrowKeyMovingOptions = {
@@ -11,16 +13,18 @@ type UseArrowKeyMovingOptions = {
 };
 
 export const useArrowKeyMoving = (options: UseArrowKeyMovingOptions) => {
-  const store = useStore();
-  const isDragging = computed(() => store.state.workflow.isDragging);
-  const isWritable = computed(() => store.getters["workflow/isWritable"]);
+  const movingStore = useMovingStore();
+  const { isDragging, movePreviewDelta } = storeToRefs(movingStore);
+
+  const workflowStore = useWorkflowStore();
+  const { isWritable } = storeToRefs(workflowStore);
 
   let cleanupKeyupHandler: Fn | null = null;
 
   const doMove = async (event: KeyboardEvent) => {
     const modifiers = [navigatorUtils.isMac() ? "Meta" : "Control", "Shift"];
     if (modifiers.includes(event.key)) {
-      await store.dispatch("workflow/moveObjects");
+      await movingStore.moveObjects();
       if (cleanupKeyupHandler !== null) {
         cleanupKeyupHandler();
         cleanupKeyupHandler = null;
@@ -33,7 +37,7 @@ export const useArrowKeyMoving = (options: UseArrowKeyMovingOptions) => {
       return;
     }
 
-    store.commit("workflow/setTooltip", null);
+    workflowStore.setTooltip(null);
 
     const deltaY = {
       ArrowUp: -gridSize.y,
@@ -46,12 +50,12 @@ export const useArrowKeyMoving = (options: UseArrowKeyMovingOptions) => {
     }[event.key];
 
     if (!isDragging.value) {
-      store.commit("workflow/setIsDragging", true);
+      movingStore.setIsDragging(true);
     }
 
-    const { x = 0, y = 0 } = store.state.workflow.movePreviewDelta;
+    const { x = 0, y = 0 } = movePreviewDelta.value;
 
-    store.commit("workflow/setMovePreview", {
+    movingStore.setMovePreview({
       deltaX: (deltaX ?? 0) + x,
       deltaY: (deltaY ?? 0) + y,
     });

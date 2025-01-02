@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { API } from "@api";
 
 import { Button } from "@knime/components";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
-import { API } from "@/api";
 import MoreNodesIllustration from "@/assets/more-nodes-illustration.svg";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
-import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import DummyNodesEmptyState from "../common/DummyNodesEmptyState.vue";
 
 type Props = {
@@ -21,8 +20,7 @@ type Props = {
 
 defineProps<Props>();
 
-const store = useStore();
-const uiControls = computed(() => store.state.uiControls);
+const uiControls = useUIControlsStore();
 
 const openKnimeUIPreferencePage = () => {
   API.desktop.openWebUIPreferencePage();

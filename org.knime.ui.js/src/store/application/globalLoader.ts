@@ -1,10 +1,6 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { defineStore } from "pinia";
 
-import type { RootStoreState } from "../types";
-
-import type { ApplicationState } from "./index";
-
-export interface GlobalLoaderConfig {
+export type GlobalLoaderConfig = {
   /**
    * Loading state
    */
@@ -25,28 +21,21 @@ export interface GlobalLoaderConfig {
    * number of stages to stagger for.
    */
   staggerStageCount?: 1 | 2;
-}
-
-interface State {
-  globalLoader: GlobalLoaderConfig;
-}
-
-declare module "./index" {
-  interface ApplicationState extends State {}
-}
-
-export const state = (): State => ({
-  globalLoader: {
-    loading: false,
-  },
-});
-
-export const mutations: MutationTree<ApplicationState> = {};
-
-export const actions: ActionTree<ApplicationState, RootStoreState> = {
-  updateGlobalLoader({ state }, config: GlobalLoaderConfig) {
-    state.globalLoader = { ...config };
-  },
 };
 
-export const getters: GetterTree<ApplicationState, RootStoreState> = {};
+export type GlobalLoaderState = {
+  globalLoader: GlobalLoaderConfig;
+};
+
+export const useGlobalLoaderStore = defineStore("globalLoader", {
+  state: (): GlobalLoaderState => ({
+    globalLoader: {
+      loading: false,
+    },
+  }),
+  actions: {
+    updateGlobalLoader(config: GlobalLoaderConfig) {
+      this.globalLoader = { ...config };
+    },
+  },
+});

@@ -5,13 +5,12 @@ import { mount } from "@vue/test-utils";
 import { SubMenu } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import * as spacesStore from "@/store/spaces";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import SpaceSelectionDropdown from "../SpaceSelectionDropdown.vue";
 
 const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
@@ -80,11 +79,9 @@ describe("SpaceSelectionDropdown.vue", () => {
   };
 
   const doMount = ({ props = {}, spaceProviders = null }: MountOps = {}) => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("spaces/setProjectPath", {
+    mockedStores.spaceCachingStore.setProjectPath({
       projectId: "someProjectId",
       value: {
         spaceId: "local",
@@ -93,13 +90,9 @@ describe("SpaceSelectionDropdown.vue", () => {
       },
     });
 
-    $store.commit(
-      "spaces/setSpaceProviders",
+    mockedStores.spaceProvidersStore.setSpaceProviders(
       spaceProviders || startSpaceProviders,
     );
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
 
     const mockRouter = { push: vi.fn() };
 
@@ -109,12 +102,12 @@ describe("SpaceSelectionDropdown.vue", () => {
         ...props,
       },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: { $router: mockRouter },
       },
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy, $router: mockRouter };
+    return { wrapper, mockedStores, $router: mockRouter };
   };
 
   beforeEach(() => {
@@ -205,7 +198,7 @@ describe("SpaceSelectionDropdown.vue", () => {
   });
 
   it("switches space on click", () => {
-    const { wrapper, commitSpy } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
@@ -213,7 +206,7 @@ describe("SpaceSelectionDropdown.vue", () => {
       .findComponent(SubMenu)
       .vm.$emit("item-click", null, menuItems.at(2)!.children!.at(0));
 
-    expect(commitSpy).toHaveBeenCalledWith("spaces/setProjectPath", {
+    expect(mockedStores.spaceCachingStore.setProjectPath).toHaveBeenCalledWith({
       projectId: "someProjectId",
       value: {
         spaceId: "team1space1",
@@ -226,7 +219,7 @@ describe("SpaceSelectionDropdown.vue", () => {
       .findComponent(SubMenu)
       .vm.$emit("item-click", null, menuItems.at(0));
 
-    expect(commitSpy).toHaveBeenCalledWith("spaces/setProjectPath", {
+    expect(mockedStores.spaceCachingStore.setProjectPath).toHaveBeenCalledWith({
       projectId: "someProjectId",
       value: {
         spaceId: "local",
@@ -237,7 +230,7 @@ describe("SpaceSelectionDropdown.vue", () => {
   });
 
   it("connects to hub if user clicks 'Sign in'", () => {
-    const { wrapper, dispatchSpy } = doMount({
+    const { wrapper, mockedStores } = doMount({
       spaceProviders: {
         local: startSpaceProviders.local,
         hub2: createSpaceProvider({
@@ -258,13 +251,13 @@ describe("SpaceSelectionDropdown.vue", () => {
       .findComponent(SubMenu)
       .vm.$emit("item-click", null, menuItems.at(-1));
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
+    expect(mockedStores.spaceAuthStore.connectProvider).toHaveBeenCalledWith({
       spaceProviderId: "hub2",
     });
   });
 
   it("renders loading state for a provider that is connecting", async () => {
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       spaceProviders: {
         local: startSpaceProviders.local,
         hub2: createSpaceProvider({
@@ -276,7 +269,7 @@ describe("SpaceSelectionDropdown.vue", () => {
       },
     });
 
-    $store.state.spaces.isConnectingToProvider = "hub2";
+    mockedStores.spaceProvidersStore.isConnectingToProvider = "hub2";
 
     await nextTick();
 
@@ -286,7 +279,7 @@ describe("SpaceSelectionDropdown.vue", () => {
   });
 
   it("renders loading state for a provider that is loading data", async () => {
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       spaceProviders: {
         local: startSpaceProviders.local,
         hub2: createSpaceProvider({
@@ -298,7 +291,7 @@ describe("SpaceSelectionDropdown.vue", () => {
       },
     });
 
-    $store.state.spaces.loadingProviderSpacesData.hub2 = true;
+    mockedStores.spaceProvidersStore.loadingProviderSpacesData.hub2 = true;
 
     await nextTick();
 

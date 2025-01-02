@@ -1,7 +1,5 @@
 import { getRPCClientInstance, registerEventHandler } from "../json-rpc-client";
 
-import type { Configuration } from "./configuration";
-
 export interface RPCClient {
   call(
     method: string,
@@ -17,7 +15,7 @@ const request = {
 } as const;
 
 // eslint-disable-next-line unused-imports/no-unused-vars
-export const createRPCClient = (configuration: Configuration): RPCClient => {
+export const createRPCClient = (): RPCClient => {
   const rpcClient: RPCClient = {
     async call(method, params) {
       try {

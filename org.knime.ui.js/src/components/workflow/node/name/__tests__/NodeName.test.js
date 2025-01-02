@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeName from "../NodeName.vue";
 import NodeNameEditor from "../NodeNameEditor.vue";
 import NodeNameText from "../NodeNameText.vue";
@@ -15,45 +15,33 @@ describe("NodeName", () => {
     value: "Test Name",
   };
 
-  const doShallowMount = ({ props = {}, $store }) => {
+  const doShallowMount = ({
+    props = {},
+    initialNameEditorNodeId = "editNodeId",
+  } = {}) => {
+    const mockedStores = mockStores();
+    mockedStores.nodeInteractionsStore.nameEditorNodeId =
+      initialNameEditorNodeId;
+
     const wrapper = shallowMount(NodeName, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return wrapper;
+    return { wrapper, mockedStores };
   };
 
   describe("handles text", () => {
-    let storeConfig, wrapper;
-
-    beforeEach(() => {
-      storeConfig = {
-        workflow: {
-          state: {
-            nameEditorNodeId: "editNodeId",
-          },
-          actions: {
-            openNameEditor: vi.fn(),
-            closeNameEditor: vi.fn(),
-            renameContainerNode: vi.fn(),
-          },
-        },
-      };
-
-      const $store = mockVuexStore(storeConfig);
-
-      wrapper = doShallowMount({ $store });
-    });
-
     it("should render properly", () => {
+      const { wrapper } = doShallowMount();
       expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
       expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
     });
 
     it("should forward props", () => {
+      const { wrapper } = doShallowMount();
       expect(wrapper.findComponent(NodeNameText).props()).toEqual(
         expect.objectContaining({
           value: defaultProps.value,
@@ -68,56 +56,51 @@ describe("NodeName", () => {
       ["mouseenter", { mock: "mock" }],
       ["mouseleave", { mock: "mock" }],
     ])("should emit a (%s) event", (eventName, payload) => {
+      const { wrapper } = doShallowMount();
       wrapper.findComponent(NodeNameText).vm.$emit(eventName, payload);
 
       expect(wrapper.emitted(eventName)[0][0]).toEqual(payload);
     });
 
     it("should handle a name change request", () => {
+      const { wrapper, mockedStores } = doShallowMount();
       wrapper.findComponent(NodeNameText).vm.$emit("request-edit");
-      expect(storeConfig.workflow.actions.openNameEditor).toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.openNameEditor,
+      ).toHaveBeenCalled();
     });
 
     it("should handle a name change requests triggered via the store (e.g. F2 key)", async () => {
-      wrapper.vm.$store.state.workflow.nameEditorNodeId =
+      const { wrapper, mockedStores } = doShallowMount();
+      mockedStores.nodeInteractionsStore.nameEditorNodeId =
         wrapper.props("nodeId");
+
       await nextTick();
       expect(wrapper.emitted("editStart")).toBeDefined();
     });
   });
 
   describe("handles editor", () => {
-    let storeConfig, wrapper, $store;
-
-    beforeEach(() => {
-      storeConfig = {
-        workflow: {
-          state: {
-            nameEditorNodeId: defaultProps.nodeId,
-          },
-          actions: {
-            openNameEditor: vi.fn(),
-            closeNameEditor: vi.fn(),
-            renameContainerNode: vi.fn(),
-          },
-        },
-      };
-
-      $store = mockVuexStore(storeConfig);
-
-      wrapper = doShallowMount({ $store });
-    });
-
     it("should render properly", () => {
+      const { wrapper } = doShallowMount({
+        initialNameEditorNodeId: defaultProps.nodeId,
+      });
+
       expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(true);
       expect(wrapper.findComponent(NodeNameText).exists()).toBe(false);
     });
 
     it("should portal editor when visible", () => {
+      const { wrapper } = doShallowMount({
+        initialNameEditorNodeId: defaultProps.nodeId,
+      });
       expect(wrapper.findComponent({ name: "Portal" }).exists()).toBe(true);
     });
 
     it("should forward props", () => {
+      const { wrapper } = doShallowMount({
+        initialNameEditorNodeId: defaultProps.nodeId,
+      });
       expect(wrapper.findComponent(NodeNameEditor).props()).toEqual(
         expect.objectContaining({
           nodeId: defaultProps.nodeId,
@@ -131,6 +114,9 @@ describe("NodeName", () => {
       ["widthChange", 100],
       ["heightChange", 100],
     ])("should emit a (%s) event", (eventName, payload) => {
+      const { wrapper } = doShallowMount({
+        initialNameEditorNodeId: defaultProps.nodeId,
+      });
       wrapper.findComponent(NodeNameEditor).vm.$emit(eventName, payload);
 
       expect(wrapper.emitted(eventName)[0][0]).toEqual(payload);
@@ -145,12 +131,14 @@ describe("NodeName", () => {
           height: 100,
         },
       };
+      const { wrapper, mockedStores } = doShallowMount({
+        initialNameEditorNodeId: defaultProps.nodeId,
+      });
 
       wrapper.findComponent(NodeNameEditor).vm.$emit("save", saveEventPayload);
       expect(
-        storeConfig.workflow.actions.renameContainerNode,
+        mockedStores.nodeInteractionsStore.renameContainerNode,
       ).toHaveBeenCalledWith(
-        expect.any(Object),
         expect.objectContaining({
           nodeId: defaultProps.nodeId,
           name: saveEventPayload.newName,
@@ -158,10 +146,12 @@ describe("NodeName", () => {
       );
 
       vi.runAllTimers();
-      expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.closeNameEditor,
+      ).toHaveBeenCalled();
 
       // emulate editor being closed from store
-      $store.state.workflow.nameEditorNodeId = null;
+      mockedStores.nodeInteractionsStore.nameEditorNodeId = null;
 
       await nextTick();
       expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
@@ -169,12 +159,17 @@ describe("NodeName", () => {
     });
 
     it("should handle closing the editor", async () => {
+      const { wrapper, mockedStores } = doShallowMount({
+        initialNameEditorNodeId: defaultProps.nodeId,
+      });
       wrapper.findComponent(NodeNameEditor).vm.$emit("cancel");
 
-      expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
+      expect(
+        mockedStores.nodeInteractionsStore.closeNameEditor,
+      ).toHaveBeenCalled();
 
       // emulate editor being closed from store
-      $store.state.workflow.nameEditorNodeId = null;
+      mockedStores.nodeInteractionsStore.nameEditorNodeId = null;
 
       await nextTick();
       expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
@@ -189,6 +184,9 @@ describe("NodeName", () => {
           height: 100,
         },
       };
+      const { wrapper } = doShallowMount({
+        initialNameEditorNodeId: defaultProps.nodeId,
+      });
 
       expect(
         wrapper.findComponent(NodeNameEditor).props("startWidth"),

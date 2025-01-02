@@ -1,27 +1,27 @@
 <script lang="ts" setup>
-import { computed, onUnmounted, ref } from "vue";
+import { onUnmounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import SpaceExplorer from "@/components/spaces/SpaceExplorer.vue";
 import SpaceExplorerActions from "@/components/spaces/SpaceExplorerActions.vue";
 import SpaceSelectionDropdown from "@/components/spaces/SpaceSelectionDropdown.vue";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 
-const store = useStore();
-const activeProjectId = computed(() => store.state.application.activeProjectId);
-const currentSelectedItemIds = computed(
-  () => store.state.spaces.currentSelectedItemIds,
-);
+const { activeProjectId } = storeToRefs(useApplicationStore());
+const spaceOperationsStore = useSpaceOperationsStore();
+const { currentSelectedItemIds } = storeToRefs(spaceOperationsStore);
 
 onUnmounted(() => {
-  store.commit("spaces/setCurrentSelectedItemIds", []);
+  spaceOperationsStore.setCurrentSelectedItemIds([]);
 });
 
 const filterQuery = ref("");
 
-const changeDirectory = async (pathId: string) => {
-  await store.dispatch("spaces/changeDirectory", {
-    projectId: activeProjectId.value,
+const changeDirectory = (pathId: string) => {
+  spaceOperationsStore.changeDirectory({
+    projectId: activeProjectId.value!,
     pathId,
   });
   filterQuery.value = "";
@@ -41,7 +41,7 @@ const changeDirectory = async (pathId: string) => {
         :project-id="activeProjectId!"
         :selected-item-ids="currentSelectedItemIds"
         @imported-item-ids="
-          store.commit('spaces/setCurrentSelectedItemIds', $event)
+          spaceOperationsStore.setCurrentSelectedItemIds($event)
         "
       />
     </template>
@@ -51,10 +51,10 @@ const changeDirectory = async (pathId: string) => {
       :filter-query="filterQuery"
       :project-id="activeProjectId"
       :selected-item-ids="currentSelectedItemIds"
-      :click-outside-exception="$refs.actions as HTMLElement"
+      :click-outside-exception="$refs.actions as any"
       @change-directory="changeDirectory"
       @update:selected-item-ids="
-        store.commit('spaces/setCurrentSelectedItemIds', $event)
+        spaceOperationsStore.setCurrentSelectedItemIds($event)
       "
     />
   </SidebarPanelLayout>

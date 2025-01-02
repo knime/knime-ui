@@ -2,8 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
-import * as aiAssistantStore from "@/store/aiAssistant";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import FeedbackControls from "../FeedbackControls.vue";
 
 describe("FeedbackControls", () => {
@@ -16,29 +15,21 @@ describe("FeedbackControls", () => {
     const isFeedbackProcessedMock = vi
       .fn()
       .mockReturnValue(isFeedbackProcessed);
-    const submitFeedbackMock = vi.fn();
 
-    const $store = mockVuexStore({
-      aiAssistant: {
-        ...aiAssistantStore,
-        getters: {
-          isFeedbackProcessed: () => isFeedbackProcessedMock,
-        },
-        actions: {
-          submitFeedback: submitFeedbackMock,
-        },
-      },
-    });
+    const mockedStores = mockStores();
+
+    // @ts-ignore
+    mockedStores.aiAssistantStore.isFeedbackProcessed = isFeedbackProcessedMock;
 
     const props = { interactionId, showControls };
     const wrapper = mount(FeedbackControls, {
       props,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store, submitFeedbackMock };
+    return { wrapper, mockedStores };
   };
 
   it("renders the feedback controls if showControls is true and feedback is not processed yet", () => {
@@ -70,11 +61,11 @@ describe("FeedbackControls", () => {
   });
 
   it("calls submitFeedback with true when thumbs-up button is clicked", async () => {
-    const { wrapper, submitFeedbackMock } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     await wrapper.find(".thumbs-up").trigger("click");
 
-    expect(submitFeedbackMock).toHaveBeenCalledWith(expect.anything(), {
+    expect(mockedStores.aiAssistantStore.submitFeedback).toHaveBeenCalledWith({
       interactionId,
       feedback: {
         comment: "",
@@ -84,11 +75,11 @@ describe("FeedbackControls", () => {
   });
 
   it("calls submitFeedback with false when thumbs-down button is clicked", async () => {
-    const { wrapper, submitFeedbackMock } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     await wrapper.find(".thumbs-down").trigger("click");
 
-    expect(submitFeedbackMock).toHaveBeenCalledWith(expect.anything(), {
+    expect(mockedStores.aiAssistantStore.submitFeedback).toHaveBeenCalledWith({
       interactionId,
       feedback: {
         comment: "",

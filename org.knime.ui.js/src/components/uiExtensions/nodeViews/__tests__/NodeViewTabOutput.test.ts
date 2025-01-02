@@ -4,7 +4,7 @@ import { mount } from "@vue/test-utils";
 
 import { NodeState, PortType } from "@/api/gateway-api/generated-api";
 import { createAvailablePortTypes, createNativeNode } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeViewLoader from "../NodeViewLoader.vue";
 import NodeViewTabOutput from "../NodeViewTabOutput.vue";
 
@@ -66,18 +66,14 @@ describe("NodeViewTabOutput.vue", () => {
   };
 
   const doMount = ({ props = {} } = {}) => {
-    const $store = mockVuexStore({
-      uiControls: {
-        state: { canDetachNodeViews: true },
-        actions: { init: () => {} },
-      },
-    });
+    const mockedStores = mockStores();
+    mockedStores.uiControlsStore.canDetachNodeViews = true;
 
     const wrapper = mount(NodeViewTabOutput, {
       props: { ...defaultProps, ...props },
       global: {
         stubs: { NodeViewLoader: true },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 

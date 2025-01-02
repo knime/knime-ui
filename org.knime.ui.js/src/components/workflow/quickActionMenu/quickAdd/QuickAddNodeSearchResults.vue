@@ -1,10 +1,11 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
+import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
 export default defineComponent({
@@ -23,9 +24,10 @@ export default defineComponent({
     },
   },
   emits: ["update:selectedNode", "addNode"],
-  expose: ["focusFirst"],
+  // FIXME: why does this cause issues?
+  // expose: ["focusFirst"],
   computed: {
-    ...mapState("quickAddNodes", [
+    ...mapState(useQuickAddNodesStore, [
       "nodes",
       "query",
       "totalNumFilteredNodesFound",
@@ -39,10 +41,12 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions("quickAddNodes", ["searchNodesNextPage"]),
+    ...mapActions(useQuickAddNodesStore, ["searchNodesNextPage"]),
     focusFirst() {
-      // @ts-ignore
-      return this.$refs.searchResults?.focusFirst();
+      const searchResults = this.$refs.searchResults as InstanceType<
+        typeof SearchResults
+      >;
+      return searchResults.focusFirst();
     },
   },
 });

@@ -1,15 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
+import { createTestingPinia } from "@pinia/testing";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
+import { useApplicationStore } from "@/store/application/application";
 import { lifecycleBus } from "@/store/application/lifecycle-events";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createWorkflow, createWorkflowMonitorMessage } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
-import * as applicationStore from "../../application";
-import * as selectionStore from "../../selection";
-import * as workflowStore from "../../workflow";
-import * as workflowMonitorStore from "../index";
+import { useWorkflowMonitorStore } from "../workflowMonitor";
 
 vi.mock("@/router/router", () => {
   return {
@@ -23,49 +24,66 @@ vi.mock("@knime/utils");
 
 describe("workflowMonitor", () => {
   const loadStore = () => {
-    const moveObjectIntoView = vi.fn();
-
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      workflowMonitor: workflowMonitorStore,
-      application: applicationStore,
-      selection: selectionStore,
-      canvas: {
-        actions: { moveObjectIntoView },
-      },
+    const testingPinia = createTestingPinia({
+      stubActions: false,
+      createSpy: vi.fn,
     });
 
     const workflow = createWorkflow();
-    $store.commit("workflow/setActiveWorkflow", workflow);
-    $store.commit("application/setActiveProjectId", workflow.projectId);
+    const canvasStore = useCanvasStore(testingPinia);
+    const moveObjectIntoView = vi.spyOn(canvasStore, "moveObjectIntoView");
+    const kanvas = document.createElement("div");
+    kanvas.setAttribute("id", "kanvas");
+    kanvas.scrollTo = vi.fn();
+    canvasStore.setScrollContainerElement(kanvas);
+    const $workflowStore = useWorkflowStore(testingPinia);
+    const $workflowMonitorStore = useWorkflowMonitorStore(testingPinia);
+    const $applicationStore = useApplicationStore(testingPinia);
+    const $selectionStore = useSelectionStore(testingPinia);
 
-    return { $store, moveObjectIntoView, workflow };
+    $workflowStore.setActiveWorkflow(workflow);
+    $applicationStore.setActiveProjectId(workflow.projectId);
+
+    return {
+      moveObjectIntoView,
+      pinia: testingPinia,
+      workflow,
+      $workflowStore,
+      $workflowMonitorStore,
+      $applicationStore,
+      $selectionStore,
+    };
   };
 
   it("should navigate to issue in the same workflow", async () => {
-    const { $store, moveObjectIntoView } = loadStore();
+    const { $selectionStore, $workflowMonitorStore, moveObjectIntoView } =
+      loadStore();
 
     const message = createWorkflowMonitorMessage();
 
-    await $store.dispatch("workflowMonitor/navigateToIssue", { message });
+    await $workflowMonitorStore.navigateToIssue({ message });
     await flushPromises();
 
-    expect($store.state.selection.selectedNodes).toEqual({
+    expect($selectionStore.selectedNodes).toEqual({
       [message.nodeId]: true,
     });
 
     expect(moveObjectIntoView).toHaveBeenCalledWith(
-      expect.anything(),
       expect.objectContaining({ id: message.nodeId }),
     );
   });
 
   it("should navigate to issue in nested workflow", async () => {
-    const { $store, workflow, moveObjectIntoView } = loadStore();
+    const {
+      $selectionStore,
+      $workflowMonitorStore,
+      workflow,
+      moveObjectIntoView,
+    } = loadStore();
 
     const message = createWorkflowMonitorMessage({ workflowId: "root:2" });
 
-    $store.dispatch("workflowMonitor/navigateToIssue", { message });
+    $workflowMonitorStore.navigateToIssue({ message });
     lifecycleBus.emit("onWorkflowLoaded");
     await flushPromises();
 
@@ -74,12 +92,11 @@ describe("workflowMonitor", () => {
       params: { projectId: workflow.projectId, workflowId: message.workflowId },
     });
 
-    expect($store.state.selection.selectedNodes).toEqual({
+    expect($selectionStore.selectedNodes).toEqual({
       [message.nodeId]: true,
     });
 
     expect(moveObjectIntoView).toHaveBeenCalledWith(
-      expect.anything(),
       expect.objectContaining({ id: message.nodeId }),
     );
   });

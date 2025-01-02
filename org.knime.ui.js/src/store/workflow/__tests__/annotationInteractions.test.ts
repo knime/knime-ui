@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import {
   ReorderWorkflowAnnotationsCommand,
   TypedText,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
+import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
@@ -14,33 +15,34 @@ const mockedAPI = deepMocked(API);
 
 describe("workflow::annotationInteractions", () => {
   it("should transform annotations", async () => {
+    const { workflowStore, annotationInteractionsStore } = loadStore();
     const annotationId = "mock-annotation-id";
 
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "foo",
-      info: { containerId: "root" },
-      workflowAnnotations: [
-        {
-          id: annotationId,
-          bounds: { x: 0, y: 0, width: 0, height: 0 },
-        },
-      ],
-    });
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        projectId: "foo",
+        info: { containerId: "root" },
+        workflowAnnotations: [
+          createWorkflowAnnotation({
+            id: annotationId,
+            bounds: { x: 0, y: 0, width: 0, height: 0 },
+          }),
+        ],
+      }),
+    );
 
     const bounds = { x: 1, y: 2, width: 3, height: 4 };
-    store.dispatch("workflow/transformWorkflowAnnotation", {
+    await annotationInteractionsStore.transformWorkflowAnnotation({
       bounds,
       annotationId,
     });
 
-    // optimistic update
     expect(
-      store.state.workflow.activeWorkflow.workflowAnnotations[0].bounds,
+      workflowStore.activeWorkflow!.workflowAnnotations[0].bounds,
     ).toStrictEqual(bounds);
 
     expect(
-      mockedAPI.workflowCommand.TransformWorkflowAnnotation,
+      API.workflowCommand.TransformWorkflowAnnotation,
     ).toHaveBeenCalledWith({
       projectId: "foo",
       workflowId: "root",
@@ -54,20 +56,25 @@ describe("workflow::annotationInteractions", () => {
       newAnnotationId: "mock-annotation2",
     });
 
-    const { store } = await loadStore();
+    const { workflowStore, annotationInteractionsStore, selectionStore } =
+      loadStore();
 
-    const mockAnnotation1 = { id: "mock-annotation1" };
-    store.commit("workflow/setActiveWorkflow", {
-      workflowAnnotations: [mockAnnotation1],
-      projectId: "foo",
-      info: {
-        containerId: "root",
-      },
+    const mockAnnotation1 = createWorkflowAnnotation({
+      id: "mock-annotation1",
     });
-    await store.dispatch("selection/selectAnnotation", mockAnnotation1.id);
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        workflowAnnotations: [mockAnnotation1],
+        projectId: "foo",
+        info: {
+          containerId: "root",
+        },
+      }),
+    );
+    selectionStore.selectAnnotation(mockAnnotation1.id);
 
     const bounds = { x: 10, y: 10, width: 80, height: 80 };
-    await store.dispatch("workflow/addWorkflowAnnotation", { bounds });
+    await annotationInteractionsStore.addWorkflowAnnotation({ bounds });
 
     expect(
       mockedAPI.workflowCommand.AddWorkflowAnnotation,
@@ -78,10 +85,12 @@ describe("workflow::annotationInteractions", () => {
       borderColor: $colors.defaultAnnotationBorderColor,
     });
 
-    expect(store.state.selection.selectedAnnotations).toEqual({
+    expect(selectionStore.selectedAnnotations).toEqual({
       "mock-annotation2": true,
     });
-    expect(store.state.workflow.editableAnnotationId).toBe("mock-annotation2");
+    expect(annotationInteractionsStore.editableAnnotationId).toBe(
+      "mock-annotation2",
+    );
   });
 
   it.each([
@@ -90,21 +99,28 @@ describe("workflow::annotationInteractions", () => {
     [ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward],
     [ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack],
   ])("reorders annotations (z-index)", async (action) => {
-    const { store } = await loadStore();
+    const { workflowStore, selectionStore, annotationInteractionsStore } =
+      loadStore();
 
-    const mockAnnotation1 = { id: "mock-annotation1" };
-    const mockAnnotation2 = { id: "mock-annotation2" };
-    store.commit("workflow/setActiveWorkflow", {
-      workflowAnnotations: [mockAnnotation1, mockAnnotation2],
-      projectId: "foo",
-      info: {
-        containerId: "root",
-      },
+    const mockAnnotation1 = createWorkflowAnnotation({
+      id: "mock-annotation1",
     });
-    await store.dispatch("selection/selectAnnotation", mockAnnotation1.id);
-    await store.dispatch("selection/selectAnnotation", mockAnnotation2.id);
+    const mockAnnotation2 = createWorkflowAnnotation({
+      id: "mock-annotation2",
+    });
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        workflowAnnotations: [mockAnnotation1, mockAnnotation2],
+        projectId: "foo",
+        info: {
+          containerId: "root",
+        },
+      }),
+    );
+    selectionStore.selectAnnotation(mockAnnotation1.id);
+    selectionStore.selectAnnotation(mockAnnotation2.id);
 
-    store.dispatch("workflow/reorderWorkflowAnnotation", { action });
+    await annotationInteractionsStore.reorderWorkflowAnnotation({ action });
 
     expect(
       mockedAPI.workflowCommand.ReorderWorkflowAnnotations,
@@ -118,27 +134,29 @@ describe("workflow::annotationInteractions", () => {
 
   describe("update annotation", () => {
     it("should handle success", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, annotationInteractionsStore } = loadStore();
 
       const annotationId = "mock-annotation-id";
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-        workflowAnnotations: [
-          {
-            id: annotationId,
-            text: {
-              value: "legacy plain text",
-              contentType: TypedText.ContentTypeEnum.Plain,
-            },
-            borderColor: "#000000",
-          },
-        ],
-      });
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+          workflowAnnotations: [
+            createWorkflowAnnotation({
+              id: annotationId,
+              text: {
+                value: "legacy plain text",
+                contentType: TypedText.ContentTypeEnum.Plain,
+              },
+              borderColor: "#000000",
+            }),
+          ],
+        }),
+      );
 
       const newText = "<p>new annotation text</p>";
 
-      store.dispatch("workflow/updateAnnotation", {
+      await annotationInteractionsStore.updateAnnotation({
         text: newText,
         annotationId,
         borderColor: "#123456",
@@ -155,9 +173,9 @@ describe("workflow::annotationInteractions", () => {
       });
 
       const updatedAnnotation =
-        store.state.workflow.activeWorkflow.workflowAnnotations.find(
+        workflowStore.activeWorkflow!.workflowAnnotations.find(
           (annotation) => annotation.id === annotationId,
-        );
+        )!;
       expect(updatedAnnotation.text.value).toEqual(newText);
       expect(updatedAnnotation.text.contentType).toEqual(
         TypedText.ContentTypeEnum.Html,
@@ -165,29 +183,31 @@ describe("workflow::annotationInteractions", () => {
     });
 
     it("should handle failure", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, annotationInteractionsStore } = loadStore();
       mockedAPI.workflowCommand.UpdateWorkflowAnnotation.mockRejectedValueOnce(
         new Error("random error"),
       );
 
       const annotationId = "mock-annotation-id";
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-        workflowAnnotations: [
-          {
-            id: annotationId,
-            text: {
-              value: "legacy plain text",
-              contentType: TypedText.ContentTypeEnum.Plain,
-            },
-            borderColor: "#000000",
-          },
-        ],
-      });
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+          workflowAnnotations: [
+            createWorkflowAnnotation({
+              id: annotationId,
+              text: {
+                value: "legacy plain text",
+                contentType: TypedText.ContentTypeEnum.Plain,
+              },
+              borderColor: "#000000",
+            }),
+          ],
+        }),
+      );
 
       await expect(() =>
-        store.dispatch("workflow/updateAnnotation", {
+        annotationInteractionsStore.updateAnnotation({
           text: "<p>new annotation text</p>",
           annotationId,
           borderColor: "#123456",
@@ -195,9 +215,9 @@ describe("workflow::annotationInteractions", () => {
       ).rejects.toThrowError("random error");
 
       const updatedAnnotation =
-        store.state.workflow.activeWorkflow.workflowAnnotations.find(
+        workflowStore.activeWorkflow!.workflowAnnotations.find(
           (annotation) => annotation.id === annotationId,
-        );
+        )!;
 
       expect(updatedAnnotation.text.value).toBe("legacy plain text");
       expect(updatedAnnotation.borderColor).toBe("#000000");

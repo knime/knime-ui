@@ -58,7 +58,7 @@ const isLegacyDescription = computed(() => {
   <Description
     v-else
     class="node-description-html"
-    :text="descriptionData.description"
+    :text="descriptionText"
     render-as-html
   />
 </template>

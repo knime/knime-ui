@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue";
-import type { Dispatch } from "vuex";
+import { storeToRefs } from "pinia";
 
 import {
   type FileExplorerContextMenu,
@@ -25,18 +25,13 @@ import {
   buildOpenInBrowserMenuItem,
   buildOpenPermissionsDialog,
 } from "@/components/spaces/remoteMenuItems";
-import { useStore } from "@/composables/useStore";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import {
   isHubProvider,
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
-
-const store = useStore();
-
-const getProviderInfoFromProjectPath = computed(
-  () => store.getters["spaces/getProviderInfoFromProjectPath"],
-);
 
 interface Props {
   createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption;
@@ -50,6 +45,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { getProviderInfoFromProjectPath } = storeToRefs(
+  useSpaceProvidersStore(),
+);
+const { selectionContainsFile, selectionContainsWorkflow } = storeToRefs(
+  useSpaceOperationsStore(),
+);
+const { exportSpaceItem } = useSpaceOperationsStore();
 
 interface Emits {
   (e: "duplicateItems", sourceItems: string[]): void;
@@ -81,85 +84,76 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       isMultipleSelectionActive,
     } = props;
 
-    const isLocal = isLocalProvider(
-      getProviderInfoFromProjectPath.value(props.projectId),
-    );
+    const providerInfo = getProviderInfoFromProjectPath.value(props.projectId);
 
-    const isServer = isServerProvider(
-      getProviderInfoFromProjectPath.value(props.projectId),
-    );
+    if (!providerInfo) {
+      return [];
+    }
 
-    const isHub = isHubProvider(
-      getProviderInfoFromProjectPath.value(props.projectId),
-    );
+    const isLocal = isLocalProvider(providerInfo);
 
-    const selectionContainsFile = store.getters["spaces/selectionContainsFile"](
+    const isHub = isHubProvider(providerInfo);
+
+    const isServer = isServerProvider(providerInfo);
+
+    const doesSelectionContainFile = selectionContainsFile.value(
       props.projectId,
       props.selectedItemIds,
     );
 
-    const selectionContainsWorkflow = store.getters[
-      "spaces/selectionContainsWorkflow"
-    ](props.projectId, props.selectedItemIds);
+    const doesSelectionContainWorkflow = selectionContainsWorkflow.value(
+      props.projectId,
+      props.selectedItemIds,
+    );
 
     const downloadToLocalSpace = buildHubDownloadMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
 
     const moveToSpace = buildMoveToSpaceMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
 
     const copyToSpace = buildCopyToSpaceMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
 
     const openInBrowser = buildOpenInBrowserMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
-      getProviderInfoFromProjectPath.value(props.projectId),
+      providerInfo,
     );
 
     const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
 
     const uploadToHub = buildHubUploadMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
 
     const displayDeployments = buildDisplayDeploymentsMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
       anchorItem.name,
     );
 
     const openPermissionsDialog = buildOpenPermissionsDialog(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
 
     const executeWorkflow = buildExecuteWorkflowMenuItem(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
 
     const createExportItemOption = (
-      dispatch: Dispatch,
       projectId: string,
       selectedItems: Array<string>,
     ) => {
@@ -168,9 +162,9 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         id: "export",
         text: "Export",
         icon: FileExportIcon,
-        disabled: selectionContainsFile || isSelectionMultiple,
+        disabled: doesSelectionContainFile || isSelectionMultiple,
         execute: () => {
-          dispatch("spaces/exportSpaceItem", {
+          exportSpaceItem({
             projectId,
             itemId: selectedItems[0],
           });
@@ -212,7 +206,6 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
     });
 
     const exportItem = createExportItemOption(
-      store.dispatch,
       props.projectId,
       props.selectedItemIds,
     );
@@ -233,7 +226,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       ...valueOrEmpty(isLocal, uploadToHub),
 
       ...valueOrEmpty(
-        isHub || (isServer && selectionContainsWorkflow),
+        isHub || (isServer && doesSelectionContainWorkflow),
         downloadToLocalSpace,
       ),
 
@@ -242,10 +235,13 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         openInBrowser,
       ),
 
-      ...valueOrEmpty(isServer && selectionContainsWorkflow, executeWorkflow),
+      ...valueOrEmpty(
+        isServer && doesSelectionContainWorkflow,
+        executeWorkflow,
+      ),
 
       ...valueOrEmpty(
-        isServer && selectionContainsWorkflow,
+        isServer && doesSelectionContainWorkflow,
         displayDeployments,
       ),
 

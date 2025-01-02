@@ -1,8 +1,9 @@
-import { computed, ref } from "vue";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodeTemplate } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import type { HubItem } from "@/store/aiAssistant";
+import { usePanelStore } from "@/store/panel";
 
 import type { Extensions } from "./types";
 
@@ -21,20 +22,17 @@ export interface AdditionalResource {
 const additionalResources = ref<AdditionalResource | null>(null);
 
 export const useKaiExtensionPanel = () => {
-  const store = useStore();
-
-  const isExtensionPanelOpen = computed(
-    () => store.state.panel.isExtensionPanelOpen,
-  );
+  const { isExtensionPanelOpen } = storeToRefs(usePanelStore());
+  const { openExtensionPanel, closeExtensionPanel } = usePanelStore();
 
   const openKaiExtensionPanel = (_panelMode: PanelMode) => {
     panelMode.value = _panelMode;
-    store.dispatch("panel/openExtensionPanel");
+    openExtensionPanel();
   };
 
   const closeKaiExtensionPanel = () => {
     panelMode.value = null;
-    store.dispatch("panel/closeExtensionPanel");
+    closeExtensionPanel();
   };
 
   const toggleNodeDescription = ({

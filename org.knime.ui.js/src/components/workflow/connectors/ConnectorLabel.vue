@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
 import { geometry } from "@/util/geometry";
 
 import type { ConnectorProps } from "./types";
@@ -29,13 +31,8 @@ const LABEL_WIDTH = 1000;
 const LABEL_HEIGHT = 60;
 const OFFSET_Y = 16;
 
-const store = useStore();
-const isDragging = computed(() => store.state.workflow.isDragging);
-
-const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
-const isNodeSelected = computed(
-  () => store.getters["selection/isNodeSelected"],
-);
+const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
+const { isNodeSelected } = storeToRefs(useSelectionStore());
 
 const {
   sourceNode,
@@ -70,8 +67,8 @@ const getLabelPosition = (start: XY, end: XY, offset: XY): XY => {
 const isConnectionAffectedByDrag = computed(
   () =>
     isDragging.value &&
-    (isNodeSelected.value(props.sourceNode) ||
-      isNodeSelected.value(props.destNode)),
+    (isNodeSelected.value(props.sourceNode ?? "") ||
+      isNodeSelected.value(props.destNode ?? "")),
 );
 
 const halfWayPosition = computed(() => {

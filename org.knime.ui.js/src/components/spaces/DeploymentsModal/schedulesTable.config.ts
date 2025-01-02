@@ -1,8 +1,6 @@
-import type { Store } from "vuex";
-
 import { columnTypes } from "@knime/knime-ui-table";
 
-import type { RootStoreState } from "@/store/types";
+import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { getIntervalFromSchedule } from "@/util/intervalFromSchedule";
 import { formatTime } from "@/util/time";
 
@@ -94,21 +92,15 @@ export const scheduleSubMenuItems = [
   {
     name: "edit",
     text: "Edit",
-    callback: (
-      row: { id: string },
-      context: { $store: Store<RootStoreState> },
-    ) => {
-      context.$store.dispatch("spaces/editSchedule", { scheduleId: row.id });
+    callback: (row: { id: string }) => {
+      useDeploymentsStore().editSchedule({ scheduleId: row.id });
     },
   },
   {
     name: "delete",
     text: "Delete",
-    callback: (
-      row: { id: string },
-      context: { $store: Store<RootStoreState> },
-    ) => {
-      context.$store.dispatch("spaces/deleteSchedule", {
+    callback: (row: { id: string }) => {
+      useDeploymentsStore().deleteSchedule({
         scheduleId: row.id,
       });
     },

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useSelectionStore } from "@/store/selection";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import * as projectUtil from "@/util/projectUtil";
 
@@ -13,38 +16,32 @@ import ProjectMetadata, {
   type SaveEventPayload as SaveProjectEventPayload,
 } from "./ProjectMetadata.vue";
 
-const store = useStore();
+const { availablePortTypes, availableComponentTypes } = storeToRefs(
+  useApplicationStore(),
+);
+const workflowStore = useWorkflowStore();
+const { activeWorkflow: workflow, isWritable: isWorkflowWritable } =
+  storeToRefs(workflowStore);
 
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
-);
-const availableComponentTypes = computed(
-  () => store.state.application.availableComponentTypes,
-);
-const workflow = computed(() => store.state.workflow!.activeWorkflow!);
 const containerType = computed(() => workflow.value!.info.containerType);
-
-const isWorkflowWritable = computed<boolean>(
-  () => store.getters["workflow/isWritable"],
-);
+const { singleSelectedNode } = storeToRefs(useSelectionStore());
 
 const isWorkflowProject = computed(() =>
-  projectUtil.isWorkflowProject(workflow.value),
+  projectUtil.isWorkflowProject(workflow.value!),
 );
 
 const isComponentProject = computed(() =>
-  projectUtil.isComponentProject(workflow.value),
+  projectUtil.isComponentProject(workflow.value!),
 );
 
 const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode,
 );
 
-const singleMetanodeSelectedId = computed<string | null>(
-  () =>
-    store.getters["selection/singleSelectedNode"] &&
-    isNodeMetaNode(store.getters["selection/singleSelectedNode"]) &&
-    store.getters["selection/singleSelectedNode"].id,
+const singleMetanodeSelectedId = computed(() =>
+  singleSelectedNode.value && isNodeMetaNode(singleSelectedNode.value)
+    ? singleSelectedNode.value.id
+    : null,
 );
 
 const updateProjectMetadata = ({
@@ -54,7 +51,7 @@ const updateProjectMetadata = ({
   projectId,
   workflowId,
 }: SaveProjectEventPayload) => {
-  store.dispatch("workflow/updateWorkflowMetadata", {
+  workflowStore.updateWorkflowMetadata({
     projectId,
     workflowId,
     description,
@@ -74,7 +71,7 @@ const updateComponentMetadata = ({
   links,
   tags,
 }: SaveComponentEventPayload) => {
-  store.dispatch("workflow/updateComponentMetadata", {
+  workflowStore.updateComponentMetadata({
     projectId,
     workflowId, // in this case the componentId
     description,

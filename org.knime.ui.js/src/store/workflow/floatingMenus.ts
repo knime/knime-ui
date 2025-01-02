@@ -1,29 +1,26 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { defineStore } from "pinia";
 
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuProps } from "@/components/workflow/quickActionMenu/QuickActionMenu.vue";
-import type { RootStoreState } from "../types";
+import { useCanvasStore } from "@/store/canvas";
 
-import type { WorkflowState } from ".";
-
-interface State {
+type FloatingMenusState = {
   portTypeMenu: {
     isOpen: boolean;
     nodeId: string | null;
     startNodeId: string | null;
     previewPort: NodePort | { typeId: string } | null;
     // TODO: improve typing by exporting Props from PortTypeMenu component
-    // not needed right now because the Vue <-> Vuex type integration is not the best anyway.
     props: {
       position: XY;
       side: "input" | "output";
-      portGroups: Record<string, PortGroup>;
+      portGroups: Record<string, PortGroup> | null;
     } | null;
 
     events: {
-      itemActive?: () => void;
-      itemClick?: () => void;
-      menuClose?: () => void;
+      itemActive?: (...args: any[]) => void;
+      itemClick?: (...args: any[]) => void;
+      menuClose?: (...args: any[]) => void;
     };
   };
 
@@ -36,128 +33,137 @@ interface State {
       menuClose?: () => void;
     };
   };
-}
-
-declare module "./index" {
-  interface WorkflowState extends State {}
-}
-
-export const state = (): State => ({
-  portTypeMenu: {
-    isOpen: false,
-    nodeId: null,
-    startNodeId: null,
-    previewPort: null,
-    props: null,
-    events: {},
-  },
-
-  quickActionMenu: {
-    isOpen: false,
-    isLocked: false,
-    hasConnector: true,
-    props: null,
-    events: {},
-  },
-});
-
-export const mutations: MutationTree<WorkflowState> = {
-  setPortTypeMenu(state, value) {
-    state.portTypeMenu = value;
-  },
-
-  setQuickActionMenu(state, value) {
-    state.quickActionMenu = value;
-  },
-
-  setPortTypeMenuPreviewPort(state, previewPort) {
-    state.portTypeMenu = { ...state.portTypeMenu, previewPort };
-  },
 };
 
-export const actions: ActionTree<WorkflowState, RootStoreState> = {
-  openPortTypeMenu({ commit }, { nodeId, startNodeId, props, events }) {
-    commit("setPortTypeMenu", {
-      isOpen: true,
+export const useFloatingMenusStore = defineStore("floatingMenus", {
+  state: (): FloatingMenusState => ({
+    portTypeMenu: {
+      isOpen: false,
+      nodeId: null,
+      startNodeId: null,
       previewPort: null,
+      props: null,
+      events: {},
+    },
+
+    quickActionMenu: {
+      isOpen: false,
+      isLocked: false,
+      hasConnector: true,
+      props: null,
+      events: {},
+    },
+  }),
+  actions: {
+    setPortTypeMenu(portTypeMenu: FloatingMenusState["portTypeMenu"]) {
+      this.portTypeMenu = portTypeMenu;
+    },
+
+    setQuickActionMenu(quickActionMenu: FloatingMenusState["quickActionMenu"]) {
+      this.quickActionMenu = quickActionMenu;
+    },
+
+    setPortTypeMenuPreviewPort(
+      previewPort: FloatingMenusState["portTypeMenu"]["previewPort"],
+    ) {
+      this.portTypeMenu = { ...this.portTypeMenu, previewPort };
+    },
+
+    openPortTypeMenu({
       nodeId,
       startNodeId,
       props,
       events,
-    });
-  },
+    }: {
+      nodeId: string | null;
+      startNodeId?: string | null;
+      props: FloatingMenusState["portTypeMenu"]["props"];
+      events: FloatingMenusState["portTypeMenu"]["events"];
+    }) {
+      this.setPortTypeMenu({
+        isOpen: true,
+        previewPort: null,
+        nodeId,
+        startNodeId: startNodeId ?? null,
+        props,
+        events,
+      });
+    },
 
-  closePortTypeMenu({ commit, dispatch }) {
-    commit("setPortTypeMenu", {
-      isOpen: false,
-      nodeId: null,
-      previewPort: null,
-      props: {},
-      events: {},
-    });
-    dispatch("canvas/focus", null, { root: true });
-  },
+    closePortTypeMenu() {
+      this.setPortTypeMenu({
+        isOpen: false,
+        nodeId: null,
+        startNodeId: null,
+        previewPort: null,
+        props: null,
+        events: {},
+      });
+      useCanvasStore().focus();
+    },
 
-  openQuickActionMenu({ commit, dispatch }, { props, events }) {
-    commit("setQuickActionMenu", {
-      isOpen: true,
-      isLocked: false,
-      hasConnector: true,
+    openQuickActionMenu({
       props,
-      events: events
-        ? events
-        : { menuClose: () => dispatch("closeQuickActionMenu") },
-    });
-  },
+      events,
+    }: {
+      props: QuickActionMenuProps | null;
+      events?: FloatingMenusState["quickActionMenu"]["events"];
+    }) {
+      this.setQuickActionMenu({
+        isOpen: true,
+        isLocked: false,
+        hasConnector: true,
+        props,
+        events: events
+          ? events
+          : { menuClose: () => this.closeQuickActionMenu() },
+      });
+    },
 
-  async closeQuickActionMenu(
-    { state, commit, dispatch },
-    { force = false } = {},
-  ) {
-    if (state.quickActionMenu.isLocked && !force) {
-      return;
-    }
+    closeQuickActionMenu({ force = false } = {}) {
+      if (this.quickActionMenu.isLocked && !force) {
+        return;
+      }
 
-    commit("setQuickActionMenu", {
-      isOpen: false,
-      isLocked: false,
-      hasConnector: true,
-      props: {},
-      events: {},
-    });
+      this.setQuickActionMenu({
+        isOpen: false,
+        isLocked: false,
+        hasConnector: true,
+        props: null,
+        events: {},
+      });
 
-    await dispatch("canvas/focus", null, { root: true });
-  },
+      useCanvasStore().focus();
+    },
 
-  lockQuickActionMenu({ state, commit }) {
-    commit("setQuickActionMenu", {
-      ...state.quickActionMenu,
-      isLocked: true,
-    });
-  },
+    lockQuickActionMenu() {
+      this.quickActionMenu = {
+        ...this.quickActionMenu,
+        isLocked: true,
+      };
+    },
 
-  unlockQuickActionMenu({ state, commit }) {
-    commit("setQuickActionMenu", {
-      ...state.quickActionMenu,
-      isLocked: false,
-    });
-  },
+    unlockQuickActionMenu() {
+      this.quickActionMenu = {
+        ...this.quickActionMenu,
+        isLocked: false,
+      };
+    },
 
-  enableDetachedMode({ state, commit }) {
-    const DETACHED_MODE_OFFSET = 125;
+    enableDetachedMode() {
+      const DETACHED_MODE_OFFSET = 125;
 
-    commit("setQuickActionMenu", {
-      ...state.quickActionMenu,
-      hasConnector: false,
-      props: {
-        ...state.quickActionMenu.props,
-        position: {
-          x: state.quickActionMenu.props!.position.x,
-          y: state.quickActionMenu.props!.position.y - DETACHED_MODE_OFFSET,
+      this.quickActionMenu = {
+        ...this.quickActionMenu,
+        hasConnector: false,
+        props: {
+          ...this.quickActionMenu.props,
+          position: {
+            x: this.quickActionMenu.props!.position.x,
+            y: this.quickActionMenu.props!.position.y - DETACHED_MODE_OFFSET,
+          },
         },
-      },
-    });
+      };
+    },
   },
-};
-
-export const getters: GetterTree<WorkflowState, RootStoreState> = {};
+});

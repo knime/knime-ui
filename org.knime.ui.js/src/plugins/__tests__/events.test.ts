@@ -1,22 +1,16 @@
 /* eslint-disable new-cap */
-import {
-  type Mock,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import type { SpaceProviderNS } from "@/api/custom-types";
 import type { DesktopEventHandlers } from "@/api/desktop-api";
 import {
   type EventHandlers,
   ShowToastEvent,
 } from "@/api/gateway-api/generated-api";
+import { createSpaceProvider } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { notifyPatch } from "@/util/event-syncer";
 import eventsPlugin from "../events";
 
@@ -24,7 +18,7 @@ vi.mock("@/util/event-syncer");
 
 const registeredHandlers: Partial<EventHandlers & DesktopEventHandlers> = {};
 
-const notifyPatchMock = notifyPatch as Mock<Parameters<typeof notifyPatch>>;
+const notifyPatchMock = vi.mocked(notifyPatch);
 
 const mockedAPI = deepMocked(API);
 
@@ -32,6 +26,7 @@ describe("Event Plugin", () => {
   beforeAll(() => {
     const registerEventHandlers = (handlers) => {
       Object.entries(handlers).forEach(([key, value]) => {
+        // @ts-ignore
         registeredHandlers[key] = value;
       });
     };
@@ -44,14 +39,6 @@ describe("Event Plugin", () => {
   });
 
   const loadPlugin = () => {
-    const storeMock = {
-      state: {
-        application: {},
-      },
-      dispatch: vi.fn(),
-      commit: vi.fn(),
-    };
-
     const routerMock = {
       push: vi.fn(),
     };
@@ -60,9 +47,12 @@ describe("Event Plugin", () => {
       show: vi.fn(),
     };
 
-    eventsPlugin({ $store: storeMock, $router: routerMock, $toast: toastMock });
+    const mockedStores = mockStores({ stubActions: true });
 
-    return { storeMock, routerMock, toastMock };
+    // @ts-ignore
+    eventsPlugin({ $router: routerMock, $toast: toastMock });
+
+    return { mockedStores, routerMock, toastMock };
   };
 
   it("all eventsHandlers are functions", () => {
@@ -78,20 +68,20 @@ describe("Event Plugin", () => {
     });
 
     it("handles WorkflowChangedEvents", () => {
-      const { storeMock } = loadPlugin();
-      registeredHandlers.WorkflowChangedEvent({
+      const { mockedStores } = loadPlugin();
+      registeredHandlers.WorkflowChangedEvent!({
         // @ts-expect-error
         patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
       });
 
-      expect(storeMock.dispatch).toHaveBeenCalledWith("workflow/patch.apply", [
+      expect(mockedStores.workflowStore["patch.apply"]).toHaveBeenCalledWith([
         { dummy: true, path: "/activeWorkflow/foo/bar" },
       ]);
     });
 
     it("should call `notifyPatch` for patches with snapshotId", () => {
       const snapshotId = "1";
-      registeredHandlers.WorkflowChangedEvent({
+      registeredHandlers.WorkflowChangedEvent!({
         // @ts-expect-error
         patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
         snapshotId,
@@ -102,7 +92,7 @@ describe("Event Plugin", () => {
 
     it("should not call `notifyPatch` for patches without snapshotId", () => {
       loadPlugin();
-      registeredHandlers.WorkflowChangedEvent({
+      registeredHandlers.WorkflowChangedEvent!({
         // @ts-expect-error
         patch: { ops: [{ dummy: true, path: "/foo/bar" }] },
       });
@@ -110,23 +100,21 @@ describe("Event Plugin", () => {
     });
 
     it("handles ProjectDirtyStateEvent", () => {
-      const { storeMock } = loadPlugin();
+      const { mockedStores } = loadPlugin();
       const dirtyProjectsMap = { 1: false, 2: false, 3: true };
 
-      registeredHandlers.ProjectDirtyStateEvent({ dirtyProjectsMap });
+      registeredHandlers.ProjectDirtyStateEvent!({ dirtyProjectsMap });
 
-      expect(storeMock.dispatch).toHaveBeenCalledWith(
-        "application/updateDirtyProjectsMap",
-        dirtyProjectsMap,
-      );
+      expect(
+        mockedStores.dirtyProjectsTrackingStore.updateDirtyProjectsMap,
+      ).toHaveBeenCalledWith(dirtyProjectsMap);
 
-      registeredHandlers.ProjectDirtyStateEvent({
+      registeredHandlers.ProjectDirtyStateEvent!({
         dirtyProjectsMap,
         shouldReplace: true,
       });
 
-      expect(storeMock.dispatch).toHaveBeenCalledWith(
-        "application/setDirtyProjectsMap",
+      expect(mockedStores.dirtyProjectsTrackingStore.dirtyProjectsMap).toEqual(
         dirtyProjectsMap,
       );
     });
@@ -145,7 +133,7 @@ describe("Event Plugin", () => {
       );
       const dirtyProjectsMap = { 1: false, 2: false, 3: true };
 
-      registeredHandlers.CompositeEvent({
+      registeredHandlers.CompositeEvent!({
         events: ["WorkflowChangedEvent", "ProjectDirtyStateEvent"],
         // @ts-expect-error
         params: [
@@ -163,22 +151,20 @@ describe("Event Plugin", () => {
     });
 
     describe("appState event", () => {
-      it("replaces application state", async () => {
-        const { storeMock, routerMock } = loadPlugin();
+      it("replaces application state", () => {
+        const { mockedStores, routerMock } = loadPlugin();
 
-        await registeredHandlers.AppStateChangedEvent({
+        registeredHandlers.AppStateChangedEvent!({
           // @ts-expect-error
           appState: { openProjects: [{ id: "mock" }] },
         });
 
-        expect(storeMock.dispatch).toHaveBeenCalledWith(
-          "application/replaceApplicationState",
-          { openProjects: [{ id: "mock" }] },
-        );
-        expect(storeMock.dispatch).toHaveBeenCalledWith(
-          "application/setActiveProject",
-          { $router: routerMock },
-        );
+        expect(
+          mockedStores.applicationStore.replaceApplicationState,
+        ).toHaveBeenCalledWith({ openProjects: [{ id: "mock" }] });
+        expect(
+          mockedStores.lifecycleStore.setActiveProject,
+        ).toHaveBeenCalledWith({ $router: routerMock });
       });
 
       // TODO NXT-1437
@@ -195,8 +181,8 @@ describe("Event Plugin", () => {
     });
 
     describe("updateAvailable event", () => {
-      it("replaces availableUpdates state", async () => {
-        const { storeMock } = loadPlugin();
+      it("replaces availableUpdates state", () => {
+        const { mockedStores } = loadPlugin();
         const newReleases = [
           {
             isUpdatePossible: true,
@@ -211,70 +197,70 @@ describe("Event Plugin", () => {
         ];
         const bugfixes = ["Update1", "Update2"];
 
-        await registeredHandlers.UpdateAvailableEvent({
+        registeredHandlers.UpdateAvailableEvent!({
           newReleases,
           bugfixes,
         });
 
-        expect(storeMock.commit).toHaveBeenCalledWith(
-          "application/setAvailableUpdates",
-          { newReleases, bugfixes },
-        );
+        expect(
+          mockedStores.applicationStore.setAvailableUpdates,
+        ).toHaveBeenCalledWith({ newReleases, bugfixes });
       });
 
-      it("does not replace availableUpdates state if there are no updates", async () => {
-        const { storeMock } = loadPlugin();
+      it("does not replace availableUpdates state if there are no updates", () => {
+        const { mockedStores } = loadPlugin();
         const newReleases = undefined;
         const bugfixes = undefined;
 
-        await registeredHandlers.UpdateAvailableEvent({
+        registeredHandlers.UpdateAvailableEvent!({
           newReleases,
           bugfixes,
         });
 
-        expect(storeMock.commit).not.toHaveBeenCalled();
+        expect(
+          mockedStores.applicationStore.setAvailableUpdates,
+        ).not.toHaveBeenCalled();
       });
     });
 
     describe("spaceProvidersChangedEvent", () => {
       it("should set the loaded space providers (success)", () => {
-        const mockProvider: SpaceProviderNS.SpaceProvider = {
-          connected: false,
-          connectionMode: "AUTOMATIC",
-          id: "providerId",
-          name: "Mock provider",
-        };
+        const mockProvider: SpaceProviderNS.SpaceProvider = createSpaceProvider(
+          {
+            connected: false,
+            connectionMode: "AUTOMATIC",
+            id: "providerId",
+            name: "Mock provider",
+          },
+        );
 
         const result = {
           [mockProvider.id]: mockProvider,
         };
 
-        const { storeMock } = loadPlugin();
-        registeredHandlers.SpaceProvidersChangedEvent({
+        const { mockedStores } = loadPlugin();
+        registeredHandlers.SpaceProvidersChangedEvent!({
           result,
         });
 
-        expect(storeMock.dispatch).toHaveBeenCalledWith(
-          "spaces/setAllSpaceProviders",
-          result,
-        );
+        expect(
+          mockedStores.spaceProvidersStore.setAllSpaceProviders,
+        ).toHaveBeenCalledWith(result);
       });
 
       it("should not set the loaded space providers (error)", () => {
-        const { storeMock } = loadPlugin();
-        registeredHandlers.SpaceProvidersChangedEvent({
+        const { mockedStores } = loadPlugin();
+        registeredHandlers.SpaceProvidersChangedEvent!({
           error: "something went wrong",
         });
 
-        expect(storeMock.commit).toBeCalledWith(
-          "spaces/setIsLoadingProviders",
-          false,
-        );
+        expect(
+          mockedStores.spaceProvidersStore.setIsLoadingProviders,
+        ).toBeCalledWith(false);
 
-        expect(storeMock.dispatch).not.toHaveBeenCalledWith(
-          "spaces/setAllSpaceProviders",
-          expect.anything(),
-        );
+        expect(
+          mockedStores.spaceProvidersStore.setAllSpaceProviders,
+        ).not.toHaveBeenCalled();
       });
     });
 
@@ -289,7 +275,7 @@ describe("Event Plugin", () => {
           message: "Some toast in my message",
         };
 
-        registeredHandlers.ShowToastEvent(toastEvent);
+        registeredHandlers.ShowToastEvent!(toastEvent);
 
         expect(toastMock.show).toBeCalledWith(toastEvent);
       });

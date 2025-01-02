@@ -1,11 +1,16 @@
 import { type Ref, computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import { navigatorUtils } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { useStore } from "@/composables/useStore";
 import { runInEnvironment } from "@/environment";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useCanvasStore } from "@/store/canvas";
+import { useSettingsStore } from "@/store/settings";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isInputElement } from "@/util/isInputElement";
 
 type UsePanningWithSpaceOptions = {
@@ -15,8 +20,8 @@ type UsePanningWithSpaceOptions = {
 
 const usePanningWithSpace = (options: UsePanningWithSpaceOptions) => {
   const isHoldingDownSpace = ref(false);
-
-  const store = useStore();
+  const { setIsMoveLocked } = useCanvasStore();
+  const { resetCanvasMode } = useCanvasModesStore();
 
   const onPressSpace = (event: KeyboardEvent) => {
     if (isInputElement(event.target as HTMLElement) || isUIExtensionFocused()) {
@@ -50,13 +55,13 @@ const usePanningWithSpace = (options: UsePanningWithSpaceOptions) => {
       // unset panning state
       options.shouldShowMoveCursor.value = false;
       options.isPanning.value = false;
-      store.dispatch("application/resetCanvasMode");
+      resetCanvasMode();
     }
 
     const metaOrCtrlKey = navigatorUtils.isMac() ? "Meta" : "Control";
 
     if (event.key === "Shift" || event.key === metaOrCtrlKey) {
-      store.commit("canvas/setIsMoveLocked", false);
+      setIsMoveLocked(false);
     }
   };
 
@@ -98,22 +103,15 @@ export const usePanning = (options: UsePanningOptions) => {
   let initialRightClickPosition: [number, number] = [0, 0];
   let elemScroll: [number, number] = [0, 0];
 
-  const store = useStore();
-
-  const hasPanModeEnabled = computed(
-    () => store.getters["application/hasPanModeEnabled"],
-  );
-
-  const interactionsEnabled = computed(
-    () => store.state.canvas.interactionsEnabled,
-  );
-
-  const isWorkflowEmpty = computed(
-    () => store.getters["workflow/isWorkflowEmpty"],
-  );
+  const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
+  const canvasStore = useCanvasStore();
+  const { interactionsEnabled } = storeToRefs(canvasStore);
+  const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
+  const { settings } = storeToRefs(useSettingsStore());
+  const { toggleContextMenu } = useApplicationStore();
 
   const beginPan = (event: PointerEvent) => {
-    store.dispatch("canvas/focus");
+    canvasStore.focus();
 
     if (!interactionsEnabled.value || isWorkflowEmpty.value) {
       return;
@@ -160,8 +158,8 @@ export const usePanning = (options: UsePanningOptions) => {
       // the factor is currently only known in desktop mode
       runInEnvironment({
         DESKTOP: () => {
-          delta[0] /= store.state.settings.settings.uiScale;
-          delta[1] /= store.state.settings.settings.uiScale;
+          delta[0] /= settings.value.uiScale;
+          delta[1] /= settings.value.uiScale;
         },
       });
 
@@ -201,7 +199,7 @@ export const usePanning = (options: UsePanningOptions) => {
   const stopPan = (event: PointerEvent) => {
     // user is not panning but did right-clicked
     if (!isPanning.value && isHoldingDownRightClick.value) {
-      store.dispatch("application/toggleContextMenu", {
+      toggleContextMenu({
         event,
         deselectAllObjects: true,
       });
@@ -238,7 +236,7 @@ export const usePanning = (options: UsePanningOptions) => {
     isHoldingDownSpace.value = false;
 
     // unset move-lock state
-    store.commit("canvas/setIsMoveLocked", false);
+    canvasStore.setIsMoveLocked(false);
   };
 
   onMounted(() => {

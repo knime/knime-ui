@@ -7,7 +7,7 @@ import { MenuItems, SearchInput } from "@knime/components";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import PortTypeMenu from "../PortTypeMenu.vue";
 
 describe("PortTypeMenu.vue", () => {
@@ -21,38 +21,29 @@ describe("PortTypeMenu.vue", () => {
       portGroups: null,
     };
 
-    const storeConfig = {
-      canvas: {
-        state: {
-          zoomFactor: 1,
-        },
-      },
-      application: {
-        state: {
-          availablePortTypes: {
-            flowVariable: { name: "Flow Variable", color: "red" },
-            table: { name: "Table", color: "black" },
-            "suggested-1": { name: "Suggested 1", color: "green" },
-            "suggested-2": { name: "Suggested 2", color: "brown" },
-          },
-          suggestedPortTypes: ["suggested-1", "suggested-2"],
-        },
-      },
-    };
-
     const FloatingMenuStub = {
       template: "<div><slot /></div>",
       props: FloatingMenu.props,
     };
 
-    const $store = mockVuexStore(storeConfig);
+    const mockedStores = mockStores();
+    mockedStores.applicationStore.availablePortTypes = {
+      flowVariable: { name: "Flow Variable", color: "red" },
+      table: { name: "Table", color: "black" },
+      "suggested-1": { name: "Suggested 1", color: "green" },
+      "suggested-2": { name: "Suggested 2", color: "brown" },
+    };
+    mockedStores.applicationStore.suggestedPortTypes = [
+      "suggested-1",
+      "suggested-2",
+    ];
 
     // attachTo document body so that focus works
     const wrapper = mount(PortTypeMenu, {
       props: { ...defaultProps, ...props },
       attachTo: document.body,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: { $shapes, $colors },
         stubs: {
           FloatingMenu: FloatingMenuStub,
@@ -60,14 +51,14 @@ describe("PortTypeMenu.vue", () => {
       },
     });
 
-    return { wrapper, FloatingMenuStub, $store };
+    return { wrapper, FloatingMenuStub, mockedStores };
   };
 
   describe("menu", () => {
     it("re-emits menu-close", () => {
       const { wrapper, FloatingMenuStub } = doMount();
 
-      wrapper.findComponent(FloatingMenuStub).vm.$emit("menu-close");
+      wrapper.findComponent(FloatingMenuStub).vm.$emit("menuClose");
       expect(wrapper.emitted("menuClose")).toBeTruthy();
     });
 
@@ -91,9 +82,9 @@ describe("PortTypeMenu.vue", () => {
       });
 
       it("moves header for bigger zoom levels", async () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
-        $store.state.canvas.zoomFactor = 2;
+        mockedStores.canvasStore.zoomFactor = 2;
         await nextTick();
 
         let header = wrapper.find(".header");
@@ -103,9 +94,9 @@ describe("PortTypeMenu.vue", () => {
       });
 
       it("doesnt move header for smaller zoom levels", async () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
-        $store.state.canvas.zoomFactor = 0.5;
+        mockedStores.canvasStore.zoomFactor = 0.5;
         await nextTick();
 
         let header = wrapper.find(".header");
@@ -141,9 +132,9 @@ describe("PortTypeMenu.vue", () => {
       });
 
       it("50% zoom, no vertical shift", async () => {
-        const { wrapper, $store, FloatingMenuStub } = doMount();
+        const { wrapper, mockedStores, FloatingMenuStub } = doMount();
 
-        $store.state.canvas.zoomFactor = 0.5;
+        mockedStores.canvasStore.zoomFactor = 0.5;
         await nextTick();
 
         let floatingMenu = wrapper.findComponent(FloatingMenuStub);
@@ -154,9 +145,9 @@ describe("PortTypeMenu.vue", () => {
       });
 
       it("200% zoom, vertical shift", async () => {
-        const { wrapper, $store, FloatingMenuStub } = doMount();
+        const { wrapper, mockedStores, FloatingMenuStub } = doMount();
 
-        $store.state.canvas.zoomFactor = 2;
+        mockedStores.canvasStore.zoomFactor = 2;
         await nextTick();
 
         let floatingMenu = wrapper.findComponent(FloatingMenuStub);
@@ -460,9 +451,9 @@ describe("PortTypeMenu.vue", () => {
     it("should add title for ports with long names", async () => {
       const longName =
         "A port that has an extremely long and verbose name which the user likely will not see";
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
-      $store.state.application.availablePortTypes.long = {
+      mockedStores.applicationStore.availablePortTypes.long = {
         name: longName,
         color: "black",
       };

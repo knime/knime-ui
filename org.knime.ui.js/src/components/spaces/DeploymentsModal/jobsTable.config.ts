@@ -1,10 +1,9 @@
-import type { Store } from "vuex";
-
 import { columnTypes } from "@knime/knime-ui-table";
 import { caseFormatter } from "@knime/utils";
 
-import type { RootStoreState } from "@/store/types";
+import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { formatTime } from "@/util/time";
+
 
 export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 
@@ -96,11 +95,8 @@ export const jobSubMenuItems = [
   {
     name: "save",
     text: "Save as workflow",
-    callback: (
-      row: { id: string; name: string },
-      context: { $store: Store<RootStoreState> },
-    ) => {
-      context.$store.dispatch("spaces/saveJobAsWorkflow", {
+    callback: (row: { id: string; name: string }) => {
+      useDeploymentsStore().saveJobAsWorkflow({
         jobId: row.id,
         jobName: row.name,
       });
@@ -109,13 +105,10 @@ export const jobSubMenuItems = [
   {
     name: "delete",
     text: "Delete",
-    callback: (
-      row: { id: string; schedulerId?: string },
-      context: { $store: Store<RootStoreState> },
-    ) => {
-      context.$store.dispatch("spaces/deleteJob", {
+    callback: (row: { id: string; schedulerId?: string }) => {
+      useDeploymentsStore().deleteJob({
         jobId: row.id,
-        schedulerId: row.schedulerId ? row.schedulerId : null,
+        schedulerId: row.schedulerId ? row.schedulerId : "",
       });
     },
   },

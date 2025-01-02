@@ -10,9 +10,10 @@ import PlusIcon from "@knime/styles/img/icons/node-stack.svg";
 import MetainfoIcon from "@/assets/metainfo.svg";
 import WorkflowMonitorIcon from "@/assets/workflow-monitor-icon.svg";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
-import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
 import { TABS, type TabValues } from "@/store/panel";
+import { usePanelStore } from "@/store/panel";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 import LeftCollapsiblePanel from "./LeftCollapsiblePanel.vue";
 import SidebarContentLoading from "./SidebarContentLoading.vue";
@@ -60,37 +61,14 @@ const WorkflowMonitor = defineAsyncComponent({
   loadingComponent: SidebarContentLoading,
 });
 
-const store = useStore();
-const expanded = computed(() => store.state.panel.expanded);
-const isExtensionPanelOpen = computed(
-  () => store.state.panel.isExtensionPanelOpen,
-);
-
-const uiControls = computed(() => store.state.uiControls);
-
-const isWorkflowEmpty = computed(
-  () => store.getters["workflow/isWorkflowEmpty"],
-);
-
-watch(
-  isWorkflowEmpty,
-  () => {
-    if (isWorkflowEmpty.value) {
-      store.dispatch("panel/setCurrentProjectActiveTab", TABS.NODE_REPOSITORY);
-    }
-  },
-  { immediate: true },
-);
-
-const isTabActive = computed<(tabName: TabValues) => boolean>(
-  () => store.getters["panel/isTabActive"],
-);
+const panelStore = usePanelStore();
+const uiControls = useUIControlsStore();
 
 const { createHint } = useHint();
 
 const hintIds = HINTS;
 
-const hintIsVisibleCondition = computed(() => !isTabActive.value("kai"));
+const hintIsVisibleCondition = computed(() => !panelStore.isTabActive("kai"));
 
 onMounted(() => {
   createHint({
@@ -101,19 +79,19 @@ onMounted(() => {
 });
 
 const activateSection = (tabName: TabValues) => {
-  const isAlreadyActive = isTabActive.value(tabName);
-  if (isAlreadyActive && expanded.value) {
-    store.commit("panel/closePanel");
+  const isAlreadyActive = panelStore.isTabActive(tabName);
+  if (isAlreadyActive && panelStore.expanded) {
+    panelStore.closePanel();
   } else {
-    store.dispatch("panel/setCurrentProjectActiveTab", tabName);
+    panelStore.setCurrentProjectActiveTab(tabName);
   }
 
-  store.dispatch("panel/closeExtensionPanel");
+  panelStore.closeExtensionPanel();
 };
 
 const { isKaiEnabled } = useIsKaiEnabled();
 watch(isKaiEnabled, (enabled) => {
-  if (!enabled && isTabActive.value(TABS.KAI)) {
+  if (!enabled && panelStore.isTabActive(TABS.KAI)) {
     // We switch over to the "Info" tab if K-AI gets disabled while the "K-AI" tab is active
     activateSection(TABS.CONTEXT_AWARE_DESCRIPTION);
   }
@@ -125,38 +103,38 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       name: TABS.CONTEXT_AWARE_DESCRIPTION,
       title: "Info",
       icon: MetainfoIcon,
-      isActive: isTabActive.value(TABS.CONTEXT_AWARE_DESCRIPTION),
-      isExpanded: expanded.value,
+      isActive: panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
+      isExpanded: panelStore.expanded,
       onClick: () => activateSection(TABS.CONTEXT_AWARE_DESCRIPTION),
     },
 
-    ...registerSidebarSection(uiControls.value.canAccessNodeRepository, {
+    ...registerSidebarSection(uiControls.canAccessNodeRepository, {
       name: TABS.NODE_REPOSITORY,
       title: "Nodes",
       icon: PlusIcon,
-      isActive: isTabActive.value(TABS.NODE_REPOSITORY),
-      isExpanded: expanded.value,
+      isActive: panelStore.isTabActive(TABS.NODE_REPOSITORY),
+      isExpanded: panelStore.expanded,
       onClick: () => activateSection(TABS.NODE_REPOSITORY),
     }),
 
-    ...registerSidebarSection(uiControls.value.canAccessSpaceExplorer, {
+    ...registerSidebarSection(uiControls.canAccessSpaceExplorer, {
       name: TABS.SPACE_EXPLORER,
       title: "Explorer",
       icon: CubeIcon,
-      isActive: isTabActive.value(TABS.SPACE_EXPLORER),
-      isExpanded: expanded.value,
+      isActive: panelStore.isTabActive(TABS.SPACE_EXPLORER),
+      isExpanded: panelStore.expanded,
       onClick: () => activateSection(TABS.SPACE_EXPLORER),
     }),
 
     ...registerSidebarSection(
-      isKaiEnabled.value && uiControls.value.canAccessKAIPanel,
+      isKaiEnabled.value && uiControls.canAccessKAIPanel,
       {
         name: TABS.KAI,
         title: "K-AI",
         icon: AiIcon,
         classes: ["k-ai-tab"],
-        isActive: isTabActive.value(TABS.KAI),
-        isExpanded: expanded.value,
+        isActive: panelStore.isTabActive(TABS.KAI),
+        isExpanded: panelStore.expanded,
         onClick: () => activateSection(TABS.KAI),
       },
     ),
@@ -165,8 +143,8 @@ const sidebarSections = computed<Array<SidebarSection>>(() => {
       name: TABS.WORKFLOW_MONITOR,
       title: "Monitor",
       icon: WorkflowMonitorIcon,
-      isActive: isTabActive.value(TABS.WORKFLOW_MONITOR),
-      isExpanded: expanded.value,
+      isActive: panelStore.isTabActive(TABS.WORKFLOW_MONITOR),
+      isExpanded: panelStore.expanded,
       onClick: () => activateSection(TABS.WORKFLOW_MONITOR),
     },
   ];
@@ -211,37 +189,37 @@ const hasSection = (name: TabValues) => {
       id="left-panel"
       width="360px"
       title="Open sidebar"
-      :expanded="expanded"
-      :disabled="isExtensionPanelOpen"
-      @toggle-expand="store.commit('panel/toggleExpanded')"
+      :expanded="panelStore.expanded"
+      :disabled="panelStore.isExtensionPanelOpen"
+      @toggle-expand="panelStore.toggleExpanded()"
     >
       <span>
         <ContextAwareDescription
           v-if="hasSection(TABS.CONTEXT_AWARE_DESCRIPTION)"
-          v-show="isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
+          v-show="panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
         />
 
         <NodeRepository
           v-if="
             hasSection(TABS.NODE_REPOSITORY) &&
-            isTabActive(TABS.NODE_REPOSITORY)
+            panelStore.isTabActive(TABS.NODE_REPOSITORY)
           "
-          v-show="isTabActive(TABS.NODE_REPOSITORY)"
+          v-show="panelStore.isTabActive(TABS.NODE_REPOSITORY)"
         />
 
         <SidebarSpaceExplorer
           v-if="hasSection(TABS.SPACE_EXPLORER)"
-          v-show="isTabActive(TABS.SPACE_EXPLORER)"
+          v-show="panelStore.isTabActive(TABS.SPACE_EXPLORER)"
         />
 
         <KaiSidebar
           v-if="hasSection(TABS.KAI)"
-          v-show="isTabActive(TABS.KAI)"
+          v-show="panelStore.isTabActive(TABS.KAI)"
         />
 
         <WorkflowMonitor
           v-if="hasSection(TABS.WORKFLOW_MONITOR)"
-          v-show="isTabActive(TABS.WORKFLOW_MONITOR)"
+          v-show="panelStore.isTabActive(TABS.WORKFLOW_MONITOR)"
         />
       </span>
     </LeftCollapsiblePanel>

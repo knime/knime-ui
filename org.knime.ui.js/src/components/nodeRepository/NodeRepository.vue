@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
 import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResults.vue";
-import { useStore } from "@/composables/useStore";
-import { TABS } from "@/store/panel";
+import { useApplicationStore } from "@/store/application/application";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import { TABS, usePanelStore } from "@/store/panel";
+import { useSettingsStore } from "@/store/settings";
 
 import CategoryTree from "./CategoryTree.vue";
 import type { NavigationKey } from "./NodeList.vue";
@@ -15,69 +19,59 @@ import TagResults from "./TagResults.vue";
 
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
-const store = useStore();
-const nodesPerTag = computed(() => store.state.nodeRepository.nodesPerTag);
-const showDescriptionForNode = computed(
-  () => store.state.nodeRepository.showDescriptionForNode,
-);
-const searchIsActive = computed(
-  () => store.getters["nodeRepository/searchIsActive"],
-);
+const nodeRepositoryStore = useNodeRepositoryStore();
+const { nodesPerTag, showDescriptionForNode, searchIsActive } =
+  storeToRefs(nodeRepositoryStore);
 
 const categoryTree = ref<InstanceType<typeof CategoryTree>>();
 
 const displayMode = computed(
-  () => store.state.settings.settings.nodeRepositoryDisplayMode,
+  () => useSettingsStore().settings.nodeRepositoryDisplayMode,
 );
 
 const isNodeVisible = computed(() => {
-  return store.getters["nodeRepository/isNodeVisible"](
-    showDescriptionForNode.value?.id,
+  return (
+    showDescriptionForNode.value &&
+    nodeRepositoryStore.isNodeVisible(showDescriptionForNode.value.id)
   );
 });
 
-const activeProjectId = computed(() => store.state.application.activeProjectId);
-const nodeRepositoryLoaded = computed(
-  () => store.state.application.nodeRepositoryLoaded,
-);
-const nodeRepositoryLoadingProgress = computed(
-  () => store.state.application.nodeRepositoryLoadingProgress,
-);
-const activeTab = computed(() => store.state.panel.activeTab);
+const { activeProjectId, nodeRepositoryLoaded, nodeRepositoryLoadingProgress } =
+  storeToRefs(useApplicationStore());
+
+const panelStore = usePanelStore();
+const { activeTab, isExtensionPanelOpen } = storeToRefs(panelStore);
 const isNodeRepositoryTabActive = computed(() => {
   return (
     activeProjectId.value &&
     activeTab.value[activeProjectId.value] === TABS.NODE_REPOSITORY
   );
 });
-const isExtensionPanelOpen = computed(
-  () => store.state.panel.isExtensionPanelOpen,
-);
 
 defineEmits<{
-  (e: "navReachedTop"): void;
+  navReachedTop: [];
 }>();
 
 watch(isExtensionPanelOpen, (isOpen) => {
   if (!isOpen) {
     setTimeout(() => {
-      store.commit("nodeRepository/setShowDescriptionForNode", null);
+      nodeRepositoryStore.setShowDescriptionForNode(null);
     }, DESELECT_NODE_DELAY);
   }
 });
 
 watch(nodeRepositoryLoaded, (isLoaded, wasLoaded) => {
   if (isLoaded === true && wasLoaded === false && !nodesPerTag.value.length) {
-    store.dispatch("nodeRepository/getAllNodes", { append: false });
+    nodeRepositoryStore.getAllNodes({ append: false });
   }
 });
 
-onMounted(() => {
-  store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
+onMounted(async () => {
+  await useLifecycleStore().subscribeToNodeRepositoryLoadingEvent();
 
   // load all nodes for the tag view if we have the data otherwise this is done when the repo is loaded
   if (nodeRepositoryLoaded.value && !nodesPerTag.value.length) {
-    store.dispatch("nodeRepository/getAllNodes", { append: false });
+    nodeRepositoryStore.getAllNodes({ append: false });
   }
 });
 
@@ -89,12 +83,12 @@ const toggleNodeDescription = ({
   nodeTemplate: NodeTemplateWithExtendedPorts;
 }) => {
   if (!isDescriptionActive || !isExtensionPanelOpen.value) {
-    store.dispatch("panel/openExtensionPanel");
-    store.commit("nodeRepository/setShowDescriptionForNode", nodeTemplate);
+    panelStore.openExtensionPanel();
+    nodeRepositoryStore.setShowDescriptionForNode(nodeTemplate);
     return;
   }
 
-  store.dispatch("panel/closeExtensionPanel");
+  panelStore.closeExtensionPanel();
 };
 
 const header = ref<InstanceType<typeof NodeRepositoryHeader>>();
@@ -170,7 +164,7 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
         <NodeDescription
           show-close-button
           :params="isNodeVisible ? showDescriptionForNode : null"
-          @close="store.dispatch('panel/closeExtensionPanel')"
+          @close="panelStore.closeExtensionPanel"
         />
       </Transition>
     </Portal>

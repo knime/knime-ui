@@ -1,5 +1,8 @@
 <script>
-import { mapGetters, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
+
+import { useCanvasStore } from "@/store/canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import Tooltip from "./Tooltip.vue";
 
@@ -18,13 +21,12 @@ export default {
     position: null,
   }),
   computed: {
-    ...mapState("workflow", ["tooltip"]),
-    ...mapState("canvas", ["zoomFactor"]),
-    ...mapGetters("canvas", ["screenFromCanvasCoordinates"]),
+    ...mapState(useWorkflowStore, ["tooltip"]),
+    ...mapState(useCanvasStore, ["zoomFactor", "screenFromCanvasCoordinates"]),
     /*
-            The gap has to grow with the zoomFactor.
-            Using the square root gives a more appropriate visual impression for larger factors
-        */
+      The gap has to grow with the zoomFactor.
+      Using the square root gives a more appropriate visual impression for larger factors
+    */
     zoomedGap() {
       return Math.sqrt(this.zoomFactor) * (this.tooltip.gap || 0);
     },
@@ -44,6 +46,7 @@ export default {
     this.closeTooltip();
   },
   methods: {
+    ...mapActions(useWorkflowStore, ["setTooltip"]),
     setPosition() {
       if (!this.tooltip) {
         this.position = null;
@@ -72,7 +75,7 @@ export default {
     },
     onMouseLeave() {
       // trigger closing tooltip
-      this.$store.commit("workflow/setTooltip", null);
+      this.setTooltip(null);
     },
     onCanvasScroll() {
       consola.trace("scrolling canvas while tooltip is open");

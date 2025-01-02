@@ -1,28 +1,29 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 import { useRoute } from "vue-router";
 
 import { FunctionButton } from "@knime/components";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { NavMenuItem } from "@/components/common/side-nav";
 import { APP_ROUTES } from "@/router/appRoutes";
-import * as spacesStore from "@/store/spaces";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import SpacePageNavItems from "../SpacePageNavItems.vue";
 
 const routerPush = vi.fn();
 
 const mockedAPI = deepMocked(API);
 
-vi.mock("vue-router", () => ({
+vi.mock("vue-router", async (importOriginal) => ({
+  ...(await importOriginal()),
   useRouter: vi.fn(() => ({ push: routerPush })),
   useRoute: vi.fn(() => {}),
 }));
@@ -84,27 +85,24 @@ describe("SpacePageNavItems.vue", () => {
       },
     }));
 
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-    });
+    const mockedStores = mockStores();
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-
-    $store.commit("spaces/setSpaceProviders", {
+    mockedStores.spaceProvidersStore.setSpaceProviders({
+      // copy data to not mutate global variables
       [localProvider.id]: { ...localProvider },
       [hubProvider1.id]: { ...hubProvider1 },
       [hubProvider2.id]: { ...hubProvider2 },
       [serverProvider.id]: { ...serverProvider },
     });
-    $store.state.spaces.hasLoadedProviders = true;
+    mockedStores.spaceProvidersStore.hasLoadedProviders = true;
 
     const wrapper = mount(SpacePageNavItems, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, mockedStores };
   };
 
   const getMenuItemByDataTestId = (
@@ -198,12 +196,12 @@ describe("SpacePageNavItems.vue", () => {
         spaceGroups: [spaceGroup2],
       });
 
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       getMenuItemByDataTestId(wrapper, hubProvider2.id).vm.$emit("click");
       await flushPromises();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
+      expect(mockedStores.spaceAuthStore.connectProvider).toHaveBeenCalledWith({
         spaceProviderId: hubProvider2.id,
       });
 
@@ -244,7 +242,7 @@ describe("SpacePageNavItems.vue", () => {
 
     describe("logout button", () => {
       it("should show for correct providers", async () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
         const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
         const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
@@ -256,13 +254,15 @@ describe("SpacePageNavItems.vue", () => {
         expect(thirdItem.findComponent(FunctionButton).exists()).toBe(false);
         expect(fourthItem.findComponent(FunctionButton).exists()).toBe(false);
 
-        $store.state.spaces.spaceProviders[hubProvider1.id].connected = false;
+        mockedStores.spaceProvidersStore.spaceProviders![
+          hubProvider1.id
+        ].connected = false;
         await nextTick();
         expect(secondItem.findComponent(FunctionButton).exists()).toBe(false);
       });
 
       it("should hide logout button when provider data is loading", async () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
         const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
         const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
@@ -274,7 +274,9 @@ describe("SpacePageNavItems.vue", () => {
         expect(thirdItem.findComponent(FunctionButton).exists()).toBe(false);
         expect(fourthItem.findComponent(FunctionButton).exists()).toBe(false);
 
-        $store.state.spaces.loadingProviderSpacesData[hubProvider1.id] = true;
+        mockedStores.spaceProvidersStore.loadingProviderSpacesData[
+          hubProvider1.id
+        ] = true;
         await nextTick();
         expect(secondItem.findComponent(FunctionButton).exists()).toBe(false);
       });
@@ -282,14 +284,16 @@ describe("SpacePageNavItems.vue", () => {
 
     describe("loading state", () => {
       it("should show when provider data is loading", async () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
         const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
         const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
         const thirdItem = getMenuItemByDataTestId(wrapper, spaceGroup1.id);
         const fourthItem = getMenuItemByDataTestId(wrapper, hubProvider2.id);
 
-        $store.state.spaces.loadingProviderSpacesData[hubProvider1.id] = true;
+        mockedStores.spaceProvidersStore.loadingProviderSpacesData[
+          hubProvider1.id
+        ] = true;
         await nextTick();
 
         expect(firstItem.find(".loading-indicator").exists()).toBe(false);
@@ -297,7 +301,9 @@ describe("SpacePageNavItems.vue", () => {
         expect(thirdItem.find(".loading-indicator").exists()).toBe(false);
         expect(fourthItem.find(".loading-indicator").exists()).toBe(false);
 
-        $store.state.spaces.loadingProviderSpacesData[hubProvider1.id] = false;
+        mockedStores.spaceProvidersStore.loadingProviderSpacesData[
+          hubProvider1.id
+        ] = false;
         await nextTick();
 
         expect(firstItem.find(".loading-indicator").exists()).toBe(false);
@@ -307,14 +313,15 @@ describe("SpacePageNavItems.vue", () => {
       });
 
       it("should show when provider is connecting", async () => {
-        const { wrapper, $store } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
         const firstItem = getMenuItemByDataTestId(wrapper, localProvider.id);
         const secondItem = getMenuItemByDataTestId(wrapper, hubProvider1.id);
         const thirdItem = getMenuItemByDataTestId(wrapper, spaceGroup1.id);
         const fourthItem = getMenuItemByDataTestId(wrapper, hubProvider2.id);
 
-        $store.state.spaces.isConnectingToProvider = hubProvider1.id;
+        mockedStores.spaceProvidersStore.isConnectingToProvider =
+          hubProvider1.id;
         await nextTick();
 
         expect(firstItem.find(".loading-indicator").exists()).toBe(false);
@@ -322,7 +329,7 @@ describe("SpacePageNavItems.vue", () => {
         expect(thirdItem.find(".loading-indicator").exists()).toBe(false);
         expect(fourthItem.find(".loading-indicator").exists()).toBe(false);
 
-        $store.state.spaces.isConnectingToProvider = null;
+        mockedStores.spaceProvidersStore.isConnectingToProvider = null;
         await nextTick();
 
         expect(firstItem.find(".loading-indicator").exists()).toBe(false);

@@ -2,15 +2,12 @@
  * Util functions for handling and manipulating NodePorts port selection
  */
 
-import type { Store } from "vuex";
-
 import type { KnimeNode } from "@/api/custom-types";
 import type {
   ComponentNode,
   MetaNodePort,
   NodePort,
 } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "@/store/types";
 
 export type SelectedPortIdentifier =
   | `${"input" | "output"}-${number | "AddPort"}`
@@ -39,16 +36,15 @@ export const getPortContext = (
 };
 
 const canAddPort = (
-  store: Store<RootStoreState>,
   node: KnimeNode,
+  isWorkflowWritable: boolean,
 ): { input: boolean; output: boolean } => {
   const isComponent = node.kind === "component";
   const isMetanode = node.kind === "metanode";
-  const isWritable = store.getters["workflow/isWritable"];
   const isLink = isComponent && (node as ComponentNode).link;
   const isExecuting = node.state?.executionState === "EXECUTING";
 
-  const isEditable = isWritable && !isLink && !isExecuting;
+  const isEditable = isWorkflowWritable && !isLink && !isExecuting;
   if (!isEditable) {
     return { input: false, output: false };
   }
@@ -70,9 +66,9 @@ const canAddPort = (
 };
 
 const getFirstSelectedSidePort = (
-  store: Store<RootStoreState>,
   node: KnimeNode,
   side: PortSide,
+  isWorkflowWritable: boolean,
 ): SelectedPortIdentifier => {
   const minIndex = node.kind === "metanode" ? 0 : 1;
   const sidePorts = side === "input" ? node.inPorts : node.outPorts;
@@ -81,7 +77,7 @@ const getFirstSelectedSidePort = (
     return `${side}-${minIndex}`;
   }
 
-  if (canAddPort(store, node)[side]) {
+  if (canAddPort(node, isWorkflowWritable)[side]) {
     return `${side}-AddPort`;
   }
 
@@ -89,22 +85,22 @@ const getFirstSelectedSidePort = (
 };
 
 const getInitialSelectedPort = (
-  store: Store<RootStoreState>,
   node: KnimeNode,
+  isWorkflowWritable: boolean,
 ): SelectedPortIdentifier => {
   return (
-    getFirstSelectedSidePort(store, node, "output") ||
-    getFirstSelectedSidePort(store, node, "input")
+    getFirstSelectedSidePort(node, "output", isWorkflowWritable) ||
+    getFirstSelectedSidePort(node, "input", isWorkflowWritable)
   );
 };
 
 export const getNextSelectedPort = (
-  store: Store<RootStoreState>,
   node: KnimeNode,
   selectedPort: SelectedPortIdentifier,
+  isWorkflowWritable: boolean,
 ): SelectedPortIdentifier => {
   if (!selectedPort) {
-    return getInitialSelectedPort(store, node);
+    return getInitialSelectedPort(node, isWorkflowWritable);
   }
 
   const current = getPortContext(node, selectedPort);
@@ -115,14 +111,14 @@ export const getNextSelectedPort = (
 
   if (
     current.index === current.sidePorts.length - 1 &&
-    canAddPort(store, node)[current.side]
+    canAddPort(node, isWorkflowWritable)[current.side]
   ) {
     return `${current.side}-AddPort`;
   }
 
   const otherSide = current.side === "input" ? "output" : "input";
   return (
-    getFirstSelectedSidePort(store, node, otherSide) ||
-    getFirstSelectedSidePort(store, node, current.side)
+    getFirstSelectedSidePort(node, otherSide, isWorkflowWritable) ||
+    getFirstSelectedSidePort(node, current.side, isWorkflowWritable)
   );
 };

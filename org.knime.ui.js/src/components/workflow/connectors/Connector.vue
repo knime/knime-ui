@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, toRefs, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/composables/useMoveObject";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId } from "@/util/connectorUtil";
 
 import ConnectorBendpoint from "./ConnectorBendpoint.vue";
@@ -26,21 +32,23 @@ const props = withDefaults(defineProps<ConnectorProps>(), {
   bendpoints: () => [],
 });
 
-const store = useStore();
+const { isDragging } = storeToRefs(useMovingStore());
+const selectionStore = useSelectionStore();
+const {
+  isNodeSelected,
+  isConnectionSelected,
+  isBendpointSelected,
+  singleSelectedNode,
+  getSelectedConnections: selectedConnections,
+} = storeToRefs(selectionStore);
+const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
+const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+const { toggleContextMenu } = useApplicationStore();
+const { addVirtualBendpoint, addBendpoint } = useConnectionInteractionsStore();
+
 const suggestDelete = ref(false);
 
 const isHovered = ref(false);
-const isDragging = computed(() => store.state.workflow.isDragging);
-
-const isNodeSelected = computed(
-  () => store.getters["selection/isNodeSelected"],
-);
-const isConnectionSelected = computed(
-  () => store.getters["selection/isConnectionSelected"],
-);
-const isBendpointSelected = computed(
-  () => store.getters["selection/isBendpointSelected"],
-);
 
 const {
   sourceNode,
@@ -62,12 +70,10 @@ const { pathSegments } = useConnectorPathSegments({
   bendpoints,
 });
 
-const isWorkflowWritable = computed(() => store.getters["workflow/isWritable"]);
-
 const sourceAndDestinationSelected = computed(() => {
   return (
-    isNodeSelected.value(sourceNode.value) &&
-    isNodeSelected.value(destNode.value)
+    isNodeSelected.value(sourceNode.value ?? "") &&
+    isNodeSelected.value(destNode.value ?? "")
   );
 });
 
@@ -78,29 +84,18 @@ watch(sourceAndDestinationSelected, (value) => {
       .map((_, i) => getBendpointId(props.id, i));
 
     if (bendpoints.every((id) => !isBendpointSelected.value(id))) {
-      store.dispatch("selection/selectBendpoints", bendpoints);
+      selectionStore.selectBendpoints(bendpoints);
     }
   }
 });
-
-const singleSelectedNode = computed(
-  () => store.getters["selection/singleSelectedNode"],
-);
-const selectedConnections = computed(
-  () => store.getters["selection/selectedConnections"],
-);
-
-const screenToCanvasCoordinates = computed(
-  () => store.getters["canvas/screenToCanvasCoordinates"],
-);
 
 const isHighlighted = computed(() => {
   // if only one node and no connections are selected, highlight the connections from and to that node
   return (
     Boolean(singleSelectedNode.value) &&
     selectedConnections.value.length === 0 &&
-    (isNodeSelected.value(props.sourceNode) ||
-      isNodeSelected.value(props.destNode))
+    (isNodeSelected.value(props.sourceNode ?? "") ||
+      isNodeSelected.value(props.destNode ?? ""))
   );
 });
 
@@ -124,19 +119,20 @@ const isMultiselect = (event: MouseEvent | PointerEvent) =>
 
 const onConnectionSegmentClick = (event: MouseEvent) => {
   if (!isMultiselect(event)) {
-    store.dispatch("selection/deselectAllObjects");
+    selectionStore.deselectAllObjects();
   }
 
   const action = isConnectionSelected.value(props.id)
-    ? "deselectConnection"
-    : "selectConnection";
-  store.dispatch(`selection/${action}`, props.id);
+    ? selectionStore.deselectConnection
+    : selectionStore.selectConnection;
+
+  action(props.id);
 };
 
 const onContextMenu = (event: MouseEvent) => {
   // right click should work same as left click
   onConnectionSegmentClick(event);
-  store.dispatch("application/toggleContextMenu", { event });
+  toggleContextMenu({ event });
 };
 
 const onNodeDragLeave = () => {
@@ -146,7 +142,7 @@ const onNodeDragLeave = () => {
 const virtualBendpoint = ref<{ index: number; position: XY } | null>(null);
 const itemRefs = ref<{ $el: HTMLElement }[]>([]);
 
-const onVirtualBendpointAdded = async ({
+const onVirtualBendpointAdded = ({
   position,
   index,
   event,
@@ -155,7 +151,7 @@ const onVirtualBendpointAdded = async ({
   index: number;
   event: PointerEvent;
 }) => {
-  await store.dispatch("workflow/addVirtualBendpoint", {
+  addVirtualBendpoint({
     position,
     connectionId: props.id,
     index,
@@ -189,7 +185,7 @@ const { createPointerDownHandler } = useMoveObject({
   useGridSnapping: false,
   onMoveEndCallback: () => {
     if (virtualBendpoint.value) {
-      store.dispatch("workflow/addBendpoint", {
+      addBendpoint({
         connectionId: props.id,
         position: virtualBendpoint.value.position,
         index: virtualBendpoint.value.index,
@@ -213,12 +209,10 @@ const onBendpointPointerdown = (
   }
 
   const bendpointId = getBendpointId(props.id, index - 1);
-  if (
-    !isBendpointSelected.value(bendpointId, props.sourceNode, props.destNode)
-  ) {
-    store.dispatch("selection/deselectAllObjects");
+  if (!isBendpointSelected.value(bendpointId)) {
+    selectionStore.deselectAllObjects();
   }
-  store.dispatch("selection/selectBendpoint", bendpointId);
+  selectionStore.selectBendpoint(bendpointId);
 
   const handler = createPointerDownHandler(computed(() => position));
   handler(event);
@@ -232,17 +226,14 @@ const onBendpointClick = (event: MouseEvent, index: number) => {
   const bendpointId = getBendpointId(props.id, index - 1);
 
   if (isMultiselect(event)) {
-    const action = isBendpointSelected.value(
-      bendpointId,
-      props.sourceNode,
-      props.destNode,
-    )
-      ? "deselect"
-      : "select";
-    store.dispatch(`selection/${action}Bendpoint`, bendpointId);
+    const action = isBendpointSelected.value(bendpointId)
+      ? selectionStore.deselectBendpoint
+      : selectionStore.selectBendpoint;
+
+    action(bendpointId);
   } else {
-    store.dispatch("selection/deselectAllObjects");
-    store.dispatch("selection/selectBendpoint", bendpointId);
+    selectionStore.deselectAllObjects();
+    selectionStore.selectBendpoint(bendpointId);
   }
 };
 
@@ -264,8 +255,8 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
   const bendpointId = getBendpointId(props.id, index - 1);
 
   hoveredBendpoint.value = index - 1;
-  store.dispatch("selection/selectBendpoint", bendpointId);
-  store.dispatch("application/toggleContextMenu", { event });
+  selectionStore.selectBendpoint(bendpointId);
+  toggleContextMenu({ event });
 };
 </script>
 
@@ -308,13 +299,7 @@ const onBendpointRightClick = (event: PointerEvent, index: number) => {
       <ConnectorBendpoint
         v-if="index !== 0"
         ref="itemRefs"
-        :is-selected="
-          isBendpointSelected(
-            getBendpointId(id, index - 1),
-            sourceNode,
-            destNode,
-          )
-        "
+        :is-selected="isBendpointSelected(getBendpointId(id, index - 1))"
         :is-dragging="isDragging"
         :is-flow-variable-connection="Boolean(flowVariableConnection)"
         :position="pathSegments[index].start"

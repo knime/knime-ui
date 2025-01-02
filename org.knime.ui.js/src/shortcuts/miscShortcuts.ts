@@ -1,6 +1,10 @@
 import LensMinusIcon from "@knime/styles/img/icons/lense-minus.svg";
 import LensPlusIcon from "@knime/styles/img/icons/lense-plus.svg";
 
+import { usePanelStore } from "@/store/panel";
+import { useSelectionStore } from "@/store/selection";
+import { useSettingsStore } from "@/store/settings";
+
 import type { UnionToShortcutRegistry } from "./types";
 
 type SelectionShortcuts = UnionToShortcutRegistry<"selectAll" | "deselectAll">;
@@ -23,13 +27,13 @@ export const selectionShortcuts: SelectionShortcuts = {
     text: "Select all objects",
     hotkey: ["CtrlOrCmd", "A"],
     group: "general",
-    execute: ({ $store }) => $store.dispatch("selection/selectAllObjects"),
+    execute: () => useSelectionStore().selectAllObjects(),
   },
   deselectAll: {
     text: "Deselect all objects",
     hotkey: ["CtrlOrCmd", "Shift", "A"],
     group: "general",
-    execute: ({ $store }) => $store.dispatch("selection/deselectAllObjects"),
+    execute: () => useSelectionStore().deselectAllObjects(),
   },
 };
 
@@ -38,7 +42,7 @@ export const sidePanelShortcuts: SidePanelShortcuts = {
     text: "Hide or show side panel",
     group: "panelNavigation",
     hotkey: ["CtrlOrCmd", "P"],
-    execute: ({ $store }) => $store.commit("panel/toggleExpanded"),
+    execute: () => usePanelStore().toggleExpanded(),
   },
 };
 
@@ -46,17 +50,17 @@ export const uiScaleShortcuts: UiScaleShortcuts = {
   increaseUiScale: {
     text: "Make larger",
     icon: LensPlusIcon,
-    execute: ({ $store }) => $store.dispatch("settings/increaseUiScale"),
+    execute: () => useSettingsStore().increaseUiScale(),
   },
   decreaseUiScale: {
     text: "Make smaller",
     icon: LensMinusIcon,
-    execute: ({ $store }) => $store.dispatch("settings/decreaseUiScale"),
+    execute: () => useSettingsStore().decreaseUiScale(),
   },
   resetUiScale: {
     text: "Reset interface scale",
     hotkey: ["CtrlOrCmd", "Alt", "0"],
     additionalHotkeys: [{ key: ["CtrlOrCmd", "Alt", "0-0"], visible: false }], // range matches Digit0 Key instead of event.code
-    execute: ({ $store }) => $store.dispatch("settings/resetUiScale"),
+    execute: () => useSettingsStore().resetUiScale(),
   },
 };

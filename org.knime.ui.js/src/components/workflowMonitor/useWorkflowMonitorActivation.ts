@@ -1,39 +1,35 @@
-import { computed, watch } from "vue";
+import { watch } from "vue";
 import { debounce } from "lodash-es";
+import { storeToRefs } from "pinia";
 
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
 import { lifecycleBus } from "@/store/application/lifecycle-events";
-import { TABS, type TabValues } from "@/store/panel";
+import { TABS, usePanelStore } from "@/store/panel";
+import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 
 export const useWorkflowMonitorActivation = () => {
-  const store = useStore();
-
-  const isTabActive = computed<(tabName: TabValues) => boolean>(
-    () => store.getters["panel/isTabActive"],
+  const { isTabActive, activeTab: activePanelTab } = storeToRefs(
+    usePanelStore(),
   );
-
-  const activeProjectId = computed(
-    () => store.state.application.activeProjectId,
-  );
+  const { activeProjectId } = storeToRefs(useApplicationStore());
+  const workflowMonitorStore = useWorkflowMonitorStore();
 
   const DEBOUNCE_DELAY_MS = 300;
 
   const toggleWorkflowMonitor = debounce(() => {
     const action = isTabActive.value(TABS.WORKFLOW_MONITOR)
-      ? "activate"
-      : "deactivate";
+      ? workflowMonitorStore.activateWorkflowMonitor
+      : workflowMonitorStore.deactivateWorkflowMonitor;
 
-    store.dispatch(`workflowMonitor/${action}WorkflowMonitor`);
+    action();
   }, DEBOUNCE_DELAY_MS);
 
-  const activePanelTab = computed(() => store.state.panel.activeTab);
-
   watch(activeProjectId, () => {
-    store.dispatch("workflowMonitor/deactivateWorkflowMonitor");
+    workflowMonitorStore.deactivateWorkflowMonitor();
 
     if (isTabActive.value(TABS.WORKFLOW_MONITOR)) {
       lifecycleBus.once("onWorkflowLoaded", () => {
-        store.dispatch("workflowMonitor/activateWorkflowMonitor");
+        workflowMonitorStore.activateWorkflowMonitor();
       });
     }
   });

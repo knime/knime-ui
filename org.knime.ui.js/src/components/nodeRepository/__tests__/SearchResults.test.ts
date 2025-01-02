@@ -3,6 +3,7 @@ import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 
 import * as $colors from "@/style/colors";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeList from "../NodeList.vue";
 import ScrollViewContainer from "../ScrollViewContainer.vue";
 import SearchResults from "../SearchResults.vue";
@@ -54,6 +55,8 @@ describe("SearchResults", () => {
       ...propsOverrides,
     };
 
+    const { testingPinia } = mockStores();
+
     const wrapper = mount(component ?? SearchResults, {
       props,
       global: {
@@ -63,6 +66,7 @@ describe("SearchResults", () => {
             : null,
           DownloadAPButton: true,
         },
+        plugins: [testingPinia],
         mocks: { $colors },
       },
     });

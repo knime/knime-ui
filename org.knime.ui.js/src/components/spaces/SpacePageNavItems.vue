@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
 import { FunctionButton, LoadingIcon } from "@knime/components";
@@ -12,19 +13,17 @@ import {
   NavMenuItem,
   type NavMenuItemProps,
 } from "@/components/common/side-nav";
-import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { isHubProvider } from "@/store/spaces/util";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
 import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
 
-const store = useStore();
+const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 const $router = useRouter();
 const $route = useRoute();
-
-const spaceProviders = computed(() => store.state.spaces.spaceProviders);
 
 const {
   isConnectingToProvider,

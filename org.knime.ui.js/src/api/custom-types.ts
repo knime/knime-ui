@@ -64,7 +64,7 @@ export namespace SpaceProviderNS {
   export import TypeEnum = _SpaceProviderNS.TypeEnum;
 
   export interface Space extends Omit<_Space, "_private"> {
-    private: boolean;
+    private?: boolean;
   }
 
   export interface SpaceGroup extends _SpaceGroup {

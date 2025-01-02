@@ -1,16 +1,21 @@
-<script lang="ts">
-import { defineComponent } from "vue";
-import { mapGetters, mapState } from "vuex";
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { useHint } from "@knime/components";
 import type { Alert } from "@knime/ui-extension-renderer/api";
 
-import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
+import type { KnimeNode } from "@/api/custom-types";
+import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
-import type { ApplicationState } from "@/store/application";
-import type { NodeConfigurationState } from "@/store/nodeConfiguration";
-import type { NodeOutputTabIdentifier } from "@/store/selection";
-import type { WorkflowState } from "@/store/workflow";
+import { useApplicationStore } from "@/store/application/application";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import {
+  type NodeOutputTabIdentifier,
+  useSelectionStore,
+} from "@/store/selection";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { isNativeNode, isNodeMetaNode } from "@/util/nodeUtil";
 
 import LoadingIndicator from "./LoadingIndicator.vue";
 import PortTabs from "./PortTabs.vue";
@@ -22,7 +27,7 @@ import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "./common/utils";
 import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
 import PortViewTabOutput from "./portViews/PortViewTabOutput.vue";
 
-export const runValidationChecks = ({
+const runValidationChecks = ({
   selectedNodes,
 }: {
   selectedNodes: KnimeNode[];
@@ -34,173 +39,160 @@ export const runValidationChecks = ({
   return Object.freeze(result);
 };
 
-interface ComponentData {
-  loadingState: UIExtensionLoadingState | null;
-  currentValidationError: ValidationError | null;
-  currentNodeViewAlert: { alert: Alert; nodeName?: string } | null;
-  EMBEDDED_CONTENT_PANEL_ID__BOTTOM: typeof EMBEDDED_CONTENT_PANEL_ID__BOTTOM;
-}
-
 /**
  * Node output panel, displaying output port selection bar and port view if possible.
  * Port view will be rendered dynamically based on the port type
  */
-export default defineComponent({
-  components: {
-    PortTabs,
-    PortViewTabOutput,
-    NodeViewTabOutput,
-    LoadingIndicator,
-    ValidationInfo,
-    UIExtensionAlertsWrapper,
+
+const { createHint } = useHint();
+const currentValidationError = ref<ValidationError | null>(null);
+const loadingState = ref<UIExtensionLoadingState | null>(null);
+const currentNodeViewAlert = ref<{ alert: Alert; nodeName?: string } | null>(
+  null,
+);
+
+const { activeProjectId: projectId, availablePortTypes } = storeToRefs(
+  useApplicationStore(),
+);
+const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const workflowId = computed(() => activeWorkflow.value!.info.containerId);
+const { timestamp } = storeToRefs(useNodeConfigurationStore());
+const { singleSelectedNode, getSelectedNodes: selectedNodes } = storeToRefs(
+  useSelectionStore(),
+);
+
+const selectedTab = computed({
+  get() {
+    // eslint-disable-next-line no-undefined
+    return useSelectionStore().activePortTab ?? undefined;
   },
-  setup() {
-    const { createHint } = useHint();
-    return { createHint };
-  },
-  data(): ComponentData {
-    return {
-      currentValidationError: null,
-      loadingState: null,
-      currentNodeViewAlert: null,
-      EMBEDDED_CONTENT_PANEL_ID__BOTTOM,
-    };
-  },
-  computed: {
-    ...mapState("application", {
-      projectId: (state: unknown) =>
-        (state as ApplicationState).activeProjectId as string | null,
-      availablePortTypes: (state: unknown) =>
-        (state as ApplicationState).availablePortTypes as AvailablePortTypes,
-    }),
-    ...mapState("workflow", {
-      workflowId: (state: unknown) =>
-        (state as WorkflowState).activeWorkflow!.info.containerId,
-    }),
-    ...mapState("nodeConfiguration", {
-      timestamp: (state: unknown) =>
-        (state as NodeConfigurationState).timestamp,
-    }),
-    ...mapGetters("selection", ["selectedNodes", "singleSelectedNode"]),
-
-    selectedTab: {
-      get() {
-        return this.$store.state.selection.activePortTab;
-      },
-      set(val: NodeOutputTabIdentifier) {
-        this.$store.commit("selection/setActivePortTab", val);
-      },
-    },
-    canSelectTabs() {
-      // allow selecting tabs when:
-      return (
-        // doesn't have errors in the output state
-        !this.currentValidationError ||
-        // or when it doesn't have these specific error types
-        this.currentValidationError.code !== "ALL_PORTS_UNSUPPORTED"
-      );
-    },
-
-    isViewTabSelected() {
-      return this.selectedTab === "view";
-    },
-
-    selectedPortIndex() {
-      // tab values are port indexes if it's not the view tab as string
-      return this.isViewTabSelected ? null : Number(this.selectedTab);
-    },
-
-    selectionValidationError() {
-      const validationResult = runValidationChecks({
-        selectedNodes: this.selectedNodes,
-      });
-
-      return validationResult?.error ?? null;
-    },
-
-    showLoadingIndicator() {
-      return (
-        this.loadingState?.value === "loading" && !this.currentValidationError
-      );
-    },
-
-    loadingMessage() {
-      if (this.loadingState?.value === "loading") {
-        return this.loadingState.message;
-      }
-
-      if (this.currentValidationError?.code === "NODE_BUSY") {
-        return this.currentValidationError.message;
-      }
-
-      return "";
-    },
-  },
-  watch: {
-    singleSelectedNode: {
-      handler(next, prev) {
-        const isDifferentNode = next?.id !== prev?.id;
-        if (!this.selectionValidationError && isDifferentNode) {
-          this.selectPort();
-        }
-      },
-      deep: true,
-    },
-    selectionValidationError: {
-      handler(selectionValidationError) {
-        if (this.selectionValidationError) {
-          this.currentValidationError = selectionValidationError;
-        } else {
-          this.selectPort();
-        }
-      },
-      // trigger the port selection as soon as the component mounts, based on the validation results
-      immediate: true,
-      // watcher won't trigger when the value hasn't been assigned a new value (e.g it stays the same),
-      // and that is the case because the computed property has cached it. But we deep watch to select the port
-      // and update the output state every time the validations retrigger
-      deep: true,
-    },
-    currentValidationError() {
-      // Validation takes precedence over any existing alert. So if a new
-      // validation error is added we must reset the alert
-      this.currentNodeViewAlert = null;
-    },
-  },
-  methods: {
-    async onPortViewLoadingState(state) {
-      this.loadingState = state;
-      if (state) {
-        // wait some time as otherwise the click on the node closes the hint via on click outside
-        await new Promise((r) => setTimeout(r, 100));
-        this.createHint({
-          hintId: HINTS.NODE_MONITOR,
-          referenceSelector: `#${EMBEDDED_CONTENT_PANEL_ID__BOTTOM}`,
-        });
-      }
-    },
-    // select the first tab
-    selectPort() {
-      let { outPorts, kind: nodeKind } = this.singleSelectedNode;
-
-      // if a node has a view it's the first tab
-      if (this.singleSelectedNode.hasView) {
-        this.selectedTab = "view";
-        return;
-      }
-
-      // choose the first node of a metanode
-      if (nodeKind === "metanode") {
-        this.selectedTab = "0";
-        return;
-      }
-
-      // node is component or native node
-      // select mickey-mouse port, if it is the only one, otherwise the first regular port
-      this.selectedTab = outPorts.length > 1 ? "1" : "0";
-    },
+  set(val: NodeOutputTabIdentifier) {
+    useSelectionStore().setActivePortTab(val);
   },
 });
+
+const canSelectTabs = computed(() => {
+  // allow selecting tabs when:
+  return (
+    // doesn't have errors in the output state
+    !currentValidationError.value ||
+    // or when it doesn't have these specific error types
+    currentValidationError.value.code !== "ALL_PORTS_UNSUPPORTED"
+  );
+});
+
+const isViewTabSelected = computed(() => {
+  return selectedTab.value === "view";
+});
+
+const selectedPortIndex = computed(() => {
+  // tab values are port indexes if it's not the view tab as string
+  return isViewTabSelected.value ? null : Number(selectedTab.value);
+});
+
+const selectionValidationError = computed(() => {
+  const validationResult = runValidationChecks({
+    selectedNodes: selectedNodes.value,
+  });
+
+  return validationResult?.error ?? null;
+});
+
+const showLoadingIndicator = computed(() => {
+  return (
+    loadingState.value?.value === "loading" && !currentValidationError.value
+  );
+});
+
+const loadingMessage = computed(() => {
+  if (loadingState.value?.value === "loading") {
+    return loadingState.value.message;
+  }
+
+  if (currentValidationError.value?.code === "NODE_BUSY") {
+    return currentValidationError.value.message;
+  }
+
+  return "";
+});
+
+// select the first tab
+const selectPort = () => {
+  if (!singleSelectedNode.value) {
+    return;
+  }
+
+  let { outPorts } = singleSelectedNode.value;
+
+  // if a node has a view it's the first tab
+  if (
+    isNativeNode(singleSelectedNode.value) &&
+    singleSelectedNode.value.hasView
+  ) {
+    selectedTab.value = "view";
+    return;
+  }
+
+  // choose the first node of a metanode
+  if (isNodeMetaNode(singleSelectedNode.value)) {
+    selectedTab.value = "0";
+    return;
+  }
+
+  // node is component or native node
+  // select mickey-mouse port, if it is the only one, otherwise the first regular port
+  selectedTab.value = outPorts.length > 1 ? "1" : "0";
+};
+
+watch(
+  singleSelectedNode,
+  (next, prev) => {
+    const isDifferentNode = next?.id !== prev?.id;
+    if (!selectionValidationError.value && isDifferentNode) {
+      selectPort();
+    }
+  },
+  { deep: true },
+);
+
+watch(
+  selectionValidationError,
+  () => {
+    if (selectionValidationError.value) {
+      currentValidationError.value = selectionValidationError.value;
+    } else {
+      selectPort();
+    }
+  },
+  {
+    // trigger the port selection as soon as the component mounts, based on the validation results
+    immediate: true,
+    // watcher won't trigger when the value hasn't been assigned a new value (e.g it stays the same),
+    // and that is the case because the computed property has cached it. But we deep watch to select the port
+    // and update the output state every time the validations retrigger
+    deep: true,
+  },
+);
+
+watch(currentValidationError, () => {
+  // Validation takes precedence over any existing alert. So if a new
+  // validation error is added we must reset the alert
+  currentNodeViewAlert.value = null;
+});
+
+const onPortViewLoadingState = async (
+  state: UIExtensionLoadingState | null,
+) => {
+  loadingState.value = state;
+  if (state) {
+    // wait some time as otherwise the click on the node closes the hint via on click outside
+    await new Promise((r) => setTimeout(r, 100));
+    createHint({
+      hintId: HINTS.NODE_MONITOR,
+      referenceSelector: `#${EMBEDDED_CONTENT_PANEL_ID__BOTTOM}`,
+    });
+  }
+};
 </script>
 
 <template>
@@ -209,7 +201,9 @@ export default defineComponent({
       v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
       v-model="selectedTab"
       class="tabs"
-      :has-view-tab="singleSelectedNode.hasView"
+      :has-view-tab="
+        isNativeNode(singleSelectedNode) && singleSelectedNode.hasView
+      "
       :node="singleSelectedNode"
       :disabled="!canSelectTabs"
     />
@@ -220,7 +214,7 @@ export default defineComponent({
       <UIExtensionAlertsWrapper
         v-if="currentNodeViewAlert"
         :alert="currentNodeViewAlert.alert"
-        :node-id="singleSelectedNode.id"
+        :node-id="singleSelectedNode!.id"
         :node-name="currentNodeViewAlert.nodeName"
       />
 
@@ -236,7 +230,7 @@ export default defineComponent({
           v-if="isViewTabSelected"
           :project-id="projectId!"
           :workflow-id="workflowId"
-          :selected-node="singleSelectedNode"
+          :selected-node="singleSelectedNode as NativeNode"
           :timestamp="timestamp || 0"
           :available-port-types="availablePortTypes"
           @alert="currentNodeViewAlert = $event"
@@ -249,7 +243,7 @@ export default defineComponent({
           ref="portViewTabOutput"
           :project-id="projectId!"
           :workflow-id="workflowId"
-          :selected-node="singleSelectedNode"
+          :selected-node="singleSelectedNode!"
           :selected-port-index="selectedPortIndex!"
           :available-port-types="availablePortTypes"
           @loading-state-change="onPortViewLoadingState($event)"

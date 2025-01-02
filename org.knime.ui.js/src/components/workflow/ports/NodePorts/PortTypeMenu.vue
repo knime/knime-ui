@@ -1,6 +1,6 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
-import { mapState } from "vuex";
+import { mapState } from "pinia";
 
 import { MenuItems, SearchInput } from "@knime/components";
 import ReturnIcon from "@knime/styles/img/icons/arrow-back.svg";
@@ -9,6 +9,8 @@ import type { NodePortGroups } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStore } from "@/store/canvas";
 import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
 
 import type { MenuItemWithPort } from "./types";
@@ -50,7 +52,7 @@ export default defineComponent({
         ["input", "output"].includes(side),
     },
     portGroups: {
-      type: Object as PropType<NodePortGroups>,
+      type: Object as PropType<NodePortGroups | null>,
       default: null,
     },
   },
@@ -65,8 +67,11 @@ export default defineComponent({
   }),
 
   computed: {
-    ...mapState("canvas", ["zoomFactor"]),
-    ...mapState("application", ["availablePortTypes", "suggestedPortTypes"]),
+    ...mapState(useCanvasStore, ["zoomFactor"]),
+    ...mapState(useApplicationStore, [
+      "availablePortTypes",
+      "suggestedPortTypes",
+    ]),
 
     headerMargin() {
       // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
@@ -187,7 +192,7 @@ export default defineComponent({
       if (item.port) {
         const { typeId } = item.port;
         this.emitPortClick({ typeId, portGroup: this.selectedPortGroup });
-      } else {
+      } else if (this.portGroups) {
         // when clicking on a port group
         // grab the first typeId of the matching group (group's name is the item.text property)
         // if there's only 1 type inside

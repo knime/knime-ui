@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { API } from "@api";
+import { createTestingPinia } from "@pinia/testing";
 
 import { Button } from "@knime/components";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 
-import { API } from "@/api";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { deepMocked } from "@/test/utils";
 import SearchResultsInfo from "../SearchResultsInfo.vue";
 
 const mockedAPI = deepMocked(API);
@@ -29,22 +31,25 @@ describe("SearchResultsInfo", () => {
       ...propsOverrides,
     };
 
-    const $store = mockVuexStore({
-      uiControls: {
-        state: { shouldDisplayDownloadAPButton: false },
-        actions: { init: () => {} },
-      },
+    const testingPinia = createTestingPinia({
+      createSpy: vi.fn,
+      stubActions: false,
     });
+
+    const uiControlsStore = useUIControlsStore(testingPinia);
+
+    uiControlsStore.shouldDisplayDownloadAPButton = false;
+    vi.mocked(uiControlsStore.init).mockImplementation(() => {});
 
     const wrapper = mount(component ?? SearchResultsInfo, {
       props,
       global: {
         stubs: { DownloadAPButton: true },
-        plugins: [$store],
+        plugins: [testingPinia],
       },
     });
 
-    return { wrapper, props, $store };
+    return { wrapper, props, uiControlsStore };
   };
 
   describe("searchResultsInfo", () => {
@@ -74,14 +79,14 @@ describe("SearchResultsInfo", () => {
         const SearchResultsInfo = (await import("../SearchResultsInfo.vue"))
           .default;
 
-        const { wrapper, $store } = doMount({
+        const { wrapper, uiControlsStore } = doMount({
           propsOverrides: {
             showDownloadButton: true,
           },
           component: SearchResultsInfo,
         });
 
-        $store.state.uiControls.shouldDisplayDownloadAPButton = true;
+        uiControlsStore.shouldDisplayDownloadAPButton = true;
         await nextTick();
 
         expect(wrapper.text()).toMatch(

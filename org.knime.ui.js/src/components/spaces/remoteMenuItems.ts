@@ -1,6 +1,4 @@
 /* eslint-disable no-undefined */
-import type { Dispatch } from "vuex";
-
 import type { MenuItem } from "@knime/components";
 import CirclePlayIcon from "@knime/styles/img/icons/circle-play.svg";
 import CloudDownloadIcon from "@knime/styles/img/icons/cloud-download.svg";
@@ -13,6 +11,9 @@ import MoveToSpaceIcon from "@knime/styles/img/icons/move-from-space-to-space.sv
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
+import { useDeploymentsStore } from "@/store/spaces/deployments";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useSpacesStore } from "@/store/spaces/spaces";
 import { getToastPresets } from "@/toastPresets";
 
 export type ActionMenuItem = MenuItem & {
@@ -21,10 +22,10 @@ export type ActionMenuItem = MenuItem & {
 };
 
 export const buildHubDownloadMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
+  const { copyBetweenSpaces } = useSpacesStore();
   const isSelectionEmpty = selectedItems.length === 0;
 
   return {
@@ -37,7 +38,7 @@ export const buildHubDownloadMenuItem = (
       : "Download to local space",
     separator: true,
     execute: () => {
-      dispatch("spaces/copyBetweenSpaces", {
+      copyBetweenSpaces({
         projectId,
         itemIds: selectedItems,
       });
@@ -46,10 +47,10 @@ export const buildHubDownloadMenuItem = (
 };
 
 export const buildMoveToSpaceMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
+  const { moveOrCopyToSpace } = useSpacesStore();
   const isSelectionEmpty = selectedItems.length === 0;
   return {
     id: "moveToSpace",
@@ -57,26 +58,24 @@ export const buildMoveToSpaceMenuItem = (
     icon: MoveToSpaceIcon,
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one item to move." : undefined,
-    execute: async () => {
-      try {
-        await dispatch("spaces/moveOrCopyToSpace", {
-          projectId,
-          isCopy: false,
-          itemIds: selectedItems,
-        });
-      } catch (error) {
+    execute: () => {
+      moveOrCopyToSpace({
+        projectId,
+        isCopy: false,
+        itemIds: selectedItems,
+      }).catch((error: any) => {
         const { toastPresets } = getToastPresets();
         toastPresets.spaces.crud.moveItemsFailed({ error });
-      }
+      });
     },
   };
 };
 
 export const buildCopyToSpaceMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
+  const { moveOrCopyToSpace } = useSpacesStore();
   const isSelectionEmpty = selectedItems.length === 0;
   return {
     id: "copyToSpace",
@@ -85,26 +84,24 @@ export const buildCopyToSpaceMenuItem = (
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one item to copy." : undefined,
     separator: true,
-    execute: async () => {
-      try {
-        await dispatch("spaces/moveOrCopyToSpace", {
-          projectId,
-          isCopy: true,
-          itemIds: selectedItems,
-        });
-      } catch (error) {
+    execute: () => {
+      moveOrCopyToSpace({
+        projectId,
+        isCopy: true,
+        itemIds: selectedItems,
+      }).catch((error: any) => {
         const { toastPresets } = getToastPresets();
         toastPresets.spaces.crud.copyItemsFailed({ error });
-      }
+      });
     },
   };
 };
 
 export const buildHubUploadMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: string[],
 ): ActionMenuItem => {
+  const { copyBetweenSpaces } = useSpacesStore();
   const isSelectionEmpty = selectedItems.length === 0;
   return {
     id: "upload",
@@ -113,7 +110,7 @@ export const buildHubUploadMenuItem = (
     disabled: isSelectionEmpty,
     title: isSelectionEmpty ? "Select at least one file to upload." : undefined,
     execute: () => {
-      dispatch("spaces/copyBetweenSpaces", {
+      copyBetweenSpaces({
         projectId,
         itemIds: selectedItems,
       });
@@ -122,11 +119,11 @@ export const buildHubUploadMenuItem = (
 };
 
 export const buildOpenInBrowserMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
   provider: SpaceProviderNS.SpaceProvider,
 ): ActionMenuItem => {
+  const { openInBrowser } = useSpacesStore();
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
 
@@ -142,7 +139,7 @@ export const buildOpenInBrowserMenuItem = (
       ? `Select one file to open in ${providerType}.`
       : undefined,
     execute: () => {
-      dispatch("spaces/openInBrowser", {
+      openInBrowser({
         projectId,
         itemId: selectedItems[0],
       });
@@ -151,10 +148,10 @@ export const buildOpenInBrowserMenuItem = (
 };
 
 export const buildOpenAPIDefinitionMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
+  const { openAPIDefinition } = useSpacesStore();
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
   return {
@@ -166,7 +163,7 @@ export const buildOpenAPIDefinitionMenuItem = (
       ? "Select one workflow to open in server."
       : undefined,
     execute: () => {
-      dispatch("spaces/openAPIDefinition", {
+      openAPIDefinition({
         projectId,
         itemId: selectedItems[0],
       });
@@ -175,10 +172,10 @@ export const buildOpenAPIDefinitionMenuItem = (
 };
 
 export const buildOpenPermissionsDialog = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
+  const { openPermissionsDialog } = useSpaceOperationsStore();
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
   return {
@@ -188,7 +185,7 @@ export const buildOpenPermissionsDialog = (
     disabled: isSelectionEmpty || isSelectionMultiple,
     title: isSelectionEmpty ? "View and edit access permissions" : undefined,
     execute: () => {
-      dispatch("spaces/openPermissionsDialog", {
+      openPermissionsDialog({
         projectId,
         itemId: selectedItems[0],
       });
@@ -197,11 +194,11 @@ export const buildOpenPermissionsDialog = (
 };
 
 export const buildDisplayDeploymentsMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
   itemName: string,
 ): ActionMenuItem => {
+  const { displayDeployments } = useDeploymentsStore();
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
 
@@ -214,7 +211,7 @@ export const buildDisplayDeploymentsMenuItem = (
       ? "Select a file to display schedules and jobs."
       : undefined,
     execute: () => {
-      dispatch("spaces/displayDeployments", {
+      displayDeployments({
         projectId,
         itemId: selectedItems[0],
         itemName,
@@ -224,10 +221,10 @@ export const buildDisplayDeploymentsMenuItem = (
 };
 
 export const buildExecuteWorkflowMenuItem = (
-  dispatch: Dispatch,
   projectId: string,
   selectedItems: Array<string>,
 ): ActionMenuItem => {
+  const { executeWorkflow } = useDeploymentsStore();
   const isSelectionEmpty = selectedItems.length === 0;
   const isSelectionMultiple = selectedItems.length > 1;
 
@@ -240,7 +237,7 @@ export const buildExecuteWorkflowMenuItem = (
       ? "Select a file to execute a workflow."
       : undefined,
     execute: () => {
-      dispatch("spaces/executeWorkflow", {
+      executeWorkflow({
         projectId,
         itemId: selectedItems[0],
       });

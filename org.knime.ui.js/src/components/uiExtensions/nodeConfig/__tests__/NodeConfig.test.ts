@@ -1,84 +1,61 @@
-import {
-  type Mock,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
-import type { Store } from "vuex";
 
 import { FunctionButton } from "@knime/components";
 
+import type { KnimeNode } from "@/api/custom-types";
 import { Node } from "@/api/gateway-api/generated-api";
-import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
-import * as applicationStore from "@/store/application";
-import * as nodeConfigurationStore from "@/store/nodeConfiguration";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import {
   createMetanode,
   createNativeNode,
   createWorkflow,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import { setEnvironment } from "@/test/utils/setEnvironment";
 import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
 import NodeConfig from "../NodeConfig.vue";
+import NodeConfigWrapper from "../NodeConfigWrapper.vue";
 
 describe("NodeConfig", () => {
   type MountOpts = {
     props?: Partial<InstanceType<typeof NodeConfig>["$props"]>;
-    singleSelectedNodeMock?: Mock;
+    singleSelectedNodeMock?: KnimeNode | null;
     component?: typeof NodeConfig | null;
     isLargeMode?: boolean;
   };
 
   const doMount = ({
     props = {},
-    singleSelectedNodeMock = vi.fn(),
+    singleSelectedNodeMock = null,
     component = NodeConfig,
-    isLargeMode = false,
+    isLargeMode,
   }: MountOpts = {}) => {
-    const $store = mockVuexStore({
-      workflow: {
-        ...workflowStore,
-        state: {
-          activeWorkflow: {
-            projectMetadata: {
-              title: "title",
-            },
-            info: {
-              name: "fileName",
-              containerType: "project",
-            },
-          },
+    const mockedStores = mockStores();
+    mockedStores.workflowStore.setActiveWorkflow(
+      createWorkflow({
+        info: {
+          name: "fileName",
+          containerType: "project",
         },
-      },
-      nodeConfiguration: nodeConfigurationStore,
-      application: applicationStore,
-      selection: {
-        getters: {
-          singleSelectedNode: singleSelectedNodeMock,
-        },
-      },
-      uiControls: uiControlsStore,
-      settings: { state: { settings: { nodeDialogSize: 100 } } },
-    });
+      }),
+    );
 
-    $store.state.nodeConfiguration.isLargeMode = isLargeMode;
+    // @ts-ignore
+    mockedStores.selectionStore.singleSelectedNode = singleSelectedNodeMock;
+    mockedStores.settingsStore.settings.nodeDialogSize = 100;
+    mockedStores.applicationStore.activeProjectId = "project";
+
+    mockedStores.nodeConfigurationStore.isLargeMode = isLargeMode ?? false;
 
     const wrapper = mount(component, {
       props,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("renders default", () => {
@@ -91,9 +68,7 @@ describe("NodeConfig", () => {
 
   it("shows different placeholder text when node without dialog is selected", () => {
     const { wrapper } = doMount({
-      singleSelectedNodeMock: vi
-        .fn()
-        .mockReturnValue(createNativeNode({ id: "2" })),
+      singleSelectedNodeMock: createNativeNode({ id: "2" }),
     });
 
     expect(wrapper.find(".placeholder-text").text()).toBe(
@@ -106,14 +81,12 @@ describe("NodeConfig", () => {
 
     const NodeConfig = (await import("../NodeConfig.vue")).default;
 
-    const { wrapper, $store } = doMount({
-      singleSelectedNodeMock: vi
-        .fn()
-        .mockReturnValue(createNativeNode({ id: "2" })),
+    const { wrapper, mockedStores } = doMount({
+      singleSelectedNodeMock: createNativeNode({ id: "2" }),
       component: NodeConfig,
     });
 
-    $store.state.uiControls.shouldDisplayDownloadAPButton = true;
+    mockedStores.uiControlsStore.shouldDisplayDownloadAPButton = true;
     await nextTick();
 
     expect(wrapper.find(".placeholder-text").text()).toBe(
@@ -123,9 +96,7 @@ describe("NodeConfig", () => {
 
   it("shows placeholder component if selected node has a legacy dialog", () => {
     const { wrapper } = doMount({
-      singleSelectedNodeMock: vi
-        .fn()
-        .mockReturnValue(createNativeNode({ id: "1" })),
+      singleSelectedNodeMock: createNativeNode({ id: "1" }),
     });
 
     expect(wrapper.find(".content-wrapper").exists()).toBe(true);
@@ -138,14 +109,12 @@ describe("NodeConfig", () => {
     setEnvironment("BROWSER");
     const NodeConfig = (await import("../NodeConfig.vue")).default;
 
-    const { wrapper, $store } = doMount({
-      singleSelectedNodeMock: vi
-        .fn()
-        .mockReturnValue(createMetanode({ id: "2" })),
+    const { wrapper, mockedStores } = doMount({
+      singleSelectedNodeMock: createMetanode({ id: "2" }),
       component: NodeConfig,
     });
 
-    $store.state.uiControls.shouldDisplayDownloadAPButton = true;
+    mockedStores.uiControlsStore.shouldDisplayDownloadAPButton = true;
     await nextTick();
 
     expect(wrapper.find(".placeholder-text").text()).toBe(
@@ -186,23 +155,23 @@ describe("NodeConfig", () => {
         },
       });
 
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         isLargeMode,
-        singleSelectedNodeMock: vi.fn().mockReturnValue(node),
+        singleSelectedNodeMock: node,
       });
-      $store.commit("workflow/setActiveWorkflow", workflow);
-      $store.commit("nodeConfiguration/setActiveNodeId", "root:1");
+      mockedStores.workflowStore.setActiveWorkflow(workflow);
+      mockedStores.nodeConfigurationStore.setActiveNodeId("root:1");
       await nextTick();
-      $store.commit("nodeConfiguration/setActiveExtensionConfig", {
+
+      mockedStores.nodeConfigurationStore.setActiveExtensionConfig({
         canBeEnlarged: true,
       });
 
-      $store.commit(
-        "nodeConfiguration/setPushEventDispatcher",
+      mockedStores.nodeConfigurationStore.setPushEventDispatcher(
         pushEventDispatcher,
       );
 
-      return { wrapper, $store };
+      return { wrapper, mockedStores };
     };
 
     const expectEventDispatch = (mode: ModeExpectation) => {
@@ -223,12 +192,12 @@ describe("NodeConfig", () => {
     };
 
     it("if starting small can be toggled to large via store", async () => {
-      const { wrapper, $store } = await doMountForLargeModeTesting();
+      const { wrapper, mockedStores } = await doMountForLargeModeTesting();
 
       expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
       expectMode(wrapper, "small");
 
-      $store.commit("nodeConfiguration/setIsLargeMode", true);
+      mockedStores.nodeConfigurationStore.setIsLargeMode(true);
       await nextTick();
 
       expect(showModal).toHaveBeenCalledOnce();
@@ -237,10 +206,10 @@ describe("NodeConfig", () => {
     });
 
     describe("if starting large", () => {
-      let wrapper: VueWrapper, $store: Store<any>;
+      let wrapper: VueWrapper, mockedStores: ReturnType<typeof mockStores>;
 
       beforeEach(async () => {
-        ({ wrapper, $store } = await doMountForLargeModeTesting(true));
+        ({ wrapper, mockedStores } = await doMountForLargeModeTesting(true));
       });
 
       it("is in right mode and has close button", () => {
@@ -249,7 +218,7 @@ describe("NodeConfig", () => {
       });
 
       it("can be toggled to small via store", async () => {
-        $store.commit("nodeConfiguration/setIsLargeMode", false);
+        mockedStores.nodeConfigurationStore.setIsLargeMode(false);
         await nextTick();
 
         expect(closeModal).toHaveBeenCalledOnce();

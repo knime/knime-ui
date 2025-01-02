@@ -1,9 +1,15 @@
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 
-import type { KnimeNode } from "@/api/custom-types";
 import { Node } from "@/api/gateway-api/generated-api";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import type { UnionToShortcutRegistry } from "../types";
 
 type OtherWorkflowShortcuts = UnionToShortcutRegistry<
@@ -20,25 +26,23 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
     hotkey: ["F6"],
     icon: OpenDialogIcon,
     group: "execution",
-    execute: ({ $store, payload = null }) => {
+    execute: ({ payload = null }) => {
       const selectedNodeId =
-        payload?.metadata?.nodeId ||
-        $store.getters["selection/singleSelectedNode"].id;
-      $store.dispatch("workflow/openNodeConfiguration", selectedNodeId);
-    },
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters[
-        "selection/singleSelectedNode"
-      ] as KnimeNode;
+        payload?.metadata?.nodeId || useSelectionStore().singleSelectedNode!.id;
 
-      const useEmbeddedDialogs = $store.state.application.useEmbeddedDialogs;
+      useDesktopInteractionsStore().openNodeConfiguration(selectedNodeId);
+    },
+    condition: () => {
+      const { singleSelectedNode } = useSelectionStore();
+
+      const { useEmbeddedDialogs } = useApplicationSettingsStore();
 
       if (!singleSelectedNode) {
         return false;
       }
 
       const canConfigureNodes =
-        $store.state.uiControls.canConfigureNodes &&
+        useUIControlsStore().canConfigureNodes &&
         Boolean(singleSelectedNode.dialogType);
 
       if (useEmbeddedDialogs) {
@@ -56,21 +60,17 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
     text: "Configure flow variables",
     hotkey: ["Shift", "F6"],
     group: "execution",
-    execute: ({ $store }) =>
-      $store.dispatch(
-        "workflow/openFlowVariableConfiguration",
-        $store.getters["selection/singleSelectedNode"].id,
+    execute: () =>
+      useDesktopInteractionsStore().openFlowVariableConfiguration(
+        useSelectionStore().singleSelectedNode!.id,
       ),
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
+    condition: () => {
+      const { singleSelectedNode } = useSelectionStore();
 
       if (singleSelectedNode) {
-        const { canOpenLegacyFlowVariableDialog } =
-          singleSelectedNode.allowedActions;
-
-        return (
-          canOpenLegacyFlowVariableDialog &&
-          $store.state.uiControls.canConfigureFlowVariables
+        return Boolean(
+          singleSelectedNode.allowedActions?.canOpenLegacyFlowVariableDialog &&
+            useUIControlsStore().canConfigureFlowVariables,
         );
       }
 
@@ -81,24 +81,19 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
     text: "Edit annotation",
     hotkey: ["F2"],
     group: "workflowAnnotations",
-    execute: ({ $store }) => {
-      if ($store.getters["selection/singleSelectedAnnotation"]) {
-        $store.dispatch(
-          "workflow/setEditableAnnotationId",
-          $store.getters["selection/singleSelectedAnnotation"].id,
-        );
-      }
+    execute: () => {
+      useAnnotationInteractionsStore().setEditableAnnotationId(
+        useSelectionStore().singleSelectedAnnotation!.id,
+      );
     },
-    condition: ({ $store }) => {
-      const singleSelectedAnnotation =
-        $store.getters["selection/singleSelectedAnnotation"];
-      const singleSelectedObject =
-        $store.getters["selection/singleSelectedObject"];
+    condition: () => {
+      const { singleSelectedAnnotation, singleSelectedObject } =
+        useSelectionStore();
 
-      return (
+      return Boolean(
         singleSelectedObject &&
-        singleSelectedAnnotation &&
-        $store.getters["workflow/isWritable"]
+          singleSelectedAnnotation &&
+          useWorkflowStore().isWritable,
       );
     },
   },
@@ -109,8 +104,8 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
     description: "Selection mode (default)",
     group: "workflowEditorModes",
     icon: SelectionModeIcon,
-    execute: ({ $store }) => {
-      $store.dispatch("application/switchCanvasMode", "selection");
+    execute: () => {
+      useCanvasModesStore().switchCanvasMode("selection");
     },
   },
   switchToPanMode: {
@@ -118,10 +113,10 @@ const otherWorkflowShortcuts: OtherWorkflowShortcuts = {
     text: "Pan mode",
     group: "workflowEditorModes",
     icon: ArrowMoveIcon,
-    execute: ({ $store }) => {
-      $store.dispatch("application/switchCanvasMode", "pan");
+    execute: () => {
+      useCanvasModesStore().switchCanvasMode("pan");
     },
-    condition: ({ $store }) => !$store.getters["workflow/isWorkflowEmpty"],
+    condition: () => !useWorkflowStore().isWorkflowEmpty,
   },
 };
 

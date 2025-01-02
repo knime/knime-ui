@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { createWorkflow } from "@/test/factories";
+
 import { loadStore } from "./loadStore";
 
 vi.mock("@/util/encodeString", () => ({
@@ -7,20 +9,9 @@ vi.mock("@/util/encodeString", () => ({
 }));
 
 describe("application::canvasStateTracking", () => {
-  const loadStoreWithWorkflow = () => {
-    const { store, ...rest } = loadStore();
-
-    store.commit("workflow/setActiveWorkflow", {
-      info: { containerId: "root" },
-      projectId: "project1",
-    });
-
-    return { store, ...rest };
-  };
-
   it("sets saved states", () => {
-    const { store } = loadStoreWithWorkflow();
-    store.commit("application/setSavedCanvasStates", {
+    const { canvasStateTrackingStore } = loadStore();
+    canvasStateTrackingStore.setSavedCanvasStates({
       zoomFactor: 1,
       scrollTop: 100,
       scrollLeft: 100,
@@ -28,7 +19,7 @@ describe("application::canvasStateTracking", () => {
       project: "project1",
     });
 
-    expect(store.state.application.savedCanvasStates).toStrictEqual({
+    expect(canvasStateTrackingStore.savedCanvasStates).toStrictEqual({
       "project1--root": {
         children: {},
         project: "project1",
@@ -42,8 +33,8 @@ describe("application::canvasStateTracking", () => {
   });
 
   it("sets children in saved state", () => {
-    const { store } = loadStoreWithWorkflow();
-    store.commit("application/setSavedCanvasStates", {
+    const { canvasStateTrackingStore } = loadStore();
+    canvasStateTrackingStore.setSavedCanvasStates({
       zoomFactor: 1,
       scrollTop: 100,
       scrollLeft: 100,
@@ -51,7 +42,7 @@ describe("application::canvasStateTracking", () => {
       project: "project1",
     });
 
-    expect(store.state.application.savedCanvasStates).toStrictEqual({
+    expect(canvasStateTrackingStore.savedCanvasStates).toStrictEqual({
       "project1--root": {
         lastActive: "root:214",
         children: {
@@ -68,22 +59,21 @@ describe("application::canvasStateTracking", () => {
   });
 
   it("saves the canvas state", () => {
-    const { store, mockedGetters } = loadStoreWithWorkflow();
-    expect(store.state.application.savedCanvasStates).toEqual({});
-    store.dispatch("application/saveCanvasState");
+    const { canvasStateTrackingStore } = loadStore();
+    expect(canvasStateTrackingStore.savedCanvasStates).toEqual({});
+    canvasStateTrackingStore.saveCanvasState();
 
-    expect(mockedGetters.canvas.getCanvasScrollState).toHaveBeenCalled();
-    expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(
+    expect(Object.keys(canvasStateTrackingStore.savedCanvasStates).length).toBe(
       1,
     );
     expect(
-      store.state.application.savedCanvasStates["project1--root"],
+      canvasStateTrackingStore.savedCanvasStates["project1--root"],
     ).toBeTruthy();
   });
 
   it("restores canvas state", () => {
-    const { store, mockedActions } = loadStoreWithWorkflow();
-    store.commit("application/setSavedCanvasStates", {
+    const { canvasStateTrackingStore, canvasStore } = loadStore();
+    canvasStateTrackingStore.setSavedCanvasStates({
       zoomFactor: 1,
       scrollTop: 100,
       scrollLeft: 100,
@@ -93,9 +83,8 @@ describe("application::canvasStateTracking", () => {
       project: "project1",
     });
 
-    store.dispatch("application/restoreCanvasState");
-    expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
-      expect.any(Object),
+    canvasStateTrackingStore.restoreCanvasState();
+    expect(canvasStore.restoreScrollState).toHaveBeenCalledWith(
       expect.objectContaining({
         zoomFactor: 1,
         scrollTop: 100,
@@ -107,14 +96,17 @@ describe("application::canvasStateTracking", () => {
   });
 
   it("restores canvas state of a child", () => {
-    const { store, mockedActions } = loadStoreWithWorkflow();
-    store.state.workflow.activeWorkflow = {
-      // @ts-expect-error
-      info: { containerId: "root:214" },
-      projectId: "project1",
-    };
+    const { workflowStore, canvasStateTrackingStore, canvasStore } =
+      loadStore();
 
-    store.commit("application/setSavedCanvasStates", {
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        info: { containerId: "root:214" },
+        projectId: "project1",
+      }),
+    );
+
+    canvasStateTrackingStore.setSavedCanvasStates({
       zoomFactor: 1,
       scrollTop: 80,
       scrollLeft: 80,
@@ -124,9 +116,8 @@ describe("application::canvasStateTracking", () => {
       project: "project1",
     });
 
-    store.dispatch("application/restoreCanvasState");
-    expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
-      expect.any(Object),
+    canvasStateTrackingStore.restoreCanvasState();
+    expect(canvasStore.restoreScrollState).toHaveBeenCalledWith(
       expect.objectContaining({
         zoomFactor: 1,
         scrollTop: 80,
@@ -138,23 +129,24 @@ describe("application::canvasStateTracking", () => {
   });
 
   it("removes canvas state", () => {
-    const { store } = loadStoreWithWorkflow();
-    store.dispatch("application/saveCanvasState");
-    expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(
+    const { canvasStateTrackingStore } = loadStore();
+    canvasStateTrackingStore.saveCanvasState();
+    expect(Object.keys(canvasStateTrackingStore.savedCanvasStates).length).toBe(
       1,
     );
     expect(
-      store.state.application.savedCanvasStates["project1--root"],
+      canvasStateTrackingStore.savedCanvasStates["project1--root"],
     ).toBeTruthy();
 
-    store.dispatch("application/removeCanvasState", "project1");
-    expect(store.state.application.savedCanvasStates).toEqual({});
+    canvasStateTrackingStore.removeCanvasState("project1");
+    expect(canvasStateTrackingStore.savedCanvasStates).toEqual({});
   });
 
   describe("lastActive", () => {
     it("switch from workflow to workflow and back", async () => {
-      const { store, dispatchSpy } = await loadStore();
-      store.state.application.savedCanvasStates = {
+      const { canvasStateTrackingStore, lifecycleStore, applicationStore } =
+        loadStore();
+      canvasStateTrackingStore.savedCanvasStates = {
         "1--root": {
           children: {},
           project: "1",
@@ -164,32 +156,33 @@ describe("application::canvasStateTracking", () => {
         },
       };
 
-      await store.dispatch("application/switchWorkflow", {
+      await lifecycleStore.switchWorkflow({
         newWorkflow: { projectId: "2", workflowId: "root" },
       });
-      expect(store.state.application.activeProjectId).toBe("2");
+      expect(applicationStore.activeProjectId).toBe("2");
 
-      await store.dispatch("application/switchWorkflow", {
+      await lifecycleStore.switchWorkflow({
         newWorkflow: { projectId: "1", workflowId: "root" },
       });
-      expect(dispatchSpy).toHaveBeenCalledWith("application/loadWorkflow", {
+      expect(lifecycleStore.loadWorkflow).toHaveBeenCalledWith({
         projectId: "1",
         workflowId: "root:214",
       });
-      expect(store.state.application.activeProjectId).toBe("1");
+      expect(applicationStore.activeProjectId).toBe("1");
     });
 
     it("restores `lastActive` workflow when switching projects", async () => {
-      const { store, dispatchSpy } = await loadStore();
+      const { workflowStore, canvasStateTrackingStore, lifecycleStore } =
+        loadStore();
       // start with a projectId 2
-      store.state.workflow.activeWorkflow = {
+      workflowStore.setActiveWorkflow({
         projectId: "2",
         // @ts-expect-error
         info: { containerId: "root-1234" },
-      };
+      });
 
       // make sure project 1 has a `lastActive` state
-      store.state.application.savedCanvasStates = {
+      canvasStateTrackingStore.savedCanvasStates = {
         "1--root": {
           children: {},
           project: "1",
@@ -200,12 +193,12 @@ describe("application::canvasStateTracking", () => {
       };
 
       // change to project 1
-      await store.dispatch("application/switchWorkflow", {
+      await lifecycleStore.switchWorkflow({
         newWorkflow: { projectId: "1" },
       });
 
       // assert that project 1 was loaded and the correct `lastActive` was restored
-      expect(dispatchSpy).toHaveBeenCalledWith("application/loadWorkflow", {
+      expect(lifecycleStore.loadWorkflow).toHaveBeenCalledWith({
         projectId: "1",
         workflowId: "root:214",
       });

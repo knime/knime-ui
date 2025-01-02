@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, markRaw, nextTick, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button, Pill } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/circle-close.svg";
@@ -17,7 +18,9 @@ import type {
 } from "@/api/custom-types";
 import type { WorkflowGroupContent } from "@/api/gateway-api/generated-api";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
@@ -59,15 +62,18 @@ const props = withDefaults(defineProps<Props>(), {
   providerRules: () => ({}),
 });
 
+const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
+const { reloadProviderSpaces } = useSpaceProvidersStore();
+const { fetchWorkflowGroupContentByIdTriplet } = useSpaceOperationsStore();
+const { connectProvider } = useSpaceAuthStore();
+
 const emit = defineEmits<{
   selectChange: [value: SpaceTreeSelection];
 }>();
 
-const store = useStore();
-
 const isProviderConnected = (
   spaceProviderId: SpaceProviderId["spaceProviderId"],
-) => store.state.spaces.spaceProviders?.[spaceProviderId]?.connected;
+) => spaceProviders.value?.[spaceProviderId]?.connected;
 
 const truncate = (text: string) => {
   return text.length <= MAX_NAME_LENGTH
@@ -151,20 +157,20 @@ const mapSpaceProviderToTree = (
 };
 
 const filteredSpaceProviders = computed(() => {
-  let spaceProviders = Object.values(store.state.spaces.spaceProviders ?? {});
+  let newSpaceProviders = Object.values(spaceProviders.value ?? {});
 
   if (props.providerRules.restrictedTo) {
-    spaceProviders = spaceProviders.filter(({ id }) =>
+    newSpaceProviders = newSpaceProviders.filter(({ id }) =>
       props.providerRules.restrictedTo!.includes(id),
     );
   }
 
   if (props.providerRules.exclude) {
-    spaceProviders = spaceProviders.filter(
+    newSpaceProviders = newSpaceProviders.filter(
       ({ id }) => !props.providerRules.exclude?.includes(id),
     );
   }
-  return spaceProviders;
+  return newSpaceProviders;
 });
 
 const tree = ref<InstanceType<typeof Tree>>();
@@ -200,14 +206,12 @@ const loadWorkflowGroup = async (
 ) => {
   const { spaceProviderId, spaceId, itemId } = group;
   try {
-    const workflowGroupContent: WorkflowGroupContent = await store.dispatch(
-      "spaces/fetchWorkflowGroupContentByIdTriplet",
-      {
+    const workflowGroupContent: WorkflowGroupContent =
+      await fetchWorkflowGroupContentByIdTriplet({
         spaceProviderId,
         spaceId,
         itemId,
-      },
-    );
+      });
 
     if (workflowGroupContent.items.length > 0) {
       addToTree(
@@ -254,7 +258,7 @@ const loadConnectedProvider = async (
     ]);
   };
   try {
-    const currentProvider = store.state.spaces.spaceProviders![spaceProviderId];
+    const currentProvider = spaceProviders.value![spaceProviderId];
 
     if (isServerProvider(currentProvider)) {
       if (currentProvider.spaceGroups.length !== 1) {
@@ -274,14 +278,14 @@ const loadConnectedProvider = async (
       return;
     }
 
-    const reloadProviderSpaces = async () => {
-      await store.dispatch("spaces/reloadProviderSpaces", {
+    const reloadProviderSpacesFn = async () => {
+      await reloadProviderSpaces({
         id: spaceProviderId,
       });
-      return store.state.spaces.spaceProviders![spaceProviderId];
+      return spaceProviders.value![spaceProviderId];
     };
 
-    const reloadedProvider = await reloadProviderSpaces();
+    const reloadedProvider = await reloadProviderSpacesFn();
     addToTree(
       reloadedProvider.spaceGroups.map((group) =>
         mapSpaceGroupToTree(group, { spaceProviderId }),
@@ -313,9 +317,9 @@ const loadProvider = async (
     const { isConnected, providerData } = isProviderConnected(spaceProviderId)
       ? {
           isConnected: true,
-          providerData: store.state.spaces.spaceProviders![spaceProviderId],
+          providerData: spaceProviders.value![spaceProviderId],
         }
-      : await store.dispatch("spaces/connectProvider", { spaceProviderId });
+      : await connectProvider({ spaceProviderId });
 
     if (isConnected) {
       loadConnectedProvider(providerData.id, addToTree);

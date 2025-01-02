@@ -1,4 +1,5 @@
 import { createApp } from "vue";
+import { createPinia } from "pinia";
 
 import { setupHints } from "@knime/components";
 
@@ -16,7 +17,7 @@ import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
 import { router } from "./router/router";
-import { store } from "./store";
+
 import "./assets/index.css";
 
 // Setup logger for production
@@ -108,13 +109,16 @@ try {
 
   const connectionInfo = await apiURLResolver();
 
-  await initJSONRPCClient(environment, connectionInfo, store);
-
   // Create Vue app
   const app = createApp(KnimeUI);
 
+  // initialize pinia stores
+  const pinia = createPinia();
+  app.use(pinia);
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
+
+  await initJSONRPCClient(environment, connectionInfo);
 
   runInEnvironment({
     BROWSER: () => {
@@ -124,17 +128,16 @@ try {
 
   // Enable easier store debugging while on dev
   if (import.meta.env.DEV) {
-    window.store = store;
     window.router = router;
+    window.store = pinia;
     app.config.performance = true;
   }
 
-  // Init plugins, provide store and router
-  initPlugins({ app, store, router });
-  initGlobalEnvProperty(app);
-
-  app.use(store);
   app.use(router);
+
+  // Init plugins, provide store and router
+  initPlugins({ app, router });
+  initGlobalEnvProperty(app);
 
   // setup hints for desktop and use the url for videos unchanged
   runInEnvironment({

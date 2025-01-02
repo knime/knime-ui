@@ -7,22 +7,21 @@ import Sidebar from "@/components/sidebar/Sidebar.vue";
 import WorkflowToolbar from "@/components/toolbar/WorkflowToolbar.vue";
 import NodeOutput from "@/components/uiExtensions/NodeOutput.vue";
 import WorkflowPanel from "@/components/workflow/WorkflowPanel.vue";
-import { useStore } from "@/composables/useStore";
+import { useSettingsStore } from "@/store/settings";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 /**
  * Component that acts as a router page to render the workflow
  */
-const store = useStore();
-
-const workflow = computed(() => store.state.workflow.activeWorkflow);
-const error = computed(() => store.state.workflow.error);
+const workflowStore = useWorkflowStore();
+const settingsStore = useSettingsStore();
 
 const savedSecondarySize = computed({
   get() {
-    return store.state.settings.settings.nodeOutputSize;
+    return settingsStore.settings.nodeOutputSize;
   },
   set(value: number) {
-    store.dispatch("settings/updateSetting", {
+    settingsStore.updateSetting({
       key: "nodeOutputSize",
       value,
     });
@@ -31,7 +30,10 @@ const savedSecondarySize = computed({
 </script>
 
 <template>
-  <div v-if="workflow && !error" id="workflow-page">
+  <div
+    v-if="workflowStore.activeWorkflow && !workflowStore.error"
+    id="workflow-page"
+  >
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />

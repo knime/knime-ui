@@ -1,66 +1,54 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { computed, ref } from "vue";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
 import type {
   NodeRelation,
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
+import { useApplicationStore } from "@/store/application/application";
+import { useNodeSearch } from "@/store/common/useNodeSearch";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { toNodeTemplateWithExtendedPorts } from "../util/portDataMapper";
-
-import * as nodeSearch from "./common/nodeSearch";
-import type { RootStoreState } from "./types";
 
 /**
  * Store that manages quick add nodes menu states.
  */
-
 const recommendationLimit = 12;
 
-export interface QuickAddNodesState extends nodeSearch.CommonNodeSearchState {
-  recommendedNodes: Array<NodeTemplateWithExtendedPorts> | null;
-}
+export const useQuickAddNodesStore = defineStore("quick", () => {
+  const nodeSearch = useNodeSearch();
 
-export const state = (): QuickAddNodesState => ({
-  ...nodeSearch.state(),
-  recommendedNodes: null,
-});
+  const recommendedNodes = ref<Array<NodeTemplateWithExtendedPorts>>([]);
 
-export const mutations: MutationTree<QuickAddNodesState> = {
-  ...nodeSearch.mutations,
+  const setRecommendedNodes = (
+    _recommendedNodes: Array<NodeTemplateWithExtendedPorts>,
+  ) => {
+    recommendedNodes.value = _recommendedNodes;
+  };
 
-  setRecommendedNodes(state, recommendedNodes) {
-    state.recommendedNodes = recommendedNodes;
-  },
-};
+  const getNodeRecommendations = async ({
+    nodeId,
+    portIdx,
+    nodesLimit = recommendationLimit,
+    nodeRelation,
+  }: {
+    nodeId?: string;
+    portIdx?: number;
+    nodesLimit?: number;
+    nodeRelation?: NodeRelation;
+  }) => {
+    const workflowStore = useWorkflowStore();
 
-export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
-  ...nodeSearch.actions,
-
-  async getNodeRecommendations(
-    { commit, rootState },
-    {
-      nodeId,
-      portIdx,
-      nodesLimit = recommendationLimit,
-      nodeRelation,
-    }: {
-      nodeId?: string;
-      portIdx?: number;
-      nodesLimit?: number;
-      nodeRelation: NodeRelation;
-    },
-  ) {
-    if (!rootState.workflow.activeWorkflow) {
+    if (!workflowStore.activeWorkflow) {
       return;
     }
 
     const {
       projectId,
       info: { containerId: workflowId },
-    } = rootState.workflow.activeWorkflow;
-    const { availablePortTypes } = rootState.application;
+    } = workflowStore.activeWorkflow;
 
-    // call api
     const recommendedNodesResult =
       await API.noderepository.getNodeRecommendations({
         workflowId,
@@ -72,30 +60,36 @@ export const actions: ActionTree<QuickAddNodesState, RootStoreState> = {
         fullTemplateInfo: true,
       });
 
-    commit(
-      "setRecommendedNodes",
+    setRecommendedNodes(
       recommendedNodesResult.map(
-        toNodeTemplateWithExtendedPorts(availablePortTypes),
+        toNodeTemplateWithExtendedPorts(
+          useApplicationStore().availablePortTypes,
+        ),
       ),
     );
-  },
+  };
 
-  async clearRecommendedNodesAndSearchParams({ commit, dispatch }) {
-    commit("setRecommendedNodes", null);
-    await dispatch("clearSearchParams");
-  },
-};
+  const clearRecommendedNodesAndSearchParams = () => {
+    setRecommendedNodes([]);
+    nodeSearch.clearSearchParams();
+  };
 
-export const getters: GetterTree<QuickAddNodesState, RootStoreState> = {
-  ...nodeSearch.getters,
-
-  getFirstResult: (state, getters) => () => {
-    if (getters.searchIsActive) {
-      return getters.getFirstSearchResult();
+  const getFirstResult = computed<NodeTemplateWithExtendedPorts | null>(() => {
+    if (nodeSearch.searchIsActive.value) {
+      return nodeSearch.getFirstSearchResult.value;
     }
 
-    return state.recommendedNodes && state.recommendedNodes.length > 0
-      ? state.recommendedNodes[0]
+    return recommendedNodes.value && recommendedNodes.value.length > 0
+      ? recommendedNodes.value[0]
       : null;
-  },
-};
+  });
+
+  return {
+    ...nodeSearch,
+    recommendedNodes,
+    getNodeRecommendations,
+    setRecommendedNodes,
+    clearRecommendedNodesAndSearchParams,
+    getFirstResult,
+  };
+});

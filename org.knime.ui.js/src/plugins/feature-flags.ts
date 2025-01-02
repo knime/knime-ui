@@ -1,7 +1,8 @@
 /* eslint-disable unused-imports/no-unused-vars */
-import { useStore } from "vuex";
-
-import type { ApplicationState } from "@/store/application";
+import {
+  type ApplicationState,
+  useApplicationStore,
+} from "@/store/application/application";
 
 import type { PluginInitFunction } from "./types";
 
@@ -32,13 +33,12 @@ export const features: (
 });
 
 export const useFeatures: () => Features = () => {
-  const store = useStore();
-  return features(store.state.application.featureFlags);
+  return features(useApplicationStore().featureFlags);
 };
 
-const init: PluginInitFunction = ({ app, $store }) => {
+const init: PluginInitFunction = ({ app }) => {
   app.config.globalProperties.$features = features(
-    $store.state.application.featureFlags,
+    useApplicationStore().featureFlags,
   );
 };
 

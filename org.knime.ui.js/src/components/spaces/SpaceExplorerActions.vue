@@ -1,6 +1,6 @@
-<script lang="ts">
-import { type PropType, defineComponent } from "vue";
-import { mapGetters, mapState } from "vuex";
+<script setup lang="ts">
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
@@ -20,6 +20,10 @@ import {
   buildMoveToSpaceMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
+import { useShortcuts } from "@/plugins/shortcuts";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { useSpacesStore } from "@/store/spaces/spaces";
 import { isLocalProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
@@ -28,231 +32,178 @@ import type { ActionMenuItem } from "./remoteMenuItems";
 
 type DisplayModes = "normal" | "mini";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
 type ItemWithExecute = MenuItem & { execute: () => any };
 
-export default defineComponent({
-  components: {
-    OptionalSubMenuActionButton,
-    SearchButton,
-    SubMenu,
-    MenuOptionsIcon,
-    ReloadIcon,
-    FunctionButton,
-    SpaceExplorerFloatingButton,
-  },
+type Props = {
+  projectId: string;
+  selectedItemIds: string[];
+  mode?: DisplayModes;
+  filterQuery?: string;
+};
 
-  props: {
-    mode: {
-      type: String as PropType<DisplayModes>,
-      default: "normal",
-    },
-    selectedItemIds: {
-      type: Array as PropType<string[]>,
-      required: true,
-    },
-    projectId: {
-      type: String as PropType<string>,
-      required: true,
-    },
-    filterQuery: {
-      type: String,
-      default: "",
-    },
-  },
-
-  emits: ["importedItemIds", "update:filterQuery"],
-
-  setup() {
-    const { toastPresets } = getToastPresets();
-    return { toastPresets };
-  },
-
-  computed: {
-    ...mapGetters("spaces", [
-      "getSpaceInfo",
-      "getProviderInfoFromProjectPath",
-      "hasActiveHubSession",
-      "selectionContainsFile",
-      "selectionContainsWorkflow",
-    ]),
-    ...mapState("spaces", ["spaceProviders", "isLoadingContent"]),
-
-    isLocal() {
-      return isLocalProvider(
-        this.getProviderInfoFromProjectPath(this.projectId),
-      );
-    },
-    isFileSelected() {
-      return this.selectionContainsFile(this.projectId, this.selectedItemIds);
-    },
-    isWorkflowSelected() {
-      return this.selectionContainsWorkflow(
-        this.projectId,
-        this.selectedItemIds,
-      );
-    },
-    createWorkflowAction() {
-      return {
-        id: "createWorkflow",
-        text: "Create workflow",
-        icon: PlusIcon,
-        disabled: this.isLoadingContent,
-        hidden: this.mode !== "mini",
-        execute: () => {
-          this.$store.commit("spaces/setCreateWorkflowModalConfig", {
-            isOpen: true,
-            projectId: this.projectId,
-          });
-        },
-      };
-    },
-    actions(): ActionMenuItem[] {
-      const { projectId } = this;
-
-      const getLocalActions = () => {
-        const uploadToHub = buildHubUploadMenuItem(
-          this.$store.dispatch,
-          this.projectId,
-          this.selectedItemIds,
-        );
-
-        if (this.isLocal) {
-          return [uploadToHub];
-        }
-
-        return [];
-      };
-
-      const getHubActions = () => {
-        if (this.isLocal) {
-          return [];
-        }
-
-        const downloadToLocalSpace = buildHubDownloadMenuItem(
-          this.$store.dispatch,
-          this.projectId,
-          this.selectedItemIds,
-        );
-
-        const moveToSpace = buildMoveToSpaceMenuItem(
-          this.$store.dispatch,
-          this.projectId,
-          this.selectedItemIds,
-        );
-
-        const copyToSpace = buildCopyToSpaceMenuItem(
-          this.$store.dispatch,
-          this.projectId,
-          this.selectedItemIds,
-        );
-
-        return [downloadToLocalSpace, moveToSpace, copyToSpace];
-      };
-
-      const getServerActions = () => {
-        if (
-          this.getProviderInfoFromProjectPath(projectId).type !==
-          BaseSpaceProvider.TypeEnum.SERVER
-        ) {
-          return [];
-        }
-
-        if (!this.isWorkflowSelected) {
-          return [];
-        }
-
-        const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
-          this.$store.dispatch,
-          this.projectId,
-          this.selectedItemIds,
-        );
-
-        return [openAPIDefinition];
-      };
-
-      return [
-        this.createWorkflowAction,
-        {
-          id: "createFolder",
-          text: "Create folder",
-          icon: FolderPlusIcon,
-          separator: true,
-          execute: async () => {
-            try {
-              await this.$store.dispatch("spaces/createFolder", { projectId });
-            } catch (error) {
-              this.toastPresets.spaces.crud.createFolderFailed({ error });
-            }
-          },
-        },
-        {
-          id: "importWorkflow",
-          text: "Import workflow",
-          icon: ImportWorkflowIcon,
-          execute: async () => {
-            const items: string[] | null = await this.$store.dispatch(
-              "spaces/importToWorkflowGroup",
-              {
-                projectId,
-                importType: "WORKFLOW",
-              },
-            );
-            if (items && items.length > 0) {
-              this.$emit("importedItemIds", items);
-            }
-          },
-        },
-        {
-          id: "importFiles",
-          text: "Add files",
-          icon: AddFileIcon,
-          separator: true,
-          execute: async () => {
-            const items: string[] | null = await this.$store.dispatch(
-              "spaces/importToWorkflowGroup",
-              {
-                projectId,
-                importType: "FILES",
-              },
-            );
-            if (items && items.length > 0) {
-              this.$emit("importedItemIds", items);
-            }
-          },
-        },
-        ...getLocalActions(),
-        ...getHubActions(),
-        ...getServerActions(),
-        {
-          id: "reload",
-          text: "Reload",
-          icon: ReloadIcon,
-          execute: () => this.reload(),
-        },
-      ];
-    },
-
-    createWorkflowButtonTitle() {
-      const { text, hotkeyText } = this.$shortcuts.get("createWorkflow");
-      return `${text} (${hotkeyText})`;
-    },
-  },
-  methods: {
-    filteredActions(hideItems: string[]) {
-      return this.actions.filter((item) => !hideItems.includes(item.id));
-    },
-    reload() {
-      const { projectId } = this;
-      if (projectId === null) {
-        return;
-      }
-      this.$store.dispatch("spaces/fetchWorkflowGroupContent", {
-        projectId,
-      });
-    },
-  },
+const props = withDefaults(defineProps<Props>(), {
+  mode: "normal",
+  filterQuery: "",
 });
+
+const emit = defineEmits(["importedItemIds", "update:filterQuery"]);
+const $shortcuts = useShortcuts();
+
+const { toastPresets } = getToastPresets();
+
+const spacesStore = useSpacesStore();
+const spaceOperationsStore = useSpaceOperationsStore();
+const { isLoadingContent, selectionContainsWorkflow } =
+  storeToRefs(spaceOperationsStore);
+const { getProviderInfoFromProjectPath } = storeToRefs(
+  useSpaceProvidersStore(),
+);
+
+const isLocal = computed(() => {
+  const providerInfo = getProviderInfoFromProjectPath.value(props.projectId);
+  return providerInfo ? isLocalProvider(providerInfo) : false;
+});
+
+const isWorkflowSelected = computed(() =>
+  selectionContainsWorkflow.value(props.projectId, props.selectedItemIds),
+);
+
+const createWorkflowAction = computed(() => ({
+  id: "createWorkflow",
+  text: "Create workflow",
+  icon: PlusIcon,
+  disabled: isLoadingContent.value,
+  hidden: props.mode !== "mini",
+  execute: () => {
+    spacesStore.setCreateWorkflowModalConfig({
+      isOpen: true,
+      projectId: props.projectId,
+    });
+  },
+}));
+
+const reload = () => {
+  if (props.projectId) {
+    spaceOperationsStore.fetchWorkflowGroupContent({
+      projectId: props.projectId,
+    });
+  }
+};
+
+const actions = computed(() => {
+  const getLocalActions = () => {
+    const uploadToHub = buildHubUploadMenuItem(
+      props.projectId,
+      props.selectedItemIds,
+    );
+    if (isLocal.value) {
+      return [uploadToHub];
+    }
+    return [];
+  };
+
+  const getHubActions = () => {
+    if (isLocal.value) {
+      return [];
+    }
+    const downloadToLocalSpace = buildHubDownloadMenuItem(
+      props.projectId,
+      props.selectedItemIds,
+    );
+    const moveToSpace = buildMoveToSpaceMenuItem(
+      props.projectId,
+      props.selectedItemIds,
+    );
+    const copyToSpace = buildCopyToSpaceMenuItem(
+      props.projectId,
+      props.selectedItemIds,
+    );
+    return [downloadToLocalSpace, moveToSpace, copyToSpace];
+  };
+
+  const getServerActions = () => {
+    const providerInfo = getProviderInfoFromProjectPath.value(props.projectId);
+    if (
+      !providerInfo ||
+      providerInfo.type !== BaseSpaceProvider.TypeEnum.SERVER ||
+      !isWorkflowSelected.value
+    ) {
+      return [];
+    }
+    const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
+      props.projectId,
+      props.selectedItemIds,
+    );
+    return [openAPIDefinition];
+  };
+
+  return [
+    createWorkflowAction.value,
+    {
+      id: "createFolder",
+      text: "Create folder",
+      icon: FolderPlusIcon,
+      separator: true,
+      execute: async () => {
+        try {
+          await spaceOperationsStore.createFolder({
+            projectId: props.projectId,
+          });
+        } catch (error) {
+          toastPresets.spaces.crud.createFolderFailed({ error });
+        }
+      },
+    },
+    {
+      id: "importWorkflow",
+      text: "Import workflow",
+      icon: ImportWorkflowIcon,
+      execute: async () => {
+        const items: string[] | null =
+          await spaceOperationsStore.importToWorkflowGroup({
+            projectId: props.projectId,
+            importType: "WORKFLOW",
+          });
+        if (items && items.length > 0) {
+          emit("importedItemIds", items);
+        }
+      },
+    },
+    {
+      id: "importFiles",
+      text: "Add files",
+      icon: AddFileIcon,
+      separator: true,
+      execute: async () => {
+        const items: string[] | null =
+          await spaceOperationsStore.importToWorkflowGroup({
+            projectId: props.projectId,
+            importType: "FILES",
+          });
+        if (items && items.length > 0) {
+          emit("importedItemIds", items);
+        }
+      },
+    },
+    ...getLocalActions(),
+    ...getHubActions(),
+    ...getServerActions(),
+    {
+      id: "reload",
+      text: "Reload",
+      icon: ReloadIcon,
+      execute: () => reload(),
+    },
+  ];
+});
+
+const createWorkflowButtonTitle = computed(() => {
+  const { text, hotkeyText } = $shortcuts.get("createWorkflow");
+  return `${text} (${hotkeyText})`;
+});
+
+const filteredActions = (hideItems: string[]) =>
+  actions.value.filter((item) => !hideItems.includes(item.id));
 </script>
 
 <template>

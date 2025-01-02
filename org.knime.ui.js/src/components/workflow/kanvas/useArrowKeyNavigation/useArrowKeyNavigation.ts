@@ -1,10 +1,11 @@
 import { type ComputedRef, type Ref, onMounted } from "vue";
 import { useEventListener } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import { navigatorUtils } from "@knime/utils";
 
-import { useStore } from "@/composables/useStore";
+import { useSelectionStore } from "@/store/selection";
 import { isInputElement } from "@/util/isInputElement";
 
 import { useArrowKeyMoving } from "./useArrowKeyMoving";
@@ -32,11 +33,12 @@ export const useArrowKeyNavigation = (
   });
   const { handleInitialSelection } = useInitialSelection();
 
-  const store = useStore();
+  const { selectedObjects, getFocusedObject, activeNodePorts } = storeToRefs(
+    useSelectionStore(),
+  );
 
   const hasSelectedObjects = () => {
-    const selectedObjects = store.getters["selection/selectedObjects"];
-    return selectedObjects.length > 0;
+    return selectedObjects.value.length > 0;
   };
 
   const isInitialSelectionEvent = (event: KeyboardEvent) => {
@@ -44,7 +46,7 @@ export const useArrowKeyNavigation = (
       !hasSelectedObjects() &&
       !event.shiftKey &&
       !event[navigatorUtils.getMetaOrCtrlKey()] &&
-      store.state.selection.focusedObject === null
+      getFocusedObject.value === null
     );
   };
 
@@ -52,7 +54,7 @@ export const useArrowKeyNavigation = (
     return (
       !isInputElement(event.target as HTMLElement) &&
       !event.altKey &&
-      !store.state.selection.activeNodePorts.selectedPort
+      !activeNodePorts.value.selectedPort
     );
   };
 

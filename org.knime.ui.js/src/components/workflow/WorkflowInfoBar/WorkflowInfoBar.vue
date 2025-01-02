@@ -1,33 +1,28 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import type { SpaceItemReference } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStore } from "@/store/canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
 
 import RemoteWorkflowInfo from "./RemoteWorkflowInfo.vue";
 import StreamingInfo from "./StreamingInfo.vue";
 
-const store = useStore();
+const {
+  isLinked,
+  isInsideLinked,
+  insideLinkedType,
+  isStreaming,
+  isRemoteWorkflow,
+  activeWorkflow,
+} = storeToRefs(useWorkflowStore());
+const { activeProjectOrigin: origin } = storeToRefs(useApplicationStore());
+const width = computed(() => useCanvasStore().containerSize.width);
 
-const width = computed(() => store.state.canvas.containerSize.width);
-
-const isLinked = computed(() => store.getters["workflow/isLinked"]);
-const isInsideLinked = computed(() => store.getters["workflow/isInsideLinked"]);
-const origin = computed<SpaceItemReference>(
-  () => store.getters["application/activeProjectOrigin"],
-);
-const isStreaming = computed(() => store.getters["workflow/isStreaming"]);
-const isRemoteWorkflow = computed(
-  () => store.getters["workflow/isRemoteWorkflow"],
-);
-const insideLinkedType = computed(
-  () => store.getters["workflow/insideLinkedType"],
-);
-const containerType = computed(
-  () => store.state.workflow.activeWorkflow!.info.containerType,
-);
+const containerType = computed(() => activeWorkflow.value!.info.containerType);
 </script>
 
 <template>

@@ -1,19 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { Button, NodePreview } from "@knime/components";
 
-import { API } from "@/api";
 import {
   NativeNodeInvariants,
   PortType,
 } from "@/api/gateway-api/generated-api";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
-import * as quickAddNodesStore from "@/store/quickAddNodes";
-import * as selectionStore from "@/store/selection";
-import * as settingsStore from "@/store/settings";
-import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -22,8 +18,10 @@ import {
   createNodeTemplate,
   createPort,
   createSearchNodesResponse,
+  createWorkflow,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import QuickAddNodeMenu, {
   type QuickAddNodeMenuProps,
 } from "../QuickAddNodeMenu.vue";
@@ -75,7 +73,6 @@ vi.mock("@/plugins/shortcuts", () => ({
 
 describe("QuickAddNodeMenu.vue", () => {
   const doMount = ({
-    addNodeMock = vi.fn(),
     props = {},
     nodeRecommendationsResponse = defaultNodeRecommendationsResponse,
     isWriteableMock = vi.fn().mockReturnValue(true),
@@ -101,79 +98,51 @@ describe("QuickAddNodeMenu.vue", () => {
     mockedAPI.noderepository.searchNodes.mockImplementation(() =>
       Promise.resolve(createSearchNodesResponse()),
     );
-    const subscribeToNodeRepositoryLoadingEventMock = vi.fn();
 
-    const storeConfig = {
-      canvas: {
-        state: () => ({
-          zoomFactor: 1,
-        }),
-        getters: {
-          contentBounds() {
-            return {
-              top: 33,
-              height: 1236,
-            };
-          },
-        },
+    const mockedStores = mockStores();
+    mockedStores.workflowStore.isWritable = isWriteableMock;
+    mockedStores.workflowStore.workflowBounds = {};
+    mockedStores.workflowStore.activeWorkflow = createWorkflow({
+      info: {
+        containerId: "container0",
       },
-      quickAddNodes: quickAddNodesStore,
-      application: {
-        state: {
-          availablePortTypes: createAvailablePortTypes({
-            "org.some.otherPorType": {
-              kind: PortType.KindEnum.Other,
-              color: "blue",
-              name: "Some other port",
-            },
-          }),
-          hasNodeCollectionActive: true,
-          hasNodeRecommendationsEnabled: true,
-          nodeRepositoryLoaded: nodeRepositoryLoadedMock,
-        },
-        actions: {
-          subscribeToNodeRepositoryLoadingEvent:
-            subscribeToNodeRepositoryLoadingEventMock,
-        },
+      projectId: "project0",
+      nodes: {},
+      metaInPorts: {
+        xPos: 100,
+        ports: [defaultPortMock],
       },
-      selection: selectionStore,
-      settings: settingsStore,
-      workflow: {
-        state: {
-          ...workflowStore.state(),
-          activeWorkflow: {
-            info: {
-              containerId: "container0",
-            },
-            projectId: "project0",
-            nodes: {},
-            metaInPorts: {
-              xPos: 100,
-              ports: [defaultPortMock],
-            },
-            metaOutPorts: {
-              xPos: 702,
-              ports: [defaultPortMock, defaultPortMock, defaultPortMock],
-            },
-          },
-        },
-        actions: {
-          addNode: addNodeMock,
-        },
-        getters: {
-          isWritable: isWriteableMock,
-          getNodeById: () => getNodeByIdMock,
-          workflowBounds: () => ({}),
-        },
+      metaOutPorts: {
+        xPos: 702,
+        ports: [defaultPortMock, defaultPortMock, defaultPortMock],
       },
+    });
+
+    mockedStores.nodeInteractionsStore.getNodeById = getNodeByIdMock;
+    mockedStores.canvasStore.contentBounds = {
+      top: 33,
+      height: 1236,
     };
 
-    const $store = mockVuexStore(storeConfig);
+    mockedStores.applicationStore.availablePortTypes = createAvailablePortTypes(
+      {
+        "org.some.otherPorType": {
+          kind: PortType.KindEnum.Other,
+          color: "blue",
+          name: "Some other port",
+        },
+      },
+    );
+
+    mockedStores.applicationStore.nodeRepositoryLoaded =
+      nodeRepositoryLoadedMock;
+    mockedStores.applicationSettingsStore.hasNodeCollectionActive = true;
+    mockedStores.applicationSettingsStore.hasNodeRecommendationsEnabled = true;
 
     const wrapper = mount(QuickAddNodeMenu, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: {
           $shapes: {
             ...$shapes,
@@ -188,10 +157,8 @@ describe("QuickAddNodeMenu.vue", () => {
 
     return {
       wrapper,
-      $store,
-      addNodeMock,
+      mockedStores,
       $shortcuts,
-      subscribeToNodeRepositoryLoadingEventMock,
     };
   };
 
@@ -215,16 +182,15 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("adds node on click", async () => {
-      const { wrapper, addNodeMock, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
 
-      expect($store.state.quickAddNodes.portTypeId).toBe(
+      expect(mockedStores.quickAddNodesStore.portTypeId).toBe(
         "org.knime.core.node.BufferedDataTable",
       );
-      expect(addNodeMock).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
         expect.objectContaining({
           nodeFactory: {
             className:
@@ -242,9 +208,9 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("allows dynamic updates of the port", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await nextTick();
-      expect($store.state.quickAddNodes.portTypeId).toBe(
+      expect(mockedStores.quickAddNodesStore.portTypeId).toBe(
         "org.knime.core.node.BufferedDataTable",
       );
 
@@ -260,7 +226,7 @@ describe("QuickAddNodeMenu.vue", () => {
       });
       await new Promise((r) => setTimeout(r, 0));
 
-      expect($store.state.quickAddNodes.portTypeId).toBe(
+      expect(mockedStores.quickAddNodesStore.portTypeId).toBe(
         "org.some.otherPorType",
       );
       expect(API.noderepository.getNodeRecommendations).toHaveBeenCalledTimes(
@@ -275,16 +241,15 @@ describe("QuickAddNodeMenu.vue", () => {
         port: null,
         nodeRelation: null,
       };
-      const { wrapper, addNodeMock, $store } = doMount({ props });
+      const { wrapper, mockedStores } = doMount({ props });
 
       await nextTick();
 
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
 
-      expect($store.state.quickAddNodes.portTypeId).toBeNull();
-      expect(addNodeMock).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.quickAddNodesStore.portTypeId).toBeNull();
+      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
         expect.objectContaining({
           nodeFactory: {
             className:
@@ -306,12 +271,12 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("adds node on pressing enter key", async () => {
-      const { wrapper, addNodeMock } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("keydown.enter");
 
-      expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
+      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith({
         nodeFactory: {
           className:
             "org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory",
@@ -327,19 +292,22 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("does not add node if workflow is not writeable", async () => {
-      const { wrapper, addNodeMock } = doMount({
-        isWriteableMock: vi.fn(() => false),
+      const { wrapper, mockedStores } = doMount({
+        isWriteableMock: false,
       });
       await nextTick();
       const node1 = wrapper.findAll(".node").at(0);
       await node1.trigger("click");
 
-      expect(addNodeMock).toHaveBeenCalledTimes(0);
+      expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledTimes(
+        0,
+      );
     });
 
     it("does display overlay if workflow coach is disabled", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.application.hasNodeRecommendationsEnabled = false;
+      const { wrapper, mockedStores } = doMount();
+      mockedStores.applicationSettingsStore.hasNodeRecommendationsEnabled =
+        false;
       await nextTick();
 
       expect(wrapper.find(".disabled-workflow-coach").exists()).toBe(true);
@@ -353,8 +321,9 @@ describe("QuickAddNodeMenu.vue", () => {
     });
 
     it("opens workflow coach preferences page when button is clicked", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.application.hasNodeRecommendationsEnabled = false;
+      const { wrapper, mockedStores } = doMount();
+      mockedStores.applicationSettingsStore.hasNodeRecommendationsEnabled =
+        false;
       await nextTick();
       await wrapper.findComponent(Button).vm.$emit("click");
 
@@ -388,7 +357,7 @@ describe("QuickAddNodeMenu.vue", () => {
 
     describe("add node", () => {
       it("adds the first search result via enter in the search box to the workflow", async () => {
-        const { wrapper, addNodeMock } = doMount();
+        const { wrapper, mockedStores } = doMount();
         const input = wrapper.find(".search-bar input");
 
         // trigger search
@@ -398,25 +367,27 @@ describe("QuickAddNodeMenu.vue", () => {
         // press enter
         await input.trigger("keydown.enter");
 
-        expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
-          nodeFactory: {
-            className:
-              "org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory",
+        expect(mockedStores.nodeInteractionsStore.addNode).toHaveBeenCalledWith(
+          {
+            nodeFactory: {
+              className:
+                "org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory",
+            },
+            position: {
+              x: 19,
+              y: -6,
+            },
+            sourceNodeId: "node-id",
+            sourcePortIdx: 1,
+            nodeRelation: "SUCCESSORS",
           },
-          position: {
-            x: 19,
-            y: -6,
-          },
-          sourceNodeId: "node-id",
-          sourcePortIdx: 1,
-          nodeRelation: "SUCCESSORS",
-        });
+        );
       });
 
       it.each(["click", "keydown.enter"])(
         "adds search results via %s to workflow",
         async (event) => {
-          const { wrapper, addNodeMock } = doMount();
+          const { wrapper, mockedStores } = doMount();
 
           const input = wrapper.find(".search-bar input");
           await input.setValue(`some-input-for-${event}`);
@@ -427,8 +398,9 @@ describe("QuickAddNodeMenu.vue", () => {
 
           await node.trigger(event);
 
-          expect(addNodeMock).toHaveBeenCalledWith(
-            expect.anything(),
+          expect(
+            mockedStores.nodeInteractionsStore.addNode,
+          ).toHaveBeenCalledWith(
             expect.objectContaining({
               nodeFactory: {
                 className:
@@ -446,11 +418,13 @@ describe("QuickAddNodeMenu.vue", () => {
   });
 
   it("shows loader if node repository is not loaded", () => {
-    const { wrapper, subscribeToNodeRepositoryLoadingEventMock } = doMount({
+    const { wrapper, mockedStores } = doMount({
       nodeRepositoryLoadedMock: false,
     });
 
-    expect(subscribeToNodeRepositoryLoadingEventMock).toHaveBeenCalled();
+    expect(
+      mockedStores.lifecycleStore.subscribeToNodeRepositoryLoadingEvent,
+    ).toHaveBeenCalled();
     expect(wrapper.findComponent(NodeRepositoryLoader).exists()).toBe(true);
   });
 });

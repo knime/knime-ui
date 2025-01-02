@@ -2,15 +2,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, shallowMount } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import * as applicationStore from "@/store/application";
-import * as selectionStore from "@/store/selection";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import * as $shapes from "@/style/shapes";
-import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
+import { createWorkflow } from "@/test/factories";
+import { deepMocked, mockBoundingRect } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import MoveableNodeContainer from "../MoveableNodeContainer.vue";
 
 const mockedAPI = deepMocked(API);
@@ -38,50 +36,37 @@ describe("MoveableNodeContainer", () => {
       position: { x: 500, y: 200 },
     };
 
-    const storeConfig = {
-      workflow: workflowStore,
-      canvas: {
-        state: { zoomFactor: 1, isMoveLocked: false },
-        getters: { screenToCanvasCoordinates: () => screenToCanvasCoordinates },
-      },
-      application: {
-        state() {
-          return {
-            ...applicationStore.state(),
-            activeProjectId: "projectId",
-          };
+    const mockedStores = mockStores();
+    // @ts-ignore
+    mockedStores.canvasStore.screenToCanvasCoordinates =
+      screenToCanvasCoordinates;
+
+    mockedStores.movingStore.setMovePreview({ deltaX: 0, deltaY: 0 });
+    mockedStores.movingStore.setIsDragging(isDragging);
+    mockedStores.workflowStore.setActiveWorkflow(
+      createWorkflow({
+        info: { containerId: "root" },
+        nodes: {
+          "root:1": { id: "root:1", position: { x: 0, y: 0 } },
+          "root:2": { id: "root:2", position: { x: 0, y: 0 } },
         },
-      },
-      selection: selectionStore,
-      uiControls: uiControlsStore,
-    };
-
-    const $store = mockVuexStore(storeConfig);
-
-    $store.commit("workflow/setMovePreview", { deltaX: 0, deltaY: 0 });
-    $store.commit("workflow/setIsDragging", isDragging);
-    $store.commit("workflow/setActiveWorkflow", {
-      info: { containerId: "root" },
-      nodes: {
-        "root:1": { id: "root:1", position: { x: 0, y: 0 } },
-        "root:2": { id: "root:2", position: { x: 0, y: 0 } },
-      },
-      connections: {},
-      workflowAnnotations: [],
-    });
+        connections: {},
+        workflowAnnotations: [],
+      }),
+    );
 
     const wrapper = shallowMount(MoveableNodeContainer, {
       props: { ...defaultProps, ...props },
       global: {
         mocks: { $shapes },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
       slots: {
         default: '<div class="node-torso-wrapper" />',
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   const startNodeDrag = (
@@ -120,28 +105,30 @@ describe("MoveableNodeContainer", () => {
     });
 
     it("should deselect other nodes on movement of unselected node", async () => {
-      const { $store, wrapper } = doMount();
+      const { mockedStores, wrapper } = doMount();
 
       // select different node
-      await $store.dispatch("selection/selectNode", "root:2");
+      mockedStores.selectionStore.selectNode("root:2");
+      await nextTick();
 
       await startNodeDrag(wrapper, { clientX: 199, clientY: 199 });
 
-      expect($store.state.selection.selectedNodes).toEqual({
+      expect(mockedStores.selectionStore.selectedNodes).toEqual({
         "root:1": true,
       });
     });
 
     it("should not deselect a node that is already selected", async () => {
-      const { $store, wrapper } = doMount({
+      const { mockedStores, wrapper } = doMount({
         props: { id: "root:2" },
       });
 
-      await $store.dispatch("selection/selectNode", "root:2");
+      mockedStores.selectionStore.selectNode("root:2");
+      await nextTick();
 
       await startNodeDrag(wrapper, { clientX: 199, clientY: 199 });
 
-      expect($store.state.selection.selectedNodes).toEqual({
+      expect(mockedStores.selectionStore.selectedNodes).toEqual({
         "root:2": true,
       });
     });
@@ -160,7 +147,7 @@ describe("MoveableNodeContainer", () => {
       const eventCoords = { clientX: 10, clientY: 10 };
       mockBoundingRect(rect);
 
-      const { $store, wrapper } = doMount({
+      const { mockedStores, wrapper } = doMount({
         isDragging: true,
         screenToCanvasCoordinates: vi.fn(() => [
           positionAfterMove.x,
@@ -188,7 +175,7 @@ describe("MoveableNodeContainer", () => {
         y: Math.round(initialDelta.y / gridSize.y) * gridSize.y,
       };
 
-      expect($store.state.workflow.movePreviewDelta).toEqual({
+      expect(mockedStores.movingStore.movePreviewDelta).toEqual({
         x: expect.anything(),
         y: expectedDelta.y,
       });
@@ -216,7 +203,7 @@ describe("MoveableNodeContainer", () => {
     const mockTarget = document.createElement("div");
     mockTarget.dispatchEvent = vi.fn();
     window.document.elementFromPoint = vi.fn().mockReturnValue(mockTarget);
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       isDragging: true,
     });
     const rect = { left: 5, top: 8, right: 20, bottom: 20 };
@@ -224,15 +211,18 @@ describe("MoveableNodeContainer", () => {
     await startNodeDrag(wrapper, { clientX: 10, clientY: 10 });
     moveNodeTo({ clientX: 250, clientY: 250 });
     await nextTick();
-    expect($store.state.workflow.movePreviewDelta).not.toEqual({ x: 0, y: 0 });
+    expect(mockedStores.movingStore.movePreviewDelta).not.toEqual({
+      x: 0,
+      y: 0,
+    });
     (useEscapeStack as any).onEscape();
-    expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
-    expect($store.state.workflow.hasAbortedDrag).toBe(true);
-    expect($store.state.workflow.isDragging).toBe(false);
+    expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
+    expect(mockedStores.movingStore.hasAbortedDrag).toBe(true);
+    expect(mockedStores.movingStore.isDragging).toBe(false);
     // drag was aborted, so the move preview cannot be updated
-    expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
+    expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
     await endNodeDrag(wrapper, { clientX: 0, clientY: 0 });
-    expect($store.state.workflow.hasAbortedDrag).toBe(false);
+    expect(mockedStores.movingStore.hasAbortedDrag).toBe(false);
   });
 
   describe("node dragging notification", () => {

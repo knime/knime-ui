@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { getToastsProvider } from "@/plugins/toasts";
+import {
+  createAvailablePortTypes,
+  createNativeNode,
+  createWorkflow,
+} from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 
@@ -70,16 +75,18 @@ describe("workflow store: Execution", () => {
 
   describe("actions", () => {
     it.each([
-      ["executeNodes", "execute"],
-      ["cancelNodeExecution", "cancel"],
-      ["resetNodes", "reset"],
-    ])("passes %s to API", async (fn, action) => {
-      const { store } = await loadStore();
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-      });
-      store.dispatch(`workflow/${fn}`, ["x", "y"]);
+      ["executeNodes", "execute"] as const,
+      ["cancelNodeExecution", "cancel"] as const,
+      ["resetNodes", "reset"] as const,
+    ])("passes %s to API", (fn, action) => {
+      const { workflowStore, executionStore } = loadStore();
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
+      executionStore[fn](["x", "y"]);
 
       expect(mockedAPI.node.changeNodeStates).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -92,17 +99,19 @@ describe("workflow store: Execution", () => {
     });
 
     it.each([
-      ["pauseLoopExecution", "pause"],
-      ["resumeLoopExecution", "resume"],
-      ["stepLoopExecution", "step"],
-    ])("passes %s to API", async (fn, action) => {
-      const { store } = await loadStore();
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-      });
+      ["pauseLoopExecution", "pause"] as const,
+      ["resumeLoopExecution", "resume"] as const,
+      ["stepLoopExecution", "step"] as const,
+    ])("passes %s to API", (fn, action) => {
+      const { workflowStore, executionStore } = loadStore();
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+        }),
+      );
 
-      store.dispatch(`workflow/${fn}`, "node x");
+      executionStore[fn]("node x");
 
       expect(mockedAPI.node.changeLoopState).toHaveBeenCalledWith({
         nodeId: "node x",
@@ -112,54 +121,57 @@ describe("workflow store: Execution", () => {
       });
     });
 
-    it("overloaded changeNodeState", async () => {
-      const { store } = await loadStore();
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        info: { containerId: "root" },
-        nodes: {
-          "root:1": { id: "root:1" },
-          "root:2": { id: "root:2" },
-        },
-        workflowAnnotations: [],
-      });
+    it("overloaded changeNodeState", () => {
+      const { workflowStore, executionStore, selectionStore } = loadStore();
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          info: { containerId: "root" },
+          nodes: {
+            "root:1": { id: "root:1" },
+            "root:2": { id: "root:2" },
+          },
+          workflowAnnotations: [],
+        }),
+      );
 
-      store.dispatch("workflow/changeNodeState", { nodes: "all" });
+      executionStore.changeNodeState({ action: "execute", nodes: "all" });
       expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith(
         expect.objectContaining({
           projectId: "foo",
           workflowId: "root",
           nodeIds: [],
+          action: "execute",
         }),
       );
 
-      store.dispatch("selection/selectAllObjects");
-      store.dispatch("workflow/changeNodeState", { nodes: "selected" });
+      selectionStore.selectAllObjects();
+      executionStore.changeNodeState({ action: "execute", nodes: "selected" });
+
       expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith(
         expect.objectContaining({
           nodeIds: ["root:1", "root:2"],
           projectId: "foo",
           workflowId: "root",
+          action: "execute",
         }),
       );
 
-      store.dispatch("workflow/changeNodeState", {
-        action: "action",
-        nodes: ["root:2"],
-      });
+      executionStore.changeNodeState({ action: "execute", nodes: ["root:2"] });
+
       expect(mockedAPI.node.changeNodeStates).toHaveBeenLastCalledWith({
         nodeIds: ["root:2"],
         projectId: "foo",
         workflowId: "root",
-        action: "action",
+        action: "execute",
       });
     });
 
-    it("executeNodeAndOpenView", async () => {
-      const { store } = await loadStore();
+    it("executeNodeAndOpenView", () => {
+      const { workflowStore, executionStore } = loadStore();
 
-      store.commit("workflow/setActiveWorkflow", { projectId: "foo" });
-      store.dispatch("workflow/executeNodeAndOpenView", "root:0");
+      workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
+      executionStore.executeNodeAndOpenView("root:0");
 
       expect(mockedAPI.desktop.executeNodeAndOpenView).toHaveBeenCalledWith({
         nodeId: "root:0",
@@ -168,37 +180,45 @@ describe("workflow store: Execution", () => {
     });
 
     describe("openPortView", () => {
-      it("open views", async () => {
-        const { store } = await loadStore();
-        store.commit("workflow/setActiveWorkflow", {
-          projectId: "MockProjectId",
-        });
-        const dispatchSpy = vi.spyOn(store, "dispatch");
-        const node = { id: "testnode" };
+      it("open views", () => {
+        const { workflowStore, executionStore } = loadStore();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            projectId: "MockProjectId",
+          }),
+        );
 
-        await store.dispatch("workflow/openPortView", { node, port: "view" });
-        expect(dispatchSpy).toHaveBeenLastCalledWith(
-          "workflow/executeNodeAndOpenView",
+        const node = createNativeNode({ id: "testnode" });
+
+        executionStore.openPortView({ node, port: "view" });
+        expect(executionStore.executeNodeAndOpenView).toHaveBeenLastCalledWith(
           node.id,
         );
       });
 
       it.each(["0", "1", "3"])('openPortView with port="%s"', async (port) => {
-        const { store } = await loadStore();
-        const dispatchSpy = vi.spyOn(store, "dispatch");
-        store.state.application.availablePortTypes = {
-          mockType0: { views: [] },
-          mockType1: { views: [] },
-          mockType2: { views: [] },
-          mockType3: { views: [] },
-        };
-        store.commit("application/setActiveProjectId", "mockActiveProjectId");
-        store.commit("workflow/setActiveWorkflow", {
-          projectId: "MockProjectId",
+        const { workflowStore, executionStore, applicationStore } = loadStore();
+
+        applicationStore.availablePortTypes = createAvailablePortTypes({
+          // @ts-ignore
+          mockType0: { views: {} },
+          // @ts-ignore
+          mockType1: { views: {} },
+          // @ts-ignore
+          mockType2: { views: {} },
+          // @ts-ignore
+          mockType3: { views: {} },
         });
+
+        applicationStore.setActiveProjectId("mockActiveProjectId");
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            projectId: "MockProjectId",
+          }),
+        );
         variableMockData.validation.result = {};
 
-        const node = {
+        const node = createNativeNode({
           id: "root:0",
           outPorts: [
             { typeId: "mockType0" },
@@ -206,13 +226,14 @@ describe("workflow store: Execution", () => {
             { typeId: "mockType2" },
             { typeId: "mockType3" },
           ],
-        };
+        });
 
         // open port with detected view index
         vi.mocked(getPortViewByViewDescriptors).mockReturnValueOnce([
           { id: "42", disabled: false, text: "mock text", canDetach: true },
         ]);
-        await store.dispatch("workflow/openPortView", { node, port });
+
+        executionStore.openPortView({ node, port });
         expect(mockedAPI.desktop.openPortView).toHaveBeenCalledOnce();
         expect(mockedAPI.desktop.openPortView).toHaveBeenCalledWith({
           projectId: "mockActiveProjectId",
@@ -225,7 +246,7 @@ describe("workflow store: Execution", () => {
         vi.mocked(getPortViewByViewDescriptors).mockReturnValueOnce([
           { id: "1", disabled: false, text: "mock text", canDetach: false },
         ]);
-        await store.dispatch("workflow/openPortView", { node, port });
+        executionStore.openPortView({ node, port });
         expect(getToastsProvider().show).toHaveBeenLastCalledWith(
           expect.objectContaining({
             message: "Port has no detachable view",
@@ -236,19 +257,16 @@ describe("workflow store: Execution", () => {
         // error: no modern viewer
         variableMockData.validation.result =
           variableMockData.validation.UNSUPPORTED_PORT_VIEW;
-        await store.dispatch("workflow/openPortView", { node, port });
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "workflow/openLegacyPortView",
-          {
-            nodeId: node.id,
-            portIndex: Number(port),
-          },
-        );
+        executionStore.openPortView({ node, port });
+        expect(executionStore.openLegacyPortView).toHaveBeenCalledWith({
+          nodeId: node.id,
+          portIndex: Number(port),
+        });
 
         // error: not executed
         variableMockData.validation.result =
           variableMockData.validation.NODE_UNEXECUTED;
-        await store.dispatch("workflow/openPortView", { node, port });
+        executionStore.openPortView({ node, port });
         expect(getToastsProvider().show).toHaveBeenLastCalledWith(
           expect.objectContaining({
             message: "unexecuted error message",
@@ -259,7 +277,7 @@ describe("workflow store: Execution", () => {
         // error: validation failed with another error
         variableMockData.validation.result =
           variableMockData.validation.GENERIC_MOCKERROR;
-        await store.dispatch("workflow/openPortView", { node, port });
+        await executionStore.openPortView({ node, port });
         expect(getToastsProvider().show).toHaveBeenLastCalledWith(
           expect.objectContaining({
             message: "generic error message",

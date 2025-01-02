@@ -1,200 +1,219 @@
-import type { ActionTree, GetterTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
+import type { KnimeNode } from "@/api/custom-types";
 import {
   buildMiddleware,
   validateNodeExecuted,
   validatePortSupport,
 } from "@/components/uiExtensions/common/output-validator";
 import { getToastsProvider } from "@/plugins/toasts";
+import { useApplicationStore } from "@/store/application/application";
+import { useSelectionStore } from "@/store/selection";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
-import type { RootStoreState } from "../types";
 
-import type { WorkflowState } from ".";
-import { getProjectAndWorkflowIds } from "./util";
+import { useWorkflowStore } from "./workflow";
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
  * It holds all calls from the workflow store to the API regarding execution.
  */
-
-export const state = () => ({});
-export const mutations = {};
-
 type ExecutionAction = Parameters<
   typeof API.node.changeNodeStates
 >[0]["action"];
 type LoopStateAction = Parameters<typeof API.node.changeLoopState>[0]["action"];
 
-export const actions: ActionTree<WorkflowState, RootStoreState> = {
-  changeNodeState(
-    { state, rootGetters },
-    {
+type NodeExecutionMode = Array<string> | "all" | "selected";
+
+export const useExecutionStore = defineStore("execution", {
+  actions: {
+    changeNodeState({
       action,
       nodes,
-    }: { action: ExecutionAction; nodes: Array<string> | "all" | "selected" },
-  ) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    }: {
+      action: ExecutionAction;
+      nodes: NodeExecutionMode;
+    }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
 
-    if (Array.isArray(nodes)) {
-      // act upon a list of nodes
-      return API.node.changeNodeStates({
-        projectId,
-        nodeIds: nodes,
-        action,
-        workflowId,
-      });
-    } else if (nodes === "all") {
-      // act upon entire workflow
-      return API.node.changeNodeStates({
-        projectId,
-        action,
-        nodeIds: [],
-        workflowId,
-      });
-    } else if (nodes === "selected") {
-      // act upon selected nodes
-      return API.node.changeNodeStates({
-        projectId,
-        nodeIds: rootGetters["selection/selectedNodeIds"],
-        action,
-        workflowId,
-      });
-    } else {
-      throw new TypeError(
-        "'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]",
-      );
-    }
-  },
+      if (Array.isArray(nodes)) {
+        // act upon a list of nodes
+        return API.node.changeNodeStates({
+          projectId,
+          nodeIds: nodes,
+          action,
+          workflowId,
+        });
+      } else if (nodes === "all") {
+        // act upon entire workflow
+        return API.node.changeNodeStates({
+          projectId,
+          action,
+          nodeIds: [],
+          workflowId,
+        });
+      } else if (nodes === "selected") {
+        // act upon selected nodes
+        return API.node.changeNodeStates({
+          projectId,
+          nodeIds: useSelectionStore().selectedNodeIds,
+          action,
+          workflowId,
+        });
+      } else {
+        throw new TypeError(
+          "'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]",
+        );
+      }
+    },
 
-  changeLoopState(
-    { state },
-    { action, nodeId }: { action: LoopStateAction; nodeId: string },
-  ) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-
-    return API.node.changeLoopState({
-      projectId,
-      workflowId,
-      nodeId,
+    changeLoopState({
       action,
-    });
-  },
-
-  executeNodes({ dispatch }, nodes) {
-    return dispatch("changeNodeState", { action: "execute", nodes });
-  },
-
-  openLegacyPortView({ state }, { nodeId, portIndex, executeNode = false }) {
-    API.desktop.openLegacyPortView({
-      projectId: state.activeWorkflow!.projectId,
       nodeId,
-      portIdx: portIndex,
-      executeNode,
-    });
-  },
+    }: {
+      action: LoopStateAction;
+      nodeId: string;
+    }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
 
-  executeNodeAndOpenView({ state }, nodeId) {
-    API.desktop.executeNodeAndOpenView({
-      projectId: state.activeWorkflow!.projectId,
+      return API.node.changeLoopState({
+        projectId,
+        workflowId,
+        nodeId,
+        action,
+      });
+    },
+
+    executeNodes(nodes: NodeExecutionMode) {
+      return this.changeNodeState({ action: "execute", nodes });
+    },
+
+    openLegacyPortView({
       nodeId,
-    });
-  },
-
-  openPortView({ dispatch, rootState }, { node, port }) {
-    if (port === "view") {
-      dispatch("executeNodeAndOpenView", node.id);
-      return;
-    }
-
-    const portTypes = rootState.application.availablePortTypes;
-    const selectedPortIndex = Number(port);
-    const selectedPort = node.outPorts[selectedPortIndex];
-    const validationResult = buildMiddleware(
-      validateNodeExecuted,
-      validatePortSupport,
-    )({
-      selectedNode: node,
-      selectedPort,
-      selectedPortIndex,
-      portTypes,
-    })();
-
-    const PORT_DETACH_SHORTCUT_FAILED_ID = "__PORT_DETACH_SHORTCUT_FAILED";
-    const showDetachErrorToast = (message: string) => {
-      getToastsProvider().show({
-        id: PORT_DETACH_SHORTCUT_FAILED_ID,
-        headline: "Error detaching output port view",
-        message,
-        type: "error",
+      portIndex,
+      executeNode = false,
+    }: {
+      nodeId: string;
+      portIndex: number;
+      executeNode?: boolean;
+    }) {
+      API.desktop.openLegacyPortView({
+        projectId: useWorkflowStore().activeWorkflow!.projectId,
+        nodeId,
+        portIdx: portIndex,
+        executeNode,
       });
-    };
+    },
 
-    if (validationResult?.error?.code === "UNSUPPORTED_PORT_VIEW") {
-      dispatch("openLegacyPortView", {
-        nodeId: node.id,
-        portIndex: selectedPortIndex,
+    /* Some nodes generate views from their data. The node gets executed and a Classic UI dialog opens to present this view */
+    executeNodeAndOpenView(nodeId: string) {
+      API.desktop.executeNodeAndOpenView({
+        projectId: useWorkflowStore().activeWorkflow!.projectId,
+        nodeId,
       });
-      return;
-    }
+    },
 
-    if (validationResult?.error) {
-      showDetachErrorToast(
-        validationResult.error.message ||
-          "Check the output port view for details.",
-      );
-      return;
-    }
-
-    const portViews =
-      rootState.application.availablePortTypes[
-        node.outPorts[selectedPortIndex].typeId
-      ].views;
-
-    if (!portViews) {
-      return;
-    }
-
-    const firstDetachableView = getPortViewByViewDescriptors(
-      portViews,
+    openPortView({
       node,
-      selectedPortIndex,
-    ).find((v) => v.canDetach);
+      port,
+    }: {
+      node: KnimeNode;
+      port: "view" | Omit<string, "view">;
+    }) {
+      if (port === "view") {
+        this.executeNodeAndOpenView(node.id);
+        return;
+      }
 
-    if (firstDetachableView) {
-      API.desktop.openPortView({
-        projectId: rootState.application.activeProjectId!,
-        nodeId: node.id,
-        viewIndex: Number(firstDetachableView.id),
-        portIndex: selectedPortIndex,
-      });
-    } else {
-      showDetachErrorToast("Port has no detachable view");
-    }
+      const portTypes = useApplicationStore().availablePortTypes;
+      const selectedPortIndex = Number(port);
+      const selectedPort = node.outPorts[selectedPortIndex];
+      const validationResult = buildMiddleware(
+        validateNodeExecuted,
+        validatePortSupport,
+      )({
+        selectedNode: node,
+        selectedPort,
+        selectedPortIndex,
+        portTypes,
+      })();
+
+      const PORT_DETACH_SHORTCUT_FAILED_ID = "__PORT_DETACH_SHORTCUT_FAILED";
+      const showDetachErrorToast = (message: string) => {
+        getToastsProvider().show({
+          id: PORT_DETACH_SHORTCUT_FAILED_ID,
+          headline: "Error detaching output port view",
+          message,
+          type: "error",
+        });
+      };
+
+      if (validationResult?.error?.code === "UNSUPPORTED_PORT_VIEW") {
+        this.openLegacyPortView({
+          nodeId: node.id,
+          portIndex: selectedPortIndex,
+        });
+        return;
+      }
+
+      if (validationResult?.error) {
+        showDetachErrorToast(
+          validationResult.error.message ||
+            "Check the output port view for details.",
+        );
+        return;
+      }
+
+      const portViews =
+        useApplicationStore().availablePortTypes[
+          node.outPorts[selectedPortIndex].typeId
+        ].views;
+
+      if (!portViews) {
+        return;
+      }
+
+      const firstDetachableView = getPortViewByViewDescriptors(
+        portViews,
+        node,
+        selectedPortIndex,
+      ).find((v) => v.canDetach);
+
+      if (firstDetachableView) {
+        API.desktop.openPortView({
+          projectId: useApplicationStore().activeProjectId!,
+          nodeId: node.id,
+          viewIndex: Number(firstDetachableView.id),
+          portIndex: selectedPortIndex,
+        });
+      } else {
+        showDetachErrorToast("Port has no detachable view");
+      }
+    },
+
+    resetNodes(nodes: NodeExecutionMode) {
+      return this.changeNodeState({ action: "reset", nodes });
+    },
+
+    cancelNodeExecution(nodes: NodeExecutionMode) {
+      return this.changeNodeState({ action: "cancel", nodes });
+    },
+
+    /* See docs in API */
+    pauseLoopExecution(nodeId: string) {
+      return this.changeLoopState({ action: "pause", nodeId });
+    },
+
+    /* See docs in API */
+    resumeLoopExecution(nodeId: string) {
+      return this.changeLoopState({ action: "resume", nodeId });
+    },
+
+    /* See docs in API */
+    stepLoopExecution(nodeId: string) {
+      return this.changeLoopState({ action: "step", nodeId });
+    },
   },
-
-  resetNodes({ dispatch }, nodes) {
-    return dispatch("changeNodeState", { action: "reset", nodes });
-  },
-
-  cancelNodeExecution({ dispatch }, nodes) {
-    return dispatch("changeNodeState", { action: "cancel", nodes });
-  },
-
-  /* See docs in API */
-  pauseLoopExecution({ dispatch }, nodeId) {
-    return dispatch("changeLoopState", { action: "pause", nodeId });
-  },
-
-  /* See docs in API */
-  resumeLoopExecution({ dispatch }, nodeId) {
-    return dispatch("changeLoopState", { action: "resume", nodeId });
-  },
-
-  /* See docs in API */
-  stepLoopExecution({ dispatch }, nodeId) {
-    return dispatch("changeLoopState", { action: "step", nodeId });
-  },
-};
-
-export const getters: GetterTree<WorkflowState, RootStoreState> = {};
+});

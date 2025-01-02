@@ -1,5 +1,9 @@
 <script>
-import { mapActions, mapGetters, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
+
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 import NodeLabelEditor from "./NodeLabelEditor.vue";
 import NodeLabelText from "./NodeLabelText.vue";
@@ -49,9 +53,8 @@ export default {
     "mouseenter",
   ],
   computed: {
-    ...mapState("workflow", ["labelEditorNodeId"]),
-    ...mapGetters("selection", ["singleSelectedNode"]),
-
+    ...mapState(useNodeInteractionsStore, ["labelEditorNodeId"]),
+    ...mapState(useSelectionStore, ["singleSelectedNode"]),
     isEditing() {
       return this.nodeId === this.labelEditorNodeId;
     },
@@ -76,11 +79,12 @@ export default {
     },
   },
   methods: {
-    ...mapActions("workflow", [
+    ...mapActions(useNodeInteractionsStore, [
       "renameNodeLabel",
       "openLabelEditor",
       "closeLabelEditor",
     ]),
+    ...mapActions(useCanvasStore, { focusCanvas: "focus" }),
     onRequestEdit() {
       this.openLabelEditor(this.nodeId);
     },
@@ -91,12 +95,12 @@ export default {
       // to allow styles to apply properly when editor is destroyed
       setTimeout(() => {
         this.closeLabelEditor();
-        this.$store.dispatch("canvas/focus");
+        this.focusCanvas();
       }, 100);
     },
     onCancel() {
       this.closeLabelEditor();
-      this.$store.dispatch("canvas/focus");
+      this.focusCanvas();
     },
   },
 };

@@ -4,80 +4,82 @@ import { loadStore } from "./loadStore";
 
 describe("workflow::floatingMenus", () => {
   describe("quickActionMenu", () => {
-    it("opens the quick add node menu", async () => {
-      const { store } = await loadStore();
+    it("opens the quick add node menu", () => {
+      const { floatingMenusStore } = loadStore();
 
-      expect(store.state.workflow.quickActionMenu.isOpen).toBe(false);
+      expect(floatingMenusStore.quickActionMenu.isOpen).toBe(false);
 
-      await store.dispatch("workflow/openQuickActionMenu", {
-        props: { someProp: "val" },
-        events: { "menu-close": () => {} },
+      floatingMenusStore.openQuickActionMenu({
+        props: { position: { x: 0, y: 0 } },
+        events: { menuClose: () => {} },
       });
 
-      expect(store.state.workflow.quickActionMenu.isOpen).toBe(true);
-      expect(store.state.workflow.quickActionMenu.props).toStrictEqual({
-        someProp: "val",
+      expect(floatingMenusStore.quickActionMenu.isOpen).toBe(true);
+      expect(floatingMenusStore.quickActionMenu.props).toStrictEqual({
+        position: { x: 0, y: 0 },
       });
-      expect(store.state.workflow.quickActionMenu.events).toMatchObject({
-        "menu-close": expect.anything(),
+      expect(floatingMenusStore.quickActionMenu.events).toMatchObject({
+        menuClose: expect.anything(),
       });
     });
 
-    it("closes the quick add node menu", async () => {
-      const { store } = await loadStore();
+    it("closes the quick add node menu", () => {
+      const { floatingMenusStore } = loadStore();
 
-      await store.dispatch("workflow/openQuickActionMenu", {});
-      expect(store.state.workflow.quickActionMenu.isOpen).toBe(true);
+      // @ts-ignore
+      floatingMenusStore.openQuickActionMenu({});
+      expect(floatingMenusStore.quickActionMenu.isOpen).toBe(true);
 
-      await store.dispatch("workflow/closeQuickActionMenu");
-      expect(store.state.workflow.quickActionMenu.isOpen).toBe(false);
+      floatingMenusStore.closeQuickActionMenu();
+      expect(floatingMenusStore.quickActionMenu.isOpen).toBe(false);
     });
   });
 
   describe("portTypeMenu", () => {
-    it("sets the preview of a portTypeMenu", async () => {
-      const { store } = await loadStore();
-      store.commit("workflow/setPortTypeMenuPreviewPort", { typeId: "prev" });
+    it("sets the preview of a portTypeMenu", () => {
+      const { floatingMenusStore } = loadStore();
+      floatingMenusStore.setPortTypeMenuPreviewPort({ typeId: "prev" });
 
-      expect(store.state.workflow.portTypeMenu.previewPort).toStrictEqual({
+      expect(floatingMenusStore.portTypeMenu.previewPort).toStrictEqual({
         typeId: "prev",
       });
     });
 
-    it("opens the port type menu", async () => {
-      const { store } = await loadStore();
+    it("opens the port type menu", () => {
+      const { floatingMenusStore } = loadStore();
 
-      expect(store.state.workflow.portTypeMenu.isOpen).toBe(false);
+      expect(floatingMenusStore.portTypeMenu.isOpen).toBe(false);
 
-      await store.dispatch("workflow/openPortTypeMenu", {
+      floatingMenusStore.openPortTypeMenu({
         nodeId: "node-id",
-        props: { side: "out" },
+        props: { side: "output", position: { x: 0, y: 0 }, portGroups: null },
         startNodeId: "start-node-id",
-        events: { "menu-close": () => {} },
+        events: { menuClose: () => {} },
       });
 
-      expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
-      expect(store.state.workflow.portTypeMenu.nodeId).toBe("node-id");
-      expect(store.state.workflow.portTypeMenu.startNodeId).toBe(
-        "start-node-id",
-      );
-      expect(store.state.workflow.portTypeMenu.previewPort).toBeNull();
-      expect(store.state.workflow.portTypeMenu.props).toStrictEqual({
-        side: "out",
+      expect(floatingMenusStore.portTypeMenu.isOpen).toBe(true);
+      expect(floatingMenusStore.portTypeMenu.nodeId).toBe("node-id");
+      expect(floatingMenusStore.portTypeMenu.startNodeId).toBe("start-node-id");
+      expect(floatingMenusStore.portTypeMenu.previewPort).toBeNull();
+      expect(floatingMenusStore.portTypeMenu.props).toStrictEqual({
+        side: "output",
+        position: { x: 0, y: 0 },
+        portGroups: null,
       });
-      expect(store.state.workflow.portTypeMenu.events).toMatchObject({
-        "menu-close": expect.anything(),
+      expect(floatingMenusStore.portTypeMenu.events).toMatchObject({
+        menuClose: expect.anything(),
       });
     });
 
-    it("closes the port type menu", async () => {
-      const { store } = await loadStore();
+    it("closes the port type menu", () => {
+      const { floatingMenusStore } = loadStore();
 
-      await store.dispatch("workflow/openPortTypeMenu", {});
-      expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
+      // @ts-ignore
+      floatingMenusStore.openPortTypeMenu({});
+      expect(floatingMenusStore.portTypeMenu.isOpen).toBe(true);
 
-      await store.dispatch("workflow/closePortTypeMenu");
-      expect(store.state.workflow.portTypeMenu.isOpen).toBe(false);
+      floatingMenusStore.closePortTypeMenu();
+      expect(floatingMenusStore.portTypeMenu.isOpen).toBe(false);
     });
   });
 });

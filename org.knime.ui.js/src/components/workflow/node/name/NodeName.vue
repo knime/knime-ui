@@ -1,5 +1,8 @@
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
+
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 import NodeNameEditor from "./NodeNameEditor.vue";
 import NodeNameText from "./NodeNameText.vue";
@@ -44,7 +47,8 @@ export default {
     };
   },
   computed: {
-    ...mapState("workflow", ["nameEditorNodeId"]),
+    ...mapState(useNodeInteractionsStore, ["nameEditorNodeId"]),
+
     isEditing() {
       return this.nodeId === this.nameEditorNodeId;
     },
@@ -58,11 +62,12 @@ export default {
     },
   },
   methods: {
-    ...mapActions("workflow", [
-      "renameContainerNode",
+    ...mapActions(useNodeInteractionsStore, [
       "openNameEditor",
+      "renameContainerNode",
       "closeNameEditor",
     ]),
+    ...mapActions(useCanvasStore, { focusCanvas: "focus" }),
     onRequestEdit() {
       this.openNameEditor(this.nodeId);
     },
@@ -74,12 +79,12 @@ export default {
       // to allow styles to apply properly when editor is destroyed
       setTimeout(() => {
         this.closeNameEditor();
-        this.$store.dispatch("canvas/focus");
+        this.focusCanvas();
       }, 100);
     },
     onCancel() {
       this.closeNameEditor();
-      this.$store.dispatch("canvas/focus");
+      this.focusCanvas();
     },
   },
 };

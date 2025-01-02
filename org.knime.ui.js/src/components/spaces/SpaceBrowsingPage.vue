@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
-import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { globalSpaceBrowserProjectId } from "@/store/spaces/common";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { isHubProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
@@ -16,18 +18,14 @@ import { useActiveRouteData } from "./useActiveRouteData";
 import { usePageBreadcrumbs } from "./usePageBreadcrumbs";
 import { useSpaceIcons } from "./useSpaceIcons";
 
-const store = useStore();
+const { currentSelectedItemIds, pathToItemId } = storeToRefs(
+  useSpaceOperationsStore(),
+);
+const { toastPresets } = getToastPresets();
+const { setCurrentSelectedItemIds, renameSpace } = useSpaceOperationsStore();
+const { setProjectPath } = useSpaceCachingStore();
 const $route = useRoute();
 const $router = useRouter();
-const { toastPresets } = getToastPresets();
-
-const currentSelectedItemIds = computed(
-  () => store.state.spaces.currentSelectedItemIds,
-);
-
-const setCurrentSelectedItemIds = (items: string[]) => {
-  store.commit("spaces/setCurrentSelectedItemIds", items);
-};
 
 const { activeSpaceProvider, activeSpaceGroup, activeSpace } =
   useActiveRouteData();
@@ -40,12 +38,12 @@ watch(
   ],
   () => {
     // This is required to sync between route params and store state
-    store.commit("spaces/setProjectPath", {
+    setProjectPath({
       projectId: globalSpaceBrowserProjectId,
       value: {
         spaceId: activeSpace.value!.id,
         spaceProviderId: activeSpaceProvider.value!.id,
-        itemId: $route.params.itemId,
+        itemId: $route.params.itemId as string,
       },
     });
   },
@@ -55,10 +53,7 @@ watch(
 const filterQuery = ref("");
 
 const changeDirectory = async (pathId: string) => {
-  const itemId = store.getters["spaces/pathToItemId"](
-    globalSpaceBrowserProjectId,
-    pathId,
-  );
+  const itemId = pathToItemId.value(globalSpaceBrowserProjectId, pathId);
 
   filterQuery.value = "";
 
@@ -109,19 +104,17 @@ const existingSpaceNames = computed<Array<string>>(() => {
 const errorOnHeader = ref("");
 const isEditing = ref(false);
 
-const onRenameSpace = async (name: string) => {
+const onRenameSpace = (name: string) => {
   errorOnHeader.value = "";
-  try {
-    await store.dispatch("spaces/renameSpace", {
-      spaceProviderId: activeSpaceProvider.value.id,
-      spaceId: activeSpace.value!.id,
-      spaceName: name,
-    });
-  } catch (error) {
-    errorOnHeader.value = (error as Error).message;
+  renameSpace({
+    spaceProviderId: activeSpaceProvider.value.id,
+    spaceId: activeSpace.value!.id,
+    spaceName: name,
+  }).catch((error) => {
+    errorOnHeader.value = error.message;
     isEditing.value = true;
     toastPresets.spaces.crud.renameSpaceFailed({ error });
-  }
+  });
 };
 </script>
 
@@ -160,7 +153,7 @@ const onRenameSpace = async (name: string) => {
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
         :filter-query="filterQuery"
-        :click-outside-exception="$refs.actions as HTMLElement"
+        :click-outside-exception="$refs.actions as any"
         @change-directory="changeDirectory"
         @update:selected-item-ids="setCurrentSelectedItemIds($event)"
       />

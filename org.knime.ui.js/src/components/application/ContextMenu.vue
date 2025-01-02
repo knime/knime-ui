@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { computed, h, markRaw, nextTick, ref, toRef, watch } from "vue";
+import { h, markRaw, nextTick, ref, toRef, watch } from "vue";
+import { API } from "@api";
+import { storeToRefs } from "pinia";
 
 import { MenuItems } from "@knime/components";
 import { type MenuItem } from "@knime/components";
 import FlowVariableIcon from "@knime/styles/img/icons/expose-flow-variables.svg";
 
-import { API } from "@/api";
 import type { ExtendedPortType, KnimeNode } from "@/api/custom-types";
-import type { Annotation, XY } from "@/api/gateway-api/generated-api";
+import type { XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import portIcon from "@/components/common/PortIconRenderer";
-import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { ShortcutName } from "@/shortcuts";
+import { useApplicationStore } from "@/store/application/application";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useExecutionStore } from "@/store/workflow/execution";
 import * as $shapes from "@/style/shapes";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
 import {
@@ -119,32 +124,20 @@ const visibleItems = ref<MenuItem[]>([]);
 const activeDescendant = ref<string | null>(null);
 
 const $shortcuts = useShortcuts();
-const store = useStore();
-
-const projectId = computed(() => store.state.application.activeProjectId);
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
+const { activeProjectId: projectId, availablePortTypes } = storeToRefs(
+  useApplicationStore(),
 );
-const isLockingEnabled = computed(
-  () => store.state.application.isSubnodeLockingEnabled,
+const { isSubnodeLockingEnabled: isLockingEnabled } = storeToRefs(
+  useApplicationSettingsStore(),
 );
-const uiControls = computed(() => store.state.uiControls);
-
-const selectedNodes = computed<KnimeNode[]>(
-  () => store.getters["selection/selectedNodes"],
-);
-const selectedAnnotations = computed<Annotation[]>(
-  () => store.getters["selection/selectedAnnotations"],
-);
-const singleSelectedNode = computed<KnimeNode | null>(
-  () => store.getters["selection/singleSelectedNode"],
-);
-const singleSelectedAnnotation = computed<Annotation | null>(
-  () => store.getters["selection/singleSelectedAnnotation"],
-);
-const isSelectionEmpty = computed<boolean>(
-  () => store.getters["selection/isSelectionEmpty"],
-);
+const uiControls = useUIControlsStore();
+const {
+  getSelectedNodes: selectedNodes,
+  getSelectedAnnotations: selectedAnnotations,
+  singleSelectedNode,
+  singleSelectedAnnotation,
+  isSelectionEmpty,
+} = storeToRefs(useSelectionStore());
 
 const portViews = (): MenuItem[] => {
   const node = singleSelectedNode.value;
@@ -176,7 +169,7 @@ const portViews = (): MenuItem[] => {
           text: "Open port view",
           metadata: {
             handler: () => {
-              store.dispatch("workflow/openLegacyPortView", {
+              useExecutionStore().openLegacyPortView({
                 nodeId,
                 portIndex,
               });
@@ -230,9 +223,7 @@ const mapToShortcut = (
     const shortcut = $shortcuts.get(shortcutItem.name);
 
     const shortcutText =
-      typeof shortcut.text === "function"
-        ? shortcut.text({ $store: store })
-        : shortcut.text;
+      typeof shortcut.text === "function" ? shortcut.text() : shortcut.text;
 
     return [
       {
@@ -256,7 +247,7 @@ const setMenuItems = () => {
   const isLoopEnd = Boolean(
     singleSelectedNode.value &&
       isNativeNode(singleSelectedNode.value) &&
-      Boolean(singleSelectedNode.value?.loopInfo?.allowedActions),
+      Boolean(singleSelectedNode.value.loopInfo?.allowedActions),
   );
 
   const isView = Boolean(
@@ -298,7 +289,7 @@ const setMenuItems = () => {
         text: "Open output port",
         children: portViewItems,
       },
-      portViewItems.length > 0 && uiControls.value.canDetachPortViews,
+      portViewItems.length > 0 && uiControls.canDetachPortViews,
     ),
     // Loop nodes
     ...mapToShortcut([

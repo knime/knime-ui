@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
+import { API } from "@api";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
 import { Carousel, FunctionButton, useHint } from "@knime/components";
@@ -10,12 +12,16 @@ import HouseIcon from "@knime/styles/img/icons/house.svg";
 import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
-import { API } from "@/api";
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
-import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useApplicationStore } from "@/store/application/application";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import { AppHeaderContextMenu } from "./AppHeaderContextMenu";
 import AppHeaderTab from "./AppHeaderTab.vue";
@@ -29,7 +35,6 @@ import HelpMenu from "./HelpMenu.vue";
 const windowWidth = ref(0);
 const hoveredTab = ref<string | null>(null);
 
-const store = useStore();
 const $router = useRouter();
 const $route = useRoute();
 const $shortcuts = useShortcuts();
@@ -42,17 +47,13 @@ const activeProjectTab = computed(() => {
   return null;
 });
 
-const openProjects = computed(() => store.state.application.openProjects);
-const activeProjectId = computed(() => store.state.application.activeProjectId);
-const isLoadingWorkflow = computed(
-  () => store.state.application.isLoadingWorkflow,
-);
+const { isLoadingWorkflow } = storeToRefs(useLifecycleStore());
+const { openProjects, activeProjectId } = storeToRefs(useApplicationStore());
+const { dirtyProjectsMap } = storeToRefs(useDirtyProjectsTrackingStore());
+const { devMode } = storeToRefs(useApplicationSettingsStore());
+
 const hasWorkflowLoadingError = computed(() =>
-  Boolean(store.state.workflow.error),
-);
-const devMode = computed(() => store.state.application.devMode);
-const dirtyProjectsMap = computed(
-  () => store.state.application.dirtyProjectsMap,
+  Boolean(useWorkflowStore().error),
 );
 
 const isHomePageActive = computed(() => {
@@ -111,7 +112,7 @@ const openKnimeUIPreferencePage = () => {
 };
 
 const closeProject = (projectId: string) =>
-  store.dispatch("workflow/closeProject", projectId);
+  useDesktopInteractionsStore().closeProject(projectId);
 
 const carousel = ref<InstanceType<typeof Carousel> | null>(null);
 const onWheelScroll = (event: WheelEvent) => {
@@ -236,7 +237,7 @@ onMounted(() => {
           <AppHeaderContextMenu
             v-if="menuPosition"
             :position="menuPosition"
-            :project-id="contextMenuProjectId"
+            :project-id="contextMenuProjectId!"
             @item-click="hideMenu"
           />
         </div>

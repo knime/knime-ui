@@ -6,14 +6,14 @@ import { muteConsole } from "@knime/utils/test-utils";
 
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeState from "../NodeState.vue";
 
 describe("NodeState.vue", () => {
   const provide = {
     anchorPoint: { x: 123, y: 456 },
   };
-  let props, wrapper, doShallowMount, $store;
+  let props, wrapper, doShallowMount, mockedStores;
 
   beforeEach(() => {
     props = {
@@ -25,15 +25,13 @@ describe("NodeState.vue", () => {
       resolutions: [],
     };
 
-    $store = mockVuexStore({
-      workflow: {},
-    });
+    mockedStores = mockStores();
 
     doShallowMount = () => {
       wrapper = shallowMount(NodeState, {
         props,
         global: {
-          plugins: [$store],
+          plugins: [mockedStores.testingPinia],
           mocks: { $shapes, $colors },
           provide,
         },
@@ -187,18 +185,7 @@ describe("NodeState.vue", () => {
   });
 
   describe("tooltips", () => {
-    let currentTooltip;
-
     beforeEach(() => {
-      $store = mockVuexStore({
-        workflow: {
-          mutations: {
-            setTooltip(state, tooltip) {
-              currentTooltip = tooltip;
-            },
-          },
-        },
-      });
       vi.useFakeTimers();
     });
 
@@ -206,7 +193,7 @@ describe("NodeState.vue", () => {
       doShallowMount();
       wrapper.find("g").trigger("mouseenter");
       await nextTick();
-      expect(currentTooltip).toBeFalsy();
+      expect(mockedStores.workflowStore.tooltip).toBeFalsy();
     });
 
     it("shows tooltips on error", async () => {
@@ -217,7 +204,7 @@ describe("NodeState.vue", () => {
       vi.runAllTimers();
       await nextTick();
 
-      expect(currentTooltip).toStrictEqual({
+      expect(mockedStores.workflowStore.tooltip).toStrictEqual({
         anchorPoint: { x: 123, y: 456 },
         text: "this is an error",
         type: "error",
@@ -233,7 +220,7 @@ describe("NodeState.vue", () => {
 
       wrapper.find("g").trigger("mouseleave");
       await nextTick();
-      expect(currentTooltip).toBeFalsy();
+      expect(mockedStores.workflowStore.tooltip).toBeFalsy();
     });
 
     it("shows tooltips with error/warning, issue and resolution", async () => {
@@ -246,7 +233,7 @@ describe("NodeState.vue", () => {
       vi.runAllTimers();
       await nextTick();
 
-      expect(currentTooltip).toStrictEqual({
+      expect(mockedStores.workflowStore.tooltip).toStrictEqual({
         anchorPoint: { x: 123, y: 456 },
         text: "this is an error",
         type: "error",
@@ -262,7 +249,7 @@ describe("NodeState.vue", () => {
 
       wrapper.find("g").trigger("mouseleave");
       await nextTick();
-      expect(currentTooltip).toBeFalsy();
+      expect(mockedStores.workflowStore.tooltip).toBeFalsy();
     });
 
     it("updates tooltips on data change", async () => {
@@ -279,7 +266,7 @@ describe("NodeState.vue", () => {
 
       vi.runAllTimers();
 
-      expect(currentTooltip).toStrictEqual({
+      expect(mockedStores.workflowStore.tooltip).toStrictEqual({
         anchorPoint: { x: 123, y: 456 },
         text: "mo Progress – Level 2",
         position: {

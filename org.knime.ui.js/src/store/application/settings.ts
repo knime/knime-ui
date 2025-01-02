@@ -1,10 +1,6 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { defineStore } from "pinia";
 
-import type { RootStoreState } from "../types";
-
-import type { ApplicationState } from "./index";
-
-interface State {
+type ApplicationSettingsState = {
   /**
    * Indicates whether the browser has support (enabled) for the Clipboard API or not
    */
@@ -17,7 +13,7 @@ interface State {
    * If true, a node collection is configured on the preference page. The node search will show the nodes of the
    * collection first and the tag groups and node recommendations will only show nodes from the collection.
    */
-  hasNodeCollectionActive: null;
+  hasNodeCollectionActive: boolean | null;
   /**
    * Name of the currently active node collection.
    * @type {string}
@@ -29,7 +25,7 @@ interface State {
    */
   scrollToZoomEnabled: boolean;
   /*
-   * If true, dev mode specific buttons will be shown.
+   * If true, dev mode specifics buttons will be shown.
    */
   devMode: boolean;
   /*
@@ -44,53 +40,55 @@ interface State {
    * Whether all K-AI-related features are enabled
    */
   isKaiEnabled: boolean;
-}
-
-declare module "./index" {
-  interface ApplicationState extends State {}
-}
-
-export const state = (): State => ({
-  hasClipboardSupport: false,
-  hasNodeRecommendationsEnabled: false,
-  hasNodeCollectionActive: null,
-  activeNodeCollection: "",
-  scrollToZoomEnabled: false,
-  devMode: false,
-  isSubnodeLockingEnabled: false,
-  useEmbeddedDialogs: true,
-  isKaiEnabled: true,
-});
-
-export const mutations: MutationTree<ApplicationState> = {
-  setHasClipboardSupport(state, hasClipboardSupport) {
-    state.hasClipboardSupport = hasClipboardSupport;
-  },
-  setHasNodeRecommendationsEnabled(state, hasNodeRecommendationsEnabled) {
-    state.hasNodeRecommendationsEnabled = hasNodeRecommendationsEnabled;
-  },
-  setScrollToZoomEnabled(state, scrollToZoomEnabled) {
-    state.scrollToZoomEnabled = scrollToZoomEnabled;
-  },
-  setHasNodeCollectionActive(state, hasNodeCollectionActive) {
-    state.hasNodeCollectionActive = hasNodeCollectionActive;
-  },
-  setActiveNodeCollection(state, activeNodeCollection) {
-    state.activeNodeCollection = activeNodeCollection;
-  },
-  setDevMode(state, devMode) {
-    state.devMode = devMode;
-  },
-  setIsSubnodeLockingEnabled(state, isSubnodeLockingEnabled) {
-    state.isSubnodeLockingEnabled = isSubnodeLockingEnabled;
-  },
-  setUseEmbeddedDialogs(state, value) {
-    state.useEmbeddedDialogs = value;
-  },
-  setIsKaiEnabled(state, value) {
-    state.isKaiEnabled = value;
-  },
 };
 
-export const actions: ActionTree<ApplicationState, RootStoreState> = {};
-export const getters: GetterTree<ApplicationState, RootStoreState> = {};
+export const useApplicationSettingsStore = defineStore("applicationSettings", {
+  state: (): ApplicationSettingsState => ({
+    hasClipboardSupport: false,
+    hasNodeRecommendationsEnabled: false,
+    hasNodeCollectionActive: null,
+    activeNodeCollection: "",
+    scrollToZoomEnabled: false,
+    devMode: false,
+    isSubnodeLockingEnabled: false,
+    useEmbeddedDialogs: true,
+    isKaiEnabled: true,
+  }),
+  actions: {
+    setHasClipboardSupport(hasClipboardSupport: boolean) {
+      this.hasClipboardSupport = hasClipboardSupport;
+    },
+
+    setHasNodeRecommendationsEnabled(hasNodeRecommendationsEnabled: boolean) {
+      this.hasNodeRecommendationsEnabled = hasNodeRecommendationsEnabled;
+    },
+
+    setScrollToZoomEnabled(scrollToZoomEnabled: boolean) {
+      this.scrollToZoomEnabled = scrollToZoomEnabled;
+    },
+
+    setHasNodeCollectionActive(hasNodeCollectionActive: boolean | null) {
+      this.hasNodeCollectionActive = hasNodeCollectionActive;
+    },
+
+    setActiveNodeCollection(activeNodeCollection: string) {
+      this.activeNodeCollection = activeNodeCollection;
+    },
+
+    setDevMode(devMode: boolean) {
+      this.devMode = devMode;
+    },
+
+    setIsSubnodeLockingEnabled(isSubnodeLockingEnabled: boolean) {
+      this.isSubnodeLockingEnabled = isSubnodeLockingEnabled;
+    },
+
+    setUseEmbeddedDialogs(useEmbeddedDialogs: boolean) {
+      this.useEmbeddedDialogs = useEmbeddedDialogs;
+    },
+
+    setIsKaiEnabled(isKaiEnabled: boolean) {
+      this.isKaiEnabled = isKaiEnabled;
+    },
+  },
+});

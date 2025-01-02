@@ -1,33 +1,36 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useMoveObject } from "@/composables/useMoveObject";
 import { usePortBarPositions } from "@/composables/usePortBarPositions";
-import { useStore } from "@/composables/useStore";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 interface Props {
-  type?: "in" | "out";
+  type: "in" | "out";
 }
 const props = defineProps<Props>();
 
 const { getBounds } = usePortBarPositions();
 const bounds = computed(() => getBounds(props.type === "out"));
 
-const store = useStore();
-const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
-const isDragging = computed(() => store.state.workflow.isDragging);
-const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
+const movingStore = useMovingStore();
+const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
+const { isMoveLocked } = storeToRefs(useCanvasStore());
 
-const workflow = computed(() => store.state.workflow.activeWorkflow);
+const workflowStore = useWorkflowStore();
+const { activeWorkflow: workflow } = storeToRefs(workflowStore);
+const selectionStore = useSelectionStore();
+const { isMetaNodePortBarSelected } = storeToRefs(selectionStore);
+
 const backendBounds = computed(() =>
   props.type === "out"
-    ? workflow.value?.metaOutPorts?.bounds
-    : workflow.value?.metaInPorts?.bounds,
-);
-
-const isMetaNodePortBarSelected = computed(
-  () => store.getters["selection/isMetaNodePortBarSelected"],
+    ? workflow.value!.metaOutPorts?.bounds
+    : workflow.value!.metaInPorts?.bounds,
 );
 
 const container = ref<HTMLElement | null>(null);
@@ -47,10 +50,10 @@ const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => container.value),
   onMoveStartCallback: (event) => {
     if (!isMetaNodePortBarSelected.value(props.type) && !event.ctrlKey) {
-      store.dispatch("selection/deselectAllObjects");
+      selectionStore.deselectAllObjects();
     }
 
-    store.dispatch("selection/selectMetanodePortBar", props.type);
+    selectionStore.selectMetanodePortBar(props.type);
   },
   onMoveEndCallback: async () => {
     // we need to set this on the first move as the backend has no data to translate otherwise
@@ -60,7 +63,7 @@ const { createPointerDownHandler } = useMoveObject({
       !(movePreviewDelta.value.x === 0 && movePreviewDelta.value.y === 0)
     ) {
       const { type } = props;
-      await store.dispatch("workflow/transformMetaNodePortBar", {
+      await workflowStore.transformMetaNodePortBar({
         // classic expects width 50 - we use 10
         bounds: { ...bounds.value, width: 50 },
         type,
@@ -83,7 +86,7 @@ useEscapeStack({
   alwaysActive: true,
   onEscape: () => {
     if (isDragging.value) {
-      store.dispatch("workflow/abortDrag");
+      movingStore.abortDrag();
     }
   },
 });

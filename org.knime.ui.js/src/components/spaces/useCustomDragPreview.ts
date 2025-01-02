@@ -1,11 +1,17 @@
 import { type Ref, computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
 
-import { type NodeTemplate, SpaceItem } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 
 const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
@@ -19,31 +25,22 @@ type UseCustomDragPreviewOptions = {
 export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   const isAboveCanvas = ref(false);
   const hasDragEnded = ref(false);
-  const nodeTemplate = ref<NodeTemplate | null>(null);
+  const nodeTemplate =
+    ref<Awaited<ReturnType<typeof createNodeTemplatePreview>>>(null);
   const isFetchingTemplate = ref(false);
 
+  const { isWritable } = storeToRefs(useWorkflowStore());
+  const { projectPath } = storeToRefs(useSpaceCachingStore());
+  const { getScrollContainerElement, screenToCanvasCoordinates } = storeToRefs(
+    useCanvasStore(),
+  );
+  const { fileExtensionToNodeTemplateId } = storeToRefs(useApplicationStore());
+  const { getSingleNodeTemplate } = useNodeTemplatesStore();
+  const { addNode } = useNodeInteractionsStore();
   const $route = useRoute();
-  const store = useStore();
 
-  // workflow
-  const isWritable = computed(() => store.getters["workflow/isWritable"]);
-
-  // spaces
   const activeSpacePath = computed(
-    () => store.state.spaces.projectPath[options.projectId.value ?? ""],
-  );
-
-  // canvas
-  const getScrollContainerElement = computed(
-    () => store.state.canvas.getScrollContainerElement,
-  );
-  const screenToCanvasCoordinates = computed(
-    () => store.getters["canvas/screenToCanvasCoordinates"],
-  );
-
-  // application
-  const fileExtensionToNodeTemplateId = computed(
-    () => store.state.application.fileExtensionToNodeTemplateId,
+    () => projectPath.value[options.projectId.value ?? ""],
   );
 
   const getNodeTemplateId = (sourceItem: FileExplorerItem) => {
@@ -61,15 +58,16 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     if (isComponent) {
       return {
         isComponent: true,
-        inPorts: [],
-        outPorts: [],
+        inPorts: [] as any[],
+        outPorts: [] as any[],
         type: item.meta?.type,
+        icon: undefined,
       };
     }
 
     const nodeTemplateId = getNodeTemplateId(item);
 
-    return store.dispatch("nodeTemplates/getSingleNodeTemplate", {
+    return getSingleNodeTemplate({
       nodeTemplateId,
     });
   };
@@ -159,10 +157,12 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         itemId: sourceItem.id,
       };
 
-      await store.dispatch("workflow/addNode", {
+      await addNode({
         position,
         spaceItemReference,
-        nodeFactory: isItemAComponent ? null : { className: nodeTemplateId },
+        nodeFactory: isItemAComponent
+          ? undefined
+          : { className: nodeTemplateId },
         isComponent: isItemAComponent,
       });
 

@@ -1,21 +1,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
 
-import { API } from "@/api";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import * as aiAssistantStore from "@/store/aiAssistant";
-import * as applicationStore from "@/store/application";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import {
   NODE_FACTORIES,
   createAvailablePortTypes,
   createNodeTemplate,
   createNodeWithExtensionInfo,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import FeedbackControls from "../FeedbackControls.vue";
 import KaiStatus from "../KaiStatus.vue";
 import MarkdownRenderer from "../MarkdownRenderer.vue";
@@ -82,23 +80,19 @@ describe("Message.vue", () => {
   };
 
   const doMount = ({ props }: { props?: Partial<ComponentProps> } = {}) => {
-    const $store = mockVuexStore({
-      aiAssistant: aiAssistantStore,
-      nodeTemplates: nodeTemplatesStore,
-      application: applicationStore,
-    });
+    const mockedStores = mockStores();
 
     const availablePortTypes = createAvailablePortTypes();
-    $store.commit("application/setAvailablePortTypes", availablePortTypes);
+    mockedStores.applicationStore.setAvailablePortTypes(availablePortTypes);
 
     const wrapper = mount(Message, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   afterEach(() => {
@@ -131,13 +125,13 @@ describe("Message.vue", () => {
     });
 
     it("should render suggested nodes and AdditionalResources button", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       await flushPromises();
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
       expect(
         wrapper.findComponent(SuggestedNodes).props("nodeTemplates"),
-      ).toEqual([$store.state.nodeTemplates.cache[FACTORY_ID]]);
+      ).toEqual([mockedStores.nodeTemplatesStore.cache[FACTORY_ID]]);
 
       expect(
         wrapper.findComponent(AdditionalResources).props("extensions"),

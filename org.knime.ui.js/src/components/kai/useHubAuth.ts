@@ -1,51 +1,53 @@
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import { useStore } from "@/composables/useStore";
 import { isBrowser, runInEnvironment } from "@/environment";
+import { useAIAssistantStore } from "@/store/aiAssistant";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { getToastPresets } from "@/toastPresets";
 
 let isHubIdFetched = false;
 
 const useHubAuth = () => {
-  const store = useStore();
+  const { hubID } = storeToRefs(useAIAssistantStore());
+  const { getHubID } = useAIAssistantStore();
+  const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
+  const { connectProvider } = useSpaceAuthStore();
 
   runInEnvironment({
     DESKTOP: () => {
       // Fetch hubID from the backend only once.
       if (!isHubIdFetched) {
-        store.dispatch("aiAssistant/getHubID");
+        getHubID();
         isHubIdFetched = true;
       }
     },
   });
 
-  const hubId = computed(() => store.state.aiAssistant.hubID);
-
-  const isHubConfigured = computed(() => Boolean(hubId.value) || isBrowser);
+  const isHubConfigured = computed(() => Boolean(hubID.value) || isBrowser);
 
   const isAuthenticated = computed(() => {
-    return (
-      store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.connected ||
-      isBrowser
-    );
+    return spaceProviders.value?.[hubID.value ?? ""]?.connected || isBrowser;
   });
 
   const userName = computed(() => {
-    return (
-      store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.user?.name ?? null
-    );
+    return spaceProviders.value?.[hubID.value ?? ""]?.user?.name ?? null;
   });
 
   const { toastPresets } = getToastPresets();
 
   const authenticateWithHub = async () => {
+    if (!hubID.value) {
+      return;
+    }
+
     try {
-      await store.dispatch("spaces/connectProvider", {
-        spaceProviderId: hubId.value,
+      await connectProvider({
+        spaceProviderId: hubID.value,
       });
     } catch (error) {
-      const providerName =
-        store.state.spaces.spaceProviders?.[hubId.value ?? ""]?.name;
+      const providerName = spaceProviders.value?.[hubID.value ?? ""]?.name;
       toastPresets.spaces.auth.connectFailed({ error, providerName });
     }
   };
@@ -53,7 +55,7 @@ const useHubAuth = () => {
   return {
     isAuthenticated,
     isHubConfigured,
-    hubId,
+    hubID,
     userName,
     authenticateWithHub,
   };

@@ -4,10 +4,8 @@ import { VueWrapper, mount } from "@vue/test-utils";
 
 import { Node } from "@/api/gateway-api/generated-api";
 import ActionButton from "@/components/common/ActionButton.vue";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeActionBar from "../NodeActionBar.vue";
 
 const $shortcuts = {
@@ -23,10 +21,7 @@ describe("NodeActionBar", () => {
   type ComponentProps = InstanceType<typeof NodeActionBar>["$props"];
 
   const doMount = ({ props }: { props?: Partial<ComponentProps> } = {}) => {
-    const $store = mockVuexStore({
-      application: applicationStore,
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
 
     const defaultProps: ComponentProps = {
       nodeId: "root:1",
@@ -41,11 +36,11 @@ describe("NodeActionBar", () => {
       },
       global: {
         mocks: { $shapes, $shortcuts },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   afterEach(() => {
@@ -72,7 +67,7 @@ describe("NodeActionBar", () => {
     wrapper.findAllComponents(ActionButton).map((btn) => btn.props());
 
   it("shows/hides configure option when ui control is set", async () => {
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       props: { canConfigure: true },
     });
 
@@ -80,7 +75,7 @@ describe("NodeActionBar", () => {
       expect.objectContaining({ title: "Configure" }),
     );
 
-    $store.state.uiControls.canConfigureNodes = false;
+    mockedStores.uiControlsStore.canConfigureNodes = false;
     await nextTick();
 
     expect(getActions(wrapper)).not.toContainEqual(
@@ -89,7 +84,7 @@ describe("NodeActionBar", () => {
   });
 
   it("shows/hides openView option when ui control is set", async () => {
-    const { wrapper, $store } = doMount({
+    const { wrapper, mockedStores } = doMount({
       props: { canOpenView: true },
     });
 
@@ -97,7 +92,7 @@ describe("NodeActionBar", () => {
       expect.objectContaining({ title: "Open view" }),
     );
 
-    $store.state.uiControls.canDetachNodeViews = false;
+    mockedStores.uiControlsStore.canDetachNodeViews = false;
     await nextTick();
 
     expect(getActions(wrapper)).not.toContainEqual(

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import {
   createSpace,
@@ -21,12 +21,12 @@ describe("spaces::providers", () => {
 
   describe("fetchAllSpaceProviders", () => {
     it("should call the desktop api", async () => {
-      const { store } = loadStore();
+      const { spaceProvidersStore } = loadStore();
 
       mockedAPI.desktop.getSpaceProviders.mockResolvedValue(undefined);
-      await store.dispatch("spaces/fetchAllSpaceProviders");
+      await spaceProvidersStore.fetchAllSpaceProviders();
 
-      expect(store.state.spaces.isLoadingProviders).toBe(true);
+      expect(spaceProvidersStore.isLoadingProviders).toBe(true);
       expect(mockedAPI.desktop.getSpaceProviders).toHaveBeenCalled();
     });
   });
@@ -75,18 +75,17 @@ describe("spaces::providers", () => {
         Promise.resolve({ spaceGroups: [mockGroup] }),
       );
 
-      const { store } = loadStore({
+      const { spaceProvidersStore } = loadStore({
         mockFetchAllProvidersResponse: spaceProviders,
       });
 
-      const promise = store.dispatch(
-        "spaces/setAllSpaceProviders",
-        spaceProviders,
-      );
+      const promise = spaceProvidersStore.setAllSpaceProviders(spaceProviders);
 
-      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(true);
-      expect(store.state.spaces.loadingProviderSpacesData.hub2).toBe(true);
-      expect(store.state.spaces.loadingProviderSpacesData.hub3).toBeUndefined();
+      expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBe(true);
+      expect(spaceProvidersStore.loadingProviderSpacesData.hub2).toBe(true);
+      expect(
+        spaceProvidersStore.loadingProviderSpacesData.hub3,
+      ).toBeUndefined();
 
       await flushPromises();
 
@@ -95,15 +94,15 @@ describe("spaces::providers", () => {
         failedProviderIds: [],
       });
 
-      expect(store.state.spaces.spaceProviders!.hub1).toEqual({
+      expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({
         ...spaceProviders.hub1,
         spaceGroups: [mockGroup],
       });
-      expect(store.state.spaces.spaceProviders!.hub2).toEqual({
+      expect(spaceProvidersStore.spaceProviders!.hub2).toEqual({
         ...spaceProviders.hub2,
         spaceGroups: [mockGroup],
       });
-      expect(store.state.spaces.spaceProviders!.hub3).toEqual({
+      expect(spaceProvidersStore.spaceProviders!.hub3).toEqual({
         ...spaceProviders.hub3,
         spaceGroups: [],
       });
@@ -168,18 +167,17 @@ describe("spaces::providers", () => {
         },
       );
 
-      const { store } = loadStore({
+      const { spaceProvidersStore } = loadStore({
         mockFetchAllProvidersResponse: spaceProviders,
       });
 
-      const promise = store.dispatch(
-        "spaces/setAllSpaceProviders",
-        spaceProviders,
-      );
+      const promise = spaceProvidersStore.setAllSpaceProviders(spaceProviders);
 
-      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(true);
-      expect(store.state.spaces.loadingProviderSpacesData.hub2).toBe(true);
-      expect(store.state.spaces.loadingProviderSpacesData.hub3).toBeUndefined();
+      expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBe(true);
+      expect(spaceProvidersStore.loadingProviderSpacesData.hub2).toBe(true);
+      expect(
+        spaceProvidersStore.loadingProviderSpacesData.hub3,
+      ).toBeUndefined();
 
       await flushPromises();
 
@@ -188,16 +186,16 @@ describe("spaces::providers", () => {
         failedProviderIds: ["hub2"],
       });
 
-      expect(store.state.spaces.spaceProviders!.hub1).toEqual({
+      expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({
         ...spaceProviders.hub1,
         spaceGroups: [mockGroup],
       });
-      expect(store.state.spaces.spaceProviders!.hub2).toEqual({
+      expect(spaceProvidersStore.spaceProviders!.hub2).toEqual({
         ...spaceProviders.hub2,
         connected: false,
         spaceGroups: [],
       });
-      expect(store.state.spaces.spaceProviders!.hub3).toEqual({
+      expect(spaceProvidersStore.spaceProviders!.hub3).toEqual({
         ...spaceProviders.hub3,
         spaceGroups: [],
       });
@@ -215,10 +213,10 @@ describe("spaces::providers", () => {
 
   describe("fetchProviderSpaces", () => {
     it("should fetch spaces", async () => {
-      const { store } = loadStore();
+      const { spaceProvidersStore } = loadStore();
       const mockSpace = createSpace({ name: "mock space", description: "" });
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         hub1: createSpaceProvider({
           id: "hub1",
           name: "Hub 1",
@@ -235,35 +233,35 @@ describe("spaces::providers", () => {
 
       mockedAPI.space.getSpaceProvider.mockResolvedValue(mockResponse);
 
-      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBeFalsy();
+      expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBeFalsy();
 
-      const promise = store.dispatch("spaces/fetchProviderSpaces", {
+      const promise = spaceProvidersStore.fetchProviderSpaces({
         id: "hub1",
       });
 
-      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(true);
+      expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBe(true);
 
       await flushPromises();
-      expect(store.state.spaces.loadingProviderSpacesData.hub1).toBe(false);
+      expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBe(false);
 
       expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
 
-      expect(promise).resolves.toEqual(mockResponse);
+      await expect(promise).resolves.toEqual(mockResponse);
     });
   });
 
   describe("getSpaceInfo", () => {
     it("should return the information about the local active space", () => {
-      const { store } = loadStore();
+      const { spaceProvidersStore, spaceCachingStore } = loadStore();
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         local: {
           id: "local",
           type: SpaceProviderNS.TypeEnum.LOCAL,
@@ -280,7 +278,7 @@ describe("spaces::providers", () => {
         },
       };
 
-      expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual(
+      expect(spaceProvidersStore.getSpaceInfo(projectId)).toEqual(
         expect.objectContaining({
           private: false,
           name: "Local space",
@@ -290,14 +288,14 @@ describe("spaces::providers", () => {
     });
 
     it("should return the information about the private active space", () => {
-      const { store } = loadStore();
+      const { spaceProvidersStore, spaceCachingStore } = loadStore();
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "knime1",
         spaceId: "privateSpace",
         itemId: "level2",
       };
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         knime1: {
           type: SpaceProviderNS.TypeEnum.HUB,
           connected: true,
@@ -325,7 +323,7 @@ describe("spaces::providers", () => {
         },
       };
 
-      expect(store.getters["spaces/getSpaceInfo"](projectId)).toEqual(
+      expect(spaceProvidersStore.getSpaceInfo(projectId)).toEqual(
         expect.objectContaining({
           id: "privateSpace",
           name: "Private space",
@@ -338,7 +336,7 @@ describe("spaces::providers", () => {
 
   describe("getProviderInfoFromProjectPath", () => {
     it("should return the information about provider based on the projectPath", () => {
-      const { store } = loadStore();
+      const { spaceProvidersStore, spaceCachingStore } = loadStore();
 
       const provider = createSpaceProvider({
         type: SpaceProviderNS.TypeEnum.HUB,
@@ -349,7 +347,7 @@ describe("spaces::providers", () => {
         spaceGroups: [],
       });
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         [provider.id]: provider,
       };
 
@@ -360,22 +358,22 @@ describe("spaces::providers", () => {
         itemId: "item1",
       };
 
-      store.state.spaces.projectPath[projectId] = data;
+      spaceCachingStore.projectPath[projectId] = data;
       expect(
-        store.getters["spaces/getProviderInfoFromProjectPath"](projectId),
+        spaceProvidersStore.getProviderInfoFromProjectPath(projectId),
       ).toEqual(provider);
     });
 
-    it("should return empty object if the projectPath is empty", () => {
-      const { store } = loadStore();
-      store.state.spaces.projectPath = {};
+    it("should return null if the projectPath is empty", () => {
+      const { spaceProvidersStore, spaceCachingStore } = loadStore();
+      spaceCachingStore.projectPath = {};
       expect(
-        store.getters["spaces/getProviderInfoFromProjectPath"]("anything"),
-      ).toEqual({});
+        spaceProvidersStore.getProviderInfoFromProjectPath("anything"),
+      ).toBeNull();
     });
 
-    it("should return empty object if the provider is not found in spaceProviders", () => {
-      const { store } = loadStore();
+    it("should return null if the provider is not found in spaceProviders", () => {
+      const { spaceProvidersStore, spaceCachingStore } = loadStore();
 
       const provider = createSpaceProvider({
         type: SpaceProviderNS.TypeEnum.HUB,
@@ -386,7 +384,7 @@ describe("spaces::providers", () => {
         spaceGroups: [],
       });
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         [provider.id]: provider,
       };
 
@@ -398,10 +396,10 @@ describe("spaces::providers", () => {
         itemId: "item1",
       };
 
-      store.state.spaces.projectPath[projectId] = data;
+      spaceCachingStore.projectPath[projectId] = data;
       expect(
-        store.getters["spaces/getProviderInfoFromProjectPath"](projectId),
-      ).toEqual({});
+        spaceProvidersStore.getProviderInfoFromProjectPath(projectId),
+      ).toBeNull();
     });
   });
 
@@ -411,19 +409,20 @@ describe("spaces::providers", () => {
         id: "provider1",
       });
 
-      const { store } = loadStore({
+      const { spaceProvidersStore } = loadStore({
         activeProjectOrigin: {
           providerId: provider.id,
           spaceId: "some-space",
           itemId: "some-item",
         },
+        isUnknownProject: false,
       });
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         [provider.id]: provider,
       };
 
-      expect(store.getters["spaces/activeProjectProvider"]).toEqual(provider);
+      expect(spaceProvidersStore.activeProjectProvider).toEqual(provider);
     });
 
     it("should return null if the active project's provider is from unknown origin", () => {
@@ -431,7 +430,7 @@ describe("spaces::providers", () => {
         id: "provider1",
       });
 
-      const { store } = loadStore({
+      const { spaceProvidersStore } = loadStore({
         activeProjectOrigin: {
           providerId: provider.id,
           spaceId: "some-space",
@@ -439,7 +438,7 @@ describe("spaces::providers", () => {
         },
       });
 
-      expect(store.getters["spaces/activeProjectProvider"]).toBeNull();
+      expect(spaceProvidersStore.activeProjectProvider).toBeNull();
     });
   });
 
@@ -456,29 +455,29 @@ describe("spaces::providers", () => {
         spaceGroups: newSpaceGroup,
       });
 
-      const { store } = loadStore();
+      const { spaceProvidersStore } = loadStore();
 
-      store.state.spaces.spaceProviders = {
+      spaceProvidersStore.spaceProviders = {
         [provider.id]: provider,
       };
 
-      expect(store.state.spaces.spaceProviders[provider.id]).toEqual(provider);
+      expect(spaceProvidersStore.spaceProviders[provider.id]).toEqual(provider);
 
       expect(
-        store.state.spaces.loadingProviderSpacesData[provider.id],
+        spaceProvidersStore.loadingProviderSpacesData[provider.id],
       ).toBeFalsy();
 
-      store.dispatch("spaces/reloadProviderSpaces", { id: provider.id });
-      expect(store.state.spaces.loadingProviderSpacesData[provider.id]).toBe(
+      spaceProvidersStore.reloadProviderSpaces({ id: provider.id });
+      expect(spaceProvidersStore.loadingProviderSpacesData[provider.id]).toBe(
         true,
       );
       await flushPromises();
 
       expect(
-        store.state.spaces.loadingProviderSpacesData[provider.id],
+        spaceProvidersStore.loadingProviderSpacesData[provider.id],
       ).toBeFalsy();
 
-      expect(store.state.spaces.spaceProviders[provider.id]).toEqual({
+      expect(spaceProvidersStore.spaceProviders[provider.id]).toEqual({
         ...provider,
         spaceGroups: newSpaceGroup,
       });

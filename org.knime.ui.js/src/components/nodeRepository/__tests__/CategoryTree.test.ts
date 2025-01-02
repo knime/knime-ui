@@ -4,8 +4,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { Tree } from "@knime/virtual-tree";
 
 import type { NodeCategoryWithExtendedPorts } from "@/api/custom-types";
-import type { NodeCategory } from "@/api/gateway-api/generated-api";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import CategoryTree from "../CategoryTree.vue";
 import { useAddNodeToWorkflow } from "../useAddNodeToWorkflow";
 
@@ -14,7 +13,7 @@ vi.mock("@/components/nodeRepository/useAddNodeToWorkflow", () => {
 });
 
 describe("CategoryTree", () => {
-  const rootTreeResponse: NodeCategory = {
+  const rootTreeResponse: NodeCategoryWithExtendedPorts = {
     childCategories: [
       {
         displayName: "mockCategory1",
@@ -27,43 +26,42 @@ describe("CategoryTree", () => {
     ],
   };
   const doMount = (
-    nodeCategoryCache = new Map<string, any>(),
+    nodeCategoryCache = new Map<string, NodeCategoryWithExtendedPorts>(),
     treeExpandedKeys: string[] = [],
   ) => {
-    const getNodeCategoryMock = vi
-      .fn()
-      .mockImplementation((_, { categoryPath }) =>
-        categoryPath.length === 0 ? rootTreeResponse : {},
-      );
+    const { nodeRepositoryStore, testingPinia, applicationSettingsStore } =
+      mockStores();
 
-    const $store = mockVuexStore({
-      nodeRepository: {
-        state: {
-          nodeCategoryCache,
-          treeExpandedKeys,
-        },
-        actions: {
-          getNodeCategory: getNodeCategoryMock,
-        },
-        mutations: {},
-      },
-      application: {
-        state: {
-          hasNodeCollectionActive: false,
-        },
-      },
+    applicationSettingsStore.hasNodeCollectionActive = false;
+
+    // we can't just override the state as that breaks things,
+    // but we use params to have it ready before mount for hooks like onMounted
+    [...nodeCategoryCache.keys()].forEach((categoryPath) => {
+      nodeRepositoryStore.updateNodeCategoryCache({
+        categoryPath: categoryPath.split("/"),
+        nodeCategory: nodeCategoryCache.get(categoryPath)!,
+      });
     });
+
+    treeExpandedKeys.forEach((key) =>
+      nodeRepositoryStore.addTreeExpandedKey(key),
+    );
+
+    const getNodeCategoryMock = vi.mocked(nodeRepositoryStore.getNodeCategory);
+    getNodeCategoryMock.mockImplementation(({ categoryPath }) =>
+      Promise.resolve(categoryPath.length === 0 ? rootTreeResponse : {}),
+    );
 
     const wrapper = mount(CategoryTree, {
-      global: { plugins: [$store] },
+      global: { plugins: [testingPinia] },
     });
 
-    return { wrapper, $store, getNodeCategoryMock };
+    return { wrapper, getNodeCategoryMock };
   };
 
   it("loads root tree level", async () => {
     const { wrapper, getNodeCategoryMock } = doMount();
-    expect(getNodeCategoryMock).toHaveBeenCalledWith(expect.anything(), {
+    expect(getNodeCategoryMock).toHaveBeenCalledWith({
       categoryPath: [],
     });
     await flushPromises();

@@ -1,21 +1,18 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import type { WorkflowMonitorState } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
 import * as panelStore from "@/store/panel";
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
-import * as workflowMonitorStore from "@/store/workflowMonitor";
 import {
   createAvailablePortTypes,
   createNodeTemplate,
   createWorkflow,
   createWorkflowMonitorMessage,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import WorkflowMonitor from "../WorkflowMonitor.vue";
 
 const mockedAPI = deepMocked(API);
@@ -47,27 +44,18 @@ describe("WorkflowMonitor.vue", () => {
   });
 
   const doMount = () => {
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      workflowMonitor: workflowMonitorStore,
-      nodeTemplates: nodeTemplatesStore,
-      selection: selectionStore,
-      panel: panelStore,
-      application: applicationStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("workflow/setActiveWorkflow", createWorkflow());
-    $store.commit("application/setActiveProjectId", "project1");
+    mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
+    mockedStores.applicationStore.setActiveProjectId("project1");
     const availablePortTypes = createAvailablePortTypes();
-    $store.commit("application/setAvailablePortTypes", availablePortTypes);
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
+    mockedStores.applicationStore.setAvailablePortTypes(availablePortTypes);
 
     const wrapper = mount(WorkflowMonitor, {
-      global: { plugins: [$store] },
+      global: { plugins: [mockedStores.testingPinia] },
     });
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, mockedStores };
   };
 
   it("should activate/deactivate workflow monitor when tab is selected", async () => {
@@ -76,51 +64,49 @@ describe("WorkflowMonitor.vue", () => {
       snapshotId: "snapshot1",
     });
 
-    const { $store, dispatchSpy } = doMount();
+    const { mockedStores } = doMount();
 
-    expect(dispatchSpy).not.toHaveBeenCalledWith(
-      "workflowMonitor/activateWorkflowMonitor",
-    );
-    expect(dispatchSpy).not.toHaveBeenCalledWith(
-      "workflowMonitor/deactivateWorkflowMonitor",
-    );
-    expect($store.state.nodeTemplates.cache).toEqual({});
+    expect(
+      mockedStores.workflowMonitorStore.activateWorkflowMonitor,
+    ).not.toHaveBeenCalled();
+    expect(
+      mockedStores.workflowMonitorStore.deactivateWorkflowMonitor,
+    ).not.toHaveBeenCalled();
+    expect(mockedStores.nodeTemplatesStore.cache).toEqual({});
 
-    await $store.dispatch(
-      "panel/setCurrentProjectActiveTab",
+    mockedStores.panelStore.setCurrentProjectActiveTab(
       panelStore.TABS.WORKFLOW_MONITOR,
     );
 
     await flushPromises();
+    expect(
+      mockedStores.workflowMonitorStore.activateWorkflowMonitor,
+    ).toHaveBeenCalled();
 
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "workflowMonitor/activateWorkflowMonitor",
-    );
-
-    expect($store.state.workflowMonitor.currentState).toEqual(
+    expect(mockedStores.workflowMonitorStore.currentState).toEqual(
       workflowMonitorStateMock,
     );
-    expect($store.state.workflowMonitor.hasLoaded).toBe(true);
-    expect($store.state.workflowMonitor.isLoading).toBe(false);
+    expect(mockedStores.workflowMonitorStore.hasLoaded).toBe(true);
+    expect(mockedStores.workflowMonitorStore.isLoading).toBe(false);
     expect(mockedAPI.event.subscribeEvent).toHaveBeenCalledWith({
       typeId: "WorkflowMonitorStateChangeEventType",
       projectId: "project1",
       snapshotId: "snapshot1",
     });
 
-    expect($store.state.nodeTemplates.cache).toEqual({
+    expect(mockedStores.nodeTemplatesStore.cache).toEqual({
       [nodeTemplate1.id]: expect.objectContaining({ id: nodeTemplate1.id }),
       [nodeTemplate2.id]: expect.objectContaining({ id: nodeTemplate2.id }),
     });
 
-    await $store.dispatch(
-      "panel/setCurrentProjectActiveTab",
+    mockedStores.panelStore.setCurrentProjectActiveTab(
       panelStore.TABS.CONTEXT_AWARE_DESCRIPTION,
     );
+    await nextTick();
 
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "workflowMonitor/deactivateWorkflowMonitor",
-    );
+    expect(
+      mockedStores.workflowMonitorStore.deactivateWorkflowMonitor,
+    ).toHaveBeenCalled();
 
     expect(mockedAPI.event.unsubscribeEventListener).toHaveBeenCalledWith({
       typeId: "WorkflowMonitorStateChangeEventType",

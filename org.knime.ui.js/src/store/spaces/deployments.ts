@@ -1,151 +1,190 @@
-import type { ActionTree, MutationTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
 import type { Job, Schedule } from "@/api/custom-types";
-import type { RootStoreState } from "../types";
 
-import type { SpacesState } from "./index";
+import { useSpaceCachingStore } from "./caching";
+import { useSpaceOperationsStore } from "./spaceOperations";
+import { useSpacesStore } from "./spaces";
 
-interface State {
+type DeploymentsState = {
   jobs: Job[];
   schedules: Schedule[];
-}
-
-declare module "./index" {
-  interface SpacesState extends State {}
-}
-
-export const state = (): State => ({
-  jobs: [],
-  schedules: [],
-});
-
-export const mutations: MutationTree<SpacesState> = {
-  setJobs(state, value) {
-    state.jobs = value;
-  },
-
-  setSchedules(state, value) {
-    state.schedules = value;
-  },
 };
 
-export const actions: ActionTree<SpacesState, RootStoreState> = {
-  async fetchJobs({ state, commit }, { projectId, itemId }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    const jobs = await API.space.listJobsForWorkflow({
-      spaceId,
-      spaceProviderId,
-      itemId,
-    });
+export const useDeploymentsStore = defineStore("deployments", {
+  state: (): DeploymentsState => ({
+    jobs: [],
+    schedules: [],
+  }),
+  actions: {
+    setJobs(jobs: Job[]) {
+      this.jobs = jobs;
+    },
 
-    commit("setJobs", jobs);
-  },
+    setSchedules(schedules: Schedule[]) {
+      this.schedules = schedules;
+    },
 
-  async fetchSchedules({ state, commit }, { projectId, itemId }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    const schedules = await API.space.listSchedulesForWorkflow({
-      spaceId,
-      spaceProviderId,
-      itemId,
-    });
-
-    commit("setSchedules", schedules);
-  },
-
-  displayDeployments({ commit, dispatch }, { projectId, itemId, itemName }) {
-    dispatch("fetchJobs", { projectId, itemId });
-    dispatch("fetchSchedules", { projectId, itemId });
-    commit("setDeploymentsModalConfig", {
-      isOpen: true,
-      name: itemName,
+    async fetchJobs({
       projectId,
       itemId,
-    });
-  },
+    }: {
+      projectId: string;
+      itemId: string;
+    }) {
+      const { spaceId, spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId];
+      const jobs = await API.space.listJobsForWorkflow({
+        spaceId,
+        spaceProviderId,
+        itemId,
+      });
 
-  async deleteJob({ state, dispatch }, { jobId, schedulerId }) {
-    const projectId = state.deploymentsModalConfig.projectId;
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    const itemId = state.deploymentsModalConfig.itemId;
+      this.setJobs(jobs);
+    },
 
-    await API.space.deleteJobsForWorkflow({
-      spaceId,
-      spaceProviderId,
+    async fetchSchedules({
+      projectId,
       itemId,
+    }: {
+      projectId: string;
+      itemId: string;
+    }) {
+      const { spaceId, spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId];
+      const schedules = await API.space.listSchedulesForWorkflow({
+        spaceId,
+        spaceProviderId,
+        itemId,
+      });
+
+      this.setSchedules(schedules);
+    },
+
+    displayDeployments({
+      projectId,
+      itemId,
+      itemName,
+    }: {
+      projectId: string;
+      itemId: string;
+      itemName: string;
+    }) {
+      this.fetchJobs({ projectId, itemId });
+      this.fetchSchedules({ projectId, itemId });
+      useSpacesStore().setDeploymentsModalConfig({
+        isOpen: true,
+        name: itemName,
+        projectId,
+        itemId,
+      });
+    },
+
+    async deleteJob({
       jobId,
-    });
+      schedulerId,
+    }: {
+      jobId: string;
+      schedulerId: string;
+    }) {
+      const { projectId, itemId } = useSpacesStore().deploymentsModalConfig;
+      const { spaceId, spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId];
 
-    await dispatch("fetchJobs", { projectId, itemId });
+      await API.space.deleteJobsForWorkflow({
+        spaceId,
+        spaceProviderId,
+        itemId,
+        jobId,
+      });
 
-    if (schedulerId) {
-      await dispatch("fetchSchedules", { projectId, itemId });
-    }
-  },
+      await this.fetchJobs({ projectId, itemId });
 
-  async saveJobAsWorkflow({ state, dispatch, commit }, { jobId, jobName }) {
-    const projectId = state.deploymentsModalConfig.projectId;
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    const itemId = state.deploymentsModalConfig.itemId;
+      if (schedulerId) {
+        await this.fetchSchedules({ projectId, itemId });
+      }
+    },
 
-    const savedWFId = await API.desktop.saveJobAsWorkflow({
-      spaceProviderId,
-      spaceId,
-      itemId,
+    async saveJobAsWorkflow({
       jobId,
       jobName,
-    });
+    }: {
+      jobId: string;
+      jobName: string;
+    }) {
+      const { projectId, itemId } = useSpacesStore().deploymentsModalConfig;
+      const { spaceId, spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId];
 
-    if (savedWFId) {
-      await dispatch("fetchWorkflowGroupContent", { projectId });
-      commit("setDeploymentsModalConfig", {
-        isOpen: false,
-        name: null,
-        projectId: null,
-        itemId: null,
+      const savedWFId = await API.desktop.saveJobAsWorkflow({
+        spaceProviderId,
+        spaceId,
+        itemId,
+        jobId,
+        jobName,
       });
-    }
-  },
 
-  async editSchedule({ state, dispatch }, { scheduleId }) {
-    const projectId = state.deploymentsModalConfig.projectId;
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    const itemId = state.deploymentsModalConfig.itemId;
+      if (savedWFId) {
+        await useSpaceOperationsStore().fetchWorkflowGroupContent({
+          projectId,
+        });
+        useSpacesStore().setDeploymentsModalConfig({
+          isOpen: false,
+          name: "",
+          projectId: "",
+          itemId: "",
+        });
+      }
+    },
 
-    const updatedScheduleId = await API.desktop.editSchedule({
-      spaceProviderId,
-      spaceId,
+    async editSchedule({ scheduleId }: { scheduleId: string }) {
+      const { projectId, itemId } = useSpacesStore().deploymentsModalConfig;
+      const { spaceId, spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId];
+
+      const updatedScheduleId = await API.desktop.editSchedule({
+        spaceProviderId,
+        spaceId,
+        itemId,
+        scheduleId,
+      });
+
+      if (updatedScheduleId) {
+        await this.fetchSchedules({ projectId, itemId });
+      }
+    },
+
+    async deleteSchedule({ scheduleId }: { scheduleId: string }) {
+      const { projectId, itemId } = useSpacesStore().deploymentsModalConfig;
+      const { spaceId, spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId];
+
+      await API.space.deleteSchedulesForWorkflow({
+        spaceId,
+        spaceProviderId,
+        itemId,
+        scheduleId,
+      });
+
+      await this.fetchSchedules({ projectId, itemId });
+    },
+
+    executeWorkflow({
+      projectId,
       itemId,
-      scheduleId,
-    });
+    }: {
+      projectId: string;
+      itemId: string;
+    }) {
+      const { spaceId, spaceProviderId } =
+        useSpaceCachingStore().projectPath[projectId];
 
-    if (updatedScheduleId) {
-      await dispatch("fetchSchedules", { projectId, itemId });
-    }
+      API.desktop.executeWorkflow({
+        spaceId,
+        spaceProviderId,
+        itemId,
+      });
+    },
   },
-
-  async deleteSchedule({ state, dispatch }, { scheduleId }) {
-    const projectId = state.deploymentsModalConfig.projectId;
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    const itemId = state.deploymentsModalConfig.itemId;
-
-    await API.space.deleteSchedulesForWorkflow({
-      spaceId,
-      spaceProviderId,
-      itemId,
-      scheduleId,
-    });
-
-    await dispatch("fetchSchedules", { projectId, itemId });
-  },
-
-  executeWorkflow({ state }, { projectId, itemId }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-
-    API.desktop.executeWorkflow({
-      spaceId,
-      spaceProviderId,
-      itemId,
-    });
-  },
-};
+});

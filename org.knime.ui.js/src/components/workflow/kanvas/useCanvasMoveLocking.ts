@@ -1,14 +1,16 @@
-import { computed, onBeforeUnmount, onMounted } from "vue";
-import { useStore } from "vuex";
+import { onBeforeUnmount, onMounted } from "vue";
+import { storeToRefs } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
+import { useCanvasStore } from "@/store/canvas";
+import { useMovingStore } from "@/store/workflow/moving";
 import { isInputElement } from "@/util/isInputElement";
 
 export const useCanvasMoveLocking = () => {
-  const store = useStore();
-  const isDragging = computed(() => store.state.workflow.isDragging);
+  const { isDragging } = storeToRefs(useMovingStore());
+  const { setIsMoveLocked } = useCanvasStore();
 
   const onDownShiftOrControl = (event: KeyboardEvent) => {
     if (isInputElement(event.target as HTMLElement) || isUIExtensionFocused()) {
@@ -18,7 +20,7 @@ export const useCanvasMoveLocking = () => {
     const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
 
     if ((event.shiftKey || event[metaOrCtrlKey]) && !isDragging.value) {
-      store.commit("canvas/setIsMoveLocked", true);
+      setIsMoveLocked(true);
     }
   };
 

@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 import { mockUserAgent } from "jest-useragent-mock";
-import type { Store } from "vuex";
 
 import { Node as NodeType } from "@/api/gateway-api/generated-api";
 import ConnectorSnappingProvider from "@/components/workflow/connectors/ConnectorSnappingProvider.vue";
@@ -12,12 +11,9 @@ import NodePorts from "@/components/workflow/ports/NodePorts/NodePorts.vue";
 import { KNIME_MIME } from "@/composables/useDropNode";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
-import * as applicationStore from "@/store/application";
-import type { RootStoreState } from "@/store/types";
-import * as uiControlsStore from "@/store/uiControls";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import Node from "../Node.vue";
 import NodeActionBar from "../NodeActionBar.vue";
 import NodeSelectionPlane from "../NodeSelectionPlane.vue";
@@ -97,7 +93,7 @@ const linkedNode = {
 };
 
 describe("Node", () => {
-  let storeConfig: Record<any, any>,
+  let mockedStores: ReturnType<typeof mockStores>,
     props:
       | typeof commonNode
       | typeof nativeNode
@@ -106,76 +102,17 @@ describe("Node", () => {
       | typeof linkedNode;
 
   beforeEach(() => {
-    storeConfig = {
-      workflow: {
-        state: {
-          isDragging: false,
-        },
-        actions: {
-          loadWorkflow: vi.fn(),
-          executeNodes: vi.fn(),
-          cancelNodeExecution: vi.fn(),
-          resetNodes: vi.fn(),
-          openNodeConfiguration: vi.fn(),
-          replaceNode: vi.fn(),
-          openView: vi.fn(),
-          removeContainerNodePort: vi.fn(),
-        },
-        getters: {
-          isWritable: () => true,
-        },
-      },
-      nodeConfiguration: {
-        state: {
-          isLargeMode: false,
-        },
-        getters: {
-          canBeEnlarged: () => true,
-        },
-      },
-      application: {
-        state() {
-          return {
-            ...applicationStore.state(),
-            activeProjectId: "projectId",
-            useEmbeddedDialogs: true,
-          };
-        },
-        getters: {
-          hasAnnotationModeEnabled: () => false,
-        },
-        actions: {
-          switchWorkflow: vi.fn(),
-          toggleContextMenu: vi.fn(),
-        },
-      },
-      uiControls: uiControlsStore,
-      selection: {
-        getters: {
-          isNodeSelected: () => vi.fn(),
-          singleSelectedNode: vi.fn(),
-        },
-        actions: {
-          deselectAllObjects: vi.fn(),
-          selectNode: vi.fn(),
-          deselectNode: vi.fn(),
-        },
-      },
-      canvas: {
-        state: {
-          zoomFactor: 1,
-        },
-      },
-    };
+    mockedStores = mockStores();
+    mockedStores.canvasModesStore.hasAnnotationModeEnabled = false;
+    mockedStores.applicationStore.activeProjectId = "projectId";
+    mockedStores.selectionStore.isNodeSelected = vi.fn();
+    mockedStores.workflowStore.isWritable = true;
+    mockedStores.nodeConfigurationStore.canBeEnlarged = true;
 
     document.elementFromPoint = vi.fn();
   });
 
-  const doMount = ({
-    storeState = storeConfig,
-    props = {},
-    customStubs = {},
-  } = {}) => {
+  const doMount = ({ props = {}, customStubs = {} } = {}) => {
     const $router = {
       push: vi.fn(),
     };
@@ -188,12 +125,12 @@ describe("Node", () => {
       })),
       isEnabled: vi.fn().mockReturnValue(false),
     };
-    const $store: Store<RootStoreState> = mockVuexStore(storeState);
+
     const wrapper = mount(Node, {
       props,
       global: {
         mocks: { $shapes, $colors, $commands, $bus, $router },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: {
           NodeName: true,
           NodeLabel: true,
@@ -208,7 +145,7 @@ describe("Node", () => {
       },
       attachTo: document.body,
     });
-    return { wrapper, storeConfig, $store, props, $router };
+    return { wrapper, mockedStores, props, $router };
   };
 
   describe("features", () => {
@@ -331,15 +268,16 @@ describe("Node", () => {
       ...commonNode,
     };
 
-    const { wrapper, $store } = doMount({ props });
-    expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+    const { wrapper, mockedStores } = doMount({ props });
+    expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
     await wrapper.findComponent(NodeTorso).trigger("dblclick");
-    expect($store.state.nodeConfiguration.isLargeMode).toBe(true);
+    await nextTick();
+    expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(true);
 
     expect(
-      storeConfig.workflow.actions.openNodeConfiguration,
-    ).toHaveBeenCalledWith(expect.anything(), "root:1");
+      mockedStores.desktopInteractionsStore.openNodeConfiguration,
+    ).toHaveBeenCalledWith("root:1");
   });
 
   it("does not open the node config on double click if node can't be enlarged", async () => {
@@ -347,23 +285,18 @@ describe("Node", () => {
       ...commonNode,
     };
 
-    const storeConfig2 = {
-      ...storeConfig,
-      nodeConfiguration: {
-        ...storeConfig.nodeConfiguration,
-        getters: { canBeEnlarged: () => false },
-      },
-    };
+    const { wrapper, mockedStores } = doMount({ props });
+    mockedStores.nodeConfigurationStore.canBeEnlarged = false;
+    await nextTick();
 
-    const { wrapper, $store } = doMount({ storeState: storeConfig2, props });
-    expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+    expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
     await wrapper.findComponent(NodeTorso).trigger("dblclick");
-    expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+    expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
     expect(
-      storeConfig.workflow.actions.openNodeConfiguration,
-    ).toHaveBeenCalledWith(expect.anything(), "root:1");
+      mockedStores.desktopInteractionsStore.openNodeConfiguration,
+    ).toHaveBeenCalledWith("root:1");
   });
 
   describe("node selection preview", () => {
@@ -379,23 +312,25 @@ describe("Node", () => {
     });
 
     it("shows frame if selection preview is active", async () => {
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(false);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValueOnce(false);
       let { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
       wrapper.vm.setSelectionPreview("show");
       await nextTick();
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
-      storeConfig.selection.getters.isNodeSelected = () =>
+      mockedStores.selectionStore.isNodeSelected = () =>
         vi.fn().mockReturnValueOnce(true);
       wrapper = doMount({ props }).wrapper;
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
     });
 
     it('hides frame if selection preview is "hide" even if real selection is active', async () => {
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValueOnce(true);
       const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
       wrapper.vm.setSelectionPreview("hide");
@@ -404,8 +339,9 @@ describe("Node", () => {
     });
 
     it("clears selection preview state", async () => {
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValue(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValue(true);
       const { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
       wrapper.vm.setSelectionPreview("hide");
@@ -428,20 +364,23 @@ describe("Node", () => {
     });
 
     it("shows frame if selected", () => {
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValueOnce(true);
       let { wrapper } = doMount({ props });
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(false);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValueOnce(false);
       wrapper = doMount({ props }).wrapper;
       expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
     });
 
     it("has no shadow effect", () => {
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValue(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValue(true);
       const { wrapper } = doMount({ props });
 
       expect(wrapper.findComponent(NodeTorso).attributes("filter")).toBe(
@@ -479,62 +418,60 @@ describe("Node", () => {
       const { wrapper } = doMount({ props });
       await wrapper.find(".mouse-clickable").trigger("click", { button: 0 });
 
-      expect(
-        storeConfig.selection.actions.deselectAllObjects,
-      ).toHaveBeenCalled();
-      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
     });
 
     it("left click with control on Mac opens context menu", async () => {
       mockUserAgent("mac");
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValueOnce(true);
       const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
         .trigger("pointerdown", { button: 0, ctrlKey: true });
 
-      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
       expect(
-        storeConfig.application.actions.toggleContextMenu,
+        mockedStores.applicationStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
+    // eslint-disable-next-line vitest/no-focused-tests
     it.each(["shift", "ctrl"])("%ss-click adds to selection", async (mod) => {
       mockUserAgent("windows");
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValueOnce(true);
       const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
         .trigger("click", { button: 0, [`${mod}Key`]: true });
 
-      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
     });
 
     it("meta click adds to selection", async () => {
       mockUserAgent("mac");
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValueOnce(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValueOnce(true);
       const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
         .trigger("click", { button: 0, metaKey: true });
 
-      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
     });
@@ -543,15 +480,15 @@ describe("Node", () => {
       "%ss-click removes from selection",
       async (mod) => {
         mockUserAgent("windows");
-        storeConfig.selection.getters.isNodeSelected = () =>
-          vi.fn().mockReturnValue(true);
+        mockedStores.selectionStore.isNodeSelected = vi
+          .fn()
+          .mockReturnValue(true);
         const { wrapper } = doMount({ props });
 
         await wrapper
           .find(".mouse-clickable")
           .trigger("click", { button: 0, [`${mod}Key`]: true });
-        expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
-          expect.anything(),
+        expect(mockedStores.selectionStore.deselectNode).toHaveBeenCalledWith(
           expect.stringMatching("root:1"),
         );
       },
@@ -559,15 +496,15 @@ describe("Node", () => {
 
     it("meta click removes to selection", async () => {
       mockUserAgent("mac");
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValue(true);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValue(true);
       const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
         .trigger("click", { button: 0, metaKey: true });
-      expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.deselectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
     });
@@ -575,20 +512,20 @@ describe("Node", () => {
     it.each(["shift", "ctrl", "meta"])(
       "%ss-right-click adds to selection",
       async (mod) => {
-        storeConfig.selection.getters.isNodeSelected = () =>
-          vi.fn().mockReturnValueOnce(true);
+        mockedStores.selectionStore.isNodeSelected = vi
+          .fn()
+          .mockReturnValueOnce(true);
         const { wrapper } = doMount({ props });
 
         await wrapper
           .find(".mouse-clickable")
           .trigger("pointerdown", { button: 2, [`${mod}Key`]: true });
 
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-          expect.anything(),
+        expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
           expect.stringMatching("root:1"),
         );
         expect(
-          storeConfig.application.actions.toggleContextMenu,
+          mockedStores.applicationStore.toggleContextMenu,
         ).toHaveBeenCalled();
       },
     );
@@ -596,41 +533,39 @@ describe("Node", () => {
     it.each(["shift", "ctrl", "meta"])(
       "%ss-right-click does not remove from selection",
       async (mod) => {
-        storeConfig.selection.getters.isNodeSelected = () =>
-          vi.fn().mockReturnValue(true);
+        mockedStores.selectionStore.isNodeSelected = vi
+          .fn()
+          .mockReturnValue(true);
         const { wrapper } = doMount({ props });
 
         await wrapper
           .find(".mouse-clickable")
           .trigger("contextmenu", { [`${mod}Key`]: true });
-        expect(
-          storeConfig.selection.actions.deselectNode,
-        ).toHaveBeenCalledTimes(0);
+        expect(mockedStores.selectionStore.deselectNode).toHaveBeenCalledTimes(
+          0,
+        );
       },
     );
 
     it("right click to select node", async () => {
-      storeConfig.selection.getters.isNodeSelected = () =>
-        vi.fn().mockReturnValue(false);
+      mockedStores.selectionStore.isNodeSelected = vi
+        .fn()
+        .mockReturnValue(false);
       const { wrapper } = doMount({ props });
 
       await wrapper
         .find(".mouse-clickable")
         .trigger("pointerdown", { button: 2 });
 
-      expect(
-        storeConfig.selection.actions.deselectAllObjects,
-      ).toHaveBeenCalled();
-      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
     });
 
     it("forwards hover state to children", () => {
-      storeConfig.selection.getters.singleSelectedNode.mockReturnValue(
-        commonNode,
-      );
+      mockedStores.selectionStore.singleSelectedNode = commonNode;
+
       const { wrapper } = doMount({ props });
 
       expect(wrapper.findComponent(NodePorts).props("isSingleSelected")).toBe(
@@ -729,11 +664,11 @@ describe("Node", () => {
       });
 
       it("should handle configure button for web-based dialogs", async () => {
-        const { wrapper, $store } = doMount({
+        const { wrapper, mockedStores } = doMount({
           props: { ...props, dialogType: NodeType.DialogTypeEnum.Web },
         });
 
-        $store.state.application.useEmbeddedDialogs = true;
+        mockedStores.applicationSettingsStore.useEmbeddedDialogs = true;
         await nextTick();
 
         await triggerHover(wrapper, true);
@@ -746,7 +681,7 @@ describe("Node", () => {
           }),
         );
 
-        $store.state.application.useEmbeddedDialogs = false;
+        mockedStores.applicationSettingsStore.useEmbeddedDialogs = false;
         await nextTick();
 
         await triggerHover(wrapper, true);
@@ -759,11 +694,11 @@ describe("Node", () => {
       });
 
       it("should handle configure button for legacy dialogs", async () => {
-        const { wrapper, $store } = doMount({
+        const { wrapper, mockedStores } = doMount({
           props: { ...props, dialogType: NodeType.DialogTypeEnum.Swing },
         });
 
-        $store.state.application.useEmbeddedDialogs = true;
+        mockedStores.applicationSettingsStore.useEmbeddedDialogs = true;
         await nextTick();
 
         await triggerHover(wrapper, true);
@@ -776,7 +711,7 @@ describe("Node", () => {
           }),
         );
 
-        $store.state.application.useEmbeddedDialogs = false;
+        mockedStores.applicationSettingsStore.useEmbeddedDialogs = false;
         await nextTick();
 
         await triggerHover(wrapper, true);
@@ -1045,9 +980,7 @@ describe("Node", () => {
       const { wrapper } = doMount({ props });
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
-      expect(
-        storeConfig.application.actions.switchWorkflow,
-      ).not.toHaveBeenCalled();
+      expect(mockedStores.lifecycleStore.switchWorkflow).not.toHaveBeenCalled();
     });
 
     it("opens component on control-double click", async () => {
@@ -1072,27 +1005,25 @@ describe("Node", () => {
         ctrlKey: true,
       });
 
-      expect(
-        storeConfig.application.actions.switchWorkflow,
-      ).not.toHaveBeenCalled();
+      expect(mockedStores.lifecycleStore.switchWorkflow).not.toHaveBeenCalled();
     });
 
     it("does not open component on double click", async () => {
       props = { ...componentNode };
-      const { wrapper, $store } = doMount({ props });
-      vi.spyOn($store, "dispatch");
+      const { wrapper, mockedStores } = doMount({ props });
+
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
-      expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
+      expect(mockedStores.lifecycleStore.loadWorkflow).not.toHaveBeenCalled();
     });
 
     it("does not open native node on double click", async () => {
       props = { ...nativeNode };
-      const { wrapper, $store } = doMount({ props });
-      vi.spyOn($store, "dispatch");
+      const { wrapper, mockedStores } = doMount({ props });
+
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
-      expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
+      expect(mockedStores.lifecycleStore.loadWorkflow).not.toHaveBeenCalled();
     });
 
     it("does not open the node config for component nodes on double click", async () => {
@@ -1100,16 +1031,16 @@ describe("Node", () => {
         ...componentNode,
       };
 
-      const { wrapper, $store } = doMount({ props });
-      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+      const { wrapper, mockedStores } = doMount({ props });
+      expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
       await nextTick();
-      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+      expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
       expect(
-        storeConfig.workflow.actions.openNodeConfiguration,
-      ).toHaveBeenCalledWith(expect.anything(), "root:1");
+        mockedStores.desktopInteractionsStore.openNodeConfiguration,
+      ).toHaveBeenCalledWith("root:1");
     });
 
     it("does not open the node config for meta nodes on double click", async () => {
@@ -1117,15 +1048,15 @@ describe("Node", () => {
         ...metaNode,
       };
 
-      const { wrapper, $store } = doMount({ props });
-      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+      const { wrapper, mockedStores } = doMount({ props });
+      expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
       await nextTick();
-      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+      expect(mockedStores.nodeConfigurationStore.isLargeMode).toBe(false);
 
       expect(
-        storeConfig.workflow.actions.openNodeConfiguration,
+        mockedStores.desktopInteractionsStore.openNodeConfiguration,
       ).not.toHaveBeenCalled();
     });
   });
@@ -1166,21 +1097,17 @@ describe("Node", () => {
       await wrapper
         .findComponent(NodeName)
         .trigger("pointerdown", { button: 2 });
-
-      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
       expect(
-        storeConfig.application.actions.toggleContextMenu,
+        mockedStores.applicationStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
     it("should handle click events", async () => {
       await wrapper.findComponent(NodeName).trigger("click", { button: 0 });
-
-      expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         expect.stringMatching("root:1"),
       );
     });
@@ -1225,8 +1152,8 @@ describe("Node", () => {
 
       it("should add the 'is-dragging' class to the hover-area", () => {
         props = { ...commonNode };
-        storeConfig.workflow.state.isDragging = true;
-        const { wrapper } = doMount({ props, storeState: storeConfig });
+        mockedStores.movingStore.isDragging = true;
+        const { wrapper } = doMount({ props });
         expect(wrapper.find(".hover-area").classes()).toContain("is-dragging");
       });
 
@@ -1246,8 +1173,8 @@ describe("Node", () => {
 
       it("does not give visual indication if node is not editable", async () => {
         props = { ...linkedNode };
-        storeConfig.workflow.getters.isWritable = () => false;
-        const { wrapper } = doMount({ props, storeState: storeConfig });
+        mockedStores.workflowStore.isWritable = false;
+        const { wrapper } = doMount({ props });
         const torso = wrapper.findComponent(NodeTorso);
 
         triggerDragEvent(torso.element, "dragenter", { types: [KNIME_MIME] });
@@ -1266,15 +1193,17 @@ describe("Node", () => {
         });
         wrapper.findComponent(NodeTorso).vm.$emit("drop", dropEvent);
         await nextTick();
-        expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
-          expect.anything(),
-          { nodeFactory: { className: "test" }, targetNodeId: "root:1" },
-        );
+        expect(
+          mockedStores.nodeInteractionsStore.replaceNode,
+        ).toHaveBeenCalledWith({
+          nodeFactory: { className: "test" },
+          targetNodeId: "root:1",
+        });
       });
 
       it("does not replace node on drop is node is not editable", async () => {
         props = { ...linkedNode };
-        storeConfig.workflow.getters.isWritable = () => false;
+        mockedStores.workflowStore.isWritable = false;
         const { wrapper } = doMount({ props });
         const node = wrapper.findComponent(Node);
 
@@ -1283,7 +1212,9 @@ describe("Node", () => {
         });
         wrapper.findComponent(NodeTorso).vm.$emit("drop", dropEvent);
         await nextTick();
-        expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
+        expect(
+          mockedStores.nodeInteractionsStore.replaceNode,
+        ).not.toHaveBeenCalled();
       });
     });
 
@@ -1327,13 +1258,12 @@ describe("Node", () => {
         await torso.trigger("node-dragging-end", {
           detail: { id: "test", clientX: 0, clientY: 0 },
         });
-        expect(storeConfig.workflow.actions.replaceNode).toHaveBeenCalledWith(
-          expect.anything(),
-          {
-            targetNodeId: "root:1",
-            replacementNodeId: "test",
-          },
-        );
+        expect(
+          mockedStores.nodeInteractionsStore.replaceNode,
+        ).toHaveBeenCalledWith({
+          targetNodeId: "root:1",
+          replacementNodeId: "test",
+        });
       });
 
       it("ignores if dropped on the same node", async () => {
@@ -1347,7 +1277,9 @@ describe("Node", () => {
         await torso.trigger("node-dragging-end", {
           detail: { id: commonNode.id, clientX: 0, clientY: 0 },
         });
-        expect(storeConfig.workflow.actions.replaceNode).not.toHaveBeenCalled();
+        expect(
+          mockedStores.nodeInteractionsStore.replaceNode,
+        ).not.toHaveBeenCalled();
       });
     });
   });

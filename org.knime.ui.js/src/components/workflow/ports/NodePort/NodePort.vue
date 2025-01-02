@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, inject } from "vue";
 import { onClickOutside } from "@vueuse/core";
-import { useStore } from "vuex";
+import { storeToRefs } from "pinia";
 
-import type { AvailablePortTypes } from "@/api/custom-types";
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
 import { type TooltipDefinition, useTooltip } from "@/composables/useTooltip";
+import { useApplicationStore } from "@/store/application/application";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import NodePortActiveConnector from "../NodePortActiveConnector.vue";
@@ -24,8 +26,6 @@ interface Props {
   disableQuickNodeAdd?: boolean;
 }
 
-const store = useStore();
-
 const props = withDefaults(defineProps<Props>(), {
   relativePosition: () => [0, 0],
   selected: false,
@@ -42,9 +42,7 @@ const emit = defineEmits<{
 
 const anchorPoint = inject<XY>("anchorPoint");
 
-const availablePortTypes = computed<AvailablePortTypes>(
-  () => store.state.application.availablePortTypes,
-);
+const { availablePortTypes } = storeToRefs(useApplicationStore());
 
 const portTemplate = computed(() => {
   const template = toExtendedPortObject(availablePortTypes.value)(
@@ -81,11 +79,8 @@ const tooltip = computed<TooltipDefinition>(() => {
   } satisfies TooltipDefinition;
 });
 
-const openQuickActionMenuAction = (payload: unknown) => {
-  store.dispatch("workflow/openQuickActionMenu", payload);
-};
-
-const isWritable = computed(() => store.getters["workflow/isWritable"]);
+const { isWritable } = storeToRefs(useWorkflowStore());
+const { openQuickActionMenu } = useFloatingMenusStore();
 
 const { elemRef: tooltipRef } = useTooltip({ tooltip });
 const {
@@ -110,7 +105,7 @@ const {
 
     const [x, y] = dragConnector.value!.absolutePoint;
 
-    openQuickActionMenuAction({
+    openQuickActionMenu({
       props: {
         position: { x, y },
         port: props.port,

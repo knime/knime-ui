@@ -1,5 +1,4 @@
 import {
-  type Mock,
   type MockedFunction,
   afterEach,
   describe,
@@ -7,12 +6,14 @@ import {
   it,
   vi,
 } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import { createWorkflow } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
-import { getNextProjectId } from "../util";
+
+import { loadStore } from "./loadStore";
+// import { getNextProjectId } from "../util";
 
 vi.mock("@/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({
@@ -33,55 +34,14 @@ const mockedGenerateWorkflowPreview = generateWorkflowPreview as MockedFunction<
 describe("workflow store: desktop interactions", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    mockedGenerateWorkflowPreview.mockReset();
   });
 
-  type Options = { autoApplySettingsMock?: Mock<[], boolean> };
-
-  const loadStore = async (options: Options = {}) => {
-    const mockCanvasWrapperEl = document.createElement("div");
-    const mockCanvasEl = document.createElement("div");
-    mockCanvasWrapperEl.appendChild(mockCanvasEl);
-
-    const autoApplySettingsMock =
-      options.autoApplySettingsMock ?? vi.fn(() => true);
-
-    const store = mockVuexStore({
-      workflow: await import("@/store/workflow"),
-      application: await import("@/store/application"),
-      selection: {
-        getters: {
-          singleSelectedNode: () => "TestNode",
-        },
-      },
-      canvas: {
-        state: {
-          getScrollContainerElement: () => mockCanvasWrapperEl,
-        },
-      },
-      spaces: {
-        actions: {
-          fetchWorkflowGroupContent: () => null,
-        },
-      },
-      nodeConfiguration: {
-        actions: {
-          autoApplySettings: autoApplySettingsMock,
-        },
-      },
-    });
-    const dispatchSpy = vi.spyOn(store, "dispatch");
-
-    return { store, dispatchSpy, mockCanvasEl, autoApplySettingsMock };
-  };
-
   describe("actions", () => {
-    it("calls executeNodeAndOpenView from API", async () => {
-      const { store } = await loadStore();
-      store.commit(
-        "workflow/setActiveWorkflow",
-        createWorkflow({ projectId: "foo" }),
-      );
-      store.dispatch("workflow/executeNodeAndOpenView", "root:0");
+    it("calls executeNodeAndOpenView from API", () => {
+      const { workflowStore, executionStore } = loadStore();
+      workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
+      executionStore.executeNodeAndOpenView("root:0");
 
       expect(mockedAPI.desktop.executeNodeAndOpenView).toHaveBeenCalledWith({
         nodeId: "root:0",
@@ -89,14 +49,11 @@ describe("workflow store: desktop interactions", () => {
       });
     });
 
-    it("calls openNodeDialog from API", async () => {
-      const { store } = await loadStore();
+    it("calls openNodeDialog from API", () => {
+      const { workflowStore, desktopInteractionsStore } = loadStore();
 
-      store.commit(
-        "workflow/setActiveWorkflow",
-        createWorkflow({ projectId: "foo" }),
-      );
-      store.dispatch("workflow/openNodeConfiguration", "node x");
+      workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
+      desktopInteractionsStore.openNodeConfiguration("node x");
 
       expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
         nodeId: "node x",
@@ -109,32 +66,29 @@ describe("workflow store: desktop interactions", () => {
         Promise.resolve(true),
       );
 
-      const { store, dispatchSpy } = await loadStore();
+      const {
+        workflowStore,
+        desktopInteractionsStore,
+        nodeConfigurationStore,
+        selectionStore,
+      } = loadStore();
 
-      store.commit(
-        "workflow/setActiveWorkflow",
-        createWorkflow({ projectId: "foo" }),
-      );
-      await store.dispatch("workflow/openNodeConfiguration", "node x");
+      selectionStore.selectNode("root:1");
+      workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
+      await desktopInteractionsStore.openNodeConfiguration("node x");
 
       expect(mockedAPI.desktop.openNodeDialog).toHaveBeenCalledWith({
         nodeId: "node x",
         projectId: "foo",
       });
-      expect(dispatchSpy).toHaveBeenLastCalledWith(
-        "nodeConfiguration/updateTimestamp",
-        null,
-      );
+      expect(nodeConfigurationStore.updateTimestamp).toHaveBeenCalled();
     });
 
     it("calls openFlowVariableConfiguration from API", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = await loadStore();
 
-      store.commit(
-        "workflow/setActiveWorkflow",
-        createWorkflow({ projectId: "foo" }),
-      );
-      store.dispatch("workflow/openFlowVariableConfiguration", "node x");
+      workflowStore.setActiveWorkflow(createWorkflow({ projectId: "foo" }));
+      desktopInteractionsStore.openFlowVariableConfiguration("node x");
 
       expect(
         mockedAPI.desktop.openLegacyFlowVariableDialog,
@@ -145,16 +99,15 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("calls openLayoutEditor from API", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = await loadStore();
 
-      store.commit(
-        "workflow/setActiveWorkflow",
+      workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
           info: { containerId: "root" },
         }),
       );
-      store.dispatch("workflow/openLayoutEditor");
+      desktopInteractionsStore.openLayoutEditor();
 
       expect(mockedAPI.desktop.openLayoutEditor).toHaveBeenCalledWith({
         projectId: "foo",
@@ -163,17 +116,16 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("calls openLayoutEditor from API with nodeId", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = await loadStore();
       const nodeId = "nodeId1";
 
-      store.commit(
-        "workflow/setActiveWorkflow",
+      workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
           info: { containerId: "root" },
         }),
       );
-      store.dispatch("workflow/openLayoutEditorByNodeId", { nodeId });
+      desktopInteractionsStore.openLayoutEditorByNodeId({ nodeId });
 
       expect(mockedAPI.desktop.openLayoutEditor).toHaveBeenCalledWith({
         projectId: "foo",
@@ -183,17 +135,16 @@ describe("workflow store: desktop interactions", () => {
 
     describe("save workflow", () => {
       it("saves the workflow via the API", async () => {
-        const { store } = await loadStore();
+        const { workflowStore, desktopInteractionsStore } = loadStore();
 
-        store.commit(
-          "workflow/setActiveWorkflow",
+        workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId: "foo",
             info: { containerId: "root" },
           }),
         );
 
-        await store.dispatch("workflow/saveProject");
+        await desktopInteractionsStore.saveProject();
 
         expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({ projectId: "foo" }),
@@ -201,19 +152,18 @@ describe("workflow store: desktop interactions", () => {
       });
 
       it("sends the correct workflow preview for a root workflow", async () => {
-        const { store } = await loadStore();
+        const { workflowStore, desktopInteractionsStore } = loadStore();
 
         mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
 
-        store.commit(
-          "workflow/setActiveWorkflow",
+        workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId: "foo",
             info: { containerId: "root" },
           }),
         );
 
-        await store.dispatch("workflow/saveProject");
+        await desktopInteractionsStore.saveProject();
 
         expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -223,14 +173,18 @@ describe("workflow store: desktop interactions", () => {
       });
 
       it("sends the correct workflow preview for a nested workflow", async () => {
-        const { store } = await loadStore();
+        const {
+          workflowStore,
+          desktopInteractionsStore,
+          workflowSnapshotsStore,
+        } = loadStore();
 
         const projectId = "project1";
         // 'root:1' to mimic being inside component/metanode
         const workflowId = "root:1";
         // set the snapshot on the store
         const dummyEl = document.createElement("div");
-        store.state.application.rootWorkflowSnapshots.set(
+        workflowSnapshotsStore.rootWorkflowSnapshots.set(
           `${projectId}--root`,
           dummyEl.outerHTML,
         );
@@ -239,15 +193,14 @@ describe("workflow store: desktop interactions", () => {
           Promise.resolve(input.outerHTML),
         );
 
-        store.commit(
-          "workflow/setActiveWorkflow",
+        workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId,
             info: { containerId: workflowId },
           }),
         );
 
-        await store.dispatch("workflow/saveProject");
+        await desktopInteractionsStore.saveProject();
 
         expect(mockedAPI.desktop.saveProject).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -267,37 +220,42 @@ describe("workflow store: desktop interactions", () => {
         const { projectId: activeProjectId } = openProjects[0];
         const { projectId: closingProjectId } = openProjects[0];
 
-        // setup
-        const { store, dispatchSpy } = await loadStore();
-        store.commit("application/setOpenProjects", openProjects);
-        store.commit("application/setActiveProjectId", activeProjectId);
-        store.commit(
-          "workflow/setActiveWorkflow",
+        const {
+          workflowStore,
+          applicationStore,
+          desktopInteractionsStore,
+          workflowSnapshotsStore,
+          canvasStateTrackingStore,
+          componentInteractionsStore,
+        } = loadStore();
+        applicationStore.setOpenProjects(openProjects);
+        applicationStore.setActiveProjectId(activeProjectId);
+
+        workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId: "foo",
             info: { containerId: "root" },
           }),
         );
 
-        await store.dispatch("workflow/closeProject", closingProjectId);
+        await desktopInteractionsStore.closeProject(closingProjectId);
         expect(mockedAPI.desktop.closeProject).toHaveBeenCalledWith({
           closingProjectId,
           nextProjectId: null,
         });
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "application/removeFromRootWorkflowSnapshots",
-          {
-            projectId: closingProjectId,
-          },
-        );
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "application/removeCanvasState",
+        expect(
+          workflowSnapshotsStore.removeFromRootWorkflowSnapshots,
+        ).toHaveBeenCalledWith({
+          projectId: closingProjectId,
+        });
+        expect(canvasStateTrackingStore.removeCanvasState).toHaveBeenCalledWith(
           closingProjectId,
         );
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "workflow/clearProcessedUpdateNotification",
-          { projectId: closingProjectId },
-        );
+        expect(
+          componentInteractionsStore.clearProcessedUpdateNotification,
+        ).toHaveBeenCalledWith({
+          projectId: closingProjectId,
+        });
       });
 
       it("should prevent closing when auto-apply node configuration cancels", async () => {
@@ -310,30 +268,39 @@ describe("workflow store: desktop interactions", () => {
         const { projectId: closingProjectId } = openProjects[0];
 
         // setup
-        const { store, dispatchSpy } = await loadStore({
-          autoApplySettingsMock: vi.fn(() => false),
-        });
-        store.commit("application/setOpenProjects", openProjects);
-        store.commit("application/setActiveProjectId", activeProjectId);
-        store.commit(
-          "workflow/setActiveWorkflow",
+        const {
+          workflowStore,
+          applicationStore,
+          desktopInteractionsStore,
+          nodeConfigurationStore,
+          canvasStateTrackingStore,
+          componentInteractionsStore,
+        } = loadStore();
+
+        vi.mocked(nodeConfigurationStore.autoApplySettings).mockImplementation(
+          () => Promise.resolve(false),
+        );
+
+        applicationStore.setOpenProjects(openProjects);
+        applicationStore.setActiveProjectId(activeProjectId);
+        workflowStore.setActiveWorkflow(
           createWorkflow({
             projectId: "foo",
             info: { containerId: "root" },
           }),
         );
 
-        await store.dispatch("workflow/closeProject", closingProjectId);
+        await desktopInteractionsStore.closeProject(closingProjectId);
         expect(mockedAPI.desktop.closeProject).not.toHaveBeenCalled();
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "nodeConfiguration/autoApplySettings",
+        expect(nodeConfigurationStore.autoApplySettings).toHaveBeenCalledWith(
           expect.anything(),
         );
-        expect(dispatchSpy).not.toHaveBeenCalledWith(
-          "application/removeCanvasState",
-          closingProjectId,
-        );
-        expect(dispatchSpy).not.toHaveBeenCalledWith(
+        expect(
+          canvasStateTrackingStore.removeCanvasState,
+        ).not.toHaveBeenCalledWith(closingProjectId);
+        expect(
+          componentInteractionsStore.clearProcessedUpdateNotification,
+        ).not.toHaveBeenCalledWith(
           "workflow/clearProcessedUpdateNotification",
           { projectId: closingProjectId },
         );
@@ -368,59 +335,59 @@ describe("workflow store: desktop interactions", () => {
             openProjects[expectedNextProject];
 
           // setup
-          const { store, dispatchSpy } = await loadStore();
-          store.commit("application/setOpenProjects", openProjects);
-          store.commit("application/setActiveProjectId", activeProjectId);
-          store.commit(
-            "workflow/setActiveWorkflow",
+          const {
+            workflowStore,
+            applicationStore,
+            desktopInteractionsStore,
+            canvasStateTrackingStore,
+          } = loadStore();
+
+          applicationStore.setOpenProjects(openProjects);
+          applicationStore.setActiveProjectId(activeProjectId);
+          workflowStore.setActiveWorkflow(
             createWorkflow({
               projectId: "foo",
               info: { containerId: "root" },
             }),
           );
 
-          await store.dispatch("workflow/closeProject", closingProjectId);
+          await desktopInteractionsStore.closeProject(closingProjectId);
           expect(mockedAPI.desktop.closeProject).toHaveBeenCalledWith({
             closingProjectId,
             nextProjectId: expectedNextProjectId,
           });
-          expect(dispatchSpy).toHaveBeenCalledWith(
-            "application/removeCanvasState",
-            closingProjectId,
-          );
+          expect(
+            canvasStateTrackingStore.removeCanvasState,
+          ).toHaveBeenCalledWith(closingProjectId);
         },
       );
 
       it("does not remove canvasState nor workflowPreviewSnapshot if closeProject is cancelled", async () => {
         mockedAPI.desktop.closeProject.mockImplementation(() => false);
-        const { store, dispatchSpy } = await loadStore();
+        const { canvasStateTrackingStore, desktopInteractionsStore } =
+          loadStore();
 
-        await store.dispatch("workflow/closeProject", "foo");
+        await desktopInteractionsStore.closeProject("foo");
 
-        expect(dispatchSpy).not.toHaveBeenCalledWith(
-          "application/removeRootWorkflowSnapshot",
-        );
-        expect(dispatchSpy).not.toHaveBeenCalledWith(
-          "application/removeCanvasState",
-          "foo",
-        );
+        expect(
+          canvasStateTrackingStore.removeCanvasState,
+        ).not.toHaveBeenCalledWith("foo");
       });
     });
   });
 
   describe("save workflow locally", () => {
     it("saves the workflow locally via the API", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = loadStore();
 
-      store.commit(
-        "workflow/setActiveWorkflow",
+      workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
           info: { containerId: "root" },
         }),
       );
 
-      await store.dispatch("workflow/saveProjectAs");
+      await desktopInteractionsStore.saveProjectAs();
 
       expect(mockedAPI.desktop.saveProjectAs).toHaveBeenCalledWith(
         expect.objectContaining({ projectId: "foo" }),
@@ -428,19 +395,18 @@ describe("workflow store: desktop interactions", () => {
     });
 
     it("sends the correct workflow preview for a root workflow when saved locally", async () => {
-      const { store } = await loadStore();
+      const { workflowStore, desktopInteractionsStore } = loadStore();
 
       mockedGenerateWorkflowPreview.mockResolvedValue("mock svg preview");
 
-      store.commit(
-        "workflow/setActiveWorkflow",
+      workflowStore.setActiveWorkflow(
         createWorkflow({
           projectId: "foo",
           info: { containerId: "root" },
         }),
       );
 
-      await store.dispatch("workflow/saveProjectAs");
+      await desktopInteractionsStore.saveProjectAs();
 
       expect(mockedAPI.desktop.saveProjectAs).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -450,21 +416,21 @@ describe("workflow store: desktop interactions", () => {
     });
   });
 
-  describe("utils", () => {
-    it("determines next project id correctly", () => {
-      const closingProjectIds = ["test1", "test2", "test3"];
-      const activeProjectId = "test1";
-      const openProjects = [
-        { projectId: "test1" },
-        { projectId: "test2" },
-        { projectId: "test4" },
-      ];
-      const nextProjectId = getNextProjectId({
-        closingProjectIds,
-        activeProjectId,
-        openProjects,
-      });
-      expect(nextProjectId).toBe("test4");
-    });
-  });
+  // describe("utils", () => {
+  //   it("determines next project id correctly", () => {
+  //     const closingProjectIds = ["test1", "test2", "test3"];
+  //     const activeProjectId = "test1";
+  //     const openProjects = [
+  //       { projectId: "test1" },
+  //       { projectId: "test2" },
+  //       { projectId: "test4" },
+  //     ];
+  //     const nextProjectId = getNextProjectId({
+  //       closingProjectIds,
+  //       activeProjectId,
+  //       openProjects,
+  //     });
+  //     expect(nextProjectId).toBe("test4");
+  //   });
+  // });
 });

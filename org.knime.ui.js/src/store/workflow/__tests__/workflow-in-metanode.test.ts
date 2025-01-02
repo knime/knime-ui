@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import type { Bounds, MetaPorts, XY } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as canvasStore from "@/store/canvas";
-import * as uiControlsStore from "@/store/uiControls";
 import {
   autoPositionMetanodeMargin,
   defaultMetaNodeBarHeight,
@@ -12,21 +9,12 @@ import {
   nodeSize,
   portSize,
 } from "@/style/shapes";
-import { type DeepPartial, mockVuexStore } from "@/test/utils";
+import { type DeepPartial } from "@/test/utils";
 import { geometry } from "@/util/geometry";
 
+import { loadStore } from "./loadStore";
+
 describe("workflow store", () => {
-  const loadStore = async () => {
-    const store = mockVuexStore({
-      workflow: await import("@/store/workflow"),
-      canvas: canvasStore,
-      application: applicationStore,
-      uiControls: uiControlsStore,
-    });
-
-    return { store };
-  };
-
   const node = { id: "root:1", position: { x: 50, y: 21 } };
 
   describe("metanode content workflows", () => {
@@ -273,25 +261,26 @@ describe("workflow store", () => {
 
     it.each(Object.entries(fixtures))(
       "calculates dimensions %s",
-      async (title, { additionalProps, nodes, expected }) => {
-        const { store } = await loadStore();
+      (_, { additionalProps, nodes, expected }) => {
+        const { workflowStore } = loadStore();
         const workflow = {
           ...baseWorkflow,
           nodes,
         };
-        store.commit("workflow/setActiveWorkflow", {
+
+        // @ts-ignore
+        workflowStore.setActiveWorkflow({
           ...workflow,
           ...additionalProps,
         });
 
-        store.commit(
-          "workflow/setCalculatedMetanodePortBarBounds",
+        workflowStore.setCalculatedMetanodePortBarBounds(
           geometry.calculateMetaNodePortBarBounds(
-            store.state.workflow.activeWorkflow,
+            workflowStore.activeWorkflow!,
           ),
         );
 
-        expect(store.getters["workflow/workflowBounds"]).toEqual(
+        expect(workflowStore.workflowBounds).toEqual(
           expect.objectContaining(expected.workflowBounds),
         );
       },

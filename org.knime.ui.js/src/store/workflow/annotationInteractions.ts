@@ -1,141 +1,156 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
 import {
+  type Bounds,
   type ReorderWorkflowAnnotationsCommand,
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
+import { useSelectionStore } from "@/store/selection";
 import * as colors from "@/style/colors";
-import type { RootStoreState } from "../types";
 
-import type { WorkflowState } from ".";
-import { getProjectAndWorkflowIds } from "./util";
+import { useWorkflowStore } from "./workflow";
 
-interface State {
+export interface AnnotationInteractionsState {
   editableAnnotationId: string | null;
 }
 
-declare module "./index" {
-  interface WorkflowState extends State {}
-}
-
-export const state = (): State => ({
-  editableAnnotationId: null,
-});
-
-export const mutations: MutationTree<WorkflowState> = {
-  setAnnotation(state, { annotationId, text, borderColor }) {
-    const { workflowAnnotations } = state.activeWorkflow!;
-
-    const mapped = workflowAnnotations.map<WorkflowAnnotation>((annotation) =>
-      annotation.id === annotationId
-        ? { ...annotation, text, borderColor }
-        : annotation,
-    );
-
-    state.activeWorkflow!.workflowAnnotations = mapped;
-  },
-
-  setEditableAnnotationId(state, annotationId) {
-    state.editableAnnotationId = annotationId;
-  },
-};
-
-export const actions: ActionTree<WorkflowState, RootStoreState> = {
-  async addWorkflowAnnotation({ state, dispatch }, { bounds }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-
-    const { newAnnotationId } = await API.workflowCommand.AddWorkflowAnnotation(
-      {
-        projectId,
-        workflowId,
-        bounds,
-        borderColor: colors.defaultAnnotationBorderColor,
-      },
-    );
-
-    await dispatch("selection/deselectAllObjects", null, { root: true });
-    await dispatch("selection/selectAnnotations", [newAnnotationId], {
-      root: true,
-    });
-    await dispatch("setEditableAnnotationId", newAnnotationId);
-  },
-
-  setEditableAnnotationId({ commit }, annotationId) {
-    commit("setEditableAnnotationId", annotationId);
-  },
-
-  transformWorkflowAnnotation({ state }, { bounds, annotationId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-
-    // optimistic update
-    const annotation = state.activeWorkflow!.workflowAnnotations.find(
-      (annotationCandidate) => annotationCandidate.id === annotationId,
-    )!;
-    if (annotation) {
-      annotation.bounds = bounds;
-    }
-
-    return API.workflowCommand.TransformWorkflowAnnotation({
-      projectId,
-      workflowId,
-      annotationId,
-      bounds,
-    });
-  },
-
-  reorderWorkflowAnnotation(
-    { state, rootGetters },
-    { action }: { action: ReorderWorkflowAnnotationsCommand.ActionEnum },
-  ) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const annotationIds = rootGetters["selection/selectedAnnotationIds"];
-
-    return API.workflowCommand.ReorderWorkflowAnnotations({
-      projectId,
-      workflowId,
-      action,
-      annotationIds,
-    });
-  },
-
-  async updateAnnotation(
-    { state, commit },
-    { annotationId, text, borderColor },
-  ) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-
-    const { text: originalText, borderColor: originalBorderColor } =
-      state.activeWorkflow!.workflowAnnotations.find(
-        (annotation) => annotation.id === annotationId,
-      )!;
-
-    try {
-      // do small optimistic update to prevent annotation from flashing between legacy and new
-      commit("setAnnotation", {
-        annotationId,
-        text: { value: text, contentType: TypedText.ContentTypeEnum.Html },
-        borderColor,
-      });
-
-      return await API.workflowCommand.UpdateWorkflowAnnotation({
-        projectId,
-        workflowId,
+export const useAnnotationInteractionsStore = defineStore(
+  "annotationInteractions",
+  {
+    state: (): AnnotationInteractionsState => ({
+      editableAnnotationId: null,
+    }),
+    actions: {
+      setAnnotation({
         annotationId,
         text,
         borderColor,
-      });
-    } catch (error) {
-      commit("setAnnotation", {
+      }: {
+        annotationId: string;
+        text: TypedText;
+        borderColor: string;
+      }) {
+        const { workflowAnnotations } = useWorkflowStore().activeWorkflow!;
+
+        const mapped = workflowAnnotations.map<WorkflowAnnotation>(
+          (annotation) =>
+            annotation.id === annotationId
+              ? { ...annotation, text, borderColor }
+              : annotation,
+        );
+
+        useWorkflowStore().activeWorkflow!.workflowAnnotations = mapped;
+      },
+
+      setEditableAnnotationId(annotationId: string | null) {
+        this.editableAnnotationId = annotationId;
+      },
+
+      async addWorkflowAnnotation({ bounds }: { bounds: Bounds }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+
+        const { newAnnotationId } =
+          await API.workflowCommand.AddWorkflowAnnotation({
+            projectId,
+            workflowId,
+            bounds,
+            borderColor: colors.defaultAnnotationBorderColor,
+          });
+
+        useSelectionStore().deselectAllObjects();
+        useSelectionStore().selectAnnotations([newAnnotationId]);
+        this.setEditableAnnotationId(newAnnotationId);
+      },
+
+      transformWorkflowAnnotation({
+        bounds,
         annotationId,
-        text: originalText,
-        borderColor: originalBorderColor,
-      });
+      }: {
+        bounds: Bounds;
+        annotationId: string;
+      }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
 
-      throw error;
-    }
+        // optimistic update
+        const annotation =
+          useWorkflowStore().activeWorkflow!.workflowAnnotations.find(
+            (annotationCandidate) => annotationCandidate.id === annotationId,
+          )!;
+        if (annotation) {
+          annotation.bounds = bounds;
+        }
+
+        return API.workflowCommand.TransformWorkflowAnnotation({
+          projectId,
+          workflowId,
+          annotationId,
+          bounds,
+        });
+      },
+
+      reorderWorkflowAnnotation({
+        action,
+      }: {
+        action: ReorderWorkflowAnnotationsCommand.ActionEnum;
+      }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+        const annotationIds = useSelectionStore().selectedAnnotationIds;
+
+        return API.workflowCommand.ReorderWorkflowAnnotations({
+          projectId,
+          workflowId,
+          action,
+          annotationIds,
+        });
+      },
+
+      async updateAnnotation({
+        annotationId,
+        text,
+        borderColor,
+      }: {
+        annotationId: string;
+        text: string;
+        borderColor: string;
+      }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+
+        const { text: originalText, borderColor: originalBorderColor } =
+          useWorkflowStore().activeWorkflow!.workflowAnnotations.find(
+            (annotation) => annotation.id === annotationId,
+          )!;
+
+        try {
+          // do small optimistic update to prevent annotation from flashing between legacy and new
+          this.setAnnotation({
+            annotationId,
+            text: { value: text, contentType: TypedText.ContentTypeEnum.Html },
+            borderColor,
+          });
+
+          return await API.workflowCommand.UpdateWorkflowAnnotation({
+            projectId,
+            workflowId,
+            annotationId,
+            text,
+            borderColor,
+          });
+        } catch (error) {
+          this.setAnnotation({
+            annotationId,
+            text: originalText,
+            borderColor: originalBorderColor,
+          });
+
+          throw error;
+        }
+      },
+    },
   },
-};
-
-export const getters: GetterTree<WorkflowState, RootStoreState> = {};
+);

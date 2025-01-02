@@ -2,7 +2,7 @@ import { type Ref, computed, ref, watch } from "vue";
 
 import type { NodeRelation } from "@/api/custom-types";
 import type { NodePort } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useAIAssistantStore } from "@/store/aiAssistant";
 
 const menuMode = ref<"quick-add" | "quick-build">("quick-add");
 
@@ -16,10 +16,8 @@ export const useQuickActionMenu = ({
   const setQuickAddMode = () => (menuMode.value = "quick-add");
   const setQuickBuildMode = () => (menuMode.value = "quick-build");
 
-  const store = useStore();
-
   const isQuickBuildModeAvailable = computed(() =>
-    store.getters["aiAssistant/isQuickBuildModeAvailable"](
+    useAIAssistantStore().isQuickBuildModeAvailable(
       nodeRelation.value,
       port.value?.typeId,
     ),
@@ -32,9 +30,7 @@ export const useQuickActionMenu = ({
         setQuickAddMode();
       }
     },
-    {
-      immediate: true,
-    },
+    { immediate: true },
   );
 
   return {

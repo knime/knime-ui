@@ -1,11 +1,8 @@
 import type { FunctionalComponent, SVGAttributes } from "vue";
 import type { Router } from "vue-router";
-import type { Store } from "vuex";
 
 import type { ToastService } from "@knime/components";
 import type { HotkeysNS } from "@knime/utils";
-
-import type { RootStoreState } from "@/store/types";
 
 import type { ShortcutsRegistry } from ".";
 
@@ -24,13 +21,10 @@ export type HotkeyText = { text: string };
 export type Hotkeys = Array<HotkeysNS.Hotkey | HotkeyText>;
 
 export type ShortcutExecuteContext = {
-  $store: Store<RootStoreState>;
   $router: Router;
   $toast: ToastService;
   payload: { event?: Event; metadata?: any };
 };
-
-export type ShortcutConditionContext = Pick<ShortcutExecuteContext, "$store">;
 
 export type Shortcut = {
   /**
@@ -48,7 +42,7 @@ export type Shortcut = {
    * @param payload
    * @returns
    */
-  condition?: (payload: ShortcutConditionContext) => boolean;
+  condition?: () => boolean;
 
   /**
    * Key combination that triggers the shortcut.
@@ -67,7 +61,7 @@ export type Shortcut = {
    * Text to display for the shortcut or a function that returns dynamic text based on the condition of the shortcut
    * @param payload
    */
-  text?: string | ((payload: ShortcutConditionContext) => string);
+  text?: string | (() => string);
 
   /**
    * A description that will be used for the shortcuts overview, important if the text is a function that depends on

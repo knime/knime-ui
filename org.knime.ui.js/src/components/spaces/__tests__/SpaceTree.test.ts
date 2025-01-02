@@ -1,15 +1,15 @@
 /* eslint-disable max-lines */
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { Tree } from "@knime/virtual-tree";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
-import * as spacesStore from "@/store/spaces";
 import { createSpaceProvider } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import SpaceTree from "../SpaceTree.vue";
 
 const mockedAPI = deepMocked(API);
@@ -54,29 +54,23 @@ describe("SpaceTree.vue", () => {
     }
     mockedAPI.space.createWorkflow.mockResolvedValue({ type: "Workflow" });
 
-    const store = mockVuexStore({
-      spaces: spacesStore,
-      application: {},
-    });
+    const mockedStores = mockStores();
     const local = createSpaceProvider();
 
-    store.commit("spaces/setSpaceProviders", {
+    mockedStores.spaceProvidersStore.setSpaceProviders({
       [local.id]: local,
       [mockSpaceProvider.id]: mockSpaceProvider,
     });
 
-    const dispatchSpy = vi.spyOn(store, "dispatch");
-    const commitSpy = vi.spyOn(store, "commit");
-
     const wrapper = mount(SpaceTree, {
       props: { selectedItemIds: [], projectId: "", ...props },
       global: {
-        plugins: [store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
     await flushPromises();
-    return { wrapper, store, dispatchSpy, commitSpy };
+    return { wrapper, mockedStores };
   };
 
   it("should load root data on created", async () => {
@@ -160,7 +154,7 @@ describe("SpaceTree.vue", () => {
   });
 
   it("should load descendent data", async () => {
-    const { wrapper, dispatchSpy } = await doMount({
+    const { wrapper, mockedStores } = await doMount({
       mockSpaceProvider: createSpaceProvider({
         id: "someMockProviderId",
         name: "Mock Space Provider",
@@ -170,27 +164,26 @@ describe("SpaceTree.vue", () => {
 
     const providerNodes = wrapper.findAllComponents({ name: "TreeNode" });
 
-    dispatchSpy.mockClear();
     await providerNodes[0].trigger("click");
     await flushPromises();
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "spaces/fetchWorkflowGroupContentByIdTriplet",
-      {
-        spaceProviderId: "local",
-        spaceId: "space1",
-        itemId: "root",
-      },
-    );
+    expect(
+      mockedStores.spaceOperationsStore.fetchWorkflowGroupContentByIdTriplet,
+    ).toHaveBeenCalledWith({
+      spaceProviderId: "local",
+      spaceId: "space1",
+      itemId: "root",
+    });
 
-    dispatchSpy.mockClear();
     await providerNodes[1].trigger("click");
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
+    expect(
+      mockedStores.spaceProvidersStore.reloadProviderSpaces,
+    ).toHaveBeenCalledWith({
       id: "someMockProviderId",
     });
   });
 
   it("should connect provider", async () => {
-    const { wrapper, dispatchSpy } = await doMount({
+    const { wrapper, mockedStores } = await doMount({
       mockSpaceProvider: createSpaceProvider({
         id: "someMockProviderId",
         name: "Mock Space Provider",
@@ -211,10 +204,9 @@ describe("SpaceTree.vue", () => {
       .at(0);
     expect(mockProviderNode).toBeTruthy();
 
-    dispatchSpy.mockClear();
     await mockProviderNode!.trigger("click");
     await flushPromises();
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/connectProvider", {
+    expect(mockedStores.spaceAuthStore.connectProvider).toHaveBeenCalledWith({
       spaceProviderId: "someMockProviderId",
     });
   });

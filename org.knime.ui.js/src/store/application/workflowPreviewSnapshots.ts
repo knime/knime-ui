@@ -1,106 +1,112 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { defineStore } from "pinia";
 
+import { useCanvasStore } from "@/store/canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
-import type { RootStoreState } from "../types";
 
-import type { ApplicationState } from "./index";
+import { useApplicationStore } from "./application";
 
-interface State {
+type WorkflowPreviewSnapshotsState = {
   // Map that keeps track of root workflow snapshots. Used as SVGs when saving
   rootWorkflowSnapshots: Map<string, string | null>;
-}
-
-declare module "./index" {
-  interface ApplicationState extends State {}
-}
-
-export const state = (): State => ({
-  rootWorkflowSnapshots: new Map(),
-});
-
-export const mutations: MutationTree<ApplicationState> = {};
-
-export const actions: ActionTree<ApplicationState, RootStoreState> = {
-  updatePreviewSnapshot(
-    { rootState, state, dispatch, rootGetters },
-    { isChangingProject, newWorkflow },
-  ) {
-    const isCurrentlyOnRoot =
-      rootState.workflow?.activeWorkflow?.info.containerId === "root";
-    const isWorkflowUnsaved = rootState.workflow?.activeWorkflow?.dirty;
-
-    const { activeProjectId } = state;
-
-    // Going from the root into deeper levels (e.g into a Metanode or Component)
-    // without having changed projects
-    const isEnteringSubWorkflow =
-      isCurrentlyOnRoot && newWorkflow && !isChangingProject;
-
-    if (isEnteringSubWorkflow || (isChangingProject && isWorkflowUnsaved)) {
-      const canvasElement =
-        rootState.canvas.getScrollContainerElement().firstChild;
-
-      // save a snapshot of the current state of the root workflow
-      dispatch("addToRootWorkflowSnapshots", {
-        projectId: activeProjectId,
-        element: canvasElement,
-        isCanvasEmpty: rootGetters["workflow/isWorkflowEmpty"],
-      });
-
-      return;
-    }
-
-    // Going back to the root of a workflow without having changed projects
-    const isGoingBackToRoot = newWorkflow?.workflowId === "root";
-    if (!isCurrentlyOnRoot && isGoingBackToRoot && !isChangingProject) {
-      // Since we're back in the root workflow, we can clear the previously saved snapshot
-      dispatch("removeFromRootWorkflowSnapshots", {
-        projectId: activeProjectId,
-      });
-    }
-  },
-
-  async addToRootWorkflowSnapshots(
-    { state },
-    { projectId, element, isCanvasEmpty },
-  ) {
-    // always use the "root" workflow
-    const snapshotKey = encodeString(`${projectId}--root`);
-    state.rootWorkflowSnapshots.set(
-      snapshotKey,
-      await generateWorkflowPreview(element, isCanvasEmpty),
-    );
-  },
-
-  removeFromRootWorkflowSnapshots({ state }, { projectId }) {
-    state.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
-  },
-
-  getRootWorkflowSnapshotByProjectId({ state }, { projectId }) {
-    const snapshotKey = encodeString(`${projectId}--root`);
-    return state.rootWorkflowSnapshots.get(snapshotKey);
-  },
-
-  async getActiveWorkflowSnapshot({ rootState, dispatch, rootGetters }) {
-    const { getScrollContainerElement } = rootState.canvas;
-    const {
-      projectId,
-      info: { containerId },
-    } = rootState.workflow.activeWorkflow!;
-
-    const isRootWorkflow = containerId === "root";
-
-    const preview = isRootWorkflow
-      ? await generateWorkflowPreview(
-          getScrollContainerElement()!.firstChild as SVGSVGElement,
-          rootGetters["workflow/isWorkflowEmpty"],
-        )
-      : // when we're on a nested workflow (metanode/component) we then need to use the saved snapshot
-        await dispatch("getRootWorkflowSnapshotByProjectId", { projectId });
-
-    return preview;
-  },
 };
 
-export const getters: GetterTree<ApplicationState, RootStoreState> = {};
+export const useWorkflowPreviewSnapshotsStore = defineStore(
+  "workflowPreviewSnapshots",
+  {
+    state: (): WorkflowPreviewSnapshotsState => ({
+      rootWorkflowSnapshots: new Map(),
+    }),
+    actions: {
+      updatePreviewSnapshot({
+        isChangingProject,
+        newWorkflow,
+      }: {
+        isChangingProject: boolean;
+        newWorkflow: { projectId: string; workflowId?: string } | null;
+      }) {
+        const isCurrentlyOnRoot =
+          useWorkflowStore()?.activeWorkflow?.info.containerId === "root";
+        const isWorkflowUnsaved = useWorkflowStore()?.activeWorkflow?.dirty;
+
+        const { activeProjectId } = useApplicationStore();
+
+        // Going from the root into deeper levels (e.g into a Metanode or Component)
+        // without having changed projects
+        const isEnteringSubWorkflow =
+          isCurrentlyOnRoot && newWorkflow && !isChangingProject;
+
+        if (isEnteringSubWorkflow || (isChangingProject && isWorkflowUnsaved)) {
+          const canvasElement = useCanvasStore().getScrollContainerElement()
+            .firstChild as SVGSVGElement;
+
+          // save a snapshot of the current state of the root workflow
+          this.addToRootWorkflowSnapshots({
+            projectId: activeProjectId!,
+            element: canvasElement,
+            isCanvasEmpty: useWorkflowStore().isWorkflowEmpty,
+          });
+
+          return;
+        }
+
+        // Going back to the root of a workflow without having changed projects
+        const isGoingBackToRoot = newWorkflow?.workflowId === "root";
+        if (!isCurrentlyOnRoot && isGoingBackToRoot && !isChangingProject) {
+          // Since we're back in the root workflow, we can clear the previously saved snapshot
+          this.removeFromRootWorkflowSnapshots({
+            projectId: activeProjectId!,
+          });
+        }
+      },
+
+      async addToRootWorkflowSnapshots({
+        projectId,
+        element,
+        isCanvasEmpty,
+      }: {
+        projectId: string;
+        element: SVGSVGElement;
+        isCanvasEmpty: boolean;
+      }) {
+        // always use the "root" workflow
+        const snapshotKey = encodeString(`${projectId}--root`);
+        this.rootWorkflowSnapshots.set(
+          snapshotKey,
+          await generateWorkflowPreview(element, isCanvasEmpty),
+        );
+      },
+
+      removeFromRootWorkflowSnapshots({ projectId }: { projectId: string }) {
+        this.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
+      },
+
+      getRootWorkflowSnapshotByProjectId({ projectId }: { projectId: string }) {
+        const snapshotKey = encodeString(`${projectId}--root`);
+
+        return this.rootWorkflowSnapshots.get(snapshotKey) ?? "";
+      },
+
+      async getActiveWorkflowSnapshot(): Promise<string> {
+        const {
+          projectId,
+          info: { containerId },
+        } = useWorkflowStore().activeWorkflow!;
+
+        const isRootWorkflow = containerId === "root";
+
+        const preview = isRootWorkflow
+          ? await generateWorkflowPreview(
+              useCanvasStore().getScrollContainerElement()
+                .firstChild as SVGSVGElement,
+              useWorkflowStore().isWorkflowEmpty,
+            )
+          : // when we're on a nested workflow (metanode/component) we then need to use the saved snapshot
+            this.getRootWorkflowSnapshotByProjectId({ projectId });
+
+        return preview ?? "";
+      },
+    },
+  },
+);

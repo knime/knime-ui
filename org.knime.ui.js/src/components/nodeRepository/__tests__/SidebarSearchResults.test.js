@@ -3,83 +3,68 @@ import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import SearchResults from "@/components/nodeRepository/SearchResults.vue";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import SidebarSearchResults from "../SidebarSearchResults.vue";
 
 describe("SidebarSearchResults", () => {
   const doMount = () => {
-    const $store = mockVuexStore({
-      nodeRepository: {
-        state: {
-          query: "",
-          nodes: [
-            {
-              id: "node1",
-              name: "Node 1",
-            },
-            {
-              id: "node2",
-              name: "Node 2",
-            },
-          ],
-          totalNumNodes: 2,
-          searchScrollPosition: 100,
-          selectedNode: { id: "some-node" },
-          totalNumFilteredNodesFound: 0,
-          isLoadingSearchResults: false,
-        },
-        actions: {
-          searchNodesNextPage: vi.fn(),
-        },
-        mutations: {
-          setSearchScrollPosition: vi.fn(),
-          setSelectedNode: vi.fn(),
-        },
-      },
-      application: {
-        state: {
-          hasNodeCollectionActive: false,
-        },
-      },
-    });
+    const { nodeRepositoryStore, testingPinia } = mockStores();
 
-    const commitSpy = vi.spyOn($store, "commit");
+    nodeRepositoryStore.setNodes([
+      createNodeTemplateWithExtendedPorts({
+        id: "node1",
+        name: "Node 1",
+      }),
+      createNodeTemplateWithExtendedPorts({
+        id: "node2",
+        name: "Node 2",
+      }),
+    ]);
+
+    nodeRepositoryStore.setTotalNumNodesFound(2);
+    nodeRepositoryStore.setTagScrollPosition(100);
+    nodeRepositoryStore.setSelectedNode(
+      createNodeTemplateWithExtendedPorts({ id: "some-node" }),
+    );
+
+    nodeRepositoryStore.setTotalNumFilteredNodesFound(0);
+
+    nodeRepositoryStore.isLoadingSearchResults = false;
+
+    vi.mocked(nodeRepositoryStore.searchNodesNextPage).mockImplementation(
+      () => {},
+    );
 
     const wrapper = mount(SidebarSearchResults, {
-      global: { plugins: [$store] },
+      props: { displayMode: "icon" },
+      global: { plugins: [testingPinia] },
     });
 
-    return { wrapper, $store, commitSpy };
+    return { wrapper, nodeRepositoryStore };
   };
 
   it("passes nodes and query", async () => {
-    const { wrapper, $store } = doMount();
-    $store.state.nodeRepository.query = "some query";
+    const { wrapper, nodeRepositoryStore } = doMount();
+    nodeRepositoryStore.query = "some query";
     await nextTick();
 
     let results = wrapper.findComponent(SearchResults);
-    expect(results.props("nodes")).toStrictEqual(
-      $store.state.nodeRepository.nodes,
-    );
-    expect(results.props("query")).toStrictEqual(
-      $store.state.nodeRepository.query,
-    );
+    expect(results.props("nodes")).toStrictEqual(nodeRepositoryStore.nodes);
+    expect(results.props("query")).toStrictEqual(nodeRepositoryStore.query);
   });
 
   it("updates scroll position", async () => {
-    const { wrapper, commitSpy, $store } = doMount();
+    const { wrapper, nodeRepositoryStore } = doMount();
 
     let results = wrapper.findComponent(SearchResults);
     expect(results.props("searchScrollPosition")).toBe(
-      $store.state.nodeRepository.searchScrollPosition,
+      nodeRepositoryStore.searchScrollPosition,
     );
 
     results.vm.$emit("update:searchScrollPosition", 57);
     await nextTick();
 
-    expect(commitSpy).toBeCalledWith(
-      "nodeRepository/setSearchScrollPosition",
-      57,
-    );
+    expect(nodeRepositoryStore.searchScrollPosition).toBe(57);
   });
 });

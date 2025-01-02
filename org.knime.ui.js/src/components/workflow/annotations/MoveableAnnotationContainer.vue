@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { Bounds } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useMoveObject } from "@/composables/useMoveObject";
-import { useStore } from "@/composables/useStore";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
 
 interface Props {
   id: string;
@@ -12,14 +15,11 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const store = useStore();
-const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
-const isDragging = computed(() => store.state.workflow.isDragging);
-const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
-
-const isAnnotationSelected = computed(
-  () => store.getters["selection/isAnnotationSelected"],
-);
+const movingStore = useMovingStore();
+const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
+const { isMoveLocked } = storeToRefs(useCanvasStore());
+const selectionStore = useSelectionStore();
+const { isAnnotationSelected } = storeToRefs(selectionStore);
 
 const container = ref<HTMLElement | null>(null);
 
@@ -38,16 +38,16 @@ const { createPointerDownHandler } = useMoveObject({
   objectElement: computed(() => container.value as HTMLElement),
   onMoveStartCallback: () => {
     if (!isAnnotationSelected.value(props.id)) {
-      store.dispatch("selection/deselectAllObjects");
+      selectionStore.deselectAllObjects();
     }
 
-    store.dispatch("selection/selectAnnotation", props.id);
+    selectionStore.selectAnnotation(props.id);
   },
 });
 
 const onPointerDown = (event: PointerEvent) => {
   if (isMoveLocked.value) {
-    store.commit("selection/setStartedSelectionFromAnnotationId", props.id);
+    selectionStore.setStartedSelectionFromAnnotationId(props.id);
     return;
   }
 
@@ -59,8 +59,8 @@ useEscapeStack({
   group: "OBJECT_DRAG",
   alwaysActive: true,
   onEscape: () => {
-    if (isDragging.value) {
-      store.dispatch("workflow/abortDrag");
+    if (isDragging) {
+      movingStore.abortDrag();
     }
   },
 });

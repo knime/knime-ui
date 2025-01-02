@@ -3,8 +3,6 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { $bus } from "@/plugins/event-bus";
 import { API } from "../../index";
 
-vi.unmock("@/api");
-
 type BrowserFunctionDescriptor = {
   name: string;
   desktopApiName?: string;

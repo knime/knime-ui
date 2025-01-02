@@ -5,7 +5,6 @@ describe("Shortcuts Plugin", () => {
   const loadPlugin = async (userAgent: string = "") => {
     const mockApp = { config: { globalProperties: {} } };
 
-    const mockStore = { isDummy: true };
     const mockRouter = {
       push: vi.fn(),
     };
@@ -38,12 +37,12 @@ describe("Shortcuts Plugin", () => {
     const { default: shortcutPlugin } = await import("@/plugins/shortcuts");
 
     // @ts-ignore
-    shortcutPlugin({ app: mockApp, $store: mockStore, $router: mockRouter });
+    shortcutPlugin({ app: mockApp, $router: mockRouter });
 
     // @ts-ignore
     const $shortcuts = mockApp.config.globalProperties.$shortcuts;
 
-    return { $shortcuts, mockStore, mockRouter };
+    return { $shortcuts, mockRouter };
   };
 
   afterEach(() => {
@@ -119,12 +118,12 @@ describe("Shortcuts Plugin", () => {
     });
 
     it.each([true, false])("isEnabled: %s", async (value) => {
-      const { $shortcuts, mockStore } = await loadPlugin("not apple");
+      const { $shortcuts } = await loadPlugin("not apple");
       const shortcut = $shortcuts.get("crazyHotkey");
       shortcut.condition.mockReturnValue(value);
 
       expect($shortcuts.isEnabled("crazyHotkey")).toBe(value);
-      expect(shortcut.condition).toHaveBeenCalledWith({ $store: mockStore });
+      expect(shortcut.condition).toHaveBeenCalled();
     });
 
     it("shortcut without condition is enabled", async () => {
@@ -133,15 +132,12 @@ describe("Shortcuts Plugin", () => {
     });
 
     it("dispatch name to shortcut", async () => {
-      const { $shortcuts, mockStore, mockRouter } = await loadPlugin(
-        "not apple",
-      );
+      const { $shortcuts, mockRouter } = await loadPlugin("not apple");
       const shortcut = $shortcuts.get("crazyHotkey");
 
       $shortcuts.dispatch("crazyHotkey", { event: { mockExtraPayload: true } });
 
       expect(shortcut.execute).toHaveBeenCalledWith({
-        $store: mockStore,
         payload: { event: { mockExtraPayload: true } },
         $router: mockRouter,
       });

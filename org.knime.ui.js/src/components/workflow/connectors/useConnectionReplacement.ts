@@ -1,9 +1,16 @@
-import { type Ref, computed, ref } from "vue";
+import { type Ref, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { ExtendedPortType } from "@/api/custom-types";
+import type { NodeFactoryKey } from "@/api/gateway-api/generated-api";
 import { useConnectedNodeObjects } from "@/composables/useConnectedNodeObjects";
 import { KNIME_MIME } from "@/composables/useDropNode";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 
@@ -38,28 +45,20 @@ export const useConnectionReplacement = (
   options: UseConnectionReplacementOptions,
 ) => {
   const isDraggedOver = ref(false);
-  const store = useStore();
 
-  const draggedNodeTemplate = computed(
-    () => store.state.nodeTemplates.draggedTemplateData,
+  const { resetDragState } = useMovingStore();
+  const { draggedTemplateData: draggedNodeTemplate } = storeToRefs(
+    useNodeTemplatesStore(),
   );
-
-  const isWorkflowWritable = computed(
-    () => store.getters["workflow/isWritable"],
-  );
-
-  const screenToCanvasCoordinates = computed(
-    () => store.getters["canvas/screenToCanvasCoordinates"],
-  );
+  const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
+  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+  const { availablePortTypes } = storeToRefs(useApplicationStore());
+  const nodeInteractionsStore = useNodeInteractionsStore();
 
   const { sourceNodeObject, destNodeObject } = useConnectedNodeObjects({
     sourceNode: options.sourceNode,
     destNode: options.destNode,
   });
-
-  const availablePortTypes = computed(
-    () => store.state.application.availablePortTypes,
-  );
 
   const hasCompatiblePorts = (
     replacementInPorts: ExtendedPortType[],
@@ -92,14 +91,14 @@ export const useConnectionReplacement = (
     clientX,
     clientY,
     event,
-    nodeId = null,
-    nodeFactory = null,
+    nodeId,
+    nodeFactory,
   }: {
     clientX: number;
     clientY: number;
     event: DragEvent | CustomEvent;
-    nodeId?: string | null;
-    nodeFactory?: string | null;
+    nodeId?: string;
+    nodeFactory?: NodeFactoryKey;
   }) => {
     if (!isWorkflowWritable.value) {
       return;
@@ -111,7 +110,7 @@ export const useConnectionReplacement = (
     ]);
 
     if (options.allowedActions?.canDelete) {
-      store.dispatch("workflow/insertNode", {
+      nodeInteractionsStore.insertNode({
         connectionId: options.id.value,
         position: { x, y },
         nodeFactory,
@@ -186,7 +185,7 @@ export const useConnectionReplacement = (
       nodeId: dragEvent.detail.id,
       event: dragEvent,
     });
-    store.dispatch("workflow/resetDragState");
+    resetDragState();
   };
 
   return {

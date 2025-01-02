@@ -1,5 +1,9 @@
 import { ReorderWorkflowAnnotationsCommand } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useSelectionStore } from "@/store/selection";
+import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   defaultAddWorkflowAnnotationHeight,
   defaultAddWorkflowAnnotationWidth,
@@ -26,21 +30,21 @@ const annotationShortcuts: AnnotationShortcuts = {
     group: "workflowEditorModes",
     text: "Annotation mode",
     icon: AnnotationModeIcon,
-    execute: ({ $store }) => {
-      $store.dispatch("application/switchCanvasMode", "annotation");
+    execute: () => {
+      useCanvasModesStore().switchCanvasMode("annotation");
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+    condition: () => useWorkflowStore().isWritable,
   },
   addWorkflowAnnotation: {
     text: "New workflow annotation",
-    execute: ({ $store, payload }) => {
+    execute: ({ payload }) => {
       const { metadata } = payload;
 
       if (!metadata?.position) {
         return;
       }
 
-      $store.dispatch("workflow/addWorkflowAnnotation", {
+      useAnnotationInteractionsStore().addWorkflowAnnotation({
         bounds: {
           x: metadata.position.x,
           y: metadata.position.y,
@@ -49,55 +53,55 @@ const annotationShortcuts: AnnotationShortcuts = {
         },
       });
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+    condition: () => useWorkflowStore().isWritable,
   },
   bringAnnotationToFront: {
     text: "Bring to front",
     hotkey: ["CtrlOrCmd", "Shift", "PageUp"],
     group: "workflowAnnotations",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
+    execute: () =>
+      useAnnotationInteractionsStore().reorderWorkflowAnnotation({
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringToFront,
       }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
+    condition: () =>
+      useSelectionStore().getSelectedAnnotations.length > 0 &&
+      useWorkflowStore().isWritable,
   },
   bringAnnotationForward: {
     hotkey: ["CtrlOrCmd", "PageUp"],
     text: "Bring forward",
     group: "workflowAnnotations",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
+    execute: () =>
+      useAnnotationInteractionsStore().reorderWorkflowAnnotation({
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.BringForward,
       }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
+    condition: () =>
+      useSelectionStore().getSelectedAnnotations.length > 0 &&
+      useWorkflowStore().isWritable,
   },
   sendAnnotationBackward: {
     hotkey: ["CtrlOrCmd", "PageDown"],
     text: "Send backward",
     group: "workflowAnnotations",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
+    execute: () =>
+      useAnnotationInteractionsStore().reorderWorkflowAnnotation({
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendBackward,
       }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
+    condition: () =>
+      useSelectionStore().getSelectedAnnotations.length > 0 &&
+      useWorkflowStore().isWritable,
   },
   sendAnnotationToBack: {
     hotkey: ["CtrlOrCmd", "Shift", "PageDown"],
     text: "Send to back",
     group: "workflowAnnotations",
-    execute: ({ $store }) =>
-      $store.dispatch("workflow/reorderWorkflowAnnotation", {
+    execute: () =>
+      useAnnotationInteractionsStore().reorderWorkflowAnnotation({
         action: ReorderWorkflowAnnotationsCommand.ActionEnum.SendToBack,
       }),
-    condition: ({ $store }) =>
-      $store.getters["selection/selectedAnnotations"].length > 0 &&
-      $store.getters["workflow/isWritable"],
+    condition: () =>
+      useSelectionStore().getSelectedAnnotations.length > 0 &&
+      useWorkflowStore().isWritable,
   },
 };
 

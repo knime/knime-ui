@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { debounce } from "lodash-es";
+import { storeToRefs } from "pinia";
 
 import { useKeyPressedUntilMouseClick } from "@knime/components";
 import { navigatorUtils } from "@knime/utils";
 
-import { useStore } from "@/composables/useStore";
 import { $bus } from "@/plugins/event-bus";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasModesStore } from "@/store/application/canvasModes";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import { RESIZE_DEBOUNCE } from "./constants";
 import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
@@ -26,29 +24,16 @@ import { usePanning } from "./usePanning";
 
 const emit = defineEmits(["containerSizeChanged"]);
 
-const store = useStore();
+const canvasStore = useCanvasStore();
+const { contentBounds, canvasSize, viewBox, interactionsEnabled } =
+  storeToRefs(canvasStore);
 
-// canvas
-const interactionsEnabled = computed(
-  () => store.state.canvas.interactionsEnabled,
-);
-const canvasSize = computed(() => store.getters["canvas/canvasSize"]);
-const viewBox = computed(() => store.getters["canvas/viewBox"]);
-const contentBounds = computed(() => store.getters["canvas/contentBounds"]);
-
-watch(contentBounds, (...args) => {
-  store.dispatch("canvas/contentBoundsChanged", args);
+watch(contentBounds, (next, prev) => {
+  canvasStore.contentBoundsChanged([next, prev]);
 });
+const { hasPanModeEnabled } = storeToRefs(useCanvasModesStore());
 
-// application
-const hasPanModeEnabled = computed(
-  () => store.getters["application/hasPanModeEnabled"],
-);
-
-// workflow
-const isWorkflowEmpty = computed(
-  () => store.getters["workflow/isWorkflowEmpty"],
-);
+const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
 const rootEl = ref<HTMLDivElement | null>(null);
 let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
@@ -56,7 +41,7 @@ let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
 const initResizeObserver = () => {
   // updating the container size and recalculating the canvas is debounced.
   const updateContainerSize = debounce(() => {
-    store.dispatch("canvas/updateContainerSize");
+    canvasStore.updateContainerSize();
     nextTick(() => {
       emit("containerSizeChanged");
     });
@@ -79,7 +64,7 @@ const initResizeObserver = () => {
 };
 
 onMounted(() => {
-  store.dispatch("canvas/initScrollContainerElement", rootEl.value);
+  canvasStore.initScrollContainerElement(rootEl.value!);
   initResizeObserver();
 });
 
@@ -90,7 +75,7 @@ onBeforeUnmount(() => {
   stopResizeObserver();
 
   // Remove reference to canvas element wrapper
-  store.commit("canvas/clearScrollContainerElement");
+  canvasStore.clearScrollContainerElement();
 });
 
 useCanvasMoveLocking();
@@ -120,14 +105,17 @@ const startRectangleSelection = (event: PointerEvent) => {
   }
 };
 
+const selectionStore = useSelectionStore();
+const applicationStore = useApplicationStore();
+
 const deselectAllObjects = () => {
-  store.dispatch("selection/deselectAllObjects");
+  selectionStore.deselectAllObjects();
 };
 
 const onLeftControlClick = (event: PointerEvent) => {
   if (navigatorUtils.isMac()) {
-    store.dispatch("application/toggleContextMenu", { event });
-    store.dispatch("selection/deselectAllObjects");
+    applicationStore.toggleContextMenu({ event });
+    selectionStore.deselectAllObjects();
   }
 };
 </script>

@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useExecutionStore } from "@/store/workflow/execution";
 import * as nodeUtils from "@/util/nodeUtil";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
@@ -19,12 +23,8 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const store = useStore();
-const uiControls = computed(() => store.state.uiControls);
-
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
-);
+const uiControls = useUIControlsStore();
+const { availablePortTypes } = storeToRefs(useApplicationStore());
 
 const isUnsupportedView = computed(
   () => props.validationError?.code === "UNSUPPORTED_PORT_VIEW",
@@ -65,7 +65,7 @@ const executeButtonMessage = computed(() => {
 });
 
 const canExecute = computed(() => {
-  if (!uiControls.value.canEditWorkflow || !props.selectedNode) {
+  if (!uiControls.canEditWorkflow || !props.selectedNode) {
     return false;
   }
 
@@ -102,24 +102,26 @@ const isPortExecuted = computed(() => {
   return state === "EXECUTED";
 });
 
+const nodeConfigurationStore = useNodeConfigurationStore();
+const executionStore = useExecutionStore();
+
 const onExecuteNode = async () => {
   if (props.selectedNode) {
-    const canContinue = await store.dispatch(
-      "nodeConfiguration/autoApplySettings",
-      { nextNodeId: props.selectedNode.id },
-    );
+    const canContinue = await nodeConfigurationStore.autoApplySettings({
+      nextNodeId: props.selectedNode.id,
+    });
 
     if (!canContinue) {
       return;
     }
 
-    store.dispatch("workflow/executeNodes", [props.selectedNode.id]);
+    executionStore.executeNodes([props.selectedNode.id]);
   }
 };
 
 const openLegacyPortView = (executeNode: boolean) => {
   if (props.selectedNode && props.selectedPortIndex) {
-    store.dispatch("workflow/openLegacyPortView", {
+    executionStore.openLegacyPortView({
       nodeId: props.selectedNode.id,
       portIndex: props.selectedPortIndex,
       executeNode,

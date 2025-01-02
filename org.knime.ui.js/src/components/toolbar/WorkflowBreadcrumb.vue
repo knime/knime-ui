@@ -1,6 +1,4 @@
 <script>
-import { mapState } from "vuex";
-
 import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
 import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
 import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
@@ -16,10 +14,13 @@ export default {
   components: {
     ActionBreadcrumb,
   },
+  props: {
+    workflow: {
+      type: Object,
+      required: true,
+    },
+  },
   computed: {
-    ...mapState("workflow", {
-      workflow: "activeWorkflow",
-    }),
     items() {
       let parents = this.workflow.parents || [];
       let items = parents.map(

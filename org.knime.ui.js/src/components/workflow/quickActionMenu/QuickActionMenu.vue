@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, toRefs, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
 import AiIcon from "@knime/styles/img/icons/ai-general.svg";
@@ -10,7 +11,9 @@ import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import NodePortActiveConnector from "@/components/workflow/ports/NodePortActiveConnector.vue";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStore } from "@/store/canvas";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import * as $shapes from "@/style/shapes";
 import type { DragConnector } from "../ports/NodePort/types";
 
@@ -37,16 +40,11 @@ const menuWidth = 360;
 
 defineEmits(["menuClose"]);
 
-const store = useStore();
+const { quickActionMenu } = storeToRefs(useFloatingMenusStore());
+const { availablePortTypes } = storeToRefs(useApplicationStore());
+const { zoomFactor } = storeToRefs(useCanvasStore());
 
-const hasConnector = computed(
-  () => store.state.workflow.quickActionMenu.hasConnector,
-);
-
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
-);
-const zoomFactor = computed(() => store.state.canvas.zoomFactor);
+const hasConnector = computed(() => quickActionMenu.value.hasConnector);
 
 const canvasPosition = computed(() => {
   let pos = { ...props.position };
@@ -70,7 +68,9 @@ const portIndex = computed(() => {
 
 const fakePortConnector = computed<DragConnector>(() => {
   // port can be null for the so called global mode
-  const portType = props.port ? availablePortTypes[props.port.typeId] : null;
+  const portType = props.port
+    ? availablePortTypes.value[props.port.typeId]
+    : null;
   const flowVariableConnection = portType?.kind === "flowVariable";
 
   const fakeNode =

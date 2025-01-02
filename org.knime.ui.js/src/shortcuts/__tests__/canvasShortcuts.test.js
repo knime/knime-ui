@@ -1,65 +1,73 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
+import { mockStores } from "@/test/utils/mockStores";
 import canvasShortcuts from "../canvasShortcuts";
 
 describe("canvasShortcuts", () => {
-  let mockDispatch, $store;
-
-  beforeEach(() => {
-    mockDispatch = vi.fn();
-    $store = {
-      dispatch: mockDispatch,
-    };
-  });
-
   it("fitToScreen", () => {
-    canvasShortcuts.fitToScreen.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/fitToScreen");
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.fitToScreen.execute();
+    expect(canvasStore.fitToScreen).toHaveBeenCalled();
   });
 
   it("fillScreen", () => {
-    canvasShortcuts.fillScreen.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/fillScreen");
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.fillScreen.execute();
+    expect(canvasStore.fillScreen).toHaveBeenCalled();
   });
 
   it("zoomIn", () => {
-    canvasShortcuts.zoomIn.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/zoomCentered", {
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.zoomIn.execute();
+    expect(canvasStore.zoomCentered).toHaveBeenCalledWith({
       delta: 1,
     });
   });
 
   it("zoomOut", () => {
-    canvasShortcuts.zoomOut.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/zoomCentered", {
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.zoomOut.execute();
+    expect(canvasStore.zoomCentered).toHaveBeenCalledWith({
       delta: -1,
     });
   });
 
   it("zoomTo75", () => {
-    canvasShortcuts.zoomTo75.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/zoomCentered", {
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.zoomTo75.execute();
+    expect(canvasStore.zoomCentered).toHaveBeenCalledWith({
       factor: 0.75,
     });
   });
 
   it("zoomTo100", () => {
-    canvasShortcuts.zoomTo100.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/zoomCentered", {
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.zoomTo100.execute();
+    expect(canvasStore.zoomCentered).toHaveBeenCalledWith({
       factor: 1,
     });
   });
 
   it("zoomTo125", () => {
-    canvasShortcuts.zoomTo125.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/zoomCentered", {
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.zoomTo125.execute();
+    expect(canvasStore.zoomCentered).toHaveBeenCalledWith({
       factor: 1.25,
     });
   });
 
   it("zoomTo150", () => {
-    canvasShortcuts.zoomTo150.execute({ $store });
-    expect(mockDispatch).toHaveBeenCalledWith("canvas/zoomCentered", {
+    const { canvasStore } = mockStores();
+
+    canvasShortcuts.zoomTo150.execute();
+    expect(canvasStore.zoomCentered).toHaveBeenCalledWith({
       factor: 1.5,
     });
   });

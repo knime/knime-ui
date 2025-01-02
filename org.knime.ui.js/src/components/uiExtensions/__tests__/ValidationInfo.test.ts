@@ -1,19 +1,18 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 
 import type { KnimeNode } from "@/api/custom-types";
 import { MetaNodePort, NodeState } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
 import {
   createAvailablePortTypes,
   createMetanode,
   createMetanodePort,
   createNativeNode,
   createPort,
+  createWorkflow,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import ExecuteButton from "../ExecuteButton.vue";
 import LegacyPortViewButtons from "../LegacyPortViewButtons.vue";
 import LoadingIndicator from "../LoadingIndicator.vue";
@@ -27,8 +26,6 @@ describe("ValidationInfo.vue", () => {
     validationError: null,
   };
 
-  const openLegacyPortViewMock = vi.fn();
-
   const doMount = ({
     props,
   }: {
@@ -38,29 +35,21 @@ describe("ValidationInfo.vue", () => {
       validationError: ValidationError;
     }>;
   } = {}) => {
-    const $store = mockVuexStore({
-      workflow: {
-        actions: {
-          openLegacyPortView: openLegacyPortViewMock,
-        },
-      },
-      application: applicationStore,
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit(
-      "application/setAvailablePortTypes",
+    mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
+    mockedStores.applicationStore.setAvailablePortTypes(
       createAvailablePortTypes(),
     );
 
     const wrapper = mount(ValidationInfo, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("should display error message", () => {
@@ -108,7 +97,7 @@ describe("ValidationInfo.vue", () => {
           ],
         });
 
-        const { wrapper } = doMount({
+        const { wrapper, mockedStores } = doMount({
           props: { validationError, selectedNode, selectedPortIndex: 1 },
         });
 
@@ -121,7 +110,9 @@ describe("ValidationInfo.vue", () => {
 
         legacyButtons.vm.$emit("openLegacyPortView", true);
 
-        expect(openLegacyPortViewMock).toHaveBeenCalledWith(expect.anything(), {
+        expect(
+          mockedStores.executionStore.openLegacyPortView,
+        ).toHaveBeenCalledWith({
           nodeId: selectedNode.id,
           portIndex: 1,
           executeNode: true,
@@ -131,11 +122,11 @@ describe("ValidationInfo.vue", () => {
 
     describe("does not support legacy views", () => {
       it("should handle unsupported views", async () => {
-        const { wrapper, $store } = doMount({
+        const { wrapper, mockedStores } = doMount({
           props: { validationError },
         });
 
-        $store.state.uiControls.canOpenLegacyPortViews = false;
+        mockedStores.uiControlsStore.canOpenLegacyPortViews = false;
         await nextTick();
 
         expect(wrapper.text()).toMatch(
@@ -160,11 +151,11 @@ describe("ValidationInfo.vue", () => {
           ],
         });
 
-        const { wrapper, $store } = doMount({
+        const { wrapper, mockedStores } = doMount({
           props: { validationError, selectedNode, selectedPortIndex: 1 },
         });
 
-        $store.state.uiControls.canOpenLegacyPortViews = false;
+        mockedStores.uiControlsStore.canOpenLegacyPortViews = false;
         await nextTick();
 
         const legacyButtons = wrapper.findComponent(LegacyPortViewButtons);
@@ -207,11 +198,11 @@ describe("ValidationInfo.vue", () => {
     });
 
     it("should NOT render if `canEditWorkflow` ui control is false", async () => {
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { selectedNode },
       });
 
-      $store.state.uiControls.canEditWorkflow = false;
+      mockedStores.uiControlsStore.canEditWorkflow = false;
 
       await nextTick();
 

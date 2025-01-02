@@ -152,7 +152,7 @@ const nodePreview = computed(() => {
 });
 
 const wrapper = ref<InstanceType<typeof SidebarPanelLayout>>();
-const wrapperElement = computed<HTMLElement>(() => wrapper.value?.$el);
+const wrapperElement = computed<HTMLDivElement>(() => wrapper.value?.$el!);
 
 const { saveContent } = useSaveMetadata({
   metadataDraft,
@@ -199,7 +199,6 @@ const preserveWhitespaceBeforeEdit = () => {
       <div class="header">
         <h2 class="component-name">
           <span class="node-preview">
-            <!-- @vue-expect-error -- NodePreview is not properly typed -->
             <NodePreview v-bind="nodePreview" />
           </span>
 

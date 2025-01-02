@@ -8,6 +8,7 @@ import {
   watch,
 } from "vue";
 import { onClickOutside, useMagicKeys } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
 
@@ -17,7 +18,12 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
 import { gridSize } from "@/style/shapes";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
@@ -41,40 +47,31 @@ const newAnnotationData = ref({
   borderColor: "",
 });
 
-const store = useStore();
-
-const editableAnnotationId = computed(
-  () => store.state.workflow.editableAnnotationId,
-);
-const isDragging = computed(() => store.state.workflow.isDragging);
-
-const isWritable = computed(() => store.getters["workflow/isWritable"]);
-
-const selectedNodeIds = computed(
-  () => store.getters["selection/selectedNodeIds"],
-);
-const selectedConnections = computed(
-  () => store.getters["selection/selectedConnections"],
-);
-const selectedAnnotationIds = computed(
-  () => store.getters["selection/selectedAnnotationIds"],
-);
-const singleSelectedAnnotation = computed(
-  () => store.getters["selection/singleSelectedAnnotation"],
-);
-const singleSelectedObject = computed(
-  () => store.getters["selection/singleSelectedObject"],
-);
+const { toggleContextMenu } = useApplicationStore();
+const annotationInteractionStore = useAnnotationInteractionsStore();
+const { isDragging } = storeToRefs(useMovingStore());
+const { isWritable } = storeToRefs(useWorkflowStore());
+const selectionStore = useSelectionStore();
+const {
+  selectedNodeIds,
+  getSelectedConnections: selectedConnections,
+  selectedAnnotationIds,
+  singleSelectedAnnotation,
+  singleSelectedObject,
+  shouldHideSelection,
+  getFocusedObject,
+  isAnnotationSelected,
+} = storeToRefs(selectionStore);
+const { focus: focusCanvas } = useCanvasStore();
 
 const isSelected = computed(() => {
-  return store.getters["selection/isAnnotationSelected"](props.annotation.id);
+  return isAnnotationSelected.value(props.annotation.id);
 });
-const shouldHideSelection = computed(
-  () => store.state.selection.shouldHideSelection,
-);
 
 const isEditing = computed(() => {
-  return props.annotation.id === editableAnnotationId.value;
+  return (
+    props.annotation.id === annotationInteractionStore.editableAnnotationId
+  );
 });
 
 const showSelectionPlane = computed(() => {
@@ -94,7 +91,7 @@ const showSelectionPlane = computed(() => {
 });
 
 const showFocus = computed(() => {
-  return store.getters["selection/focusedObject"]?.id === props.annotation.id;
+  return getFocusedObject.value?.id === props.annotation.id;
 });
 
 const showTransformControls = computed(() => {
@@ -144,11 +141,11 @@ onMounted(() => {
   initializeData();
 });
 
-const onLeftClick = async (event: PointerEvent) => {
+const onLeftClick = (event: PointerEvent) => {
   const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
-  await store.dispatch("selection/toggleAnnotationSelection", {
+  selectionStore.toggleAnnotationSelection({
     annotationId: props.annotation.id,
     isMultiselect,
     isSelected: isSelected.value,
@@ -160,11 +157,11 @@ const onContextMenu = (event: PointerEvent) => {
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   if (!isMultiselect && !isSelected.value) {
-    store.dispatch("selection/deselectAllObjects");
+    selectionStore.deselectAllObjects();
   }
 
-  store.dispatch("selection/selectAnnotation", props.annotation.id);
-  store.dispatch("application/toggleContextMenu", { event });
+  selectionStore.selectAnnotation(props.annotation.id);
+  toggleContextMenu({ event });
 };
 
 const setSelectionPreview = (type: UnwrapRef<typeof selectionPreview>) => {
@@ -174,7 +171,7 @@ const setSelectionPreview = (type: UnwrapRef<typeof selectionPreview>) => {
 defineExpose({ setSelectionPreview });
 
 const transformAnnotation = (bounds: Bounds) => {
-  store.dispatch("workflow/transformWorkflowAnnotation", {
+  annotationInteractionStore.transformWorkflowAnnotation({
     bounds,
     annotationId: props.annotation.id,
   });
@@ -186,17 +183,16 @@ const toggleEdit = () => {
   }
 
   if (isEditing.value) {
-    store.dispatch("canvas/focus");
+    focusCanvas();
   }
 
-  store.dispatch(
-    "workflow/setEditableAnnotationId",
+  annotationInteractionStore.setEditableAnnotationId(
     isEditing.value ? null : props.annotation.id,
   );
 };
 
 const updateAnnotation = () => {
-  return store.dispatch("workflow/updateAnnotation", {
+  return annotationInteractionStore.updateAnnotation({
     annotationId: props.annotation.id,
     text: newAnnotationData.value.richTextContent,
     borderColor: newAnnotationData.value.borderColor,

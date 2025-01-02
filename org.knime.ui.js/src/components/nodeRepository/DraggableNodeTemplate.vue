@@ -1,8 +1,13 @@
 <script>
-import { mapActions, mapGetters, mapState } from "vuex";
+import { mapActions, mapState } from "pinia";
 
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
 import { KNIME_MIME } from "@/composables/useDropNode";
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
+import { usePanelStore } from "@/store/panel";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useSelectionEvents } from "../uiExtensions/common/useSelectionEvents";
 
 import { useAddNodeToWorkflow } from "./useAddNodeToWorkflow";
 /**
@@ -38,7 +43,9 @@ export default {
   emits: ["showNodeDescription"],
   setup() {
     const addNodeToWorkflow = useAddNodeToWorkflow();
-    return { addNodeToWorkflow };
+    return {
+      addNodeToWorkflow,
+    };
   },
   data() {
     return {
@@ -47,20 +54,23 @@ export default {
     };
   },
   computed: {
-    ...mapState("panel", ["isExtensionPanelOpen"]),
-    ...mapState("workflow", { workflow: "activeWorkflow" }),
-    ...mapGetters("workflow", ["isWritable"]),
-    ...mapGetters("canvas", ["getVisibleFrame"]),
-    ...mapGetters("selection", ["selectedNodes"]),
+    ...mapState(usePanelStore, ["isExtensionPanelOpen"]),
+    ...mapState(useWorkflowStore, {
+      workflow: "activeWorkflow",
+      isWritable: "isWritable",
+    }),
+    ...mapState(useCanvasStore, ["getVisibleFrame"]),
+    ...mapState(useSelectionEvents, { selectedNodes: "getSelectedNodes" }),
   },
   methods: {
-    ...mapActions("nodeTemplates", ["setDraggingNodeTemplate"]),
+    ...mapActions(useNodeTemplatesStore, ["setDraggingNodeTemplate"]),
+    ...mapActions(usePanelStore, ["closeExtensionPanel"]),
 
     onDragStart(e) {
       // close description panel
       this.shouldShowDescriptionOnAbort =
         this.isSelected && this.isExtensionPanelOpen;
-      this.$store.dispatch("panel/closeExtensionPanel");
+      this.closeExtensionPanel();
       this.setDraggingNodeTemplate(this.nodeTemplate);
 
       // Fix for cursor style for Firefox

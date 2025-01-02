@@ -1,9 +1,12 @@
 <script lang="ts">
 import { defineComponent } from "vue";
+import { mapActions, mapState } from "pinia";
 import throttle from "raf-throttle";
-import { mapActions, mapGetters, mapState } from "vuex";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import { findObjectsForSelection } from "./findObjectsForSelection";
 
@@ -27,7 +30,7 @@ type ComponentData = {
  *
  * This component registers to the `selection-pointer{up,down,move} of its parent (the Kanvas).
  * It also uses the parent for several other things. The vue event @node-selection-preview is used for a fast selection
- * preview. This is caused by the slowness of the Vuex store. The WorkflowPanel forwards those events to the Workflow
+ * preview. This is caused by the slowness of the store. The WorkflowPanel forwards those events to the Workflow
  * which calls the Node (via $refs) to show a selection preview. We know that this is not very vue-ish and data should
  * define what is rendered, but that's too slow in this case.
  */
@@ -54,9 +57,12 @@ export default defineComponent({
     annotationIdsInsidePreviousSelection: [],
   }),
   computed: {
-    ...mapState("workflow", ["activeWorkflow"]),
-    ...mapGetters("canvas", ["screenToCanvasCoordinates"]),
-    ...mapGetters("selection", ["selectedNodeIds", "selectedAnnotationIds"]),
+    ...mapState(useWorkflowStore, ["activeWorkflow"]),
+    ...mapState(useCanvasStore, ["screenToCanvasCoordinates"]),
+    ...mapState(useSelectionStore, [
+      "selectedNodeIds",
+      "selectedAnnotationIds",
+    ]),
 
     selectionBounds() {
       const { endPos, startPos } = this;
@@ -83,12 +89,13 @@ export default defineComponent({
     this.$bus.off("selection-lostpointercapture", this.stopRectangleSelection);
   },
   methods: {
-    ...mapActions("selection", [
+    ...mapActions(useSelectionStore, [
       "selectNodes",
       "deselectNodes",
       "deselectAllObjects",
       "selectAnnotations",
       "deselectAnnotations",
+      "setDidStartRectangleSelection",
     ]),
 
     startRectangleSelection(e: PointerEvent) {
@@ -176,7 +183,7 @@ export default defineComponent({
         this.annotationIdsToDeselectOnEnd = [];
         this.selectedAnnotationIdsAtStart = [];
 
-        this.$store.commit("selection/setDidStartRectangleSelection", false);
+        this.setDidStartRectangleSelection(false);
       }, 0);
       /* eslint-enable no-invalid-this */
     }),
@@ -187,7 +194,7 @@ export default defineComponent({
         return;
       }
 
-      this.$store.commit("selection/setDidStartRectangleSelection", true);
+      this.setDidStartRectangleSelection(true);
 
       [this.endPos.x, this.endPos.y] = this.screenToCanvasCoordinates([
         e.clientX,
@@ -202,7 +209,7 @@ export default defineComponent({
         findObjectsForSelection({
           startPos,
           endPos,
-          workflow: this.activeWorkflow,
+          workflow: this.activeWorkflow!,
         });
 
       // remember this for the real selection at the end of the movement (pointerup)

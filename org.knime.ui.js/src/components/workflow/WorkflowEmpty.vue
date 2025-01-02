@@ -4,16 +4,15 @@ import { computed } from "vue";
 import ArrowDownIcon from "@knime/styles/img/icons/arrow-down.svg";
 import CircleInfoIcon from "@knime/styles/img/icons/circle-info.svg";
 
-import { useStore } from "@/composables/useStore";
+import { useCanvasStore } from "@/store/canvas";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 import WorkflowPortalLayers from "./WorkflowPortalLayers.vue";
 
-const store = useStore();
-
-const uiControls = computed(() => store.state.uiControls);
+const uiControls = useUIControlsStore();
 
 const bounds = computed(() => {
-  const { containerSize } = store.state.canvas;
+  const { containerSize } = useCanvasStore();
   const { height, width } = containerSize;
 
   // When showing this empty workflow, the origin (0,0) is exactly in the center of the canvas

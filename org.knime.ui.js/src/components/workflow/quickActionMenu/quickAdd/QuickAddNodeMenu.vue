@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, toRefs, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { SearchInput } from "@knime/components";
 
@@ -10,13 +11,19 @@ import type {
   NodeTemplateWithExtendedPorts,
 } from "@/api/custom-types";
 import {
+  AddNodeCommand,
   type NodePort,
   type NodePortTemplate,
   type XY,
 } from "@/api/gateway-api/generated-api";
 import NodeRepositoryLoader from "@/components/nodeRepository/NodeRepositoryLoader.vue";
-import { useStore } from "@/composables/useStore";
 import { useShortcuts } from "@/plugins/shortcuts";
+import { useApplicationStore } from "@/store/application/application";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { useQuickAddNodesStore } from "@/store/quickAddNodes";
+import { useSettingsStore } from "@/store/settings";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { checkPortCompatibility } from "@/util/compatibleConnections";
 import { portPositions } from "@/util/portShift";
 
@@ -79,27 +86,20 @@ const emit = defineEmits(["menuClose"]);
 
 const $shortcuts = useShortcuts();
 
-const store = useStore();
-
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
-);
-const nodeRepositoryLoaded = computed(
-  () => store.state.application.nodeRepositoryLoaded,
-);
-const nodeRepositoryLoadingProgress = computed(
-  () => store.state.application.nodeRepositoryLoadingProgress,
-);
-const isWritable = computed(() => store.getters["workflow/isWritable"]);
-const searchIsActive = computed(
-  () => store.getters["quickAddNodes/searchIsActive"],
-);
-const getFirstResult = computed(
-  () => store.getters["quickAddNodes/getFirstResult"],
-);
+const {
+  availablePortTypes,
+  nodeRepositoryLoaded,
+  nodeRepositoryLoadingProgress,
+} = storeToRefs(useApplicationStore());
+const { subscribeToNodeRepositoryLoadingEvent } = useLifecycleStore();
+const { isWritable } = storeToRefs(useWorkflowStore());
+const quickAddNodesStore = useQuickAddNodesStore();
+const { searchIsActive, getFirstResult } = storeToRefs(quickAddNodesStore);
+const { settings } = useSettingsStore();
+const nodeInteractionsStore = useNodeInteractionsStore();
 
 const displayMode = computed(() => {
-  const { nodeRepositoryDisplayMode } = store.state.settings.settings;
+  const { nodeRepositoryDisplayMode } = settings;
   if (nodeRepositoryDisplayMode === "tree") {
     return "list";
   }
@@ -129,22 +129,24 @@ const addNode = async (nodeTemplate: NodeTemplateWithExtendedPorts) => {
 
   // add node
   const { x, y } = canvasPosition.value;
-  await store.dispatch("workflow/addNode", {
+  await nodeInteractionsStore.addNode({
     position: {
       x: x - offsetX,
       y: y - offsetY,
     },
     nodeFactory,
-    sourceNodeId: nodeId.value,
-    sourcePortIdx: portIndex.value,
-    nodeRelation: nodeRelation.value,
+    sourceNodeId: nodeId.value!,
+    sourcePortIdx: portIndex.value!,
+    nodeRelation: nodeRelation.value! as AddNodeCommand.NodeRelationEnum,
   });
 
   emit("menuClose");
 };
 
 const searchEnterKey = () => {
-  addNode(getFirstResult.value());
+  if (getFirstResult.value) {
+    addNode(getFirstResult.value);
+  }
 };
 
 const recommendationResults =
@@ -169,15 +171,15 @@ const searchHandleShortcuts = (e: KeyboardEvent) => {
 
 onMounted(() => {
   if (props.port) {
-    store.commit("quickAddNodes/setPortTypeId", props.port.typeId);
-    store.commit("quickAddNodes/setSearchNodeRelation", props.nodeRelation);
+    quickAddNodesStore.setPortTypeId(props.port.typeId);
+    quickAddNodesStore.setSearchNodeRelation(props.nodeRelation);
   }
 
-  store.dispatch("application/subscribeToNodeRepositoryLoadingEvent");
+  subscribeToNodeRepositoryLoadingEvent();
 });
 
 onBeforeUnmount(() => {
-  store.dispatch("quickAddNodes/clearRecommendedNodesAndSearchParams");
+  quickAddNodesStore.clearRecommendedNodesAndSearchParams();
 });
 
 watch(
@@ -185,13 +187,13 @@ watch(
   async (newPort, oldPort) => {
     if (newPort && newPort?.index !== oldPort?.index) {
       // reset search on index switch (this is a common operation via the keyboard shortcut CTRL+.)
-      await store.dispatch("quickAddNodes/clearSearchParams");
+      quickAddNodesStore.clearSearchParams();
 
       // update type id for next search (if one was active it got reset by index change)
       // this needs to be done in all cases as clearSearchParams resets it
-      store.commit("quickAddNodes/setPortTypeId", newPort.typeId);
+      quickAddNodesStore.setPortTypeId(newPort.typeId);
       // also update the node relation, as it will be 'null' otherwise
-      store.commit("quickAddNodes/setSearchNodeRelation", props.nodeRelation);
+      quickAddNodesStore.setSearchNodeRelation(props.nodeRelation);
 
       // fetch new recommendations
       await fetchNodeRecommendations();
@@ -205,12 +207,12 @@ watch(
     <SearchInput
       ref="search"
       :disabled="!nodeRepositoryLoaded"
-      :model-value="$store.state.quickAddNodes.query"
+      :model-value="quickAddNodesStore.query"
       placeholder="Search compatible nodes"
       class="search-bar"
       focus-on-mount
       tabindex="0"
-      @update:model-value="$store.dispatch('quickAddNodes/updateQuery', $event)"
+      @update:model-value="quickAddNodesStore.updateQuery($event)"
       @focusin="selectedNode = null"
       @keydown.enter.prevent.stop="searchEnterKey"
       @keydown.down.prevent.stop="searchDownKey"

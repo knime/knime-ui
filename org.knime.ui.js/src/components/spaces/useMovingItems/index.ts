@@ -1,8 +1,11 @@
-import { type Ref, computed } from "vue";
+import { type Ref } from "vue";
 import { h } from "vue";
+import { API } from "@api";
+import { storeToRefs } from "pinia";
 
-import { API } from "@/api";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { getToastPresets } from "@/toastPresets";
 
 import MovingItemsTemplate from "./MovingItemsTemplate.vue";
@@ -16,13 +19,12 @@ const createModalTemplate = (
 ) => h(MovingItemsTemplate, { ...props });
 
 export const useMovingItems = (options: UseMovingItemsOptions) => {
-  const store = useStore();
-  const openProjects = computed(() => store.state.application.openProjects);
+  const { openProjects } = storeToRefs(useApplicationStore());
+  const { projectPath } = storeToRefs(useSpaceCachingStore());
+  const { pathToItemId } = storeToRefs(useSpaceOperationsStore());
+  const { moveOrCopyItems } = useSpaceOperationsStore();
 
-  const pathToItemId = computed(() => store.getters["spaces/pathToItemId"]);
-  const activeSpacePath = computed(() => {
-    return store.state.spaces.projectPath[options.projectId.value ?? ""];
-  });
+  const activeSpacePath = projectPath.value[options.projectId.value ?? ""];
 
   const { toastPresets } = getToastPresets();
 
@@ -75,7 +77,7 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
     }
 
     const destWorkflowGroupItemId = pathToItemId.value(
-      options.projectId.value,
+      options.projectId.value ?? "",
       targetItem,
     );
 
@@ -84,13 +86,13 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
     const isDuplicate = isCopy && targetItem === ".";
     const collisionStrategy = isDuplicate
       ? "AUTORENAME"
-      : await API.desktop.getNameCollisionStrategy({
-          spaceProviderId: activeSpacePath.value?.spaceProviderId,
-          spaceId: activeSpacePath.value?.spaceId,
+      : (await API.desktop.getNameCollisionStrategy({
+          spaceProviderId: activeSpacePath?.spaceProviderId,
+          spaceId: activeSpacePath?.spaceId,
           itemIds: sourceItems,
-          destinationItemId: destWorkflowGroupItemId,
+          destinationItemId: destWorkflowGroupItemId ?? "",
           usageContext: "MOVE",
-        });
+        }))!;
 
     if (collisionStrategy === "CANCEL") {
       onComplete(false);
@@ -103,10 +105,10 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
       // which will show a loading overlay anyway after a certain time threshold
       onComplete(true);
 
-      await store.dispatch("spaces/moveOrCopyItems", {
+      await moveOrCopyItems({
         itemIds: sourceItems,
-        projectId: options.projectId.value,
-        destWorkflowGroupItemId,
+        projectId: options.projectId.value ?? "",
+        destWorkflowGroupItemId: destWorkflowGroupItemId ?? "",
         collisionStrategy,
         isCopy,
       });

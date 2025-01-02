@@ -1,22 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { MenuItems } from "@knime/components";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
-import * as applicationStore from "@/store/application";
 import * as panelStore from "@/store/panel";
-import * as spacesStore from "@/store/spaces";
 import {
   createProject,
   createSpace,
   createSpaceProvider,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import AppHeaderContextMenu from "../AppHeaderContextMenu.vue";
 
 const routerPush = vi.fn();
@@ -33,6 +32,10 @@ vi.mock("@knime/components", async (importOriginal) => {
 vi.mock("vue-router", () => ({
   useRouter: vi.fn(() => ({ push: routerPush })),
   useRoute: vi.fn(() => ({})),
+}));
+
+vi.mock("@/router/router", () => ({
+  push: vi.fn(),
 }));
 
 const mockedAPI = deepMocked(API);
@@ -185,32 +188,22 @@ describe("AppHeaderContextMenu.vue", () => {
   const doMount = async ({
     props = {},
   }: { props?: Partial<typeof defaultProps> } = {}) => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-      application: applicationStore,
-      panel: panelStore,
-      workflow: {
-        actions: {
-          closeProject: () => {},
-        },
-      },
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("application/setOpenProjects", Object.values(openProjects));
-    $store.commit("application/setActiveProjectId", props.projectId);
-    $store.state.spaces.spaceProviders = PROVIDERS;
+    mockedStores.applicationStore.setOpenProjects(Object.values(openProjects));
+    mockedStores.applicationStore.setActiveProjectId(props.projectId ?? null);
+    mockedStores.spaceProvidersStore.spaceProviders = PROVIDERS;
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
     const wrapper = mount(AppHeaderContextMenu, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
     await nextTick();
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, mockedStores };
   };
 
   it("should render properly", async () => {
@@ -292,22 +285,22 @@ describe("AppHeaderContextMenu.vue", () => {
           itemName: null,
         });
 
-        const { wrapper, $store } = await doMount({
+        const { wrapper, mockedStores } = await doMount({
           props: { projectId: project.projectId },
         });
 
-        $store.commit("application/setActiveProjectId", project.projectId);
+        mockedStores.applicationStore.setActiveProjectId(project.projectId);
         await nextTick();
 
         await triggerOption(wrapper);
         await flushPromises();
 
         expect(toast.show).not.toHaveBeenCalled();
-        expect($store.state.panel.activeTab).toEqual({
+        expect(mockedStores.panelStore.activeTab).toEqual({
           [project.projectId]: panelStore.TABS.SPACE_EXPLORER,
         });
         expect(routerPush).not.toHaveBeenCalled();
-        expect($store.state.spaces.projectPath).toEqual(
+        expect(mockedStores.spaceCachingStore.projectPath).toEqual(
           expect.objectContaining({
             [project.projectId]: expectedPath,
           }),
@@ -315,29 +308,31 @@ describe("AppHeaderContextMenu.vue", () => {
 
         // fetch is done in SpaceExplorer on change of ProjectPath
         // simulate loading being done:
-        $store.state.spaces.isLoadingContent = true;
+        mockedStores.spaceOperationsStore.isLoadingContent = true;
         await nextTick();
 
-        $store.state.spaces.isLoadingContent = false;
+        mockedStores.spaceOperationsStore.isLoadingContent = false;
         await nextTick();
 
-        expect($store.state.spaces.currentSelectedItemIds).toEqual([
-          project.origin?.itemId,
-        ]);
+        expect(
+          mockedStores.spaceOperationsStore.currentSelectedItemIds,
+        ).toEqual([project.origin?.itemId]);
       },
     );
 
     it("should not display option for server projects", async () => {
       const projectId = openProjects.serverProject.projectId;
 
-      const { wrapper, $store } = await doMount({
+      const { wrapper, mockedStores } = await doMount({
         props: { projectId },
       });
 
-      $store.commit("application/setOpenProjects", Object.values(openProjects));
-      $store.state.spaces.spaceProviders = PROVIDERS;
+      mockedStores.applicationStore.setOpenProjects(
+        Object.values(openProjects),
+      );
+      mockedStores.spaceProvidersStore.spaceProviders = PROVIDERS;
 
-      $store.commit("application/setActiveProjectId", projectId);
+      mockedStores.applicationStore.setActiveProjectId(projectId);
       await nextTick();
 
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);
@@ -372,22 +367,22 @@ describe("AppHeaderContextMenu.vue", () => {
         itemName: null,
       });
 
-      const { wrapper, $store } = await doMount({
+      const { wrapper, mockedStores } = await doMount({
         props: { projectId },
       });
 
-      $store.commit("application/setActiveProjectId", projectId);
+      mockedStores.applicationStore.setActiveProjectId(projectId);
 
       await triggerOption(wrapper);
       await flushPromises();
 
       expect(toast.show).not.toHaveBeenCalled();
-      expect($store.state.panel.activeTab).toEqual({
+      expect(mockedStores.panelStore.activeTab).toEqual({
         [projectId]: panelStore.TABS.SPACE_EXPLORER,
       });
       expect(routerPush).not.toHaveBeenCalled();
       expect(mockedAPI.desktop.getAncestorInfo).toHaveBeenCalled();
-      expect($store.state.spaces.projectPath).toEqual(
+      expect(mockedStores.spaceCachingStore.projectPath).toEqual(
         expect.objectContaining({
           [projectId]: {
             itemId: "3",
@@ -399,34 +394,33 @@ describe("AppHeaderContextMenu.vue", () => {
 
       // fetch is done in SpaceExplorer on change of ProjectPath
       // simulate loading being done:
-      $store.state.spaces.isLoadingContent = true;
+      mockedStores.spaceOperationsStore.isLoadingContent = true;
       await nextTick();
 
-      $store.state.spaces.isLoadingContent = false;
+      mockedStores.spaceOperationsStore.isLoadingContent = false;
       await nextTick();
 
-      expect($store.state.spaces.currentSelectedItemIds).toEqual([
+      expect(mockedStores.spaceOperationsStore.currentSelectedItemIds).toEqual([
         openProjects.hubProjectNested.origin?.itemId,
       ]);
     });
 
     it("should reveal project in SpaceBrowsingPage when there's no active project", async () => {
       const project = openProjects.localProjectNestedDeep!;
-      const { wrapper, $store, dispatchSpy } = await doMount({
+      const { wrapper, mockedStores } = await doMount({
         props: { projectId: project.projectId },
       });
 
-      $store.commit("application/setActiveProjectId", null);
+      mockedStores.applicationStore.setActiveProjectId(null);
 
       await triggerOption(wrapper);
       await flushPromises();
 
       expect(toast.show).not.toHaveBeenCalled();
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "panel/setCurrentProjectActiveTab",
-        panelStore.TABS.SPACE_EXPLORER,
-      );
+      expect(
+        mockedStores.panelStore.setCurrentProjectActiveTab,
+      ).not.toHaveBeenCalledWith(panelStore.TABS.SPACE_EXPLORER);
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.Home.SpaceBrowsingPage,
         params: {
@@ -437,21 +431,20 @@ describe("AppHeaderContextMenu.vue", () => {
         },
       });
 
-      expect($store.state.spaces.currentSelectedItemIds).toEqual([
+      expect(mockedStores.spaceOperationsStore.currentSelectedItemIds).toEqual([
         project.origin?.itemId,
       ]);
     });
   });
 
   it("should handle closing a project", async () => {
-    const { wrapper, dispatchSpy } = await doMount();
+    const { wrapper, mockedStores } = await doMount();
 
     await wrapper.findAll("li button").at(-1)?.trigger("click");
 
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "workflow/closeProject",
-      defaultProps.projectId,
-    );
+    expect(
+      mockedStores.desktopInteractionsStore.closeProject,
+    ).toHaveBeenCalledWith(defaultProps.projectId);
     expect(wrapper.emitted("itemClick")).toBeDefined();
   });
 });

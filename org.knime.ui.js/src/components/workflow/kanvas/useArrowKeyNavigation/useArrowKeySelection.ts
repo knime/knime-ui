@@ -1,11 +1,14 @@
-import { type Ref, computed, onMounted } from "vue";
+import { type Ref, onMounted } from "vue";
 import { useEventListener } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 import { capitalize } from "@knime/utils";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { useStore } from "@/composables/useStore";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isInputElement } from "@/util/isInputElement";
 import {
   type Direction,
@@ -69,29 +72,19 @@ type UseArrowKeySelectionOptions = {
 };
 
 export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
-  const store = useStore();
-  const workflowObjects = computed<WorkflowObject[]>(
-    () => store.getters["workflow/workflowObjects"],
-  );
-  const singleSelectedObject = computed<WorkflowObject | null>(
-    () => store.getters["selection/singleSelectedObject"],
-  );
-  const isNodeSelected = computed<(id: string) => boolean>(
-    () => store.getters["selection/isNodeSelected"],
-  );
-  const isAnnotationSelected = computed<(id: string) => boolean>(
-    () => store.getters["selection/isAnnotationSelected"],
-  );
-  const focusedObject = computed<WorkflowObject | null>(
-    () => store.getters["selection/focusedObject"],
-  );
-  const isSelectionEmpty = computed<boolean>(
-    () => store.getters["selection/isSelectionEmpty"],
-  );
+  const { workflowObjects } = storeToRefs(useWorkflowStore());
+  const selectionStore = useSelectionStore();
 
-  const selectedObjects = computed<Array<WorkflowObject>>(
-    () => store.getters["selection/selectedObjects"],
-  );
+  const {
+    singleSelectedObject,
+    getFocusedObject: focusedObject,
+    isSelectionEmpty,
+    selectedObjects,
+    isNodeSelected,
+    isAnnotationSelected,
+  } = storeToRefs(selectionStore);
+
+  const canvasStore = useCanvasStore();
 
   const handleSelection = async (event: KeyboardEvent) => {
     const isMultiselect = event.shiftKey;
@@ -123,8 +116,8 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
         return;
       }
 
-      store.commit("selection/focusObject", nearestObject);
-      await store.dispatch("canvas/moveObjectIntoView", nearestObject);
+      selectionStore.focusObject(nearestObject);
+      canvasStore.moveObjectIntoView(nearestObject);
 
       return;
     }
@@ -145,9 +138,8 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
             getFurthestObjectByDirection(selectedObjects.value, event)
           : singleSelectedObject.value!;
 
-      store.commit("selection/focusObject", objectToFocus);
-
-      await store.dispatch("canvas/moveObjectIntoView", objectToFocus);
+      selectionStore.focusObject(objectToFocus);
+      canvasStore.moveObjectIntoView(objectToFocus);
 
       return;
     }
@@ -175,13 +167,14 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
       }
 
       const selectionAction =
-        nearestObject.type === "node" ? "selectNode" : "selectAnnotation";
+        nearestObject.type === "node"
+          ? selectionStore.selectNode
+          : selectionStore.selectAnnotation;
 
-      store.commit("selection/unfocusObject");
-      await store.dispatch("selection/deselectAllObjects");
-      await store.dispatch(`selection/${selectionAction}`, nearestObject.id);
-
-      await store.dispatch("canvas/moveObjectIntoView", nearestObject);
+      selectionStore.unfocusObject();
+      selectionStore.deselectAllObjects();
+      selectionAction(nearestObject.id);
+      canvasStore.moveObjectIntoView(nearestObject);
 
       return;
     }
@@ -201,11 +194,13 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
       );
 
       const selectionAction =
-        furthestObject.type === "node" ? "selectNode" : "selectAnnotation";
+        furthestObject.type === "node"
+          ? selectionStore.selectNode
+          : selectionStore.selectAnnotation;
 
       // deselect everything and select object that's furthest away in the same direction
-      await store.dispatch("selection/deselectAllObjects");
-      await store.dispatch(`selection/${selectionAction}`, furthestObject.id);
+      selectionStore.deselectAllObjects();
+      selectionAction(furthestObject.id);
     }
   };
 
@@ -220,15 +215,30 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
 
     if (focusedObject.value !== null) {
       const isObjectSelected = {
-        node: isNodeSelected,
-        annotation: isAnnotationSelected,
+        node: isNodeSelected.value,
+        annotation: isAnnotationSelected.value,
       }[focusedObject.value.type];
 
-      const action = isObjectSelected.value(focusedObject.value.id)
-        ? `deselect${capitalize(focusedObject.value.type)}`
-        : `select${capitalize(focusedObject.value.type)}`;
+      const action:
+        | "selectNode"
+        | "deselectNode"
+        | "selectAnnotation"
+        | "deselectAnnotation" = isObjectSelected(focusedObject.value.id)
+        ? `deselect${
+            capitalize(focusedObject.value.type) as "Annotation" | "Node"
+          }`
+        : `select${
+            capitalize(focusedObject.value.type) as "Annotation" | "Node"
+          }`;
 
-      store.dispatch(`selection/${action}`, focusedObject.value.id);
+      const match = {
+        selectNode: selectionStore.selectNode,
+        deselectNode: selectionStore.deselectNode,
+        selectAnnotation: selectionStore.selectAnnotation,
+        deselectAnnotation: selectionStore.deselectAnnotation,
+      };
+
+      match[action](focusedObject.value.id);
     }
   };
 

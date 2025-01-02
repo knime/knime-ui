@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { InputField, Modal } from "@knime/components";
 
-import { API } from "@/api";
 import { $bus } from "@/plugins/event-bus";
-import * as spacesStore from "@/store/spaces";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import CreateWorkflowModal from "../CreateWorkflowModal.vue";
 
 const busEmitSpy = vi.spyOn($bus, "emit");
@@ -43,16 +43,9 @@ describe("CreateWorkflowModal.vue", () => {
     mockedAPI.space.createWorkflow.mockResolvedValue({ id: "new-wf" });
     mockedAPI.space.listWorkflowGroup.mockResolvedValue({ items });
 
-    const $store = mockVuexStore({
-      application: {
-        state: {
-          openProjects: [],
-        },
-      },
-      spaces: spacesStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("spaces/setProjectPath", {
+    mockedStores.spaceCachingStore.setProjectPath({
       projectId,
       value: {
         spaceId: "space",
@@ -61,35 +54,32 @@ describe("CreateWorkflowModal.vue", () => {
       },
     });
 
-    $store.commit("spaces/setWorkflowGroupContent", {
+    mockedStores.spaceCachingStore.setWorkflowGroupContent({
       projectId,
       content: { items },
     });
 
     // modal state
-    $store.commit("spaces/setCreateWorkflowModalConfig", {
+    mockedStores.spacesStore.setCreateWorkflowModalConfig({
       isOpen,
       projectId,
     });
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
-
     const wrapper = mount(CreateWorkflowModal, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: { BaseModal: true },
       },
       attachTo: document.body,
     });
 
-    return { wrapper, $store, dispatchSpy, commitSpy };
+    return { wrapper, mockedStores };
   };
 
   describe("createWorkflowModal", () => {
     it("opens on state change", async () => {
-      const { wrapper, $store } = doMount({ isOpen: false });
-      await $store.commit("spaces/setCreateWorkflowModalConfig", {
+      const { wrapper, mockedStores } = doMount({ isOpen: false });
+      mockedStores.spacesStore.setCreateWorkflowModalConfig({
         isOpen: true,
         projectId,
       });
@@ -98,20 +88,19 @@ describe("CreateWorkflowModal.vue", () => {
     });
 
     it("closes on state change", async () => {
-      const { wrapper, commitSpy } = doMount({ isOpen: true });
+      const { wrapper, mockedStores } = doMount({ isOpen: true });
 
       wrapper.findComponent(Modal).vm.$emit("cancel");
       await nextTick();
 
       expect(wrapper.find("input").isVisible()).toBe(false);
-      expect(commitSpy).toHaveBeenCalledWith(
-        "spaces/setCreateWorkflowModalConfig",
-        { isOpen: false, projectId: null },
-      );
+      expect(
+        mockedStores.spacesStore.setCreateWorkflowModalConfig,
+      ).toHaveBeenCalledWith({ isOpen: false, projectId: null });
     });
 
     it("should create workflow", async () => {
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       const newName = "Test name";
       const input = wrapper.find("input");
@@ -126,14 +115,18 @@ describe("CreateWorkflowModal.vue", () => {
 
       await flushPromises();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/createWorkflow", {
+      expect(
+        mockedStores.spaceOperationsStore.createWorkflow,
+      ).toHaveBeenCalledWith({
         projectId: "someProject",
         workflowName: newName,
       });
 
       expect(busEmitSpy).toHaveBeenCalledWith("unblock-ui");
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/openProject", {
+      expect(
+        mockedStores.spaceOperationsStore.openProject,
+      ).toHaveBeenCalledWith({
         providerId: "provider",
         spaceId: "space",
         itemId: "new-wf",
@@ -141,7 +134,7 @@ describe("CreateWorkflowModal.vue", () => {
     });
 
     it("should disable button when name is invalid", async () => {
-      const { wrapper } = await doMount();
+      const { wrapper } = doMount();
 
       const input = wrapper.find("input");
       input.element.value = 'invalid Name?*?#:"<>%~|/\\>?';
@@ -152,9 +145,9 @@ describe("CreateWorkflowModal.vue", () => {
       expect(errorMessage.text()).toMatch("contains invalid characters");
     });
 
-    it("should focus the input", async () => {
+    it("should focus the input", () => {
       vi.useFakeTimers();
-      const { wrapper } = await doMount();
+      const { wrapper } = doMount();
 
       const input = wrapper.find("input");
       const focusSpy = vi.spyOn(input.element, "focus");
@@ -191,7 +184,7 @@ describe("CreateWorkflowModal.vue", () => {
 
     describe("hotkeys", () => {
       it("should submit on keypress enter with a valid name but only once", async () => {
-        const { wrapper, dispatchSpy } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
         const newName = "A valid name";
         const input = wrapper.find("input");
@@ -202,18 +195,16 @@ describe("CreateWorkflowModal.vue", () => {
         await inputField.vm.$emit("keyup", { key: "Enter" });
         await inputField.vm.$emit("keyup", { key: "Enter" });
 
-        expect(dispatchSpy).toHaveBeenNthCalledWith(
-          1,
-          "spaces/createWorkflow",
-          {
-            projectId: "someProject",
-            workflowName: newName,
-          },
-        );
+        expect(
+          mockedStores.spaceOperationsStore.createWorkflow,
+        ).toHaveBeenNthCalledWith(1, {
+          projectId: "someProject",
+          workflowName: newName,
+        });
       });
 
       it("should not submit on keypress enter with an invalid name", async () => {
-        const { wrapper, dispatchSpy } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
         const newName = 'An invalid name *?#:"<>%~|/\\>?';
         const input = wrapper.find("input");
@@ -221,8 +212,11 @@ describe("CreateWorkflowModal.vue", () => {
         await input.trigger("input");
 
         const inputField = wrapper.findComponent(InputField);
-        await inputField.vm.$emit("keyup", { key: "Enter" });
-        expect(dispatchSpy).not.toHaveBeenCalledWith("spaces/createWorkflow", {
+        inputField.vm.$emit("keyup", { key: "Enter" });
+
+        expect(
+          mockedStores.spaceOperationsStore.createWorkflow,
+        ).not.toHaveBeenCalledWith({
           workflowName: newName,
         });
       });

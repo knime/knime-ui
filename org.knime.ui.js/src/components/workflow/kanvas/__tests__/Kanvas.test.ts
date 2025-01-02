@@ -3,10 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
+import { navigatorUtils } from "@knime/utils";
+
 import { $bus } from "@/plugins/event-bus";
-import * as canvasStore from "@/store/canvas";
-import * as selectionStore from "@/store/selection";
-import * as workflowStore from "@/store/workflow";
 import {
   createNativeNode,
   createWorkflow,
@@ -14,7 +13,7 @@ import {
   createWorkflowObject,
 } from "@/test/factories";
 import { mockedObject } from "@/test/utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import Kanvas from "../Kanvas.vue";
 import { RESIZE_DEBOUNCE } from "../constants";
@@ -33,8 +32,6 @@ vi.mock("@/util/workflowNavigationService", () => {
   };
 });
 
-let isMacMock, metaOrCtrlKeyMock;
-
 vi.mock("@knime/utils", async (importOriginal) => {
   const actual = await importOriginal();
 
@@ -42,8 +39,8 @@ vi.mock("@knime/utils", async (importOriginal) => {
     // @ts-ignore
     ...actual,
     navigatorUtils: {
-      isMac: () => isMacMock,
-      getMetaOrCtrlKey: () => metaOrCtrlKeyMock,
+      isMac: vi.fn(() => false),
+      getMetaOrCtrlKey: vi.fn(() => "ctrlKey"),
     },
   };
 });
@@ -52,8 +49,7 @@ vi.unmock("lodash-es");
 
 describe("Kanvas", () => {
   const doShallowMount = ({
-    isWorkflowEmptyMock = vi.fn().mockReturnValue(false),
-    isDraggingNode = false,
+    isWorkflowEmptyMock = false,
     scrollLeft = 0,
     scrollTop = 0,
   } = {}) => {
@@ -88,120 +84,76 @@ describe("Kanvas", () => {
 
     window.ResizeObserver = ResizeObserverMock;
 
-    const actions = {
-      canvas: {
-        ...canvasStore.actions,
-        zoomAroundPointer: vi.fn(),
-        updateContainerSize: vi.fn(),
-        contentBoundsChanged: vi.fn(),
-        initScrollContainerElement: vi
-          .fn()
-          .mockImplementation(({ state }, el) => {
-            state.getScrollContainerElement = () => el;
-          }),
-        scroll: vi.fn(),
-      },
-      application: {
-        toggleContextMenu: vi.fn(),
-      },
-    };
-
     const isWorkflowWritableMock = vi.fn(() => true);
-    const storeConfig = {
-      application: {
-        actions: actions.application,
-        getters: {
-          hasPanModeEnabled: () => false,
-        },
-      },
-      canvas: {
-        state: {
-          getScrollContainerElement: null,
-          zoomFactor: 1,
-          suggestPanning: false,
-          // mock implementation of contentBounds for testing watcher
-          __contentBounds: { left: 0, top: 0 },
-          interactionsEnabled: true,
-        },
-        getters: {
-          viewBox: () => ({ string: "viewbox-string" }),
-          contentBounds: (state) => state.__contentBounds,
-          contentPadding: () => ({ left: 10, top: 10 }),
-          canvasSize: () => ({ width: 30, height: 300 }),
-          screenFromCanvasCoordinates: () =>
-            vi.fn(() => ({ x: 1000, y: 1000 })),
-          screenToCanvasCoordinates: () => vi.fn(() => [1000, 1000]),
-          getCenterOfScrollContainer: () => vi.fn(() => ({ x: 10, y: 10 })),
-        },
-        actions: actions.canvas,
-        mutations: {
-          clearScrollContainerElement: vi.fn(),
-          setSuggestPanning: vi.fn(),
-          setIsMoveLocked: vi.fn(),
-        },
-      },
-      workflow: {
-        ...workflowStore,
-        actions: {
-          ...workflowStore.actions,
-          moveObjects: vi.fn(),
-        },
-        getters: {
-          ...workflowStore.getters,
-          isWorkflowEmpty: isWorkflowEmptyMock,
-          isWritable: isWorkflowWritableMock,
-        },
-      },
-      nodeRepository: {
-        state: {
-          isDraggingNode,
-        },
-      },
-      selection: selectionStore,
-      settings: {
-        state: {
-          settings: {
-            uiScale: 1.0,
-          },
-        },
-      },
-    };
 
-    const $store = mockVuexStore(storeConfig);
+    const mockedStores = mockStores();
 
-    const commitSpy = vi.spyOn($store, "commit");
-    const dispatchSpy = vi.spyOn($store, "dispatch");
+    // @ts-ignore
+    mockedStores.canvasModesStore.hasPanModeEnabled = false;
+    mockedStores.settingsStore.settings.uiScale = 1.0;
+
+    mockedStores.canvasStore.interactionsEnabled = true;
+    // @ts-ignore
+    mockedStores.canvasStore.viewBox = { string: "viewbox-string" };
+    // @ts-ignore
+    mockedStores.canvasStore.contentBounds = { left: 0, top: 0 };
+    // @ts-ignore
+    mockedStores.canvasStore.contentPadding = { left: 10, top: 10 };
+    // @ts-ignore
+    mockedStores.canvasStore.canvasSize = { width: 30, height: 300 };
+    // @ts-ignore
+    mockedStores.canvasStore.screenFromCanvasCoordinates = vi.fn(() => ({
+      x: 1000,
+      y: 1000,
+    }));
+    // @ts-ignore
+    mockedStores.canvasStore.screenToCanvasCoordinates = vi.fn(() => [
+      1000, 1000,
+    ]);
+    // @ts-ignore
+    mockedStores.canvasStore.getCenterOfScrollContainer = vi.fn(() => ({
+      x: 10,
+      y: 10,
+    }));
+
+    // @ts-ignore
+    mockedStores.workflowStore.isWorkflowEmpty = isWorkflowEmptyMock;
 
     const wrapper = shallowMount(Kanvas, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
     const setPointerCapture = vi.fn();
     const releasePointerCapture = vi.fn();
+    wrapper.element.scrollTo = () => {};
     wrapper.element.setPointerCapture = setPointerCapture;
     wrapper.element.releasePointerCapture = releasePointerCapture;
     wrapper.element.scrollLeft = scrollLeft;
     wrapper.element.scrollTop = scrollTop;
 
     return {
-      $store,
+      mockedStores,
       wrapper,
-      actions,
       setPointerCapture,
       releasePointerCapture,
       ResizeObserverMock,
-      commitSpy,
-      dispatchSpy,
       isWorkflowWritableMock,
     };
   };
 
+  const mockGetMetaOrCtrlKey = (value: "metaKey" | "ctrlKey") => {
+    vi.mocked(navigatorUtils.getMetaOrCtrlKey).mockReturnValue(value);
+  };
+  const mockIsMac = (value: boolean) => {
+    vi.mocked(navigatorUtils.isMac).mockReturnValue(value);
+  };
+
   afterEach(() => {
     vi.clearAllMocks();
-    isMacMock = false;
-    metaOrCtrlKeyMock = "ctrlKey";
+    vi.mocked(navigatorUtils.getMetaOrCtrlKey).mockReturnValue("ctrlKey");
+    vi.mocked(navigatorUtils.isMac).mockReturnValue(false);
   });
 
   const triggerPointerDown = async ({
@@ -230,26 +182,28 @@ describe("Kanvas", () => {
   };
 
   it("should make scrollContainer accessible to the store", () => {
-    const { wrapper, actions } = doShallowMount();
-    expect(actions.canvas.initScrollContainerElement).toHaveBeenCalledWith(
-      expect.anything(),
-      wrapper.element,
-    );
+    const { wrapper, mockedStores } = doShallowMount();
+    expect(
+      mockedStores.canvasStore.initScrollContainerElement,
+    ).toHaveBeenCalledWith(wrapper.element);
   });
 
   it("should update canvas store when content bounds change", async () => {
-    const { actions, $store } = doShallowMount();
+    const { mockedStores } = doShallowMount();
 
-    expect(actions.canvas.contentBoundsChanged).not.toHaveBeenCalled();
+    expect(
+      mockedStores.canvasStore.contentBoundsChanged,
+    ).not.toHaveBeenCalled();
 
-    $store.state.canvas.__contentBounds = { left: 10, top: 10 };
+    // @ts-ignore
+    mockedStores.canvasStore.contentBounds = { left: 10, top: 10 };
 
     await nextTick();
 
-    expect(actions.canvas.contentBoundsChanged).toHaveBeenCalledWith(
-      expect.anything(),
-      [{ left: 10, top: 10 }, { left: 0, top: 0 }, expect.anything()],
-    );
+    expect(mockedStores.canvasStore.contentBoundsChanged).toHaveBeenCalledWith([
+      { left: 10, top: 10 },
+      { left: 0, top: 0 },
+    ]);
   });
 
   describe("selection on canvas", () => {
@@ -287,7 +241,7 @@ describe("Kanvas", () => {
     });
 
     it("should emit select-pointerdown when pressing meta on Mac and left mouse button", async () => {
-      metaOrCtrlKeyMock = "metaKey";
+      mockGetMetaOrCtrlKey("metaKey");
       const { wrapper } = doShallowMount();
       const svg = wrapper.find("svg");
       await svg.trigger("pointerdown", {
@@ -326,36 +280,43 @@ describe("Kanvas", () => {
     });
 
     it("should set objects to be unmovable if meta key is down on mac", async () => {
-      metaOrCtrlKeyMock = "metaKey";
-      const { commitSpy } = doShallowMount();
+      mockGetMetaOrCtrlKey("metaKey");
+      const { mockedStores } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { metaKey: true }));
       await nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
+      expect(mockedStores.canvasStore.setIsMoveLocked).toHaveBeenCalledWith(
+        true,
+      );
     });
 
     it("should set objects to be unmovable if control key is down on windows", async () => {
-      const { commitSpy } = doShallowMount();
+      const { mockedStores } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { ctrlKey: true }));
       await nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
+      expect(mockedStores.canvasStore.setIsMoveLocked).toHaveBeenCalledWith(
+        true,
+      );
     });
 
     it("should set objects to back to be movable if shift key is released", async () => {
-      const { commitSpy } = doShallowMount();
+      const { mockedStores } = doShallowMount();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { shiftKey: true }));
       await nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", true);
-
+      expect(mockedStores.canvasStore.setIsMoveLocked).toHaveBeenCalledWith(
+        true,
+      );
       document.dispatchEvent(new KeyboardEvent("keyup", { key: "Shift" }));
       await nextTick();
 
-      expect(commitSpy).toHaveBeenCalledWith("canvas/setIsMoveLocked", false);
+      expect(mockedStores.canvasStore.setIsMoveLocked).toHaveBeenCalledWith(
+        false,
+      );
     });
   });
 
@@ -419,11 +380,11 @@ describe("Kanvas", () => {
       });
 
       it("should not pan if interactionsEnabled is false", async () => {
-        const { wrapper, $store } = doShallowMount({
+        const { wrapper, mockedStores } = doShallowMount({
           scrollLeft: 100,
           scrollTop: 100,
         });
-        $store.state.canvas.interactionsEnabled = false;
+        mockedStores.canvasStore.interactionsEnabled = false;
 
         document.dispatchEvent(
           new KeyboardEvent("keypress", { code: "Space" }),
@@ -449,11 +410,15 @@ describe("Kanvas", () => {
 
     describe("with middle mouse button click", () => {
       it("pans with middle mouse button", async () => {
-        const { wrapper, setPointerCapture, releasePointerCapture, actions } =
-          doShallowMount({
-            scrollLeft: 100,
-            scrollTop: 100,
-          });
+        const {
+          wrapper,
+          setPointerCapture,
+          releasePointerCapture,
+          mockedStores,
+        } = doShallowMount({
+          scrollLeft: 100,
+          scrollTop: 100,
+        });
 
         await triggerPointerDown({
           wrapper,
@@ -476,12 +441,14 @@ describe("Kanvas", () => {
 
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).toHaveBeenCalledWith(-1);
-        expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
+        expect(
+          mockedStores.applicationStore.toggleContextMenu,
+        ).not.toHaveBeenCalled();
       });
 
       it("should not pan if interactionsEnabled is false", async () => {
-        const { wrapper, $store } = doShallowMount();
-        $store.state.canvas.interactionsEnabled = false;
+        const { wrapper, mockedStores } = doShallowMount();
+        mockedStores.canvasStore.interactionsEnabled = false;
 
         wrapper.element.setPointerCapture = vi.fn();
         wrapper.element.releasePointerCapture = vi.fn();
@@ -505,11 +472,15 @@ describe("Kanvas", () => {
 
     describe("with right mouse button click", () => {
       it("pans with right mouse button if mouse movement threshold is exceeded", async () => {
-        const { wrapper, setPointerCapture, releasePointerCapture, actions } =
-          doShallowMount({
-            scrollLeft: 100,
-            scrollTop: 100,
-          });
+        const {
+          wrapper,
+          setPointerCapture,
+          releasePointerCapture,
+          mockedStores,
+        } = doShallowMount({
+          scrollLeft: 100,
+          scrollTop: 100,
+        });
 
         await triggerPointerDown({
           wrapper,
@@ -537,14 +508,18 @@ describe("Kanvas", () => {
 
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).toHaveBeenCalledWith(-1);
-        expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
+        expect(
+          mockedStores.applicationStore.toggleContextMenu,
+        ).not.toHaveBeenCalled();
       });
 
       it("does not pan and opens the context menu if mouse movement threshold is not exceeded", async () => {
-        const { wrapper, releasePointerCapture, actions } = doShallowMount({
-          scrollLeft: 100,
-          scrollTop: 100,
-        });
+        const { wrapper, releasePointerCapture, mockedStores } = doShallowMount(
+          {
+            scrollLeft: 100,
+            scrollTop: 100,
+          },
+        );
 
         await triggerPointerDown({
           wrapper,
@@ -569,7 +544,9 @@ describe("Kanvas", () => {
 
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
-        expect(actions.application.toggleContextMenu).toHaveBeenCalled();
+        expect(
+          mockedStores.applicationStore.toggleContextMenu,
+        ).toHaveBeenCalled();
       });
 
       it("should not pan if interactionsEnabled is false", async () => {
@@ -577,14 +554,13 @@ describe("Kanvas", () => {
           wrapper,
           setPointerCapture,
           releasePointerCapture,
-          actions,
-          $store,
+          mockedStores,
         } = doShallowMount({
           scrollLeft: 100,
           scrollTop: 100,
         });
 
-        $store.state.canvas.interactionsEnabled = false;
+        mockedStores.canvasStore.interactionsEnabled = false;
 
         await triggerPointerDown({
           wrapper,
@@ -612,13 +588,15 @@ describe("Kanvas", () => {
 
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
-        expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
+        expect(
+          mockedStores.applicationStore.toggleContextMenu,
+        ).not.toHaveBeenCalled();
       });
     });
 
     it("does not pan if workflow is empty", () => {
       const { wrapper, setPointerCapture } = doShallowMount({
-        isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+        isWorkflowEmptyMock: true,
       });
 
       wrapper.element.scrollLeft = 100;
@@ -637,7 +615,7 @@ describe("Kanvas", () => {
 
   describe("context Menu", () => {
     it("shows context menu if user has not panned and used right mouse button", async () => {
-      const { wrapper, actions } = doShallowMount();
+      const { wrapper, mockedStores } = doShallowMount();
 
       await triggerPointerDown({
         wrapper,
@@ -651,8 +629,9 @@ describe("Kanvas", () => {
 
       await triggerPointerUp({ wrapper });
 
-      expect(actions.application.toggleContextMenu).toHaveBeenCalledWith(
-        expect.anything(),
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           deselectAllObjects: true,
           event: expect.anything(),
@@ -669,52 +648,46 @@ describe("Kanvas", () => {
     });
 
     it("opens contextmenu (via native event) if the workflow is empty", async () => {
-      const { wrapper, dispatchSpy, $store } = doShallowMount({
-        isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+      const { wrapper, mockedStores } = doShallowMount({
+        isWorkflowEmptyMock: true,
       });
-      expect($store.getters["workflow/isWorkflowEmpty"]).toBe(true);
       await wrapper.trigger("contextmenu");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalledWith(expect.anything());
     });
 
     it("opens contextmenu with SHIFT+F10", async () => {
-      const { wrapper, dispatchSpy } = doShallowMount();
+      const { wrapper, mockedStores } = doShallowMount();
       await wrapper.trigger("keydown", { key: "F10", shiftKey: true });
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalledWith(expect.anything());
     });
 
     it("left click with control on Mac opens context menu", async () => {
-      isMacMock = true;
-      const { wrapper, dispatchSpy } = doShallowMount();
+      mockIsMac(true);
+      const { wrapper, mockedStores } = doShallowMount();
       await wrapper.trigger("pointerdown", { button: 0, ctrlKey: true });
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalledWith(expect.anything());
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
     });
 
     it("opens contextmenu via context menu key (regardless of empty state)", async () => {
-      const { wrapper, dispatchSpy } = doShallowMount();
-      dispatchSpy.mockClear();
+      const { wrapper, mockedStores } = doShallowMount();
       await wrapper.trigger("keydown", { key: "ContextMenu" });
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalledWith(expect.anything());
     });
   });
 
   describe("container Resize", () => {
     it("should observe container resizes", async () => {
       vi.useFakeTimers();
-      const { wrapper, actions, ResizeObserverMock } = doShallowMount();
+      const { wrapper, mockedStores, ResizeObserverMock } = doShallowMount();
 
       ResizeObserverMock.__trigger__();
       ResizeObserverMock.__trigger__();
@@ -723,7 +696,9 @@ describe("Kanvas", () => {
       await nextTick();
 
       expect(wrapper.emitted("containerSizeChanged")).toBeTruthy();
-      expect(actions.canvas.updateContainerSize).toHaveBeenCalledTimes(1);
+      expect(
+        mockedStores.canvasStore.updateContainerSize,
+      ).toHaveBeenCalledTimes(1);
 
       vi.useRealTimers();
     });
@@ -737,22 +712,22 @@ describe("Kanvas", () => {
 
   describe("zooming", () => {
     it("uses canvasSize and viewBox from store", async () => {
-      const { wrapper, $store } = doShallowMount();
+      const { wrapper, mockedStores } = doShallowMount();
       await nextTick();
 
       const svg = wrapper.find("svg");
 
-      const canvasSize = $store.getters["canvas/canvasSize"];
+      const { canvasSize } = mockedStores.canvasStore;
       expect(Number(svg.attributes("width"))).toBe(canvasSize.width);
       expect(Number(svg.attributes("height"))).toBe(canvasSize.height);
 
-      const viewBoxString = $store.getters["canvas/viewBox"].string;
+      const { viewBox: viewBoxString } = mockedStores.canvasStore;
 
-      expect(svg.attributes("viewBox")).toBe(viewBoxString);
+      expect(svg.attributes("viewBox")).toBe(viewBoxString.string);
     });
 
     it("should zoom when using mouse wheel", () => {
-      const { wrapper, actions } = doShallowMount();
+      const { wrapper, mockedStores } = doShallowMount();
 
       wrapper.element.dispatchEvent(
         new WheelEvent("wheel", {
@@ -762,19 +737,16 @@ describe("Kanvas", () => {
           clientY: 10,
         }),
       );
-      expect(actions.canvas.zoomAroundPointer).toHaveBeenCalledWith(
-        expect.anything(),
-        {
-          delta: 1,
-          cursorX: 5,
-          cursorY: 0,
-        },
-      );
+      expect(mockedStores.canvasStore.zoomAroundPointer).toHaveBeenCalledWith({
+        delta: 1,
+        cursorX: 5,
+        cursorY: 0,
+      });
     });
 
     it("does not zoom on mouse wheel if interactionsEnabled is false", () => {
-      const { wrapper, actions, $store } = doShallowMount();
-      $store.state.canvas.interactionsEnabled = false;
+      const { wrapper, mockedStores } = doShallowMount();
+      mockedStores.canvasStore.interactionsEnabled = false;
 
       wrapper.element.dispatchEvent(
         new WheelEvent("wheel", {
@@ -784,12 +756,12 @@ describe("Kanvas", () => {
           clientY: 10,
         }),
       );
-      expect(actions.canvas.zoomAroundPointer).not.toHaveBeenCalled();
+      expect(mockedStores.canvasStore.zoomAroundPointer).not.toHaveBeenCalled();
     });
 
     it("does not zoom on mouse wheel if workflow is empty", () => {
-      const { wrapper, actions } = doShallowMount({
-        isWorkflowEmptyMock: vi.fn().mockReturnValue(true),
+      const { wrapper, mockedStores } = doShallowMount({
+        isWorkflowEmptyMock: true,
       });
 
       wrapper.element.dispatchEvent(
@@ -800,7 +772,7 @@ describe("Kanvas", () => {
           clientY: 10,
         }),
       );
-      expect(actions.canvas.zoomAroundPointer).not.toHaveBeenCalled();
+      expect(mockedStores.canvasStore.zoomAroundPointer).not.toHaveBeenCalled();
     });
   });
 
@@ -828,7 +800,7 @@ describe("Kanvas", () => {
     });
 
     const mountWithWorkflow = () => {
-      const mountResult = doShallowMount();
+      const mountResult = doShallowMount({});
 
       const node1 = createNativeNode({
         id: "root:1",
@@ -849,7 +821,7 @@ describe("Kanvas", () => {
         },
         workflowAnnotations: [annotation1],
       });
-      mountResult.$store.commit("workflow/setActiveWorkflow", workflow);
+      mountResult.mockedStores.workflowStore.setActiveWorkflow(workflow);
 
       return { ...mountResult, workflow, node1, node2, annotation1 };
     };
@@ -862,11 +834,11 @@ describe("Kanvas", () => {
       };
 
       it("should move focus to near node when multiselection is used and focus was already active", async () => {
-        const { $store, node1, node2, wrapper, actions } = mountWithWorkflow();
+        const { node1, node2, wrapper, mockedStores } = mountWithWorkflow();
         const firstNodeObject = createWorkflowObject(node1);
         const secondNodeObject = createWorkflowObject(node2);
 
-        $store.state.selection.focusedObject = firstNodeObject;
+        mockedStores.selectionStore.focusedObject = firstNodeObject;
 
         mockNearestObject(secondNodeObject);
 
@@ -875,18 +847,20 @@ describe("Kanvas", () => {
         await flushPromises();
 
         expect(mocked.nearestObject).toHaveBeenCalledOnce();
-        expect($store.state.selection.focusedObject).toEqual(secondNodeObject);
-        expect(actions.canvas.scroll).toHaveBeenCalled();
+        expect(mockedStores.selectionStore.focusedObject).toEqual(
+          secondNodeObject,
+        );
+        expect(mockedStores.canvasStore.scroll).toHaveBeenCalled();
       });
 
       it("should activate focus if it's not active and multiselection is used", async () => {
-        const { $store, node1, node2, wrapper, actions } = mountWithWorkflow();
+        const { node1, node2, wrapper, mockedStores } = mountWithWorkflow();
         const firstNodeObject = createWorkflowObject(node1);
         const secondNodeObject = createWorkflowObject(node2);
 
-        const reset = async () => {
-          $store.commit("selection/unfocusObject");
-          await $store.dispatch("selection/deselectAllObjects");
+        const reset = () => {
+          mockedStores.selectionStore.unfocusObject();
+          mockedStores.selectionStore.deselectAllObjects();
         };
 
         mockNearestObject(secondNodeObject);
@@ -897,158 +871,168 @@ describe("Kanvas", () => {
         // ----------------------- //
         // no selection and no focus, item will be selected
         expect(mocked.nearestObject).not.toHaveBeenCalled();
-        expect(actions.canvas.scroll).not.toHaveBeenCalled();
+        expect(mockedStores.canvasStore.scroll).not.toHaveBeenCalled();
 
         // ----------------------- //
         // single item selected, should get focus
-        await $store.dispatch("selection/selectNode", node1.id);
+        mockedStores.selectionStore.selectNode(node1.id);
 
         emitEvent(wrapper, "keydown", "ArrowRight", true);
         await flushPromises();
 
-        expect($store.state.selection.focusedObject).toEqual(firstNodeObject);
-        expect(actions.canvas.scroll).toHaveBeenCalled();
+        expect(mockedStores.selectionStore.focusedObject).toEqual(
+          firstNodeObject,
+        );
+        expect(mockedStores.canvasStore.scroll).toHaveBeenCalled();
 
         // ----------------------- //
         // reset focus and select multiple items, go "right"
-        await reset();
-        await $store.dispatch("selection/selectNode", node1.id);
-        await $store.dispatch("selection/selectNode", node2.id);
+        reset();
+        mockedStores.selectionStore.selectNode(node1.id);
+        mockedStores.selectionStore.selectNode(node2.id);
 
         emitEvent(wrapper, "keydown", "ArrowRight", true);
         await flushPromises();
 
-        expect($store.state.selection.focusedObject).toEqual(secondNodeObject);
+        expect(mockedStores.selectionStore.focusedObject).toEqual(
+          secondNodeObject,
+        );
 
         // ----------------------- //
         // reset focus and select multiple items, go "left"
-        await reset();
-        await $store.dispatch("selection/selectNode", node1.id);
-        await $store.dispatch("selection/selectNode", node2.id);
+        reset();
+        mockedStores.selectionStore.selectNode(node1.id);
+        mockedStores.selectionStore.selectNode(node2.id);
 
         emitEvent(wrapper, "keydown", "ArrowLeft", true);
         await flushPromises();
 
-        expect($store.state.selection.focusedObject).toEqual(firstNodeObject);
-        expect(actions.canvas.scroll).toHaveBeenCalled();
+        expect(mockedStores.selectionStore.focusedObject).toEqual(
+          firstNodeObject,
+        );
+        expect(mockedStores.canvasStore.scroll).toHaveBeenCalled();
       });
 
       it("should select next nearest object when single object is selected and not using multi-select", async () => {
-        const { $store, node1, node2, wrapper, commitSpy } =
+        const { node1, node2, wrapper, mockedStores } =
           mountWithWorkflow(false);
 
-        await $store.dispatch("selection/selectSingleObject", {
+        mockedStores.selectionStore.selectSingleObject({
           type: "node",
           id: node1.id,
         });
         emitEvent(wrapper, "keydown", "ArrowRight", false);
         await flushPromises();
 
-        expect($store.state.selection.selectedNodes).toStrictEqual({
+        expect(mockedStores.selectionStore.selectedNodes).toStrictEqual({
           [node2.id]: true,
         });
-        expect(commitSpy).toHaveBeenCalledWith("selection/unfocusObject");
+        expect(mockedStores.selectionStore.unfocusObject).toHaveBeenCalled();
       });
 
       it("should select next nearest object when selection is empty but one object has focus AND not using multi-select", async () => {
-        const { $store, node1, annotation1, wrapper, commitSpy } =
+        const { node1, annotation1, wrapper, mockedStores } =
           mountWithWorkflow();
         const nodeObject = createWorkflowObject(node1);
         const annotationObject = createWorkflowObject(annotation1);
 
         mockNearestObject(annotationObject);
-        $store.state.selection.focusedObject = nodeObject;
+        mockedStores.selectionStore.focusedObject = nodeObject;
 
         emitEvent(wrapper, "keydown", "ArrowRight", false);
         await flushPromises();
 
-        expect($store.state.selection.selectedNodes).toStrictEqual({});
-        expect($store.state.selection.selectedAnnotations).toStrictEqual({
+        expect(mockedStores.selectionStore.selectedNodes).toStrictEqual({});
+        expect(mockedStores.selectionStore.selectedAnnotations).toStrictEqual({
           [annotation1.id]: true,
         });
-        expect(commitSpy).toHaveBeenCalledWith("selection/unfocusObject");
+        expect(mockedStores.selectionStore.unfocusObject).toHaveBeenCalled();
       });
 
       it("should escape multiselection state when arrow key is used without multi-select modifier", async () => {
-        const { $store, node1, node2, annotation1, wrapper } =
+        const { mockedStores, node1, node2, annotation1, wrapper } =
           mountWithWorkflow();
 
         // Go right
-        await $store.dispatch("selection/selectNode", node1.id);
-        await $store.dispatch("selection/selectNode", node2.id);
-        await $store.dispatch("selection/selectAnnotation", annotation1.id);
+        mockedStores.selectionStore.selectNode(node1.id);
+        mockedStores.selectionStore.selectNode(node2.id);
+        mockedStores.selectionStore.selectAnnotation(annotation1.id);
 
         emitEvent(wrapper, "keydown", "ArrowRight", false);
         await flushPromises();
 
-        expect($store.state.selection.selectedNodes).toStrictEqual({});
-        expect($store.state.selection.selectedAnnotations).toStrictEqual({
+        expect(mockedStores.selectionStore.selectedNodes).toStrictEqual({});
+        expect(mockedStores.selectionStore.selectedAnnotations).toStrictEqual({
           [annotation1.id]: true,
         });
 
         // Go left
-        await $store.dispatch("selection/selectNode", node1.id);
-        await $store.dispatch("selection/selectNode", node2.id);
-        await $store.dispatch("selection/selectAnnotation", annotation1.id);
+        mockedStores.selectionStore.selectNode(node1.id);
+        mockedStores.selectionStore.selectNode(node2.id);
+        mockedStores.selectionStore.selectAnnotation(annotation1.id);
 
         emitEvent(wrapper, "keydown", "ArrowLeft", false);
         await flushPromises();
 
-        expect($store.state.selection.selectedNodes).toStrictEqual({
+        expect(mockedStores.selectionStore.selectedNodes).toStrictEqual({
           [node1.id]: true,
         });
-        expect($store.state.selection.selectedAnnotations).toStrictEqual({});
+        expect(mockedStores.selectionStore.selectedAnnotations).toStrictEqual(
+          {},
+        );
       });
 
       it("should add/remove from selection by pressing 'Enter'", async () => {
-        const { $store, node1, annotation1, wrapper } = mountWithWorkflow();
+        const { mockedStores, node1, annotation1, wrapper } =
+          mountWithWorkflow();
 
         const nodeObject = createWorkflowObject(node1);
         const annotationObject = createWorkflowObject(annotation1);
         mockNearestObject(annotationObject);
 
-        await $store.dispatch("selection/selectNode", node1.id);
+        mockedStores.selectionStore.selectNode(node1.id);
 
-        expect($store.state.selection.focusObject).toBeUndefined();
-
-        emitEvent(wrapper, "keydown", "ArrowRight", true);
-        await flushPromises();
-
-        expect($store.state.selection.focusedObject).toEqual(nodeObject);
+        expect(mockedStores.selectionStore.focusedObject).toBeFalsy();
 
         emitEvent(wrapper, "keydown", "ArrowRight", true);
         await flushPromises();
 
-        expect($store.state.selection.focusedObject).toEqual(annotationObject);
+        expect(mockedStores.selectionStore.focusedObject).toEqual(nodeObject);
+
+        emitEvent(wrapper, "keydown", "ArrowRight", true);
+        await flushPromises();
+
+        expect(mockedStores.selectionStore.focusedObject).toEqual(
+          annotationObject,
+        );
 
         emitEvent(wrapper, "keydown", "Enter", true);
         await flushPromises();
 
-        expect($store.state.selection.selectedNodes).toStrictEqual({
+        expect(mockedStores.selectionStore.selectedNodes).toStrictEqual({
           [node1.id]: true,
         });
-        expect($store.state.selection.selectedAnnotations).toStrictEqual({
+        expect(mockedStores.selectionStore.selectedAnnotations).toStrictEqual({
           [annotation1.id]: true,
         });
 
         emitEvent(wrapper, "keydown", "Enter", true);
         await flushPromises();
-        expect($store.state.selection.selectedNodes).toStrictEqual({
+        expect(mockedStores.selectionStore.selectedNodes).toStrictEqual({
           [node1.id]: true,
         });
-        expect($store.state.selection.selectedAnnotations).toStrictEqual({});
+        expect(mockedStores.selectionStore.selectedAnnotations).toStrictEqual(
+          {},
+        );
       });
     });
 
     describe("arrow key movement", () => {
       it("should move object with arrow keys", async () => {
-        const { $store, node1, node2, wrapper, commitSpy, dispatchSpy } =
-          mountWithWorkflow();
+        const { mockedStores, node1, node2, wrapper } = mountWithWorkflow();
 
-        await $store.dispatch("selection/selectNode", node1.id);
-        await $store.dispatch("selection/selectNode", node2.id);
-
-        dispatchSpy.mockClear();
+        mockedStores.selectionStore.selectNode(node1.id);
+        mockedStores.selectionStore.selectNode(node2.id);
 
         emitEvent(wrapper, "keydown", "Control", true, true);
         emitEvent(wrapper, "keydown", "Shift", true, true);
@@ -1056,13 +1040,19 @@ describe("Kanvas", () => {
 
         await flushPromises();
 
-        expect(commitSpy).toHaveBeenCalledWith("workflow/setTooltip", null);
-        expect(commitSpy).toHaveBeenCalledWith("workflow/setIsDragging", true);
-        expect(commitSpy).toHaveBeenLastCalledWith("workflow/setMovePreview", {
+        expect(mockedStores.workflowStore.setTooltip).toHaveBeenCalledWith(
+          null,
+        );
+        expect(mockedStores.movingStore.setIsDragging).toHaveBeenCalledWith(
+          true,
+        );
+        expect(
+          mockedStores.movingStore.setMovePreview,
+        ).toHaveBeenLastCalledWith({
           deltaX: 5,
           deltaY: 0,
         });
-        expect(dispatchSpy).not.toHaveBeenCalled();
+        expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
 
         emitEvent(wrapper, "keydown", "Control", true, true);
         emitEvent(wrapper, "keydown", "Shift", true, true);
@@ -1070,33 +1060,27 @@ describe("Kanvas", () => {
 
         await flushPromises();
 
-        expect(commitSpy).toHaveBeenLastCalledWith("workflow/setMovePreview", {
+        expect(
+          mockedStores.movingStore.setMovePreview,
+        ).toHaveBeenLastCalledWith({
           deltaX: 5,
           deltaY: -5,
         });
-        expect(dispatchSpy).not.toHaveBeenCalled();
+        expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
 
         emitEvent(wrapper, "keyup", "Control");
         await flushPromises();
-        expect(dispatchSpy).toHaveBeenCalledWith("workflow/moveObjects");
+        expect(mockedStores.movingStore.moveObjects).toHaveBeenCalled();
       });
 
       it("should not move objects if workflow is not writable", async () => {
-        const {
-          $store,
-          node1,
-          wrapper,
-          commitSpy,
-          dispatchSpy,
-          isWorkflowWritableMock,
-        } = mountWithWorkflow();
+        const { mockedStores, node1, wrapper } = mountWithWorkflow();
 
-        isWorkflowWritableMock.mockImplementationOnce(() => false);
+        // @ts-ignore
+        mockedStores.workflowStore.isWritable = false;
+        await nextTick();
 
-        await $store.dispatch("selection/selectNode", node1.id);
-
-        dispatchSpy.mockClear();
-        commitSpy.mockClear();
+        mockedStores.selectionStore.selectNode(node1.id);
 
         emitEvent(wrapper, "keydown", "Control", true, true);
         emitEvent(wrapper, "keydown", "Shift", true, true);
@@ -1104,13 +1088,13 @@ describe("Kanvas", () => {
 
         await flushPromises();
 
-        expect(commitSpy).not.toHaveBeenCalledWith("worflow/setIsDragging");
-        expect(commitSpy).not.toHaveBeenCalledWith("worflow/setMovePreview");
-        expect(dispatchSpy).not.toHaveBeenCalled();
+        expect(mockedStores.movingStore.setIsDragging).not.toHaveBeenCalled();
+        expect(mockedStores.movingStore.setMovePreview).not.toHaveBeenCalled();
+        expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
 
         emitEvent(wrapper, "keyup", "Control");
         await flushPromises();
-        expect(dispatchSpy).not.toHaveBeenCalled();
+        expect(mockedStores.movingStore.moveObjects).not.toHaveBeenCalled();
       });
     });
   });
@@ -1144,36 +1128,33 @@ describe("Kanvas", () => {
         },
         workflowAnnotations: [annotation1],
       });
-      mountResult.$store.commit("workflow/setActiveWorkflow", workflow);
-      mountResult.$store.commit("selection/clearSelection");
+      mountResult.mockedStores.workflowStore.setActiveWorkflow(workflow);
+      mountResult.mockedStores.selectionStore.clearSelection();
 
       return { ...mountResult, workflow, node1, node2, annotation1 };
     };
 
     it("should select first object on keyboard focus", async () => {
-      const { node1, wrapper, dispatchSpy } = mountWithWorkflowButNoSelection();
+      const { node1, wrapper, mockedStores } =
+        mountWithWorkflowButNoSelection();
       const firstNodeObject = createWorkflowObject(node1);
 
       mockNearestObject(firstNodeObject);
 
-      dispatchSpy.mockClear();
-
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
       await wrapper.trigger("focusin");
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectNode",
+      expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
         firstNodeObject.id,
       );
     });
 
     it("should not select first object on mouse focus", async () => {
-      const { node1, wrapper, dispatchSpy } = mountWithWorkflowButNoSelection();
+      const { node1, wrapper, mockedStores } =
+        mountWithWorkflowButNoSelection();
       const firstNodeObject = createWorkflowObject(node1);
 
       mockNearestObject(firstNodeObject);
-
-      dispatchSpy.mockClear();
 
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
       await nextTick();
@@ -1183,50 +1164,52 @@ describe("Kanvas", () => {
 
       await wrapper.trigger("focusin");
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "selection/selectNode",
+      expect(mockedStores.selectionStore.selectNode).not.toHaveBeenCalledWith(
         firstNodeObject.id,
       );
     });
 
     it("should deselect all objects on escape", async () => {
-      const { node1, wrapper, dispatchSpy, $store } =
+      const { node1, wrapper, mockedStores } =
         mountWithWorkflowButNoSelection();
 
-      await $store.dispatch("selection/selectNode", node1.id);
-
-      dispatchSpy.mockClear();
+      mockedStores.selectionStore.selectNode(node1.id);
 
       await wrapper.trigger("keydown", { key: "Escape" });
 
-      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
     });
 
     it("should not select anything if something is already selected", async () => {
-      const { node1, node2, $store, wrapper, dispatchSpy } =
+      const { node1, node2, wrapper, mockedStores } =
         mountWithWorkflowButNoSelection();
       const firstNodeObject = createWorkflowObject(node1);
 
-      await $store.dispatch("selection/selectNode", node2.id);
+      mockedStores.selectionStore.selectNode(node2.id);
       mockNearestObject(firstNodeObject);
 
-      dispatchSpy.mockClear();
+      vi.mocked(mockedStores.selectionStore.selectNode).mockClear();
 
       await wrapper.trigger("focusin");
 
-      expect(dispatchSpy).not.toHaveBeenCalled();
+      expect(
+        mockedStores.selectionStore.selectAnnotation,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockedStores.selectionStore.selectAnnotations,
+      ).not.toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectNode).not.toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectNodes).not.toHaveBeenCalled();
     });
 
     it.each(["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"])(
       "should select an objects on %s key",
       async (key) => {
-        const { wrapper, dispatchSpy } = mountWithWorkflowButNoSelection();
+        const { wrapper, mockedStores } = mountWithWorkflowButNoSelection();
 
-        dispatchSpy.mockClear();
         await wrapper.trigger("keydown", { key });
 
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "selection/selectNode",
+        expect(mockedStores.selectionStore.selectNode).toHaveBeenCalledWith(
           "root:1",
         );
       },

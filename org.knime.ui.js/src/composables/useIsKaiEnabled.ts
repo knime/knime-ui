@@ -1,10 +1,9 @@
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import { useStore } from "./useStore";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 
 export const useIsKaiEnabled = () => {
-  const store = useStore();
-  const isKaiEnabled = computed(() => store.state.application.isKaiEnabled);
+  const { isKaiEnabled } = storeToRefs(useApplicationSettingsStore());
 
   return { isKaiEnabled };
 };

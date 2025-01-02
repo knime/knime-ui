@@ -1,9 +1,9 @@
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import { useStore } from "@/composables/useStore";
-import type { Message } from "@/store/aiAssistant";
+import { type Message, useAIAssistantStore } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
 import { useKaiServer } from "../useKaiServer";
 
@@ -18,16 +18,17 @@ class MessageSeparator {
 }
 
 const useChat = (chainType: ChainType) => {
+  const aiAssistant = storeToRefs(useAIAssistantStore());
+  const { makeAiRequest, abortAiRequest } = useAIAssistantStore();
   const { uiStrings } = useKaiServer();
 
-  const store = useStore();
   const { show: showConfirmDialog } = useConfirmDialog();
 
   const messagesWithSeparators = computed(() => {
     // Computes an array of messages interlaced with day separators.
 
     const now = Date.now();
-    const rawMessages = store.state.aiAssistant[chainType].messages;
+    const rawMessages = aiAssistant[chainType].value.messages;
     const initialTimestamp = rawMessages[0]?.timestamp ?? now;
     const welcomeMessage: Message = {
       role: KaiMessage.RoleEnum.Assistant,
@@ -65,19 +66,19 @@ const useChat = (chainType: ChainType) => {
   });
 
   const isProcessing = computed(
-    () => store.state.aiAssistant[chainType].isProcessing,
+    () => aiAssistant[chainType].value.isProcessing,
   );
 
   const incomingTokens = computed(
-    () => store.state.aiAssistant[chainType].incomingTokens,
+    () => aiAssistant[chainType].value.incomingTokens,
   );
 
   const statusUpdate = computed(
-    () => store.state.aiAssistant[chainType].statusUpdate,
+    () => aiAssistant[chainType].value.statusUpdate,
   );
 
   const lastUserMessage = computed(() => {
-    const messages = store.state.aiAssistant[chainType].messages;
+    const messages = aiAssistant[chainType].value.messages;
 
     const lastUserMessage = messages.findLast(
       (message: Message) => message.role === "user",
@@ -93,7 +94,7 @@ const useChat = (chainType: ChainType) => {
     message: string;
     targetNodes?: string[];
   }) => {
-    await store.dispatch("aiAssistant/makeAiRequest", {
+    await makeAiRequest({
       chainType,
       message,
       targetNodes,
@@ -111,7 +112,7 @@ const useChat = (chainType: ChainType) => {
       ],
     });
     if (confirmed) {
-      store.dispatch("aiAssistant/abortAiRequest", {
+      abortAiRequest({
         chainType,
       });
     }

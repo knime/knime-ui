@@ -1,33 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
-import { merge } from "lodash-es";
+import { describe, expect, it } from "vitest";
 
 import { createMetanode, createNativeNode, createPort } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
 import {
   type SelectedPortIdentifier,
   getNextSelectedPort,
   getPortContext,
 } from "../portSelection";
 
-const setup = ({
-  additionalStoreConfig,
-}: { additionalStoreConfig?: Record<any, any> } = {}) => {
-  const defaultStoreConfig = {
-    workflow: {
-      getters: {
-        isWritable: () => vi.fn().mockReturnValue(true),
-      },
-    },
-  };
-
-  const store = mockVuexStore(merge(defaultStoreConfig, additionalStoreConfig));
-  return { store };
-};
-
 describe("port selection untils", () => {
   describe("getNextSelectedPort", () => {
-    const { store } = setup();
-
     describe("metanode", () => {
       const metanode = createMetanode({
         inPorts: [{}, {}],
@@ -40,7 +21,7 @@ describe("port selection untils", () => {
         ["output-1", "output-2"],
         ["output-2", "output-AddPort"],
       ] as Array<Array<SelectedPortIdentifier>>)("'%s'->'%s'", (from, to) => {
-        expect(getNextSelectedPort(store, metanode, from)).toBe(to);
+        expect(getNextSelectedPort(metanode, from, true)).toBe(to);
       });
     });
 
@@ -56,7 +37,7 @@ describe("port selection untils", () => {
         ["output-2", "input-1"],
         ["input-1", "output-1"],
       ] as Array<Array<SelectedPortIdentifier>>)("'%s'->'%s'", (from, to) => {
-        expect(getNextSelectedPort(store, node, from)).toBe(to);
+        expect(getNextSelectedPort(node, from, true)).toBe(to);
       });
     });
 
@@ -68,17 +49,17 @@ describe("port selection untils", () => {
         inPorts: [createPort(), createPort()],
         outPorts: [],
       };
-      expect(getNextSelectedPort(store, metanode, null)).toBe("output-AddPort");
+      expect(getNextSelectedPort(metanode, null, true)).toBe("output-AddPort");
     });
 
     it("next port is AddPort", () => {
       const metanode = { ...createMetanode(), inPorts: [], outPorts: [] };
 
-      expect(getNextSelectedPort(store, metanode, null)).toBe("output-AddPort");
-      expect(getNextSelectedPort(store, metanode, "output-AddPort")).toBe(
+      expect(getNextSelectedPort(metanode, null, true)).toBe("output-AddPort");
+      expect(getNextSelectedPort(metanode, "output-AddPort", true)).toBe(
         "input-AddPort",
       );
-      expect(getNextSelectedPort(store, metanode, "input-AddPort")).toBe(
+      expect(getNextSelectedPort(metanode, "input-AddPort", true)).toBe(
         "output-AddPort",
       );
     });
@@ -89,7 +70,7 @@ describe("port selection untils", () => {
         outPorts: [{}, {}, {}],
       });
 
-      expect(getNextSelectedPort(store, node, "output-2")).toBe("output-1");
+      expect(getNextSelectedPort(node, "output-2", true)).toBe("output-1");
     });
   });
 

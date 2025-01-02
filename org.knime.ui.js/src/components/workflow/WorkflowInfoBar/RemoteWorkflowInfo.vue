@@ -1,23 +1,18 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import * as $colors from "@/style/colors";
 
-const store = useStore();
-const isUnknownProject = computed<(projectId: string) => boolean>(
-  () => store.getters["application/isUnknownProject"],
+const { isUnknownProject, openProjects, activeProjectId } = storeToRefs(
+  useApplicationStore(),
 );
-
-const uiControls = computed(() => store.state.uiControls);
-const openProjects = computed(() => store.state.application.openProjects);
-
-const activeProjectProvider = computed<SpaceProviderNS.SpaceProvider | null>(
-  () => store.getters["spaces/activeProjectProvider"],
-);
-
-const activeProjectId = computed(() => store.state.application.activeProjectId);
+const uiControls = useUIControlsStore();
+const { activeProjectProvider } = storeToRefs(useSpaceProvidersStore());
 
 const isServerSpace = computed(
   () =>
@@ -30,7 +25,7 @@ const shouldShow = computed(() => {
     (project) => project.projectId === activeProjectId.value,
   );
 
-  if (!uiControls.value.shouldDisplayRemoteWorkflowInfoBar || !foundProject) {
+  if (!uiControls.shouldDisplayRemoteWorkflowInfoBar || !foundProject) {
     return false;
   }
 

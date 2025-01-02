@@ -10,19 +10,15 @@ import {
   TagList,
 } from "@knime/components";
 
+import type { Workflow } from "@/api/custom-types";
 import {
   ComponentNodeAndDescription,
   TypedText,
-  type Workflow,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import * as applicationStore from "@/store/application";
-import * as selectionStore from "@/store/selection";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import ComponentMetadata from "../ComponentMetadata.vue";
 import ComponentMetadataNodeFeatures from "../ComponentMetadataNodeFeatures.vue";
 import MetadataDescription from "../MetadataDescription.vue";
@@ -36,18 +32,9 @@ describe("WorkflowMetadata.vue", () => {
     workflow = null,
   }: { workflow?: Workflow | null } = {}) => {
     const availablePortTypes = createAvailablePortTypes();
-    const $store = mockVuexStore({
-      selection: selectionStore,
-      workflow: workflowStore,
-      uiControls: uiControlsStore,
 
-      application: {
-        state: {
-          ...applicationStore.state(),
-          availablePortTypes,
-        },
-      },
-    });
+    const mockedStores = mockStores();
+    mockedStores.applicationStore.availablePortTypes = availablePortTypes;
 
     const baseWorkflow = createWorkflow({
       info: {
@@ -59,17 +46,16 @@ describe("WorkflowMetadata.vue", () => {
       },
     });
 
-    $store.commit("workflow/setActiveWorkflow", workflow || baseWorkflow);
-    const dispatchSpy = vi.spyOn($store, "dispatch");
+    mockedStores.workflowStore.setActiveWorkflow(workflow || baseWorkflow);
 
     const wrapper = mount(WorkflowMetadata, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: { RichTextEditor: true },
       },
     });
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, mockedStores };
   };
 
   describe("project", () => {
@@ -125,7 +111,7 @@ describe("WorkflowMetadata.vue", () => {
 
   describe("component", () => {
     it("displays component metadata", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       const workflow = createWorkflow({
         info: {
@@ -145,7 +131,7 @@ describe("WorkflowMetadata.vue", () => {
         },
       });
 
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      mockedStores.workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
       expect(wrapper.findComponent(NodePreview).exists()).toBe(true);
@@ -159,7 +145,7 @@ describe("WorkflowMetadata.vue", () => {
     });
 
     it("maps the port color and type to display them properly", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       const workflow = createWorkflow({
         info: {
@@ -187,7 +173,7 @@ describe("WorkflowMetadata.vue", () => {
         },
       });
 
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      mockedStores.workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
       const nodeFeatures = wrapper
@@ -227,7 +213,7 @@ describe("WorkflowMetadata.vue", () => {
     });
 
     it("saves changes for component", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       const workflow = createWorkflow({
         info: {
@@ -269,21 +255,20 @@ describe("WorkflowMetadata.vue", () => {
         type: "",
       };
 
-      $store.commit("workflow/setActiveWorkflow", workflow);
+      mockedStores.workflowStore.setActiveWorkflow(workflow);
       await nextTick();
 
       wrapper.findComponent(ComponentMetadata).vm.$emit("save", savedComponent);
 
       expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(true);
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "workflow/updateComponentMetadata",
-        savedComponent,
-      );
+      expect(
+        mockedStores.workflowStore.updateComponentMetadata,
+      ).toHaveBeenCalledWith(savedComponent);
     });
   });
 
   it("saves changes for project metadata", async () => {
-    const { wrapper, $store, dispatchSpy } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     const workflow = createWorkflow({
       info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
@@ -305,20 +290,19 @@ describe("WorkflowMetadata.vue", () => {
       workflowId: "workflow1",
     };
 
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
 
     wrapper.findComponent(ProjectMetadata).vm.$emit("save", savedProject);
 
     expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(true);
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      "workflow/updateWorkflowMetadata",
-      savedProject,
-    );
+    expect(
+      mockedStores.workflowStore.updateWorkflowMetadata,
+    ).toHaveBeenCalledWith(savedProject);
   });
 
   it("should display metadata for Components opened as a project", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     const workflow = createWorkflow({
       info: {
@@ -346,7 +330,7 @@ describe("WorkflowMetadata.vue", () => {
       },
     });
 
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
 
     expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
@@ -354,7 +338,7 @@ describe("WorkflowMetadata.vue", () => {
   });
 
   it("should not display metadata for metanodes", async () => {
-    const { wrapper, $store } = doMount();
+    const { wrapper, mockedStores } = doMount();
 
     const workflow = createWorkflow({
       info: {
@@ -362,7 +346,7 @@ describe("WorkflowMetadata.vue", () => {
       },
     });
 
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
 
     expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);

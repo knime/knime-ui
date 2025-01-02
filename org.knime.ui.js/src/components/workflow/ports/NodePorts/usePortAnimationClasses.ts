@@ -1,7 +1,8 @@
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import { useNodeInfo } from "./useNodeInfo";
 
@@ -14,15 +15,9 @@ type UsePortAnimationClassesOptions = {
 export const usePortAnimationClasses = (
   options: UsePortAnimationClassesOptions,
 ) => {
-  const store = useStore();
-
   const { isMetanode } = useNodeInfo({ nodeId: options.nodeId });
-
-  const isWritable = computed<boolean>(
-    () => store.getters["workflow/isWritable"],
-  );
-
-  const quickActionMenu = computed(() => store.state.workflow.quickActionMenu);
+  const { isWritable } = storeToRefs(useWorkflowStore());
+  const { quickActionMenu } = storeToRefs(useFloatingMenusStore());
 
   const isQuickAddNodeMenuOpenInTheSameSide = (side: "in" | "out") => {
     return (

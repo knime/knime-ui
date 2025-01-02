@@ -6,7 +6,7 @@ import { Description, NodeFeatureList } from "@knime/components";
 
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import { NODE_FACTORIES, createNativeNodeDescription } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeDescription from "../NodeDescription.vue";
 
 vi.mock("@/environment");
@@ -52,24 +52,22 @@ describe("NodeDescription", () => {
       isVisible: true,
     };
 
-    const $store = mockVuexStore({
-      nodeDescription: {
-        actions: {
-          getNativeNodeDescription: getNodeDescriptionMock,
-          getComponentDescription: getComponentDescriptionMock,
-        },
-      },
-    });
+    const mockedStores = mockStores();
+
+    mockedStores.nodeDescriptionStore.getNativeNodeDescription =
+      getNodeDescriptionMock;
+    mockedStores.nodeDescriptionStore.getComponentDescription =
+      getComponentDescriptionMock;
 
     const wrapper = mount(NodeDescription, {
       props: { ...defaultProps, ...props },
-      global: { plugins: [$store] },
+      global: { plugins: [mockedStores.testingPinia] },
     });
 
     // wait for the initial fetch of data
     await flushPromises();
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("renders all components", async () => {

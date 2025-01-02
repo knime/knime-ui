@@ -2,26 +2,20 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { h, nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { API } from "@api";
 import { mockUserAgent } from "jest-useragent-mock";
-import type { Store } from "vuex";
 
 import { RichTextEditor } from "@knime/rich-text-editor";
 
-import { API } from "@/api";
 import {
   type Bounds,
   TypedText,
   type WorkflowAnnotation,
 } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as canvasStore from "@/store/canvas";
-import * as selectionStore from "@/store/selection";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow, createWorkflowAnnotation } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import LegacyAnnotation from "../LegacyAnnotation.vue";
 import RichTextAnnotation from "../RichTextAnnotation.vue";
 import TransformControls from "../TransformControls.vue";
@@ -44,36 +38,19 @@ describe("WorkflowAnnotation.vue", () => {
     transformControlStub = null,
     directives = {},
   } = {}) => {
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      canvas: canvasStore,
-      selection: selectionStore,
-      application: {
-        ...applicationStore,
-        actions: {
-          toggleContextMenu: vi.fn(),
-        },
-      },
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
 
-    const div = document.createElement("div");
-    $store.commit("canvas/setScrollContainerElement", div);
-
-    $store.commit(
-      "workflow/setActiveWorkflow",
+    mockedStores.workflowStore.setActiveWorkflow(
       createWorkflow({
         workflowAnnotations: [defaultProps.annotation],
       }),
     );
 
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-
     const wrapper = mount(WorkflowAnnotationComp, {
       props: { ...defaultProps, ...props },
       global: {
         mocks: { $shapes, $colors },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: {
           RichTextEditor: true,
           TransformControls: transformControlStub ?? false,
@@ -82,7 +59,7 @@ describe("WorkflowAnnotation.vue", () => {
       },
     });
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, mockedStores };
   };
 
   it("should render LegacyAnnotation", () => {
@@ -139,14 +116,15 @@ describe("WorkflowAnnotation.vue", () => {
     });
 
     it("should trigger call to transform annotation", () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       const bounds = { x: 15, y: 15, width: 100, height: 100 };
 
       wrapper
         .findComponent(TransformControls)
         .vm.$emit("transformEnd", { bounds });
-      const projectId = $store.state.workflow.activeWorkflow.projectId;
-      const workflowId = $store.state.workflow.activeWorkflow.info.containerId;
+      const projectId = mockedStores.workflowStore.activeWorkflow!.projectId;
+      const workflowId =
+        mockedStores.workflowStore.activeWorkflow!.info.containerId;
 
       expect(
         API.workflowCommand.TransformWorkflowAnnotation,
@@ -159,7 +137,7 @@ describe("WorkflowAnnotation.vue", () => {
     });
 
     it("should transform annotation using keyboard shortcuts", async () => {
-      const { $store } = doMount();
+      const { mockedStores } = doMount();
 
       const dispatchKeyEvent = (key: string, altKey: boolean) => {
         const event = new KeyboardEvent("keydown", {
@@ -176,11 +154,11 @@ describe("WorkflowAnnotation.vue", () => {
         API.workflowCommand.TransformWorkflowAnnotation,
       ).not.toHaveBeenCalled();
 
-      const projectId = $store.state.workflow.activeWorkflow.projectId;
-      const workflowId = $store.state.workflow.activeWorkflow.info.containerId;
+      const projectId = mockedStores.workflowStore.activeWorkflow!.projectId;
+      const workflowId =
+        mockedStores.workflowStore.activeWorkflow!.info.containerId;
 
-      await $store.dispatch(
-        "selection/selectAnnotation",
+      await mockedStores.selectionStore.selectAnnotation(
         defaultProps.annotation.id,
       );
 
@@ -262,49 +240,58 @@ describe("WorkflowAnnotation.vue", () => {
       },
     };
 
-    const toggleAnnotationEdit = ($store: Store<any>, annotationId: string) => {
-      $store.commit("workflow/setEditableAnnotationId", annotationId);
+    const toggleAnnotationEdit = (
+      mockedStores: ReturnType<typeof mockStores>,
+      annotationId: string,
+    ) => {
+      mockedStores.annotationInteractionsStore.setEditableAnnotationId(
+        annotationId,
+      );
       return nextTick();
     };
 
     it("should start editing when dblclicking on LegacyAnnotation", () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       wrapper.findComponent(LegacyAnnotation).trigger("dblclick");
-      expect($store.state.workflow.editableAnnotationId).toBe(
-        defaultProps.annotation.id,
-      );
+      expect(
+        mockedStores.annotationInteractionsStore.editableAnnotationId,
+      ).toBe(defaultProps.annotation.id);
     });
 
     it("should start editing when dblclicking on RichTextAnnotation", () => {
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { annotation: modernAnnotation },
       });
 
       wrapper.findComponent(RichTextAnnotation).vm.$emit("editStart");
-      expect($store.state.workflow.editableAnnotationId).toBe(
-        modernAnnotation.id,
-      );
+      expect(
+        mockedStores.annotationInteractionsStore.editableAnnotationId,
+      ).toBe(modernAnnotation.id);
     });
 
     it("should not allow editing when for non-writable workflows", () => {
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { annotation: modernAnnotation },
       });
-      $store.state.workflow.activeWorkflow.info.linked = true;
+      mockedStores.workflowStore.activeWorkflow!.info.linked = true;
 
-      expect($store.state.workflow.editableAnnotationId).toBeNull();
+      expect(
+        mockedStores.annotationInteractionsStore.editableAnnotationId,
+      ).toBeNull();
       wrapper.findComponent(RichTextAnnotation).vm.$emit("editStart");
       expect(wrapper.findComponent(RichTextEditor).props("editable")).toBe(
         false,
       );
-      expect($store.state.workflow.editableAnnotationId).toBeNull();
+      expect(
+        mockedStores.annotationInteractionsStore.editableAnnotationId,
+      ).toBeNull();
     });
 
     it("should render RichTextEditor when annotation is editable", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
-      await toggleAnnotationEdit($store, defaultProps.annotation.id);
+      await toggleAnnotationEdit(mockedStores, defaultProps.annotation.id);
 
       expect(wrapper.findComponent(LegacyAnnotation).exists()).toBe(false);
       expect(wrapper.findComponent(RichTextEditor).exists()).toBe(true);
@@ -322,11 +309,11 @@ describe("WorkflowAnnotation.vue", () => {
         },
       };
 
-      const { wrapper, $store, dispatchSpy } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { annotation },
       });
 
-      await toggleAnnotationEdit($store, "id1");
+      await toggleAnnotationEdit(mockedStores, "id1");
       expect(
         wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe($colors.defaultAnnotationBorderColor);
@@ -341,7 +328,9 @@ describe("WorkflowAnnotation.vue", () => {
       // emulate click outside
       window.dispatchEvent(new Event("click"));
 
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
+      expect(
+        mockedStores.annotationInteractionsStore.updateAnnotation,
+      ).toHaveBeenCalledWith({
         annotationId: defaultProps.annotation.id,
         text: newText,
         borderColor: $colors.defaultAnnotationBorderColor,
@@ -349,26 +338,26 @@ describe("WorkflowAnnotation.vue", () => {
     });
 
     it("should set the active border color for new annotations", async () => {
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: {
           annotation: { ...modernAnnotation, borderColor: "#000000" },
         },
       });
 
-      await toggleAnnotationEdit($store, defaultProps.annotation.id);
+      await toggleAnnotationEdit(mockedStores, defaultProps.annotation.id);
       expect(
         wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
     });
 
     it("should update the active border color for new annotations when it changes in the state", async () => {
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: {
           annotation: { ...modernAnnotation, borderColor: "#000000" },
         },
       });
 
-      await toggleAnnotationEdit($store, defaultProps.annotation.id);
+      await toggleAnnotationEdit(mockedStores, defaultProps.annotation.id);
       expect(
         wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
       ).toBe("#000000");
@@ -383,13 +372,13 @@ describe("WorkflowAnnotation.vue", () => {
     });
 
     it("should dispatch an update of an annotation content (no color change)", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: {
           annotation: { ...modernAnnotation, borderColor: "#000000" },
         },
       });
 
-      await toggleAnnotationEdit($store, modernAnnotation.id);
+      await toggleAnnotationEdit(mockedStores, modernAnnotation.id);
       const newContent = "<p>new content</p>";
 
       wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newContent);
@@ -406,7 +395,9 @@ describe("WorkflowAnnotation.vue", () => {
       // emulate click outside
       window.dispatchEvent(new Event("click"));
 
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
+      expect(
+        mockedStores.annotationInteractionsStore.updateAnnotation,
+      ).toHaveBeenCalledWith({
         annotationId: defaultProps.annotation.id,
         text: newContent,
         borderColor: "#000000",
@@ -414,13 +405,13 @@ describe("WorkflowAnnotation.vue", () => {
     });
 
     it("should dispatch an update of an annotation border color (no content change)", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: {
           annotation: { ...modernAnnotation, borderColor: "#000000" },
         },
       });
 
-      await toggleAnnotationEdit($store, modernAnnotation.id);
+      await toggleAnnotationEdit(mockedStores, modernAnnotation.id);
       const newColor = "#123456";
 
       expect(
@@ -439,7 +430,9 @@ describe("WorkflowAnnotation.vue", () => {
       // emulate click outside
       window.dispatchEvent(new Event("click"));
 
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
+      expect(
+        mockedStores.annotationInteractionsStore.updateAnnotation,
+      ).toHaveBeenCalledWith({
         annotationId: defaultProps.annotation.id,
         text: modernAnnotation.text.value,
         borderColor: newColor,
@@ -447,16 +440,18 @@ describe("WorkflowAnnotation.vue", () => {
     });
 
     it("should save content on  blur event", async () => {
-      const { wrapper, $store, dispatchSpy } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { annotation: modernAnnotation },
       });
 
-      await toggleAnnotationEdit($store, modernAnnotation.id);
+      await toggleAnnotationEdit(mockedStores, modernAnnotation.id);
       const newText = "some newer text";
       wrapper.findComponent(RichTextAnnotation).vm.$emit("change", newText);
       wrapper.findComponent(RichTextAnnotation).vm.$emit("blur", newText);
 
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/updateAnnotation", {
+      expect(
+        mockedStores.annotationInteractionsStore.updateAnnotation,
+      ).toHaveBeenCalledWith({
         annotationId: defaultProps.annotation.id,
         text: newText,
         borderColor: modernAnnotation.borderColor,
@@ -466,155 +461,145 @@ describe("WorkflowAnnotation.vue", () => {
 
   describe("selection", () => {
     it("should select with left click", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await wrapper
         .findComponent(TransformControls)
         .trigger("click", { button: 0 });
       await nextTick();
 
-      expect($store.state.selection.selectedNodes).toEqual({});
-      expect($store.state.selection.selectedConnections).toEqual({});
-      expect($store.state.selection.selectedAnnotations).toEqual({ id1: true });
+      expect(mockedStores.selectionStore.selectedNodes).toEqual({});
+      expect(mockedStores.selectionStore.selectedConnections).toEqual({});
+      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
+        id1: true,
+      });
     });
 
     it.each(["shift", "ctrl"])(
       "%ss-click toggles the selection of annotation",
       async (mod) => {
         mockUserAgent("windows");
-        const { wrapper, dispatchSpy } = doMount();
+        const { wrapper, mockedStores } = doMount();
 
         await wrapper
           .findComponent(TransformControls)
           .trigger("click", { button: 0, [`${mod}Key`]: true });
 
         // selects annotation
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "selection/toggleAnnotationSelection",
-          {
-            annotationId: defaultProps.annotation.id,
-            isMultiselect: true,
-            isSelected: false,
-          },
-        );
+        expect(
+          mockedStores.selectionStore.toggleAnnotationSelection,
+        ).toHaveBeenCalledWith({
+          annotationId: defaultProps.annotation.id,
+          isMultiselect: true,
+          isSelected: false,
+        });
 
         await wrapper
           .findComponent(TransformControls)
           .trigger("click", { button: 0, [`${mod}Key`]: true });
 
         // deselects annotation
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          "selection/toggleAnnotationSelection",
-          {
-            annotationId: defaultProps.annotation.id,
-            isMultiselect: true,
-            isSelected: true,
-          },
-        );
+        expect(
+          mockedStores.selectionStore.toggleAnnotationSelection,
+        ).toHaveBeenCalledWith({
+          annotationId: defaultProps.annotation.id,
+          isMultiselect: true,
+          isSelected: true,
+        });
       },
     );
 
     it("should toggle the selection of annotation with meta + left click", async () => {
       mockUserAgent("mac");
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       await wrapper
         .findComponent(TransformControls)
         .trigger("click", { button: 0, metaKey: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/toggleAnnotationSelection",
-        {
-          annotationId: defaultProps.annotation.id,
-          isMultiselect: true,
-          isSelected: false,
-        },
-      );
+      expect(
+        mockedStores.selectionStore.toggleAnnotationSelection,
+      ).toHaveBeenCalledWith({
+        annotationId: defaultProps.annotation.id,
+        isMultiselect: true,
+        isSelected: false,
+      });
 
       await wrapper
         .findComponent(TransformControls)
         .trigger("click", { button: 0, metaKey: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/toggleAnnotationSelection",
-        {
-          annotationId: defaultProps.annotation.id,
-          isMultiselect: true,
-          isSelected: true,
-        },
-      );
+      expect(
+        mockedStores.selectionStore.toggleAnnotationSelection,
+      ).toHaveBeenCalledWith({
+        annotationId: defaultProps.annotation.id,
+        isMultiselect: true,
+        isSelected: true,
+      });
     });
   });
 
   describe("context menu", () => {
     it("click to select clicked annotation and deselect other items", async () => {
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await wrapper
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 2 });
 
-      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectAnnotation",
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
         defaultProps.annotation.id,
       );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalled();
     });
 
     it("left click with control on Mac opens context menu", async () => {
       mockUserAgent("mac");
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await wrapper
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 0, ctrlKey: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectAnnotation",
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
         defaultProps.annotation.id,
       );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalled();
     });
 
     it.each(["shift", "ctrl"])("%ss-click adds to selection", async (mod) => {
       mockUserAgent("windows");
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       await wrapper
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 2, [`${mod}Key`]: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectAnnotation",
+      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
         defaultProps.annotation.id,
       );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalled();
     });
 
     it("meta click adds to selection", async () => {
       mockUserAgent("mac");
-      const { wrapper, dispatchSpy } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       await wrapper
         .findComponent(TransformControls)
         .trigger("pointerdown", { button: 2, metaKey: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectAnnotation",
+      expect(mockedStores.selectionStore.selectAnnotation).toHaveBeenCalledWith(
         defaultProps.annotation.id,
       );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalled();
     });
   });
 });

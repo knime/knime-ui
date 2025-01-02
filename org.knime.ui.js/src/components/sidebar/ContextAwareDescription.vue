@@ -1,35 +1,38 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import type {
-  ComponentNode,
-  NativeNode,
-} from "@/api/gateway-api/generated-api";
-import NodeDescription from "@/components/nodeDescription/NodeDescription.vue";
-import WorkflowMetadata from "@/components/workflowMetadata/WorkflowMetadata.vue";
-import { useStore } from "@/composables/useStore";
-import { TABS } from "@/store/panel";
+import type { NativeNode } from "@/api/gateway-api/generated-api";
+import { TABS, usePanelStore } from "@/store/panel";
+import { useSelectionStore } from "@/store/selection";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import NodeDescription from "../nodeDescription/NodeDescription.vue";
+import WorkflowMetadata from "../workflowMetadata/WorkflowMetadata.vue";
 
 /**
  * Shows metadata based on the current selection either of the whole workflow or the selected node (if its only one)
  */
-const store = useStore();
+
+const panelStore = usePanelStore();
+const { expanded: isSidebarExpanded } = storeToRefs(panelStore);
+
 const isNodeDescriptionTabActive = computed<boolean>(() =>
-  store.getters["panel/isTabActive"](TABS.CONTEXT_AWARE_DESCRIPTION),
+  panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION),
 );
 
-const isSidebarExpanded = computed(() => store.state.panel.expanded);
-
-const singleSelectedNode = computed<NativeNode | ComponentNode>(
-  () => store.getters["selection/singleSelectedNode"],
-);
+const nodeInteractionStore = useNodeInteractionsStore();
+const { singleSelectedNode } = storeToRefs(useSelectionStore());
 
 const showNodeDescription = computed(
   () => singleSelectedNode.value && !isNodeMetaNode(singleSelectedNode.value),
 );
 
 const selectedNode = computed(() => {
+  if (!singleSelectedNode.value) {
+    return null;
+  }
+
   if (isNodeComponent(singleSelectedNode.value)) {
     const { id, name } = singleSelectedNode.value;
 
@@ -41,8 +44,8 @@ const selectedNode = computed(() => {
 
   return {
     id: templateId,
-    name: store.getters["workflow/getNodeName"](id),
-    nodeFactory: store.getters["workflow/getNodeFactory"](id),
+    name: nodeInteractionStore.getNodeName(id),
+    nodeFactory: nodeInteractionStore.getNodeFactory(id),
   };
 });
 </script>

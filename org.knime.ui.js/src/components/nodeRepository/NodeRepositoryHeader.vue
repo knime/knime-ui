@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import {
   type BreadcrumbItem,
@@ -12,39 +13,41 @@ import DisplayModeTreeIcon from "@knime/styles/img/icons/unordered-list.svg";
 import DisplayModeGridIcon from "@knime/styles/img/icons/view-cards.svg";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-import { useStore } from "@/composables/useStore";
-import type { NodeRepositoryDisplayModesType } from "@/store/settings";
+import { useApplicationStore } from "@/store/application/application";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useNodeRepositoryStore } from "@/store/nodeRepository";
+import {
+  type NodeRepositoryDisplayModesType,
+  useSettingsStore,
+} from "@/store/settings";
 
 import CloseableTagList from "./CloseableTagList.vue";
 
-const store = useStore();
-
-const searchIsActive = computed(
-  () => store.getters["nodeRepository/searchIsActive"],
-);
-const tags = computed(() => store.getters["nodeRepository/tagsOfVisibleNodes"]);
-
-const displayMode = computed(
-  () => store.state.settings.settings.nodeRepositoryDisplayMode,
-);
-const hasNodeCollectionActive = computed(
-  () => store.state.application.hasNodeCollectionActive,
-);
-const activeNodeCollection = computed(
-  () => store.state.application.activeNodeCollection,
-);
-const nodeRepositoryLoaded = computed(
-  () => store.state.application.nodeRepositoryLoaded,
-);
+const nodeRepositoryStore = useNodeRepositoryStore();
+const {
+  searchIsActive,
+  tagsOfVisibleNodes: tags,
+  query,
+} = storeToRefs(nodeRepositoryStore);
 
 const selectedTags = computed({
   get() {
-    return store.state.nodeRepository.selectedTags;
+    return nodeRepositoryStore.selectedTags;
   },
   set(value) {
-    store.dispatch("nodeRepository/setSelectedTags", value);
+    nodeRepositoryStore.updateSelectedTags(value);
   },
 });
+
+const settingsStore = useSettingsStore();
+const displayMode = computed(
+  () => settingsStore.settings.nodeRepositoryDisplayMode,
+);
+
+const { hasNodeCollectionActive, activeNodeCollection } = storeToRefs(
+  useApplicationSettingsStore(),
+);
+const { nodeRepositoryLoaded } = storeToRefs(useApplicationStore());
 
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
   // If search results are shown, it's possible to navigate back
@@ -55,7 +58,7 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 
 const onBreadcrumbClick = (event: { id: string }) => {
   if (event.id === "clear") {
-    store.dispatch("nodeRepository/clearSearchParams");
+    nodeRepositoryStore.clearSearchParams();
   }
 };
 
@@ -85,7 +88,7 @@ const displayModeSubMenuItems = computed<MenuItemWithDisplayMode[]>(() => [
 ]);
 
 const setDisplayMode = (value: NodeRepositoryDisplayModesType) => {
-  store.dispatch("settings/updateSetting", {
+  settingsStore.updateSetting({
     key: "nodeRepositoryDisplayMode",
     value,
   });
@@ -131,7 +134,7 @@ defineExpose({ focusSearchInput });
       </div>
       <SearchInput
         ref="searchBar"
-        :model-value="store.state.nodeRepository.query"
+        :model-value="query"
         spellcheck="false"
         compact
         :maxlength="300"
@@ -143,10 +146,8 @@ defineExpose({ focusSearchInput });
         "
         class="search-bar"
         @keydown.down.prevent="$emit('searchBarDownKey')"
-        @clear="store.dispatch('nodeRepository/clearSearchParams')"
-        @update:model-value="
-          store.dispatch('nodeRepository/updateQuery', $event)
-        "
+        @clear="nodeRepositoryStore.clearSearchParams"
+        @update:model-value="nodeRepositoryStore.updateQuery($event)"
       />
     </div>
     <CloseableTagList

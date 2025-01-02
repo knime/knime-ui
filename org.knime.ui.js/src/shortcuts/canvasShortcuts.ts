@@ -1,6 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import throttle from "raf-throttle";
 
+import { useCanvasStore } from "@/store/canvas";
+
 import type { UnionToShortcutRegistry } from "./types";
 
 type CanvasShortcuts = UnionToShortcutRegistry<
@@ -18,8 +20,8 @@ declare module "./index" {
   interface ShortcutsRegistry extends CanvasShortcuts {}
 }
 
-const zoomInHelper = throttle(({ $store }) => {
-  $store.dispatch("canvas/zoomCentered", { delta: 1 });
+const zoomInHelper = throttle(() => {
+  useCanvasStore().zoomCentered({ delta: 1 });
 });
 
 const canvasShortcuts: CanvasShortcuts = {
@@ -27,13 +29,13 @@ const canvasShortcuts: CanvasShortcuts = {
     text: "Fit to screen",
     hotkey: ["CtrlOrCmd", "2"],
     group: "canvasNavigation",
-    execute: ({ $store }) => $store.dispatch("canvas/fitToScreen"),
+    execute: () => useCanvasStore().fitToScreen(),
   },
   fillScreen: {
     text: "Fill entire screen",
     hotkey: ["CtrlOrCmd", "1"],
     group: "canvasNavigation",
-    execute: ({ $store }) => $store.dispatch("canvas/fillScreen"),
+    execute: () => useCanvasStore().fillScreen(),
   },
   zoomIn: {
     text: "Zoom in",
@@ -46,31 +48,27 @@ const canvasShortcuts: CanvasShortcuts = {
     text: "Zoom out",
     hotkey: ["CtrlOrCmd", "-"],
     group: "canvasNavigation",
-    execute: throttle(({ $store }) => {
-      $store.dispatch("canvas/zoomCentered", { delta: -1 });
+    execute: throttle(() => {
+      useCanvasStore().zoomCentered({ delta: -1 });
     }),
   },
   zoomTo75: {
     text: "Zoom to 75%",
-    execute: ({ $store }) =>
-      $store.dispatch("canvas/zoomCentered", { factor: 0.75 }),
+    execute: () => useCanvasStore().zoomCentered({ factor: 0.75 }),
   },
   zoomTo100: {
     text: "Zoom to 100%",
     hotkey: ["CtrlOrCmd", "0"],
     group: "canvasNavigation",
-    execute: ({ $store }) =>
-      $store.dispatch("canvas/zoomCentered", { factor: 1 }),
+    execute: () => useCanvasStore().zoomCentered({ factor: 1 }),
   },
   zoomTo125: {
     text: "Zoom to 125%",
-    execute: ({ $store }) =>
-      $store.dispatch("canvas/zoomCentered", { factor: 1.25 }),
+    execute: () => useCanvasStore().zoomCentered({ factor: 1.25 }),
   },
   zoomTo150: {
     text: "Zoom to 150%",
-    execute: ({ $store }) =>
-      $store.dispatch("canvas/zoomCentered", { factor: 1.5 }),
+    execute: () => useCanvasStore().zoomCentered({ factor: 1.5 }),
   },
 };
 

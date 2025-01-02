@@ -1,28 +1,22 @@
-import { type Ref, computed } from "vue";
+import { type Ref } from "vue";
+import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import { navigatorUtils } from "@knime/utils";
 
-import { useStore } from "@/composables/useStore";
+import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useCanvasStore } from "@/store/canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 type UseZoomOptions = {
   rootEl: Ref<HTMLElement>;
 };
 
 export const useMouseWheelZooming = (options: UseZoomOptions) => {
-  const store = useStore();
-
-  const scrollToZoomEnabled = computed(
-    () => store.state.application.scrollToZoomEnabled,
-  );
-
-  const interactionsEnabled = computed(
-    () => store.state.canvas.interactionsEnabled,
-  );
-
-  const isWorkflowEmpty = computed(
-    () => store.getters["workflow/isWorkflowEmpty"],
-  );
+  const { scrollToZoomEnabled } = storeToRefs(useApplicationSettingsStore());
+  const canvasStore = useCanvasStore();
+  const { interactionsEnabled } = storeToRefs(canvasStore);
+  const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
   const zoom = throttle(function (e) {
     // delta is -1, 0 or 1 depending on scroll direction.
@@ -33,7 +27,7 @@ export const useMouseWheelZooming = (options: UseZoomOptions) => {
     const cursorX = e.clientX - bcr.x;
     const cursorY = e.clientY - bcr.y;
 
-    store.dispatch("canvas/zoomAroundPointer", { delta, cursorX, cursorY });
+    canvasStore.zoomAroundPointer({ delta, cursorX, cursorY });
   });
 
   const onMouseWheel = (event: WheelEvent) => {

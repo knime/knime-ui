@@ -1,15 +1,22 @@
 import { type Mock, vi } from "vitest";
+import { API } from "@api";
+import { createTestingPinia } from "@pinia/testing";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import type {
   Project,
   SpaceItemReference,
 } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "@/store/types";
+import { useApplicationStore } from "@/store/application/application";
+import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { createJob, createSchedule } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
-import * as spacesStore from "../index";
+import { deepMocked } from "@/test/utils";
+import { useSpaceAuthStore } from "../auth";
+import { useSpaceCachingStore } from "../caching";
+import { useDeploymentsStore } from "../deployments";
+import { useSpaceProvidersStore } from "../providers";
+import { useSpaceOperationsStore } from "../spaceOperations";
+import { useSpacesStore } from "../spaces";
 
 export const fetchWorkflowGroupContentResponse = {
   id: "root",
@@ -102,27 +109,49 @@ export const loadStore = ({
   isUnknownProject = false,
   activeProjectOrigin = null,
 }: LoadStoreOpts = {}) => {
-  const store = mockVuexStore<RootStoreState>({
-    spaces: spacesStore,
-    application: {
-      state: { openProjects, activeProjectId },
-      getters: {
-        isUnknownProject: () => () => isUnknownProject,
-        activeProjectOrigin: () => activeProjectOrigin,
+  const testingPinia = createTestingPinia({
+    stubActions: false,
+    createSpy: vi.fn,
+    initialState: {
+      application: {
+        openProjects,
+        activeProjectId,
       },
-      actions: { updateGlobalLoader: () => {}, forceCloseProjects },
     },
   });
 
-  store.state.spaces.projectPath.myProject1 = {
-    spaceProviderId: "mockProviderId",
-    spaceId: "mockSpaceId",
-    itemId: "bar",
-  };
+  const spacesStore = useSpacesStore(testingPinia);
+  const spaceCachingStore = useSpaceCachingStore(testingPinia);
+  const spaceProvidersStore = useSpaceProvidersStore(testingPinia);
+  const spaceAuthStore = useSpaceAuthStore(testingPinia);
+  const deploymentsStore = useDeploymentsStore(testingPinia);
+  const spaceOperationsStore = useSpaceOperationsStore(testingPinia);
+  const applicationStore = useApplicationStore(testingPinia);
+  // @ts-expect-error
+  applicationStore.isUnknownProject = () => isUnknownProject;
+  // @ts-expect-error
+  // eslint-disable-next-line no-undefined
+  applicationStore.activeProjectOrigin = activeProjectOrigin ?? undefined;
+
+  vi.mocked(applicationStore.forceCloseProjects).mockImplementation(
+    forceCloseProjects,
+  );
+  vi.mocked(
+    useGlobalLoaderStore(testingPinia).updateGlobalLoader,
+  ).mockImplementation(() => {});
+
+  spaceCachingStore.setProjectPath({
+    projectId: "myProject1",
+    value: {
+      spaceProviderId: "mockProviderId",
+      spaceId: "mockSpaceId",
+      itemId: "bar",
+    },
+  });
 
   mockedAPI.desktop.getSpaceProviders.mockImplementation(() => {
-    store.dispatch(
-      "spaces/setAllSpaceProviders",
+    spaceProvidersStore.setAllSpaceProviders(
+      // @ts-expect-error
       mockFetchAllProvidersResponse,
     );
   });
@@ -136,7 +165,14 @@ export const loadStore = ({
     mockListSchedulesForWorkflowResponse,
   );
 
-  const dispatchSpy = vi.spyOn(store, "dispatch");
-
-  return { store, dispatchSpy };
+  return {
+    testingPinia,
+    spacesStore,
+    spaceCachingStore,
+    spaceProvidersStore,
+    spaceAuthStore,
+    deploymentsStore,
+    spaceOperationsStore,
+    applicationStore,
+  };
 };

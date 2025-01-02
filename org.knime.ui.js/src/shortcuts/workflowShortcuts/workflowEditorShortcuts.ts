@@ -1,16 +1,17 @@
-import { API } from "@/api";
+import { API } from "@api";
+
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import { portPositions } from "@/util/portShift";
-import { getProjectAndWorkflowIds } from "../../store/workflow/util";
-import type {
-  ShortcutConditionContext,
-  ShortcutExecuteContext,
-  UnionToShortcutRegistry,
-} from "../types";
+import type { UnionToShortcutRegistry } from "../types";
 
 type WorkflowEditorShortcuts = UnionToShortcutRegistry<
   | "quickActionMenu"
@@ -27,32 +28,28 @@ const createAutoConnectionHandler =
       | typeof API.workflowCommand.AutoDisconnect,
     flowVariablePortsOnly: boolean = false,
   ) =>
-  ({ $store }: ShortcutExecuteContext) => {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(
-      $store.state.workflow,
-    );
+  () => {
+    const { projectId, workflowId } =
+      useWorkflowStore().getProjectAndWorkflowIds;
 
-    const selectedNodes: string[] = $store.getters["selection/selectedNodeIds"];
-
-    const selectedPortBars: Array<"out" | "in"> =
-      $store.getters["selection/selectedMetanodePortBars"];
+    const { selectedNodeIds, getSelectedMetanodePortBars: selectedPortBars } =
+      useSelectionStore();
 
     command({
       projectId,
       workflowId,
-      selectedNodes,
+      selectedNodes: selectedNodeIds,
       workflowInPortsBarSelected: selectedPortBars.includes("in"),
       workflowOutPortsBarSelected: selectedPortBars.includes("out"),
       flowVariablePortsOnly,
     });
   };
 
-const canAutoConnectOrDisconnect = ({ $store }: ShortcutConditionContext) => {
-  const selectedNodes: Array<KnimeNode> =
-    $store.getters["selection/selectedNodes"];
-
-  const selectedPortBars: Array<"out" | "in"> =
-    $store.getters["selection/selectedMetanodePortBars"];
+const canAutoConnectOrDisconnect = () => {
+  const {
+    getSelectedNodes: selectedNodes,
+    getSelectedMetanodePortBars: selectedPortBars,
+  } = useSelectionStore();
 
   const isSingleNodeSelected = selectedNodes.length === 1;
   const isAnyPortBarSelected = selectedPortBars.length !== 0;
@@ -68,10 +65,10 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     hotkey: ["CtrlOrCmd", "."],
     additionalHotkeys: [{ key: ["Ctrl", " " /* Space */], visible: false }],
     group: "workflowEditor",
-    execute: ({ $store, payload }) => {
+    execute: ({ payload }) => {
       // destruct current state
-      const positionFromContextMenu = payload?.metadata?.position;
-      const { isOpen, props } = $store.state.workflow.quickActionMenu;
+      const positionFromContextMenu = payload?.metadata?.position as XY;
+      const { isOpen, props } = useFloatingMenusStore().quickActionMenu;
 
       const {
         nodeId: lastNodeId,
@@ -83,21 +80,23 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       const lastPortIndex = port?.index ?? -1;
 
       // use the node of the currently open dialog because the node might not be selected in that case
-      const node: KnimeNode = isOpen
-        ? $store.getters["workflow/getNodeById"](lastNodeId)
-        : $store.getters["selection/singleSelectedNode"];
+      const node = isOpen
+        ? useNodeInteractionsStore().getNodeById(lastNodeId!)
+        : useSelectionStore().singleSelectedNode;
 
       // global menu without predecessor node
       if (node === null) {
         const position =
           positionFromContextMenu ??
           geometry.findFreeSpaceAroundCenterWithFallback({
-            visibleFrame: $store.getters["canvas/getVisibleFrame"](),
-            nodes: $store.state.workflow.activeWorkflow!.nodes,
+            visibleFrame: useCanvasStore().getVisibleFrame,
+            nodes: useWorkflowStore().activeWorkflow!.nodes,
           });
-        $store.dispatch("workflow/openQuickActionMenu", {
+
+        useFloatingMenusStore().openQuickActionMenu({
           props: { position },
         });
+
         return;
       }
 
@@ -141,8 +140,8 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
 
         return geometry.findFreeSpaceAroundPointWithFallback({
           startPoint,
-          visibleFrame: $store.getters["canvas/getVisibleFrame"](),
-          nodes: $store.state.workflow.activeWorkflow!.nodes,
+          visibleFrame: useCanvasStore().getVisibleFrame,
+          nodes: useWorkflowStore().activeWorkflow!.nodes,
         });
       };
 
@@ -155,11 +154,12 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
       const portSideChangesForCalculatedPosition =
         portSideWillChange && lastPositionOrigin !== "mouse";
       const useLastPosition = isOpen && !portSideChangesForCalculatedPosition;
-      const position = useLastPosition
-        ? lastPosition
-        : calculatePosition(node, portIndex, portCount);
+      const position =
+        useLastPosition && lastPosition
+          ? lastPosition
+          : calculatePosition(node, portIndex, portCount);
 
-      $store.dispatch("workflow/openQuickActionMenu", {
+      useFloatingMenusStore().openQuickActionMenu({
         props: {
           nodeId,
           port: nextPort,
@@ -169,7 +169,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
         },
       });
     },
-    condition: ({ $store }) => $store.getters["workflow/isWritable"],
+    condition: () => useWorkflowStore().isWritable,
   },
   autoConnectNodesDefault: {
     text: "Connect nodes",

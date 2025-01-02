@@ -1,18 +1,17 @@
 import { computed, onMounted, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { useHint } from "@knime/components";
 
-import { useStore } from "@/composables/useStore";
 import { HINTS } from "@/hints/hints.config";
+import { useCanvasStore } from "@/store/canvas";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 
 export const useKanvasHint = () => {
   const { createHint, isCompleted } = useHint();
 
-  const store = useStore();
-  const workflowHasNodes = computed(
-    () => store.getters["workflow/workflowHasNodes"],
-  );
+  const { workflowHasNodes, activeWorkflow } = storeToRefs(useWorkflowStore());
 
   const showHint = async () => {
     // we skip the search for the most center node if this thing is done already
@@ -20,8 +19,8 @@ export const useKanvasHint = () => {
       return;
     }
 
-    const nodes = store.state.workflow.activeWorkflow?.nodes;
-    const nodesWithOutPorts = Object.values(nodes ?? {}).filter(
+    const nodes = computed(() => activeWorkflow.value?.nodes);
+    const nodesWithOutPorts = Object.values(nodes.value ?? {}).filter(
       (node) => node.outPorts.length > 1,
     );
     const nodeObjects = nodesWithOutPorts.map(({ id, position }) => ({
@@ -31,7 +30,7 @@ export const useKanvasHint = () => {
       y: position.y,
     }));
 
-    const center = store.getters["canvas/getCenterOfScrollContainer"]();
+    const center = useCanvasStore().getCenterOfScrollContainer();
 
     const nearestObject = await workflowNavigationService.nearestObject({
       objects: nodeObjects,

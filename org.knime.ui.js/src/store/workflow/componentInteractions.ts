@@ -1,225 +1,235 @@
-import type { ActionTree, MutationTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
 import LoadIcon from "@knime/styles/img/icons/load.svg";
 
-import { API } from "@/api";
 import { UpdateLinkedComponentsResult } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
+import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToast";
-import type { RootStoreState } from "../types";
 
-import type { WorkflowState } from "./index";
-import { getProjectAndWorkflowIds } from "./util";
+import { useWorkflowStore } from "./workflow";
 
 const TOAST_ID_PREFIX = "LINK_UPDATE";
 const TOAST_HEADLINE = "Linked components";
+
 const $toast = getToastsProvider();
 
 const pluralize = (text: string, count: number) =>
   count > 1 ? `${text}s` : text;
 
-interface State {
+type ComponentInteractionsState = {
   processedUpdateNotifications: Record<string, boolean>;
-}
-declare module "./index" {
-  interface WorkflowState extends State {}
-}
-
-export const state = (): State => ({
-  processedUpdateNotifications: {},
-});
-
-export const mutations: MutationTree<WorkflowState> = {
-  setProcessedNotification(state, { projectId, value }) {
-    state.processedUpdateNotifications[projectId] = value;
-  },
 };
 
-export const actions: ActionTree<WorkflowState, RootStoreState> = {
-  async checkForLinkedComponentUpdates(
-    { state, commit, dispatch, getters },
-    { auto = false } = {},
-  ) {
-    const isWritable = getters.isWritable;
-    const shouldCheckForUpdates =
-      isWritable && state.activeWorkflow!.info.containsLinkedComponents;
-
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const hasAlreadyChecked = state.processedUpdateNotifications[projectId];
-
-    if (!shouldCheckForUpdates || (hasAlreadyChecked && auto)) {
-      return;
-    }
-
-    try {
-      const updatables = await API.workflow.getUpdatableLinkedComponents({
+export const useComponentInteractionsStore = defineStore(
+  "componentInteractions",
+  {
+    state: (): ComponentInteractionsState => ({
+      processedUpdateNotifications: {},
+    }),
+    actions: {
+      setProcessedNotification({
         projectId,
-        workflowId,
-      });
+        value,
+      }: {
+        projectId: string;
+        value: boolean;
+      }) {
+        this.processedUpdateNotifications[projectId] = value;
+      },
 
-      if (updatables.length === 0) {
-        if (!auto) {
-          $toast.show({
-            id: `${TOAST_ID_PREFIX}__ALL_UP_TO_DATE`,
-            type: "success",
-            headline: TOAST_HEADLINE,
-            message: "No updates available",
+      async linkComponent({ nodeId }: { nodeId: string }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+        const success = await API.desktop.openLinkComponentDialog({
+          projectId,
+          workflowId,
+          nodeId,
+        });
+        if (success) {
+          // Reload the space items if the component linking was successful
+          await useSpaceOperationsStore().fetchWorkflowGroupContent({
+            projectId,
           });
         }
+      },
 
-        return;
-      }
+      async unlinkComponent({ nodeId }: { nodeId: string }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+        await API.workflowCommand.UpdateComponentLinkInformation({
+          projectId,
+          workflowId,
+          nodeId,
+        });
+      },
 
-      const hasExecutedNodes = updatables.some(
-        (updatable) => updatable.isExecuted,
-      );
-      const nodeIds = updatables.map((updatable) => updatable.id);
+      changeHubItemVersion({ nodeId }: { nodeId: string }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+        API.desktop.openChangeComponentHubItemVersionDialog({
+          projectId,
+          workflowId,
+          nodeId,
+        });
+      },
 
-      const message = `You have ${nodeIds.length} ${pluralize(
-        "update",
-        nodeIds.length,
-      )} available`;
+      changeComponentLinkType({ nodeId }: { nodeId: string }) {
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+        API.desktop.openChangeComponentLinkTypeDialog({
+          projectId,
+          workflowId,
+          nodeId,
+        });
+      },
 
-      const withUpdateDisclaimer = hasExecutedNodes
-        ? `${message}. Reset ${pluralize(
-            "component",
+      clearComponentUpdateToasts() {
+        const $toast = getToastsProvider();
+        $toast.removeBy((toast) =>
+          (toast.id ?? "").startsWith(TOAST_ID_PREFIX),
+        );
+      },
+
+      clearProcessedUpdateNotification({ projectId }: { projectId: string }) {
+        this.setProcessedNotification({ projectId, value: false });
+      },
+
+      lockSubnode({ nodeId }: { nodeId: string }) {
+        const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
+        API.desktop.openLockSubnodeDialog({ projectId, nodeId });
+      },
+
+      unlockSubnode({ nodeId }: { nodeId: string }) {
+        const { projectId } = useWorkflowStore().getProjectAndWorkflowIds;
+        return API.desktop.unlockSubnode({ projectId, nodeId });
+      },
+
+      async checkForLinkedComponentUpdates({ auto = false } = {}) {
+        const workflowStore = useWorkflowStore();
+        const isWritable = workflowStore.isWritable;
+        const shouldCheckForUpdates =
+          isWritable &&
+          workflowStore.activeWorkflow!.info.containsLinkedComponents;
+
+        const { projectId, workflowId } =
+          workflowStore.getProjectAndWorkflowIds;
+        const hasAlreadyChecked = this.processedUpdateNotifications[projectId];
+
+        if (!shouldCheckForUpdates || (hasAlreadyChecked && auto)) {
+          return;
+        }
+
+        try {
+          const updatables = await API.workflow.getUpdatableLinkedComponents({
+            projectId,
+            workflowId,
+          });
+
+          if (updatables.length === 0) {
+            if (!auto) {
+              $toast.show({
+                id: `${TOAST_ID_PREFIX}__ALL_UP_TO_DATE`,
+                type: "success",
+                headline: TOAST_HEADLINE,
+                message: "No updates available",
+              });
+            }
+
+            return;
+          }
+
+          const hasExecutedNodes = updatables.some(
+            (updatable) => updatable.isExecuted,
+          );
+          const nodeIds = updatables.map((updatable) => updatable.id);
+
+          const message = `You have ${nodeIds.length} ${pluralize(
+            "update",
             nodeIds.length,
-          )} and update now?`
-        : message;
+          )} available`;
 
-      $toast.show({
-        id: `${TOAST_ID_PREFIX}__CHECKING`,
-        type: "warning",
-        headline: TOAST_HEADLINE,
-        message: withUpdateDisclaimer,
-        buttons: [
-          {
-            icon: LoadIcon,
-            text: hasExecutedNodes ? "Reset and update" : "Update",
-            callback: async () => {
-              await dispatch("clearComponentUpdateToasts");
-              await dispatch("updateComponents", { nodeIds });
+          const withUpdateDisclaimer = hasExecutedNodes
+            ? `${message}. Reset ${pluralize(
+                "component",
+                nodeIds.length,
+              )} and update now?`
+            : message;
+
+          $toast.show({
+            id: `${TOAST_ID_PREFIX}__CHECKING`,
+            type: "warning",
+            headline: TOAST_HEADLINE,
+            message: withUpdateDisclaimer,
+            buttons: [
+              {
+                icon: LoadIcon,
+                text: hasExecutedNodes ? "Reset and update" : "Update",
+                callback: async () => {
+                  this.clearComponentUpdateToasts();
+                  await this.updateComponents({ nodeIds });
+                },
+              },
+            ],
+            autoRemove: false,
+          });
+          this.setProcessedNotification({ projectId, value: true });
+        } catch (error) {
+          $toast.show({
+            id: `${TOAST_ID_PREFIX}__CHECKING_FAILED`,
+            type: "error",
+            headline: TOAST_HEADLINE,
+            message: "Problem checking for linked component updates",
+            autoRemove: false,
+          });
+        }
+      },
+
+      async updateComponents({ nodeIds }: { nodeIds: string[] }) {
+        const updateStartedToastId = $toast.show({
+          id: `${TOAST_ID_PREFIX}__STARTED`,
+          headline: TOAST_HEADLINE,
+          message: "Updating...",
+          autoRemove: false,
+        });
+
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+        const result = await API.workflowCommand.UpdateLinkedComponents({
+          projectId,
+          workflowId,
+          nodeIds,
+        });
+
+        $toast.remove(updateStartedToastId);
+
+        if (result.status === UpdateLinkedComponentsResult.StatusEnum.Error) {
+          showProblemDetailsErrorToast({
+            id: `${TOAST_ID_PREFIX}__ERROR`,
+            headline: TOAST_HEADLINE,
+            problemDetails: {
+              title: `Could not update the linked ${pluralize(
+                "component",
+                nodeIds.length,
+              )}. Try again later.`,
+              details: result.details,
             },
-          },
-        ],
-        autoRemove: false,
-      });
-      commit("setProcessedNotification", { projectId, value: true });
-    } catch (error) {
-      $toast.show({
-        id: `${TOAST_ID_PREFIX}__CHECKING_FAILED`,
-        type: "error",
-        headline: TOAST_HEADLINE,
-        message: "Problem checking for linked component updates",
-        autoRemove: false,
-      });
-    }
+          });
+        } else {
+          const message =
+            result.status === UpdateLinkedComponentsResult.StatusEnum.Success
+              ? "Updated."
+              : "Everything up-to-date.";
+          $toast.show({
+            headline: TOAST_HEADLINE,
+            message,
+            id: `${TOAST_ID_PREFIX}__SUCCESS`,
+            type: "success",
+            autoRemove: true,
+          });
+        }
+      },
+    },
   },
-
-  async updateComponents({ state }, { nodeIds }) {
-    const updateStartedToastId = $toast.show({
-      id: `${TOAST_ID_PREFIX}__STARTED`,
-      headline: TOAST_HEADLINE,
-      message: "Updating...",
-      autoRemove: false,
-    });
-
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const result = await API.workflowCommand.UpdateLinkedComponents({
-      projectId,
-      workflowId,
-      nodeIds,
-    });
-
-    $toast.remove(updateStartedToastId);
-
-    if (result.status === UpdateLinkedComponentsResult.StatusEnum.Error) {
-      showProblemDetailsErrorToast({
-        id: `${TOAST_ID_PREFIX}__ERROR`,
-        headline: TOAST_HEADLINE,
-        problemDetails: {
-          title: `Could not update the linked ${pluralize(
-            "component",
-            nodeIds.length,
-          )}. Try again later.`,
-          details: result.details,
-        },
-      });
-    } else {
-      const message =
-        result.status === UpdateLinkedComponentsResult.StatusEnum.Success
-          ? "Updated."
-          : "Everything up-to-date.";
-      $toast.show({
-        headline: TOAST_HEADLINE,
-        message,
-        id: `${TOAST_ID_PREFIX}__SUCCESS`,
-        type: "success",
-        autoRemove: true,
-      });
-    }
-  },
-
-  async linkComponent({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const success = await API.desktop.openLinkComponentDialog({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-    if (success) {
-      // Reload the page if the component linking was successful
-      await this.dispatch(
-        "spaces/fetchWorkflowGroupContent",
-        { projectId },
-        { root: true },
-      );
-    }
-  },
-
-  async unlinkComponent({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    await API.workflowCommand.UpdateComponentLinkInformation({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-  },
-
-  changeHubItemVersion({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    API.desktop.openChangeComponentHubItemVersionDialog({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-  },
-
-  changeComponentLinkType({ state }, { nodeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    API.desktop.openChangeComponentLinkTypeDialog({
-      projectId,
-      workflowId,
-      nodeId,
-    });
-  },
-
-  clearComponentUpdateToasts() {
-    const $toast = getToastsProvider();
-    $toast.removeBy((toast) => (toast.id ?? "").startsWith(TOAST_ID_PREFIX));
-  },
-
-  clearProcessedUpdateNotification({ commit }, { projectId }) {
-    commit("setProcessedNotification", { projectId, value: false });
-  },
-
-  lockSubnode({ state }, { nodeId }) {
-    const { projectId } = getProjectAndWorkflowIds(state);
-    API.desktop.openLockSubnodeDialog({ projectId, nodeId });
-  },
-
-  unlockSubnode({ state }, { nodeId }) {
-    const { projectId } = getProjectAndWorkflowIds(state);
-    return API.desktop.unlockSubnode({ projectId, nodeId });
-  },
-};
+);

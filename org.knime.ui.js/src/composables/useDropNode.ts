@@ -1,8 +1,9 @@
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
+import { useCanvasStore } from "@/store/canvas";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
-
-import { useStore } from "./useStore";
 
 export const KNIME_MIME = "application/vnd.knime.ap.noderepo+json";
 
@@ -10,9 +11,9 @@ export const useDropNode = () => {
   const isKnimeNode = (event: DragEvent) =>
     event.dataTransfer?.types.includes(KNIME_MIME);
 
-  const store = useStore();
-
-  const isWritable = computed(() => store.getters["workflow/isWritable"]);
+  const { isWritable } = storeToRefs(useWorkflowStore());
+  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
+  const { addNode } = useNodeInteractionsStore();
 
   const onDrop = async (event: DragEvent) => {
     if (isWritable.value) {
@@ -23,13 +24,13 @@ export const useDropNode = () => {
       }
 
       const nodeFactory = JSON.parse(data);
-      const [x, y] = store.getters["canvas/screenToCanvasCoordinates"]([
+      const [x, y] = screenToCanvasCoordinates.value([
         event.clientX - $shapes.nodeSize / 2,
         event.clientY - $shapes.nodeSize / 2,
       ]);
 
       try {
-        await store.dispatch("workflow/addNode", {
+        await addNode({
           position: { x, y },
           nodeFactory,
         });

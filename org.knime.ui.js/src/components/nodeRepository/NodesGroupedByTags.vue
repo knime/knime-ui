@@ -1,5 +1,5 @@
-<script lang="ts">
-import { type PropType, defineComponent } from "vue";
+<script setup lang="ts">
+import { computed, ref } from "vue";
 
 import { Tag } from "@knime/components";
 
@@ -11,59 +11,54 @@ import NodeList, { type NavReachedEvent } from "./NodeList.vue";
 
 const TAG_LIMIT = 8;
 
-export default defineComponent({
-  components: {
-    DraggableNodeTemplate,
-    NodeList,
-    Tag,
-  },
-  props: {
-    tag: {
-      type: String,
-      required: true,
+interface Props {
+  tag: string;
+  nodes?: NodeTemplateWithExtendedPorts[];
+  displayMode?: NodeRepositoryDisplayModesType;
+  selectedNode?: NodeTemplateWithExtendedPorts | null;
+  showDescriptionForNode?: NodeTemplateWithExtendedPorts | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  nodes: () => [],
+  displayMode: "icon",
+  selectedNode: null,
+  showDescriptionForNode: null,
+});
+
+defineEmits<{
+  selectTag: [tag: string];
+  showNodeDescription: [
+    payload: {
+      nodeTemplate: NodeTemplateWithExtendedPorts;
+      isHighlighted: boolean;
+      isSelected: boolean;
+      isDescriptionActive: boolean;
+      displayMode: NodeRepositoryDisplayModesType;
     },
-    nodes: {
-      type: Array as PropType<NodeTemplateWithExtendedPorts[]>,
-      default: () => [],
-    },
-    displayMode: {
-      type: String as PropType<NodeRepositoryDisplayModesType>,
-      default: "icon",
-    },
-    selectedNode: {
-      type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
-      default: null,
-    },
-    showDescriptionForNode: {
-      type: Object as PropType<NodeTemplateWithExtendedPorts | null>,
-      default: null,
-    },
-  },
-  expose: ["focusFirst", "focusLast"],
-  emits: [
-    "selectTag",
-    "showNodeDescription",
-    "update:selectedNode",
-    "itemEnterKey",
-    "helpKey",
-    "navReachedEnd",
-    "navReachedTop",
-  ],
-  computed: {
-    hasMoreNodes() {
-      return this.nodes.length >= TAG_LIMIT;
-    },
-  },
-  methods: {
-    focusFirst(navReached?: NavReachedEvent) {
-      const nodeList = this.$refs.nodeList as InstanceType<typeof NodeList>;
-      nodeList?.focusFirst(navReached);
-    },
-    focusLast(navReached?: NavReachedEvent) {
-      const nodeList = this.$refs.nodeList as InstanceType<typeof NodeList>;
-      nodeList?.focusLast(navReached);
-    },
-  },
+  ];
+  "update:selectedNode": [node: NodeTemplateWithExtendedPorts | null];
+  itemEnterKey: [node: NodeTemplateWithExtendedPorts];
+  helpKey: [node: NodeTemplateWithExtendedPorts];
+  navReachedEnd: [event: NavReachedEvent];
+  navReachedTop: [event: NavReachedEvent];
+}>();
+
+const nodeList = ref<InstanceType<typeof NodeList>>();
+
+const hasMoreNodes = computed(() => props.nodes.length >= TAG_LIMIT);
+
+const focusFirst = (navReached?: NavReachedEvent) => {
+  nodeList.value?.focusFirst(navReached);
+};
+
+const focusLast = (navReached?: NavReachedEvent) => {
+  nodeList.value?.focusLast(navReached);
+};
+
+defineExpose({
+  focusFirst,
+  focusLast,
 });
 </script>
 

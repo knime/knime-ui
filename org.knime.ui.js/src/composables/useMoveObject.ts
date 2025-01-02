@@ -1,11 +1,14 @@
-import { type ComputedRef, type Ref, computed } from "vue";
+import { type ComputedRef, type Ref } from "vue";
+import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-
-import { useStore } from "./useStore";
 
 interface UseMoveObjectOptions {
   objectElement?: ComputedRef<HTMLElement | null>;
@@ -23,16 +26,14 @@ const defaultOptions: Required<Omit<UseMoveObjectOptions, "objectElement">> = {
 };
 
 export const useMoveObject = (options: UseMoveObjectOptions) => {
-  const store = useStore();
-
-  const hasAbortedDrag = computed(() => store.state.workflow.hasAbortedDrag);
-  const isWritable = computed(() => store.getters["workflow/isWritable"]);
-
-  const zoomFactor = computed(() => store.state.canvas.zoomFactor);
-  const isMoveLocked = computed(() => store.state.canvas.isMoveLocked);
-  const screenToCanvasCoordinates = computed(
-    () => store.getters["canvas/screenToCanvasCoordinates"],
+  const movingStore = useMovingStore();
+  const { hasAbortedDrag, isDragging } = storeToRefs(movingStore);
+  const { isMoveLocked, screenToCanvasCoordinates, zoomFactor } = storeToRefs(
+    useCanvasStore(),
   );
+  const { isWritable } = storeToRefs(useWorkflowStore());
+  const selectionStore = useSelectionStore();
+  const { shouldHideSelection } = storeToRefs(selectionStore);
 
   const onMoveStartCallback =
     options.onMoveStartCallback || defaultOptions.onMoveStartCallback;
@@ -143,8 +144,8 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
 
         onMoveCallback(pointerMoveEvent);
 
-        if (!store.state.selection.shouldHideSelection) {
-          store.commit("selection/setShouldHideSelection", true);
+        if (!shouldHideSelection.value) {
+          selectionStore.setShouldHideSelection(true);
         }
 
         const snapFn = useGridSnapping
@@ -160,10 +161,10 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           snapSize,
         );
 
-        if (!store.state.workflow.isDragging) {
-          store.commit("workflow/setIsDragging", true);
+        if (!isDragging.value) {
+          movingStore.setIsDragging(true);
         }
-        store.commit("workflow/setMovePreview", {
+        movingStore.setMovePreview({
           deltaX: deltaX + startPosition.positionDelta.x,
           deltaY: deltaY + startPosition.positionDelta.y,
         });
@@ -178,17 +179,17 @@ export const useMoveObject = (options: UseMoveObjectOptions) => {
           const shouldMove = await onMoveEndCallback(pointerUpEvent);
           try {
             if (shouldMove && !hasAbortedDrag.value) {
-              await store.dispatch("workflow/moveObjects");
+              await movingStore.moveObjects();
             }
           } catch (error) {
             consola.error("Error moving objects", error);
-            await store.dispatch("workflow/resetDragState");
+            movingStore.resetDragState();
           } finally {
-            store.commit("selection/setShouldHideSelection", false);
+            selectionStore.setShouldHideSelection(false);
           }
 
           if (hasAbortedDrag.value) {
-            await store.dispatch("workflow/resetAbortDrag");
+            movingStore.resetAbortDrag();
           }
 
           eventTarget.releasePointerCapture(pointerDownEvent.pointerId);

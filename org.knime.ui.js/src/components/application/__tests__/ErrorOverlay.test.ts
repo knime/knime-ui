@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick, version } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { Button } from "@knime/components";
 
-import { API } from "@/api";
 import { deepMocked } from "@/test/utils";
 import { copyErrorReportToClipboard } from "@/util/copyErrorReportToClipboard";
 import ErrorOverlay from "../ErrorOverlay.vue";

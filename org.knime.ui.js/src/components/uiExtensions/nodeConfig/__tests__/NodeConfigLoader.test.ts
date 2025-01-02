@@ -6,6 +6,7 @@ import {
   flushPromises,
   mount,
 } from "@vue/test-utils";
+import { API } from "@api";
 
 import { type Alert } from "@knime/ui-extension-renderer/api";
 import {
@@ -13,12 +14,11 @@ import {
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
+import { Node } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
-import * as applicationStore from "@/store/application";
-import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
-import { deepMocked, mockVuexStore, mockedObject } from "@/test/utils";
+import { deepMocked, mockedObject } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { setRestApiBaseUrl } from "../../common/useResourceLocation";
 import NodeConfigLoader from "../NodeConfigLoader.vue";
 
@@ -44,7 +44,7 @@ describe("NodeConfigLoader.vue", () => {
     allowedActions: {
       canExecute: false,
     },
-    hasDialog: true,
+    dialogType: Node.DialogTypeEnum.Web,
   });
 
   afterEach(() => {
@@ -63,18 +63,18 @@ describe("NodeConfigLoader.vue", () => {
   };
 
   const doMount = ({ props, slots }: MountOpts = {}) => {
-    const $store = mockVuexStore({
-      application: applicationStore,
-      nodeConfiguration: nodeConfigurationStore,
-    });
+    const mockedStores = mockStores();
 
     const wrapper = mount(NodeConfigLoader, {
       props: { ...defaultProps, ...props },
-      global: { plugins: [$store], stubs: { UIExtension: true } },
+      global: {
+        plugins: [mockedStores.testingPinia],
+        stubs: { UIExtension: true },
+      },
       slots,
     });
 
-    return { wrapper, $store };
+    return { wrapper, mockedStores };
   };
 
   it("should load nodeDialog on mount", () => {
@@ -165,9 +165,9 @@ describe("NodeConfigLoader.vue", () => {
         },
       });
       setRestApiBaseUrl("API_URL_BASE");
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
-      $store.commit("application/setActiveProjectId", "project1");
+      mockedStores.applicationStore.setActiveProjectId("project1");
 
       const apiLayer = getApiLayer(wrapper);
 
@@ -209,13 +209,15 @@ describe("NodeConfigLoader.vue", () => {
 
     it("implements publishData", async () => {
       mockGetNodeDialog();
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
-      expect($store.state.nodeConfiguration.latestPublishedData).toBeNull();
+      expect(
+        mockedStores.nodeConfigurationStore.latestPublishedData,
+      ).toBeNull();
 
       const apiLayer = getApiLayer(wrapper);
       apiLayer.publishData({ mock: "data" });
-      expect($store.state.nodeConfiguration.latestPublishedData).toEqual({
+      expect(mockedStores.nodeConfigurationStore.latestPublishedData).toEqual({
         data: {
           mock: "data",
         },
@@ -227,28 +229,28 @@ describe("NodeConfigLoader.vue", () => {
 
     it("implements registerPushEventService", async () => {
       mockGetNodeDialog();
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
 
       const dispatcher = () => {};
 
-      expect($store.state.nodeConfiguration.pushEventDispatcher).not.toBe(
+      expect(mockedStores.nodeConfigurationStore.pushEventDispatcher).not.toBe(
         dispatcher,
       );
 
       const apiLayer = getApiLayer(wrapper);
       apiLayer.registerPushEventService({ dispatchPushEvent: dispatcher });
-      expect($store.state.nodeConfiguration.pushEventDispatcher).toBe(
+      expect(mockedStores.nodeConfigurationStore.pushEventDispatcher).toBe(
         dispatcher,
       );
     });
 
     it("implements onDirtyStateChange", async () => {
       mockGetNodeDialog();
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
 
-      expect($store.state.nodeConfiguration.dirtyState).toEqual({
+      expect(mockedStores.nodeConfigurationStore.dirtyState).toEqual({
         apply: "clean",
         view: "clean",
       });
@@ -261,21 +263,20 @@ describe("NodeConfigLoader.vue", () => {
       } as const;
       apiLayer.onDirtyStateChange(newState);
 
-      expect($store.state.nodeConfiguration.dirtyState).toEqual(newState);
+      expect(mockedStores.nodeConfigurationStore.dirtyState).toEqual(newState);
     });
 
     it("implements onApplied", async () => {
       mockGetNodeDialog();
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       await flushPromises();
-      const dispatchSpy = vi.spyOn($store, "dispatch");
+
       const apiLayer = getApiLayer(wrapper);
       apiLayer.onApplied({ isApplied: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "nodeConfiguration/setApplyComplete",
-        true,
-      );
+      expect(
+        mockedStores.nodeConfigurationStore.setApplyComplete,
+      ).toHaveBeenCalledWith(true);
     });
 
     it("implements setControlsVisibility", async () => {

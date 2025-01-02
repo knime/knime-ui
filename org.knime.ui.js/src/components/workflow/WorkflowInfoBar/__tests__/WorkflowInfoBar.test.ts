@@ -6,11 +6,8 @@ import {
   SpaceItemReference,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import { createWorkflow } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { setEnvironment } from "@/test/utils/setEnvironment";
 import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
 import StreamingInfo from "../StreamingInfo.vue";
@@ -21,27 +18,20 @@ describe("WorkflowInfoBar.vue", () => {
     workflow,
     origin,
   }: { workflow?: Workflow; origin?: SpaceItemReference } = {}) => {
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      application: {
-        ...applicationStore,
-        getters: {
-          ...applicationStore.getters,
-          activeProjectOrigin: () => origin || null,
-        },
-      },
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("workflow/setActiveWorkflow", workflow ?? createWorkflow());
+    mockedStores.workflowStore.setActiveWorkflow(workflow ?? createWorkflow());
+
+    // @ts-ignore
+    mockedStores.applicationStore.activeProjectOrigin = origin || null;
 
     const wrapper = mount(WorkflowInfoBar, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper, ...mockedStores };
   };
 
   it("should render info bar for linked workflows", () => {

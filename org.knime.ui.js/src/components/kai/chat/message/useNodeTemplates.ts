@@ -2,7 +2,7 @@ import { type Ref, ref, watch } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import { KaiMessage } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import type {
   ExtensionWithNodes,
   Extensions,
@@ -26,11 +26,10 @@ const useNodeTemplates = ({
   nodes: Ref<NodeWithExtensionInfo[]>;
   callback: () => void;
 }) => {
+  const { getNodeTemplates } = useNodeTemplatesStore();
   // Reactive references to hold the node templates.
   const nodeTemplates = ref<NodeTemplateWithExtendedPorts[]>([]);
   const uninstalledExtensions = ref<Extensions>({});
-
-  const store = useStore();
 
   watch(
     nodes,
@@ -64,10 +63,9 @@ const useNodeTemplates = ({
 
       const nodeTemplateIds = nodes.value.map(({ factoryId }) => factoryId);
 
-      const { found, missing } = (await store.dispatch(
-        "nodeTemplates/getNodeTemplates",
-        { nodeTemplateIds },
-      )) as {
+      const { found, missing } = (await getNodeTemplates({
+        nodeTemplateIds,
+      })) as {
         found: Record<string, NodeTemplateWithExtendedPorts>;
         missing: string[];
       };

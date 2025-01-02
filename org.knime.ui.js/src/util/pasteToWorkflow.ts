@@ -1,6 +1,5 @@
-import type { Store } from "vuex";
+import { API } from "@api";
 
-import { API } from "@/api";
 import type { Workflow } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { nodeSize } from "@/style/shapes";
@@ -77,19 +76,17 @@ export const pastePartsAt = ({
   visibleFrame,
   clipboardContent,
   isWorkflowEmpty,
-  dispatch,
 }: {
   visibleFrame: GeometryBounds;
   clipboardContent: { objectBounds: GeometryBounds };
   isWorkflowEmpty: boolean;
-  dispatch: Store<any>["dispatch"];
 }) => {
   /* Workflow is empty */
   if (isWorkflowEmpty) {
     consola.info("workflow is empty: paste to center");
     return {
       position: centerStrategy({ visibleFrame, clipboardContent }),
-      doAfterPaste: () => dispatch("canvas/fillScreen", null, { root: true }),
+      fillScreenAfterPaste: true,
     };
   }
 

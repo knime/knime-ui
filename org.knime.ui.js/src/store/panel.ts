@@ -1,11 +1,11 @@
+import { defineStore } from "pinia";
+
+import { useApplicationStore } from "@/store/application/application";
+import { useWorkflowStore } from "@/store/workflow/workflow";
+
 /**
  * Store that manages the global state of the side-panel (tabs plus expanding drawer).
  */
-
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
-
-import type { RootStoreState } from "./types";
-
 export const TABS = {
   CONTEXT_AWARE_DESCRIPTION: "description",
   NODE_REPOSITORY: "nodeRepository",
@@ -23,68 +23,72 @@ export interface PanelState {
   isExtensionPanelOpen: boolean;
 }
 
-export const state = (): PanelState => ({
-  expanded: true,
-  activeTab: {},
-  isExtensionPanelOpen: false,
-});
-
-export const actions: ActionTree<PanelState, RootStoreState> = {
-  setCurrentProjectActiveTab({ commit, rootState }, activeTab) {
-    const projectId = rootState.application.activeProjectId;
-    if (projectId === null) {
-      return;
-    }
-    commit("setActiveTab", { projectId, activeTab });
-  },
-
-  openExtensionPanel({ commit }) {
-    commit("setExtensionPanelOpen", true);
-  },
-
-  closeExtensionPanel({ commit }) {
-    commit("setExtensionPanelOpen", false);
-  },
-};
-
-export const mutations: MutationTree<PanelState> = {
-  setActiveTab(state, { projectId, activeTab }) {
-    state.activeTab = {
-      ...state.activeTab,
-      [projectId]: activeTab,
-    };
-    state.expanded = true;
-  },
-  toggleExpanded(state) {
-    state.expanded = !state.expanded;
-  },
-  closePanel(state) {
-    state.expanded = false;
-  },
-  setExtensionPanelOpen(state, val) {
-    state.isExtensionPanelOpen = val;
-  },
-};
-
-export const getters: GetterTree<PanelState, RootStoreState> = {
-  isTabActive(state, _, rootState, rootGetters) {
-    const isWorkflowEmpty = rootGetters["workflow/isWorkflowEmpty"];
-    const { activeProjectId } = rootState.application;
-
-    return (tabName: TabValues) => {
-      const getDefaultTab = () => {
-        return isWorkflowEmpty
-          ? TABS.NODE_REPOSITORY
-          : TABS.CONTEXT_AWARE_DESCRIPTION;
+export const usePanelStore = defineStore("panel", {
+  state: (): PanelState => ({
+    expanded: true,
+    activeTab: {},
+    isExtensionPanelOpen: false,
+  }),
+  actions: {
+    setActiveTab({
+      projectId,
+      activeTab,
+    }: {
+      projectId: string;
+      activeTab: TabValues;
+    }) {
+      this.activeTab = {
+        ...this.activeTab,
+        [projectId]: activeTab,
       };
+      this.expanded = true;
+    },
 
-      if (!activeProjectId) {
-        return false;
+    toggleExpanded() {
+      this.expanded = !this.expanded;
+    },
+
+    closePanel() {
+      this.expanded = false;
+    },
+
+    setCurrentProjectActiveTab(activeTab: TabValues) {
+      const projectId = useApplicationStore().activeProjectId;
+
+      if (projectId === null) {
+        return;
       }
 
-      const _activeTab = state.activeTab[activeProjectId] || getDefaultTab();
+      this.setActiveTab({ projectId, activeTab });
+    },
 
-      return _activeTab === tabName;
-    };
+    openExtensionPanel() {
+      this.isExtensionPanelOpen = true;
+    },
+
+    closeExtensionPanel() {
+      this.isExtensionPanelOpen = false;
+    },
   },
-};
+  getters: {
+    isTabActive(state) {
+      return (tabName: TabValues) => {
+        const activeProjectId = useApplicationStore().activeProjectId;
+
+        const getDefaultTab = () => {
+          return useWorkflowStore().isWorkflowEmpty
+            ? TABS.NODE_REPOSITORY
+            : TABS.CONTEXT_AWARE_DESCRIPTION;
+        };
+
+        if (!activeProjectId) {
+          return false;
+        }
+
+        const _activeTab = state.activeTab[activeProjectId] || getDefaultTab();
+
+        return _activeTab === tabName;
+      };
+    },
+  },
+});

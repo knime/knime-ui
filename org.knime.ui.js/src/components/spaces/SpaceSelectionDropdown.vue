@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
@@ -10,7 +11,9 @@ import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
-import { useStore } from "@/composables/useStore";
+import { useSpaceAuthStore } from "@/store/spaces/auth";
+import { useSpaceCachingStore } from "@/store/spaces/caching";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { isLocalProvider, isServerProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
 
@@ -22,12 +25,23 @@ interface Props {
   projectId: string;
 }
 
-const store = useStore();
 const props = withDefaults(defineProps<Props>(), { showText: true });
-const { toastPresets } = getToastPresets();
+
+const { projectPath } = storeToRefs(useSpaceCachingStore());
+const { setProjectPath } = useSpaceCachingStore();
+const { connectProvider } = useSpaceAuthStore();
+const {
+  spaceProviders,
+  isConnectingToProvider,
+  loadingProviderSpacesData,
+  getProviderInfoFromProjectPath,
+  getSpaceInfo,
+} = storeToRefs(useSpaceProvidersStore());
 
 const { getSpaceIcon, getSpaceProviderIcon, getSpaceGroupIcon } =
   useSpaceIcons();
+
+const { toastPresets } = getToastPresets();
 
 type SingleSpaceProviderMetadata = {
   type: "single-space-provider";
@@ -76,12 +90,12 @@ const isClickableItem = (
   return ["space", "sign-in", "single-space-provider"].includes(metadata.type);
 };
 
-const setProjectPath = (
+const setProjectPathFn = (
   projectId: string,
   spaceProviderId: string,
   spaceId: string,
 ) => {
-  store.commit("spaces/setProjectPath", {
+  setProjectPath({
     projectId,
     value: {
       spaceId,
@@ -102,7 +116,7 @@ const onSpaceChange = async ({
 
   // just load content if we are already connected
   if (!isSignInItem(metadata!)) {
-    setProjectPath(projectId, metadata.spaceProviderId, metadata.space.id);
+    setProjectPathFn(projectId, metadata.spaceProviderId, metadata.space.id);
     return;
   }
 
@@ -110,39 +124,34 @@ const onSpaceChange = async ({
 
   try {
     // handle sign in request
-    const { isConnected, providerData } = await store.dispatch(
-      "spaces/connectProvider",
-      { spaceProviderId },
-    );
-
-    const { spaces: [firstSpace = null] = [] } = providerData ?? {};
+    const { isConnected, providerData } = await connectProvider({
+      spaceProviderId,
+    });
 
     if (!isConnected) {
       return;
     }
 
+    const firstSpace = providerData.spaceGroups.at(0)?.spaces.at(0);
+
     // change to first space if we have one
     if (firstSpace) {
-      setProjectPath(projectId, spaceProviderId!, firstSpace.id);
+      setProjectPathFn(projectId, spaceProviderId!, firstSpace.id);
     }
   } catch (error) {
     consola.error("Failed to sign in from SpaceSelectionDropdown", { error });
 
     const providerName =
-      store.state.spaces.spaceProviders?.[spaceProviderId]?.name ?? "remote";
+      spaceProviders.value?.[spaceProviderId]?.name ?? "remote";
 
     toastPresets.spaces.auth.connectFailed({ error, providerName });
   }
 };
 
-const activeSpacePath = computed(
-  () => store.state.spaces.projectPath[props.projectId],
-);
+const activeSpacePath = projectPath.value[props.projectId];
 
-const spaceProviders = computed(() => {
-  const spaceProviders = Object.values(store.state.spaces.spaceProviders ?? {});
-
-  return spaceProviders.map((provider) => {
+const spaceProvidersWithGroups = computed(() => {
+  return Object.values(spaceProviders.value ?? {}).map((provider) => {
     const restructuredSpaceGroups: SpaceProviderNS.SpaceGroup[] = [];
 
     (provider.spaceGroups ?? []).forEach((group) => {
@@ -216,8 +225,8 @@ const spaceToMenuItem =
       // eslint-disable-next-line no-undefined
       icon: getIcon() ?? undefined,
       selected:
-        provider.id === activeSpacePath.value?.spaceProviderId &&
-        space.id === activeSpacePath.value?.spaceId,
+        provider.id === activeSpacePath?.spaceProviderId &&
+        space.id === activeSpacePath?.spaceId,
       metadata: {
         type: "space",
         spaceProviderId: provider.id,
@@ -237,12 +246,11 @@ const createMenuEntries = (
     provider.type === SpaceProviderNS.TypeEnum.HUB;
 
   return groups.map((group) => {
-    const isActiveProvider =
-      provider.id === activeSpacePath.value?.spaceProviderId;
+    const isActiveProvider = provider.id === activeSpacePath?.spaceProviderId;
 
     if (shouldHaveChildren()) {
       const isActiveSpaceInGroup = group.spaces.some(
-        (space) => space.id === activeSpacePath.value?.spaceId,
+        (space) => space.id === activeSpacePath?.spaceId,
       );
 
       return {
@@ -276,7 +284,7 @@ const createMenuEntries = (
 };
 
 const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
-  const providers = Object.values(spaceProviders.value ?? {});
+  const providers = Object.values(spaceProvidersWithGroups.value ?? {});
 
   const getHeadline = (
     provider: SpaceProviderNS.SpaceProvider,
@@ -297,12 +305,9 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
   const getProviderMenuEntries = (
     provider: SpaceProviderNS.SpaceProvider,
   ): MenuItem[] => {
-    const { isConnectingToProvider, loadingProviderSpacesData } =
-      store.state.spaces;
-
     const isLoading =
-      isConnectingToProvider === provider.id ||
-      loadingProviderSpacesData[provider.id];
+      isConnectingToProvider.value === provider.id ||
+      loadingProviderSpacesData.value[provider.id];
 
     if (isLoading) {
       return [
@@ -362,12 +367,10 @@ const selectedText = computed(() => {
 });
 
 const spaceIcon = computed(() => {
-  const provider = store.getters["spaces/getProviderInfoFromProjectPath"](
-    props.projectId,
-  );
-  const activeSpaceInfo = store.getters["spaces/getSpaceInfo"](props.projectId);
-  const isLocal = isLocalProvider(provider);
-  const isServer = isServerProvider(provider);
+  const provider = getProviderInfoFromProjectPath.value(props.projectId);
+  const activeSpaceInfo = getSpaceInfo.value(props.projectId);
+  const isLocal = provider ? isLocalProvider(provider) : false;
+  const isServer = provider ? isServerProvider(provider) : false;
 
   if (isLocal) {
     return ComputerDesktopIcon;

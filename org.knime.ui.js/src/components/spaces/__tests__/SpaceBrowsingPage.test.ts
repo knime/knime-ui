@@ -1,22 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 import { useRoute } from "vue-router";
 
 import { FileExplorer } from "@knime/components";
 
-import { API } from "@/api";
 import { SpaceProviderNS } from "@/api/custom-types";
 import { SpaceItem } from "@/api/gateway-api/generated-api";
 import { router } from "@/router/router";
-import * as applicationStore from "@/store/application";
-import * as spacesStore from "@/store/spaces";
-import { globalSpaceBrowserProjectId } from "@/store/spaces";
+import { globalSpaceBrowserProjectId } from "@/store/spaces/common";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { deepMocked, mockVuexStore } from "@/test/utils";
+import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import SpaceExplorer from "../SpaceExplorer.vue";
 import SpacePageHeader from "../SpacePageHeader.vue";
 
@@ -109,47 +108,33 @@ describe("SpaceBrowsingPage.vue", () => {
     });
   });
 
-  const doMount = async ({
-    initialStoreState = {},
-    customProviders = {},
-  } = {}) => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-      application: applicationStore,
-    });
+  const doMount = async ({ customProviders = {} } = {}) => {
+    const mockedStores = mockStores();
 
-    $store.commit("spaces/setSpaceProviders", {
+    mockedStores.spaceProvidersStore.setSpaceProviders({
       [spaceProvider.id]: spaceProvider,
       ...customProviders,
     });
 
-    $store.state.spaces = {
-      ...$store.state.spaces,
-      ...{
-        projectPath: {
-          [globalSpaceBrowserProjectId]: {
-            spaceId: "local",
-            spaceProviderId: "local",
-            itemId: "root",
-          },
-        },
+    mockedStores.spaceCachingStore.projectPath = {
+      [globalSpaceBrowserProjectId]: {
+        spaceId: "local",
+        spaceProviderId: "local",
+        itemId: "root",
       },
-      ...initialStoreState,
     };
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
 
     const SpaceBrowsingPage = (await import("../SpaceBrowsingPage.vue"))
       .default;
 
     const wrapper = mount(SpaceBrowsingPage, {
       global: {
-        plugins: [$store, router],
+        plugins: [mockedStores.testingPinia, router],
         mocks: { $shortcuts: { get: vi.fn(() => ({})) } },
       },
     });
 
-    return { wrapper, $store, dispatchSpy };
+    return { wrapper, mockedStores };
   };
 
   it("should render correctly", async () => {
@@ -227,14 +212,14 @@ describe("SpaceBrowsingPage.vue", () => {
   });
 
   it("should rename a space", async () => {
-    const { wrapper, dispatchSpy } = await doMount();
+    const { wrapper, mockedStores } = await doMount();
 
     const headerComponent = wrapper.findComponent(SpacePageHeader);
     expect(headerComponent.props("isEditable")).toBe(true);
 
     headerComponent.vm.$emit("submit", "testName");
 
-    expect(dispatchSpy).toHaveBeenCalledWith("spaces/renameSpace", {
+    expect(mockedStores.spaceOperationsStore.renameSpace).toHaveBeenCalledWith({
       spaceProviderId: spaceProvider.id,
       spaceId: spaceGroup.spaces.at(0)!.id,
       spaceName: "testName",

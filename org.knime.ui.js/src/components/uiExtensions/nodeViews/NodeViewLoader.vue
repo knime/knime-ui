@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, toRaw, toRefs, watch } from "vue";
+import { API } from "@api";
+import { storeToRefs } from "pinia";
 
 import type {
   Alert,
@@ -10,9 +12,8 @@ import {
   type UIExtensionAPILayer,
 } from "@knime/ui-extension-renderer/vue";
 
-import { API } from "@/api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
-import { useStore } from "@/composables/useStore";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import ExecuteButton from "../ExecuteButton.vue";
 import type { ExtensionConfig, UIExtensionLoadingState } from "../common/types";
 import { useResourceLocation } from "../common/useResourceLocation";
@@ -34,7 +35,7 @@ const props = defineProps<Props>();
 
 // Even though there's a store usage, this component should be limited to
 // using only the nodeConfiguration store, to keep it as context-less as possible
-const store = useStore();
+const nodeConfigurationStore = useNodeConfigurationStore();
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
@@ -160,9 +161,8 @@ const apiLayer: UIExtensionAPILayer = {
 
 const { uniqueNodeViewId } = useUniqueNodeStateId(toRefs(props));
 
-const latestPublishedData = computed(
-  () => store.state.nodeConfiguration.latestPublishedData,
-);
+const { latestPublishedData, dirtyState } = storeToRefs(nodeConfigurationStore);
+
 const latestPublishedDataForThisNode = computed(() => {
   if (latestPublishedData.value === null) {
     return null;
@@ -178,10 +178,8 @@ const latestPublishedDataForThisNode = computed(() => {
   return data;
 });
 
-const dirtyState = computed(() => store.state.nodeConfiguration.dirtyState);
-
 const applySettings = (nodeId: string, execute?: boolean) => {
-  store.dispatch("nodeConfiguration/applySettings", { nodeId, execute });
+  nodeConfigurationStore.applySettings({ nodeId, execute });
 };
 
 watch(

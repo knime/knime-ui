@@ -1,153 +1,146 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
 import type { WorkflowAnnotation, XY } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "../types";
+import { useSelectionStore } from "@/store/selection";
 
-import type { WorkflowState } from "./index";
-import { getProjectAndWorkflowIds } from "./util";
+import { useWorkflowStore } from "./workflow";
 
-interface State {
+type MovingState = {
   isDragging: boolean;
   hasAbortedDrag: boolean;
   movePreviewDelta: XY;
-}
-
-declare module "./index" {
-  interface WorkflowState extends State {}
-}
-
-export const state = (): State => ({
-  isDragging: false,
-  hasAbortedDrag: false,
-  // TODO: rename to `translationDelta`
-  movePreviewDelta: { x: 0, y: 0 },
-});
-
-export const mutations: MutationTree<WorkflowState> = {
-  // Shifts the position of the node for the provided amount
-  setMovePreview(state, { deltaX, deltaY }) {
-    state.movePreviewDelta.x = deltaX;
-    state.movePreviewDelta.y = deltaY;
-  },
-
-  // Reset the position of the move deltas
-  resetMovePreview(state) {
-    state.movePreviewDelta = { x: 0, y: 0 };
-  },
-
-  setHasAbortedDrag(state, value) {
-    state.hasAbortedDrag = value;
-  },
-
-  setIsDragging(state, value) {
-    state.isDragging = value;
-  },
 };
 
-export const actions: ActionTree<WorkflowState, RootStoreState> = {
-  abortDrag({ commit }) {
-    commit("setHasAbortedDrag", true);
-    commit("setMovePreview", { deltaX: 0, deltaY: 0 });
-    commit("setIsDragging", false);
-  },
+export const useMovingStore = defineStore("moving", {
+  state: (): MovingState => ({
+    isDragging: false,
+    hasAbortedDrag: false,
+    // TODO: rename to `translationDelta`
+    movePreviewDelta: { x: 0, y: 0 },
+  }),
+  actions: {
+    // Shifts the position of the node for the provided amount
+    setMovePreview({ deltaX, deltaY }: { deltaX: number; deltaY: number }) {
+      this.movePreviewDelta.x = deltaX;
+      this.movePreviewDelta.y = deltaY;
+    },
 
-  resetAbortDrag({ commit }) {
-    commit("setHasAbortedDrag", false);
-  },
+    // Reset the position of the move deltas
+    resetMovePreview() {
+      this.movePreviewDelta = { x: 0, y: 0 };
+    },
 
-  resetDragState({ commit }) {
-    commit("setMovePreview", { deltaX: 0, deltaY: 0 });
-    commit("setIsDragging", false);
-  },
-  /**
-   * Calls the API to save the position of the nodes after the move is over
-   */
-  async moveObjects({ state, rootGetters, rootState, dispatch }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const selectedNodeIds = rootGetters["selection/selectedNodeIds"];
-    const selectedAnnotationIds =
-      rootGetters["selection/selectedAnnotationIds"];
-    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
-    const metanodePortBars = rootGetters["selection/selectedMetanodePortBars"];
+    setHasAbortedDrag(hasAbortedDrag: boolean) {
+      this.hasAbortedDrag = hasAbortedDrag;
+    },
 
-    const translation = {
-      x: state.movePreviewDelta.x,
-      y: state.movePreviewDelta.y,
-    };
+    setIsDragging(isDragging: boolean) {
+      this.isDragging = isDragging;
+    },
 
-    if (translation.x === 0 && translation.y === 0) {
-      await dispatch("resetDragState");
-      return;
-    }
+    abortDrag() {
+      this.setHasAbortedDrag(true);
+      this.setMovePreview({ deltaX: 0, deltaY: 0 });
+      this.setIsDragging(false);
+    },
 
-    // do optimistic updates
-    const selectedNodes = rootGetters["selection/selectedNodes"];
-    selectedNodes.forEach((node: KnimeNode) => {
-      node.position.x += translation.x;
-      node.position.y += translation.y;
-    });
+    resetAbortDrag() {
+      this.setHasAbortedDrag(false);
+    },
 
-    const selectedAnnotations = rootGetters["selection/selectedAnnotations"];
-    selectedAnnotations.forEach((annotation: WorkflowAnnotation) => {
-      annotation.bounds.x += translation.x;
-      annotation.bounds.y += translation.y;
-    });
+    resetDragState() {
+      this.setMovePreview({ deltaX: 0, deltaY: 0 });
+      this.setIsDragging(false);
+    },
+    /**
+     * Calls the API to save the position of the nodes after the move is over
+     */
+    async moveObjects() {
+      const selectionStore = useSelectionStore();
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+      const selectedNodeIds = selectionStore.selectedNodeIds;
+      const selectedAnnotationIds = selectionStore.selectedAnnotationIds;
+      const connectionBendpoints = selectionStore.getSelectedBendpoints;
+      const metanodePortBars = selectionStore.getSelectedMetanodePortBars;
 
-    if (metanodePortBars.includes("in")) {
-      const metaInBounds =
-        rootState.workflow.activeWorkflow?.metaInPorts?.bounds;
-      if (!metaInBounds) {
+      const translation = {
+        x: this.movePreviewDelta.x,
+        y: this.movePreviewDelta.y,
+      };
+
+      if (translation.x === 0 && translation.y === 0) {
+        this.resetDragState();
         return;
       }
-      metaInBounds.x += translation.x;
-      metaInBounds.y += translation.y;
-    }
 
-    if (metanodePortBars.includes("out")) {
-      const metaOutBounds =
-        rootState.workflow.activeWorkflow?.metaOutPorts?.bounds;
-      if (!metaOutBounds) {
-        return;
-      }
-      metaOutBounds.x += translation.x;
-      metaOutBounds.y += translation.y;
-    }
+      // do optimistic updates
+      const selectedNodes = selectionStore.getSelectedNodes;
+      selectedNodes.forEach((node: KnimeNode) => {
+        node.position.x += translation.x;
+        node.position.y += translation.y;
+      });
 
-    Object.keys(connectionBendpoints).forEach((connectionId: string) => {
-      connectionBendpoints[connectionId].forEach((selectedIndex: number) => {
-        const connection =
-          rootState.workflow?.activeWorkflow?.connections[connectionId];
-        const bendpoint = connection?.bendpoints?.[selectedIndex];
+      const selectedAnnotations = selectionStore.getSelectedAnnotations;
+      selectedAnnotations.forEach((annotation: WorkflowAnnotation) => {
+        annotation.bounds.x += translation.x;
+        annotation.bounds.y += translation.y;
+      });
 
-        if (!bendpoint) {
+      if (metanodePortBars.includes("in")) {
+        const metaInBounds =
+          useWorkflowStore().activeWorkflow?.metaInPorts?.bounds;
+        if (!metaInBounds) {
           return;
         }
-        bendpoint.x += translation.x;
-        bendpoint.y += translation.y;
-      });
-    });
+        metaInBounds.x += translation.x;
+        metaInBounds.y += translation.y;
+      }
 
-    // reset drag state
-    await dispatch("resetDragState");
+      if (metanodePortBars.includes("out")) {
+        const metaOutBounds =
+          useWorkflowStore().activeWorkflow?.metaOutPorts?.bounds;
+        if (!metaOutBounds) {
+          return;
+        }
+        metaOutBounds.x += translation.x;
+        metaOutBounds.y += translation.y;
+      }
 
-    // send data to backend
-    try {
-      await API.workflowCommand.Translate({
-        projectId,
-        workflowId,
-        nodeIds: selectedNodeIds,
-        annotationIds: selectedAnnotationIds,
-        connectionBendpoints,
-        metanodeInPortsBar: metanodePortBars.includes("in"),
-        metanodeOutPortsBar: metanodePortBars.includes("out"),
-        translation,
+      Object.keys(connectionBendpoints).forEach((connectionId: string) => {
+        connectionBendpoints[connectionId].forEach((selectedIndex: number) => {
+          const connection =
+            useWorkflowStore()?.activeWorkflow?.connections[connectionId];
+          const bendpoint = connection?.bendpoints?.[selectedIndex];
+
+          if (!bendpoint) {
+            return;
+          }
+          bendpoint.x += translation.x;
+          bendpoint.y += translation.y;
+        });
       });
-    } catch (e) {
-      consola.log("The following error occurred: ", e);
-    }
+
+      // reset drag state
+      this.resetDragState();
+
+      // send data to backend
+      try {
+        await API.workflowCommand.Translate({
+          projectId,
+          workflowId,
+          nodeIds: selectedNodeIds,
+          annotationIds: selectedAnnotationIds,
+          connectionBendpoints,
+          metanodeInPortsBar: metanodePortBars.includes("in"),
+          metanodeOutPortsBar: metanodePortBars.includes("out"),
+          translation,
+        });
+      } catch (e) {
+        consola.log("The following error occurred: ", e);
+      }
+    },
   },
-};
-
-export const getters: GetterTree<WorkflowState, RootStoreState> = {};
+});

@@ -52,13 +52,13 @@ const isKnownNode = computed(() => {
     <NodeTorsoForbidden v-if="type === 'Forbidden'" />
     <NodeTorsoMetanode
       v-else-if="kind === 'metanode'"
-      :execution-state="executionState"
+      :execution-state="executionState!"
     />
     <NodeTorsoNormal
       v-else-if="isKnownNode"
       :is-component="kind === 'component'"
-      :icon="icon"
-      :type="type"
+      :icon="icon!"
+      :type="type!"
     />
     <NodeTorsoUnknown v-else />
     <!-- Not using conditional rendering, DOM modifications will trigger DragLeave event -->

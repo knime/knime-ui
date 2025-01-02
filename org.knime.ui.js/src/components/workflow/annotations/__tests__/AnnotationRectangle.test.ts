@@ -4,7 +4,7 @@ import { mount } from "@vue/test-utils";
 
 import { $bus } from "@/plugins/event-bus";
 import * as $colors from "@/style/colors";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import AnnotationRectangle from "../AnnotationRectangle.vue";
 
 const $shortcuts = {
@@ -21,27 +21,17 @@ vi.mock("@/plugins/shortcuts", () => ({
 describe("AnnotationRectangle", () => {
   const doMount = ({ pointerId = 1 } = {}) => {
     const props = {};
-    const switchCanvasModeMock = vi.fn();
 
-    const storeConfig = {
-      canvas: {
-        getters: {
-          screenToCanvasCoordinates: () =>
-            vi.fn().mockImplementation(([x, y]) => [x, y]),
-        },
-      },
-      application: {
-        actions: {
-          switchCanvasMode: switchCanvasModeMock,
-        },
-      },
-    };
+    const mockedStores = mockStores();
+    // @ts-ignore
+    mockedStores.canvasStore.screenToCanvasCoordinates = vi
+      .fn()
+      .mockImplementation(([x, y]) => [x, y]);
 
-    const $store = mockVuexStore(storeConfig);
     const wrapper = mount(AnnotationRectangle, {
       props,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: {
           $colors,
           $bus,
@@ -103,12 +93,10 @@ describe("AnnotationRectangle", () => {
     return {
       wrapper,
       props,
-      $store,
-      storeConfig,
+      mockedStores,
       pointerDown,
       pointerUp,
       pointerMove,
-      switchCanvasModeMock,
     };
   };
 
@@ -128,7 +116,7 @@ describe("AnnotationRectangle", () => {
   });
 
   it("toggles annotationMode on pointerUp", async () => {
-    const { wrapper, pointerDown, pointerUp, switchCanvasModeMock } = doMount();
+    const { wrapper, pointerDown, pointerUp, mockedStores } = doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
     await nextTick();
@@ -138,17 +126,12 @@ describe("AnnotationRectangle", () => {
     pointerUp();
     await nextTick();
 
-    expect(switchCanvasModeMock).toHaveBeenCalled();
+    expect(mockedStores.canvasModesStore.switchCanvasMode).toHaveBeenCalled();
   });
 
   it("creates correct annotation on pointerUp", async () => {
-    const {
-      wrapper,
-      pointerDown,
-      pointerUp,
-      switchCanvasModeMock,
-      pointerMove,
-    } = doMount();
+    const { wrapper, pointerDown, pointerUp, mockedStores, pointerMove } =
+      doMount();
 
     pointerDown({ clientX: 0, clientY: 0 });
     await nextTick();
@@ -159,7 +142,7 @@ describe("AnnotationRectangle", () => {
     pointerUp();
     await nextTick();
 
-    expect(switchCanvasModeMock).toHaveBeenCalled();
+    expect(mockedStores.canvasModesStore.switchCanvasMode).toHaveBeenCalled();
     expect($shortcuts.dispatch).toHaveBeenCalledWith(
       "addWorkflowAnnotation",
       expect.objectContaining({

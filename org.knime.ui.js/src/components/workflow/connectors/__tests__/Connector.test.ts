@@ -10,19 +10,14 @@ import {
 } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { API } from "@api";
 import gsap from "gsap";
 import { mockUserAgent } from "jest-useragent-mock";
-import type { Store } from "vuex";
 
-import { API } from "@/api";
+import type { Workflow } from "@/api/custom-types";
 import { PortType } from "@/api/gateway-api/generated-api";
 import { KNIME_MIME } from "@/composables/useDropNode";
 import { $bus } from "@/plugins/event-bus";
-import * as applicationStore from "@/store/application";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-import * as selectionStore from "@/store/selection";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
@@ -34,7 +29,7 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-import { mockVuexStore } from "@/test/utils/mockVuexStore";
+import { mockStores } from "@/test/utils/mockStores";
 import * as connectorPath from "@/util/connectorPath";
 import * as portShift from "@/util/portShift";
 import Connector from "../Connector.vue";
@@ -60,44 +55,27 @@ describe("Connector.vue", () => {
     vi.clearAllMocks();
   });
 
-  const createStore = ({ workflow = null, extraModules = {} } = {}) => {
-    const $store = mockVuexStore({
-      application: {
-        ...applicationStore,
-        actions: {
-          ...applicationStore.actions,
-          toggleContextMenu: vi.fn(),
+  const createStore = ({ workflow }: { workflow?: Workflow } = {}) => {
+    const mockedStores = mockStores();
+    mockedStores.applicationStore.availablePortTypes = createAvailablePortTypes(
+      {
+        portType1: {
+          color: "#9B9B9B",
+          compatibleTypes: ["portType1"],
+          kind: PortType.KindEnum.Other,
+          name: "name 1",
         },
-        state: {
-          ...applicationStore.state(),
-          availablePortTypes: createAvailablePortTypes({
-            portType1: {
-              color: "#9B9B9B",
-              compatibleTypes: ["portType1"],
-              kind: PortType.KindEnum.Other,
-              name: "name 1",
-            },
-            portType2: {
-              color: "#9B9B9B",
-              compatibleTypes: ["portType2"],
-              kind: PortType.KindEnum.Other,
-              name: "name 2",
-            },
-          }),
+        portType2: {
+          color: "#9B9B9B",
+          compatibleTypes: ["portType2"],
+          kind: PortType.KindEnum.Other,
+          name: "name 2",
         },
       },
-      selection: selectionStore,
-      workflow: workflowStore,
-      nodeTemplates: nodeTemplatesStore,
-      canvas: {
-        state: { zoomFactor: 1 },
-        getters: {
-          screenToCanvasCoordinates: vi.fn().mockReturnValue(() => [5, 5]),
-        },
-      },
-      uiControls: uiControlsStore,
-      ...extraModules,
-    });
+    );
+
+    // @ts-ignore
+    mockedStores.canvasStore.screenToCanvasCoordinates = vi.fn(() => [5, 5]);
 
     const { sourceNode, destNode, connection } = createConnectedNodes(
       createNativeNode({
@@ -131,8 +109,7 @@ describe("Connector.vue", () => {
       },
     });
 
-    $store.commit(
-      "workflow/setActiveWorkflow",
+    mockedStores.workflowStore.setActiveWorkflow(
       workflow || {
         ..._workflow,
         projectId: "project1",
@@ -140,7 +117,7 @@ describe("Connector.vue", () => {
     );
 
     return {
-      $store,
+      mockedStores,
       connection,
       sourceNode,
       destNode,
@@ -148,27 +125,26 @@ describe("Connector.vue", () => {
   };
 
   const doMount = ({
-    props = null,
-    customStore = null,
+    props,
+    customStores,
   }: {
-    props?: Partial<ConnectorProps> | null;
-    customStore?: Store<any> | null;
+    props?: Partial<ConnectorProps>;
+    customStores?: ReturnType<typeof mockStores>;
   } = {}) => {
-    const { $store: _$store, connection } = createStore();
+    const { mockedStores: _mockedStores, connection } = createStore();
 
-    const $store = customStore || _$store;
-    const dispatchSpy = vi.spyOn($store, "dispatch");
+    const mockedStores = customStores || _mockedStores;
 
     const wrapper = mount(Connector, {
       props: { ...connection, ...props } as ConnectorProps,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: { $colors, $shapes, $bus },
       },
       attachTo: document.body,
     });
 
-    return { wrapper, $store, dispatchSpy, connection };
+    return { wrapper, mockedStores, connection };
   };
 
   it("should set data attribute for connection id", () => {
@@ -192,9 +168,12 @@ describe("Connector.vue", () => {
         [connection.id]: connection,
       },
     });
-    const { $store } = createStore({ workflow });
+    const { mockedStores } = createStore({ workflow });
 
-    const { wrapper } = doMount({ customStore: $store, props: connection });
+    const { wrapper } = doMount({
+      customStores: mockedStores,
+      props: connection,
+    });
     expect(wrapper.attributes("data-connector-id")).toBeDefined();
     expect(wrapper.attributes("data-connector-id")).toBe("root:4_0");
   });
@@ -221,9 +200,12 @@ describe("Connector.vue", () => {
           [connection.id]: connection,
         },
       });
-      const { $store } = createStore({ workflow });
+      const { mockedStores } = createStore({ workflow });
 
-      const { wrapper } = doMount({ customStore: $store, props: connection });
+      const { wrapper } = doMount({
+        customStores: mockedStores,
+        props: connection,
+      });
       expect(portShiftMock).toHaveBeenCalledWith(0, 1, false, true);
       expect(portShiftMock).toHaveBeenCalledWith(0, 1, true, false);
       expect(wrapper.find("path").attributes().d).toBe(
@@ -239,112 +221,103 @@ describe("Connector.vue", () => {
     });
 
     it("selects the connection", async () => {
-      const { wrapper, dispatchSpy, connection } = doMount();
+      const { wrapper, mockedStores, connection } = doMount();
       await wrapper.find("g path").trigger("click", { button: 0 });
 
-      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectConnection",
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
         connection.id,
       );
     });
 
     it("left click with control on Mac opens context menu", async () => {
       mockUserAgent("mac");
-      const { wrapper, dispatchSpy, connection } = doMount();
+      const { wrapper, mockedStores, connection } = doMount();
       await wrapper
         .find("g path")
         .trigger("pointerdown", { button: 0, ctrlKey: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectConnection",
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
         connection.id,
       );
     });
 
     it("right click selects the connection", async () => {
-      const { wrapper, dispatchSpy, connection } = doMount();
+      const { wrapper, mockedStores, connection } = doMount();
       await wrapper.find("g path").trigger("pointerdown", { button: 2 });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith("selection/deselectAllObjects");
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectConnection",
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
         connection.id,
       );
     });
 
     it("shift-click adds to selection", async () => {
-      const { wrapper, dispatchSpy, connection } = doMount();
+      const { wrapper, mockedStores, connection } = doMount();
       await wrapper
         .find("g path")
         .trigger("click", { button: 0, shiftKey: true });
 
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "selection/deselectConnection",
-        expect.anything(),
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectConnection",
+      expect(
+        mockedStores.selectionStore.deselectConnection,
+      ).not.toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
         connection.id,
       );
     });
 
     it("shift-click and right click add to selection", async () => {
-      const { wrapper, dispatchSpy, connection } = doMount();
+      const { wrapper, mockedStores, connection } = doMount();
       await wrapper
         .find("g path")
         .trigger("pointerdown", { button: 2, shiftKey: true });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "application/toggleContextMenu",
-        expect.anything(),
-      );
-      expect(dispatchSpy).not.toHaveBeenCalledWith(
-        "selection/deselectConnection",
-        expect.anything(),
-      );
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "selection/selectConnection",
+      expect(
+        mockedStores.applicationStore.toggleContextMenu,
+      ).toHaveBeenCalled();
+      expect(
+        mockedStores.selectionStore.deselectConnection,
+      ).not.toHaveBeenCalled();
+      expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
         connection.id,
       );
     });
 
     it("shift-click removes from selection", async () => {
-      const { wrapper, $store, connection } = doMount();
+      const { wrapper, mockedStores, connection } = doMount();
 
-      await $store.dispatch("selection/selectConnection", connection.id);
-      expect($store.state.selection.selectedConnections).not.toEqual({});
+      mockedStores.selectionStore.selectConnection(connection.id);
+      expect(mockedStores.selectionStore.selectedConnections).not.toEqual({});
 
       await wrapper
         .find("g path")
         .trigger("click", { button: 0, shiftKey: true });
 
-      expect($store.state.selection.selectedConnections).toEqual({});
+      expect(mockedStores.selectionStore.selectedConnections).toEqual({});
     });
 
     it("draws no grab cursor if write protected", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.workflow.activeWorkflow.info.linked = true;
+      const { wrapper, mockedStores } = doMount();
+      mockedStores.workflowStore.activeWorkflow!.info.linked = true;
       await nextTick();
 
       expect(wrapper.find(".read-only").exists()).toBe(true);
     });
 
     it("draws dashed lines when streaming", async () => {
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { streaming: true },
       });
 
-      $store.state.workflow.activeWorkflow.jobManager = {};
+      // @ts-ignore
+      mockedStores.workflowStore.activeWorkflow!.jobManager = {};
       await nextTick();
 
       expect(wrapper.find(".dashed").exists()).toBe(true);
@@ -376,24 +349,26 @@ describe("Connector.vue", () => {
     });
 
     it("highlights connection if source node is selected", async () => {
-      const { wrapper, $store, connection } = doMount();
-      await $store.dispatch("selection/selectNode", connection.sourceNode);
+      const { wrapper, mockedStores, connection } = doMount();
+      mockedStores.selectionStore.selectNode(connection.sourceNode);
+      await nextTick();
       const classes = wrapper.findAll("path")[1].classes();
       expect(classes.includes("highlighted")).toBe(true);
     });
 
     it("highlights connection if destination node is selected", async () => {
-      const { wrapper, $store, connection } = doMount();
-      await $store.dispatch("selection/selectNode", connection.destNode);
+      const { wrapper, mockedStores, connection } = doMount();
+      mockedStores.selectionStore.selectNode(connection.destNode);
+      await nextTick();
       const classes = wrapper.findAll("path")[1].classes();
       expect(classes.includes("highlighted")).toBe(true);
     });
 
-    it("does not highlight connections if a connection is selected", async () => {
-      const { wrapper, $store, connection } = doMount();
+    it("does not highlight connections if a connection is selected", () => {
+      const { wrapper, mockedStores, connection } = doMount();
 
-      await $store.dispatch("selection/selectNode", connection.destNode);
-      await $store.dispatch("selection/selectConnection", "root:2_0");
+      mockedStores.selectionStore.selectNode(connection.destNode);
+      mockedStores.selectionStore.selectConnection("root:2_0");
 
       const classes = wrapper.findAll("path")[1].classes();
       expect(classes).not.toContain("highlighted");
@@ -436,23 +411,14 @@ describe("Connector.vue", () => {
         },
       });
 
-      const { $store } = createStore({
-        workflow,
-        extraModules: {
-          canvas: {
-            getters: {
-              contentBounds() {
-                return {
-                  top: 33,
-                  height: 1236,
-                };
-              },
-            },
-          },
-        },
-      });
+      const { mockedStores } = createStore({ workflow });
+      // @ts-ignore
+      mockedStores.canvasStore.contentBounds = {
+        top: 33,
+        height: 1236,
+      };
 
-      doMount({ customStore: $store });
+      doMount({ customStores: mockedStores });
 
       expect(connectorPathSpy).toHaveBeenCalledWith(
         104.5,
@@ -585,7 +551,7 @@ describe("Connector.vue", () => {
       wrapper.trigger("indicate-replacement", { detail: { state: false } });
       await nextTick();
 
-      wrapper.vm.$root.$emit("connector-dropped");
+      wrapper.vm.$root!.$emit("connector-dropped");
       await nextTick();
 
       expect(
@@ -618,91 +584,88 @@ describe("Connector.vue", () => {
     };
 
     it("highlights if dragged object is type and port compatible", async () => {
-      const { $store, connection } = createStore({
-        extraModules: {
-          nodeTemplates: {
-            state: {
-              isDraggingNodeTemplate: true,
-              draggedTemplateData: {
-                inPorts: [portMock],
-                outPorts: [portMock],
-              },
-            },
-          },
-        },
-      });
+      const { mockedStores, connection } = createStore();
+      mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
+      mockedStores.nodeTemplatesStore.draggedTemplateData = {
+        // @ts-ignore
+        inPorts: [portMock],
+        // @ts-ignore
+        outPorts: [portMock],
+      };
 
-      const { wrapper } = doMount({ customStore: $store, props: connection });
+      const { wrapper } = doMount({
+        customStores: mockedStores,
+        props: connection,
+      });
       const paths = wrapper.findAll("path");
 
-      triggerDragEvent(paths.at(0).element, "dragenter", {
+      triggerDragEvent(paths.at(0)!.element, "dragenter", {
         types: [KNIME_MIME],
       });
       await nextTick();
-      expect(paths.at(1).classes()).toContain("is-dragged-over");
+      expect(paths.at(1)!.classes()).toContain("is-dragged-over");
 
-      triggerDragEvent(paths.at(0).element, "dragleave");
+      triggerDragEvent(paths.at(0)!.element, "dragleave");
       await nextTick();
-      expect(paths.at(1).classes()).not.toContain("is-dragged-over");
+      expect(paths.at(1)!.classes()).not.toContain("is-dragged-over");
     });
 
     it("ignores dragged repository node without compatible ports", async () => {
-      const { $store, connection } = createStore({
-        extraModules: {
-          nodeTemplates: {
-            state: {
-              isDraggingNodeTemplate: true,
-              draggedTemplateData: {
-                inPorts: [{ ...portMock, typeId: "portType2" }],
-                outPorts: [{ ...portMock, typeId: "portType2" }],
-              },
-            },
-          },
-        },
-      });
+      const { mockedStores, connection } = createStore();
 
-      const { wrapper } = doMount({ customStore: $store, props: connection });
+      mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
+      mockedStores.nodeTemplatesStore.draggedTemplateData = {
+        // @ts-ignore
+        inPorts: [{ ...portMock, typeId: "portType2" }],
+        // @ts-ignore
+        outPorts: [{ ...portMock, typeId: "portType2" }],
+      };
+
+      const { wrapper } = doMount({
+        customStores: mockedStores,
+        props: connection,
+      });
       const paths = wrapper.findAll("path");
 
-      triggerDragEvent(paths.at(0).element, "dragenter", {
+      triggerDragEvent(paths.at(0)!.element, "dragenter", {
         types: [KNIME_MIME],
       });
       await nextTick();
-      expect(paths.at(1).classes()).not.toContain("is-dragged-over");
+      expect(paths.at(1)!.classes()).not.toContain("is-dragged-over");
     });
 
     it("ignores dragged repository node if workflow is not writable", async () => {
-      const { $store, connection } = createStore({
-        extraModules: {
-          nodeTemplates: {
-            state: {
-              isDraggingNodeTemplate: true,
-              draggedTemplateData: {
-                inPorts: [portMock],
-                outPorts: [portMock],
-              },
-            },
-          },
-        },
-      });
-      // make workflow non-writable
-      $store.state.workflow.activeWorkflow.info.linked = true;
+      const { mockedStores, connection } = createStore();
 
-      const { wrapper } = doMount({ customStore: $store, props: connection });
+      mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
+      mockedStores.nodeTemplatesStore.draggedTemplateData = {
+        // @ts-ignore
+        inPorts: [portMock],
+        // @ts-ignore
+        outPorts: [portMock],
+      };
+
+      // make workflow non-writable
+      mockedStores.workflowStore.activeWorkflow!.info.linked = true;
+
+      const { wrapper } = doMount({
+        customStores: mockedStores,
+        props: connection,
+      });
       const paths = wrapper.findAll("path");
 
-      triggerDragEvent(paths.at(0).element, "dragenter", {
+      triggerDragEvent(paths.at(0)!.element, "dragenter", {
         types: [KNIME_MIME],
       });
       await nextTick();
-      expect(paths.at(1).classes()).not.toContain("is-dragged-over");
+      expect(paths.at(1)!.classes()).not.toContain("is-dragged-over");
     });
 
     it("inserts node on drop", async () => {
       const { wrapper } = doMount();
       const paths = wrapper.findAll("path");
 
-      triggerDragEvent(paths.at(0).element, "drop", {
+      triggerDragEvent(paths.at(0)!.element, "drop", {
         getData: () => '{ "className": "test" }',
       });
       await nextTick();
@@ -711,21 +674,21 @@ describe("Connector.vue", () => {
         nodeFactory: { className: "test" },
         connectionId: "root:2_0",
         position: { x: 5, y: 5 },
-        nodeId: null,
-        projectId: expect.anything(),
-        workflowId: expect.anything(),
+        nodeId: undefined,
+        projectId: "project1",
+        workflowId: "root",
       });
     });
 
     it("does not insert node on drop if workflow is not writable", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
       // make workflow non-writable
-      $store.state.workflow.activeWorkflow.info.linked = true;
+      mockedStores.workflowStore.activeWorkflow!.info.linked = true;
 
       await nextTick();
       const paths = wrapper.findAll("path");
 
-      triggerDragEvent(paths.at(0).element, "drop", {
+      triggerDragEvent(paths.at(0)!.element, "drop", {
         getData: () => '{ "className": "test" }',
       });
       await nextTick();
@@ -737,7 +700,7 @@ describe("Connector.vue", () => {
       const { wrapper } = doMount();
 
       const paths = wrapper.findAll("path");
-      paths.at(0).trigger("node-dragging-enter", {
+      paths.at(0)!.trigger("node-dragging-enter", {
         detail: {
           isNodeConnected: true,
           inPorts: [portMock],
@@ -745,28 +708,27 @@ describe("Connector.vue", () => {
         },
       });
 
-      expect(paths.at(1).classes()).not.toContain("is-dragged-over");
+      expect(paths.at(1)!.classes()).not.toContain("is-dragged-over");
     });
 
     it("ignores dragged workflow node without compatible ports", () => {
-      const { $store, connection } = createStore({
-        extraModules: {
-          nodeTemplates: {
-            state: {
-              isDraggingNodeTemplate: true,
-              draggedTemplateData: {
-                inPorts: [{ ...portMock, typeId: "portType2" }],
-                outPorts: [{ ...portMock, typeId: "portType2" }],
-              },
-            },
-          },
-        },
+      const { mockedStores, connection } = createStore();
+
+      mockedStores.nodeTemplatesStore.isDraggingNodeTemplate = true;
+      mockedStores.nodeTemplatesStore.draggedTemplateData = {
+        // @ts-ignore
+        inPorts: [{ ...portMock, typeId: "portType2" }],
+        // @ts-ignore
+        outPorts: [{ ...portMock, typeId: "portType2" }],
+      };
+
+      const { wrapper } = doMount({
+        customStores: mockedStores,
+        props: connection,
       });
 
-      const { wrapper } = doMount({ customStore: $store, props: connection });
-
       const paths = wrapper.findAll("path");
-      paths.at(0).trigger("node-dragging-enter", {
+      paths.at(0)!.trigger("node-dragging-enter", {
         detail: {
           isNodeConnected: true,
           inPorts: [portMock],
@@ -774,14 +736,14 @@ describe("Connector.vue", () => {
         },
       });
 
-      expect(paths.at(1).classes()).not.toContain("is-dragged-over");
+      expect(paths.at(1)!.classes()).not.toContain("is-dragged-over");
     });
 
     it("inserts existing dragged node", async () => {
       const { wrapper } = doMount();
 
       const paths = wrapper.findAll("path");
-      paths.at(0).trigger("node-dragging-enter", {
+      paths.at(0)!.trigger("node-dragging-enter", {
         detail: {
           isNodeConnected: false,
           inPorts: [portMock],
@@ -789,19 +751,19 @@ describe("Connector.vue", () => {
         },
       });
       await nextTick();
-      expect(paths.at(1).classes()).toContain("is-dragged-over");
+      expect(paths.at(1)!.classes()).toContain("is-dragged-over");
 
-      paths.at(0).trigger("node-dragging-end", {
+      paths.at(0)!.trigger("node-dragging-end", {
         detail: { id: "test", clientX: 0, clientY: 0 },
       });
 
       expect(mockedAPI.workflowCommand.InsertNode).toHaveBeenCalledWith({
-        nodeFactory: null,
+        nodeFactory: undefined,
         connectionId: "root:2_0",
         position: { x: 5, y: 5 },
         nodeId: "test",
-        projectId: expect.anything(),
-        workflowId: expect.anything(),
+        projectId: "project1",
+        workflowId: "root",
       });
     });
 
@@ -811,7 +773,7 @@ describe("Connector.vue", () => {
       });
 
       const paths = wrapper.findAll("path");
-      paths.at(0).trigger("node-dragging-enter", {
+      paths.at(0)!.trigger("node-dragging-enter", {
         detail: {
           isNodeConnected: false,
           inPorts: [portMock],
@@ -820,7 +782,7 @@ describe("Connector.vue", () => {
       });
 
       const errorCallback = vi.fn();
-      paths.at(0).trigger("node-dragging-end", {
+      paths.at(0)!.trigger("node-dragging-end", {
         detail: {
           id: "test",
           clientX: 0,
@@ -863,9 +825,9 @@ describe("Connector.vue", () => {
           [connection.id]: connection,
         },
       });
-      const { $store } = createStore({ workflow });
+      const { mockedStores } = createStore({ workflow });
 
-      return doMount({ customStore: $store, props: connection });
+      return doMount({ customStores: mockedStores, props: connection });
     };
 
     it("renders multiple bendpoints", () => {
@@ -914,7 +876,7 @@ describe("Connector.vue", () => {
           return;
         }
 
-        const previousSegment = segmentComponents.at(i - 1).props("segment");
+        const previousSegment = segmentComponents.at(i - 1)!.props("segment");
 
         expect(segment.start).toEqual(previousSegment.end);
         expect(segment.isStart).toBe(false);
@@ -923,14 +885,14 @@ describe("Connector.vue", () => {
     });
 
     it("handles dragging bendpoints", async () => {
-      const { wrapper, $store, dispatchSpy } = doMountWithBendpoints();
+      const { wrapper, mockedStores } = doMountWithBendpoints();
 
-      const bendpoint = wrapper.findAllComponents(ConnectorBendpoint).at(4);
+      const bendpoint = wrapper.findAllComponents(ConnectorBendpoint).at(4)!;
 
       // moving without first pressing down does nothing
       bendpoint.trigger("pointermove", { clientX: 100, clientY: 100 });
-      expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
-      expect($store.state.workflow.isDragging).toBe(false);
+      expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
+      expect(mockedStores.movingStore.isDragging).toBe(false);
 
       // start the drag
       bendpoint.trigger("pointerdown", {
@@ -943,8 +905,8 @@ describe("Connector.vue", () => {
       await nextTick();
       expect(bendpoint.props("isSelected")).toBe(true);
 
-      expect($store.state.workflow.movePreviewDelta).toEqual({ x: 0, y: 0 });
-      expect($store.state.workflow.isDragging).toBe(false);
+      expect(mockedStores.movingStore.movePreviewDelta).toEqual({ x: 0, y: 0 });
+      expect(mockedStores.movingStore.isDragging).toBe(false);
 
       // move the bendpoint
       const ptrEvent = new PointerEvent("pointermove", {
@@ -956,17 +918,20 @@ describe("Connector.vue", () => {
       document.dispatchEvent(ptrEvent);
       await nextTick();
 
-      expect($store.state.workflow.movePreviewDelta).toEqual({ x: -7, y: -5 });
-      expect($store.state.workflow.isDragging).toBe(true);
+      expect(mockedStores.movingStore.movePreviewDelta).toEqual({
+        x: -7,
+        y: -5,
+      });
+      expect(mockedStores.movingStore.isDragging).toBe(true);
 
       bendpoint.trigger("pointerup", {});
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/moveObjects");
+      expect(mockedStores.movingStore.moveObjects).toHaveBeenCalled();
     });
 
     it("automatically selects all bendpoints when nodes are selected", async () => {
-      const { wrapper, $store, connection } = doMountWithBendpoints();
+      const { wrapper, mockedStores, connection } = doMountWithBendpoints();
 
       const bendpoints = wrapper
         .findAllComponents(ConnectorBendpoint)
@@ -976,17 +941,20 @@ describe("Connector.vue", () => {
       expect(bendpoints.every((comp) => !comp.props("isSelected"))).toBe(true);
 
       // select the 2 nodes of this connector
-      await $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
+      mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
+      await nextTick();
 
       // every bendpoint IS selected now that the 2 nodes are selected
       expect(bendpoints.every((comp) => comp.props("isSelected"))).toBe(true);
 
       // start over - deselect nodes and select a single bendpoint
-      await $store.dispatch("selection/deselectAllObjects");
-      await $store.dispatch("selection/selectBendpoint", `${connection.id}__1`);
+      mockedStores.selectionStore.deselectAllObjects();
+      mockedStores.selectionStore.selectBendpoint(`${connection.id}__1`);
 
       // select the 2 nodes of this connector
-      await $store.dispatch("selection/selectNodes", ["root:1", "root:2"]);
+      mockedStores.selectionStore.selectNodes(["root:1", "root:2"]);
+
+      await nextTick();
 
       // only the bendpoint at index 1 is selected
       bendpoints.forEach((comp, i) => {
@@ -996,19 +964,20 @@ describe("Connector.vue", () => {
     });
 
     it("adds bendpoint via virtual bendpoints", async () => {
-      const { wrapper, $store, connection, dispatchSpy } =
-        doMountWithBendpoints();
+      const { wrapper, connection, mockedStores } = doMountWithBendpoints();
 
       const firstVirtualBendpoint = wrapper
         .findAllComponents(ConnectorBendpoint)
         .filter((comp) => comp.props("virtual"))
-        .at(0);
+        .at(0)!;
 
       const totalBendpointsBefore = wrapper
         .findAllComponents(ConnectorBendpoint)
         .filter((comp) => !comp.props("virtual")).length;
 
-      expect($store.state.workflow.virtualBendpoints).toEqual({});
+      expect(
+        mockedStores.connectionInteractionsStore.virtualBendpoints,
+      ).toEqual({});
 
       await firstVirtualBendpoint.trigger("pointerdown", {
         stopPropagation: vi.fn(),
@@ -1017,7 +986,9 @@ describe("Connector.vue", () => {
       });
       await nextTick();
 
-      expect($store.state.workflow.virtualBendpoints).toEqual({
+      expect(
+        mockedStores.connectionInteractionsStore.virtualBendpoints,
+      ).toEqual({
         [connection.id]: {
           0: {
             x: 19.5,
@@ -1036,7 +1007,7 @@ describe("Connector.vue", () => {
       const addedBendpoint = wrapper
         .findAllComponents(ConnectorBendpoint)
         .filter((comp) => !comp.props("virtual"))
-        .at(0);
+        .at(0)!;
 
       await nextTick();
       await nextTick();
@@ -1056,16 +1027,18 @@ describe("Connector.vue", () => {
         clientY: 100,
       });
 
-      expect($store.state.workflow.movePreviewDelta).toEqual({
+      expect(mockedStores.movingStore.movePreviewDelta).toEqual({
         x: -14.5,
         y: -0.75,
       });
-      expect($store.state.workflow.isDragging).toBe(true);
+      expect(mockedStores.movingStore.isDragging).toBe(true);
 
       addedBendpoint.trigger("pointerup", {});
       await nextTick();
 
-      expect(dispatchSpy).toHaveBeenCalledWith("workflow/addBendpoint", {
+      expect(
+        mockedStores.connectionInteractionsStore.addBendpoint,
+      ).toHaveBeenCalledWith({
         connectionId: connection.id,
         position: { x: 5, y: 5 }, // as returned by the canvas getter
         index: 0,
@@ -1073,7 +1046,7 @@ describe("Connector.vue", () => {
     });
 
     it("should show/hide bendpoints", async () => {
-      const { wrapper, $store } = doMountWithBendpoints();
+      const { wrapper, mockedStores } = doMountWithBendpoints();
 
       const bendpoints = wrapper
         .findAllComponents(ConnectorBendpoint)
@@ -1082,37 +1055,44 @@ describe("Connector.vue", () => {
       // all have the `isVisible` prop set to false
       expect(bendpoints.every((bp) => !bp.props("isVisible"))).toBe(true);
 
-      await bendpoints.at(0).trigger("mouseenter");
-      expect(bendpoints.at(0).props("isVisible")).toBe(true);
-      await bendpoints.at(0).trigger("mouseleave");
-      expect(bendpoints.at(0).props("isVisible")).toBe(false);
+      await bendpoints.at(0)!.trigger("mouseenter");
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(true);
+      await bendpoints.at(0)!.trigger("mouseleave");
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(false);
 
       // when nodes are selected, connections are highlighted and BP are shown
-      await $store.dispatch("selection/selectNodes", ["root:1"]);
-      expect(bendpoints.at(0).props("isVisible")).toBe(true);
+      mockedStores.selectionStore.selectNodes(["root:1"]);
+      await nextTick();
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(true);
 
-      await $store.dispatch("selection/deselectAllObjects");
-      expect(bendpoints.at(0).props("isVisible")).toBe(false);
+      mockedStores.selectionStore.deselectAllObjects();
+      await nextTick();
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(false);
 
       // selecting connections also shows bendpoints
-      await $store.dispatch("selection/selectConnection", "root:2_0");
-      expect(bendpoints.at(0).props("isVisible")).toBe(true);
+      mockedStores.selectionStore.selectConnection("root:2_0");
+      await nextTick();
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(true);
 
-      await $store.dispatch("selection/deselectAllObjects");
-      expect(bendpoints.at(0).props("isVisible")).toBe(false);
+      mockedStores.selectionStore.deselectAllObjects();
+      await nextTick();
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(false);
 
-      await wrapper
+      wrapper
         .findAllComponents(ConnectorPathSegment)
-        .at(0)
+        .at(0)!
         .vm.$emit("mouseenter");
 
-      expect(bendpoints.at(0).props("isVisible")).toBe(true);
+      await nextTick();
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(true);
 
-      await wrapper
+      wrapper
         .findAllComponents(ConnectorPathSegment)
-        .at(0)
+        .at(0)!
         .vm.$emit("mouseleave");
-      expect(bendpoints.at(0).props("isVisible")).toBe(false);
+
+      await nextTick();
+      expect(bendpoints.at(0)!.props("isVisible")).toBe(false);
     });
   });
 });

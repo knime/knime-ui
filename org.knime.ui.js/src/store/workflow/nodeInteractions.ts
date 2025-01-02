@@ -1,95 +1,93 @@
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { API } from "@api";
+import { defineStore } from "pinia";
 
-import { API } from "@/api";
 import type {
   AddNodeCommand,
   Connection,
+  NodeFactoryKey,
+  PortCommand,
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
+import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
-import type { RootStoreState } from "../types";
 
-import type { WorkflowState } from ".";
-import { getProjectAndWorkflowIds } from "./util";
+import { useWorkflowStore } from "./workflow";
 
-interface State {
+type NodeInteractionsState = {
   nameEditorNodeId: string | null;
   labelEditorNodeId: string | null;
-}
-
-declare module "./index" {
-  interface WorkflowState extends State {}
-}
-
-export const state = (): State => ({
-  nameEditorNodeId: null,
-  labelEditorNodeId: null,
-});
-
-export const mutations: MutationTree<WorkflowState> = {
-  setNameEditorNodeId(state, nodeId) {
-    state.nameEditorNodeId = nodeId;
-  },
-
-  setLabelEditorNodeId(state, nodeId) {
-    state.labelEditorNodeId = nodeId;
-  },
 };
 
-export const actions: ActionTree<WorkflowState, RootStoreState> = {
-  openNameEditor({ commit }, nodeId) {
-    commit("setNameEditorNodeId", nodeId);
-  },
+export const useNodeInteractionsStore = defineStore("nodeInteractions", {
+  state: (): NodeInteractionsState => ({
+    nameEditorNodeId: null,
+    labelEditorNodeId: null,
+  }),
+  actions: {
+    openNameEditor(nodeId: string) {
+      this.nameEditorNodeId = nodeId;
+    },
 
-  closeNameEditor({ commit }) {
-    commit("setNameEditorNodeId", null);
-  },
+    closeNameEditor() {
+      this.nameEditorNodeId = null;
+    },
 
-  openLabelEditor({ commit }, nodeId) {
-    commit("setLabelEditorNodeId", nodeId);
-  },
+    openLabelEditor(nodeId: string) {
+      this.labelEditorNodeId = nodeId;
+    },
 
-  closeLabelEditor({ commit }) {
-    commit("setLabelEditorNodeId", null);
-  },
+    closeLabelEditor() {
+      this.labelEditorNodeId = null;
+    },
 
-  connectNodes({ state }, { sourceNode, sourcePort, destNode, destPort }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    return API.workflowCommand.Connect({
-      projectId,
-      workflowId,
-      sourceNodeId: sourceNode,
-      sourcePortIdx: sourcePort,
-      destinationNodeId: destNode,
-      destinationPortIdx: destPort,
-    });
-  },
+    connectNodes({
+      sourceNode,
+      sourcePort,
+      destNode,
+      destPort,
+    }: {
+      sourceNode: string;
+      sourcePort: number;
+      destNode: string;
+      destPort: number;
+    }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+      return API.workflowCommand.Connect({
+        projectId,
+        workflowId,
+        sourceNodeId: sourceNode,
+        sourcePortIdx: sourcePort,
+        destinationNodeId: destNode,
+        destinationPortIdx: destPort,
+      });
+    },
 
-  renameContainerNode({ state }, { nodeId, name }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    return API.workflowCommand.UpdateComponentOrMetanodeName({
-      projectId,
-      workflowId,
-      nodeId,
-      name,
-    });
-  },
+    renameContainerNode({ nodeId, name }: { nodeId: string; name: string }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+      return API.workflowCommand.UpdateComponentOrMetanodeName({
+        projectId,
+        workflowId,
+        nodeId,
+        name,
+      });
+    },
 
-  renameNodeLabel({ state }, { nodeId, label }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    return API.workflowCommand.UpdateNodeLabel({
-      projectId,
-      workflowId,
-      nodeId,
-      label,
-    });
-  },
+    renameNodeLabel({ nodeId, label }: { nodeId: string; label: string }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+      return API.workflowCommand.UpdateNodeLabel({
+        projectId,
+        workflowId,
+        nodeId,
+        label,
+      });
+    },
 
-  async addNode(
-    { state, dispatch },
-    {
+    async addNode({
       position,
       // use either nodeFactory or spaceItemReference
       nodeFactory,
@@ -107,7 +105,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     }: {
       position: XY;
       nodeFactory?: { className: string };
-      spaceItemReference: SpaceItemReference;
+      spaceItemReference?: SpaceItemReference;
       sourceNodeId?: string;
       sourcePortIdx?: number;
       nodeRelation?: AddNodeCommand.NodeRelationEnum;
@@ -116,155 +114,190 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
        * 'add' adds the new node to the active selection
        * 'none' doesn't modify the active selection nor it selects the new node
        */
-      selectionMode: "new-only" | "add" | "none";
+      selectionMode?: "new-only" | "add" | "none";
       isComponent?: boolean;
-    },
-  ) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+    }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
 
-    // Adjusted For Grid Snapping
-    const gridAdjustedPosition = {
-      x: geometry.utils.snapToGrid(position.x),
-      y: geometry.utils.snapToGrid(position.y),
-    };
+      // Adjusted For Grid Snapping
+      const gridAdjustedPosition = {
+        x: geometry.utils.snapToGrid(position.x),
+        y: geometry.utils.snapToGrid(position.y),
+      };
 
-    const apiCall = isComponent
-      ? () =>
-          API.desktop.importComponent({
-            projectId,
-            workflowId,
-            x: gridAdjustedPosition.x,
-            y: gridAdjustedPosition.y,
-            spaceProviderId: spaceItemReference.providerId,
-            spaceId: spaceItemReference.spaceId,
-            itemId: spaceItemReference.itemId,
-          })
-      : () =>
-          API.workflowCommand.AddNode({
-            projectId,
-            workflowId,
-            position: gridAdjustedPosition,
-            nodeFactory,
-            spaceItemReference,
-            sourceNodeId,
-            sourcePortIdx,
-            nodeRelation,
-          });
+      const apiCall =
+        isComponent && spaceItemReference
+          ? () =>
+              API.desktop.importComponent({
+                projectId,
+                workflowId,
+                x: gridAdjustedPosition.x,
+                y: gridAdjustedPosition.y,
+                spaceProviderId: spaceItemReference.providerId,
+                spaceId: spaceItemReference.spaceId,
+                itemId: spaceItemReference.itemId,
+              })
+          : () =>
+              API.workflowCommand.AddNode({
+                projectId,
+                workflowId,
+                position: gridAdjustedPosition,
+                nodeFactory,
+                spaceItemReference,
+                sourceNodeId,
+                sourcePortIdx,
+                nodeRelation,
+              });
 
-    const response = await apiCall();
-    if (!response) {
-      return null;
-    }
-
-    const newNodeId =
-      typeof response === "string" ? response : response.newNodeId;
-
-    if (selectionMode !== "none") {
-      if (selectionMode === "new-only") {
-        await dispatch(
-          "selection/selectSingleObject",
-          { type: "node", id: newNodeId },
-          { root: true },
-        );
-      } else {
-        await dispatch("selection/selectNode", newNodeId, { root: true });
+      const response = await apiCall();
+      if (!response) {
+        return null;
       }
-    }
 
-    return response;
-  },
+      const newNodeId =
+        typeof response === "string" ? response : response.newNodeId;
 
-  replaceNode(
-    { state },
-    { targetNodeId, replacementNodeId = null, nodeFactory = null },
-  ) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+      if (selectionMode !== "none") {
+        if (selectionMode === "new-only") {
+          useSelectionStore().selectSingleObject({
+            type: "node",
+            id: newNodeId,
+          });
+        } else {
+          useSelectionStore().selectNode(newNodeId);
+        }
+      }
 
-    return API.workflowCommand.ReplaceNode({
-      projectId,
-      workflowId,
+      return response;
+    },
+
+    replaceNode({
       targetNodeId,
       replacementNodeId,
       nodeFactory,
-    });
-  },
+    }: {
+      targetNodeId: string;
+      replacementNodeId?: string;
+      nodeFactory?: NodeFactoryKey;
+    }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
 
-  insertNode(
-    { state: { activeWorkflow } },
-    { connectionId, position, nodeFactory, nodeId },
-  ) {
-    const projectId = activeWorkflow!.projectId;
-    const workflowId = activeWorkflow!.info.containerId;
+      return API.workflowCommand.ReplaceNode({
+        projectId,
+        workflowId,
+        targetNodeId,
+        replacementNodeId,
+        nodeFactory,
+      });
+    },
 
-    return API.workflowCommand.InsertNode({
-      projectId,
-      workflowId,
+    insertNode({
       connectionId,
       position,
       nodeFactory,
       nodeId,
-    });
-  },
+    }: {
+      connectionId: string;
+      position: XY;
+      nodeFactory?: NodeFactoryKey;
+      nodeId?: string;
+    }) {
+      const projectId = useWorkflowStore().activeWorkflow!.projectId;
+      const workflowId = useWorkflowStore().activeWorkflow!.info.containerId;
 
-  addNodePort({ state }, { nodeId, side, portGroup, typeId }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+      return API.workflowCommand.InsertNode({
+        projectId,
+        workflowId,
+        connectionId,
+        position,
+        nodeFactory,
+        nodeId,
+      });
+    },
 
-    return API.workflowCommand.AddPort({
-      projectId,
-      workflowId,
+    addNodePort({
       nodeId,
       side,
       portGroup,
-      portTypeId: typeId,
-    });
-  },
+      typeId,
+    }: {
+      nodeId: string;
+      side: "input" | "output";
+      portGroup: string;
+      typeId: string;
+    }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
 
-  removeNodePort({ state }, { nodeId, side, index, portGroup }) {
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+      return API.workflowCommand.AddPort({
+        projectId,
+        workflowId,
+        nodeId,
+        side: side as PortCommand.SideEnum,
+        portGroup,
+        portTypeId: typeId,
+      });
+    },
 
-    return API.workflowCommand.RemovePort({
-      projectId,
-      workflowId,
+    removeNodePort({
       nodeId,
       side,
+      index,
       portGroup,
-      portIndex: index,
-    });
+    }: {
+      nodeId: string;
+      side: "input" | "output";
+      index: number;
+      portGroup: string;
+    }) {
+      const { projectId, workflowId } =
+        useWorkflowStore().getProjectAndWorkflowIds;
+
+      return API.workflowCommand.RemovePort({
+        projectId,
+        workflowId,
+        nodeId,
+        side: side as PortCommand.SideEnum,
+        portGroup,
+        portIndex: index,
+      });
+    },
   },
-};
 
-const getNodeTemplateProperty = (params: {
-  activeWorkflow: WorkflowState["activeWorkflow"];
-  nodeId: string;
-  property: "name" | "icon" | "type" | "nodeFactory";
-}) => {
-  const { activeWorkflow, nodeId, property } = params;
+  getters: {
+    getNodeTemplateProperty:
+      () =>
+      ({
+        nodeId,
+        property,
+      }: {
+        nodeId: string;
+        property: "name" | "icon" | "type" | "nodeFactory";
+      }) => {
+        const node = useWorkflowStore().activeWorkflow!.nodes[nodeId];
 
-  const node = activeWorkflow!.nodes[nodeId];
+        // These nodeTemplates are not to be confused with the ones from the
+        // `nodeTemplates` store module. Because these do not contain port information
+        // and also only refer to the data of the current workflow level
+        const nodeTemplates = useWorkflowStore().activeWorkflow!.nodeTemplates;
 
-  // These nodeTemplates are not to be confused with the ones from the
-  // `nodeTemplates` store module. Because these do not contain port information
-  // and also only refer to the data of the current workflow level
-  const nodeTemplates = activeWorkflow!.nodeTemplates;
+        if (isNativeNode(node)) {
+          const { templateId } = node;
 
-  if (isNativeNode(node)) {
-    const { templateId } = node;
+          return nodeTemplates[templateId][property];
+        }
 
-    return nodeTemplates[templateId][property];
-  }
+        // @ts-ignore - TODO: NXT-2023 component is not inheriting properties correctly. Type narrowing
+        // can be improved here once NativeNode, ComponentNode and MetaNode types are generated correctly
+        return node[property];
+      },
 
-  // @ts-ignore - TODO: NXT-2023 component is not inheriting properties correctly. Type narrowing
-  // can be improved here once NativeNode, ComponentNode and MetaNode types are generated correctly
-  return node[property];
-};
-
-export const getters: GetterTree<WorkflowState, RootStoreState> = {
-  isNodeConnected:
-    ({ activeWorkflow }) =>
-    (nodeId: string) => {
+    isNodeConnected: () => (nodeId: string) => {
       let connection: Connection;
 
-      const currentConnections = activeWorkflow!.connections;
+      const currentConnections = useWorkflowStore().activeWorkflow!.connections;
 
       for (const connectionID in currentConnections) {
         connection = currentConnections[connectionID];
@@ -279,48 +312,43 @@ export const getters: GetterTree<WorkflowState, RootStoreState> = {
       return false;
     },
 
-  getNodeById:
-    ({ activeWorkflow }) =>
-    (nodeId: string) =>
-      activeWorkflow?.nodes[nodeId] || null,
+    getNodeById: () => (nodeId: string) =>
+      useWorkflowStore().activeWorkflow?.nodes[nodeId] || null,
 
-  getNodeIcon:
-    ({ activeWorkflow }) =>
-    (nodeId: string) => {
-      return getNodeTemplateProperty({
-        nodeId,
-        activeWorkflow,
-        property: "icon",
-      });
+    getNodeIcon() {
+      return (nodeId: string) => {
+        return this.getNodeTemplateProperty({
+          nodeId,
+          property: "icon",
+        });
+      };
     },
 
-  getNodeName:
-    ({ activeWorkflow }) =>
-    (nodeId: string) => {
-      return getNodeTemplateProperty({
-        nodeId,
-        activeWorkflow,
-        property: "name",
-      });
+    getNodeName() {
+      return (nodeId: string) => {
+        return this.getNodeTemplateProperty({
+          nodeId,
+          property: "name",
+        });
+      };
     },
 
-  getNodeFactory:
-    ({ activeWorkflow }) =>
-    (nodeId: string) => {
-      return getNodeTemplateProperty({
-        nodeId,
-        activeWorkflow,
-        property: "nodeFactory",
-      });
+    getNodeFactory() {
+      return (nodeId: string) => {
+        return this.getNodeTemplateProperty({
+          nodeId,
+          property: "nodeFactory",
+        });
+      };
     },
 
-  getNodeType:
-    ({ activeWorkflow }) =>
-    (nodeId: string) => {
-      return getNodeTemplateProperty({
-        activeWorkflow,
-        nodeId,
-        property: "type",
-      });
+    getNodeType() {
+      return (nodeId: string) => {
+        return this.getNodeTemplateProperty({
+          nodeId,
+          property: "type",
+        });
+      };
     },
-};
+  },
+});

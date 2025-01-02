@@ -4,7 +4,12 @@ import type { KnimeNode } from "@/api/custom-types";
 import OpenDialogIcon from "@/assets/configure-node.svg";
 import { isDesktop } from "@/environment";
 import { getToastsProvider } from "@/plugins/toasts";
+import { useApplicationStore } from "@/store/application/application";
 import type { NodeOutputTabIdentifier } from "@/store/selection";
+import { useSelectionStore } from "@/store/selection";
+import { useExecutionStore } from "@/store/workflow/execution";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 import { getNextSelectedPort } from "@/util/portSelection";
 import type { UnionToShortcutRegistry } from "../types";
@@ -45,18 +50,20 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     text: "Activate the n-th output port view",
     hotkey: ["Shift", "1-9"],
     group: "selectedNode",
-    execute: ({ $store, payload }) => {
+    execute: ({ payload }) => {
       const event = payload.event! as KeyboardEvent;
-      const node = $store.getters["selection/singleSelectedNode"];
-      const port = getPortFromKey(node, event);
+      const { singleSelectedNode, setActivePortTab } = useSelectionStore();
+      const port = getPortFromKey(singleSelectedNode!, event);
 
       if (port) {
-        $store.commit("selection/setActivePortTab", port);
+        setActivePortTab(port);
       }
     },
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      return singleSelectedNode && singleSelectedNode.outPorts.length > 0;
+    condition: () => {
+      const { singleSelectedNode } = useSelectionStore();
+      return Boolean(
+        singleSelectedNode && singleSelectedNode.outPorts.length > 0,
+      );
     },
   },
   activateFlowVarPort: {
@@ -64,17 +71,22 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     hotkey: ["Shift", "0"],
     additionalHotkeys: [{ key: ["Shift", "0-0"], visible: false }], // range matches Digit0 Key even with shift
     group: "selectedNode",
-    execute: ({ $store }) => {
-      $store.commit("selection/setActivePortTab", "0");
+    execute: () => {
+      useSelectionStore().setActivePortTab("0");
     },
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      const portTypes = $store.state.application.availablePortTypes;
+    condition: () => {
+      const { singleSelectedNode } = useSelectionStore();
+      const { availablePortTypes } = useApplicationStore();
+
+      if (!singleSelectedNode) {
+        return false;
+      }
+
       const hasFlowVarPort =
-        portTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
+        availablePortTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
         "flowVariable";
 
-      return singleSelectedNode && hasFlowVarPort;
+      return hasFlowVarPort;
     },
   },
   detachOutputPort: {
@@ -82,21 +94,21 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     hotkey: ["Shift", "Alt", "1-9"],
     icon: OpenDialogIcon,
     group: "selectedNode",
-    execute: ({ $store, payload }) => {
+    execute: ({ payload }) => {
       const event = payload.event! as KeyboardEvent;
-      const node = $store.getters["selection/singleSelectedNode"];
-      const port = getPortFromKey(node, event);
+      const { singleSelectedNode } = useSelectionStore();
+      const port = getPortFromKey(singleSelectedNode!, event);
 
       if (port) {
-        $store.dispatch("workflow/openPortView", { node, port });
+        useExecutionStore().openPortView({ node: singleSelectedNode!, port });
       }
     },
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      return (
+    condition: () => {
+      const { singleSelectedNode } = useSelectionStore();
+      return Boolean(
         isDesktop &&
-        singleSelectedNode &&
-        singleSelectedNode.outPorts.length > 0
+          singleSelectedNode &&
+          singleSelectedNode.outPorts.length > 0,
       );
     },
   },
@@ -107,11 +119,14 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     additionalHotkeys: [{ key: ["Shift", "Alt", "0-0"], visible: false }], // range matches Digit0 Key even with shift
     icon: OpenDialogIcon,
     group: "selectedNode",
-    execute: ({ $store }) => {
-      const node: KnimeNode = $store.getters["selection/singleSelectedNode"];
+    execute: () => {
+      const { singleSelectedNode } = useSelectionStore();
 
-      if (node.state?.executionState === "EXECUTED") {
-        $store.dispatch("workflow/openPortView", { node, port: "0" });
+      if (singleSelectedNode?.state?.executionState === "EXECUTED") {
+        useExecutionStore().openPortView({
+          node: singleSelectedNode!,
+          port: "0",
+        });
       } else {
         // TODO: NXT-2024 remove this condition once flowvars can be detached in 'configured' state
         getToastsProvider().show({
@@ -122,14 +137,19 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
         });
       }
     },
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      const portTypes = $store.state.application.availablePortTypes;
+    condition: () => {
+      const { singleSelectedNode } = useSelectionStore();
+      const { availablePortTypes } = useApplicationStore();
+
+      if (!singleSelectedNode) {
+        return false;
+      }
+
       const hasFlowVarPort =
-        portTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
+        availablePortTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
         "flowVariable";
 
-      return isDesktop && singleSelectedNode && hasFlowVarPort;
+      return isDesktop && hasFlowVarPort;
     },
   },
 
@@ -138,38 +158,42 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     hotkey: ["Shift", "Alt", "Enter"],
     icon: OpenDialogIcon,
     group: "selectedNode",
-    execute: ({ $store }) => {
-      const port = $store.state.selection.activePortTab;
-      const node = $store.getters["selection/singleSelectedNode"];
+    execute: () => {
+      const { singleSelectedNode, activePortTab } = useSelectionStore();
 
-      $store.dispatch("workflow/openPortView", { node, port });
+      if (!singleSelectedNode || !activePortTab) {
+        return;
+      }
+
+      useExecutionStore().openPortView({
+        node: singleSelectedNode,
+        port: activePortTab,
+      });
     },
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      const port = $store.state.selection.activePortTab;
-      return isDesktop && singleSelectedNode && port;
+    condition: () => {
+      const { singleSelectedNode, activePortTab } = useSelectionStore();
+
+      return Boolean(isDesktop && singleSelectedNode && activePortTab);
     },
   },
   editNodeComment: {
     text: "Edit node comment",
     hotkey: ["F2"],
     group: "selectedNode",
-    execute: ({ $store }) => {
-      if ($store.getters["selection/singleSelectedNode"]) {
-        $store.dispatch(
-          "workflow/openLabelEditor",
-          $store.getters["selection/singleSelectedNode"].id,
-        );
+    execute: () => {
+      const { singleSelectedNode } = useSelectionStore();
+
+      if (singleSelectedNode) {
+        useNodeInteractionsStore().openLabelEditor(singleSelectedNode.id);
       }
     },
-    condition: ({ $store }) => {
-      const singleSelectedNode = $store.getters["selection/singleSelectedNode"];
-      const singleSelectedObject =
-        $store.getters["selection/singleSelectedObject"];
-      return (
+    condition: () => {
+      const { singleSelectedNode, singleSelectedObject } = useSelectionStore();
+
+      return Boolean(
         singleSelectedObject &&
-        singleSelectedNode &&
-        $store.getters["workflow/isWritable"]
+          singleSelectedNode &&
+          useWorkflowStore().isWritable,
       );
     },
   },
@@ -179,20 +203,32 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
     title: "Select (next) port of the selected node",
     hotkey: [navigatorUtils.isMac() ? "Ctrl" : "Alt", "P"], // Alt+P yields a pi-symbol on mac
     group: "selectedNode",
-    execute: ({ $store }) => {
-      const node = $store.getters["selection/singleSelectedNode"];
+    execute: () => {
+      const { singleSelectedNode, activeNodePorts, updateActiveNodePorts } =
+        useSelectionStore();
+
+      if (!singleSelectedNode) {
+        return;
+      }
+
       const currentSelectedPort =
-        $store.state.selection.activeNodePorts.nodeId === node.id
-          ? $store.state.selection.activeNodePorts.selectedPort
+        activeNodePorts.nodeId === singleSelectedNode.id
+          ? activeNodePorts.selectedPort
           : null;
-      $store.commit("selection/updateActiveNodePorts", {
-        nodeId: node.id,
-        selectedPort: getNextSelectedPort($store, node, currentSelectedPort),
+
+      updateActiveNodePorts({
+        nodeId: singleSelectedNode.id,
+        selectedPort: getNextSelectedPort(
+          singleSelectedNode,
+          currentSelectedPort,
+          useWorkflowStore().isWritable,
+        ),
       });
     },
-    condition: ({ $store }) => {
-      const node: KnimeNode = $store.getters["selection/singleSelectedNode"];
-      return Boolean(node) && $store.getters["workflow/isWritable"];
+    condition: () => {
+      return Boolean(
+        useSelectionStore().singleSelectedNode && useWorkflowStore().isWritable,
+      );
     },
   },
 };

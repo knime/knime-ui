@@ -14,7 +14,7 @@ import { FunctionButton } from "@knime/components";
 import { CreateLinkModal } from "@knime/rich-text-editor";
 
 import * as $colors from "@/style/colors";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import ColorIcon from "../ColorIcon.vue";
 import ColorSelectionDialog from "../ColorSelectionDialog.vue";
 import RichTextAnnotation from "../RichTextAnnotation.vue";
@@ -94,13 +94,7 @@ describe("RichTextAnnotation.vue", () => {
   };
 
   const doMount = ({ props = {}, isWebKitBrowser = false } = {}) => {
-    const $store = mockVuexStore({
-      canvas: {
-        state: {
-          zoomFactor: 1,
-        },
-      },
-    });
+    const mockedStores = mockStores();
 
     Object.defineProperty(navigator, "userAgent", {
       value: isWebKitBrowser
@@ -112,7 +106,7 @@ describe("RichTextAnnotation.vue", () => {
     const wrapper = mount(RichTextAnnotation, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: { FloatingMenu: true },
       },
     });

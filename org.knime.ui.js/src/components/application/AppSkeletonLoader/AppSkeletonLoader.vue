@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import { useStore } from "@/composables/useStore";
 import { isBrowser } from "@/environment";
-import { TABS, type TabValues } from "@/store/panel";
+import { useApplicationStore } from "@/store/application/application";
+import { useLifecycleStore } from "@/store/application/lifecycle";
+import { TABS, type TabValues, usePanelStore } from "@/store/panel";
+import { useSettingsStore } from "@/store/settings";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
 import AppKanvasSkeleton from "./AppKanvasSkeleton.vue";
@@ -13,23 +17,17 @@ import AppSidebarSkeletonContent from "./AppSidebarSkeletonContent.vue";
 import AppSidebarSkeletonTabs from "./AppSidebarSkeletonTabs.vue";
 import AppToolbarSkeleton from "./AppToolbarSkeleton.vue";
 
-const store = useStore();
+const { activeProjectId } = storeToRefs(useApplicationStore());
+const { isLoadingApp, isLoadingWorkflow, isChangingProject } = storeToRefs(
+  useLifecycleStore(),
+);
+const { settings } = storeToRefs(useSettingsStore());
+const { error: workflowError } = storeToRefs(useWorkflowStore());
 
-const activeProjectId = computed(() => store.state.application.activeProjectId);
-
-const isLoadingApp = computed(() => store.state.application.isLoadingApp);
-const isLoadingWorkflow = computed(
-  () => store.state.application.isLoadingWorkflow,
-);
-const isChangingProject = computed(
-  () => store.state.application.isChangingProject,
-);
-const bottomPanelHeight = computed(
-  () => store.state.settings.settings.nodeOutputSize,
-);
+const bottomPanelHeight = computed(() => settings.value.nodeOutputSize);
 const topPanelHeight = computed(() => 100 - bottomPanelHeight.value);
 const rightPanelWidth = computed(() =>
-  isBrowser ? store.state.settings.settings.nodeDialogSize : 0,
+  isBrowser ? settings.value.nodeDialogSize : 0,
 );
 
 const isLoading = computed(() => isLoadingApp.value || isLoadingWorkflow.value);
@@ -39,8 +37,6 @@ const isChangingBetweenWorkflows = computed(() => {
     isLoadingWorkflow.value && activeProjectId.value && !isLoadingApp.value,
   );
 });
-
-const workflowError = computed(() => store.state.workflow.error);
 
 const isSkeletonTransparentForTab = (currentTab: TabValues) => {
   if (currentTab === TABS.NODE_REPOSITORY) {
@@ -60,12 +56,12 @@ const isSidebarTransparent = computed(() => {
   return (
     isChangingBetweenWorkflows.value &&
     isSkeletonTransparentForTab(
-      store.state.panel.activeTab[activeProjectId.value!],
+      usePanelStore().activeTab[activeProjectId.value!],
     )
   );
 });
 
-const isLeftPanelOpen = computed(() => store.state.panel.expanded);
+const isLeftPanelOpen = computed(() => usePanelStore().expanded);
 
 const isLogoShown = ref(false);
 const setLogoVisible = createStaggeredLoader({

@@ -1,11 +1,12 @@
 <script lang="ts">
 import { type PropType, defineComponent } from "vue";
-import { mapGetters } from "vuex";
+import { mapState } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
 import ActionBar from "@/components/common/ActionBar.vue";
+import { useCanvasStore } from "@/store/canvas";
 
 import NodeNameTextarea from "./NodeNameTextarea.vue";
 
@@ -67,7 +68,7 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapGetters("canvas", ["viewBox"]),
+    ...mapState(useCanvasStore, ["viewBox"]),
     overlayStyles() {
       const { left, top } = this.viewBox;
       return {

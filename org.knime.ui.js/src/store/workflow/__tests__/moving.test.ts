@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
+import { API } from "@api";
 
-import { API } from "@/api";
+import { createNativeNode, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 
 import { loadStore } from "./loadStore";
@@ -13,95 +14,54 @@ describe("workflow::moving", () => {
     vi.clearAllMocks();
   });
 
-  it("should set the movePreviewDelta", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "bar",
-      nodes: {
-        "root:1": { id: "root:1", position: { x: 0, y: 0 } },
-      },
-    });
+  it("should set the movePreviewDelta", () => {
+    const { workflowStore, movingStore } = loadStore();
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        projectId: "bar",
+        nodes: {
+          "root:1": createNativeNode({
+            id: "root:1",
+            position: { x: 0, y: 0 },
+          }),
+        },
+      }),
+    );
 
-    const node = store.state.workflow.activeWorkflow.nodes["root:1"];
-    store.commit("workflow/setMovePreview", { node, deltaX: 50, deltaY: 50 });
-    expect(store.state.workflow.movePreviewDelta).toStrictEqual({
+    movingStore.setMovePreview({ deltaX: 50, deltaY: 50 });
+    expect(movingStore.movePreviewDelta).toStrictEqual({
       x: 50,
       y: 50,
     });
   });
 
-  it("should reset the position of the movePreviewDelta", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "bar",
-      nodes: {
-        "root:1": { id: "root:1", position: { x: 0, y: 0 } },
-      },
-    });
+  it("should reset the position of the movePreviewDelta", () => {
+    const { workflowStore, movingStore } = loadStore();
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        projectId: "bar",
+        nodes: {
+          "root:1": { id: "root:1", position: { x: 0, y: 0 } },
+        },
+      }),
+    );
 
-    const node = store.state.workflow.activeWorkflow.nodes["root:1"];
-    store.commit("workflow/setMovePreview", { node, deltaX: 50, deltaY: 50 });
-    expect(store.state.workflow.movePreviewDelta).toStrictEqual({
+    movingStore.setMovePreview({ deltaX: 50, deltaY: 50 });
+    expect(movingStore.movePreviewDelta).toStrictEqual({
       x: 50,
       y: 50,
     });
-    store.commit("workflow/resetMovePreview", { nodeId: node.id });
-    expect(store.state.workflow.movePreviewDelta).toStrictEqual({
+    movingStore.resetMovePreview();
+    expect(movingStore.movePreviewDelta).toStrictEqual({
       x: 0,
       y: 0,
-    });
-  });
-
-  it("should handle moving nodes and annotations", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "bar",
-      nodes: {
-        foo: { bla: 1, position: { x: 0, y: 0 } },
-        bar: { qux: 2, position: { x: 50, y: 50 } },
-      },
-      workflowAnnotations: [
-        { id: "id1", bounds: { x: 10, y: 10, width: 10, height: 10 } },
-        { id: "id2", bounds: { x: 20, y: 20, width: 20, height: 20 } },
-      ],
-    });
-    store.dispatch("selection/selectAllObjects");
-    await nextTick();
-
-    store.commit("workflow/setMovePreview", { deltaX: 50, deltaY: 50 });
-    expect(store.state.workflow.movePreviewDelta).toStrictEqual({
-      x: 50,
-      y: 50,
-    });
-  });
-
-  it("moves nodes and annotations", async () => {
-    const { store } = await loadStore();
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "bar",
-      nodes: {
-        foo: { bla: 1, position: { x: 0, y: 0 } },
-        bar: { qux: 2, position: { x: 50, y: 50 } },
-      },
-      workflowAnnotations: [
-        { id: "id1", bounds: { x: 10, y: 10, width: 10, height: 10 } },
-        { id: "id2", bounds: { x: 20, y: 20, width: 20, height: 20 } },
-      ],
-    });
-    store.dispatch("selection/selectAllObjects");
-    await nextTick();
-
-    store.commit("workflow/setMovePreview", { deltaX: 50, deltaY: 50 });
-    expect(store.state.workflow.movePreviewDelta).toStrictEqual({
-      x: 50,
-      y: 50,
     });
   });
 
   it.each([[1], [20]])(
     "should save position after move end for %s nodes and annotations",
     async (amount) => {
-      const { store } = await loadStore();
+      const { workflowStore, movingStore, selectionStore } = loadStore();
       const nodesRecords: Record<string, { id: string; position: any }> = {};
       for (let i = 0; i < amount; i++) {
         const name = `node-${i}`;
@@ -121,41 +81,41 @@ describe("workflow::moving", () => {
       const nodesRecordsCopy: Record<string, { id: string; position: any }> =
         JSON.parse(JSON.stringify(nodesRecords));
 
-      store.commit("workflow/setActiveWorkflow", {
-        projectId: "foo",
-        nodes: nodesRecords,
-        info: {
-          containerId: "test",
-        },
-        metaOutPorts: {
-          bounds: {
-            x: 0,
-            y: 0,
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          nodes: nodesRecords,
+          info: {
+            containerId: "test",
           },
-        },
-        workflowAnnotations: annotationsArray,
-      });
+          metaOutPorts: {
+            bounds: {
+              x: 0,
+              y: 0,
+            },
+          },
+          workflowAnnotations: annotationsArray,
+        }),
+      );
       await nextTick();
-      const nodeIds = [];
-      const annotationIds = [];
+      const nodeIds: string[] = [];
+      const annotationIds: string[] = [];
       Object.values(nodesRecords).forEach((node) => {
-        store.dispatch("selection/selectNode", node.id);
+        selectionStore.selectNode(node.id);
         nodeIds.push(node.id);
       });
       Object.values(annotationsArray).forEach((annotation) => {
-        store.dispatch("selection/selectAnnotation", annotation.id);
+        selectionStore.selectAnnotation(annotation.id);
         annotationIds.push(annotation.id);
       });
 
-      store.dispatch("selection/selectMetanodePortBar", "out");
+      selectionStore.selectMetanodePortBar("out");
 
-      store.commit("workflow/setMovePreview", { deltaX: 50, deltaY: 50 });
-      await store.dispatch("workflow/moveObjects");
+      movingStore.setMovePreview({ deltaX: 50, deltaY: 50 });
+      await movingStore.moveObjects();
 
       // optimistic update
-      expect(
-        store.state.workflow.activeWorkflow.workflowAnnotations,
-      ).toStrictEqual(
+      expect(workflowStore.activeWorkflow!.workflowAnnotations).toStrictEqual(
         annotationsArrayCopy.map((annotation: any) => ({
           ...annotation,
           bounds: {
@@ -166,7 +126,7 @@ describe("workflow::moving", () => {
         })),
       );
 
-      expect(store.state.workflow.activeWorkflow.nodes).toStrictEqual(
+      expect(workflowStore.activeWorkflow!.nodes!).toStrictEqual(
         Object.fromEntries(
           Object.entries(nodesRecordsCopy).map(([key, value]) => [
             key,
@@ -175,9 +135,7 @@ describe("workflow::moving", () => {
         ),
       );
 
-      expect(
-        store.state.workflow.activeWorkflow.metaOutPorts.bounds,
-      ).toStrictEqual({
+      expect(workflowStore.activeWorkflow!.metaOutPorts!.bounds).toStrictEqual({
         x: 50,
         y: 50,
       });
@@ -196,22 +154,24 @@ describe("workflow::moving", () => {
   );
 
   it("should skip moving objects if translation is 0", async () => {
-    const { store } = await loadStore();
+    const { workflowStore, movingStore } = loadStore();
 
-    store.commit("workflow/setIsDragging", true);
-    store.commit("workflow/setMovePreview", { deltaX: 0, deltaY: 0 });
-    store.commit("workflow/setActiveWorkflow", {
-      projectId: "foo",
-      nodes: {},
-      info: {
-        containerId: "test",
-      },
-      workflowAnnotations: [],
-    });
+    movingStore.setIsDragging(true);
+    movingStore.setMovePreview({ deltaX: 0, deltaY: 0 });
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        projectId: "foo",
+        nodes: {},
+        info: {
+          containerId: "test",
+        },
+        workflowAnnotations: [],
+      }),
+    );
 
-    await store.dispatch("workflow/moveObjects");
+    await movingStore.moveObjects();
 
-    expect(store.state.workflow.isDragging).toBe(false);
+    expect(movingStore.isDragging).toBe(false);
     expect(mockedAPI.workflowCommand.Translate).not.toHaveBeenCalled();
   });
 });

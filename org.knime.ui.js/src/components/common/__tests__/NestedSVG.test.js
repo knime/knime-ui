@@ -7,7 +7,7 @@ describe("NestedSVG", () => {
   it("renders svg and passes attributes", () => {
     let wrapper = mount(NestedSVG, {
       slots: {
-        default: () => ({ children: [{ template: "<svg />" }] }),
+        default: "<div><svg /></div>",
       },
       attrs: {
         width: "200",

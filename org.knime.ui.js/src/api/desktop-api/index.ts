@@ -24,7 +24,7 @@ export interface DesktopEventHandlers {
     progress: number;
   }): void;
 
-  AiAssistantEvent(payload: { chainType: "qa" | "build"; data: {} }): void;
+  AiAssistantEvent(payload: { chainType: "qa" | "build"; data: unknown }): void;
 
   AiAssistantServerChangedEvent(): void;
 

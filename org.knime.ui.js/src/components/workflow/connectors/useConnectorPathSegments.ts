@@ -1,8 +1,12 @@
 import { type Ref, computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
-import { useStore } from "@/composables/useStore";
+import { useSelectionStore } from "@/store/selection";
+import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getBendpointId } from "@/util/connectorUtil";
 
 import type { PathSegment } from "./types";
@@ -36,11 +40,13 @@ type UseConnectorPathSegmentsOptions = {
 export const useConnectorPathSegments = (
   options: UseConnectorPathSegmentsOptions,
 ) => {
-  const store = useStore();
-  const isDragging = computed(() => store.state.workflow.isDragging);
+  const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
+  const { isMetaNodePortBarSelected, isNodeSelected, isBendpointSelected } =
+    storeToRefs(useSelectionStore());
+  const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
   const virtualBendpoints = computed(
-    () => store.state.workflow.virtualBendpoints[options.id] ?? {},
+    () => useConnectionInteractionsStore().virtualBendpoints[options.id] ?? {},
   );
 
   const totalVirtualBendpoints = computed(
@@ -48,13 +54,6 @@ export const useConnectorPathSegments = (
   );
 
   const hasVirtualBendpoints = computed(() => totalVirtualBendpoints.value > 0);
-
-  const movePreviewDelta = computed(
-    () => store.state.workflow.movePreviewDelta,
-  );
-  const isMetanodePortBarSelected = computed(
-    () => store.getters["selection/isMetaNodePortBarSelected"],
-  );
 
   const isConnectedToConnectionId = (
     ports: NodePort[] | undefined,
@@ -66,22 +65,15 @@ export const useConnectorPathSegments = (
 
   const isMetanodeInPortBarConnection = computed(() =>
     isConnectedToConnectionId(
-      store.state.workflow.activeWorkflow!.metaInPorts?.ports,
+      activeWorkflow.value!.metaInPorts?.ports,
       options.id,
     ),
   );
   const isMetanodeOutPortBarConnection = computed(() =>
     isConnectedToConnectionId(
-      store.state.workflow.activeWorkflow!.metaOutPorts?.ports,
+      activeWorkflow.value!.metaOutPorts?.ports,
       options.id,
     ),
-  );
-
-  const isNodeSelected = computed(
-    () => store.getters["selection/isNodeSelected"],
-  );
-  const isBendpointSelected = computed(
-    () => store.getters["selection/isBendpointSelected"],
   );
 
   const { start: startSegmentPosition, end: endSegmentPosition } =
@@ -96,17 +88,17 @@ export const useConnectorPathSegments = (
     // Update position of source or destination node is being moved
     if (isDragging.value) {
       if (
-        isNodeSelected.value(options.sourceNode.value) ||
+        isNodeSelected.value(options.sourceNode.value ?? "") ||
         (isMetanodeInPortBarConnection.value &&
-          isMetanodePortBarSelected.value("in"))
+          isMetaNodePortBarSelected.value("in"))
       ) {
         startX += movePreviewDelta.value.x;
         startY += movePreviewDelta.value.y;
       }
       if (
-        isNodeSelected.value(options.destNode.value) ||
+        isNodeSelected.value(options.destNode.value ?? "") ||
         (isMetanodeOutPortBarConnection.value &&
-          isMetanodePortBarSelected.value("out"))
+          isMetaNodePortBarSelected.value("out"))
       ) {
         endX += movePreviewDelta.value.x;
         endY += movePreviewDelta.value.y;

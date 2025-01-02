@@ -7,13 +7,12 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import { NetworkException } from "@/api/gateway-api/generated-exceptions";
 import SearchButton from "@/components/common/SearchButton.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
-import * as spacesStore from "@/store/spaces";
 import {
   createSpace,
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { getToastPresets } from "@/toastPresets";
 import SpaceCard from "../SpaceCard.vue";
 import SpaceExplorerFloatingButton from "../SpaceExplorerFloatingButton.vue";
@@ -22,7 +21,8 @@ import SpaceSelectionPage from "../SpaceSelectionPage.vue";
 
 const routerPush = vi.fn();
 
-vi.mock("vue-router", () => ({
+vi.mock("vue-router", async (importOriginal) => ({
+  ...(await importOriginal()),
   useRouter: vi.fn(() => ({ push: routerPush })),
   useRoute: vi.fn(),
 }));
@@ -55,33 +55,26 @@ describe("SpaceSelectionPage.vue", () => {
   });
 
   const doMount = () => {
-    const $store = mockVuexStore({
-      spaces: spacesStore,
-    });
+    const mockedStores = mockStores();
 
     const { toastPresets } = getToastPresets();
 
-    $store.commit("spaces/setSpaceProviders", {
+    mockedStores.spaceProvidersStore.setSpaceProviders({
       [spaceProvider.id]: spaceProvider,
     });
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
 
     const mockRouter = { push: vi.fn() };
 
     const wrapper = mount(SpaceSelectionPage, {
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         stubs: { RouterLink: true },
       },
     });
 
     return {
       wrapper,
-      $store,
-      dispatchSpy,
-      commitSpy,
+      mockedStores,
       $router: mockRouter,
       toastPresets,
     };
@@ -105,7 +98,7 @@ describe("SpaceSelectionPage.vue", () => {
     });
 
     it("should reload spaces", async () => {
-      const { wrapper, dispatchSpy, toastPresets } = doMount();
+      const { wrapper, mockedStores, toastPresets } = doMount();
 
       const reloadProviderSpacesFailedSpy = vi.spyOn(
         toastPresets.spaces.crud,
@@ -114,7 +107,9 @@ describe("SpaceSelectionPage.vue", () => {
 
       await wrapper.find(".reload-button").trigger("click");
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
+      expect(
+        mockedStores.spaceProvidersStore.reloadProviderSpaces,
+      ).toHaveBeenCalledWith({
         id: spaceProvider.id,
       });
 
@@ -122,20 +117,24 @@ describe("SpaceSelectionPage.vue", () => {
     });
 
     it("should show error when reloading spaces", async () => {
-      const { wrapper, dispatchSpy, toastPresets } = doMount();
+      const { wrapper, mockedStores, toastPresets } = doMount();
 
       const reloadProviderSpacesFailedSpy = vi.spyOn(
         toastPresets.spaces.crud,
         "reloadProviderSpacesFailed",
       );
 
-      dispatchSpy.mockImplementationOnce(() =>
+      vi.mocked(
+        mockedStores.spaceProvidersStore.reloadProviderSpaces,
+      ).mockImplementationOnce(() =>
         Promise.reject(new NetworkException({ message: "Connectivity issue" })),
       );
 
       await wrapper.find(".reload-button").trigger("click");
 
-      expect(dispatchSpy).toHaveBeenCalledWith("spaces/reloadProviderSpaces", {
+      expect(
+        mockedStores.spaceProvidersStore.reloadProviderSpaces,
+      ).toHaveBeenCalledWith({
         id: spaceProvider.id,
       });
 
@@ -188,13 +187,15 @@ describe("SpaceSelectionPage.vue", () => {
     });
 
     it("should create a new space", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       await wrapper
         .findAllComponents(SpaceExplorerFloatingButton)
         .at(0)!
         .vm.$emit("click");
-      expect($store.dispatch).toHaveBeenCalledWith("spaces/createSpace", {
+      expect(
+        mockedStores.spaceOperationsStore.createSpace,
+      ).toHaveBeenCalledWith({
         spaceProviderId: spaceProvider.id,
         spaceGroup: spaceGroup1,
         $router: expect.anything(),

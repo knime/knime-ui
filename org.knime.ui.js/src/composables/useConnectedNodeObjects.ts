@@ -1,6 +1,7 @@
 import { type Ref, computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import { useStore } from "./useStore";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 type UseConnectedNodeObjectsOptions = {
   /**
@@ -16,17 +17,17 @@ type UseConnectedNodeObjectsOptions = {
 export const useConnectedNodeObjects = (
   options: UseConnectedNodeObjectsOptions,
 ) => {
-  const store = useStore();
+  const { activeWorkflow } = storeToRefs(useWorkflowStore());
 
   const sourceNodeObject = computed(() =>
     options.sourceNode.value
-      ? store.state.workflow!.activeWorkflow!.nodes[options.sourceNode.value]
+      ? activeWorkflow.value!.nodes[options.sourceNode.value]
       : null,
   );
 
   const destNodeObject = computed(() =>
     options.destNode.value
-      ? store.state.workflow!.activeWorkflow!.nodes[options.destNode.value]
+      ? activeWorkflow.value!.nodes[options.destNode.value]
       : null,
   );
 

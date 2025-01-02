@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 
 import ActionBar from "@/components/common/ActionBar.vue";
 import * as $shapes from "@/style/shapes";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import NodeLabelEditor from "../NodeLabelEditor.vue";
 import NodeLabelTextArea from "../NodeLabelTextArea.vue";
 
@@ -15,18 +15,13 @@ describe("NodeLabelEditor", () => {
     kind: "node",
   };
   const doMount = () => {
-    const storeConfig = {
-      canvas: {
-        getters: {
-          viewBox: () => ({ left: 0, top: 0 }),
-        },
-      },
-    };
-    const $store = mockVuexStore(storeConfig);
+    const mockedStores = mockStores();
+
+    mockedStores.canvasStore.viewBox = { left: 0, top: 0 };
     const wrapper = mount(NodeLabelEditor, {
       props,
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: { $shapes },
         stubs: { NodeLabelTextArea: true },
       },

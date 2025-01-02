@@ -1,16 +1,16 @@
 import { type Ref, onMounted, onUnmounted } from "vue";
+import { storeToRefs } from "pinia";
 
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 type UseKanvasContextMenuOptions = {
   rootEl: Ref<HTMLElement>;
 };
 
 export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
-  const store = useStore();
-
-  const toggleContextMenu = (event: unknown) =>
-    store.dispatch("application/toggleContextMenu", { event });
+  const { toggleContextMenu } = useApplicationStore();
+  const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
   // handle native context menu event
   const onContextMenu = (event: MouseEvent) => {
@@ -25,8 +25,8 @@ export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
     event.preventDefault();
 
     // trigger it for empty workflows as we don't have a pan there
-    if (store.getters["workflow/isWorkflowEmpty"]) {
-      toggleContextMenu(event);
+    if (isWorkflowEmpty.value) {
+      toggleContextMenu({ event });
     }
   };
 
@@ -42,7 +42,8 @@ export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
 
   const onKeydown = (event: KeyboardEvent) => {
     const stopPreventAndToggleContextMenu = () => {
-      toggleContextMenu(event);
+      // @ts-expect-error TODO: fix type in store
+      toggleContextMenu({ event });
       event.preventDefault();
       event.stopPropagation();
     };

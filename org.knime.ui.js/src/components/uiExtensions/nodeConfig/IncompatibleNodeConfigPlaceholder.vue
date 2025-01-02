@@ -1,21 +1,20 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
 import CogIcon from "@knime/styles/img/icons/cog.svg";
 
-import type { KnimeNode } from "@/api/custom-types";
 import { Node } from "@/api/gateway-api/generated-api";
 import DownloadAPButton from "@/components/common/DownloadAPButton.vue";
-import { useStore } from "@/composables/useStore";
 import { isDesktop } from "@/environment";
+import { useSelectionStore } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 
-const store = useStore();
-
-const selectedNode = computed<KnimeNode>(
-  () => store.getters["selection/singleSelectedNode"],
-);
+const uiControls = useUIControlsStore();
+const { singleSelectedNode: selectedNode } = storeToRefs(useSelectionStore());
 
 const hasLegacyDialog = computed(() =>
   Boolean(
@@ -23,8 +22,6 @@ const hasLegacyDialog = computed(() =>
       selectedNode.value.dialogType === Node.DialogTypeEnum.Swing,
   ),
 );
-
-const uiControls = computed(() => store.state.uiControls);
 
 const isMetanode = computed(
   () => selectedNode.value && isNodeMetaNode(selectedNode.value),
@@ -36,7 +33,7 @@ const openNodeConfiguration = () => {
   }
 
   const nodeId = selectedNode.value.id;
-  store.dispatch("workflow/openNodeConfiguration", nodeId);
+  useDesktopInteractionsStore().openNodeConfiguration(nodeId);
 };
 </script>
 

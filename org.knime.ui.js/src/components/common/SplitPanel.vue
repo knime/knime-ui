@@ -28,6 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
   direction: "left",
   showSecondaryPanel: true,
   removeElementOnClose: false,
+  splitterId: "",
 });
 
 interface Emits {

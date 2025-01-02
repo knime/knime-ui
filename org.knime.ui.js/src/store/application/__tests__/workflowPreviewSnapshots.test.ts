@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Store } from "vuex";
+import { flushPromises } from "@vue/test-utils";
+import { API } from "@api";
 
-import type { RootStoreState } from "@/store/types";
+import { createWorkflow } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
+import type { useWorkflowPreviewSnapshotsStore } from "../workflowPreviewSnapshots";
 
 import { loadStore } from "./loadStore";
 
@@ -13,108 +16,129 @@ vi.mock("@/util/generateWorkflowPreview", () => ({
   generateWorkflowPreview: vi.fn((value) => value.outerHTML),
 }));
 
+const mockedAPI = deepMocked(API);
+
 describe("workflow preview snapshot", () => {
-  const getSnapshotKeys = (_store: Store<RootStoreState>) =>
-    Array.from(_store.state.application.rootWorkflowSnapshots.keys());
+  const getSnapshotKeys = (
+    _store: ReturnType<typeof useWorkflowPreviewSnapshotsStore>,
+  ) => Array.from(_store.rootWorkflowSnapshots.keys());
 
   describe("getActiveWorkflowSnapshot", () => {
     it("should get the active workflow snapshot when on the root level", async () => {
-      const { store } = loadStore();
+      const { workflowPreviewSnapshotsStore, canvasStore } = loadStore();
 
-      await store.dispatch("application/getActiveWorkflowSnapshot");
-      expect(store.state.canvas.getScrollContainerElement).toHaveBeenCalled();
+      const spy = vi.fn(() => ({ firstChild: {} }));
+      // @ts-ignore
+      canvasStore.getScrollContainerElement = spy;
+
+      await workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot();
+      expect(spy).toHaveBeenCalled();
     });
 
     it("should get the active workflow snapshot when not on the root level", async () => {
-      const { store } = loadStore();
+      const { workflowStore, workflowPreviewSnapshotsStore } = loadStore();
 
-      store.state.workflow.activeWorkflow.info.containerId = "root:17";
+      workflowStore.activeWorkflow!.projectId = "foo";
+      workflowStore.activeWorkflow!.info.containerId = "root:17";
 
-      store.state.application.rootWorkflowSnapshots.set(
+      workflowPreviewSnapshotsStore.rootWorkflowSnapshots.set(
         "foo--root",
         "<svg data-was-saved></svg>",
       );
 
-      const result = await store.dispatch(
-        "application/getActiveWorkflowSnapshot",
-      );
+      const result =
+        await workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot();
       expect(result).toBe("<svg data-was-saved></svg>");
     });
   });
 
   it("should save the current project snapshot when changing to a different project if current is unsaved", async () => {
-    const { store } = loadStore();
-    store.state.workflow.activeWorkflow.dirty = true;
+    const { applicationStore, workflowStore, workflowPreviewSnapshotsStore } =
+      loadStore();
+    workflowStore.activeWorkflow!.dirty = true;
 
-    const { activeProjectId } = store.state.application;
-    expect(store.state.application.rootWorkflowSnapshots.size).toBe(0);
+    const { activeProjectId } = applicationStore;
+    expect(workflowPreviewSnapshotsStore.rootWorkflowSnapshots.size).toBe(0);
 
-    await store.dispatch("application/updatePreviewSnapshot", {
+    workflowPreviewSnapshotsStore.updatePreviewSnapshot({
       isChangingProject: true,
       newWorkflow: {
         projectId: "bar",
       },
     });
 
+    await flushPromises();
+
     expect(
-      store.state.application.rootWorkflowSnapshots.get(
+      workflowPreviewSnapshotsStore.rootWorkflowSnapshots.get(
         `${activeProjectId}--root`,
       ),
     ).toBeDefined();
   });
 
   it("should update the workflow preview snapshots correctly (single project)", async () => {
-    const { store } = loadStore();
+    const {
+      canvasStore,
+      workflowStore,
+      applicationStore,
+      lifecycleStore,
+      workflowPreviewSnapshotsStore,
+    } = loadStore();
 
     const projectId = "project1";
 
     // create a dummy element to act as the workflow
     const canvasWrapperMockEl = document.createElement("div");
+    canvasWrapperMockEl.scrollTo = vi.fn();
     const canvasMockEl = document.createElement("svg");
     canvasWrapperMockEl.appendChild(canvasMockEl);
-    // setup canvas
-    store.state.canvas = {
-      getScrollContainerElement: () => canvasWrapperMockEl,
-    };
+    canvasStore.getScrollContainerElement = () => canvasWrapperMockEl;
+
     // setup activeWorkflow
-    store.commit("workflow/setActiveWorkflow", {
-      info: { containerId: "root" },
-      projectId,
-      nodes: {},
-      workflowAnnotations: [],
-    });
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        info: { containerId: "root" },
+        projectId,
+        nodes: {},
+        workflowAnnotations: [],
+      }),
+    );
     // setup projects
-    store.commit("application/setActiveProjectId", projectId);
-    store.commit("application/setOpenProjects", [
-      { projectId, name: projectId },
-    ]);
+    applicationStore.setActiveProjectId(projectId);
+    applicationStore.setOpenProjects([{ projectId, name: projectId }]);
 
     // switch to nested workflow on the same project
-    await store.dispatch("application/switchWorkflow", {
+    await lifecycleStore.switchWorkflow({
       newWorkflow: { projectId, workflowId: "root:1" },
     });
 
     // should have saved 1 snapshot
-    expect(getSnapshotKeys(store).length).toBe(1);
+    expect(getSnapshotKeys(workflowPreviewSnapshotsStore).length).toBe(1);
     expect(
-      store.state.application.rootWorkflowSnapshots.get(
-        getSnapshotKeys(store)[0],
+      workflowPreviewSnapshotsStore.rootWorkflowSnapshots.get(
+        getSnapshotKeys(workflowPreviewSnapshotsStore)[0],
       ),
     ).toBe("<svg></svg>");
 
     // go back to the root workflow
-    await store.dispatch("application/switchWorkflow", {
+    await lifecycleStore.switchWorkflow({
       newWorkflow: { projectId, workflowId: "root" },
     });
 
     // should have cleared the snapshot
-    expect(getSnapshotKeys(store).length).toBe(0);
+    expect(getSnapshotKeys(workflowPreviewSnapshotsStore).length).toBe(0);
   });
 
   it("should update the workflow preview snapshots correctly (multiple projects)", async () => {
-    const { store, loadWorkflow } = loadStore();
+    const {
+      canvasStore,
+      workflowStore,
+      applicationStore,
+      lifecycleStore,
+      workflowPreviewSnapshotsStore,
+    } = loadStore();
 
-    loadWorkflow
+    mockedAPI.workflow.getWorkflow
       .mockResolvedValueOnce({
         workflow: {
           info: { containerId: "root:1" },
@@ -141,44 +165,44 @@ describe("workflow preview snapshot", () => {
     canvasWrapperMockEl.appendChild(canvasMockEl);
 
     // setup canvas
-    store.state.canvas = {
-      getScrollContainerElement: () => canvasWrapperMockEl,
-    };
+    canvasStore.getScrollContainerElement = () => canvasWrapperMockEl;
 
     // setup activeWorkflow
-    store.commit("workflow/setActiveWorkflow", {
-      info: { containerId: "root" },
-      projectId: project1,
-      nodes: {},
-      workflowAnnotations: [],
-    });
+    workflowStore.setActiveWorkflow(
+      createWorkflow({
+        info: { containerId: "root" },
+        projectId: project1,
+        nodes: {},
+        workflowAnnotations: [],
+      }),
+    );
 
     // setup projects
-    store.commit("application/setActiveProjectId", project1);
-    store.commit("application/setOpenProjects", [
+    applicationStore.setActiveProjectId(project1);
+    applicationStore.setOpenProjects([
       { projectId: project1, name: project1 },
       { projectId: project2, name: project2 },
     ]);
 
     // first switch to nested workflow on project1
-    await store.dispatch("application/switchWorkflow", {
+    await lifecycleStore.switchWorkflow({
       newWorkflow: { projectId: project1, workflowId: "root:1" },
     });
 
     // then switch to root workflow on project2
-    await store.dispatch("application/switchWorkflow", {
+    await lifecycleStore.switchWorkflow({
       newWorkflow: { projectId: project2, workflowId: "root" },
     });
 
     // should have saved 1 snapshot (only from the 1st project)
-    expect(getSnapshotKeys(store).length).toBe(1);
+    expect(getSnapshotKeys(workflowPreviewSnapshotsStore).length).toBe(1);
 
     // go into nested workflow on project 2
-    await store.dispatch("application/switchWorkflow", {
+    await lifecycleStore.switchWorkflow({
       newWorkflow: { projectId: project2, workflowId: "root:2" },
     });
 
     // should have saved 2 snapshots, one for each project
-    expect(getSnapshotKeys(store).length).toBe(2);
+    expect(getSnapshotKeys(workflowPreviewSnapshotsStore).length).toBe(2);
   });
 });

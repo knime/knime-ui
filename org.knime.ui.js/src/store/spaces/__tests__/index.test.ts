@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { API } from "@api";
 
-import { API } from "@/api";
 import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
 import { deepMocked } from "@/test/utils";
 
@@ -31,16 +31,16 @@ describe("spaces::index", () => {
   describe("copyBetweenSpace", () => {
     it("should copy items between spaces", async () => {
       const itemIds = ["id1", "id2"];
-      const { store } = loadStore();
+      const { spacesStore, spaceCachingStore } = loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "local",
         spaceId: "local",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/copyBetweenSpaces", {
+      await spacesStore.copyBetweenSpaces({
         projectId,
         itemIds,
       });
@@ -60,16 +60,17 @@ describe("spaces::index", () => {
     it("should move items between spaces on same Hub", async () => {
       const itemIds = ["id1", "id2"];
       mockedAPI.desktop.moveOrCopyToSpace.mockReturnValueOnce("SUCCESS");
-      const { store, dispatchSpy } = loadStore();
+      const { spacesStore, spaceCachingStore, spaceOperationsStore } =
+        loadStore();
 
       const projectId = "project2";
-      store.state.spaces.projectPath[projectId] = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "hub1",
         spaceId: "space1",
         itemId: "level2",
       };
 
-      await store.dispatch("spaces/moveOrCopyToSpace", {
+      await spacesStore.moveOrCopyToSpace({
         projectId,
         isCopy: false,
         itemIds,
@@ -83,10 +84,9 @@ describe("spaces::index", () => {
         destinationItemId: "mockDestinationItemId",
         nameCollisionHandling: null,
       });
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        "spaces/fetchWorkflowGroupContent",
-        { projectId },
-      );
+      expect(
+        spaceOperationsStore.fetchWorkflowGroupContent,
+      ).toHaveBeenCalledWith({ projectId });
     });
   });
 });

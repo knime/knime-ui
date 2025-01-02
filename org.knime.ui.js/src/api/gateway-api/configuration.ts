@@ -1,4 +1,6 @@
+import type { RPCClient } from "./rpc-client";
+
 export interface Configuration {
-  url: string;
+  createRPCClient: () => RPCClient;
   postProcessCommandResponse?: <T>(response: Promise<T>) => Promise<T>;
 }

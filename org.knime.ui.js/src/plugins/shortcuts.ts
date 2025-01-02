@@ -1,5 +1,4 @@
 import { type Router, useRouter } from "vue-router";
-import { type Store, useStore } from "vuex";
 
 import { type ToastService, useToasts } from "@knime/components";
 import { type HotkeysNS, hotkeys, navigatorUtils } from "@knime/utils";
@@ -10,7 +9,6 @@ import type {
   Hotkeys,
   ShortcutsService,
 } from "@/shortcuts/types";
-import type { RootStoreState } from "@/store/types";
 
 import type { PluginInitFunction } from "./types";
 
@@ -50,11 +48,9 @@ const isDigitKeyInRange = (
 };
 
 export const createShortcutsService = ({
-  $store,
   $router,
   $toast,
 }: {
-  $store: Store<RootStoreState>;
   $router: Router;
   $toast: ToastService;
 }) => {
@@ -161,7 +157,7 @@ export const createShortcutsService = ({
       return true;
     }
 
-    return shortcut.condition({ $store });
+    return shortcut.condition();
   };
 
   const preventDefault: ShortcutsService["preventDefault"] = (shortcutName) => {
@@ -179,7 +175,6 @@ export const createShortcutsService = ({
     const shortcut = getByName(shortcutName);
 
     shortcut.execute({
-      $store,
       $router,
       $toast,
       payload,
@@ -194,7 +189,7 @@ export const createShortcutsService = ({
     }
 
     return typeof shortcut.text === "function"
-      ? shortcut.text({ $store })
+      ? shortcut.text()
       : shortcut.text;
   };
 
@@ -211,16 +206,15 @@ export const createShortcutsService = ({
 };
 
 export const useShortcuts = () => {
-  const $store = useStore();
   const $router = useRouter();
   const $toast = useToasts();
 
-  return createShortcutsService({ $store, $router, $toast });
+  return createShortcutsService({ $router, $toast });
 };
 
 // define plugin
-const init: PluginInitFunction = ({ app, $store, $router, $toast }) => {
-  const $shortcuts = createShortcutsService({ $store, $router, $toast });
+const init: PluginInitFunction = ({ app, $router, $toast }) => {
+  const $shortcuts = createShortcutsService({ $router, $toast });
 
   // define global $shortcuts property
   app.config.globalProperties.$shortcuts = $shortcuts;

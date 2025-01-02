@@ -1,18 +1,19 @@
 import { shallowRef } from "vue";
+import { API } from "@api";
 import { uniqueId } from "lodash-es";
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import { defineStore } from "pinia";
 
 import CopyIcon from "@knime/styles/img/icons/copy.svg";
 
-import { API } from "@/api";
+import type { XY } from "@/api/gateway-api/generated-api";
 import { createAbortablePromise } from "@/api/utils";
 import { getToastsProvider } from "@/plugins/toasts";
+import { useCanvasStore } from "@/store/canvas";
+import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { pastePartsAt, pasteURI } from "@/util/pasteToWorkflow";
-import type { RootStoreState } from "../types";
 
-import type { WorkflowState } from ".";
-import { getProjectAndWorkflowIds } from "./util";
+import { useWorkflowStore } from "./workflow";
 
 const $toast = getToastsProvider();
 
@@ -56,20 +57,6 @@ const writeToClipboardWithFallback = async (clipboardContent: string) => {
   }
 };
 
-interface State {
-  copyPaste: {
-    payloadIdentifier?: unknown;
-    lastPasteBounds?: {
-      left: number;
-      top: number;
-      width: number;
-      height: number;
-    };
-  } | null;
-  cacheClipboardContent: Record<string, string>;
-  isClipboardBusy: boolean;
-}
-
 let copyCutAbortController: AbortController = new AbortController();
 
 let pasteOperation: (() => Promise<unknown>) | null = null;
@@ -81,227 +68,252 @@ const processPasteOperation = () => {
   pasteOperation = null;
 };
 
-declare module "./index" {
-  interface WorkflowState extends State {}
+type PasteBounds = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
+export interface ClipboardInteractionsState {
+  copyPaste: {
+    payloadIdentifier?: unknown;
+    lastPasteBounds?: PasteBounds;
+  } | null;
+  cacheClipboardContent: Record<string, string>;
+  isClipboardBusy: boolean;
 }
 
-export const state = (): State => ({
-  copyPaste: null,
-  cacheClipboardContent: {},
-  isClipboardBusy: false,
-});
+export const useClipboardInteractionsStore = defineStore(
+  "clipboardInteractions",
+  {
+    state: (): ClipboardInteractionsState => ({
+      copyPaste: null,
+      cacheClipboardContent: {},
+      isClipboardBusy: false,
+    }),
+    actions: {
+      setCopyPaste(copyPasteState: ClipboardInteractionsState["copyPaste"]) {
+        this.copyPaste = copyPasteState;
+      },
 
-export const mutations: MutationTree<WorkflowState> = {
-  setCopyPaste(state, copyPasteState) {
-    state.copyPaste = copyPasteState;
-  },
-
-  setClipboardContentCache(
-    state,
-    { cacheClipboardContentId, clipboardContent },
-  ) {
-    state.cacheClipboardContent = {
-      [cacheClipboardContentId]: clipboardContent,
-    };
-  },
-
-  setLastPasteBounds(state, bounds) {
-    if (!state.copyPaste) {
-      state.copyPaste = {};
-    }
-    state.copyPaste.lastPasteBounds = bounds;
-  },
-
-  setIsClipboardBusy(state, value) {
-    state.isClipboardBusy = value;
-  },
-};
-
-export const actions: ActionTree<WorkflowState, RootStoreState> = {
-  async copyOrCutWorkflowParts(
-    { state, rootGetters, dispatch, commit },
-    { command },
-  ) {
-    if (!["copy", "cut"].includes(command)) {
-      throw new Error("command has to be 'copy' or 'cut'");
-    }
-
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
-    const selectedNodes = rootGetters["selection/selectedNodeIds"];
-    const selectedAnnotations = rootGetters["selection/selectedAnnotationIds"];
-    const connectionBendpoints = rootGetters["selection/selectedBendpoints"];
-
-    if (rootGetters["selection/isSelectionEmpty"]) {
-      return;
-    }
-
-    const objectBounds = geometry.getWorkflowObjectBounds({
-      nodes: rootGetters["selection/selectedNodes"],
-      workflowAnnotations: rootGetters["selection/selectedAnnotations"],
-    });
-
-    if (command === "cut") {
-      await dispatch("selection/deselectAllObjects", null, { root: true });
-    }
-
-    const workflowCommand =
-      command === "copy" ? API.workflowCommand.Copy : API.workflowCommand.Cut;
-
-    const { abortController, runAbortablePromise } = createAbortablePromise();
-
-    copyCutAbortController.abort();
-    copyCutAbortController = abortController;
-
-    try {
-      commit("setIsClipboardBusy", true);
-
-      // add this placeholder for webkit (safari) browsers to be able to fetch the data from the store later
-      const cacheClipboardContentId = `clipboard_cache_${uniqueId()}`;
-      await navigator.clipboard.writeText(
-        JSON.stringify({ cacheClipboardContentId }),
-      );
-
-      const response = await runAbortablePromise(() =>
-        workflowCommand({
-          projectId,
-          workflowId,
-          nodeIds: selectedNodes,
-          annotationIds: selectedAnnotations,
-          connectionBendpoints,
-        }),
-      );
-
-      const payload = JSON.parse(response.content);
-
-      const clipboardContent = {
-        payloadIdentifier: payload.payloadIdentifier,
-        projectId,
-        workflowId,
-        data: response.content,
-        objectBounds,
-      };
-
-      commit("setCopyPaste", {
-        payloadIdentifier: clipboardContent.payloadIdentifier,
-      });
-
-      const clipboardContentSerialized = JSON.stringify(clipboardContent);
-
-      // remember the data for non chromium browsers
-      commit("setClipboardContentCache", {
+      setClipboardContentCache({
         cacheClipboardContentId,
-        clipboardContent: clipboardContentSerialized,
-      });
+        clipboardContent,
+      }: {
+        cacheClipboardContentId: string;
+        clipboardContent: string;
+      }) {
+        this.cacheClipboardContent = {
+          [cacheClipboardContentId]: clipboardContent,
+        };
+      },
 
-      await writeToClipboardWithFallback(clipboardContentSerialized);
+      setLastPasteBounds(bounds: PasteBounds) {
+        if (!this.copyPaste) {
+          this.copyPaste = {};
+        }
+        this.copyPaste.lastPasteBounds = bounds;
+      },
 
-      commit("setIsClipboardBusy", false);
-      processPasteOperation();
+      setIsClipboardBusy(isClipboardBusy: boolean) {
+        this.isClipboardBusy = isClipboardBusy;
+      },
 
-      consola.info("Copied workflow parts", clipboardContent);
-    } catch (error) {
-      // we aborted the call so just return and do nothing
-      if (
-        typeof error === "object" &&
-        error &&
-        "name" in error &&
-        error.name === "AbortError"
-      ) {
-        consola.info("Aborting first copy/cut request");
-        return;
-      }
+      async copyOrCutWorkflowParts({ command }: { command: "cut" | "copy" }) {
+        const selectionStore = useSelectionStore();
 
-      consola.error("Could not write to clipboard.");
-    }
-  },
+        if (!["copy", "cut"].includes(command)) {
+          throw new Error("command has to be 'copy' or 'cut'");
+        }
 
-  async pasteWorkflowParts(
-    { state, getters: { isWorkflowEmpty }, dispatch, rootGetters, commit },
-    { position: customPosition } = { position: null },
-  ) {
-    if (state.isClipboardBusy) {
-      enqueuePasteOperation(() =>
-        dispatch("pasteWorkflowParts", { position: customPosition }),
-      );
-      return;
-    }
+        const { projectId, workflowId } =
+          useWorkflowStore().getProjectAndWorkflowIds;
+        const selectedNodes = selectionStore.selectedNodeIds;
+        const selectedAnnotations = selectionStore.selectedAnnotationIds;
+        const connectionBendpoints = selectionStore.getSelectedBendpoints;
 
-    const { activeWorkflow } = state;
-    let clipboardContent, clipboardText;
-    try {
-      // TODO: NXT-1168 Put a limit on the clipboard content size
-      clipboardText = await navigator.clipboard.readText();
-    } catch (e) {
-      consola.info(
-        "Could not read from clipboard. Maybe the user did not permit it?",
-      );
-      return;
-    }
+        if (selectionStore.isSelectionEmpty) {
+          return;
+        }
 
-    try {
-      clipboardContent = JSON.parse(clipboardText);
-      // replace the content with our cache if we have a hit (store cached data is used for non chrome browsers)
-      if (
-        clipboardContent.cacheClipboardContentId &&
-        state.cacheClipboardContent[clipboardContent.cacheClipboardContentId]
-      ) {
-        clipboardContent = JSON.parse(
-          state.cacheClipboardContent[clipboardContent.cacheClipboardContentId],
-        );
-      }
-    } catch (e) {
-      // try to paste the clipboard content as a URI
-      if (
-        !pasteURI(
-          clipboardText,
-          activeWorkflow!,
-          customPosition,
-          rootGetters["canvas/getVisibleFrame"](),
-        )
-      ) {
-        consola.info("Could not parse json or URI from clipboard.");
-      }
-      return;
-    }
-
-    consola.info("Pasted workflow parts");
-
-    // 1. Decide where to paste
-    const { position, doAfterPaste } = customPosition
-      ? { position: customPosition, doAfterPaste: null }
-      : pastePartsAt({
-          visibleFrame: rootGetters["canvas/getVisibleFrame"](),
-          clipboardContent,
-          isWorkflowEmpty,
-          dispatch,
+        const objectBounds = geometry.getWorkflowObjectBounds({
+          nodes: selectionStore.getSelectedNodes,
+          workflowAnnotations: selectionStore.getSelectedAnnotations,
         });
 
-    // 2. Remember decision
-    commit("setLastPasteBounds", {
-      left: position.x,
-      top: position.y,
-      width: clipboardContent.objectBounds.width,
-      height: clipboardContent.objectBounds.height,
-    });
+        if (command === "cut") {
+          selectionStore.deselectAllObjects();
+        }
 
-    const { projectId, workflowId } = getProjectAndWorkflowIds(state);
+        const workflowCommand =
+          command === "copy"
+            ? API.workflowCommand.Copy
+            : API.workflowCommand.Cut;
 
-    // 3. Do actual pasting
-    const { nodeIds, annotationIds } = await API.workflowCommand.Paste({
-      projectId,
-      workflowId,
-      content: clipboardContent.data,
-      position,
-    });
+        const { abortController, runAbortablePromise } =
+          createAbortablePromise();
 
-    // 4. Execute hook and select pasted content
-    doAfterPaste?.();
-    await dispatch("selection/deselectAllObjects", null, { root: true });
-    await dispatch("selection/selectNodes", nodeIds, { root: true });
-    await dispatch("selection/selectAnnotations", annotationIds, {
-      root: true,
-    });
+        copyCutAbortController.abort();
+        copyCutAbortController = abortController;
+
+        try {
+          this.setIsClipboardBusy(true);
+
+          // add this placeholder for webkit (safari) browsers to be able to fetch the data from the store later
+          const cacheClipboardContentId = `clipboard_cache_${uniqueId()}`;
+          await navigator.clipboard.writeText(
+            JSON.stringify({ cacheClipboardContentId }),
+          );
+
+          const response = await runAbortablePromise(() =>
+            workflowCommand({
+              projectId,
+              workflowId,
+              nodeIds: selectedNodes,
+              annotationIds: selectedAnnotations,
+              connectionBendpoints,
+            }),
+          );
+
+          const payload = JSON.parse(response.content);
+
+          const clipboardContent = {
+            payloadIdentifier: payload.payloadIdentifier,
+            projectId,
+            workflowId,
+            data: response.content,
+            objectBounds,
+          };
+
+          this.setCopyPaste({
+            payloadIdentifier: clipboardContent.payloadIdentifier,
+          });
+
+          const clipboardContentSerialized = JSON.stringify(clipboardContent);
+
+          // remember the data for non chromium browsers
+          this.setClipboardContentCache({
+            cacheClipboardContentId,
+            clipboardContent: clipboardContentSerialized,
+          });
+
+          await writeToClipboardWithFallback(clipboardContentSerialized);
+
+          this.setIsClipboardBusy(false);
+          processPasteOperation();
+
+          consola.info("Copied workflow parts", clipboardContent);
+        } catch (error) {
+          // we aborted the call so just return and do nothing
+          if (
+            typeof error === "object" &&
+            error &&
+            "name" in error &&
+            error.name === "AbortError"
+          ) {
+            consola.info("Aborting first copy/cut request");
+            return;
+          }
+
+          consola.error("Could not write to clipboard.");
+        }
+      },
+
+      async pasteWorkflowParts(
+        { position: customPosition }: { position?: XY | null } = {
+          position: null,
+        },
+      ) {
+        if (this.isClipboardBusy) {
+          enqueuePasteOperation(() =>
+            this.pasteWorkflowParts({ position: customPosition }),
+          );
+          return;
+        }
+
+        const canvasStore = useCanvasStore();
+        const workflowStore = useWorkflowStore();
+        const selectionStore = useSelectionStore();
+
+        let clipboardContent, clipboardText;
+        try {
+          // TODO: NXT-1168 Put a limit on the clipboard content size
+          clipboardText = await navigator.clipboard.readText();
+        } catch (e) {
+          consola.info(
+            "Could not read from clipboard. Maybe the user did not permit it?",
+          );
+          return;
+        }
+
+        try {
+          clipboardContent = JSON.parse(clipboardText);
+          // replace the content with our cache if we have a hit (store cached data is used for non chrome browsers)
+          if (
+            clipboardContent.cacheClipboardContentId &&
+            this.cacheClipboardContent[clipboardContent.cacheClipboardContentId]
+          ) {
+            clipboardContent = JSON.parse(
+              this.cacheClipboardContent[
+                clipboardContent.cacheClipboardContentId
+              ],
+            );
+          }
+        } catch (e) {
+          // try to paste the clipboard content as a URI
+          if (
+            !pasteURI(
+              clipboardText,
+              workflowStore.activeWorkflow!,
+              customPosition ?? { x: 0, y: 0 },
+              canvasStore.getVisibleFrame,
+            )
+          ) {
+            consola.info("Could not parse json or URI from clipboard.");
+          }
+          return;
+        }
+
+        consola.info("Pasted workflow parts");
+
+        // 1. Decide where to paste
+        const { position, fillScreenAfterPaste } = customPosition
+          ? { position: customPosition, fillScreenAfterPaste: false }
+          : pastePartsAt({
+              visibleFrame: canvasStore.getVisibleFrame,
+              clipboardContent,
+              isWorkflowEmpty: workflowStore.isWorkflowEmpty,
+            });
+
+        // 2. Remember decision
+        this.setLastPasteBounds({
+          left: position.x,
+          top: position.y,
+          width: clipboardContent.objectBounds.width,
+          height: clipboardContent.objectBounds.height,
+        });
+
+        const { projectId, workflowId } =
+          workflowStore.getProjectAndWorkflowIds;
+
+        // 3. Do actual pasting
+        const { nodeIds, annotationIds } = await API.workflowCommand.Paste({
+          projectId,
+          workflowId,
+          content: clipboardContent.data,
+          position,
+        });
+
+        // 4. Execute hook and select pasted content
+        if (fillScreenAfterPaste) {
+          canvasStore.fillScreen();
+        }
+
+        selectionStore.deselectAllObjects();
+        selectionStore.selectNodes(nodeIds!);
+        selectionStore.selectAnnotations(annotationIds!);
+      },
+    },
   },
-};
-
-export const getters: GetterTree<WorkflowState, RootStoreState> = {};
+);

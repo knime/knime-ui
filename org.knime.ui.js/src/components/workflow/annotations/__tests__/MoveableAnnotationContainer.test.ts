@@ -1,15 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import type { Bounds } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as selectionStore from "@/store/selection";
-import * as uiControlsStore from "@/store/uiControls";
-import * as workflowStore from "@/store/workflow";
 import * as $shapes from "@/style/shapes";
 import { createWorkflow } from "@/test/factories";
-import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockBoundingRect } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import MoveableAnnotationContainer from "../MoveableAnnotationContainer.vue";
 
 const mockedAPI = deepMocked(API);
@@ -23,7 +20,7 @@ describe("MoveableAnnotationContainer.vue", () => {
   const doMount = ({
     props = {},
     mocks = {},
-    screenToCanvasCoordinatesMock = vi.fn().mockReturnValue(() => [0, 0]),
+    screenToCanvasCoordinatesMock = vi.fn(() => [0, 0]),
   } = {}) => {
     const createMockMoveDirective = () => {
       let handlers = {};
@@ -40,35 +37,19 @@ describe("MoveableAnnotationContainer.vue", () => {
 
     const mockMoveDirective = createMockMoveDirective();
 
-    const $store = mockVuexStore({
-      workflow: workflowStore,
-      selection: selectionStore,
-      canvas: {
-        state: { zoomFactor: 1, isMoveLocked: false },
-        getters: {
-          screenToCanvasCoordinates: screenToCanvasCoordinatesMock,
-        },
-      },
-      aiAssistant: {
-        state: { build: { isProcessing: false } },
-      },
-      application: {
-        state: { ...applicationStore.state(), canvasMode: "selection" },
-      },
-      uiControls: uiControlsStore,
-    });
+    const mockedStores = mockStores();
 
-    $store.commit("workflow/setActiveWorkflow", createWorkflow());
-
-    const dispatchSpy = vi.spyOn($store, "dispatch");
-    const commitSpy = vi.spyOn($store, "commit");
+    // @ts-ignore
+    mockedStores.canvasStore.screenToCanvasCoordinates =
+      screenToCanvasCoordinatesMock;
+    mockedStores.workflowStore.setActiveWorkflow(createWorkflow());
 
     const finalProps = { ...defaultProps, ...props };
     const wrapper = mount(MoveableAnnotationContainer, {
       props: finalProps,
       global: {
         mocks: { $shapes, ...mocks },
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
       },
     });
 
@@ -79,7 +60,7 @@ describe("MoveableAnnotationContainer.vue", () => {
       right: finalProps.bounds.width,
     });
 
-    return { wrapper, $store, mockMoveDirective, dispatchSpy, commitSpy };
+    return { wrapper, mockedStores, mockMoveDirective };
   };
 
   const startAnnotationDrag = (
@@ -115,10 +96,10 @@ describe("MoveableAnnotationContainer.vue", () => {
     });
 
     it("deselects all objects on movement of unselected annotation", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       // add something to selection
-      await $store.dispatch("selection/selectNode", "root:1");
+      mockedStores.selectionStore.selectNode("root:1");
 
       startAnnotationDrag(wrapper, {
         clientX: 199,
@@ -128,17 +109,17 @@ describe("MoveableAnnotationContainer.vue", () => {
       await flushPromises();
 
       // node was unselected
-      expect($store.state.selection.selectedNodes).toEqual({});
-      expect($store.state.selection.selectedAnnotations).toEqual({
+      expect(mockedStores.selectionStore.selectedNodes).toEqual({});
+      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
         "annotation:1": true,
       });
     });
 
-    it("does not deselect annotation when annotation is already selected", async () => {
-      const { wrapper, $store } = doMount();
+    it("does not deselect annotation when annotation is already selected", () => {
+      const { wrapper, mockedStores } = doMount();
 
-      await $store.dispatch("selection/selectAnnotation", "annotation:1");
-      expect($store.state.selection.selectedAnnotations).toEqual({
+      mockedStores.selectionStore.selectAnnotation("annotation:1");
+      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
         "annotation:1": true,
       });
 
@@ -148,7 +129,7 @@ describe("MoveableAnnotationContainer.vue", () => {
         shiftKey: false,
       });
 
-      expect($store.state.selection.selectedAnnotations).toEqual({
+      expect(mockedStores.selectionStore.selectedAnnotations).toEqual({
         "annotation:1": true,
       });
     });
@@ -171,9 +152,9 @@ describe("MoveableAnnotationContainer.vue", () => {
         right: bounds.width,
       });
 
-      const { wrapper, $store } = doMount({
+      const { wrapper, mockedStores } = doMount({
         props: { bounds },
-        screenToCanvasCoordinatesMock: vi.fn(() => ([x, y]) => [x, y]),
+        screenToCanvasCoordinatesMock: vi.fn(([x, y]) => [x, y]),
       });
 
       const clickPosition = { clientX: 85, clientY: 85 };
@@ -184,11 +165,11 @@ describe("MoveableAnnotationContainer.vue", () => {
 
       await flushPromises();
 
-      expect($store.state.workflow.isDragging).toBe(true);
+      expect(mockedStores.movingStore.isDragging).toBe(true);
 
       moveTo({ ...movePosition, altKey });
 
-      expect($store.state.workflow.movePreviewDelta).toEqual(expectedDelta);
+      expect(mockedStores.movingStore.movePreviewDelta).toEqual(expectedDelta);
     });
 
     it("ends movement of an annotation", async () => {
@@ -221,14 +202,13 @@ describe("MoveableAnnotationContainer.vue", () => {
   });
 
   it("sets an id of annotation from which selection started", () => {
-    const { wrapper, $store, commitSpy } = doMount();
-    $store.state.canvas.isMoveLocked = true;
+    const { wrapper, mockedStores } = doMount();
+    mockedStores.canvasStore.isMoveLocked = true;
 
     wrapper.trigger("pointerdown", { button: 0 });
 
-    expect(commitSpy).toHaveBeenCalledWith(
-      "selection/setStartedSelectionFromAnnotationId",
-      defaultProps.id,
-    );
+    expect(
+      mockedStores.selectionStore.setStartedSelectionFromAnnotationId,
+    ).toHaveBeenCalledWith(defaultProps.id);
   });
 });

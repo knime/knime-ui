@@ -1,20 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
+import { API } from "@api";
 
-import { API } from "@/api";
 import {
   NativeNodeInvariants,
   type NodeTemplate,
   PortType,
 } from "@/api/gateway-api/generated-api";
 import { KNIME_MIME } from "@/composables/useDropNode";
-import * as nodeTemplatesStore from "@/store/nodeTemplates";
-import * as panelStore from "@/store/panel";
-import * as selectionStore from "@/store/selection";
-import * as worflowStore from "@/store/workflow";
 import { createAvailablePortTypes, createWorkflow } from "@/test/factories";
-import { deepMocked, mockBoundingRect, mockVuexStore } from "@/test/utils";
+import { deepMocked, mockBoundingRect } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import DraggableNodeTemplate from "../DraggableNodeTemplate.vue";
 
 const mockedAPI = deepMocked(API);
@@ -38,56 +35,55 @@ describe("DraggableNodeTemplate", () => {
     vi.clearAllMocks();
   });
 
-  const doMount = ({ props = {}, isWritable = null } = {}) => {
+  const doMount = ({ props = {}, isWritable = true } = {}) => {
     const defaultProps = { nodeTemplate: baseNodeTemplate };
 
-    const $store = mockVuexStore({
-      application: {
-        state: {
-          availablePortTypes: createAvailablePortTypes({
-            "org.port.mockId": {
-              kind: PortType.KindEnum.Table,
-              color: "mockColor",
-              name: "mockport",
-            },
-          }),
+    const {
+      testingPinia,
+      workflowStore,
+      canvasStore,
+      applicationStore,
+      selectionStore,
+      nodeTemplatesStore,
+      panelStore,
+    } = mockStores();
+    applicationStore.setAvailablePortTypes(
+      createAvailablePortTypes({
+        "org.port.mockId": {
+          kind: PortType.KindEnum.Table,
+          color: "mockColor",
+          name: "mock_port",
         },
-      },
-      panel: panelStore,
-      workflow: {
-        ...worflowStore,
-        getters: {
-          ...worflowStore.getters,
-          isWritable: isWritable || (() => true),
-        },
-      },
-      canvas: {
-        getters: {
-          getVisibleFrame: () =>
-            vi.fn().mockReturnValue({
-              left: 0,
-              top: 0,
-              width: 500,
-              height: 500,
-            }),
-        },
-      },
-      nodeTemplates: nodeTemplatesStore,
-      selection: selectionStore,
-    });
+      }),
+    );
 
-    const workflow = createWorkflow();
-    $store.commit("workflow/setActiveWorkflow", workflow);
+    // @ts-expect-error
+    workflowStore.isWritable = isWritable;
+    workflowStore.setActiveWorkflow(createWorkflow());
+
+    // @ts-expect-error
+    canvasStore.getVisibleFrame = {
+      left: 0,
+      top: 0,
+      width: 500,
+      height: 500,
+    };
 
     const wrapper = mount(DraggableNodeTemplate, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [testingPinia],
         mocks: { $shapes: { nodeSize: 32 } },
       },
     });
 
-    return { wrapper, $store };
+    return {
+      wrapper,
+      workflowStore,
+      selectionStore,
+      panelStore,
+      nodeTemplatesStore,
+    };
   };
 
   it("shows node name in label", () => {
@@ -137,8 +133,8 @@ describe("DraggableNodeTemplate", () => {
     });
 
     it("looks for free space to position node if there is already a node", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.workflow.activeWorkflow.nodes["root:2"].position = {
+      const { wrapper, workflowStore } = doMount();
+      workflowStore.activeWorkflow!.nodes["root:2"].position = {
         x: 234,
         y: 171.5,
       };
@@ -152,7 +148,7 @@ describe("DraggableNodeTemplate", () => {
     });
 
     it("does nothing on double click if workflow it not writeable", async () => {
-      const { wrapper } = doMount({ isWritable: () => false });
+      const { wrapper } = doMount({ isWritable: false });
 
       wrapper.find(".node").trigger("dblclick");
       await nextTick();
@@ -161,14 +157,12 @@ describe("DraggableNodeTemplate", () => {
     });
 
     it("takes single selected node into account", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.workflow.activeWorkflow.nodes["root:2"].position = {
+      const { wrapper, workflowStore, selectionStore } = doMount();
+      workflowStore.activeWorkflow!.nodes["root:2"].position = {
         x: 100,
         y: 100,
       };
-      $store.state.selection.selectedNodes = {
-        "root:2": true,
-      };
+      selectionStore.addNodesToSelection(["root:2"]);
 
       wrapper.find(".node").trigger("dblclick");
       await nextTick();
@@ -228,7 +222,7 @@ describe("DraggableNodeTemplate", () => {
 
       wrapper.trigger("dragstart", testEvent);
 
-      const clonedNodePreview = wrapper.vm.dragGhost;
+      const clonedNodePreview = wrapper.vm.dragGhost as unknown as HTMLElement;
 
       // Correct Styling
       expect(clonedNodePreview.style.position).toBe("absolute");
@@ -262,7 +256,7 @@ describe("DraggableNodeTemplate", () => {
     });
 
     it("changes cursor when dragged in write-protected mode", () => {
-      const { wrapper } = doMount({ isWritable: () => false });
+      const { wrapper } = doMount({ isWritable: false });
 
       wrapper.trigger("drag");
       const node = wrapper.find(".node");
@@ -271,7 +265,7 @@ describe("DraggableNodeTemplate", () => {
     });
 
     it("removes style from node when dragging ends", () => {
-      const { wrapper } = doMount({ isWritable: () => false });
+      const { wrapper } = doMount({ isWritable: false });
 
       wrapper.trigger("drag");
       const node = wrapper.find(".node");
@@ -284,16 +278,16 @@ describe("DraggableNodeTemplate", () => {
     });
 
     it("closes description panel when dragging starts", async () => {
-      const { wrapper, $store } = doMount();
-      $store.state.panel.isExtensionPanelOpen = true;
+      const { wrapper, panelStore } = doMount();
+      panelStore.isExtensionPanelOpen = true;
       await wrapper.trigger("dragstart", testEvent);
 
-      expect($store.state.panel.isExtensionPanelOpen).toBe(false);
+      expect(panelStore.isExtensionPanelOpen).toBe(false);
     });
 
     it("emits event to show node description when dragging is aborted", async () => {
-      const { wrapper, $store } = doMount({ props: { isSelected: true } });
-      $store.state.panel.isExtensionPanelOpen = true;
+      const { wrapper, panelStore } = doMount({ props: { isSelected: true } });
+      panelStore.isExtensionPanelOpen = true;
 
       // start dragging while node is selected
       await wrapper.trigger("dragstart", testEvent);
@@ -309,18 +303,18 @@ describe("DraggableNodeTemplate", () => {
     });
 
     it("sets isDraggingNode as true when dragging starts", async () => {
-      const { wrapper, $store } = doMount();
-      expect($store.state.nodeTemplates.draggedTemplateData).toBeNull();
+      const { wrapper, nodeTemplatesStore } = doMount();
+      expect(nodeTemplatesStore.draggedTemplateData).toBeNull();
       await wrapper.trigger("dragstart", testEvent);
 
-      expect($store.state.nodeTemplates.draggedTemplateData).not.toBeNull();
+      expect(nodeTemplatesStore.draggedTemplateData).not.toBeNull();
     });
 
     it("sets isDraggingNode as false when dragging ends", async () => {
-      const { wrapper, $store } = doMount();
+      const { wrapper, nodeTemplatesStore } = doMount();
       await wrapper.trigger("dragend", { dataTransfer: { dropEffect: "" } });
 
-      expect($store.state.nodeTemplates.draggedTemplateData).toBeNull();
+      expect(nodeTemplatesStore.draggedTemplateData).toBeNull();
     });
   });
 });

@@ -7,7 +7,7 @@ import MenuIcon from "@knime/styles/img/icons/menu-options.svg";
 import TrashIcon from "@knime/styles/img/icons/trash.svg";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
-import { useStore } from "@/composables/useStore";
+import { useAIAssistantStore } from "@/store/aiAssistant";
 
 import KaiExtensionPanel from "./KaiExtensionPanel.vue";
 import Chat from "./chat/Chat.vue";
@@ -16,14 +16,14 @@ import type { ChainType } from "./types";
 
 const chainType = ref<ChainType>("qa");
 
-const store = useStore();
+const { clearConversation } = useAIAssistantStore();
 
 const deleteChatMenuItem = {
   text: "Clear chat",
   icon: TrashIcon,
   metadata: {
     handler: () =>
-      store.dispatch("aiAssistant/clearConversation", {
+      clearConversation({
         chainType: chainType.value,
       }),
   },

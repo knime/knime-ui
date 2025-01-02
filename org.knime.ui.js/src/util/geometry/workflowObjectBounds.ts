@@ -1,5 +1,9 @@
-import type { Workflow } from "@/api/custom-types";
-import type { Bounds, MetaPorts } from "@/api/gateway-api/generated-api";
+import type { KnimeNode, Workflow } from "@/api/custom-types";
+import type {
+  Bounds,
+  MetaPorts,
+  WorkflowAnnotation,
+} from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 import { mergePortBarBounds } from "../workflowUtil";
 
@@ -28,7 +32,7 @@ const getLimitBounds = ({
   workflowAnnotations,
   padding,
 }: {
-  nodes: Workflow["nodes"];
+  nodes: Workflow["nodes"] | KnimeNode[];
   workflowAnnotations: Workflow["workflowAnnotations"];
   padding: boolean;
 }) => {
@@ -105,8 +109,8 @@ const getMetanodePortbarMargins = (
 };
 
 type ObjectBoundsParameter = {
-  nodes: Workflow["nodes"];
-  workflowAnnotations: Workflow["workflowAnnotations"];
+  nodes: Workflow["nodes"] | KnimeNode[];
+  workflowAnnotations: Workflow["workflowAnnotations"] | WorkflowAnnotation[];
   metaInPorts?: Workflow["metaInPorts"];
   metaOutPorts?: Workflow["metaOutPorts"];
 };

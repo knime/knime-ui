@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "@/components/common/side-panel/SidebarPanelScrollContainer.vue";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
-import { useStore } from "@/composables/useStore";
+import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 
 import WorkflowMonitorContent from "./WorkflowMonitorContent.vue";
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
 import { useWorkflowMonitorActivation } from "./useWorkflowMonitorActivation";
 
-const store = useStore();
-
-const isLoading = computed(() => store.state.workflowMonitor.isLoading);
+const { isLoading } = storeToRefs(useWorkflowMonitorStore());
 
 useWorkflowMonitorActivation();
 </script>

@@ -1,35 +1,35 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
+import { mockStores } from "@/test/utils/mockStores";
 import { selectionShortcuts, sidePanelShortcuts } from "../miscShortcuts";
 
 describe("miscShortcuts", () => {
-  let mockDispatch, $store, mockCommit;
-
-  beforeEach(() => {
-    mockDispatch = vi.fn();
-    mockCommit = vi.fn();
-    $store = {
-      dispatch: mockDispatch,
-      commit: mockCommit,
-    };
-  });
-
   describe("sidePanelShortcuts", () => {
     it("execute toggleSidePanel", () => {
-      sidePanelShortcuts.toggleSidePanel.execute({ $store });
-      expect(mockCommit).toHaveBeenCalledWith("panel/toggleExpanded");
+      const { panelStore } = mockStores();
+
+      sidePanelShortcuts.toggleSidePanel.execute();
+      expect(panelStore.toggleExpanded).toHaveBeenCalled();
     });
   });
 
   describe("selectionShortcuts", () => {
     it("execute selectAll", () => {
-      selectionShortcuts.selectAll.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("selection/selectAllObjects");
+      const { selectionStore, workflowStore } = mockStores();
+
+      workflowStore.activeWorkflow = {
+        nodes: [],
+        workflowAnnotations: [],
+      };
+      selectionShortcuts.selectAll.execute();
+      expect(selectionStore.selectAllObjects).toHaveBeenCalled();
     });
 
     it("execute deselectAll", () => {
-      selectionShortcuts.deselectAll.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("selection/deselectAllObjects");
+      const { selectionStore } = mockStores();
+
+      selectionShortcuts.deselectAll.execute();
+      expect(selectionStore.deselectAllObjects).toHaveBeenCalled();
     });
   });
 });

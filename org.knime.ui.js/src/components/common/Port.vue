@@ -1,7 +1,9 @@
 <script>
-import { mapState } from "vuex";
+import { mapState } from "pinia";
 
 import { PortIcon } from "@knime/components";
+
+import { useApplicationStore } from "@/store/application/application";
 
 export default {
   components: {
@@ -24,7 +26,7 @@ export default {
     },
   },
   computed: {
-    ...mapState("application", { portTypes: "availablePortTypes" }),
+    ...mapState(useApplicationStore, { portTypes: "availablePortTypes" }),
     portKind() {
       // port kind has to be fetched from port type map
       return this.portTypes[this.port.typeId].kind;

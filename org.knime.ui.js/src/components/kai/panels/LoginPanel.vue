@@ -3,7 +3,7 @@ import { Button } from "@knime/components";
 
 import { useHubAuth } from "../useHubAuth";
 
-const { authenticateWithHub, hubId } = useHubAuth();
+const { authenticateWithHub, hubID } = useHubAuth();
 </script>
 
 <template>
@@ -13,7 +13,7 @@ const { authenticateWithHub, hubId } = useHubAuth();
       to chat with our AI assistant.
     </div>
     <Button primary compact @click="authenticateWithHub"
-      >Login to {{ hubId }}</Button
+      >Login to {{ hubID }}</Button
     >
   </div>
 </template>

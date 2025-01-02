@@ -7,19 +7,15 @@ import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
 import { useQuickActionMenu } from "@/components/workflow/quickActionMenu/useQuickActionMenu";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
-import * as aiAssistantStore from "@/store/aiAssistant";
-import * as quickAddNodesStore from "@/store/quickAddNodes";
-import * as selectionStore from "@/store/selection";
-import * as settingsStore from "@/store/settings";
-import * as workflowStore from "@/store/workflow";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import {
   PORT_TYPE_IDS,
   createAvailablePortTypes,
   createPort,
+  createWorkflow,
 } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";
@@ -69,63 +65,38 @@ describe("QuickActionMenu.vue", () => {
       nodeRelation: "SUCCESSORS",
     };
 
-    const storeConfig = {
-      aiAssistant: aiAssistantStore,
-      canvas: {
-        state: () => ({
-          zoomFactor: 1,
-        }),
-        getters: {
-          contentBounds() {
-            return {
-              top: 33,
-              height: 1236,
-            };
-          },
-        },
+    const mockedStores = mockStores();
+    mockedStores.workflowStore.activeWorkflow = createWorkflow({
+      info: {
+        containerId: "container0",
       },
-      quickAddNodes: quickAddNodesStore,
-      application: {
-        state: {
-          availablePortTypes: createAvailablePortTypes({
-            "org.some.otherPorType": {
-              kind: PortType.KindEnum.Other,
-              color: "blue",
-              name: "Some other port",
-            },
-          }),
-          hasNodeCollectionActive: true,
-          hasNodeRecommendationsEnabled: true,
-        },
+      projectId: "project0",
+      nodes: {},
+      metaInPorts: {
+        xPos: 100,
+        ports: [defaultPortMock],
       },
-      selection: selectionStore,
-      settings: settingsStore,
-      workflow: {
-        state: {
-          ...workflowStore.state(),
-          activeWorkflow: {
-            info: {
-              containerId: "container0",
-            },
-            projectId: "project0",
-            nodes: {},
-            metaInPorts: {
-              xPos: 100,
-              ports: [defaultPortMock],
-            },
-            metaOutPorts: {
-              xPos: 702,
-              ports: [defaultPortMock, defaultPortMock, defaultPortMock],
-            },
-          },
-        },
-        actions: {
-          addNode: addNodeMock,
-        },
+      metaOutPorts: {
+        xPos: 702,
+        ports: [defaultPortMock, defaultPortMock, defaultPortMock],
       },
+    });
+    mockedStores.canvasStore.contentBounds = {
+      top: 33,
+      height: 1236,
     };
 
-    const $store = mockVuexStore(storeConfig);
+    mockedStores.applicationStore.availablePortTypes = createAvailablePortTypes(
+      {
+        "org.some.otherPorType": {
+          kind: PortType.KindEnum.Other,
+          color: "blue",
+          name: "Some other port",
+        },
+      },
+    );
+    mockedStores.applicationSettingsStore.hasNodeCollectionActive = true;
+    mockedStores.applicationSettingsStore.hasNodeRecommendationsEnabled = true;
 
     const isKaiEnabledRef = ref(isKaiEnabled); // this one we can modify externally to affect the computed one
     const isKaiEnabledComputed = computed(() => isKaiEnabledRef.value);
@@ -147,7 +118,7 @@ describe("QuickActionMenu.vue", () => {
     const wrapper = mount(QuickActionMenu, {
       props: { ...defaultProps, ...props },
       global: {
-        plugins: [$store],
+        plugins: [mockedStores.testingPinia],
         mocks: {
           $shapes: {
             ...$shapes,
@@ -167,7 +138,7 @@ describe("QuickActionMenu.vue", () => {
 
     return {
       wrapper,
-      $store,
+      mockedStores,
       addNodeMock,
       $shortcuts,
       isKaiEnabledRef,

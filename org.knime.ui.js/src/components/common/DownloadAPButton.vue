@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
-import { useStore } from "@/composables/useStore";
+import { useApplicationStore } from "@/store/application/application";
 
 type Props = {
   src: string;
@@ -17,10 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
   onDark: false,
 });
 
-const store = useStore();
-const analyticsPlatformDownloadURL = computed(
-  () => store.state.application.analyticsPlatformDownloadURL,
-);
+const { analyticsPlatformDownloadURL } = storeToRefs(useApplicationStore());
 
 const href = computed(() => {
   const parameter = `?src=${props.src}`;
