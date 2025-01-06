@@ -124,9 +124,6 @@ final class Init {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state, final boolean checkForUpdates) {
         var projectManager = state.getProjectManager();
         var localSpace = state.getLocalSpace();
-        var spaceProviders = createSpaceProviders(localSpace);
-        var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
-        var appStateUpdater = new AppStateUpdater();
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
         var spaceProviders = createSpaceProviders(localSpace, toastService);

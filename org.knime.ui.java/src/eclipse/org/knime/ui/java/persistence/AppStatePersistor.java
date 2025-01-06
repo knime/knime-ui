@@ -78,7 +78,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Utility methods to persist (saven and load) the state of the KNIME UI to a file.
+ * Utility methods to persist (save and load) the state of the KNIME UI to a file.
  *
  * An important part of the app state is derived from the {@link ProjectManager} which keeps track of the opened and
  * active workflow projects.
@@ -128,7 +128,7 @@ public final class AppStatePersistor {
      * @return a string representing the app state
      */
     public static String serializeAppState(final ProjectManager pm, final MostRecentlyUsedProjects mruProjects,
-        LocalSpace localSpace) {
+        final LocalSpace localSpace) {
         var projectsJson = serializeProjects(pm, localSpace);
         var mruProjectsJson = serializeMRUProjects(mruProjects, localSpace);
         var res = MAPPER.createObjectNode().put(VERSION, KNIMEConstants.VERSION);
@@ -139,7 +139,7 @@ public final class AppStatePersistor {
         return res.toPrettyString();
     }
 
-    private static ArrayNode serializeProjects(final ProjectManager projectManager, LocalSpace localSpace) {
+    private static ArrayNode serializeProjects(final ProjectManager projectManager, final LocalSpace localSpace) {
         return projectManager.getProjectIds().stream().map(id -> projectManager.getProject(id).orElse(null))
             .filter(Objects::nonNull) //
             // only persist local workflow projects
@@ -152,7 +152,7 @@ public final class AppStatePersistor {
     }
 
     private static ObjectNode serializeProject(final ProjectManager projectManager, final Project project,
-        LocalSpace localSpace) {
+        final LocalSpace localSpace) {
         var projectJson = MAPPER.createObjectNode() //
             .put(NAME, project.getName()) //
             .put(ACTIVE, projectManager.isActiveProject(project.getID()));
@@ -161,12 +161,12 @@ public final class AppStatePersistor {
     }
 
     private static ArrayNode serializeMRUProjects(final MostRecentlyUsedProjects mruProjects,
-        LocalSpace localSpace) {
+        final LocalSpace localSpace) {
         return mruProjects.get().stream().map(project -> serializeRUProject(project, localSpace)) //
             .collect(arrayNodeCollector());
     }
 
-    private static ObjectNode serializeRUProject(final RecentlyUsedProject project, LocalSpace localSpace) {
+    private static ObjectNode serializeRUProject(final RecentlyUsedProject project, final LocalSpace localSpace) {
         var projectJson = MAPPER.createObjectNode() //
             .put(NAME, project.name()) //
             .put(TIME_USED, project.timeUsed().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -174,24 +174,20 @@ public final class AppStatePersistor {
         return projectJson;
     }
 
-    /**
-     * Currently assumed to be called only for projects in local space provider
-     */
     private static JsonNode serializeOrigin(final Origin origin, final boolean addProjectTypeIfPresent,
-        LocalSpace localSpace) {
+        final LocalSpace localSpace) {
         var originJson = MAPPER.createObjectNode() //
             .put(PROVIDER_ID, origin.getProviderId()) //
             .put(SPACE_ID, origin.getSpaceId());
         if (addProjectTypeIfPresent) {
             origin.getProjectType().map(ProjectTypeEnum::name).ifPresent(t -> originJson.put(PROJECT_TYPE, t));
         }
-        // item ID is assumed to be valid because we are serialising projects which were opened from some Space
-        localSpace.toLocalAbsolutePath(origin.getItemId()) //
-            .map(absolutePath -> localSpace.getRootPath().relativize(absolutePath)) //
-            .ifPresentOrElse( //
-                path -> originJson.put(RELATIVE_PATH, path.toString()), //
-                () -> originJson.put(ITEM_ID, origin.getItemId()) //
-            );
+        if (origin.isLocal()) {
+            final var relativePath = localSpace.toLocalRelativePath(origin.getItemId()).orElseThrow();
+            originJson.put(RELATIVE_PATH, relativePath.toString());
+        } else {
+            originJson.put(ITEM_ID, origin.getItemId());
+        }
         return originJson;
     }
 

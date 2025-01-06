@@ -135,7 +135,6 @@ public final class LocalSpaceUtil {
      * @return The {@link org.knime.gateway.impl.project.Project.Origin} of the workflow project.
      */
     public static Project.Origin getLocalOrigin(final Path absolutePath, final LocalSpace localSpace) {
-        var relativePath = toRelativePath(absolutePath, localSpace);
         var itemId = localSpace.getItemId(absolutePath);
         return new Project.Origin() { // NOSONAR
             @Override
@@ -158,10 +157,6 @@ public final class LocalSpaceUtil {
                 return localSpace.getProjectType(getItemId());
             }
         };
-    }
-
-    private static Path toRelativePath(final Path absolutePath, final LocalSpace localSpace) {
-        return localSpace.getRootPath().relativize(absolutePath);
     }
 
     /**

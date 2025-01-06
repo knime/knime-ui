@@ -244,8 +244,8 @@ final class OpenProject {
                 var wfm = pm.getCachedProject(project.getID()).orElse(null);
                 if (wfm != null) {
                     // update project to set origin and mark it to be used by the UI
-                    var projectWithOrigin = Project.of(wfm, spaceProviderId, spaceId, itemId, null,
-                        projectType, project.getID());
+                    var projectWithOrigin =
+                        Project.of(wfm, spaceProviderId, spaceId, itemId, projectType, project.getID());
                     pm.addProject(projectWithOrigin);
                     return new ProjectAndWorkflowManager(projectWithOrigin, wfm);
                 }
@@ -256,19 +256,12 @@ final class OpenProject {
 
     private static ProjectAndWorkflowManager loadProject(final Space space, final String spaceProviderId,
         final String spaceId, final String itemId, final ProjectTypeEnum projectType, final IProgressMonitor monitor) {
-        // TODo how is this different from fetchAndLoadProjectWithProgress?
         // see caller -- pretty sure this can be simplified/flattened
         var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor);
         if (wfm == null) {
             return null;
         }
-        String relativePath = null;
-        if (space instanceof LocalSpace localSpace) {
-            var wfPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
-            relativePath = localSpace.getRootPath().relativize(wfPath).toString();
-        }
-
-        var project = Project.of(wfm, spaceProviderId, spaceId, itemId, relativePath, projectType);
+        var project = Project.of(wfm, spaceProviderId, spaceId, itemId, projectType);
         return new ProjectAndWorkflowManager(project, wfm);
     }
 
