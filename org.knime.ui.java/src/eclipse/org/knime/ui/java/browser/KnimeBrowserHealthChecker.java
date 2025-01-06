@@ -55,6 +55,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -82,9 +83,16 @@ final class KnimeBrowserHealthChecker {
 
     private static final int TIMEOUT_IN_SECONDS = 10;
 
+    private static final UserChoice SAVE_AND_RESTART = new UserChoice("Save and restart", 0);
+
+    private static final UserChoice WAIT = new UserChoice("Wait", 1);
+
+    private record UserChoice(String label, int returnCode) {
+    }
+
     private final ChromiumBrowser m_browser;
 
-    private Timer m_timer = null;
+    private Timer m_timer;
 
     KnimeBrowserHealthChecker(final Browser browser) {
         if (!Boolean.getBoolean("org.knime.ui.disable_healthchecker")) {
@@ -126,7 +134,8 @@ final class KnimeBrowserHealthChecker {
         return Display.getDefault().syncCall(() -> {
             var dialog = createMessageDialog();
             var returnCode = dialog.open();
-            if (returnCode == 0) {
+            // return code is implied by order of buttons
+            if (returnCode == SAVE_AND_RESTART.returnCode()) {
                 saveAndRestart();
                 return false;
             } else {
@@ -142,7 +151,7 @@ final class KnimeBrowserHealthChecker {
 
     private static void saveAndCloseProjects() {
         var projectIds = ProjectManager.getInstance().getDirtyProjectsMap().entrySet().stream()
-            .filter(e -> e.getValue().booleanValue()).map(Entry::getKey).toArray(String[]::new);
+            .filter(Entry::getValue).map(Entry::getKey).toArray(String[]::new);
         // save and close projects
         var svgs = new String[projectIds.length];
         Arrays.fill(svgs, EMPTY_SVG);
@@ -151,9 +160,16 @@ final class KnimeBrowserHealthChecker {
     }
 
     private static MessageDialog createMessageDialog() {
-        return new MessageDialog(SWTUtilities.getActiveShell(), "User interface is not responding", null,
-            "An unresponsive user interface has been detected", MessageDialog.ERROR,
-            new String[]{"Save and restart", "Wait for the UI to respond"}, 1);
+        var buttonLabels = Stream.of(SAVE_AND_RESTART, WAIT).map(UserChoice::label).toArray(String[]::new);
+        return new MessageDialog( //
+            SWTUtilities.getActiveShell(), //
+            "User interface is not responding", //
+            null, //
+            "An unresponsive user interface has been detected", //
+            MessageDialog.ERROR, //
+            buttonLabels, //
+            1 //
+        );
     }
 
     void cancel() {
