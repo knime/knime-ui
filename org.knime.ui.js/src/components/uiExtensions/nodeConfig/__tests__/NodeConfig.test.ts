@@ -71,7 +71,7 @@ describe("NodeConfig", () => {
     const { wrapper } = doMount();
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "Select one node to show its dialog.",
+      "Select a to show its dialog.",
     );
   });
 
@@ -135,7 +135,7 @@ describe("NodeConfig", () => {
     await nextTick();
 
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "Select one node to show its dialog.",
+      "Select a to show its dialog.",
     );
   });
 
