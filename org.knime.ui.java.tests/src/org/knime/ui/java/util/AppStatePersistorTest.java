@@ -169,7 +169,7 @@ public class AppStatePersistorTest {
 
     @Test
     void testSaveAndLoadAppState() throws IOException {
-        openWorkflowProject();
+        openWorkflowProject(true);
         var pm = ProjectManager.getInstance();
         var mruProjects = new MostRecentlyUsedProjects();
         var appStateString = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
@@ -252,7 +252,7 @@ public class AppStatePersistorTest {
     }
 
     @SuppressWarnings("javadoc")
-    public static void openWorkflowProject() throws IOException {
+    public static void openWorkflowProject(final boolean isLocal) {
         var pm = ProjectManager.getInstance();
         var project = mock(Project.class);
         when(project.getID()).thenReturn("test_id");
@@ -261,6 +261,7 @@ public class AppStatePersistorTest {
         when(origin.getSpaceId()).thenReturn(LocalSpace.LOCAL_SPACE_ID);
         when(origin.getProviderId()).thenReturn(SpaceProvider.LOCAL_SPACE_PROVIDER_ID);
         when(origin.getItemId()).thenReturn(itemId);
+        when(origin.isLocal()).thenReturn(isLocal);
         when(project.getOrigin()).thenReturn(Optional.of(origin));
         pm.addProject(project);
     }

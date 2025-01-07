@@ -87,8 +87,8 @@ class SaveAndCloseProjectsTest {
         var pm = ProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
-            pm.addProject(Project.of(wfms.get(i - 1), "providerId",
-                "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, projectId));
+            pm.addProject(
+                Project.of(wfms.get(i - 1), "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, projectId));
             pm.openAndCacheProject(projectId);
         }
 

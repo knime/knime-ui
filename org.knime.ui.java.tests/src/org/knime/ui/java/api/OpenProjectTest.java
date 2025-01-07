@@ -129,8 +129,7 @@ class OpenProjectTest {
     @Test
     void testCreateWorkflowProject() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var project = Project.of(m_wfm, "providerId", "spaceId", "itemId", "relativePath",
-            ProjectTypeEnum.WORKFLOW, "projectId");
+        var project = Project.of(m_wfm, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId");
         assertThat(project.getName()).isEqualTo("workflow");
         assertThat(project.getID()).isEqualTo("projectId");
         assertThat(project.loadWorkflowManager()).isSameAs(m_wfm);
@@ -152,8 +151,7 @@ class OpenProjectTest {
         DesktopAPI.injectDependency(mruProjects);
 
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var project = Project.of(m_wfm, "providerId", "spaceId", "itemId", "relativePath",
-            ProjectTypeEnum.WORKFLOW, "projectId");
+        var project = Project.of(m_wfm, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId");
         OpenProject.registerProjectAndSetActive(project, m_wfm, SpaceProviderEnt.TypeEnum.LOCAL);
 
         var projectIds = pm.getProjectIds();

@@ -105,11 +105,11 @@ class ImportURITest {
         importURIAtWorkflowCanvasAndAssert(file.toURI().toString());
     }
 
-    private void importURIAtWorkflowCanvasAndAssert(final String uri) throws IOException {
+    private static void importURIAtWorkflowCanvasAndAssert(final String uri) throws IOException {
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
-            ProjectManager.getInstance().addProject(Project.of(wfm,
-                "providerID", "spaceId", "itemId", "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
+            ProjectManager.getInstance()
+                .addProject(Project.of(wfm, "providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId"));
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
                 new WorkflowMiddleware(ProjectManager.getInstance(), null));
             var nodeFactoryProvider = mock(NodeFactoryProvider.class);

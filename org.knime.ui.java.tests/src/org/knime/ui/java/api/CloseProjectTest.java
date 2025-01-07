@@ -101,10 +101,8 @@ class CloseProjectTest {
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
 
-        pm.addProject(Project.of(wfm1, "providerId", "spaceId", "itemId",
-            "relativePath", ProjectTypeEnum.WORKFLOW, "projectId1"));
-        pm.addProject(Project.of(wfm2, "providerId", "spaceId", "itemId",
-            "relativePath", ProjectTypeEnum.WORKFLOW, "projectId2"));
+        pm.addProject(Project.of(wfm1, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId1"));
+        pm.addProject(Project.of(wfm2, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId2"));
         pm.openAndCacheProject("projectId1");
         pm.setProjectActive("projectId1");
         assertThat(pm.getProjectIds()).hasSize(2);

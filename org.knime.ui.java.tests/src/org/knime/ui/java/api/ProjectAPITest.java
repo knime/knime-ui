@@ -85,8 +85,7 @@ class ProjectAPITest {
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var wpm = ProjectManager.getInstance();
-        wpm.addProject(Project.of(m_wfm, "providerId", "spaceId", "itemId",
-            "relativePath", ProjectTypeEnum.WORKFLOW, "projectId"));
+        wpm.addProject(Project.of(m_wfm, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId"));
 
         ProjectAPI.setProjectActiveAndEnsureItsLoaded("projectId");
 

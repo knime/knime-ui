@@ -135,7 +135,7 @@ class LifeCycleTest {
         lc.reload();
         assertStateTransition(lc, StateTransition.WEB_APP_LOADED, StateTransition.SAVE_STATE);
 
-        AppStatePersistorTest.openWorkflowProject();
+        AppStatePersistorTest.openWorkflowProject(false);
         lc.saveState(null);
         assertStateTransition(lc, StateTransition.SAVE_STATE, StateTransition.SUSPEND);
 
