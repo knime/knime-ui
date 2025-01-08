@@ -128,20 +128,20 @@ const fetchWorkflowGroupContent = async () => {
     return;
   }
   // unsubscribe from previous (no effect if no subscription)
-  store.dispatch("spaces/unsubscribeResourceChangedEventListener");
+  store.dispatch("spaces/unsubscribeSpaceItemChangedEventListener");
 
   await store.dispatch("spaces/fetchWorkflowGroupContent", {
     projectId: props.projectId,
   });
 
   // subscribe to space item identified by project id
-  store.dispatch("spaces/subscribeResourceChangedEventListener", {
+  store.dispatch("spaces/subscribeSpaceItemChangedEventListener", {
     projectId: props.projectId,
   });
 };
 
 onUnmounted(() => {
-  store.dispatch("spaces/unsubscribeResourceChangedEventListener");
+  store.dispatch("spaces/unsubscribeSpaceItemChangedEventListener");
 });
 
 // spaceId and itemId (folder) are based on the projectId but might change even with the same projectId (change dir)

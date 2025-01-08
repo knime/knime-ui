@@ -3185,64 +3185,6 @@ export interface ProjectMetadata extends EditableProjectMetadata {
 
 
 /**
- * Event to update the state of the space explorer.
- * @export
- * @interface ProviderResourceChangedEvent
- */
-export interface ProviderResourceChangedEvent extends Event {
-
-    /**
-     *
-     * @type {string}
-     * @memberof ProviderResourceChangedEvent
-     */
-    providerId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof ProviderResourceChangedEvent
-     */
-    spaceId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof ProviderResourceChangedEvent
-     */
-    itemId: string;
-
-}
-
-
-/**
- * The event type to register for the respective event.
- * @export
- * @interface ProviderResourceChangedEventType
- */
-export interface ProviderResourceChangedEventType extends EventType {
-
-    /**
-     *
-     * @type {string}
-     * @memberof ProviderResourceChangedEventType
-     */
-    providerId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof ProviderResourceChangedEventType
-     */
-    spaceId: string;
-    /**
-     *
-     * @type {string}
-     * @memberof ProviderResourceChangedEventType
-     */
-    itemId: string;
-
-}
-
-
-/**
  * Remove a port from a node
  * @export
  * @interface RemovePortCommand
@@ -3594,6 +3536,64 @@ export namespace SpaceItem {
         Data = 'Data'
     }
 }
+/**
+ * Event to update the state of the space explorer.
+ * @export
+ * @interface SpaceItemChangedEvent
+ */
+export interface SpaceItemChangedEvent extends Event {
+
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEvent
+     */
+    providerId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEvent
+     */
+    spaceId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEvent
+     */
+    itemId: string;
+
+}
+
+
+/**
+ * The event type to register for the respective event.
+ * @export
+ * @interface SpaceItemChangedEventType
+ */
+export interface SpaceItemChangedEventType extends EventType {
+
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEventType
+     */
+    providerId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEventType
+     */
+    spaceId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof SpaceItemChangedEventType
+     */
+    itemId: string;
+
+}
+
+
 /**
  * Describes from where a workflow or component project originates.
  * @export
@@ -6181,7 +6181,7 @@ export type EventParams =
     | (NodeRepositoryLoadingProgressEventType & { typeId: 'NodeRepositoryLoadingProgressEventType' })
     | (ProjectDisposedEventType & { typeId: 'ProjectDisposedEventType' })
     | (WorkflowMonitorStateChangeEventType & { typeId: 'WorkflowMonitorStateChangeEventType' })
-    | (ProviderResourceChangedEventType & { typeId: 'ProviderResourceChangedEventType' })
+    | (SpaceItemChangedEventType & { typeId: 'SpaceItemChangedEventType' })
 ;
 
 export interface EventHandlers {
@@ -6194,7 +6194,7 @@ export interface EventHandlers {
     ShowToastEvent?(payload: ShowToastEvent): void;
     ProjectDisposedEvent?(payload: ProjectDisposedEvent): void;
     WorkflowMonitorStateChangeEvent?(payload: WorkflowMonitorStateChangeEvent): void;
-    ProviderResourceChangedEvent?(payload: ProviderResourceChangedEvent): void;
+    SpaceItemChangedEvent?(payload: SpaceItemChangedEvent): void;
     SelectionEvent?(payload: SelectionEvent): void;
 }
 

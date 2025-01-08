@@ -1,22 +1,22 @@
 /* eslint-disable max-lines */
-import type { Router } from "vue-router";
-import type { ActionTree, GetterTree, MutationTree } from "vuex";
+import type {Router} from "vue-router";
+import type {ActionTree, GetterTree, MutationTree} from "vuex";
 
-import { API } from "@/api";
-import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
+import {API} from "@/api";
+import type {SpaceProviderNS, WorkflowOrigin} from "@/api/custom-types";
 import {
   SpaceGroup,
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import { $bus } from "@/plugins/event-bus";
-import { APP_ROUTES } from "@/router/appRoutes";
+import {$bus} from "@/plugins/event-bus";
+import {APP_ROUTES} from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import type { RootStoreState } from "../types";
+import type {RootStoreState} from "../types";
 
-import { globalSpaceBrowserProjectId } from "./common";
-import type { SpacesState } from "./index";
-import { isProjectOpen } from "./util";
+import {globalSpaceBrowserProjectId} from "./common";
+import type {SpacesState} from "./index";
+import {isProjectOpen} from "./util";
 
 export interface PathTriplet {
   spaceId: string;
@@ -32,7 +32,8 @@ interface State {
 }
 
 declare module "./index" {
-  interface SpacesState extends State {}
+  interface SpacesState extends State {
+  }
 }
 
 export const state = (): State => ({
@@ -63,8 +64,8 @@ export const mutations: MutationTree<SpacesState> = {
 // #region:actions
 export const actions: ActionTree<SpacesState, RootStoreState> = {
   async fetchWorkflowGroupContentByIdTriplet(
-    { commit, dispatch },
-    { spaceId, spaceProviderId, itemId, retry = true },
+    {commit, dispatch},
+    {spaceId, spaceProviderId, itemId, retry = true},
   ) {
     try {
       commit("setIsLoadingContent", true);
@@ -77,7 +78,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return content;
     } catch (dataFetchError) {
       if (retry) {
-        const { isConnected } = await dispatch("connectProvider", {
+        const {isConnected} = await dispatch("connectProvider", {
           spaceProviderId,
         });
 
@@ -104,7 +105,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async fetchWorkflowGroupContent({ commit, state, dispatch }, { projectId }) {
+  async fetchWorkflowGroupContent({commit, state, dispatch}, {projectId}) {
     const pathTriplet = state.projectPath[projectId];
     if (!pathTriplet) {
       return [];
@@ -114,7 +115,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       "fetchWorkflowGroupContentByIdTriplet",
       pathTriplet,
     );
-    commit("setWorkflowGroupContent", { projectId, content });
+    commit("setWorkflowGroupContent", {projectId, content});
 
     return content;
   },
@@ -122,20 +123,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   /**
    * To start listening to hub resource changed events
    */
-  subscribeResourceChangedEventListener({ commit, state }, { projectId }) {
+  subscribeSpaceItemChangedEventListener({commit, state}, {projectId}) {
     const pathTriplet = state.projectPath[projectId];
     if (!pathTriplet) {
       return;
     }
 
-    const { spaceId, spaceProviderId: providerId, itemId } = pathTriplet;
-    const currentProvider = state.spaceProviders![providerId];
-
+    const {spaceId, spaceProviderId: providerId, itemId} = pathTriplet;
     API.event.subscribeEvent({
       providerId,
       spaceId,
       itemId,
-      typeId: "ProviderResourceChangedEventType",
+      typeId: "SpaceItemChangedEventType",
     });
 
     commit("setPreviousTriplet", pathTriplet);
@@ -144,26 +143,26 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   /**
    * To stop listing to hub resource changed events
    */
-  unsubscribeResourceChangedEventListener({ state }) {
+  unsubscribeSpaceItemChangedEventListener({state}) {
     if (state.previousTriplet) {
-      const { spaceProviderId, spaceId, itemId } = state.previousTriplet;
+      const {spaceProviderId, spaceId, itemId} = state.previousTriplet;
       API.event.unsubscribeEventListener({
         providerId: spaceProviderId,
         spaceId,
         itemId,
-        typeId: "ProviderResourceChangedEventType",
+        typeId: "SpaceItemChangedEventType",
       });
     }
   },
 
-  changeDirectory({ getters, commit }, { projectId, pathId }) {
+  changeDirectory({getters, commit}, {projectId, pathId}) {
     const itemId = getters.pathToItemId(projectId, pathId);
-    commit("updateProjectPath", { projectId, value: { itemId } });
-    return { itemId };
+    commit("updateProjectPath", {projectId, value: {itemId}});
+    return {itemId};
   },
 
   async createSpace(
-    { commit, state },
+    {commit, state},
     {
       spaceProviderId,
       spaceGroup,
@@ -181,13 +180,13 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
 
       const updatedGroups = originalProvider.spaceGroups.map((group) =>
         group.id === spaceGroup.id
-          ? { ...group, spaces: [...group.spaces, newSpace] }
+          ? {...group, spaces: [...group.spaces, newSpace]}
           : group,
       );
 
       commit("updateSpaceProvider", {
         id: spaceProviderId,
-        value: { ...originalProvider, spaceGroups: updatedGroups },
+        value: {...originalProvider, spaceGroups: updatedGroups},
       });
 
       const routeNow = $router.currentRoute.value.fullPath;
@@ -204,7 +203,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         });
       }
     } catch (error) {
-      consola.error("Error while creating space", { error });
+      consola.error("Error while creating space", {error});
 
       // rollback the space providers state
       commit("updateSpaceProvider", {
@@ -217,21 +216,21 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
   },
 
   async renameSpace(
-    { commit, state },
-    { spaceProviderId, spaceId, spaceName },
+    {commit, state},
+    {spaceProviderId, spaceId, spaceName},
   ) {
     const provider = state.spaceProviders![spaceProviderId];
     try {
       const updatedGroups = provider.spaceGroups.map((group) => ({
         ...group,
         spaces: group.spaces.map((space) =>
-          space.id === spaceId ? { ...space, name: spaceName } : space,
+          space.id === spaceId ? {...space, name: spaceName} : space,
         ),
       }));
 
       commit("updateSpaceProvider", {
         id: spaceProviderId,
-        value: { spaceGroups: updatedGroups },
+        value: {spaceGroups: updatedGroups},
       });
 
       await API.space.renameSpace({
@@ -240,7 +239,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         spaceName,
       });
     } catch (error) {
-      consola.error("Error while renaming space", { error });
+      consola.error("Error while renaming space", {error});
 
       // Rollback to the original spaceProvider state
       commit("updateSpaceProvider", {
@@ -252,8 +251,8 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async createWorkflow({ state, dispatch }, { projectId, workflowName }) {
-    const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
+  async createWorkflow({state, dispatch}, {projectId, workflowName}) {
+    const {spaceId, spaceProviderId, itemId} = state.projectPath[projectId];
 
     try {
       // use global block-ui because just using the local one for the space explorer
@@ -269,18 +268,18 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       $bus.emit("unblock-ui");
 
       // re-fetch the content of the current folder to include the created workflow (in the background)
-      dispatch("fetchWorkflowGroupContent", { projectId });
+      dispatch("fetchWorkflowGroupContent", {projectId});
 
       return newWorkflowItem;
     } catch (error) {
       $bus.emit("unblock-ui");
-      consola.log("Error creating workflow", { error });
+      consola.log("Error creating workflow", {error});
       throw error;
     }
   },
 
-  async createFolder({ dispatch, state, commit }, { projectId }) {
-    const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
+  async createFolder({dispatch, state, commit}, {projectId}) {
+    const {spaceId, spaceProviderId, itemId} = state.projectPath[projectId];
     // Loading will be cleared after fetching the data by fetchWorkflowGroupContent
     commit("setIsLoadingContent", true);
 
@@ -293,20 +292,20 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       })
       .catch((error) => {
         commit("setIsLoadingContent", false);
-        consola.error("Error while creating folder", { error });
+        consola.error("Error while creating folder", {error});
 
         throw error;
       });
 
     // Clears loading, might also throw but we let the exception bubble up
-    await dispatch("fetchWorkflowGroupContent", { projectId });
+    await dispatch("fetchWorkflowGroupContent", {projectId});
     commit("setActiveRenamedItemId", newFolderItem.id);
     commit("setCurrentSelectedItemIds", [newFolderItem.id]);
     return newFolderItem;
   },
 
   async openProject(
-    { rootState, state },
+    {rootState, state},
     {
       providerId,
       spaceId,
@@ -315,16 +314,16 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }: WorkflowOrigin & { $router?: Router },
   ) {
     const provider = (state.spaceProviders ?? {})[providerId];
-    const { openProjects } = rootState.application;
+    const {openProjects} = rootState.application;
 
     const foundOpenProject = openProjects.find((project) =>
-      isProjectOpen(project, { spaceId, providerId, itemId }, provider),
+      isProjectOpen(project, {spaceId, providerId, itemId}, provider),
     );
 
     if (foundOpenProject) {
       $router?.push({
         name: APP_ROUTES.WorkflowPage,
-        params: { workflowId: "root", projectId: foundOpenProject.projectId },
+        params: {workflowId: "root", projectId: foundOpenProject.projectId},
       });
 
       return;
@@ -356,25 +355,25 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }
   },
 
-  async importToWorkflowGroup({ state, dispatch }, { projectId, importType }) {
-    const { spaceId, spaceProviderId, itemId } = state.projectPath[projectId];
+  async importToWorkflowGroup({state, dispatch}, {projectId, importType}) {
+    const {spaceId, spaceProviderId, itemId} = state.projectPath[projectId];
     const importedItems =
       importType === "FILES"
-        ? await API.desktop.importFiles({ spaceProviderId, spaceId, itemId })
+        ? await API.desktop.importFiles({spaceProviderId, spaceId, itemId})
         : await API.desktop.importWorkflows({
-            spaceProviderId,
-            spaceId,
-            itemId,
-          });
+          spaceProviderId,
+          spaceId,
+          itemId,
+        });
 
     if (importedItems !== null && importedItems.length > 0) {
-      await dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", {projectId});
     }
     return importedItems;
   },
 
-  async exportSpaceItem({ state, dispatch }, { projectId, itemId }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+  async exportSpaceItem({state, dispatch}, {projectId, itemId}) {
+    const {spaceId, spaceProviderId} = state.projectPath[projectId];
     const success = await API.desktop.exportSpaceItem({
       spaceProviderId,
       spaceId,
@@ -382,15 +381,15 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     });
 
     if (success) {
-      await dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", {projectId});
     }
   },
 
   async renameItem(
-    { state, dispatch, commit },
-    { projectId, itemId, newName },
+    {state, dispatch, commit},
+    {projectId, itemId, newName},
   ) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const {spaceId, spaceProviderId} = state.projectPath[projectId];
 
     try {
       // loading is cleared after data is fetched by fetchWorkflowGroupContent
@@ -409,16 +408,16 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         newName,
       });
 
-      await dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", {projectId});
     } catch (error) {
       commit("setIsLoadingContent", false);
-      consola.log("Error renaming item", { error });
+      consola.log("Error renaming item", {error});
       throw error;
     }
   },
 
   async deleteItems(
-    { dispatch, commit, state, rootState, getters },
+    {dispatch, commit, state, rootState, getters},
     {
       projectId,
       itemIds,
@@ -426,10 +425,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
     }: { projectId: string; itemIds: string[]; $router: Router },
   ) {
     try {
-      const { spaceId, spaceProviderId } = state.projectPath[projectId];
+      const {spaceId, spaceProviderId} = state.projectPath[projectId];
       const provider: SpaceProviderNS.SpaceProvider =
         getters.getProviderInfoFromProjectPath(projectId);
-      const { openProjects } = rootState.application;
+      const {openProjects} = rootState.application;
 
       const origins = itemIds.map<WorkflowOrigin>((itemId) => ({
         providerId: provider.id,
@@ -442,7 +441,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         .filter((project) =>
           origins.some((origin) => isProjectOpen(project, origin, provider)),
         )
-        .map(({ projectId }) => projectId);
+        .map(({projectId}) => projectId);
 
       const isDeletingOpenProjects = openProjectIds.length > 0;
 
@@ -450,10 +449,10 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       // this in-turn will return which is the project that should be active after deletion
       const nextProjectId = isDeletingOpenProjects
         ? await dispatch(
-            "application/forceCloseProjects",
-            { projectIds: openProjectIds },
-            { root: true },
-          )
+          "application/forceCloseProjects",
+          {projectIds: openProjectIds},
+          {root: true},
+        )
         : null;
 
       const isDeletingActiveProject = isDeletingOpenProjects
@@ -464,35 +463,35 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       commit("setIsLoadingContent", true);
       commit("setActiveRenamedItemId", "");
 
-      await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
+      await API.space.deleteItems({spaceProviderId, spaceId, itemIds});
       await dispatch("fetchWorkflowGroupContent", {
         projectId: isDeletingActiveProject
           ? // if the active project is beind deleted activate the next project
             // with a fallback to the global space browser
-            nextProjectId ?? globalSpaceBrowserProjectId
+          nextProjectId ?? globalSpaceBrowserProjectId
           : // otherwise simply refresh the current space
-            projectId,
+          projectId,
       });
 
       // navigate to the next workflow (if any) to set it as active
       if (nextProjectId) {
         await $router.push({
           name: APP_ROUTES.WorkflowPage,
-          params: { projectId: nextProjectId, workflowId: "root" },
+          params: {projectId: nextProjectId, workflowId: "root"},
         });
       }
     } catch (error) {
       commit("setIsLoadingContent", false);
-      consola.log("Error deleting item", { error });
+      consola.log("Error deleting item", {error});
       throw error;
     }
   },
 
   async moveOrCopyItems(
-    { state, dispatch, commit },
-    { projectId, itemIds, destWorkflowGroupItemId, collisionStrategy, isCopy },
+    {state, dispatch, commit},
+    {projectId, itemIds, destWorkflowGroupItemId, collisionStrategy, isCopy},
   ) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
+    const {spaceId, spaceProviderId} = state.projectPath[projectId];
 
     try {
       commit("setIsLoadingContent", true);
@@ -511,7 +510,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
           itemId,
         });
       });
-      await dispatch("fetchWorkflowGroupContent", { projectId });
+      await dispatch("fetchWorkflowGroupContent", {projectId});
     } catch (error) {
       const copyOrMoveText = isCopy ? "copying" : "moving";
       consola.log(`Error ${copyOrMoveText} items`, {
@@ -529,9 +528,9 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
    * @param projectId
    * @param itemId
    */
-  openPermissionsDialog({ state }, { projectId, itemId }) {
-    const { spaceId, spaceProviderId } = state.projectPath[projectId];
-    API.desktop.openPermissionsDialog({ spaceProviderId, spaceId, itemId });
+  openPermissionsDialog({state}, {projectId, itemId}) {
+    const {spaceId, spaceProviderId} = state.projectPath[projectId];
+    API.desktop.openPermissionsDialog({spaceProviderId, spaceId, itemId});
   },
 };
 
@@ -552,23 +551,23 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
 
   parentWorkflowGroupId:
     (state, getters) =>
-    (projectId: string): string | null => {
-      const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
+      (projectId: string): string | null => {
+        const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
 
-      if (workflowGroupContent === null) {
-        return null;
-      }
+        if (workflowGroupContent === null) {
+          return null;
+        }
 
-      const { path } = workflowGroupContent;
+        const {path} = workflowGroupContent;
 
-      // we're already at the root, there's no parent
-      if (path.length === 0) {
-        return null;
-      }
+        // we're already at the root, there's no parent
+        if (path.length === 0) {
+          return null;
+        }
 
-      // when we're down to 1 item it means we're 1 level away from the root
-      return path.length === 1 ? "root" : path[path.length - 2].id;
-    },
+        // when we're down to 1 item it means we're 1 level away from the root
+        return path.length === 1 ? "root" : path[path.length - 2].id;
+      },
 
   currentWorkflowGroupId: (state, getters) => (projectId: string) => {
     const workflowGroupContent = getters.getWorkflowGroupContent(projectId);
@@ -577,80 +576,80 @@ export const getters: GetterTree<SpacesState, RootStoreState> = {
       return null;
     }
 
-    const { path } = workflowGroupContent;
+    const {path} = workflowGroupContent;
     return path.length > 0 ? path[path.length - 1].id : "root";
   },
 
   getOpenedWorkflowItems:
-    (state, getters, { application }) =>
-    (pathKey: string) => {
-      const { openProjects } = application;
-      const workflowGroupContent: WorkflowGroupContent =
-        getters.getWorkflowGroupContent(pathKey);
+    (state, getters, {application}) =>
+      (pathKey: string) => {
+        const {openProjects} = application;
+        const workflowGroupContent: WorkflowGroupContent =
+          getters.getWorkflowGroupContent(pathKey);
 
-      if (workflowGroupContent === null) {
-        return [];
-      }
+        if (workflowGroupContent === null) {
+          return [];
+        }
 
-      // provider and spaceId must be derived from the given path key
-      const { spaceId } = state.projectPath[pathKey];
-      const provider: SpaceProviderNS.SpaceProvider =
-        getters.getProviderInfoFromProjectPath(pathKey);
+        // provider and spaceId must be derived from the given path key
+        const {spaceId} = state.projectPath[pathKey];
+        const provider: SpaceProviderNS.SpaceProvider =
+          getters.getProviderInfoFromProjectPath(pathKey);
 
-      return openProjects
-        .filter((project) =>
-          isProjectOpen(
-            project,
-            {
-              providerId: provider.id,
-              spaceId,
-              itemId: project.origin?.itemId ?? "",
-            },
-            provider,
-          ),
-        )
-        .map(({ origin }) => origin?.itemId);
-    },
+        return openProjects
+          .filter((project) =>
+            isProjectOpen(
+              project,
+              {
+                providerId: provider.id,
+                spaceId,
+                itemId: project.origin?.itemId ?? "",
+              },
+              provider,
+            ),
+          )
+          .map(({origin}) => origin?.itemId);
+      },
 
   getOpenedFolderItems:
-    (state, getters, { application }) =>
-    (pathKey: string) => {
-      const { openProjects } = application;
+    (state, getters, {application}) =>
+      (pathKey: string) => {
+        const {openProjects} = application;
 
-      const workflowGroupContent: WorkflowGroupContent =
-        getters.getWorkflowGroupContent(pathKey);
+        const workflowGroupContent: WorkflowGroupContent =
+          getters.getWorkflowGroupContent(pathKey);
 
-      if (workflowGroupContent === null) {
-        return [];
-      }
+        if (workflowGroupContent === null) {
+          return [];
+        }
 
-      // provider and spaceId must be derived from the given path key
-      const { spaceId } = state.projectPath[pathKey];
-      const provider: SpaceProviderNS.SpaceProvider =
-        getters.getProviderInfoFromProjectPath(pathKey);
+        // provider and spaceId must be derived from the given path key
+        const {spaceId} = state.projectPath[pathKey];
+        const provider: SpaceProviderNS.SpaceProvider =
+          getters.getProviderInfoFromProjectPath(pathKey);
 
-      const openProjectsFolders = openProjects
-        .filter((project) =>
-          isProjectOpen(
-            project,
-            {
-              providerId: provider.id,
-              spaceId,
-              itemId: project.origin?.itemId ?? "",
-            },
-            provider,
-          ),
-        )
-        .flatMap(({ origin }) => origin?.ancestorItemIds ?? []);
+        const openProjectsFolders = openProjects
+          .filter((project) =>
+            isProjectOpen(
+              project,
+              {
+                providerId: provider.id,
+                spaceId,
+                itemId: project.origin?.itemId ?? "",
+              },
+              provider,
+            ),
+          )
+          .flatMap(({origin}) => origin?.ancestorItemIds ?? []);
 
-      return workflowGroupContent.items
-        .filter(
-          (item) =>
-            item.type === ITEM_TYPES.WorkflowGroup &&
-            openProjectsFolders.includes(item.id),
-        )
-        .map((item) => item.id);
-    },
+        return workflowGroupContent.items
+          .filter(
+            (item) =>
+              item.type === ITEM_TYPES.WorkflowGroup &&
+              openProjectsFolders.includes(item.id),
+          )
+          .map((item) => item.id);
+      },
 
   selectionContainsFile:
     (state, getters) => (projectId: string, selectedItemIds: string[]) => {

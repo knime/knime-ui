@@ -89,6 +89,7 @@ import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.js.cef.nodeview.CEFNodeView;
@@ -341,7 +342,7 @@ final class Init {
         private Map<String, SpaceProviderEnt.TypeEnum> m_providerTypes = Map.of();
 
         public UpdatableSpaceProviders(final LocalSpace localSpace, final ToastService toastService) {
-            m_localSpaceProvider = LocalSpaceUtil.createLocalSpaceProvider(localSpace);
+            m_localSpaceProvider = new LocalSpaceProvider(localSpace);
             m_spaceProvidersFromExtensionPoint.forEach(providers -> providers.getProvidersMap().values()
                     .forEach(provider -> initializeSpaceProvider(provider, toastService)));
             update(toastService);
