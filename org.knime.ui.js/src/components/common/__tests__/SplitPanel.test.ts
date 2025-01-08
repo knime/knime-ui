@@ -15,6 +15,7 @@ describe("SplitPanel", () => {
       ...propsOverride,
     };
     const wrapper = mount(SplitPanel, {
+      // @ts-ignore
       props,
       slots: {
         default: "<p>main content</p>",
@@ -30,7 +31,7 @@ describe("SplitPanel", () => {
 
     const checkSecondarySize = (size: number) => {
       const unit = usePixel ? "px" : "%";
-      const splitter = wrapper.findComponent(".vue-splitter");
+      const splitter = wrapper.findComponent(".base-splitter");
       const styles = splitter.attributes("style")!;
 
       const sizeLine = isReverse
@@ -45,8 +46,13 @@ describe("SplitPanel", () => {
       return { styles, gridTemplate };
     };
     const dragSplitter = async (x: number, y: number) => {
+      const pointerId = -1;
       const splitter = wrapper.find(".splitter");
-      await splitter.trigger("mousedown", { offsetY: 10, offsetX: 10 });
+      await splitter.trigger("pointerdown", {
+        offsetY: 10,
+        offsetX: 10,
+        pointerId,
+      });
 
       // this mocks it for EVERY html element but that should not be a problem in this test
       Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
@@ -58,15 +64,19 @@ describe("SplitPanel", () => {
         value: 600,
       });
 
-      const move = new MouseEvent("mousemove", {
+      const move = new PointerEvent("pointermove", {
         buttons: 1,
-        clientX: x,
-        clientY: y,
+        pointerId,
       });
+
+      // @ts-ignore
+      move.pageX = x;
+      // @ts-ignore
+      move.pageY = y;
 
       window.dispatchEvent(move);
 
-      window.dispatchEvent(new MouseEvent("mouseup"));
+      window.dispatchEvent(new PointerEvent("pointerup", { pointerId }));
 
       await nextTick();
     };
@@ -137,7 +147,7 @@ describe("SplitPanel", () => {
     const { dragSplitter, checkSecondarySize } = doMount();
 
     await dragSplitter(300, 400);
-    checkSecondarySize(33.18000000000001);
+    checkSecondarySize(34.84);
   });
 
   it.each(["down", "up", "left", "right"])(

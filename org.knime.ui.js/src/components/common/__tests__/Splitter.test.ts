@@ -5,7 +5,7 @@ import Splitter from "../Splitter.vue";
 
 test("isHorizontal false style", () => {
   const comp = mount(Splitter);
-  const elDragger = comp.get(".vue-splitter");
+  const elDragger = comp.get(".base-splitter");
   const splitters = comp.findAll(".splitter-pane");
   const leftPane = splitters[0];
   const rightPane = splitters[1];
@@ -20,7 +20,7 @@ test("isHorizontal false style", () => {
 
 test("isHorizontal true style", () => {
   const comp = mount(Splitter, { props: { isHorizontal: true } });
-  const elDragger = comp.get(".vue-splitter");
+  const elDragger = comp.get(".base-splitter");
   const splitters = comp.findAll(".splitter-pane");
   const leftPane = splitters[0];
   const rightPane = splitters[1];
@@ -44,6 +44,6 @@ test("moving the splitter should set the class to active", async () => {
   const comp = mount(Splitter);
   const elDragger = comp.get(".splitter");
   expect(elDragger.classes("active")).toBe(false);
-  await elDragger.trigger("mousedown");
+  await elDragger.trigger("pointerdown");
   expect(elDragger.classes("active")).toBe(true);
 });
