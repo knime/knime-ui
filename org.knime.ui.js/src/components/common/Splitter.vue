@@ -1,14 +1,13 @@
-<!-- eslint-disable no-magic-numbers -->
-<!-- eslint-disable no-use-before-define -->
-<!-- eslint-disable func-style -->
 <script setup lang="ts">
 // A simple 2 panel splitter component that works with pixels or percent
-// based on vue-splitter: https://github.com/rmp135/vue-splitter (MIT)
-// some modifications have been done:
+// Loosely based on vue-splitter: https://github.com/rmp135/vue-splitter (MIT)
+// This file and only this file can be also used under the MIT License.
+// Modifications have that been done:
 // * add pixel mode
 // * added events (drag-start drag-end)
 // * added splitterSize prop
 // * added ability to define the panel for which the size will be set (important for pixel mode)
+// * use pointer events instead of mouse and touch events
 import { computed, ref } from "vue";
 
 const props = withDefaults(
@@ -38,6 +37,8 @@ const props = withDefaults(
     splitterId: "",
   },
 );
+
+const splitter = ref<HTMLElement>();
 
 const emit = defineEmits<{
   (event: "update:percent", value: number): void;
@@ -97,37 +98,13 @@ const gridTemplate = computed(() =>
 );
 const userSelect = computed(() => (isActive.value ? "none" : "auto"));
 
-function addBodyListeners() {
-  window.addEventListener("mousemove", onBodyMouseMove);
-  window.addEventListener("touchmove", onBodyTouchMove);
-  window.addEventListener("touchend", onBodyUp, { once: true });
-  window.addEventListener("mouseup", onBodyUp, { once: true });
-}
-
-function onSplitterDown() {
-  emit("drag-start");
-  isActive.value = true;
-  hasMoved.value = false;
-  addBodyListeners();
-}
-
-function onSplitterClick() {
+const onSplitterClick = () => {
   if (!hasMoved.value) {
     emit("splitter-click");
   }
-}
+};
 
-function onSplitterMouseDown(e: MouseEvent) {
-  dragOffset.value = props.isHorizontal ? e.offsetY : e.offsetX;
-  onSplitterDown();
-}
-
-function onSplitterTouchDown() {
-  dragOffset.value = 0;
-  onSplitterDown();
-}
-
-function calculateSplitterPercent(e: MouseEvent | Touch) {
+const calculateSplitterPercent = (e: PointerEvent) => {
   let offset = dragOffset.value;
   let target = containerRef.value as HTMLElement;
   let containerOffset = 0;
@@ -150,8 +127,10 @@ function calculateSplitterPercent(e: MouseEvent | Touch) {
     containerOffset = containerRef.value!.offsetWidth;
   }
 
+  // eslint-disable-next-line no-magic-numbers
   const percent = Math.floor((pixel / containerOffset) * 10000) / 100;
   const splitterSizeInPercent =
+    // eslint-disable-next-line no-magic-numbers
     Math.floor((props.splitterSize / containerOffset) * 10000) / 100;
 
   if (percent > 0 && percent < 100) {
@@ -164,41 +143,45 @@ function calculateSplitterPercent(e: MouseEvent | Touch) {
       : pixel;
     hasMoved.value = true;
   }
-}
+};
 
-function onBodyTouchMove(e: TouchEvent) {
-  if (isActive.value) {
-    calculateSplitterPercent(e.touches[0]);
-  }
-}
-
-function onBodyMouseMove(e: MouseEvent) {
+const onWindowPointerMove = (e: PointerEvent) => {
   if (e.buttons && e.buttons === 0) {
     isActive.value = false;
-    removeBodyListeners();
+    window.removeEventListener("pointermove", onWindowPointerMove);
   }
   if (isActive.value) {
     calculateSplitterPercent(e);
   }
-}
+};
 
-function removeBodyListeners() {
-  window.removeEventListener("touchmove", onBodyTouchMove);
-  window.removeEventListener("mousemove", onBodyMouseMove);
-}
-
-function onBodyUp() {
+const onWindowUp = (e: PointerEvent) => {
+  splitter.value?.releasePointerCapture(e.pointerId);
   emit("drag-end");
   isActive.value = false;
-  removeBodyListeners();
-}
+  window.removeEventListener("pointermove", onWindowPointerMove);
+};
+
+const addWindowListeners = () => {
+  window.addEventListener("pointermove", onWindowPointerMove);
+  window.addEventListener("pointerup", onWindowUp, { once: true });
+};
+
+const onSplitterPointerDown = (e: PointerEvent) => {
+  splitter.value?.setPointerCapture(e.pointerId);
+  dragOffset.value = props.isHorizontal ? e.offsetY : e.offsetX;
+  emit("drag-start");
+  isActive.value = true;
+  hasMoved.value = false;
+  addWindowListeners();
+};
 </script>
 
 <template>
   <div
     ref="containerRef"
     :style="{ userSelect, gridTemplate }"
-    class="vue-splitter"
+    class="base-splitter"
     :class="{ horizontal: isHorizontal, vertical: !isHorizontal }"
   >
     <div class="splitter-pane" :class="leftPaneClass">
@@ -206,12 +189,12 @@ function onBodyUp() {
       <slot name="top-pane" />
     </div>
     <div
+      ref="splitter"
       class="splitter"
       :data-test-splitter-id="splitterId"
       :class="{ active: isActive }"
       :title="splitterTitle"
-      @mousedown="onSplitterMouseDown"
-      @touchstart.passive="onSplitterTouchDown"
+      @pointerdown="onSplitterPointerDown"
       @click="onSplitterClick"
     >
       <slot name="splitter" />
@@ -224,7 +207,7 @@ function onBodyUp() {
 </template>
 
 <style lang="postcss" scoped>
-.vue-splitter {
+.base-splitter {
   --splitter-background-color: var(--knime-silver-sand-semi);
 
   display: grid;
