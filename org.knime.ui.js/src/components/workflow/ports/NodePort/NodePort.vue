@@ -120,6 +120,7 @@ const {
 });
 
 const onClick = () => {
+  console.log("port", props.port)
   if (didMove.value) {
     return;
   }

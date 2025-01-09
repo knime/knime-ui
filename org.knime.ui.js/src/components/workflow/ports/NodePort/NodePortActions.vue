@@ -41,6 +41,7 @@ const actions = computed(() => [
 
 const selectedPortPosition = computed(() => {
   const [x, y] = props.relativePosition;
+  console.log("actions", actions.value)
   return [props.anchorPoint.x + x, props.anchorPoint.y + y];
 });
 

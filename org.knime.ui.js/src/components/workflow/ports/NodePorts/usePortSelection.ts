@@ -60,9 +60,12 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
     { index, portGroupId }: NodePort,
     side: "input" | "output",
   ) => {
+    console.log('options', options);
+    console.log('portgoupid', portGroupId);
     if (!options.isEditable) {
       return;
     }
+    
 
     if (isComponent.value && index !== 0) {
       // all but hidden ports on components (mickey mouse) can be selected
@@ -73,9 +76,10 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
       // native node and port is part of a port group
       const portGroup = options.portGroups[portGroupId];
       const [, upperBound] = portGroup[`${side}Range`]!;
+      console.log('true');
 
       // select last port of group
-      updateSelection(`${side}-${upperBound}`);
+      updateSelection(`${side}-${index}`);
     }
   };
 
