@@ -56,6 +56,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
 
 /**
  * Tests methods in {@link LocalSpaceUtil}.
@@ -81,7 +82,7 @@ public class LocalSpaceUtilTest {
 
     @Test
     public void createSpaceIsNotSupported() throws IOException {
-        var group = LocalSpaceUtil.getLocalSpaceGroup(createLocalSpace());
+        var group = new LocalSpaceProvider(createLocalSpace()).getLocalSpaceGroup();
         assertThatThrownBy(group::createSpace).isInstanceOf(UnsupportedOperationException.class);
     }
 
