@@ -218,4 +218,25 @@ describe("SpaceTree.vue", () => {
       spaceProviderId: "someMockProviderId",
     });
   });
+
+  it("can automatically expand a root node", async () => {
+    const { wrapper } = await doMount({
+      props: {
+        autoExpand: true,
+        providerRules: {
+          restrictedTo: ["someMockProviderId"],
+        },
+      },
+      mockSpaceProvider: createSpaceProvider({
+        id: "someMockProviderId",
+        name: "Mock Space Provider",
+        type: SpaceProviderNS.TypeEnum.HUB,
+      }),
+    });
+
+    const baseTree = wrapper.findComponent({ name: "BaseTree" });
+    await flushPromises();
+
+    expect(baseTree.vm.expandedKeys).to.contain("provider_someMockProviderId");
+  });
 });

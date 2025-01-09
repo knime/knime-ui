@@ -66,6 +66,7 @@ const showValidationHint = computed(
           <SpaceTree
             class="space-tree"
             :provider-rules="config?.spaceProviderRules"
+            auto-expand
             @select-change="onSpaceTreeSelection"
           />
         </div>

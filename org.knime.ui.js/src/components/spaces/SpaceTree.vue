@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, markRaw, ref } from "vue";
+import { computed, markRaw, nextTick, ref } from "vue";
 
 import { Button, Pill } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/circle-close.svg";
@@ -50,6 +50,7 @@ interface Props {
     restrictedTo?: Array<string>;
     exclude?: Array<string>;
   };
+  autoExpand?: boolean;
 }
 
 const MAX_NAME_LENGTH = 300;
@@ -63,6 +64,10 @@ const emit = defineEmits<{
 }>();
 
 const store = useStore();
+
+const isProviderConnected = (
+  spaceProviderId: SpaceProviderId["spaceProviderId"],
+) => store.state.spaces.spaceProviders?.[spaceProviderId]?.connected;
 
 const truncate = (text: string) => {
   return text.length <= MAX_NAME_LENGTH
@@ -162,9 +167,32 @@ const filteredSpaceProviders = computed(() => {
   return spaceProviders;
 });
 
+const tree = ref<InstanceType<typeof Tree>>();
 const treeSource = ref<TreeNodeOptions[]>(
   filteredSpaceProviders.value.map(mapSpaceProviderToTree),
 );
+
+const autoExpandTree = () => {
+  nextTick(() => {
+    // If there is a single (already authenticated) root item ...
+    if (
+      treeSource.value.length === 1 &&
+      (treeSource.value[0].type !== "provider" ||
+        isProviderConnected(treeSource.value[0].spaceProviderId))
+    ) {
+      // ... automatically expand it
+      tree.value?.toggleExpand(
+        // This also works in the case of 'node.type !== "provider"' (e.g. local)
+        treeSource.value[0].nodeKey,
+        true,
+      );
+    }
+  });
+};
+
+if (props.autoExpand) {
+  autoExpandTree();
+}
 
 const loadWorkflowGroup = async (
   group: FullSpacePath,
@@ -264,10 +292,6 @@ const loadConnectedProvider = async (
   }
 };
 
-const isProviderConnected = (
-  spaceProviderId: SpaceProviderId["spaceProviderId"],
-) => store.state.spaces.spaceProviders?.[spaceProviderId]?.connected;
-
 const loadProvider = async (
   spaceProviderId: SpaceProviderId["spaceProviderId"],
   addToTree: AddToTreeCallback,
@@ -330,8 +354,6 @@ const loadTreeLevel = (
     },
   ]);
 };
-
-const tree = ref<InstanceType<typeof Tree>>();
 
 const retryLoadProvider = (treeNodeKey: NodeKey) => {
   const RETRY_DELAY_MS = 200;
