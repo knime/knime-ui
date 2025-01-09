@@ -56,7 +56,7 @@ const openNodeConfiguration = () => {
 
     <template v-else>
       <span v-if="isMetanode" class="placeholder-text">
-        Select a to show its dialog.
+        Select a node to show its dialog..
       </span>
 
       <template v-else-if="uiControls.shouldDisplayDownloadAPButton">
@@ -75,7 +75,7 @@ const openNodeConfiguration = () => {
 
   <!-- PLACEHOLDER - DEFAULT -->
   <div v-if="!selectedNode" class="placeholder full-height">
-    <span class="placeholder-text">Select a to show its dialog.</span>
+    <span class="placeholder-text">Select a node to show its dialog..</span>
   </div>
 </template>
 
