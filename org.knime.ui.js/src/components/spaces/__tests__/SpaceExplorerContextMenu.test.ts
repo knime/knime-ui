@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import { MenuItems } from "@knime/components";
 
@@ -44,7 +44,13 @@ const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
 };
 
 describe("SpaceExplorerContextMenu.vue", () => {
-  const doMount = ({ props = {}, spaceProviders = null } = {}) => {
+  const doMount = ({
+    props = {},
+    spaceProviders = null,
+  }: {
+    props?: Partial<InstanceType<typeof SpaceExplorerContextMenu>["$props"]>;
+    spaceProviders?: Record<string, SpaceProviderNS.SpaceProvider> | null;
+  } = {}) => {
     const $store = mockVuexStore({
       spaces: spacesStore,
     });
@@ -138,20 +144,32 @@ describe("SpaceExplorerContextMenu.vue", () => {
     expect(items.map((item) => item.text)).to.not.include("rename");
   });
 
-  it("displays the 'Copy to...' option when items are selected", () => {
-    const { wrapper } = doMount({
+  it("displays the 'Copy to...' option when items are selected", async () => {
+    const { wrapper, $store } = doMount({
       props: {
         selectedItemIds: ["2342"],
         isMultipleSelectionActive: false,
+        projectId: "someHubProjectId",
       },
       spaceProviders: {
         hub1: {
           ...startSpaceProviders.hub1,
           connected: true,
           type: SpaceProviderNS.TypeEnum.HUB,
+          id: "hub1",
         },
       },
     });
+    $store.commit("spaces/setProjectPath", {
+      projectId: "someHubProjectId",
+      value: {
+        spaceId: "someHubSpace",
+        spaceProviderId: "hub1",
+        itemId: "root",
+      },
+    });
+
+    await flushPromises();
 
     const items = wrapper.findComponent(MenuItems).props("items");
     expect(items.some((item) => item.text === "Copy to...")).toBe(true);
@@ -159,10 +177,11 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
   it("calls copy to space action on store when 'Copy to...' is clicked", async () => {
     const closeContextMenu = vi.fn();
-    const { wrapper, dispatchSpy } = doMount({
+    const { wrapper, dispatchSpy, $store } = doMount({
       props: {
         selectedItemIds: ["2342"],
         isMultipleSelectionActive: false,
+        projectId: "someHubProjectId",
         closeContextMenu,
       },
       spaceProviders: {
@@ -170,9 +189,20 @@ describe("SpaceExplorerContextMenu.vue", () => {
           ...startSpaceProviders.hub1,
           connected: true,
           type: SpaceProviderNS.TypeEnum.HUB,
+          id: "hub1",
         },
       },
     });
+    $store.commit("spaces/setProjectPath", {
+      projectId: "someHubProjectId",
+      value: {
+        spaceId: "someHubSpace",
+        spaceProviderId: "hub1",
+        itemId: "root",
+      },
+    });
+
+    await flushPromises();
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
@@ -185,7 +215,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
     expect(dispatchSpy).toHaveBeenCalledWith("spaces/moveOrCopyToSpace", {
       itemIds: ["2342"],
-      projectId: "someProjectId",
+      projectId: "someHubProjectId",
       isCopy: true,
     });
     expect(closeContextMenu).toHaveBeenCalled();
