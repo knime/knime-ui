@@ -164,7 +164,10 @@ const onWindowUp = (e: PointerEvent) => {
 
 const addWindowListeners = () => {
   window.addEventListener("pointermove", onWindowPointerMove);
-  window.addEventListener("pointerup", onWindowUp, { once: true });
+  window.addEventListener("pointerup", onWindowUp, {
+    once: true,
+    capture: true,
+  });
 };
 
 const onSplitterPointerDown = (e: PointerEvent) => {
