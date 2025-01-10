@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, toRef, watch } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { FileExplorer, NodePreview } from "@knime/components";
@@ -127,22 +127,11 @@ const fetchWorkflowGroupContent = async () => {
   if (props.projectId === null) {
     return;
   }
-  // unsubscribe from previous (no effect if no subscription)
-  store.dispatch("spaces/unsubscribeSpaceItemChangedEventListener");
 
   await store.dispatch("spaces/fetchWorkflowGroupContent", {
     projectId: props.projectId,
   });
-
-  // subscribe to space item identified by project id
-  store.dispatch("spaces/subscribeSpaceItemChangedEventListener", {
-    projectId: props.projectId,
-  });
 };
-
-onUnmounted(() => {
-  store.dispatch("spaces/unsubscribeSpaceItemChangedEventListener");
-});
 
 // spaceId and itemId (folder) are based on the projectId but might change even with the same projectId (change dir)
 watch(

@@ -1,22 +1,22 @@
 /* eslint-disable max-lines */
-import type {Router} from "vue-router";
-import type {ActionTree, GetterTree, MutationTree} from "vuex";
+import type { Router } from "vue-router";
+import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import {API} from "@/api";
-import type {SpaceProviderNS, WorkflowOrigin} from "@/api/custom-types";
+import { API } from "@/api";
+import type { SpaceProviderNS, WorkflowOrigin } from "@/api/custom-types";
 import {
   SpaceGroup,
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
-import {$bus} from "@/plugins/event-bus";
-import {APP_ROUTES} from "@/router/appRoutes";
+import { $bus } from "@/plugins/event-bus";
+import { APP_ROUTES } from "@/router/appRoutes";
 import ITEM_TYPES from "@/util/spaceItemTypes";
-import type {RootStoreState} from "../types";
+import type { RootStoreState } from "../types";
 
-import {globalSpaceBrowserProjectId} from "./common";
-import type {SpacesState} from "./index";
-import {isProjectOpen} from "./util";
+import { globalSpaceBrowserProjectId } from "./common";
+import type { SpacesState } from "./index";
+import { isProjectOpen } from "./util";
 
 export interface PathTriplet {
   spaceId: string;
@@ -28,7 +28,6 @@ interface State {
   isLoadingContent: boolean;
   activeRenamedItemId: string;
   currentSelectedItemIds: string[];
-  previousTriplet: PathTriplet | null;
 }
 
 declare module "./index" {
@@ -39,7 +38,6 @@ export const state = (): State => ({
   isLoadingContent: false,
   activeRenamedItemId: "",
   currentSelectedItemIds: [],
-  previousTriplet: null,
 });
 
 export const mutations: MutationTree<SpacesState> = {
@@ -53,10 +51,6 @@ export const mutations: MutationTree<SpacesState> = {
 
   setCurrentSelectedItemIds(state, itemIds) {
     state.currentSelectedItemIds = itemIds;
-  },
-
-  setPreviousTriplet(state, triplet: PathTriplet) {
-    state.previousTriplet = triplet;
   },
 };
 
@@ -110,48 +104,17 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       return [];
     }
 
-    const content = await dispatch(
-      "fetchWorkflowGroupContentByIdTriplet",
-      pathTriplet,
-    );
+    const { spaceId, spaceProviderId, itemId } = pathTriplet;
+
+    const content = await dispatch("fetchWorkflowGroupContentByIdTriplet", {
+      spaceId,
+      spaceProviderId,
+      itemId,
+    });
+
     commit("setWorkflowGroupContent", { projectId, content });
 
     return content;
-  },
-
-  /**
-   * To start listening to hub resource changed events
-   */
-  subscribeSpaceItemChangedEventListener({ commit, state }, { projectId }) {
-    const pathTriplet = state.projectPath[projectId];
-    if (!pathTriplet) {
-      return;
-    }
-
-    const { spaceId, spaceProviderId: providerId, itemId } = pathTriplet;
-    API.event.subscribeEvent({
-      providerId,
-      spaceId,
-      itemId,
-      typeId: "SpaceItemChangedEventType",
-    });
-
-    commit("setPreviousTriplet", pathTriplet);
-  },
-
-  /**
-   * To stop listing to hub resource changed events
-   */
-  unsubscribeSpaceItemChangedEventListener({ state }) {
-    if (state.previousTriplet) {
-      const { spaceProviderId, spaceId, itemId } = state.previousTriplet;
-      API.event.unsubscribeEventListener({
-        providerId: spaceProviderId,
-        spaceId,
-        itemId,
-        typeId: "SpaceItemChangedEventType",
-      });
-    }
   },
 
   changeDirectory({ getters, commit }, { projectId, pathId }) {
