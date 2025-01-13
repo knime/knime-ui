@@ -206,15 +206,24 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
     hotkey: ["CtrlOrCmd", "E"],
     group: "general",
     execute: ({ $store }) => {
+      const currentSelectedItemIds =
+        $store.state.spaces?.currentSelectedItemIds;
+
       const activeProjectOrigin =
         $store.getters["application/activeProjectOrigin"];
       const activeProjectId =
         activeProjectOrigin?.projectId ||
         $store.state.application.activeProjectId;
 
+      const selectedItemId =
+        Array.isArray(currentSelectedItemIds) &&
+        currentSelectedItemIds.length > 0
+          ? currentSelectedItemIds[0]
+          : activeProjectOrigin?.itemId;
+
       $store.dispatch("spaces/exportSpaceItem", {
         projectId: activeProjectId,
-        itemId: activeProjectOrigin?.itemId,
+        itemId: selectedItemId,
       });
     },
     condition: ({ $store }) => {
