@@ -118,7 +118,7 @@ describe("NodeOutput.vue", () => {
       const { wrapper } = doMount(store);
 
       expect(validationInfoMessage(wrapper)).toBe(
-        "To show the node output, please select a configured or executed node.",
+        "Select a configured or executed node to show the node output.",
       );
 
       expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
