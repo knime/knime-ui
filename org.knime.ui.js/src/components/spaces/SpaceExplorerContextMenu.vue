@@ -196,7 +196,6 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         id: "export",
         text: "Export",
         icon: FileExportIcon,
-        hotkeyText: hotkeys.formatHotkeys(["CtrlOrCmd", "E"]),
         disabled: selectionContainsFile || isSelectionMultiple,
         execute: () => {
           dispatch("spaces/exportSpaceItem", {
