@@ -242,10 +242,8 @@ describe("NodePorts.vue", () => {
       let groupPort = wrapper.findAllComponents(NodePort).at(3);
       await groupPort.vm.$emit("click");
 
-      // Last group port is selected, clicked one isn't
-      let lastGroupPort = wrapper.findAllComponents(NodePort).at(4);
-      expect(groupPort.props("selected")).toBe(false);
-      expect(lastGroupPort.props("selected")).toBe(true);
+      // Clicked port is selected
+      expect(groupPort.props("selected")).toBe(true);
     });
 
     describe("navigate selection", () => {
