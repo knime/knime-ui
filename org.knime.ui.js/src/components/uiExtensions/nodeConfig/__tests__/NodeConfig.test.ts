@@ -1,6 +1,14 @@
-import { type Mock, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  type Mock,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { VueWrapper, mount } from "@vue/test-utils";
 
 import { FunctionButton } from "@knime/components";
 
@@ -24,12 +32,14 @@ describe("NodeConfig", () => {
     props?: Partial<InstanceType<typeof NodeConfig>["$props"]>;
     singleSelectedNodeMock?: Mock;
     component?: typeof NodeConfig | null;
+    isLargeMode?: boolean;
   };
 
   const doMount = ({
     props = {},
     singleSelectedNodeMock = vi.fn(),
-    component = null,
+    component = NodeConfig,
+    isLargeMode = false,
   }: MountOpts = {}) => {
     const $store = mockVuexStore({
       workflow: {
@@ -57,7 +67,9 @@ describe("NodeConfig", () => {
       settings: { state: { settings: { nodeDialogSize: 100 } } },
     });
 
-    const wrapper = mount(component ?? NodeConfig, {
+    $store.state.nodeConfiguration.isLargeMode = isLargeMode;
+
+    const wrapper = mount(component, {
       props,
       global: {
         plugins: [$store],
@@ -140,69 +152,135 @@ describe("NodeConfig", () => {
   });
 
   describe("large mode", () => {
+    type ModeExpectation = "large" | "small";
+
     const showModal = vi.fn();
     const closeModal = vi.fn();
+    const pushEventDispatcher = vi.fn();
 
     beforeAll(() => {
       HTMLDialogElement.prototype.showModal = showModal;
       HTMLDialogElement.prototype.close = closeModal;
-    });
-
-    const node = createNativeNode({
-      id: "root:1",
-      dialogType: Node.DialogTypeEnum.Web,
-    });
-
-    const workflow = createWorkflow({
-      nodes: { [node.id]: node },
-      nodeTemplates: {
-        [node.templateId]: {
-          icon: "",
-          name: "Mock Node",
-        },
-      },
-    });
-
-    it("should toggle between large and small mode", async () => {
       vi.useFakeTimers();
-      const { wrapper, $store } = doMount({
-        singleSelectedNodeMock: vi.fn().mockReturnValue(node),
+    });
+
+    beforeEach(() => {
+      showModal.mockClear();
+      closeModal.mockClear();
+      pushEventDispatcher.mockClear();
+    });
+
+    const doMountForLargeModeTesting = async (isLargeMode: boolean = false) => {
+      const node = createNativeNode({
+        id: "root:1",
+        dialogType: Node.DialogTypeEnum.Web,
       });
 
+      const workflow = createWorkflow({
+        nodes: { [node.id]: node },
+        nodeTemplates: {
+          [node.templateId]: {
+            icon: "",
+            name: "Mock Node",
+          },
+        },
+      });
+
+      const { wrapper, $store } = doMount({
+        isLargeMode,
+        singleSelectedNodeMock: vi.fn().mockReturnValue(node),
+      });
       $store.commit("workflow/setActiveWorkflow", workflow);
-
-      expect(wrapper.classes()).toContain("small");
-      expect(wrapper.find(".title-bar").exists()).toBe(false);
-      expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
-
       $store.commit("nodeConfiguration/setActiveNodeId", "root:1");
-
-      const pushEventDispatcher = vi.fn();
-      $store.commit(
-        "nodeConfiguration/setPushEventDispatcher",
-        pushEventDispatcher,
-      );
-
       await nextTick();
-
       $store.commit("nodeConfiguration/setActiveExtensionConfig", {
         canBeEnlarged: true,
       });
 
-      // @ts-ignore - start on Large Mode
-      await wrapper.vm.toggleLarge();
+      $store.commit(
+        "nodeConfiguration/setPushEventDispatcher",
+        pushEventDispatcher,
+      );
       await nextTick();
+      return { wrapper, $store };
+    };
 
-      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
-      await wrapper.findComponent(FunctionButton).trigger("click");
-      vi.runOnlyPendingTimers();
-      await nextTick();
-
-      expect(wrapper.find(".title-bar").text()).toMatch("Mock Node");
-      expect(pushEventDispatcher).toHaveBeenCalledTimes(2);
-      expect(pushEventDispatcher).toHaveBeenNthCalledWith(2, {
+    const expectEventDispatch = (mode: ModeExpectation) => {
+      expect(pushEventDispatcher).toHaveBeenCalledTimes(1);
+      expect(pushEventDispatcher).toHaveBeenNthCalledWith(1, {
         eventType: "DisplayModeEvent",
-        payload: { mode: "small" },
+        payload: { mode },
+      });
+    };
+
+    describe("toggles isLargeMode", () => {
+      const expectMode = (
+        wrapper: VueWrapper,
+        expectation: ModeExpectation,
+      ) => {
+        expect(wrapper.classes()).toContain(expectation);
+        if (expectation === "large") {
+          expect(wrapper.find(".title-bar").text()).toMatch("Mock Node");
+        } else {
+          expect(wrapper.find(".title-bar").exists()).toBe(false);
+        }
+      };
+
+      it("to large if starting small", async () => {
+        const { wrapper, $store } = await doMountForLargeModeTesting();
+
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+        expectMode(wrapper, "small");
+
+        $store.commit("nodeConfiguration/setIsLargeMode", true);
+        await nextTick();
+
+        expect(showModal).toHaveBeenCalledOnce();
+        expectMode(wrapper, "large");
+        expectEventDispatch("large");
+      });
+
+      it("to small if starting large via store", async () => {
+        const { wrapper, $store } = await doMountForLargeModeTesting(true);
+
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+        expectMode(wrapper, "large");
+
+        $store.commit("nodeConfiguration/setIsLargeMode", false);
+        await nextTick();
+
+        expect(closeModal).toHaveBeenCalledOnce();
+        expectMode(wrapper, "small");
+        expectEventDispatch("small");
+      });
+
+      it("to small if starting large by pressing escape", async () => {
+        const { wrapper } = await doMountForLargeModeTesting(true);
+
+        expectMode(wrapper, "large");
+
+        const dialog = wrapper.find("dialog");
+        expect(dialog.exists()).toBe(true);
+        await dialog.trigger("keydown.esc");
+        await nextTick();
+
+        expect(closeModal).toHaveBeenCalledOnce();
+        expectMode(wrapper, "small");
+        expectEventDispatch("small");
+      });
+
+      it("to small if starting large by close button", async () => {
+        const { wrapper } = await doMountForLargeModeTesting(true);
+
+        expectMode(wrapper, "large");
+
+        const closeButton = wrapper.findComponent(FunctionButton);
+        expect(closeButton.exists()).toBe(true);
+        await closeButton.trigger("click");
+
+        expect(closeModal).toHaveBeenCalledOnce();
+        expectMode(wrapper, "small");
+        expectEventDispatch("small");
       });
     });
   });

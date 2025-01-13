@@ -10,7 +10,10 @@ import {
 } from "@knime/ui-extension-service";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import * as applicationStore from "@/store/application";
+import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
+import { mockVuexStore } from "@/test/utils";
 import NodeConfigLayout from "../NodeConfigLayout.vue";
 import NodeConfigLoader from "../NodeConfigLoader.vue";
 
@@ -36,7 +39,6 @@ describe("NodeConfigLayout.vue", () => {
       disabled?: boolean;
       dirtyState?: APILayerDirtyState;
       nodeName?: string;
-      isLargeMode?: boolean;
       canBeEnlarged?: boolean;
     };
   };
@@ -48,11 +50,17 @@ describe("NodeConfigLayout.vue", () => {
     disabled: false,
     dirtyState: { apply: ApplyState.CLEAN, view: ViewState.CLEAN },
     nodeName: "Node1",
-    isLargeMode: false,
     canBeEnlarged: false,
   };
 
-  const doMount = ({ props }: MountOpts = {}) => {
+  const doMount = ({ props }: MountOpts = {}, isLargeMode: boolean = false) => {
+    const $store = mockVuexStore({
+      nodeConfiguration: nodeConfigurationStore,
+      application: applicationStore,
+    });
+
+    $store.state.nodeConfiguration.isLargeMode = isLargeMode;
+
     const wrapper = mount(NodeConfigLayout, {
       props: { ...defaultProps, ...props },
       global: {
@@ -62,10 +70,11 @@ describe("NodeConfigLayout.vue", () => {
               '<div><slot name="header" /><slot name="controls" /></div>',
           },
         },
+        plugins: [$store],
       },
     });
 
-    return { wrapper };
+    return { wrapper, $store };
   };
 
   const setLoadingDone = async (wrapper: VueWrapper<any>) => {
@@ -93,30 +102,36 @@ describe("NodeConfigLayout.vue", () => {
 
   describe("header", () => {
     it("should show header button on small dialogs and toggle large", async () => {
-      const { wrapper } = doMount({
-        props: { canBeEnlarged: true, isLargeMode: false },
+      const { wrapper, $store } = doMount({
+        props: { canBeEnlarged: true },
       });
+      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
 
-      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
       expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
       await wrapper.findComponent(FunctionButton).trigger("click");
 
-      expect(wrapper.emitted("toggleLarge")).toBeDefined();
+      expect($store.state.nodeConfiguration.isLargeMode).toBe(true);
     });
 
     it("should not show header on large dialogs", () => {
-      const { wrapper } = doMount({
-        props: { canBeEnlarged: true, isLargeMode: true },
-      });
+      const { wrapper } = doMount(
+        {
+          props: { canBeEnlarged: true },
+        },
+        true,
+      );
 
       expect(wrapper.find(".header").exists()).toBe(false);
       expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
     });
 
     it("should not show button on dialogs that cannot be enlarged", () => {
-      const { wrapper } = doMount({
-        props: { canBeEnlarged: false, isLargeMode: false },
-      });
+      const { wrapper } = doMount(
+        {
+          props: { canBeEnlarged: false },
+        },
+        false,
+      );
 
       expect(wrapper.find(".header").exists()).toBe(true);
       expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);

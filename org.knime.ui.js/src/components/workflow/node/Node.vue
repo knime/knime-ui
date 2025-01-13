@@ -382,6 +382,10 @@ export default {
         return;
       }
 
+      if (this.useEmbeddedDialogs) {
+        this.$store.state.nodeConfiguration.isLargeMode = true;
+      }
+
       if (this.dialogType === "web" && this.useEmbeddedDialogs) {
         return;
       }

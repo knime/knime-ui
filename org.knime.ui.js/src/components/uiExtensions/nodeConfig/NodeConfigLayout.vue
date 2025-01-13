@@ -9,6 +9,7 @@ import {
 } from "@knime/ui-extension-service";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import { useStore } from "@/composables/useStore";
 import type { UIExtensionLoadingState } from "../common/types";
 
 import NodeConfigLoader from "./NodeConfigLoader.vue";
@@ -21,16 +22,16 @@ type Props = {
   dirtyState: APILayerDirtyState;
   nodeName: string;
   canBeEnlarged: boolean;
-  isLargeMode: boolean;
 };
 
 const props = defineProps<Props>();
+
+const store = useStore();
 
 const emit = defineEmits<{
   apply: [execute: boolean];
   execute: [];
   discard: [];
-  toggleLarge: [];
 }>();
 
 const loadingState = ref<UIExtensionLoadingState | null>(null);
@@ -88,9 +89,12 @@ const onDiscard = () => {
       @loading-state-change="loadingState = $event"
     >
       <template #header>
-        <div v-if="!isLargeMode" class="header">
+        <div v-if="!store.state.nodeConfiguration.isLargeMode" class="header">
           <h6>{{ nodeName }}</h6>
-          <FunctionButton v-if="canBeEnlarged" @click="emit('toggleLarge')">
+          <FunctionButton
+            v-if="canBeEnlarged"
+            @click="store.state.nodeConfiguration.isLargeMode = true"
+          >
             <ArrowsExpandIcon />
           </FunctionButton>
         </div>

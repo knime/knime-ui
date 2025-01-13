@@ -125,11 +125,17 @@ describe("Node", () => {
           isWritable: () => true,
         },
       },
+      nodeConfiguration: {
+        state: {
+          isLargeMode: false,
+        },
+      },
       application: {
         state() {
           return {
             ...applicationStore.state(),
             activeProjectId: "projectId",
+            useEmbeddedDialogs: true,
           };
         },
         getters: {
@@ -324,8 +330,13 @@ describe("Node", () => {
         canOpenDialog: true,
       },
     };
-    const { wrapper } = doMount({ props });
+
+    const { wrapper, $store } = doMount({ props });
+    expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+
     await wrapper.findComponent(NodeTorso).trigger("dblclick");
+    await nextTick();
+    expect($store.state.nodeConfiguration.isLargeMode).toBe(true);
 
     expect(
       storeConfig.workflow.actions.openNodeConfiguration,

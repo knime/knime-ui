@@ -47,6 +47,7 @@ export interface NodeConfigurationState {
   } | null;
   pushEventDispatcher: UIExtensionPushEventDispatcher;
   timestamp: number | null;
+  isLargeMode: boolean;
 }
 
 export const state = (): NodeConfigurationState => ({
@@ -59,6 +60,7 @@ export const state = (): NodeConfigurationState => ({
   latestPublishedData: null,
   pushEventDispatcher: () => {},
   timestamp: null,
+  isLargeMode: false,
 });
 
 let unwrappedPromise = createUnwrappedPromise<boolean>();
@@ -134,6 +136,9 @@ export const mutations: MutationTree<NodeConfigurationState> = {
   },
   setTimestamp(state, value) {
     state.timestamp = value;
+  },
+  setIsLargeMode(state, value) {
+    state.isLargeMode = value;
   },
 };
 

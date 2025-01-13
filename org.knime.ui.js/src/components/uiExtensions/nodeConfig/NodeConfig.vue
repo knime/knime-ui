@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import { FunctionButton } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
 import { UIExtensionPushEvents } from "@knime/ui-extension-service";
-import { sleep } from "@knime/utils";
 
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
@@ -30,60 +29,51 @@ const nodeName = computed(() =>
     : "",
 );
 
-const isLargeMode = ref(false);
+const isLargeMode = computed<boolean>({
+  get: () => store.state.nodeConfiguration.isLargeMode,
+  set: (value) => (store.state.nodeConfiguration.isLargeMode = value),
+});
 
-const toggleLarge = async () => {
+watch(isLargeMode, () => {
   if (isLargeMode.value) {
-    panel.value!.close();
-
-    // wait for one event loop run, so that the <dialog> element gets layout-ed correctly
-    await sleep(0);
-    isLargeMode.value = false;
-  } else {
-    isLargeMode.value = true;
-
-    await nextTick();
     panel.value!.showModal();
+  } else {
+    panel.value!.close();
   }
-
-  const mode = isLargeMode.value ? "large" : "small";
-
   store.state.nodeConfiguration.pushEventDispatcher({
     eventType: UIExtensionPushEvents.EventTypes.DisplayModeEvent,
-    payload: { mode },
+    payload: { mode: isLargeMode.value ? "large" : "small" },
   });
-};
+});
 
 const onDialogCancel = () => {
-  if (isLargeMode.value) {
-    toggleLarge();
-  }
+  isLargeMode.value = false;
 };
 </script>
 
 <template>
+  <!--  below the deprecated @cancel event is used. Trying to use @keydown.esc instead resulted in the NodeConfig for the "Expression" node to disappear after using ESC to exit large mode -->
   <dialog
     :id="EMBEDDED_CONTENT_PANEL_ID__RIGHT"
     ref="panel"
     class="node-config-embedded-content-panel full-height"
-    :class="{ large: isLargeMode, small: !isLargeMode }"
+    :class="{
+      large: isLargeMode,
+      small: !isLargeMode,
+    }"
     @cancel="onDialogCancel"
   >
     <div v-if="isLargeMode" class="title-bar">
       <h2>{{ nodeName }}</h2>
       <FunctionButton
         v-if="activeNode && canBeEnlarged && isLargeMode"
-        @click="toggleLarge"
+        @click="isLargeMode = false"
       >
         <ArrowsCollapseIcon />
       </FunctionButton>
     </div>
 
-    <NodeConfigWrapper
-      class="content-wrapper"
-      :is-large-mode="isLargeMode"
-      @toggle-large="toggleLarge"
-    >
+    <NodeConfigWrapper class="content-wrapper">
       <template #inactive>
         <IncompatibleNodeConfigPlaceholder />
       </template>
