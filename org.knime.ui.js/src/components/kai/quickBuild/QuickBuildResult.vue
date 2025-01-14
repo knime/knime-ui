@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 
+import MarkdownRenderer from "../chat/message/MarkdownRenderer.vue";
+
 type Props = {
   message: string;
   interactionId: string;
@@ -15,7 +17,9 @@ defineEmits(["close"]);
     <div class="knime-icon">
       <KnimeIcon />
     </div>
-    <div class="message">{{ message }}</div>
+    <div class="message">
+      <MarkdownRenderer :markdown="message" />
+    </div>
   </div>
 </template>
 
@@ -25,7 +29,7 @@ defineEmits(["close"]);
 .quick-build-result {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-8);
 
   & .knime-icon {
