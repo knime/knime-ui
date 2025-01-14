@@ -10,10 +10,10 @@ import type { Message, StatusUpdate } from "@/store/aiAssistant";
 
 import FeedbackControls from "./FeedbackControls.vue";
 import KaiStatus from "./KaiStatus.vue";
+import MarkdownRenderer from "./MarkdownRenderer.vue";
 import MessagePlaceholder from "./MessagePlaceholder.vue";
 import SuggestedNodes from "./SuggestedNodes.vue";
 import AdditionalResources from "./additionalResources/AdditionalResources.vue";
-import { renderMarkdown } from "./markdown";
 import { useNodeTemplates } from "./useNodeTemplates";
 
 const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
@@ -42,7 +42,6 @@ const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
 });
 
 const isUser = computed(() => props.role === KaiMessage.RoleEnum.User);
-const htmlContent = computed(() => renderMarkdown(props.content));
 const showFeedbackControls = computed(
   () => !isUser.value && !props.isError && props.interactionId,
 );
@@ -58,7 +57,7 @@ const showFeedbackControls = computed(
     </div>
     <div class="body" :class="{ user: isUser, error: isError }">
       <!-- eslint-disable vue/no-v-html  -->
-      <div v-if="content" class="content" v-html="htmlContent" />
+      <MarkdownRenderer v-if="content" :markdown="content" />
       <MessagePlaceholder v-else />
       <SuggestedNodes :node-templates="nodeTemplates" />
       <AdditionalResources
@@ -144,81 +143,6 @@ const showFeedbackControls = computed(
 
     &.error {
       background-color: var(--knime-coral-light);
-    }
-
-    & :deep(.content) {
-      overflow-wrap: break-word;
-      overflow-x: hidden;
-
-      & *:first-child {
-        margin-top: 0;
-      }
-
-      & *:last-child {
-        margin-bottom: 0;
-      }
-
-      & h1 {
-        font-size: 1.5em;
-      }
-
-      & h2,
-      & h3,
-      & h4,
-      & h5,
-      & h6 {
-        font-size: 1em;
-      }
-
-      & pre,
-      & p:has(> code:only-child) {
-        border: 1px solid var(--knime-silver-sand);
-        padding: var(--space-4);
-      }
-
-      & code {
-        white-space: pre-wrap;
-        word-break: break-all;
-      }
-
-      & ul,
-      & ol {
-        list-style: none;
-        padding-left: 0;
-
-        & li {
-          margin-bottom: 0.4em;
-
-          &::before {
-            font-weight: bold;
-            margin-right: 5px;
-          }
-
-          & p:first-child {
-            display: inline;
-          }
-        }
-      }
-
-      & ul {
-        & li {
-          &::before {
-            content: "\2022";
-          }
-        }
-      }
-
-      & ol {
-        counter-reset: list-counter;
-
-        & li {
-          counter-increment: list-counter;
-
-          &::before {
-            content: counter(list-counter) ".";
-          }
-        }
-      }
     }
   }
 
