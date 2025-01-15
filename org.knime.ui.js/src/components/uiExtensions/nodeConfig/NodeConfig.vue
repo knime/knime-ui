@@ -72,7 +72,7 @@ const onExpandConfig = () => {
         v-if="activeNode && canBeEnlarged && isLargeMode"
         @click="isLargeMode = false"
       >
-        <ArrowsCollapseIcon />
+        <ArrowsCollapseIcon class="arrows-collapse-icon" />
       </FunctionButton>
     </div>
 
@@ -156,6 +156,16 @@ dialog {
 
     & .content-wrapper {
       height: calc(100% - var(--title-bar-height));
+    }
+
+    & .arrows-collapse-icon {
+      stroke: var(--knime-white);
+
+      &:hover {
+        outline: none;
+        color: var(--theme-button-function-foreground-color-hover);
+        background-color: transparent;
+      }
     }
   }
 }
