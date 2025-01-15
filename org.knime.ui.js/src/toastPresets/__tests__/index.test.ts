@@ -131,7 +131,7 @@ describe("toastPresets", () => {
         [
           "renameItemFailed",
           "Rename failed",
-          'Could not rename the selected item to "undefined". Try again later.',
+          'Could not rename the selected item with the new name "undefined". actual renameItemFailed error',
         ],
         [
           "renameSpaceFailed",

@@ -120,7 +120,9 @@ export const getPresets = (
         defaultErrorPresetHandler($toast, error, {
           type: "error",
           headline: "Rename failed",
-          message: `Could not rename the selected item with the new name "${newName}". ${error}`,
+          message: `Could not rename the selected item with the new name "${newName}". ${
+            (error as Error).message
+          }`,
         }),
       renameSpaceFailed: ({ error }) =>
         defaultErrorPresetHandler($toast, error, {
