@@ -180,11 +180,13 @@ const onRenameFile = ({
       itemId,
       newName,
     })
-    .catch(() => {
+    .catch((error) => {
       $toast.show({
         type: "error",
         headline: "Rename failed",
-        message: `Could not rename the selected item with the new name "${newName}". Please, try again`,
+        message: `Could not rename the selected item with the new name "${newName}". ${
+          (error as Error).message
+        }`,
       });
     });
 };
