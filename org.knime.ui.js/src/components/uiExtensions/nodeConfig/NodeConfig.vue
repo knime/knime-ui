@@ -113,10 +113,6 @@ dialog {
     display: block;
     position: relative;
 
-    & .toggle-display-mode-btn {
-      right: var(--space-16);
-    }
-
     & .content-wrapper {
       height: 100%;
     }
@@ -142,15 +138,6 @@ dialog {
         margin: 0;
         font-size: 19px;
         line-height: var(--title-bar-height);
-      }
-    }
-
-    & .toggle-display-mode-btn {
-      top: 2px;
-      right: var(--space-8);
-
-      & :deep(svg) {
-        stroke: var(--knime-white);
       }
     }
 
