@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useEventListener } from "@vueuse/core";
 
 import { FunctionButton } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
@@ -53,6 +54,11 @@ const onDialogCancel = () => {
 const onExpandConfig = () => {
   isLargeMode.value = true;
 };
+useEventListener(panel, "click", (event) => {
+  if (event.target === panel.value) {
+    onDialogCancel();
+  }
+});
 </script>
 
 <template>

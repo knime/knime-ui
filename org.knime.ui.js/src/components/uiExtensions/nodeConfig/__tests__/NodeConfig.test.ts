@@ -14,6 +14,7 @@ import type { Store } from "vuex";
 import { FunctionButton } from "@knime/components";
 
 import { Node } from "@/api/gateway-api/generated-api";
+import NodeConfigWrapper from "@/components/uiExtensions/nodeConfig/NodeConfigWrapper.vue";
 import * as applicationStore from "@/store/application";
 import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import * as uiControlsStore from "@/store/uiControls";
@@ -23,7 +24,6 @@ import {
   createNativeNode,
   createWorkflow,
 } from "@/test/factories";
-import { mockBoundingRect } from "@/test/utils";
 import { mockVuexStore } from "@/test/utils/mockVuexStore";
 import { setEnvironment } from "@/test/utils/setEnvironment";
 import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
@@ -160,9 +160,6 @@ describe("NodeConfig", () => {
     const closeModal = vi.fn();
     const pushEventDispatcher = vi.fn();
 
-    const modalWidth = 100;
-    const modalHeight = 100;
-
     beforeAll(() => {
       HTMLDialogElement.prototype.showModal = showModal;
       HTMLDialogElement.prototype.close = closeModal;
@@ -204,11 +201,6 @@ describe("NodeConfig", () => {
         "nodeConfiguration/setPushEventDispatcher",
         pushEventDispatcher,
       );
-      await nextTick();
-      mockBoundingRect({
-        height: modalHeight,
-        width: modalWidth,
-      });
 
       return { wrapper, $store };
     };
@@ -281,30 +273,24 @@ describe("NodeConfig", () => {
         expectEventDispatch("small");
       });
 
-      it("to small node if dialog background is clicked", async () => {
+      it("is toggled to small if dialog background is clicked", async () => {
         const { wrapper } = await doMountForLargeModeTesting(true);
 
         expectMode(wrapper, "large");
 
-        await wrapper.trigger("click", {
-          clientX: modalWidth + 1,
-          clientY: modalHeight + 1,
-        });
+        await wrapper.find("dialog").trigger("click");
 
         expect(closeModal).toHaveBeenCalledOnce();
         expectMode(wrapper, "small");
         expectEventDispatch("small");
       });
 
-      it("is not executed if dialog area is clicked", async () => {
+      it("is not toggled to small if dialog area is clicked", async () => {
         const { wrapper } = await doMountForLargeModeTesting(true);
 
         expectMode(wrapper, "large");
 
-        await wrapper.trigger("click", {
-          clientX: modalWidth / 2,
-          clientY: modalHeight / 2,
-        });
+        await wrapper.findComponent(NodeConfigWrapper).trigger("click");
 
         expect(closeModal).not.toHaveBeenCalled();
         expect(pushEventDispatcher).not.toHaveBeenCalled();
