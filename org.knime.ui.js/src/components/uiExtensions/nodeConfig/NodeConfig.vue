@@ -49,6 +49,10 @@ watch(isLargeMode, () => {
 const onDialogCancel = () => {
   isLargeMode.value = false;
 };
+
+const onExpandConfig = () => {
+  isLargeMode.value = true;
+};
 </script>
 
 <template>
@@ -73,7 +77,11 @@ const onDialogCancel = () => {
       </FunctionButton>
     </div>
 
-    <NodeConfigWrapper class="content-wrapper">
+    <NodeConfigWrapper
+      class="content-wrapper"
+      :is-large-mode="isLargeMode"
+      @expand="onExpandConfig"
+    >
       <template #inactive>
         <IncompatibleNodeConfigPlaceholder />
       </template>

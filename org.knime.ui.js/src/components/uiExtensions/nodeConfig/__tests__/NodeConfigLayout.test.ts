@@ -10,10 +10,7 @@ import {
 } from "@knime/ui-extension-service";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
-import * as applicationStore from "@/store/application";
-import * as nodeConfigurationStore from "@/store/nodeConfiguration";
 import { createNativeNode } from "@/test/factories";
-import { mockVuexStore } from "@/test/utils";
 import NodeConfigLayout from "../NodeConfigLayout.vue";
 import NodeConfigLoader from "../NodeConfigLoader.vue";
 
@@ -39,6 +36,7 @@ describe("NodeConfigLayout.vue", () => {
       disabled?: boolean;
       dirtyState?: APILayerDirtyState;
       nodeName?: string;
+      isLargeMode?: boolean;
       canBeEnlarged?: boolean;
     };
   };
@@ -50,17 +48,11 @@ describe("NodeConfigLayout.vue", () => {
     disabled: false,
     dirtyState: { apply: ApplyState.CLEAN, view: ViewState.CLEAN },
     nodeName: "Node1",
+    isLargeMode: false,
     canBeEnlarged: false,
   };
 
-  const doMount = ({ props }: MountOpts = {}, isLargeMode: boolean = false) => {
-    const $store = mockVuexStore({
-      nodeConfiguration: nodeConfigurationStore,
-      application: applicationStore,
-    });
-
-    $store.state.nodeConfiguration.isLargeMode = isLargeMode;
-
+  const doMount = ({ props }: MountOpts = {}) => {
     const wrapper = mount(NodeConfigLayout, {
       props: { ...defaultProps, ...props },
       global: {
@@ -70,11 +62,10 @@ describe("NodeConfigLayout.vue", () => {
               '<div><slot name="header" /><slot name="controls" /></div>',
           },
         },
-        plugins: [$store],
       },
     });
 
-    return { wrapper, $store };
+    return { wrapper };
   };
 
   const setLoadingDone = async (wrapper: VueWrapper<any>) => {
@@ -102,36 +93,29 @@ describe("NodeConfigLayout.vue", () => {
 
   describe("header", () => {
     it("should show header button on small dialogs and toggle large", async () => {
-      const { wrapper, $store } = doMount({
-        props: { canBeEnlarged: true },
+      const { wrapper } = doMount({
+        props: { canBeEnlarged: true, isLargeMode: false },
       });
-      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
 
       expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
       await wrapper.findComponent(FunctionButton).trigger("click");
 
-      expect($store.state.nodeConfiguration.isLargeMode).toBe(true);
+      expect(wrapper.emitted("expand")).toBeDefined();
     });
 
     it("should not show header on large dialogs", () => {
-      const { wrapper } = doMount(
-        {
-          props: { canBeEnlarged: true },
-        },
-        true,
-      );
+      const { wrapper } = doMount({
+        props: { canBeEnlarged: true, isLargeMode: true },
+      });
 
       expect(wrapper.find(".header").exists()).toBe(false);
       expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
     });
 
     it("should not show button on dialogs that cannot be enlarged", () => {
-      const { wrapper } = doMount(
-        {
-          props: { canBeEnlarged: false },
-        },
-        false,
-      );
+      const { wrapper } = doMount({
+        props: { canBeEnlarged: false },
+      });
 
       expect(wrapper.find(".header").exists()).toBe(true);
       expect(wrapper.findComponent(FunctionButton).exists()).toBe(false);
@@ -144,6 +128,15 @@ describe("NodeConfigLayout.vue", () => {
       state: APILayerDirtyState,
     ) => {
       return wrapper.setProps({ dirtyState: state });
+    };
+
+    const expectButtonsInDirtyState = (wrapper: VueWrapper) => {
+      expect(wrapper.find("button.execute").exists()).toBe(false);
+      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
+
+      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
+      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(false);
+      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
     };
 
     it("should render correctly", async () => {
@@ -169,12 +162,7 @@ describe("NodeConfigLayout.vue", () => {
         view: ViewState.CONFIG,
       });
 
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
+      expectButtonsInDirtyState(wrapper);
     });
 
     it("should handle button states for CONFIGURED node", async () => {
@@ -194,12 +182,7 @@ describe("NodeConfigLayout.vue", () => {
         view: ViewState.CONFIG,
       });
 
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
+      expectButtonsInDirtyState(wrapper);
     });
 
     it("should handle button states for EXECUTED node", async () => {
@@ -231,12 +214,7 @@ describe("NodeConfigLayout.vue", () => {
         view: ViewState.CONFIG,
       });
 
-      expect(wrapper.find("button.execute").exists()).toBe(false);
-      expect(wrapper.find("button.apply-execute").exists()).toBe(true);
-
-      expect(isButtonDisabled(wrapper, "discard")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply-execute")).toBe(false);
-      expect(isButtonDisabled(wrapper, "apply")).toBe(false);
+      expectButtonsInDirtyState(wrapper);
     });
 
     it("should handle discard", async () => {

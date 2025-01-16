@@ -9,6 +9,7 @@ import {
 } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
+import type { Store } from "vuex";
 
 import { FunctionButton } from "@knime/components";
 
@@ -165,9 +166,7 @@ describe("NodeConfig", () => {
     });
 
     beforeEach(() => {
-      showModal.mockClear();
-      closeModal.mockClear();
-      pushEventDispatcher.mockClear();
+      vi.clearAllMocks();
     });
 
     const doMountForLargeModeTesting = async (isLargeMode: boolean = false) => {
@@ -213,39 +212,42 @@ describe("NodeConfig", () => {
       });
     };
 
-    describe("toggles isLargeMode", () => {
-      const expectMode = (
-        wrapper: VueWrapper,
-        expectation: ModeExpectation,
-      ) => {
-        expect(wrapper.classes()).toContain(expectation);
-        if (expectation === "large") {
-          expect(wrapper.find(".title-bar").text()).toMatch("Mock Node");
-        } else {
-          expect(wrapper.find(".title-bar").exists()).toBe(false);
-        }
-      };
+    const expectMode = (wrapper: VueWrapper, expectation: ModeExpectation) => {
+      expect(wrapper.find("dialog").classes()).toContain(expectation);
+      if (expectation === "large") {
+        expect(wrapper.find(".title-bar").text()).toMatch("Mock Node");
+      } else {
+        expect(wrapper.find(".title-bar").exists()).toBe(false);
+      }
+    };
 
-      it("to large if starting small", async () => {
-        const { wrapper, $store } = await doMountForLargeModeTesting();
+    it("if starting small can be toggled to large via store", async () => {
+      const { wrapper, $store } = await doMountForLargeModeTesting();
 
-        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
-        expectMode(wrapper, "small");
+      expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+      expectMode(wrapper, "small");
 
-        $store.commit("nodeConfiguration/setIsLargeMode", true);
-        await nextTick();
+      $store.commit("nodeConfiguration/setIsLargeMode", true);
+      await nextTick();
 
-        expect(showModal).toHaveBeenCalledOnce();
-        expectMode(wrapper, "large");
-        expectEventDispatch("large");
+      expect(showModal).toHaveBeenCalledOnce();
+      expectMode(wrapper, "large");
+      expectEventDispatch("large");
+    });
+
+    describe("if starting large", () => {
+      let wrapper: VueWrapper, $store: Store<any>;
+
+      beforeEach(async () => {
+        ({ wrapper, $store } = await doMountForLargeModeTesting(true));
       });
 
-      it("to small if starting large via store", async () => {
-        const { wrapper, $store } = await doMountForLargeModeTesting(true);
-
-        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+      it("is in right mode and has close button", () => {
         expectMode(wrapper, "large");
+        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+      });
 
+      it("can be toggled to small via store", async () => {
         $store.commit("nodeConfiguration/setIsLargeMode", false);
         await nextTick();
 
@@ -254,29 +256,16 @@ describe("NodeConfig", () => {
         expectEventDispatch("small");
       });
 
-      it("to small if starting large by pressing escape", async () => {
-        const { wrapper } = await doMountForLargeModeTesting(true);
-
-        expectMode(wrapper, "large");
-
-        const dialog = wrapper.find("dialog");
-        expect(dialog.exists()).toBe(true);
-        await dialog.trigger("keydown.esc");
-        await nextTick();
+      it("is toggled to small by pressing escape", async () => {
+        await wrapper.find("dialog").trigger("cancel");
 
         expect(closeModal).toHaveBeenCalledOnce();
         expectMode(wrapper, "small");
         expectEventDispatch("small");
       });
 
-      it("to small if starting large by close button", async () => {
-        const { wrapper } = await doMountForLargeModeTesting(true);
-
-        expectMode(wrapper, "large");
-
-        const closeButton = wrapper.findComponent(FunctionButton);
-        expect(closeButton.exists()).toBe(true);
-        await closeButton.trigger("click");
+      it("is toggled to small by close button", async () => {
+        await wrapper.findComponent(FunctionButton).trigger("click");
 
         expect(closeModal).toHaveBeenCalledOnce();
         expectMode(wrapper, "small");
