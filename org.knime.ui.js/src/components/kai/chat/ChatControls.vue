@@ -21,6 +21,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  placeholder: {
+    type: String,
+    default: "",
+  },
 });
 
 const { textarea, input } = useTextareaAutosize();
@@ -84,6 +88,7 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       class="textarea"
       maxlength="300"
       @keydown="handleKeyDown"
+      :placeholder="placeholder"
     />
     <FunctionButton
       class="send-button"
