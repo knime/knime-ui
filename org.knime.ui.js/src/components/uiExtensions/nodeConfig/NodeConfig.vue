@@ -56,7 +56,6 @@ const onExpandConfig = () => {
 </script>
 
 <template>
-  <!--  below the deprecated @cancel event is used. Trying to use @keydown.esc instead resulted in the NodeConfig for the "Expression" node to disappear after using ESC to exit large mode -->
   <dialog
     :id="EMBEDDED_CONTENT_PANEL_ID__RIGHT"
     ref="panel"
