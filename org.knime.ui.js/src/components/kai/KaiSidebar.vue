@@ -59,7 +59,9 @@ const showChatControls = computed(() => !panelComponent.value);
       </template>
     </template>
 
-    <component :is="panelComponent" v-if="panelComponent" />
+    <div v-if="panelComponent" class="panel-container">
+      <component :is="panelComponent" />
+    </div>
     <template v-else>
       <Chat v-show="chainType === 'qa'" chain-type="qa" />
       <Chat v-show="chainType === 'build'" chain-type="build" />
@@ -73,5 +75,12 @@ const showChatControls = computed(() => !panelComponent.value);
   --z-index-common-menu-items-expanded: v-bind("$zIndices.layerExpandedMenus");
 
   margin-left: 5px;
+}
+
+.panel-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 </style>
