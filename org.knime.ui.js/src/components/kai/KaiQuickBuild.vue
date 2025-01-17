@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs } from "vue";
+import { computed, toRefs, watch } from "vue";
 
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
@@ -44,16 +44,31 @@ const {
   statusUpdate,
 } = useQuickBuild({ nodeId, startPosition });
 
-const menuState = computed<"PROCESSING" | "RESULT" | "INPUT">(() => {
+const menuState = computed<"PROCESSING" | "RESULT" | "INPUT" | "NONE">(() => {
   if (isProcessing.value) {
     return "PROCESSING";
   }
-  // Ideally, we would check for "SUCCESS" here. To be backwards compatible,
-  // we check for "INPUT_NEEDED" instead.
-  if (result?.value && result.value.type !== "INPUT_NEEDED") {
-    return "RESULT";
+
+  if (result.value) {
+    if (Object.keys(result.value).length === 0) {
+      // User cancelled the ai request.
+      return "NONE";
+    }
+
+    // Ideally, we would check for "SUCCESS" here. To be backwards compatible,
+    // we check for "INPUT_NEEDED" instead.
+    if (result.value.type !== "INPUT_NEEDED") {
+      return "RESULT";
+    }
   }
+
   return "INPUT";
+});
+
+watch(menuState, (menuState) => {
+  if (menuState === "NONE") {
+    closeQuickActionMenu();
+  }
 });
 </script>
 
