@@ -14,7 +14,11 @@ const openInBrowser = (url: string) => {
   window.open(url);
 };
 
-const shouldRender = computed(() => Object.keys(props.references).length > 0);
+const shouldRender = computed(
+  () =>
+    Object.keys(props.references).length &&
+    Object.values(props.references).some((urls) => urls.length),
+);
 </script>
 
 <template>
@@ -29,12 +33,14 @@ const shouldRender = computed(() => Object.keys(props.references).length > 0);
       :key="referenceName"
       :urls="urls"
     >
-      <span class="reference-name">{{ referenceName }}: </span>
-      <span v-for="(url, index) in urls" :key="index">
-        <Button class="button" @click="openInBrowser(url)"
-          >[{{ index + 1 }}]</Button
-        ><span v-if="index < urls.length - 1">, </span>
-      </span>
+      <template v-if="urls.length">
+        <span class="reference-name">{{ referenceName }}: </span>
+        <span v-for="(url, index) in urls" :key="index">
+          <Button class="button" @click="openInBrowser(url)"
+            >[{{ index + 1 }}]</Button
+          ><span v-if="index < urls.length - 1">, </span>
+        </span>
+      </template>
     </div>
   </div>
 </template>
