@@ -19,10 +19,15 @@ const {
 } = useKaiExtensionPanel();
 
 const shouldRender = computed(() => {
+  const hasReferences =
+    Object.keys(props.references).length &&
+    Object.values(props.references).some((urls) => urls.length);
+
   return (
-    Object.keys(props.references).length ||
+    hasReferences ||
     props.workflows.length ||
-    props.components.length
+    props.components.length ||
+    Object.keys(props.extensions).length
   );
 });
 
