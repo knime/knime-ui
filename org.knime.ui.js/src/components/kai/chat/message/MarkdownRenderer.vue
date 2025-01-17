@@ -19,11 +19,11 @@ const htmlContent = computed(() => renderMarkdown(props.markdown));
   overflow-wrap: break-word;
   overflow-x: hidden;
 
-  & *:first-child {
+  & > *:first-child {
     margin-top: 0;
   }
 
-  & *:last-child {
+  & > *:last-child {
     margin-bottom: 0;
   }
 
@@ -50,6 +50,18 @@ const htmlContent = computed(() => renderMarkdown(props.markdown));
     word-break: break-all;
   }
 
+  & ol {
+    counter-reset: list-counter;
+
+    & li {
+      counter-increment: list-counter;
+
+      &::before {
+        content: counter(list-counter) ".";
+      }
+    }
+  }
+
   & ul,
   & ol {
     list-style: none;
@@ -67,24 +79,19 @@ const htmlContent = computed(() => renderMarkdown(props.markdown));
         display: inline;
       }
     }
+
+    & ul,
+    & ol {
+      counter-reset: list-counter;
+      padding-left: var(--space-16);
+      margin-top: 0.4em;
+    }
   }
 
   & ul {
     & li {
       &::before {
         content: "\2022";
-      }
-    }
-  }
-
-  & ol {
-    counter-reset: list-counter;
-
-    & li {
-      counter-increment: list-counter;
-
-      &::before {
-        content: counter(list-counter) ".";
       }
     }
   }
