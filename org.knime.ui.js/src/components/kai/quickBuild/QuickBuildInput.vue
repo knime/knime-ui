@@ -29,6 +29,7 @@ defineEmits<{
       class="chat-controls"
       :last-user-message="lastUserMessage"
       :text="errorMessage ? lastUserMessage : ''"
+      placeholder="What would you like to build?"
       @send-message="$emit('sendMessage', $event)"
     />
     <div v-if="errorMessage" class="error">
