@@ -126,9 +126,9 @@ describe("SpaceExplorerContextMenu.vue", () => {
       "delete",
       "Duplicate",
       "Export",
-      "Upload",
       "Move to...",
       "Copy to...",
+      "Upload",
     ]);
   });
 
@@ -237,7 +237,7 @@ describe("SpaceExplorerContextMenu.vue", () => {
 
     const menuItems = wrapper.findComponent(MenuItems);
     const items = menuItems.props("items");
-    const uploadToHub = items[3];
+    const uploadToHub = items.find((item) => item.id === "upload");
     menuItems.vm.$emit("item-click", null, uploadToHub);
     await nextTick();
 

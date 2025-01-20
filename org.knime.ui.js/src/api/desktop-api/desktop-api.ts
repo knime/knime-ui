@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
-import { isBrowser } from "@/environment";
-import { $bus } from "@/plugins/event-bus";
+import {isBrowser} from "@/environment";
+import {$bus} from "@/plugins/event-bus";
 import {
   type AncestorInfo,
   type ExampleProject,
@@ -579,7 +579,7 @@ export const moveOrCopyToSpace = ({
       destinationItemId,
       nameCollisionHandling,
     ],
-    `Error ${copyOrMove} to Hub space`,
+    `Error ${copyOrMove} item`,
     true,
     { block: true, darkenBackground: true },
   );

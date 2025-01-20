@@ -233,10 +233,6 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         exportItem
       ),
 
-      ...valueOrEmpty(
-        isLocal,
-        uploadToHub
-      ),
 
       ...valueOrEmpty(
         isLocal || isHub,
@@ -246,6 +242,11 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       ...valueOrEmpty(
         isLocal || isHub,
         copyToSpace
+      ),
+
+      ...valueOrEmpty(
+        isLocal,
+        uploadToHub
       ),
 
       ...valueOrEmpty(
