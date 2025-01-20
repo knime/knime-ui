@@ -6,7 +6,12 @@ import { useHint } from "@knime/components";
 import type { Alert } from "@knime/ui-extension-renderer/api";
 
 import type { KnimeNode } from "@/api/custom-types";
-import type { NativeNode } from "@/api/gateway-api/generated-api";
+import type {
+  ComponentNode,
+  NativeNode,
+} from "@/api/gateway-api/generated-api";
+import ComponentViewTabOutput from "@/components/uiExtensions/componentView/ComponentViewTabOutput.vue";
+import NodeViewTabOutput from "@/components/uiExtensions/nodeViews/NodeViewTabOutput.vue";
 import { HINTS } from "@/hints/hints.config";
 import { useApplicationStore } from "@/store/application/application";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
@@ -15,7 +20,7 @@ import {
   useSelectionStore,
 } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { isNativeNode, isNodeMetaNode } from "@/util/nodeUtil";
+import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
 import LoadingIndicator from "./LoadingIndicator.vue";
 import PortTabs from "./PortTabs.vue";
@@ -24,7 +29,6 @@ import ValidationInfo from "./ValidationInfo.vue";
 import { buildMiddleware, validateSelection } from "./common/output-validator";
 import type { UIExtensionLoadingState, ValidationError } from "./common/types";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "./common/utils";
-import NodeViewTabOutput from "./nodeViews/NodeViewTabOutput.vue";
 import PortViewTabOutput from "./portViews/PortViewTabOutput.vue";
 
 const runValidationChecks = ({
@@ -202,7 +206,8 @@ const onPortViewLoadingState = async (
       v-model="selectedTab"
       class="tabs"
       :has-view-tab="
-        isNativeNode(singleSelectedNode) && singleSelectedNode.hasView
+        (isNativeNode(singleSelectedNode) && singleSelectedNode.hasView) ||
+        isNodeComponent(singleSelectedNode)
       "
       :node="singleSelectedNode"
       :disabled="!canSelectTabs"
@@ -225,15 +230,23 @@ const onPortViewLoadingState = async (
         :selected-port-index="selectedPortIndex"
       />
 
-      <template v-if="!selectionValidationError">
+      <template v-if="!selectionValidationError && singleSelectedNode">
         <NodeViewTabOutput
-          v-if="isViewTabSelected"
+          v-if="isViewTabSelected && singleSelectedNode.kind === 'node'"
           :project-id="projectId!"
           :workflow-id="workflowId"
           :selected-node="singleSelectedNode as NativeNode"
           :timestamp="timestamp || 0"
           :available-port-types="availablePortTypes"
           @alert="currentNodeViewAlert = $event"
+          @loading-state-change="loadingState = $event"
+          @validation-error="currentValidationError = $event"
+        />
+
+        <ComponentViewTabOutput
+          v-if="isViewTabSelected && singleSelectedNode.kind === 'component'"
+          :selected-node="singleSelectedNode as ComponentNode"
+          :available-port-types="availablePortTypes"
           @loading-state-change="loadingState = $event"
           @validation-error="currentValidationError = $event"
         />

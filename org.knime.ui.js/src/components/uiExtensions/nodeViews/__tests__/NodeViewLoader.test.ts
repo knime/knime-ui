@@ -87,9 +87,7 @@ describe("NodeViewLoader.vue", () => {
     const { wrapper } = doMount();
     const newNode = { ...dummyNode, id: "node2" };
 
-    wrapper.setProps({ selectedNode: newNode });
-
-    await nextTick();
+    await wrapper.setProps({ selectedNode: newNode });
 
     expect(mockedAPI.node.getNodeView).toBeCalledTimes(2);
     expect(mockedAPI.node.getNodeView).toBeCalledWith(

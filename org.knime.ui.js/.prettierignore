@@ -4,3 +4,4 @@ dist
 generated-api.ts
 generated-exceptions.ts
 licenses/
+public/lib

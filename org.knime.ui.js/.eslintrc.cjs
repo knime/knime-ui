@@ -10,7 +10,12 @@ module.exports = {
     consola: false,
   },
   // TODO: fix issues inside vue3-pixi
-  ignorePatterns: ["generated-api.ts", "generated-exceptions.ts", "vue3-pixi"],
+  ignorePatterns: [
+    "generated-api.ts",
+    "generated-exceptions.ts",
+    "vue3-pixi",
+    "PageBuilder.umd.js",
+  ],
   env: { browser: true, node: true },
   settings: {
     "import/resolver": {
