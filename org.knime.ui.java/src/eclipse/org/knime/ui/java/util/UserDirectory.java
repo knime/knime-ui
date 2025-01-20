@@ -51,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.util.EclipseUtil;
@@ -63,6 +64,8 @@ public final class UserDirectory {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(UserDirectory.class);
 
+    private static final String WORKSPACE_PLACEHOLDER = "##workspace##";
+
     private UserDirectory() {
         // utility class
     }
@@ -70,6 +73,10 @@ public final class UserDirectory {
     private static Optional<Path> getUserDirectory() {
         var configuredPath = System.getProperty("org.knime.ui.userdirectory");
         if (configuredPath != null) {
+            if (configuredPath.contains(WORKSPACE_PLACEHOLDER)) {
+                var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
+                configuredPath = configuredPath.replace(WORKSPACE_PLACEHOLDER, localWorkspaceRootPath.toString());
+            }
             return Optional.of(Path.of(configuredPath));
         }
         if (!EclipseUtil.isRunFromSDK()) {
