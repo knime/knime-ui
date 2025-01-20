@@ -129,6 +129,9 @@ describe("Node", () => {
         state: {
           isLargeMode: false,
         },
+        getters: {
+          canBeEnlarged: () => true,
+        },
       },
       application: {
         state() {
@@ -323,20 +326,40 @@ describe("Node", () => {
     });
   });
 
-  it("opens the node config on double click", async () => {
+  it("opens the node config on double click if node can be enlarged", async () => {
     const props = {
       ...commonNode,
-      allowedActions: {
-        canOpenDialog: true,
-      },
     };
 
     const { wrapper, $store } = doMount({ props });
     expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
 
     await wrapper.findComponent(NodeTorso).trigger("dblclick");
-    await nextTick();
     expect($store.state.nodeConfiguration.isLargeMode).toBe(true);
+
+    expect(
+      storeConfig.workflow.actions.openNodeConfiguration,
+    ).toHaveBeenCalledWith(expect.anything(), "root:1");
+  });
+
+  it("does not open the node config on double click if node can't be enlarged", async () => {
+    const props = {
+      ...commonNode,
+    };
+
+    const storeConfig2 = {
+      ...storeConfig,
+      nodeConfiguration: {
+        ...storeConfig.nodeConfiguration,
+        getters: { canBeEnlarged: () => false },
+      },
+    };
+
+    const { wrapper, $store } = doMount({ storeState: storeConfig2, props });
+    expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+
+    await wrapper.findComponent(NodeTorso).trigger("dblclick");
+    expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
 
     expect(
       storeConfig.workflow.actions.openNodeConfiguration,
@@ -1070,6 +1093,40 @@ describe("Node", () => {
       await wrapper.findComponent(NodeTorso).trigger("dblclick");
 
       expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
+    });
+
+    it("does not open the node config for component nodes on double click", async () => {
+      const props = {
+        ...componentNode,
+      };
+
+      const { wrapper, $store } = doMount({ props });
+      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+
+      await wrapper.findComponent(NodeTorso).trigger("dblclick");
+      await nextTick();
+      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+
+      expect(
+        storeConfig.workflow.actions.openNodeConfiguration,
+      ).toHaveBeenCalledWith(expect.anything(), "root:1");
+    });
+
+    it("does not open the node config for meta nodes on double click", async () => {
+      const props = {
+        ...metaNode,
+      };
+
+      const { wrapper, $store } = doMount({ props });
+      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+
+      await wrapper.findComponent(NodeTorso).trigger("dblclick");
+      await nextTick();
+      expect($store.state.nodeConfiguration.isLargeMode).toBe(false);
+
+      expect(
+        storeConfig.workflow.actions.openNodeConfiguration,
+      ).not.toHaveBeenCalled();
     });
   });
 

@@ -294,4 +294,8 @@ export const getters: GetterTree<NodeConfigurationState, RootStoreState> = {
     // when the node is executed but can't be reset it means a downstream node is now executing
     return isExecuted && !activeNode.allowedActions?.canReset;
   },
+
+  canBeEnlarged(state) {
+    return state.activeExtensionConfig?.canBeEnlarged ?? false;
+  },
 };

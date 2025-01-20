@@ -219,6 +219,7 @@ export default {
     ...mapGetters("selection", ["isNodeSelected", "singleSelectedNode"]),
     ...mapGetters("workflow", ["isWritable"]),
     ...mapGetters("application", ["hasAnnotationModeEnabled"]),
+    ...mapGetters("nodeConfiguration", ["canBeEnlarged"]),
 
     /**
      * Width of the node selection plane. It accounts not only for the node margins
@@ -350,6 +351,12 @@ export default {
         // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
         isMetanode || (isComponent && (e.ctrlKey || e.metaKey));
 
+      const canOpenAsModal =
+        this.canBeEnlarged &&
+        this.useEmbeddedDialogs &&
+        !isComponent &&
+        !isMetanode;
+
       if (isOpeningContainerNode) {
         if (
           this.isLocked &&
@@ -382,7 +389,7 @@ export default {
         return;
       }
 
-      if (this.useEmbeddedDialogs) {
+      if (canOpenAsModal) {
         this.$store.state.nodeConfiguration.isLargeMode = true;
       }
 
