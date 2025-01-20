@@ -64,14 +64,19 @@ public final class UserDirectory {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(UserDirectory.class);
 
-    private static final String WORKSPACE_PLACEHOLDER = "##workspace##";
+    /**
+     * Using {@code ${workspace}} does not work beacuse the Eclipse PDE framework would interpret this as a variable.
+     */
+    static final String WORKSPACE_PLACEHOLDER = "##workspace##";
+
+    static final String CONFIGURED_PATH_KEY = "org.knime.ui.userdirectory";
 
     private UserDirectory() {
         // utility class
     }
 
     private static Optional<Path> getUserDirectory() {
-        var configuredPath = System.getProperty("org.knime.ui.userdirectory");
+        var configuredPath = System.getProperty(CONFIGURED_PATH_KEY);
         if (configuredPath != null) {
             if (configuredPath.contains(WORKSPACE_PLACEHOLDER)) {
                 var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
@@ -101,7 +106,7 @@ public final class UserDirectory {
             var path = userDir.resolve("profile");
             if (!Files.exists(path)) {
                 try {
-                    Files.createDirectory(path);
+                    Files.createDirectories(path);
                 } catch (IOException e) { // NOSONAR
                     LOGGER.error("Could not create profile directory at %s".formatted(path), e);
                     return null;
