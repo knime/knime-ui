@@ -63,6 +63,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.internal.progress.ProgressManager;
 import org.knime.core.node.NodeFactory;
+import org.knime.core.node.extension.NodeSpecCollectionProvider;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.util.auth.CouldNotAuthorizeException;
 import org.knime.gateway.api.util.ExtPointUtil;
@@ -135,11 +136,12 @@ final class Init {
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepo = createNodeRepository(nodeCollections);
         var selectionEventBus = createSelectionEventBus(eventConsumer);
-
+        NodeCategoryExtensions nodeCategoryExtensions =
+            () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
-            kaiHandler, nodeCollections, nodeRepo, selectionEventBus);
+            kaiHandler, nodeCollections, nodeRepo, nodeCategoryExtensions, selectionEventBus);
         DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
             state.getLocalSpace(), state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
