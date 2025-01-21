@@ -13,7 +13,7 @@ describe("useUniqueNodeStateId", () => {
       selectedNode: ref(
         createNativeNode({
           inputContentVersion: 13,
-          templateId: "org.knime.base.node.MockNodeFactory",
+          factoryId: "org.knime.base.node.MockNodeFactory",
         }),
       ),
     });

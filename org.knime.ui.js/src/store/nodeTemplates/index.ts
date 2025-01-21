@@ -75,9 +75,9 @@ const toNodeTemplateDictionary = (
 };
 
 export const actions: ActionTree<NodeTemplatesState, RootStoreState> = {
-  async getSingleNodeTemplate({ dispatch }, { nodeTemplateId }) {
+  async getSingleNodeTemplate({ dispatch }, { nodeFactoryId }) {
     const { found, missing } = (await dispatch("getNodeTemplates", {
-      nodeTemplateIds: [nodeTemplateId],
+      nodeFactoryIds: [nodeFactoryId],
     })) as {
       found: Record<string, NodeTemplateWithExtendedPorts>;
       missing: string[];
@@ -87,35 +87,35 @@ export const actions: ActionTree<NodeTemplatesState, RootStoreState> = {
       return {};
     }
 
-    return found[nodeTemplateId];
+    return found[nodeFactoryId];
   },
 
   async getNodeTemplates(
     { state, commit, rootState },
-    { nodeTemplateIds }: { nodeTemplateIds: string[] },
+    { nodeFactoryIds }: { nodeFactoryIds: string[] },
   ) {
     const idsToDictionary = (): NodeTemplateDictionary => {
       return Object.fromEntries(
-        nodeTemplateIds
+        nodeFactoryIds
           .filter((id) => state.cache[id])
           .map((id) => [id, state.cache[id]]),
       );
     };
 
     // remove possibly repeated values
-    const uniqueNodeTemplateIds = uniqueStrings(nodeTemplateIds);
+    const uniqueNodeFactoryIds = uniqueStrings(nodeFactoryIds);
 
-    const uncachedTemplateIds = uniqueNodeTemplateIds.filter(
+    const uncachedFactoryIds = uniqueNodeFactoryIds.filter(
       (id) => !state.cache[id],
     );
 
     // every value is already cached, which also means no template id is missing
-    if (uncachedTemplateIds.length === 0) {
+    if (uncachedFactoryIds.length === 0) {
       return { found: idsToDictionary(), missing: [] };
     }
 
     const nodeTemplates = await API.noderepository.getNodeTemplates({
-      nodeTemplateIds: uncachedTemplateIds,
+      nodeFactoryIds: uncachedFactoryIds,
     });
 
     const { availablePortTypes } = rootState.application;
@@ -134,7 +134,7 @@ export const actions: ActionTree<NodeTemplatesState, RootStoreState> = {
       // so, we add that information to the response indicating that these ids are not found.
       // NOTE: Even if not found these ids are still valid templates ids;
       // meaning that the request will fail if a random unrecognized string is provided
-      missing: nodeTemplateIds.filter((id) => !state.cache[id]),
+      missing: nodeFactoryIds.filter((id) => !state.cache[id]),
     };
   },
 

@@ -248,9 +248,9 @@ const getNodeTemplateProperty = (params: {
   const nodeTemplates = activeWorkflow!.nodeTemplates;
 
   if (isNativeNode(node)) {
-    const { templateId } = node;
+    const { factoryId } = node;
 
-    return nodeTemplates[templateId][property];
+    return nodeTemplates[factoryId][property];
   }
 
   // @ts-ignore - TODO: NXT-2023 component is not inheriting properties correctly. Type narrowing

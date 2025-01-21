@@ -66,7 +66,7 @@ export interface ApplicationState {
   /**
    * an object that maps supported file extensions to their node template id
    */
-  fileExtensionToNodeTemplateId: Record<string, string>;
+  fileExtensionToNodeFactoryId: Record<string, string>;
   /**
    * indicates if node repository is loaded
    */
@@ -121,7 +121,7 @@ export const state = (): ApplicationState => ({
   availableUpdates: null,
   featureFlags: {},
   exampleProjects: [],
-  fileExtensionToNodeTemplateId: {},
+  fileExtensionToNodeFactoryId: {},
 
   nodeRepositoryLoaded: false,
   nodeRepositoryLoadingProgress: null,
@@ -170,8 +170,8 @@ export const mutations: MutationTree<ApplicationState> = {
   setAvailableUpdates(state, availableUpdates) {
     state.availableUpdates = availableUpdates;
   },
-  setFileExtensionToNodeTemplateId(state, fileExtensionToNodeTemplateId) {
-    state.fileExtensionToNodeTemplateId = fileExtensionToNodeTemplateId;
+  setFileExtensionToNodeFactoryId(state, fileExtensionToNodeFactoryId) {
+    state.fileExtensionToNodeFactoryId = fileExtensionToNodeFactoryId;
   },
   setNodeRepositoryLoaded(state, nodeRepositoryLoaded) {
     state.nodeRepositoryLoaded = nodeRepositoryLoaded;
@@ -327,10 +327,10 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       );
     }
 
-    if (applicationState.fileExtensionToNodeTemplateId) {
+    if (applicationState.fileExtensionToNodeFactoryId) {
       commit(
-        "setFileExtensionToNodeTemplateId",
-        applicationState.fileExtensionToNodeTemplateId,
+        "setFileExtensionToNodeFactoryId",
+        applicationState.fileExtensionToNodeFactoryId,
       );
     }
 

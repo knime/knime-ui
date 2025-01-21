@@ -8,8 +8,8 @@ import { useStore } from "@/composables/useStore";
 import { APP_ROUTES } from "@/router/appRoutes";
 import * as $shapes from "@/style/shapes";
 
-const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
-  return !nodeTemplateId && item.meta?.type === SpaceItem.TypeEnum.Component;
+const isComponent = (nodeFactoryId: string | null, item: FileExplorerItem) => {
+  return !nodeFactoryId && item.meta?.type === SpaceItem.TypeEnum.Component;
 };
 
 type UseCustomDragPreviewOptions = {
@@ -42,16 +42,16 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   );
 
   // application
-  const fileExtensionToNodeTemplateId = computed(
-    () => store.state.application.fileExtensionToNodeTemplateId,
+  const fileExtensionToNodeFactoryId = computed(
+    () => store.state.application.fileExtensionToNodeFactoryId,
   );
 
-  const getNodeTemplateId = (sourceItem: FileExplorerItem) => {
+  const getNodeFactoryId = (sourceItem: FileExplorerItem) => {
     const sourceFileExtension = Object.keys(
-      fileExtensionToNodeTemplateId.value,
+      fileExtensionToNodeFactoryId.value,
     ).find((extension) => sourceItem.name.endsWith(extension));
 
-    return fileExtensionToNodeTemplateId.value[sourceFileExtension ?? ""];
+    return fileExtensionToNodeFactoryId.value[sourceFileExtension ?? ""];
   };
 
   const createNodeTemplatePreview = (
@@ -67,10 +67,10 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       };
     }
 
-    const nodeTemplateId = getNodeTemplateId(item);
+    const nodeFactoryId = getNodeFactoryId(item);
 
     return store.dispatch("nodeTemplates/getSingleNodeTemplate", {
-      nodeTemplateId,
+      nodeFactoryId,
     });
   };
 
@@ -83,12 +83,12 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   }) => {
     // reset state on subsequent drags
     hasDragEnded.value = false;
-    const nodeTemplateId = getNodeTemplateId(item);
-    const isItemAComponent = isComponent(nodeTemplateId, item);
+    const nodeFactoryId = getNodeFactoryId(item);
+    const isItemAComponent = isComponent(nodeFactoryId, item);
 
     // when it doesn't have a template id and it's not a component
     // then it's just a random item that shouldn't have a preview
-    if (!nodeTemplateId && !isItemAComponent) {
+    if (!nodeFactoryId && !isItemAComponent) {
       return;
     }
 
@@ -142,10 +142,10 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       return;
     }
 
-    const nodeTemplateId = getNodeTemplateId(sourceItem);
-    const isItemAComponent = isComponent(nodeTemplateId, sourceItem);
+    const nodeFactoryId = getNodeFactoryId(sourceItem);
+    const isItemAComponent = isComponent(nodeFactoryId, sourceItem);
 
-    if (!nodeTemplateId && !isItemAComponent) {
+    if (!nodeFactoryId && !isItemAComponent) {
       onComplete(false);
       return;
     }
@@ -162,7 +162,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       await store.dispatch("workflow/addNode", {
         position,
         spaceItemReference,
-        nodeFactory: isItemAComponent ? null : { className: nodeTemplateId },
+        nodeFactory: isItemAComponent ? null : { className: nodeFactoryId },
         isComponent: isItemAComponent,
       });
 

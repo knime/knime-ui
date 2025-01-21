@@ -129,11 +129,11 @@ const createAndConnectNodes = () => {
 };
 
 const extractNodeTemplates = (nodes: KnimeNode[]): NativeNodeInvariants[] => {
-  const nodeTemplateIds = Object.values(nodes)
-    .map((value) => (isNativeNode(value) ? value.templateId : null))
+  const nodeFactoryIds = Object.values(nodes)
+    .map((value) => (isNativeNode(value) ? value.factoryId : null))
     .filter(Boolean);
 
-  return nodeTemplateIds.map<NativeNodeInvariants>((id) => ({
+  return nodeFactoryIds.map<NativeNodeInvariants>((id) => ({
     name: "Lorem",
     type: NativeNodeInvariants.TypeEnum.Source,
     icon: "data:image/png;base64,iVBORw0KGg",

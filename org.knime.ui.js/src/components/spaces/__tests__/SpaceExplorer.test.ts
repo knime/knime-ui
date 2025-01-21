@@ -92,7 +92,7 @@ describe("SpaceExplorer.vue", () => {
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
     openProjects = [] as Project[],
-    fileExtensionToNodeTemplateId = {},
+    fileExtensionToNodeFactoryId = {},
     isWriteableMock = vi.fn().mockReturnValue(true),
   } = {}) => {
     if (mockGetSpaceItems) {
@@ -107,7 +107,7 @@ describe("SpaceExplorer.vue", () => {
       application: {
         state: {
           openProjects,
-          fileExtensionToNodeTemplateId,
+          fileExtensionToNodeFactoryId,
         },
         actions: {
           updateGlobalLoader: vi.fn(),
@@ -197,7 +197,7 @@ describe("SpaceExplorer.vue", () => {
     mockResponse = fetchWorkflowGroupContentResponse,
     mockGetSpaceItems = null,
     openProjects = [] as Project[],
-    fileExtensionToNodeTemplateId = {},
+    fileExtensionToNodeFactoryId = {},
     isWriteableMock = vi.fn().mockReturnValue(true),
   } = {}) => {
     const mountResult = doMount({
@@ -205,7 +205,7 @@ describe("SpaceExplorer.vue", () => {
       mockResponse,
       mockGetSpaceItems,
       openProjects,
-      fileExtensionToNodeTemplateId,
+      fileExtensionToNodeFactoryId,
       isWriteableMock,
     });
 
@@ -785,7 +785,7 @@ describe("SpaceExplorer.vue", () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
       const { wrapper, store, dispatchSpy } = await doMountAndLoad({
         isWriteableMock: vi.fn(() => false),
-        fileExtensionToNodeTemplateId: {
+        fileExtensionToNodeFactoryId: {
           test: "org.knime.test.test.nodeFactory",
         },
         mockResponse: {
@@ -830,7 +830,7 @@ describe("SpaceExplorer.vue", () => {
     it("should add a node to canvas when dragged from the file explorer", async () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
       const { wrapper, store, dispatchSpy } = await doMountAndLoad({
-        fileExtensionToNodeTemplateId: {
+        fileExtensionToNodeFactoryId: {
           test: "org.knime.test.test.nodeFactory",
         },
         mockResponse: {
@@ -884,7 +884,7 @@ describe("SpaceExplorer.vue", () => {
       document.elementFromPoint = vi.fn().mockReturnValue(null);
       const { wrapper, store, dispatchSpy } = await doMountAndLoad({
         // components don't have an extenssion associated to them
-        fileExtensionToNodeTemplateId: {},
+        fileExtensionToNodeFactoryId: {},
         mockResponse: {
           path: [],
           items: [
@@ -936,7 +936,7 @@ describe("SpaceExplorer.vue", () => {
         .fn()
         .mockReturnValue({ id: "someElementThatIsNotNull" });
       const { wrapper, store } = await doMountAndLoad({
-        fileExtensionToNodeTemplateId: {
+        fileExtensionToNodeFactoryId: {
           test: "org.knime.test.test.nodeFactory",
         },
         mockResponse: {

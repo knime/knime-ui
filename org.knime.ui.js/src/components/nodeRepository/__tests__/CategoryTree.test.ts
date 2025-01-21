@@ -162,7 +162,7 @@ describe("CategoryTree", () => {
     const nodeInfoEvent = {
       event: { key: "i" },
       node: {
-        origin: { nodeTemplate: { id: "mockNodeTemplateId1" } },
+        origin: { nodeTemplate: { id: "mockNodeFactoryId1" } },
       },
     };
     tree.vm.$emit("keydown", nodeInfoEvent);

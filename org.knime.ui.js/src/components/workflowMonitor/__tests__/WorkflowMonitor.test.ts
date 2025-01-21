@@ -26,14 +26,14 @@ describe("WorkflowMonitor.vue", () => {
       createWorkflowMonitorMessage({
         nodeId: "root:1",
         message: "something is really bad with this node",
-        templateId: "org.node.type1",
+        factoryId: "org.node.type1",
       }),
     ],
     warnings: [
       createWorkflowMonitorMessage({
         nodeId: "root:1",
         message: "something is ok-ish with this node",
-        templateId: "org.node.type2",
+        factoryId: "org.node.type2",
       }),
     ],
   };

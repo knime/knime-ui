@@ -59,7 +59,7 @@ describe("nodeTemplates", () => {
 
   describe("getNodeTemplates", () => {
     it("should fetch multiple templates and cache them", async () => {
-      const nodeTemplateIds = [
+      const nodeFactoryIds = [
         nodeTemplate1.id,
         nodeTemplate2.id,
         nodeTemplate3.id,
@@ -70,7 +70,7 @@ describe("nodeTemplates", () => {
       expect($store.state.nodeTemplates.cache).toEqual({});
 
       const result1 = await $store.dispatch("nodeTemplates/getNodeTemplates", {
-        nodeTemplateIds,
+        nodeFactoryIds,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
@@ -85,7 +85,7 @@ describe("nodeTemplates", () => {
       });
 
       const result2 = await $store.dispatch("nodeTemplates/getNodeTemplates", {
-        nodeTemplateIds,
+        nodeFactoryIds,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
@@ -112,26 +112,26 @@ describe("nodeTemplates", () => {
       const request2 = [nodeTemplate1.id, nodeTemplate2.id, nodeTemplate3.id];
 
       await $store.dispatch("nodeTemplates/getNodeTemplates", {
-        nodeTemplateIds: request1,
+        nodeFactoryIds: request1,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledWith({
-        nodeTemplateIds: request1,
+        nodeFactoryIds: request1,
       });
 
       await $store.dispatch("nodeTemplates/getNodeTemplates", {
-        nodeTemplateIds: request2,
+        nodeFactoryIds: request2,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledWith({
         // only the last id, which was not yet cached
-        nodeTemplateIds: request2.slice(-1),
+        nodeFactoryIds: request2.slice(-1),
       });
     });
 
     it("should remove duplicate template ids before fetching", async () => {
       const { $store } = loadStore();
-      const nodeTemplateIds = [
+      const nodeFactoryIds = [
         nodeTemplate1.id,
         nodeTemplate1.id,
         nodeTemplate1.id,
@@ -144,11 +144,11 @@ describe("nodeTemplates", () => {
       ];
 
       await $store.dispatch("nodeTemplates/getNodeTemplates", {
-        nodeTemplateIds,
+        nodeFactoryIds,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledWith({
-        nodeTemplateIds: [nodeTemplate1.id, nodeTemplate2.id, nodeTemplate3.id],
+        nodeFactoryIds: [nodeTemplate1.id, nodeTemplate2.id, nodeTemplate3.id],
       });
     });
 
@@ -157,7 +157,7 @@ describe("nodeTemplates", () => {
 
       expect($store.state.nodeTemplates.cache).toEqual({});
 
-      const nodeTemplateIds = [
+      const nodeFactoryIds = [
         nodeTemplate1.id,
         nodeTemplate2.id,
         nodeTemplate3.id,
@@ -167,7 +167,7 @@ describe("nodeTemplates", () => {
 
       const { found, missing } = await $store.dispatch(
         "nodeTemplates/getNodeTemplates",
-        { nodeTemplateIds },
+        { nodeFactoryIds },
       );
 
       expect(found).toEqual({
@@ -195,7 +195,7 @@ describe("nodeTemplates", () => {
 
       const result = await $store.dispatch(
         "nodeTemplates/getSingleNodeTemplate",
-        { nodeTemplateId: nodeTemplate1.id },
+        { nodeFactoryId: nodeTemplate1.id },
       );
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
@@ -205,7 +205,7 @@ describe("nodeTemplates", () => {
       );
 
       await $store.dispatch("nodeTemplates/getSingleNodeTemplate", {
-        nodeTemplateId: nodeTemplate1.id,
+        nodeFactoryId: nodeTemplate1.id,
       });
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
@@ -220,7 +220,7 @@ describe("nodeTemplates", () => {
 
       const result = await $store.dispatch(
         "nodeTemplates/getSingleNodeTemplate",
-        { nodeTemplateId: nodeTemplate1.id },
+        { nodeFactoryId: nodeTemplate1.id },
       );
 
       expect(mockedAPI.noderepository.getNodeTemplates).toHaveBeenCalledOnce();
@@ -237,7 +237,7 @@ describe("nodeTemplates", () => {
     const { $store } = loadStore();
 
     await $store.dispatch("nodeTemplates/getSingleNodeTemplate", {
-      nodeTemplateId: nodeTemplate1.id,
+      nodeFactoryId: nodeTemplate1.id,
     });
 
     expect(Object.keys($store.state.nodeTemplates.cache)).toEqual([

@@ -241,7 +241,7 @@ describe("workflow::nodeInteractions", () => {
         projectId: "foo",
         nodes: {
           foo: {
-            templateId: "bla",
+            factoryId: "bla",
             kind: "node",
           },
           ownData: {

@@ -71,7 +71,7 @@ const commonNode = {
 };
 const nativeNode = {
   ...commonNode,
-  templateId: "A",
+  factoryId: "A",
 };
 const componentNode = {
   ...commonNode,

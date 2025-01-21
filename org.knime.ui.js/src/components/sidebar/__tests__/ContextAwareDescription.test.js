@@ -53,7 +53,7 @@ describe("ContextAwareDescription.vue", () => {
     const { wrapper } = doMount({
       singleSelectedNodeMock: vi.fn().mockReturnValue({
         id: 2,
-        templateId: "org.mock.node",
+        factoryId: "org.mock.node",
         kind: "node",
       }),
     });

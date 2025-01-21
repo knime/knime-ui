@@ -80,19 +80,19 @@ const createBaseNode = (
   return merge(node, data);
 };
 
-type NodeTemplateIds =
+type NodeFactoryIds =
   | (typeof TEMPLATE_IDS)[number]
   | Omit<string, (typeof TEMPLATE_IDS)[number]>;
 
 export const createNativeNode = (
-  data: DeepPartial<NativeNode & { templateId: NodeTemplateIds }> = {},
+  data: DeepPartial<NativeNode & { factoryId: NodeFactoryIds }> = {},
 ): NativeNode => {
   const baseNode = createBaseNode(Node.KindEnum.Node, data);
 
   const nativeNode: NativeNode = {
     ...baseNode,
 
-    templateId: randomValue(TEMPLATE_IDS),
+    factoryId: randomValue(TEMPLATE_IDS),
     hasView: false,
     isReexecutable: true,
     portGroups: {},

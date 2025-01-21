@@ -179,7 +179,7 @@ describe("NodeConfig", () => {
       const workflow = createWorkflow({
         nodes: { [node.id]: node },
         nodeTemplates: {
-          [node.templateId]: {
+          [node.factoryId]: {
             icon: "",
             name: "Mock Node",
           },

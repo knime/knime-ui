@@ -108,13 +108,13 @@ export const actions: ActionTree<WorkflowMonitorState, RootStoreState> = {
       currentState: { errors = [], warnings = [] },
     } = state;
 
-    const toTemplateId = (value: WorkflowMonitorMessage) =>
-      value.templateId ?? "";
-    const nodeTemplateIds = errors.concat(warnings).map(toTemplateId);
+    const toFactoryId = (value: WorkflowMonitorMessage) =>
+      value.factoryId ?? "";
+    const nodeFactoryIds = errors.concat(warnings).map(toFactoryId);
 
     dispatch(
       "nodeTemplates/getNodeTemplates",
-      { nodeTemplateIds },
+      { nodeFactoryIds },
       { root: true },
     );
   },

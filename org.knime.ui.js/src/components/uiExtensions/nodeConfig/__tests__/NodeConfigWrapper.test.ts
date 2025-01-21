@@ -62,10 +62,10 @@ describe("NodeConfigWrapper.vue", () => {
         [executingNode.id]: executingNode,
       },
       nodeTemplates: {
-        [idleNode.templateId]: { name: "template" },
-        [configuredNode.templateId]: { name: "template" },
-        [executedNode.templateId]: { name: "template" },
-        [executingNode.templateId]: { name: "template" },
+        [idleNode.factoryId]: { name: "template" },
+        [configuredNode.factoryId]: { name: "template" },
+        [executedNode.factoryId]: { name: "template" },
+        [executingNode.factoryId]: { name: "template" },
       },
     });
 

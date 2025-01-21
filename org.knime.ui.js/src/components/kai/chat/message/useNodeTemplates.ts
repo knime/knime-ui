@@ -62,11 +62,11 @@ const useNodeTemplates = ({
         return extension;
       };
 
-      const nodeTemplateIds = nodes.value.map(({ factoryId }) => factoryId);
+      const nodeFactoryIds = nodes.value.map(({ factoryId }) => factoryId);
 
       const { found, missing } = (await store.dispatch(
         "nodeTemplates/getNodeTemplates",
-        { nodeTemplateIds },
+        { nodeFactoryIds },
       )) as {
         found: Record<string, NodeTemplateWithExtendedPorts>;
         missing: string[];

@@ -34,8 +34,8 @@ const shouldDisplayEmptyMessage = computed(() => {
   );
 });
 
-const getTemplate = (templateId: string) => {
-  return store.state.nodeTemplates.cache[templateId];
+const getTemplate = (factoryId: string) => {
+  return store.state.nodeTemplates.cache[factoryId];
 };
 
 const navigateToIssue = async (message: WorkflowMonitorMessageType) => {
@@ -62,7 +62,7 @@ const isHighlighted = (message: WorkflowMonitorMessageType) => {
         v-for="error in errors"
         :key="error.nodeId"
         :message="error"
-        :node-template="getTemplate(error.templateId!)"
+        :node-template="getTemplate(error.factoryId!)"
         :component-info="error.componentInfo"
         :nested="isFromNestedNode(error)"
         :is-highlighted="isHighlighted(error)"
@@ -83,7 +83,7 @@ const isHighlighted = (message: WorkflowMonitorMessageType) => {
         v-for="warning in warnings"
         :key="warning.nodeId"
         :message="warning"
-        :node-template="getTemplate(warning.templateId!)"
+        :node-template="getTemplate(warning.factoryId!)"
         :component-info="warning.componentInfo"
         :nested="isFromNestedNode(warning)"
         :is-highlighted="isHighlighted(warning)"

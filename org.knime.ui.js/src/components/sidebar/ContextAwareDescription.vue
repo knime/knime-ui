@@ -37,10 +37,10 @@ const selectedNode = computed(() => {
   }
 
   // transform this into a NodeTemplate-like object
-  const { id, templateId } = singleSelectedNode.value as NativeNode;
+  const { id, factoryId } = singleSelectedNode.value as NativeNode;
 
   return {
-    id: templateId,
+    id: factoryId,
     name: store.getters["workflow/getNodeName"](id),
     nodeFactory: store.getters["workflow/getNodeFactory"](id),
   };

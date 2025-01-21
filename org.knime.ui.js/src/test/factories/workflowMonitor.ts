@@ -8,7 +8,7 @@ export const createWorkflowMonitorMessage = (
   const issue: WorkflowMonitorMessage = {
     nodeId: "root:1",
     message: "There is something wrong with this node",
-    templateId: "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
+    factoryId: "org.knime.base.node.preproc.filter.row.RowFilterNodeFactory",
     name: "Row filter",
     workflowId: "root",
   };
