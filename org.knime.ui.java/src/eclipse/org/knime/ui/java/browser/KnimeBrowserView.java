@@ -95,9 +95,9 @@ public class KnimeBrowserView {
 
     static final String DEV_URL_PROP = "org.knime.ui.dev.url";
 
-    private static final String HTTP = "http";
+    private static final String HTTPS = "https";
 
-    static final String BASE_URL = HTTP + "://" + DOMAIN_NAME;
+    static final String BASE_URL = HTTPS + "://" + DOMAIN_NAME;
 
     private static final String APP_PAGE = BASE_URL + "/index.html";
 

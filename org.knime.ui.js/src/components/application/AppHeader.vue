@@ -90,9 +90,10 @@ setupResizeListener();
 const reloadApp = () => location.reload();
 
 const openInspector = () => {
-  const remoteDebuggingPort =
-    import.meta.env.KNIME_CEF_REMOTE_DEBUGGING_PORT || "8888";
-  window.open(`http://localhost:${remoteDebuggingPort}/`, "_blank");
+  window.open(
+    "https://docs.equo.dev/chromium/128.x/developing/debugging.html",
+    "_blank",
+  );
 };
 
 const setGetStartedPageTab = () => {
