@@ -66,6 +66,6 @@ public class KnimeUIPreferenceInitializer extends AbstractPreferenceInitializer 
         store.setDefault(KnimeUIPreferences.MOUSE_WHEEL_ACTION_PREF_KEY, KnimeUIPreferences.MOUSE_WHEEL_ACTION_SCROLL);
         store.setDefault(KnimeUIPreferences.CONFIRM_NODE_CONFIG_CHANGES_PREF_KEY, true);
         store.setDefault(KnimeUIPreferences.CONFIRM_CLOSE_PROJECTS_ON_SWITCH_PREF_KEY, true);
-        store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED);
+        store.setDefault(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY, KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED);
     }
 }

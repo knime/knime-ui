@@ -108,7 +108,7 @@ public final class KnimeUIPreferencePage extends FieldEditorPreferencePage imple
         /// Node configuration dialog mode
         final var nodeConfigurationModeOptions = new String[][]{ //
             new String[]{"Open in new window", KnimeUIPreferences.NODE_DIALOG_MODE_DETACHED}, //
-            new String[]{"Embedded inside application (experimental)", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
+            new String[]{"Embedded inside application", KnimeUIPreferences.NODE_DIALOG_MODE_EMBEDDED}, //
         };
 
         final var nodeDialogModeEditor = new RadioGroupFieldEditor(KnimeUIPreferences.NODE_DIALOG_MODE_PREF_KEY,
