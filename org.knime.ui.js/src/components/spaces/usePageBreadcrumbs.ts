@@ -2,7 +2,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { APP_ROUTES } from "@/router/appRoutes";
-import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
+import { isHubProvider } from "@/store/spaces/util";
 
 import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useActiveRouteData } from "./useActiveRouteData";
@@ -29,11 +29,13 @@ export const usePageBreadcrumbs = () => {
   const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
   const breadcrumbs = computed<Array<BreadcrumbItem>>(() => {
+    const isHub = isHubProvider(activeSpaceProvider.value);
+
     const spaceProviderBreadcrumbItem: BreadcrumbItem = {
       text: formatSpaceProviderName(activeSpaceProvider.value),
       icon: getSpaceProviderIcon(activeSpaceProvider.value),
-      clickable: !isLocalProvider(activeSpaceProvider.value),
-      ...(!isLocalProvider(activeSpaceProvider.value) && {
+      clickable: isHub,
+      ...(isHub && {
         onClick: () => {
           $router.push({
             name: APP_ROUTES.Home.SpaceSelectionPage,
@@ -46,7 +48,7 @@ export const usePageBreadcrumbs = () => {
       }),
     };
 
-    if (!isHubProvider(activeSpaceProvider.value) || isShowingAllSpaces.value) {
+    if (!isHub || isShowingAllSpaces.value) {
       return [spaceProviderBreadcrumbItem];
     }
 
@@ -76,7 +78,7 @@ export const usePageBreadcrumbs = () => {
 
     const base = [spaceProviderBreadcrumbItem, spaceGroupBreadcrumbItem];
 
-    return base.concat(spaceId ? spaceBreadcrumbItem : []);
+    return spaceId ? base.concat(spaceBreadcrumbItem) : base;
   });
 
   return { breadcrumbs };
