@@ -217,37 +217,20 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       props.selectedItemIds,
     );
 
-    // prettier-ignore
     return [
-      ...valueOrEmpty(
-        !isMultipleSelectionActive,
-        renameItem
-      ),
+      ...valueOrEmpty(!isMultipleSelectionActive, renameItem),
 
       deleteItem,
 
       createDuplicateItemOption(),
 
-      ...valueOrEmpty(
-        isLocal,
-        exportItem
-      ),
+      ...valueOrEmpty(isLocal, exportItem),
 
+      ...valueOrEmpty(isLocal || isHub, moveToSpace),
 
-      ...valueOrEmpty(
-        isLocal || isHub,
-        moveToSpace
-      ),
+      ...valueOrEmpty(isLocal || isHub, copyToSpace),
 
-      ...valueOrEmpty(
-        isLocal || isHub,
-        copyToSpace
-      ),
-
-      ...valueOrEmpty(
-        isLocal,
-        uploadToHub
-      ),
+      ...valueOrEmpty(isLocal, uploadToHub),
 
       ...valueOrEmpty(
         isHub || (isServer && selectionContainsWorkflow),
@@ -259,25 +242,16 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
         openInBrowser,
       ),
 
-      ...valueOrEmpty(
-        isServer && selectionContainsWorkflow,
-        executeWorkflow
-      ),
+      ...valueOrEmpty(isServer && selectionContainsWorkflow, executeWorkflow),
 
       ...valueOrEmpty(
         isServer && selectionContainsWorkflow,
         displayDeployments,
       ),
 
-      ...valueOrEmpty(
-        isServer,
-        openAPIDefinition
-      ),
+      ...valueOrEmpty(isServer, openAPIDefinition),
 
-      ...valueOrEmpty(
-        isServer,
-        openPermissionsDialog
-      ),
+      ...valueOrEmpty(isServer, openPermissionsDialog),
     ];
   },
 );

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
-import {isBrowser} from "@/environment";
-import {$bus} from "@/plugins/event-bus";
+import { isBrowser } from "@/environment";
+import { $bus } from "@/plugins/event-bus";
 import {
   type AncestorInfo,
   type ExampleProject,
