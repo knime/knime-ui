@@ -3,11 +3,7 @@ import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
 import { FunctionButton } from "@knime/components";
-import {
-  type APILayerDirtyState,
-  ApplyState,
-  ViewState,
-} from "@knime/ui-extension-service";
+import { type APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
 import { createNativeNode } from "@/test/factories";
@@ -46,7 +42,7 @@ describe("NodeConfigLayout.vue", () => {
     projectId: "project1",
     workflowId: "workflow1",
     disabled: false,
-    dirtyState: { apply: ApplyState.CLEAN, view: ViewState.CLEAN },
+    dirtyState: { apply: "clean", view: "clean" },
     nodeName: "Node1",
     isLargeMode: false,
     canBeEnlarged: false,
@@ -158,8 +154,8 @@ describe("NodeConfigLayout.vue", () => {
       expect(isButtonDisabled(wrapper, "apply")).toBe(true);
 
       await setDirtyState(wrapper, {
-        apply: ApplyState.CONFIG,
-        view: ViewState.CONFIG,
+        apply: "configured",
+        view: "configured",
       });
 
       expectButtonsInDirtyState(wrapper);
@@ -178,8 +174,8 @@ describe("NodeConfigLayout.vue", () => {
       expect(isButtonDisabled(wrapper, "apply")).toBe(true);
 
       await setDirtyState(wrapper, {
-        apply: ApplyState.CONFIG,
-        view: ViewState.CONFIG,
+        apply: "configured",
+        view: "configured",
       });
 
       expectButtonsInDirtyState(wrapper);
@@ -198,8 +194,8 @@ describe("NodeConfigLayout.vue", () => {
       expect(isButtonDisabled(wrapper, "apply")).toBe(true);
 
       await setDirtyState(wrapper, {
-        apply: ApplyState.EXEC,
-        view: ViewState.EXEC,
+        apply: "executed",
+        view: "executed",
       });
 
       expect(wrapper.find("button.execute").exists()).toBe(false);
@@ -210,8 +206,8 @@ describe("NodeConfigLayout.vue", () => {
       expect(isButtonDisabled(wrapper, "apply")).toBe(false);
 
       await setDirtyState(wrapper, {
-        apply: ApplyState.CONFIG,
-        view: ViewState.CONFIG,
+        apply: "configured",
+        view: "configured",
       });
 
       expectButtonsInDirtyState(wrapper);
@@ -223,8 +219,8 @@ describe("NodeConfigLayout.vue", () => {
       await setLoadingDone(wrapper);
 
       await setDirtyState(wrapper, {
-        apply: ApplyState.CONFIG,
-        view: ViewState.CONFIG,
+        apply: "configured",
+        view: "configured",
       });
 
       expect(wrapper.emitted("discard")).toBeUndefined();
@@ -241,8 +237,8 @@ describe("NodeConfigLayout.vue", () => {
       await setLoadingDone(wrapper);
 
       await setDirtyState(wrapper, {
-        apply: ApplyState.CONFIG,
-        view: ViewState.CONFIG,
+        apply: "configured",
+        view: "configured",
       });
 
       expect(wrapper.emitted("apply")).toBeUndefined();
@@ -273,8 +269,8 @@ describe("NodeConfigLayout.vue", () => {
       await setLoadingDone(wrapper);
 
       await setDirtyState(wrapper, {
-        apply: ApplyState.CONFIG,
-        view: ViewState.CONFIG,
+        apply: "configured",
+        view: "configured",
       });
 
       expect(wrapper.emitted("apply")).toBeUndefined();

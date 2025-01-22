@@ -1,12 +1,9 @@
-import { UIExtensionPushEvents } from "@knime/ui-extension-service";
+import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
 
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
 
 type SelectionEventListener = (
-  event: UIExtensionPushEvents.PushEvent<
-    UIExtensionPushEvents.EventTypes.SelectionEvent,
-    SelectionEvent
-  >,
+  event: UIExtensionPushEvents.PushEvent<"SelectionEvent", SelectionEvent>,
 ) => void;
 
 type SelectionEventId = {
@@ -31,7 +28,7 @@ export const useSelectionEvents = () => {
     notifyListeners: (event: SelectionEvent) => {
       const listener = listeners.get(composeId(event));
       listener?.({
-        eventType: UIExtensionPushEvents.EventTypes.SelectionEvent,
+        eventType: "SelectionEvent",
         // @ts-ignore
         payload: {
           ...event,

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 
-import { ApplyState, ViewState } from "@knime/ui-extension-service";
+import { ApplyState, ViewState } from "@knime/ui-extension-renderer/api";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
@@ -107,7 +107,10 @@ describe("nodeConfiguration", () => {
   });
 
   describe("autoApplySettings [DESKTOP]", () => {
-    const dirtyState = { apply: ApplyState.CONFIG, view: ViewState.CONFIG };
+    const dirtyState = {
+      apply: "configured" satisfies ApplyState,
+      view: "configured" satisfies ViewState,
+    };
 
     beforeEach(() => {
       // @ts-ignore
@@ -192,7 +195,10 @@ describe("nodeConfiguration", () => {
   });
 
   describe("autoApplySettings [BROWSER]", () => {
-    const dirtyState = { apply: ApplyState.CONFIG, view: ViewState.CONFIG };
+    const dirtyState = {
+      apply: "configured" satisfies ApplyState,
+      view: "configured" satisfies ViewState,
+    };
 
     beforeEach(() => {
       // @ts-ignore

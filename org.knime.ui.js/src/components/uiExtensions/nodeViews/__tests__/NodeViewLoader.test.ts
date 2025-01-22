@@ -2,15 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { UIExtension } from "@knime/ui-extension-renderer";
-import {
-  type Alert,
-  AlertType,
+import type {
+  Alert,
   ApplyState,
-  DataServiceType,
   UIExtensionPushEvents,
   ViewState,
-} from "@knime/ui-extension-service";
+} from "@knime/ui-extension-renderer/api";
+import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
@@ -176,7 +174,7 @@ describe("NodeViewLoader.vue", () => {
         projectId: "",
         workflowId: "",
         extensionType: "",
-        serviceType: DataServiceType.DATA,
+        serviceType: "data",
         dataServiceRequest: "request",
       });
 
@@ -199,7 +197,7 @@ describe("NodeViewLoader.vue", () => {
       const apiLayer = getApiLayer(wrapper);
 
       const alert1: Alert = {
-        type: AlertType.ERROR,
+        type: "error",
         message: "There's an warning in this node",
       };
       apiLayer.sendAlert(alert1);
@@ -236,7 +234,7 @@ describe("NodeViewLoader.vue", () => {
       await nextTick();
 
       expect(pushEventDispatcher).toHaveBeenCalledWith({
-        eventType: UIExtensionPushEvents.EventTypes.DataEvent,
+        eventType: "DataEvent" satisfies UIExtensionPushEvents.KnownEventType,
         payload: { mock: "new-data" },
       });
     });
@@ -297,8 +295,8 @@ describe("NodeViewLoader.vue", () => {
     expect(wrapper.findComponent(UIExtension).exists()).toBe(true);
 
     $store.commit("nodeConfiguration/setDirtyState", {
-      apply: ApplyState.CONFIG,
-      view: ViewState.CONFIG,
+      apply: "configured" satisfies ApplyState,
+      view: "configured" satisfies ViewState,
     });
     await nextTick();
 

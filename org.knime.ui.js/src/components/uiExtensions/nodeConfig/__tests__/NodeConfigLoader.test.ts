@@ -7,14 +7,11 @@ import {
   mount,
 } from "@vue/test-utils";
 
-import { UIExtension } from "@knime/ui-extension-renderer";
+import { type Alert } from "@knime/ui-extension-renderer/api";
 import {
-  type Alert,
-  AlertType,
-  ApplyState,
-  DataServiceType,
-  ViewState,
-} from "@knime/ui-extension-service";
+  UIExtension,
+  type UIExtensionAPILayer,
+} from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import { getToastsProvider } from "@/plugins/toasts";
@@ -142,7 +139,7 @@ describe("NodeConfigLoader.vue", () => {
   });
 
   describe("apiLayer", () => {
-    const getApiLayer = (wrapper: VueWrapper<any>) => {
+    const getApiLayer = (wrapper: VueWrapper<any>): UIExtensionAPILayer => {
       const uiExtension = wrapper.findComponent(UIExtension);
       return uiExtension.props("apiLayer");
     };
@@ -194,7 +191,7 @@ describe("NodeConfigLoader.vue", () => {
         projectId: "",
         workflowId: "",
         extensionType: "",
-        serviceType: DataServiceType.DATA,
+        serviceType: "data",
         dataServiceRequest: "request",
       });
 
@@ -252,16 +249,16 @@ describe("NodeConfigLoader.vue", () => {
       await flushPromises();
 
       expect($store.state.nodeConfiguration.dirtyState).toEqual({
-        apply: ApplyState.CLEAN,
-        view: ViewState.CLEAN,
+        apply: "clean",
+        view: "clean",
       });
 
       const apiLayer = getApiLayer(wrapper);
 
       const newState = {
-        apply: ApplyState.CONFIG,
-        view: ViewState.CONFIG,
-      };
+        apply: "configured",
+        view: "configured",
+      } as const;
       apiLayer.onDirtyStateChange(newState);
 
       expect($store.state.nodeConfiguration.dirtyState).toEqual(newState);
@@ -307,9 +304,7 @@ describe("NodeConfigLoader.vue", () => {
       const apiLayer = getApiLayer(wrapper);
 
       const alert1: Alert = {
-        nodeId: "root:1",
-        type: AlertType.ERROR,
-        nodeInfo: { nodeName: "The Node", nodeState: "" },
+        type: "error",
         message: "There's an error in this node dialog",
       };
       apiLayer.sendAlert(alert1);

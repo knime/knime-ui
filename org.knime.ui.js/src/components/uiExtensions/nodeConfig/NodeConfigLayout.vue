@@ -3,10 +3,7 @@ import { computed, ref } from "vue";
 
 import { Button, FunctionButton } from "@knime/components";
 import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
-import {
-  type APILayerDirtyState,
-  ApplyState,
-} from "@knime/ui-extension-service";
+import { type APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
 import type { UIExtensionLoadingState } from "../common/types";
@@ -42,22 +39,22 @@ const isLoadingReady = computed(() => loadingState.value?.value === "ready");
 const showExecuteOnlyButton = computed(
   () =>
     nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED &&
-    props.dirtyState.apply === ApplyState.CLEAN,
+    props.dirtyState.apply === "clean",
 );
 
 const canApplyOrDiscard = computed(() => {
-  return props.dirtyState.apply !== ApplyState.CLEAN;
+  return props.dirtyState.apply !== "clean";
 });
 
 const canApplyAndExecute = computed(() => {
   switch (nodeState.value) {
     case NodeState.ExecutionStateEnum.IDLE:
     case NodeState.ExecutionStateEnum.CONFIGURED: {
-      return props.dirtyState.apply !== ApplyState.CLEAN;
+      return props.dirtyState.apply !== "clean";
     }
 
     case NodeState.ExecutionStateEnum.EXECUTED: {
-      return props.dirtyState.apply === ApplyState.CONFIG;
+      return props.dirtyState.apply === "configured";
     }
 
     default: {

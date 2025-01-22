@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import type { Store } from "vuex";
 
-import { ApplyState, ViewState } from "@knime/ui-extension-service";
+import type { ApplyState, ViewState } from "@knime/ui-extension-renderer/api";
 
 import { Node, NodeState } from "@/api/gateway-api/generated-api";
 import * as applicationStore from "@/store/application";
@@ -141,8 +141,8 @@ describe("NodeConfigWrapper.vue", () => {
     });
 
     $store.commit("nodeConfiguration/setDirtyState", {
-      apply: ApplyState.CONFIG,
-      view: ViewState.CONFIG,
+      apply: "configured" satisfies ApplyState,
+      view: "configured" satisfies ViewState,
     });
 
     expect(wrapper.findComponent(NodeConfigLayout).props("disabled")).toBe(
@@ -179,8 +179,8 @@ describe("NodeConfigWrapper.vue", () => {
     );
 
     $store.commit("nodeConfiguration/setDirtyState", {
-      apply: ApplyState.CONFIG,
-      view: ViewState.CONFIG,
+      apply: "configured" satisfies ApplyState,
+      view: "configured" satisfies ViewState,
     });
 
     await selectNextNode($store, executedNode.id);

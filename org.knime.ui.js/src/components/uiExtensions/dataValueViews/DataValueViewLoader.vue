@@ -7,7 +7,7 @@ import { ref, toRef, watch } from "vue";
 import {
   UIExtension,
   type UIExtensionAPILayer,
-} from "@knime/ui-extension-renderer";
+} from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";

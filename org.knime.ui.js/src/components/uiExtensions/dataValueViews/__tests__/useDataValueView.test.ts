@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import type { ClientRectObject } from "@floating-ui/vue";
 
-import type { DataValueViewConfig } from "@knime/ui-extension-service";
+import type { DataValueViewConfig } from "@knime/ui-extension-renderer/api";
 
 import { useDataValueViewSize } from "../useDataValueView";
 

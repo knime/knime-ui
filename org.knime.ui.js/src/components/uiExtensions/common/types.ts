@@ -1,7 +1,7 @@
 import type {
   ExtensionConfig as BaseExtensionConfig,
   UIExtensionAPILayer,
-} from "@knime/ui-extension-renderer";
+} from "@knime/ui-extension-renderer/vue";
 
 import type { ValidationResult } from "./output-validator";
 

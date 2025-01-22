@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, toRaw, toRefs, watch } from "vue";
 
+import type {
+  Alert,
+  UIExtensionPushEvents,
+} from "@knime/ui-extension-renderer/api";
 import {
   UIExtension,
   type UIExtensionAPILayer,
-} from "@knime/ui-extension-renderer";
-import {
-  type Alert,
-  UIExtensionPushEvents,
-  ViewState,
-} from "@knime/ui-extension-service";
+} from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import type { NativeNode } from "@/api/gateway-api/generated-api";
@@ -132,7 +131,7 @@ const apiLayer: UIExtensionAPILayer = {
     // function that updates the data of this UIExtension (NodeView in this case)
     updateViewData = (data) =>
       dispatchPushEvent({
-        eventType: UIExtensionPushEvents.EventTypes.DataEvent,
+        eventType: "DataEvent" satisfies UIExtensionPushEvents.KnownEventType,
         payload: toRaw(data),
       });
 
@@ -196,7 +195,7 @@ watch(
 const hasToReexecute = computed(() => {
   // when receiving dirty state we check whether
   // the view can be displayed based on said dirty state
-  return dirtyState.value.view === ViewState.CONFIG;
+  return dirtyState.value.view === "configured";
 });
 
 watch(

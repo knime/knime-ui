@@ -1,10 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  AlertType,
   INTERNAL_ERROR_CODE,
   USER_ERROR_CODE,
-} from "@knime/ui-extension-service";
+} from "@knime/ui-extension-renderer/api";
 
 import { getHeadline, getMessage } from "../uiExtensionAlert";
 
@@ -31,7 +30,7 @@ describe("uiExtensionAlert", () => {
     it("shows user errors", () => {
       expect(
         getMessage({
-          type: AlertType.ERROR,
+          type: "error",
           code: USER_ERROR_CODE,
           message: "An expected error occurred!",
           data: { details: "Some more details: ..." },
@@ -42,7 +41,7 @@ describe("uiExtensionAlert", () => {
     it("shows internal errors", () => {
       expect(
         getMessage({
-          type: AlertType.ERROR,
+          type: "error",
           code: INTERNAL_ERROR_CODE,
           message: "An unexpected error occurred!",
           data: {
@@ -58,7 +57,7 @@ describe("uiExtensionAlert", () => {
     it("shows other errors", () => {
       expect(
         getMessage({
-          type: AlertType.ERROR,
+          type: "error",
           message: "Invalid parameters",
         }),
       ).toBe("Invalid parameters");

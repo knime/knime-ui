@@ -29,8 +29,6 @@ import ValidationInfo from "../ValidationInfo.vue";
 import NodeViewTabOutput from "../nodeViews/NodeViewTabOutput.vue";
 import PortViewTabOutput from "../portViews/PortViewTabOutput.vue";
 
-vi.mock("@knime/ui-extension-service");
-
 describe("NodeOutput.vue", () => {
   const dummyNodes: Record<string, KnimeNode> = {
     node1: createNativeNode({

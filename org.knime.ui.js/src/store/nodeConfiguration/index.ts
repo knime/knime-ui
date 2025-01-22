@@ -1,12 +1,10 @@
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
-import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer";
-import {
-  type APILayerDirtyState,
-  ApplyState,
+import type {
+  APILayerDirtyState,
   UIExtensionPushEvents,
-  ViewState,
-} from "@knime/ui-extension-service";
+} from "@knime/ui-extension-renderer/api";
+import type { UIExtensionAPILayer } from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import {
@@ -54,8 +52,8 @@ export const state = (): NodeConfigurationState => ({
   activeNodeId: null,
   activeExtensionConfig: null,
   dirtyState: {
-    apply: ApplyState.CLEAN,
-    view: ViewState.CLEAN,
+    apply: "clean",
+    view: "clean",
   },
   latestPublishedData: null,
   pushEventDispatcher: () => {},
@@ -153,7 +151,8 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
   ) {
     const dispatchApplySettings = () => {
       state.pushEventDispatcher({
-        eventType: UIExtensionPushEvents.EventTypes.ApplyDataEvent,
+        eventType:
+          "ApplyDataEvent" satisfies UIExtensionPushEvents.KnownEventType,
       });
 
       // Return a promise that will resolve once the configuration
@@ -175,7 +174,7 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
   ) {
     const activeNode = getters.activeNode;
 
-    if (state.dirtyState.apply === ApplyState.CLEAN) {
+    if (state.dirtyState.apply === "clean") {
       return true;
     }
 
@@ -242,8 +241,8 @@ export const actions: ActionTree<NodeConfigurationState, RootStoreState> = {
    */
   discardSettings({ commit }) {
     commit("setDirtyState", {
-      apply: ApplyState.CLEAN,
-      view: ViewState.CLEAN,
+      apply: "clean",
+      view: "clean",
     });
   },
 

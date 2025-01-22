@@ -4,7 +4,7 @@ import { useEventListener } from "@vueuse/core";
 
 import { FunctionButton } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
-import { UIExtensionPushEvents } from "@knime/ui-extension-service";
+import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
 
 import type { NativeNode } from "@/api/gateway-api/generated-api";
 import { useStore } from "@/composables/useStore";
@@ -42,7 +42,8 @@ watch(isLargeMode, () => {
     panel.value!.close();
   }
   store.state.nodeConfiguration.pushEventDispatcher({
-    eventType: UIExtensionPushEvents.EventTypes.DisplayModeEvent,
+    eventType:
+      "DisplayModeEvent" satisfies UIExtensionPushEvents.KnownEventType,
     payload: { mode: isLargeMode.value ? "large" : "small" },
   });
 });

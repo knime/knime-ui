@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onUnmounted, ref, toRefs, watch } from "vue";
 
+import { type Alert } from "@knime/ui-extension-renderer/api";
 import {
   UIExtension,
   type UIExtensionAPILayer,
-} from "@knime/ui-extension-renderer";
-import { type Alert } from "@knime/ui-extension-service";
+} from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import { gatewayRpcClient } from "@/api/gateway-api";

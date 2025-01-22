@@ -4,7 +4,7 @@ import {
   type Alert,
   INTERNAL_ERROR_CODE,
   USER_ERROR_CODE,
-} from "@knime/ui-extension-service";
+} from "@knime/ui-extension-renderer/api";
 
 export type NodeInfoParam = {
   nodeId: string;

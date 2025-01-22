@@ -4,8 +4,7 @@ import { onUnmounted, ref, toRef, watch } from "vue";
 import {
   UIExtension,
   type UIExtensionAPILayer,
-} from "@knime/ui-extension-renderer";
-import { AlertType } from "@knime/ui-extension-service";
+} from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import type { KnimeNode } from "@/api/custom-types";
@@ -125,7 +124,7 @@ const apiLayer: UIExtensionAPILayer = {
   sendAlert: (alert) => {
     consola.log("Alert received for PortView :>> ", alert);
 
-    if (alert.type === AlertType.ERROR) {
+    if (alert.type === "error") {
       emit("loadingStateChange", {
         value: "error",
         message: getMessage(alert),

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 
-import { UIExtension } from "@knime/ui-extension-renderer";
+import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";

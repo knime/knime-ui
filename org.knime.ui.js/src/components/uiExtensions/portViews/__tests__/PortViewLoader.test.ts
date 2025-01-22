@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
 
-import { AlertType, UIExtension } from "@knime/ui-extension-renderer";
+import { UIExtension } from "@knime/ui-extension-renderer/vue";
 
 import { API } from "@/api";
 import { SelectionEvent } from "@/api/gateway-api/generated-api";
@@ -382,7 +382,7 @@ describe("PortViewLoader.vue", () => {
       // data errors from the BE would come in via the sendAlert apiLayer
       props.apiLayer.sendAlert({
         message: "mock error",
-        type: AlertType.ERROR,
+        type: "error",
       });
 
       const emittedEvents = wrapper.emitted("loadingStateChange");
@@ -404,7 +404,7 @@ describe("PortViewLoader.vue", () => {
 
       // data errors from the BE would come in via the sendAlert apiLayer
       props.apiLayer.sendAlert({
-        type: AlertType.ERROR,
+        type: "error",
         message: "mock error",
       });
 

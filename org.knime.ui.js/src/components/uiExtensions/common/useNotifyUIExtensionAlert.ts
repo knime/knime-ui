@@ -1,6 +1,6 @@
 import { onUnmounted, ref } from "vue";
 
-import { type Alert } from "@knime/ui-extension-service";
+import { type Alert } from "@knime/ui-extension-renderer/api";
 
 import { getToastsProvider } from "@/plugins/toasts";
 

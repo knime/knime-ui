@@ -3,7 +3,7 @@ import { defineComponent } from "vue";
 import { mapGetters, mapState } from "vuex";
 
 import { useHint } from "@knime/components";
-import type { Alert } from "@knime/ui-extension-service";
+import type { Alert } from "@knime/ui-extension-renderer/api";
 
 import type { AvailablePortTypes, KnimeNode } from "@/api/custom-types";
 import { HINTS } from "@/hints/hints.config";

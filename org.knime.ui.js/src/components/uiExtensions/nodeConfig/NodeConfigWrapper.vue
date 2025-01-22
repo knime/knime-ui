@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 
-import { ApplyState } from "@knime/ui-extension-service";
-
 import type { KnimeNode } from "@/api/custom-types";
 import { type NativeNode } from "@/api/gateway-api/generated-api";
 import AppRightPanelSkeleton from "@/components/application/AppSkeletonLoader/AppRightPanelSkeleton.vue";
@@ -69,10 +67,7 @@ watch(
       return;
     }
 
-    if (
-      dirtyState.value.apply === ApplyState.CLEAN ||
-      isConfigurationDisabled.value
-    ) {
+    if (dirtyState.value.apply === "clean" || isConfigurationDisabled.value) {
       // set the active node to be the next selected node
       store.commit("nodeConfiguration/setActiveNodeId", nextNode?.id ?? null);
       return;
