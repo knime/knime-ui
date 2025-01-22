@@ -49,7 +49,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
       });
 
       if (spaceProviderData.spaceGroups.length == 0) {
-        throw new Error(`You are not part of any team.`);
+        throw new Error("You are not part of any team.");
       }
 
       consola.info("action::connectProvider -> updating space provider", {

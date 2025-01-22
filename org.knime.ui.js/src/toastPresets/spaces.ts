@@ -58,7 +58,6 @@ export const getPresets = (
         defaultErrorPresetHandler($toast, error, {
           type: "error",
           headline: `Could not connect to ${providerName ?? "remote"}`,
-          message: error.message,
         }),
     },
 
