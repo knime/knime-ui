@@ -30,7 +30,13 @@ const href = computed(() => {
 </script>
 
 <template>
-  <Button primary :on-dark="onDark" :compact="compact" :href="href">
+  <Button
+    primary
+    :on-dark="onDark"
+    :compact="compact"
+    :href="href"
+    target="_blank"
+  >
     <LinkExternalIcon />
     <span><b>Get KNIME Analytics Platform</b></span>
   </Button>
