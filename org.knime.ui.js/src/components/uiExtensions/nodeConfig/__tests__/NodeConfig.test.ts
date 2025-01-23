@@ -12,10 +12,20 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { setEnvironment } from "@/test/utils/setEnvironment";
+import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 import IncompatibleNodeConfigPlaceholder from "../IncompatibleNodeConfigPlaceholder.vue";
 import NodeConfig from "../NodeConfig.vue";
 import NodeConfigWrapper from "../NodeConfigWrapper.vue";
+
+const mockEnvironment = vi.hoisted(
+  () => ({}),
+) as typeof import("@/environment");
+
+vi.mock("@/environment", async (importOriginal) => {
+  Object.assign(mockEnvironment, await importOriginal());
+  return mockEnvironment;
+});
+const { setEnvironment } = useMockEnvironment(mockEnvironment);
 
 describe("NodeConfig", () => {
   type MountOpts = {

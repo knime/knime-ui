@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises, shallowMount } from "@vue/test-utils";
 import { createTestingPinia } from "@pinia/testing";
@@ -11,7 +11,7 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { setEnvironment } from "@/test/utils/setEnvironment";
+import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 import ErrorOverlay from "../application/ErrorOverlay.vue";
 
 vi.mock("vue-router", async (importOriginal) => {
@@ -25,15 +25,16 @@ vi.mock("vue-router", async (importOriginal) => {
   };
 });
 
-vi.mock("@/environment", async () => {
-  const actual = await vi.importActual("@/environment");
+const mockEnvironment = vi.hoisted(
+  () => ({}),
+) as typeof import("@/environment");
 
-  return {
-    ...actual,
-    DynamicEnvRenderer: {},
-    isDesktop: false,
-  };
+vi.mock("@/environment", async (importOriginal) => {
+  Object.assign(mockEnvironment, await importOriginal());
+  return mockEnvironment;
 });
+
+const { setEnvironment } = useMockEnvironment(mockEnvironment);
 
 describe("KnimeUI.vue", () => {
   const doShallowMount = async ({
@@ -98,7 +99,7 @@ describe("KnimeUI.vue", () => {
     };
   };
 
-  afterEach(() => {
+  beforeEach(() => {
     vi.clearAllMocks();
   });
 
@@ -179,11 +180,8 @@ describe("KnimeUI.vue", () => {
     expect(wrapper.findComponent(".download-banner").exists()).toBe(true);
   });
 
-  // FIXME
-  // eslint-disable-next-line vitest/no-disabled-tests
-  it.skip("sets CSS variable --app-main-content-height in desktop correctly", async () => {
-    // setEnvironment("DESKTOP");
-    vi.resetModules();
+  it("sets CSS variable --app-main-content-height in desktop correctly", async () => {
+    setEnvironment("DESKTOP");
     await doShallowMount();
 
     const style = getComputedStyle(document.documentElement);
@@ -194,9 +192,7 @@ describe("KnimeUI.vue", () => {
     expect(appHeight).toBe("calc(100vh - var(--app-header-height))");
   });
 
-  // FIXME
-  // eslint-disable-next-line vitest/no-disabled-tests
-  it.skip("sets CSS variable --app-main-content-height in browser correctly", async () => {
+  it("sets CSS variable --app-main-content-height in browser correctly", async () => {
     setEnvironment("BROWSER");
     await doShallowMount();
 
@@ -208,9 +204,7 @@ describe("KnimeUI.vue", () => {
     expect(appHeight).toBe("100vh");
   });
 
-  // FIXME
-  // eslint-disable-next-line vitest/no-disabled-tests
-  it.skip("sets CSS variable --app-main-content-height with download banner correctly", async () => {
+  it("sets CSS variable --app-main-content-height with download banner correctly", async () => {
     setEnvironment("BROWSER");
     await doShallowMount({
       uiControlsOverrides: { shouldDisplayDownloadAPButton: true },
@@ -225,6 +219,10 @@ describe("KnimeUI.vue", () => {
   });
 
   describe("clipboard support", () => {
+    beforeEach(() => {
+      setEnvironment("BROWSER");
+    });
+
     it.each([
       ["granted", true],
       ["prompt", true],

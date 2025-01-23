@@ -1,7 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { AppState } from "@/api/gateway-api/generated-api";
-import { setEnvironment } from "@/test/utils/setEnvironment";
+import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
+
+const mockEnvironment = vi.hoisted(
+  () => ({}),
+) as typeof import("@/environment");
+
+vi.mock("@/environment", async (importOriginal) => {
+  Object.assign(mockEnvironment, await importOriginal());
+  return mockEnvironment;
+});
+const { setEnvironment } = useMockEnvironment(mockEnvironment);
 
 describe("uiControls", () => {
   const loadStore = async (mode: AppState.AppModeEnum) => {

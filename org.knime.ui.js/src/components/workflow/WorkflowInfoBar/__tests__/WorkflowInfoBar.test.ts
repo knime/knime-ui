@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import type { Workflow } from "@/api/custom-types";
@@ -8,10 +8,20 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { createWorkflow } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-import { setEnvironment } from "@/test/utils/setEnvironment";
+import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 import RemoteWorkflowInfo from "../RemoteWorkflowInfo.vue";
 import StreamingInfo from "../StreamingInfo.vue";
 import WorkflowInfoBar from "../WorkflowInfoBar.vue";
+
+const mockEnvironment = vi.hoisted(
+  () => ({}),
+) as typeof import("@/environment");
+
+vi.mock("@/environment", async (importOriginal) => {
+  Object.assign(mockEnvironment, await importOriginal());
+  return mockEnvironment;
+});
+const { setEnvironment } = useMockEnvironment(mockEnvironment);
 
 describe("WorkflowInfoBar.vue", () => {
   const doMount = ({
