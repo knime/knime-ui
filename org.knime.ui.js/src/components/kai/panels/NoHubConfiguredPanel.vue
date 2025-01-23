@@ -3,7 +3,6 @@ import { API } from "@api";
 
 import { Button } from "@knime/components";
 
-
 const openPreferencePage = API.desktop.openAiAssistantPreferencePage;
 </script>
 

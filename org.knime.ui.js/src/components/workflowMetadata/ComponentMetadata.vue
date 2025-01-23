@@ -199,6 +199,7 @@ const preserveWhitespaceBeforeEdit = () => {
       <div class="header">
         <h2 class="component-name">
           <span class="node-preview">
+            <!-- @vue-ignore -- NodePreview is not properly typed -->
             <NodePreview v-bind="nodePreview" />
           </span>
 

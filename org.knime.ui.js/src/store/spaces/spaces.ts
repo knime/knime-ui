@@ -56,7 +56,13 @@ export const useSpacesStore = defineStore("spaces", {
       this.deploymentsModalConfig = deploymentsModalConfig;
     },
 
-    async copyBetweenSpaces({ projectId, itemIds }) {
+    async copyBetweenSpaces({
+      projectId,
+      itemIds,
+    }: {
+      projectId: string;
+      itemIds: string[];
+    }) {
       const { spaceId: sourceSpaceId, spaceProviderId: sourceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
 
@@ -86,7 +92,15 @@ export const useSpacesStore = defineStore("spaces", {
       }
     },
 
-    async moveOrCopyToSpace({ projectId, isCopy, itemIds }) {
+    async moveOrCopyToSpace({
+      projectId,
+      isCopy,
+      itemIds,
+    }: {
+      projectId: string;
+      isCopy: boolean;
+      itemIds: string[];
+    }) {
       const { spaceId: sourceSpaceId, spaceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
 
@@ -145,13 +159,25 @@ export const useSpacesStore = defineStore("spaces", {
       }
     },
 
-    openInBrowser({ projectId, itemId }) {
+    openInBrowser({
+      projectId,
+      itemId,
+    }: {
+      projectId: string;
+      itemId: string;
+    }) {
       const { spaceId, spaceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
       API.desktop.openInBrowser({ spaceProviderId, spaceId, itemId });
     },
 
-    openAPIDefinition({ projectId, itemId }) {
+    openAPIDefinition({
+      projectId,
+      itemId,
+    }: {
+      projectId: string;
+      itemId: string;
+    }) {
       const { spaceId, spaceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
       API.desktop.openAPIDefinition({ spaceProviderId, spaceId, itemId });

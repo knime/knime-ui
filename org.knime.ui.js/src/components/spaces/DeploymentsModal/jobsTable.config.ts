@@ -4,7 +4,6 @@ import { caseFormatter } from "@knime/utils";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { formatTime } from "@/util/time";
 
-
 export const defaultColumns = ["createdAt", "owner", "state", "nodeMessages"];
 
 export const defaultSortColumn = 0; // createdAt

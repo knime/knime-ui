@@ -65,7 +65,7 @@ export default defineComponent({
     },
   },
   emits: ["addPort"],
-  // FIXME: why does this cause issues?
+  // TODO NXT-3304 Migrate file to sfc setup (expose seems to suddenly cause type issues)
   // expose: ["isMenuOpen", "onClick"],
 
   data: (): ComponentData => ({

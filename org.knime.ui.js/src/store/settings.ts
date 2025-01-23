@@ -1,7 +1,6 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-
 /**
  * Store that manages UI settings, for now saved to local storage
  */

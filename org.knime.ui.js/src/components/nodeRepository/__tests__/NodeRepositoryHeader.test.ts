@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { SearchInput } from "@knime/components";
 
 import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
 import type { NodeRepositoryState } from "@/store/nodeRepository";
 import { createNodeTemplateWithExtendedPorts } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import CloseableTagList from "../CloseableTagList.vue";
 import NodeRepositoryHeader from "../NodeRepositoryHeader.vue";
@@ -19,6 +21,8 @@ const defaultNodesPerTag = [
     ],
   },
 ];
+
+const mockedAPI = deepMocked(API);
 
 describe("NodeRepositoryHeader", () => {
   type MountOpts = {
@@ -59,6 +63,13 @@ describe("NodeRepositoryHeader", () => {
     nodeRepositoryStore.setSelectedNode(
       createNodeTemplateWithExtendedPorts({ id: "node1" }),
     );
+
+    mockedAPI.noderepository.searchNodes.mockResolvedValue({
+      tags: [],
+      totalNumNodesFound: 0,
+      totalNumFilteredNodesFound: 0,
+      nodes: [],
+    });
 
     nodeRepositoryStore.setSelectedTags(selectedTags ?? ["myTag2"]);
 

@@ -3,10 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
-import {
-  NetworkException,
-  ServiceCallException,
-} from "@/api/gateway-api/generated-exceptions";
+import { ServiceCallException } from "@/api/gateway-api/generated-exceptions";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
@@ -128,9 +125,7 @@ describe("spaces::spaceOperations", () => {
       // null will indicate a failure when connecting to this provider
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValue(null);
 
-      const error = new NetworkException({
-        message: "Failed to connect to remote",
-      });
+      const error = new Error("Failed to connect to remote");
 
       // fail once so that it gets retried which will attempt to connect
       mockedAPI.space.listWorkflowGroup.mockRejectedValue(error);

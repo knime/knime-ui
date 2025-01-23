@@ -55,10 +55,9 @@ export const useInitialSelection = () => {
 
     // the nearestObject uses some max distances so it can happen that there is nothing "found", just use any object
     const objectToSelect = mostCenterObject ?? workflowObjects.value.at(0)!;
+    const objectName = capitalize(objectToSelect.type) as "Node" | "Annotation";
 
-    selectionStore[`select${capitalize(objectToSelect.type)}`](
-      objectToSelect.id,
-    );
+    selectionStore[`select${objectName}`](objectToSelect.id);
 
     moveObjectIntoView(objectToSelect);
   };

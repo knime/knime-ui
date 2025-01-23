@@ -1,10 +1,13 @@
 import { version } from "vue";
 
 const toEnumeratedObject = (obj: object) => {
-  return Object.getOwnPropertyNames(obj).reduce((acc, cur) => {
-    acc[cur] = obj[cur];
-    return acc;
-  }, {});
+  return Object.getOwnPropertyNames(obj).reduce(
+    (acc, cur) => {
+      acc[cur] = obj[cur as keyof object];
+      return acc;
+    },
+    {} as Record<any, any>,
+  );
 };
 
 export const copyErrorReportToClipboard = (data: object = {}) => {

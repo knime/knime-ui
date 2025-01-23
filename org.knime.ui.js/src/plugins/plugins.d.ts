@@ -22,10 +22,6 @@ interface _ComponentCustomProperties {
   $toast: ToastService;
 }
 
-declare module "@vue/runtime-core" {
-  interface ComponentCustomProperties extends _ComponentCustomProperties {}
-}
-
 declare module "vue" {
   interface ComponentCustomProperties extends _ComponentCustomProperties {}
 }

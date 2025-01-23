@@ -224,7 +224,7 @@ const removePort = async (
   clearSelection();
 };
 
-const isFirstRegularPort = (port) => {
+const isFirstRegularPort = (port: NodePortType) => {
   if (isMetanode.value && port.index === 0) {
     return true;
   }

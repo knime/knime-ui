@@ -1,7 +1,7 @@
 import type { App } from "vue";
 
 // Boilerplate for mocking the envirment module in a test-file:
-/* 
+/*
 const mockEnvironment = vi.hoisted(
   () => ({}),
 ) as typeof import("@/environment");
@@ -25,7 +25,9 @@ export const useMockEnvironment = (
   const setEnvironment = (environment: "BROWSER" | "DESKTOP") => {
     // make sure no unmocked, possibly inconsistent, keys are left.
     // rather throw an error on access than stale data
-    Object.keys(mockEnvironment).forEach((key) => delete mockEnvironment[key]);
+    Object.keys(mockEnvironment).forEach(
+      (key) => delete mockEnvironment[key as keyof typeof mockEnvironment],
+    );
     // set the values to the desired environment
     Object.assign(mockEnvironment, {
       DynamicEnvRenderer: {},

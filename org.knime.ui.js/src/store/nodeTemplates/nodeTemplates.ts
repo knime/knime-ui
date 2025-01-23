@@ -58,7 +58,8 @@ export const useNodeTemplatesStore = defineStore("nodeTemplates", {
     draggedTemplateData: null,
   }),
   actions: {
-    updateCache(newValues) {
+    updateCache(newValues: Partial<NodeTemplateDictionary>) {
+      // @ts-expect-error
       this.cache = {
         ...this.cache,
         ...newValues,

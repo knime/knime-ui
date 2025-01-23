@@ -443,7 +443,6 @@ describe("Node", () => {
       ).toHaveBeenCalled();
     });
 
-    // eslint-disable-next-line vitest/no-focused-tests
     it.each(["shift", "ctrl"])("%ss-click adds to selection", async (mod) => {
       mockUserAgent("windows");
       mockedStores.selectionStore.isNodeSelected = vi

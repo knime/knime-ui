@@ -90,7 +90,7 @@ const {
 
 const mapSpaceItemToTree = (
   spaceItem: SpaceItem,
-  { spaceId, spaceProviderId },
+  { spaceId, spaceProviderId }: { spaceId: string; spaceProviderId: string },
 ) => ({
   type: "item",
   nodeKey: `item_${spaceProviderId}_${spaceId}_${spaceItem.id}`,
@@ -102,7 +102,10 @@ const mapSpaceItemToTree = (
   hasChildren: spaceItem.type === SpaceItem.TypeEnum.WorkflowGroup,
 });
 
-const mapSpaceToTree = (space: SpaceProviderNS.Space, { spaceProviderId }) => ({
+const mapSpaceToTree = (
+  space: SpaceProviderNS.Space,
+  { spaceProviderId }: { spaceProviderId: string },
+) => ({
   type: "item",
   nodeKey: `space_${spaceProviderId}_${space.id}`,
   name: truncate(space.name),
@@ -115,7 +118,7 @@ const mapSpaceToTree = (space: SpaceProviderNS.Space, { spaceProviderId }) => ({
 
 const mapSpaceGroupToTree = (
   spaceGroup: SpaceProviderNS.SpaceGroup,
-  { spaceProviderId },
+  { spaceProviderId }: { spaceProviderId: string },
 ) => ({
   type: "group",
   nodeKey: `group_${spaceProviderId}_${spaceGroup.id}`,

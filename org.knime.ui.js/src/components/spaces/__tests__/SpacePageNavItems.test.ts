@@ -220,12 +220,12 @@ describe("SpacePageNavItems.vue", () => {
         connected: true,
       });
 
-      const { wrapper, $store } = doMount();
+      const { wrapper, mockedStores } = doMount();
 
       getMenuItemByDataTestId(wrapper, serverProvider.id).vm.$emit("click");
       await flushPromises();
 
-      expect($store.dispatch).toHaveBeenCalledWith("spaces/connectProvider", {
+      expect(mockedStores.spaceAuthStore.connectProvider).toHaveBeenCalledWith({
         spaceProviderId: serverProvider.id,
       });
 

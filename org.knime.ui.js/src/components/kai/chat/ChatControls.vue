@@ -68,7 +68,7 @@ const handleSendButtonClick = () => {
   }
 };
 
-const handleClick = (event) => {
+const handleClick = (event: MouseEvent) => {
   if (event.target === event.currentTarget) {
     textarea.value.focus();
   }

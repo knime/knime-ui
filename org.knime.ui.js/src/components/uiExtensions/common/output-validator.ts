@@ -358,12 +358,14 @@ export const validateNodeExecuted: ValidationFn<{
   return next(context);
 };
 
-type MiddlewareFn<TEnv> = (
+type MiddlewareFn<TEnv, TCxt> = (
   environment: TEnv,
-  next: NextFn<TEnv>,
-) => () => ReturnType<ValidationFn<TEnv>>;
+  next: NextFn<TCxt>,
+) => (context: TCxt) => ReturnType<ValidationFn<TCxt>>;
 
-type MiddlewareMappingFn<TEnv> = (fn: ValidationFn<TEnv>) => MiddlewareFn<TEnv>;
+type MiddlewareMappingFn<TEnv, TCxt> = (
+  fn: ValidationFn<TCxt>,
+) => MiddlewareFn<TEnv, TCxt>;
 
 type MiddlewarePipe = () => ValidationResult | null;
 
@@ -378,19 +380,24 @@ type MiddlewarePipe = () => ValidationResult | null;
  * have executed, or it will return a different value if any function performed an early exit
  */
 export const buildMiddleware =
-  <TEnv>(...middlewares: Array<ValidationFn>) =>
-  (env: TEnv): MiddlewarePipe => {
+  <TInitialCtx, TCtx>(...middlewares: Array<ValidationFn>) =>
+  (initialContext: TInitialCtx) => {
     // convert a simple function into a middleware function
-    // by partially applying environment and next before calling the given function along with the context
-    const toMiddlewareFn: MiddlewareMappingFn<TEnv> =
-      (fn) => (environment, next) => () =>
-        fn({ ...environment }, next);
+    // by partially applying the prev context and next before calling the given function along with the next context
+    const toMiddlewareFn: MiddlewareMappingFn<TInitialCtx, TCtx> =
+      (fn) => (prevContext, next) => (nextContext) =>
+        fn({ ...prevContext, ...nextContext }, next);
 
-    const runFinal = (context?: any) => context;
+    // at the end of the pipe simply return the context
+    // after all middlewares have made changes to it
+    const runFinal = (context: any) => context;
 
     const runChain = middlewares
       .map(toMiddlewareFn)
-      .reduceRight((next, middleware) => middleware(env, next), runFinal);
+      .reduceRight(
+        (next, middleware) => middleware(initialContext, next),
+        runFinal,
+      ) as MiddlewarePipe;
 
     return runChain;
   };

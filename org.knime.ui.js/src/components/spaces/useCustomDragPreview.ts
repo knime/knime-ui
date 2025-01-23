@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { type Ref, computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
@@ -25,8 +26,7 @@ type UseCustomDragPreviewOptions = {
 export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
   const isAboveCanvas = ref(false);
   const hasDragEnded = ref(false);
-  const nodeTemplate =
-    ref<Awaited<ReturnType<typeof createNodeTemplatePreview>>>(null);
+
   const isFetchingTemplate = ref(false);
 
   const { isWritable } = storeToRefs(useWorkflowStore());
@@ -71,6 +71,9 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       nodeTemplateId,
     });
   };
+
+  const nodeTemplate =
+    ref<Awaited<ReturnType<typeof createNodeTemplatePreview>>>(null);
 
   const onDrag = async ({
     event,

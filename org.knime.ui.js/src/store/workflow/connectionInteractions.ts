@@ -1,7 +1,7 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type { XY } from "@/api/gateway-api/generated-api";
+import type { Connection, XY } from "@/api/gateway-api/generated-api";
 
 import { useMovingStore } from "./moving";
 import { useWorkflowStore } from "./workflow";
@@ -23,11 +23,25 @@ export const useConnectionInteractionsStore = defineStore(
       virtualBendpoints: {},
     }),
     actions: {
-      updateConnection({ connectionId, data }) {
+      updateConnection({
+        connectionId,
+        data,
+      }: {
+        connectionId: string;
+        data: Connection;
+      }) {
         useWorkflowStore().activeWorkflow!.connections[connectionId] = data;
       },
 
-      addVirtualBendpoint({ connectionId, index, position }) {
+      addVirtualBendpoint({
+        connectionId,
+        index,
+        position,
+      }: {
+        connectionId: string;
+        index: number;
+        position: XY;
+      }) {
         const currentBendpointCount =
           useWorkflowStore().activeWorkflow!.connections[connectionId]
             .bendpoints?.length ?? 0;
@@ -41,7 +55,13 @@ export const useConnectionInteractionsStore = defineStore(
         };
       },
 
-      removeVirtualBendpoint({ connectionId, index }) {
+      removeVirtualBendpoint({
+        connectionId,
+        index,
+      }: {
+        connectionId: string;
+        index: number;
+      }) {
         delete this.virtualBendpoints[connectionId][index];
 
         if (Object.keys(this.virtualBendpoints[connectionId]).length === 0) {
@@ -49,7 +69,15 @@ export const useConnectionInteractionsStore = defineStore(
         }
       },
 
-      async addBendpoint({ connectionId, index, position }) {
+      async addBendpoint({
+        connectionId,
+        index,
+        position,
+      }: {
+        connectionId: string;
+        index: number;
+        position: XY;
+      }) {
         const { projectId, workflowId } =
           useWorkflowStore().getProjectAndWorkflowIds;
 
