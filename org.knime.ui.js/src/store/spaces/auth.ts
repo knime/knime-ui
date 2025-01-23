@@ -48,7 +48,7 @@ export const actions: ActionTree<SpacesState, RootStoreState> = {
         id: spaceProviderId,
       });
 
-      if (spaceProviderData.spaceGroups.length == 0) {
+      if (spaceProviderData?.spaceGroups.length === 0) {
         throw new Error("You are not part of any team.");
       }
 

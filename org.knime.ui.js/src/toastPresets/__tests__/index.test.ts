@@ -80,7 +80,8 @@ describe("toastPresets", () => {
         });
 
         expect($toast.show).toBeCalledWith({
-          message: "Could not connect to some provider",
+          headline: "Could not connect to some provider",
+          message: "connect failed",
           type: "error",
         });
       });
