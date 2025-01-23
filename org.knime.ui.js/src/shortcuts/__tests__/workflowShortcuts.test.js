@@ -4,15 +4,13 @@ import { API } from "@api";
 
 import { Node } from "@/api/gateway-api/generated-api";
 import { EMBEDDED_CONTENT_PANEL_ID__BOTTOM } from "@/components/uiExtensions/common/utils";
-import * as applicationStore from "@/store/application";
-import * as uiControlsStore from "@/store/uiControls";
-import { createNativeNode } from "@/test/factories";
+import { createNativeNode, createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { mockStores } from "@/test/utils/mockStores";
 import { getNextSelectedPort } from "@/util/portSelection";
 import workflowShortcuts from "../workflowShortcuts";
 
 describe("workflowShortcuts", () => {
-  const mockSelectedNode = { id: "root:0", allowedActions: {} };
   const mockedAPI = deepMocked(API);
 
   let mockEnvironment = vi.hoisted(() => ({}));
@@ -27,310 +25,262 @@ describe("workflowShortcuts", () => {
     };
   });
 
-  const createStore = ({
-    containerType = "project",
-    selectedNodes = [],
-    selectedConnections = [],
-    selectedAnnotations = [],
-    selectedMetanodePortBars = [],
-    singleSelectedNode = mockSelectedNode,
-    singleSelectedAnnotation = null,
-    isWorkflowWritable = true,
-    getScrollContainerElement = vi.fn(),
-    getNodeById = vi.fn(),
-    getVisibleFrame = vi
-      .fn()
-      .mockReturnValue({ left: -500, top: -500, width: 1000, height: 1000 }),
-  } = {}) => {
-    const mockDispatch = vi.fn();
-    const mockCommit = vi.fn();
-    const $store = {
-      commit: mockCommit,
-      dispatch: mockDispatch,
-      state: {
-        application: {
-          ...applicationStore.state(),
-          activeProjectId: "activeTestProjectId",
-          dirtyProjectsMap: { activeTestProjectId: false },
-          hasClipboardSupport: true,
-        },
-        uiControls: uiControlsStore.state(),
-        workflow: {
-          activeWorkflow: {
-            projectId: "activeTestProjectId",
-            allowedActions: {},
-            info: {
-              containerId: "testWorkflow",
-              containerType,
-            },
-            nodes: {
-              node1: {
-                position: {
-                  x: 300,
-                  y: 200,
-                },
-              },
-            },
-            parents: [
-              {
-                containerId: "root:parent",
-              },
-              {
-                containerId: "direct:parent:id",
-              },
-            ],
-          },
-          quickActionMenu: {
-            isOpen: false,
-            props: {},
-            events: {},
-          },
-        },
-        canvas: {
-          getScrollContainerElement,
-        },
-        selection: {
-          activePortTab: null,
-          activeNodePorts: {
-            nodeId: null,
-            selectedPort: null,
-          },
-        },
+  const createStore = () => {
+    const {
+      applicationStore,
+      applicationSettingsStore,
+      workflowStore,
+      selectionStore,
+      desktopInteractionsStore,
+      uiControlsStore,
+      spaceOperationsStore,
+      executionStore,
+      nodeInteractionsStore,
+      annotationInteractionsStore,
+      clipboardInteractionsStore,
+      canvasStore,
+      movingStore,
+      floatingMenusStore,
+    } = mockStores({ stubActions: true });
+
+    applicationSettingsStore.hasClipboardSupport = true;
+    applicationStore.activeProjectOrigin = {
+      providerId: "some-provider",
+      spaceId: "some-space",
+    };
+    workflowStore.isWritable = true;
+    workflowStore.activeWorkflow = createWorkflow({
+      projectId: "activeTestProjectId",
+      allowedActions: {
+        canUndo: false,
       },
-      getters: {
-        "selection/selectedNodes": selectedNodes,
-        "selection/selectedNodeIds": selectedNodes.map(({ id }) => id),
-        "selection/selectedConnections": selectedConnections,
-        "selection/singleSelectedNode": singleSelectedNode,
-        "selection/selectedAnnotations": selectedAnnotations,
-        "selection/selectedMetanodePortBars": selectedMetanodePortBars,
-        "selection/singleSelectedAnnotation": singleSelectedAnnotation,
-        "selection/singleSelectedObject":
-          (singleSelectedNode && !singleSelectedAnnotation) ||
-          (!singleSelectedNode && singleSelectedAnnotation),
-        "workflow/isWritable": isWorkflowWritable,
-        "workflow/getNodeById": getNodeById,
-        "canvas/getVisibleFrame": getVisibleFrame,
-        "application/activeProjectOrigin": {
-          providerId: "some-provider",
-          spaceId: "some-space",
-        },
-        "application/isDirtyActiveProject": false,
+      info: {
+        containerId: "testWorkflow",
+        containerType: "project",
       },
+      parents: [
+        {
+          containerId: "root:parent",
+        },
+        {
+          containerId: "direct:parent:id",
+        },
+      ],
+    });
+    floatingMenusStore.quickActionMenu = {
+      isOpen: false,
+      props: {},
+    };
+    selectionStore.singleSelectedNode = {
+      id: "root:0",
+      allowedActions: {},
+    };
+    canvasStore.getVisibleFrame = {
+      left: -500,
+      top: -500,
+      width: 1000,
+      height: 1000,
     };
 
-    return { mockCommit, mockDispatch, $store };
+    return {
+      applicationStore,
+      workflowStore,
+      selectionStore,
+      desktopInteractionsStore,
+      uiControlsStore,
+      spaceOperationsStore,
+      applicationSettingsStore,
+      executionStore,
+      nodeInteractionsStore,
+      annotationInteractionsStore,
+      clipboardInteractionsStore,
+      canvasStore,
+      movingStore,
+      floatingMenusStore,
+    };
   };
 
   describe("save", () => {
     it("executes", () => {
-      const { $store, mockDispatch } = createStore();
+      const { applicationStore, desktopInteractionsStore } = createStore();
 
-      $store.getters["application/isUnknownProject"] = () => false;
-      workflowShortcuts.save.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("workflow/saveProject");
-      expect(mockDispatch).not.toHaveBeenCalledWith("workflow/saveProjectAs");
+      applicationStore.isUnknownProject = () => false;
+      workflowShortcuts.save.execute();
+      expect(desktopInteractionsStore.saveProject).toHaveBeenCalled();
+      expect(desktopInteractionsStore.saveProjectAs).not.toHaveBeenCalled();
     });
 
     it("executes when project without origin is open", () => {
-      const { $store, mockDispatch } = createStore();
+      const { applicationStore, desktopInteractionsStore } = createStore();
 
-      $store.getters["application/isUnknownProject"] = () => true;
-      $store.getters["application/activeProjectOrigin"] = null;
-
-      workflowShortcuts.save.execute({ $store });
-      expect(mockDispatch).not.toHaveBeenCalledWith("workflow/saveProject");
-      expect(mockDispatch).toHaveBeenCalledWith("workflow/saveProjectAs");
+      applicationStore.isUnknownProject = () => true;
+      applicationStore.activeProjectOrigin = null;
+      workflowShortcuts.save.execute();
+      expect(desktopInteractionsStore.saveProject).not.toHaveBeenCalled();
+      expect(desktopInteractionsStore.saveProjectAs).toHaveBeenCalled();
     });
 
     it("checks save condition", () => {
-      const { $store } = createStore();
+      const { applicationStore, uiControlsStore } = createStore();
 
-      $store.getters["application/isUnknownProject"] = () => false;
-
-      expect(workflowShortcuts.save.condition({ $store })).toBeFalsy();
-
-      $store.getters["application/isDirtyActiveProject"] = true;
-      $store.state.uiControls.isLocalSaveSupported = false;
-      expect(workflowShortcuts.save.condition({ $store })).toBe(false);
-
-      $store.state.uiControls.isLocalSaveSupported = true;
-      $store.state.application.activeProjectId = "knownProjectId";
-      expect(workflowShortcuts.save.condition({ $store })).toBe(true);
-
-      $store.getters["application/isDirtyActiveProject"] = false;
-      expect(workflowShortcuts.save.condition({ $store })).toBe(false);
+      applicationStore.activeProjectOrigin = "origin";
+      expect(workflowShortcuts.save.condition()).toBeFalsy();
+      applicationStore.isDirtyActiveProject = true;
+      uiControlsStore.isLocalSaveSupported = false;
+      expect(workflowShortcuts.save.condition()).toBe(false);
+      uiControlsStore.isLocalSaveSupported = true;
+      applicationStore.activeProjectId = "knownProjectId";
+      expect(workflowShortcuts.save.condition()).toBe(true);
+      applicationStore.isDirtyActiveProject = false;
+      expect(workflowShortcuts.save.condition()).toBe(false);
     });
   });
 
   describe("undo/redo", () => {
     it("executes undo", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.undo.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("workflow/undo");
+      const { workflowStore } = createStore();
+
+      workflowShortcuts.undo.execute();
+      expect(workflowStore.undo).toHaveBeenCalled();
     });
 
     it("executes redo", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.redo.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith("workflow/redo");
+      const { workflowStore } = createStore();
+
+      workflowShortcuts.redo.execute();
+      expect(workflowStore.redo).toHaveBeenCalled();
     });
 
     it("checks undo condition", () => {
-      const { $store } = createStore();
-      expect(workflowShortcuts.undo.condition({ $store })).toBeFalsy();
-      $store.state.workflow.activeWorkflow.allowedActions.canUndo = true;
-      expect(workflowShortcuts.undo.condition({ $store })).toBe(true);
+      const { workflowStore } = createStore();
+
+      expect(workflowShortcuts.undo.condition()).toBeFalsy();
+      workflowStore.activeWorkflow.allowedActions.canUndo = true;
+      expect(workflowShortcuts.undo.condition()).toBe(true);
     });
 
     it("checks redo condition", () => {
-      const { $store } = createStore();
-      expect(workflowShortcuts.redo.condition({ $store })).toBeFalsy();
-      $store.state.workflow.activeWorkflow.allowedActions.canRedo = true;
-      expect(workflowShortcuts.redo.condition({ $store })).toBe(true);
+      const { workflowStore } = createStore();
+
+      expect(workflowShortcuts.redo.condition()).toBeFalsy();
+      workflowStore.activeWorkflow.allowedActions.canRedo = true;
+      expect(workflowShortcuts.redo.condition()).toBe(true);
     });
   });
 
   describe("export", () => {
     it("executes export action", () => {
-      const { $store, mockDispatch } = createStore();
+      const { spaceOperationsStore, applicationStore } = createStore();
 
-      workflowShortcuts.export.execute({ $store });
-
-      expect(mockDispatch).toHaveBeenCalledWith("spaces/exportSpaceItem", {
-        projectId: $store.state.application.activeProjectId,
-        itemId: $store.getters["application/activeProjectOrigin"].itemId,
-      });
-    });
-
-    it("executes export action when project origin is present", () => {
-      const { $store, mockDispatch } = createStore();
-
-      $store.getters["application/activeProjectOrigin"] = {
-        projectId: "testProjectId",
-        itemId: "testItemId",
-      };
-
-      workflowShortcuts.export.execute({ $store });
-
-      expect(mockDispatch).toHaveBeenCalledWith("spaces/exportSpaceItem", {
-        projectId: "testProjectId",
-        itemId: "testItemId",
+      workflowShortcuts.export.execute();
+      expect(spaceOperationsStore.exportSpaceItem).toHaveBeenCalledWith({
+        projectId: applicationStore.activeProjectId,
+        itemId: applicationStore.activeProjectOrigin.itemId,
       });
     });
 
     it("checks export condition", () => {
-      const { $store } = createStore();
+      const { applicationStore } = createStore();
 
-      $store.state.application.activeProjectId = "ExampleProjectId";
-      expect(workflowShortcuts.export.condition({ $store })).toBe(true);
-
-      $store.state.application.activeProjectId = null;
-      expect(workflowShortcuts.export.condition({ $store })).toBe(false);
+      applicationStore.activeProjectId = "ExampleProjectId";
+      expect(workflowShortcuts.export.condition()).toBe(true);
+      applicationStore.activeProjectId = null;
+      expect(workflowShortcuts.export.condition()).toBe(false);
     });
   });
 
   describe("configure", () => {
     it("executes", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.configureNode.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openNodeConfiguration",
-        "root:0",
-      );
+      const { desktopInteractionsStore } = createStore();
+
+      workflowShortcuts.configureNode.execute({});
+      expect(
+        desktopInteractionsStore.openNodeConfiguration,
+      ).toHaveBeenCalledWith("root:0");
     });
 
     it("checks condition for detached dialogs", () => {
-      const { $store } = createStore();
+      const { uiControlsStore, selectionStore, applicationSettingsStore } =
+        createStore();
 
-      $store.state.uiControls.canConfigureNodes = true;
-      $store.state.application.useEmbeddedDialogs = false;
-
+      uiControlsStore.canConfigureNodes = true;
+      applicationSettingsStore.useEmbeddedDialogs = false;
       // check for web dialogs
-      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+      selectionStore.singleSelectedNode = createNativeNode({
         dialogType: "web",
       });
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
+      expect(workflowShortcuts.configureNode.condition()).toBe(true);
 
       // check for swing dialogs
-      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+      selectionStore.singleSelectedNode = createNativeNode({
         dialogType: "swing",
       });
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
+      expect(workflowShortcuts.configureNode.condition()).toBe(true);
 
-      $store.state.uiControls.canConfigureNodes = false;
-
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+      uiControlsStore.canConfigureNodes = false;
+      expect(workflowShortcuts.configureNode.condition()).toBe(false);
     });
 
     it("checks condition for embedded dialogs", () => {
-      const { $store } = createStore();
+      const { uiControlsStore, selectionStore, applicationSettingsStore } =
+        createStore();
 
-      $store.state.uiControls.canConfigureNodes = true;
-      $store.state.application.useEmbeddedDialogs = true;
-
+      uiControlsStore.canConfigureNodes = true;
+      applicationSettingsStore.useEmbeddedDialogs = true;
       // check for web dialogs
-      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+      selectionStore.singleSelectedNode = createNativeNode({
         dialogType: "web",
       });
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+      expect(workflowShortcuts.configureNode.condition()).toBe(false);
 
       // check for swing dialogs
-      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+      selectionStore.singleSelectedNode = createNativeNode({
         dialogType: "swing",
       });
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(true);
+      expect(workflowShortcuts.configureNode.condition()).toBe(true);
 
-      $store.state.uiControls.canConfigureNodes = false;
-
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+      uiControlsStore.canConfigureNodes = false;
+      expect(workflowShortcuts.configureNode.condition()).toBe(false);
     });
 
     it("checks condition for null dialogTypes", () => {
-      const { $store } = createStore();
+      const { uiControlsStore, selectionStore, applicationSettingsStore } =
+        createStore();
 
-      $store.state.uiControls.canConfigureNodes = true;
-      $store.state.application.useEmbeddedDialogs = true;
-
-      $store.getters["selection/singleSelectedNode"] = createNativeNode({
+      uiControlsStore.canConfigureNodes = true;
+      applicationSettingsStore.useEmbeddedDialogs = true;
+      selectionStore.singleSelectedNode = createNativeNode({
         dialogType: null,
       });
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
-      $store.state.application.useEmbeddedDialogs = false;
-      expect(workflowShortcuts.configureNode.condition({ $store })).toBe(false);
+      expect(workflowShortcuts.configureNode.condition()).toBe(false);
+      applicationSettingsStore.useEmbeddedDialogs = false;
+      expect(workflowShortcuts.configureNode.condition()).toBe(false);
     });
   });
 
   describe("configureFlowVariables", () => {
     it("executes", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.configureFlowVariables.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openFlowVariableConfiguration",
-        "root:0",
-      );
+      const { desktopInteractionsStore } = createStore();
+
+      workflowShortcuts.configureFlowVariables.execute();
+      expect(
+        desktopInteractionsStore.openFlowVariableConfiguration,
+      ).toHaveBeenCalledWith("root:0");
     });
 
     it("checks condition", () => {
-      const { $store } = createStore();
+      const { uiControlsStore, selectionStore } = createStore();
 
-      $store.state.uiControls.canConfigureFlowVariables = true;
-      expect(
-        workflowShortcuts.configureFlowVariables.condition({ $store }),
-      ).toBeFalsy();
+      uiControlsStore.canConfigureFlowVariables = true;
+      expect(workflowShortcuts.configureFlowVariables.condition()).toBeFalsy();
 
-      $store.getters["selection/singleSelectedNode"].allowedActions = {
+      selectionStore.singleSelectedNode.allowedActions = {
         canOpenLegacyFlowVariableDialog: true,
       };
+      expect(workflowShortcuts.configureFlowVariables.condition()).toBe(true);
 
-      expect(
-        workflowShortcuts.configureFlowVariables.condition({ $store }),
-      ).toBe(true);
-
-      $store.state.uiControls.canConfigureFlowVariables = false;
-      expect(
-        workflowShortcuts.configureFlowVariables.condition({ $store }),
-      ).toBe(false);
+      uiControlsStore.canConfigureFlowVariables = false;
+      expect(workflowShortcuts.configureFlowVariables.condition()).toBe(false);
     });
   });
 
@@ -362,469 +312,374 @@ describe("workflowShortcuts", () => {
     describe("activateOutputPort", () => {
       it("executes", () => {
         // mock selected node with 4 dummy ports
-        const { $store, mockCommit } = createStore({
-          singleSelectedNode: {
-            ...mockSelectedNode,
-            outPorts: [{}, {}, {}, {}],
-          },
-        });
+        const { selectionStore } = createStore();
 
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
+          outPorts: [{}, {}, {}, {}],
+        };
         workflowShortcuts.activateOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit1 },
         });
-        expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setActivePortTab",
-          "1",
-        );
+        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("1");
 
         workflowShortcuts.activateOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit3 },
         });
-        expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setActivePortTab",
-          "3",
-        );
+        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("3");
 
         // handle metanodes
-        $store.getters["selection/singleSelectedNode"].kind =
-          Node.KindEnum.Metanode;
-
+        selectionStore.singleSelectedNode.kind = Node.KindEnum.Metanode;
         workflowShortcuts.activateOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit1 },
         });
-        expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setActivePortTab",
-          "0",
-        );
+        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("0");
 
         workflowShortcuts.activateOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit3 },
         });
-        expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setActivePortTab",
-          "2",
-        );
+        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("2");
 
         // handle too few outPorts
-        mockCommit.mockClear();
-        $store.getters["selection/singleSelectedNode"].outPorts = [{}, {}];
+        vi.clearAllMocks();
+        selectionStore.singleSelectedNode.outPorts = [{}, {}];
         workflowShortcuts.activateOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit3 },
         });
-        expect(mockCommit).not.toBeCalled();
+        expect(selectionStore.setActivePortTab).not.toBeCalled();
       });
 
       it("handles views", () => {
-        const { $store, mockCommit } = createStore({
-          singleSelectedNode: {
-            ...mockSelectedNode,
-            hasView: true,
-            outPorts: [{}, {}],
-          },
-        });
+        const { selectionStore } = createStore();
 
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
+          hasView: true,
+          outPorts: [{}, {}],
+        };
         workflowShortcuts.activateOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit1 },
         });
-        expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setActivePortTab",
+        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith(
           "view",
         );
       });
 
       it("checks condition", () => {
-        const { $store } = createStore({ singleSelectedNode: null });
-        expect(
-          workflowShortcuts.activateOutputPort.condition({ $store }),
-        ).toBeFalsy(); // no selected node
-        $store.getters["selection/singleSelectedNode"] = {
-          ...mockSelectedNode,
+        const { selectionStore } = createStore();
+
+        selectionStore.singleSelectedNode = null;
+        expect(workflowShortcuts.activateOutputPort.condition()).toBeFalsy(); // no selected node
+
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
           outPorts: [],
         };
-        expect(
-          workflowShortcuts.activateOutputPort.condition({ $store }),
-        ).toBeFalsy(); // no output port
-        $store.getters["selection/singleSelectedNode"] = {
-          ...mockSelectedNode,
+        expect(workflowShortcuts.activateOutputPort.condition()).toBeFalsy(); // no output port
+
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
           outPorts: [{}],
         };
-        expect(
-          workflowShortcuts.activateOutputPort.condition({ $store }),
-        ).toBeTruthy();
+        expect(workflowShortcuts.activateOutputPort.condition()).toBeTruthy();
       });
     });
 
     describe("activateFlowVarPort", () => {
       it("executes", () => {
-        const { $store, mockCommit } = createStore();
+        const { selectionStore } = createStore();
 
-        workflowShortcuts.activateFlowVarPort.execute({
-          $store,
-        });
-        expect(mockCommit).toHaveBeenLastCalledWith(
-          "selection/setActivePortTab",
-          "0",
-        );
+        workflowShortcuts.activateFlowVarPort.execute({});
+        expect(selectionStore.setActivePortTab).toHaveBeenLastCalledWith("0");
       });
 
       it("checks condition", () => {
-        const { $store } = createStore({ singleSelectedNode: null });
-        $store.state.application.availablePortTypes = {
+        const { selectionStore, applicationStore } = createStore();
+
+        selectionStore.singleSelectedNode = null;
+        applicationStore.availablePortTypes = {
           mockTypeId: { kind: "not a flowvar" },
         };
+        expect(workflowShortcuts.activateFlowVarPort.condition()).toBeFalsy(); // no node selected
 
-        expect(
-          workflowShortcuts.activateFlowVarPort.condition({ $store }),
-        ).toBeFalsy(); // no node selected
-        $store.getters["selection/singleSelectedNode"] = {
-          ...mockSelectedNode,
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
           outPorts: [{ typeId: "mockTypeId" }],
         };
-        expect(
-          workflowShortcuts.activateFlowVarPort.condition({ $store }),
-        ).toBeFalsy(); // not a flowvar port
-        $store.state.application.availablePortTypes = {
+        expect(workflowShortcuts.activateFlowVarPort.condition()).toBeFalsy(); // not a flowvar port
+
+        applicationStore.availablePortTypes = {
           mockTypeId: { kind: "flowVariable" },
         };
-        expect(
-          workflowShortcuts.activateFlowVarPort.condition({ $store }),
-        ).toBeTruthy();
+        expect(workflowShortcuts.activateFlowVarPort.condition()).toBeTruthy();
       });
     });
 
     describe("detachOutputPort", () => {
       it("executes", () => {
+        const { selectionStore, executionStore } = createStore();
+
         const node = {
-          ...mockSelectedNode,
+          id: "root:0",
+          allowedActions: {},
           outPorts: [{}, {}, {}, {}],
         };
-        const { $store, mockDispatch } = createStore({
-          singleSelectedNode: node,
-        });
-
+        selectionStore.singleSelectedNode = node;
         workflowShortcuts.detachOutputPort.execute({
-          $store,
           payload: { event: eventShiftAltDigit1 },
         });
-        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "1",
         });
 
         workflowShortcuts.detachOutputPort.execute({
-          $store,
           payload: { event: eventShiftAltDigit3 },
         });
-        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "3",
         });
 
-        $store.getters["selection/singleSelectedNode"].hasView = true;
+        selectionStore.singleSelectedNode.hasView = true;
         workflowShortcuts.detachOutputPort.execute({
-          $store,
           payload: { event: eventShiftAltDigit1 },
         });
-
-        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "view",
         });
 
         // handle metanodes
-        $store.getters["selection/singleSelectedNode"].hasView = false;
-        $store.getters["selection/singleSelectedNode"].kind =
-          Node.KindEnum.Metanode;
-
+        selectionStore.singleSelectedNode.hasView = false;
+        selectionStore.singleSelectedNode.kind = Node.KindEnum.Metanode;
         workflowShortcuts.detachOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit1 },
         });
-        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "0",
         });
 
         workflowShortcuts.detachOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit3 },
         });
-        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "2",
         });
 
         // handle too few outPorts
-        mockDispatch.mockClear();
-        $store.getters["selection/singleSelectedNode"].outPorts = [{}, {}];
+        vi.clearAllMocks();
+        selectionStore.singleSelectedNode.outPorts = [{}, {}];
         workflowShortcuts.detachOutputPort.execute({
-          $store,
           payload: { event: eventShiftDigit3 },
         });
-        expect(mockDispatch).not.toBeCalled();
+        expect(executionStore.openPortView).not.toBeCalled();
       });
 
       it("checks condition", () => {
-        const createFailureCondition = ({
-          isDesktop = true,
-          selectedNode = {
-            ...mockSelectedNode,
-            outPorts: [{}],
-          },
-        } = {}) => {
-          mockEnvironment.isDesktop = isDesktop;
-          return {
-            ...createStore({ singleSelectedNode: selectedNode }),
-          };
-        };
-
-        {
-          const { $store } = createFailureCondition(undefined);
-          expect(
-            workflowShortcuts.detachOutputPort.condition({ $store }),
-          ).toBeTruthy();
-        }
-
-        {
-          // detach only on desktop
-          const { $store } = createFailureCondition({ isDesktop: false });
-          expect(
-            workflowShortcuts.detachOutputPort.condition({ $store }),
-          ).toBeFalsy();
-        }
-
-        {
-          // no selected node
-          const { $store } = createFailureCondition({ selectedNode: null });
-          expect(
-            workflowShortcuts.detachOutputPort.condition({ $store }),
-          ).toBeFalsy();
-        }
-
-        {
-          // no output ports
-          const { $store } = createFailureCondition({
-            selectedNode: {
-              ...mockSelectedNode,
-              outPorts: [],
-            },
-          });
-          expect(
-            workflowShortcuts.detachOutputPort.condition({ $store }),
-          ).toBeFalsy();
-        }
-
         mockEnvironment.isDesktop = true;
+        const { selectionStore } = createStore();
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
+          outPorts: [{}],
+        };
+        expect(workflowShortcuts.detachOutputPort.condition()).toBeTruthy();
+
+        // detach only on desktop
+        mockEnvironment.isDesktop = false;
+        expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
+
+        // no selected node
+        mockEnvironment.isDesktop = true;
+        selectionStore.singleSelectedNode = null;
+        expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
+
+        // no output ports
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
+          outPorts: [],
+        };
+        expect(workflowShortcuts.detachOutputPort.condition()).toBeFalsy();
       });
     });
 
     describe("detachFlowVarPort", () => {
       it("executes", () => {
+        const { selectionStore, executionStore } = createStore();
+
         const node = {
-          ...mockSelectedNode,
+          id: "root:0",
+          allowedActions: {},
           outPorts: [{}, {}, {}, {}],
           state: {
             executionState: "IDLE",
           },
         };
-        const { $store, mockDispatch } = createStore({
-          singleSelectedNode: node,
-        });
+        selectionStore.singleSelectedNode = node;
+        workflowShortcuts.detachFlowVarPort.execute({});
+        expect(executionStore.openPortView).not.toBeCalled();
 
-        workflowShortcuts.detachFlowVarPort.execute({
-          $store,
-        });
-        expect(mockDispatch).not.toBeCalled();
-
-        node.state.executionState = "EXECUTED";
-        workflowShortcuts.detachFlowVarPort.execute({
-          $store,
-        });
-        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+        selectionStore.singleSelectedNode.state.executionState = "EXECUTED";
+        workflowShortcuts.detachFlowVarPort.execute({});
+        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "0",
         });
       });
 
       it("checks condition", () => {
-        const createFailureCondition = ({
-          isDesktop = true,
-          selectedNode = {
-            ...mockSelectedNode,
-            outPorts: [{ typeId: "mockTypeId" }],
-          },
-          hasFlowVarPort = true,
-        } = {}) => {
-          mockEnvironment.isDesktop = isDesktop;
+        const { selectionStore, applicationStore } = createStore();
 
-          const { $store } = createStore({ singleSelectedNode: selectedNode });
-          $store.state.application.availablePortTypes = {
-            mockTypeId: {
-              // eslint-disable-next-line vitest/no-conditional-tests
-              kind: hasFlowVarPort ? "flowVariable" : "not a flowVariable",
-            },
-          };
-          return {
-            $store,
-          };
+        const node = {
+          id: "root:0",
+          allowedActions: {},
+          outPorts: [{ typeId: "mockTypeId" }],
         };
-
-        {
-          const { $store } = createFailureCondition(undefined);
-          expect(
-            workflowShortcuts.detachFlowVarPort.condition({ $store }),
-          ).toBeTruthy();
-        }
-
-        {
-          // detach only on desktop
-          const { $store } = createFailureCondition({ isDesktop: false });
-          expect(
-            workflowShortcuts.detachFlowVarPort.condition({ $store }),
-          ).toBeFalsy();
-        }
-
-        {
-          // no selected node
-          const { $store } = createFailureCondition({ selectedNode: null });
-          expect(
-            workflowShortcuts.detachFlowVarPort.condition({ $store }),
-          ).toBeFalsy();
-        }
-
-        {
-          // no flowVariable port
-          const { $store } = createFailureCondition({
-            hasFlowVarPort: false,
-          });
-          expect(
-            workflowShortcuts.detachFlowVarPort.condition({ $store }),
-          ).toBeFalsy();
-        }
-
         mockEnvironment.isDesktop = true;
+        selectionStore.singleSelectedNode = node;
+        applicationStore.availablePortTypes = {
+          mockTypeId: {
+            kind: "flowVariable",
+          },
+        };
+        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeTruthy();
+
+        // detach only on desktop
+        mockEnvironment.isDesktop = false;
+        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
+
+        // no selected node
+        mockEnvironment.isDesktop = true;
+        selectionStore.singleSelectedNode = null;
+        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
+
+        // no flowVariable port
+        selectionStore.singleSelectedNode = node;
+        applicationStore.availablePortTypes = {
+          mockTypeId: {
+            kind: "not a flowVariable",
+          },
+        };
+        expect(workflowShortcuts.detachFlowVarPort.condition()).toBeFalsy();
       });
     });
 
     describe("detachActiveOutputPort", () => {
       it("executes", () => {
-        const { $store, mockDispatch } = createStore();
+        const { selectionStore, executionStore } = createStore();
 
-        $store.state.selection.activePortTab = "42";
-        const node = $store.getters["selection/singleSelectedNode"];
-
-        workflowShortcuts.detachActiveOutputPort.execute({
-          $store,
-        });
-        expect(mockDispatch).toHaveBeenLastCalledWith("workflow/openPortView", {
+        selectionStore.activePortTab = "42";
+        const node = selectionStore.singleSelectedNode;
+        workflowShortcuts.detachActiveOutputPort.execute({});
+        expect(executionStore.openPortView).toHaveBeenLastCalledWith({
           node,
           port: "42",
         });
       });
 
       it("checks condition", () => {
-        const { $store } = createStore({ singleSelectedNode: null });
+        const { selectionStore } = createStore();
+
+        selectionStore.singleSelectedNode = null;
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+          workflowShortcuts.detachActiveOutputPort.condition(),
         ).toBeFalsy();
-        $store.getters["selection/singleSelectedNode"] = mockSelectedNode;
+
+        selectionStore.singleSelectedNode = {
+          id: "root:0",
+          allowedActions: {},
+        };
         mockEnvironment.isDesktop = false;
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+          workflowShortcuts.detachActiveOutputPort.condition(),
         ).toBeFalsy();
+
         mockEnvironment.isDesktop = true;
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+          workflowShortcuts.detachActiveOutputPort.condition(),
         ).toBeFalsy();
-        $store.state.selection.activePortTab = "1";
+
+        selectionStore.activePortTab = "1";
         expect(
-          workflowShortcuts.detachActiveOutputPort.condition({ $store }),
+          workflowShortcuts.detachActiveOutputPort.condition(),
         ).toBeTruthy();
       });
     });
   });
 
   describe("editNodeComment", () => {
-    it("eecutes ", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.editNodeComment.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openLabelEditor",
+    it("executes ", () => {
+      const { nodeInteractionsStore } = createStore();
+
+      workflowShortcuts.editNodeComment.execute();
+      expect(nodeInteractionsStore.openLabelEditor).toHaveBeenCalledWith(
         "root:0",
       );
     });
 
     it("cannot edit label if no node is selected", () => {
-      const { $store } = createStore({
-        isWorkflowWritable: true,
-        singleSelectedNode: null,
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.editNodeComment.condition({ $store }),
-      ).toBeFalsy();
+      selectionStore.singleSelectedNode = null;
+      expect(workflowShortcuts.editNodeComment.condition()).toBeFalsy();
     });
 
     it("cannot edit label when workflow is not writable", () => {
-      const { $store } = createStore({
-        isWorkflowWritable: false,
-        singleSelectedNode: {
-          kind: "node",
-          id: "node1",
-        },
-      });
+      const { selectionStore, workflowStore } = createStore();
 
-      expect(workflowShortcuts.editNodeComment.condition({ $store })).toBe(
-        false,
-      );
+      selectionStore.singleSelectedNode = { kind: "node", id: "node1" };
+      workflowStore.isWritable = false;
+      expect(workflowShortcuts.editNodeComment.condition()).toBe(false);
     });
   });
 
   describe("editAnnotation", () => {
     it("executes ", () => {
-      const { $store, mockDispatch } = createStore({
-        singleSelectedAnnotation: { id: "annotationId1" },
-      });
-      workflowShortcuts.editAnnotation.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/setEditableAnnotationId",
-        "annotationId1",
-      );
+      const { selectionStore, annotationInteractionsStore } = createStore();
+
+      selectionStore.singleSelectedAnnotation = { id: "annotationId1" };
+      workflowShortcuts.editAnnotation.execute();
+      expect(
+        annotationInteractionsStore.setEditableAnnotationId,
+      ).toHaveBeenCalledWith("annotationId1");
     });
   });
 
   describe("clipboard operations", () => {
     it("executes copy", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.copy.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/copyOrCutWorkflowParts",
-        { command: "copy" },
-      );
+      const { clipboardInteractionsStore } = createStore();
+
+      workflowShortcuts.copy.execute();
+      expect(
+        clipboardInteractionsStore.copyOrCutWorkflowParts,
+      ).toHaveBeenCalledWith({ command: "copy" });
     });
 
     it("executes cut", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.cut.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/copyOrCutWorkflowParts",
-        { command: "cut" },
-      );
+      const { clipboardInteractionsStore } = createStore();
+
+      workflowShortcuts.cut.execute();
+      expect(
+        clipboardInteractionsStore.copyOrCutWorkflowParts,
+      ).toHaveBeenCalledWith({ command: "cut" });
     });
 
     it("executes paste", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.paste.execute({ $store, payload: {} });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/pasteWorkflowParts",
-        expect.anything(),
-      );
+      const { clipboardInteractionsStore } = createStore();
+
+      workflowShortcuts.paste.execute({});
+      expect(
+        clipboardInteractionsStore.pasteWorkflowParts,
+      ).toHaveBeenCalledWith(expect.anything());
     });
 
     it("checks copy condition", () => {
@@ -841,205 +696,186 @@ describe("workflowShortcuts", () => {
       kanvasElement.focus();
 
       expect(document.activeElement).toBe(kanvasElement);
-      const getScrollContainerElement = vi.fn().mockReturnValue(kanvasElement);
 
-      const { $store } = createStore({ getScrollContainerElement });
+      const { canvasStore, selectionStore, applicationSettingsStore } =
+        createStore();
 
-      expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
+      canvasStore.getScrollContainerElement = vi
+        .fn()
+        .mockReturnValue(kanvasElement);
+      expect(workflowShortcuts.copy.condition()).toBe(false);
 
-      $store.getters["selection/selectedNodes"] = [{ allowedActions: {} }];
-      expect(workflowShortcuts.copy.condition({ $store })).toBe(true);
+      selectionStore.getSelectedNodes = [{ allowedActions: {} }];
+      expect(workflowShortcuts.copy.condition()).toBe(true);
 
       bottomPanel.focus();
-
       expect(document.activeElement).toBe(bottomPanel);
-      expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
+      expect(workflowShortcuts.copy.condition()).toBe(false);
 
       kanvasElement.focus();
+      applicationSettingsStore.hasClipboardSupport = false;
+      expect(workflowShortcuts.copy.condition()).toBe(false);
 
-      $store.state.application.hasClipboardSupport = false;
-      expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
-
-      getScrollContainerElement.mockReturnValue({});
-      expect(workflowShortcuts.copy.condition({ $store })).toBe(false);
+      canvasStore.setScrollContainerElement({});
+      expect(workflowShortcuts.copy.condition()).toBe(false);
     });
 
     describe("cut condition checks", () => {
-      it("nothing selected, not writeable -> disabled", () => {
-        const { $store } = createStore();
-        expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
+      it("nothing selected, writeable -> disabled", () => {
+        const { selectionStore } = createStore();
+
+        selectionStore.getSelectedNodes = [];
+        expect(workflowShortcuts.cut.condition()).toBeFalsy();
       });
 
       it("nodes selected, not writeable -> disabled", () => {
-        const { $store } = createStore({
-          selectedNodes: [{ allowedActions: {} }],
-          isWorkflowWritable: false,
-        });
+        const { selectionStore, workflowStore } = createStore();
 
-        expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
-      });
-
-      it("nothing selected, writeable -> disabled", () => {
-        const { $store } = createStore({ isWorkflowWritable: true });
-
-        expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
+        selectionStore.getSelectedNodes = [{ allowedActions: {} }];
+        workflowStore.isWritable = false;
+        expect(workflowShortcuts.cut.condition()).toBeFalsy();
       });
 
       it("nodes selected, writeable -> enabled", () => {
-        const { $store } = createStore({
-          selectedNodes: [{ allowedActions: {} }],
-          isWorkflowWritable: true,
-        });
-        expect(workflowShortcuts.cut.condition({ $store })).toBe(true);
+        const { selectionStore } = createStore();
+
+        selectionStore.getSelectedNodes = [{ allowedActions: {} }];
+        expect(workflowShortcuts.cut.condition()).toBe(true);
       });
 
       it("nodes selected, writeable but no clipboard permission -> disabled", () => {
-        const { $store } = createStore({
-          selectedNodes: [{ allowedActions: {} }],
-          isWorkflowWritable: true,
-        });
-        $store.state.application.hasClipboardSupport = false;
+        const { selectionStore, applicationSettingsStore } = createStore();
 
-        expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
+        selectionStore.getSelectedNodes = [{ allowedActions: {} }];
+        applicationSettingsStore.hasClipboardSupport = false;
+        expect(workflowShortcuts.cut.condition()).toBeFalsy();
       });
     });
 
     it("checks paste condition", () => {
-      const { $store } = createStore({
-        selectedNodes: [{ allowedActions: {} }],
-        isWorkflowWritable: false,
-      });
+      const { selectionStore, workflowStore, applicationSettingsStore } =
+        createStore();
 
-      expect(workflowShortcuts.paste.condition({ $store })).toBeFalsy();
-      $store.getters["workflow/isWritable"] = true;
+      selectionStore.getSelectedNodes = [{ allowedActions: {} }];
+      workflowStore.isWritable = false;
+      expect(workflowShortcuts.paste.condition()).toBeFalsy();
 
-      expect(workflowShortcuts.paste.condition({ $store })).toBe(true);
+      workflowStore.isWritable = true;
+      expect(workflowShortcuts.paste.condition()).toBe(true);
 
-      $store.state.application.hasClipboardSupport = false;
-      expect(workflowShortcuts.paste.condition({ $store })).toBeFalsy();
+      applicationSettingsStore.hasClipboardSupport = false;
+      expect(workflowShortcuts.paste.condition()).toBeFalsy();
     });
   });
 
   describe("deleteSelected", () => {
     it("execute: delete selected objects", () => {
-      const { $store, mockDispatch } = createStore();
-      workflowShortcuts.deleteSelected.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/deleteSelectedObjects",
-      );
+      const { workflowStore } = createStore();
+
+      workflowShortcuts.deleteSelected.execute();
+      expect(workflowStore.deleteSelectedObjects).toHaveBeenCalled();
     });
 
     it("execute: delete selected port", () => {
-      const { $store, mockDispatch } = createStore();
+      const { workflowStore, selectionStore } = createStore();
 
-      $store.state.selection.activeNodePorts = {
+      selectionStore.activeNodePorts = {
         nodeId: "someid",
         selectedPort: "some-port",
       };
-
-      workflowShortcuts.deleteSelected.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledOnce();
-      expect(mockDispatch).toHaveBeenLastCalledWith(
-        "workflow/deleteSelectedPort",
-      );
+      workflowShortcuts.deleteSelected.execute();
+      expect(workflowStore.deleteSelectedPort).toHaveBeenCalled();
     });
 
     it("condition checks when workflow is not writeable ", () => {
-      const { $store } = createStore({ singleSelectedNode: null });
-      $store.getters["workflow/isWritable"] = false;
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-        false,
-      );
+      const { workflowStore, selectionStore } = createStore();
+
+      selectionStore.singleSelectedNode = null;
+      workflowStore.isWritable = false;
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
     });
 
     it("condition checks when nothing selected", () => {
-      const { $store } = createStore({ singleSelectedNode: null });
-      $store.getters["selection/selectedNodes"] = [];
-      $store.getters["selection/selectedConnections"] = [];
-      $store.getters["selection/selectedBendpointIds"] = [];
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-        false,
-      );
+      const { selectionStore } = createStore();
+
+      selectionStore.singleSelectedNode = null;
+      selectionStore.getSelectedNodes = [];
+      selectionStore.getSelectedConnections = [];
+      selectionStore.getSelectedBendpointIds = [];
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
 
       // port is selected -> shortcut active...
-      $store.state.selection.activeNodePorts.selectedPort = "some-port";
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(true);
+      selectionStore.activeNodePorts.selectedPort = "some-port";
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(true);
       // ... unless a modification is already in progress
-      $store.state.selection.activeNodePorts.isModificationInProgress = true;
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-        false,
-      );
+      selectionStore.activeNodePorts.isModificationInProgress = true;
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
     });
 
     it("condition checks when one node is not deletable", () => {
-      const { $store } = createStore({
-        singleSelectedNode: null,
-        selectedNodes: [
-          { allowedActions: { canDelete: true } },
-          { allowedActions: { canDelete: false } },
-        ],
-        selectedConnections: [{ allowedActions: { canDelete: true } }],
-      });
+      const { selectionStore } = createStore();
 
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-        false,
-      );
+      selectionStore.singleSelectedNode = null;
+      selectionStore.getSelectedNodes = [
+        { allowedActions: { canDelete: true } },
+        { allowedActions: { canDelete: false } },
+      ];
+      selectionStore.getSelectedConnections = [
+        { allowedActions: { canDelete: true } },
+      ];
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
     });
 
     it("checks when one connection is not deletable", () => {
-      const { $store } = createStore({
-        singleSelectedNode: null,
-        selectedNodes: [
-          { allowedActions: { canDelete: true } },
-          { allowedActions: { canDelete: true } },
-        ],
-        selectedConnections: [{ allowedActions: { canDelete: false } }],
-      });
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-        false,
-      );
+      const { selectionStore } = createStore();
+
+      selectionStore.singleSelectedNode = null;
+      selectionStore.getSelectedNodes = [
+        { allowedActions: { canDelete: true } },
+        { allowedActions: { canDelete: true } },
+      ];
+      selectionStore.getSelectedConnections = [
+        { allowedActions: { canDelete: false } },
+      ];
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
     });
 
     it("condition checks when all selected are deletable", () => {
-      const { $store } = createStore({
-        singleSelectedNode: null,
-        selectedNodes: [
-          { allowedActions: { canDelete: true } },
-          { allowedActions: { canDelete: true } },
-        ],
-        selectedConnections: [
-          { allowedActions: { canDelete: true } },
-          { allowedActions: { canDelete: true } },
-        ],
-      });
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(true);
+      const { selectionStore } = createStore();
+
+      selectionStore.singleSelectedNode = null;
+      selectionStore.getSelectedNodes = [
+        { allowedActions: { canDelete: true } },
+        { allowedActions: { canDelete: true } },
+      ];
+      selectionStore.getSelectedConnections = [
+        { allowedActions: { canDelete: true } },
+        { allowedActions: { canDelete: true } },
+      ];
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(true);
     });
 
     it("condition checks when only nodes are selected", () => {
-      const { $store } = createStore({
-        singleSelectedNode: null,
-        selectedNodes: [
-          { allowedActions: { canDelete: true } },
-          { allowedActions: { canDelete: true } },
-        ],
-      });
+      const { selectionStore } = createStore();
 
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(true);
+      selectionStore.singleSelectedNode = null;
+      selectionStore.getSelectedNodes = [
+        { allowedActions: { canDelete: true } },
+        { allowedActions: { canDelete: true } },
+      ];
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(true);
     });
 
     it("condition checks when dragging", () => {
-      const { $store } = createStore({
-        singleSelectedNode: null,
-        selectedNodes: [
-          { allowedActions: { canDelete: true } },
-          { allowedActions: { canDelete: true } },
-        ],
-      });
+      const { selectionStore, movingStore } = createStore();
 
-      $store.state.workflow.isDragging = true;
-      expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(
-        false,
-      );
+      selectionStore.singleSelectedNode = null;
+      selectionStore.getSelectedNodes = [
+        { allowedActions: { canDelete: true } },
+        { allowedActions: { canDelete: true } },
+      ];
+      movingStore.isDragging = true;
+      expect(workflowShortcuts.deleteSelected.condition()).toBe(false);
     });
   });
 
@@ -1048,29 +884,23 @@ describe("workflowShortcuts", () => {
       ["enables", true],
       ["disables", false],
     ])("%s menu if workflow is writeable or not", (_, cond) => {
-      const { $store } = createStore({
-        isWorkflowWritable: cond,
-        singleSelectedNode: null,
-      });
-      expect(workflowShortcuts.quickActionMenu.condition({ $store })).toBe(
-        cond,
-      );
+      const { selectionStore, workflowStore } = createStore();
+
+      selectionStore.singleSelectedNode = null;
+      workflowStore.isWritable = cond;
+      expect(workflowShortcuts.quickActionMenu.condition()).toBe(cond);
     });
 
     it("opens quick add node menu in global mode if no node is selected", () => {
-      const { $store, mockDispatch } = createStore({
-        isWorkflowWritable: true,
-        singleSelectedNode: null,
-      });
-      workflowShortcuts.quickActionMenu.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickActionMenu",
-        {
-          props: {
-            position: expect.anything(),
-          },
+      const { selectionStore, floatingMenusStore } = createStore();
+
+      selectionStore.singleSelectedNode = null;
+      workflowShortcuts.quickActionMenu.execute({});
+      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+        props: {
+          position: expect.anything(),
         },
-      );
+      });
     });
 
     const mockNodeTemplate = (length) => ({
@@ -1084,52 +914,52 @@ describe("workflowShortcuts", () => {
     });
 
     it("opens quick add node menu on the mickey mouse ports if no others are available", () => {
-      const { $store, mockDispatch } = createStore({
-        isWorkflowWritable: true,
-        singleSelectedNode: mockNodeTemplate(1),
-      });
-      workflowShortcuts.quickActionMenu.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickActionMenu",
-        {
-          props: {
-            nodeId: "root:4",
-            nodeRelation: "SUCCESSORS",
-            port: { index: 0, typeId: "some.type" },
-            position: expect.anything(),
-            positionOrigin: "calculated",
-          },
+      const { selectionStore, floatingMenusStore } = createStore();
+
+      selectionStore.singleSelectedNode = mockNodeTemplate(1);
+      workflowShortcuts.quickActionMenu.execute({});
+      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+        props: {
+          nodeId: "root:4",
+          nodeRelation: "SUCCESSORS",
+          port: { index: 0, typeId: "some.type" },
+          position: expect.anything(),
+          positionOrigin: "calculated",
         },
-      );
+      });
     });
 
     it("opens quick add node menu on first none mickey mouse ports", () => {
-      const { $store, mockDispatch } = createStore({
-        isWorkflowWritable: true,
-        singleSelectedNode: mockNodeTemplate(3),
-      });
-      workflowShortcuts.quickActionMenu.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickActionMenu",
-        {
-          props: {
-            nodeId: "root:4",
-            nodeRelation: "SUCCESSORS",
-            port: { index: 1, typeId: "some.type" },
-            position: expect.anything(),
-            positionOrigin: "calculated",
-          },
+      const { selectionStore, floatingMenusStore } = createStore();
+
+      selectionStore.singleSelectedNode = mockNodeTemplate(3);
+      workflowShortcuts.quickActionMenu.execute({});
+      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+        props: {
+          nodeId: "root:4",
+          nodeRelation: "SUCCESSORS",
+          port: { index: 1, typeId: "some.type" },
+          position: expect.anything(),
+          positionOrigin: "calculated",
         },
-      );
+      });
     });
 
     it("switch to the next port and reuse current position if menu was already open", () => {
-      const { $store, mockDispatch } = createStore({
-        isWorkflowWritable: true,
-        getNodeById: vi.fn().mockReturnValue(mockNodeTemplate(3)),
-        singleSelectedNode: mockNodeTemplate(3),
+      const { selectionStore, floatingMenusStore, nodeInteractionsStore } =
+        createStore();
+
+      const node = createNativeNode({
+        id: "root:4",
+        outPorts: [
+          { index: 0, typeId: "some.type" },
+          { index: 1, typeId: "some.type" },
+          { index: 2, typeId: "some.type" },
+        ],
       });
-      $store.state.workflow.quickActionMenu = {
+      selectionStore.singleSelectedNode = node;
+      nodeInteractionsStore.getNodeById = vi.fn().mockReturnValue(node);
+      floatingMenusStore.quickActionMenu = {
         isOpen: true,
         props: {
           nodeId: "root:4",
@@ -1140,34 +970,30 @@ describe("workflowShortcuts", () => {
           nodeRelation: "SUCCESSORS",
         },
       };
-      workflowShortcuts.quickActionMenu.execute({ $store });
-      expect(mockDispatch).toHaveBeenCalledWith(
-        "workflow/openQuickActionMenu",
-        {
-          props: {
-            nodeId: "root:4",
-            nodeRelation: "SUCCESSORS",
-            port: { index: 2, typeId: "some.type" },
-            position: { x: 5, y: 8 },
-          },
+      workflowShortcuts.quickActionMenu.execute({});
+      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+        props: {
+          nodeId: "root:4",
+          nodeRelation: "SUCCESSORS",
+          port: { index: 2, typeId: "some.type" },
+          position: { x: 5, y: 8 },
         },
-      );
+      });
     });
   });
 
   describe("autoConnectNodes", () => {
     it("should execute for regular ports", () => {
-      const selectedNodes = [createNativeNode(), createNativeNode()];
-      const { $store } = createStore({
-        selectedNodes,
-        selectedMetanodePortBars: ["in"],
-      });
+      const { selectionStore } = createStore();
 
-      workflowShortcuts.autoConnectNodesDefault.execute({ $store });
+      const nodes = [createNativeNode(), createNativeNode()];
+      selectionStore.getSelectedNodes = nodes;
+      selectionStore.getSelectedMetanodePortBars = ["in"];
+      workflowShortcuts.autoConnectNodesDefault.execute();
       expect(mockedAPI.workflowCommand.AutoConnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
-        selectedNodes: selectedNodes.map(({ id }) => id),
+        selectedNodes: nodes.map(({ id }) => id),
         workflowInPortsBarSelected: true,
         workflowOutPortsBarSelected: false,
         flowVariablePortsOnly: false,
@@ -1175,17 +1001,16 @@ describe("workflowShortcuts", () => {
     });
 
     it("should execute for flow variable ports", () => {
-      const selectedNodes = [createNativeNode(), createNativeNode()];
-      const { $store } = createStore({
-        selectedNodes,
-        selectedMetanodePortBars: ["in"],
-      });
+      const { selectionStore } = createStore();
 
-      workflowShortcuts.autoConnectNodesFlowVar.execute({ $store });
+      const nodes = [createNativeNode(), createNativeNode()];
+      selectionStore.getSelectedNodes = nodes;
+      selectionStore.getSelectedMetanodePortBars = ["in"];
+      workflowShortcuts.autoConnectNodesFlowVar.execute();
       expect(mockedAPI.workflowCommand.AutoConnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
-        selectedNodes: selectedNodes.map(({ id }) => id),
+        selectedNodes: nodes.map(({ id }) => id),
         workflowInPortsBarSelected: true,
         workflowOutPortsBarSelected: false,
         flowVariablePortsOnly: true,
@@ -1193,75 +1018,56 @@ describe("workflowShortcuts", () => {
     });
 
     it("should not work when no node is selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoConnectNodesDefault.condition({ $store }),
-      ).toBe(false);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(false);
+      selectionStore.getSelectedNodes = [];
+      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(false);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
     });
 
     it("should not work when only single node is selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [createNativeNode()],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoConnectNodesDefault.condition({ $store }),
-      ).toBe(false);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(false);
+      selectionStore.getSelectedNodes = [createNativeNode()];
+      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(false);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
     });
 
     it("should work when single node is selected and a port bar is selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [createNativeNode()],
-        selectedMetanodePortBars: ["in"],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoConnectNodesDefault.condition({ $store }),
-      ).toBe(true);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(true);
+      selectionStore.getSelectedNodes = [createNativeNode()];
+      selectionStore.getSelectedMetanodePortBars = ["in"];
+      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(true);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
     });
 
     it("should work when multiple nodes are selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [createNativeNode(), createNativeNode()],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoConnectNodesDefault.condition({ $store }),
-      ).toBe(true);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(true);
+      selectionStore.getSelectedNodes = [
+        createNativeNode(),
+        createNativeNode(),
+      ];
+      expect(workflowShortcuts.autoConnectNodesDefault.condition()).toBe(true);
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
     });
   });
 
   describe("autoDisconnectNodes", () => {
     it("should execute for regular ports", () => {
-      const selectedNodes = [createNativeNode(), createNativeNode()];
-      const { $store } = createStore({
-        selectedNodes,
-        selectedMetanodePortBars: ["in"],
-      });
+      const { selectionStore } = createStore();
 
+      const nodes = [createNativeNode(), createNativeNode()];
+      selectionStore.getSelectedNodes = nodes;
+      selectionStore.getSelectedMetanodePortBars = ["in"];
       workflowShortcuts.autoDisconnectNodesDefault.execute({
-        $store,
         payload: { event: { key: "l" } },
       });
       expect(mockedAPI.workflowCommand.AutoDisconnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
-        selectedNodes: selectedNodes.map(({ id }) => id),
+        selectedNodes: nodes.map(({ id }) => id),
         workflowInPortsBarSelected: true,
         workflowOutPortsBarSelected: false,
         flowVariablePortsOnly: false,
@@ -1269,17 +1075,16 @@ describe("workflowShortcuts", () => {
     });
 
     it("should execute for flow variable ports", () => {
-      const selectedNodes = [createNativeNode(), createNativeNode()];
-      const { $store } = createStore({
-        selectedNodes,
-        selectedMetanodePortBars: ["in"],
-      });
+      const { selectionStore } = createStore();
 
-      workflowShortcuts.autoDisconnectNodesFlowVar.execute({ $store });
+      const nodes = [createNativeNode(), createNativeNode()];
+      selectionStore.getSelectedNodes = nodes;
+      selectionStore.getSelectedMetanodePortBars = ["in"];
+      workflowShortcuts.autoDisconnectNodesFlowVar.execute();
       expect(mockedAPI.workflowCommand.AutoDisconnect).toHaveBeenCalledWith({
         projectId: "activeTestProjectId",
         workflowId: "testWorkflow",
-        selectedNodes: selectedNodes.map(({ id }) => id),
+        selectedNodes: nodes.map(({ id }) => id),
         workflowInPortsBarSelected: true,
         workflowOutPortsBarSelected: false,
         flowVariablePortsOnly: true,
@@ -1287,105 +1092,79 @@ describe("workflowShortcuts", () => {
     });
 
     it("should not work when no node is selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
-      ).toBe(false);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(false);
+      selectionStore.getSelectedNodes = [];
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+        false,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
     });
 
     it("should not work when only single node is selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [createNativeNode()],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
-      ).toBe(false);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(false);
+      selectionStore.getSelectedNodes = [createNativeNode()];
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+        false,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(false);
     });
 
     it("should work when single node is selected and a port bar is selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [createNativeNode()],
-        selectedMetanodePortBars: ["in"],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
-      ).toBe(true);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(true);
+      selectionStore.getSelectedNodes = [createNativeNode()];
+      selectionStore.getSelectedMetanodePortBars = ["in"];
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+        true,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
     });
 
     it("should work when multiple nodes are selected", () => {
-      const { $store } = createStore({
-        selectedNodes: [createNativeNode(), createNativeNode()],
-      });
+      const { selectionStore } = createStore();
 
-      expect(
-        workflowShortcuts.autoDisconnectNodesDefault.condition({ $store }),
-      ).toBe(true);
-      expect(
-        workflowShortcuts.autoConnectNodesFlowVar.condition({ $store }),
-      ).toBe(true);
+      selectionStore.getSelectedNodes = [
+        createNativeNode(),
+        createNativeNode(),
+      ];
+      expect(workflowShortcuts.autoDisconnectNodesDefault.condition()).toBe(
+        true,
+      );
+      expect(workflowShortcuts.autoConnectNodesFlowVar.condition()).toBe(true);
     });
   });
 
   describe("shuffleSelectedPort", () => {
     it("executes:", () => {
-      const { $store, mockCommit } = createStore({
-        singleSelectedNode: mockSelectedNode,
-        isWorkflowWritable: true,
-      });
-      getNextSelectedPort.mockReturnValueOnce("someSelectedPortIdentifier");
+      const { selectionStore } = createStore();
 
-      workflowShortcuts.shuffleSelectedPort.execute({ $store });
-      expect(mockCommit).toHaveBeenCalledOnce();
-      expect(mockCommit).toHaveBeenLastCalledWith(
-        "selection/updateActiveNodePorts",
-        {
-          nodeId: $store.getters["selection/singleSelectedNode"].id,
-          selectedPort: "someSelectedPortIdentifier",
-        },
-      );
+      getNextSelectedPort.mockReturnValueOnce("someSelectedPortIdentifier");
+      workflowShortcuts.shuffleSelectedPort.execute();
+      expect(selectionStore.updateActiveNodePorts).toHaveBeenLastCalledWith({
+        nodeId: selectionStore.singleSelectedNode.id,
+        selectedPort: "someSelectedPortIdentifier",
+      });
     });
 
     it("checks condition:", () => {
       // ideal condition
-      let { $store } = createStore({
-        singleSelectedNode: mockSelectedNode,
-        isWorkflowWritable: true,
-      });
-      expect(workflowShortcuts.shuffleSelectedPort.condition({ $store })).toBe(
-        true,
-      );
+      const { selectionStore, workflowStore } = createStore();
+
+      expect(workflowShortcuts.shuffleSelectedPort.condition()).toBe(true);
 
       // no single node selected
-      ({ $store } = createStore({
-        singleSelectedNode: null,
-        isWorkflowWritable: true,
-      }));
-      expect(workflowShortcuts.shuffleSelectedPort.condition({ $store })).toBe(
-        false,
-      );
+      selectionStore.singleSelectedNode = null;
+      expect(workflowShortcuts.shuffleSelectedPort.condition()).toBe(false);
 
       // workflow read-only
-      ({ $store } = createStore({
-        singleSelectedNode: mockSelectedNode,
-        isWorkflowWritable: false,
-      }));
-      expect(workflowShortcuts.shuffleSelectedPort.condition({ $store })).toBe(
-        false,
-      );
+      selectionStore.singleSelectedNode = {
+        id: "root:0",
+        allowedActions: {},
+      };
+      workflowStore.isWritable = false;
+      expect(workflowShortcuts.shuffleSelectedPort.condition()).toBe(false);
     });
   });
 });

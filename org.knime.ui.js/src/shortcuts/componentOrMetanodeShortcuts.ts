@@ -152,7 +152,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
       const selectedNode = useSelectionStore().singleSelectedNode;
 
       if (!selectedNode) {
-        return false;
+        return;
       }
 
       if (!isComponent(selectedNode) && !isMetanode(selectedNode)) {
@@ -430,9 +430,9 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
   checkForComponentUpdates: {
     text: "Check for linked component updates",
     title: "Check for linked component updates",
-    execute: () => {
+    execute: async () => {
       // Get available updates
-      useComponentInteractionsStore().checkForLinkedComponentUpdates;
+      await useComponentInteractionsStore().checkForLinkedComponentUpdates;
     },
     condition: () => {
       const { containsLinkedComponents } =

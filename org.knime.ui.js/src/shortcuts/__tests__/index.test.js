@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /* eslint-disable max-nested-callbacks */
+import { mockStores } from "@/test/utils/mockStores";
 import shortcuts, { conditionGroup } from "..";
 import canvasShortcutsMock from "../canvasShortcuts";
 import { selectionShortcuts as selectionShortcutsMocks } from "../miscShortcuts";
@@ -31,7 +32,7 @@ describe("Shortcuts", () => {
         noCondition: { name: "c1" },
         withCondition: {
           name: "c2",
-          condition: vi.fn().mockImplementation(({ age }) => age >= 18),
+          condition: vi.fn().mockImplementation(({ age } = {}) => age >= 18),
         },
       };
     });
@@ -50,27 +51,22 @@ describe("Shortcuts", () => {
   });
 
   describe("exported shortcuts with condition groups", () => {
-    let $store, isWorkflowEmpty;
+    const createStore = () => {
+      const { workflowStore, canvasStore } = mockStores();
 
-    beforeEach(() => {
-      $store = {
-        state: {
-          workflow: {
-            activeWorkflow: null,
-          },
-          canvas: {
-            interactionsEnabled: null,
-          },
-        },
-        getters: {
-          workflow: {
-            isWorkflowEmpty: isWorkflowEmpty ?? (() => false),
-          },
-        },
+      workflowStore.activeWorkflow = null;
+      workflowStore.isWorkflowEmpty = false;
+      canvasStore.interactionsEnabled = null;
+
+      return {
+        workflowStore,
+        canvasStore,
       };
-    });
+    };
 
     it("adds workflow shortcuts if workflow is present", () => {
+      const { workflowStore } = createStore();
+
       const workflowShortcuts = Object.keys(workflowShortcutsMock).reduce(
         (res, key) => {
           res[key] = shortcuts[key];
@@ -79,15 +75,15 @@ describe("Shortcuts", () => {
         {},
       );
       const resultWithoutWorkflow = Object.keys(workflowShortcuts).filter((c) =>
-        workflowShortcuts[c].condition({ $store }),
+        workflowShortcuts[c].condition(),
       );
       expect(resultWithoutWorkflow).not.toStrictEqual(
         expect.arrayContaining(["save", "undo"]),
       );
 
-      $store.state.workflow.activeWorkflow = {};
+      workflowStore.activeWorkflow = {};
       const resultWithWorkflow = Object.keys(workflowShortcuts).filter((c) =>
-        workflowShortcuts[c].condition({ $store }),
+        workflowShortcuts[c].condition(),
       );
       expect(resultWithWorkflow).toStrictEqual(
         expect.arrayContaining(["save", "undo"]),
@@ -95,6 +91,8 @@ describe("Shortcuts", () => {
     });
 
     it("adds canvas shortcuts if interactions are enabled and workflow is not empty", () => {
+      const { workflowStore, canvasStore } = createStore();
+
       const canvasShortcuts = Object.keys(canvasShortcutsMock).reduce(
         (res, key) => {
           res[key] = shortcuts[key];
@@ -104,28 +102,26 @@ describe("Shortcuts", () => {
       );
 
       // we need workflow and interactions
-      $store.state.workflow.activeWorkflow = {};
-
+      workflowStore.activeWorkflow = {};
       const resultNoInteractions = Object.keys(canvasShortcuts).filter((c) =>
-        canvasShortcuts[c].condition({ $store }),
+        canvasShortcuts[c].condition(),
       );
       expect(resultNoInteractions).not.toStrictEqual(
         expect.arrayContaining(["fitToScreen", "zoomTo100"]),
       );
 
-      $store.state.canvas.interactionsEnabled = true;
-      isWorkflowEmpty = () => true;
-
+      canvasStore.interactionsEnabled = true;
       const resultInteractions = Object.keys(canvasShortcuts).filter((c) =>
-        canvasShortcuts[c].condition({ $store }),
+        canvasShortcuts[c].condition(),
       );
-
       expect(resultInteractions).toStrictEqual(
         expect.arrayContaining(["fitToScreen", "zoomTo100"]),
       );
     });
 
     it("adds selection shortcuts if interactions are enabled", () => {
+      const { workflowStore, canvasStore } = createStore();
+
       const selectionShortcuts = Object.keys(selectionShortcutsMocks).reduce(
         (res, key) => {
           res[key] = shortcuts[key];
@@ -135,21 +131,18 @@ describe("Shortcuts", () => {
       );
 
       // we need workflow and interactions
-      $store.state.workflow.activeWorkflow = {};
-
+      workflowStore.activeWorkflow = {};
       const resultNoInteractions = Object.keys(selectionShortcuts).filter((c) =>
-        selectionShortcuts[c].condition({ $store }),
+        selectionShortcuts[c].condition(),
       );
       expect(resultNoInteractions).not.toStrictEqual(
         expect.arrayContaining(["selectAll", "deselectAll"]),
       );
 
-      $store.state.canvas.interactionsEnabled = true;
-
+      canvasStore.interactionsEnabled = true;
       const resultInteractions = Object.keys(selectionShortcuts).filter((c) =>
-        selectionShortcuts[c].condition({ $store }),
+        selectionShortcuts[c].condition(),
       );
-
       expect(resultInteractions).toStrictEqual(
         expect.arrayContaining(["selectAll", "deselectAll"]),
       );
