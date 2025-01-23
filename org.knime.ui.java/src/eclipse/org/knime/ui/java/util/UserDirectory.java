@@ -54,7 +54,6 @@ import java.util.Optional;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.util.EclipseUtil;
 
 /**
  * Provide access to the "KNIME User Directory" (for example {@code ~/.knime/}. Note that this is different from the
@@ -84,14 +83,10 @@ public final class UserDirectory {
             }
             return Optional.of(Path.of(configuredPath));
         }
-        if (!EclipseUtil.isRunFromSDK()) {
-            try {
-                return Optional.of(KNIMEConstants.getOrCreateKNIMEDir());
-            } catch (IOException e) {
-                LOGGER.error("Could not access user directory", e);
-                return Optional.empty();
-            }
-        } else {
+        try {
+            return Optional.of(KNIMEConstants.getOrCreateKNIMEDir());
+        } catch (IOException e) {
+            LOGGER.error("Could not access user directory", e);
             return Optional.empty();
         }
     }
