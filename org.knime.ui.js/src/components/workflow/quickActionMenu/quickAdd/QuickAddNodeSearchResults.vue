@@ -1,6 +1,6 @@
-<script lang="ts">
-import { type PropType, defineComponent } from "vue";
-import { mapActions, mapState } from "pinia";
+<script lang="ts" setup>
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.vue";
@@ -8,48 +8,32 @@ import SearchResults from "@/components/nodeRepository/SearchResults.vue";
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
-export default defineComponent({
-  components: {
-    SearchResults,
-    NodeTemplate,
-  },
-  props: {
-    selectedNode: {
-      type: [Object, null] as PropType<NodeTemplateWithExtendedPorts | null>,
-      required: true,
-    },
-    displayMode: {
-      type: String as PropType<NodeRepositoryDisplayModesType>,
-      default: "icon",
-    },
-  },
-  emits: ["update:selectedNode", "addNode"],
-  // FIXME: why does this cause issues?
-  // expose: ["focusFirst"],
-  computed: {
-    ...mapState(useQuickAddNodesStore, [
-      "nodes",
-      "query",
-      "totalNumFilteredNodesFound",
-      "isLoadingSearchResults",
-    ]),
+type Props = {
+  selectedNode: NodeTemplateWithExtendedPorts | null;
+  displayMode?: NodeRepositoryDisplayModesType;
+};
 
-    searchActions() {
-      return {
-        searchNodesNextPage: this.searchNodesNextPage,
-      };
-    },
-  },
-  methods: {
-    ...mapActions(useQuickAddNodesStore, ["searchNodesNextPage"]),
-    focusFirst() {
-      const searchResults = this.$refs.searchResults as InstanceType<
-        typeof SearchResults
-      >;
-      return searchResults.focusFirst();
-    },
-  },
+withDefaults(defineProps<Props>(), {
+  displayMode: "icon",
 });
+
+defineEmits<{
+  "update:selectedNode": [value: NodeTemplateWithExtendedPorts | null];
+  addNode: [node: NodeTemplateWithExtendedPorts];
+}>();
+
+const quickAddNodesStore = useQuickAddNodesStore();
+
+const { nodes, query, totalNumFilteredNodesFound, isLoadingSearchResults } =
+  storeToRefs(quickAddNodesStore);
+
+const searchActions = computed(() => ({
+  searchNodesNextPage: quickAddNodesStore.searchNodesNextPage,
+}));
+
+const searchResults = ref<InstanceType<typeof SearchResults>>();
+const focusFirst = () => searchResults.value?.focusFirst();
+defineExpose({ focusFirst });
 </script>
 
 <template>

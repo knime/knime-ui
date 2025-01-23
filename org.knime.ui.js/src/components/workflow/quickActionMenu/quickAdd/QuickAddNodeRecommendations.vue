@@ -1,6 +1,6 @@
-<script lang="ts">
-import { type PropType, defineComponent } from "vue";
-import { mapState } from "pinia";
+<script lang="ts" setup>
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import NodeList from "@/components/nodeRepository/NodeList.vue";
@@ -8,41 +8,30 @@ import NodeTemplate from "@/components/nodeRepository/NodeTemplate/NodeTemplate.
 import { useQuickAddNodesStore } from "@/store/quickAddNodes";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 
-export default defineComponent({
-  components: {
-    NodeList,
-    NodeTemplate,
-  },
-  props: {
-    selectedNode: {
-      type: [Object, null] as PropType<NodeTemplateWithExtendedPorts | null>,
-      required: true,
-    },
-    disableRecommendations: {
-      type: Boolean,
-      default: false,
-    },
-    displayMode: {
-      type: String as PropType<NodeRepositoryDisplayModesType>,
-      default: "icon",
-    },
-  },
-  emits: ["update:selectedNode", "addNode", "navReachedTop"],
-  // FIXME: why does this cause issues?
-  // expose: ["focusFirst"],
-  computed: {
-    ...mapState(useQuickAddNodesStore, ["recommendedNodes"]),
-    hasRecommendations() {
-      return this.recommendedNodes.length > 0;
-    },
-  },
-  methods: {
-    focusFirst() {
-      // @ts-ignore
-      return this.$refs.recommendationResults?.focusFirst();
-    },
-  },
+type Props = {
+  selectedNode: NodeTemplateWithExtendedPorts | null;
+  disableRecommendations?: boolean;
+  displayMode?: NodeRepositoryDisplayModesType;
+};
+
+withDefaults(defineProps<Props>(), {
+  disableRecommendations: false,
+  displayMode: "icon",
 });
+
+defineEmits<{
+  "update:selectedNode": [value: NodeTemplateWithExtendedPorts | null];
+  addNode: [node: NodeTemplateWithExtendedPorts];
+  navReachedTop: [];
+}>();
+
+const { recommendedNodes } = storeToRefs(useQuickAddNodesStore());
+
+const hasRecommendations = computed(() => recommendedNodes.value.length > 0);
+
+const recommendationResults = ref<InstanceType<typeof NodeList>>();
+const focusFirst = () => recommendationResults.value?.focusFirst();
+defineExpose({ focusFirst });
 </script>
 
 <template>
