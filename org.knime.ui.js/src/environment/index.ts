@@ -1,7 +1,6 @@
 import type { App } from "vue";
 
 import DynamicEnvRenderer from "./DynamicEnvRenderer.vue";
-import * as compatibility from "./compatibility";
 
 /* eslint-disable new-cap */
 
@@ -34,4 +33,4 @@ export const runInEnvironment = (matcher: Matcher) => {
   return (matcher[environment] ?? noop)();
 };
 
-export { DynamicEnvRenderer, compatibility };
+export { DynamicEnvRenderer };
