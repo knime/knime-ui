@@ -55,7 +55,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import org.junit.jupiter.api.AfterEach;
@@ -96,15 +95,18 @@ class LifeCycleTest {
     }
 
     @Test
-    void testHappyPath() throws IOException {
+    void testHappyPath() {
         PerspectiveUtil.setClassicPerspectiveActive(false);
 
         var lc = LifeCycle.get();
-        assertThat(lc.isNextStateTransition(StateTransition.STARTUP)).isTrue();
+        assertThat(lc.isNextStateTransition(StateTransition.STARTUP))//
+            .as("STARTUP is the next state transition")//
+            .isTrue();
 
         lc.startup();
         assertStateTransition(lc, StateTransition.STARTUP, StateTransition.CREATE);
-        assertThat(System.getProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY))
+        assertThat(System.getProperty(PerspectiveUtil.PERSPECTIVE_SYSTEM_PROPERTY))//
+            .as("System property is set correctly")//
             .isEqualTo(PerspectiveUtil.WEB_UI_PERSPECTIVE_ID);
 
         var middlewareServiceMock = Mockito.mock(IMiddlewareService.class);
@@ -121,8 +123,12 @@ class LifeCycleTest {
 
         lc.init(true);
         assertStateTransition(lc, StateTransition.INIT, StateTransition.WEB_APP_LOADED);
-        assertThat(ServiceInstances.areServicesInitialized()).isFalse();
-        assertThat(DesktopAPI.areDependenciesInjected()).isTrue();
+        assertThat(ServiceInstances.areServicesInitialized())//
+            .as("Services aren't initialized")//
+            .isFalse();
+        assertThat(DesktopAPI.areDependenciesInjected())//
+            .as("Desktop API dependecies are injected")//
+            .isTrue();
 
         // test that multiple calls of the same life cycle transitions doesn't have an effect
         lc.init(true);
@@ -141,8 +147,12 @@ class LifeCycleTest {
 
         lc.suspend();
         assertStateTransition(lc, StateTransition.SUSPEND, StateTransition.SHUTDOWN);
-        assertThat(ServiceInstances.areServicesInitialized()).isFalse();
-        assertThat(DesktopAPI.areDependenciesInjected()).isFalse();
+        assertThat(ServiceInstances.areServicesInitialized())//
+            .as("Services aren't initialized")//
+            .isFalse();
+        assertThat(DesktopAPI.areDependenciesInjected())//
+            .as("Desktop API dependecies aren't injected")//
+            .isFalse();
 
         lc.shutdown();
          AppStatePersistorTest.assertAppStateFileExists();
@@ -160,60 +170,62 @@ class LifeCycleTest {
 
         lc.startup();
         assertFails(() -> lc.init(false));
-        assertFails(() -> lc.webAppLoaded());
+        assertFails(lc::webAppLoaded);
         assertFails(() -> lc.saveState(null));
-        assertFails(() -> lc.suspend());
+        assertFails(lc::suspend);
 
         CEFPlugin.setMiddlewareService(mock(IMiddlewareService.class));
         lc.create(biConsumer);
-        assertFails(() -> lc.startup());
-        assertFails(() -> lc.webAppLoaded());
-        assertFails(() -> lc.reload());
+        assertFails(lc::startup);
+        assertFails(lc::webAppLoaded);
+        assertFails(lc::reload);
         assertFails(() -> lc.saveState(null));
-        assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown());
+        assertFails(lc::suspend);
+        assertFails(lc::shutdown);
 
         lc.init(false);
-        assertFails(() -> lc.startup());
+        assertFails(lc::startup);
         assertFails(() -> lc.create(biConsumer));
-        assertFails(() -> lc.reload());
+        assertFails(lc::reload);
         assertFails(() -> lc.saveState(null));
-        assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown());
+        assertFails(lc::suspend);
+        assertFails(lc::shutdown);
 
         lc.webAppLoaded();
-        assertFails(() -> lc.startup());
+        assertFails(lc::startup);
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
-        assertFails(() -> lc.suspend());
-        assertFails(() -> lc.shutdown());
+        assertFails(lc::suspend);
+        assertFails(lc::shutdown);
 
         lc.saveState(null);
-        assertFails(() -> lc.startup());
+        assertFails(lc::startup);
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
-        assertFails(() -> lc.webAppLoaded());
-        assertFails(() -> lc.reload());
-        assertFails(() -> lc.shutdown());
+        assertFails(lc::webAppLoaded);
+        assertFails(lc::reload);
+        assertFails(lc::shutdown);
 
         lc.suspend();
-        assertFails(() -> lc.startup());
+        assertFails(lc::startup);
         assertFails(() -> lc.create(biConsumer));
-        assertFails(() -> lc.webAppLoaded());
-        assertFails(() -> lc.reload());
+        assertFails(lc::webAppLoaded);
+        assertFails(lc::reload);
         assertFails(() -> lc.saveState(null));
         lc.init(false); // init is allowed here again
 
         lc.setStateTransition(StateTransition.SUSPEND);
-        assertThat(lc.isLastStateTransition(StateTransition.SUSPEND)).isTrue();
+        assertThat(lc.isLastStateTransition(StateTransition.SUSPEND))//
+            .as("Last state transition is SUSPEND")//
+            .isTrue();
 
         lc.shutdown();
         assertFails(() -> lc.create(biConsumer));
         assertFails(() -> lc.init(false));
-        assertFails(() -> lc.webAppLoaded());
-        assertFails(() -> lc.reload());
+        assertFails(lc::webAppLoaded);
+        assertFails(lc::reload);
         assertFails(() -> lc.saveState(null));
-        assertFails(() -> lc.suspend());
+        assertFails(lc::suspend);
     }
 
     /**
@@ -237,17 +249,25 @@ class LifeCycleTest {
     }
 
     private static void assertFails(final Executable executable) {
-        var message = assertThrows(IllegalStateException.class, executable).getMessage();
-        assertThat(message).contains("wrong life cycle state transition");
+        var message = assertThrows(IllegalStateException.class, executable, "Throws incorrect exception").getMessage();
+        assertThat(message)//
+            .as("Correct message contained in thrown exception")//
+            .contains("wrong life cycle state transition");
     }
 
     private static void assertStateTransition(final LifeCycle lc, final StateTransition last,
         final StateTransition next) {
         if (last != null) {
-            assertThat(lc.isLastStateTransition(last)).isTrue();
+            assertThat(lc.isLastStateTransition(last))//
+                .as("Last state transition really is final")//
+                .isTrue();
         }
-        assertThat(lc.isBeforeStateTransition(next)).isTrue();
-        assertThat(lc.isNextStateTransition(next)).isTrue();
+        assertThat(lc.isBeforeStateTransition(next))//
+            .as("Life cycle state really is before next transition")//
+            .isTrue();
+        assertThat(lc.isNextStateTransition(next))//
+            .as("Next state transition really is next")//
+            .isTrue();
     }
 
     @AfterEach
