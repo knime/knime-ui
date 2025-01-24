@@ -418,16 +418,6 @@ export const openWorkflowCoachPreferencePage = () => {
   );
 };
 
-export const getSpaceProviders = () => {
-  return callBrowserFunction(
-    window.getSpaceProviders,
-    [],
-    "Could not fetch space providers",
-    false,
-    { block: false },
-  );
-};
-
 export const connectSpaceProvider = async ({
   spaceProviderId,
 }: SpaceProviderId): Promise<SpaceProviderNS.SpaceProvider | null> => {

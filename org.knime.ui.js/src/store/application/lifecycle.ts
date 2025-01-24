@@ -18,7 +18,6 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { usePanelStore } from "@/store/panel";
 import { useSelectionStore } from "@/store/selection";
 import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -219,15 +218,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
       consola.info("lifecycle::Application state", { applicationState });
       useApplicationStore().replaceApplicationState(applicationState);
       await this.setActiveProject({ $router });
-
-      await runInEnvironment({
-        DESKTOP: async () => {
-          consola.trace("lifecycle::loading local space");
-          await useSpaceProvidersStore().loadLocalSpace();
-          consola.trace("lifecycle::fetching all space providers");
-          useSpaceProvidersStore().fetchAllSpaceProviders();
-        },
-      });
 
       if (useApplicationSettingsStore().isKaiEnabled) {
         kaiFetchUiStrings();

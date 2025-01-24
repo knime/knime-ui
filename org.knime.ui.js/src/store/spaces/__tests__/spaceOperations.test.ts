@@ -60,7 +60,7 @@ describe("spaces::spaceOperations", () => {
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce(
         mockSpaceProvider,
       );
-
+      mockedAPI.space.getSpaceGroups.mockResolvedValueOnce([{}]);
       mockedAPI.space.listWorkflowGroup.mockRejectedValueOnce(
         new Error("Error fetching content"),
       );
@@ -98,6 +98,7 @@ describe("spaces::spaceOperations", () => {
         connected: true,
         user: { name: "John Doe" },
       });
+      mockedAPI.space.getSpaceGroups.mockResolvedValueOnce([{}]);
       mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce(
         mockSpaceProvider,
       );
@@ -236,6 +237,7 @@ describe("spaces::spaceOperations", () => {
       const ioErr = new ServiceCallException({
         message: "something failed with IO",
       });
+      mockedAPI.space.getSpaceGroups.mockResolvedValueOnce([{}]);
       mockedAPI.space.createWorkflowGroup.mockRejectedValueOnce(ioErr);
 
       spaceCachingStore.projectPath.project2 = {

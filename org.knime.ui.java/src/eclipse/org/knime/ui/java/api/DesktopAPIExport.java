@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.api;
 
+import org.knime.gateway.impl.webui.AppStateUpdater;
+
 /**
  * The {@link DesktopAPI} is usually only meant to be called by the frontend (hence, all desktop API functions are
  * package scope). However, there is at least one case where a desktop API function is required by other java-code. This
@@ -68,7 +70,8 @@ public final class DesktopAPIExport {
      */
     public static void sendSpaceProviderChangedEvent() {
         if (DesktopAPI.areDependenciesInjected()) {
-            SpaceAPI.getSpaceProviders();
+            // the space provider info is part of the app state
+            DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
         }
     }
 

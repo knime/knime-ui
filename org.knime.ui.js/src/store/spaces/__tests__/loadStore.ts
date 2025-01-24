@@ -2,7 +2,6 @@ import { type Mock, vi } from "vitest";
 import { API } from "@api";
 import { createTestingPinia } from "@pinia/testing";
 
-import { SpaceProviderNS } from "@/api/custom-types";
 import type {
   Project,
   SpaceItemReference,
@@ -46,25 +45,6 @@ export const fetchWorkflowGroupContentResponse = {
   ],
 };
 
-type WithOptionalProviderSpaceGroups = Omit<
-  SpaceProviderNS.SpaceProvider,
-  "spaceGroups"
-> &
-  Partial<Pick<SpaceProviderNS.SpaceProvider, "spaceGroups">>;
-
-export const fetchAllSpaceProvidersResponse: Record<
-  string,
-  WithOptionalProviderSpaceGroups
-> = {
-  local: {
-    id: "local",
-    connected: true,
-    connectionMode: "AUTOMATIC",
-    name: "Local Space",
-    type: SpaceProviderNS.TypeEnum.LOCAL,
-  },
-};
-
 export const listJobsForWorkflowResponse = [
   createJob({
     id: "1",
@@ -89,7 +69,6 @@ const mockedAPI = deepMocked(API);
 
 type LoadStoreOpts = {
   mockFetchWorkflowGroupResponse?: typeof fetchWorkflowGroupContentResponse;
-  mockFetchAllProvidersResponse?: typeof fetchAllSpaceProvidersResponse;
   mockListJobsForWorkflowResponse?: typeof listJobsForWorkflowResponse;
   mockListSchedulesForWorkflowResponse?: typeof listSchedulesForWorkflowResponse;
   openProjects?: Project[];
@@ -101,7 +80,6 @@ type LoadStoreOpts = {
 
 export const loadStore = ({
   mockFetchWorkflowGroupResponse = fetchWorkflowGroupContentResponse,
-  mockFetchAllProvidersResponse = fetchAllSpaceProvidersResponse,
   mockListJobsForWorkflowResponse = listJobsForWorkflowResponse,
   mockListSchedulesForWorkflowResponse = listSchedulesForWorkflowResponse,
   openProjects = [],
@@ -151,12 +129,6 @@ export const loadStore = ({
     },
   });
 
-  mockedAPI.desktop.getSpaceProviders.mockImplementation(() => {
-    spaceProvidersStore.setAllSpaceProviders(
-      // @ts-expect-error
-      mockFetchAllProvidersResponse,
-    );
-  });
   mockedAPI.space.listWorkflowGroup.mockResolvedValue(
     mockFetchWorkflowGroupResponse,
   );

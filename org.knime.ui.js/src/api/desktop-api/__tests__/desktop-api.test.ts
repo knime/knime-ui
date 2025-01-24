@@ -116,9 +116,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "getSpaceProviders",
-  },
-  {
     name: "connectSpaceProvider",
     params: [["spaceProviderId", "1"]],
     returnValue: JSON.stringify({

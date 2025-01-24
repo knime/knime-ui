@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { VueWrapper, flushPromises, mount } from "@vue/test-utils";
-import { API } from "@api";
 import { useRoute } from "vue-router";
 
 import { FunctionButton } from "@knime/components";
@@ -14,13 +13,10 @@ import {
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import SpacePageNavItems from "../SpacePageNavItems.vue";
 
 const routerPush = vi.fn();
-
-const mockedAPI = deepMocked(API);
 
 vi.mock("vue-router", async (importOriginal) => ({
   ...(await importOriginal()),
@@ -190,13 +186,18 @@ describe("SpacePageNavItems.vue", () => {
     });
 
     it("should connect to provider and then navigate", async () => {
-      mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce({
-        ...hubProvider2,
-        connected: true,
-        spaceGroups: [spaceGroup2],
-      });
-
       const { wrapper, mockedStores } = doMount();
+
+      vi.mocked(
+        mockedStores.spaceAuthStore.connectProvider,
+      ).mockResolvedValueOnce({
+        isConnected: true,
+        providerData: {
+          ...hubProvider2,
+          connected: true,
+          spaceGroups: [spaceGroup2],
+        },
+      });
 
       getMenuItemByDataTestId(wrapper, hubProvider2.id).vm.$emit("click");
       await flushPromises();
@@ -215,12 +216,14 @@ describe("SpacePageNavItems.vue", () => {
     });
 
     it("should connect to server provider and navigate directly to its space", async () => {
-      mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce({
-        ...serverProvider,
-        connected: true,
-      });
-
       const { wrapper, mockedStores } = doMount();
+
+      vi.mocked(
+        mockedStores.spaceAuthStore.connectProvider,
+      ).mockResolvedValueOnce({
+        isConnected: true,
+        providerData: serverProvider,
+      });
 
       getMenuItemByDataTestId(wrapper, serverProvider.id).vm.$emit("click");
       await flushPromises();

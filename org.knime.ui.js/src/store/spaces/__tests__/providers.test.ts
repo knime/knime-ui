@@ -19,18 +19,6 @@ describe("spaces::providers", () => {
     vi.clearAllMocks();
   });
 
-  describe("fetchAllSpaceProviders", () => {
-    it("should call the desktop api", async () => {
-      const { spaceProvidersStore } = loadStore();
-
-      mockedAPI.desktop.getSpaceProviders.mockResolvedValue(undefined);
-      await spaceProvidersStore.fetchAllSpaceProviders();
-
-      expect(spaceProvidersStore.isLoadingProviders).toBe(true);
-      expect(mockedAPI.desktop.getSpaceProviders).toHaveBeenCalled();
-    });
-  });
-
   describe("setAllSpaceProviders", () => {
     it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
       const spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
@@ -71,13 +59,11 @@ describe("spaces::providers", () => {
         spaces: [createSpace({ id: "space-1" })],
       });
 
-      mockedAPI.space.getSpaceProvider.mockImplementation(() =>
-        Promise.resolve({ spaceGroups: [mockGroup] }),
+      mockedAPI.space.getSpaceGroups.mockImplementation(() =>
+        Promise.resolve([mockGroup]),
       );
 
-      const { spaceProvidersStore } = loadStore({
-        mockFetchAllProvidersResponse: spaceProviders,
-      });
+      const { spaceProvidersStore } = loadStore();
 
       const promise = spaceProvidersStore.setAllSpaceProviders(spaceProviders);
 
@@ -106,13 +92,13 @@ describe("spaces::providers", () => {
         ...spaceProviders.hub3,
         spaceGroups: [],
       });
-      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
-      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
         spaceProviderId: "hub2",
       });
-      expect(mockedAPI.space.getSpaceProvider).not.toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).not.toHaveBeenCalledWith({
         spaceProviderId: "hub3",
       });
     });
@@ -156,20 +142,18 @@ describe("spaces::providers", () => {
         spaces: [createSpace({ id: "space-1" })],
       });
 
-      mockedAPI.space.getSpaceProvider.mockImplementation(
+      mockedAPI.space.getSpaceGroups.mockImplementation(
         // @ts-ignore
         ({ spaceProviderId }) => {
           if (spaceProviderId === "hub2") {
             return Promise.reject(new Error("Failed to load spaces"));
           } else {
-            return Promise.resolve({ spaceGroups: [mockGroup] });
+            return Promise.resolve([mockGroup]);
           }
         },
       );
 
-      const { spaceProvidersStore } = loadStore({
-        mockFetchAllProvidersResponse: spaceProviders,
-      });
+      const { spaceProvidersStore } = loadStore();
 
       const promise = spaceProvidersStore.setAllSpaceProviders(spaceProviders);
 
@@ -199,13 +183,13 @@ describe("spaces::providers", () => {
         ...spaceProviders.hub3,
         spaceGroups: [],
       });
-      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
-      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
         spaceProviderId: "hub2",
       });
-      expect(mockedAPI.space.getSpaceProvider).not.toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).not.toHaveBeenCalledWith({
         spaceProviderId: "hub3",
       });
     });
@@ -223,15 +207,13 @@ describe("spaces::providers", () => {
         }),
       };
 
-      const mockResponse = {
-        spaceGroups: [
-          createSpaceGroup({
-            spaces: [mockSpace],
-          }),
-        ],
-      };
+      const mockResponse = [
+        createSpaceGroup({
+          spaces: [mockSpace],
+        }),
+      ];
 
-      mockedAPI.space.getSpaceProvider.mockResolvedValue(mockResponse);
+      mockedAPI.space.getSpaceGroups.mockResolvedValue(mockResponse);
 
       expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBeFalsy();
 
@@ -244,7 +226,7 @@ describe("spaces::providers", () => {
       await flushPromises();
       expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBe(false);
 
-      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
 
@@ -446,14 +428,13 @@ describe("spaces::providers", () => {
     it("should reload a space provider's spaces", async () => {
       const provider = createSpaceProvider();
 
-      const newSpaceGroup = createSpaceGroup({
-        spaces: [createSpace({ id: "new1" }), createSpace({ id: "new1" })],
-      });
+      const newSpaceGroups = [
+        createSpaceGroup({
+          spaces: [createSpace({ id: "new1" }), createSpace({ id: "new1" })],
+        }),
+      ];
 
-      mockedAPI.space.getSpaceProvider.mockResolvedValue({
-        ...provider,
-        spaceGroups: newSpaceGroup,
-      });
+      mockedAPI.space.getSpaceGroups.mockResolvedValue(newSpaceGroups);
 
       const { spaceProvidersStore } = loadStore();
 
@@ -479,7 +460,7 @@ describe("spaces::providers", () => {
 
       expect(spaceProvidersStore.spaceProviders[provider.id]).toEqual({
         ...provider,
-        spaceGroups: newSpaceGroup,
+        spaceGroups: newSpaceGroups,
       });
     });
   });

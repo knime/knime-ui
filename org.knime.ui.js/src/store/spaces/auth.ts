@@ -43,20 +43,20 @@ export const useSpaceAuthStore = defineStore("space.auth", {
         }
 
         // fetch the spaces if we are now connected
-        const spaceProviderData = await providersStore.fetchProviderSpaces({
+        const spaceGroups = await providersStore.fetchProviderSpaces({
           id: spaceProviderId,
         });
 
-        if (spaceProviderData?.spaceGroups.length === 0) {
+        if (spaceGroups.length === 0) {
           throw new Error("You are not part of any team.");
         }
 
         consola.info("action::connectProvider -> updating space provider", {
           spaceProvider,
-          spaceProviderData,
+          spaceGroups,
         });
 
-        const updatedProvider = { ...spaceProvider, ...spaceProviderData };
+        const updatedProvider = { ...spaceProvider, spaceGroups };
 
         providersStore.updateSpaceProvider({
           id: spaceProviderId,

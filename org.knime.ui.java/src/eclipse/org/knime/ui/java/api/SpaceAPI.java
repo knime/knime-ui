@@ -77,7 +77,7 @@ import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAl
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
-import org.knime.gateway.impl.webui.service.events.EventConsumer;
+import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.Space.TransferResult;
@@ -85,9 +85,9 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
+import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
 import org.knime.ui.java.util.DesktopAPUtil;
-import org.knime.ui.java.util.SpaceProvidersUtil;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
 import org.knime.workbench.explorer.dialogs.Validator;
@@ -97,6 +97,7 @@ import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -123,31 +124,23 @@ final class SpaceAPI {
     }
 
     /**
-     * Provides infos on all available {@link SpaceProviders}. It's a browser function because this functionality is
-     * only available in the desktop AP (the desktop AP, e.g., can connect to multiple hubs).
-     */
-    @API
-    static void getSpaceProviders() {
-        SpaceProvidersUtil.sendSpaceProvidersChangedEvent(DesktopAPI.getDeps(SpaceProviders.class),
-            DesktopAPI.getDeps(EventConsumer.class));
-    }
-
-    /**
      * Tries to connect a space provider to its remote location if it's not connected already (i.e. essentially calls
      * {@link SpaceProvider#connect()}. And returns the space provider information (no matter whether it has been
      * connected already or not).
      *
      * @return A JSON object with all the space provider information.
+     * @throws JsonProcessingException if the result couldn't be serialized
      * @throws NoSuchElementException if there is no space provider for the given id
      */
     @API(runInUIThread = false)
-    static String connectSpaceProvider(final String spaceProviderId) {
+    static String connectSpaceProvider(final String spaceProviderId) throws JsonProcessingException {
         final var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
         if (spaceProvider == null) {
             throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }
         var isConnected = spaceProvider.getConnection(false).isPresent();
-        return SpaceProvidersUtil.buildSpaceProviderObjectNode(spaceProvider, !isConnected).toPrettyString();
+        return ObjectMapperUtil.getInstance().getObjectMapper()
+            .writeValueAsString(AppStateEntityFactory.buildSpaceProviderEnt(spaceProvider, !isConnected));
     }
 
     /**

@@ -74,7 +74,8 @@ export namespace SpaceProviderNS {
   // eslint-disable-next-line unused-imports/no-unused-vars
   export import UserTypeEnum = _SpaceGroupNS.TypeEnum;
 
-  export interface SpaceProvider extends _SpaceProvider {
+  export interface SpaceProvider
+    extends Omit<_SpaceProvider, "connectionMode"> {
     id: string;
     name: string;
     connected: boolean;

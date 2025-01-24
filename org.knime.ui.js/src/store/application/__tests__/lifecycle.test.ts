@@ -35,8 +35,7 @@ describe("application::lifecycle", () => {
       // @ts-ignore
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
-      const { lifecycleStore, applicationStore, spaceProvidersStore } =
-        loadStore();
+      const { lifecycleStore, applicationStore } = loadStore();
       window.localStorage.setItem("foo", "bar");
       const localStorageData = {
         settings1: { a: 1, b: 2 },
@@ -71,8 +70,6 @@ describe("application::lifecycle", () => {
         applicationState,
       );
 
-      expect(spaceProvidersStore.loadLocalSpace).toHaveBeenCalled();
-      expect(spaceProvidersStore.fetchAllSpaceProviders).toHaveBeenCalled();
       expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
       });
@@ -84,8 +81,7 @@ describe("application::lifecycle", () => {
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
 
-      const { lifecycleStore, spaceProvidersStore, applicationStore } =
-        loadStore();
+      const { lifecycleStore, applicationStore } = loadStore();
       await lifecycleStore.initializeApplication({
         $router: router,
       });
@@ -94,9 +90,6 @@ describe("application::lifecycle", () => {
 
       expect(mockedAPI.event.subscribeEvent).toHaveBeenCalled();
       expect(mockedAPI.application.getState).toHaveBeenCalled();
-
-      expect(spaceProvidersStore.loadLocalSpace).not.toHaveBeenCalled();
-      expect(spaceProvidersStore.fetchAllSpaceProviders).not.toHaveBeenCalled();
 
       expect(applicationStore.replaceApplicationState).toHaveBeenCalledWith(
         applicationState,

@@ -1,14 +1,14 @@
 /* eslint-disable new-cap */
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
-import type { SpaceProviderNS } from "@/api/custom-types";
 import type { DesktopEventHandlers } from "@/api/desktop-api";
 import {
   type EventHandlers,
   ShowToastEvent,
+  SpaceProvider,
 } from "@/api/gateway-api/generated-api";
-import { createSpaceProvider } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { notifyPatch } from "@/util/event-syncer";
@@ -151,6 +151,80 @@ describe("Event Plugin", () => {
     });
 
     describe("appState event", () => {
+      it("sets the space providers", () => {
+        const { mockedStores } = loadPlugin();
+        registeredHandlers.AppStateChangedEvent!({
+          appState: {
+            spaceProviders: {
+              id1: {
+                id: "id1",
+                name: "provider name",
+                connected: false,
+                connectionMode: SpaceProvider.ConnectionModeEnum.AUTOMATIC,
+                type: SpaceProvider.TypeEnum.HUB,
+              },
+            },
+          },
+        });
+        expect(
+          mockedStores.spaceProvidersStore.setAllSpaceProviders,
+        ).toHaveBeenCalledWith({
+          id1: {
+            connected: false,
+            connectionMode: "AUTOMATIC",
+            id: "id1",
+            name: "provider name",
+            spaceGroups: [],
+            type: "HUB",
+          },
+        });
+      });
+
+      it("shows an error toast if space provider can't be loaded", async () => {
+        const { mockedStores, toastMock } = loadPlugin();
+
+        const providerId = "id1";
+
+        vi.mocked(
+          mockedStores.spaceProvidersStore.setAllSpaceProviders,
+        ).mockResolvedValueOnce({
+          failedProviderIds: [providerId],
+          successfulProviderIds: [],
+        });
+
+        registeredHandlers.AppStateChangedEvent!({
+          appState: {
+            spaceProviders: {
+              id1: {
+                id: providerId,
+                name: "provider name",
+                connected: false,
+                connectionMode: SpaceProvider.ConnectionModeEnum.AUTOMATIC,
+                type: SpaceProvider.TypeEnum.HUB,
+              },
+            },
+          },
+        });
+
+        await flushPromises();
+
+        expect(toastMock.show).toHaveBeenCalledWith({
+          type: "error",
+          headline: "Failed loading spaces",
+          message: expect.stringMatching("provider name"),
+        });
+      });
+
+      it("does nothing if there are not space providers supplied", () => {
+        const { mockedStores } = loadPlugin();
+        registeredHandlers.AppStateChangedEvent!({
+          appState: {},
+        });
+        expect(
+          mockedStores.spaceProvidersStore.setAllSpaceProviders,
+        ).not.toHaveBeenCalled();
+      });
+
       it("replaces application state", () => {
         const { mockedStores, routerMock } = loadPlugin();
 
@@ -219,47 +293,6 @@ describe("Event Plugin", () => {
 
         expect(
           mockedStores.applicationStore.setAvailableUpdates,
-        ).not.toHaveBeenCalled();
-      });
-    });
-
-    describe("spaceProvidersChangedEvent", () => {
-      it("should set the loaded space providers (success)", () => {
-        const mockProvider: SpaceProviderNS.SpaceProvider = createSpaceProvider(
-          {
-            connected: false,
-            connectionMode: "AUTOMATIC",
-            id: "providerId",
-            name: "Mock provider",
-          },
-        );
-
-        const result = {
-          [mockProvider.id]: mockProvider,
-        };
-
-        const { mockedStores } = loadPlugin();
-        registeredHandlers.SpaceProvidersChangedEvent!({
-          result,
-        });
-
-        expect(
-          mockedStores.spaceProvidersStore.setAllSpaceProviders,
-        ).toHaveBeenCalledWith(result);
-      });
-
-      it("should not set the loaded space providers (error)", () => {
-        const { mockedStores } = loadPlugin();
-        registeredHandlers.SpaceProvidersChangedEvent!({
-          error: "something went wrong",
-        });
-
-        expect(
-          mockedStores.spaceProvidersStore.setIsLoadingProviders,
-        ).toBeCalledWith(false);
-
-        expect(
-          mockedStores.spaceProvidersStore.setAllSpaceProviders,
         ).not.toHaveBeenCalled();
       });
     });

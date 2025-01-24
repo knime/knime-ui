@@ -132,7 +132,7 @@ export const useUIControlsStore = defineStore("uiControls", {
       const uiControls: UIControlsState = {
         canAccessKAIPanel: isDefault || isPlayground,
         canAccessNodeRepository: isDefault || isPlayground,
-        canAccessSpaceExplorer: isDesktop,
+        canAccessSpaceExplorer: isDefault,
         canConfigureNodes: isDefault || isPlayground,
         canEditWorkflow: isDefault || isPlayground,
         shouldDisplayRemoteWorkflowInfoBar: isDesktop,

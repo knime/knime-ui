@@ -57,7 +57,7 @@ describe("uiControls", () => {
       expect(mockedStores.uiControlsStore.$state).toEqual({
         canAccessKAIPanel: true,
         canAccessNodeRepository: true,
-        canAccessSpaceExplorer: false,
+        canAccessSpaceExplorer: true,
         canConfigureFlowVariables: false,
         canConfigureNodes: true,
         canDetachNodeViews: false,

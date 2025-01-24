@@ -27,17 +27,15 @@ describe("spaces::auth", () => {
         connected: true,
         user: { name: "John Doe" },
       };
-      const mockSpaces = createSpaceProvider({
-        spaceGroups: [
-          createSpaceGroup({ spaces: [createSpace({ name: "test" })] }),
-        ],
-      });
+      const mockSpaces = [
+        createSpaceGroup({ spaces: [createSpace({ name: "test" })] }),
+      ];
 
       spaceProvidersStore.spaceProviders = {
         // @ts-ignore
         hub1: {},
       };
-      mockedAPI.space.getSpaceProvider.mockResolvedValue(mockSpaces);
+      mockedAPI.space.getSpaceGroups.mockResolvedValue(mockSpaces);
       mockedAPI.desktop.connectSpaceProvider.mockReturnValue(mockSpaceProvider);
       await spaceAuthStore.connectProvider({
         spaceProviderId: "hub1",
@@ -46,14 +44,14 @@ describe("spaces::auth", () => {
       expect(mockedAPI.desktop.connectSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
-      expect(mockedAPI.space.getSpaceProvider).toHaveBeenCalledWith({
+      expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
       expect(spaceProvidersStore.spaceProviders!.hub1.user).toEqual(
         mockSpaceProvider.user,
       );
       expect(spaceProvidersStore.spaceProviders!.hub1.spaceGroups).toEqual(
-        mockSpaces.spaceGroups,
+        mockSpaces,
       );
     });
 
@@ -76,7 +74,7 @@ describe("spaces::auth", () => {
       expect(mockedAPI.desktop.connectSpaceProvider).toHaveBeenCalledWith({
         spaceProviderId: "hub1",
       });
-      expect(mockedAPI.space.getSpaceProvider).not.toHaveBeenCalled();
+      expect(mockedAPI.space.getSpaceGroups).not.toHaveBeenCalled();
     });
   });
 

@@ -103,8 +103,42 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
      * Is triggered by the backend, whenever the application state changes
      * sends the new state
      */
-    AppStateChangedEvent({ appState }) {
+    // NOSONAR - promise returned not needed to be awaited; there are no direct callers
+    async AppStateChangedEvent({ appState }) {
       consola.info("events::AppStateChangedEvent", { appState });
+
+      // needs to happen before 'replaceApplicationState'
+      if (appState.spaceProviders) {
+        try {
+          const providers = Object.fromEntries(
+            Object.entries(appState.spaceProviders).map(([key, value]) => [
+              key,
+              { ...value, spaceGroups: [] },
+            ]),
+          );
+
+          const { failedProviderIds } =
+            await useSpaceProvidersStore().setAllSpaceProviders(providers);
+
+          if (failedProviderIds.length > 0) {
+            const providerNames = failedProviderIds
+              // @ts-expect-error
+              .map((id) => `- ${appState.spaceProviders[id].name}`)
+              .join("\n");
+
+            $toast.show({
+              type: "error",
+              headline: "Failed loading spaces",
+              message: `Could not load spaces for:\n${providerNames}`,
+            });
+          }
+        } catch (error) {
+          consola.error(
+            "events::SpaceProvidersChangedEvent -> unexpected error",
+            { error },
+          );
+        }
+      }
 
       useApplicationStore().replaceApplicationState(appState);
       if (appState.openProjects) {
@@ -318,45 +352,6 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
     DesktopAPIFunctionResultEvent(payload) {
       // forward to app local event bus, handled in desktop-api promise
       $bus.emit(`desktop-api-function-result-${payload.name}`, payload);
-    },
-
-    async SpaceProvidersChangedEvent(payload) {
-      consola.info("events::SpaceProvidersChangedEvent", payload);
-
-      if ("error" in payload) {
-        consola.error("Error fetching space providers", payload.error);
-
-        useSpaceProvidersStore().setIsLoadingProviders(false);
-        useSpaceProvidersStore().setHasLoadedProviders(false);
-        return;
-      }
-
-      try {
-        const { failedProviderIds } =
-          (await useSpaceProvidersStore().setAllSpaceProviders(
-            payload.result,
-          )) as {
-            successfulProviderIds: string[];
-            failedProviderIds: string[];
-          };
-
-        if (failedProviderIds.length > 0) {
-          const providerNames = failedProviderIds
-            .map((id) => `- ${payload.result[id].name}`)
-            .join("\n");
-
-          $toast.show({
-            type: "error",
-            headline: "Failed loading spaces",
-            message: `Could not load spaces for:\n${providerNames}`,
-          });
-        }
-      } catch (error) {
-        consola.error(
-          "events::SpaceProvidersChangedEvent -> unexpected error",
-          { error },
-        );
-      }
     },
   });
 };

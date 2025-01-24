@@ -197,7 +197,7 @@ final class Init {
         KnimeUIPreferences.setConfirmNodeConfigChangesPrefChangeListener(appStateUpdater::updateAppState);
         KnimeUIPreferences.setExplorerMointPointChangeListener(() -> {
             spaceProviders.update();
-            spaceProviders.sendSpaceProvidersChangedEvent(eventConsumer);
+            appStateUpdater.updateAppState();
         });
 
         KnimeUIPreferences.setNodeDialogModeChangeListener((oldValue, newValue) -> {

@@ -6,7 +6,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { findSpaceById } from "@/store/spaces/util";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
-import { localRootProjectPath, useSpaceCachingStore } from "./caching";
+import { useSpaceCachingStore } from "./caching";
 
 export interface ProvidersState {
   /**
@@ -77,62 +77,6 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       this.spaceProviders = spaceProviders;
     },
 
-    async loadLocalSpace() {
-      consola.trace("action::loadLocalSpace");
-
-      const spacesData = await this.fetchProviderSpaces({
-        id: localRootProjectPath.spaceProviderId,
-      });
-
-      consola.trace("action::loadLocalSpace. Loaded data", { spacesData });
-
-      const localSpace: SpaceProviderNS.SpaceProvider = {
-        id: "local",
-        name: "Local space",
-        connected: true,
-        connectionMode: "AUTOMATIC",
-        ...spacesData,
-      };
-
-      this.setSpaceProviders({
-        [localRootProjectPath.spaceProviderId]: localSpace,
-      });
-    },
-
-    refreshSpaceProviders({ keepLocalSpace = true } = {}) {
-      if (this.isLoadingProviders) {
-        return;
-      }
-
-      if (this.spaceProviders) {
-        const localSpace =
-          this.spaceProviders[localRootProjectPath.spaceProviderId];
-
-        const spaceProviders = keepLocalSpace
-          ? { [localRootProjectPath.spaceProviderId]: localSpace }
-          : null;
-
-        this.setSpaceProviders(spaceProviders);
-      }
-
-      this.fetchAllSpaceProviders();
-    },
-
-    fetchAllSpaceProviders() {
-      if (this.isLoadingProviders) {
-        return;
-      }
-
-      this.setIsLoadingProviders(true);
-
-      consola.trace("action::fetchAllSpaceProviders");
-
-      // provider fetch happens async, so the payload will be received via a
-      // `SpaceProvidersResponseEvent` which will then call the `setAllSpaceProviders`
-      // action
-      API.desktop.getSpaceProviders();
-    },
-
     setAllSpaceProviders(
       spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
     ) {
@@ -168,9 +112,13 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
         const loadDataPromise = this.fetchProviderSpaces({ id })
           .then((spacesData) => {
             successfulProviderIds.push(id);
+            const { spaceGroups, ...providerMeta } = spaceProviders[id];
             this.updateSpaceProvider({
               id,
-              value: { ...spaceProviders[id], ...spacesData },
+              value: {
+                ...providerMeta,
+                spaceGroups: spacesData,
+              } satisfies SpaceProviderNS.SpaceProvider,
             });
 
             consola.info(
@@ -208,7 +156,7 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       try {
         this.setLoadingProviderData({ id, loading: true });
 
-        const data = await API.space.getSpaceProvider({ spaceProviderId: id });
+        const data = await API.space.getSpaceGroups({ spaceProviderId: id });
 
         consola.info("action::fetchProviderSpaces", {
           params: { id },
@@ -239,12 +187,15 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
           { spaceProviderId: id },
         );
 
-        const spaceProvider = this.spaceProviders[id];
+        const { spaceGroups, ...spaceProviderMeta } = this.spaceProviders[id];
         const spacesData = await this.fetchProviderSpaces({ id });
 
         this.updateSpaceProvider({
           id,
-          value: { ...spaceProvider, ...spacesData },
+          value: {
+            ...spaceProviderMeta,
+            spaceGroups: spacesData,
+          } satisfies SpaceProviderNS.SpaceProvider,
         });
       } catch (error) {
         consola.error(
