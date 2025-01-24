@@ -13,7 +13,7 @@ import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { isNodeMetaNode } from "@/util/nodeUtil";
 
-const uiControls = useUIControlsStore();
+const { shouldDisplayDownloadAPButton } = storeToRefs(useUIControlsStore());
 const { singleSelectedNode: selectedNode } = storeToRefs(useSelectionStore());
 
 const hasLegacyDialog = computed(() =>
@@ -35,44 +35,48 @@ const openNodeConfiguration = () => {
   const nodeId = selectedNode.value.id;
   useDesktopInteractionsStore().openNodeConfiguration(nodeId);
 };
+
+const placeholderText = computed(() => {
+  if (isMetanode.value) {
+    return "Configuration is not available for metanodes. Select a node to show its dialog.";
+  }
+
+  if (shouldDisplayDownloadAPButton.value) {
+    return "To configure nodes with a classic dialog, download the KNIME Analytics Platform.";
+  }
+
+  if (selectedNode.value) {
+    return "This node dialog is not supported here.";
+  }
+
+  return "Select a node to show its dialog.";
+});
 </script>
 
 <template>
-  <!-- PLACEHOLDER - LEGACY DIALOGS -->
-  <div v-if="hasLegacyDialog" class="placeholder full-height">
-    <template v-if="isDesktop">
-      <span class="placeholder-text">
-        This node dialog is not supported here.
-      </span>
+  <div class="placeholder full-height">
+    <!-- Always show a placeholder text -->
+    <span class="placeholder-text">{{ placeholderText }}</span>
 
-      <Button with-border compact class="button" @click="openNodeConfiguration">
-        <CogIcon />
-        <span>Open dialog</span>
-      </Button>
-    </template>
-
-    <template v-else>
-      <span v-if="isMetanode" class="placeholder-text">
-        Select a node to show its dialog.
-      </span>
-
-      <template v-else-if="uiControls.shouldDisplayDownloadAPButton">
-        <span class="placeholder-text">
-          To configure nodes with a classic dialog, download the KNIME Analytics
-          Platform.
-        </span>
-        <DownloadAPButton compact src="node-configuration-panel" />
+    <div v-if="hasLegacyDialog">
+      <!-- Show a button to open the legacy dialog if it is available -->
+      <template v-if="isDesktop">
+        <Button
+          with-border
+          compact
+          class="button"
+          @click="openNodeConfiguration"
+        >
+          <CogIcon />
+          <span>Open dialog</span>
+        </Button>
       </template>
 
-      <span v-else class="placeholder-text">
-        This node dialog is not supported here.
-      </span>
-    </template>
-  </div>
-
-  <!-- PLACEHOLDER - DEFAULT -->
-  <div v-if="!selectedNode" class="placeholder full-height">
-    <span class="placeholder-text">Select a node to show its dialog.</span>
+      <!-- Show a download button if in browser -->
+      <template v-else-if="shouldDisplayDownloadAPButton">
+        <DownloadAPButton compact src="node-configuration-panel" />
+      </template>
+    </div>
   </div>
 </template>
 

@@ -128,7 +128,7 @@ describe("NodeConfig", () => {
     await nextTick();
 
     expect(wrapper.find(".placeholder-text").text()).toBe(
-      "Select a node to show its dialog.",
+      "Configuration is not available for metanodes. Select a node to show its dialog.",
     );
   });
 
