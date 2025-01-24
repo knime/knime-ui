@@ -111,12 +111,12 @@ class LifeCycleTest {
         CEFPlugin.setMiddlewareService(middlewareServiceMock);
         lc.create(mock(BiConsumer.class));
         assertStateTransition(lc, StateTransition.CREATE, StateTransition.INIT);
-        verify(middlewareServiceMock).addResourceHandler(eq("http"), eq(KnimeBrowserView.DOMAIN_NAME), any());
-        verify(middlewareServiceMock).addResourceHandler(eq("http"),
+        verify(middlewareServiceMock).addResourceHandler(eq("https"), eq(KnimeBrowserView.DOMAIN_NAME), any());
+        verify(middlewareServiceMock).addResourceHandler(eq("https"),
             eq(NodeDialogManager.getInstance().getPageResourceManager().getDomainName()), any());
-        verify(middlewareServiceMock).addResourceHandler(eq("http"),
+        verify(middlewareServiceMock).addResourceHandler(eq("https"),
             eq(NodeViewManager.getInstance().getPageResourceManager().getDomainName()), any());
-        verify(middlewareServiceMock).addResourceHandler(eq("http"),
+        verify(middlewareServiceMock).addResourceHandler(eq("https"),
             eq(PortViewManager.getInstance().getPageResourceManager().getDomainName()), any());
 
         lc.init(true);
