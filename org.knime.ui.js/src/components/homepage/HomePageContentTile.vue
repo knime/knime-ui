@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { useStorage } from "@vueuse/core";
+import { computed, onMounted, ref } from "vue";
 
 import { Button, FunctionButton, Pill } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
 import { API } from "@/api";
+import { useStore } from "@/composables/useStore";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
 
-const LOCAL_STORAGE_KEY = "home-page-tile";
-const config = useStorage(LOCAL_STORAGE_KEY, {
-  visible: true,
-  hasRegisteredTeardown: false,
-});
+const store = useStore();
+const isVisible = computed(
+  () => !store.state.application.dismissedHomePageTile,
+);
 
 type ContentTileData = Awaited<ReturnType<typeof API.desktop.getHomePageTile>>;
 const data = ref<ContentTileData | null>(null);
@@ -23,28 +22,21 @@ const fetchData = async () => {
   data.value = await retryAsyncCall(API.desktop.getHomePageTile, retryDelayMS);
 };
 
-const resetVisibleFlag = () => {
-  // The value from localstorage is used only while the app is running,
-  // so that the preference is retained while the user is on the app.
-  localStorage.removeItem(LOCAL_STORAGE_KEY);
-};
-
 onMounted(() => {
-  fetchData();
-
-  if (!config.value.hasRegisteredTeardown) {
-    window.addEventListener("beforeunload", resetVisibleFlag);
-    config.value.hasRegisteredTeardown = true;
+  if (!isVisible.value) {
+    return;
   }
+
+  fetchData();
 });
 
 const dismissTile = () => {
-  config.value.visible = false;
+  store.commit("application/setDismissedHomePageTole", true);
 };
 </script>
 
 <template>
-  <div v-if="data && config.visible" class="content-tile-wrapper">
+  <div v-if="data && isVisible" class="content-tile-wrapper">
     <img class="image" :src="data.image" :alt="data.title" />
     <FunctionButton class="close" compact @click="dismissTile">
       <CloseIcon />
