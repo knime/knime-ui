@@ -187,7 +187,7 @@ const onRenameFile = async ({
 };
 
 const { onDeleteItems } = useDeleteItems({
-  projectId: props.projectId,
+  projectId,
   itemIconRenderer,
 });
 
