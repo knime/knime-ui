@@ -192,7 +192,7 @@ const onRenameFile = ({
 };
 
 const { onDeleteItems } = useDeleteItems({
-  projectId: props.projectId,
+  projectId,
   itemIconRenderer,
 });
 

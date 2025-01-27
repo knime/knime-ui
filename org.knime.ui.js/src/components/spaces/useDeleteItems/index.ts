@@ -1,4 +1,4 @@
-import { h, markRaw } from "vue";
+import { type Ref, h, markRaw } from "vue";
 import { useRouter } from "vue-router";
 
 import type { FileExplorerItem } from "@knime/components";
@@ -15,7 +15,7 @@ const createModalTemplate = (props: TemplateComponentProps) =>
   h(DeleteItemTemplate, { ...props });
 
 type UseDeleteItemsOptions = {
-  projectId: string;
+  projectId: Ref<string>;
   itemIconRenderer: TemplateComponentProps["itemIconRenderer"];
 };
 
@@ -58,7 +58,7 @@ export const useDeleteItems = (options: UseDeleteItemsOptions) => {
       const itemIds = items.map(({ id }) => id);
 
       await store.dispatch("spaces/deleteItems", {
-        projectId: options.projectId,
+        projectId: options.projectId.value,
         itemIds,
         $router,
       });
