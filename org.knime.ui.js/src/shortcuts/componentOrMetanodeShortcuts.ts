@@ -432,7 +432,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
     title: "Check for linked component updates",
     execute: async () => {
       // Get available updates
-      await useComponentInteractionsStore().checkForLinkedComponentUpdates;
+      await useComponentInteractionsStore().checkForLinkedComponentUpdates();
     },
     condition: () => {
       const { containsLinkedComponents } =
