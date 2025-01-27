@@ -1,5 +1,4 @@
 import { createApp } from "vue";
-import { createGtm } from "@gtm-support/vue-gtm";
 
 import { setupHints } from "@knime/components";
 
@@ -116,11 +115,6 @@ try {
 
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
-
-  // use GTM plugin if gtmId is set
-  if (connectionInfo?.gtmId) {
-    app.use(createGtm({ id: connectionInfo.gtmId, defer: true }));
-  }
 
   runInEnvironment({
     BROWSER: () => {
