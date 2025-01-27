@@ -32,7 +32,6 @@
     "@fontsource/roboto": "4.x",
     "@fontsource/roboto-condensed": "4.x",
     "@fontsource/roboto-mono": "4.x",
-    "@gtm-support/vue-gtm": "^3.1.0",
     "@knime/components": "^1.9.3",
     "@knime/knime-ui-table": "^0.5.15",
     "@knime/rich-text-editor": "^1.2.46",

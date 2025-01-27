@@ -21,7 +21,6 @@ export type ConnectionInfo = {
   url: string;
   restApiBaseUrl: string;
   sessionId: string;
-  gtmId?: string;
 };
 
 const initDesktopClient = () => {
