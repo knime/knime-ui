@@ -1,7 +1,7 @@
 import { WebSocketTransport as BaseWebSocketTransport } from "@open-rpc/client-js";
 import type { JSONRPCRequestData } from "@open-rpc/client-js/build/Request";
 
-const DEFAULT_TIMEOUT = 5000;
+const DEFAULT_TIMEOUT = 10000;
 
 export class WebSocketTransport extends BaseWebSocketTransport {
   public sendData(
