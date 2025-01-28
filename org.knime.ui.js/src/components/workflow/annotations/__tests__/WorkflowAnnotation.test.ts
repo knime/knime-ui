@@ -425,7 +425,7 @@ describe("WorkflowAnnotation.vue", () => {
 
       expect(
         wrapper.findComponent(RichTextAnnotation).props("initialBorderColor"),
-      ).toBe("#000000");
+      ).toBe("#123456");
 
       // emulate click outside
       window.dispatchEvent(new Event("click"));

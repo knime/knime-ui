@@ -24,7 +24,6 @@ const isNone = (color: string) => color === annotationColorPresets.None;
 
 const onSelectColor = (color: string) => {
   emit("selectColor", color);
-  emit("hoverColor", color);
 };
 
 const isActive = (color: string) => {
