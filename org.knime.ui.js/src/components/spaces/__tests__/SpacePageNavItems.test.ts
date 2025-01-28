@@ -52,6 +52,19 @@ describe("SpacePageNavItems.vue", () => {
     spaceGroups: [spaceGroup1],
   });
 
+  const serverProvider = createSpaceProvider({
+    id: "serverProvider",
+    name: "Some server space",
+    type: SpaceProviderNS.TypeEnum.SERVER,
+    connected: false,
+    spaceGroups: [
+      createSpaceGroup({
+        id: "serverGroup",
+        spaces: [createSpace({ id: "serverSpace", name: "SERVER SPACE" })],
+      }),
+    ],
+  });
+
   const spaceGroup2 = createGroup("provider2");
   const hubProvider2 = createSpaceProvider({
     id: "provider2",
@@ -78,10 +91,10 @@ describe("SpacePageNavItems.vue", () => {
     const dispatchSpy = vi.spyOn($store, "dispatch");
 
     $store.commit("spaces/setSpaceProviders", {
-      // copy data to not mutate global variables
       [localProvider.id]: { ...localProvider },
       [hubProvider1.id]: { ...hubProvider1 },
       [hubProvider2.id]: { ...hubProvider2 },
+      [serverProvider.id]: { ...serverProvider },
     });
     $store.state.spaces.hasLoadedProviders = true;
 
@@ -106,7 +119,7 @@ describe("SpacePageNavItems.vue", () => {
   it("should render items", () => {
     const { wrapper } = doMount();
 
-    expect(wrapper.findAllComponents(NavMenuItem).length).toBe(4);
+    expect(wrapper.findAllComponents(NavMenuItem).length).toBe(5);
 
     const firstItem = getMenuItemByDataTestId(
       wrapper,
@@ -199,6 +212,32 @@ describe("SpacePageNavItems.vue", () => {
         params: {
           spaceProviderId: hubProvider2.id,
           groupId: "all",
+        },
+      });
+    });
+
+    it("should connect to server provider and navigate directly to its space", async () => {
+      mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce({
+        ...serverProvider,
+        connected: true,
+      });
+
+      const { wrapper, $store } = doMount();
+
+      getMenuItemByDataTestId(wrapper, serverProvider.id).vm.$emit("click");
+      await flushPromises();
+
+      expect($store.dispatch).toHaveBeenCalledWith("spaces/connectProvider", {
+        spaceProviderId: serverProvider.id,
+      });
+
+      expect(routerPush).toHaveBeenCalledWith({
+        name: APP_ROUTES.Home.SpaceBrowsingPage,
+        params: {
+          spaceProviderId: serverProvider.id,
+          groupId: "serverGroup",
+          spaceId: "serverSpace",
+          itemId: "root",
         },
       });
     });

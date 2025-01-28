@@ -9,6 +9,7 @@ import {
 import { useStore } from "@/composables/useStore";
 import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { isHubProvider } from "@/store/spaces/util";
 
 export const useSpaceProviderAuth = () => {
   const store = useStore();
@@ -99,25 +100,32 @@ export const useSpaceProviderAuth = () => {
       }
 
       const updatedProvider =
-        store.state.spaces.spaceProviders![spaceProvider.id];
+        store.state.spaces.spaceProviders![spaceProviderId];
 
-      const routeParamsMap = {
-        [SpaceProviderNS.TypeEnum.HUB]: {
-          spaceProviderId: spaceProvider.id,
-          groupId: "all",
-        },
-        [SpaceProviderNS.TypeEnum.SERVER]: {
-          spaceProviderId: spaceProvider.id,
-          groupId: updatedProvider.spaceGroups.at(0)!.id,
-        },
-      } as const;
+      // If it’s Hub, go to the space selection overview.
+      if (isHubProvider(updatedProvider)) {
+        $router.push({
+          name: APP_ROUTES.Home.SpaceSelectionPage,
+          params: {
+            spaceProviderId: updatedProvider.id,
+            groupId: "all",
+          },
+        });
+      } else {
+        // Server -> single group & space, so jump straight to browsing
+        const spaceGroup = updatedProvider.spaceGroups.at(0)!;
+        const spaceId = spaceGroup.spaces.at(0)!.id;
 
-      const routeParams = routeParamsMap[spaceProvider.type];
-
-      $router.push({
-        name: APP_ROUTES.Home.SpaceSelectionPage,
-        params: routeParams,
-      });
+        $router.push({
+          name: APP_ROUTES.Home.SpaceBrowsingPage,
+          params: {
+            spaceProviderId: updatedProvider.id,
+            groupId: spaceGroup.id,
+            spaceId,
+            itemId: "root",
+          },
+        });
+      }
     } catch (error) {
       consola.error("Failed to connect or load provider data", {
         error,
