@@ -52,15 +52,13 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -148,26 +146,32 @@ final class Create {
         return userProfile;
     }
 
+    private static Optional<IWorkbench> getWorkbenchOptional() {
+        try {
+            return Optional.of(PlatformUI.getWorkbench());
+        } catch (IllegalStateException e) {
+            NodeLogger.getLogger(Create.class).warn("Can't get workbench instance.", e);
+            return Optional.empty();
+        }
+    }
+
     private static void assertNoOpenClassicEditors() {
-        Supplier<Optional<IWorkbench>> workbenchOptionalSupplier = () -> {
-            try {
-                return Optional.of(PlatformUI.getWorkbench());
-            } catch (IllegalStateException e) { // NOSONAR: Exception not needed
-                return Optional.empty();
-            }
-        };
-        workbenchOptionalSupplier.get() //
+        AtomicReference<IWorkbenchPage> pageReference = new AtomicReference<>();
+        getWorkbenchOptional() //
             .map(IWorkbench::getActiveWorkbenchWindow) //
             .map(IWorkbenchWindow::getActivePage) //
-            .map(IWorkbenchPage::getEditorReferences) //
-            .flatMap(editorReferences -> editorReferences.length > 0 //
-                ? Optional.of(editorReferences) : Optional.empty()) //
-            .ifPresent(editorReferences -> {
-                var referenceNames =
-                    Arrays.stream(editorReferences).map(IEditorReference::getName).collect(Collectors.joining(","));
-                NodeLogger.getLogger(LifeCycle.class)
-                    .error("There are open eclipse editors which is not expected: " + referenceNames);
-            });
+            .map(page -> {
+                pageReference.set(page);
+                return page.getEditorReferences();
+            }) //
+            .filter(editorReferences -> editorReferences.length > 0) //
+            .ifPresent(editorReferences -> Arrays.stream(editorReferences) //
+                .map(editorReference -> { // To fix NXT-3313
+                    var name = editorReference.getName();
+                    NodeLogger.getLogger(Create.class).error("Closing unexpectedly open editor '" + name + "'.");
+                    return editorReference.getEditor(false);
+                }) //
+                .forEach(editor -> pageReference.get().closeEditor(editor, false)));
     }
 
     private static void initializeResourceHandlers() {
