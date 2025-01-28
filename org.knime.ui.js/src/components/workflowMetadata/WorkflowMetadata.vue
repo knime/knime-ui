@@ -12,6 +12,7 @@ import * as projectUtil from "@/util/projectUtil";
 import ComponentMetadata, {
   type SaveEventPayload as SaveComponentEventPayload,
 } from "./ComponentMetadata.vue";
+import MetanodeMetadata from "./MetanodeMetadata.vue";
 import ProjectMetadata, {
   type SaveEventPayload as SaveProjectEventPayload,
 } from "./ProjectMetadata.vue";
@@ -109,6 +110,12 @@ const updateComponentMetadata = ({
       @save="updateComponentMetadata"
     />
   </div>
+
+  <MetanodeMetadata
+    v-if="workflow && isMetanode"
+    :workflow-id="workflow.info.containerId"
+  />
+
   <!-- Render an element to prevent issue with transition-group and conditional elements -->
   <div v-else />
 </template>
