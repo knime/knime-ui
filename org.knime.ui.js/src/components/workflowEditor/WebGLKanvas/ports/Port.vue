@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { Store } from "vuex";
+import { storeToRefs } from "pinia";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "@/store/types";
+import { useApplicationStore } from "@/store/application/application";
 import * as $colors from "@/style/colors";
 
 import PortIcon from "./PortIcon.vue";
@@ -14,12 +14,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// TODO: fix store injection
-declare let store: Store<RootStoreState>;
-
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
-);
+const { availablePortTypes } = storeToRefs(useApplicationStore());
 
 const portKind = computed(() => {
   // port kind has to be fetched from port type map

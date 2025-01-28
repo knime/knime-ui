@@ -1,20 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Rectangle } from "pixi.js";
-import type { GraphicsInst } from "vue3-pixi";
-import type { Store } from "vuex";
+import { type GraphicsInst, useStage } from "vue3-pixi";
 
-import type { RootStoreState } from "@/store/types";
+const stage = useStage();
 
-// TODO: fix store injection
-declare let store: Store<RootStoreState>;
+const stageHitArea = computed(() => stage.value!.hitArea as Rectangle);
 
-const stage = computed(() => store.state.canvasWebGL.stage);
-const stageHitArea = computed(
-  () => store.state.canvasWebGL.stage!.hitArea as Rectangle,
-);
-
-const bounds = stage.value!.getChildByName("contentBounds")!.getBounds();
+const bounds = () => stage.value.getChildByName("contentBounds")?.getBounds();
 </script>
 
 <template>

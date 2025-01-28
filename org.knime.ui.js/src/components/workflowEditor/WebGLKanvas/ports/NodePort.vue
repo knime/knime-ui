@@ -1,12 +1,14 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { Rectangle } from "pixi.js";
-import type { GraphicsInst } from "vue3-pixi";
-import type { Store } from "vuex";
+import { type GraphicsInst } from "vue3-pixi";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "@/store/types";
+import { useApplicationStore } from "@/store/application/application";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
@@ -21,18 +23,11 @@ interface Props {
   direction: "in" | "out";
 }
 
-// TODO: fix store injection
-declare let store: Store<RootStoreState>;
-
 const props = defineProps<Props>();
 
-const isCanvasDebugEnabled = computed(
-  () => store.state.canvasWebGL.isDebugModeEnabled,
-);
-
-const availablePortTypes = computed(
-  () => store.state.application.availablePortTypes,
-);
+const canvasStore = useWebGLCanvasStore();
+const { isDebugModeEnabled: isCanvasDebugEnabled } = storeToRefs(canvasStore);
+const { availablePortTypes } = storeToRefs(useApplicationStore());
 
 const hitAreaBufferSize = portSize / 6;
 const hitArea = new Rectangle(
@@ -101,7 +96,7 @@ const onConnectionDrop = () => {
         }
       : { nodeId: props.nodeId, portIndex: props.port.index };
 
-  store.dispatch("workflow/connectNodes", {
+  useNodeInteractionsStore().connectNodes({
     sourceNode: from.nodeId,
     sourcePort: from.portIndex,
     destNode: to.nodeId,

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
+import { storeToRefs } from "pinia";
 import type { GraphicsInst } from "vue3-pixi";
-import type { Store } from "vuex";
 
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
-import type { RootStoreState } from "@/store/types";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
 import { portSize } from "@/style/shapes";
 import type { ConnectorProps } from "../types";
 
@@ -39,11 +40,8 @@ const props = withDefaults(defineProps<ConnectorProps>(), {
   interactive: true,
 });
 
-// TODO: fix store injection
-declare let store: Store<RootStoreState>;
-
-const isDragging = computed(() => store.state.workflow.isDragging);
-const movePreviewDelta = computed(() => store.state.workflow.movePreviewDelta);
+const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
+const { isNodeSelected } = storeToRefs(useSelectionStore());
 
 const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
   toRefs(props);
@@ -56,10 +54,6 @@ const { start, end } = useConnectorPosition({
   absolutePoint,
 });
 
-const isNodeSelected = computed(
-  () => store.getters["selection/isNodeSelected"],
-);
-
 const moveDeltas = computed(() => {
   let x1 = 0;
   let y1 = 0;
@@ -67,11 +61,11 @@ const moveDeltas = computed(() => {
   let y2 = 0;
 
   if (isDragging.value) {
-    if (isNodeSelected.value(props.sourceNode)) {
+    if (props.sourceNode && isNodeSelected.value(props.sourceNode)) {
       x1 += movePreviewDelta.value.x;
       y1 += movePreviewDelta.value.y;
     }
-    if (isNodeSelected.value(props.destNode)) {
+    if (props.destNode && isNodeSelected.value(props.destNode)) {
       x2 += movePreviewDelta.value.x;
       y2 += movePreviewDelta.value.y;
     }

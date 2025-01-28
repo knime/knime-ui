@@ -1,11 +1,12 @@
-import { computed, ref } from "vue";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 import throttle from "raf-throttle";
 import { useStage } from "vue3-pixi";
-import type { Store } from "vuex";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
-import type { RootStoreState } from "@/store/types";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as shapes from "@/style/shapes";
 import type { Direction } from "@/util/compatibleConnections";
 
@@ -55,23 +56,14 @@ const isSignificantMove = (startPosition: XY, newPosition: XY) => {
   return deltaX >= MOVE_THRESHOLD || deltaY >= MOVE_THRESHOLD;
 };
 
-declare let store: Store<RootStoreState>;
-
 const dragConnector = ref<DragConnector | null>(null);
 export const usePortDragging = (params: Params) => {
-  // represents the <Connector> line that can be dragged to other ports
+  const { globalToWorldCoordinates } = storeToRefs(useWebGLCanvasStore());
+  const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
   const didMove = ref(false);
   const pointerDown = ref(false);
   const didDragToCompatibleTarget = ref(false);
-
-  const globalToWorldCoordinates = computed(
-    () => store.getters["canvasWebGL/globalToWorldCoordinates"],
-  );
-
-  const isWorkflowWritable = computed(
-    () => store.getters["workflow/isWritable"],
-  );
 
   let startPosition: XY | null = null;
   const stage = useStage();

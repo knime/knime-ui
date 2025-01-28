@@ -1,4 +1,5 @@
 import { ref, watch } from "vue";
+import type { FederatedPointerEvent } from "pixi.js";
 
 const hoveredNodeId = ref<string | null>(null);
 
@@ -11,13 +12,13 @@ type UseNodeHoverProviderOptions = {
 export const useNodeHoverProvider = (
   options: UseNodeHoverProviderOptions = {},
 ) => {
-  const onPointerEnter = (nodeId: string) => {
+  const onPointerEnter = (_event: FederatedPointerEvent, nodeId: string) => {
     if (hoveredNodeId.value !== nodeId) {
       hoveredNodeId.value = nodeId;
     }
   };
 
-  const onPointerLeave = () => {
+  const onPointerLeave = (_event: FederatedPointerEvent) => {
     if (hoveredNodeId.value !== null) {
       hoveredNodeId.value = null;
     }

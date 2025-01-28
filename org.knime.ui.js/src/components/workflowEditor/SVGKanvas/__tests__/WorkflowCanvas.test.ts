@@ -2,13 +2,13 @@ import { type Mock, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { shallowMount } from "@vue/test-utils";
 
-import Kanvas from "@/components/workflow/kanvas/Kanvas.vue";
 import { TABS } from "@/store/panel";
 import { mockStores } from "@/test/utils/mockStores";
 import SelectionRectangle from "../SelectionRectangle/SelectionRectangle.vue";
 import Workflow from "../Workflow.vue";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
 import WorkflowEmpty from "../WorkflowEmpty.vue";
+import Kanvas from "../kanvas/Kanvas.vue";
 
 describe("WorkflowCanvas", () => {
   type MountOpts = {

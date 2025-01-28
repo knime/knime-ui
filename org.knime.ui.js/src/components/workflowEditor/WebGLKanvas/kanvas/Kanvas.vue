@@ -1,24 +1,23 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { type Ref, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { debounce } from "lodash-es";
+import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
-import { Application, type ApplicationInst } from "vue3-pixi";
+import { Application, type ApplicationInst, type StageInst } from "vue3-pixi";
 
-import { useStore } from "@/composables/useStore";
 import { $bus } from "@/plugins/event-bus";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
 import { useCanvasPanning } from "../kanvas/useCanvasPanning";
 
+const pixiApp = ref<ApplicationInst>();
+
 const { devicePixelRatio } = window;
 
-const store = useStore();
-
-const stage = computed(() => store.state.canvasWebGL.stage);
-const containerSize = computed(() => store.state.canvasWebGL.containerSize);
-const isCanvasDebugEnabled = computed(
-  () => store.state.canvasWebGL.isDebugModeEnabled,
-);
+const canvasStore = useWebGLCanvasStore();
+const { containerSize, isDebugModeEnabled: isCanvasDebugEnabled } =
+  storeToRefs(canvasStore);
 
 // prevent browser zoom using mouse wheel
 document.addEventListener(
@@ -37,10 +36,10 @@ const zoom = throttle(function (event: WheelEvent) {
     return;
   }
 
-  store.dispatch("canvasWebGL/zoomAroundPointer", {
+  canvasStore.zoomAroundPointer({
     cursorX: event.offsetX,
     cursorY: event.offsetY,
-    delta: Math.sign(-event.deltaY),
+    delta: Math.sign(-event.deltaY) as -1 | 0 | 1,
   });
 });
 
@@ -55,7 +54,7 @@ const initResizeObserver = () => {
 
   // updating the container size and recalculating the canvas is debounced.
   const updateContainerSize = debounce(() => {
-    store.dispatch("canvasWebGL/updateContainerSize");
+    canvasStore.updateContainerSize();
   }, 100);
 
   resizeObserver = new ResizeObserver((entries) => {
@@ -74,32 +73,28 @@ const initResizeObserver = () => {
   resizeObserver.observe(rootEl.value);
 };
 
-const pixiApp = ref<ApplicationInst | null>(null);
-
 onMounted(() => {
-  store.dispatch("canvasWebGL/initScrollContainerElement", rootEl.value);
+  canvasStore.initScrollContainerElement(rootEl.value!);
   rootEl.value!.focus();
 
   // Store reference Pixi.js application instance
   const app = pixiApp.value!.app;
   globalThis.__PIXI_APP__ = app;
-  store.commit("canvasWebGL/setApp", pixiApp.value);
+
+  canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
 
   // Store reference to the Pixi.js Stage
-  // https://pixijs.com/8.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
-  store.commit("canvasWebGL/setStage", app.stage);
+  // https://pixijs.com/7.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
+  canvasStore.stage = app.stage as StageInst;
 
   // Needed for interactions on the canvas (e.g panning)
-  // https://pixijs.com/8.x/guides/components/interaction#event-modes
-  stage.value!.eventMode = "static";
+  // https://pixijs.com/7.x/guides/components/interaction#event-modes
+  canvasStore.stage!.eventMode = "static";
 
-  store.commit(
-    "canvasWebGL/setIsDebugModeEnabled",
-    import.meta.env.VITE_CANVAS_DEBUG === "true",
-  );
+  canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
 
-  nextTick(async () => {
-    await store.dispatch("canvasWebGL/updateStageHitArea");
+  nextTick(() => {
+    canvasStore.updateStageHitArea();
     isReady.value = true;
   });
 
@@ -110,7 +105,9 @@ onBeforeUnmount(() => {
   stopResizeObserver?.();
 });
 
-const { beginPan } = useCanvasPanning();
+const { beginPan } = useCanvasPanning({
+  pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
+});
 </script>
 
 <template>

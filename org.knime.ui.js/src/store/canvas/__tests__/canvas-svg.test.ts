@@ -2,23 +2,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
 
+import { useWorkflowStore } from "@/store/workflow/workflow";
+import { createWorkflow } from "@/test/factories";
 import {
   defaultZoomFactor,
   maxZoomFactor,
   minZoomFactor,
   padding,
-  useCanvasStore,
+  useSVGCanvasStore,
   zoomMultiplier,
-} from "@/store/canvas";
-import { useWorkflowStore } from "@/store/workflow/workflow";
-import { createWorkflow } from "@/test/factories";
+} from "../canvas-svg";
 
 const round = (n) => {
   const precision = 10;
   return Number(n.toFixed(precision));
 };
 
-describe("canvas store", () => {
+describe("SVG canvas store", () => {
   const workflowBounds = {
     left: 0,
     top: 0,
@@ -51,7 +51,7 @@ describe("canvas store", () => {
       createSpy: vi.fn,
     });
 
-    const canvasStore = useCanvasStore(testingPinia);
+    const canvasStore = useSVGCanvasStore(testingPinia);
     const workflowStore = useWorkflowStore(testingPinia);
 
     workflowStore.activeWorkflow = createWorkflow();

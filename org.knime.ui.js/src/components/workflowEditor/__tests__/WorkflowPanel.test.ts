@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import type { Workflow } from "@/api/custom-types";
 import RightPanel from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
@@ -211,13 +211,15 @@ describe("WorkflowPanel", () => {
     });
   });
 
-  it("should not display right panel when flag is set to false", () => {
+  it("should not display right panel when flag is set to false", async () => {
     const { wrapper } = doShallowMount({
       mockFeatureFlags: {
         // @ts-ignore
         shouldDisplayEmbeddedDialogs: vi.fn(() => false),
       },
     });
+
+    await flushPromises();
 
     expect(wrapper.findComponent(WorkflowCanvas).exists()).toBe(true);
     expect(wrapper.findComponent(RightPanel).exists()).toBe(false);

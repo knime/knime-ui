@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 import type { GraphicsInst } from "vue3-pixi";
-import type { Store } from "vuex";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
-import type { RootStoreState } from "@/store/types";
+import { useApplicationStore } from "@/store/application/application";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useSelectionStore } from "@/store/selection";
+import { useMovingStore } from "@/store/workflow/moving";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
 import { findObjectsForSelection } from "../../util/findObjectsForSelection";
 
-// TODO: fix store injection
-declare let store: Store<RootStoreState>;
-
-const isDragging = computed(() => store.state.workflow.isDragging);
-const zoomFactor = computed(() => store.state.canvasWebGL.zoomFactor);
-const canvasAnchor = computed(() => store.state.canvasWebGL.canvasAnchor);
+const canvasStore = useWebGLCanvasStore();
+const { zoomFactor, canvasAnchor, canvasOffset } = storeToRefs(canvasStore);
+const { isDragging } = storeToRefs(useMovingStore());
+const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const selectionStore = useSelectionStore();
 
 const isSelectionVisible = ref(false);
 const startPos = ref<XY>({ x: 0, y: 0 });
@@ -28,7 +31,7 @@ const findNodesInsideSelection = () => {
     findObjectsForSelection({
       startPos: startPos.value,
       endPos: endPos.value,
-      workflow: store.state.workflow.activeWorkflow!,
+      workflow: activeWorkflow.value!,
     });
 
   nodesInside.value = _nodesInside;
@@ -54,23 +57,23 @@ const selectionRectangle = computed(() =>
     : {},
 );
 
-const onSelectionStart = (event) => {
+const onSelectionStart = (event: PointerEvent) => {
   if (isDragging.value || event.defaultPrevented) {
     return;
   }
 
   if (event.button === 0 && canvasAnchor.value.isOpen) {
-    store.commit("canvasWebGL/clearCanvasAnchor");
-    store.dispatch("application/toggleContextMenu");
+    canvasStore.clearCanvasAnchor();
+    useApplicationStore().toggleContextMenu();
   }
 
-  store.dispatch("selection/deselectAllObjects");
+  selectionStore.deselectAllObjects();
   isSelectionVisible.value = true;
 
   const { offsetX, offsetY } = event;
   startPos.value = {
-    x: (offsetX - store.state.canvasWebGL.canvasOffset.x) / zoomFactor.value,
-    y: (offsetY - store.state.canvasWebGL.canvasOffset.y) / zoomFactor.value,
+    x: (offsetX - canvasOffset.value.x) / zoomFactor.value,
+    y: (offsetY - canvasOffset.value.y) / zoomFactor.value,
   };
   endPos.value = {
     x: startPos.value.x,
@@ -78,7 +81,7 @@ const onSelectionStart = (event) => {
   };
 };
 
-const onSelectionMove = (event) => {
+const onSelectionMove = (event: PointerEvent) => {
   if (!isSelectionVisible.value || isDragging.value) {
     return;
   }
@@ -86,8 +89,8 @@ const onSelectionMove = (event) => {
   const { offsetX, offsetY } = event;
 
   endPos.value = {
-    x: (offsetX - store.state.canvasWebGL.canvasOffset.x) / zoomFactor.value,
-    y: (offsetY - store.state.canvasWebGL.canvasOffset.y) / zoomFactor.value,
+    x: (offsetX - canvasOffset.value.x) / zoomFactor.value,
+    y: (offsetY - canvasOffset.value.y) / zoomFactor.value,
   };
 
   findNodesInsideSelection();
@@ -99,7 +102,7 @@ const onSelectionEnd = () => {
   endPos.value = { x: 0, y: 0 };
 
   if (nodesInside.value.length) {
-    store.dispatch("selection/selectNodes", nodesInside.value);
+    selectionStore.selectNodes(nodesInside.value);
 
     nodesInside.value.forEach((node) => {
       $bus.emit(`node-selection-preview-${node}`, {
@@ -112,7 +115,7 @@ const onSelectionEnd = () => {
   }
 
   if (nodesOutside.value.length) {
-    store.dispatch("selection/deselectNodes", nodesOutside.value);
+    selectionStore.deselectNodes(nodesOutside.value);
 
     nodesOutside.value.forEach((node) => {
       $bus.emit(`node-selection-preview-${node}`, {

@@ -1,27 +1,25 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
-import type { Store } from "vuex";
 
-import type { RootStoreState } from "@/store/types";
+import { useApplicationStore } from "@/store/application/application";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useSelectionStore } from "@/store/selection";
+import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import Connector from "./connectors/Connector.vue";
 import Node from "./node/Node.vue";
 
-// TODO: fix store injection
-declare let store: Store<RootStoreState>;
+const selectionStore = useSelectionStore();
+const { isNodeSelected } = storeToRefs(selectionStore);
 
-const activeWorkflow = computed(() => store.state.workflow.activeWorkflow);
+const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const { getNodeIcon, getNodeType } = storeToRefs(useNodeInteractionsStore());
 
-const getNodeIcon = computed(() => store.getters["workflow/getNodeIcon"]);
-const getNodeType = computed(() => store.getters["workflow/getNodeType"]);
-const globalToWorldCoordinates = computed(
-  () => store.getters["canvasWebGL/globalToWorldCoordinates"],
-);
-const isNodeSelected = computed(
-  () => store.getters["selection/isNodeSelected"],
-);
+const canvasStore = useWebGLCanvasStore();
+const { globalToWorldCoordinates } = storeToRefs(canvasStore);
 
 const onRightClick = (event: FederatedPointerEvent, nodeId: string) => {
   const [x, y] = globalToWorldCoordinates.value([
@@ -29,17 +27,17 @@ const onRightClick = (event: FederatedPointerEvent, nodeId: string) => {
     event.global.y,
   ]);
 
-  store.commit("canvasWebGL/setCanvasAnchor", {
+  canvasStore.setCanvasAnchor({
     isOpen: true,
     anchor: { x, y },
   });
 
   if (!isNodeSelected.value(nodeId)) {
-    store.dispatch("selection/deselectAllObjects");
-    store.dispatch("selection/selectNode", nodeId);
+    selectionStore.deselectAllObjects();
+    selectionStore.selectNode(nodeId);
   }
 
-  store.dispatch("application/toggleContextMenu");
+  useApplicationStore().toggleContextMenu();
 };
 </script>
 
