@@ -128,6 +128,13 @@ const initialRichTextAnnotationValue = computed(() => {
 });
 
 const initialBorderColor = computed(() => {
+  if (
+    hasEdited.value &&
+    newAnnotationData.value.borderColor !== props.annotation.borderColor
+  ) {
+    return newAnnotationData.value.borderColor;
+  }
+
   return isRichTextAnnotation.value
     ? props.annotation.borderColor
     : $colors.defaultAnnotationBorderColor;
