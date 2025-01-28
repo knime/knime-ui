@@ -55,7 +55,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.jupiter.api.AfterEach;
@@ -70,7 +69,6 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.util.LocalSpaceUtilTest;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -89,9 +87,10 @@ class OpenProjectTest {
     void testOpenWorkflowInWebUIOnly() throws Exception {
         var localSpace = LocalSpaceUtilTest.createLocalSpace();
         var spaceProvider = mock(SpaceProvider.class);
+        when(spaceProvider.getId()).thenReturn("local");
+        when(spaceProvider.getType()).thenReturn(SpaceProviderEnt.TypeEnum.LOCAL);
         when(spaceProvider.getSpace("local")).thenReturn(localSpace);
-        var spaceProviders = mock(SpaceProviders.class);
-        when(spaceProviders.getProvidersMap()).thenReturn(Map.of("local", spaceProvider));
+        var spaceProviders = SpaceAPITest.createSpaceProviders(spaceProvider);
         var eventConsumer = mock(EventConsumer.class);
         var appStateUpdater = new AppStateUpdater();
         var appStateUpdateListener = mock(Runnable.class);

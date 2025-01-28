@@ -49,22 +49,23 @@
 package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.knime.gateway.impl.webui.service.events.EventConsumer;
+import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * Tests methods in {@link SpaceAPI}.
@@ -74,121 +75,54 @@ import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 class SpaceAPITest {
 
     @Test
-    void testGetSpaceProviders() throws ExecutionException, InterruptedException { // TODO: NXT-2049
-//        String localProviderId = "local_provider";
-//        String localProviderName = "Local Provider";
-//        String connectedProviderId = "connected_provider";
-//        String connectedProviderName = "Connected Provider";
-//
-//        // mock space providers
-//        var localSpaceProvider = mock(SpaceProvider.class);
-//        when(localSpaceProvider.getId()).thenReturn(localProviderId);
-//        when(localSpaceProvider.getName()).thenReturn(localProviderName);
-//        when(localSpaceProvider.getType()).thenReturn(TypeEnum.LOCAL);
-//        var connectedSpaceProvider = mock(SpaceProvider.class);
-//        when(connectedSpaceProvider.getId()).thenReturn(connectedProviderId);
-//        when(connectedSpaceProvider.getName()).thenReturn(connectedProviderName);
-//        when(connectedSpaceProvider.getType()).thenReturn(TypeEnum.HUB);
-//        when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(mock(SpaceProviderConnection.class)));
-//
-//        // make mocks available by mocking `SpaceProviders`
-//        var spaceProviders = mock(SpaceProviders.class);
-//        var providersMap = new LinkedHashMap<String, SpaceProvider>();
-//        providersMap.put("1", localSpaceProvider);
-//        providersMap.put("2", connectedSpaceProvider);
-//        when(spaceProviders.getProvidersMap()).thenReturn(providersMap);
-//
-//        // The endpoint returns void and dispatches an event instead
-//        var eventConsumer = mock(EventConsumer.class);
-//
-//        DesktopAPI.injectDependencies(null, null, spaceProviders, null, eventConsumer, null);
-//
-//        SpaceAPI.getSpaceProviders();
-//
-//        // construct expected event payload
-//        var localProvider = MAPPER.createObjectNode();
-//        localProvider.put("id", localProviderId);
-//        localProvider.put("name", localProviderName);
-//        localProvider.put("connected", true);
-//        localProvider.put("connectionMode", "AUTOMATIC");
-//        localProvider.put("type", "LOCAL");
-//        var connectedProvider = MAPPER.createObjectNode();
-//        connectedProvider.put("id", connectedProviderId);
-//        connectedProvider.put("name", connectedProviderName);
-//        connectedProvider.put("connected", true);
-//        connectedProvider.put("connectionMode", "AUTHENTICATED");
-//        connectedProvider.put("type", "HUB");
-//        var result = MAPPER.createObjectNode();
-//        result.set(localProviderId, localProvider);
-//        result.set(connectedProviderId, connectedProvider);
-//        var expected = MAPPER.createObjectNode();
-//        expected.set("result", result);
-//
-//        // verify that event was dispatched
-//        verify(eventConsumer).accept("SpaceProvidersChangedEvent", expected);
-    }
+    void testConnectSpaceProvider() throws JsonProcessingException {
+        var connectedSpaceProvider = mock(SpaceProvider.class);
+        when(connectedSpaceProvider.getId()).thenReturn("1");
+        when(connectedSpaceProvider.getName()).thenReturn("Connected Provider");
+        when(connectedSpaceProvider.getType()).thenReturn(TypeEnum.HUB);
+        when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(mock(SpaceProviderConnection.class)));
 
-    @Test
-    void testGetSpaceProvidersExceptionally() throws ExecutionException, InterruptedException {
-        // verify that event is sent in case of exception
-        var spaceProviders = mock(SpaceProviders.class);
-        var exception = new IllegalStateException("mock exception message");
-        when(spaceProviders.getProvidersMap()).thenThrow(exception);
-        var eventConsumer = mock(EventConsumer.class);
-        DesktopAPI.injectDependency(spaceProviders);
-        DesktopAPI.injectDependency(eventConsumer);
-        SpaceAPI.getSpaceProviders();
-        var expected = MAPPER.createObjectNode();
-        expected.put("error", exception.getMessage());
-        verify(eventConsumer).accept("SpaceProvidersChangedEvent", expected);
-    }
+        var disconnectedSpaceProvider = mock(SpaceProvider.class);
+        when(disconnectedSpaceProvider.getId()).thenReturn("2");
+        when(disconnectedSpaceProvider.getName()).thenReturn("Disconnected Provider");
+        when(disconnectedSpaceProvider.getType()).thenReturn(TypeEnum.HUB);
+        when(disconnectedSpaceProvider.getConnection(false)).thenReturn(Optional.empty());
+        var connection = mock(SpaceProviderConnection.class);
+        when(connection.getUsername()).thenReturn("blub");
+        when(disconnectedSpaceProvider.getConnection(true)).thenReturn(Optional.of(connection));
 
-    @Test
-    void testConnectSpaceProvider() { // TODO: NXT-2049
-//        var connectedSpaceProvider = mock(SpaceProvider.class);
-//        when(connectedSpaceProvider.getId()).thenReturn("connected_provider");
-//        when(connectedSpaceProvider.getName()).thenReturn("Connected Provider");
-//        when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(mock(SpaceProviderConnection.class)));
-//
-//        var disconnectedSpaceProvider = mock(SpaceProvider.class);
-//        when(disconnectedSpaceProvider.getId()).thenReturn("disconnected_provider");
-//        when(disconnectedSpaceProvider.getName()).thenReturn("Disconnected Provider");
-//        when(disconnectedSpaceProvider.getConnection(false)).thenReturn(Optional.empty());
-//        var connection = mock(SpaceProviderConnection.class);
-//        when(connection.getUsername()).thenReturn("blub");
-//        when(disconnectedSpaceProvider.getConnection(true)).thenReturn(Optional.of(connection));
-//
-//        var spaceProviders = mock(SpaceProviders.class);
-//        var providersMap = new LinkedHashMap<String, SpaceProvider>();
-//        providersMap.put("1", connectedSpaceProvider);
-//        providersMap.put("2", disconnectedSpaceProvider);
-//        when(spaceProviders.getProvidersMap()).thenReturn(providersMap);
-//
-//        DesktopAPI.injectDependencies(null, null, spaceProviders, null, null, null);
-//
-//        assertThat(SpaceAPI.connectSpaceProvider("1")).isNull();
-//        assertThat(SpaceAPI.connectSpaceProvider("2")).isEqualTo("""
-//                {
-//                  "name" : "blub"
-//                }""");
-//
+        DesktopAPI.injectDependency(createSpaceProviders(connectedSpaceProvider, disconnectedSpaceProvider));
+
+        assertThat(SpaceAPI.connectSpaceProvider("1")).isEqualTo(
+            """
+                    {"connected":true,"name":"Connected Provider","id":"1","type":"HUB","connectionMode":"AUTHENTICATED"}""");
+        assertThat(SpaceAPI.connectSpaceProvider("2")).isEqualTo(
+            """
+                    {"user":{"name":"blub"},"connected":false,"name":"Disconnected Provider","id":"2","type":"HUB","connectionMode":"AUTHENTICATED"}""");
     }
 
     @Test
     void testDisconnectedSpaceProvider() {
         var connectedSpaceProvider = mock(SpaceProvider.class);
-        when(connectedSpaceProvider.getId()).thenReturn("connected_provider");
+        when(connectedSpaceProvider.getId()).thenReturn("1");
         when(connectedSpaceProvider.getName()).thenReturn("Connected Provider");
         var connection = mock(SpaceProviderConnection.class);
         when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(connection));
 
-        var spaceProviders = mock(SpaceProviders.class);
-        when(spaceProviders.getProvidersMap()).thenReturn(Map.of("1", connectedSpaceProvider));
+        DesktopAPI.injectDependency(createSpaceProviders(connectedSpaceProvider));
 
-        DesktopAPI.injectDependency(spaceProviders);
         SpaceAPI.disconnectSpaceProvider("1");
-
         verify(connection).disconnect();
+    }
+
+    static SpaceProviders createSpaceProviders(final SpaceProvider... spaceProviders) {
+        var spaceProvidersFactory = mock(SpaceProvidersFactory.class);
+        var providers = List.of(spaceProviders);
+        when(spaceProvidersFactory.createSpaceProviders()).thenReturn(providers);
+        var res = new SpaceProviders(id -> {
+        }, null, List.of(spaceProvidersFactory));
+        res.update();
+        return res;
     }
 
     @Test
