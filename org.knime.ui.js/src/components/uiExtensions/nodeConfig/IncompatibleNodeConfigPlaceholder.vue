@@ -27,6 +27,17 @@ const isMetanode = computed(
   () => selectedNode.value && isNodeMetaNode(selectedNode.value),
 );
 
+const shouldDisplayOpenDialog = computed(
+  () => hasLegacyDialog.value && isDesktop && !isMetanode.value,
+);
+
+const shouldDisplayDownload = computed(
+  () =>
+    hasLegacyDialog.value &&
+    shouldDisplayDownloadAPButton.value &&
+    !isMetanode.value,
+);
+
 const openNodeConfiguration = () => {
   if (!selectedNode.value) {
     return;
@@ -35,48 +46,42 @@ const openNodeConfiguration = () => {
   const nodeId = selectedNode.value.id;
   useDesktopInteractionsStore().openNodeConfiguration(nodeId);
 };
-
-const placeholderText = computed(() => {
-  if (isMetanode.value) {
-    return "Configuration is not available for metanodes. Select a node to show its dialog.";
-  }
-
-  if (shouldDisplayDownloadAPButton.value) {
-    return "To configure nodes with a classic dialog, download the KNIME Analytics Platform.";
-  }
-
-  if (selectedNode.value) {
-    return "This node dialog is not supported here.";
-  }
-
-  return "Select a node to show its dialog.";
-});
 </script>
 
 <template>
   <div class="placeholder full-height">
-    <!-- Always show a placeholder text -->
-    <span class="placeholder-text">{{ placeholderText }}</span>
+    <!-- Show placeholder text and "Open dialog" button -->
+    <template v-if="shouldDisplayOpenDialog">
+      <span class="placeholder-text">
+        This node dialog is not supported here.
+      </span>
 
-    <div v-if="hasLegacyDialog">
-      <!-- Show a button to open the legacy dialog if it is available -->
-      <template v-if="isDesktop">
-        <Button
-          with-border
-          compact
-          class="button"
-          @click="openNodeConfiguration"
-        >
-          <CogIcon />
-          <span>Open dialog</span>
-        </Button>
-      </template>
+      <Button with-border compact class="button" @click="openNodeConfiguration">
+        <CogIcon />
+        <span>Open dialog</span>
+      </Button>
+    </template>
 
-      <!-- Show a download button if in browser -->
-      <template v-else-if="shouldDisplayDownloadAPButton">
-        <DownloadAPButton compact src="node-configuration-panel" />
-      </template>
-    </div>
+    <!-- Show placeholder text and "Download AP" button -->
+    <template v-else-if="shouldDisplayDownload">
+      <span class="placeholder-text">
+        To configure nodes with a classic dialog, download the KNIME Analytics
+        Platform.
+      </span>
+
+      <DownloadAPButton compact src="node-configuration-panel" />
+    </template>
+
+    <!-- Show nothing but a placeholder text if no buttons are needed -->
+    <template v-else>
+      <span v-if="isMetanode" class="placeholder-text">
+        Configuration is not available for metanodes.<br />
+        Select a node to show its dialog.
+      </span>
+      <span v-else class="placeholder-text">
+        Select a node to show its dialog.
+      </span>
+    </template>
   </div>
 </template>
 
