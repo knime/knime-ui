@@ -14,6 +14,7 @@ declare global {
 
     store: any;
     router: any;
+    toast: any;
   }
 
   interface ObjectConstructor {

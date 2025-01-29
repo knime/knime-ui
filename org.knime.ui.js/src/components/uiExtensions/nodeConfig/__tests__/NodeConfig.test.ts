@@ -61,6 +61,9 @@ describe("NodeConfig", () => {
     const wrapper = mount(component, {
       props,
       global: {
+        stubs: {
+          ToastStack: true,
+        },
         plugins: [mockedStores.testingPinia],
       },
     });

@@ -130,6 +130,7 @@ try {
   if (import.meta.env.DEV) {
     window.router = router;
     window.store = pinia;
+    window.toast = toastServiceProvider;
     app.config.performance = true;
   }
 

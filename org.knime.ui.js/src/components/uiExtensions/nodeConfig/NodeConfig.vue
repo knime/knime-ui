@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useEventListener } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import { FunctionButton } from "@knime/components";
+import { FunctionButton, ToastStack } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
 import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
 
@@ -74,6 +74,7 @@ useEventListener(panel, "click", (event) => {
     }"
     @cancel="onDialogCancel"
   >
+    <ToastStack v-if="isLargeMode" class="large-mode-toasts" />
     <div v-if="isLargeMode" class="title-bar">
       <h2>{{ nodeName }}</h2>
       <FunctionButton
@@ -103,6 +104,10 @@ useEventListener(panel, "click", (event) => {
 dialog {
   border: none;
   padding: 0;
+}
+
+.large-mode-toasts {
+  z-index: calc(v-bind("$zIndices.layerToasts"));
 }
 
 ::backdrop {
