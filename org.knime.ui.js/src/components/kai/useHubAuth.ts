@@ -1,4 +1,5 @@
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 import { useStore } from "@/composables/useStore";
 import { isBrowser, runInEnvironment } from "@/environment";
@@ -50,12 +51,32 @@ const useHubAuth = () => {
     }
   };
 
+  const disconnectHub = async () => {
+    if (!hubId.value) {
+      return;
+    }
+
+    await store.dispatch("spaces/disconnectProvider", {
+      spaceProviderId: hubId.value,
+      $router: useRouter(),
+    });
+  };
+
+  const isAuthError = (errorMessage: string) => {
+    return Boolean(
+      errorMessage.startsWith("Could not authorize") ||
+        errorMessage.startsWith("Failed to authenticate"),
+    );
+  };
+
   return {
     isAuthenticated,
     isHubConfigured,
     hubId,
     userName,
     authenticateWithHub,
+    disconnectHub,
+    isAuthError,
   };
 };
 
