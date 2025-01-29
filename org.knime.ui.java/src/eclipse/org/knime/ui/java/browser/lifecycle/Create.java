@@ -52,7 +52,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -60,7 +59,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
@@ -156,22 +154,21 @@ final class Create {
     }
 
     private static void assertNoOpenClassicEditors() {
-        AtomicReference<IWorkbenchPage> pageReference = new AtomicReference<>();
-        getWorkbenchOptional() //
+        var page = getWorkbenchOptional() //
             .map(IWorkbench::getActiveWorkbenchWindow) //
             .map(IWorkbenchWindow::getActivePage) //
-            .map(page -> {
-                pageReference.set(page);
-                return page.getEditorReferences();
-            }) //
-            .filter(editorReferences -> editorReferences.length > 0) //
-            .ifPresent(editorReferences -> Arrays.stream(editorReferences) //
-                .map(editorReference -> { // To fix NXT-3313
-                    var name = editorReference.getName();
-                    NodeLogger.getLogger(Create.class).error("Closing unexpectedly open editor '" + name + "'.");
-                    return editorReference.getEditor(false);
-                }) //
-                .forEach(editor -> pageReference.get().closeEditor(editor, false)));
+            .orElse(null);
+
+        if (page == null) {
+            return;
+        }
+
+        var editorReferences = page.getEditorReferences();
+        if (editorReferences.length > 0) {
+            Arrays.stream(editorReferences).forEach(editorReference -> NodeLogger.getLogger(Create.class)
+                .warn("Closing unexpectedly open editor '" + editorReference.getName() + "'."));
+            page.closeAllEditors(false);
+        }
     }
 
     private static void initializeResourceHandlers() {
