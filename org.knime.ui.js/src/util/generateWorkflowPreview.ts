@@ -5,7 +5,7 @@ const removeNonXMLChars = (xmlStr: string) => {
   // taken from https://www.w3.org/TR/REC-xml/#charsets
   const nonXMLChars =
     // eslint-disable-next-line no-control-regex
-    /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\uD800-\uDFFF]/ug;
+    /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\uD800-\uDFFF]/gu;
   return xmlStr.replaceAll(nonXMLChars, "");
 };
 
