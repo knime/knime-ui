@@ -115,7 +115,6 @@ const apiLayer: UIExtensionAPILayer = {
 
   publishData: (data) => {
     consola.trace("NodeDialog :: publishData", data);
-    nodeConfigurationStore.updateTimestamp();
     nodeConfigurationStore.setLatestPublishedData({
       data,
       projectId: projectId.value,
