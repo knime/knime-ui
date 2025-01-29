@@ -3,8 +3,8 @@ import { storeToRefs } from "pinia";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
-import { getToastsProvider } from "@/plugins/toasts";
 import { type Message, useAIAssistantStore } from "@/store/aiAssistant";
+import { getToastPresets } from "@/toastPresets";
 import type { ChainType } from "../types";
 import { useHubAuth } from "../useHubAuth";
 import { useKaiServer } from "../useKaiServer";
@@ -27,7 +27,7 @@ const useChat = (chainType: ChainType) => {
 
   const { show: showConfirmDialog } = useConfirmDialog();
 
-  const $toast = getToastsProvider();
+  const { toastPresets } = getToastPresets();
 
   const messagesWithSeparators = computed(() => {
     // Computes an array of messages interlaced with day separators.
@@ -107,11 +107,7 @@ const useChat = (chainType: ChainType) => {
       });
     } catch (error: any) {
       if (isAuthError(error.message)) {
-        $toast.show({
-          type: "error",
-          headline: "KNIME Hub session expired",
-          message: "Please log in again to continue.",
-        });
+        toastPresets.connectivity.hubSessionExpired();
 
         // mark the provider as disconnected to trigger the Login Panel
         disconnectHub();

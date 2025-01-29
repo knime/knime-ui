@@ -38,7 +38,20 @@ describe("toastPresets", () => {
       expect($toast.show).toBeCalledWith(
         expect.objectContaining({
           headline: "Connectivity problem",
-          message: "Check you network connection",
+          message: "Check you network connection.",
+          type: "error",
+        }),
+      );
+    });
+
+    it("should show hubSessionExpired toast ", () => {
+      const { toastPresets, $toast } = toastSetup();
+      toastPresets.connectivity.hubSessionExpired();
+
+      expect($toast.show).toBeCalledWith(
+        expect.objectContaining({
+          headline: "KNIME Hub session expired",
+          message: "Please log in again to continue.",
           type: "error",
         }),
       );

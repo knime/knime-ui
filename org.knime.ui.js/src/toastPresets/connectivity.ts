@@ -6,6 +6,7 @@ import { removeAllToastsByPrefix } from "./utils";
 
 export type ConnectivityPresets = {
   networkProblem: ToastPresetErrorHandler;
+  hubSessionExpired: ToastPresetHandler;
   // browser
   connectionLoss: ToastPresetHandler;
   connectionRestored: ToastPresetHandler;
@@ -21,7 +22,7 @@ export const getPresets = (
     networkProblem: ({ error } = {}) =>
       defaultErrorPresetHandler($toast, error, {
         headline: "Connectivity problem",
-        message: "Check you network connection",
+        message: "Check you network connection.",
         type: "error",
         autoRemove: false,
       }),
@@ -51,13 +52,19 @@ export const getPresets = (
         autoRemove: false,
       });
     },
-
     connectionRestored: () => {
       removeAllToastsByPrefix($toast, CONNECTION_LOST_TOAST_ID_PREFIX);
 
       $toast.show({
         type: "success",
         headline: "Connection restored",
+      });
+    },
+    hubSessionExpired: () => {
+      $toast.show({
+        type: "error",
+        headline: "KNIME Hub session expired",
+        message: "Please log in again to continue.",
       });
     },
   };
