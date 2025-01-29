@@ -82,6 +82,7 @@ type AiAssistantQAEventPayload = {
 
 export type AiAssistantBuildEventPayload = {
   message: string;
+  summary?: string;
   interactionId: string;
   type: "SUCCESS" | "INPUT_NEEDED";
   references: never;

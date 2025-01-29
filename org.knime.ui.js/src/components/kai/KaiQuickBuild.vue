@@ -3,6 +3,7 @@ import { computed, toRefs, watch } from "vue";
 
 import { Button } from "@knime/components";
 import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
+import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
@@ -71,7 +72,15 @@ watch(menuState, (menuState) => {
   <div class="quick-build-menu">
     <div v-if="menuState === 'INPUT'" class="header">
       K-AI Build Mode
-      <Button with-border @click="$emit('menuBack')"><GoBackIcon /></Button>
+      <Button with-border @click="$emit('menuBack')">
+        <GoBackIcon />
+      </Button>
+    </div>
+    <div v-else-if="menuState === 'RESULT'" class="header">
+      K-AI Build Mode Results
+      <Button with-border @click="closeQuickActionMenu">
+        <CancelIcon />
+      </Button>
     </div>
     <div class="main">
       <component :is="panelComponent" v-if="panelComponent" class="panel" />
@@ -84,6 +93,7 @@ watch(menuState, (menuState) => {
         <QuickBuildResult
           v-if="menuState === 'RESULT'"
           :message="result!.message"
+          :summary="result!.summary"
           :interaction-id="result!.interactionId"
           @close="closeQuickActionMenu"
         />
@@ -139,7 +149,7 @@ watch(menuState, (menuState) => {
 
   & .main {
     & .panel {
-      min-height: 200px;
+      min-height: 500px;
     }
   }
 }

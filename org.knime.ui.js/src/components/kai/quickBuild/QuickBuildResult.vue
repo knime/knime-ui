@@ -1,24 +1,53 @@
 <script setup lang="ts">
-import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
+import { ref } from "vue";
 
-import MarkdownRenderer from "../chat/message/MarkdownRenderer.vue";
+import { KaiMessage } from "@/api/gateway-api/generated-api";
+import Message from "../chat/message/Message.vue";
 
 type Props = {
   message: string;
   interactionId: string;
+  summary?: string;
 };
 
-defineProps<Props>();
 defineEmits(["close"]);
+
+const props = defineProps<Props>();
+const shouldShowExplanation = ref(false);
+
+const showExplanation = () => {
+  shouldShowExplanation.value = true;
+};
 </script>
 
 <template>
   <div class="quick-build-result">
-    <div class="knime-icon">
-      <KnimeIcon />
+    <div class="summary-message">
+      <Message
+        :content="props.summary!"
+        :role="KaiMessage.RoleEnum.Assistant"
+        :always-show-feedback-controls="!shouldShowExplanation"
+        :interaction-id="props.interactionId"
+        :hide-footer="shouldShowExplanation"
+      >
+        <template #footer-append>
+          <button
+            v-if="!shouldShowExplanation"
+            class="show-explanation-button"
+            @click="showExplanation"
+          >
+            See full explanation
+          </button>
+        </template>
+      </Message>
     </div>
-    <div class="message">
-      <MarkdownRenderer :markdown="message" />
+    <div v-if="shouldShowExplanation" class="explanation-message">
+      <Message
+        :content="props.message"
+        :role="KaiMessage.RoleEnum.Assistant"
+        :always-show-feedback-controls="true"
+        :interaction-id="props.interactionId"
+      />
     </div>
   </div>
 </template>
@@ -28,63 +57,25 @@ defineEmits(["close"]);
 
 .quick-build-result {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: flex-start;
   gap: var(--space-8);
 
-  & .knime-icon {
-    background-color: var(--knime-white);
-    border-radius: 100%;
-    height: 26px;
-    width: 26px;
-    flex: none;
+  & .summary-message {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
 
-    &.user {
-      left: auto;
-      right: 0;
-    }
+    & .show-explanation-button {
+      all: unset;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+      padding-top: 10px;
 
-    & svg {
-      margin-top: -2px;
-
-      @mixin svg-icon-size 16;
-    }
-
-    &.user svg.assistant {
-      margin-top: -4px;
-    }
-  }
-
-  & .message {
-    min-height: 26px;
-    background-color: var(--knime-white);
-    color: var(--knime-masala);
-    border-radius: 5px;
-    padding: var(--space-4) var(--space-8);
-    flex-grow: 1;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-  }
-
-  & .cancel-button {
-    padding: 0;
-    width: 26px;
-    height: 26px;
-    border-color: var(--knime-silver-sand);
-
-    &:hover {
-      background-color: var(--knime-silver-sand);
-    }
-
-    & svg {
-      @mixin svg-icon-size 16;
-
-      margin-left: 4px;
-      margin-top: 1px;
+      &:active,
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }

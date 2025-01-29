@@ -20,6 +20,8 @@ const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
 
 interface Props extends Message {
   statusUpdate?: StatusUpdate | null;
+  alwaysShowFeedbackControls?: boolean;
+  hideFooter?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -30,6 +32,8 @@ const props = withDefaults(defineProps<Props>(), {
   components: () => [],
   statusUpdate: null,
   isError: false,
+  alwaysShowFeedbackControls: false,
+  hideFooter: false,
 });
 
 const messageElement = ref<HTMLElement | null>(null);
@@ -42,9 +46,16 @@ const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
 });
 
 const isUser = computed(() => props.role === KaiMessage.RoleEnum.User);
-const showFeedbackControls = computed(
+const shouldShowFeedbackControls = computed(
   () => !isUser.value && !props.isError && props.interactionId,
 );
+const areFeedbackControlsVisible = computed(() => {
+  if (props.alwaysShowFeedbackControls) {
+    return true;
+  }
+
+  return isHovered.value;
+});
 </script>
 
 <template>
@@ -68,13 +79,17 @@ const showFeedbackControls = computed(
       />
       <KaiStatus :status="statusUpdate?.message" />
     </div>
-    <div class="footer">
-      <FeedbackControls
-        v-if="showFeedbackControls"
-        class="feedback-controls"
-        :interaction-id="interactionId!"
-        :show-controls="isHovered"
-      />
+    <div v-if="!props.hideFooter" class="footer">
+      <div class="footer-inner">
+        <FeedbackControls
+          v-if="shouldShowFeedbackControls"
+          class="feedback-controls"
+          :interaction-id="interactionId!"
+          :show-controls="areFeedbackControlsVisible"
+        />
+
+        <slot name="footer-append" />
+      </div>
     </div>
   </div>
 </template>
@@ -147,7 +162,12 @@ const showFeedbackControls = computed(
   }
 
   & .footer {
-    height: 41px;
+    height: 40px;
+
+    & .footer-inner {
+      display: flex;
+      gap: var(--space-8);
+    }
   }
 }
 </style>
