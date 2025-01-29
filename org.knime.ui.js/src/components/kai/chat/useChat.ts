@@ -3,8 +3,10 @@ import { storeToRefs } from "pinia";
 
 import { KaiMessage } from "@/api/gateway-api/generated-api";
 import { useConfirmDialog } from "@/composables/useConfirmDialog";
+import { getToastsProvider } from "@/plugins/toasts";
 import { type Message, useAIAssistantStore } from "@/store/aiAssistant";
 import type { ChainType } from "../types";
+import { useHubAuth } from "../useHubAuth";
 import { useKaiServer } from "../useKaiServer";
 
 import { isSameDay } from "./utils";
@@ -21,8 +23,11 @@ const useChat = (chainType: ChainType) => {
   const aiAssistant = storeToRefs(useAIAssistantStore());
   const { makeAiRequest, abortAiRequest } = useAIAssistantStore();
   const { uiStrings } = useKaiServer();
+  const { disconnectHub, isAuthError } = useHubAuth();
 
   const { show: showConfirmDialog } = useConfirmDialog();
+
+  const $toast = getToastsProvider();
 
   const messagesWithSeparators = computed(() => {
     // Computes an array of messages interlaced with day separators.
@@ -94,11 +99,24 @@ const useChat = (chainType: ChainType) => {
     message: string;
     targetNodes?: string[];
   }) => {
-    await makeAiRequest({
-      chainType,
-      message,
-      targetNodes,
-    });
+    try {
+      await makeAiRequest({
+        chainType,
+        message,
+        targetNodes,
+      });
+    } catch (error: any) {
+      if (isAuthError(error.message)) {
+        $toast.show({
+          type: "error",
+          headline: "KNIME Hub session expired",
+          message: "Please log in again to continue.",
+        });
+
+        // mark the provider as disconnected to trigger the Login Panel
+        disconnectHub();
+      }
+    }
   };
 
   const abortSendMessage = async () => {

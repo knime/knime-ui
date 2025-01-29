@@ -1,12 +1,14 @@
 import { type Ref, ref, watch } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import {
   type AiAssistantBuildEventPayload,
   useAIAssistantStore,
 } from "@/store/aiAssistant";
 import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useChat } from "../chat/useChat";
+import { useHubAuth } from "../useHubAuth";
 
 export const useQuickBuild = ({
   nodeId,
@@ -18,6 +20,10 @@ export const useQuickBuild = ({
   const { enableDetachedMode, lockQuickActionMenu, unlockQuickActionMenu } =
     useFloatingMenusStore();
   const { makeAiRequest } = useAIAssistantStore();
+
+  const { isAuthError, disconnectHub } = useHubAuth();
+
+  const $toast = getToastsProvider();
 
   const userQuery = ref("");
   const errorMessage = ref("");
@@ -56,7 +62,18 @@ export const useQuickBuild = ({
         enableDetachedModeFn();
       }
     } catch (error: any) {
-      errorMessage.value = error.message;
+      if (isAuthError(error.message)) {
+        $toast.show({
+          type: "error",
+          headline: "KNIME Hub session expired",
+          message: "Please log in again to continue.",
+        });
+
+        // mark the provider as disconnected to trigger the Login Panel
+        disconnectHub();
+      } else {
+        errorMessage.value = error.message;
+      }
     }
   };
 
