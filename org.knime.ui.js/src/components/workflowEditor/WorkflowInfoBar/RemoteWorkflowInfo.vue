@@ -6,7 +6,6 @@ import { SpaceProviderNS } from "@/api/custom-types";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import * as $colors from "@/style/colors";
 
 const { isUnknownProject, openProjects, activeProjectId } = storeToRefs(
   useApplicationStore(),

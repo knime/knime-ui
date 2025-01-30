@@ -10,7 +10,8 @@ import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
-import { useCanvasStore } from "@/store/canvas";
+import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -80,7 +81,8 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const workflowStore = useWorkflowStore(testingPinia);
   const workflowMonitorStore = useWorkflowMonitorStore(testingPinia);
   const aiAssistantStore = useAIAssistantStore(testingPinia);
-  const canvasStore = useCanvasStore(testingPinia);
+  const canvasStore = useSVGCanvasStore(testingPinia);
+  const webglCanvasStore = useWebGLCanvasStore(testingPinia);
   const nodeRepositoryStore = useNodeRepositoryStore(testingPinia);
   const panelStore = usePanelStore(testingPinia);
   const quickAddNodesStore = useQuickAddNodesStore(testingPinia);
@@ -92,7 +94,9 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const kanvas = document.createElement("div");
   kanvas.setAttribute("id", "kanvas");
   kanvas.scrollTo = vi.fn();
+
   canvasStore.setScrollContainerElement(kanvas);
+  webglCanvasStore.setScrollContainerElement(kanvas);
 
   return {
     testingPinia,
@@ -132,5 +136,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     quickAddNodesStore,
     selectionStore,
     settingsStore,
+    webglCanvasStore,
   };
 };

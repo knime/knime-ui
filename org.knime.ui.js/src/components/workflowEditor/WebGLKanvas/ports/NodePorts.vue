@@ -14,7 +14,7 @@ import {
   portPositions as _portPositions,
   placeholderPosition,
 } from "@/util/portShift";
-import { useNodeHoverProvider } from "../node/useNodeHoverProvider";
+import { useNodeHoveredStateListener } from "../node/useNodeHoveredState";
 
 import NodePort from "./NodePort.vue";
 
@@ -95,8 +95,9 @@ const isDefaultFlowVariable = (index: number) => {
 };
 
 const getPortContainerName = (index: number, type: "in" | "out") => {
+  const typeName = type === "in" ? "In" : "Out";
   return isDefaultFlowVariable(index)
-    ? `${props.nodeId}__defaulFlowVar${type === "in" ? "In" : "Out"}`
+    ? `${props.nodeId}__defaulFlowVar${typeName}`
     : `${props.nodeId}__out-${index}`;
 };
 
@@ -111,8 +112,8 @@ const getFlowVariableContainers = () => {
   return [defaulFlowVarOut, defaulFlowVarIn];
 };
 
-useNodeHoverProvider({
-  listenerId: props.nodeId,
+useNodeHoveredStateListener({
+  nodeId: props.nodeId,
   onEnterCallback: () => {
     const [defaulFlowVarOut, defaulFlowVarIn] = getFlowVariableContainers();
 
@@ -145,7 +146,7 @@ const hideFlowVarPort = (event: FederatedPointerEvent, index: number) => {
 </script>
 
 <template>
-  <container ref="ports">
+  <Container ref="ports">
     <NodePort
       v-for="port of inPorts"
       :key="`out-${port.index}`"
@@ -177,5 +178,5 @@ const hideFlowVarPort = (event: FederatedPointerEvent, index: number) => {
       @pointerenter="revealFlowVarPort($event, port.index)"
       @pointerleave="hideFlowVarPort($event, port.index)"
     />
-  </container>
+  </Container>
 </template>

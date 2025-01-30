@@ -527,7 +527,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     cursorY,
   }: {
     factor?: number;
-    delta: -1 | 0 | 1;
+    delta?: -1 | 0 | 1;
     cursorX: number;
     cursorY: number;
   }) => {
@@ -548,7 +548,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
     // delta is -1, 0 or 1 depending on scroll direction.
     const newScale = clampZoomFactor(
-      delta > 0
+      (delta ?? 0) > 0
         ? zoomFactor.value * zoomMultiplier
         : zoomFactor.value / zoomMultiplier,
     );
@@ -578,7 +578,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     delta = 0,
     factor = 1,
   }: {
-    delta: -1 | 0 | 1;
+    delta?: -1 | 0 | 1;
     factor?: number;
   }) => {
     zoomAroundPointer({
@@ -705,6 +705,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     focus,
     initScrollContainerElement,
     fitToScreen,
+    fillScreen,
     zoomCentered,
     zoomAroundPointer,
     scroll,

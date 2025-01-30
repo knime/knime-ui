@@ -33,10 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (
-    e: "addVirtualBendpoint",
-    params: { position: XY; event: PointerEvent },
-  ): void;
+  addVirtualBendpoint: [{ position: XY; event: PointerEvent }];
 }>();
 
 const path = computed(() => {

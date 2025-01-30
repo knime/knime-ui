@@ -79,7 +79,7 @@ const renderFn = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <graphics
+  <Graphics
     :x="anchorPosition?.x - config.width / 2 + $shapes.nodeSize / 2"
     :y="anchorPosition?.y - config.height / 2 + $shapes.nodeSize / 2"
     @render="renderFn"

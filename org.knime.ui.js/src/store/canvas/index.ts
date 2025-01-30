@@ -1,6 +1,3 @@
-import { useSVGCanvasStore } from "./canvas-svg";
-// import { useCanvasStore as useWebGLCanvasStore } from "./canvas-webgl";
+import { useSVGCanvasStore as useCanvasStore } from "./canvas-svg";
 
-export const useCanvasStore = () => {
-  return useSVGCanvasStore();
-};
+export { useCanvasStore };

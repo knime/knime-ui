@@ -19,8 +19,8 @@ import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import NodePorts from "../ports/NodePorts.vue";
 
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
-import { useNodeHoverProvider } from "./useNodeHoverProvider";
 import { useNodeHoverSize } from "./useNodeHoverSize";
+import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
 
 const stage = useStage();
 
@@ -179,7 +179,7 @@ const { isSelectionPreviewShown } = useSelectionPreview({
 });
 
 const { onPointerEnter, onPointerLeave, hoveredNodeId } =
-  useNodeHoverProvider();
+  useNodeHoveredStateProvider();
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize } = useNodeHoverSize({
@@ -193,7 +193,7 @@ const { hoverSize } = useNodeHoverSize({
 const renderHoverArea = (graphics: GraphicsInst) => {
   graphics.clear();
 
-  if (isDebugModeEnabled) {
+  if (isDebugModeEnabled.value) {
     graphics.beginFill(0xf1f1f1);
   }
 
@@ -216,8 +216,8 @@ const renderHoverArea = (graphics: GraphicsInst) => {
 
   <Container
     @rightclick="emit('contextmenu', $event)"
-    @pointerenter="onPointerEnter($event, node.id)"
-    @pointerleave.self="onPointerLeave"
+    @pointerenter="onPointerEnter(node.id)"
+    @pointerleave.self="onPointerLeave()"
     @pointerdown="onPointerDown"
   >
     <Graphics :position="translatedPosition" @render="renderHoverArea" />

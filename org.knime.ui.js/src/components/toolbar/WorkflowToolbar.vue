@@ -2,8 +2,9 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { type MenuItem, SubMenu } from "@knime/components";
+import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
+import BrushIcon from "@knime/styles/img/icons/brush.svg";
 
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
@@ -15,10 +16,13 @@ import {
   type CanvasMode,
   useCanvasModesStore,
 } from "@/store/application/canvasModes";
+import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { canvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
+import FPSMeter from "./FPSMeter.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
 import WorkflowBreadcrumb from "./WorkflowBreadcrumb.vue";
 import ZoomMenu from "./ZoomMenu.vue";
@@ -147,6 +151,19 @@ const onCanvasModeUpdate = (
 ) => {
   canvasModesStore.switchCanvasMode(id);
 };
+
+// toggle renderer svg/webgl
+const { devMode } = storeToRefs(useApplicationSettingsStore());
+
+const toggleCanvasRenderer = () => {
+  canvasRendererUtils.toggleCanvasRenderer();
+  // reload
+  window.location.href = "/";
+};
+
+const currentCanvasRenderer = computed(() =>
+  canvasRendererUtils.getCurrentCanvasRenderer(),
+);
 </script>
 
 <template>
@@ -175,6 +192,18 @@ const onCanvasModeUpdate = (
     />
 
     <div class="control-list">
+      <template v-if="devMode">
+        <FPSMeter style="margin-right: 10px" />
+        <FunctionButton
+          class="header-button no-text control"
+          data-test-id="dev-mode-only"
+          title="Toggle renderer"
+          @click="toggleCanvasRenderer()"
+        >
+          <BrushIcon /> {{ currentCanvasRenderer }}
+        </FunctionButton>
+      </template>
+
       <SubMenu
         class="control"
         :items="canvasModes"

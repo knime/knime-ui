@@ -5,7 +5,6 @@ import type { GraphicsInst } from "vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { $bus } from "@/plugins/event-bus";
-import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -14,7 +13,7 @@ import * as $colors from "@/style/colors";
 import { findObjectsForSelection } from "../../util/findObjectsForSelection";
 
 const canvasStore = useWebGLCanvasStore();
-const { zoomFactor, canvasAnchor, canvasOffset } = storeToRefs(canvasStore);
+const { zoomFactor, canvasOffset } = storeToRefs(canvasStore);
 const { isDragging } = storeToRefs(useMovingStore());
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
 const selectionStore = useSelectionStore();
@@ -62,15 +61,11 @@ const onSelectionStart = (event: PointerEvent) => {
     return;
   }
 
-  if (event.button === 0 && canvasAnchor.value.isOpen) {
-    canvasStore.clearCanvasAnchor();
-    useApplicationStore().toggleContextMenu();
-  }
-
   selectionStore.deselectAllObjects();
   isSelectionVisible.value = true;
 
   const { offsetX, offsetY } = event;
+
   startPos.value = {
     x: (offsetX - canvasOffset.value.x) / zoomFactor.value,
     y: (offsetY - canvasOffset.value.y) / zoomFactor.value,
@@ -149,7 +144,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <graphics
+  <Graphics
     v-if="isSelectionVisible"
     :x="selectionRectangle.x"
     :y="selectionRectangle.y"

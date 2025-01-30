@@ -8,6 +8,7 @@ import { type GraphicsInst } from "vue3-pixi";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
@@ -21,9 +22,12 @@ interface Props {
   port: NodePort;
   position: XY;
   direction: "in" | "out";
+  disableQuickNodeAdd?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  disableQuickNodeAdd: false,
+});
 
 const canvasStore = useWebGLCanvasStore();
 const { isDebugModeEnabled: isCanvasDebugEnabled } = storeToRefs(canvasStore);
@@ -53,6 +57,8 @@ const isFlowVariable = computed(
   () => portTemplate.value.kind === "flowVariable",
 );
 
+const { openQuickActionMenu } = useFloatingMenusStore();
+
 const { dragConnector, onPointerDown } = usePortDragging({
   direction: props.direction,
   isFlowVariable: isFlowVariable.value,
@@ -60,6 +66,23 @@ const { dragConnector, onPointerDown } = usePortDragging({
   port: props.port,
 
   onCanvasDrop: () => {
+    // ignore drop if quick add menu is disabled (e.g for metanode port bars)
+    if (props.disableQuickNodeAdd) {
+      return { removeConnector: true };
+    }
+
+    const [x, y] = dragConnector.value!.absolutePoint;
+
+    openQuickActionMenu({
+      props: {
+        position: { x, y },
+        port: props.port,
+        nodeRelation: props.direction === "out" ? "SUCCESSORS" : "PREDECESSORS",
+        nodeId: props.nodeId,
+        positionOrigin: "mouse",
+      },
+    });
+
     return { removeConnector: true };
   },
 });
@@ -106,15 +129,15 @@ const onConnectionDrop = () => {
 </script>
 
 <template>
-  <container>
-    <container
+  <Container>
+    <Container
       :position="position"
       :hit-area="hitArea"
       :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
       @pointerdown="onPointerDown"
       @pointerup="onConnectionDrop"
     >
-      <graphics
+      <Graphics
         v-if="isCanvasDebugEnabled"
         :x="hitArea.x"
         :y="hitArea.y"
@@ -128,12 +151,12 @@ const onConnectionDrop = () => {
         "
       />
       <Port :port="port" />
-    </container>
+    </Container>
 
     <NodePortActiveConnector
       v-if="dragConnector && isDraggingFromThisPort"
       :drag-connector="dragConnector"
       :port="port"
     />
-  </container>
+  </Container>
 </template>

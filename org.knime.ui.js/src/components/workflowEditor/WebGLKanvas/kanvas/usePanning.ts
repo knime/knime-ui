@@ -37,10 +37,8 @@ export const useCanvasPanning = ({
     const onPan = (event: FederatedPointerEvent) => {
       if (isPanning.value) {
         canvasStore.setCanvasOffset({
-          x:
-            stage.value!.x + (event.global.x - (panLastPosition.value?.x ?? 0)),
-          y:
-            stage.value!.y + (event.global.y - (panLastPosition.value?.y ?? 0)),
+          x: stage.value.x + (event.global.x - (panLastPosition.value?.x ?? 0)),
+          y: stage.value.y + (event.global.y - (panLastPosition.value?.y ?? 0)),
         });
 
         panLastPosition.value = { x: event.global.x, y: event.global.y };
@@ -53,14 +51,14 @@ export const useCanvasPanning = ({
       isPanning.value = false;
       panLastPosition.value = null;
 
-      stage.value!.off("pointermove", onPan);
-      stage.value!.off("pointerup", stopPan);
-      stage.value!.off("pointerupoutside", stopPan);
+      stage.value.off("pointermove", onPan);
+      stage.value.off("pointerup", stopPan);
+      stage.value.off("pointerupoutside", stopPan);
     };
 
-    stage.value!.on("pointermove", onPan);
-    stage.value!.on("pointerup", stopPan);
-    stage.value!.on("pointerupoutside", stopPan);
+    stage.value.on("pointermove", onPan);
+    stage.value.on("pointerup", stopPan);
+    stage.value.on("pointerupoutside", stopPan);
   };
 
   return { beginPan };

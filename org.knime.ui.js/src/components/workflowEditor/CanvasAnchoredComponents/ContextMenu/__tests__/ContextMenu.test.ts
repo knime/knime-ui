@@ -25,8 +25,6 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-// TODO: fix
-import FloatingMenu from "../../../SVGKanvas/FloatingMenu/FloatingMenu.vue";
 import ContextMenu from "../ContextMenu.vue";
 
 let $shortcuts: ShortcutsService;
@@ -107,6 +105,9 @@ describe("ContextMenu.vue", () => {
     const wrapper = shallowMount(ContextMenu, {
       props: { ...defaultProps, ...props },
       global: {
+        stubs: {
+          FloatingMenu: true,
+        },
         plugins: [mockedStores.testingPinia],
       },
     });
@@ -123,16 +124,18 @@ describe("ContextMenu.vue", () => {
     it("sets position", async () => {
       const { wrapper } = await doMount();
       expect(
-        wrapper.findComponent(FloatingMenu).props("canvasPosition"),
+        wrapper.findComponent({ name: "FloatingMenu" }).props("canvasPosition"),
       ).toStrictEqual({ x: 10, y: 10 });
-      expect(wrapper.findComponent(FloatingMenu).props("preventOverflow")).toBe(
-        true,
-      );
+      expect(
+        wrapper
+          .findComponent({ name: "FloatingMenu" })
+          .props("preventOverflow"),
+      ).toBe(true);
     });
 
     it("re-emits menu-close", async () => {
       const { wrapper } = await doMount();
-      wrapper.findComponent(FloatingMenu).vm.$emit("menu-close");
+      wrapper.findComponent({ name: "FloatingMenu" }).vm.$emit("menu-close");
       expect(wrapper.emitted("menuClose")).toBeTruthy();
     });
 

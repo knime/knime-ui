@@ -9,7 +9,8 @@ import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
-import { useCanvasPanning } from "../kanvas/useCanvasPanning";
+
+import { useCanvasPanning } from "./usePanning";
 
 const pixiApp = ref<ApplicationInst>();
 
@@ -18,15 +19,6 @@ const { devicePixelRatio } = window;
 const canvasStore = useWebGLCanvasStore();
 const { containerSize, isDebugModeEnabled: isCanvasDebugEnabled } =
   storeToRefs(canvasStore);
-
-// prevent browser zoom using mouse wheel
-document.addEventListener(
-  "wheel",
-  (e) => {
-    e.preventDefault();
-  },
-  { passive: false },
-);
 
 const isReady = ref(false);
 
@@ -111,12 +103,7 @@ const { beginPan } = useCanvasPanning({
 </script>
 
 <template>
-  <div
-    ref="rootEl"
-    tabindex="0"
-    :class="['scroll-container']"
-    style="position: relative"
-  >
+  <div ref="rootEl" tabindex="0" class="scroll-container">
     <FloatingMenuPortalTarget v-if="isReady" />
 
     <Application
@@ -131,32 +118,17 @@ const { beginPan } = useCanvasPanning({
       @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @pointerup="$bus.emit('selection-pointerup', $event)"
+      @contextmenu.prevent
     >
-      <container name="contentBounds">
+      <Container name="contentBounds">
         <Debug v-if="isCanvasDebugEnabled" />
         <slot />
-      </container>
+      </Container>
     </Application>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-svg {
-  position: relative;
-
-  /* needed for z-index to have effect */
-  display: block;
-}
-
-.panning {
-  cursor: move;
-
-  & svg,
-  & svg :deep(*) {
-    pointer-events: none !important;
-  }
-}
-
 .scroll-container {
   position: relative;
   overflow: hidden;
@@ -165,21 +137,6 @@ svg {
 
   &:focus {
     outline: none;
-  }
-
-  &.empty {
-    overflow: hidden;
-
-    /* disables scrolling */
-  }
-
-  &.disabled {
-    pointer-events: none !important;
-
-    & svg,
-    & svg :deep(*) {
-      pointer-events: none !important;
-    }
   }
 }
 </style>

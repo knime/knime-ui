@@ -6,7 +6,6 @@ import { isDesktop } from "@/environment";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStore } from "@/store/canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import * as $colors from "@/style/colors";
 
 import RemoteWorkflowInfo from "./RemoteWorkflowInfo.vue";
 import StreamingInfo from "./StreamingInfo.vue";

@@ -1,34 +1,27 @@
 const STORAGE_KEY = "KNIME_KANVAS_RENDERER";
 
-enum CanvasRendererType {
-  SVG = "SVG",
-  WebGL = "WebGL",
-}
+type CanvasRendererType = "SVG" | "WebGL";
 
 const getCurrentCanvasRenderer = (): CanvasRendererType => {
   return (
-    (window.localStorage.getItem(STORAGE_KEY) as CanvasRendererType) ??
-    CanvasRendererType.SVG
+    (window.localStorage.getItem(STORAGE_KEY) as CanvasRendererType) ?? "SVG"
   );
 };
 
 const toggleCanvasRenderer = () => {
   const currentRenderer = getCurrentCanvasRenderer();
 
-  const nextRenderer =
-    currentRenderer === CanvasRendererType.SVG
-      ? CanvasRendererType.WebGL
-      : CanvasRendererType.SVG;
+  const nextRenderer = currentRenderer === "SVG" ? "WebGL" : "SVG";
 
   window.localStorage.setItem(STORAGE_KEY, nextRenderer);
 };
 
 const isWebGLRenderer = () => {
-  return getCurrentCanvasRenderer() === CanvasRendererType.WebGL;
+  return getCurrentCanvasRenderer() === "WebGL";
 };
 
 const isSVGRenderer = () => {
-  return getCurrentCanvasRenderer() === CanvasRendererType.SVG;
+  return getCurrentCanvasRenderer() === "SVG";
 };
 
 export const canvasRendererUtils = {

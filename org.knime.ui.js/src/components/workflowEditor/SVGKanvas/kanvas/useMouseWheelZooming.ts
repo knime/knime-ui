@@ -20,7 +20,7 @@ export const useMouseWheelZooming = (options: UseZoomOptions) => {
 
   const zoom = throttle(function (e) {
     // delta is -1, 0 or 1 depending on scroll direction.
-    const delta = Math.sign(-e.deltaY);
+    const delta = Math.sign(-e.deltaY) as -1 | 0 | 1;
 
     // get mouse cursor position on canvas
     const bcr = options.rootEl.value.getBoundingClientRect();

@@ -100,21 +100,18 @@ const bezierPoints = computed<[number, number, number, number, number, number]>(
     ];
   },
 );
+
+const renderFn = (graphics: GraphicsInst) => {
+  graphics.clear();
+  graphics
+    .lineStyle(2, 0x000000, 1)
+    .moveTo(linePoints.value.at(0)!, linePoints.value.at(1)!)
+    .bezierCurveTo(...bezierPoints.value);
+
+  graphics.endFill();
+};
 </script>
 
 <template>
-  <graphics
-    :name="id"
-    @render="
-      (graphics: GraphicsInst) => {
-        graphics.clear();
-        graphics
-          .lineStyle(2, 0x000000, 1)
-          .moveTo(linePoints.at(0)!, linePoints.at(1)!)
-          .bezierCurveTo(...bezierPoints);
-
-        graphics.endFill();
-      }
-    "
-  />
+  <Graphics :name="id" @render="renderFn" />
 </template>

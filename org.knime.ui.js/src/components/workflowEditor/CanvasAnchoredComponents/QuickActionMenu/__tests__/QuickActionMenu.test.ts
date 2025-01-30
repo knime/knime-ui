@@ -14,8 +14,6 @@ import {
   createWorkflow,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
-// TODO: fix
-import FloatingMenu from "../../../SVGKanvas/FloatingMenu/FloatingMenu.vue";
 import QuickActionMenu, {
   type QuickActionMenuProps,
 } from "../QuickActionMenu.vue";
@@ -38,14 +36,6 @@ vi.mock("@/plugins/shortcuts", () => ({
 }));
 
 describe("QuickActionMenu.vue", () => {
-  const FloatingMenuStub = {
-    template: `
-          <div>
-          <slot />
-          </div>`,
-    props: FloatingMenu.props,
-  };
-
   const doMount = ({
     addNodeMock = vi.fn(),
     props = {},
@@ -74,14 +64,13 @@ describe("QuickActionMenu.vue", () => {
       projectId: "project0",
       nodes: {},
       metaInPorts: {
-        xPos: 100,
         ports: [defaultPortMock],
       },
       metaOutPorts: {
-        xPos: 702,
         ports: [defaultPortMock, defaultPortMock, defaultPortMock],
       },
     });
+    // @ts-ignore
     mockedStores.canvasStore.contentBounds = {
       top: 33,
       height: 1236,
@@ -129,7 +118,7 @@ describe("QuickActionMenu.vue", () => {
           $colors,
         },
         stubs: {
-          FloatingMenu: FloatingMenuStub,
+          FloatingMenu: true,
           KaiQuickBuild: true,
           QuickAddNodeMenu: true,
         },
@@ -155,7 +144,7 @@ describe("QuickActionMenu.vue", () => {
   describe("quickActionMenu", () => {
     it("re-emits menuClose", () => {
       const { wrapper } = doMount();
-      wrapper.findComponent(FloatingMenuStub).vm.$emit("menuClose");
+      wrapper.findComponent({ name: "FloatingMenu" }).vm.$emit("menuClose");
 
       expect(wrapper.emitted("menuClose")).toBeTruthy();
     });
@@ -164,7 +153,7 @@ describe("QuickActionMenu.vue", () => {
       const { wrapper } = doMount();
 
       expect(
-        wrapper.findComponent(FloatingMenuStub).props("canvasPosition"),
+        wrapper.findComponent({ name: "FloatingMenu" }).props("canvasPosition"),
       ).toStrictEqual({
         x: 14.5,
         y: 10,

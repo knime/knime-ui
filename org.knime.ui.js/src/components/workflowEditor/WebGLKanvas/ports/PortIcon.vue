@@ -78,14 +78,14 @@ const otherPortsRenderFn = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <graphics v-if="type === 'table'" @render="tablePortRenderFn" />
+  <Graphics v-if="type === 'table'" @render="tablePortRenderFn" />
 
-  <graphics
+  <Graphics
     v-else-if="type === 'flowVariable'"
     @render="flowVariablePortRenderFn"
   />
 
-  <graphics
+  <Graphics
     v-else
     :position="{ x: -portSize / 2, y: -portSize / 2 }"
     @render="otherPortsRenderFn"

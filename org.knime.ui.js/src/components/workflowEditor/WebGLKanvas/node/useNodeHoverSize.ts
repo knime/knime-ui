@@ -51,22 +51,9 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
       hoverBounds.right += extraHorizontalSpace / 2;
     }
 
-    // TODO: adjust hover area for connector hovering
-    // if (this.isConnectorHovering || this.isHovering) {
-    //   // enlarge hover area to include all ports
-
-    //   const margin = this.$shapes.nodeHoverPortBottomMargin;
-
-    //   // if portBarBottom + margin is larger, then extend hover bounds
-    //   hoverBounds.bottom = Math.max(
-    //     this.portBarBottom + margin,
-    //     hoverBounds.bottom,
-    //   );
-    // }
-
     return {
-      y: hoverBounds.top,
       x: hoverBounds.left,
+      y: hoverBounds.top,
       width: hoverBounds.right - hoverBounds.left,
       height: hoverBounds.bottom - hoverBounds.top,
     };

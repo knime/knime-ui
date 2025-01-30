@@ -2,7 +2,9 @@ import { defineStore } from "pinia";
 
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useCanvasStore } from "@/store/canvas";
+import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 
 type FloatingMenusState = {
   portTypeMenu: {
@@ -106,9 +108,18 @@ export const useFloatingMenusStore = defineStore("floatingMenus", {
       props,
       events,
     }: {
-      props: QuickActionMenuProps | null;
+      props: QuickActionMenuProps;
       events?: FloatingMenusState["quickActionMenu"]["events"];
     }) {
+      if (canvasRendererUtils.isWebGLRenderer()) {
+        const canvasStore = useWebGLCanvasStore();
+
+        canvasStore.setCanvasAnchor({
+          isOpen: true,
+          anchor: { x: props.position.x, y: props.position.y },
+        });
+      }
+
       this.setQuickActionMenu({
         isOpen: true,
         isLocked: false,
@@ -123,6 +134,12 @@ export const useFloatingMenusStore = defineStore("floatingMenus", {
     closeQuickActionMenu({ force = false } = {}) {
       if (this.quickActionMenu.isLocked && !force) {
         return;
+      }
+
+      if (canvasRendererUtils.isWebGLRenderer()) {
+        const canvasStore = useWebGLCanvasStore();
+
+        canvasStore.clearCanvasAnchor();
       }
 
       this.setQuickActionMenu({

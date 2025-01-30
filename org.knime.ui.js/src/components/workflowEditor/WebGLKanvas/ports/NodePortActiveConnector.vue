@@ -15,7 +15,7 @@ defineProps<Props>();
 <template>
   <Connector v-if="dragConnector" v-bind="dragConnector" />
 
-  <container
+  <Container
     v-if="dragConnector"
     :position="{
       x: dragConnector.absolutePoint[0],
@@ -24,5 +24,5 @@ defineProps<Props>();
     event-mode="none"
   >
     <Port :port="port!" />
-  </container>
+  </Container>
 </template>

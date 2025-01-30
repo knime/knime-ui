@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { Rectangle } from "pixi.js";
+import { type Rectangle } from "pixi.js";
 import { type GraphicsInst, useStage } from "vue3-pixi";
 
 const stage = useStage();
 
 const stageHitArea = computed(() => stage.value!.hitArea as Rectangle);
 
-const bounds = () => stage.value.getChildByName("contentBounds")?.getBounds();
+const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
 </script>
 
 <template>
-  <container>
-    <graphics
+  <Container>
+    <Graphics
       v-if="stage && stageHitArea"
       :position="{ x: stageHitArea.x, y: stageHitArea.y }"
       @render="
@@ -25,20 +25,23 @@ const bounds = () => stage.value.getChildByName("contentBounds")?.getBounds();
       "
     />
 
-    <graphics
+    <Graphics
+      v-if="bounds"
       :position="{ x: bounds.x, y: bounds.y }"
       @render="
         (graphics: GraphicsInst) => {
-          graphics.clear();
-          graphics.beginFill(0x1099bb);
-          graphics.drawRect(0, 0, bounds!.width, bounds!.height);
-          graphics.endFill();
+          if (bounds) {
+            graphics.clear();
+            graphics.beginFill(0x1099bb);
+            graphics.drawRect(0, 0, bounds.width, bounds.height);
+            graphics.endFill();
+          }
         }
       "
     />
 
     <!-- ORIGIN -->
-    <graphics
+    <Graphics
       :x="0"
       :y="0"
       @render="
@@ -50,5 +53,5 @@ const bounds = () => stage.value.getChildByName("contentBounds")?.getBounds();
         }
       "
     />
-  </container>
+  </Container>
 </template>

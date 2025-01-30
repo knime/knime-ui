@@ -17,6 +17,7 @@ import * as $shapes from "@/style/shapes";
 // TODO: refactor structure and implement fix for dynamically resolved NodePortActiveConnector
 import type { DragConnector } from "../../SVGKanvas/ports/NodePort/types";
 import NodePortActiveConnector from "../../SVGKanvas/ports/NodePortActiveConnector.vue";
+import { canvasRendererUtils } from "../../util/canvasRenderer";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 import QuickAddNodeMenu from "./quickAdd/QuickAddNodeMenu.vue";
@@ -169,18 +170,20 @@ watch(
     :top-offset="floatingMenuTopOffset"
     focus-trap
     :prevent-overflow="true"
-    :style="{ width: `${menuWidth}px` }"
     @menu-close="$emit('menuClose')"
   >
     <!-- this will be portalled to the canvas -->
     <NodePortActiveConnector
-      v-if="hasConnector"
+      v-if="hasConnector && canvasRendererUtils.isSVGRenderer()"
       :port="port"
       :direction="nodeRelation === 'SUCCESSORS' ? 'out' : 'in'"
       :drag-connector="fakePortConnector"
     />
 
-    <div :class="['wrapper', menuMode]">
+    <div
+      :class="['quick-action-content', menuMode]"
+      :style="{ width: `${menuWidth}px` }"
+    >
       <template v-if="menuMode == 'quick-add'">
         <QuickAddNodeMenu
           :node-id="nodeId"
@@ -213,39 +216,39 @@ watch(
 
 .quick-add-node {
   margin-top: v-bind("marginTop");
+}
 
-  & .wrapper {
-    box-shadow: var(--shadow-elevation-1);
-    background: var(--knime-gray-ultra-light);
+.quick-action-content {
+  box-shadow: var(--shadow-elevation-1);
+  background: var(--knime-gray-ultra-light);
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.quick-add {
+    height: 420px;
+  }
+
+  & .footer {
+    flex: none;
+    height: 46px;
     display: flex;
-    flex-direction: column;
-    border-radius: 8px;
-    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+    border-top: 1px solid var(--knime-silver-sand);
 
-    &.quick-add {
-      height: 420px;
-    }
-
-    & .footer {
-      flex: none;
-      height: 46px;
+    & button {
+      height: 30px;
+      padding: 0 15px;
       display: flex;
-      justify-content: center;
       align-items: center;
-      border-top: 1px solid var(--knime-silver-sand);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 0.9;
 
-      & button {
-        height: 30px;
-        padding: 0 15px;
-        display: flex;
-        align-items: center;
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 0.9;
-
-        & svg {
-          @mixin svg-icon-size 18;
-        }
+      & svg {
+        @mixin svg-icon-size 18;
       }
     }
   }

@@ -187,7 +187,7 @@ export const useSVGCanvasStore = defineStore("canvasSVG", {
       delta = 0,
       factor = 1,
     }: {
-      delta?: number;
+      delta?: -1 | 0 | 1;
       factor?: number;
     }) {
       this.zoomAroundPointer({

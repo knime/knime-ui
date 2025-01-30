@@ -1,23 +1,15 @@
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  toRef,
-  watch,
-} from "vue";
-import { onClickOutside, useResizeObserver } from "@vueuse/core";
-import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
+import { computed, onBeforeUnmount, onMounted, ref, toRef, watch } from "vue";
+import { useResizeObserver } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useEscapeStack } from "@/composables/useEscapeStack";
 import { useCanvasStore } from "@/store/canvas";
-import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
-import { useMovingStore } from "@/store/workflow/moving";
+import {
+  type FloatingContainerProperties,
+  useCanvasFloatingContainer,
+} from "../../CanvasAnchoredComponents/useCanvasFloatingContainer";
 
 /*
  * The FloatingMenu component is a container that can be sticked to a position on the canvas,
@@ -30,7 +22,7 @@ import { useMovingStore } from "@/store/workflow/moving";
  *
  */
 
-type Props = {
+type Props = FloatingContainerProperties & {
   /**
    * Whether the menu should be prevented from moving out of sight
    */
@@ -55,21 +47,6 @@ type Props = {
    * A constant offset value added to `top` when computing the anchor position
    */
   topOffset?: number;
-
-  /**
-   * When set to true will disable interactions on the workflow canvas when the menu is open
-   */
-  disableInteractions?: boolean;
-
-  /**
-   * Whether to enable the behavior that closes the menu by pressing the escape key. `true` by default
-   */
-  closeOnEscape?: boolean;
-
-  /**
-   * Keep focus inside of the FloatingMenu while it is open
-   */
-  focusTrap?: boolean;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -86,34 +63,22 @@ const emit = defineEmits(["menuClose"]);
 
 const absolutePosition = ref({ left: 0, top: 0 });
 
-const { isDragging: isDraggingNodeInCanvas } = storeToRefs(useMovingStore());
 const canvasStore = useCanvasStore();
 
 const { zoomFactor } = storeToRefs(canvasStore);
-const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
 
-const rootEl = ref<HTMLDivElement | null>(null);
+const rootEl = ref<HTMLDivElement>();
 const menuElementHeight = computed(() => {
   return rootEl.value?.offsetHeight ?? 0;
 });
 
-const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } =
-  useFocusTrap(rootEl);
-
-onMounted(async () => {
-  // wait once after first event loop run before registering the click outside handler,
-  // to avoid closing immediately after opening
-  await new Promise((r) => setTimeout(r, 0));
-
-  onClickOutside(rootEl, () => {
-    deactivateFocusTrap();
-    emit("menuClose");
-  });
-
-  if (props.focusTrap) {
-    await nextTick();
-    activateFocusTrap();
-  }
+useCanvasFloatingContainer({
+  rootEl,
+  focusTrap: toRef(props, "focusTrap"),
+  closeMenu: () => emit("menuClose"),
+  canvasStore,
+  disableInteractions: props.disableInteractions,
+  closeOnEscape: props.closeOnEscape,
 });
 
 const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
@@ -199,22 +164,6 @@ watch([zoomFactor, toRef(props, "canvasPosition")], () => {
   setAbsolutePosition();
 });
 
-watch(isDraggingNodeInCanvas, () => {
-  if (isDraggingNodeInCanvas.value) {
-    emit("menuClose");
-  }
-});
-
-watch(
-  isDraggingNodeTemplate,
-  () => {
-    if (isDraggingNodeTemplate.value) {
-      emit("menuClose");
-    }
-  },
-  { immediate: true },
-);
-
 const onCanvasScroll = throttle(function () {
   setAbsolutePosition();
 });
@@ -226,26 +175,12 @@ useResizeObserver(rootEl, () => {
 
 onMounted(() => {
   setAbsolutePosition();
-  if (props.disableInteractions) {
-    canvasStore.setInteractionsEnabled(false);
-  }
 
   let kanvas = document.getElementById("kanvas")!;
   kanvas.addEventListener("scroll", onCanvasScroll);
 });
 
-if (props.closeOnEscape) {
-  useEscapeStack({
-    onEscape: () => {
-      emit("menuClose");
-    },
-  });
-}
-
 onBeforeUnmount(() => {
-  deactivateFocusTrap();
-  canvasStore.setInteractionsEnabled(true);
-
   // if kanvas currently exists (workflow is open) remove scroll event listener
   let kanvas = document.getElementById("kanvas")!;
   kanvas?.removeEventListener("scroll", onCanvasScroll);
