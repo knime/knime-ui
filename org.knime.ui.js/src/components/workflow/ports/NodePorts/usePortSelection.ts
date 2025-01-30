@@ -70,10 +70,6 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
     } else if (isMetanode.value) {
       updateSelection(`${side}-${index}`);
     } else if (options.portGroups && portGroupId) {
-      // native node and port is part of a port group
-      const portGroup = options.portGroups[portGroupId];
-      const [, upperBound] = portGroup[`${side}Range`]!;
-
       // select clicked port
       updateSelection(`${side}-${index}`);
     }
