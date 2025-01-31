@@ -3,6 +3,7 @@ import { API } from "@api";
 import { createTestingPinia } from "@pinia/testing";
 
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking.ts";
 import { useCanvasStore } from "@/store/canvas";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -63,6 +64,8 @@ export const loadStore = () => {
   const nodeConfigurationStore = useNodeConfigurationStore(testingPinia);
   const spaceProvidersStore = useSpaceProvidersStore(testingPinia);
   const floatingMenusStore = useFloatingMenusStore(testingPinia);
+  const dirtyProjectsTrackingStore =
+    useDirtyProjectsTrackingStore(testingPinia);
 
   workflowStore.setActiveWorkflow(
     createWorkflow({ projectId: "project1", info: { containerId: "root" } }),
@@ -87,5 +90,6 @@ export const loadStore = () => {
     workflowPreviewSnapshotsStore,
     mockRouter,
     floatingMenusStore,
+    dirtyProjectsTrackingStore,
   };
 };
