@@ -29,7 +29,6 @@ import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 
 import { useCanvasModesStore } from "./canvasModes";
-import { useDirtyProjectsTrackingStore } from "./dirtyProjectsTracking";
 import { useApplicationSettingsStore } from "./settings";
 
 export interface ApplicationState {
@@ -500,15 +499,6 @@ export const useApplicationStore = defineStore("application", {
       // try to find a provider that contains the spaceId referenced
       // by the activeProject's origin
       return !findSpaceById(spaceProviders, foundProject.origin.spaceId);
-    },
-
-    isDirtyActiveProject: (state) => {
-      if (!state.activeProjectId) {
-        return false;
-      }
-      return Boolean(
-        useDirtyProjectsTrackingStore().dirtyProjectsMap[state.activeProjectId],
-      );
     },
 
     /**

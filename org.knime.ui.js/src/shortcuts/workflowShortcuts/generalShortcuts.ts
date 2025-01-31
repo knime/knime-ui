@@ -9,6 +9,7 @@ import type { Connection } from "@/api/gateway-api/generated-api";
 import DeleteIcon from "@/assets/delete.svg";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useApplicationStore } from "@/store/application/application";
+import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking.ts";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useCanvasStore } from "@/store/canvas";
 import { useSelectionStore } from "@/store/selection";
@@ -49,8 +50,8 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       }
     },
     condition: () => {
-      const { activeProjectId, isDirtyActiveProject, activeProjectOrigin } =
-        useApplicationStore();
+      const { activeProjectId, activeProjectOrigin } = useApplicationStore();
+      const { isDirtyActiveProject } = useDirtyProjectsTrackingStore();
       const { isLocalSaveSupported } = useUIControlsStore();
 
       return Boolean(

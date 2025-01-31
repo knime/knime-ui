@@ -41,6 +41,7 @@ describe("workflowShortcuts", () => {
       canvasStore,
       movingStore,
       floatingMenusStore,
+      dirtyProjectsTrackingStore,
     } = mockStores({ stubActions: true });
 
     applicationSettingsStore.hasClipboardSupport = true;
@@ -97,6 +98,7 @@ describe("workflowShortcuts", () => {
       canvasStore,
       movingStore,
       floatingMenusStore,
+      dirtyProjectsTrackingStore,
     };
   };
 
@@ -121,17 +123,21 @@ describe("workflowShortcuts", () => {
     });
 
     it("checks save condition", () => {
-      const { applicationStore, uiControlsStore } = createStore();
+      const { applicationStore, uiControlsStore, dirtyProjectsTrackingStore } =
+        createStore();
 
       applicationStore.activeProjectOrigin = "origin";
       expect(workflowShortcuts.save.condition()).toBeFalsy();
-      applicationStore.isDirtyActiveProject = true;
+
+      dirtyProjectsTrackingStore.isDirtyActiveProject = true;
       uiControlsStore.isLocalSaveSupported = false;
       expect(workflowShortcuts.save.condition()).toBe(false);
+
       uiControlsStore.isLocalSaveSupported = true;
       applicationStore.activeProjectId = "knownProjectId";
       expect(workflowShortcuts.save.condition()).toBe(true);
-      applicationStore.isDirtyActiveProject = false;
+
+      dirtyProjectsTrackingStore.isDirtyActiveProject = false;
       expect(workflowShortcuts.save.condition()).toBe(false);
     });
   });

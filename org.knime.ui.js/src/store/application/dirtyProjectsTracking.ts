@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 
+import { useApplicationStore } from "@/store/application/application.ts";
+
 type DirtyProjectsTrackingState = {
   /**
    * an object that maps projectIds to the isDirty flag of the workflow
@@ -15,11 +17,21 @@ export const useDirtyProjectsTrackingStore = defineStore(
     }),
     actions: {
       updateDirtyProjectsMap(dirtyProjectsMap: Record<string, boolean>) {
-        const updatedDirtyProjectsMap = {
+        this.dirtyProjectsMap = {
           ...this.dirtyProjectsMap,
           ...dirtyProjectsMap,
         };
-        this.dirtyProjectsMap = updatedDirtyProjectsMap;
+      },
+    },
+    getters: {
+      isDirtyActiveProject: (): boolean => {
+        const projectId = useApplicationStore().activeProjectId;
+        if (!projectId) {
+          return false;
+        }
+        return Boolean(
+          useDirtyProjectsTrackingStore().dirtyProjectsMap[projectId],
+        );
       },
     },
   },
