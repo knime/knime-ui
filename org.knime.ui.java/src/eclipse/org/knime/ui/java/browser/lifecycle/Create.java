@@ -165,9 +165,12 @@ final class Create {
 
         var editorReferences = page.getEditorReferences();
         if (editorReferences.length > 0) {
-            Arrays.stream(editorReferences).forEach(editorReference -> NodeLogger.getLogger(Create.class)
-                .warn("Closing unexpectedly open editor '" + editorReference.getName() + "'."));
-            page.closeAllEditors(false);
+            Arrays.stream(editorReferences).forEach(editorReference -> {
+                NodeLogger.getLogger(Create.class)
+                    .warn("Closing unexpectedly open editor '" + editorReference.getName() + "'.");
+                var editor = editorReference.getEditor(false);
+                page.closeEditor(editor, false);
+            });
         }
     }
 
