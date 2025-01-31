@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRefs, watch } from "vue";
+import { computed, nextTick, ref, toRefs, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { navigatorUtils } from "@knime/utils";
@@ -178,7 +178,9 @@ const onVirtualBendpointAdded = ({
     pointerId: event.pointerId,
   });
 
-  itemRefs.value[index].$el.dispatchEvent(ptrEvent);
+  nextTick(() => {
+    itemRefs.value[index].$el.dispatchEvent(ptrEvent);
+  });
 };
 
 const { createPointerDownHandler } = useMoveObject({

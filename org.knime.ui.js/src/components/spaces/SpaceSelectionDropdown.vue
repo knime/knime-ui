@@ -148,7 +148,7 @@ const onSpaceChange = async ({
   }
 };
 
-const activeSpacePath = projectPath.value[props.projectId];
+const activeSpacePath = computed(() => projectPath.value[props.projectId]);
 
 const spaceProvidersWithGroups = computed(() => {
   return Object.values(spaceProviders.value ?? {}).map((provider) => {
@@ -225,8 +225,8 @@ const spaceToMenuItem =
       // eslint-disable-next-line no-undefined
       icon: getIcon() ?? undefined,
       selected:
-        provider.id === activeSpacePath?.spaceProviderId &&
-        space.id === activeSpacePath?.spaceId,
+        provider.id === activeSpacePath.value?.spaceProviderId &&
+        space.id === activeSpacePath.value?.spaceId,
       metadata: {
         type: "space",
         spaceProviderId: provider.id,
@@ -246,11 +246,12 @@ const createMenuEntries = (
     provider.type === SpaceProviderNS.TypeEnum.HUB;
 
   return groups.map((group) => {
-    const isActiveProvider = provider.id === activeSpacePath?.spaceProviderId;
+    const isActiveProvider =
+      provider.id === activeSpacePath.value?.spaceProviderId;
 
     if (shouldHaveChildren()) {
       const isActiveSpaceInGroup = group.spaces.some(
-        (space) => space.id === activeSpacePath?.spaceId,
+        (space) => space.id === activeSpacePath.value?.spaceId,
       );
 
       return {

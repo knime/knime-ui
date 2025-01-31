@@ -54,11 +54,9 @@ const { selectionContainsFile, selectionContainsWorkflow } = storeToRefs(
 );
 const { exportSpaceItem } = useSpaceOperationsStore();
 
-interface Emits {
-  (e: "duplicateItems", sourceItems: string[]): void;
-}
-
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  duplicateItems: [sourceItems: string[]];
+}>();
 
 type SpaceExplorerContentMenuItem = MenuItem & { execute?: () => void };
 
@@ -231,7 +229,7 @@ const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
       ),
 
       ...valueOrEmpty(
-        (isHub && !selectionContainsFile) || isServer,
+        (isHub && !doesSelectionContainFile) || isServer,
         openInBrowser,
       ),
 

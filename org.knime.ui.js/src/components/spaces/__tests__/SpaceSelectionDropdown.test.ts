@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
+import { API } from "@api";
 
 import { SubMenu } from "@knime/components";
 
@@ -10,8 +11,11 @@ import {
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
+import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import SpaceSelectionDropdown from "../SpaceSelectionDropdown.vue";
+
+const mockedAPI = deepMocked(API);
 
 const startSpaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
   local: createSpaceProvider({
@@ -229,31 +233,57 @@ describe("SpaceSelectionDropdown.vue", () => {
     });
   });
 
-  it("connects to hub if user clicks 'Sign in'", () => {
+  it("connects to hub if user clicks 'Sign in'", async () => {
+    const spacesAfterLogin = [
+      createSpaceGroup({
+        name: "group1",
+        spaces: [createSpace({ name: "space1" })],
+      }),
+    ];
+
+    const hub2 = createSpaceProvider({
+      id: "hub2",
+      connected: false,
+      connectionMode: "AUTHENTICATED",
+      name: "Hub 2",
+      type: SpaceProviderNS.TypeEnum.HUB,
+      spaceGroups: Object.create([]),
+    });
+
     const { wrapper, mockedStores } = doMount({
       spaceProviders: {
         local: startSpaceProviders.local,
-        hub2: createSpaceProvider({
-          id: "hub2",
-          connected: false,
-          connectionMode: "AUTHENTICATED",
-          name: "Hub 2",
-        }),
+        hub2,
       },
+    });
+
+    const connectedHub = { ...hub2, connected: true };
+
+    mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce(connectedHub);
+
+    vi.mocked(
+      mockedStores.spaceProvidersStore.fetchProviderSpaces,
+    ).mockResolvedValueOnce({
+      ...connectedHub,
+      spaceGroups: spacesAfterLogin,
     });
 
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
     expect(menuItems.at(-1)!.text).toBe("Sign in");
 
+    expect(wrapper.find(".selected-text").text()).toMatch("Local Space");
     // click on sign in
     wrapper
       .findComponent(SubMenu)
       .vm.$emit("item-click", null, menuItems.at(-1));
 
+    await flushPromises();
     expect(mockedStores.spaceAuthStore.connectProvider).toHaveBeenCalledWith({
       spaceProviderId: "hub2",
     });
+
+    expect(wrapper.find(".selected-text").text()).toMatch("j.doe – space1");
   });
 
   it("renders loading state for a provider that is connecting", async () => {
