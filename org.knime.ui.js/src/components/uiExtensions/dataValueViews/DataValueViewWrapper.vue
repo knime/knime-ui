@@ -36,7 +36,7 @@ const PADDING = 8; // var(--space-8)
 const {
   height: dataValueViewHeight,
   width: dataValueViewWidth,
-  minSize: minLoaderSize,
+  minSize: dataValueViewSize,
 } = useDataValueViewSize();
 
 const defaultWidth = computed(() => dataValueViewWidth.value + 2 * PADDING);
@@ -98,7 +98,7 @@ const emit = defineEmits(["close"]);
   <ResizableComponentWrapper
     ref="dataValueViewWrapper"
     class="data-value-view-element"
-    :min-size="minLoaderSize"
+    :min-size="dataValueViewSize"
     :rect-state="rectState"
     :style="styles"
     draggable
@@ -137,7 +137,10 @@ const emit = defineEmits(["close"]);
   }
 
   & .data-value-view-loader {
+    background-color: var(--knime-white);
+    cursor: default;
     border-radius: 8px;
+    overflow: hidden;
   }
 }
 </style>

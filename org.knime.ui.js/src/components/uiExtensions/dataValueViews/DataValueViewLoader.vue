@@ -2,12 +2,17 @@
 /**
  * Dynamically loads a component that will render a data value view
  */
-import { ref, toRef, watch } from "vue";
+import { computed, ref, toRef, watch } from "vue";
 import { API } from "@api";
 
 import {
+  type Alert,
+  USER_ERROR_CODE_BLOCKING,
+} from "@knime/ui-extension-renderer/api";
+import {
   UIExtension,
   type UIExtensionAPILayer,
+  UIExtensionBlockingErrorView,
 } from "@knime/ui-extension-renderer/vue";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
@@ -33,17 +38,26 @@ const { resourceLocation, resourceLocationResolver } = useResourceLocation({
   extensionConfig,
 });
 
-const loadExtensionConfig = async () => {
-  const dataValueView = await API.port.getDataValueView({
-    projectId: props.projectId,
-    workflowId: props.workflowId,
-    nodeId: props.nodeId,
-    portIdx: props.selectedPortIndex,
-    rowIdx: props.selectedRowIndex,
-    colIdx: props.selectedColIndex,
-  });
+const isBlockingError = computed(
+  () => error.value?.code === USER_ERROR_CODE_BLOCKING,
+);
 
-  extensionConfig.value = dataValueView;
+const loadExtensionConfig = async () => {
+  error.value = null;
+  isLoadingConfig.value = true;
+  try {
+    extensionConfig.value = await API.port.getDataValueView({
+      projectId: props.projectId,
+      workflowId: props.workflowId,
+      nodeId: props.nodeId,
+      portIdx: props.selectedPortIndex,
+      rowIdx: props.selectedRowIndex,
+      colIdx: props.selectedColIndex,
+    });
+  } catch (_error) {
+    error.value = _error;
+  }
+  isLoadingConfig.value = false;
 };
 
 const noop = () => {}; // NOSONAR
@@ -61,8 +75,9 @@ const apiLayer: UIExtensionAPILayer = {
   // TODO: UIEXT-2229: Add data value view rpc data service calls
   // eslint-disable-next-line prefer-promise-reject-errors
   callNodeDataService: () => Promise.reject("Not implemented"),
-  // TODO: UIEXT-2204: Add alert handling
-  sendAlert: noop,
+  sendAlert: (alert: Alert) => {
+    error.value = alert;
+  },
   updateDataPointSelection: () => Promise.resolve(null),
   publishData: noop,
   setReportingContent: noop,
@@ -75,18 +90,10 @@ const apiLayer: UIExtensionAPILayer = {
   showDataValueView: noop,
 };
 
-// TODO: UIEXT-2204 add loading and error state handling
 watch(
   [toRef(props, "selectedColIndex"), toRef(props, "selectedRowIndex")],
   async () => {
-    try {
-      error.value = null;
-      isLoadingConfig.value = true;
-      await loadExtensionConfig();
-    } catch (_error) {
-      error.value = _error;
-    }
-    isLoadingConfig.value = false;
+    await loadExtensionConfig();
   },
   { immediate: true },
 );
@@ -94,12 +101,17 @@ watch(
 </script>
 
 <template>
+  <SkeletonItem v-if="isLoadingConfig" type="rounded-md" />
+  <UIExtensionBlockingErrorView
+    v-else-if="isBlockingError"
+    :alert="error"
+    @retry="loadExtensionConfig()"
+  />
   <UIExtension
-    v-if="!error && !isLoadingConfig"
+    v-else-if="!error"
     :extension-config="extensionConfig!"
     :shadow-app-style="{ height: '100%' }"
     :resource-location="resourceLocation"
     :api-layer="apiLayer!"
   />
-  <SkeletonItem v-else-if="isLoadingConfig" type="rounded-md" />
 </template>

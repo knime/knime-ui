@@ -121,5 +121,15 @@ describe("DataValueViewWrapper", () => {
       await nextTick();
       expect(wrapper.attributes().style).toContain("left: 10px;");
     });
+
+    it("is not draggable when clicking on other elements than the DataValueViewWrapper", async () => {
+      const { wrapper } = doShallowMount();
+      await nextTick();
+      await wrapper.findComponent(DataValueViewLoader).trigger("mousedown");
+      await nextTick();
+      expect(
+        wrapper.findComponent(DataValueViewLoader).attributes().style,
+      ).toBeUndefined();
+    });
   });
 });

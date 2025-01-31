@@ -112,6 +112,10 @@ export const useDraggableElement = (
   };
 
   const onMouseDown = (event: MouseEvent) => {
+    if (unrefElement(element) !== event.target) {
+      return;
+    }
+
     isDragging.value = true;
     const { left, top } = rectState.value;
     startX = event.clientX - left;

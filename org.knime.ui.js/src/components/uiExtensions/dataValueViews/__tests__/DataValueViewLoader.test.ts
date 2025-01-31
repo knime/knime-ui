@@ -1,8 +1,16 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 import { VueWrapper, flushPromises, shallowMount } from "@vue/test-utils";
 import { API } from "@api";
 
-import { UIExtension } from "@knime/ui-extension-renderer/vue";
+import {
+  type Alert,
+  USER_ERROR_CODE_BLOCKING,
+} from "@knime/ui-extension-renderer/api";
+import {
+  UIExtension,
+  UIExtensionBlockingErrorView,
+} from "@knime/ui-extension-renderer/vue";
 
 import SkeletonItem from "@/components/common/skeleton-loader/SkeletonItem.vue";
 import { deepMocked } from "@/test/utils";
@@ -64,12 +72,12 @@ describe("DataValueViewLoader.vue", () => {
         colIdx: props.selectedColIndex,
       }),
     );
-    expect(wrapper.findComponent(UIExtension).exists()).toBe(false);
+    expect(wrapper.findComponent(UIExtension).exists()).toBeFalsy();
     expect(wrapper.findComponent(SkeletonItem).exists()).toBeTruthy();
 
     await flushPromises();
 
-    expect(wrapper.findComponent(UIExtension).exists()).toBe(true);
+    expect(wrapper.findComponent(UIExtension).exists()).toBeTruthy();
     expect(wrapper.findComponent(SkeletonItem).exists()).toBeFalsy();
   });
 
@@ -80,6 +88,35 @@ describe("DataValueViewLoader.vue", () => {
     await flushPromises();
 
     expect(wrapper.findComponent(UIExtension).exists()).toBe(false);
+  });
+
+  it("loads the extension config on try again when it is not defined", async () => {
+    mockedAPI.port.getDataValueView
+      .mockRejectedValueOnce({
+        type: "error",
+        code: USER_ERROR_CODE_BLOCKING,
+        message: "An error occurred.",
+        data: {},
+      })
+      .mockResolvedValueOnce({
+        resourceInfo: {
+          type: "SHADOW_APP",
+          baseUrl: "baseUrl/",
+          path: "path",
+        },
+      });
+    const { wrapper } = doMount();
+    await flushPromises();
+
+    const errorView = wrapper.findComponent(UIExtensionBlockingErrorView);
+    expect(wrapper.findComponent(UIExtension).exists()).toBeFalsy();
+    expect(errorView.exists()).toBeTruthy();
+
+    errorView.vm.$emit("retry");
+    await flushPromises();
+
+    expect(wrapper.findComponent(UIExtension).exists()).toBeTruthy();
+    expect(errorView.exists()).toBeFalsy();
   });
 
   describe("apiLayer", () => {
@@ -98,6 +135,28 @@ describe("DataValueViewLoader.vue", () => {
       const location = await apiLayer.getResourceLocation("path1");
 
       expect(location).toBe("baseUrl/path1");
+    });
+
+    it("implements sendAlert in apiLayer", async () => {
+      mockGetDataValueView();
+      const { wrapper } = doMount();
+      await flushPromises();
+
+      const apiLayer = getApiLayer(wrapper);
+
+      const alert: Alert = {
+        type: "error",
+        message: "message",
+        code: USER_ERROR_CODE_BLOCKING,
+        data: {},
+      };
+
+      apiLayer.sendAlert(alert);
+
+      await nextTick();
+      const errorView = wrapper.findComponent(UIExtensionBlockingErrorView);
+      expect(errorView.exists()).toBeTruthy();
+      expect(errorView.props().alert).toStrictEqual(alert);
     });
   });
 });
