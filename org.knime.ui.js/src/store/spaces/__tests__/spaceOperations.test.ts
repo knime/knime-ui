@@ -1,6 +1,5 @@
 /* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import { ServiceCallException } from "@/api/gateway-api/generated-exceptions";
@@ -139,10 +138,10 @@ describe("spaces::spaceOperations", () => {
   });
 
   describe("changeDirectory", () => {
-    it("should change to another directory", async () => {
+    it("should change to another directory", () => {
       const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
-      await spaceOperationsStore.changeDirectory({
+      spaceOperationsStore.changeDirectory({
         projectId: "myProject1",
         pathId: "baz",
       });
@@ -151,7 +150,7 @@ describe("spaces::spaceOperations", () => {
       expect(spaceCachingStore.projectPath.myProject1.itemId).toBe("baz");
     });
 
-    it("should change to a parent directory", async () => {
+    it("should change to a parent directory", () => {
       const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
       spaceCachingStore.workflowGroupCache.set(
@@ -160,7 +159,7 @@ describe("spaces::spaceOperations", () => {
         { path: [{ id: "level1" }, { id: "level2" }] },
       );
 
-      await spaceOperationsStore.changeDirectory({
+      spaceOperationsStore.changeDirectory({
         projectId: "myProject1",
         pathId: "..",
       });
@@ -376,11 +375,10 @@ describe("spaces::spaceOperations", () => {
         itemId: "level1",
       };
 
-      spaceOperationsStore.importToWorkflowGroup({
+      await spaceOperationsStore.importToWorkflowGroup({
         projectId: "project2",
         importType: "FILES",
       });
-      await flushPromises();
 
       expect(mockedAPI.desktop.importFiles).toHaveBeenCalledWith({
         itemId: "level1",
@@ -398,11 +396,10 @@ describe("spaces::spaceOperations", () => {
         itemId: "level2",
       };
 
-      spaceOperationsStore.importToWorkflowGroup({
+      await spaceOperationsStore.importToWorkflowGroup({
         projectId: "project2",
         importType: "WORKFLOW",
       });
-      await flushPromises();
 
       expect(mockedAPI.desktop.importWorkflows).toHaveBeenCalledWith({
         itemId: "level2",
@@ -421,11 +418,10 @@ describe("spaces::spaceOperations", () => {
         itemId: "level2",
       };
 
-      spaceOperationsStore.exportSpaceItem({
+      await spaceOperationsStore.exportSpaceItem({
         projectId: "project2",
         itemId: "level2",
       });
-      await flushPromises();
 
       expect(mockedAPI.desktop.exportSpaceItem).toHaveBeenCalledWith({
         itemId: "level2",

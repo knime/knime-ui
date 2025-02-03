@@ -55,13 +55,11 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       try {
         this.setIsLoadingContent(true);
 
-        const content = await API.space.listWorkflowGroup({
+        return await API.space.listWorkflowGroup({
           spaceProviderId,
           spaceId,
           itemId,
         });
-
-        return content;
       } catch (dataFetchError) {
         if (retry) {
           const { isConnected } = await useSpaceAuthStore().connectProvider({
@@ -72,14 +70,12 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
             throw dataFetchError;
           }
 
-          const content = await this.fetchWorkflowGroupContentByIdTriplet({
+          return await this.fetchWorkflowGroupContentByIdTriplet({
             spaceId,
             spaceProviderId,
             itemId,
             retry: false,
           });
-
-          return content;
         } else {
           consola.error("Error trying to fetch workflow group content", {
             error: dataFetchError,
