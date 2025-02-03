@@ -13,7 +13,6 @@ const DELAY_TIME = 1000;
 
 interface Props {
   interactionId: string;
-  showControls: boolean;
 }
 
 const props = defineProps<Props>();
@@ -49,7 +48,6 @@ const clickSubmitFeedback = async (feedback: {
 
 <template>
   <div
-    v-show="showControls"
     v-if="shouldRenderFeedbackControls"
     class="feedback-controls"
   >
@@ -98,14 +96,7 @@ const clickSubmitFeedback = async (feedback: {
     }
   }
 
-  & .button.thumbs-down {
-    & svg.icon {
-      top: 4px;
-    }
-  }
-
-  & .button.thumbs-up:hover,
-  .button.thumbs-up:focus-visible {
+  & .button.thumbs-up:hover {
     background-color: var(--theme-color-success-semi);
 
     & svg.icon {
@@ -113,8 +104,7 @@ const clickSubmitFeedback = async (feedback: {
     }
   }
 
-  & .button.thumbs-down:hover,
-  .button.thumbs-down:focus-visible {
+  & .button.thumbs-down:hover {
     background-color: var(--theme-color-error-semi);
 
     & svg.icon {

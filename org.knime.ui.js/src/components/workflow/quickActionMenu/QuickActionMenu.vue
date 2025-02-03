@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, toRefs, watch } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { Button } from "@knime/components";
@@ -9,6 +9,7 @@ import type { NodeRelation } from "@/api/custom-types";
 import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import FloatingMenu from "@/components/common/FloatingMenu.vue";
 import KaiQuickBuild from "@/components/kai/KaiQuickBuild.vue";
+import { type QuickBuildMenuState } from "@/components/kai/KaiQuickBuild.vue";
 import NodePortActiveConnector from "@/components/workflow/ports/NodePortActiveConnector.vue";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useApplicationStore } from "@/store/application/application";
@@ -36,6 +37,9 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
   positionOrigin: "mouse",
 });
 
+const QUICK_BUILD_PROCESSING_OFFSET = 70;
+const QUICK_BUILD_RESULT_OFFSET = 40;
+
 const menuWidth = 360;
 
 defineEmits(["menuClose"]);
@@ -46,6 +50,18 @@ const { zoomFactor } = storeToRefs(useCanvasStore());
 
 const hasConnector = computed(() => quickActionMenu.value.hasConnector);
 
+const { port, nodeRelation } = toRefs(props);
+
+const {
+  menuMode,
+  setQuickAddMode,
+  setQuickBuildMode,
+  isQuickBuildModeAvailable,
+} = useQuickActionMenu({ port, nodeRelation });
+
+const quickBuildState = ref<QuickBuildMenuState>("INPUT");
+const updateQuickBuildState = (newState: QuickBuildMenuState) => (quickBuildState.value = newState);
+
 const canvasPosition = computed(() => {
   let pos = { ...props.position };
   const halfPort = $shapes.portSize / 2;
@@ -55,6 +71,17 @@ const canvasPosition = computed(() => {
     pos.x -= halfPort;
   } else {
     pos.x += halfPort;
+  }
+
+  if (menuMode.value === "quick-build") {
+    if (quickBuildState.value === "PROCESSING") {
+      // move the "processing" bar up above the insertion point
+      pos.y -= QUICK_BUILD_PROCESSING_OFFSET / zoomFactor.value;
+    }
+    if (quickBuildState.value === "RESULT") {
+      // move the "result" menu down closer to the added nodes
+      pos.y += QUICK_BUILD_RESULT_OFFSET / zoomFactor.value;
+    }
   }
 
   return pos;
@@ -101,14 +128,17 @@ const marginTop = computed(() => {
   return `${marginTop}px`;
 });
 
-const { port, nodeRelation } = toRefs(props);
+const floatingMenuAnchor = computed(() => {
+  if (menuMode.value === "quick-build") {
+    if (quickBuildState.value === "INPUT") {
+      return nodeRelation.value ? "top-left" : "top-right";
+    }
 
-const {
-  menuMode,
-  setQuickAddMode,
-  setQuickBuildMode,
-  isQuickBuildModeAvailable,
-} = useQuickActionMenu({ port, nodeRelation });
+    return "bottom-left";
+  }
+
+  return nodeRelation.value === "SUCCESSORS" ? "top-left" : "top-right"
+})
 
 const { isKaiEnabled } = useIsKaiEnabled();
 watch(
@@ -129,7 +159,7 @@ watch(
     class="quick-add-node"
     :canvas-position="canvasPosition"
     aria-label="Quick add node"
-    :anchor="nodeRelation === 'SUCCESSORS' ? 'top-left' : 'top-right'"
+    :anchor="floatingMenuAnchor"
     focus-trap
     :prevent-overflow="true"
     :style="{ width: `${menuWidth}px` }"
@@ -165,6 +195,7 @@ watch(
         :node-id="nodeId"
         :start-position="canvasPosition"
         @menu-back="setQuickAddMode"
+        @quick-build-state-changed="updateQuickBuildState"
       />
     </div>
   </FloatingMenu>

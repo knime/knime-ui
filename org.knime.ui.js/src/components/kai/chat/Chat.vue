@@ -52,16 +52,17 @@ watch(
 <template>
   <div class="chat">
     <SidebarPanelScrollContainer ref="scrollableContainer">
-      <template v-for="(item, index) in messagesWithSeparators" :key="index">
-        <MessageSeparatorComponent
-          v-if="item instanceof MessageSeparator"
-          v-bind="item"
-        />
-        <Message
-          v-else
-          v-bind="item"
-          @node-templates-loaded="scrollOnNewMessages"
-        />
+      <div class="messages">
+        <template v-for="(item, index) in messagesWithSeparators" :key="index">
+          <MessageSeparatorComponent
+            v-if="item instanceof MessageSeparator"
+            v-bind="item"
+          />
+          <Message
+            v-else
+            v-bind="item"
+            @node-templates-loaded="scrollOnNewMessages"
+          />
       </template>
       <Message
         v-if="isProcessing"
@@ -70,7 +71,9 @@ watch(
         :content="incomingTokens"
         :status-update="statusUpdate"
       />
+      </div>
     </SidebarPanelScrollContainer>
+
     <ChatControls
       class="chat-controls"
       :is-processing="isProcessing"
@@ -88,6 +91,14 @@ watch(
   flex-direction: column;
   min-height: 0;
   position: relative;
+
+  & .messages {
+    padding-top: 20px;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
   & .chat-controls {
     max-height: 200px;

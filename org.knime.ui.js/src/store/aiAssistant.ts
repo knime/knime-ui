@@ -33,6 +33,7 @@ export interface Message extends KaiMessage {
   interactionId?: string;
   isError?: boolean;
   timestamp?: number;
+  kind?: "quick-build-explanation" | "other";
 }
 
 interface ProjectAndWorkflowIds {
@@ -82,7 +83,6 @@ type AiAssistantQAEventPayload = {
 
 export type AiAssistantBuildEventPayload = {
   message: string;
-  summary?: string;
   interactionId: string;
   type: "SUCCESS" | "INPUT_NEEDED";
   references: never;

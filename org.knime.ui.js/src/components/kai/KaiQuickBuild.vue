@@ -14,6 +14,8 @@ import QuickBuildProcessing from "./quickBuild/QuickBuildProcessing.vue";
 import QuickBuildResult from "./quickBuild/QuickBuildResult.vue";
 import { useQuickBuild } from "./quickBuild/useQuickBuild";
 
+export type QuickBuildMenuState = "PROCESSING" | "RESULT" | "INPUT" | "NONE";
+
 type Props = {
   nodeId: string | null;
   startPosition: XY;
@@ -23,7 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
   nodeId: null,
 });
 
-defineEmits(["menuBack"]);
+const emit = defineEmits(["menuBack", "quickBuildStateChanged"]);
 
 const { nodeId, startPosition } = toRefs(props);
 const { closeQuickActionMenu } = useFloatingMenusStore();
@@ -40,7 +42,7 @@ const {
   statusUpdate,
 } = useQuickBuild({ nodeId, startPosition });
 
-const menuState = computed<"PROCESSING" | "RESULT" | "INPUT" | "NONE">(() => {
+const menuState = computed<QuickBuildMenuState>(() => {
   if (isProcessing.value) {
     return "PROCESSING";
   }
@@ -62,6 +64,8 @@ const menuState = computed<"PROCESSING" | "RESULT" | "INPUT" | "NONE">(() => {
 });
 
 watch(menuState, (menuState) => {
+  emit("quickBuildStateChanged", menuState);
+
   if (menuState === "NONE") {
     closeQuickActionMenu();
   }
@@ -70,18 +74,24 @@ watch(menuState, (menuState) => {
 
 <template>
   <div class="quick-build-menu">
-    <div v-if="menuState === 'INPUT'" class="header">
+    <div v-if="menuState === 'INPUT' || menuState === 'RESULT'" class="header">
       K-AI Build Mode
-      <Button with-border @click="$emit('menuBack')">
+      <Button
+        v-if="menuState === 'INPUT'"
+        with-border
+        @click="$emit('menuBack')"
+      >
         <GoBackIcon />
       </Button>
-    </div>
-    <div v-else-if="menuState === 'RESULT'" class="header">
-      K-AI Build Mode Results
-      <Button with-border @click="closeQuickActionMenu">
+      <Button
+        v-else-if="menuState === 'RESULT'"
+        with-border
+        @click="closeQuickActionMenu"
+      >
         <CancelIcon />
       </Button>
     </div>
+
     <div class="main">
       <component :is="panelComponent" v-if="panelComponent" class="panel" />
       <template v-else>
@@ -93,7 +103,6 @@ watch(menuState, (menuState) => {
         <QuickBuildResult
           v-if="menuState === 'RESULT'"
           :message="result!.message"
-          :summary="result!.summary"
           :interaction-id="result!.interactionId"
           @close="closeQuickActionMenu"
         />
@@ -148,8 +157,12 @@ watch(menuState, (menuState) => {
   }
 
   & .main {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
     & .panel {
-      min-height: 500px;
+      min-height: 200px;
     }
   }
 }

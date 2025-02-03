@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from "vue";
-import { useElementHover } from "@vueuse/core";
 
 import KnimeIcon from "@knime/styles/img/KNIME_Triangle.svg";
 import UserIcon from "@knime/styles/img/icons/user.svg";
@@ -20,8 +19,6 @@ const emit = defineEmits(["nodeTemplatesLoaded", "showNodeDescription"]);
 
 interface Props extends Message {
   statusUpdate?: StatusUpdate | null;
-  alwaysShowFeedbackControls?: boolean;
-  hideFooter?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -32,12 +29,8 @@ const props = withDefaults(defineProps<Props>(), {
   components: () => [],
   statusUpdate: null,
   isError: false,
-  alwaysShowFeedbackControls: false,
-  hideFooter: false,
+  kind: "other",
 });
-
-const messageElement = ref<HTMLElement | null>(null);
-const isHovered = useElementHover(messageElement);
 
 const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
   role: props.role,
@@ -46,29 +39,43 @@ const { nodeTemplates, uninstalledExtensions } = useNodeTemplates({
 });
 
 const isUser = computed(() => props.role === KaiMessage.RoleEnum.User);
-const shouldShowFeedbackControls = computed(
+const shouldShowFeedbackButtons = computed(
   () => !isUser.value && !props.isError && props.interactionId,
 );
-const areFeedbackControlsVisible = computed(() => {
-  if (props.alwaysShowFeedbackControls) {
-    return true;
+
+// Message content is only truncated for K-AI's explanations in Quick Build Mode
+const shouldTruncateContent = computed(() => {
+  const lines = props.content.split(/\r?\n/);
+  return props.kind === "quick-build-explanation" && lines.length > 2;
+});
+const isContentExpanded = ref(!shouldTruncateContent.value);
+
+const displayContent = computed(() => {
+  if (!shouldTruncateContent.value || isContentExpanded.value) {
+    return props.content;
   }
 
-  return isHovered.value;
+  const lines = props.content.split(/\r?\n/);
+  if (lines.length > 2) {
+    return `${lines.slice(0, 2).join("\n")} …`;
+  }
+  return props.content;
 });
 </script>
 
 <template>
-  <div ref="messageElement" class="message">
+  <div class="message">
+    <!-- Message's sender icon -->
     <div class="header">
       <div class="icon" :class="{ user: isUser }">
         <UserIcon v-if="isUser" />
         <KnimeIcon v-else />
       </div>
     </div>
+
+    <!-- Message content -->
     <div class="body" :class="{ user: isUser, error: isError }">
-      <!-- eslint-disable vue/no-v-html  -->
-      <MarkdownRenderer v-if="content" :markdown="content" />
+      <MarkdownRenderer v-if="content" :markdown="displayContent" />
       <MessagePlaceholder v-else />
       <SuggestedNodes :node-templates="nodeTemplates" />
       <AdditionalResources
@@ -79,16 +86,26 @@ const areFeedbackControlsVisible = computed(() => {
       />
       <KaiStatus :status="statusUpdate?.message" />
     </div>
-    <div v-if="!props.hideFooter" class="footer">
-      <div class="footer-inner">
+
+    <!-- Feedback buttons -->
+    <div class="footer">
+      <div class="footer-left">
+        <template v-if="shouldTruncateContent && !isContentExpanded">
+          <button
+            class="show-full-content-button"
+            @click="isContentExpanded = true"
+          >
+            Show full explanation
+          </button>
+        </template>
+      </div>
+
+      <div class="footer-right">
         <FeedbackControls
-          v-if="shouldShowFeedbackControls"
+          v-if="shouldShowFeedbackButtons"
           class="feedback-controls"
           :interaction-id="interactionId!"
-          :show-controls="areFeedbackControlsVisible"
         />
-
-        <slot name="footer-append" />
       </div>
     </div>
   </div>
@@ -102,10 +119,6 @@ const areFeedbackControlsVisible = computed(() => {
   width: 100%;
   font-size: 13px;
   font-weight: 400;
-
-  &:first-child {
-    margin-top: 21px;
-  }
 
   & .header {
     position: absolute;
@@ -129,11 +142,6 @@ const areFeedbackControlsVisible = computed(() => {
       display: flex;
       justify-content: center;
       align-items: center;
-
-      &.user {
-        left: auto;
-        right: 0;
-      }
 
       & svg {
         margin-top: -2px;
@@ -162,11 +170,34 @@ const areFeedbackControlsVisible = computed(() => {
   }
 
   & .footer {
-    height: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 25px;
 
-    & .footer-inner {
-      display: flex;
-      gap: var(--space-8);
+    & .footer-left {
+      flex: 1;
+      text-align: left;
+    }
+
+    & .footer-right {
+      text-align: right;
+    }
+
+    & .show-full-content-button {
+      all: unset;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 11px;
+      padding-top: 10px;
+      color: var(--knime-dove-grey);
+      margin-top: -5px;
+      margin-left: 2px;
+    }
+
+    & .show-full-content-button:active,
+    .show-full-content-button:hover {
+      text-decoration: underline;
     }
   }
 }

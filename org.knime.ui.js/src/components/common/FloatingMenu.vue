@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, toRef, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRef, watch } from "vue";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
 import { storeToRefs } from "pinia";
@@ -36,7 +36,7 @@ type Props = {
   /**
    * Which corner of the floating menu should stick to target position
    */
-  anchor?: "top-left" | "top-right";
+  anchor?: "top-left" | "top-right" | "bottom-left";
 
   /**
    * When set to true will disable interactions on the workflow canvas when the menu is open
@@ -113,6 +113,10 @@ const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
   return Math.max(distanceX, distanceY);
 };
 
+const menuHeightComputed = computed(() => {
+  return rootEl.value?.offsetHeight;
+})
+
 const setAbsolutePosition = () => {
   if (!rootEl.value) {
     return;
@@ -145,6 +149,10 @@ const setAbsolutePosition = () => {
     left -= menuWidth;
   }
 
+  if (props.anchor === "bottom-left") {
+    top -= menuHeight;
+  }
+
   if (props.preventOverflow) {
     // ensure the menu is always visible within the window
     if (window.innerWidth - left < menuWidth) {
@@ -163,6 +171,10 @@ const setAbsolutePosition = () => {
 
   absolutePosition.value = { left, top };
 };
+
+watch(menuHeightComputed, () => {
+  setAbsolutePosition();
+})
 
 watch([zoomFactor, toRef(props, "canvasPosition")], () => {
   setAbsolutePosition();
