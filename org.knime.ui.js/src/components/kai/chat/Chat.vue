@@ -63,14 +63,14 @@ watch(
             v-bind="item"
             @node-templates-loaded="scrollOnNewMessages"
           />
-      </template>
-      <Message
-        v-if="isProcessing"
-        key="processing"
-        :role="KaiMessage.RoleEnum.Assistant"
-        :content="incomingTokens"
-        :status-update="statusUpdate"
-      />
+        </template>
+        <Message
+          v-if="isProcessing"
+          key="processing"
+          :role="KaiMessage.RoleEnum.Assistant"
+          :content="incomingTokens"
+          :status-update="statusUpdate"
+        />
       </div>
     </SidebarPanelScrollContainer>
 

@@ -47,10 +47,7 @@ const clickSubmitFeedback = async (feedback: {
 </script>
 
 <template>
-  <div
-    v-if="shouldRenderFeedbackControls"
-    class="feedback-controls"
-  >
+  <div v-if="shouldRenderFeedbackControls" class="feedback-controls">
     <Button
       class="button thumbs-up"
       @click="clickSubmitFeedback({ isPositive: true, comment: '' })"

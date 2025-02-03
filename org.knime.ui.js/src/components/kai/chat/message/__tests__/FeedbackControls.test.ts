@@ -9,9 +9,8 @@ describe("FeedbackControls", () => {
   const interactionId = "some-interaction-id";
 
   const doMount = ({
-    showControls = true,
     isFeedbackProcessed = false,
-  }: { showControls?: boolean; isFeedbackProcessed?: boolean } = {}) => {
+  }: { isFeedbackProcessed?: boolean } = {}) => {
     const isFeedbackProcessedMock = vi
       .fn()
       .mockReturnValue(isFeedbackProcessed);
@@ -21,7 +20,7 @@ describe("FeedbackControls", () => {
     // @ts-ignore
     mockedStores.aiAssistantStore.isFeedbackProcessed = isFeedbackProcessedMock;
 
-    const props = { interactionId, showControls };
+    const props = { interactionId };
     const wrapper = mount(FeedbackControls, {
       props,
       global: {
@@ -32,7 +31,7 @@ describe("FeedbackControls", () => {
     return { wrapper, mockedStores };
   };
 
-  it("renders the feedback controls if showControls is true and feedback is not processed yet", () => {
+  it("renders the feedback controls", () => {
     const { wrapper } = doMount();
 
     expect(wrapper.find(".feedback-controls").exists()).toBe(true);
@@ -42,22 +41,6 @@ describe("FeedbackControls", () => {
     const { wrapper } = doMount({ isFeedbackProcessed: true });
 
     expect(wrapper.find(".feedback-controls").exists()).toBe(false);
-  });
-
-  it("shows the feedback controls if showControls is true", () => {
-    const { wrapper } = doMount();
-
-    const htmlElement = wrapper.find(".feedback-controls")
-      .element as HTMLElement;
-    expect(htmlElement.style.display).not.toBe("none");
-  });
-
-  it("does not show the feedback controls if showControls is false", () => {
-    const { wrapper } = doMount({ showControls: false });
-
-    const htmlElement = wrapper.find(".feedback-controls")
-      .element as HTMLElement;
-    expect(htmlElement.style.display).toBe("none");
   });
 
   it("calls submitFeedback with true when thumbs-up button is clicked", async () => {

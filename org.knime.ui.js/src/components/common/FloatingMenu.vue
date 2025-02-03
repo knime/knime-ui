@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRef, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  toRef,
+  watch,
+} from "vue";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
 import { storeToRefs } from "pinia";
@@ -73,6 +81,9 @@ const { zoomFactor } = storeToRefs(canvasStore);
 const { isDraggingNodeTemplate } = storeToRefs(useNodeTemplatesStore());
 
 const rootEl = ref<HTMLDivElement | null>(null);
+const menuElementHeight = computed(() => {
+  return rootEl.value?.offsetHeight ?? 0;
+});
 
 const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } =
   useFocusTrap(rootEl);
@@ -112,10 +123,6 @@ const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
   // return greatest distance
   return Math.max(distanceX, distanceY);
 };
-
-const menuHeightComputed = computed(() => {
-  return rootEl.value?.offsetHeight;
-})
 
 const setAbsolutePosition = () => {
   if (!rootEl.value) {
@@ -172,9 +179,9 @@ const setAbsolutePosition = () => {
   absolutePosition.value = { left, top };
 };
 
-watch(menuHeightComputed, () => {
+watch(menuElementHeight, () => {
   setAbsolutePosition();
-})
+});
 
 watch([zoomFactor, toRef(props, "canvasPosition")], () => {
   setAbsolutePosition();

@@ -225,4 +225,53 @@ describe("Message.vue", () => {
       interactionId,
     );
   });
+
+  describe("quick-build explanation truncation", () => {
+    it("truncates content if kind is quick-build-explanation and there are more than 2 lines", () => {
+      const multiLine = "Line1\nLine2\nLine3\nLine4";
+      const { wrapper } = doMount({
+        props: { kind: "quick-build-explanation", content: multiLine },
+      });
+
+      expect(wrapper.findComponent(MarkdownRenderer).text()).toContain(
+        "Line1\nLine2 …",
+      );
+      expect(wrapper.find(".show-full-content-button").exists()).toBe(true);
+    });
+
+    it('displays full content after clicking "Show full explanation"', async () => {
+      const multiLine = "Line1\nLine2\nLine3\nLine4";
+      const { wrapper } = doMount({
+        props: { kind: "quick-build-explanation", content: multiLine },
+      });
+
+      expect(wrapper.findComponent(MarkdownRenderer).text()).toContain(
+        "Line1\nLine2 …",
+      );
+      await wrapper.find(".show-full-content-button").trigger("click");
+
+      expect(wrapper.findComponent(MarkdownRenderer).text()).toBe(multiLine);
+      expect(wrapper.find(".show-full-content-button").exists()).toBe(false);
+    });
+
+    it("does not truncate content if there are 2 or fewer lines", () => {
+      const twoLines = "Line1\nLine2";
+      const { wrapper } = doMount({
+        props: { kind: "quick-build-explanation", content: twoLines },
+      });
+
+      expect(wrapper.findComponent(MarkdownRenderer).text()).toBe(twoLines);
+      expect(wrapper.find(".show-full-content-button").exists()).toBe(false);
+    });
+
+    it("does not truncate content if kind is not quick-build-explanation", () => {
+      const multiLine = "Line1\nLine2\nLine3\nLine4";
+      const { wrapper } = doMount({
+        props: { kind: "other", content: multiLine },
+      });
+
+      expect(wrapper.findComponent(MarkdownRenderer).text()).toBe(multiLine);
+      expect(wrapper.find(".show-full-content-button").exists()).toBe(false);
+    });
+  });
 });

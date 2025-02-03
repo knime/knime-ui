@@ -60,7 +60,8 @@ const {
 } = useQuickActionMenu({ port, nodeRelation });
 
 const quickBuildState = ref<QuickBuildMenuState>("INPUT");
-const updateQuickBuildState = (newState: QuickBuildMenuState) => (quickBuildState.value = newState);
+const updateQuickBuildState = (newState: QuickBuildMenuState) =>
+  (quickBuildState.value = newState);
 
 const canvasPosition = computed(() => {
   let pos = { ...props.position };
@@ -137,8 +138,8 @@ const floatingMenuAnchor = computed(() => {
     return "bottom-left";
   }
 
-  return nodeRelation.value === "SUCCESSORS" ? "top-left" : "top-right"
-})
+  return nodeRelation.value === "SUCCESSORS" ? "top-left" : "top-right";
+});
 
 const { isKaiEnabled } = useIsKaiEnabled();
 watch(

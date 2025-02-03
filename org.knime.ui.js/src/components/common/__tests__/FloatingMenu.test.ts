@@ -184,6 +184,16 @@ describe("FloatingMenu.vue", () => {
       expect(wrapper.attributes("style")).toMatch("opacity: 1;");
     });
 
+    it("position inside canvas: bottom-left", async () => {
+      const { wrapper } = doMount({ props: { anchor: "bottom-left" } });
+
+      await nextTick();
+
+      expect(wrapper.attributes("style")).toMatch("left: 20px;");
+      expect(wrapper.attributes("style")).toMatch("top: 10px");
+      expect(wrapper.attributes("style")).toMatch("opacity: 1;");
+    });
+
     it("position outside left border, half threshold", async () => {
       const { wrapper } = doMount({
         props: { canvasPosition: { x: -5, y: 20 } },
@@ -249,33 +259,22 @@ describe("FloatingMenu.vue", () => {
     });
 
     it("re-position on canvas scroll", async () => {
-      const screenFromCanvasCoordinatesMock = vi
-        .fn()
-        .mockImplementationOnce(() => ({ x: 20, y: 20 }))
-        .mockImplementationOnce(() => ({ x: 50, y: 50 }));
+      let screenCoordinates = { x: 20, y: 20 };
+      const screenFromCanvasCoordinatesMock = vi.fn(() => screenCoordinates);
 
-      const { wrapper, getBoundingClientRect } = doMount({
-        screenFromCanvasCoordinatesMock,
-      });
-
+      const { wrapper } = doMount({ screenFromCanvasCoordinatesMock });
       await nextTick();
 
       expect(wrapper.attributes("style")).toContain("left: 20px");
       expect(wrapper.attributes("style")).toContain("top: 20px");
 
+      // Update the coordinates for the scroll event.
+      screenCoordinates = { x: 50, y: 50 };
+
       const kanvas = document.getElementById("kanvas")!;
-      getBoundingClientRect.mockImplementationOnce(() => ({
-        x: 50,
-        y: 50,
-        width: 80,
-        height: 80,
-      }));
-
-      await nextTick();
-
       kanvas.dispatchEvent(new CustomEvent("scroll"));
-
       await nextTick();
+
       expect(wrapper.attributes("style")).toContain("left: 50px");
       expect(wrapper.attributes("style")).toContain("top: 50px");
     });
