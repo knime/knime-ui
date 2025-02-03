@@ -1,4 +1,3 @@
-import { API } from "@api";
 import { defineStore } from "pinia";
 
 import type {
@@ -342,15 +341,6 @@ export const useApplicationStore = defineStore("application", {
       if (applicationState.hasOwnProperty("nodeRepositoryLoaded")) {
         this.setNodeRepositoryLoaded(applicationState.nodeRepositoryLoaded!);
       }
-    },
-
-    async forceCloseProjects({ projectIds }: { projectIds: string[] }) {
-      const nextProjectId = this.getNextProjectId({
-        closingProjectIds: projectIds,
-      });
-
-      await API.desktop.forceCloseProjects({ projectIds });
-      return nextProjectId;
     },
 
     async toggleContextMenu({

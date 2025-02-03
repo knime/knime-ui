@@ -13,7 +13,6 @@ import { deepMocked } from "@/test/utils";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
 
 import { loadStore } from "./loadStore";
-// import { getNextProjectId } from "../util";
 
 vi.mock("@/util/generateWorkflowPreview");
 vi.mock("@/util/encodeString", () => ({
@@ -376,6 +375,19 @@ describe("workflow store: desktop interactions", () => {
     });
   });
 
+  it("force close projects calls forceCloseProjects via the API", async () => {
+    mockedAPI.desktop.forceCloseProjects.mockImplementation(() => null);
+    const closingProjectIds = { projectIds: ["someProjectId"] };
+
+    await loadStore().desktopInteractionsStore.forceCloseProjects(
+      closingProjectIds,
+    );
+
+    expect(mockedAPI.desktop.forceCloseProjects).toHaveBeenCalledWith(
+      closingProjectIds,
+    );
+  });
+
   describe("save workflow locally", () => {
     it("saves the workflow locally via the API", async () => {
       const { workflowStore, desktopInteractionsStore } = loadStore();
@@ -416,6 +428,7 @@ describe("workflow store: desktop interactions", () => {
     });
   });
 
+  // TODO move to applicationStore tests?
   // describe("utils", () => {
   //   it("determines next project id correctly", () => {
   //     const closingProjectIds = ["test1", "test2", "test3"];

@@ -62,6 +62,14 @@ export const useDesktopInteractionsStore = defineStore("desktopInteractions", {
       });
     },
 
+    async forceCloseProjects({ projectIds }: { projectIds: string[] }) {
+      await API.desktop.forceCloseProjects({ projectIds });
+
+      return useApplicationStore().getNextProjectId({
+        closingProjectIds: projectIds,
+      });
+    },
+
     /* See docs in API */
     async openNodeConfiguration(nodeId: string) {
       const settingsChanged = await API.desktop.openNodeDialog({

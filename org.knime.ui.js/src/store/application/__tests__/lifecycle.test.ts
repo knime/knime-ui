@@ -230,8 +230,7 @@ describe("application::lifecycle", () => {
     });
 
     it("force closes projects on call", async () => {
-      const { applicationStore } = loadStore();
-      await applicationStore.forceCloseProjects({
+      await loadStore().desktopInteractionsStore.forceCloseProjects({
         projectIds: ["projectTest1"],
       });
 

@@ -493,7 +493,7 @@ describe("spaces::spaceOperations", () => {
         spaceOperationsStore,
         spaceCachingStore,
         spaceProvidersStore,
-        applicationStore,
+        desktopInteractionsStore,
       } = loadStore({
         openProjects,
         forceCloseProjects: vi.fn(() => "project2"),
@@ -518,7 +518,7 @@ describe("spaces::spaceOperations", () => {
         $router,
       });
 
-      expect(applicationStore.forceCloseProjects).toHaveBeenCalledWith({
+      expect(desktopInteractionsStore.forceCloseProjects).toHaveBeenCalledWith({
         projectIds: ["project1"],
       });
 

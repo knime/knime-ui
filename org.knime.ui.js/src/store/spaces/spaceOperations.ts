@@ -13,6 +13,7 @@ import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { isProjectOpen } from "@/store/spaces/util";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions.ts";
 import ITEM_TYPES from "@/util/spaceItemTypes";
 
 import { useSpaceAuthStore } from "./auth";
@@ -452,7 +453,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         // when open projects are being deleted we must force close them first.
         // this in-turn will return which is the project that should be active after deletion
         const nextProjectId = isDeletingOpenProjects
-          ? await useApplicationStore().forceCloseProjects({
+          ? await useDesktopInteractionsStore().forceCloseProjects({
               projectIds: openProjectIds,
             })
           : null;

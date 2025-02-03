@@ -9,6 +9,7 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions.ts";
 import { createJob, createSchedule } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { useSpaceAuthStore } from "../auth";
@@ -126,6 +127,7 @@ export const loadStore = ({
   const spaceAuthStore = useSpaceAuthStore(testingPinia);
   const deploymentsStore = useDeploymentsStore(testingPinia);
   const spaceOperationsStore = useSpaceOperationsStore(testingPinia);
+  const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
   const applicationStore = useApplicationStore(testingPinia);
   // @ts-expect-error
   applicationStore.isUnknownProject = () => isUnknownProject;
@@ -133,7 +135,7 @@ export const loadStore = ({
   // eslint-disable-next-line no-undefined
   applicationStore.activeProjectOrigin = activeProjectOrigin ?? undefined;
 
-  vi.mocked(applicationStore.forceCloseProjects).mockImplementation(
+  vi.mocked(desktopInteractionsStore.forceCloseProjects).mockImplementation(
     forceCloseProjects,
   );
   vi.mocked(
@@ -174,5 +176,6 @@ export const loadStore = ({
     deploymentsStore,
     spaceOperationsStore,
     applicationStore,
+    desktopInteractionsStore,
   };
 };

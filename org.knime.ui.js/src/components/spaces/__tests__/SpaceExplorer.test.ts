@@ -115,7 +115,7 @@ describe("SpaceExplorer.vue", () => {
     });
 
     vi.mocked(
-      mockedStores.applicationStore.forceCloseProjects,
+      mockedStores.desktopInteractionsStore.forceCloseProjects,
     ).mockImplementation(vi.fn());
     vi.mocked(
       mockedStores.globalLoaderStore.updateGlobalLoader,
@@ -564,7 +564,7 @@ describe("SpaceExplorer.vue", () => {
       });
 
       expect(
-        mockedStores.applicationStore.forceCloseProjects,
+        mockedStores.desktopInteractionsStore.forceCloseProjects,
       ).toHaveBeenNthCalledWith(1, { projectIds: [openProjects[0].projectId] });
     });
 

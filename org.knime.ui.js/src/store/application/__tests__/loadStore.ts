@@ -9,6 +9,7 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions.ts";
 import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createWorkflow } from "@/test/factories";
@@ -66,6 +67,7 @@ export const loadStore = () => {
   const floatingMenusStore = useFloatingMenusStore(testingPinia);
   const dirtyProjectsTrackingStore =
     useDirtyProjectsTrackingStore(testingPinia);
+  const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
 
   workflowStore.setActiveWorkflow(
     createWorkflow({ projectId: "project1", info: { containerId: "root" } }),
@@ -91,5 +93,6 @@ export const loadStore = () => {
     mockRouter,
     floatingMenusStore,
     dirtyProjectsTrackingStore,
+    desktopInteractionsStore,
   };
 };
