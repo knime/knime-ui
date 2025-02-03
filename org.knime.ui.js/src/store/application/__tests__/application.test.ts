@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
+import type { Project } from "@/api/gateway-api/generated-api.ts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router } from "@/router/router";
 import type { useWorkflowStore } from "@/store/workflow/workflow";
@@ -86,6 +87,68 @@ describe("application", () => {
     expect(applicationStore.isUnknownProject("project1")).toBe(true);
     expect(applicationStore.isUnknownProject("project2")).toBe(false);
     expect(applicationStore.isUnknownProject("project3")).toBe(true);
+  });
+
+  describe("getNextProjectId", () => {
+    const { applicationStore } = loadStore();
+    const projects: Project[] = Array.from({ length: 4 }, (_, i) => ({
+      name: `project ${i + 1}`,
+      projectId: `projectId${i + 1}`,
+    }));
+
+    it("returns active projectId if active project is not in closing projects", () => {
+      const closingProjectIds = projects
+        .slice(0, 3)
+        .map(({ projectId }) => projectId);
+      applicationStore.setActiveProjectId(projects[3].projectId);
+
+      const nextProjectId = applicationStore.getNextProjectId({
+        closingProjectIds,
+      });
+
+      expect(nextProjectId).toBe(projects[3].projectId);
+    });
+
+    it("returns null if active project is closed and there is exactly one open project", () => {
+      const closingProjectIds = projects
+        .slice(0, 3)
+        .map(({ projectId }) => projectId);
+      applicationStore.setActiveProjectId(projects[0].projectId);
+      applicationStore.setOpenProjects([projects[3]]);
+
+      const nextProjectId = applicationStore.getNextProjectId({
+        closingProjectIds,
+      });
+
+      expect(nextProjectId).toBeNull();
+    });
+
+    it("returns null if active project is closed and there are at least two open projects which are alle closed", () => {
+      const closingProjectIds = projects.map(({ projectId }) => projectId);
+      applicationStore.setActiveProjectId(projects[0].projectId);
+      applicationStore.setOpenProjects(projects.slice(0, 2));
+
+      const nextProjectId = applicationStore.getNextProjectId({
+        closingProjectIds,
+      });
+
+      expect(nextProjectId).toBeNull();
+    });
+
+    it("returns projectId of next open project if active project is closed and at least one open project is not closed", () => {
+      const { applicationStore } = loadStore();
+      const closingProjectIds = projects
+        .slice(0, 1)
+        .map(({ projectId }) => projectId);
+      applicationStore.setActiveProjectId(projects[0].projectId);
+      applicationStore.setOpenProjects(projects.slice(0, 2));
+
+      const nextProjectId = applicationStore.getNextProjectId({
+        closingProjectIds,
+      });
+
+      expect(nextProjectId).toBe(projects[1].projectId);
+    });
   });
 
   describe("replace application State", () => {

@@ -427,23 +427,4 @@ describe("workflow store: desktop interactions", () => {
       );
     });
   });
-
-  // TODO move to applicationStore tests?
-  // describe("utils", () => {
-  //   it("determines next project id correctly", () => {
-  //     const closingProjectIds = ["test1", "test2", "test3"];
-  //     const activeProjectId = "test1";
-  //     const openProjects = [
-  //       { projectId: "test1" },
-  //       { projectId: "test2" },
-  //       { projectId: "test4" },
-  //     ];
-  //     const nextProjectId = getNextProjectId({
-  //       closingProjectIds,
-  //       activeProjectId,
-  //       openProjects,
-  //     });
-  //     expect(nextProjectId).toBe("test4");
-  //   });
-  // });
 });
