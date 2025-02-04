@@ -240,10 +240,13 @@ describe("NodePorts.vue", () => {
 
       // Click any port of group
       let groupPort = wrapper.findAllComponents(NodePort).at(3);
+      let canRemove = groupPort.props("canRemove");
       await groupPort.vm.$emit("click");
-
-      // Clicked port is selected
-      expect(groupPort.props("selected")).toBe(true);
+      if (canRemove) {
+        expect(groupPort.props("selected")).toBe(true);
+      } else {
+        expect(groupPort.props("selected")).toBe(false);
+      }
     });
 
     describe("navigate selection", () => {

@@ -63,12 +63,16 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
     if (!options.isEditable) {
       return;
     }
-    var isSelectableComponentPort = isComponent.value && index !== 0;
+    const isSelectableComponentPort = isComponent.value && index !== 0;
     // all but hidden ports on components (mickey mouse) can be selected
-    var isSelectableMetonodePort = isMetanode.value;
-    var isSelectableNativePort = options.portGroups && portGroupId &&canRemove;
+    const isSelectableNativePort =
+      options.portGroups && portGroupId && canRemove;
     // removable native ports in a port group can be selected
-    if(isSelectableComponentPort || isSelectableMetonodePort || isSelectableNativePort) {
+    if (
+      isSelectableComponentPort ||
+      isMetanode.value ||
+      isSelectableNativePort
+    ) {
       updateSelection(`${side}-${index}`);
     }
   };
