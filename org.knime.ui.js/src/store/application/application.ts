@@ -1,3 +1,4 @@
+import { API } from "@api";
 import { defineStore } from "pinia";
 
 import type { AvailablePortTypes, ExampleProject } from "@/api/custom-types";
@@ -120,6 +121,13 @@ export const useApplicationStore = defineStore("application", {
 
     setOpenProjects(projects: Project[]) {
       this.openProjects = projects;
+    },
+
+    async updateOpenProjectsOrder(projects: Project[]) {
+      this.setOpenProjects(projects); // optimistic update
+
+      const projectIds = projects.map(({ projectId }) => projectId);
+      await API.desktop.updateOpenProjectsOrder({ projectIds });
     },
 
     setExampleProjects(examples: ExampleProject[]) {

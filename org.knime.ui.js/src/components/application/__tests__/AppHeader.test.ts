@@ -1,4 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  type MockInstance,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { API } from "@api";
@@ -10,6 +18,7 @@ import type { Project } from "@/api/gateway-api/generated-api";
 import CloseIcon from "@/assets/cancel.svg";
 import CloseButton from "@/components/common/CloseButton.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
+import { useApplicationStore } from "@/store/application/application.ts";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
@@ -213,6 +222,147 @@ describe("AppHeader.vue", () => {
       const activeDiv = wrapper.find(".active").element;
 
       expect(activeDiv.scrollIntoView).toHaveBeenCalledOnce();
+    });
+
+    describe("drag and drop", () => {
+      let getBoundingClientRectMock: MockInstance;
+
+      beforeEach(() => {
+        getBoundingClientRectMock = vi.spyOn(
+          HTMLElement.prototype,
+          "getBoundingClientRect",
+        );
+      });
+
+      afterEach(() => {
+        getBoundingClientRectMock.mockRestore();
+      });
+
+      it("works as expected if all tabs have same width", async () => {
+        const { wrapper, openProjects } = doMount();
+        getBoundingClientRectMock.mockReturnValue({ width: 100, left: 0 });
+        const tabs = wrapper.findAllComponents(AppHeaderTab);
+
+        await tabs.at(2)!.trigger("dragstart", {
+          dataTransfer: {
+            setDragImage: vi.fn(),
+          },
+        });
+        await tabs.at(1)!.trigger("drag", { clientX: 199 });
+        await tabs.at(0)!.trigger("drag", { clientX: 99 });
+        await tabs.at(0)!.trigger("dragend");
+
+        const newOrder = wrapper.findAll(".tab-item").map((tab) => tab.text());
+        const expectedOpenProjects = [
+          openProjects[2],
+          openProjects[0],
+          openProjects[1],
+        ];
+        expect(newOrder).toEqual(expectedOpenProjects.map(({ name }) => name));
+        expect(useApplicationStore().openProjects).toEqual(
+          expectedOpenProjects,
+        );
+        expect(mockedAPI.desktop.updateOpenProjectsOrder).toHaveBeenCalledWith({
+          projectIds: expectedOpenProjects.map(({ projectId }) => projectId),
+        });
+      });
+
+      it("works as expected moving left to right if dragged tab is smaller", async () => {
+        const { wrapper, openProjects } = doMount();
+
+        // mock tab widths
+        [50, 100, 100].forEach((width) => {
+          getBoundingClientRectMock.mockReturnValueOnce({ width });
+        });
+        // mock tabWrapper left
+        getBoundingClientRectMock.mockReturnValueOnce({ left: 0 });
+
+        const tabs = wrapper.findAllComponents(AppHeaderTab);
+
+        await tabs.at(0)!.trigger("dragstart", {
+          dataTransfer: {
+            setDragImage: vi.fn(),
+          },
+        });
+        await tabs.at(1)!.trigger("drag", { clientX: 101 });
+        await tabs.at(2)!.trigger("drag", { clientX: 199 });
+        await tabs.at(2)!.trigger("dragend");
+
+        const newOrder = wrapper.findAll(".tab-item").map((tab) => tab.text());
+        const expectedOpenProjects = [
+          openProjects[1],
+          openProjects[0],
+          openProjects[2],
+        ];
+        expect(newOrder).toEqual(expectedOpenProjects.map(({ name }) => name));
+        expect(useApplicationStore().openProjects).toEqual(
+          expectedOpenProjects,
+        );
+        expect(mockedAPI.desktop.updateOpenProjectsOrder).toHaveBeenCalledWith({
+          projectIds: expectedOpenProjects.map(({ projectId }) => projectId),
+        });
+      });
+
+      it("works as expected moving right to left if dragged tab is smaller", async () => {
+        const { wrapper, openProjects } = doMount();
+
+        // mock tab widths
+        [100, 100, 50].forEach((width) => {
+          getBoundingClientRectMock.mockReturnValueOnce({ width });
+        });
+        // mock tabWrapper left
+        getBoundingClientRectMock.mockReturnValueOnce({ left: 0 });
+
+        const tabs = wrapper.findAllComponents(AppHeaderTab);
+
+        await tabs.at(2)!.trigger("dragstart", {
+          dataTransfer: {
+            setDragImage: vi.fn(),
+          },
+        });
+        await tabs.at(1)!.trigger("drag", { clientX: 149 });
+        await tabs.at(0)!.trigger("drag", { clientX: 51 });
+        await tabs.at(0)!.trigger("dragend");
+
+        const newOrder = wrapper.findAll(".tab-item").map((tab) => tab.text());
+        const expectedOpenProjects = [
+          openProjects[0],
+          openProjects[2],
+          openProjects[1],
+        ];
+        expect(newOrder).toEqual(expectedOpenProjects.map(({ name }) => name));
+        expect(useApplicationStore().openProjects).toEqual(
+          expectedOpenProjects,
+        );
+        expect(mockedAPI.desktop.updateOpenProjectsOrder).toHaveBeenCalledWith({
+          projectIds: expectedOpenProjects.map(({ projectId }) => projectId),
+        });
+      });
+
+      it("resets order if drag is aborted", async () => {
+        const { wrapper, openProjects } = doMount();
+        getBoundingClientRectMock.mockReturnValue({ width: 100, left: 0 });
+        const tabs = wrapper.findAllComponents(AppHeaderTab);
+
+        await tabs.at(2)!.trigger("dragstart", {
+          dataTransfer: {
+            setDragImage: vi.fn(),
+          },
+        });
+        await tabs.at(1)!.trigger("dragover", { clientX: 199 });
+        await tabs.at(0)!.trigger("dragend", {
+          dataTransfer: {
+            dropEffect: "none",
+          },
+        });
+
+        const newOrder = wrapper.findAll(".tab-item").map((tab) => tab.text());
+        expect(newOrder).toEqual(openProjects.map(({ name }) => name));
+        expect(useApplicationStore().openProjects).toEqual(openProjects);
+        expect(mockedAPI.desktop.updateOpenProjectsOrder).toHaveBeenCalledWith({
+          projectIds: openProjects.map(({ projectId }) => projectId),
+        });
+      });
     });
   });
 

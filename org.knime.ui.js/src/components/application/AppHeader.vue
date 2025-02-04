@@ -13,6 +13,7 @@ import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
+import { useTabDrag } from "@/composables/useTabDrag.ts";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -173,10 +174,18 @@ const helpMenu = ref<InstanceType<typeof HelpMenu>>();
 onMounted(() => {
   createHint({
     hintId: HINTS.HELP,
-    // @ts-ignore
     referenceElement: helpMenu,
   });
 });
+
+const { onDragStart, onDrag, onDragEnd } = useTabDrag(tabWrapper, openProjects);
+
+// overwrite drag handling from Carousel,
+// i.e. if more tabs are open than fit in window, drag won't move all of them,
+// but instead can be used to reorder them
+const onMouseDown = (e: MouseEvent) => {
+  e.stopPropagation();
+};
 </script>
 
 <template>
@@ -187,7 +196,8 @@ onMounted(() => {
       :active="isHomeButtonActive"
       @click="setGetStartedPageTab()"
     >
-      <HouseIcon /> Home
+      <HouseIcon />
+      Home
     </FunctionButton>
     <div
       :class="[
@@ -202,14 +212,18 @@ onMounted(() => {
         <Carousel ref="carousel" @wheel="onWheelScroll">
           <div ref="tabWrapper" class="wrapper">
             <AppHeaderTab
-              v-for="{
-                name,
-                projectId,
-                origin = { providerId: '', projectType: null },
-              } in openProjects"
+              v-for="(
+                {
+                  name,
+                  projectId,
+                  origin = { providerId: '', projectType: null },
+                },
+                index
+              ) in openProjects"
               :key="projectId"
               :class="[
                 'project-tab',
+                'draggable-item',
                 { loading: isLoadingWorkflow && !hasWorkflowLoadingError },
               ]"
               :name="name"
@@ -222,9 +236,14 @@ onMounted(() => {
               :disabled="isLoadingWorkflow && !hasWorkflowLoadingError"
               :has-unsaved-changes="Boolean(dirtyProjectsMap[projectId])"
               :is-hovered-over="hoveredTab === projectId"
+              draggable="true"
               @hover="hoveredTab = $event"
               @switch-workflow="onProjectTabChange"
               @close-project="closeProject($event)"
+              @dragstart.stop="onDragStart($event, index)"
+              @drag="onDrag($event)"
+              @dragend="onDragEnd"
+              @mousedown="onMouseDown($event)"
             />
           </div>
         </Carousel>
@@ -312,6 +331,7 @@ header {
   padding: initial;
 
   /* smallish dark spacer */
+
   &::after {
     content: "";
     position: absolute;
@@ -432,6 +452,7 @@ header {
     }
 
     /* right button bar: help, preferences and menu */
+
     & .buttons {
       display: flex;
       align-items: center;
@@ -480,5 +501,17 @@ header {
       }
     }
   }
+}
+
+.dragged-tab {
+  opacity: 0;
+}
+
+.drag-image {
+  position: fixed;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+  z-index: v-bind("$zIndices.layerPriorityElevation");
+  will-change: transform;
 }
 </style>
