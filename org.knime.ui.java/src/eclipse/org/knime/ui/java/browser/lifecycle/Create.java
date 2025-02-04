@@ -50,7 +50,6 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -163,14 +162,19 @@ final class Create {
             return;
         }
 
-        var editorReferences = page.getEditorReferences();
-        if (editorReferences.length > 0) {
-            Arrays.stream(editorReferences).forEach(editorReference -> {
-                NodeLogger.getLogger(Create.class)
-                    .warn("Closing unexpectedly open editor '" + editorReference.getName() + "'.");
-                var editor = editorReference.getEditor(false);
-                page.closeEditor(editor, false);
-            });
+        var referencesBeforeClose = page.getEditorReferences();
+        if (referencesBeforeClose.length > 0) {
+            NodeLogger.getLogger(Create.class)
+                .warn("Closing %s unexpectedly open editor(s).".formatted(referencesBeforeClose.length));
+            // Closing all open editors here will throw an "IllegalArgument" exception that cannot be caught.
+            // Since this is not harmful, we just log it and continue.
+            page.closeEditors(referencesBeforeClose, false);
+
+            var referencesAfterClose = page.getEditorReferences();
+            if (referencesAfterClose.length > 0) {
+                NodeLogger.getLogger(Create.class).error("Failed to close all open editors. Still %s editor(s) open."
+                    .formatted(referencesAfterClose.length));
+            }
         }
     }
 
