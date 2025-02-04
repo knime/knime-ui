@@ -40,11 +40,14 @@ const runNodeValidationChecks = ({
   return Object.freeze(result);
 };
 
-const props = defineProps<{
-  selectedNode: ComponentNode;
+type Props = {
   projectId: string;
+  workflowId: string;
+  selectedNode: ComponentNode;
   availablePortTypes: AvailablePortTypes;
-}>();
+};
+
+const props = defineProps<Props>();
 
 const uiControls = useUIControlsStore();
 
@@ -94,7 +97,10 @@ const openInNewWindow = () => {
   <div class="node-view-wrapper">
     <Suspense>
       <ComponentViewLoader
-        :project-id="props.projectId"
+        :project-id="projectId"
+        :workflow-id="workflowId"
+        :node-id="selectedNode.id"
+        :execution-state="selectedNode.state?.executionState"
         @loading-state-change="emit('loadingStateChange', $event)"
       />
     </Suspense>

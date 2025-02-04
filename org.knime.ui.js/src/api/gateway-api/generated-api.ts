@@ -4941,6 +4941,32 @@ const application = function(rpcClient: RPCClient) {
 };
 
 /**
+ * component - functional programming interface
+ * @export
+ */
+const component = function(rpcClient: RPCClient) {
+    return {
+        /**
+         * Returns all the information on a node view required to render it.
+         * @param {string} projectId ID of the workflow-project.
+         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {NodeNotFoundException} The requested node was not found.
+         * @throws {InvalidRequestException} If the request is invalid for a reason.
+         */
+        async getComponentViewPage(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<any> {
+            const defaultParams = { 
+            }
+            return rpcClient.call('ComponentService.getComponentViewPage', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
+    }
+};
+
+/**
  * event - functional programming interface
  * @export
  */
@@ -6268,6 +6294,7 @@ export const createAPI = (configuration: Configuration) => {
 
     const api = { 
         application: application(rpcClient),
+        component: component(rpcClient),
         event: event(rpcClient),
         kai: kai(rpcClient),
         node: node(rpcClient),

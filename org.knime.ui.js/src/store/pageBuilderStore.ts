@@ -3,7 +3,6 @@ import { consola } from "consola";
 import { API } from "@/api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types.ts";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
-import { mockedPage } from "@/components/uiExtensions/componentView/MockedPage.ts";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useExecutionStore } from "@/store/workflow/execution";
 
@@ -60,6 +59,10 @@ const actions = {
   },
 
   registerService(_: any, { service, id }: SelectionServiceParams): void {
+    // TODO(NXT-3316): We have these two versions of the projectId. The "more correct" version is one with an added uuid
+    // but the SelectionEvent will use the simpler projectId one. So we dont use the "correct one" right now
+    // const projectId = useApplicationStore().activeProjectId;
+
     const { addListener } = useSelectionEvents();
     addListener({ ...id }, service);
   },
@@ -73,9 +76,25 @@ const actions = {
     await useExecutionStore().executeNodes("selected");
   },
 
-  async mount({ dispatch }: any): Promise<void> {
+  async mount(
+    { dispatch }: any,
+    { projectId, workflowId, nodeId }: Identifiers,
+  ): Promise<void> {
     consola.info("Loading page for PageBuilder");
-    const page = mockedPage;
+
+    const result = await API.component.getComponentViewPage({
+      projectId,
+      workflowId,
+      nodeId,
+    });
+
+    const page = {
+      nodeMessages: null,
+      wizardExecutionState: "INTERACTION_REQUIRED",
+      hasPreviousPage: false,
+      wizardPageContent: JSON.parse(result),
+    };
+
     await dispatch("pagebuilder/setPage", { page }, { root: true });
   },
 };

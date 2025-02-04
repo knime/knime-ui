@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
 import { createPinia } from "pinia";
 import * as PIXI from "pixi.js";
+import { createStore } from "vuex";
 
 import { setupHints } from "@knime/components";
 
@@ -122,6 +123,12 @@ try {
   // initialize pinia stores
   const pinia = createPinia();
   app.use(pinia);
+
+  // initialize empty vuex store for the pageBuilder, this will be filled asynchronously
+  // when the component to show the pageBuilder is loaded.
+  const pageBuilderStore = createStore();
+  app.use(pageBuilderStore);
+
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
 
@@ -138,6 +145,8 @@ try {
     window.router = router;
     window.store = pinia;
     window.toast = toastServiceProvider;
+    // eslint-disable-next-line
+    window["pageBuilderStore"] = pageBuilderStore;
     app.config.performance = true;
   }
 

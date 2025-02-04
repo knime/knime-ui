@@ -254,6 +254,7 @@ const onPortViewLoadingState = async (
         <ComponentViewTabOutput
           v-if="isViewTabSelected && singleSelectedNode.kind === 'component'"
           :project-id="projectId!"
+          :workflow-id="workflowId"
           :selected-node="singleSelectedNode as ComponentNode"
           :available-port-types="availablePortTypes"
           @loading-state-change="loadingState = $event"

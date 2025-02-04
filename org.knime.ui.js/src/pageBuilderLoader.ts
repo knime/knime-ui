@@ -1,7 +1,8 @@
 import type { App } from "vue";
 import * as Vue from "vue";
 import { defineComponent } from "vue";
-import { type Store, createStore } from "vuex";
+import consola from "consola";
+import { type Store } from "vuex";
 
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation.ts";
 import { isDesktop } from "@/environment";
@@ -24,17 +25,6 @@ const pageBuilderResource = {
   }),
 };
 
-const createScriptTag = (resolve: (value: unknown) => void, url: string) => {
-  const script = document.createElement("script");
-  script.async = true; // this is the default, but let's be safe
-  script.addEventListener("load", () => {
-    resolve(script);
-    document.head.removeChild(script);
-  });
-  script.src = url;
-  return script;
-};
-
 /**
  * Loads the script from the given URL by appending a script tag to the document head.
  * The script element is then removed after successful loading and after error.
@@ -44,94 +34,88 @@ const createScriptTag = (resolve: (value: unknown) => void, url: string) => {
  */
 const loadScript = (url: string) => {
   return new Promise((resolve, reject) => {
-    const script = createScriptTag(resolve, url);
+    const script = document.createElement("script");
+    script.async = true; // this is the default, but let's be safe
+    script.addEventListener("load", () => {
+      resolve(script);
+      document.head.removeChild(script);
+    });
     script.addEventListener("error", () => {
       reject(new Error(`Script loading of "${url}" failed`));
       document.head.removeChild(script);
     });
+    script.src = url;
+
     document.head.appendChild(script);
   });
 };
 
-const pageBuilderLoader = (store: Store<any>, app: App, projectId: string) => {
+const pageBuilderLoader = async (store: Store<any>, app: App, projectId: string) => {
   // @ts-ignore
   window.process = { env: { NODE_ENV: "production" } };
 
-  return new Promise<void>((resolve) => {
-    if (app.component(pageBuilderResource.componentName)) {
-      resolve();
+  if (app.component(pageBuilderResource.componentName)) {
+    return;
+  }
+
+  const fallback = (errorMessage: string) => {
+    consola.error(
+      `Loading of ${pageBuilderResource.componentName} (url: ${pageBuilderResource.url}) failed: ${errorMessage}. Will use fallback dummy component.`,
+    );
+    app.component(
+      pageBuilderResource.componentName,
+      pageBuilderResource.fallback,
+    );
+  };
+
+  try {
+    await loadScript(pageBuilderResource.url(projectId));
+
+    const Component = (<any>window)[pageBuilderResource.name][
+      pageBuilderResource.componentName
+    ];
+
+    if (!Component) {
+      fallback("PageBuilder component not found.");
       return;
     }
 
-    loadScript(pageBuilderResource.url(projectId))
-      .then(() => {
-        const Component = (<any>window)[pageBuilderResource.name][
-          pageBuilderResource.componentName
-        ];
-        if (!Component) {
-          throw new Error(
-            `${
-              pageBuilderResource.componentName
-            } script invalid. Could not load the PageBuilder (${JSON.stringify(
-              pageBuilderResource,
-            )}).`,
-          );
-        }
-        if (typeof Component.initStore === "function") {
-          Component.initStore(store);
-        } else {
-          throw new Error(
-            `PageBuilder component does not have initStore method. Resource: ${JSON.stringify(
-              pageBuilderResource,
-            )}.`,
-          );
-        }
-        app.component(pageBuilderResource.componentName, Component);
-        delete (<any>window)[pageBuilderResource.name];
-      })
-      .catch((e) => {
-        consola.error(
-          `Loading of ${pageBuilderResource.componentName} failed: ${e.message}. Will use fallback dummy component.`,
-        );
-        app.component(
-          pageBuilderResource.componentName,
-          pageBuilderResource.fallback,
-        );
-      })
-      .finally(() => {
-        resolve();
-      });
-  });
+    if (typeof Component.initStore === "function") {
+      Component.initStore(store);
+      app.component(pageBuilderResource.componentName, Component);
+    } else {
+      fallback("PageBuilder component does not have initStore method.");
+    }
+
+    delete (<any>window)[pageBuilderResource.name];
+  } catch (e ) {
+    fallback((e as unknown as Error).message);
+  }
 };
 
 /**
- * Setup the PageBuilder store.
+ * Setup the PageBuilder store and component in the given Vue app instance. If the store is already initialized, this function will do nothing.
  * @param app The Vue app instance
+ * @param store The Vuex store instance to register the PageBuilder store
  * @param projectId The project ID. when using KNIME in browser the resolution of the PageBuilder module will be done using this project ID. This is not needed when using KNIME in desktop.
  */
 export const setupPageBuilderEnvironment = async (
   app: App,
+  store: Store<any>,
   projectId: string,
 ): Promise<void> => {
-  // @ts-ignore
-  if (!window.Vue) {
-    // @ts-ignore
-    window.Vue = Vue as any;
+  if (!(window as any).Vue) {
+    (window as any).Vue = Vue as any;
   }
 
-  // PageBuilder will access process
-  (window as any).process = { env: { NODE_ENV: import.meta.env.MODE } };
+  const isStoreInitialized =
+    store.hasModule("api") && store.hasModule("pagebuilder");
+  if (!isStoreInitialized) {
+    consola.info("Loading PageBuilder store and component");
+    // PageBuilder will access process
+    (window as any).process = { env: { NODE_ENV: import.meta.env.MODE } };
 
-  const store = createStore({
-    modules: {
-      api: pageBuilderStoreConfig,
-    },
-  });
-
-  await pageBuilderLoader(store, app, projectId);
-  app.use(store);
-
-  if (import.meta.env.DEV) {
-    (window as any).pagebuilderStore = store;
+    store.registerModule("api", pageBuilderStoreConfig);
+    await pageBuilderLoader(store, app, projectId);
   }
 };
