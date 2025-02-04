@@ -106,6 +106,11 @@ export default {
     this.$bus.on("connector-end", this.onConnectorEnd);
   },
 
+  unmounted() {
+    this.$bus.off("connector-start", this.onConnectorStart);
+    this.$bus.off("connector-end", this.onConnectorEnd);
+  },
+
   methods: {
     ...mapActions("workflow", [
       "connectNodes",

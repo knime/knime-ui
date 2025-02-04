@@ -147,6 +147,18 @@ describe("ConnectorSnappingProvider.vue", () => {
     vi.clearAllMocks();
   });
 
+  it("should clean up $bus listeners on unmount", () => {
+    const spy = vi.spyOn($bus, "off");
+
+    const { wrapper } = doMount({ id: "self" });
+
+    expect(spy).not.toHaveBeenCalled();
+    wrapper.unmount();
+
+    expect(spy).toHaveBeenCalledWith("connector-start", expect.any(Function));
+    expect(spy).toHaveBeenCalledWith("connector-end", expect.any(Function));
+  });
+
   describe("connector enter & leave", () => {
     it("should set the connector hover state for valid target", async () => {
       const myId = "target";
