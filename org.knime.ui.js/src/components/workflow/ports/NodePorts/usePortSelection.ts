@@ -57,20 +57,18 @@ export const usePortSelection = (options: UsePortSelectionOptions) => {
   };
 
   const selectPort = (
-    { index, portGroupId }: NodePort,
+    { index, portGroupId, canRemove }: NodePort,
     side: "input" | "output",
   ) => {
     if (!options.isEditable) {
       return;
     }
-    
-    if (isComponent.value && index !== 0) {
-      // all but hidden ports on components (mickey mouse) can be selected
-      updateSelection(`${side}-${index}`);
-    } else if (isMetanode.value) {
-      updateSelection(`${side}-${index}`);
-    } else if (options.portGroups && portGroupId) {
-      // select clicked port
+    var isSelectableComponentPort = isComponent.value && index !== 0;
+    // all but hidden ports on components (mickey mouse) can be selected
+    var isSelectableMetonodePort = isMetanode.value;
+    var isSelectableNativePort = options.portGroups && portGroupId &&canRemove;
+    // removable native ports in a port group can be selected
+    if(isSelectableComponentPort || isSelectableMetonodePort || isSelectableNativePort) {
       updateSelection(`${side}-${index}`);
     }
   };
