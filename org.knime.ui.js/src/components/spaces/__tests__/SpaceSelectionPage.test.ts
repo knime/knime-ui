@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { useRoute } from "vue-router";
 
 import { SpaceProviderNS } from "@/api/custom-types";
@@ -105,7 +105,13 @@ describe("SpaceSelectionPage.vue", () => {
         "reloadProviderSpacesFailed",
       );
 
+      vi.mocked(
+        mockedStores.spaceProvidersStore.reloadProviderSpaces,
+      ).mockResolvedValueOnce();
+
       await wrapper.find(".reload-button").trigger("click");
+
+      await flushPromises();
 
       expect(
         mockedStores.spaceProvidersStore.reloadProviderSpaces,

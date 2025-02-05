@@ -12,9 +12,7 @@ export const useActiveRouteData = () => {
   const $route = useRoute();
 
   const activeSpaceProvider = computed(() => {
-    return (spaceProviders.value ?? {})[
-      $route.params.spaceProviderId as string
-    ];
+    return spaceProviders.value![$route.params.spaceProviderId as string];
   });
 
   const activeSpaceGroup = computed(() => {

@@ -263,10 +263,7 @@ describe("SpaceSelectionDropdown.vue", () => {
 
     vi.mocked(
       mockedStores.spaceProvidersStore.fetchProviderSpaces,
-    ).mockResolvedValueOnce({
-      ...connectedHub,
-      spaceGroups: spacesAfterLogin,
-    });
+    ).mockResolvedValueOnce(spacesAfterLogin);
 
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 

@@ -111,9 +111,7 @@ const onSpaceExplorerFloatingButtonClick = async () => {
 
 const reload = async () => {
   try {
-    await reloadProviderSpaces({
-      id: activeSpaceProvider.value.id,
-    });
+    await reloadProviderSpaces({ id: activeSpaceProvider.value.id });
   } catch (error) {
     toastPresets.spaces.crud.reloadProviderSpacesFailed({ error });
   }
