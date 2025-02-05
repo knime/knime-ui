@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import type { GraphicsInst } from "vue3-pixi";
 
@@ -137,6 +137,12 @@ const renderFn = (graphics: GraphicsInst) => {
 };
 
 onMounted(() => {
+  $bus.on("selection-pointerdown", onSelectionStart);
+  $bus.on("selection-pointermove", onSelectionMove);
+  $bus.on("selection-pointerup", onSelectionEnd);
+});
+
+onUnmounted(() => {
   $bus.on("selection-pointerdown", onSelectionStart);
   $bus.on("selection-pointermove", onSelectionMove);
   $bus.on("selection-pointerup", onSelectionEnd);

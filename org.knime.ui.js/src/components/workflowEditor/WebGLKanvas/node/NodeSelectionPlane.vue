@@ -11,6 +11,7 @@ import * as $shapes from "@/style/shapes";
  */
 
 type Props = {
+  renderable?: boolean;
   anchorPosition: XY;
   kind: Node.KindEnum;
   /**
@@ -82,6 +83,7 @@ const renderFn = (graphics: GraphicsInst) => {
   <Graphics
     :x="anchorPosition?.x - config.width / 2 + $shapes.nodeSize / 2"
     :y="anchorPosition?.y - config.height / 2 + $shapes.nodeSize / 2"
+    :renderable="renderable"
     @render="renderFn"
   />
 </template>

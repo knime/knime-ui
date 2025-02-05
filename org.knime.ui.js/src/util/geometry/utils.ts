@@ -107,3 +107,15 @@ export const getCenterPoint = (start: XY, end: XY): XY => {
     y: centerY,
   };
 };
+
+export const isPointOutsideBounds = (
+  point: XY,
+  bounds: XY & { width: number; height: number },
+): boolean => {
+  const xMax = bounds.x + bounds.width;
+  const yMax = bounds.y + bounds.height;
+
+  return (
+    point.x < bounds.x || point.x > xMax || point.y < bounds.y || point.y > yMax
+  );
+};

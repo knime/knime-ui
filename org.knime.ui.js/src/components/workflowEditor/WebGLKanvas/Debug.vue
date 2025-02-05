@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { type Rectangle } from "pixi.js";
+import { storeToRefs } from "pinia";
 import { type GraphicsInst, useStage } from "vue3-pixi";
+
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 
 const stage = useStage();
 
-const stageHitArea = computed(() => stage.value!.hitArea as Rectangle);
+const { stageHitArea } = storeToRefs(useWebGLCanvasStore());
 
 const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
 </script>
@@ -13,7 +14,7 @@ const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
 <template>
   <Container>
     <Graphics
-      v-if="stage && stageHitArea"
+      v-if="stageHitArea"
       :position="{ x: stageHitArea.x, y: stageHitArea.y }"
       @render="
         (graphics: GraphicsInst) => {

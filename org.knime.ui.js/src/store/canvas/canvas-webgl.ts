@@ -50,6 +50,8 @@ export interface CanvasState {
   stage: StageInst | null;
 
   isDebugModeEnabled: boolean;
+
+  stageHitArea: { x: number; y: number; width: number; height: number };
 }
 
 type Scroll = {
@@ -66,6 +68,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const getScrollContainerElement =
     ref<() => HTMLElement>(unsetScrollContainer);
   const interactionsEnabled = ref(true);
+
+  const stageHitArea = ref({ x: 0, y: 0, width: 0, height: 0 });
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -501,13 +505,13 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
    * which could cause bugs when trying to detect user events for panning on these "gaps"
    */
   const updateStageHitArea = () => {
-    const OFFSET_BUFFER = 500;
+    const OFFSET_BUFFER = 100;
 
     if (!stage.value || !pixiApplication.value) {
       return;
     }
 
-    stage.value.hitArea = new Rectangle(
+    const rect = new Rectangle(
       -stage.value.x / zoomFactor.value - OFFSET_BUFFER,
       -stage.value.y / zoomFactor.value - OFFSET_BUFFER,
       pixiApplication.value.app.screen.width / zoomFactor.value +
@@ -515,6 +519,14 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       pixiApplication.value.app.screen.height / zoomFactor.value +
         OFFSET_BUFFER * 2,
     );
+
+    stage.value.hitArea = rect;
+    stageHitArea.value = {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
   };
 
   /*
@@ -673,6 +685,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   };
 
   return {
+    stageHitArea,
     zoomFactor,
     containerSize,
     interactionsEnabled,

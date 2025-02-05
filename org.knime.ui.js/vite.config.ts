@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
         },
       }),
       svgLoader({ svgoConfig }),
-      // TODO: enable once compilerOptions warning is fixed
+      // TODO: enable once it's compatible with the WebGL canvas
       // vueDevTools(),
     ],
 

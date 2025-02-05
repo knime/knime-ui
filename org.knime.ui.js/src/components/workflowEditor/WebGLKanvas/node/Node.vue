@@ -14,6 +14,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
 import { nodeBackgroundColors } from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import { geometry } from "@/util/geometry";
 import { isNodeComponent } from "@/util/nodeUtil";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import NodePorts from "../ports/NodePorts.vue";
@@ -43,7 +44,9 @@ const emit = defineEmits<{
   contextmenu: [event: PIXI.FederatedPointerEvent];
 }>();
 
-const { zoomFactor, isDebugModeEnabled } = storeToRefs(useWebGLCanvasStore());
+const { zoomFactor, isDebugModeEnabled, stageHitArea } = storeToRefs(
+  useWebGLCanvasStore(),
+);
 
 const selectionStore = useSelectionStore();
 const { isNodeSelected } = storeToRefs(selectionStore);
@@ -205,6 +208,14 @@ const renderHoverArea = (graphics: GraphicsInst) => {
   );
   graphics.endFill();
 };
+
+const renderable = computed(
+  () =>
+    !geometry.utils.isPointOutsideBounds(
+      translatedPosition.value,
+      stageHitArea.value,
+    ),
+);
 </script>
 
 <template>
@@ -212,9 +223,11 @@ const renderHoverArea = (graphics: GraphicsInst) => {
     v-if="isSelectionPreviewShown"
     :kind="node.kind"
     :anchor-position="translatedPosition"
+    :renderable="renderable"
   />
 
   <Container
+    :renderable="renderable"
     @rightclick="emit('contextmenu', $event)"
     @pointerenter="onPointerEnter(node.id)"
     @pointerleave.self="onPointerLeave()"
