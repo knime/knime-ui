@@ -87,7 +87,7 @@ const updateComponentMetadata = ({
 </script>
 
 <template>
-  <div v-if="workflow && !isMetanode" class="metadata">
+  <div v-if="workflow" class="metadata">
     <ProjectMetadata
       v-if="isWorkflowProject && workflow.projectMetadata"
       :project-metadata="workflow.projectMetadata"
@@ -109,12 +109,12 @@ const updateComponentMetadata = ({
       :single-metanode-selected-id="singleMetanodeSelectedId"
       @save="updateComponentMetadata"
     />
-  </div>
 
-  <MetanodeMetadata
-    v-if="workflow && isMetanode"
-    :workflow-id="workflow.info.containerId"
-  />
+    <MetanodeMetadata
+      v-if="isMetanode"
+      :workflow-id="workflow.info.containerId"
+    />
+  </div>
 
   <!-- Render an element to prevent issue with transition-group and conditional elements -->
   <div v-else />

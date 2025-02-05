@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
 
-import MetadataLastEdit from "./MetadataLastEdit.vue";
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
-import MetadataTags from "./MetadataTags.vue";
 
 interface Props {
   workflowId: string;
@@ -17,18 +14,14 @@ defineProps<Props>();
 <template>
   <SidebarPanelLayout class="metanode-metadata">
     <template #header>
-      <MetadataLastEdit :last-edit="undefined" />
+      <h2>Description</h2>
     </template>
 
     <SidebarPanelScrollContainer>
       <MetadataPlaceholder
         padded
-        text="A description is not available for metanodes. Select a node to show its description."
+        text="A description is not available for metanodes. Select a node or a component to show their description."
       />
-
-      <ExternalResourcesList :model-value="[]" :editable="false" />
-
-      <MetadataTags :model-value="[]" :editable="false" />
     </SidebarPanelScrollContainer>
   </SidebarPanelLayout>
 </template>
