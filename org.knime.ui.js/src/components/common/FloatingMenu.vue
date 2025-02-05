@@ -47,6 +47,16 @@ type Props = {
   anchor?: "top-left" | "top-right" | "bottom-left";
 
   /**
+   * A constant offset value added to `left` when computing the anchor position
+   */
+  leftOffset?: number;
+
+  /**
+   * A constant offset value added to `top` when computing the anchor position
+   */
+  topOffset?: number;
+
+  /**
    * When set to true will disable interactions on the workflow canvas when the menu is open
    */
   disableInteractions?: boolean;
@@ -65,6 +75,8 @@ type Props = {
 const props = withDefaults(defineProps<Props>(), {
   preventOverflow: false,
   anchor: "top-left",
+  leftOffset: 0,
+  topOffset: 0,
   disableInteractions: false,
   closeOnEscape: true,
   focusTrap: false,
@@ -153,11 +165,11 @@ const setAbsolutePosition = () => {
   const menuHeight = rootEl.value.offsetHeight;
 
   if (props.anchor === "top-right") {
-    left -= menuWidth;
+    left -= menuWidth + props.leftOffset;
   }
 
   if (props.anchor === "bottom-left") {
-    top -= menuHeight;
+    top -= menuHeight + props.topOffset;
   }
 
   if (props.preventOverflow) {

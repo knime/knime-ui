@@ -25,7 +25,10 @@ const props = withDefaults(defineProps<Props>(), {
   nodeId: null,
 });
 
-const emit = defineEmits(["menuBack", "quickBuildStateChanged"]);
+const emit = defineEmits<{
+  menuBack: [];
+  quickBuildStateChanged: [QuickBuildMenuState];
+}>();
 
 const { nodeId, startPosition } = toRefs(props);
 const { closeQuickActionMenu } = useFloatingMenusStore();

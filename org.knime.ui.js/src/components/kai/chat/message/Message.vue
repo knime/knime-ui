@@ -196,7 +196,7 @@ const displayContent = computed(() => {
     }
 
     & .show-full-content-button:active,
-    .show-full-content-button:hover {
+    & .show-full-content-button:hover {
       text-decoration: underline;
     }
   }

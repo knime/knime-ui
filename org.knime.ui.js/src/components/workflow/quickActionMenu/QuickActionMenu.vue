@@ -38,7 +38,7 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
 });
 
 const QUICK_BUILD_PROCESSING_OFFSET = 70;
-const QUICK_BUILD_RESULT_OFFSET = 40;
+const QUICK_BUILD_RESULT_OFFSET = -40;
 
 const menuWidth = 360;
 
@@ -72,17 +72,6 @@ const canvasPosition = computed(() => {
     pos.x -= halfPort;
   } else {
     pos.x += halfPort;
-  }
-
-  if (menuMode.value === "quick-build") {
-    if (quickBuildState.value === "PROCESSING") {
-      // move the "processing" bar up above the insertion point
-      pos.y -= QUICK_BUILD_PROCESSING_OFFSET / zoomFactor.value;
-    }
-    if (quickBuildState.value === "RESULT") {
-      // move the "result" menu down closer to the added nodes
-      pos.y += QUICK_BUILD_RESULT_OFFSET / zoomFactor.value;
-    }
   }
 
   return pos;
@@ -130,15 +119,28 @@ const marginTop = computed(() => {
 });
 
 const floatingMenuAnchor = computed(() => {
-  if (menuMode.value === "quick-build") {
-    if (quickBuildState.value === "INPUT") {
-      return nodeRelation.value ? "top-left" : "top-right";
-    }
-
-    return "bottom-left";
+  if (menuMode.value === "quick-add") {
+    return nodeRelation.value === "SUCCESSORS" ? "top-left" : "top-right";
   }
 
-  return nodeRelation.value === "SUCCESSORS" ? "top-left" : "top-right";
+  if (quickBuildState.value === "INPUT") {
+    return nodeRelation.value ? "top-left" : "top-right";
+  }
+
+  return "bottom-left";
+});
+const floatingMenuTopOffset = computed(() => {
+  if (menuMode.value === "quick-build") {
+    if (quickBuildState.value === "PROCESSING") {
+      return QUICK_BUILD_PROCESSING_OFFSET;
+    }
+
+    if (quickBuildState.value === "RESULT") {
+      return QUICK_BUILD_RESULT_OFFSET;
+    }
+  }
+
+  return 0;
 });
 
 const { isKaiEnabled } = useIsKaiEnabled();
@@ -161,6 +163,7 @@ watch(
     :canvas-position="canvasPosition"
     aria-label="Quick add node"
     :anchor="floatingMenuAnchor"
+    :top-offset="floatingMenuTopOffset"
     focus-trap
     :prevent-overflow="true"
     :style="{ width: `${menuWidth}px` }"
