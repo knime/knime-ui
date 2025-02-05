@@ -25,6 +25,7 @@ import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
+import { useSpaceProvidersStore } from "../spaces/providers";
 
 import { useApplicationStore } from "./application";
 import { useCanvasModesStore } from "./canvasModes";
@@ -215,6 +216,14 @@ export const useLifecycleStore = defineStore("lifecycle", {
       });
 
       const applicationState = await API.application.getState({});
+
+      // needs to be done before 'replaceApplicationState'
+      if (applicationState.spaceProviders) {
+        await useSpaceProvidersStore().setAllSpaceProviders(
+          applicationState.spaceProviders,
+        );
+      }
+
       consola.info("lifecycle::Application state", { applicationState });
       useApplicationStore().replaceApplicationState(applicationState);
       await this.setActiveProject({ $router });

@@ -110,15 +110,10 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
       // needs to happen before 'replaceApplicationState'
       if (appState.spaceProviders) {
         try {
-          const providers = Object.fromEntries(
-            Object.entries(appState.spaceProviders).map(([key, value]) => [
-              key,
-              { ...value, spaceGroups: [] },
-            ]),
-          );
-
           const { failedProviderIds } =
-            await useSpaceProvidersStore().setAllSpaceProviders(providers);
+            await useSpaceProvidersStore().setAllSpaceProviders(
+              appState.spaceProviders,
+            );
 
           if (failedProviderIds.length > 0) {
             const providerNames = failedProviderIds

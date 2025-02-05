@@ -2,6 +2,7 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import type { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { findSpaceById } from "@/store/spaces/util";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
@@ -78,8 +79,14 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
     },
 
     setAllSpaceProviders(
-      spaceProviders: Record<string, SpaceProviderNS.SpaceProvider>,
+      spaceProvidersMetaInfo: Record<string, SpaceProvider>,
     ) {
+      const spaceProviders = Object.fromEntries(
+        Object.entries(spaceProvidersMetaInfo).map(([key, value]) => [
+          key,
+          { ...value, spaceGroups: [] },
+        ]),
+      );
       const connectedProviderIds = Object.values(spaceProviders)
         .filter(
           ({ connected, connectionMode }) =>

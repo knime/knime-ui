@@ -174,7 +174,6 @@ describe("Event Plugin", () => {
             connectionMode: "AUTOMATIC",
             id: "id1",
             name: "provider name",
-            spaceGroups: [],
             type: "HUB",
           },
         });

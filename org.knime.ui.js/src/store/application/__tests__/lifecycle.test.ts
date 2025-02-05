@@ -81,7 +81,8 @@ describe("application::lifecycle", () => {
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.BROWSER?.());
 
-      const { lifecycleStore, applicationStore } = loadStore();
+      const { lifecycleStore, applicationStore, spaceProvidersStore } =
+        loadStore();
       await lifecycleStore.initializeApplication({
         $router: router,
       });
@@ -91,9 +92,14 @@ describe("application::lifecycle", () => {
       expect(mockedAPI.event.subscribeEvent).toHaveBeenCalled();
       expect(mockedAPI.application.getState).toHaveBeenCalled();
 
+      expect(spaceProvidersStore.setAllSpaceProviders).toHaveBeenCalledWith(
+        applicationState.spaceProviders,
+      );
+
       expect(applicationStore.replaceApplicationState).toHaveBeenCalledWith(
         applicationState,
       );
+
       expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
       });
