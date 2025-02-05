@@ -751,7 +751,7 @@ export default {
 
 .node-torso:hover,
 .node-state:hover {
-  filter: "url(#node-state-shadow)";
+  filter: url("#node-state-shadow");
 }
 
 .connection-forbidden .hover-container {
