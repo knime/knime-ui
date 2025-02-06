@@ -1,8 +1,10 @@
 import type { ToastServiceProvider } from "@knime/components";
 
-export const removeAllToastsByPrefix = (
+export const removeAllToastsByIds = (
   $toast: ToastServiceProvider,
-  prefix: string,
+  toastIds: Set<string>,
 ) => {
-  $toast.removeBy((toast) => (toast.id ?? "").startsWith(prefix));
+  toastIds.forEach((toastId: string) => {
+    $toast.remove(toastId);
+  });
 };

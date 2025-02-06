@@ -2,7 +2,9 @@ import type { ToastServiceProvider } from "@knime/components";
 
 import { defaultErrorPresetHandler } from "./defaultErrorPresetHandler";
 import { type ToastPresetErrorHandler, type ToastPresetHandler } from "./types";
-import { removeAllToastsByPrefix } from "./utils";
+import { removeAllToastsByIds } from "./utils";
+
+const toastIds = new Set<string>();
 
 export type ConnectivityPresets = {
   networkProblem: ToastPresetErrorHandler;
@@ -13,27 +15,28 @@ export type ConnectivityPresets = {
   websocketClosed: ToastPresetHandler<{ wsCloseEvent: CloseEvent }>;
 };
 
-const CONNECTION_LOST_TOAST_ID_PREFIX = "__CONNECTION_LOST";
-
 export const getPresets = (
   $toast: ToastServiceProvider,
 ): ConnectivityPresets => {
   return {
-    networkProblem: ({ error } = {}) =>
-      defaultErrorPresetHandler($toast, error, {
+    networkProblem: ({ error } = {}) => {
+      const toastId = defaultErrorPresetHandler($toast, error, {
         headline: "Connectivity problem",
         message: "Check you network connection.",
         type: "error",
         autoRemove: false,
-      }),
-    connectionLoss: () =>
-      $toast.show({
-        id: `${CONNECTION_LOST_TOAST_ID_PREFIX}CONNECTION_LOST`,
+      });
+      toastIds.add(toastId);
+    },
+    connectionLoss: () => {
+      const toastId = $toast.show({
         headline: "Connection lost",
         message: "Check your internet connection and refresh the page.",
         type: "error",
         autoRemove: false,
-      }),
+      });
+      toastIds.add(toastId);
+    },
     websocketClosed: ({ wsCloseEvent }) => {
       const isSessionExpired =
         wsCloseEvent.reason?.toLowerCase() === "proxy close";
@@ -44,16 +47,17 @@ export const getPresets = (
         ? "Refresh the page to reactivate the session."
         : "Connection lost. Try again later.";
 
-      $toast.show({
-        id: `${CONNECTION_LOST_TOAST_ID_PREFIX}_WS_CLOSED`,
+      const toastId = $toast.show({
         headline,
         message,
         type: "error",
         autoRemove: false,
       });
+      toastIds.add(toastId);
     },
     connectionRestored: () => {
-      removeAllToastsByPrefix($toast, CONNECTION_LOST_TOAST_ID_PREFIX);
+      removeAllToastsByIds($toast, toastIds);
+      toastIds.clear();
 
       $toast.show({
         type: "success",

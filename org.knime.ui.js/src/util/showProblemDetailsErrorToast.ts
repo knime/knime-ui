@@ -37,14 +37,12 @@ const formatToastMessage = ({
 };
 
 export const showProblemDetailsErrorToast = ({
-  id = "__ERROR_TOAST_ID",
   headline,
   errorHint,
   problemDetails,
   error,
   copyToClipboard = false,
 }: {
-  id?: string;
   headline?: string;
   errorHint?: string;
   problemDetails: ProblemDetails;
@@ -52,7 +50,6 @@ export const showProblemDetailsErrorToast = ({
   copyToClipboard?: boolean;
 }) => {
   return $toast.show({
-    id,
     headline,
     message: formatToastMessage({ errorHint, problemDetails }),
     type: "error",

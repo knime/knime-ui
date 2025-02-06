@@ -140,10 +140,8 @@ export const useExecutionStore = defineStore("execution", {
         portTypes,
       })();
 
-      const PORT_DETACH_SHORTCUT_FAILED_ID = "__PORT_DETACH_SHORTCUT_FAILED";
       const showDetachErrorToast = (message: string) => {
         getToastsProvider().show({
-          id: PORT_DETACH_SHORTCUT_FAILED_ID,
           headline: "Error detaching output port view",
           message,
           type: "error",

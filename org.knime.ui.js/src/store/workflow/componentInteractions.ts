@@ -10,10 +10,22 @@ import { showProblemDetailsErrorToast } from "@/util/showProblemDetailsErrorToas
 
 import { useWorkflowStore } from "./workflow";
 
-const TOAST_ID_PREFIX = "LINK_UPDATE";
 const TOAST_HEADLINE = "Linked components";
 
 const $toast = getToastsProvider();
+
+const toastIdsByWorkflowId: Map<string, Set<string>> = new Map<
+  string,
+  Set<string>
+>();
+
+const addToastId = (workflowId: string, toastId: string) => {
+  if (toastIdsByWorkflowId[workflowId]) {
+    toastIdsByWorkflowId[workflowId].add(toastId);
+  } else {
+    toastIdsByWorkflowId[workflowId] = new Set(toastId);
+  }
+};
 
 const pluralize = (text: string, count: number) =>
   count > 1 ? `${text}s` : text;
@@ -86,10 +98,15 @@ export const useComponentInteractionsStore = defineStore(
       },
 
       clearComponentUpdateToasts() {
+        const { workflowId } = useWorkflowStore().getProjectAndWorkflowIds;
         const $toast = getToastsProvider();
-        $toast.removeBy((toast) =>
-          (toast.id ?? "").startsWith(TOAST_ID_PREFIX),
-        );
+        const toastIdsToBeRemoved = toastIdsByWorkflowId[workflowId];
+        if (toastIdsToBeRemoved) {
+          toastIdsToBeRemoved.forEach((toastId: string) => {
+            $toast.remove(toastId);
+          });
+          toastIdsByWorkflowId.delete(workflowId);
+        }
       },
 
       clearProcessedUpdateNotification({ projectId }: { projectId: string }) {
@@ -130,13 +147,11 @@ export const useComponentInteractionsStore = defineStore(
           if (updatables.length === 0) {
             if (!auto) {
               $toast.show({
-                id: `${TOAST_ID_PREFIX}__ALL_UP_TO_DATE`,
                 type: "success",
                 headline: TOAST_HEADLINE,
                 message: "No updates available",
               });
             }
-
             return;
           }
 
@@ -157,8 +172,7 @@ export const useComponentInteractionsStore = defineStore(
               )} and update now?`
             : message;
 
-          $toast.show({
-            id: `${TOAST_ID_PREFIX}__CHECKING`,
+          const toastId = $toast.show({
             type: "warning",
             headline: TOAST_HEADLINE,
             message: withUpdateDisclaimer,
@@ -174,21 +188,21 @@ export const useComponentInteractionsStore = defineStore(
             ],
             autoRemove: false,
           });
+          addToastId(workflowId, toastId);
           this.setProcessedNotification({ projectId, value: true });
         } catch (error) {
-          $toast.show({
-            id: `${TOAST_ID_PREFIX}__CHECKING_FAILED`,
+          const toastId = $toast.show({
             type: "error",
             headline: TOAST_HEADLINE,
             message: "Problem checking for linked component updates",
             autoRemove: false,
           });
+          addToastId(workflowId, toastId);
         }
       },
 
       async updateComponents({ nodeIds }: { nodeIds: string[] }) {
         const updateStartedToastId = $toast.show({
-          id: `${TOAST_ID_PREFIX}__STARTED`,
           headline: TOAST_HEADLINE,
           message: "Updating...",
           autoRemove: false,
@@ -196,6 +210,7 @@ export const useComponentInteractionsStore = defineStore(
 
         const { projectId, workflowId } =
           useWorkflowStore().getProjectAndWorkflowIds;
+        addToastId(workflowId, updateStartedToastId);
         const result = await API.workflowCommand.UpdateLinkedComponents({
           projectId,
           workflowId,
@@ -205,8 +220,7 @@ export const useComponentInteractionsStore = defineStore(
         $toast.remove(updateStartedToastId);
 
         if (result.status === UpdateLinkedComponentsResult.StatusEnum.Error) {
-          showProblemDetailsErrorToast({
-            id: `${TOAST_ID_PREFIX}__ERROR`,
+          const toastId = showProblemDetailsErrorToast({
             headline: TOAST_HEADLINE,
             problemDetails: {
               title: `Could not update the linked ${pluralize(
@@ -216,6 +230,7 @@ export const useComponentInteractionsStore = defineStore(
               details: result.details,
             },
           });
+          addToastId(workflowId, toastId);
         } else {
           const message =
             result.status === UpdateLinkedComponentsResult.StatusEnum.Success
@@ -224,7 +239,6 @@ export const useComponentInteractionsStore = defineStore(
           $toast.show({
             headline: TOAST_HEADLINE,
             message,
-            id: `${TOAST_ID_PREFIX}__SUCCESS`,
             type: "success",
             autoRemove: true,
           });

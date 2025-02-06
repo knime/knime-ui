@@ -4,7 +4,7 @@ import type { ToastServiceProvider } from "@knime/components";
 
 import { defaultErrorPresetHandler } from "./defaultErrorPresetHandler";
 import { type ToastPresetErrorHandler, type ToastPresetHandler } from "./types";
-import { removeAllToastsByPrefix } from "./utils";
+import { removeAllToastsByIds } from "./utils";
 
 type SpacesAuthToastPresets = {
   connectFailed: ToastPresetErrorHandler<{
@@ -47,7 +47,7 @@ export type SpacesToastPresets = {
   reveal: SpacesRevealToastPresets;
 };
 
-const REVEAL_PROJECT_ID_PREFIX = "__REVEAL_PROJECT";
+const toastIds = new Set<string>();
 
 export const getPresets = (
   $toast: ToastServiceProvider,
@@ -132,9 +132,9 @@ export const getPresets = (
     },
     reveal: {
       revealProjectFailed: ({ error }) => {
-        removeAllToastsByPrefix($toast, REVEAL_PROJECT_ID_PREFIX);
+        removeAllToastsByIds($toast, toastIds);
+        toastIds.clear();
         return defaultErrorPresetHandler($toast, error, {
-          id: `${REVEAL_PROJECT_ID_PREFIX}_ERROR`,
           type: "error",
           headline: "Project not found",
           message: "Could not reveal project in Space Explorer.",
@@ -142,9 +142,9 @@ export const getPresets = (
         });
       },
       nameHasChanged: ({ oldItemName, newItemName }) => {
-        removeAllToastsByPrefix($toast, REVEAL_PROJECT_ID_PREFIX);
+        removeAllToastsByIds($toast, toastIds);
+        toastIds.clear();
         return $toast.show({
-          id: `${REVEAL_PROJECT_ID_PREFIX}_NAME_CHANGED`,
           type: "warning",
           headline: "Name has changed",
           message: `The project name has changed from "${oldItemName}" to "${newItemName}" on the remote Hub`,

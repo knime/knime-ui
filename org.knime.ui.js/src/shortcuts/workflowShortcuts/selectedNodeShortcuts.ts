@@ -82,11 +82,10 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
         return false;
       }
 
-      const hasFlowVarPort =
+      return (
         availablePortTypes[singleSelectedNode?.outPorts[0]?.typeId]?.kind ===
-        "flowVariable";
-
-      return hasFlowVarPort;
+        "flowVariable"
+      );
     },
   },
   detachOutputPort: {
@@ -130,7 +129,6 @@ const selectedNodeWorkflowShortcuts: SelectedNodeWorkflowShortcuts = {
       } else {
         // TODO: NXT-2024 remove this condition once flowvars can be detached in 'configured' state
         getToastsProvider().show({
-          id: "__FLOWVAR_DETACH_SHORTCUT_FAILED",
           headline: "Error detaching flow variable view",
           message: "Execute the selected node first.",
           type: "error",

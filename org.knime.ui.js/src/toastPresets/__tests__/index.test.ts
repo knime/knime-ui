@@ -64,7 +64,6 @@ describe("toastPresets", () => {
       expect($toast.show).toBeCalledWith({
         autoRemove: false,
         headline: "Connection lost",
-        id: "__CONNECTION_LOSTCONNECTION_LOST",
         message: "Check your internet connection and refresh the page.",
         type: "error",
       });
@@ -74,7 +73,7 @@ describe("toastPresets", () => {
       const { toastPresets, $toast } = toastSetup();
       toastPresets.connectivity.connectionRestored();
 
-      expect($toast.removeBy).toBeCalled();
+      expect($toast.remove).toBeCalled();
 
       expect($toast.show).toBeCalledWith({
         headline: "Connection restored",
