@@ -40,7 +40,7 @@ describe("workflowShortcuts", () => {
       clipboardInteractionsStore,
       canvasStore,
       movingStore,
-      floatingMenusStore,
+      canvasAnchoredComponentsStore,
     } = mockStores({ stubActions: true });
 
     applicationSettingsStore.hasClipboardSupport = true;
@@ -67,7 +67,7 @@ describe("workflowShortcuts", () => {
         },
       ],
     });
-    floatingMenusStore.quickActionMenu = {
+    canvasAnchoredComponentsStore.quickActionMenu = {
       isOpen: false,
       props: {},
     };
@@ -96,7 +96,7 @@ describe("workflowShortcuts", () => {
       clipboardInteractionsStore,
       canvasStore,
       movingStore,
-      floatingMenusStore,
+      canvasAnchoredComponentsStore,
     };
   };
 
@@ -892,11 +892,13 @@ describe("workflowShortcuts", () => {
     });
 
     it("opens quick add node menu in global mode if no node is selected", () => {
-      const { selectionStore, floatingMenusStore } = createStore();
+      const { selectionStore, canvasAnchoredComponentsStore } = createStore();
 
       selectionStore.singleSelectedNode = null;
       workflowShortcuts.quickActionMenu.execute({});
-      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+      expect(
+        canvasAnchoredComponentsStore.openQuickActionMenu,
+      ).toHaveBeenCalledWith({
         props: {
           position: expect.anything(),
         },
@@ -914,11 +916,13 @@ describe("workflowShortcuts", () => {
     });
 
     it("opens quick add node menu on the mickey mouse ports if no others are available", () => {
-      const { selectionStore, floatingMenusStore } = createStore();
+      const { selectionStore, canvasAnchoredComponentsStore } = createStore();
 
       selectionStore.singleSelectedNode = mockNodeTemplate(1);
       workflowShortcuts.quickActionMenu.execute({});
-      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+      expect(
+        canvasAnchoredComponentsStore.openQuickActionMenu,
+      ).toHaveBeenCalledWith({
         props: {
           nodeId: "root:4",
           nodeRelation: "SUCCESSORS",
@@ -930,11 +934,13 @@ describe("workflowShortcuts", () => {
     });
 
     it("opens quick add node menu on first none mickey mouse ports", () => {
-      const { selectionStore, floatingMenusStore } = createStore();
+      const { selectionStore, canvasAnchoredComponentsStore } = createStore();
 
       selectionStore.singleSelectedNode = mockNodeTemplate(3);
       workflowShortcuts.quickActionMenu.execute({});
-      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+      expect(
+        canvasAnchoredComponentsStore.openQuickActionMenu,
+      ).toHaveBeenCalledWith({
         props: {
           nodeId: "root:4",
           nodeRelation: "SUCCESSORS",
@@ -946,8 +952,11 @@ describe("workflowShortcuts", () => {
     });
 
     it("switch to the next port and reuse current position if menu was already open", () => {
-      const { selectionStore, floatingMenusStore, nodeInteractionsStore } =
-        createStore();
+      const {
+        selectionStore,
+        canvasAnchoredComponentsStore,
+        nodeInteractionsStore,
+      } = createStore();
 
       const node = createNativeNode({
         id: "root:4",
@@ -959,7 +968,7 @@ describe("workflowShortcuts", () => {
       });
       selectionStore.singleSelectedNode = node;
       nodeInteractionsStore.getNodeById = vi.fn().mockReturnValue(node);
-      floatingMenusStore.quickActionMenu = {
+      canvasAnchoredComponentsStore.quickActionMenu = {
         isOpen: true,
         props: {
           nodeId: "root:4",
@@ -971,7 +980,9 @@ describe("workflowShortcuts", () => {
         },
       };
       workflowShortcuts.quickActionMenu.execute({});
-      expect(floatingMenusStore.openQuickActionMenu).toHaveBeenCalledWith({
+      expect(
+        canvasAnchoredComponentsStore.openQuickActionMenu,
+      ).toHaveBeenCalledWith({
         props: {
           nodeId: "root:4",
           nodeRelation: "SUCCESSORS",

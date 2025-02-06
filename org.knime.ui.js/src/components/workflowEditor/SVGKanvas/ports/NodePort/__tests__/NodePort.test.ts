@@ -1191,7 +1191,9 @@ describe("NodePort", () => {
 
           await wrapper.trigger("lostpointercapture");
 
-          expect(mockedStores.floatingMenusStore.quickActionMenu).toEqual(
+          expect(
+            mockedStores.canvasAnchoredComponentsStore.quickActionMenu,
+          ).toEqual(
             expect.objectContaining({
               isOpen: true,
               props: {
@@ -1222,7 +1224,7 @@ describe("NodePort", () => {
           expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
           // simulate open menu
-          mockedStores.floatingMenusStore.quickActionMenu = {
+          mockedStores.canvasAnchoredComponentsStore.quickActionMenu = {
             isOpen: true,
             props: {
               nodeId: defaultProps.nodeId,
@@ -1251,13 +1253,13 @@ describe("NodePort", () => {
           await wrapper.trigger("lostpointercapture");
 
           // call close
-          mockedStores.floatingMenusStore.quickActionMenu.events.menuClose();
+          mockedStores.canvasAnchoredComponentsStore.quickActionMenu.events.menuClose();
           await nextTick();
 
           // see if close went good
-          expect(mockedStores.floatingMenusStore.quickActionMenu.isOpen).toBe(
-            false,
-          );
+          expect(
+            mockedStores.canvasAnchoredComponentsStore.quickActionMenu.isOpen,
+          ).toBe(false);
         });
       });
     });

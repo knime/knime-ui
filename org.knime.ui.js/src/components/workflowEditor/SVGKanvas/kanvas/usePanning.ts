@@ -6,9 +6,9 @@ import { navigatorUtils } from "@knime/utils";
 
 import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { runInEnvironment } from "@/environment";
-import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isInputElement } from "@/util/isInputElement";
@@ -108,7 +108,7 @@ export const usePanning = (options: UsePanningOptions) => {
   const { interactionsEnabled } = storeToRefs(canvasStore);
   const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
   const { settings } = storeToRefs(useSettingsStore());
-  const { toggleContextMenu } = useApplicationStore();
+  const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 
   const beginPan = (event: PointerEvent) => {
     canvasStore.focus();

@@ -69,7 +69,7 @@ describe("WorkflowPanel", () => {
 
       expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
 
-      await mockedStores.applicationStore.toggleContextMenu({
+      await mockedStores.canvasAnchoredComponentsStore.toggleContextMenu({
         // @ts-ignore
         event: createEvent(242, 122),
       });
@@ -84,7 +84,7 @@ describe("WorkflowPanel", () => {
       const { wrapper, mockedStores } = doShallowMount();
 
       wrapper.trigger("contextmenu", { clientX: 100, clientY: 200 });
-      mockedStores.applicationStore.toggleContextMenu({
+      await mockedStores.canvasAnchoredComponentsStore.toggleContextMenu({
         // @ts-ignore
         event: createEvent(100, 200),
       });
@@ -100,7 +100,7 @@ describe("WorkflowPanel", () => {
   describe("port Type menu", () => {
     const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
       const mountResult = doShallowMount();
-      mountResult.mockedStores.floatingMenusStore.portTypeMenu = {
+      mountResult.mockedStores.canvasAnchoredComponentsStore.portTypeMenu = {
         isOpen: true,
         // @ts-expect-error
         props: {
@@ -118,7 +118,7 @@ describe("WorkflowPanel", () => {
       const { wrapper, mockedStores } = doShallowMount();
       expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
 
-      mockedStores.floatingMenusStore.portTypeMenu = {
+      mockedStores.canvasAnchoredComponentsStore.portTypeMenu = {
         isOpen: true,
         // @ts-expect-error
         props: {
@@ -151,7 +151,7 @@ describe("WorkflowPanel", () => {
   describe("quick add node menu", () => {
     const mountAndOpenMenu = async ({ closeCallback = vi.fn() } = {}) => {
       const mountResult = doShallowMount();
-      mountResult.mockedStores.floatingMenusStore.quickActionMenu = {
+      mountResult.mockedStores.canvasAnchoredComponentsStore.quickActionMenu = {
         isOpen: true,
         props: {
           direction: "in",
@@ -172,7 +172,7 @@ describe("WorkflowPanel", () => {
       const { wrapper, mockedStores } = doShallowMount();
       expect(wrapper.findComponent(QuickActionMenu).exists()).toBe(false);
 
-      mockedStores.floatingMenusStore.quickActionMenu = {
+      mockedStores.canvasAnchoredComponentsStore.quickActionMenu = {
         isOpen: true,
         props: {
           direction: "in",

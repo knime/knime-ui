@@ -18,8 +18,8 @@ import type {
 } from "@/api/gateway-api/generated-api";
 import { TypedText } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -47,7 +47,7 @@ const newAnnotationData = ref({
   borderColor: "",
 });
 
-const { toggleContextMenu } = useApplicationStore();
+const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const annotationInteractionStore = useAnnotationInteractionsStore();
 const { isDragging } = storeToRefs(useMovingStore());
 const { isWritable } = storeToRefs(useWorkflowStore());

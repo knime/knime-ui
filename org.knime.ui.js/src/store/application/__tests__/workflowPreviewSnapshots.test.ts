@@ -57,6 +57,7 @@ describe("workflow preview snapshot", () => {
       loadStore();
     workflowStore.activeWorkflow!.dirty = true;
 
+    applicationStore.setActiveProjectId("project1");
     const { activeProjectId } = applicationStore;
     expect(workflowPreviewSnapshotsStore.rootWorkflowSnapshots.size).toBe(0);
 

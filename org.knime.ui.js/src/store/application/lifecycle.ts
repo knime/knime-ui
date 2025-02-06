@@ -25,6 +25,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
+import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 
 import { useApplicationStore } from "./application";
 import { useCanvasModesStore } from "./canvasModes";
@@ -510,7 +511,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       } = activeWorkflow;
 
       useCanvasModesStore().resetCanvasMode();
-      await useApplicationStore().toggleContextMenu();
+      useCanvasAnchoredComponentsStore().closeAllAnchoredMenus();
       useAnnotationInteractionsStore().setEditableAnnotationId("");
       usePanelStore().closeExtensionPanel();
       useComponentInteractionsStore().clearComponentUpdateToasts();

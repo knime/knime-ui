@@ -65,7 +65,7 @@ describe("AddPortPlaceholder.vue", () => {
 
       expect(wrapper.element.style.opacity).toBe("");
 
-      mockedStores.floatingMenusStore.openPortTypeMenu({
+      mockedStores.canvasAnchoredComponentsStore.openPortTypeMenu({
         nodeId: "node-id",
         props: { side: "output" },
       });
@@ -73,7 +73,7 @@ describe("AddPortPlaceholder.vue", () => {
 
       expect(wrapper.element.style.opacity).toBe("1");
 
-      mockedStores.floatingMenusStore.closePortTypeMenu();
+      mockedStores.canvasAnchoredComponentsStore.closePortTypeMenu();
       await nextTick();
       vi.runAllTimers();
 
@@ -86,13 +86,13 @@ describe("AddPortPlaceholder.vue", () => {
       expect(wrapper.element.style.opacity).toBe("");
 
       vi.useFakeTimers();
-      mockedStores.floatingMenusStore.openPortTypeMenu({
+      mockedStores.canvasAnchoredComponentsStore.openPortTypeMenu({
         nodeId: "node-id",
         props: { side: "output" },
       });
       await nextTick();
-      mockedStores.floatingMenusStore.closePortTypeMenu();
-      mockedStores.floatingMenusStore.openPortTypeMenu({
+      mockedStores.canvasAnchoredComponentsStore.closePortTypeMenu();
+      mockedStores.canvasAnchoredComponentsStore.openPortTypeMenu({
         nodeId: "node-id",
         props: { side: "output" },
       });
@@ -145,7 +145,9 @@ describe("AddPortPlaceholder.vue", () => {
       it("opens the menu on click", async () => {
         const { mockedStores } = await mountWithOpenMenu();
 
-        expect(mockedStores.floatingMenusStore.portTypeMenu).toMatchObject({
+        expect(
+          mockedStores.canvasAnchoredComponentsStore.portTypeMenu,
+        ).toMatchObject({
           nodeId: "node-id",
           props: {
             position: {
@@ -172,9 +174,11 @@ describe("AddPortPlaceholder.vue", () => {
         const { wrapper, mockedStores } = await mountWithOpenMenu();
 
         const port = { typeId: "table" };
-        mockedStores.floatingMenusStore.portTypeMenu.events.itemActive({
-          port,
-        });
+        mockedStores.canvasAnchoredComponentsStore.portTypeMenu.events.itemActive(
+          {
+            port,
+          },
+        );
         await nextTick();
 
         expect(wrapper.find(".add-port-icon").exists()).toBe(false);
@@ -188,7 +192,9 @@ describe("AddPortPlaceholder.vue", () => {
       it("resets port preview", async () => {
         const { wrapper, mockedStores } = await mountWithOpenMenu();
 
-        mockedStores.floatingMenusStore.portTypeMenu.events.itemActive(null);
+        mockedStores.canvasAnchoredComponentsStore.portTypeMenu.events.itemActive(
+          null,
+        );
         await nextTick();
 
         expect(wrapper.find(".add-port-icon").exists()).toBe(true);
@@ -200,21 +206,26 @@ describe("AddPortPlaceholder.vue", () => {
 
         await wrapper.find(".add-port-icon").trigger("click");
 
-        expect(mockedStores.floatingMenusStore.portTypeMenu.isOpen).toBe(false);
+        expect(
+          mockedStores.canvasAnchoredComponentsStore.portTypeMenu.isOpen,
+        ).toBe(false);
       });
 
       it("closes menu on menuClose event", async () => {
         const { mockedStores } = await mountWithOpenMenu();
 
-        mockedStores.floatingMenusStore.portTypeMenu.events.menuClose();
+        mockedStores.canvasAnchoredComponentsStore.portTypeMenu.events.menuClose();
         await nextTick();
 
-        expect(mockedStores.floatingMenusStore.portTypeMenu.isOpen).toBe(false);
+        expect(
+          mockedStores.canvasAnchoredComponentsStore.portTypeMenu.isOpen,
+        ).toBe(false);
       });
 
       it("close menu without selecting a port resets port preview", async () => {
         const { wrapper, mockedStores } = await mountWithOpenMenu();
-        const callbacks = mockedStores.floatingMenusStore.portTypeMenu.events;
+        const callbacks =
+          mockedStores.canvasAnchoredComponentsStore.portTypeMenu.events;
 
         callbacks.itemActive({ portId: "table" });
         callbacks.menuClose();
@@ -228,7 +239,9 @@ describe("AddPortPlaceholder.vue", () => {
         const { wrapper, mockedStores } = await mountWithOpenMenu();
 
         const port = { typeId: "table" };
-        mockedStores.floatingMenusStore.portTypeMenu.events.itemClick({ port });
+        mockedStores.canvasAnchoredComponentsStore.portTypeMenu.events.itemClick(
+          { port },
+        );
 
         await nextTick();
         expect(wrapper.findComponent(Transition).attributes("name")).toBe(
@@ -247,9 +260,11 @@ describe("AddPortPlaceholder.vue", () => {
       it("click on item emits event", async () => {
         const { wrapper, mockedStores } = await mountWithOpenMenu();
 
-        mockedStores.floatingMenusStore.portTypeMenu.events.itemClick({
-          typeId: "table",
-        });
+        mockedStores.canvasAnchoredComponentsStore.portTypeMenu.events.itemClick(
+          {
+            typeId: "table",
+          },
+        );
 
         expect(wrapper.emitted("addPort")).toStrictEqual([
           [{ typeId: "table", portGroup: undefined }],

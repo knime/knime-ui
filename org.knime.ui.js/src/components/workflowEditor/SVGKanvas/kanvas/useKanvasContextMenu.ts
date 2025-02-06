@@ -1,7 +1,7 @@
 import { type Ref, onMounted, onUnmounted } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useApplicationStore } from "@/store/application/application";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 type UseKanvasContextMenuOptions = {
@@ -9,7 +9,7 @@ type UseKanvasContextMenuOptions = {
 };
 
 export const useKanvasContextMenu = (options: UseKanvasContextMenuOptions) => {
-  const { toggleContextMenu } = useApplicationStore();
+  const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
   const { isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 
   // handle native context menu event

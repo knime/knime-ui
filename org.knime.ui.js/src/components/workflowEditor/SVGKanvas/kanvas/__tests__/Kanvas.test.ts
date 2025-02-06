@@ -442,7 +442,7 @@ describe("Kanvas", () => {
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).toHaveBeenCalledWith(-1);
         expect(
-          mockedStores.applicationStore.toggleContextMenu,
+          mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
         ).not.toHaveBeenCalled();
       });
 
@@ -509,7 +509,7 @@ describe("Kanvas", () => {
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).toHaveBeenCalledWith(-1);
         expect(
-          mockedStores.applicationStore.toggleContextMenu,
+          mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
         ).not.toHaveBeenCalled();
       });
 
@@ -545,7 +545,7 @@ describe("Kanvas", () => {
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
         expect(
-          mockedStores.applicationStore.toggleContextMenu,
+          mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
         ).toHaveBeenCalled();
       });
 
@@ -589,7 +589,7 @@ describe("Kanvas", () => {
         await triggerPointerUp({ wrapper });
         expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
         expect(
-          mockedStores.applicationStore.toggleContextMenu,
+          mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
         ).not.toHaveBeenCalled();
       });
     });
@@ -630,7 +630,7 @@ describe("Kanvas", () => {
       await triggerPointerUp({ wrapper });
 
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           deselectAllObjects: true,
@@ -653,7 +653,7 @@ describe("Kanvas", () => {
       });
       await wrapper.trigger("contextmenu");
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith(expect.anything());
     });
 
@@ -661,7 +661,7 @@ describe("Kanvas", () => {
       const { wrapper, mockedStores } = doShallowMount();
       await wrapper.trigger("keydown", { key: "F10", shiftKey: true });
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith(expect.anything());
     });
 
@@ -670,7 +670,7 @@ describe("Kanvas", () => {
       const { wrapper, mockedStores } = doShallowMount();
       await wrapper.trigger("pointerdown", { button: 0, ctrlKey: true });
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith(expect.anything());
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
     });
@@ -679,7 +679,7 @@ describe("Kanvas", () => {
       const { wrapper, mockedStores } = doShallowMount();
       await wrapper.trigger("keydown", { key: "ContextMenu" });
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalledWith(expect.anything());
     });
   });

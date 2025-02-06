@@ -8,9 +8,9 @@ import { useKeyPressedUntilMouseClick } from "@knime/components";
 import { navigatorUtils } from "@knime/utils";
 
 import { $bus } from "@/plugins/event-bus";
-import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -106,7 +106,6 @@ const startRectangleSelection = (event: PointerEvent) => {
 };
 
 const selectionStore = useSelectionStore();
-const applicationStore = useApplicationStore();
 
 const deselectAllObjects = () => {
   selectionStore.deselectAllObjects();
@@ -114,7 +113,7 @@ const deselectAllObjects = () => {
 
 const onLeftControlClick = (event: PointerEvent) => {
   if (navigatorUtils.isMac()) {
-    applicationStore.toggleContextMenu({ event });
+    useCanvasAnchoredComponentsStore().toggleContextMenu({ event });
     selectionStore.deselectAllObjects();
   }
 };

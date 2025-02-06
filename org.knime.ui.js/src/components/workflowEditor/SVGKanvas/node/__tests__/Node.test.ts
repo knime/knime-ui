@@ -439,7 +439,7 @@ describe("Node", () => {
         expect.stringMatching("root:1"),
       );
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
@@ -524,7 +524,7 @@ describe("Node", () => {
           expect.stringMatching("root:1"),
         );
         expect(
-          mockedStores.applicationStore.toggleContextMenu,
+          mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
         ).toHaveBeenCalled();
       },
     );
@@ -1100,7 +1100,7 @@ describe("Node", () => {
         expect.stringMatching("root:1"),
       );
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
