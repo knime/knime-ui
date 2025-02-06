@@ -182,7 +182,7 @@ describe("WorkflowCanvas", () => {
     expect(screenToCanvasCoordinatesMock).toHaveBeenCalledWith([50, 75]);
 
     expect(
-      mockedStores.floatingMenusStore.openQuickActionMenu,
+      mockedStores.canvasAnchoredComponentsStore.openQuickActionMenu,
     ).toHaveBeenCalledWith({
       props: { position: { x: 100, y: 200 } },
     });
@@ -190,7 +190,9 @@ describe("WorkflowCanvas", () => {
     const nonSvgElement = document.createElement("div");
     kanvas.element.appendChild(nonSvgElement);
 
-    vi.mocked(mockedStores.floatingMenusStore.openQuickActionMenu).mockReset();
+    vi.mocked(
+      mockedStores.canvasAnchoredComponentsStore.openQuickActionMenu,
+    ).mockReset();
 
     nonSvgElement.dispatchEvent(
       new MouseEvent("dblclick", {
@@ -202,7 +204,7 @@ describe("WorkflowCanvas", () => {
     );
 
     expect(
-      mockedStores.floatingMenusStore.openQuickActionMenu,
+      mockedStores.canvasAnchoredComponentsStore.openQuickActionMenu,
     ).not.toHaveBeenCalled();
   });
 

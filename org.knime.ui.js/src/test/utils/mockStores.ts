@@ -75,7 +75,8 @@ export const mockStores = ({ stubActions = false } = {}) => {
     useConnectionInteractionsStore(testingPinia);
   const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
   const executionStore = useExecutionStore(testingPinia);
-  const floatingMenusStore = useCanvasAnchoredComponentsStore(testingPinia);
+  const canvasAnchoredComponentsStore =
+    useCanvasAnchoredComponentsStore(testingPinia);
   const movingStore = useMovingStore(testingPinia);
   const nodeInteractionsStore = useNodeInteractionsStore(testingPinia);
   const workflowStore = useWorkflowStore(testingPinia);
@@ -93,6 +94,9 @@ export const mockStores = ({ stubActions = false } = {}) => {
 
   const kanvas = document.createElement("div");
   kanvas.setAttribute("id", "kanvas");
+  kanvas.appendChild(
+    document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+  );
   kanvas.scrollTo = vi.fn();
 
   canvasStore.setScrollContainerElement(kanvas);
@@ -124,7 +128,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     connectionInteractionsStore,
     desktopInteractionsStore,
     executionStore,
-    floatingMenusStore,
+    canvasAnchoredComponentsStore,
     movingStore,
     nodeInteractionsStore,
     workflowStore,

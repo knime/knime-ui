@@ -58,7 +58,8 @@ describe("NodePorts.vue", () => {
 
     const mockedStores = mockStores();
     mockedStores.workflowStore.isWritable = isWorkflowWritable;
-    mockedStores.floatingMenusStore.quickActionMenu = quickActionMenu;
+    mockedStores.canvasAnchoredComponentsStore.quickActionMenu =
+      quickActionMenu;
     mockedStores.nodeInteractionsStore.getNodeById = getNodeByIdMock;
 
     vi.mocked(

@@ -6,8 +6,8 @@ import { navigatorUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/composables/useMoveObject";
-import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -43,7 +43,7 @@ const {
 } = storeToRefs(selectionStore);
 const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
-const { toggleContextMenu } = useApplicationStore();
+const { toggleContextMenu } = useCanvasAnchoredComponentsStore();
 const { addVirtualBendpoint, addBendpoint } = useConnectionInteractionsStore();
 
 const suggestDelete = ref(false);

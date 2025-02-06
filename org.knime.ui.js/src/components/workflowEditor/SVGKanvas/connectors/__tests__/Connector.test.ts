@@ -238,7 +238,7 @@ describe("Connector.vue", () => {
         .trigger("pointerdown", { button: 0, ctrlKey: true });
 
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
       expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
@@ -251,7 +251,7 @@ describe("Connector.vue", () => {
       await wrapper.find("g path").trigger("pointerdown", { button: 2 });
 
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(mockedStores.selectionStore.deselectAllObjects).toHaveBeenCalled();
       expect(mockedStores.selectionStore.selectConnection).toHaveBeenCalledWith(
@@ -280,7 +280,7 @@ describe("Connector.vue", () => {
         .trigger("pointerdown", { button: 2, shiftKey: true });
 
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
       expect(
         mockedStores.selectionStore.deselectConnection,

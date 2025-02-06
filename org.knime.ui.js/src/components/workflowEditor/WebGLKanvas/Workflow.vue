@@ -2,8 +2,8 @@
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
-import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -39,7 +39,7 @@ const onRightClick = (event: FederatedPointerEvent, nodeId: string) => {
     selectionStore.selectNode(nodeId);
   }
 
-  useApplicationStore().toggleContextMenu();
+  useCanvasAnchoredComponentsStore().toggleContextMenu();
 };
 </script>
 

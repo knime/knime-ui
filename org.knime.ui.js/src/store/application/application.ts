@@ -1,33 +1,20 @@
 import { defineStore } from "pinia";
 
-import type {
-  AvailablePortTypes,
-  ExampleProject,
-  WorkflowObject,
-} from "@/api/custom-types";
+import type { AvailablePortTypes, ExampleProject } from "@/api/custom-types";
 import {
   AppState,
   type PortType,
   type Project,
   type SpaceItemReference,
   type UpdateAvailableEvent,
-  type XY,
 } from "@/api/gateway-api/generated-api";
-import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
-import { useCanvasStore } from "@/store/canvas";
-import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
-import { useSelectionStore } from "@/store/selection";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { nodeSize } from "@/style/shapes";
-import { workflowNavigationService } from "@/util/workflowNavigationService";
-import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 
-import { useCanvasModesStore } from "./canvasModes";
 import { useApplicationSettingsStore } from "./settings";
 
 export interface ApplicationState {
@@ -51,13 +38,6 @@ export interface ApplicationState {
    * A list of component types
    */
   availableComponentTypes: Array<string>;
-  /**
-   * Workflow Context Menu state
-   */
-  contextMenu: {
-    isOpen: boolean;
-    position: XY | null;
-  };
   /**
    * Object to track state of available updates
    */
@@ -115,10 +95,6 @@ export const useApplicationStore = defineStore("application", {
     availablePortTypes: {},
     suggestedPortTypes: [],
     availableComponentTypes: [],
-    contextMenu: {
-      isOpen: false,
-      position: null,
-    },
     availableUpdates: null,
     featureFlags: {},
     exampleProjects: [],
@@ -162,10 +138,6 @@ export const useApplicationStore = defineStore("application", {
 
     setFeatureFlags(featureFlags: Record<string, boolean>) {
       this.featureFlags = featureFlags;
-    },
-
-    setContextMenu(contextMenu: ApplicationState["contextMenu"]) {
-      this.contextMenu = contextMenu;
     },
 
     setAvailableUpdates(
@@ -342,121 +314,6 @@ export const useApplicationStore = defineStore("application", {
         this.setNodeRepositoryLoaded(applicationState.nodeRepositoryLoaded!);
       }
     },
-
-    async toggleContextMenu({
-      event = null,
-      deselectAllObjects = false,
-    }: { event?: MouseEvent | null; deselectAllObjects?: boolean } = {}) {
-      // close other menus if they are open
-      if (useCanvasAnchoredComponentsStore().quickActionMenu.isOpen) {
-        useCanvasAnchoredComponentsStore().quickActionMenu.events.menuClose?.();
-      }
-
-      if (useCanvasAnchoredComponentsStore().portTypeMenu.isOpen) {
-        useCanvasAnchoredComponentsStore().portTypeMenu.events.menuClose?.();
-      }
-
-      if (canvasRendererUtils.isWebGLRenderer()) {
-        const { isOpen } = this.contextMenu;
-
-        this.contextMenu = {
-          isOpen: !isOpen,
-          position: isOpen ? null : useWebGLCanvasStore().canvasAnchor.anchor,
-        };
-
-        return;
-      }
-
-      // close an open menu
-      if (this.contextMenu.isOpen) {
-        // when closing an active menu, we could optionally receive a native event
-        // e.g. the menu is getting closed by right-clicking again
-        event?.preventDefault();
-        this.setContextMenu({ isOpen: false, position: null });
-        useCanvasStore().focus();
-
-        return;
-      }
-
-      // safety check
-      if (!event) {
-        return;
-      }
-
-      // we do not want it to bubble up if we handle it here
-      event.stopPropagation();
-      event.preventDefault();
-
-      if (deselectAllObjects) {
-        useSelectionStore().deselectAllObjects();
-      }
-
-      // reset to selection mode
-      useCanvasModesStore().resetCanvasMode();
-
-      const eventBasedPosition = () => {
-        const { clientX, clientY } = event;
-        if (!clientX && !clientY) {
-          return null;
-        }
-
-        const screenToCanvasCoordinates =
-          useCanvasStore().screenToCanvasCoordinates;
-
-        const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
-
-        return { x, y };
-      };
-
-      // the node offset is also fine for annotations so we use it all the time
-      const extractXYWithOffset = ({ x, y }: XY) => ({
-        x: x + nodeSize / 2,
-        y: y + nodeSize / 2,
-      });
-
-      const centerOfVisibleArea = useCanvasStore().getCenterOfScrollContainer;
-
-      // fallback position for keyboard shortcut to open context menu
-      const selectionBasedPosition = async () => {
-        const selectedObjects: WorkflowObject[] =
-          useSelectionStore().selectedObjects;
-
-        if (selectedObjects.length === 0) {
-          return null;
-        }
-
-        // use position of object if we only have one selected
-        if (selectedObjects.length === 1) {
-          return extractXYWithOffset(selectedObjects[0]);
-        }
-
-        // try to find the object that is nearest going left from the right border (y-centered) of the visible area
-        const mostRightObject = await workflowNavigationService.nearestObject({
-          objects: selectedObjects,
-          reference: {
-            ...centerOfVisibleArea("right"),
-            id: "",
-          },
-          direction: "left",
-        });
-
-        // the nearestObject uses some max distances so it can happen that there is nothing "found"
-        if (!mostRightObject) {
-          return null;
-        }
-        return extractXYWithOffset(mostRightObject);
-      };
-
-      const position =
-        eventBasedPosition() ??
-        (await selectionBasedPosition()) ??
-        centerOfVisibleArea();
-
-      this.contextMenu = {
-        isOpen: true,
-        position,
-      };
-    },
   },
   getters: {
     activeProjectOrigin: (state): SpaceItemReference | null => {
@@ -480,7 +337,7 @@ export const useApplicationStore = defineStore("application", {
         (project) => project.projectId === projectId,
       );
 
-      if (!foundProject || !foundProject?.origin) {
+      if (!foundProject?.origin) {
         return true;
       }
 

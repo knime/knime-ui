@@ -73,13 +73,13 @@ describe("ConnectorSnappingProvider.vue", () => {
       mockedStores.nodeInteractionsStore.addNodePort,
     ).mockImplementation((...args) => addNodePortMock(...args));
     vi.mocked(
-      mockedStores.floatingMenusStore.openPortTypeMenu,
+      mockedStores.canvasAnchoredComponentsStore.openPortTypeMenu,
     ).mockImplementation((...args) => openPortTypeMenuMock(...args));
     vi.mocked(
-      mockedStores.floatingMenusStore.closePortTypeMenu,
+      mockedStores.canvasAnchoredComponentsStore.closePortTypeMenu,
     ).mockImplementation((...args) => closePortTypeMenuMock(...args));
     vi.mocked(
-      mockedStores.floatingMenusStore.setPortTypeMenuPreviewPort,
+      mockedStores.canvasAnchoredComponentsStore.setPortTypeMenuPreviewPort,
     ).mockImplementation((...args) => setPortTypeMenuPreviewPortMock(...args));
 
     const wrapper = mount(ConnectorSnappingProvider, {

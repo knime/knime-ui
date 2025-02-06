@@ -1,24 +1,10 @@
 import { vi } from "vitest";
 import { API } from "@api";
-import { createTestingPinia } from "@pinia/testing";
 
 import { APP_ROUTES } from "@/router/appRoutes";
-import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking.ts";
-import { useCanvasStore } from "@/store/canvas";
-import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
-import { useNodeRepositoryStore } from "@/store/nodeRepository";
-import { useSelectionStore } from "@/store/selection";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions.ts";
-import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
-import { useApplicationStore } from "../application";
-import { useCanvasStateTrackingStore } from "../canvasStateTracking";
-import { useLifecycleStore } from "../lifecycle";
-import { useApplicationSettingsStore } from "../settings";
-import { useWorkflowPreviewSnapshotsStore } from "../workflowPreviewSnapshots";
+import { mockStores } from "@/test/utils/mockStores";
 
 const mockedAPI = deepMocked(API);
 
@@ -35,41 +21,12 @@ export const loadStore = () => {
   const loadWorkflow = deepMocked(API).workflow.getWorkflow;
   loadWorkflow.mockResolvedValue({ workflow: { info: { containerId: "" } } });
 
-  const testingPinia = createTestingPinia({
-    stubActions: false,
-    createSpy: vi.fn,
-  });
-
-  const applicationStore = useApplicationStore(testingPinia);
-  const lifecycleStore = useLifecycleStore(testingPinia);
-  const canvasStateTrackingStore = useCanvasStateTrackingStore(testingPinia);
-  const workflowStore = useWorkflowStore(testingPinia);
-  const nodeRepositoryStore = useNodeRepositoryStore(testingPinia);
-  const workflowPreviewSnapshotsStore =
-    useWorkflowPreviewSnapshotsStore(testingPinia);
-
-  const canvasStore = useCanvasStore(testingPinia);
-  const kanvas = document.createElement("div");
-  kanvas.setAttribute("id", "kanvas");
-  kanvas.scrollTo = vi.fn();
-  kanvas.appendChild(
-    document.createElementNS("http://www.w3.org/2000/svg", "svg"),
-  );
-  canvasStore.setScrollContainerElement(kanvas);
+  const mockedStores = mockStores();
 
   // @ts-ignore
-  canvasStore.screenToCanvasCoordinates = ([x, y]) => [x, y];
+  mockedStores.canvasStore.screenToCanvasCoordinates = ([x, y]) => [x, y];
 
-  const selectionStore = useSelectionStore(testingPinia);
-  const applicationSettingsStore = useApplicationSettingsStore(testingPinia);
-  const nodeConfigurationStore = useNodeConfigurationStore(testingPinia);
-  const spaceProvidersStore = useSpaceProvidersStore(testingPinia);
-  const dirtyProjectsTrackingStore =
-    useDirtyProjectsTrackingStore(testingPinia);
-  const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
-  const floatingMenusStore = useCanvasAnchoredComponentsStore(testingPinia);
-
-  workflowStore.setActiveWorkflow(
+  mockedStores.workflowStore.setActiveWorkflow(
     createWorkflow({ projectId: "project1", info: { containerId: "root" } }),
   );
 
@@ -79,20 +36,7 @@ export const loadStore = () => {
   };
 
   return {
-    applicationStore,
-    lifecycleStore,
-    canvasStateTrackingStore,
-    workflowStore,
-    nodeRepositoryStore,
-    canvasStore,
-    selectionStore,
-    applicationSettingsStore,
-    nodeConfigurationStore,
-    spaceProvidersStore,
-    workflowPreviewSnapshotsStore,
+    ...mockedStores,
     mockRouter,
-    floatingMenusStore,
-    dirtyProjectsTrackingStore,
-    desktopInteractionsStore,
   };
 };

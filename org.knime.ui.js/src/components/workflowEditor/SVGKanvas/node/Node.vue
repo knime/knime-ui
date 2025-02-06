@@ -9,6 +9,7 @@ import { KNIME_MIME } from "@/composables/useDropNode";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -321,7 +322,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(useApplicationStore, ["toggleContextMenu"]),
+    ...mapActions(useCanvasAnchoredComponentsStore, ["toggleContextMenu"]),
     ...mapActions(useNodeInteractionsStore, ["replaceNode"]),
     ...mapActions(useComponentInteractionsStore, ["unlockSubnode"]),
     ...mapActions(useDesktopInteractionsStore, ["openNodeConfiguration"]),

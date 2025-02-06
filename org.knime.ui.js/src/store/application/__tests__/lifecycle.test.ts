@@ -4,7 +4,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import { runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
-import { routes } from "@/router/router";
+import { router, routes } from "@/router/router";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
 import { lifecycleBus } from "../lifecycle-events";
@@ -356,5 +356,25 @@ describe("application::lifecycle", () => {
 
       expect(router.currentRoute.value.name).toBe(APP_ROUTES.WorkflowPage);
     });
+  });
+
+  it("should hide the canvas anchored components when leaving the worklow page", async () => {
+    const { canvasAnchoredComponentsStore, lifecycleStore } = loadStore();
+
+    mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue({});
+    await lifecycleStore.initializeApplication({
+      $router: router,
+    });
+
+    await router.push({
+      name: APP_ROUTES.WorkflowPage,
+      params: { projectId: "foo", workflowId: "bar" },
+    });
+
+    await router.push({ name: APP_ROUTES.Home.GetStarted });
+
+    expect(
+      canvasAnchoredComponentsStore.closeAllAnchoredMenus,
+    ).toHaveBeenCalled();
   });
 });

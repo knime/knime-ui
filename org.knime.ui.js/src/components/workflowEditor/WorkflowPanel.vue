@@ -30,12 +30,14 @@ const WorkflowCanvas = defineAsyncComponent({
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
-const { portTypeMenu, quickActionMenu } = storeToRefs(
-  useCanvasAnchoredComponentsStore(),
+const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
+const { portTypeMenu, quickActionMenu, contextMenu } = storeToRefs(
+  canvasAnchoredComponentsStore,
 );
 const applicationStore = useApplicationStore();
 
-const { contextMenu, activeProjectId } = storeToRefs(applicationStore);
+const { activeProjectId } = storeToRefs(applicationStore);
+
 const { selectedNodeIds } = useSelectionStore();
 const { hasAnnotationModeEnabled } = useCanvasModesStore();
 
@@ -61,7 +63,7 @@ watch(selectedNodeIds, () => {
 
 const closeContextMenu = (event?: MouseEvent) => {
   if (contextMenu.value.isOpen) {
-    applicationStore.toggleContextMenu({ event });
+    canvasAnchoredComponentsStore.toggleContextMenu({ event });
   }
 };
 </script>

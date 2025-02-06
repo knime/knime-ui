@@ -550,7 +550,7 @@ describe("WorkflowAnnotation.vue", () => {
         defaultProps.annotation.id,
       );
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
@@ -566,7 +566,7 @@ describe("WorkflowAnnotation.vue", () => {
         defaultProps.annotation.id,
       );
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
@@ -582,7 +582,7 @@ describe("WorkflowAnnotation.vue", () => {
         defaultProps.annotation.id,
       );
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
 
@@ -598,7 +598,7 @@ describe("WorkflowAnnotation.vue", () => {
         defaultProps.annotation.id,
       );
       expect(
-        mockedStores.applicationStore.toggleContextMenu,
+        mockedStores.canvasAnchoredComponentsStore.toggleContextMenu,
       ).toHaveBeenCalled();
     });
   });
