@@ -1,6 +1,6 @@
 import { type Mock, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import { TABS } from "@/store/panel";
 import { mockStores } from "@/test/utils/mockStores";
@@ -43,8 +43,13 @@ describe("WorkflowCanvas", () => {
   };
 
   describe("with Workflow", () => {
-    it("renders workflow, if it is not empty", () => {
-      const { wrapper } = doShallowMount();
+    it("renders workflow, if it is not empty", async () => {
+      const { wrapper, mockedStores } = doShallowMount();
+
+      await flushPromises();
+      expect(
+        mockedStores.canvasStateTrackingStore.restoreCanvasState,
+      ).toHaveBeenCalled();
 
       expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(false);
       expect(wrapper.findComponent(Workflow).exists()).toBe(true);
@@ -67,13 +72,12 @@ describe("WorkflowCanvas", () => {
 
     it("does not fill the screen if workflow is not empty", async () => {
       const { wrapper, mockedStores } = doShallowMount();
-      await nextTick();
+      await flushPromises();
       expect(mockedStores.canvasStore.fillScreen).toHaveBeenCalled();
       const kanvas = wrapper.findComponent(Kanvas);
       kanvas.vm.$emit("container-size-changed");
 
-      await nextTick();
-      await nextTick();
+      await flushPromises();
       expect(mockedStores.canvasStore.fillScreen).toHaveBeenCalledTimes(1);
     });
 
@@ -204,10 +208,16 @@ describe("WorkflowCanvas", () => {
 
   it("does not zoom to fit after mounting if a canvas state exists for this worflow", async () => {
     const { mockedStores } = doShallowMount({
-      workflowCanvasState: {},
+      workflowCanvasState: {
+        zoomFactor: 1,
+        scrollLeft: 10,
+        scrollTop: 10,
+        scrollWidth: 10,
+        scrollHeight: 10,
+      },
     });
 
-    await nextTick();
+    await flushPromises();
 
     expect(mockedStores.canvasStore.fillScreen).not.toHaveBeenCalled();
   });

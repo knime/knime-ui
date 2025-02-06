@@ -464,7 +464,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       );
     },
 
-    async setWorkflow({
+    setWorkflow({
       workflow,
       projectId,
       snapshotId,
@@ -487,9 +487,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
         workflowId,
         snapshotId,
       });
-
-      // restore scroll and zoom if saved before
-      await useCanvasStateTrackingStore().restoreCanvasState();
     },
 
     afterSetActivateWorkflow() {

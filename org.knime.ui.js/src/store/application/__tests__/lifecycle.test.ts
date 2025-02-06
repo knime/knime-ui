@@ -278,7 +278,6 @@ describe("application::lifecycle", () => {
         workflowId: "root",
       });
       expect(applicationStore.activeProjectId).toBe("1");
-      expect(canvasStateTrackingStore.restoreCanvasState).toHaveBeenCalled();
     });
   });
 

@@ -40,7 +40,10 @@ watch(
   { immediate: true },
 );
 
-onMounted(() => {
+onMounted(async () => {
+  // restore scroll and zoom if saved before
+  await useCanvasStateTrackingStore().restoreCanvasState();
+
   nextTick(() => {
     // put canvas into fillScreen view after loading the workflow
     // if there isn't a saved canvas state for it
