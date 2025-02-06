@@ -1,7 +1,7 @@
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 
+import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import {
-  $bus,
   type PreviewMode,
   type SelectionPreviewEvents,
 } from "@/plugins/event-bus";
@@ -35,14 +35,11 @@ export const useSelectionPreview = (options: UseSelectionPreviewOptions) => {
 
   const eventName = options.eventNameResolver();
 
-  onMounted(() => {
-    $bus.on(eventName, (event) => {
+  useGlobalBusListener({
+    eventName,
+    handler: (event) => {
       selectionPreview.value = event.preview;
-    });
-  });
-
-  onBeforeUnmount(() => {
-    $bus.off(eventName);
+    },
   });
 
   return { selectionPreview, isSelectionPreviewShown };

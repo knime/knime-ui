@@ -19,7 +19,7 @@ export type SelectionPreviewEvents = {
   };
 };
 
-type BusEvents = {
+export type BusEvents = {
   "selection-pointerdown": PointerEvent;
   "selection-pointerup": PointerEvent;
   "selection-pointermove": PointerEvent;

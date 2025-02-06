@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /** Blocks the whole UI */
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 
-import { $bus } from "@/plugins/event-bus";
+import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 
 const block = ref(false);
 const darkenBackground = ref(false);
@@ -14,20 +14,20 @@ const focus = async () => {
   blocker.value?.focus();
 };
 
-onMounted(() => {
-  $bus.on("block-ui", (config = {}) => {
+useGlobalBusListener({
+  eventName: "block-ui",
+  handler: (config = {}) => {
     block.value = true;
     darkenBackground.value = Boolean(config.darkenBackground);
-  });
-  $bus.on("unblock-ui", () => {
-    block.value = false;
-    darkenBackground.value = false;
-  });
+  },
 });
 
-onBeforeUnmount(() => {
-  $bus.off("block-ui");
-  $bus.off("unblock-ui");
+useGlobalBusListener({
+  eventName: "unblock-ui",
+  handler: () => {
+    block.value = false;
+    darkenBackground.value = false;
+  },
 });
 
 watch(block, () => {

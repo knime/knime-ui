@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import type { GraphicsInst } from "vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
+import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
@@ -136,16 +137,17 @@ const renderFn = (graphics: GraphicsInst) => {
   graphics.endFill();
 };
 
-onMounted(() => {
-  $bus.on("selection-pointerdown", onSelectionStart);
-  $bus.on("selection-pointermove", onSelectionMove);
-  $bus.on("selection-pointerup", onSelectionEnd);
+useGlobalBusListener({
+  eventName: "selection-pointerdown",
+  handler: onSelectionStart,
 });
-
-onUnmounted(() => {
-  $bus.on("selection-pointerdown", onSelectionStart);
-  $bus.on("selection-pointermove", onSelectionMove);
-  $bus.on("selection-pointerup", onSelectionEnd);
+useGlobalBusListener({
+  eventName: "selection-pointermove",
+  handler: onSelectionMove,
+});
+useGlobalBusListener({
+  eventName: "selection-pointerup",
+  handler: onSelectionEnd,
 });
 </script>
 

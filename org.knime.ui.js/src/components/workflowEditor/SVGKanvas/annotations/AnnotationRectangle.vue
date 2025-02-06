@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import throttle from "raf-throttle";
 
-import { $bus } from "@/plugins/event-bus";
+import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStore } from "@/store/canvas";
@@ -73,16 +73,21 @@ const stopAnnotationDrag = throttle(function (event) {
   }, 0);
 });
 
-$bus.on("selection-pointerdown", startAnnotationDrag);
-$bus.on("selection-pointerup", stopAnnotationDrag);
-$bus.on("selection-pointermove", updateAnnotationDrag);
-$bus.on("selection-lostpointercapture", stopAnnotationDrag);
-
-onBeforeUnmount(() => {
-  $bus.off("selection-pointerdown", startAnnotationDrag);
-  $bus.off("selection-pointerup", stopAnnotationDrag);
-  $bus.off("selection-pointermove", updateAnnotationDrag);
-  $bus.off("selection-lostpointercapture", stopAnnotationDrag);
+useGlobalBusListener({
+  eventName: "selection-pointerdown",
+  handler: startAnnotationDrag,
+});
+useGlobalBusListener({
+  eventName: "selection-pointerup",
+  handler: stopAnnotationDrag,
+});
+useGlobalBusListener({
+  eventName: "selection-pointermove",
+  handler: updateAnnotationDrag,
+});
+useGlobalBusListener({
+  eventName: "selection-lostpointercapture",
+  handler: stopAnnotationDrag,
 });
 </script>
 
