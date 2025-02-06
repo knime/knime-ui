@@ -4,7 +4,7 @@ import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
 import { storeToRefs } from "pinia";
 
 import { useEscapeStack } from "@/composables/useEscapeStack";
-import type { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import type { useCanvasStore } from "@/store/canvas/canvas-svg";
 import type { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -68,9 +68,7 @@ type UseCanvasFloatingContainerOptions = {
   closeMenu: () => void;
   disableInteractions?: boolean;
   closeOnEscape?: boolean;
-  canvasStore?: ReturnType<
-    typeof useSVGCanvasStore | typeof useWebGLCanvasStore
-  >;
+  canvasStore?: ReturnType<typeof useCanvasStore | typeof useWebGLCanvasStore>;
 };
 
 export const useCanvasFloatingContainer = (

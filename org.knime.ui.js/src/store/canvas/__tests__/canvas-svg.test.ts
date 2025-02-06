@@ -9,7 +9,7 @@ import {
   maxZoomFactor,
   minZoomFactor,
   padding,
-  useSVGCanvasStore,
+  useCanvasStore,
   zoomMultiplier,
 } from "../canvas-svg";
 
@@ -51,7 +51,7 @@ describe("SVG canvas store", () => {
       createSpy: vi.fn,
     });
 
-    const canvasStore = useSVGCanvasStore(testingPinia);
+    const canvasStore = useCanvasStore(testingPinia);
     const workflowStore = useWorkflowStore(testingPinia);
 
     workflowStore.activeWorkflow = createWorkflow();

@@ -10,7 +10,7 @@ import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
-import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import { useCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
@@ -81,7 +81,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const workflowStore = useWorkflowStore(testingPinia);
   const workflowMonitorStore = useWorkflowMonitorStore(testingPinia);
   const aiAssistantStore = useAIAssistantStore(testingPinia);
-  const canvasStore = useSVGCanvasStore(testingPinia);
+  const canvasStore = useCanvasStore(testingPinia);
   const webglCanvasStore = useWebGLCanvasStore(testingPinia);
   const nodeRepositoryStore = useNodeRepositoryStore(testingPinia);
   const panelStore = usePanelStore(testingPinia);

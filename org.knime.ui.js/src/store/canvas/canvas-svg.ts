@@ -51,7 +51,7 @@ type Scroll = {
   smooth?: boolean;
 };
 
-export const useSVGCanvasStore = defineStore("canvasSVG", {
+export const useCanvasStore = defineStore("canvasSVG", {
   state: (): CanvasState => ({
     zoomFactor: defaultZoomFactor,
     containerSize: { width: 0, height: 0 },

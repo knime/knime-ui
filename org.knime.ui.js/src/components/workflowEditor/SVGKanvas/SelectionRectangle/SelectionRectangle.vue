@@ -5,7 +5,7 @@ import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { findObjectsForSelection } from "@/components/workflowEditor/util/findObjectsForSelection";
-import { useSVGCanvasStore as useCanvasStore } from "@/store/canvas/canvas-svg";
+import { useCanvasStore } from "@/store/canvas/canvas-svg";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
