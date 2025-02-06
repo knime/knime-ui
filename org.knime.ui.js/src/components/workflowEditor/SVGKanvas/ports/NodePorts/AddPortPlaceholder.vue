@@ -5,7 +5,7 @@ import { mapActions, mapState } from "pinia";
 import type { NodePortGroups } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import type {
   MenuItemWithPort,
   TargetPort,
@@ -75,7 +75,7 @@ export default defineComponent({
     closeTimeout: null,
   }),
   computed: {
-    ...mapState(useFloatingMenusStore, ["portTypeMenu"]),
+    ...mapState(useCanvasAnchoredComponentsStore, ["portTypeMenu"]),
     addPortPlaceholderPath() {
       return addPortPlaceholderPath;
     },
@@ -141,7 +141,7 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useFloatingMenusStore, [
+    ...mapActions(useCanvasAnchoredComponentsStore, [
       "openPortTypeMenu",
       "closePortTypeMenu",
       "setPortTypeMenuPreviewPort",

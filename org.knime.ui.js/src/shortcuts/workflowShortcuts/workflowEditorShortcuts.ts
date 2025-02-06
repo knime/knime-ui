@@ -3,8 +3,8 @@ import { API } from "@api";
 import type { KnimeNode } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { nodeSize } from "@/style/shapes";
@@ -68,7 +68,8 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
     execute: ({ payload }) => {
       // destruct current state
       const positionFromContextMenu = payload?.metadata?.position as XY;
-      const { isOpen, props } = useFloatingMenusStore().quickActionMenu;
+      const { isOpen, props } =
+        useCanvasAnchoredComponentsStore().quickActionMenu;
 
       const {
         nodeId: lastNodeId,
@@ -93,7 +94,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
             nodes: useWorkflowStore().activeWorkflow!.nodes,
           });
 
-        useFloatingMenusStore().openQuickActionMenu({
+        useCanvasAnchoredComponentsStore().openQuickActionMenu({
           props: { position },
         });
 
@@ -159,7 +160,7 @@ const workflowEditorShortcuts: WorkflowEditorShortcuts = {
           ? lastPosition
           : calculatePosition(node, portIndex, portCount);
 
-      useFloatingMenusStore().openQuickActionMenu({
+      useCanvasAnchoredComponentsStore().openQuickActionMenu({
         props: {
           nodeId,
           port: nextPort,

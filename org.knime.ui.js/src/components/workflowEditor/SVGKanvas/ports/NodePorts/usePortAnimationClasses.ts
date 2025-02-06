@@ -1,7 +1,7 @@
 import { storeToRefs } from "pinia";
 
 import type { NodePort } from "@/api/gateway-api/generated-api";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import { useNodeInfo } from "./useNodeInfo";
@@ -17,7 +17,7 @@ export const usePortAnimationClasses = (
 ) => {
   const { isMetanode } = useNodeInfo({ nodeId: options.nodeId });
   const { isWritable } = storeToRefs(useWorkflowStore());
-  const { quickActionMenu } = storeToRefs(useFloatingMenusStore());
+  const { quickActionMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
 
   const isQuickAddNodeMenuOpenInTheSameSide = (side: "in" | "out") => {
     return (

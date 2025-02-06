@@ -9,9 +9,9 @@ import NodeConfig from "@/components/uiExtensions/nodeConfig/NodeConfig.vue";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import ContextMenu from "./CanvasAnchoredComponents/ContextMenu/ContextMenu.vue";
@@ -30,7 +30,9 @@ const WorkflowCanvas = defineAsyncComponent({
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
-const { portTypeMenu, quickActionMenu } = storeToRefs(useFloatingMenusStore());
+const { portTypeMenu, quickActionMenu } = storeToRefs(
+  useCanvasAnchoredComponentsStore(),
+);
 const applicationStore = useApplicationStore();
 
 const { contextMenu, activeProjectId } = storeToRefs(applicationStore);

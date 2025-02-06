@@ -12,7 +12,7 @@ import { type QuickBuildMenuState } from "@/components/kai/KaiQuickBuild.vue";
 import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStore } from "@/store/canvas";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import * as $shapes from "@/style/shapes";
 // TODO: refactor structure and implement fix for dynamically resolved NodePortActiveConnector
 import type { DragConnector } from "../../SVGKanvas/ports/NodePort/types";
@@ -48,7 +48,7 @@ const menuWidth = 360;
 
 defineEmits(["menuClose"]);
 
-const { quickActionMenu } = storeToRefs(useFloatingMenusStore());
+const { quickActionMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
 const { availablePortTypes } = storeToRefs(useApplicationStore());
 const { zoomFactor } = storeToRefs(useCanvasStore());
 

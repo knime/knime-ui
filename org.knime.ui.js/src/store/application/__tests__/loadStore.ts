@@ -4,11 +4,11 @@ import { createTestingPinia } from "@pinia/testing";
 
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
@@ -62,7 +62,7 @@ export const loadStore = () => {
   const applicationSettingsStore = useApplicationSettingsStore(testingPinia);
   const nodeConfigurationStore = useNodeConfigurationStore(testingPinia);
   const spaceProvidersStore = useSpaceProvidersStore(testingPinia);
-  const floatingMenusStore = useFloatingMenusStore(testingPinia);
+  const floatingMenusStore = useCanvasAnchoredComponentsStore(testingPinia);
 
   workflowStore.setActiveWorkflow(
     createWorkflow({ projectId: "project1", info: { containerId: "root" } }),
