@@ -5906,7 +5906,7 @@ const workflow = function(rpcClient: RPCClient) {
          * @throws {NodeNotFoundException} The requested node was not found.
          */
         getWorkflow(
-        	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean,  version?: string  }
+        	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean,  version?: string | null  }
         ): Promise<WorkflowSnapshot> {
             const defaultParams = { 
                 includeInteractionInfo: null,

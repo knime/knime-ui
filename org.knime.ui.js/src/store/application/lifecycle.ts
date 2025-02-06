@@ -134,9 +134,10 @@ export const useLifecycleStore = defineStore("lifecycle", {
         if (isEnteringWorkflow) {
           // when entering workflow, we must dispatch to the store and load
           // the relevant workflow state
-          const newWorkflow = to.params as {
+          const newWorkflow = { ...to.query, ...to.params } as {
             projectId: string;
             workflowId?: string;
+            version?: string | null;
           };
           await this.switchWorkflow({ newWorkflow });
           next();
@@ -311,7 +312,11 @@ export const useLifecycleStore = defineStore("lifecycle", {
     async switchWorkflow({
       newWorkflow = null,
     }: {
-      newWorkflow: { projectId: string; workflowId?: string } | null;
+      newWorkflow: {
+        projectId: string;
+        workflowId?: string;
+        version?: string | null;
+      } | null;
     }) {
       consola.trace("action::switchWorkflow >> Params", { newWorkflow });
 
@@ -369,9 +374,14 @@ export const useLifecycleStore = defineStore("lifecycle", {
           await this.loadWorkflow({
             projectId,
             workflowId: newWorkflowId,
+            version: newWorkflow.version,
           });
         } else {
-          await this.loadWorkflow({ projectId, workflowId });
+          await this.loadWorkflow({
+            projectId,
+            workflowId,
+            version: newWorkflow.version,
+          });
         }
       }
 
@@ -381,9 +391,11 @@ export const useLifecycleStore = defineStore("lifecycle", {
     async loadWorkflow({
       projectId,
       workflowId = "root",
+      version = null,
     }: {
       projectId: string;
       workflowId?: string;
+      version?: string | null;
     }) {
       // ensures that the workflow is loaded on the java-side (only necessary for the desktop AP)
       await API.desktop.setProjectActiveAndEnsureItsLoaded({ projectId });
@@ -394,6 +406,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
           projectId,
           workflowId,
           includeInteractionInfo: true,
+          version,
         });
       } catch (error) {
         consola.error("lifecycle::loadWorkflow failed to load workflow", {
@@ -457,12 +470,15 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       useWorkflowStore().setActiveSnapshotId(snapshotId);
       const workflowId = workflow.info.containerId;
-      API.event.subscribeEvent({
-        typeId: "WorkflowChangedEventType",
-        projectId,
-        workflowId,
-        snapshotId,
-      });
+
+      if (!workflow.info.version) {
+        API.event.subscribeEvent({
+          typeId: "WorkflowChangedEventType",
+          projectId,
+          workflowId,
+          snapshotId,
+        });
+      }
     },
 
     afterSetActivateWorkflow() {

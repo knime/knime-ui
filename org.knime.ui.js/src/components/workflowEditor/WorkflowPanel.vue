@@ -13,10 +13,12 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 
 import ContextMenu from "./CanvasAnchoredComponents/ContextMenu/ContextMenu.vue";
 import PortTypeMenu from "./CanvasAnchoredComponents/PortTypeMenu/PortTypeMenu.vue";
 import QuickActionMenu from "./CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
+import ManageVersionsWrapper from "./ManageVersionsWrapper.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
 import { useCanvasRendererUtils } from "./util/canvasRenderer";
 
@@ -34,6 +36,7 @@ const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu, quickActionMenu, contextMenu } = storeToRefs(
   canvasAnchoredComponentsStore,
 );
+const versionsStore = useWorkflowVersionsStore();
 const applicationStore = useApplicationStore();
 
 const { activeProjectId } = storeToRefs(applicationStore);
@@ -109,7 +112,7 @@ const closeContextMenu = (event?: MouseEvent) => {
     <WorkflowInfoBar />
 
     <SplitPanel
-      v-if="useEmbeddedDialogs"
+      v-if="useEmbeddedDialogs || versionsStore.isSidepanelOpen"
       v-model:secondary-size="nodeDialogSize"
       splitter-id="node-config-split-panel"
       direction="right"
@@ -125,7 +128,8 @@ const closeContextMenu = (event?: MouseEvent) => {
     -->
       <WorkflowCanvas :key="`${activeProjectId}-${activeWorkflowId}`" />
       <template #secondary>
-        <NodeConfig />
+        <NodeConfig v-if="useEmbeddedDialogs" />
+        <ManageVersionsWrapper v-else />
       </template>
     </SplitPanel>
 

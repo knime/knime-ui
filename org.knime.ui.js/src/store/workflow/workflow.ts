@@ -498,7 +498,10 @@ export const useWorkflowStore = defineStore("workflow", {
     },
 
     isWritable(): boolean {
-      if (!useUIControlsStore().canEditWorkflow) {
+      if (
+        !useUIControlsStore().canEditWorkflow ||
+        this.activeWorkflow?.info.version
+      ) {
         return false;
       }
 

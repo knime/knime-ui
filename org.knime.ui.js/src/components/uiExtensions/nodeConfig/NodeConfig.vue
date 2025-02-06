@@ -7,8 +7,10 @@ import { FunctionButton, ToastStack } from "@knime/components";
 import ArrowsCollapseIcon from "@knime/styles/img/icons/arrows-collapse.svg";
 import type { UIExtensionPushEvents } from "@knime/ui-extension-renderer/api";
 
+import ManageVersionsWrapper from "@/components/workflowEditor/ManageVersionsWrapper.vue";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useWorkflowVersionsStore } from "@/store/workflow/workflowVersions";
 import { EMBEDDED_CONTENT_PANEL_ID__RIGHT } from "../common/utils";
 
 import IncompatibleNodeConfigPlaceholder from "./IncompatibleNodeConfigPlaceholder.vue";
@@ -19,6 +21,7 @@ const { activeNode, activeExtensionConfig } = storeToRefs(
   nodeConfigurationStore,
 );
 const { getNodeName } = storeToRefs(useNodeInteractionsStore());
+const versionsStore = useWorkflowVersionsStore();
 
 const canBeEnlarged = computed(
   () => activeExtensionConfig.value?.canBeEnlarged,
@@ -91,7 +94,8 @@ useEventListener(panel, "click", (event) => {
       @expand="onExpandConfig"
     >
       <template #inactive>
-        <IncompatibleNodeConfigPlaceholder />
+        <ManageVersionsWrapper v-if="versionsStore.isSidepanelOpen" />
+        <IncompatibleNodeConfigPlaceholder v-else />
       </template>
     </NodeConfigWrapper>
   </dialog>

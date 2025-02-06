@@ -207,6 +207,7 @@ export const createShortcutsService = ({
 
 export const useShortcuts = () => {
   const $router = useRouter();
+  // TODO: NXT-3449 (Change to remove getToastsProvider() or retire $toasts arg altogether)
   const $toast = useToasts();
 
   return createShortcutsService({ $router, $toast });
