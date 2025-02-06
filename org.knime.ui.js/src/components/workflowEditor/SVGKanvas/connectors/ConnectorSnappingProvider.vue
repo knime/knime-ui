@@ -1,8 +1,8 @@
 <script>
 import { mapActions, mapState } from "pinia";
 
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 
 /**
@@ -67,7 +67,7 @@ export default {
   }),
 
   computed: {
-    ...mapState(useFloatingMenusStore, ["portTypeMenu"]),
+    ...mapState(useCanvasAnchoredComponentsStore, ["portTypeMenu"]),
 
     /**
      * Divides the height of the container into partitions
@@ -117,7 +117,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(useFloatingMenusStore, [
+    ...mapActions(useCanvasAnchoredComponentsStore, [
       "openPortTypeMenu",
       "closePortTypeMenu",
       "setPortTypeMenuPreviewPort",

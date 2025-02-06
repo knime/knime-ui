@@ -7,7 +7,7 @@ import { type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
 import { type TooltipDefinition, useTooltip } from "@/composables/useTooltip";
 import { useApplicationStore } from "@/store/application/application";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
@@ -80,7 +80,7 @@ const tooltip = computed<TooltipDefinition>(() => {
 });
 
 const { isWritable } = storeToRefs(useWorkflowStore());
-const { openQuickActionMenu } = useFloatingMenusStore();
+const { openQuickActionMenu } = useCanvasAnchoredComponentsStore();
 
 const { elemRef: tooltipRef } = useTooltip({ tooltip });
 const {

@@ -12,6 +12,7 @@ import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPreviewSnapshots";
 import { useCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -33,7 +34,6 @@ import { useComponentInteractionsStore } from "@/store/workflow/componentInterac
 import { useConnectionInteractionsStore } from "@/store/workflow/connectionInteractions";
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useExecutionStore } from "@/store/workflow/execution";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -75,7 +75,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     useConnectionInteractionsStore(testingPinia);
   const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
   const executionStore = useExecutionStore(testingPinia);
-  const floatingMenusStore = useFloatingMenusStore(testingPinia);
+  const floatingMenusStore = useCanvasAnchoredComponentsStore(testingPinia);
   const movingStore = useMovingStore(testingPinia);
   const nodeInteractionsStore = useNodeInteractionsStore(testingPinia);
   const workflowStore = useWorkflowStore(testingPinia);

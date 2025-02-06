@@ -5,7 +5,7 @@ import {
   type AiAssistantBuildEventPayload,
   useAIAssistantStore,
 } from "@/store/aiAssistant";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { getToastPresets } from "@/toastPresets";
 import { useChat } from "../chat/useChat";
 import { useHubAuth } from "../useHubAuth";
@@ -18,7 +18,7 @@ export const useQuickBuild = ({
   startPosition: Ref<XY>;
 }) => {
   const { enableDetachedMode, lockQuickActionMenu, unlockQuickActionMenu } =
-    useFloatingMenusStore();
+    useCanvasAnchoredComponentsStore();
   const { makeAiRequest } = useAIAssistantStore();
 
   const { isAuthError, disconnectHub } = useHubAuth();

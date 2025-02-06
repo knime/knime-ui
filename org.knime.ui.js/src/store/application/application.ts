@@ -15,6 +15,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
 import { useSelectionStore } from "@/store/selection";
@@ -22,7 +23,6 @@ import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { findSpaceById } from "@/store/spaces/util";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { nodeSize } from "@/style/shapes";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
@@ -348,12 +348,12 @@ export const useApplicationStore = defineStore("application", {
       deselectAllObjects = false,
     }: { event?: MouseEvent | null; deselectAllObjects?: boolean } = {}) {
       // close other menus if they are open
-      if (useFloatingMenusStore().quickActionMenu.isOpen) {
-        useFloatingMenusStore().quickActionMenu.events.menuClose?.();
+      if (useCanvasAnchoredComponentsStore().quickActionMenu.isOpen) {
+        useCanvasAnchoredComponentsStore().quickActionMenu.events.menuClose?.();
       }
 
-      if (useFloatingMenusStore().portTypeMenu.isOpen) {
-        useFloatingMenusStore().portTypeMenu.events.menuClose?.();
+      if (useCanvasAnchoredComponentsStore().portTypeMenu.isOpen) {
+        useCanvasAnchoredComponentsStore().portTypeMenu.events.menuClose?.();
       }
 
       if (canvasRendererUtils.isWebGLRenderer()) {

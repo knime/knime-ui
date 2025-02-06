@@ -8,7 +8,7 @@ import { type GraphicsInst } from "vue3-pixi";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
@@ -57,7 +57,7 @@ const isFlowVariable = computed(
   () => portTemplate.value.kind === "flowVariable",
 );
 
-const { openQuickActionMenu } = useFloatingMenusStore();
+const { openQuickActionMenu } = useCanvasAnchoredComponentsStore();
 
 const { dragConnector, onPointerDown } = usePortDragging({
   direction: props.direction,

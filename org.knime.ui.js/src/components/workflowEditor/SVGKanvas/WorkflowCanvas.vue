@@ -6,8 +6,8 @@ import { useDropNode } from "@/composables/useDropNode";
 import { useCanvasModesStore } from "@/store/application/canvasModes";
 import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useCanvasStore } from "@/store/canvas";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
 const { workflowCanvasState } = storeToRefs(useCanvasStateTrackingStore());
@@ -83,7 +83,7 @@ const openQuickActionMenu = (event: MouseEvent) => {
 
   const [x, y] = screenToCanvasCoordinates([event.clientX, event.clientY]);
 
-  useFloatingMenusStore().openQuickActionMenu({
+  useCanvasAnchoredComponentsStore().openQuickActionMenu({
     props: { position: { x, y } },
   });
 };

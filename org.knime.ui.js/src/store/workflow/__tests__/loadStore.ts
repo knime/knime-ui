@@ -14,7 +14,6 @@ import { useClipboardInteractionsStore } from "../clipboardInteractions";
 import { useComponentInteractionsStore } from "../componentInteractions";
 import { useDesktopInteractionsStore } from "../desktopInteractions";
 import { useExecutionStore } from "../execution";
-import { useFloatingMenusStore } from "../floatingMenus";
 import { useMovingStore } from "../moving";
 import { useNodeInteractionsStore } from "../nodeInteractions";
 import { useWorkflowStore } from "../workflow";
@@ -49,7 +48,6 @@ export const loadStore = () => {
   const desktopInteractionsStore = useDesktopInteractionsStore(testingPinia);
   const nodeConfigurationStore = useNodeConfigurationStore(testingPinia);
   const workflowSnapshotsStore = useWorkflowPreviewSnapshotsStore(testingPinia);
-  const floatingMenusStore = useFloatingMenusStore(testingPinia);
   const movingStore = useMovingStore();
   const nodeInteractionsStore = useNodeInteractionsStore(testingPinia);
   const uiControlsStore = useUIControlsStore(testingPinia);
@@ -69,7 +67,6 @@ export const loadStore = () => {
     nodeConfigurationStore,
     workflowSnapshotsStore,
     canvasStateTrackingStore,
-    floatingMenusStore,
     movingStore,
     nodeInteractionsStore,
     uiControlsStore,

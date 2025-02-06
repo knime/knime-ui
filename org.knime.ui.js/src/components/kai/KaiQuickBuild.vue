@@ -6,7 +6,7 @@ import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
 import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
 
 import type { XY } from "@/api/gateway-api/generated-api";
-import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 
 import { useKaiPanels } from "./panels/useKaiPanels";
 import QuickBuildInput from "./quickBuild/QuickBuildInput.vue";
@@ -31,7 +31,7 @@ const emit = defineEmits<{
 }>();
 
 const { nodeId, startPosition } = toRefs(props);
-const { closeQuickActionMenu } = useFloatingMenusStore();
+const { closeQuickActionMenu } = useCanvasAnchoredComponentsStore();
 
 const { panelComponent } = useKaiPanels();
 

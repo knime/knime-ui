@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { loadStore } from "./loadStore";
+import { mockStores } from "@/test/utils/mockStores";
 
-describe("workflow::floatingMenus", () => {
+describe("canvasAnchoredComponents", () => {
   describe("quickActionMenu", () => {
     it("opens the quick add node menu", () => {
-      const { floatingMenusStore } = loadStore();
+      const { floatingMenusStore } = mockStores();
 
       expect(floatingMenusStore.quickActionMenu.isOpen).toBe(false);
 
@@ -24,7 +24,7 @@ describe("workflow::floatingMenus", () => {
     });
 
     it("closes the quick add node menu", () => {
-      const { floatingMenusStore } = loadStore();
+      const { floatingMenusStore } = mockStores();
 
       // @ts-ignore
       floatingMenusStore.openQuickActionMenu({});
@@ -37,7 +37,7 @@ describe("workflow::floatingMenus", () => {
 
   describe("portTypeMenu", () => {
     it("sets the preview of a portTypeMenu", () => {
-      const { floatingMenusStore } = loadStore();
+      const { floatingMenusStore } = mockStores();
       floatingMenusStore.setPortTypeMenuPreviewPort({ typeId: "prev" });
 
       expect(floatingMenusStore.portTypeMenu.previewPort).toStrictEqual({
@@ -46,7 +46,7 @@ describe("workflow::floatingMenus", () => {
     });
 
     it("opens the port type menu", () => {
-      const { floatingMenusStore } = loadStore();
+      const { floatingMenusStore } = mockStores();
 
       expect(floatingMenusStore.portTypeMenu.isOpen).toBe(false);
 
@@ -72,7 +72,7 @@ describe("workflow::floatingMenus", () => {
     });
 
     it("closes the port type menu", () => {
-      const { floatingMenusStore } = loadStore();
+      const { floatingMenusStore } = mockStores();
 
       // @ts-ignore
       floatingMenusStore.openPortTypeMenu({});
