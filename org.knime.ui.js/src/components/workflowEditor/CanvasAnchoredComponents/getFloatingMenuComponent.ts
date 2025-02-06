@@ -8,7 +8,9 @@ import { canvasRendererUtils } from "../util/canvasRenderer";
  * irrespective to the canvas rendering system (SVG or WebGL)
  * @returns
  */
-export const getFloatingMenuComponent = () => {
+export const getFloatingMenuComponent = (): {
+  FloatingMenu: typeof SVGKanvasFloatingMenu | typeof WebGLKanvasFloatingMenu;
+} => {
   const FloatingMenu = canvasRendererUtils.isSVGRenderer()
     ? SVGKanvasFloatingMenu
     : WebGLKanvasFloatingMenu;
