@@ -49,29 +49,26 @@ const portColor = computed(() => {
   return portColors[props.type] || props.color;
 });
 
-const fillColor = computed(() =>
-  props.filled ? portColor.value : "transparent",
-);
-
 const tablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.lineStyle(strokeWidth, fillColor.value);
-  graphics.beginFill(fillColor.value);
+  graphics.lineStyle(strokeWidth, portColor.value);
+  graphics.beginFill(portColor.value, props.filled ? 1 : 0);
   graphics.drawPolygon(trianglePath.value);
   graphics.endFill();
 };
 
 const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.beginFill(fillColor.value);
-  graphics.drawCircle(0, 0, portSize / 2);
+  graphics.lineStyle(strokeWidth, portColor.value);
+  graphics.beginFill(portColor.value, props.filled ? 1 : 0);
+  graphics.drawCircle(0, 0, portSize / 2 - 1);
   graphics.endFill();
 };
 
 const otherPortsRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.lineStyle(strokeWidth, fillColor.value);
-  graphics.beginFill(fillColor.value);
+  graphics.lineStyle(strokeWidth, portColor.value);
+  graphics.beginFill(portColor.value, props.filled ? 1 : 0);
   graphics.drawRect(0, 0, portSize, portSize);
   graphics.endFill();
 };

@@ -30,6 +30,7 @@ const MIN_MOVE_THRESHOLD = 5;
 interface Props {
   node: KnimeNode;
   position: { x: number; y: number };
+  name: string;
   icon?: string | null;
   type?: NativeNodeInvariants.TypeEnum | null;
 }
@@ -216,6 +217,24 @@ const renderable = computed(
       stageHitArea.value,
     ),
 );
+
+const nodeNamePosition = computed(() => {
+  const { x, y } = translatedPosition.value;
+  return {
+    x: x + hoverSize.value.x + hoverSize.value.width / 2,
+    y: y - $shapes.nodeSize / 2 - $shapes.nodeNameMargin,
+  };
+});
+
+const hitArea = computed(
+  () =>
+    new PIXI.Rectangle(
+      hoverSize.value.x,
+      hoverSize.value.y,
+      hoverSize.value.width,
+      hoverSize.value.height,
+    ),
+);
 </script>
 
 <template>
@@ -233,7 +252,26 @@ const renderable = computed(
     @pointerleave.self="onPointerLeave()"
     @pointerdown="onPointerDown"
   >
-    <Graphics :position="translatedPosition" @render="renderHoverArea" />
+    <Graphics
+      :hit-area="hitArea"
+      :position="translatedPosition"
+      @render="renderHoverArea"
+    />
+
+    <Text
+      :position="nodeNamePosition"
+      :resolution="3"
+      :scale="0.5"
+      :style="{
+        fill: 'black',
+        fontFamily: 'Roboto Condensed',
+        fontSize: 32,
+        fontWeight: 'bold',
+      }"
+      :anchor="{ x: 0.5, y: 0.5 }"
+    >
+      {{ name }}
+    </Text>
 
     <Graphics
       :name="node.id"

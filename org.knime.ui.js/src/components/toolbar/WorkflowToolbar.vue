@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import BrushIcon from "@knime/styles/img/icons/brush.svg";
+import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
@@ -17,6 +18,7 @@ import {
   useCanvasModesStore,
 } from "@/store/application/canvasModes";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -41,6 +43,8 @@ const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
+
+const webglCanvasStore = useWebGLCanvasStore();
 
 const canvasModes = computed<Array<MenuItem>>(() => {
   const canvasModeShortcuts: Array<{
@@ -194,6 +198,17 @@ const currentCanvasRenderer = computed(() =>
     <div class="control-list">
       <template v-if="devMode">
         <FPSMeter style="margin-right: 10px" />
+        <FunctionButton
+          class="header-button no-text control"
+          data-test-id="dev-mode-only"
+          title="Toggle canvas debug"
+          @click="
+            webglCanvasStore.isDebugModeEnabled =
+              !webglCanvasStore.isDebugModeEnabled
+          "
+        >
+          <ChartDotsIcon />
+        </FunctionButton>
         <FunctionButton
           class="header-button no-text control"
           data-test-id="dev-mode-only"

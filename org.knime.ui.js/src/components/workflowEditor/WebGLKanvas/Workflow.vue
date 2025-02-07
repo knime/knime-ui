@@ -16,7 +16,9 @@ const selectionStore = useSelectionStore();
 const { isNodeSelected } = storeToRefs(selectionStore);
 
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
-const { getNodeIcon, getNodeType } = storeToRefs(useNodeInteractionsStore());
+const { getNodeIcon, getNodeName, getNodeType } = storeToRefs(
+  useNodeInteractionsStore(),
+);
 
 const canvasStore = useWebGLCanvasStore();
 const { globalToWorldCoordinates } = storeToRefs(canvasStore);
@@ -44,19 +46,20 @@ const onRightClick = (event: FederatedPointerEvent, nodeId: string) => {
 <template>
   <SelectionRectangle />
 
+  <Connector
+    v-for="connector of activeWorkflow!.connections"
+    :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+    v-bind="connector"
+  />
+
   <Node
     v-for="node in activeWorkflow!.nodes"
     :key="node.id"
     :position="node.position"
     :icon="getNodeIcon(node.id)"
     :type="getNodeType(node.id)"
+    :name="getNodeName(node.id)"
     :node="node"
     @contextmenu="onRightClick($event, node.id)"
-  />
-
-  <Connector
-    v-for="connector of activeWorkflow!.connections"
-    :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
-    v-bind="connector"
   />
 </template>

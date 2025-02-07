@@ -143,6 +143,14 @@ const hideFlowVarPort = (event: FederatedPointerEvent, index: number) => {
 
   gsap.to(event.target, { alpha: 0, duration: 0.5 });
 };
+
+const getPortAlpha = (port: _NodePortType) => {
+  if (port.connectedVia.length) {
+    return 1;
+  }
+
+  return isDefaultFlowVariable(port.index) ? 0 : 1;
+};
 </script>
 
 <template>
@@ -153,7 +161,7 @@ const hideFlowVarPort = (event: FederatedPointerEvent, index: number) => {
       direction="in"
       :node-id="nodeId"
       :name="getPortContainerName(port.index, 'in')"
-      :alpha="isDefaultFlowVariable(port.index) ? 0 : 1"
+      :alpha="getPortAlpha(port)"
       :port="port"
       :position="{
         x: anchor.x + portPositions.in[port.index][0] - $shapes.portSize / 2,
@@ -169,7 +177,7 @@ const hideFlowVarPort = (event: FederatedPointerEvent, index: number) => {
       direction="out"
       :node-id="nodeId"
       :name="getPortContainerName(port.index, 'out')"
-      :alpha="isDefaultFlowVariable(port.index) ? 0 : 1"
+      :alpha="getPortAlpha(port)"
       :port="port"
       :position="{
         x: anchor.x + portPositions.out[port.index][0] - $shapes.portSize / 2,
