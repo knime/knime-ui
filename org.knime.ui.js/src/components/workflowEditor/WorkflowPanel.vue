@@ -22,10 +22,6 @@ import { canvasRendererUtils } from "./util/canvasRenderer";
 
 const WorkflowCanvas = defineAsyncComponent({
   loader: () => {
-    if (import.meta.env.PROD) {
-      return import("./SVGKanvas/WorkflowCanvas.vue");
-    }
-
     return canvasRendererUtils.isSVGRenderer()
       ? import("./SVGKanvas/WorkflowCanvas.vue")
       : import("./WebGLKanvas/WorkflowCanvas.vue");

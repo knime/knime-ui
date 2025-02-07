@@ -9,10 +9,6 @@ import { canvasRendererUtils } from "../util/canvasRenderer";
  * @returns
  */
 export const getFloatingMenuComponent = () => {
-  if (import.meta.env.PROD) {
-    return SVGKanvasFloatingMenu;
-  }
-
   const FloatingMenu = canvasRendererUtils.isSVGRenderer()
     ? SVGKanvasFloatingMenu
     : WebGLKanvasFloatingMenu;
