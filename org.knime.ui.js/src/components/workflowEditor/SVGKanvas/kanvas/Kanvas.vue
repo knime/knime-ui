@@ -63,9 +63,12 @@ const initResizeObserver = () => {
   resizeObserver.observe(rootEl.value!);
 };
 
+const isReady = ref(false);
+
 onMounted(() => {
   canvasStore.initScrollContainerElement(rootEl.value!);
   initResizeObserver();
+  isReady.value = true;
 });
 
 useKanvasHint();
@@ -154,7 +157,7 @@ const onLeftControlClick = (event: PointerEvent) => {
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @lostpointercapture="$bus.emit('selection-lostpointercapture', $event)"
     >
-      <slot />
+      <slot v-if="isReady" />
     </svg>
   </div>
 </template>
