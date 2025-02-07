@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { isUndefined } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import { useHint } from "@knime/components";
@@ -19,6 +20,7 @@ import {
   type NodeOutputTabIdentifier,
   useSelectionStore,
 } from "@/store/selection";
+import { useUIControlsStore } from "@/store/uiControls/uiControls.ts";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
@@ -120,6 +122,22 @@ const loadingMessage = computed(() => {
   return "";
 });
 
+const hasViewTab = computed(() => {
+  if (!singleSelectedNode.value) {
+    return false;
+  }
+  if (isNodeComponent(singleSelectedNode.value)) {
+    return (
+      !isUndefined(singleSelectedNode.value.allowedActions?.canOpenView) &&
+      useUIControlsStore().canDetachNodeViews
+    );
+  }
+  if (isNativeNode(singleSelectedNode.value)) {
+    return singleSelectedNode.value.hasView;
+  }
+  return false;
+});
+
 // select the first tab
 const selectPort = () => {
   if (!singleSelectedNode.value) {
@@ -128,11 +146,8 @@ const selectPort = () => {
 
   let { outPorts } = singleSelectedNode.value;
 
-  // if a node has a view it's the first tab
-  if (
-    isNativeNode(singleSelectedNode.value) &&
-    singleSelectedNode.value.hasView
-  ) {
+  // if a node/component has a view it's the first tab
+  if (hasViewTab.value) {
     selectedTab.value = "view";
     return;
   }
@@ -205,10 +220,7 @@ const onPortViewLoadingState = async (
       v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
       v-model="selectedTab"
       class="tabs"
-      :has-view-tab="
-        (isNativeNode(singleSelectedNode) && singleSelectedNode.hasView) ||
-        isNodeComponent(singleSelectedNode)
-      "
+      :has-view-tab="hasViewTab"
       :node="singleSelectedNode"
       :disabled="!canSelectTabs"
     />
