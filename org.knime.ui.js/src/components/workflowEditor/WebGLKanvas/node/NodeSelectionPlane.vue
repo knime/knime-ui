@@ -74,15 +74,21 @@ const renderFn = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.lineStyle(2, $colors.kanvasNodeSelection.activeBorder, 1);
   graphics.beginFill($colors.kanvasNodeSelection.activeBackground);
-  graphics.drawRect(0, 0, config.value.width, config.value.height);
+  graphics.drawRoundedRect(
+    config.value.x,
+    config.value.y,
+    config.value.width,
+    config.value.height,
+    $shapes.selectedItemBorderRadius,
+  );
   graphics.endFill();
 };
 </script>
 
 <template>
   <Graphics
-    :x="anchorPosition?.x - config.width / 2 + $shapes.nodeSize / 2"
-    :y="anchorPosition?.y - config.height / 2 + $shapes.nodeSize / 2"
+    :x="anchorPosition?.x"
+    :y="anchorPosition?.y + $shapes.selectedItemBorderRadius"
     :renderable="renderable"
     @render="renderFn"
   />

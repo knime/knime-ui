@@ -6,6 +6,15 @@ import { SubMenu } from "@knime/components";
 import { mockStores } from "@/test/utils/mockStores";
 import ZoomMenu from "../ZoomMenu.vue";
 
+const $shortcuts = {
+  get: vi.fn().mockImplementation((shortcut) => ({ name: shortcut })),
+  dispatch: vi.fn(),
+};
+
+vi.mock("@/plugins/shortcuts", () => ({
+  useShortcuts: () => $shortcuts,
+}));
+
 describe("ZoomMenu", () => {
   type MountOpts = {
     props?: Partial<InstanceType<typeof ZoomMenu>>["$props"];
@@ -17,14 +26,9 @@ describe("ZoomMenu", () => {
 
     mockedStores.canvasStore.zoomFactor = zoomFactor;
 
-    const $shortcuts = {
-      get: vi.fn().mockImplementation((shortcut) => ({ name: shortcut })),
-      dispatch: vi.fn(),
-    };
-
     const wrapper = mount(ZoomMenu, {
       props,
-      global: { plugins: [mockedStores.testingPinia], mocks: { $shortcuts } },
+      global: { plugins: [mockedStores.testingPinia] },
     });
 
     return { wrapper, mockedStores, $shortcuts };

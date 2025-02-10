@@ -24,6 +24,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
 import { retryAsyncCall } from "@/util/retryAsyncCall";
+import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
@@ -513,6 +514,8 @@ export const useLifecycleStore = defineStore("lifecycle", {
       useAnnotationInteractionsStore().setEditableAnnotationId("");
       usePanelStore().closeExtensionPanel();
       useComponentInteractionsStore().clearComponentUpdateToasts();
+      useWebGLCanvasStore().setCanvasOffset({ x: 0, y: 0 });
+      useWebGLCanvasStore().setFactor(1);
 
       const { activeSnapshotId: snapshotId } = useWorkflowStore();
 

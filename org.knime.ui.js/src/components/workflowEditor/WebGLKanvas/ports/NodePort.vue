@@ -13,7 +13,6 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
-import NodePortActiveConnector from "./NodePortActiveConnector.vue";
 import Port from "./Port.vue";
 import { usePortDragging } from "./usePortDragging";
 
@@ -87,17 +86,6 @@ const { dragConnector, onPointerDown } = usePortDragging({
   },
 });
 
-const isDraggingFromThisPort = computed(() => {
-  if (!dragConnector.value) {
-    return false;
-  }
-
-  return (
-    dragConnector.value.sourceNode === props.nodeId ||
-    dragConnector.value.destNode === props.nodeId
-  );
-});
-
 const onConnectionDrop = () => {
   if (!dragConnector.value) {
     return;
@@ -152,11 +140,5 @@ const onConnectionDrop = () => {
       />
       <Port :port="port" />
     </Container>
-
-    <NodePortActiveConnector
-      v-if="dragConnector && isDraggingFromThisPort"
-      :drag-connector="dragConnector"
-      :port="port"
-    />
   </Container>
 </template>

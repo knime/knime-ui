@@ -333,6 +333,10 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           useCanvasStore().focus();
         }
 
+        if (canvasRendererUtils.isWebGLRenderer()) {
+          useWebGLCanvasStore().clearCanvasAnchor();
+        }
+
         this.contextMenu = {
           isOpen: false,
           position: null,

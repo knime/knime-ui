@@ -14,7 +14,8 @@ import { useCanvasPanning } from "./usePanning";
 
 const pixiApp = ref<ApplicationInst>();
 
-const { devicePixelRatio } = window;
+// TODO: How to use devicePixelRatio to improve resolution w/o affecting
+// offset calculations for events (panning, zooming, etc). Causes issues on Mac
 
 const canvasStore = useWebGLCanvasStore();
 const { containerSize, isDebugModeEnabled: isCanvasDebugEnabled } =
@@ -79,14 +80,9 @@ onMounted(() => {
   // https://pixijs.com/7.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
   canvasStore.stage = app.stage as StageInst;
 
-  // Needed for interactions on the canvas (e.g panning)
-  // https://pixijs.com/7.x/guides/components/interaction#event-modes
-  canvasStore.stage!.eventMode = "static";
-
   canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
 
   nextTick(() => {
-    canvasStore.updateStageHitArea();
     isReady.value = true;
   });
 
@@ -111,14 +107,14 @@ const { beginPan } = useCanvasPanning({
       :background-color="0xffffff"
       :width="containerSize.width"
       :height="containerSize.height"
-      :resolution="devicePixelRatio"
+      :resolution="1"
       @wheel.prevent="zoom"
-      @pointerdown.middle="beginPan"
-      @pointerdown.right="beginPan"
       @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @pointerup="$bus.emit('selection-pointerup', $event)"
       @contextmenu.prevent
+      @pointerdown.right="beginPan"
+      @pointerdown.middle="beginPan"
     >
       <Container name="contentBounds">
         <Debug v-if="isCanvasDebugEnabled" />

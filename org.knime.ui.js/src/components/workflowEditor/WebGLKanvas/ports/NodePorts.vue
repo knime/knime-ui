@@ -1,30 +1,31 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { gsap } from "gsap";
-import type { Container, FederatedPointerEvent } from "pixi.js";
+import { computed, ref, toRef } from "vue";
+import type { ContainerInst } from "vue3-pixi";
 
 import {
   Node,
+  type NodePort as NodePortType,
   type PortGroup,
   type XY,
-  type NodePort as _NodePortType,
 } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
 import {
   portPositions as _portPositions,
   placeholderPosition,
 } from "@/util/portShift";
-import { useNodeHoveredStateListener } from "../node/useNodeHoveredState";
 
 import NodePort from "./NodePort.vue";
+import NodePortActiveConnector from "./NodePortActiveConnector.vue";
+import { useFlowVarPortTransparency } from "./useFlowVarPortTransparency";
+import { dragConnector } from "./usePortDragging";
 
 interface Props {
   nodeId: string;
   anchor: XY;
   isEditable: boolean;
   nodeKind: Node.KindEnum;
-  inPorts: _NodePortType[];
-  outPorts: _NodePortType[];
+  inPorts: NodePortType[];
+  outPorts: NodePortType[];
   portGroups: PortGroup | null;
 }
 
@@ -101,74 +102,66 @@ const getPortContainerName = (index: number, type: "in" | "out") => {
     : `${props.nodeId}__out-${index}`;
 };
 
-const ports = ref<Container | null>(null);
-const getFlowVariableContainers = () => {
-  const defaulFlowVarOut = ports.value!.getChildByName(
-    getPortContainerName(0, "out"),
-  );
-  const defaulFlowVarIn = ports.value!.getChildByName(
-    getPortContainerName(0, "in"),
-  );
-  return [defaulFlowVarOut, defaulFlowVarIn];
-};
+const ports = ref<ContainerInst>();
 
-useNodeHoveredStateListener({
-  nodeId: props.nodeId,
-  onEnterCallback: () => {
-    const [defaulFlowVarOut, defaulFlowVarIn] = getFlowVariableContainers();
+const draggedConnectorPort = computed(() => {
+  if (!dragConnector.value) {
+    // eslint-disable-next-line no-undefined
+    return undefined;
+  }
 
-    gsap.to(defaulFlowVarOut, { alpha: 1, duration: 0.5, delay: 0.25 });
-    gsap.to(defaulFlowVarIn, { alpha: 1, duration: 0.5, delay: 0.25 });
-  },
-  onLeaveCallback: () => {
-    const [defaulFlowVarOut, defaulFlowVarIn] = getFlowVariableContainers();
+  const { direction } = dragConnector.value;
 
-    gsap.to(defaulFlowVarOut, { alpha: 0, duration: 0.5, delay: 0.25 });
-    gsap.to(defaulFlowVarIn, { alpha: 0, duration: 0.5, delay: 0.25 });
-  },
+  // render only the connector for a single node; the one being dragged out of
+  if (
+    (direction === "out" && dragConnector.value.sourceNode !== props.nodeId) ||
+    (direction === "in" && dragConnector.value.destNode !== props.nodeId)
+  ) {
+    // eslint-disable-next-line no-undefined
+    return undefined;
+  }
+
+  const ports = direction === "out" ? props.outPorts : props.inPorts;
+  const connectorIndex =
+    direction === "out"
+      ? dragConnector.value.sourcePort
+      : dragConnector.value.destPort;
+
+  return ports.find(({ index }) => index === connectorIndex);
 });
 
-const revealFlowVarPort = (event: FederatedPointerEvent, index: number) => {
-  if (!isDefaultFlowVariable(index)) {
-    return;
-  }
-
-  gsap.to(event.target, { alpha: 1, duration: 0.5 });
-};
-
-const hideFlowVarPort = (event: FederatedPointerEvent, index: number) => {
-  if (!isDefaultFlowVariable(index)) {
-    return;
-  }
-
-  gsap.to(event.target, { alpha: 0, duration: 0.5 });
-};
-
-const getPortAlpha = (port: _NodePortType) => {
-  if (port.connectedVia.length) {
-    return 1;
-  }
-
-  return isDefaultFlowVariable(port.index) ? 0 : 1;
-};
+const { getPortInitialAlpha } = useFlowVarPortTransparency({
+  nodeId: props.nodeId,
+  nodeKind: props.nodeKind,
+  portsContainer: ports,
+  draggedConnectorPort,
+  inPorts: toRef(props, "inPorts"),
+  outPorts: toRef(props, "outPorts"),
+  getPortContainerName,
+  isDefaultFlowVariable,
+});
 </script>
 
 <template>
   <Container ref="ports">
+    <NodePortActiveConnector
+      v-if="dragConnector && draggedConnectorPort"
+      :drag-connector="dragConnector"
+      :port="draggedConnectorPort"
+    />
+
     <NodePort
       v-for="port of inPorts"
       :key="`out-${port.index}`"
       direction="in"
       :node-id="nodeId"
       :name="getPortContainerName(port.index, 'in')"
-      :alpha="getPortAlpha(port)"
+      :alpha="getPortInitialAlpha(port)"
       :port="port"
       :position="{
         x: anchor.x + portPositions.in[port.index][0] - $shapes.portSize / 2,
         y: anchor.y + portPositions.in[port.index][1] - $shapes.portSize / 2,
       }"
-      @pointerenter="revealFlowVarPort($event, port.index)"
-      @pointerleave="hideFlowVarPort($event, port.index)"
     />
 
     <NodePort
@@ -177,14 +170,12 @@ const getPortAlpha = (port: _NodePortType) => {
       direction="out"
       :node-id="nodeId"
       :name="getPortContainerName(port.index, 'out')"
-      :alpha="getPortAlpha(port)"
+      :alpha="getPortInitialAlpha(port)"
       :port="port"
       :position="{
         x: anchor.x + portPositions.out[port.index][0] - $shapes.portSize / 2,
         y: anchor.y + portPositions.out[port.index][1] - $shapes.portSize / 2,
       }"
-      @pointerenter="revealFlowVarPort($event, port.index)"
-      @pointerleave="hideFlowVarPort($event, port.index)"
     />
   </Container>
 </template>

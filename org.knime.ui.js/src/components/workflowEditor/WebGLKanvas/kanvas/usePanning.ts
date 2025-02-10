@@ -1,7 +1,6 @@
 import type { Ref } from "vue";
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import type { FederatedPointerEvent } from "pixi.js";
 import { type ApplicationInst } from "vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -21,8 +20,10 @@ export const useCanvasPanning = ({
 
   const { isDragging } = storeToRefs(useMovingStore());
 
-  const beginPan = (event: PointerEvent) => {
-    const isMouseLeftClick = event.button === 0;
+  const beginPan = (pointerDownEvent: PointerEvent) => {
+    const { canvas } = pixiApp.value;
+
+    const isMouseLeftClick = pointerDownEvent.button === 0;
     if (isMouseLeftClick) {
       return;
     }
@@ -32,33 +33,44 @@ export const useCanvasPanning = ({
     }
 
     isPanning.value = true;
-    panLastPosition.value = { x: event.offsetX, y: event.offsetY };
+    panLastPosition.value = {
+      x: pointerDownEvent.offsetX,
+      y: pointerDownEvent.offsetY,
+    };
 
-    const onPan = (event: FederatedPointerEvent) => {
+    const eventTarget = pointerDownEvent.currentTarget as HTMLElement;
+    eventTarget.setPointerCapture(pointerDownEvent.pointerId);
+
+    const onPan = (ptrMoveEvent: PointerEvent) => {
       if (isPanning.value) {
         canvasStore.setCanvasOffset({
-          x: stage.value.x + (event.global.x - (panLastPosition.value?.x ?? 0)),
-          y: stage.value.y + (event.global.y - (panLastPosition.value?.y ?? 0)),
+          x:
+            stage.value.x +
+            (ptrMoveEvent.offsetX - (panLastPosition.value?.x ?? 0)),
+          y:
+            stage.value.y +
+            (ptrMoveEvent.offsetY - (panLastPosition.value?.y ?? 0)),
         });
 
-        panLastPosition.value = { x: event.global.x, y: event.global.y };
-
-        canvasStore.updateStageHitArea();
+        panLastPosition.value = {
+          x: ptrMoveEvent.offsetX,
+          y: ptrMoveEvent.offsetY,
+        };
       }
     };
 
     const stopPan = () => {
       isPanning.value = false;
       panLastPosition.value = null;
-
-      stage.value.off("pointermove", onPan);
-      stage.value.off("pointerup", stopPan);
-      stage.value.off("pointerupoutside", stopPan);
+      canvas.removeEventListener("pointermove", onPan);
+      canvas.removeEventListener("pointerup", stopPan);
+      canvas.removeEventListener("lostpointercapture", stopPan);
+      eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
     };
 
-    stage.value.on("pointermove", onPan);
-    stage.value.on("pointerup", stopPan);
-    stage.value.on("pointerupoutside", stopPan);
+    canvas.addEventListener("pointermove", onPan);
+    canvas.addEventListener("pointerup", stopPan);
+    canvas.addEventListener("lostpointercapture", stopPan);
   };
 
   return { beginPan };

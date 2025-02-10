@@ -102,13 +102,12 @@ const bezierPoints = computed<[number, number, number, number, number, number]>(
 );
 
 const renderFn = (graphics: GraphicsInst) => {
-  graphics.clear();
   graphics
+    .clear()
     .lineStyle(2, 0x000000, 1)
     .moveTo(linePoints.value.at(0)!, linePoints.value.at(1)!)
-    .bezierCurveTo(...bezierPoints.value);
-
-  graphics.endFill();
+    .bezierCurveTo(...bezierPoints.value)
+    .endFill();
 };
 </script>
 

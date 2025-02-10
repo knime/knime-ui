@@ -3,7 +3,6 @@
 
 import { type UnwrapRef, computed, nextTick, ref, shallowRef } from "vue";
 import { defineStore } from "pinia";
-import { Rectangle } from "pixi.js";
 import type { ApplicationInst, StageInst } from "vue3-pixi";
 
 import type { WorkflowObject } from "@/api/custom-types";
@@ -30,30 +29,6 @@ const unsetScrollContainer = () => {
  * coordinate transformations for the Kanvas component.
  */
 
-export interface CanvasState {
-  zoomFactor: number;
-  containerSize: { width: number; height: number };
-  getScrollContainerElement: () => HTMLElement;
-  interactionsEnabled: boolean;
-  zoomCache: {
-    invariant: [number, number, number, number];
-    result: string;
-    timestamp: number;
-  } | null;
-  isMoveLocked: boolean;
-  canvasOffset: { x: number; y: number };
-  canvasAnchor: {
-    isOpen: boolean;
-    anchor: { x: number; y: number };
-  };
-  pixiApplication: ApplicationInst | null;
-  stage: StageInst | null;
-
-  isDebugModeEnabled: boolean;
-
-  stageHitArea: { x: number; y: number; width: number; height: number };
-}
-
 type Scroll = {
   canvasX: number | string;
   toScreenX?: number | string;
@@ -68,8 +43,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const getScrollContainerElement =
     ref<() => HTMLElement>(unsetScrollContainer);
   const interactionsEnabled = ref(true);
-
-  const stageHitArea = ref({ x: 0, y: 0, width: 0, height: 0 });
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
@@ -337,26 +310,14 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   });
 
   // returns the currently visible area of the workflow
-  const getVisibleFrame = computed(() => {
-    const container = getScrollContainerElement.value();
-    const screenBounds = container.getBoundingClientRect();
-
-    const [left, top] = screenToCanvasCoordinates.value([
-      screenBounds.x,
-      screenBounds.y,
-    ]);
-    const [right, bottom] = screenToCanvasCoordinates.value([
-      screenBounds.right,
-      screenBounds.bottom,
-    ]);
+  const visibleArea = computed(() => {
+    const OFFSET_BUFFER = 100;
 
     return {
-      left,
-      top,
-      right,
-      bottom,
-      width: right - left,
-      height: bottom - top,
+      x: -canvasOffset.value.x / zoomFactor.value - OFFSET_BUFFER,
+      y: -canvasOffset.value.y / zoomFactor.value - OFFSET_BUFFER,
+      width: containerSize.value.width / zoomFactor.value + OFFSET_BUFFER * 2,
+      height: containerSize.value.height / zoomFactor.value + OFFSET_BUFFER * 2,
     };
   });
 
@@ -498,37 +459,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     scroll({ ...scrollX, ...scrollY });
   };
 
-  /**
-   * Define and update a custom hit area for the Pixi.js application's stage.
-   * This makes the stage grow/shrink, and in general update its size to match
-   * the screen as the canvas is zoomed in/out; so as not to have "non interactible gaps"
-   * which could cause bugs when trying to detect user events for panning on these "gaps"
-   */
-  const updateStageHitArea = () => {
-    const OFFSET_BUFFER = 100;
-
-    if (!stage.value || !pixiApplication.value) {
-      return;
-    }
-
-    const rect = new Rectangle(
-      -stage.value.x / zoomFactor.value - OFFSET_BUFFER,
-      -stage.value.y / zoomFactor.value - OFFSET_BUFFER,
-      pixiApplication.value.app.screen.width / zoomFactor.value +
-        OFFSET_BUFFER * 2,
-      pixiApplication.value.app.screen.height / zoomFactor.value +
-        OFFSET_BUFFER * 2,
-    );
-
-    stage.value.hitArea = rect;
-    stageHitArea.value = {
-      x: rect.x,
-      y: rect.y,
-      width: rect.width,
-      height: rect.height,
-    };
-  };
-
   /*
    * Zooms in/out of the workflow such that the pointer stays fixated
    */
@@ -554,7 +484,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       });
 
       setFactor(factor);
-      updateStageHitArea();
       return;
     }
 
@@ -580,7 +509,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       y: stage.value.y - (newScreenPosition.y - cursorY),
     });
     setFactor(newScale);
-    updateStageHitArea();
   };
 
   /*
@@ -685,7 +613,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   };
 
   return {
-    stageHitArea,
     zoomFactor,
     containerSize,
     interactionsEnabled,
@@ -700,7 +627,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     contentBounds,
     canvasSize,
     getCanvasScrollState,
-    getVisibleFrame,
+    visibleArea,
     getCenterOfScrollContainer,
     globalToWorldCoordinates,
     screenFromCanvasCoordinates,
@@ -726,6 +653,5 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     updateContainerSize,
     restoreScrollState,
     moveObjectIntoView,
-    updateStageHitArea,
   };
 });

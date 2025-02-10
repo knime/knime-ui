@@ -6,6 +6,7 @@ export const portActionsGapSize = 5;
 
 export const addNodeGhostSize = 20;
 
+export const nodeTorsoRadius = 2.8;
 export const nodeStatusHeight = 12;
 export const nodeStatusMarginTop = 8;
 
