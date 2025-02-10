@@ -98,7 +98,7 @@ class SpaceAPITest {
                     {"connected":true,"name":"Connected Provider","id":"1","type":"HUB","connectionMode":"AUTHENTICATED"}""");
         assertThat(SpaceAPI.connectSpaceProvider("2")).isEqualTo(
             """
-                    {"user":{"name":"blub"},"connected":false,"name":"Disconnected Provider","id":"2","type":"HUB","connectionMode":"AUTHENTICATED"}""");
+                    {"username":"blub","connected":false,"name":"Disconnected Provider","id":"2","type":"HUB","connectionMode":"AUTHENTICATED"}""");
     }
 
     @Test

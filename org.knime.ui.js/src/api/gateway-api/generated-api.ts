@@ -3782,10 +3782,10 @@ export interface SpaceProvider {
     connectionMode: SpaceProvider.ConnectionModeEnum;
     /**
      *
-     * @type {User}
+     * @type {string}
      * @memberof SpaceProvider
      */
-    user?: User;
+    username?: string;
 
 }
 
@@ -4354,23 +4354,6 @@ export interface UpdateWorkflowAnnotationCommand extends WorkflowAnnotationComma
  */
 export namespace UpdateWorkflowAnnotationCommand {
 }
-/**
- *
- * @export
- * @interface User
- */
-export interface User {
-
-    /**
-     *
-     * @type {string}
-     * @memberof User
-     */
-    name: string;
-
-}
-
-
 /**
  * The vendor of an extension.
  * @export
