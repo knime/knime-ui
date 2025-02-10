@@ -65,7 +65,8 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.spaces.Space;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
@@ -161,7 +162,8 @@ final class OpenProject {
      */
     static void openProjectWithProgress(final String spaceProviderId, final String spaceId, final String itemId,
         final IProgressMonitor monitor) throws OpenProjectException {
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
+        final var spaceProvidersManager = DesktopAPI.getDeps(SpaceProvidersManager.class);
+        var spaceProviders = spaceProvidersManager.getSpaceProviders(Key.defaultKey());
 
         final Space space;
         try {

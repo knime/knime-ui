@@ -68,6 +68,7 @@ import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.WelcomeAPEndpoint;
 import org.knime.ui.java.profile.UserProfile;
@@ -189,7 +190,7 @@ public final class DesktopAPI {
      *
      * @param workflowProjectManager
      * @param appStateUpdater
-     * @param spaceProviders
+     * @param spaceProvidersManager
      * @param updateStateProvider optional, can be {@code null}
      * @param eventConsumer
      * @param workflowMiddleware
@@ -202,9 +203,9 @@ public final class DesktopAPI {
      * @param userProfile
      * @throws IllegalStateException if the dependencies have been already injected
      */
-    @SuppressWarnings({"java:S107"})  // parameter count
+    @SuppressWarnings({"java:S107"}) // parameter count
     public static void injectDependencies(final ProjectManager workflowProjectManager,
-        final AppStateUpdater appStateUpdater, final SpaceProviders spaceProviders,
+        final AppStateUpdater appStateUpdater, final SpaceProvidersManager spaceProvidersManager,
         final UpdateStateProvider updateStateProvider, final EventConsumer eventConsumer,
         final WorkflowMiddleware workflowMiddleware, final ToastService toastService, final NodeRepository nodeRepo,
         final MostRecentlyUsedProjects mruProjects, final LocalSpace localSpace,
@@ -215,7 +216,7 @@ public final class DesktopAPI {
         }
         injectDependency(workflowProjectManager);
         injectDependency(appStateUpdater);
-        injectDependency(spaceProviders);
+        injectDependency(spaceProvidersManager);
         injectDependency(eventConsumer);
         DEPENDENCIES.put(WorkflowMiddleware.class, workflowMiddleware);
         DEPENDENCIES.put(ToastService.class, toastService);
@@ -273,10 +274,10 @@ public final class DesktopAPI {
     /**
      * Add individual dependency for testing purposes.
      *
-     * @param spaceProviders
+     * @param spaceProvidersManager
      */
-    static void injectDependency(final SpaceProviders spaceProviders) {
-        DEPENDENCIES.put(SpaceProviders.class, spaceProviders);
+    static void injectDependency(final SpaceProvidersManager spaceProvidersManager) {
+        DEPENDENCIES.put(SpaceProvidersManager.class, spaceProvidersManager);
     }
 
     /**
@@ -299,7 +300,7 @@ public final class DesktopAPI {
 
     /**
      * @return whether dependencies already have been injected via
-     *         {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}
+     *         {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProvidersManager, UpdateStateProvider, EventConsumer)}
      */
     public static boolean areDependenciesInjected() {
         return !DEPENDENCIES.isEmpty();

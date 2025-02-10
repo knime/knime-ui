@@ -90,7 +90,7 @@ class OpenProjectTest {
         when(spaceProvider.getId()).thenReturn("local");
         when(spaceProvider.getType()).thenReturn(SpaceProviderEnt.TypeEnum.LOCAL);
         when(spaceProvider.getSpace("local")).thenReturn(localSpace);
-        var spaceProviders = SpaceAPITest.createSpaceProviders(spaceProvider);
+        var spaceProvidersManager = SpaceAPITest.createSpaceProvidersManager(spaceProvider);
         var eventConsumer = mock(EventConsumer.class);
         var appStateUpdater = new AppStateUpdater();
         var appStateUpdateListener = mock(Runnable.class);
@@ -99,7 +99,7 @@ class OpenProjectTest {
         var pm = ProjectManager.getInstance();
         DesktopAPI.injectDependency(pm);
         DesktopAPI.injectDependency(appStateUpdater);
-        DesktopAPI.injectDependency(spaceProviders);
+        DesktopAPI.injectDependency(spaceProvidersManager);
         DesktopAPI.injectDependency(eventConsumer);
         DesktopAPI.injectDependency(mruProjects);
         DesktopAPI.injectDependency(localSpace);

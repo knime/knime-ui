@@ -62,8 +62,8 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersFactory;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -91,7 +91,7 @@ class SpaceAPITest {
         when(connection.getUsername()).thenReturn("blub");
         when(disconnectedSpaceProvider.getConnection(true)).thenReturn(Optional.of(connection));
 
-        DesktopAPI.injectDependency(createSpaceProviders(connectedSpaceProvider, disconnectedSpaceProvider));
+        DesktopAPI.injectDependency(createSpaceProvidersManager(connectedSpaceProvider, disconnectedSpaceProvider));
 
         assertThat(SpaceAPI.connectSpaceProvider("1")).isEqualTo(
             """
@@ -109,17 +109,17 @@ class SpaceAPITest {
         var connection = mock(SpaceProviderConnection.class);
         when(connectedSpaceProvider.getConnection(false)).thenReturn(Optional.of(connection));
 
-        DesktopAPI.injectDependency(createSpaceProviders(connectedSpaceProvider));
+        DesktopAPI.injectDependency(createSpaceProvidersManager(connectedSpaceProvider));
 
         SpaceAPI.disconnectSpaceProvider("1");
         verify(connection).disconnect();
     }
 
-    static SpaceProviders createSpaceProviders(final SpaceProvider... spaceProviders) {
+    static SpaceProvidersManager createSpaceProvidersManager(final SpaceProvider... spaceProviders) {
         var spaceProvidersFactory = mock(SpaceProvidersFactory.class);
         var providers = List.of(spaceProviders);
         when(spaceProvidersFactory.createSpaceProviders()).thenReturn(providers);
-        var res = new SpaceProviders(id -> {
+        var res = new SpaceProvidersManager(id -> {
         }, null, List.of(spaceProvidersFactory));
         res.update();
         return res;

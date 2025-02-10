@@ -84,6 +84,8 @@ import org.knime.gateway.impl.webui.spaces.Space.TransferResult;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.api.NameCollisionChecker.UsageContext;
@@ -134,7 +136,8 @@ final class SpaceAPI {
      */
     @API(runInUIThread = false)
     static String connectSpaceProvider(final String spaceProviderId) throws JsonProcessingException {
-        final var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
+        final var spaceProvider = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey())
+            .getSpaceProvider(spaceProviderId);
         if (spaceProvider == null) {
             throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }
@@ -152,7 +155,8 @@ final class SpaceAPI {
      */
     @API
     static void disconnectSpaceProvider(final String spaceProviderId) {
-        var spaceProvider = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap().get(spaceProviderId);
+        var spaceProvider = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey())
+            .getSpaceProvider(spaceProviderId);
         if (spaceProvider != null) {
             spaceProvider.getConnection(false).ifPresent(SpaceProviderConnection::disconnect);
         }
@@ -614,11 +618,11 @@ final class SpaceAPI {
     }
 
     static SpaceProvider getSpaceProvider(final String spaceProviderId) {
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        if (spaceProviders == null) {
+        final var spaceProviderManager = DesktopAPI.getDeps(SpaceProvidersManager.class);
+        if (spaceProviderManager == null) {
             throw new NoSuchElementException("Available space providers could not be determined.");
         }
-        var spaceProvider = spaceProviders.getProvidersMap().get(spaceProviderId);
+        var spaceProvider = spaceProviderManager.getSpaceProviders(Key.defaultKey()).getSpaceProvider(spaceProviderId);
         if (spaceProvider == null) {
             throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }

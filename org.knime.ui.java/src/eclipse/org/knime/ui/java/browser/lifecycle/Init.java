@@ -84,7 +84,8 @@ import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
@@ -120,11 +121,11 @@ final class Init {
         var localSpace = state.getLocalSpace();
         var eventConsumer = createEventConsumer();
         var toastService = new ToastService(eventConsumer);
-        var spaceProviders = createSpaceProviders(localSpace, toastService);
-        var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProviders);
+        var spaceProvidersManager = createSpaceProvidersManager(localSpace, toastService);
+        var workflowMiddleware = new WorkflowMiddleware(projectManager, spaceProvidersManager);
         var appStateUpdater = new AppStateUpdater();
         var updateStateProvider = checkForUpdates ? new UpdateStateProvider(DesktopAPUtil::checkForUpdate) : null;
-        var kaiHandler = createKaiHandler(eventConsumer, spaceProviders, appStateUpdater);
+        var kaiHandler = createKaiHandler(eventConsumer, spaceProvidersManager, appStateUpdater);
         var preferenceProvider = createPreferencesProvider();
         var nodeCollections = new NodeCollections(preferenceProvider, WebUIMode.getMode());
         var nodeRepo = createNodeRepository(nodeCollections);
@@ -133,15 +134,15 @@ final class Init {
             () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
-            eventConsumer, spaceProviders, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
+            eventConsumer, spaceProvidersManager, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
             kaiHandler, nodeCollections, nodeRepo, nodeCategoryExtensions, selectionEventBus);
-        DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProviders, updateStateProvider,
+        DesktopAPI.injectDependencies(projectManager, appStateUpdater, spaceProvidersManager, updateStateProvider,
             eventConsumer, workflowMiddleware, toastService, nodeRepo, state.getMostRecentlyUsedProjects(),
             state.getLocalSpace(), state.getWelcomeApEndpoint(), createExampleProjects(), state.getUserProfile());
 
         // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
-        registerPreferenceListeners(appStateUpdater, spaceProviders, eventConsumer, nodeCollections, nodeRepo,
+        registerPreferenceListeners(appStateUpdater, spaceProvidersManager, eventConsumer, nodeCollections, nodeRepo,
             toastService);
 
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
@@ -172,7 +173,7 @@ final class Init {
     }
 
     private static void registerPreferenceListeners(final AppStateUpdater appStateUpdater,
-        final SpaceProviders spaceProviders, final EventConsumer eventConsumer,
+        final SpaceProvidersManager spaceProvidersManager, final EventConsumer eventConsumer,
         final NodeCollections nodeCollections, final NodeRepository nodeRepo, final ToastService toastService) {
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
@@ -196,7 +197,7 @@ final class Init {
 
         KnimeUIPreferences.setConfirmNodeConfigChangesPrefChangeListener(appStateUpdater::updateAppState);
         KnimeUIPreferences.setExplorerMointPointChangeListener(() -> {
-            spaceProviders.update();
+            spaceProvidersManager.update();
             appStateUpdater.updateAppState();
         });
 
@@ -222,10 +223,11 @@ final class Init {
         return initializeJavaBrowserCommunication(SharedConstants.JSON_RPC_ACTION_ID, SharedConstants.EVENT_ACTION_ID);
     }
 
-    private static SpaceProviders createSpaceProviders(final LocalSpace localSpace, final ToastService toastService) {
+    private static SpaceProvidersManager createSpaceProvidersManager(final LocalSpace localSpace,
+        final ToastService toastService) {
         Consumer<String> loginErrorHandler = loginErrorMessage -> toastService
             .showToast(ShowToastEventEnt.TypeEnum.ERROR, "Login failed", loginErrorMessage, false);
-        var spaceProviders = new SpaceProviders(loginErrorHandler, new LocalSpaceProvider(localSpace));
+        var spaceProviders = new SpaceProvidersManager(loginErrorHandler, new LocalSpaceProvider(localSpace));
         spaceProviders.update();
         return spaceProviders;
     }
@@ -330,8 +332,8 @@ final class Init {
     /**
      * @return A new K-AI handler instance or {@code null} if K-AI is not installed
      */
-    private static KaiHandler createKaiHandler(final EventConsumer eventConsumer, final SpaceProviders spaceProviders,
-        final AppStateUpdater appStateUpdater) {
+    private static KaiHandler createKaiHandler(final EventConsumer eventConsumer,
+        final SpaceProvidersManager spaceProviders, final AppStateUpdater appStateUpdater) {
         AuthTokenProvider authTokenProvider = (projectId, hubId) -> {
             var spaceProvider = getSpaceProviderOrThrow(spaceProviders, hubId);
             var connection = spaceProvider.getConnection(false).orElseThrow(
@@ -350,11 +352,12 @@ final class Init {
      * @return The space provider for the given Hub ID
      * @throws CouldNotAuthorizeException If the space provider could not be found or is not a Hub
      */
-    private static SpaceProvider getSpaceProviderOrThrow(final SpaceProviders spaceProviders, final String hubId)
+    private static SpaceProvider getSpaceProviderOrThrow(final SpaceProvidersManager spaceProvidersManager, final String hubId)
         throws CouldNotAuthorizeException {
-        var spaceProvider = Optional.ofNullable(spaceProviders.getProvidersMap().get(hubId))
-            .orElseThrow(() -> new CouldNotAuthorizeException(
-                "Please add the %s to your hosted mountpoints and login to use K-AI.".formatted(hubId)));
+        var spaceProvider =
+            Optional.ofNullable(spaceProvidersManager.getSpaceProviders(Key.defaultKey()).getSpaceProvider(hubId))
+                .orElseThrow(() -> new CouldNotAuthorizeException(
+                    "Please add the %s to your hosted mountpoints and login to use K-AI.".formatted(hubId)));
         if (spaceProvider.getType() != TypeEnum.HUB) {
             throw new CouldNotAuthorizeException("Unexpected content provider for mount ID '%s'.".formatted(hubId));
         }

@@ -73,7 +73,8 @@ import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateUpdater;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
+import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.DesktopAPUtil.OverwriteRemotelyResult;
 import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
@@ -263,10 +264,11 @@ final class SaveProject {
         // selected a remote location: save + upload
         saveLocalProject(monitor, wfm, svg);
 
-        final var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class).getProvidersMap();
-        final var spaceProvider = Optional.ofNullable(spaceProviders.get(remoteMountpointURI.getAuthority())) //
-                .orElseThrow(() -> new IllegalStateException("Space provider '" + remoteMountpointURI.getAuthority()
-                          + "' not found."));
+        final var spaceProviders = DesktopAPI.getDeps(SpaceProvidersManager.class).getSpaceProviders(Key.defaultKey());
+        final var spaceProvider = Optional
+            .ofNullable(spaceProviders.getSpaceProvider(remoteMountpointURI.getAuthority())) //
+            .orElseThrow(() -> new IllegalStateException(
+                "Space provider '" + remoteMountpointURI.getAuthority() + "' not found."));
         final var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
         var uploaded = false;
         try {
