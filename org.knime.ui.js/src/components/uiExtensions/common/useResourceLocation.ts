@@ -1,4 +1,5 @@
 import { type Ref, computed } from "vue";
+import consola from "consola";
 import { storeToRefs } from "pinia";
 
 import { useApplicationStore } from "@/store/application/application";
@@ -16,12 +17,19 @@ export const resourceLocationResolver = (
   path: string,
   baseUrl?: string,
 ) => {
-  consola.trace("resolving dynamic resource :: ", { path, baseUrl });
+  consola.trace("resolving dynamic resource: ", { path, baseUrl });
 
-  if (baseUrl) {
+  // eslint-disable-next-line no-undefined
+  if (baseUrl !== undefined && baseUrl.length !== 0) {
     return `${baseUrl}${path}`;
-  } else {
+    // eslint-disable-next-line no-negated-condition
+  } else if (restAPIBaseURL.length !== 0) {
     return `${restAPIBaseURL}/jobs/${projectId}/workflow/wizard/web-resources/${path}`;
+  } else {
+    consola.warn(
+      `knime-ui/useResourceLocationResolver: baseUrl and restAPIBaseURL are not defined/empty. Try to continue, return path:${path}.`,
+    );
+    return path;
   }
 };
 

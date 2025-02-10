@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { isUndefined } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import { useHint } from "@knime/components";
@@ -20,7 +19,6 @@ import {
   type NodeOutputTabIdentifier,
   useSelectionStore,
 } from "@/store/selection";
-import { useUIControlsStore } from "@/store/uiControls/uiControls.ts";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
@@ -127,10 +125,8 @@ const hasViewTab = computed(() => {
     return false;
   }
   if (isNodeComponent(singleSelectedNode.value)) {
-    return (
-      !isUndefined(singleSelectedNode.value.allowedActions?.canOpenView) &&
-      useUIControlsStore().canDetachNodeViews
-    );
+    // eslint-disable-next-line no-undefined
+    return singleSelectedNode.value.allowedActions?.canOpenView !== undefined;
   }
   if (isNativeNode(singleSelectedNode.value)) {
     return singleSelectedNode.value.hasView;
@@ -257,6 +253,7 @@ const onPortViewLoadingState = async (
 
         <ComponentViewTabOutput
           v-if="isViewTabSelected && singleSelectedNode.kind === 'component'"
+          :project-id="projectId!"
           :selected-node="singleSelectedNode as ComponentNode"
           :available-port-types="availablePortTypes"
           @loading-state-change="loadingState = $event"

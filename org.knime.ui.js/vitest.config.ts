@@ -17,7 +17,6 @@ export default defineConfig((env) => {
 
     test: {
       include: ["**/__tests__/*.test.{js,mjs,cjs,ts,mts,cts}"],
-      exclude: ["./node_modules/**/*"],
       setupFiles: ["src/test/setup"],
       environment: "jsdom",
       testTimeout: 30000,

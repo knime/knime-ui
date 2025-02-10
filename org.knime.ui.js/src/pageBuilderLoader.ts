@@ -3,16 +3,21 @@ import * as Vue from "vue";
 import { defineComponent } from "vue";
 import { type Store, createStore } from "vuex";
 
+import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation.ts";
 import { pageBuilderStoreConfig } from "@/store/pageBuilderStore.ts";
 
 const pageBuilderResource = {
   name: "PageBuilder", // module name
   componentName: "PageBuilder", // top level component name
-  url:
-    import.meta.env.PAGEBUILDER_URL ||
-    "/org/knime/core/ui/pagebuilder/lib/PageBuilder.umd.js",
-  backup: "/lib/PageBuilder.umd.js",
-  // dummy vue component to show if loading and backup failed
+
+  url: (projectId: string) =>
+    resourceLocationResolver(
+      projectId,
+      "/org/knime/core/ui/pagebuilder/lib/PageBuilder.umd.js",
+      // eslint-disable-next-line no-undefined
+      "https://org.knime.js.pagebuilder",
+    ),
+  // dummy vue component to show if loading failed
   fallback: defineComponent({
     template: "<div>PageBuilder failed to load.</div>",
   }),
@@ -36,32 +41,18 @@ const createScriptTag = (resolve: (value: unknown) => void, url: string) => {
  * @param backup A backup URL to load a default resource if the intended one fails
  * @returns A promise that is resolved with the script element in case of success, or rejected on error.
  */
-const loadScript = (url: string, backup?: string) => {
+const loadScript = (url: string) => {
   return new Promise((resolve, reject) => {
-    let script = createScriptTag(resolve, url);
+    const script = createScriptTag(resolve, url);
     script.addEventListener("error", () => {
-      if (script.src.endsWith(url) && backup) {
-        consola.warn("Loading of original resource failed: ", url);
-        consola.warn(`Trying backup ${backup}`);
-        document.head.removeChild(script);
-        script = createScriptTag(resolve, backup);
-        script.addEventListener("error", () => {
-          reject(
-            new Error(`Script loading of backup script "${backup}" failed`),
-          );
-          document.head.removeChild(script);
-        });
-        document.head.appendChild(script);
-      } else {
-        reject(new Error(`Script loading of "${url}" failed`));
-        document.head.removeChild(script);
-      }
+      reject(new Error(`Script loading of "${url}" failed`));
+      document.head.removeChild(script);
     });
     document.head.appendChild(script);
   });
 };
 
-const pageBuilderLoader = (store: Store<any>, app: App) => {
+const pageBuilderLoader = (store: Store<any>, app: App, projectId: string) => {
   // @ts-ignore
   window.process = { env: { NODE_ENV: "production" } };
 
@@ -71,7 +62,7 @@ const pageBuilderLoader = (store: Store<any>, app: App) => {
       return;
     }
 
-    loadScript(pageBuilderResource.url, pageBuilderResource.backup)
+    loadScript(pageBuilderResource.url(projectId))
       .then(() => {
         const Component = (<any>window)[pageBuilderResource.name][
           pageBuilderResource.componentName
@@ -99,7 +90,7 @@ const pageBuilderLoader = (store: Store<any>, app: App) => {
       })
       .catch((e) => {
         consola.error(
-          `Loading of ${pageBuilderResource.componentName} failed: ${e.message} Will use fallback dummy component.`,
+          `Loading of ${pageBuilderResource.componentName} failed: ${e.message}. Will use fallback dummy component.`,
         );
         app.component(
           pageBuilderResource.componentName,
@@ -112,7 +103,15 @@ const pageBuilderLoader = (store: Store<any>, app: App) => {
   });
 };
 
-export const setupPageBuilder = async (app: App): Promise<void> => {
+/**
+ * Setup the PageBuilder store.
+ * @param app The Vue app instance
+ * @param projectId The project ID. when using KNIME in browser the resolution of the PageBuilder module will be done using this project ID. This is not needed when using KNIME in desktop.
+ */
+export const setupPageBuilderEnvironment = async (
+  app: App,
+  projectId: string,
+): Promise<void> => {
   // @ts-ignore
   if (!window.Vue) {
     // @ts-ignore
@@ -128,7 +127,7 @@ export const setupPageBuilder = async (app: App): Promise<void> => {
     },
   });
 
-  await pageBuilderLoader(store, app);
+  await pageBuilderLoader(store, app, projectId);
   app.use(store);
 
   if (import.meta.env.DEV) {

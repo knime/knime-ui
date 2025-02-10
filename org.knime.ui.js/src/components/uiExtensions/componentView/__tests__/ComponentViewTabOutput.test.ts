@@ -65,10 +65,8 @@ describe("ComponentViewTabOutput.vue", () => {
 
   const defaultProps = {
     projectId: "project-1",
-    workflowId: "workflow-1",
     selectedNode: createComponentNode({ ...dummyNode }),
     availablePortTypes,
-    timestamp: 0,
   };
 
   const doMount = ({ props = {} } = {}) => {
@@ -137,7 +135,7 @@ describe("ComponentViewTabOutput.vue", () => {
     );
   });
 
-  it("should forward loadingStateChange events from the PortViewLoader", async () => {
+  it("should forward loadingStateChange events from the ComponentViewLoader", async () => {
     const { wrapper } = doMount({
       props: {
         selectedNode: {
@@ -149,16 +147,14 @@ describe("ComponentViewTabOutput.vue", () => {
 
     await nextTick();
 
-    wrapper.findComponent(ComponentViewLoader).vm.$emit("loadingStateChange", {
-      value: "loading",
-      message: "Something",
-    });
+    const eventPayload = { value: "loading", message: "Something" };
+    wrapper
+      .findComponent(ComponentViewLoader)
+      .vm.$emit("loadingStateChange", eventPayload);
 
-    expect(wrapper.emitted("loadingStateChange")![0][0]).toEqual(
-      expect.objectContaining({
-        value: "loading",
-        message: "Something",
-      }),
-    );
+    const eventsEmitted = wrapper.emitted("loadingStateChange")![0];
+
+    expect(eventsEmitted).lengthOf(1);
+    expect(eventsEmitted[0]).toEqual(eventPayload);
   });
 });

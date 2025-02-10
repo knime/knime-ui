@@ -27,7 +27,7 @@ interface SelectionServiceParams {
 
 const actions = {
   async callService(
-    { _ }: any,
+    _: any,
     {
       extensionConfig,
       nodeService,
@@ -59,12 +59,12 @@ const actions = {
     return { result: JSON.parse(result) };
   },
 
-  registerService({ _ }: any, { service, id }: SelectionServiceParams): void {
+  registerService(_: any, { service, id }: SelectionServiceParams): void {
     const { addListener } = useSelectionEvents();
     addListener({ ...id }, service);
   },
 
-  deregisterService({ _ }: any, id: Identifiers): void {
+  deregisterService(_: any, id: Identifiers): void {
     const { removeListener } = useSelectionEvents();
     removeListener({ ...id });
   },
@@ -74,7 +74,7 @@ const actions = {
   },
 
   async mount({ dispatch }: any): Promise<void> {
-    consola.info("Initializing initial page for PageBuilder");
+    consola.info("Loading page for PageBuilder");
     const page = mockedPage;
     await dispatch("pagebuilder/setPage", { page }, { root: true });
   },

@@ -24,8 +24,6 @@ type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
 
 type Matcher = AtLeastOne<Record<Environment, Handler>>;
 
-export const getEnv = () => environment;
-
 export const runInEnvironment = (matcher: Matcher) => {
   // fallback, just in case value is not provided
   const noop = () => Promise.resolve();

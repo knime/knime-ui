@@ -6,8 +6,6 @@ import * as PIXI from "pixi.js";
 
 import { setupHints } from "@knime/components";
 
-import { setupPageBuilder } from "@/pageBuilderLoader.ts";
-
 import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
@@ -124,11 +122,6 @@ try {
   // initialize pinia stores
   const pinia = createPinia();
   app.use(pinia);
-
-  // load and initialize the pageBuilder
-  // This makes the pageBuilder available on the app instance
-  await setupPageBuilder(app);
-
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
 
