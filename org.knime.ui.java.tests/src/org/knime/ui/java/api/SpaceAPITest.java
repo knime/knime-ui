@@ -62,7 +62,7 @@ import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.spaces.SpaceProvidersFactory;
+import org.knime.gateway.impl.webui.spaces.SpaceProviderFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -116,7 +116,7 @@ class SpaceAPITest {
     }
 
     static SpaceProvidersManager createSpaceProvidersManager(final SpaceProvider... spaceProviders) {
-        var spaceProvidersFactory = mock(SpaceProvidersFactory.class);
+        var spaceProvidersFactory = mock(SpaceProviderFactory.class);
         var providers = List.of(spaceProviders);
         when(spaceProvidersFactory.createSpaceProviders()).thenReturn(providers);
         var res = new SpaceProvidersManager(id -> {
