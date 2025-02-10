@@ -1,75 +1,91 @@
-<script>
-import { mapActions, mapState } from "pinia";
+<script setup lang="ts">
+import { computed, useTemplateRef } from "vue";
 
-import { SubMenu } from "@knime/components";
+import { type MenuItem, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
+import { useShortcuts } from "@/plugins/shortcuts";
+import type { FormattedShortcut } from "@/shortcuts";
 import { useCanvasStore } from "@/store/canvas";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { canvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
 /**
  * ZoomMenu offers predefined zoom levels and an input field to enter custom zoom levels
  */
-export default {
-  components: {
-    DropdownIcon,
-    SubMenu,
-  },
-  props: {
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  computed: {
-    ...mapState(useCanvasStore, ["zoomFactor"]),
-    zoomInputValue() {
-      return `${Math.round(this.zoomFactor * 100)}%`;
-    },
-    zoomMenuItems() {
-      return [
-        "fillScreen",
-        "fitToScreen",
-        "zoomIn",
-        "zoomOut",
-        "zoomTo75",
-        "zoomTo100",
-        "zoomTo125",
-        "zoomTo150",
-      ].map((action) => this.$shortcuts.get(action));
-    },
-  },
-  methods: {
-    ...mapActions(useCanvasStore, ["zoomCentered"]),
-    onZoomInputEnter(e) {
-      // '100' or '100%' works
-      let newZoomFactor = parseInt(e.target.value, 10) / 100;
 
-      if (!isNaN(newZoomFactor)) {
-        this.zoomCentered({ factor: newZoomFactor });
-      }
+type Props = {
+  disabled?: boolean;
+};
 
-      // de-focus input. Resets and formats zoom level
-      e.target.blur();
-      e.target.value = this.zoomInputValue;
-    },
-    onZoomInputClick(e) {
-      e.target.focus();
-      e.target.select();
-    },
-    onZoomInputFocusOut(e) {
-      // Deselect text and reset to formatted value
-      e.target.blur();
-      e.target.value = this.zoomInputValue;
-    },
-    onZoomItemClick(e, item) {
-      this.$shortcuts.dispatch(item.name);
-      this.$refs.zoomInput.blur();
-    },
-    onWheel(e) {
-      const delta = e.deltaY < 0 ? 1 : -1;
-      this.zoomCentered({ delta });
-    },
-  },
+const $shortcuts = useShortcuts();
+withDefaults(defineProps<Props>(), { disabled: false });
+const svgCanvasStore = useCanvasStore();
+const webGLCanvasStore = useWebGLCanvasStore();
+
+const zoomFactor = computed(() => {
+  return canvasRendererUtils.isSVGRenderer()
+    ? svgCanvasStore.zoomFactor
+    : webGLCanvasStore.zoomFactor;
+});
+
+const zoomInputValue = computed(() => `${Math.round(zoomFactor.value * 100)}%`);
+
+const zoomActions = [
+  "fillScreen",
+  "fitToScreen",
+  "zoomIn",
+  "zoomOut",
+  "zoomTo75",
+  "zoomTo100",
+  "zoomTo125",
+  "zoomTo150",
+] as const;
+
+const zoomMenuItems = computed<MenuItem[]>(() => {
+  return zoomActions.map((action) => $shortcuts.get(action)) as MenuItem[];
+});
+
+const onZoomInputEnter = (event: KeyboardEvent) => {
+  if (!event.target) {
+    return;
+  }
+
+  const target = event.target as HTMLInputElement;
+
+  // '100' or '100%' works
+  let newZoomFactor = parseInt(target.value, 10) / 100;
+
+  if (!isNaN(newZoomFactor)) {
+    svgCanvasStore.zoomCentered({ factor: newZoomFactor });
+  }
+
+  // de-focus input. Resets and formats zoom level
+  target.blur();
+  target.value = zoomInputValue.value;
+};
+
+const onZoomInputClick = (event: MouseEvent) => {
+  (event.target! as HTMLInputElement).focus();
+  (event.target! as HTMLInputElement).select();
+};
+
+const onZoomInputFocusOut = (event: FocusEvent) => {
+  // Deselect text and reset to formatted value
+  (event.target! as HTMLInputElement).blur();
+  (event.target! as HTMLInputElement).value = zoomInputValue.value;
+};
+
+const zoomInput = useTemplateRef("zoomInput");
+
+const onZoomItemClick = (_event: KeyboardEvent, item: FormattedShortcut) => {
+  $shortcuts.dispatch(item.name);
+  zoomInput.value?.blur();
+};
+
+const onWheel = (e: WheelEvent) => {
+  const delta = e.deltaY < 0 ? 1 : -1;
+  svgCanvasStore.zoomCentered({ delta });
 };
 </script>
 

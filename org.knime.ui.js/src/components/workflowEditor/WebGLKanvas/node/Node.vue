@@ -1,29 +1,32 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, toRef, unref, watch } from "vue";
+import { computed, ref, toRef, unref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
-import { type GraphicsInst, useStage } from "vue3-pixi";
+import { type GraphicsInst } from "vue3-pixi";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { NativeNodeInvariants, Node } from "@/api/gateway-api/generated-api";
+import {
+  MetaNodeState,
+  NativeNodeInvariants,
+  Node,
+} from "@/api/gateway-api/generated-api";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import * as $colors from "@/style/colors";
-import { nodeBackgroundColors } from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { isNodeComponent } from "@/util/nodeUtil";
+import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import NodePorts from "../ports/NodePorts.vue";
+import { nodeNameText } from "../util/textStyles";
 
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
+import NodeState from "./nodeState/NodeState.vue";
+import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
-
-const stage = useStage();
 
 const MIN_MOVE_THRESHOLD = 5;
 
@@ -45,9 +48,8 @@ const emit = defineEmits<{
   contextmenu: [event: PIXI.FederatedPointerEvent];
 }>();
 
-const { zoomFactor, isDebugModeEnabled, stageHitArea } = storeToRefs(
-  useWebGLCanvasStore(),
-);
+const { zoomFactor, isDebugModeEnabled, pixiApplication, visibleArea } =
+  storeToRefs(useWebGLCanvasStore());
 
 const selectionStore = useSelectionStore();
 const { isNodeSelected } = storeToRefs(selectionStore);
@@ -92,6 +94,9 @@ const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     return;
   }
 
+  const canvas = pixiApplication.value!.canvas;
+  canvas.setPointerCapture(pointerDownEvent.pointerId);
+
   startPos.value = {
     x: pointerDownEvent.global.x,
     y: pointerDownEvent.global.y,
@@ -117,11 +122,11 @@ const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
   let didDrag = false;
   movingStore.setIsDragging(true);
 
-  const onMove = (pointerMoveEvent: PIXI.FederatedPointerEvent): void => {
+  const onMove = (pointerMoveEvent: PointerEvent): void => {
     const deltaX =
-      (pointerMoveEvent.global.x - startPos.value.x) / zoomFactor.value;
+      (pointerMoveEvent.offsetX - startPos.value.x) / zoomFactor.value;
     const deltaY =
-      (pointerMoveEvent.global.y - startPos.value.y) / zoomFactor.value;
+      (pointerMoveEvent.offsetY - startPos.value.y) / zoomFactor.value;
 
     if (
       Math.abs(deltaX) >= MIN_MOVE_THRESHOLD ||
@@ -142,39 +147,14 @@ const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
     }
 
     movingStore.moveObjects();
-    stage.value.off("pointermove", onMove);
-    stage.value.off("pointerup", onUp);
-    stage.value.off("pointerupoutside", onUp);
+    canvas.releasePointerCapture(pointerDownEvent.pointerId);
+    canvas.removeEventListener("pointermove", onMove);
+    canvas.removeEventListener("pointerup", onUp);
   };
 
-  stage.value.on("pointermove", onMove);
-  stage.value.on("pointerup", onUp);
-  stage.value.on("pointerupoutside", onUp);
+  canvas.addEventListener("pointermove", onMove);
+  canvas.addEventListener("pointerup", onUp);
 };
-
-const backgroundColor = computed(() => {
-  // In case of unknown type, use Hibiscus Dark
-  return props.type ? nodeBackgroundColors[props.type] : $colors.HibiscusDark;
-});
-
-const texture = ref<PIXI.Texture<PIXI.Resource>>();
-
-const NODE_ICON_SIZE = 16;
-const scaleFactor = ref(0);
-
-onMounted(() => {
-  if (props.icon) {
-    const imageLocal = new window.Image();
-
-    imageLocal.src = props.icon;
-    imageLocal.onload = () => {
-      texture.value = PIXI.Texture.from(props.icon!);
-      scaleFactor.value =
-        NODE_ICON_SIZE /
-        Math.max(imageLocal.naturalWidth, imageLocal.naturalHeight);
-    };
-  }
-});
 
 const { isSelectionPreviewShown } = useSelectionPreview({
   objectId: props.node.id,
@@ -198,6 +178,7 @@ const renderHoverArea = (graphics: GraphicsInst) => {
   graphics.clear();
 
   if (isDebugModeEnabled.value) {
+    // eslint-disable-next-line no-magic-numbers
     graphics.beginFill(0xf1f1f1);
   }
 
@@ -214,7 +195,7 @@ const renderable = computed(
   () =>
     !geometry.utils.isPointOutsideBounds(
       translatedPosition.value,
-      stageHitArea.value,
+      visibleArea.value,
     ),
 );
 
@@ -235,6 +216,15 @@ const hitArea = computed(
       hoverSize.value.height,
     ),
 );
+
+const isMetanode = computed(() => isNodeMetaNode(props.node));
+
+const style = new PIXI.TextStyle(nodeNameText.styles);
+const nameMeasures = PIXI.TextMetrics.measureText(props.name, style, true);
+const SINGLE_LINE_TEXT_HEIGHT_THRESHOLD = 40;
+const textYAnchor = computed(() =>
+  nameMeasures.height <= SINGLE_LINE_TEXT_HEIGHT_THRESHOLD ? 0 : 0.5,
+);
 </script>
 
 <template>
@@ -243,9 +233,15 @@ const hitArea = computed(
     :kind="node.kind"
     :anchor-position="translatedPosition"
     :renderable="renderable"
+    :width="
+      nameMeasures.width * nodeNameText.downscalingFactor +
+      $shapes.nodeNameHorizontalMargin * 2
+    "
+    :extra-height="nameMeasures.height * nodeNameText.downscalingFactor"
   />
 
   <Container
+    :name="node.id"
     :renderable="renderable"
     @rightclick="emit('contextmenu', $event)"
     @pointerenter="onPointerEnter(node.id)"
@@ -253,39 +249,23 @@ const hitArea = computed(
     @pointerdown="onPointerDown"
   >
     <Graphics
+      name="NodeHoverArea"
       :hit-area="hitArea"
       :position="translatedPosition"
       @render="renderHoverArea"
     />
 
     <Text
+      name="NodeName"
       :position="nodeNamePosition"
-      :resolution="3"
-      :scale="0.5"
-      :style="{
-        fill: 'black',
-        fontFamily: 'Roboto Condensed',
-        fontSize: 32,
-        fontWeight: 'bold',
-      }"
-      :anchor="{ x: 0.5, y: 0.5 }"
+      :resolution="zoomFactor + 0.1"
+      :scale="nodeNameText.downscalingFactor"
+      :style="nodeNameText.styles"
+      :anchor="{ x: 0.5, y: textYAnchor }"
+      :round-pixels="true"
     >
       {{ name }}
     </Text>
-
-    <Graphics
-      :name="node.id"
-      :position="translatedPosition"
-      event-mode="none"
-      @render="
-        (graphics: GraphicsInst) => {
-          graphics.clear();
-          graphics.beginFill(backgroundColor);
-          graphics.drawRoundedRect(0, 0, $shapes.nodeSize, $shapes.nodeSize, 4);
-          graphics.endFill();
-        }
-      "
-    />
 
     <NodePorts
       :node-id="node.id"
@@ -297,14 +277,19 @@ const hitArea = computed(
       :port-groups="null"
     />
 
-    <Sprite
-      v-if="texture"
-      :texture="texture as any"
-      :anchor="0.5"
-      event-mode="none"
-      :scale="scaleFactor"
-      :x="translatedPosition.x + $shapes.nodeSize / 2"
-      :y="translatedPosition.y + $shapes.nodeSize / 2"
-    />
+    <Container name="NodeTorsoContainer" :position="translatedPosition">
+      <NodeTorso
+        :kind="node.kind"
+        :type="type"
+        :icon="icon"
+        :execution-state="
+          isMetanode
+            ? (node.state?.executionState as MetaNodeState.ExecutionStateEnum)
+            : undefined
+        "
+      />
+
+      <NodeState v-if="!isMetanode" v-bind="node.state" />
+    </Container>
   </Container>
 </template>

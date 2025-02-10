@@ -1,8 +1,8 @@
-import { ref } from "vue";
+/* eslint-disable no-undefined */
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 import throttle from "raf-throttle";
-import { useStage } from "vue3-pixi";
 
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -15,6 +15,8 @@ export interface DragConnector {
   flowVariableConnection: boolean;
   absolutePoint: [number, number];
   allowedActions: { canDelete: boolean };
+  direction: "in" | "out";
+  portInstance: NodePort & { parentNodeId: string };
   interactive?: boolean;
   sourceNode?: string;
   sourcePort?: number;
@@ -41,6 +43,8 @@ const createConnectorFromEvent = (
   return {
     id: "drag-connector",
     allowedActions: { canDelete: false },
+    direction: params.direction,
+    portInstance: { ...params.port, parentNodeId: params.nodeId },
     flowVariableConnection: params.isFlowVariable,
     absolutePoint,
     [relatedNode]: params.nodeId,
@@ -56,9 +60,14 @@ const isSignificantMove = (startPosition: XY, newPosition: XY) => {
   return deltaX >= MOVE_THRESHOLD || deltaY >= MOVE_THRESHOLD;
 };
 
-const dragConnector = ref<DragConnector | null>(null);
+const _dragConnector = ref<DragConnector | null>(null);
+
+export const dragConnector = computed(() => _dragConnector.value);
+
 export const usePortDragging = (params: Params) => {
-  const { globalToWorldCoordinates } = storeToRefs(useWebGLCanvasStore());
+  const { globalToWorldCoordinates, pixiApplication } = storeToRefs(
+    useWebGLCanvasStore(),
+  );
   const { isWritable: isWorkflowWritable } = storeToRefs(useWorkflowStore());
 
   const didMove = ref(false);
@@ -66,19 +75,18 @@ export const usePortDragging = (params: Params) => {
   const didDragToCompatibleTarget = ref(false);
 
   let startPosition: XY | null = null;
-  const stage = useStage();
 
   /**
    * Called on the pointer's first move.
    * It sets up the connector, emits the event to signal the start of connection
    * and it triggers the circle detection logic to highlight compatible target nodes
    * */
-  const initialPointerMove = (event: FederatedPointerEvent) => {
+  const initialPointerMove = (event: PointerEvent) => {
     if (
       !startPosition ||
       !isSignificantMove(startPosition, {
-        x: event.global.x,
-        y: event.global.y,
+        x: event.offsetX,
+        y: event.offsetY,
       })
     ) {
       return;
@@ -87,9 +95,9 @@ export const usePortDragging = (params: Params) => {
     didMove.value = true;
 
     // set up connector
-    dragConnector.value = createConnectorFromEvent(params, [
-      event.global.x,
-      event.global.y,
+    _dragConnector.value = createConnectorFromEvent(params, [
+      event.offsetX,
+      event.offsetY,
     ]);
   };
 
@@ -103,6 +111,9 @@ export const usePortDragging = (params: Params) => {
       return;
     }
 
+    const canvas = pixiApplication.value!.canvas;
+    canvas.setPointerCapture(pointerDownEvent.pointerId);
+
     pointerDownEvent.stopPropagation();
     pointerDownEvent.originalEvent.stopPropagation();
     pointerDownEvent.originalEvent.preventDefault();
@@ -113,30 +124,28 @@ export const usePortDragging = (params: Params) => {
       y: pointerDownEvent.global.y,
     };
 
-    const onPointerMove = throttle(
-      (pointerMoveEvent: FederatedPointerEvent) => {
-        if (pointerDown.value && !didMove.value) {
-          initialPointerMove(pointerMoveEvent);
-        }
+    const onPointerMove = throttle((pointerMoveEvent: PointerEvent) => {
+      if (pointerDown.value && !didMove.value) {
+        initialPointerMove(pointerMoveEvent);
+      }
 
-        // skip pointermove logic when there's no active dragconnector being displayed or
-        // when the user is no longer holding down the pointer click
-        if (!dragConnector.value || !pointerDown.value) {
-          return;
-        }
+      // skip pointermove logic when there's no active dragconnector being displayed or
+      // when the user is no longer holding down the pointer click
+      if (!_dragConnector.value || !pointerDown.value) {
+        return;
+      }
 
-        const [absoluteX, absoluteY] = globalToWorldCoordinates.value([
-          pointerMoveEvent.global.x,
-          pointerMoveEvent.global.y,
-        ]);
+      const [absoluteX, absoluteY] = globalToWorldCoordinates.value([
+        pointerMoveEvent.offsetX,
+        pointerMoveEvent.offsetY,
+      ]);
 
-        const setDragConnectorCoords = (x: number, y: number) => {
-          dragConnector.value!.absolutePoint = [x, y];
-        };
+      const setDragConnectorCoords = (x: number, y: number) => {
+        _dragConnector.value!.absolutePoint = [x, y];
+      };
 
-        setDragConnectorCoords(absoluteX, absoluteY);
-      },
-    );
+      setDragConnectorCoords(absoluteX, absoluteY);
+    });
 
     const onPointerUp = () => {
       pointerDown.value = false;
@@ -146,30 +155,30 @@ export const usePortDragging = (params: Params) => {
         !didDragToCompatibleTarget.value && params.direction === "out";
 
       const { removeConnector } =
-        isDroppedOnCanvas && dragConnector.value
-          ? params.onCanvasDrop?.(dragConnector.value) ?? {
+        isDroppedOnCanvas && _dragConnector.value
+          ? params.onCanvasDrop?.(_dragConnector.value) ?? {
               removeConnector: true,
             }
           : { removeConnector: true };
 
       if (removeConnector) {
-        dragConnector.value = null;
+        _dragConnector.value = null;
       }
 
-      stage.value.off("pointermove", onPointerMove);
-      stage.value.off("pointerup", onPointerUp);
-      stage.value.off("pointerupoutside", onPointerUp);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("lostPointerCapture", onPointerUp);
     };
 
-    stage.value.on("pointermove", onPointerMove);
-    stage.value.on("pointerup", onPointerUp);
-    stage.value.on("pointerupoutside", onPointerUp);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("lostPointerCapture", onPointerUp);
   };
 
   return {
     didMove,
     didDragToCompatibleTarget,
-    dragConnector,
+    dragConnector: _dragConnector,
     onPointerDown,
   };
 };

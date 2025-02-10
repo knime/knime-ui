@@ -46,12 +46,6 @@ const onRightClick = (event: FederatedPointerEvent, nodeId: string) => {
 <template>
   <SelectionRectangle />
 
-  <Connector
-    v-for="connector of activeWorkflow!.connections"
-    :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
-    v-bind="connector"
-  />
-
   <Node
     v-for="node in activeWorkflow!.nodes"
     :key="node.id"
@@ -61,5 +55,11 @@ const onRightClick = (event: FederatedPointerEvent, nodeId: string) => {
     :name="getNodeName(node.id)"
     :node="node"
     @contextmenu="onRightClick($event, node.id)"
+  />
+
+  <Connector
+    v-for="connector of activeWorkflow!.connections"
+    :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
+    v-bind="connector"
   />
 </template>

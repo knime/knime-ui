@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
-import { computed } from "vue";
+import { computed, shallowRef } from "vue";
 import { storeToRefs } from "pinia";
-import { Rectangle } from "pixi.js";
-import { type GraphicsInst } from "vue3-pixi";
+import { Container, Rectangle } from "pixi.js";
+import { type ContainerInst, type GraphicsInst } from "vue3-pixi";
 
-import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -13,12 +13,13 @@ import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 
-import NodePortActiveConnector from "./NodePortActiveConnector.vue";
 import Port from "./Port.vue";
+import { useFlowVarPortTransparency } from "./useFlowVarPortTransparency";
 import { usePortDragging } from "./usePortDragging";
 
 interface Props {
   nodeId: string;
+  nodeKind: Node.KindEnum;
   port: NodePort;
   position: XY;
   direction: "in" | "out";
@@ -87,17 +88,6 @@ const { dragConnector, onPointerDown } = usePortDragging({
   },
 });
 
-const isDraggingFromThisPort = computed(() => {
-  if (!dragConnector.value) {
-    return false;
-  }
-
-  return (
-    dragConnector.value.sourceNode === props.nodeId ||
-    dragConnector.value.destNode === props.nodeId
-  );
-});
-
 const onConnectionDrop = () => {
   if (!dragConnector.value) {
     return;
@@ -126,10 +116,24 @@ const onConnectionDrop = () => {
     destPort: to.portIndex,
   });
 };
+
+const portContainer = shallowRef<ContainerInst | undefined>();
+
+const { initialAlpha, onPointerEnter, onPointerLeave } =
+  useFlowVarPortTransparency({
+    portContainer,
+    port: props.port,
+    nodeKind: props.nodeKind,
+  });
 </script>
 
 <template>
-  <Container>
+  <Container
+    ref="portContainer"
+    :alpha="initialAlpha ? 1 : 0"
+    @pointerenter="onPointerEnter"
+    @pointerleave="onPointerLeave"
+  >
     <Container
       :position="position"
       :hit-area="hitArea"
@@ -152,11 +156,5 @@ const onConnectionDrop = () => {
       />
       <Port :port="port" />
     </Container>
-
-    <NodePortActiveConnector
-      v-if="dragConnector && isDraggingFromThisPort"
-      :drag-connector="dragConnector"
-      :port="port"
-    />
   </Container>
 </template>

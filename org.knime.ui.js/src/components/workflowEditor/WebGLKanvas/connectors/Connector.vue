@@ -1,12 +1,17 @@
+<!-- eslint-disable func-style -->
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 import type { GraphicsInst } from "vue3-pixi";
 
+import type { XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
+import * as $colors from "@/style/colors";
 import { portSize } from "@/style/shapes";
+import { geometry } from "@/util/geometry";
 import type { ConnectorProps } from "../types";
 
 // eslint-disable-next-line no-magic-numbers
@@ -42,6 +47,7 @@ const props = withDefaults(defineProps<ConnectorProps>(), {
 
 const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
 const { isNodeSelected } = storeToRefs(useSelectionStore());
+const { visibleArea } = storeToRefs(useWebGLCanvasStore());
 
 const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
   toRefs(props);
@@ -102,16 +108,51 @@ const bezierPoints = computed<[number, number, number, number, number, number]>(
 );
 
 const renderFn = (graphics: GraphicsInst) => {
-  graphics.clear();
+  const color = props.flowVariableConnection ? $colors.Coral : $colors.Masala;
   graphics
-    .lineStyle(2, 0x000000, 1)
+    .clear()
+    .lineStyle(1, color)
     .moveTo(linePoints.value.at(0)!, linePoints.value.at(1)!)
-    .bezierCurveTo(...bezierPoints.value);
-
-  graphics.endFill();
+    .bezierCurveTo(...bezierPoints.value)
+    .endFill();
 };
+
+function getBoundingBox(start: XY, ctrl1: XY, ctrl2: XY, end: XY) {
+  const minX = Math.min(start.x, ctrl1.x, ctrl2.x, end.x);
+  const maxX = Math.max(start.x, ctrl1.x, ctrl2.x, end.x);
+  const minY = Math.min(start.y, ctrl1.y, ctrl2.y, end.y);
+  const maxY = Math.max(start.y, ctrl1.y, ctrl2.y, end.y);
+
+  return {
+    left: minX,
+    top: minY,
+    width: maxX - minX,
+    // make sure height is at least 1, otherwise it'd be 0 for straight lines
+    height: Math.max(maxY - minY, 1),
+  };
+}
+
+const boundingBox = computed(() =>
+  getBoundingBox(
+    start.value,
+    { x: bezierPoints.value[0], y: bezierPoints.value[1] },
+    { x: bezierPoints.value[2], y: bezierPoints.value[3] },
+    { x: bezierPoints.value[4], y: bezierPoints.value[5] },
+  ),
+);
+
+const renderable = computed(() => {
+  const intersect = geometry.utils.rectangleIntersection(boundingBox.value, {
+    left: visibleArea.value.x,
+    top: visibleArea.value.y,
+    width: visibleArea.value.width,
+    height: visibleArea.value.height,
+  });
+
+  return Boolean(intersect);
+});
 </script>
 
 <template>
-  <Graphics :name="id" @render="renderFn" />
+  <Graphics :renderable="renderable" :name="id" @render="renderFn" />
 </template>

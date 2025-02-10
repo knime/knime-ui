@@ -127,7 +127,6 @@ const onSelectionEnd = () => {
 const renderFn = (graphics: GraphicsInst) => {
   graphics.clear();
   graphics.lineStyle(1, $colors.kanvasNodeSelection.activeBorder);
-  graphics.beginFill($colors.kanvasNodeSelection.activeBackground);
   graphics.drawRect(
     0,
     0,

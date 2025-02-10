@@ -6,7 +6,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 
 const stage = useStage();
 
-const { stageHitArea } = storeToRefs(useWebGLCanvasStore());
+const { visibleArea } = storeToRefs(useWebGLCanvasStore());
 
 const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
 </script>
@@ -14,13 +14,13 @@ const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
 <template>
   <Container>
     <Graphics
-      v-if="stageHitArea"
-      :position="{ x: stageHitArea.x, y: stageHitArea.y }"
+      v-if="visibleArea"
+      :position="{ x: visibleArea.x, y: visibleArea.y }"
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
           graphics.beginFill(0xf2eecb);
-          graphics.drawRect(0, 0, stageHitArea.width, stageHitArea.height);
+          graphics.drawRect(0, 0, visibleArea.width, visibleArea.height);
           graphics.endFill();
         }
       "
