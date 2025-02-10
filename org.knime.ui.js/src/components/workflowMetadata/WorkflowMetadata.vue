@@ -84,6 +84,16 @@ const updateComponentMetadata = ({
     tags,
   });
 };
+
+const parentDescription = computed(() => {
+  const meta = isWorkflowProject.value
+    ? workflow.value?.projectMetadata
+    : isComponentProject.value
+    ? workflow.value?.componentMetadata
+    : null;
+
+  return meta?.description?.value ?? "";
+});
 </script>
 
 <template>
@@ -113,6 +123,7 @@ const updateComponentMetadata = ({
     <MetanodeMetadata
       v-if="isMetanode"
       :workflow-id="workflow.info.containerId"
+      :parent-description="parentDescription"
     />
   </div>
 
