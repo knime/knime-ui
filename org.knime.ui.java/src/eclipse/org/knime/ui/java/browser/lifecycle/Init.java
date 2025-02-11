@@ -45,6 +45,7 @@
  */
 package org.knime.ui.java.browser.lifecycle;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.internal.progress.ProgressManager;
 import org.knime.core.node.NodeFactory;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.extension.NodeSpecCollectionProvider;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.util.auth.CouldNotAuthorizeException;
@@ -84,22 +86,27 @@ import org.knime.gateway.impl.webui.service.ServiceDependencies;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
 import org.knime.gateway.impl.webui.service.events.SelectionEventBus;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpaceProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.js.cef.CEFPlugin;
 import org.knime.js.cef.commservice.CEFCommService;
 import org.knime.js.cef.nodeview.CEFNodeView;
 import org.knime.js.cef.wizardnodeview.CEFWizardNodeView;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.api.SaveAndCloseProjects;
+import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.NodeCollectionUtil;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
+import com.equo.middleware.api.handler.IRequestFilter;
+import com.equo.middleware.api.resource.MutableRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -132,6 +139,7 @@ final class Init {
         var selectionEventBus = createSelectionEventBus(eventConsumer);
         NodeCategoryExtensions nodeCategoryExtensions =
             () -> NodeSpecCollectionProvider.getInstance().getCategoryExtensions();
+
         // "Inject" the service dependencies
         ServiceDependencies.setDefaultServiceDependencies(projectManager, workflowMiddleware, appStateUpdater,
             eventConsumer, spaceProvidersManager, updateStateProvider, preferenceProvider, createNodeFactoryProvider(),
@@ -216,17 +224,38 @@ final class Init {
     }
 
     /**
+     * Initializes the Java-Browser communication.
+     *
      * @return a new event consumer instance forwarding events to java-script
      */
     private static EventConsumer createEventConsumer() {
-        return initializeJavaBrowserCommunication(SharedConstants.JSON_RPC_ACTION_ID, SharedConstants.EVENT_ACTION_ID);
+        JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
+        CEFCommService.invoke(cs -> cs.on(SharedConstants.JSON_RPC_ACTION_ID, message -> { // NOSONAR
+            return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        }));
+
+        var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
+        return (name, event) -> {
+            var message = createEventMessage(mapper, name, event);
+            CEFCommService.invoke(cs -> cs.send(SharedConstants.EVENT_ACTION_ID, message));
+        };
+    }
+
+    private static String createEventMessage(final ObjectMapper mapper, final String name, final Object payload) {
+        var event = mapper.createObjectNode();
+        try {
+            return mapper.writeValueAsString(event.put("eventType", name).set("payload", mapper.valueToTree(payload)));
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Problem creating the event-message in order to send an event", ex);
+        }
     }
 
     private static SpaceProvidersManager createSpaceProvidersManager(final LocalSpace localSpace,
         final ToastService toastService) {
         Consumer<String> loginErrorHandler = loginErrorMessage -> toastService
             .showToast(ShowToastEventEnt.TypeEnum.ERROR, "Login failed", loginErrorMessage, false);
-        var spaceProvidersManager = new SpaceProvidersManager(loginErrorHandler, new LocalSpaceProvider(localSpace));
+        var spaceProvidersManager = new SpaceProvidersManager(loginErrorHandler, Init::addRequestFilterForSpaceProvider,
+            Init::removeRequestFilterForSpaceProvider, new LocalSpaceProvider(localSpace));
         spaceProvidersManager.update();
         return spaceProvidersManager;
     }
@@ -285,29 +314,6 @@ final class Init {
         };
     }
 
-    private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,
-        final String eventActionId) {
-        JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
-        CEFCommService.invoke(cs -> cs.on(jsonRpcActionId, message -> { // NOSONAR
-            return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-        }));
-
-        var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
-        return (name, event) -> {
-            var message = createEventMessage(mapper, name, event);
-            CEFCommService.invoke(cs -> cs.send(eventActionId, message));
-        };
-    }
-
-    private static String createEventMessage(final ObjectMapper mapper, final String name, final Object payload) {
-        var event = mapper.createObjectNode();
-        try {
-            return mapper.writeValueAsString(event.put("eventType", name).set("payload", mapper.valueToTree(payload)));
-        } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Problem creating the event-message in order to send an event", ex);
-        }
-    }
-
     /**
      * Registers a job change listener to the {@code IJobManager} to be able to track Eclipse background jobs.
      *
@@ -361,6 +367,54 @@ final class Init {
             throw new CouldNotAuthorizeException("Unexpected content provider for mount ID '%s'.".formatted(hubId));
         }
         return spaceProvider;
+    }
+
+    /**
+     * Enables the FE to send authorized requests to a certain Hub space provider.
+     */
+    private static void addRequestFilterForSpaceProvider(final SpaceProvider spaceProvider) {
+        if (spaceProvider.getType() != TypeEnum.HUB) {
+            return;
+        }
+
+        IRequestFilter requestFilter = mutableRequest -> {
+            if (!mutableRequest.getFrame().isMain()) {
+                return;
+            }
+            if (!mutableRequest.getFrame().getCurrentUrl().startsWith(KnimeBrowserView.BASE_URL)) {
+                return;
+            }
+            spaceProvider.getConnection(false) //
+                .ifPresent(connection -> addAuthorizationToRequestHeaderWithoutException(mutableRequest, connection));
+        };
+
+        var middleware = CEFPlugin.getMiddlewareService();
+        spaceProvider.getServerAddress() //
+            .map(URI::create) //
+            .ifPresent(uri -> middleware.addRequestFilter(uri.getScheme(), uri.getHost(), requestFilter));
+    }
+
+    private static void addAuthorizationToRequestHeaderWithoutException(final MutableRequest mutableRequest,
+        final SpaceProviderConnection connection) {
+        try {
+            mutableRequest.getHeaderMap().put("Authorization", connection.getAuthorization());
+        } catch (CouldNotAuthorizeException e) {
+            NodeLogger.getLogger(Init.class).error("Could not authorize request.", e);
+        }
+    }
+
+    /**
+     * Disables the FE to send authorized requests to a certain Hub space provider.
+     */
+    private static void removeRequestFilterForSpaceProvider(final SpaceProvider spaceProvider) {
+        if (spaceProvider.getType() != TypeEnum.HUB) {
+            return; // Nothing to do for non-Hub space providers
+        }
+
+        var middleware = CEFPlugin.getMiddlewareService();
+        spaceProvider.getServerAddress() //
+            .map(URI::create) //
+            .ifPresent(uri -> middleware.removeRequestFilter(uri.getScheme(), uri.getHost()));
     }
 
 }

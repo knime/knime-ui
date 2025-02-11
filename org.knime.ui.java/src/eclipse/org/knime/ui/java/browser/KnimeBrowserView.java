@@ -97,7 +97,8 @@ public class KnimeBrowserView {
 
     private static final String SCHEME = "https";
 
-    static final String BASE_URL = SCHEME + "://" + DOMAIN_NAME;
+    @SuppressWarnings("javadoc")
+    public static final String BASE_URL = SCHEME + "://" + DOMAIN_NAME;
 
     private static final String APP_PAGE = BASE_URL + "/index.html";
 
