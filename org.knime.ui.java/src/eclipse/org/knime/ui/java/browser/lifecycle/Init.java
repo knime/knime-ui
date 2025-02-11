@@ -106,6 +106,7 @@ import org.knime.ui.java.util.NodeCollectionUtil;
 import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.equo.middleware.api.handler.IRequestFilter;
+import com.equo.middleware.api.resource.Frame;
 import com.equo.middleware.api.resource.MutableRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
