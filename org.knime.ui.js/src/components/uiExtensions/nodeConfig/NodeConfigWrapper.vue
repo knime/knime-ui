@@ -8,6 +8,7 @@ import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfigu
 import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 
@@ -21,6 +22,8 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   expand: [];
 }>();
+
+const { openKaiQuickInteractionMenu } = useFloatingMenusStore();
 
 const { activeProjectId: projectId } = storeToRefs(useApplicationStore());
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -86,6 +89,14 @@ watch(
 const { settings } = storeToRefs(useSettingsStore());
 
 const rightPanelWidth = computed(() => settings.value.nodeDialogSize);
+
+const onAskKai = () => {
+  openKaiQuickInteractionMenu({
+    props: {
+      nodeId: activeNodeId.value,
+    },
+  });
+};
 </script>
 
 <template>
@@ -104,6 +115,7 @@ const rightPanelWidth = computed(() => settings.value.nodeDialogSize);
       @execute="executeActiveNode"
       @discard="discardSettings"
       @expand="emit('expand')"
+      @ask-kai="onAskKai"
     >
       <template #loading-skeleton>
         <AppRightPanelSkeleton :width="rightPanelWidth" />

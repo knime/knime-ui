@@ -2,10 +2,12 @@
 import { computed, ref } from "vue";
 
 import { Button, FunctionButton } from "@knime/components";
+import AiIcon from "@knime/styles/img/icons/ai-general.svg";
 import ArrowsExpandIcon from "@knime/styles/img/icons/arrows-expand.svg";
 import { type APILayerDirtyState } from "@knime/ui-extension-renderer/api";
 
 import { type NativeNode, NodeState } from "@/api/gateway-api/generated-api";
+import { useIsKaiEnabled } from "@/composables/useIsKaiEnabled";
 import type { UIExtensionLoadingState } from "../common/types";
 
 import NodeConfigLoader from "./NodeConfigLoader.vue";
@@ -28,6 +30,7 @@ const emit = defineEmits<{
   execute: [];
   discard: [];
   expand: [];
+  askKai: [];
 }>();
 
 const loadingState = ref<UIExtensionLoadingState | null>(null);
@@ -35,6 +38,12 @@ const loadingState = ref<UIExtensionLoadingState | null>(null);
 const nodeState = computed(() => props.activeNode.state?.executionState);
 
 const isLoadingReady = computed(() => loadingState.value?.value === "ready");
+
+const { isKaiEnabled } = useIsKaiEnabled();
+
+const isNodeConfigured = computed(
+  () => nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED,
+);
 
 const showExecuteOnlyButton = computed(
   () =>
@@ -102,6 +111,18 @@ const onDiscard = () => {
             @click="onDiscard"
           >
             <strong>Discard</strong>
+          </Button>
+
+          <Button
+            v-if="isKaiEnabled"
+            with-border
+            compact
+            class="button ask-kai"
+            :disabled="!isNodeConfigured"
+            @click="emit('askKai')"
+          >
+            <AiIcon />
+            <strong>Ask K-AI</strong>
           </Button>
 
           <Button

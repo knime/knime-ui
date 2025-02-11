@@ -13,6 +13,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useSettingsStore } from "@/store/settings";
 import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import KaiQuickInteractionMenu from "../kai/KaiQuickInteractionMenu.vue";
 
 import ContextMenu from "./CanvasAnchoredComponents/ContextMenu/ContextMenu.vue";
 import PortTypeMenu from "./CanvasAnchoredComponents/PortTypeMenu/PortTypeMenu.vue";
@@ -30,7 +31,7 @@ const WorkflowCanvas = defineAsyncComponent({
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { activeWorkflow, isWritable } = storeToRefs(useWorkflowStore());
-const { portTypeMenu, quickActionMenu } = storeToRefs(useFloatingMenusStore());
+const { portTypeMenu, quickActionMenu, kaiQuickInteractionMenu } = storeToRefs(useFloatingMenusStore());
 const applicationStore = useApplicationStore();
 
 const { contextMenu, activeProjectId } = storeToRefs(applicationStore);
@@ -92,6 +93,13 @@ const closeContextMenu = (event?: MouseEvent) => {
       v-if="quickActionMenu.isOpen"
       v-bind="quickActionMenu.props!"
       v-on="quickActionMenu.events"
+    />
+
+    <!-- Currently only Node Config menu. In the future, Quick Build Mode and more Quick Interactions. -->
+    <KaiQuickInteractionMenu
+      v-if="kaiQuickInteractionMenu.isOpen"
+      v-bind="kaiQuickInteractionMenu.props!"
+      v-on="kaiQuickInteractionMenu.events"
     />
 
     <PortalTarget name="annotation-editor-toolbar" tag="div" />

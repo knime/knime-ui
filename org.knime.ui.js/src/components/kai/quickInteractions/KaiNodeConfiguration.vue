@@ -1,0 +1,175 @@
+<script setup lang="ts">
+import { computed, toRefs, watch } from "vue";
+
+import { Button } from "@knime/components";
+import GoBackIcon from "@knime/styles/img/icons/arrow-back.svg";
+import CancelIcon from "@knime/styles/img/icons/cancel-execution.svg";
+
+import type { XY } from "@/api/gateway-api/generated-api";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
+import { useFloatingMenusStore } from "@/store/workflow/floatingMenus";
+import { useKaiPanels } from "../panels/useKaiPanels";
+import QuickBuildInput from "../quickBuild/QuickBuildInput.vue";
+import QuickBuildProcessing from "../quickBuild/QuickBuildProcessing.vue";
+import QuickBuildResult from "../quickBuild/QuickBuildResult.vue";
+import { useKaiNodeConfiguration } from "../quickBuild/useKaiNodeConfiguration";
+
+export type QuickBuildMenuState = "PROCESSING" | "RESULT" | "INPUT" | "NONE";
+
+type Props = {
+  nodeId: string | null;
+  startPosition: XY;
+};
+
+const props = withDefaults(defineProps<Props>(), {
+  nodeId: null,
+});
+
+const emit = defineEmits<{
+  menuBack: [];
+  quickBuildStateChanged: [QuickBuildMenuState];
+}>();
+
+const { nodeId, startPosition } = toRefs(props);
+const { closeQuickActionMenu } = useFloatingMenusStore();
+
+const { panelComponent } = useKaiPanels();
+
+const nodeConfigurationStore = useNodeConfigurationStore();
+
+const {
+  errorMessage,
+  result,
+  sendMessage,
+  isProcessing,
+  lastUserMessage,
+  abortSendMessage,
+  statusUpdate,
+} = useKaiNodeConfiguration({ nodeId, startPosition });
+
+const menuState = computed<QuickBuildMenuState>(() => {
+  if (isProcessing.value) {
+    return "PROCESSING";
+  }
+
+  if (result.value) {
+    if (Object.keys(result.value).length === 0) {
+      // User cancelled the ai request.
+      return "NONE";
+    }
+
+    // Ideally, we would check for "SUCCESS" here. To be backwards compatible,
+    // we check for "INPUT_NEEDED" instead.
+    if (result.value.type !== "INPUT_NEEDED") {
+      nodeConfigurationStore.applySettings({ nodeId: props.nodeId as string });
+      return "RESULT";
+    }
+  }
+
+  return "INPUT";
+});
+
+watch(menuState, (menuState) => {
+  emit("quickBuildStateChanged", menuState);
+
+  if (menuState === "NONE") {
+    closeQuickActionMenu();
+  }
+});
+</script>
+
+<template>
+  <div class="quick-build-menu">
+    <div v-if="menuState === 'INPUT' || menuState === 'RESULT'" class="header">
+      K-AI Node Configuration Mode
+      <Button
+        v-if="menuState === 'INPUT'"
+        with-border
+        @click="$emit('menuBack')"
+      >
+        <GoBackIcon />
+      </Button>
+      <Button
+        v-else-if="menuState === 'RESULT'"
+        with-border
+        @click="closeQuickActionMenu"
+      >
+        <CancelIcon />
+      </Button>
+    </div>
+
+    <div class="main">
+      <component :is="panelComponent" v-if="panelComponent" class="panel" />
+      <template v-else>
+        <QuickBuildProcessing
+          v-if="menuState === 'PROCESSING'"
+          :status="statusUpdate?.message ?? null"
+          @abort="abortSendMessage"
+        />
+        <QuickBuildResult
+          v-if="menuState === 'RESULT'"
+          :message="result!.message"
+          :interaction-id="result!.interactionId"
+          @close="closeQuickActionMenu"
+        />
+        <QuickBuildInput
+          v-if="menuState === 'INPUT'"
+          :prompt="result?.message"
+          :last-user-message="lastUserMessage"
+          :error-message="errorMessage"
+          @send-message="sendMessage"
+        />
+      </template>
+    </div>
+  </div>
+</template>
+
+<style lang="postcss" scoped>
+@import url("@/assets/mixins.css");
+
+& .quick-build-menu {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8);
+  gap: var(--space-8);
+
+  & .header {
+    margin-top: calc(var(--space-8) * -1);
+    height: 42px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--knime-silver-sand);
+    font-weight: 500;
+    font-size: 16px;
+
+    & button {
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      border-color: var(--knime-silver-sand);
+
+      &:hover {
+        background-color: var(--knime-silver-sand);
+      }
+
+      & svg {
+        @mixin svg-icon-size 18;
+
+        margin-left: 5px;
+      }
+    }
+  }
+
+  & .main {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    & .panel {
+      min-height: 200px;
+    }
+  }
+}
+</style>

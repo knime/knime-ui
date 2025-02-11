@@ -36,7 +36,7 @@ type Props = FloatingContainerProperties & {
   /**
    * Which corner of the floating menu should stick to target position
    */
-  anchor?: "top-left" | "top-right" | "bottom-left";
+  anchor?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
   /**
    * A constant offset value added to `left` when computing the anchor position
@@ -129,13 +129,21 @@ const setAbsolutePosition = () => {
   const menuWidth = rootEl.value.offsetWidth;
   const menuHeight = rootEl.value.offsetHeight;
 
-  if (props.anchor === "top-right") {
-    left -= menuWidth + props.leftOffset;
+  switch (props.anchor) {
+    case "top-right":
+      left -= menuWidth;
+      break;
+    case "bottom-left":
+      top -= menuHeight;
+      break;
+    case "bottom-right":
+      left -= menuWidth;
+      top -= menuHeight;
+      break;
   }
 
-  if (props.anchor === "bottom-left") {
-    top -= menuHeight + props.topOffset;
-  }
+  top -= props.topOffset;
+  left -= props.leftOffset;
 
   if (props.preventOverflow) {
     // ensure the menu is always visible within the window

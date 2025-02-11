@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
+import type { KaiQuickInteractionMenuProps } from "@/components/kai/KaiQuickInteractionMenu.vue";
 import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useCanvasStore } from "@/store/canvas";
@@ -35,6 +36,14 @@ type FloatingMenusState = {
       menuClose?: () => void;
     };
   };
+
+  kaiQuickInteractionMenu: {
+    isOpen: boolean;
+    props: KaiQuickInteractionMenuProps | null;
+    events: {
+      menuClose?: () => void;
+    };
+  };
 };
 
 export const useFloatingMenusStore = defineStore("floatingMenus", {
@@ -55,6 +64,12 @@ export const useFloatingMenusStore = defineStore("floatingMenus", {
       props: null,
       events: {},
     },
+
+    kaiQuickInteractionMenu: {
+      isOpen: false,
+      props: null,
+      events: {},
+    },
   }),
   actions: {
     setPortTypeMenu(portTypeMenu: FloatingMenusState["portTypeMenu"]) {
@@ -65,12 +80,19 @@ export const useFloatingMenusStore = defineStore("floatingMenus", {
       this.quickActionMenu = quickActionMenu;
     },
 
+    setKaiQuickInteractionMenu(
+      kaiQuickInteractionMenu: FloatingMenusState["kaiQuickInteractionMenu"],
+    ) {
+      this.kaiQuickInteractionMenu = kaiQuickInteractionMenu;
+    },
+
     setPortTypeMenuPreviewPort(
       previewPort: FloatingMenusState["portTypeMenu"]["previewPort"],
     ) {
       this.portTypeMenu = { ...this.portTypeMenu, previewPort };
     },
 
+    // #region:portTypeMenu
     openPortTypeMenu({
       nodeId,
       startNodeId,
@@ -104,6 +126,7 @@ export const useFloatingMenusStore = defineStore("floatingMenus", {
       useCanvasStore().focus();
     },
 
+    // #region:quickActionMenu
     openQuickActionMenu({
       props,
       events,
@@ -181,6 +204,48 @@ export const useFloatingMenusStore = defineStore("floatingMenus", {
           },
         },
       };
+    },
+
+    // #region:kaiQuickInteraction
+    openKaiQuickInteractionMenu({
+      props,
+      events,
+    }: {
+      props: KaiQuickInteractionMenuProps;
+      events?: FloatingMenusState["kaiQuickInteractionMenu"]["events"];
+    }) {
+      if (canvasRendererUtils.isWebGLRenderer()) {
+        const canvasStore = useWebGLCanvasStore();
+
+        canvasStore.setCanvasAnchor({
+          isOpen: true,
+          anchor: { x: 0, y: 0 },
+        });
+      }
+
+      this.setKaiQuickInteractionMenu({
+        isOpen: true,
+        props,
+        events: events
+          ? events
+          : { menuClose: () => this.closeKaiQuickInteractionMenu() },
+      });
+    },
+
+    closeKaiQuickInteractionMenu() {
+      if (canvasRendererUtils.isWebGLRenderer()) {
+        const canvasStore = useWebGLCanvasStore();
+
+        canvasStore.clearCanvasAnchor();
+      }
+
+      this.setKaiQuickInteractionMenu({
+        isOpen: false,
+        props: null,
+        events: {},
+      });
+
+      useCanvasStore().focus();
     },
   },
 });
