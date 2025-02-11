@@ -142,8 +142,7 @@ final class Init {
 
         // Register preference listeners
         var softwareUpdateProgressListener = registerSoftwareUpdateProgressListener(eventConsumer);
-        registerPreferenceListeners(appStateUpdater, spaceProvidersManager, eventConsumer, nodeCollections, nodeRepo,
-            toastService);
+        registerPreferenceListeners(appStateUpdater, spaceProvidersManager, nodeCollections, nodeRepo);
 
         return new LifeCycleStateInternalAdapter(state) { // NOSONAR
 
@@ -173,8 +172,8 @@ final class Init {
     }
 
     private static void registerPreferenceListeners(final AppStateUpdater appStateUpdater,
-        final SpaceProvidersManager spaceProvidersManager, final EventConsumer eventConsumer,
-        final NodeCollections nodeCollections, final NodeRepository nodeRepo, final ToastService toastService) {
+        final SpaceProvidersManager spaceProvidersManager, final NodeCollections nodeCollections,
+        final NodeRepository nodeRepo) {
         // Update the app state when the node repository filter changes
         KnimeUIPreferences.setSelectedNodeCollectionChangeListener((oldValue, newValue) -> {
             if (!Objects.equals(oldValue, newValue)) {
@@ -227,9 +226,9 @@ final class Init {
         final ToastService toastService) {
         Consumer<String> loginErrorHandler = loginErrorMessage -> toastService
             .showToast(ShowToastEventEnt.TypeEnum.ERROR, "Login failed", loginErrorMessage, false);
-        var spaceProviders = new SpaceProvidersManager(loginErrorHandler, new LocalSpaceProvider(localSpace));
-        spaceProviders.update();
-        return spaceProviders;
+        var spaceProvidersManager = new SpaceProvidersManager(loginErrorHandler, new LocalSpaceProvider(localSpace));
+        spaceProvidersManager.update();
+        return spaceProvidersManager;
     }
 
     private static PreferencesProvider createPreferencesProvider() {
@@ -352,8 +351,8 @@ final class Init {
      * @return The space provider for the given Hub ID
      * @throws CouldNotAuthorizeException If the space provider could not be found or is not a Hub
      */
-    private static SpaceProvider getSpaceProviderOrThrow(final SpaceProvidersManager spaceProvidersManager, final String hubId)
-        throws CouldNotAuthorizeException {
+    private static SpaceProvider getSpaceProviderOrThrow(final SpaceProvidersManager spaceProvidersManager,
+        final String hubId) throws CouldNotAuthorizeException {
         var spaceProvider =
             Optional.ofNullable(spaceProvidersManager.getSpaceProviders(Key.defaultKey()).getSpaceProvider(hubId))
                 .orElseThrow(() -> new CouldNotAuthorizeException(
