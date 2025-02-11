@@ -129,8 +129,6 @@ export const useLifecycleStore = defineStore("lifecycle", {
         },
       });
 
-      await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
-
       await runInEnvironment({
         DESKTOP: async () => {
           // Get custom help menu entries
@@ -216,6 +214,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
       });
 
       const applicationState = await API.application.getState({});
+      await API.event.subscribeEvent({ typeId: "AppStateChangedEventType" });
 
       // needs to be done before 'replaceApplicationState'
       if (applicationState.spaceProviders) {
