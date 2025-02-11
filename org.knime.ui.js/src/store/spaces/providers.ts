@@ -78,14 +78,9 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       this.spaceProviders = spaceProviders;
     },
 
-    setAllSpaceProviders(
-      spaceProvidersMetaInfo: Record<string, SpaceProvider>,
-    ) {
+    setAllSpaceProviders(spaceProvidersMetaInfo: SpaceProvider[]) {
       const spaceProviders = Object.fromEntries(
-        Object.entries(spaceProvidersMetaInfo).map(([key, value]) => [
-          key,
-          { ...value, spaceGroups: [] },
-        ]),
+        spaceProvidersMetaInfo.map((sp) => [sp.id, { ...sp, spaceGroups: [] }]),
       );
       const connectedProviderIds = Object.values(spaceProviders)
         .filter(

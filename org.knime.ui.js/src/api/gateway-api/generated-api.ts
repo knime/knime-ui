@@ -560,11 +560,11 @@ export interface AppState {
      */
     isSubnodeLockingEnabled?: boolean;
     /**
-     * A map of all available space providers.
-     * @type {{ [key: string]: SpaceProvider; }}
+     * A list of all available space providers.
+     * @type {Array<SpaceProvider>}
      * @memberof AppState
      */
-    spaceProviders?: { [key: string]: SpaceProvider; };
+    spaceProviders?: Array<SpaceProvider>;
 
 }
 

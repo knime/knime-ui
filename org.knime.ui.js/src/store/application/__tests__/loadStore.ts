@@ -10,9 +10,7 @@ const mockedAPI = deepMocked(API);
 
 export const applicationState = {
   openProjects: [{ projectId: "foo", name: "bar" }],
-  spaceProviders: {
-    hub: {},
-  },
+  spaceProviders: [],
 };
 
 export const loadStore = () => {

@@ -3,6 +3,7 @@ import { flushPromises } from "@vue/test-utils";
 import { API } from "@api";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import {
   createSpace,
   createSpaceGroup,
@@ -21,38 +22,29 @@ describe("spaces::providers", () => {
 
   describe("setAllSpaceProviders", () => {
     it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
-      const spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
-        hub1: createSpaceProvider(
-          {
-            id: "hub1",
-            connected: true,
-            name: "Hub 1",
-            connectionMode: "AUTHENTICATED",
-            type: SpaceProviderNS.TypeEnum.HUB,
-          },
-          false,
-        ),
-        hub2: createSpaceProvider(
-          {
-            id: "hub2",
-            connected: true,
-            name: "Hub 2",
-            connectionMode: "AUTHENTICATED",
-            type: SpaceProviderNS.TypeEnum.HUB,
-          },
-          false,
-        ),
-        hub3: createSpaceProvider(
-          {
-            id: "hub3",
-            connected: false,
-            name: "Hub 3",
-            connectionMode: "AUTHENTICATED",
-            type: SpaceProviderNS.TypeEnum.HUB,
-          },
-          false,
-        ),
-      };
+      const spaceProviders: SpaceProvider[] = [
+        {
+          id: "hub1",
+          connected: true,
+          name: "Hub 1",
+          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+          type: SpaceProvider.TypeEnum.HUB,
+        },
+        {
+          id: "hub2",
+          connected: true,
+          name: "Hub 2",
+          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+          type: SpaceProvider.TypeEnum.HUB,
+        },
+        {
+          id: "hub3",
+          connected: false,
+          name: "Hub 3",
+          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+          type: SpaceProvider.TypeEnum.HUB,
+        },
+      ];
 
       const mockGroup = createSpaceGroup({
         id: "group-1",
@@ -81,15 +73,15 @@ describe("spaces::providers", () => {
       });
 
       expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({
-        ...spaceProviders.hub1,
+        ...spaceProviders[0],
         spaceGroups: [mockGroup],
       });
       expect(spaceProvidersStore.spaceProviders!.hub2).toEqual({
-        ...spaceProviders.hub2,
+        ...spaceProviders[1],
         spaceGroups: [mockGroup],
       });
       expect(spaceProvidersStore.spaceProviders!.hub3).toEqual({
-        ...spaceProviders.hub3,
+        ...spaceProviders[2],
         spaceGroups: [],
       });
       expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
@@ -104,38 +96,30 @@ describe("spaces::providers", () => {
     });
 
     it("should handle errors when loading provider data", async () => {
-      const spaceProviders: Record<string, SpaceProviderNS.SpaceProvider> = {
-        hub1: createSpaceProvider(
-          {
-            id: "hub1",
-            connected: true,
-            name: "Hub 1",
-            connectionMode: "AUTHENTICATED",
-            type: SpaceProviderNS.TypeEnum.HUB,
-          },
-          false,
-        ),
-        hub2: createSpaceProvider(
-          {
-            id: "hub2",
-            connected: true,
-            name: "Hub 2",
-            connectionMode: "AUTHENTICATED",
-            type: SpaceProviderNS.TypeEnum.HUB,
-          },
-          false,
-        ),
-        hub3: createSpaceProvider(
-          {
-            id: "hub3",
-            connected: false,
-            name: "Hub 3",
-            connectionMode: "AUTHENTICATED",
-            type: SpaceProviderNS.TypeEnum.HUB,
-          },
-          false,
-        ),
-      };
+      const spaceProviders: SpaceProvider[] = [
+        {
+          id: "hub1",
+          connected: true,
+          name: "Hub 1",
+          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+          type: SpaceProvider.TypeEnum.HUB,
+        },
+        {
+          id: "hub2",
+          connected: true,
+          name: "Hub 2",
+
+          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+          type: SpaceProvider.TypeEnum.HUB,
+        },
+        {
+          id: "hub3",
+          connected: false,
+          name: "Hub 3",
+          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+          type: SpaceProvider.TypeEnum.HUB,
+        },
+      ];
 
       const mockGroup = createSpaceGroup({
         id: "group-1",
@@ -171,16 +155,16 @@ describe("spaces::providers", () => {
       });
 
       expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({
-        ...spaceProviders.hub1,
+        ...spaceProviders[0],
         spaceGroups: [mockGroup],
       });
       expect(spaceProvidersStore.spaceProviders!.hub2).toEqual({
-        ...spaceProviders.hub2,
+        ...spaceProviders[1],
         connected: false,
         spaceGroups: [],
       });
       expect(spaceProvidersStore.spaceProviders!.hub3).toEqual({
-        ...spaceProviders.hub3,
+        ...spaceProviders[2],
         spaceGroups: [],
       });
       expect(mockedAPI.space.getSpaceGroups).toHaveBeenCalledWith({
