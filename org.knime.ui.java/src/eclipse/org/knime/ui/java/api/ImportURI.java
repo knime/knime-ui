@@ -72,6 +72,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.knime.core.node.KNIMEComponentInformation;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.extension.ConfigurableNodeFactoryMapper;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.NodeCreationType;
 import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
@@ -102,7 +103,6 @@ import org.knime.workbench.core.imports.RepoObjectImport.RepoObjectType;
 import org.knime.workbench.core.imports.URIImporterFinder;
 import org.knime.workbench.core.imports.UpdateSiteInfo;
 import org.knime.workbench.editor2.InstallMissingNodesJob;
-import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 import org.knime.workbench.ui.p2.actions.AbstractP2Action;
 
 /**
