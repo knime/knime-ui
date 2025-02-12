@@ -59,9 +59,9 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
-import org.knime.gateway.impl.project.DefaultProject;
+import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
-import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.testing.util.WorkflowManagerUtil;
@@ -95,7 +95,7 @@ public class MostRecentlyUsedProjectsTest {
     }
 
     /**
-     * Tests {@link MostRecentlyUsedProjects#add(org.knime.gateway.impl.project.Project)}
+     * Tests {@link MostRecentlyUsedProjects#add(Project)}
      *
      * @throws IOException
      */
@@ -103,10 +103,10 @@ public class MostRecentlyUsedProjectsTest {
     void testAddProject() throws IOException {
         var mruProjects = new MostRecentlyUsedProjects();
         var wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        mruProjects.add(DefaultProject.builder(wfm).build());
+        mruProjects.add(CachedProject.builder().setWfm(wfm).build());
         assertThat(mruProjects.get()).as("projects without origin are omitted").isEmpty();
         var origin = createOrigin("1", "2", "3");
-        mruProjects.add(DefaultProject.builder(wfm).setOrigin(origin).build());
+        mruProjects.add(CachedProject.builder().setWfm(wfm).setOrigin(origin).build());
         assertThat(mruProjects.get()).hasSize(1);
         assertThat(mruProjects.get().get(0).name()).isEqualTo("workflow");
         assertThat(mruProjects.get().get(0).origin()).isSameAs(origin);
@@ -160,7 +160,7 @@ public class MostRecentlyUsedProjectsTest {
     }
 
     /**
-     * Creates a {@link Project.Origin} instance for testing purposes.
+     * Creates a {@link Origin} instance for testing purposes.
      *
      * @param providerId
      * @param spaceId

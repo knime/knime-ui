@@ -66,7 +66,8 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -100,10 +101,17 @@ class CloseProjectTest {
 
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
-
-        pm.addProject(Project.of(wfm1, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId1"));
-        pm.addProject(Project.of(wfm2, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId2"));
-        pm.openAndCacheProject("projectId1");
+        var origin = Origin.of("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+        pm.addProject(CachedProject.builder() //
+            .setWfm(wfm1) //
+            .setOrigin(origin) //
+            .setId("projectId1") //
+            .build());
+        pm.addProject(CachedProject.builder() //
+            .setWfm(wfm2) //
+            .setOrigin(origin) //
+            .setId("projectId2") //
+            .build());
         pm.setProjectActive("projectId1");
         assertThat(pm.getProjectIds()).hasSize(2);
 
@@ -134,7 +142,7 @@ class CloseProjectTest {
         var wfm2 = m_wfms.get(1);
         wfm2.setDirty();
         assertThat(wfm2.isDirty()).isTrue();
-        ProjectManager.getInstance().openAndCacheProject("projectId2");
+        ProjectManager.getInstance().getProject("projectId2").orElseThrow().getWorkflowManager();
 
         CloseProject.forceCloseProjects(List.of("projectId1", "projectId2", "non-existing-id"));
 
@@ -150,7 +158,7 @@ class CloseProjectTest {
     @AfterEach
     void cleanUp() {
         var pm = ProjectManager.getInstance();
-        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        pm.getProjectIds().forEach(pm::removeProject);
         DesktopAPI.disposeDependencies();
     }
 

@@ -51,7 +51,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 
@@ -65,15 +65,15 @@ public final class LocalSpaceUtil {
     }
 
     /**
-     * Obtain the {@link org.knime.gateway.impl.project.Project.Origin} of a workflow project on the local file system
+     * Obtain the {@link Origin} of a workflow project on the local file system
      *
      * @param absolutePath The path of the workflow project
      * @param localSpace the local space instance
-     * @return The {@link org.knime.gateway.impl.project.Project.Origin} of the workflow project.
+     * @return The {@link Origin} of the workflow project.
      */
-    public static Project.Origin getLocalOrigin(final Path absolutePath, final LocalSpace localSpace) {
+    public static Origin getLocalOrigin(final Path absolutePath, final LocalSpace localSpace) {
         var itemId = localSpace.getItemId(absolutePath);
-        return new Project.Origin() { // NOSONAR
+        return new Origin() { // NOSONAR
             @Override
             public String getProviderId() {
                 return SpaceProvider.LOCAL_SPACE_PROVIDER_ID;

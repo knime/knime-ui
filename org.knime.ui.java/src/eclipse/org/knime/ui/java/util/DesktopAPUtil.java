@@ -94,6 +94,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.UpdateDetector;
@@ -132,19 +133,25 @@ public final class DesktopAPUtil {
         // utility
     }
 
+    public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
+        final IProgressMonitor monitor) {
+        return fetchAndLoadWorkflowWithTask(space, itemId, monitor, null);
+    }
+
     /**
      * Loads the workflow for the given item-id from the given space while reporting progress to the given monitor.
      *
      * @param space the space
      * @param itemId the item ID of the workflow
      * @param monitor progress monitor
+     * @param version
      * @return the loaded workflow or {@code null} if it couldn't be loaded
      */
     public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
-        final IProgressMonitor monitor) {
+        final IProgressMonitor monitor, final VersionId version) {
         monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
         final var exec = DesktopAPUtil.toExecutionMonitor(monitor);
-        final var path = space.toLocalAbsolutePath(exec, itemId).orElse(null);
+        final var path = space.toLocalAbsolutePath(exec, itemId, version).orElse(null);
         if (path == null) {
             return null;
         }

@@ -67,7 +67,6 @@ import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
 import org.knime.js.cef.CEFPlugin;
-import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.api.DesktopAPI;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
@@ -276,7 +275,7 @@ class LifeCycleTest {
         ServiceInstances.disposeAllServiceInstancesAndDependencies();
         DesktopAPI.disposeDependencies();
         var wpm = ProjectManager.getInstance();
-        wpm.getProjectIds().forEach(id -> wpm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        wpm.getProjectIds().forEach(wpm::removeProject);
     }
 
 }

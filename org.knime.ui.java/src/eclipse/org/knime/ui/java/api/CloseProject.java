@@ -52,8 +52,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -81,9 +79,6 @@ public final class CloseProject {
     static boolean closeProject(final String projectIdToClose, final String nextProjectId) {
         var projectManager = DesktopAPI.getDeps(ProjectManager.class);
         projectManager.setProjectActive(nextProjectId);
-        if (nextProjectId != null) {
-            projectManager.openAndCacheProject(nextProjectId);
-        }
         var saveAndCloseState = saveAndCloseProjectsInteractively(Collections.singletonList(projectIdToClose),
             DesktopAPI.getDeps(EventConsumer.class));
         var success = saveAndCloseState == SaveAndCloseProjects.State.SUCCESS;
@@ -120,15 +115,7 @@ public final class CloseProject {
     static boolean closeProject(final String projectId) {
         var projectManager = ProjectManager.getInstance();
         var success = new AtomicBoolean(true);
-        projectManager.removeProject(projectId, wfm -> {
-            try {
-                CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
-            } catch (InterruptedException e) { // NOSONAR
-                NodeLogger.getLogger(SaveAndCloseProjects.class)
-                    .warn("Problem while waiting for the workflow '" + projectId + "' to be cancelled", e);
-                success.set(false);
-            }
-        });
+        projectManager.removeProject(projectId);
         return success.get();
     }
 

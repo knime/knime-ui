@@ -63,7 +63,8 @@ import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -116,26 +117,13 @@ class OpenProjectTest {
         assertThat(projectIds).hasSize(1);
         var project = pm.getProject(projectIds.iterator().next()).get();
         assertThat(project.getName()).isEqualTo("simple");
-        m_wfm = project.loadWorkflowManager();
+        m_wfm = project.getWorkflowManager();
         assertThat(m_wfm).isNotNull();
         assertThat(m_wfm.getName()).startsWith("simple");
         assertThat(mruProjects.get()).hasSize(1);
         assertThat(mruProjects.get().get(0).name()).isEqualTo("simple");
 
         verify(appStateUpdateListener).run();
-    }
-
-    @Test
-    void testCreateWorkflowProject() throws IOException {
-        m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var project = Project.of(m_wfm, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId");
-        assertThat(project.getName()).isEqualTo("workflow");
-        assertThat(project.getID()).isEqualTo("projectId");
-        assertThat(project.loadWorkflowManager()).isSameAs(m_wfm);
-        var origin = project.getOrigin().orElseThrow();
-        assertThat(origin.getItemId()).isEqualTo("itemId");
-        assertThat(origin.getSpaceId()).isEqualTo("spaceId");
-        assertThat(origin.getProviderId()).isEqualTo("providerId");
     }
 
     @Test
@@ -150,8 +138,14 @@ class OpenProjectTest {
         DesktopAPI.injectDependency(mruProjects);
 
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
-        var project = Project.of(m_wfm, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId");
-        OpenProject.registerProjectAndSetActive(project, m_wfm, SpaceProviderEnt.TypeEnum.LOCAL);
+
+        var origin = Origin.of("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+        var project = CachedProject.builder() //
+            .setWfm(m_wfm) //
+            .setOrigin(origin) //
+            .setId("projectId1") //
+            .build();
+        OpenProject.registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.LOCAL);
 
         var projectIds = pm.getProjectIds();
         assertThat(projectIds).as("Exactly one project is registered").hasSize(1);
@@ -168,7 +162,7 @@ class OpenProjectTest {
     @AfterEach
     void cleanUp() {
         var pm = ProjectManager.getInstance();
-        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        pm.getProjectIds().forEach(pm::removeProject);
         DesktopAPI.disposeDependencies();
     }
 

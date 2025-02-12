@@ -59,9 +59,12 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collector;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -72,7 +75,8 @@ import org.knime.core.node.workflow.NodeTimer.GlobalNodeStats.WorkflowType;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.core.ui.wrapper.WorkflowManagerWrapper;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.Project.Origin;
+import org.knime.gateway.impl.project.Origin;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
@@ -97,14 +101,7 @@ final class ProjectAPI {
     }
 
     /**
-     * Opens the workflow or component project either in both, the Classic UI and the Modern/Web UI if the classic UI is
-     * active (the WorkflowEditor is used in that case to open the workflow). Or it opens and loads the project
-     * exclusively in the Modern UI. Those projects won't be available in the classic UI when switching to it.
-     *
-     * @param spaceId
-     * @param itemId
-     * @param spaceProviderId {@code local} if absent
-     * @throws IOException If something goes wrong opening the project
+     * @see OpenProject#openProjectWithProgress(String, String, String, IProgressMonitor)
      */
     @API
     static void openProject(final String spaceId, final String itemId, final String spaceProviderId)
@@ -163,23 +160,21 @@ final class ProjectAPI {
      */
     @API
     static void setProjectActiveAndEnsureItsLoaded(final String projectId) {
-        var pm = ProjectManager.getInstance();
-        var wfm = pm.getCachedProject(projectId).orElse(null);
+        var projectManager = ProjectManager.getInstance();
+        projectManager.setProjectActive(projectId);
+        var project = projectManager.getProject(projectId).orElseThrow();
+        if (project.getWorkflowManagerIfLoaded().isPresent()) {
+            return;
+        }
+        var wfm = project.getWorkflowManager();
         if (wfm == null) {
-            // workflow hasn't been loaded, yet -> open it
-            wfm = pm.openAndCacheProject(projectId).orElse(null);
-            if (wfm != null) {
-                NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
-            }
-        }
-        if (wfm != null) {
-            pm.setProjectActive(projectId);
-        } else {
-            pm.removeProject(projectId, w -> {});
+            projectManager.removeProject(projectId);
             NodeLogger.getLogger(ProjectAPI.class)
-                .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
+                    .error("Workflow with ID '" + projectId + "' couldn't be loaded. Workflow closed.");
             DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+            return;
         }
+        NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, WorkflowType.LOCAL);
     }
 
     /**
@@ -215,7 +210,10 @@ final class ProjectAPI {
      */
     @API
     static void openWorkflowConfiguration(final String projectId) {
-        final var projectWfm = DesktopAPI.getDeps(ProjectManager.class).openAndCacheProject(projectId).orElseThrow();
+        final var projectWfm = DesktopAPI.getDeps(ProjectManager.class) //
+                .getProject(projectId) //
+                .flatMap(Project::getWorkflowManagerIfLoaded) //
+                .orElseThrow(() -> new NoSuchElementException("WorkflowManager of project is not loaded"));
         try {
             var dialog = new WrappedNodeDialog(Display.getDefault().getActiveShell(),
                 WorkflowManagerWrapper.wrap(projectWfm), null, null);

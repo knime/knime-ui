@@ -66,13 +66,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.util.PathUtils;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
-import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
-import org.knime.testing.util.WorkflowManagerUtil;
 import org.knime.ui.java.persistence.AppStatePersistor;
 import org.knime.ui.java.util.MostRecentlyUsedProjects.RecentlyUsedProject;
 
@@ -176,7 +175,7 @@ public class AppStatePersistorTest {
         AppStatePersistor.saveAppState(appStateString);
         assertAppStateFile(VALID_APP_STATE_WITH_PROJECT);
 
-        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        pm.getProjectIds().forEach(pm::removeProject);
 
         AppStatePersistor.loadAppState(pm, mruProjects, m_space);
         var appStateStringNew = AppStatePersistor.serializeAppState(pm, mruProjects, m_space);
@@ -248,7 +247,7 @@ public class AppStatePersistorTest {
     @AfterEach
     void cleanUp() {
         var pm = ProjectManager.getInstance();
-        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        pm.getProjectIds().forEach(pm::removeProject);
     }
 
     @SuppressWarnings("javadoc")

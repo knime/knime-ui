@@ -61,6 +61,8 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
@@ -79,26 +81,31 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
  */
 class ProjectAPITest {
 
-    private WorkflowManager m_wfm;
-
     @Test
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
-        m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
+        WorkflowManager m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var wpm = ProjectManager.getInstance();
-        wpm.addProject(Project.of(m_wfm, "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, "projectId"));
+        var origin = Origin.of("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+        var projectId = "projectId";
+        var project = CachedProject.builder() //
+            .setWfm(m_wfm) //
+            .setOrigin(origin) //
+            .setId(projectId) //
+            .build();
+        wpm.addProject(project);
 
-        ProjectAPI.setProjectActiveAndEnsureItsLoaded("projectId");
+        ProjectAPI.setProjectActiveAndEnsureItsLoaded(projectId);
 
-        assertThat(wpm.getCachedProject("projectId")).isNotNull();
-        assertThat(wpm.isActiveProject("projectId")).isTrue();
+        assertThat(wpm.getProject(projectId)).isNotEmpty();
+        assertThat(wpm.getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded)).isNotEmpty();
+        assertThat(wpm.isActiveProject(projectId)).isTrue();
     }
 
     @Test
     void testUpdateAndGetMostRecentlyUsedProjects() throws IOException {
         var mruProjects = new MostRecentlyUsedProjects();
         var localSpace = LocalSpaceUtilTest.createLocalSpace();
-        var proj1 =
-            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
+        var proj1 = new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
         var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         var itemId = localSpace.getItemId(localSpace.getRootPath().resolve("simple"));
         var proj3 = new RecentlyUsedProject("name3", createOrigin("local", "local", itemId), OffsetDateTime.MAX);
@@ -136,8 +143,7 @@ class ProjectAPITest {
     @Test
     void testRemoveMostRecentlyUsedProject() {
         var mruProjects = new MostRecentlyUsedProjects();
-        var proj1 =
-            new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
+        var proj1 = new RecentlyUsedProject("name1", createOrigin("local", "local", "iid"), OffsetDateTime.MAX);
         var proj2 = new RecentlyUsedProject("name2", createOrigin("pid", "sid", "iid2"), OffsetDateTime.MAX);
         mruProjects.add(proj1);
         mruProjects.add(proj2);
@@ -183,7 +189,7 @@ class ProjectAPITest {
 
     @AfterEach
     void cleanUp() {
-        ProjectManager.getInstance().removeProject("projectId", WorkflowManagerUtil::disposeWorkflow);
+        ProjectManager.getInstance().removeProject("projectId" );
         DesktopAPI.disposeDependencies();
     }
 

@@ -73,6 +73,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
+import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -116,7 +117,8 @@ final class SaveProjectCopy {
                 final var message = String.format("No local workflow path found for <%s>", projectId);
                 return new NoSuchElementException(message);
             });
-        final var wfm = project.loadWorkflowManager();
+        final var wfm = project.getWorkflowManagerIfLoaded() //
+            .orElseThrow(() -> new NoSuchElementException("Project is not loaded"));
         final var oldContext = CheckUtils.checkArgumentNotNull(wfm.getContextV2());
         try {
             final var newContext = pickDestinationAndGetNewContext(oldContext);
@@ -226,26 +228,26 @@ final class SaveProjectCopy {
         if (nameCollisions.isEmpty()) {
             return NameCollisionHandling.NOOP;
         } else {
-            return NameCollisionChecker.openDialogToSelectCollisionHandling(localSpace, workflowGroupItemId,
-                nameCollisions, UsageContext.SAVE).orElse(null);
+            return NameCollisionChecker
+                .openDialogToSelectCollisionHandling(localSpace, workflowGroupItemId, nameCollisions, UsageContext.SAVE)
+                .orElse(null);
         }
     }
 
     private static void saveAndReplaceWorkflowProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId, final String projectSVG,
         final LocalSpace localSpace) {
-        final var project =
-            Project.of(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
-        saveAndReplaceProject(oldContext, newContext, project,
+        final var projectOfCopy = CachedProject.of(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
+        saveAndReplaceProject(oldContext, newContext, projectOfCopy,
             monitor -> saveWorkflowCopy(newContext, monitor, wfm, projectSVG));
     }
 
     private static void saveAndReplaceComponentProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
         final LocalSpace localSpace) {
-        final var project =
-            Project.of(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
-        saveAndReplaceProject(oldContext, newContext, project, monitor -> saveComponentCopy(monitor, wfm, newContext));
+        final var projectOfCopy = CachedProject.of(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
+        saveAndReplaceProject(oldContext, newContext, projectOfCopy,
+            monitor -> saveComponentCopy(monitor, wfm, newContext));
     }
 
     /**
@@ -315,7 +317,7 @@ final class SaveProjectCopy {
                 FileUtil.deleteRecursively(srcPath.toFile());
             }
             // Provider type can only be Local here
-            OpenProject.registerProjectAndSetActive(project, wfm, SpaceProviderEnt.TypeEnum.LOCAL);
+            OpenProject.registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.LOCAL);
         };
 
         final Runnable errorHandler = () -> {

@@ -50,7 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -61,8 +60,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
-import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.browser.KnimeBrowserView;
@@ -112,31 +110,14 @@ public final class TestingUtil {
     private static void addToProjectManagerForTesting(final List<String> projectIds, final String activeProjectId,
         final Supplier<LocalSpace> localSpaceSupplier) {
         var wpm = ProjectManager.getInstance();
-        projectIds.stream().forEach(projectId -> wpm.addProject(new Project() { // NOSONAR
-
-            @Override
-            public WorkflowManager loadWorkflowManager() {
-                return loadWorkflowForTesting(projectId);
-            }
-
-            @Override
-            public String getName() {
-                return projectId;
-            }
-
-            @Override
-            public String getID() {
-                return projectId;
-            }
-
-            @Override
-            public Optional<Origin> getOrigin() {
-                return Optional
-                    .of(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpaceSupplier.get()));
-            }
-        }));
+        projectIds.forEach(projectId -> wpm.addProject( //
+            CachedProject.builder() //
+                .setWfmLoader(() -> loadWorkflowForTesting(projectId)) //
+                .setName(projectId) //
+                .setId(projectId) //
+                .setOrigin(LocalSpaceUtil.getLocalOrigin(getProjectFile(projectId).toPath(), localSpaceSupplier.get())) //
+                .build()));
         if (activeProjectId != null) {
-            wpm.openAndCacheProject(activeProjectId);
             wpm.setProjectActive(activeProjectId);
         }
 
@@ -162,14 +143,7 @@ public final class TestingUtil {
         if (loadedWorkflowsForTesting != null) {
             for (String id : loadedWorkflowsForTesting) {
                 var wpm = ProjectManager.getInstance();
-                wpm.openAndCacheProject(id).ifPresent(wfm -> {
-                    try {
-                        CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
-                    } catch (InterruptedException ex) { // NOSONAR should never happen
-                        throw new IllegalStateException(ex);
-                    }
-                });
-                wpm.removeProject(id, w -> {});
+                wpm.removeProject(id);
             }
             loadedWorkflowsForTesting.clear();
         }

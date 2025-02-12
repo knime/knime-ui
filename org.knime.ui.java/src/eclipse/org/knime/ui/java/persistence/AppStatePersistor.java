@@ -57,14 +57,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collector;
+import java.util.function.Supplier;
 
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
+import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
-import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.DesktopAPUtil;
@@ -260,40 +262,28 @@ public final class AppStatePersistor {
         var originAndRelativePath = deserializeOrigin(projectJson.get(ORIGIN), localSpace);
         var absolutePath = localSpace.getRootPath().resolve(originAndRelativePath.getSecond().orElseThrow());
         var origin = originAndRelativePath.getFirst();
-        return new Project() { // NOSONAR
 
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public String getID() {
-                return projectId;
-            }
-
-            @Override
-            public Optional<Origin> getOrigin() {
-                return Optional.of(origin);
-            }
-
-            @Override
-            public WorkflowManager loadWorkflowManager() {
-                if (!Files.exists(absolutePath)) {
-                    DesktopAPUtil.showWarning("No workflow project found",
+        Supplier<WorkflowManager> getWfm = () -> {
+            if (!Files.exists(absolutePath)) {
+                DesktopAPUtil.showWarning("No workflow project found",
                         "No workflow project found at " + absolutePath);
-                    return null;
-                }
-                return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
-                    var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.getItemId(), monitor);
-                    if (wfm == null) {
-                        DesktopAPUtil.showWarning("Failed to load workflow",
-                            "The workflow at '" + absolutePath + "' couldn't be loaded.");
-                    }
-                    return wfm;
-                }).orElse(null);
+                return null;
             }
+            return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
+                var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.getItemId(), monitor);
+                if (wfm == null) {
+                    DesktopAPUtil.showWarning("Failed to load workflow",
+                            "The workflow at '" + absolutePath + "' couldn't be loaded.");
+                }
+                return wfm;
+            }).orElse(null);
         };
+
+        return CachedProject.builder()
+                .setWfmLoader(getWfm)
+                .setName(name)
+                .setId(projectId)
+                .build();
     }
 
     private static boolean hasOriginAndRelativePath(final JsonNode projectJson) {

@@ -175,7 +175,7 @@ public final class ImportURI {
     private static Optional<NamedItemVersion> getWorkflowVersion(final RepoObjectImport repoObjectImport,
         final HubSpaceLocationInfo hubSpaceLocationInfo) {
         var itemVersion = hubSpaceLocationInfo.getItemVersion();
-        if (!itemVersion.isPresent()) {
+        if (itemVersion.isEmpty()) {
             return Optional.empty();
         }
 

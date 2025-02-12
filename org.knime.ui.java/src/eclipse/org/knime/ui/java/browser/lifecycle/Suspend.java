@@ -49,8 +49,6 @@
 package org.knime.ui.java.browser.lifecycle;
 
 import org.eclipse.core.runtime.jobs.Job;
-import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.service.ServiceInstances;
@@ -87,17 +85,7 @@ final class Suspend {
 
     private static void disposeAllProjects(final ProjectManager pm) {
         // dispose all projects that are used by the UI
-        for (var projectId : pm.getProjectIds()) {
-            pm.getCachedProject(projectId).ifPresent(t -> {
-                try {
-                    CoreUtil.cancelAndCloseLoadedWorkflow(t);
-                } catch (InterruptedException e) { // NOSONAR
-                    NodeLogger.getLogger(Suspend.class).error(e);
-                }
-            });
-            pm.removeProject(projectId, w -> {
-            });
-        }
+        pm.disposeAll();
 
         // (triggers to) dispose all projects used as workflow service
         WorkflowServiceProjects.removeAllProjects();

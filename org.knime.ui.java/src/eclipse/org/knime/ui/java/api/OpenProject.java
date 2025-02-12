@@ -48,6 +48,7 @@ package org.knime.ui.java.api;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.knime.core.node.ExecutionMonitor;
@@ -59,11 +60,13 @@ import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.core.util.hub.NamedItemVersion;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.impl.project.DefaultProject;
+import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.project.WorkflowServiceProjects;
 import org.knime.gateway.impl.webui.AppStateUpdater;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
@@ -82,6 +85,7 @@ import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Kai Franze, KNIME GmbH, Germany
  */
+@SuppressWarnings("java:S1602") // braces on one-expression lambda
 final class OpenProject {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(OpenProject.class);
@@ -103,7 +107,7 @@ final class OpenProject {
         try {
             DesktopAPUtil.consumerWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER,
                 monitor -> openProjectWithProgress(spaceProviderId, spaceId, itemId, monitor));
-        } catch (Exception e) {  // NOSONAR
+        } catch (Exception e) { // NOSONAR
             LOGGER.error("Failed to open project", e);
             throw new IOException(e.getMessage(), e);
         }
@@ -140,11 +144,10 @@ final class OpenProject {
             .filter(HubSpaceLocationInfo.class::isInstance)//
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
-        final var origin =
-            Project.Origin.of(locationInfo, wfm, selectedVersion).orElse(null);
-        final var project = DefaultProject.builder(wfm).setOrigin(origin).build();
+        final var origin = Origin.of(locationInfo, wfm, selectedVersion).orElse(null);
+        final var project = CachedProject.builder().setWfm(wfm).setOrigin(origin).build();
         // Provider type can only be Hub here
-        registerProjectAndSetActive(project, wfm, SpaceProviderEnt.TypeEnum.HUB);
+        registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.HUB);
 
         return true;
     }
@@ -181,16 +184,12 @@ final class OpenProject {
             throw new OpenProjectException("The project could not be found.", e);
         }
 
-        var projectAndWfm = getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType);
-        if (projectAndWfm == null) {
-            projectAndWfm = loadProject(space, spaceProviderId, spaceId, itemId, projectType, monitor);
-        }
-        if (projectAndWfm == null) {
-            throw new OpenProjectException("The project could not be loaded.");
-        }
+        var project = getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType) //
+            .or(() -> loadProject(space, spaceProviderId, spaceId, itemId, projectType, monitor)) //
+            .orElseThrow(() -> new OpenProjectException("The project could not be loaded."));
 
         final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
-        registerProjectAndSetActive(projectAndWfm.project, projectAndWfm.wfm, providerType);
+        registerProjectAndSetActive(project, providerType);
     }
 
     @SuppressWarnings("serial")
@@ -210,8 +209,7 @@ final class OpenProject {
      * Registers the project with the {@link ProjectManager}, sets it as active, adds it to the most recently used and
      * updates the app state.
      */
-    static void registerProjectAndSetActive(final Project project, final WorkflowManager wfm,
-        final SpaceProviderEnt.TypeEnum providerType) {
+    static void registerProjectAndSetActive(final Project project, final SpaceProviderEnt.TypeEnum providerType) {
         var pm = DesktopAPI.getDeps(ProjectManager.class);
         pm.addProject(project);
         pm.setProjectActive(project.getID());
@@ -223,8 +221,10 @@ final class OpenProject {
         DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
 
         // Instrumentation
-        var wfType = providerType == SpaceProviderEnt.TypeEnum.LOCAL ? WorkflowType.LOCAL : WorkflowType.REMOTE;
-        NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
+        project.getWorkflowManagerIfLoaded().ifPresent(wfm -> {
+            var wfType = providerType == SpaceProviderEnt.TypeEnum.LOCAL ? WorkflowType.LOCAL : WorkflowType.REMOTE;
+            NodeTimer.GLOBAL_TIMER.incWorkflowOpening(wfm, wfType);
+        });
     }
 
     /*
@@ -234,39 +234,39 @@ final class OpenProject {
      *
      *  @return the project and workflow-manager or null if none
      */
-    private static ProjectAndWorkflowManager getAndUpdateWorkflowServiceProject(final Space space,
-        final String spaceProviderId, final String spaceId, final String itemId, final ProjectTypeEnum projectType) {
-        if (space instanceof LocalSpace localSpace) {
-            var pm = DesktopAPI.getDeps(ProjectManager.class);
-            var path = localSpace.toLocalAbsolutePath(new ExecutionMonitor(), itemId).orElse(null);
-            var project = WorkflowServiceProjects.getProject(path).flatMap(pm::getProject).orElse(null);
-            if (project != null) {
-                var wfm = pm.getCachedProject(project.getID()).orElse(null);
-                if (wfm != null) {
-                    // update project to set origin and mark it to be used by the UI
-                    var projectWithOrigin =
-                        Project.of(wfm, spaceProviderId, spaceId, itemId, projectType, project.getID());
-                    pm.addProject(projectWithOrigin);
-                    return new ProjectAndWorkflowManager(projectWithOrigin, wfm);
-                }
-            }
+    private static Optional<Project> getAndUpdateWorkflowServiceProject(final Space space, final String spaceProviderId,
+        final String spaceId, final String itemId, final ProjectTypeEnum projectType) {
+        if (!(space instanceof LocalSpace localSpace)) {
+            return Optional.empty();
         }
-        return null;
+        var projectManager = DesktopAPI.getDeps(ProjectManager.class);
+        return localSpace.toLocalAbsolutePath(new ExecutionMonitor(), itemId) //
+            .flatMap(WorkflowServiceProjects::getProjectIdAt) //
+            .flatMap(projectManager::getProject) //
+            .flatMap(originalProject -> {
+                return originalProject.getWorkflowManagerIfLoaded().map(wfm -> {
+                    var updatedProject = CachedProject.builder() //
+                            .setWfm(wfm) //
+                            .setId(originalProject.getID()) //
+                            .setOrigin(Origin.of(spaceProviderId, spaceId, itemId, projectType)) //
+                            .build();
+                    projectManager.addProject(updatedProject);
+                    return updatedProject;
+                });
+            });
     }
 
-    private static ProjectAndWorkflowManager loadProject(final Space space, final String spaceProviderId,
-        final String spaceId, final String itemId, final ProjectTypeEnum projectType, final IProgressMonitor monitor) {
-        // see caller -- pretty sure this can be simplified/flattened
-        var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor);
-        if (wfm == null) {
-            return null;
-        }
-        var project = Project.of(wfm, spaceProviderId, spaceId, itemId, projectType);
-        return new ProjectAndWorkflowManager(project, wfm);
-    }
-
-    private static record ProjectAndWorkflowManager(Project project, WorkflowManager wfm) {
-        //
+    private static Optional<Project> loadProject(final Space space, final String spaceProviderId, final String spaceId,
+        final String itemId, final ProjectTypeEnum projectType, final IProgressMonitor monitor) {
+        var loadedWorkflow =
+            Optional.ofNullable(DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, VersionId.currentState()));
+        return loadedWorkflow.map(wfm -> { //
+            return CachedProject.builder() //
+                .setWfm(wfm) //
+                .setOrigin(Origin.of(spaceProviderId, spaceId, itemId, projectType)) //
+                .getVersion(version -> DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, version)) //
+                .build();
+        });
     }
 
     private static WorkflowManager fetchAndLoadProjectWithProgress(final RepoObjectImport repoObjectImport) {
@@ -274,8 +274,7 @@ final class OpenProject {
             repoObjectImport.getKnimeURI() //
         );
         var locationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
-        return DesktopAPUtil
-            .downloadWorkflowWithProgress(fileStore, locationInfo) //
+        return DesktopAPUtil.downloadWorkflowWithProgress(fileStore, locationInfo) //
             .map(RemoteWorkflowInput::getWorkflowContext) //
             .flatMap(DesktopAPUtil::loadWorkflowWithProgress) //
             .orElse(null);

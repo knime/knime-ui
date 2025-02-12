@@ -68,6 +68,7 @@ import org.eclipse.ui.progress.IProgressService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -149,10 +150,10 @@ public final class SaveAndCloseProjects {
         final EventConsumer eventConsumer) {
         var projectManager = ProjectManager.getInstance();
         var dirtyProjectIds = projectIds.stream() //
-            .filter(id -> projectManager.getCachedProject(id).map(WorkflowManager::isDirty).orElse(false)) //
+            .filter(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).map(WorkflowManager::isDirty).orElse(false)) //
             .toArray(String[]::new);
         var dirtyWfms = Arrays.stream(dirtyProjectIds) //
-            .flatMap(id -> projectManager.getCachedProject(id).stream()) //
+            .flatMap(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).stream()) //
             .toArray(WorkflowManager[]::new);
         var shallSaveProjects = promptWhetherToSaveProjects(dirtyWfms);
         return switch (shallSaveProjects) {
@@ -203,7 +204,7 @@ public final class SaveAndCloseProjects {
         for (var i = 0; i < projectIds.length; i++) {
             var projectId = projectIds[i];
             var projectSVG = svgs[i];
-            var projectWfm = ProjectManager.getInstance().getCachedProject(projectId).orElse(null);
+            var projectWfm = ProjectManager.getInstance().getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
             var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm);
             if (!success) {
                 firstFailure.compareAndExchange(null, Optional.of(projectId));

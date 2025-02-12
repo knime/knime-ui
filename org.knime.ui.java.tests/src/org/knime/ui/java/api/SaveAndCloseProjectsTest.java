@@ -64,7 +64,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.Project;
+import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.mockito.ArgumentMatchers;
@@ -87,9 +88,13 @@ class SaveAndCloseProjectsTest {
         var pm = ProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
-            pm.addProject(
-                Project.of(wfms.get(i - 1), "providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW, projectId));
-            pm.openAndCacheProject(projectId);
+            var origin = Origin.of("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+            var project = CachedProject.builder() //
+                .setWfm(wfms.get(i - 1)) //
+                .setOrigin(origin) //
+                .setId(projectId) //
+                .build();
+            pm.addProject(project);
         }
 
         var progressService = mock(IProgressService.class);
@@ -119,7 +124,7 @@ class SaveAndCloseProjectsTest {
     @AfterEach
     void cleanUp() {
         var pm = ProjectManager.getInstance();
-        pm.getProjectIds().forEach(id -> pm.removeProject(id, WorkflowManagerUtil::disposeWorkflow));
+        pm.getProjectIds().forEach(pm::removeProject);
         DesktopAPI.disposeDependencies();
     }
 }

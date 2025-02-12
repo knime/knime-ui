@@ -58,8 +58,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import org.knime.core.node.util.CheckUtils;
+import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
-import org.knime.gateway.impl.project.Project.Origin;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 
 /**
