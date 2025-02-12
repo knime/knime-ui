@@ -16,7 +16,7 @@ const doMount = (customHelpMenuEntries = {}) => {
   return { wrapper, mockedStores };
 };
 
-const numberOfDefaultHelpMenuEntries = 9;
+const numberOfDefaultHelpMenuEntries = 10;
 
 describe("HelpMenu.vue", () => {
   it("doesn't show custom help menu entries if non present in the application store", () => {

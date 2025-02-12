@@ -14,6 +14,7 @@ import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
 import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
 import Steps123Icon from "@knime/styles/img/icons/steps-1-3.svg";
+import TeamPlan from "@knime/styles/img/icons/team-group.svg";
 
 import InfoIcon from "@/assets/info.svg";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
@@ -99,6 +100,12 @@ const helpMenuItem = computed<MenuItem>(() => ({
       separator: true,
       icon: HubIcon,
       href: buildExternalUrl("https://hub.knime.com/"),
+    },
+    {
+      text: "Learn more about the KNIME Team Plan",
+      separator: true,
+      icon: TeamPlan,
+      href: buildExternalUrl("https://knime.com/team-plan"),
     },
 
     // Add custom help menu entries if present
