@@ -4699,6 +4699,12 @@ export interface WorkflowInfo {
      */
     providerType?: WorkflowInfo.ProviderTypeEnum;
     /**
+     * The version identifier. &#x60;null&#x60; corresponds to the current-state (working area).
+     * @type {string}
+     * @memberof WorkflowInfo
+     */
+    version?: string;
+    /**
      *
      * @type {JobManager}
      * @memberof WorkflowInfo
@@ -5736,16 +5742,18 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {boolean} [includeInteractionInfo] Whether to enclose information that is required when the user is interacting with the returned workflow. E.g. the allowed actions (reset, execute, cancel) for contained nodes and the entire workflow itself.
+         * @param {string} [version] The version identifier. &#x60;null&#x60; corresponds to the current-state (working area).
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
          * @throws {NodeNotFoundException} The requested node was not found.
          */
         getWorkflow(
-        	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean  }
+        	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean,  version?: string  }
         ): Promise<WorkflowSnapshot> {
             const defaultParams = { 
                 includeInteractionInfo: null,
+                version: null,
             }
             
             return rpcClient.call('WorkflowService.getWorkflow', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
