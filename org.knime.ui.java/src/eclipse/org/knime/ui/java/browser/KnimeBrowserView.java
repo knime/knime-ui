@@ -50,6 +50,7 @@ import static org.knime.ui.java.util.DesktopAPUtil.runUiEventLoopUntilValueAvail
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -289,5 +290,12 @@ public class KnimeBrowserView {
 			return false;
 		}
 	}
+
+    /**
+     * @return Optional URL the externally served web app is running on, if set.
+     */
+    public static Optional<String> getExternalAppURL() {
+        return Optional.ofNullable(System.getProperty(DEV_URL_PROP));
+    }
 
 }

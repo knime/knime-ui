@@ -377,13 +377,12 @@ final class Init {
             return;
         }
 
+        var origin = KnimeBrowserView.getExternalAppURL().orElse(KnimeBrowserView.BASE_URL);
         IRequestFilter requestFilter = mutableRequest -> {
-            if (!mutableRequest.getFrame().isMain()) {
+            if (!mutableRequest.getFrame().isMain() || !mutableRequest.getFrame().getCurrentUrl().startsWith(origin)) {
                 return;
             }
-            if (!mutableRequest.getFrame().getCurrentUrl().startsWith(KnimeBrowserView.BASE_URL)) {
-                return;
-            }
+
             spaceProvider.getConnection(false) //
                 .ifPresent(connection -> addAuthorizationToRequestHeaderWithoutException(mutableRequest, connection));
         };
@@ -408,7 +407,7 @@ final class Init {
      */
     private static void removeRequestFilterForSpaceProvider(final SpaceProvider spaceProvider) {
         if (spaceProvider.getType() != TypeEnum.HUB) {
-            return; // Nothing to do for non-Hub space providers
+            return;
         }
 
         var middleware = CEFPlugin.getMiddlewareService();
