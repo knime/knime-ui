@@ -15,7 +15,8 @@ export type ShortcutGroups =
   | "componentAndMetanode"
   | "selectedNode"
   | "workflowAnnotations"
-  | "workflowEditor";
+  | "workflowEditor"
+  | "development";
 
 export type HotkeyText = { text: string };
 export type Hotkeys = Array<HotkeysNS.Hotkey | HotkeyText>;

@@ -51,6 +51,7 @@ const groupNamesMap: Record<ShortcutGroupsWithOthers, string> = {
   workflowAnnotations: "Workflow annotations",
   workflowEditor: "Workflow editor actions",
   others: "Others",
+  development: "Experimental actions for development purposes",
 };
 
 const getGroupHeading = (key: ShortcutGroupsWithOthers) => {

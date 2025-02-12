@@ -7,6 +7,7 @@ import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
 import BrushIcon from "@knime/styles/img/icons/brush.svg";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 
+import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
 import SelectionModeIcon from "@/assets/selection-mode.svg";
 import { isDesktop } from "@/environment";
@@ -20,6 +21,7 @@ import {
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { canvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
@@ -43,6 +45,7 @@ const { getSelectedNodes: selectedNodes } = storeToRefs(useSelectionStore());
 const canvasModesStore = useCanvasModesStore();
 const { hasAnnotationModeEnabled, hasPanModeEnabled, hasSelectionModeEnabled } =
   storeToRefs(canvasModesStore);
+const { activeProjectProvider } = storeToRefs(useSpaceProvidersStore());
 
 const webglCanvasStore = useWebGLCanvasStore();
 
@@ -115,6 +118,8 @@ const toolbarButtons = computed(() => {
   }
 
   const hasNodesSelected = selectedNodes.value.length > 0;
+  const isHubProject =
+    activeProjectProvider.value?.type === SpaceProvider.TypeEnum.HUB;
 
   const visibleItems: Partial<Record<ShortcutName, boolean>> = {
     save: !isUnknownProject.value(activeProjectId.value) && isDesktop,
@@ -138,7 +143,11 @@ const toolbarButtons = computed(() => {
     createMetanode: hasNodesSelected,
     createComponent: hasNodesSelected,
 
+    // Component editing
     openLayoutEditor: $shortcuts.isEnabled("openLayoutEditor"),
+
+    // Development
+    getVersions: isHubProject,
   };
 
   return (
