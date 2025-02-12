@@ -4,6 +4,7 @@ import { defineComponent } from "vue";
 import { type Store, createStore } from "vuex";
 
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation.ts";
+import { isDesktop } from "@/environment";
 import { pageBuilderStoreConfig } from "@/store/pageBuilderStore.ts";
 
 const pageBuilderResource = {
@@ -15,7 +16,7 @@ const pageBuilderResource = {
       projectId,
       "/org/knime/core/ui/pagebuilder/lib/PageBuilder.umd.js",
       // eslint-disable-next-line no-undefined
-      "https://org.knime.js.pagebuilder",
+      isDesktop ? "https://org.knime.js.pagebuilder" : undefined,
     ),
   // dummy vue component to show if loading failed
   fallback: defineComponent({
