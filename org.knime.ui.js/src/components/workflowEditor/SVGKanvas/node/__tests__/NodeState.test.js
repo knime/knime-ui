@@ -52,7 +52,7 @@ describe("NodeState.vue", () => {
       "IDLE",
       [
         { fill: $colors.trafficLight.red, stroke: undefined },
-        { fill: "none", stroke: $colors.darkeningMask },
+        { fill: "none", stroke: $colors.trafficLight.redBorder },
         { fill: $colors.trafficLight.inactive, stroke: undefined },
         { fill: "none", stroke: $colors.trafficLight.inactiveBorder },
         { fill: $colors.trafficLight.inactive, stroke: undefined },
@@ -65,7 +65,7 @@ describe("NodeState.vue", () => {
         { fill: $colors.trafficLight.inactive, stroke: undefined },
         { fill: "none", stroke: $colors.trafficLight.inactiveBorder },
         { fill: $colors.trafficLight.yellow, stroke: undefined },
-        { fill: "none", stroke: $colors.darkeningMask },
+        { fill: "none", stroke: $colors.trafficLight.yellowBorder },
         { fill: $colors.trafficLight.inactive, stroke: undefined },
         { fill: "none", stroke: $colors.trafficLight.inactiveBorder },
       ],
@@ -78,7 +78,7 @@ describe("NodeState.vue", () => {
         { fill: $colors.trafficLight.inactive, stroke: undefined },
         { fill: "none", stroke: $colors.trafficLight.inactiveBorder },
         { fill: $colors.trafficLight.green, stroke: undefined },
-        { fill: "none", stroke: $colors.darkeningMask },
+        { fill: "none", stroke: $colors.trafficLight.greenBorder },
       ],
     ],
     // TODO NXT-279: for now halted is the same state as executed
@@ -90,7 +90,7 @@ describe("NodeState.vue", () => {
         { fill: $colors.trafficLight.inactive, stroke: undefined },
         { fill: "none", stroke: $colors.trafficLight.inactiveBorder },
         { fill: $colors.trafficLight.green, stroke: undefined },
-        { fill: "none", stroke: $colors.darkeningMask },
+        { fill: "none", stroke: $colors.trafficLight.greenBorder },
       ],
     ],
     [

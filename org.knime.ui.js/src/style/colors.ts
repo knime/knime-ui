@@ -40,12 +40,15 @@ export const connectorColors = {
 };
 
 export const trafficLight = {
-  red: "hsl(339.1, 88.4%, 43.9%)",
+  red: "hsl(357, 72%, 45%)",
+  redBorder: "hsl(348, 94%, 21%)",
   yellow: knimeColors.Yellow,
-  green: "hsl(127.5, 50%, 47.1%)",
+  yellowBorder: "hsla(0, 0%, 0%, 54%)",
+  green: "hsl(107, 43%, 55%)",
+  greenBorder: "hsl(116, 47%, 26%)",
   blue: "hsl(206, 69.7%, 55.9%)",
   inactive: "hsl(0, 0%, 100%)",
-  inactiveBorder: "hsl(0, 0%, 48.2%)",
+  inactiveBorder: "hsl(0, 0%, 73%)",
   background: "hsl(192, 6.8%, 85.7%)",
 };
 
