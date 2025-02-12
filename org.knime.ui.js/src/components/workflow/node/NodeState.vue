@@ -114,6 +114,16 @@ const fillColor = (active: boolean, index: number) => {
     : $colors.trafficLight.inactive;
 };
 
+const strokeColor = (active: boolean, index: number) => {
+  const activeColor = (["redBorder", "yellowBorder", "greenBorder"] as const)[
+    index
+  ];
+
+  return active
+    ? $colors.trafficLight[activeColor]
+    : $colors.trafficLight.inactiveBorder;
+};
+
 const { elemRef: tooltipRef } = useTooltip({ tooltip });
 </script>
 
@@ -135,9 +145,6 @@ const { elemRef: tooltipRef } = useTooltip({ tooltip });
           :cx="6 + 10 * index"
           cy="6"
           r="4"
-          :class="
-            active ? `traffic-light-${['red', 'yellow', 'green'][index]}` : null
-          "
           :fill="fillColor(active, index)"
         />
         <circle
@@ -145,9 +152,7 @@ const { elemRef: tooltipRef } = useTooltip({ tooltip });
           cy="6"
           r="3.5"
           fill="none"
-          :stroke="
-            active ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder
-          "
+          :stroke="strokeColor(active, index)"
         />
       </template>
     </g>

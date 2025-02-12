@@ -120,7 +120,7 @@ export default {
               trafficLight === 'yellow' || trafficLight === 'green' ? 'h-5' : ''
             }`"
             fill="none"
-            :stroke="$colors.darkeningMask"
+            :stroke="$colors.trafficLight[`${trafficLight}Border`]"
             :transform="trafficLight === 'yellow' ? 'rotate(90)' : null"
           />
         </g>
