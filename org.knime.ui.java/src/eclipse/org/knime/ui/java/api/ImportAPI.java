@@ -65,7 +65,6 @@ import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.commands.WorkflowCommand;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.workbench.editor2.commands.CreateMetaNodeTemplateCommand;
 
 /**
@@ -91,7 +90,7 @@ final class ImportAPI {
     @API
     static String[] importWorkflows(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
         var itemIds = IMPORT_WORKFLOWS.importItems(space, itemId);
         if (itemIds != null && itemIds.length > 0) {
             NodeTimer.GLOBAL_TIMER.incWorkflowImport();
@@ -107,7 +106,7 @@ final class ImportAPI {
     @API
     static String[] importFiles(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
         return IMPORT_FILES.importItems(space, itemId);
     }
 
@@ -136,8 +135,7 @@ final class ImportAPI {
     @API
     static String importComponent(final String spaceProviderId, final String spaceId, final String itemId,
         final String projectId, final String workflowId, final double x, final double y) {
-        var spaceProviders = DesktopAPI.getDeps(SpaceProviders.class);
-        var space = spaceProviders.getSpace(spaceProviderId, spaceId);
+        var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
         var uri = space.toKnimeUrl(itemId);
         var isRemoteLocation = !SpaceProvider.LOCAL_SPACE_PROVIDER_ID.equals(spaceProviderId);
         return importComponent(projectId, workflowId, uri, isRemoteLocation, x, y);

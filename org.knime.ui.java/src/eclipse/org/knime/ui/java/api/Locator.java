@@ -56,11 +56,10 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 /**
  * Locate things in the Space Providers / Spaces / Items system.
  */
-@SuppressWarnings("javadoc") // trivial constructors
 final class Locator {
 
     private Locator() {
-
+        // Static helper class
     }
 
     /**

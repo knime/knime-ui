@@ -83,7 +83,6 @@ import org.knime.gateway.impl.webui.spaces.Space.NameCollisionHandling;
 import org.knime.gateway.impl.webui.spaces.Space.TransferResult;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
@@ -176,7 +175,7 @@ final class SpaceAPI {
     @API
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
         final String destWorkflowGroupItemId, final String context) {
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = getSpace(spaceProviderId, spaceId);
         return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, UsageContext.valueOf(context)) //
             .map(NameCollisionHandling::toString) //
             .orElse("CANCEL");
@@ -415,9 +414,8 @@ final class SpaceAPI {
     @API
     static String getAncestorInfo(final String providerId, final String spaceId, final String itemId)
         throws IOException {
-        final var providers = DesktopAPI.getDeps(SpaceProviders.class);
+        final var space = getSpace(providerId, spaceId);
         try {
-            final var space = providers.getSpace(providerId, spaceId);
             final var ancestorItemIds = space.getAncestorItemIds(itemId);
             // The known project name may be outdated. Return the new name to check this e.g. on "Reveal in Space
             // Explorer" and display a notification.
@@ -508,7 +506,7 @@ final class SpaceAPI {
         final var isWorkflowGroup = destInfo.isWorkflowGroup();
         // else it's a Workflow (due to Validator)
 
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = getSpace(spaceProviderId, spaceId);
 
         if (!isWorkflowGroup) {
             // workflow, ask for overwrite
@@ -613,10 +611,13 @@ final class SpaceAPI {
     @API
     static String editSchedule(final String spaceProviderId, final String spaceId, final String itemId,
         final String scheduleId) throws ResourceAccessException {
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = getSpace(spaceProviderId, spaceId);
         return space.editScheduleInfo(itemId, scheduleId);
     }
 
+    /**
+     * @throws NoSuchElementException If the space provider could not be found
+     */
     static SpaceProvider getSpaceProvider(final String spaceProviderId) {
         final var spaceProviderManager = DesktopAPI.getDeps(SpaceProvidersManager.class);
         if (spaceProviderManager == null) {
@@ -627,6 +628,14 @@ final class SpaceAPI {
             throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
         }
         return spaceProvider;
+    }
+
+    /**
+     * @throws NoSuchElementException If the space provider or space could not be found
+     */
+    static Space getSpace(final String spaceProviderId, final String spaceId) {
+        final var spaceProvider = getSpaceProvider(spaceProviderId);
+        return spaceProvider.getSpace(spaceId);
     }
 
 }

@@ -77,7 +77,6 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.entity.AppStateEntityFactory;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -203,7 +202,7 @@ final class ProjectAPI {
      */
     @API
     static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
         space.openRemoteExecution(itemId);
     }
 

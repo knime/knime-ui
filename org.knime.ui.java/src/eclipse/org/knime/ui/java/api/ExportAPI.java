@@ -54,7 +54,6 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.impl.webui.spaces.Space;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceFileStore;
 import org.knime.workbench.explorer.view.ContentObject;
 import org.knime.workbench.explorer.view.actions.export.WorkflowExportWizard;
@@ -77,7 +76,7 @@ final class ExportAPI {
      */
     @API
     static boolean exportSpaceItem(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
         final var success = openExportWizard(space, itemId);
         if (success) {
             NodeTimer.GLOBAL_TIMER.incWorkflowExport();

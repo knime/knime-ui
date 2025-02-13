@@ -72,7 +72,6 @@ import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
-import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.ui.p2.actions.InvokeInstallSiteAction;
 import org.knime.workbench.ui.p2.actions.InvokeUpdateAction;
@@ -262,7 +261,7 @@ final class EclipseUIAPI {
     @API
     static void openPermissionsDialog(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        final var space = DesktopAPI.getDeps(SpaceProviders.class).getSpace(spaceProviderId, spaceId);
+        final var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
         space.openPermissionsDialogForItem(itemId); // Method call might throw a `NotImplementedException` exception.
     }
 
