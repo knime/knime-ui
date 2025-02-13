@@ -133,6 +133,9 @@ public final class DesktopAPUtil {
         // utility
     }
 
+    /**
+     * @see this#fetchAndLoadWorkflowWithTask(Space, String, IProgressMonitor, VersionId) 
+     */
     public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
         final IProgressMonitor monitor) {
         return fetchAndLoadWorkflowWithTask(space, itemId, monitor, null);
