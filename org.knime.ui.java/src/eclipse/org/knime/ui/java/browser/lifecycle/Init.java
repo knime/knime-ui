@@ -377,7 +377,7 @@ final class Init {
             return;
         }
 
-        var origin = KnimeBrowserView.getExternalAppURL().orElse(KnimeBrowserView.BASE_URL);
+        var origin = KnimeBrowserView.getDevURL().orElse(KnimeBrowserView.BASE_URL);
         IRequestFilter requestFilter = mutableRequest -> {
             if (!mutableRequest.getFrame().isMain() || !mutableRequest.getFrame().getCurrentUrl().startsWith(origin)) {
                 return;

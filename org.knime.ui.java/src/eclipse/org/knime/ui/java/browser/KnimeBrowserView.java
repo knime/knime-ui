@@ -294,7 +294,7 @@ public class KnimeBrowserView {
     /**
      * @return Optional URL the externally served web app is running on, if set.
      */
-    public static Optional<String> getExternalAppURL() {
+    public static Optional<String> getDevURL() {
         return Optional.ofNullable(System.getProperty(DEV_URL_PROP));
     }
 
