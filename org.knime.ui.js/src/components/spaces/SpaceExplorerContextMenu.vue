@@ -32,6 +32,7 @@ import {
   isLocalProvider,
   isServerProvider,
 } from "@/store/spaces/util";
+import { valueOrEmpty } from "@/util/valueOrEmpty";
 
 interface Props {
   createRenameOption: FileExplorerContextMenu.CreateDefaultMenuOption;
@@ -69,9 +70,6 @@ const handleItemClick = (item: SpaceExplorerContentMenuItem) => {
   // use file explorers default impl
   props.onItemClick(item);
 };
-
-const valueOrEmpty = <T,>(condition: boolean, value: T) =>
-  condition ? [value] : [];
 
 const fileExplorerContextMenuItems = computed<SpaceExplorerContentMenuItem[]>(
   () => {

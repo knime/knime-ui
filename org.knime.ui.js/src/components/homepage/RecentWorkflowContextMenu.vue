@@ -11,6 +11,7 @@ import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { valueOrEmpty } from "@/util/valueOrEmpty";
 
 export type ActionMenuItem = MenuItem & {
   id: string;
@@ -35,9 +36,6 @@ const handleItemClick = (item: MenuItem & { execute?: () => void }) => {
   }
   props.onItemClick(item);
 };
-
-const valueOrEmpty = <T,>(condition: boolean, value: T) =>
-  condition ? [value] : [];
 
 const recentWorkflowContextMenuItems = computed(() => {
   const recentWorkflow = props.anchor.item.meta?.recentWorkflow;

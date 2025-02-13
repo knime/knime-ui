@@ -6,9 +6,10 @@ import {
   onMounted,
   ref,
 } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 
-import { HintProvider, ToastStack } from "@knime/components";
+import { HintProvider, ToastStack, useBeforeUnload } from "@knime/components";
 
 import BlockUi from "@/components/application/BlockUi.vue";
 import CreateWorkflowModal from "@/components/application/CreateWorkflowModal.vue";
@@ -23,6 +24,7 @@ import { useApplicationStore } from "@/store/application/application";
 import { useGlobalLoaderStore } from "@/store/application/globalLoader";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
+import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
@@ -42,6 +44,12 @@ const AppHeader = defineAsyncComponent({
   loader: () => import("@/components/application/AppHeader.vue"),
 });
 
+const UploadProgressPanel = defineAsyncComponent(() =>
+  import("@knime/components").then(
+    ({ UploadProgressPanel }) => UploadProgressPanel,
+  ),
+);
+
 const loaded = ref(false);
 const error = ref<{ message: string; stack?: string } | null>(null);
 
@@ -53,6 +61,17 @@ const globalLoaderStore = useGlobalLoaderStore();
 const lifecycleStore = useLifecycleStore();
 const applicationSettingsStore = useApplicationSettingsStore();
 const uiControls = useUIControlsStore();
+const spaceUploadsStore = useSpaceUploadsStore();
+const {
+  hasActiveUpload,
+  hasPendingUploads,
+  isPreparingUpload,
+  uploadItems,
+  totalFilesBeingPrepared,
+} = storeToRefs(spaceUploadsStore);
+const isUploadPanelExpanded = ref(true);
+
+useBeforeUnload({ hasUnsavedChanges: () => hasPendingUploads.value });
 
 const setContentHeight = () => {
   let mainContentHeight = "100vh";
@@ -201,6 +220,20 @@ const onCloseError = () => {
       @dismiss="onDismissUpdateBanner"
     />
 
+    <div
+      v-if="hasActiveUpload || isPreparingUpload"
+      class="floating-uploads-panel"
+    >
+      <UploadProgressPanel
+        v-model:expanded="isUploadPanelExpanded"
+        :placeholder-items="totalFilesBeingPrepared"
+        :items="uploadItems"
+        @remove="spaceUploadsStore.removeItem($event.id)"
+        @close="spaceUploadsStore.closeUploadsPanel()"
+        @cancel="spaceUploadsStore.cancelUpload($event.id)"
+      />
+    </div>
+
     <ConfirmDialog />
 
     <CreateWorkflowModal />
@@ -249,5 +282,12 @@ const onCloseError = () => {
 
 .toast-stack {
   z-index: calc(v-bind("$zIndices.layerToasts"));
+}
+
+.floating-uploads-panel {
+  z-index: v-bind("$zIndices.layerFloatingWindows");
+  position: fixed;
+  bottom: var(--space-16);
+  right: var(--space-16);
 }
 </style>

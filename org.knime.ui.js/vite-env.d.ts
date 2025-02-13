@@ -2,3 +2,23 @@
 /// <reference types="@knime/styles/config/svg.d.ts" />
 /// <reference types="vite/client" />
 /// <reference types="vite-svg-loader" />
+
+// For more info on this env variables see .env.example
+interface ImportMetaEnv {
+  readonly VITE_APP_PORT: string;
+  readonly VITE_LOG_LEVEL: string;
+
+  readonly VITE_BROWSER_DEV_MODE: string;
+  readonly VITE_BROWSER_DEV_MODE_EMBEDDED: string;
+  readonly VITE_BROWSER_DEV_WS_URL: string;
+
+  readonly VITE_CANVAS_DEBUG: string;
+
+  readonly VITE_HUB_API_URL: string;
+  readonly VITE_HUB_AUTH_USER: string;
+  readonly VITE_HUB_AUTH_PASS: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

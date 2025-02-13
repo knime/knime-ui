@@ -4,6 +4,7 @@ import type {
   Project,
   WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
+import { useApplicationStore } from "../application/application";
 
 import {
   cachedLocalSpaceProjectId,
@@ -153,5 +154,15 @@ export const useSpaceCachingStore = defineStore("space.caching", {
 
         return state.workflowGroupCache.get(cacheKey)!;
       },
+
+    activeProjectPath: (state) => {
+      const { activeProjectId } = useApplicationStore();
+
+      if (!activeProjectId) {
+        return null;
+      }
+
+      return state.projectPath[activeProjectId];
+    },
   },
 });

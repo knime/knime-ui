@@ -2,6 +2,7 @@ import consola, { type LogLevel, LogLevels, type LogType } from "consola";
 
 const getLogLevelFromEnv = (): LogLevel => {
   const fromStorage = localStorage.getItem("KNIME_LOG_LEVEL");
+  // @ts-ignore
   const level: LogType =
     fromStorage ?? import.meta.env.VITE_LOG_LEVEL ?? "warn";
 

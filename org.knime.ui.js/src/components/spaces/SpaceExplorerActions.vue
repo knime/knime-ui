@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
+import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
 import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
@@ -20,12 +21,15 @@ import {
   buildMoveToSpaceMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
+import { isBrowser } from "@/environment";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
+import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { isLocalProvider } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
+import { valueOrEmpty } from "@/util/valueOrEmpty";
 
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
 import type { ActionMenuItem } from "./remoteMenuItems";
@@ -138,6 +142,14 @@ const actions = computed(() => {
   };
 
   return [
+    ...valueOrEmpty(isBrowser, {
+      id: "upload",
+      text: "Upload",
+      icon: CloudUploadIcon,
+      execute: () => {
+        useSpaceUploadsStore().startUpload();
+      },
+    }),
     createWorkflowAction.value,
     {
       id: "createFolder",
