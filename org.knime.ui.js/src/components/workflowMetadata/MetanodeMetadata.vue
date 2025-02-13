@@ -6,15 +6,16 @@ import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScroll
 
 import MetadataDescription from "./MetadataDescription.vue";
 import MetadataPlaceholder from "./MetadataPlaceholder.vue";
+import ProjectMetadata from "@/components/workflowMetadata/ProjectMetadata.vue";
 
 interface Props {
   workflowId: string;
-  parentDescription: string;
+  projectMetadata: ProjectMetadata;
 }
 
 const props = defineProps<Props>();
 
-const hasDescription = computed(() => Boolean(props.parentDescription));
+const hasDescription = computed(() => Boolean(props.projectMetadata));
 </script>
 
 <template>
@@ -26,8 +27,8 @@ const hasDescription = computed(() => Boolean(props.parentDescription));
     <SidebarPanelScrollContainer>
       <template v-if="hasDescription">
         <MetadataDescription
-          :original-description="parentDescription"
-          :model-value="parentDescription"
+          :original-description="projectMetadata"
+          :model-value="projectMetadata"
           :editable="false"
           :is-legacy="false"
         />
