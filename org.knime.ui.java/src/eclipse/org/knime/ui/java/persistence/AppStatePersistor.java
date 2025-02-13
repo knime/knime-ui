@@ -265,25 +265,25 @@ public final class AppStatePersistor {
 
         Supplier<WorkflowManager> getWfm = () -> {
             if (!Files.exists(absolutePath)) {
-                DesktopAPUtil.showWarning("No workflow project found",
-                        "No workflow project found at " + absolutePath);
+                DesktopAPUtil.showWarning("No workflow project found", "No workflow project found at " + absolutePath);
                 return null;
             }
             return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
                 var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.getItemId(), monitor);
                 if (wfm == null) {
                     DesktopAPUtil.showWarning("Failed to load workflow",
-                            "The workflow at '" + absolutePath + "' couldn't be loaded.");
+                        "The workflow at '" + absolutePath + "' couldn't be loaded.");
                 }
                 return wfm;
             }).orElse(null);
         };
 
-        return CachedProject.builder()
-                .setWfmLoader(getWfm)
-                .setName(name)
-                .setId(projectId)
-                .build();
+        return CachedProject.builder() //
+            .setWfmLoader(getWfm) //
+            .setName(name) //
+            .setId(projectId) //
+            .setOrigin(origin) //
+            .build();
     }
 
     private static boolean hasOriginAndRelativePath(final JsonNode projectJson) {
@@ -304,8 +304,7 @@ public final class AppStatePersistor {
         }
     }
 
-    private static RecentlyUsedProject deserializeMRUProject(final JsonNode projectJson,
-        final LocalSpace localSpace) {
+    private static RecentlyUsedProject deserializeMRUProject(final JsonNode projectJson, final LocalSpace localSpace) {
         var origin = deserializeOrigin(projectJson.get(ORIGIN), localSpace).getFirst();
         return new RecentlyUsedProject( //
             projectJson.get(NAME).asText(), //
