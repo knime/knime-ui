@@ -264,7 +264,7 @@ final class OpenProject {
             return CachedProject.builder() //
                 .setWfm(wfm) //
                 .setOrigin(Origin.of(spaceProviderId, spaceId, itemId, projectType)) //
-                .getVersion(version -> DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, version)) //
+                .setVersionWfmLoader(version -> DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, version)) //
                 .build();
         });
     }
