@@ -27,6 +27,7 @@ import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
+import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInteractions";
@@ -64,6 +65,8 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const spaceProvidersStore = useSpaceProvidersStore(testingPinia);
   const spaceOperationsStore = useSpaceOperationsStore(testingPinia);
   const spacesStore = useSpacesStore(testingPinia);
+  const spaceUploadsStore = useSpaceUploadsStore(testingPinia);
+
   const uiControlsStore = useUIControlsStore(testingPinia);
   const annotationInteractionsStore =
     useAnnotationInteractionsStore(testingPinia);
@@ -121,6 +124,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     spaceProvidersStore,
     spaceOperationsStore,
     spacesStore,
+    spaceUploadsStore,
     uiControlsStore,
     annotationInteractionsStore,
     clipboardInteractionsStore,

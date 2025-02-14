@@ -21,7 +21,7 @@ import {
   buildMoveToSpaceMenuItem,
   buildOpenAPIDefinitionMenuItem,
 } from "@/components/spaces/remoteMenuItems";
-import { isBrowser } from "@/environment";
+import { isBrowser, isDesktop } from "@/environment";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -142,14 +142,6 @@ const actions = computed(() => {
   };
 
   return [
-    ...valueOrEmpty(isBrowser, {
-      id: "upload",
-      text: "Upload",
-      icon: CloudUploadIcon,
-      execute: () => {
-        useSpaceUploadsStore().startUpload();
-      },
-    }),
     createWorkflowAction.value,
     {
       id: "createFolder",
@@ -166,7 +158,13 @@ const actions = computed(() => {
         }
       },
     },
-    {
+    ...valueOrEmpty(isBrowser, {
+      id: "upload",
+      text: "Upload",
+      icon: CloudUploadIcon,
+      execute: useSpaceUploadsStore().startUpload,
+    }),
+    ...valueOrEmpty(isDesktop, {
       id: "importWorkflow",
       text: "Import workflow",
       icon: ImportWorkflowIcon,
@@ -180,8 +178,8 @@ const actions = computed(() => {
           emit("importedItemIds", items);
         }
       },
-    },
-    {
+    }),
+    ...valueOrEmpty(isDesktop, {
       id: "importFiles",
       text: "Add files",
       icon: AddFileIcon,
@@ -196,7 +194,7 @@ const actions = computed(() => {
           emit("importedItemIds", items);
         }
       },
-    },
+    }),
     ...getLocalActions(),
     ...getHubActions(),
     ...getServerActions(),

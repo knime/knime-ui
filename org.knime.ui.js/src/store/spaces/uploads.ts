@@ -4,6 +4,7 @@ import { useFileDialog } from "@vueuse/core";
 import { defineStore, storeToRefs } from "pinia";
 
 import { rfcErrors, useFileUpload } from "@knime/hub-features";
+import { knimeFileFormats } from "@knime/utils";
 
 import { getToastsProvider } from "@/plugins/toasts";
 import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
@@ -32,7 +33,7 @@ const getCustomFetchOptions = () => {
   };
 };
 
-export const useSpaceUploadsStore = defineStore("uploads", () => {
+export const useSpaceUploadsStore = defineStore("space.uploads", () => {
   const hasActiveUpload = ref(false);
   const $toast = getToastsProvider();
 
@@ -86,13 +87,31 @@ export const useSpaceUploadsStore = defineStore("uploads", () => {
 
     onChange((files) => {
       const { activeProjectId } = applicationStore;
+
       if (!activeProjectId || !files) {
         resolve(null);
         reset();
         return;
       }
 
-      resolve([...files]);
+      const selectedFiles = [...files];
+      const hasSelectedKnwfFiles = selectedFiles.some((file) =>
+        knimeFileFormats.KNWF.matches(file),
+      );
+
+      if (hasSelectedKnwfFiles) {
+        $toast.show({
+          type: "warning",
+          headline: "Importing .knwf file",
+          message: "Importing workflows is not yet supported. (Coming soon!)",
+        });
+      }
+
+      const withoutKnwfFiles = selectedFiles.filter(
+        (file) => !knimeFileFormats.KNWF.matches(file),
+      );
+
+      resolve(withoutKnwfFiles);
       reset();
     });
 
