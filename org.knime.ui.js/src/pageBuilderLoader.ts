@@ -1,7 +1,6 @@
 import type { App } from "vue";
 import * as Vue from "vue";
 import { defineComponent } from "vue";
-import consola from "consola";
 import { type Store } from "vuex";
 
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation.ts";
@@ -50,9 +49,13 @@ const loadScript = (url: string) => {
   });
 };
 
-const pageBuilderLoader = async (store: Store<any>, app: App, projectId: string) => {
-  // @ts-ignore
-  window.process = { env: { NODE_ENV: "production" } };
+const pageBuilderLoader = async (
+  store: Store<any>,
+  app: App,
+  projectId: string,
+) => {
+  // PageBuilder will access process
+  (window as any).process = { env: { NODE_ENV: import.meta.env.MODE } };
 
   if (app.component(pageBuilderResource.componentName)) {
     return;
@@ -88,7 +91,7 @@ const pageBuilderLoader = async (store: Store<any>, app: App, projectId: string)
     }
 
     delete (<any>window)[pageBuilderResource.name];
-  } catch (e ) {
+  } catch (e) {
     fallback((e as unknown as Error).message);
   }
 };
@@ -112,9 +115,6 @@ export const setupPageBuilderEnvironment = async (
     store.hasModule("api") && store.hasModule("pagebuilder");
   if (!isStoreInitialized) {
     consola.info("Loading PageBuilder store and component");
-    // PageBuilder will access process
-    (window as any).process = { env: { NODE_ENV: import.meta.env.MODE } };
-
     store.registerModule("api", pageBuilderStoreConfig);
     await pageBuilderLoader(store, app, projectId);
   }
