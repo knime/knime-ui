@@ -101,9 +101,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
     document.createElementNS("http://www.w3.org/2000/svg", "svg"),
   );
   kanvas.scrollTo = vi.fn();
-
-  canvasStore.setScrollContainerElement(kanvas);
-  webglCanvasStore.setScrollContainerElement(kanvas);
+  document.body.appendChild(kanvas);
 
   return {
     testingPinia,

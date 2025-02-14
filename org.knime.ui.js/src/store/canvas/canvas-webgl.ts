@@ -9,6 +9,7 @@ import type { ApplicationInst, StageInst } from "vue3-pixi";
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -21,10 +22,6 @@ export const zoomCacheLifespan = 1000; // 1 second
 const clampZoomFactor = (newFactor: number) =>
   Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
-const unsetScrollContainer = () => {
-  throw new Error("dom element hasn't been set yet");
-};
-
 /**
  * Canvas Store manages positioning, zooming, scrolling and
  * coordinate transformations for the Kanvas component.
@@ -33,7 +30,6 @@ const unsetScrollContainer = () => {
 export interface CanvasState {
   zoomFactor: number;
   containerSize: { width: number; height: number };
-  getScrollContainerElement: () => HTMLElement;
   interactionsEnabled: boolean;
   zoomCache: {
     invariant: [number, number, number, number];
@@ -65,8 +61,6 @@ type Scroll = {
 export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const zoomFactor = ref(defaultZoomFactor);
   const containerSize = ref({ width: 0, height: 0 });
-  const getScrollContainerElement =
-    ref<() => HTMLElement>(unsetScrollContainer);
   const interactionsEnabled = ref(true);
 
   const stageHitArea = ref({ x: 0, y: 0, width: 0, height: 0 });
@@ -80,14 +74,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const pixiApplication = shallowRef<ApplicationInst | null>(null);
   const stage = shallowRef<StageInst | null>(null);
   const isDebugModeEnabled = ref(false);
-
-  const setScrollContainerElement = (el: HTMLElement) => {
-    getScrollContainerElement.value = () => el;
-  };
-
-  const clearScrollContainerElement = () => {
-    getScrollContainerElement.value = unsetScrollContainer;
-  };
 
   const setFactor = (newFactor: number) => {
     zoomFactor.value = clampZoomFactor(newFactor);
@@ -161,11 +147,10 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   };
 
   const focus = () => {
-    getScrollContainerElement.value()?.focus();
+    getKanvasDomElement()?.focus();
   };
 
   const initScrollContainerElement = (kanvas: HTMLElement) => {
-    setScrollContainerElement(kanvas);
     setContainerSize({
       width: kanvas.clientWidth,
       height: kanvas.clientHeight,
@@ -223,9 +208,11 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       newBounds.top - oldBounds.top,
     ];
 
-    const kanvas = getScrollContainerElement.value();
-    kanvas.scrollLeft -= deltaX * zoomFactor.value;
-    kanvas.scrollTop -= deltaY * zoomFactor.value;
+    const kanvas = getKanvasDomElement();
+    if (kanvas) {
+      kanvas.scrollLeft -= deltaX * zoomFactor.value;
+      kanvas.scrollTop -= deltaY * zoomFactor.value;
+    }
   };
 
   const contentPadding = computed(() => {
@@ -285,7 +272,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   // returns the position of a given point on the workflow relative to the window
   const screenFromCanvasCoordinates = computed(() => {
     return ({ x, y }: XY) => {
-      const scrollContainerElement = getScrollContainerElement.value();
+      const scrollContainerElement = getKanvasDomElement()!;
       const { x: offsetLeft, y: offsetTop } =
         scrollContainerElement.getBoundingClientRect();
       const { scrollLeft, scrollTop } = scrollContainerElement;
@@ -309,7 +296,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   // returns the position of a given point on the workflow relative to the window
   const screenToCanvasCoordinates = computed(() => {
     return ([origX, origY]: [number, number]) => {
-      const scrollContainerElement = getScrollContainerElement.value();
+      const scrollContainerElement = getKanvasDomElement()!;
 
       const { x: offsetLeft, y: offsetTop } =
         scrollContainerElement.getBoundingClientRect();
@@ -323,7 +310,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   });
 
   const getCanvasScrollState = computed(() => {
-    const kanvas = getScrollContainerElement.value();
+    const kanvas = getKanvasDomElement()!;
 
     const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = kanvas;
 
@@ -338,7 +325,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   // returns the currently visible area of the workflow
   const getVisibleFrame = computed(() => {
-    const container = getScrollContainerElement.value();
+    const container = getKanvasDomElement()!;
     const screenBounds = container.getBoundingClientRect();
 
     const [left, top] = screenToCanvasCoordinates.value([
@@ -374,7 +361,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     return (
       anchor: "center" | "left" | "top" | "right" | "bottom" = "center",
     ) => {
-      const kanvas = getScrollContainerElement.value();
+      const kanvas = getKanvasDomElement()!;
 
       let screenX = kanvas.offsetLeft;
       let screenY = kanvas.offsetTop;
@@ -422,7 +409,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     toScreenY = 0,
     smooth = false,
   }: Scroll) => {
-    const kanvas = getScrollContainerElement.value();
+    const kanvas = getKanvasDomElement()!;
 
     if (canvasX === "center") {
       canvasX = contentBounds.value.centerX;
@@ -602,7 +589,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   };
 
   const updateContainerSize = async () => {
-    const kanvas = getScrollContainerElement.value();
+    const kanvas = getKanvasDomElement()!;
 
     // find origin in screen coordinates, relative to upper left corner of canvas
     let { x, y } = fromCanvasCoordinates.value({ x: 0, y: 0 });
@@ -650,7 +637,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     setFactor(zoomFactor);
     await nextTick();
 
-    const kanvas = getScrollContainerElement.value();
+    const kanvas = getKanvasDomElement()!;
 
     const widthRatioBefore = scrollLeft / scrollWidth;
     const widthRatioAfter = kanvas.scrollWidth * widthRatioBefore;
@@ -667,7 +654,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   // TODO: implement for webgl canvas
   const moveObjectIntoView = (workflowObject: WorkflowObject) => {
-    const kanvas = getScrollContainerElement.value();
+    const kanvas = getKanvasDomElement()!;
     const objectScreenCoordinates =
       screenFromCanvasCoordinates.value(workflowObject);
 
@@ -705,8 +692,6 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     globalToWorldCoordinates,
     screenFromCanvasCoordinates,
     screenToCanvasCoordinates,
-    setScrollContainerElement,
-    clearScrollContainerElement,
     setFactor,
     setContainerSize,
     setInteractionsEnabled,

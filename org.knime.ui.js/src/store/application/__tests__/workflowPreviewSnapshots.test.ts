@@ -4,6 +4,7 @@ import { API } from "@api";
 
 import { createWorkflow } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { useWorkflowPreviewSnapshotsStore } from "../workflowPreviewSnapshots";
 
 import { loadStore } from "./loadStore";
@@ -16,6 +17,8 @@ vi.mock("@/util/generateWorkflowPreview", () => ({
   generateWorkflowPreview: vi.fn((value) => value.outerHTML),
 }));
 
+vi.mock("@/util/getKanvasDomElement", { spy: true });
+
 const mockedAPI = deepMocked(API);
 
 describe("workflow preview snapshot", () => {
@@ -25,14 +28,10 @@ describe("workflow preview snapshot", () => {
 
   describe("getActiveWorkflowSnapshot", () => {
     it("should get the active workflow snapshot when on the root level", async () => {
-      const { workflowPreviewSnapshotsStore, canvasStore } = loadStore();
-
-      const spy = vi.fn(() => ({ firstChild: {} }));
-      // @ts-ignore
-      canvasStore.getScrollContainerElement = spy;
+      const { workflowPreviewSnapshotsStore } = loadStore();
 
       await workflowPreviewSnapshotsStore.getActiveWorkflowSnapshot();
-      expect(spy).toHaveBeenCalled();
+      expect(getKanvasDomElement).toHaveBeenCalled();
     });
 
     it("should get the active workflow snapshot when not on the root level", async () => {
@@ -79,7 +78,6 @@ describe("workflow preview snapshot", () => {
 
   it("should update the workflow preview snapshots correctly (single project)", async () => {
     const {
-      canvasStore,
       workflowStore,
       applicationStore,
       lifecycleStore,
@@ -90,10 +88,11 @@ describe("workflow preview snapshot", () => {
 
     // create a dummy element to act as the workflow
     const canvasWrapperMockEl = document.createElement("div");
+    canvasWrapperMockEl.setAttribute("id", "kanvas");
     canvasWrapperMockEl.scrollTo = vi.fn();
     const canvasMockEl = document.createElement("svg");
     canvasWrapperMockEl.appendChild(canvasMockEl);
-    canvasStore.getScrollContainerElement = () => canvasWrapperMockEl;
+    document.body.appendChild(canvasWrapperMockEl);
 
     // setup activeWorkflow
     workflowStore.setActiveWorkflow(
@@ -132,7 +131,6 @@ describe("workflow preview snapshot", () => {
 
   it("should update the workflow preview snapshots correctly (multiple projects)", async () => {
     const {
-      canvasStore,
       workflowStore,
       applicationStore,
       lifecycleStore,
@@ -162,11 +160,12 @@ describe("workflow preview snapshot", () => {
 
     // create a dummy element to act as the workflow
     const canvasWrapperMockEl = document.createElement("div");
+    canvasWrapperMockEl.setAttribute("id", "kanvas");
     const canvasMockEl = document.createElement("div");
     canvasWrapperMockEl.appendChild(canvasMockEl);
+    document.body.appendChild(canvasWrapperMockEl);
 
     // setup canvas
-    canvasStore.getScrollContainerElement = () => canvasWrapperMockEl;
 
     // setup activeWorkflow
     workflowStore.setActiveWorkflow(

@@ -6,6 +6,7 @@ import { shallowMount } from "@vue/test-utils";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import { mockStores } from "@/test/utils/mockStores";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import FloatingMenu from "../FloatingMenu.vue";
 
 const useFocusTrapMock = {
@@ -66,6 +67,7 @@ describe("FloatingMenu.vue", () => {
       width: 80,
       height: 80,
     }));
+    // @ts-ignore
     mockKanvas.getBoundingClientRect = getBoundingClientRect;
     document.body.appendChild(mockKanvas);
 
@@ -114,8 +116,8 @@ describe("FloatingMenu.vue", () => {
   };
 
   afterEach(() => {
-    const kanvas = document.getElementById("kanvas")!;
-    kanvas?.remove(); // clean-up attached event listeners
+    // clean-up body (and attached event listeners)
+    document.body.innerHTML = "";
     vi.clearAllMocks();
   });
 
@@ -269,8 +271,8 @@ describe("FloatingMenu.vue", () => {
       // Update the coordinates for the scroll event.
       screenCoordinates = { x: 50, y: 50 };
 
-      const kanvas = document.getElementById("kanvas")!;
-      kanvas.dispatchEvent(new CustomEvent("scroll"));
+      const kanvas = getKanvasDomElement();
+      kanvas?.dispatchEvent(new CustomEvent("scroll"));
       await nextTick();
 
       expect(wrapper.attributes("style")).toContain("left: 50px");
@@ -298,9 +300,9 @@ describe("FloatingMenu.vue", () => {
       wrapper.unmount();
       await nextTick();
 
-      const kanvas = document.getElementById("kanvas")!;
+      const kanvas = getKanvasDomElement();
 
-      kanvas.dispatchEvent(new CustomEvent("scroll"));
+      kanvas?.dispatchEvent(new CustomEvent("scroll"));
 
       expect(HTMLElement.prototype.removeEventListener).toHaveBeenCalledWith(
         "scroll",

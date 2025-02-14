@@ -23,6 +23,15 @@ import SpaceExplorer from "../SpaceExplorer.vue";
 
 const mockedAPI = deepMocked(API);
 
+vi.mock("@/util/getKanvasDomElement", () => {
+  return {
+    getKanvasDomElement: vi.fn().mockReturnValue({
+      contains: vi.fn().mockReturnValue(true),
+      getBoundingClientRect: vi.fn().mockReturnValue({}),
+    }),
+  };
+});
+
 const createMockItem = (
   data: Partial<FileExplorerItem> = {},
   itemType: SpaceItem.TypeEnum,
@@ -139,10 +148,6 @@ describe("SpaceExplorer.vue", () => {
       outPorts: [],
       icon: "data:image/icon",
     });
-
-    mockedStores.canvasStore.getScrollContainerElement().contains = vi
-      .fn()
-      .mockReturnValue(true);
 
     // default state of default project
     mockedStores.spaceCachingStore.projectPath = {

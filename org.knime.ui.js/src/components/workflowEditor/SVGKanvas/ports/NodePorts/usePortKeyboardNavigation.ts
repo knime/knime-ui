@@ -3,13 +3,14 @@ import {
   type Ref,
   computed,
   onBeforeUnmount,
+  ref,
   watch,
 } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
-import { useCanvasStore } from "@/store/canvas";
 import { useSelectionStore } from "@/store/selection";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { isInputElement } from "@/util/isInputElement";
 import {
   type SelectedPortContext,
@@ -44,7 +45,6 @@ type UsePortKeyboardNavigationOptions = {
 export const usePortKeyboardNavigation = (
   options: UsePortKeyboardNavigationOptions,
 ) => {
-  const { getScrollContainerElement } = storeToRefs(useCanvasStore());
   const { activeNodePorts } = storeToRefs(useSelectionStore());
 
   const isActiveNodePortsInstance = computed(
@@ -176,21 +176,20 @@ export const usePortKeyboardNavigation = (
     }
   };
 
-  let canvasElementRef: HTMLElement | null = null;
+  const hasKeydownListener = ref(false);
 
   watch(isActiveNodePortsInstance, (isActivated) => {
-    if (canvasElementRef) {
-      canvasElementRef.removeEventListener("keydown", onKeydown);
-      canvasElementRef = null;
+    if (hasKeydownListener.value) {
+      getKanvasDomElement()?.removeEventListener("keydown", onKeydown);
     }
 
     if (isActivated) {
-      canvasElementRef = getScrollContainerElement.value();
-      getScrollContainerElement.value().addEventListener("keydown", onKeydown);
+      getKanvasDomElement()?.addEventListener("keydown", onKeydown);
+      hasKeydownListener.value = true;
     }
   });
 
   onBeforeUnmount(() => {
-    canvasElementRef?.removeEventListener("keydown", onKeydown);
+    getKanvasDomElement()?.removeEventListener("keydown", onKeydown);
   });
 };

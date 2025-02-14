@@ -703,12 +703,8 @@ describe("workflowShortcuts", () => {
 
       expect(document.activeElement).toBe(kanvasElement);
 
-      const { canvasStore, selectionStore, applicationSettingsStore } =
-        createStore();
+      const { selectionStore, applicationSettingsStore } = createStore();
 
-      canvasStore.getScrollContainerElement = vi
-        .fn()
-        .mockReturnValue(kanvasElement);
       expect(workflowShortcuts.copy.condition()).toBe(false);
 
       selectionStore.getSelectedNodes = [{ allowedActions: {} }];
@@ -722,7 +718,7 @@ describe("workflowShortcuts", () => {
       applicationSettingsStore.hasClipboardSupport = false;
       expect(workflowShortcuts.copy.condition()).toBe(false);
 
-      canvasStore.setScrollContainerElement({});
+      kanvasElement.remove();
       expect(workflowShortcuts.copy.condition()).toBe(false);
     });
 

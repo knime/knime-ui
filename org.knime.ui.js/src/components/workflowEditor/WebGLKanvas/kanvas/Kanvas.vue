@@ -7,6 +7,7 @@ import { Application, type ApplicationInst, type StageInst } from "vue3-pixi";
 
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { KANVAS_ID } from "@/util/getKanvasDomElement";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
 
@@ -103,7 +104,7 @@ const { beginPan } = useCanvasPanning({
 </script>
 
 <template>
-  <div ref="rootEl" tabindex="0" class="scroll-container">
+  <div :id="KANVAS_ID" ref="rootEl" tabindex="0" class="scroll-container">
     <FloatingMenuPortalTarget v-if="isReady" />
 
     <Application

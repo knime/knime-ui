@@ -37,7 +37,7 @@ export const loadStore = () => {
   const kanvas = document.createElement("div");
   kanvas.setAttribute("id", "kanvas");
   kanvas.scrollTo = vi.fn();
-  canvasStore.setScrollContainerElement(kanvas);
+  document.body.appendChild(kanvas);
 
   const canvasStateTrackingStore = useCanvasStateTrackingStore(testingPinia);
 

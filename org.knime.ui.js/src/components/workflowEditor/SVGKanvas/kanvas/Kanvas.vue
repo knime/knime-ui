@@ -13,6 +13,7 @@ import { useCanvasStore } from "@/store/canvas";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { KANVAS_ID } from "@/util/getKanvasDomElement";
 
 import { RESIZE_DEBOUNCE } from "./constants";
 import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
@@ -73,9 +74,6 @@ useKanvasHint();
 onBeforeUnmount(() => {
   // Stop Resize Observer
   stopResizeObserver();
-
-  // Remove reference to canvas element wrapper
-  canvasStore.clearScrollContainerElement();
 });
 
 useCanvasMoveLocking();
@@ -121,6 +119,7 @@ const onLeftControlClick = (event: PointerEvent) => {
 
 <template>
   <div
+    :id="KANVAS_ID"
     ref="rootEl"
     tabindex="0"
     :class="[

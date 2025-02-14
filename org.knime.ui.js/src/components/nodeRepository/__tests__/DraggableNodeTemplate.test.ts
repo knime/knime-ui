@@ -201,6 +201,7 @@ describe("DraggableNodeTemplate", () => {
 
     it("adds and removes dragGhost to/from vm and document.body", () => {
       const { wrapper } = doMount();
+      document.body.innerHTML = "";
       expect(document.body.childNodes.length).toBe(0);
 
       // add node preview clone

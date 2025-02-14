@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 
-import { useCanvasStore } from "@/store/canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { generateWorkflowPreview } from "@/util/generateWorkflowPreview";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 import { useApplicationStore } from "./application";
 
@@ -38,8 +38,8 @@ export const useWorkflowPreviewSnapshotsStore = defineStore(
           isCurrentlyOnRoot && newWorkflow && !isChangingProject;
 
         if (isEnteringSubWorkflow || (isChangingProject && isWorkflowUnsaved)) {
-          const canvasElement = useCanvasStore().getScrollContainerElement()
-            .firstChild as SVGSVGElement;
+          const canvasElement = getKanvasDomElement()
+            ?.firstChild as SVGSVGElement;
 
           // save a snapshot of the current state of the root workflow
           this.addToRootWorkflowSnapshots({
@@ -98,8 +98,7 @@ export const useWorkflowPreviewSnapshotsStore = defineStore(
 
         const preview = isRootWorkflow
           ? await generateWorkflowPreview(
-              useCanvasStore().getScrollContainerElement()
-                .firstChild as SVGSVGElement,
+              getKanvasDomElement()?.firstChild as SVGSVGElement,
               useWorkflowStore().isWorkflowEmpty,
             )
           : // when we're on a nested workflow (metanode/component) we then need to use the saved snapshot

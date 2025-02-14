@@ -11,6 +11,7 @@ import {
   createNativeNode,
 } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import NodePort from "../../NodePort/NodePort.vue";
 import AddPortPlaceholder from "../AddPortPlaceholder.vue";
 import NodePorts from "../NodePorts.vue";
@@ -86,9 +87,14 @@ describe("NodePorts.vue", () => {
       createNativeNode({ id: props.nodeId, kind: props.nodeKind }),
     );
 
+    // mock kanvas
+    const mockKanvas = document.createElement("div");
+    mockKanvas.setAttribute("id", "kanvas");
+    document.body.appendChild(mockKanvas);
+
     const wrapper = mount(NodePorts, {
       props,
-      attachTo: mockedStores.canvasStore.getScrollContainerElement(),
+      attachTo: mockKanvas,
       global: {
         mocks: { $shapes, $colors },
         plugins: [mockedStores.testingPinia],
@@ -252,9 +258,9 @@ describe("NodePorts.vue", () => {
 
     describe("navigate selection", () => {
       const navigate = (mockedStores, direction) => {
-        mockedStores.canvasStore
-          .getScrollContainerElement()
-          .dispatchEvent(new KeyboardEvent("keydown", { key: direction }));
+        getKanvasDomElement().dispatchEvent(
+          new KeyboardEvent("keydown", { key: direction }),
+        );
       };
 
       it("for normal ports", async () => {

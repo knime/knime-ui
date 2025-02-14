@@ -11,7 +11,6 @@ import { isUIExtensionFocused } from "@/components/uiExtensions";
 import { useApplicationStore } from "@/store/application/application";
 import { useDirtyProjectsTrackingStore } from "@/store/application/dirtyProjectsTracking.ts";
 import { useApplicationSettingsStore } from "@/store/application/settings";
-import { useCanvasStore } from "@/store/canvas";
 import { useSelectionStore } from "@/store/selection";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
@@ -19,6 +18,7 @@ import { useClipboardInteractionsStore } from "@/store/workflow/clipboardInterac
 import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { UnionToShortcutRegistry } from "../types";
 
 type GeneralNodeWorkflowShortcuts = UnionToShortcutRegistry<
@@ -163,7 +163,7 @@ const generalWorkflowShortcuts: GeneralNodeWorkflowShortcuts = {
       const selectedNodes = selectionStore.getSelectedNodes;
       const selectedAnnotations = selectionStore.getSelectedAnnotations;
 
-      const kanvas = useCanvasStore().getScrollContainerElement();
+      const kanvas = getKanvasDomElement();
       const kanvasIsActiveElement = document.activeElement === kanvas;
       const textSelectionIsEmpty = window?.getSelection()?.toString() === "";
       const isSomethingSelected =

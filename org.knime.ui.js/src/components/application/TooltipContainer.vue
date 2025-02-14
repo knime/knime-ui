@@ -3,6 +3,7 @@ import { mapActions, mapState } from "pinia";
 
 import { useCanvasStore } from "@/store/canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 import Tooltip from "./Tooltip.vue";
 
@@ -63,14 +64,14 @@ export default {
     openTooltip() {
       consola.trace("add kanvas scroll listener for tooltips");
 
-      let kanvas = document.getElementById("kanvas");
-      kanvas.addEventListener("scroll", this.onCanvasScroll);
+      let kanvas = getKanvasDomElement();
+      kanvas?.addEventListener("scroll", this.onCanvasScroll);
     },
     closeTooltip() {
       consola.trace("remove kanvas scroll listener for tooltips");
 
-      let kanvas = document.getElementById("kanvas");
-      // if kanvas currently exsists (workflow is open) remove scroll event listener
+      let kanvas = getKanvasDomElement();
+      // if kanvas currently exists (workflow is open) remove scroll event listener
       kanvas?.removeEventListener("scroll", this.onCanvasScroll);
     },
     onMouseLeave() {

@@ -113,16 +113,21 @@ describe("NodePort", () => {
   document.elementFromPoint = vi.fn();
 
   // Set up
-  const KanvasMock = {
-    offsetLeft: 8,
-    offsetTop: 8,
-    scrollLeft: 16,
-    scrollTop: 16,
-  };
+  const kanvasMock = document.createElement("div");
+  kanvasMock.setAttribute("id", "kanvas");
+  document.body.appendChild(kanvasMock);
+
+  kanvasMock.getBoundingClientRect = vi.fn().mockReturnValue({
+    x: 0,
+    y: 0,
+    left: 8,
+    top: 8,
+  });
+
+  kanvasMock.scrollLeft = 16;
+  kanvasMock.scrollTop = 16;
 
   const startDragging = async ({ wrapper, position: [x, y] = [0, 0] }) => {
-    document.getElementById = vi.fn().mockReturnValue(KanvasMock);
-
     wrapper.element.setPointerCapture = vi.fn();
     wrapper.element.releasePointerCapture = vi.fn();
 

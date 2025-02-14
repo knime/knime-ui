@@ -6,6 +6,7 @@ import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useCanvasStore } from "@/store/canvas";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import {
   type FloatingContainerProperties,
   useCanvasFloatingContainer,
@@ -82,8 +83,8 @@ useCanvasFloatingContainer({
 });
 
 const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {
-  let kanvas = document.getElementById("kanvas")!;
-  let { y, x, width, height } = kanvas.getBoundingClientRect();
+  let kanvas = getKanvasDomElement();
+  let { y, x, width, height } = kanvas!.getBoundingClientRect();
 
   // find distance of point to all edges
   let leftDistance = x - left;
@@ -176,13 +177,13 @@ useResizeObserver(rootEl, () => {
 onMounted(() => {
   setAbsolutePosition();
 
-  let kanvas = document.getElementById("kanvas")!;
-  kanvas.addEventListener("scroll", onCanvasScroll);
+  let kanvas = getKanvasDomElement();
+  kanvas?.addEventListener("scroll", onCanvasScroll);
 });
 
 onBeforeUnmount(() => {
   // if kanvas currently exists (workflow is open) remove scroll event listener
-  let kanvas = document.getElementById("kanvas")!;
+  let kanvas = getKanvasDomElement();
   kanvas?.removeEventListener("scroll", onCanvasScroll);
 });
 </script>

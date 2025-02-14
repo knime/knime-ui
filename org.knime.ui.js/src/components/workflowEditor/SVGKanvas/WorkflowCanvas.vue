@@ -91,7 +91,6 @@ const openQuickActionMenu = (event: MouseEvent) => {
 
 <template>
   <Kanvas
-    id="kanvas"
     ref="kanvas"
     :class="{
       'indicate-node-drag': isWorkflowEmpty && isDraggingNodeTemplate,

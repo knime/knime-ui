@@ -8,8 +8,8 @@ import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
-import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -22,18 +22,9 @@ export const zoomCacheLifespan = 1000; // 1 second
 const clampZoomFactor = (newFactor: number) =>
   Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
-const unsetScrollContainer = () => {
-  if (canvasRendererUtils.isWebGLRenderer()) {
-    return document.createElement("div");
-  }
-
-  throw new Error("dom element hasn't been set yet");
-};
-
 type CanvasState = {
   zoomFactor: number;
   containerSize: { width: number; height: number };
-  getScrollContainerElement: () => HTMLElement;
   interactionsEnabled: boolean;
   zoomCache: {
     invariant: [number, number, number, number];
@@ -55,25 +46,11 @@ export const useCanvasStore = defineStore("canvasSVG", {
   state: (): CanvasState => ({
     zoomFactor: defaultZoomFactor,
     containerSize: { width: 0, height: 0 },
-    getScrollContainerElement: unsetScrollContainer,
     interactionsEnabled: true,
     zoomCache: null,
     isMoveLocked: false,
   }),
   actions: {
-    /*
-    The scroll container is saved in the store state so properties
-    like scrollTop etc. can be accessed quickly
-    Saved as result of function to avoid problems with reactivity
-  */
-    setScrollContainerElement(el: HTMLElement) {
-      this.getScrollContainerElement = () => el;
-    },
-
-    clearScrollContainerElement() {
-      this.getScrollContainerElement = unsetScrollContainer;
-    },
-
     setFactor(newFactor: number) {
       this.zoomFactor = clampZoomFactor(newFactor);
     },
@@ -112,11 +89,10 @@ export const useCanvasStore = defineStore("canvasSVG", {
     },
 
     focus() {
-      this.getScrollContainerElement()?.focus();
+      getKanvasDomElement()?.focus();
     },
 
     initScrollContainerElement(kanvas: HTMLElement) {
-      this.setScrollContainerElement(kanvas);
       this.setContainerSize({
         width: kanvas.clientWidth,
         height: kanvas.clientHeight,
@@ -132,9 +108,11 @@ export const useCanvasStore = defineStore("canvasSVG", {
         newBounds.top - oldBounds.top,
       ];
 
-      const kanvas = this.getScrollContainerElement();
-      kanvas.scrollLeft -= deltaX * this.zoomFactor;
-      kanvas.scrollTop -= deltaY * this.zoomFactor;
+      const kanvas = getKanvasDomElement();
+      if (kanvas) {
+        kanvas.scrollLeft -= deltaX * this.zoomFactor;
+        kanvas.scrollTop -= deltaY * this.zoomFactor;
+      }
     },
 
     /*
@@ -211,7 +189,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
       cursorX: number;
       cursorY: number;
     }) {
-      const kanvas = this.getScrollContainerElement();
+      const kanvas = getKanvasDomElement()!;
       const { scrollLeft, scrollTop } = kanvas;
 
       // caches the calculation for the canvas coordinate point
@@ -277,7 +255,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
       toScreenY = 0,
       smooth = false,
     }: Scroll) {
-      const kanvas = this.getScrollContainerElement();
+      const kanvas = getKanvasDomElement()!;
 
       if (canvasX === "center") {
         canvasX = this.contentBounds.centerX;
@@ -317,7 +295,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
     },
 
     async updateContainerSize() {
-      const kanvas = this.getScrollContainerElement();
+      const kanvas = getKanvasDomElement()!;
 
       // find origin in screen coordinates, relative to upper left corner of canvas
       let { x, y } = this.fromCanvasCoordinates({ x: 0, y: 0 });
@@ -364,7 +342,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
       this.setFactor(zoomFactor);
       await nextTick();
 
-      const kanvas = this.getScrollContainerElement();
+      const kanvas = getKanvasDomElement()!;
 
       const widthRatioBefore = scrollLeft / scrollWidth;
       const widthRatioAfter = kanvas.scrollWidth * widthRatioBefore;
@@ -380,7 +358,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
     },
 
     moveObjectIntoView(workflowObject: WorkflowObject) {
-      const kanvas = this.getScrollContainerElement();
+      const kanvas = getKanvasDomElement()!;
       const objectScreenCoordinates =
         this.screenFromCanvasCoordinates(workflowObject);
 
@@ -406,7 +384,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
       scrollHeight: number;
       zoomFactor: number;
     } {
-      const kanvas = this.getScrollContainerElement();
+      const kanvas = getKanvasDomElement()!;
 
       const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = kanvas;
 
@@ -532,7 +510,10 @@ export const useCanvasStore = defineStore("canvasSVG", {
     // returns the position of a given point on the workflow relative to the window
     screenFromCanvasCoordinates() {
       return ({ x, y }: XY) => {
-        const scrollContainerElement = this.getScrollContainerElement();
+        const scrollContainerElement = getKanvasDomElement();
+        if (!scrollContainerElement) {
+          return { x: 0, y: 0 };
+        }
         const { x: offsetLeft, y: offsetTop } =
           scrollContainerElement.getBoundingClientRect();
         const { scrollLeft, scrollTop } = scrollContainerElement;
@@ -556,7 +537,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
     // returns the position of a given point on the workflow relative to the window
     screenToCanvasCoordinates() {
       return ([origX, origY]: [number, number]) => {
-        const scrollContainerElement = this.getScrollContainerElement();
+        const scrollContainerElement = getKanvasDomElement()!;
 
         const { x: offsetLeft, y: offsetTop } =
           scrollContainerElement.getBoundingClientRect();
@@ -600,7 +581,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
       width: number;
       height: number;
     } {
-      const container = this.getScrollContainerElement();
+      const container = getKanvasDomElement()!;
       const screenBounds = container.getBoundingClientRect();
 
       const [left, top] = this.screenToCanvasCoordinates([
@@ -636,7 +617,7 @@ export const useCanvasStore = defineStore("canvasSVG", {
       return (
         anchor: "center" | "left" | "top" | "right" | "bottom" = "center",
       ) => {
-        const kanvas = this.getScrollContainerElement();
+        const kanvas = getKanvasDomElement()!;
 
         let screenX = kanvas.offsetLeft;
         let screenY = kanvas.offsetTop;

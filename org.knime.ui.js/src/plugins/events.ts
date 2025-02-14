@@ -18,6 +18,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { nodeSize } from "@/style/shapes";
 import { notifyPatch } from "@/util/event-syncer";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
@@ -284,9 +285,9 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
       consola.info("events::ImportURIEvent", { x, y });
 
       const el = document.elementFromPoint(x, y);
-      const kanvas = useCanvasStore().getScrollContainerElement();
+      const kanvas = getKanvasDomElement();
 
-      if (kanvas && kanvas.contains(el)) {
+      if (kanvas?.contains(el)) {
         const [canvasX, canvasY] = useCanvasStore().screenToCanvasCoordinates([
           x,
           y,

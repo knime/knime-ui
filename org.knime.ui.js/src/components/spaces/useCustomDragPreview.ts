@@ -14,6 +14,7 @@ import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
   return !nodeTemplateId && item.meta?.type === SpaceItem.TypeEnum.Component;
@@ -31,9 +32,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
 
   const { isWritable } = storeToRefs(useWorkflowStore());
   const { projectPath } = storeToRefs(useSpaceCachingStore());
-  const { getScrollContainerElement, screenToCanvasCoordinates } = storeToRefs(
-    useCanvasStore(),
-  );
+  const { screenToCanvasCoordinates } = storeToRefs(useCanvasStore());
   const { fileExtensionToNodeTemplateId } = storeToRefs(useApplicationStore());
   const { getSingleNodeTemplate } = useNodeTemplatesStore();
   const { addNode } = useNodeInteractionsStore();
@@ -98,8 +97,8 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     const screenY = event.clientY - $shapes.nodeSize / 2;
 
     const el = document.elementFromPoint(screenX, screenY);
-    const kanvas = getScrollContainerElement.value();
-    isAboveCanvas.value = kanvas.contains(el);
+    const kanvas = getKanvasDomElement();
+    isAboveCanvas.value = kanvas?.contains(el) ?? false;
 
     // make sure the preview is only fetched once for this current drag interaction
     if (!isFetchingTemplate.value) {
@@ -136,7 +135,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
       return;
     }
 
-    const kanvas = getScrollContainerElement.value();
+    const kanvas = getKanvasDomElement()!;
 
     if (!kanvas.contains(el)) {
       onComplete(false);

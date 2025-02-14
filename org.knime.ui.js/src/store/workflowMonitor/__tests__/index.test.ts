@@ -35,7 +35,8 @@ describe("workflowMonitor", () => {
     const kanvas = document.createElement("div");
     kanvas.setAttribute("id", "kanvas");
     kanvas.scrollTo = vi.fn();
-    canvasStore.setScrollContainerElement(kanvas);
+    document.body.appendChild(kanvas);
+
     const $workflowStore = useWorkflowStore(testingPinia);
     const $workflowMonitorStore = useWorkflowMonitorStore(testingPinia);
     const $applicationStore = useApplicationStore(testingPinia);
