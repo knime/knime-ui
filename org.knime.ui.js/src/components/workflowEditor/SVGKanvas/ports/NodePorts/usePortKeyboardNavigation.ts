@@ -3,7 +3,6 @@ import {
   type Ref,
   computed,
   onBeforeUnmount,
-  ref,
   watch,
 } from "vue";
 import { storeToRefs } from "pinia";
@@ -176,16 +175,16 @@ export const usePortKeyboardNavigation = (
     }
   };
 
-  const hasKeydownListener = ref(false);
+  let hasKeydownListener = false;
 
   watch(isActiveNodePortsInstance, (isActivated) => {
-    if (hasKeydownListener.value) {
+    if (hasKeydownListener) {
       getKanvasDomElement()?.removeEventListener("keydown", onKeydown);
     }
 
     if (isActivated) {
       getKanvasDomElement()?.addEventListener("keydown", onKeydown);
-      hasKeydownListener.value = true;
+      hasKeydownListener = true;
     }
   });
 
