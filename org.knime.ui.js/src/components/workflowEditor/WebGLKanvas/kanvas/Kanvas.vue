@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 import { Application, type ApplicationInst, type StageInst } from "vue3-pixi";
 
+import { performanceTracker } from "@/performanceTracker";
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import Debug from "../Debug.vue";
@@ -74,7 +75,9 @@ onMounted(() => {
   const app = pixiApp.value!.app;
   globalThis.__PIXI_APP__ = app;
 
-  canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
+  canvasStore.pixiApplication = pixiApp.value!;
+
+  performanceTracker.init(pixiApp.value!);
 
   // Store reference to the Pixi.js Stage
   // https://pixijs.com/7.x/guides/basics/getting-started#adding-the-sprite-to-the-stage

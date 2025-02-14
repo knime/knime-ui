@@ -1,0 +1,417 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": {
+    "hasNodeRecommendationsEnabled": true,
+    "scrollToZoomEnabled": false,
+    "isKaiEnabled": false,
+    "openProjects": [
+      {
+        "name": "KNIME_project",
+        "projectId": "KNIME_project_cb05d935-0c13-4aa7-9bb3-b3b6424a28af",
+        "activeWorkflowId": "root"
+      }
+    ],
+    "availablePortTypes": {
+      "org.knime.core.node.port.viewproperty.FilterDefinitionHandlerPortObject": {
+        "name": "Filter Definition",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.base.node.mine.bayes.naivebayes.port.NaiveBayesPortObject": {
+        "name": "Naive Bayes",
+        "hidden": true,
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.base.node.mine.treeensemble2.model.RegressionTreeModelPortObject": {
+        "name": "Regression Tree",
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.distance.DistanceMeasurePortObject": {
+        "name": "Distance Measure",
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.google.api.data.GoogleApiConnectionPortObject": {
+        "name": "Credential (Google)",
+        "hidden": true,
+        "kind": "other",
+        "color": "#4386F7",
+        "compatibleTypes": ["org.knime.credentials.base.CredentialPortObject"]
+      },
+      "org.knime.base.node.mine.transformation.port.TransformationPortObject": {
+        "name": "Transformation",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.reporting2.porttype.ReportPortObject": {
+        "name": "Report Fragment Implementation",
+        "hidden": true,
+        "kind": "other",
+        "views": {
+          "descriptors": [{ "label": "Report" }],
+          "descriptorMapping": { "configured": [], "executed": [0] }
+        },
+        "color": "#1A6C85",
+        "compatibleTypes": ["org.knime.core.node.port.report.IReportPortObject"]
+      },
+      "org.knime.base.node.preproc.correlation.pmcc.PMCCPortObjectAndSpec": {
+        "name": "Correlation",
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.core.data.uri.URIPortObject": {
+        "name": "URI Object",
+        "hidden": true,
+        "kind": "other",
+        "color": "#1EB9DC",
+        "compatibleTypes": ["org.knime.core.data.uri.IURIPortObject"]
+      },
+      "org.knime.base.node.mine.treeensemble.model.RegressionTreeModelPortObject": {
+        "name": "Regression Tree",
+        "hidden": true,
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.database.port.DBSessionPortObject": {
+        "name": "DB Session",
+        "kind": "other",
+        "color": "#CC005B"
+      },
+      "org.knime.database.port.DBDataPortObject": {
+        "name": "DB Data",
+        "kind": "other",
+        "views": {
+          "descriptors": [{ "label": "Table" }],
+          "descriptorMapping": { "configured": [], "executed": [0] }
+        },
+        "color": "#66002D"
+      },
+      "com.knime.server.nodes.util.KnimeServerConnectionInformationPortObject": {
+        "name": "KNIME Connection",
+        "kind": "other",
+        "color": "#9B9B9B",
+        "compatibleTypes": [
+          "org.knime.base.filehandling.remote.connectioninformation.port.ConnectionInformationPortObject"
+        ]
+      },
+      "org.knime.core.node.port.database.DatabaseConnectionPortObject": {
+        "name": "Database Connection",
+        "hidden": true,
+        "kind": "other",
+        "color": "#FF4B4B",
+        "compatibleTypes": [
+          "org.knime.core.node.port.database.DatabasePortObject"
+        ]
+      },
+      "org.knime.base.node.mine.treeensemble.model.TreeEnsembleModelPortObject": {
+        "name": "Tree Ensemble",
+        "hidden": true,
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.core.node.port.database.DatabasePortObject": {
+        "name": "Database Query",
+        "hidden": true,
+        "kind": "other",
+        "color": "#800000",
+        "compatibleTypes": [
+          "org.knime.core.node.port.database.DatabaseConnectionPortObject"
+        ]
+      },
+      "org.knime.core.node.port.viewproperty.SizeHandlerPortObject": {
+        "name": "Size",
+        "hidden": true,
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.base.node.mine.bfn.radial.RadialBasisFunctionPortObject": {
+        "name": "Radial Basis Function",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.google.api.analytics.ga4.port.GAConnectionPortObject": {
+        "name": "Google Analytics",
+        "hidden": true,
+        "kind": "other",
+        "views": {
+          "descriptors": [
+            { "label": "Google Analytics Connection", "isSpecView": true },
+            { "label": "Google Analytics Connection" }
+          ],
+          "descriptorMapping": { "configured": [0], "executed": [1] }
+        },
+        "color": "#DE5246"
+      },
+      "org.knime.credentials.base.CredentialPortObject": {
+        "name": "Credential",
+        "kind": "other",
+        "views": {
+          "descriptors": [
+            { "label": "Credential", "isSpecView": true },
+            { "label": "Credential" }
+          ],
+          "descriptorMapping": { "configured": [0], "executed": [1] }
+        },
+        "color": "#4386F7",
+        "compatibleTypes": [
+          "org.knime.ext.microsoft.authentication.port.MicrosoftCredentialPortObject",
+          "org.knime.google.api.data.GoogleApiConnectionPortObject",
+          "com.knime.hub.nodes.authentication.port.HubAuthenticationPortObject"
+        ]
+      },
+      "org.knime.base.data.normalize.NormalizerPortObject": {
+        "name": "Normalizer",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.google.api.analytics.data.GoogleAnalyticsConnectionPortObject": {
+        "name": "Google Analytics (deprecated)",
+        "hidden": true,
+        "kind": "other",
+        "color": "#FE5617"
+      },
+      "org.knime.core.node.BufferedDataTable": {
+        "name": "Table",
+        "kind": "table",
+        "views": {
+          "descriptors": [
+            { "label": "Table", "isSpecView": true },
+            { "label": "Table" },
+            { "label": "Statistics" }
+          ],
+          "descriptorMapping": { "configured": [0, 2], "executed": [1, 2] }
+        },
+        "color": "#000000"
+      },
+      "org.knime.core.node.port.PortObject": {
+        "name": "Generic Port",
+        "kind": "generic",
+        "color": "#9B9B9B"
+      },
+      "org.knime.base.node.mine.treeensemble2.model.GradientBoostingModelPortObject": {
+        "name": "Gradient Boosting Model",
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.base.algorithms.outlier.NumericOutliersPortObject": {
+        "name": "Outlier",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.base.node.preproc.autobinner.pmml.PMMLDiscretizePreprocPortObject": {
+        "name": "PMML Discretization",
+        "kind": "other",
+        "color": "#1EB9DC",
+        "compatibleTypes": [
+          "org.knime.core.node.port.pmml.preproc.PMMLPreprocPortObject"
+        ]
+      },
+      "org.knime.google.api.sheets.data.GoogleSheetsConnectionPortObject": {
+        "name": "Google Sheets",
+        "hidden": true,
+        "kind": "other",
+        "color": "#16A965"
+      },
+      "com.knime.hub.nodes.authentication.port.HubAuthenticationPortObject": {
+        "name": "Credential (KNIME Hub)",
+        "hidden": true,
+        "kind": "other",
+        "views": {
+          "descriptors": [
+            { "label": "Credential", "isSpecView": true },
+            { "label": "Credential" }
+          ],
+          "descriptorMapping": { "configured": [0], "executed": [1] }
+        },
+        "color": "#4386F7",
+        "compatibleTypes": [
+          "org.knime.workflowservices.connection.AbstractHubAuthenticationPortObject",
+          "org.knime.credentials.base.CredentialPortObject"
+        ]
+      },
+      "org.knime.core.node.port.flowvariable.FlowVariablePortObject": {
+        "name": "Flow Variable",
+        "kind": "flowVariable",
+        "views": {
+          "descriptors": [
+            { "label": "Flow variables", "isSpecView": true },
+            { "label": "Flow variables" }
+          ],
+          "descriptorMapping": { "configured": [0], "executed": [1] }
+        },
+        "color": "#FF4B4B"
+      },
+      "org.knime.core.node.workflow.capture.WorkflowPortObject": {
+        "name": "Workflow",
+        "kind": "other",
+        "color": "#000000"
+      },
+      "org.knime.google.api.drive.util.GoogleDriveConnectionInformationPortObject": {
+        "name": "Google Drive",
+        "kind": "other",
+        "color": "#9B9B9B",
+        "compatibleTypes": [
+          "org.knime.base.filehandling.remote.connectioninformation.port.ConnectionInformationPortObject"
+        ]
+      },
+      "org.knime.filehandling.core.port.FileSystemPortObject": {
+        "name": "File System",
+        "kind": "other",
+        "color": "#178BA5"
+      },
+      "org.knime.base.node.meta.feature.selection.FeatureSelectionModel": {
+        "name": "Feature Selection Model",
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.base.node.mine.treeensemble2.model.TreeEnsembleModelPortObject": {
+        "name": "Tree Ensemble",
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.core.node.port.pmml.PMMLPortObject": {
+        "name": "PMML",
+        "kind": "other",
+        "color": "#1469AF"
+      },
+      "org.knime.base.node.mine.pca.PCAModelPortObject": {
+        "name": "PCA",
+        "hidden": true,
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.core.node.port.inactive.InactiveBranchPortObject": {
+        "name": "Inactive branch",
+        "hidden": true,
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.ext.microsoft.authentication.port.MicrosoftCredentialPortObject": {
+        "name": "Credential (Microsoft)",
+        "hidden": true,
+        "kind": "other",
+        "color": "#4386F7",
+        "compatibleTypes": ["org.knime.credentials.base.CredentialPortObject"]
+      },
+      "org.knime.core.node.port.report.IReportPortObject": {
+        "name": "Report",
+        "kind": "other",
+        "views": {
+          "descriptors": [{ "label": "Report" }],
+          "descriptorMapping": { "configured": [], "executed": [0] }
+        },
+        "color": "#1A6C85",
+        "compatibleTypes": ["org.knime.reporting2.porttype.ReportPortObject"]
+      },
+      "org.knime.base.filehandling.remote.connectioninformation.port.ConnectionInformationPortObject": {
+        "name": "Remote Connection",
+        "kind": "other",
+        "color": "#7FE1FF",
+        "compatibleTypes": [
+          "com.knime.server.nodes.util.KnimeServerConnectionInformationPortObject",
+          "org.knime.google.api.drive.util.GoogleDriveConnectionInformationPortObject"
+        ]
+      },
+      "org.knime.core.data.uri.IURIPortObject": {
+        "name": "URI Object",
+        "kind": "other",
+        "color": "#1EB9DC",
+        "compatibleTypes": ["org.knime.core.data.uri.URIPortObject"]
+      },
+      "org.knime.base.node.mine.bfn.fuzzy.FuzzyBasisFunctionPortObject": {
+        "name": "Fuzzy Basis Function",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.core.node.port.viewproperty.ShapeHandlerPortObject": {
+        "name": "Shape",
+        "hidden": true,
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.base.node.preproc.discretization.caim2.DiscretizationModel": {
+        "name": "CAIM",
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.core.node.port.pmml.preproc.PMMLPreprocPortObject": {
+        "name": "PMML Preprocessing",
+        "hidden": true,
+        "kind": "other",
+        "color": "#9B9B9B",
+        "compatibleTypes": [
+          "org.knime.base.node.preproc.autobinner.pmml.PMMLDiscretizePreprocPortObject"
+        ]
+      },
+      "org.knime.base.node.meta.feature.backwardelim.BWElimModel": {
+        "name": "Feature Elimination",
+        "hidden": true,
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.base.node.mine.cluster.hierarchical.ClusterTreeModel": {
+        "name": "Cluster Tree",
+        "hidden": true,
+        "kind": "other",
+        "color": "#9B9B9B"
+      },
+      "org.knime.core.node.port.viewproperty.ColorHandlerPortObject": {
+        "name": "Color",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.base.node.mine.sota.SotaPortObject": {
+        "name": "Sota",
+        "kind": "other",
+        "color": "#1EB9DC"
+      },
+      "org.knime.workflowservices.connection.AbstractHubAuthenticationPortObject": {
+        "name": "Credential (KNIME Hub)",
+        "kind": "other",
+        "color": "#4386F7",
+        "compatibleTypes": [
+          "com.knime.hub.nodes.authentication.port.HubAuthenticationPortObject"
+        ]
+      },
+      "org.knime.core.node.port.image.ImagePortObject": {
+        "name": "Image",
+        "kind": "other",
+        "views": {
+          "descriptors": [{ "label": "Image" }],
+          "descriptorMapping": { "configured": [], "executed": [0] }
+        },
+        "color": "#41BE78"
+      }
+    },
+    "suggestedPortTypeIds": [
+      "org.knime.core.node.BufferedDataTable",
+      "org.knime.database.port.DBDataPortObject",
+      "org.knime.database.port.DBSessionPortObject",
+      "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+      "org.knime.core.node.port.PortObject",
+      "org.knime.core.node.workflow.capture.WorkflowPortObject"
+    ],
+    "availableComponentTypes": [
+      "Learner",
+      "Manipulator",
+      "Predictor",
+      "Sink",
+      "Source",
+      "Visualizer",
+      "Other"
+    ],
+    "featureFlags": {},
+    "hasNodeCollectionActive": true,
+    "useEmbeddedDialogs": true,
+    "activeNodeCollection": "starter",
+    "confirmNodeConfigChanges": false,
+    "devMode": true,
+    "appMode": "default",
+    "fileExtensionToNodeTemplateId": {},
+    "nodeRepositoryLoaded": true,
+    "isSubnodeLockingEnabled": false
+  }
+}

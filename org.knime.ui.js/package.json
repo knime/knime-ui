@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run type-check && vite build",
+    "build:only": "vite build",
     "serve": "vite preview",
     "lint": "run-p 'lint:* -- --fix'",
     "lint:js": "eslint --cache . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",

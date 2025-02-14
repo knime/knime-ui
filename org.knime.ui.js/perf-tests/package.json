@@ -1,0 +1,29 @@
+{
+  "name": "knime-ui-performance-tests",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "cd ../ && CANVAS_PERF_MODE=true npm run build:only",
+    "start": "cd ./dist && ws --spa index.html --port 3000",
+    "tests": "node src/index.js"
+  },
+  "author": "",
+  "license": "NONE",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^22.12.0",
+    "local-web-server": "^5.4.0",
+    "playwright": "^1.50.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "volta": {
+    "node": "22.11.0",
+    "npm": "10.9.1"
+  }
+}

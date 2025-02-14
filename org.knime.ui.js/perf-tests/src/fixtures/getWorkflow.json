@@ -1,0 +1,287 @@
+{
+  "jsonrpc": "2.0",
+  "id": "2",
+  "result": {
+    "workflow": {
+      "dirty": true,
+      "nodes": {
+        "root:1": {
+          "id": "root:1",
+          "state": {
+            "warning": "Please specify a file",
+            "resolutions": [],
+            "executionState": "IDLE"
+          },
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false
+            },
+            {
+              "name": "File Table",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ],
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canReset": false,
+            "canDelete": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "position": { "x": 85, "y": 70 }
+        },
+        "root:2": {
+          "id": "root:2",
+          "state": { "executionState": "IDLE" },
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            },
+            {
+              "name": "Input table",
+              "index": 1,
+              "optional": false,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "portGroupId": "Sheet Input Ports",
+              "canRemove": false
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false
+            }
+          ],
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canReset": false,
+            "canDelete": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            },
+            "Sheet Input Ports": {
+              "inputRange": [1, 1],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": ["org.knime.core.node.BufferedDataTable"]
+            }
+          },
+          "position": { "x": 250, "y": 215 }
+        },
+        "root:4": {
+          "id": "root:4",
+          "state": {
+            "warning": "Please specify at least one scope",
+            "resolutions": [],
+            "executionState": "IDLE"
+          },
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false
+            },
+            {
+              "name": "Credential",
+              "index": 1,
+              "typeId": "org.knime.credentials.base.CredentialPortObject",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ],
+          "dialogType": "web",
+          "inputContentVersion": 0,
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canReset": false,
+            "canOpenLegacyFlowVariableDialog": true,
+            "canDelete": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.google.api.nodes.authenticator.GoogleAuthenticatorNodeFactory",
+          "position": { "x": 85, "y": 170 }
+        },
+        "root:5": {
+          "id": "root:5",
+          "state": {
+            "warning": "Please specify a file",
+            "resolutions": [],
+            "executionState": "IDLE"
+          },
+          "kind": "node",
+          "inPorts": [
+            {
+              "name": "Variable Inport",
+              "index": 0,
+              "optional": true,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ],
+          "outPorts": [
+            {
+              "name": "Variable Outport",
+              "index": 0,
+              "typeId": "org.knime.core.node.port.flowvariable.FlowVariablePortObject",
+              "connectedVia": [],
+              "portContentVersion": -337043238,
+              "canRemove": false
+            },
+            {
+              "name": "File Table",
+              "index": 1,
+              "typeId": "org.knime.core.node.BufferedDataTable",
+              "connectedVia": [],
+              "canRemove": false
+            }
+          ],
+          "dialogType": "swing",
+          "allowedActions": {
+            "canExecute": false,
+            "canCancel": false,
+            "canReset": false,
+            "canDelete": true,
+            "canCollapse": "true"
+          },
+          "templateId": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory",
+          "portGroups": {
+            "File System Connection": {
+              "inputRange": [],
+              "outputRange": [],
+              "canAddInPort": true,
+              "supportedPortTypeIds": [
+                "org.knime.filehandling.core.port.FileSystemPortObject"
+              ]
+            }
+          },
+          "position": { "x": 245, "y": 70 }
+        }
+      },
+      "workflowAnnotations": [],
+      "connections": {},
+      "allowedActions": {
+        "canExecute": false,
+        "canCancel": false,
+        "canReset": false,
+        "canUndo": true,
+        "canRedo": false
+      },
+      "nodeTemplates": {
+        "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory": {
+          "name": "CSV Reader",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3BpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RkRBRThDOTU3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RkRBRThDOTQ3RjI0MTFFNUE3NjBCMzY2NkE3NjU5N0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2MjZBQjAxMDJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2MjZBQjAxMTJFMkYxMUU1OUMzRUMzQkRFMzNFNTk1RiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pr5h9h8AAABuSURBVHjaYmRgYPjPQAT4//8/IzZxkOD/j5Ot8Wrmzz2K0wAmBgoBI6VegMpBAD8/P1Y2VA0DNozihT9//mBlDyEvDEgsMEJciMN0RkZ0Q2Bi/2F68RqAx+D/cCYBFxA0nbYGUOwFAgaAQxMgwAD1CJc+ReyqcgAAAABJRU5ErkJggg==",
+          "nodeFactory": {
+            "className": "org.knime.base.node.io.filehandling.csv.reader.CSVTableReaderNodeFactory"
+          }
+        },
+        "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory": {
+          "name": "Excel Reader",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADPSURBVHgBtVFBDoIwEByIiSfrA2xAH0A8C1E+4l+Es+EXHrkazsTg3fAAhfABevOEQFISlNImxEmazna3050uMBHa2jBO9e5J6rxXnvsigQoKqAW0oXOdk2eWtUsUizDjZGtZeKQpzkEAVFV3JkPPAqUUtyRp+d5xUBRFV2jQ1XgH3yCE9OL4+P6pcS/zvkDzehiGYGWJaxS1FhhjULLAP2xjmhiKRRaUx8gFXcdGnNw73ozRl11ekoUwp4kSB3un1BnGBDjGuI6J+J8FVXwArGpkXrM0Y1EAAAAASUVORK5CYII=",
+          "nodeFactory": {
+            "className": "org.knime.ext.poi3.node.io.filehandling.excel.reader.ExcelTableReaderNodeFactory"
+          }
+        },
+        "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory": {
+          "name": "Excel Writer",
+          "type": "Sink",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADUSURBVHgBpZFLDoIwEIYH7RrUA4AegOhWiOJZ5CK4NtyES6AB14YDGIxuNfQCSJuU1KSvpN+inWmnM/NPASxx9tG2Nwm81DdHdI7IUs4XysfJ9yO9m4AlSFfBKEFZ1dRJ4mi0N2EIHcZj4NL3RbPKpBL4xwoy6S88X2+6P9qW7qsgEPpSCSxgPUi5Nw2c8xyg78czBgINeJCyi2O4VhX1iY05eYhVZvC2CNd1/3xHFshPneguigJw18ExTakE1oU2gW6IRh2omMouZp5Hkh9AzQls+QHI9FBAzPdfuAAAAABJRU5ErkJggg==",
+          "nodeFactory": {
+            "className": "org.knime.ext.poi3.node.io.filehandling.excel.writer.ExcelTableWriterNodeFactory"
+          }
+        },
+        "org.knime.google.api.nodes.authenticator.GoogleAuthenticatorNodeFactory": {
+          "name": "Google Authenticator",
+          "type": "Source",
+          "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB8AAAAQCAYAAADu+KTsAAAACXBIWXMAAAK+AAACvgEk+CLQAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAeBJREFUOI21lT9oU1EUxn/fTSJBHBTBycF/xCWDcN+jQxcXB5tJ6i66S8Wh6CBuooMIWRzdnVoHEQpSaCn43rsJCA5ObkrdWmrVau5xSCMhtE2oz7Ndvu/yOx/3XI7MjEFNTU2d7PV6d4BrwBlgE1gF2kVRrFJyaQBP03TazF4Cp/bwmZk963Q692y42zLgaZo2zWwFODbG/7goigdlwZ0kF2N8MQEYYN5770uDe++vSro0qR+4Xxa8ClwfOm+b2bKkBnBhrwuSWkmSvDskb8c5dzfLshxA3vuPwDngl6TpPM+7SZLUzGxR0pVDQg6qbeBGURQL8t5vAEfNbCmEMDNwpGk6Y2aL/wEOEIH5KvAvX+ebmX2VVANOj2hfzOyHpOPAiWHBzEzSjgPWASRdHkxys9k8EmO8PY4s6U0IoRFjbI1qzrlbIYQG0B6RtiTNFkXxvAqs0X/zmqS33vvler1+ETi/D/M38H43wSeAWq32vdfrdUbSbe42+NnMBtpPSXN5nnehP3AtYGFcyqG0r/I8n53Uf1C5EMJrM+tO6I8xxkdlgAGcmVmlUrkJbE3gfxJCCKXBAbIs++Cca5nZ+j4+A56GEB6WBYahrQZ/V+oc/ZV6FtiQtCKpnWXZWplggD+g9svk3pHFTAAAAABJRU5ErkJggg==",
+          "nodeFactory": {
+            "className": "org.knime.google.api.nodes.authenticator.GoogleAuthenticatorNodeFactory"
+          }
+        }
+      },
+      "projectMetadata": {
+        "tags": [],
+        "description": { "value": "", "contentType": "text/plain" },
+        "links": [],
+        "lastEdit": "2025-01-27T09:47:19.060+01:00"
+      },
+      "info": {
+        "name": "KNIME_project",
+        "providerType": "LOCAL",
+        "containerType": "project",
+        "containerId": "root"
+      }
+    },
+    "snapshotId": "35"
+  }
+}

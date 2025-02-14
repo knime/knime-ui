@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { URL, fileURLToPath } from "node:url";
 
 import { defineConfig, loadEnv } from "vite";
@@ -12,6 +13,10 @@ import { svgoConfig } from "@knime/styles/config/svgo.config";
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
+  if (process.env.CANVAS_PERF_MODE) {
+    console.log(" --- Custom build for performance test mode ---");
+  }
+
   const config: ViteUserConfig = {
     plugins: [
       vue({
@@ -24,7 +29,12 @@ export default defineConfig(({ mode }) => {
       // vueDevTools(),
     ],
 
+    define: {
+      "import.meta.env.CANVAS_PERF_MODE": process.env.CANVAS_PERF_MODE,
+    },
+
     build: {
+      outDir: process.env.CANVAS_PERF_MODE ? "./perf-tests/dist" : "./dist",
       target: "esnext",
     },
 
