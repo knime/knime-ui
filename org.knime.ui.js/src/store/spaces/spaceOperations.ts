@@ -51,7 +51,9 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       spaceProviderId,
       itemId,
       retry = true,
-    }: PathTriplet & { retry?: boolean }): Promise<WorkflowGroupContent> {
+    }: PathTriplet & {
+      retry?: boolean;
+    }): Promise<WorkflowGroupContent> {
       try {
         this.setIsLoadingContent(true);
 
@@ -288,13 +290,8 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       itemId,
       $router,
     }: WorkflowOrigin & { $router?: Router }) {
-      const provider = (useSpaceProvidersStore().spaceProviders ?? {})[
-        providerId
-      ];
-
       const foundOpenProject = useApplicationStore().openProjects.find(
-        (project) =>
-          isProjectOpen(project, { spaceId, providerId, itemId }, provider),
+        (project) => isProjectOpen(project, { spaceId, providerId, itemId }),
       );
 
       if (foundOpenProject) {
@@ -440,7 +437,7 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         // find if among the items being deleted some pertain to currently open projects
         const openProjectIds = useApplicationStore()
           .openProjects.filter((project) =>
-            origins.some((origin) => isProjectOpen(project, origin, provider)),
+            origins.some((origin) => isProjectOpen(project, origin)),
           )
           .map(({ projectId }) => projectId);
 
@@ -615,15 +612,11 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
 
       return useApplicationStore()
         .openProjects.filter((project) =>
-          isProjectOpen(
-            project,
-            {
-              providerId: provider.id,
-              spaceId,
-              itemId: project.origin?.itemId ?? "",
-            },
-            provider,
-          ),
+          isProjectOpen(project, {
+            providerId: provider.id,
+            spaceId,
+            itemId: project.origin?.itemId ?? "",
+          }),
         )
         .map(({ origin }) => origin?.itemId);
     },
@@ -644,15 +637,11 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
 
       const openProjectsFolders = useApplicationStore()
         .openProjects.filter((project) =>
-          isProjectOpen(
-            project,
-            {
-              providerId: provider.id,
-              spaceId,
-              itemId: project.origin?.itemId ?? "",
-            },
-            provider,
-          ),
+          isProjectOpen(project, {
+            providerId: provider.id,
+            spaceId,
+            itemId: project.origin?.itemId ?? "",
+          }),
         )
         .flatMap(({ origin }) => origin?.ancestorItemIds ?? []);
 

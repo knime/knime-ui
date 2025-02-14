@@ -147,54 +147,38 @@ describe("spaces::util", () => {
 
     // from local -> should be detected as open
     expect(
-      isProjectOpen(
-        openProjects.at(0)!,
-        {
-          providerId: spaceProvider1.id,
-          spaceId: "group1:space1",
-          itemId: "open-item-id",
-        },
-        spaceProvider1,
-      ),
+      isProjectOpen(openProjects.at(0)!, {
+        providerId: spaceProvider1.id,
+        spaceId: "group1:space1",
+        itemId: "open-item-id",
+      }),
     ).toBe(true);
 
     // from local (not opened) -> should NOT be detected as open
     expect(
-      isProjectOpen(
-        openProjects.at(0)!,
-        {
-          providerId: spaceProvider1.id,
-          spaceId: "groupX:spaceX",
-          itemId: "open-item-id",
-        },
-        spaceProvider1,
-      ),
+      isProjectOpen(openProjects.at(0)!, {
+        providerId: spaceProvider1.id,
+        spaceId: "groupX:spaceX",
+        itemId: "open-item-id",
+      }),
     ).toBe(false);
 
     // from hub -> should NOT be detected as open
     expect(
-      isProjectOpen(
-        openProjects.at(0)!,
-        {
-          providerId: spaceProvider2.id,
-          spaceId: "group4:space2",
-          itemId: "open-item-id",
-        },
-        spaceProvider2,
-      ),
+      isProjectOpen(openProjects.at(0)!, {
+        providerId: spaceProvider2.id,
+        spaceId: "group4:space2",
+        itemId: "open-item-id",
+      }),
     ).toBe(false);
 
     // from server -> should NOT be detected as open
     expect(
-      isProjectOpen(
-        openProjects.at(0)!,
-        {
-          providerId: spaceProvider3.id,
-          spaceId: "group6:space3",
-          itemId: "open-item-id",
-        },
-        spaceProvider3,
-      ),
+      isProjectOpen(openProjects.at(0)!, {
+        providerId: spaceProvider3.id,
+        spaceId: "group6:space3",
+        itemId: "open-item-id",
+      }),
     ).toBe(false);
   });
 });

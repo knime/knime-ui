@@ -37,12 +37,10 @@ export const isServerProvider = (
 export const isProjectOpen = (
   project: Project,
   referenceOrigin: WorkflowOrigin,
-  spaceProvider: SpaceProviderNS.SpaceProvider,
 ) => {
   return (
     project.origin?.providerId === referenceOrigin.providerId &&
     project.origin?.spaceId === referenceOrigin.spaceId &&
-    project.origin?.itemId === referenceOrigin.itemId &&
-    isLocalProvider(spaceProvider)
+    project.origin?.itemId === referenceOrigin.itemId
   );
 };
