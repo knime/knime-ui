@@ -62,6 +62,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.internal.progress.ProgressManager;
 import org.knime.core.node.NodeFactory;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.extension.ConfigurableNodeFactoryMapper;
 import org.knime.core.node.extension.NodeSpecCollectionProvider;
 import org.knime.core.ui.workflowcoach.NodeRecommendationManager;
 import org.knime.core.util.auth.CouldNotAuthorizeException;
@@ -103,7 +104,6 @@ import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.ExampleProjects;
 import org.knime.ui.java.util.NodeCollectionUtil;
-import org.knime.workbench.repository.util.ConfigurableNodeFactoryMapper;
 
 import com.equo.middleware.api.handler.IRequestFilter;
 import com.equo.middleware.api.resource.MutableRequest;
