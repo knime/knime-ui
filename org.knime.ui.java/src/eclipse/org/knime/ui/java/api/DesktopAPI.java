@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -67,6 +68,8 @@ import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
+import org.knime.gateway.impl.webui.spaces.Space;
+import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProviders;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
@@ -111,6 +114,37 @@ public final class DesktopAPI {
     private static final List<Class<?>> CONTRIBUTING_CLASSES_FOR_TESTING = List.of( //
         TestingAPI.class //
     );
+
+    /**
+     * @return A {@link SpaceProviders} instance for the Desktop-API context.
+     * @throws NoSuchElementException If no such service dependency is set
+     */
+    static SpaceProviders getSpaceProviders() {
+        final var spaceProvidersManager = getDeps(SpaceProvidersManager.class);
+        if (spaceProvidersManager == null) {
+            throw new NoSuchElementException("Available space providers could not be determined.");
+        }
+        return spaceProvidersManager.getSpaceProviders(SpaceProvidersManager.Key.defaultKey());
+    }
+
+    /**
+     * @throws NoSuchElementException If the space provider could not be found
+     */
+    static SpaceProvider getSpaceProvider(final String spaceProviderId) {
+        var spaceProvider = getSpaceProviders().getSpaceProvider(spaceProviderId);
+        if (spaceProvider == null) {
+            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
+        }
+        return spaceProvider;
+    }
+
+    /**
+     * @throws NoSuchElementException If the space provider or space could not be found
+     */
+    static Space getSpace(final String spaceProviderId, final String spaceId) {
+        final var spaceProvider = getSpaceProvider(spaceProviderId);
+        return spaceProvider.getSpace(spaceId);
+    }
 
     private static record APIMethod(Method method, boolean runInUIThread) {
     }

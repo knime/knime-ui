@@ -261,7 +261,7 @@ final class EclipseUIAPI {
     @API
     static void openPermissionsDialog(final String spaceProviderId, final String spaceId, final String itemId)
         throws IOException {
-        final var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
+        final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         space.openPermissionsDialogForItem(itemId); // Method call might throw a `NotImplementedException` exception.
     }
 

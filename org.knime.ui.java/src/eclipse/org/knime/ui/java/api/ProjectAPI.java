@@ -197,7 +197,7 @@ final class ProjectAPI {
      */
     @API
     static void executeOnClassic(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var space = SpaceAPI.getSpace(spaceProviderId, spaceId);
+        final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         space.openRemoteExecution(itemId);
     }
 

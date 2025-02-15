@@ -141,7 +141,7 @@ final class Locator {
          */
         @Override
         public SpaceProvider provider() {
-            return SpaceAPI.getSpaceProvider(this.providerId());
+            return DesktopAPI.getSpaceProvider(this.providerId());
         }
 
         /**

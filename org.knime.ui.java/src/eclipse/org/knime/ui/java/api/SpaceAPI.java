@@ -175,7 +175,7 @@ final class SpaceAPI {
     @API
     static String getNameCollisionStrategy(final String spaceProviderId, final String spaceId, final Object[] itemIds,
         final String destWorkflowGroupItemId, final String context) {
-        final var space = getSpace(spaceProviderId, spaceId);
+        final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         return determineNameCollisionHandling(space, itemIds, destWorkflowGroupItemId, UsageContext.valueOf(context)) //
             .map(NameCollisionHandling::toString) //
             .orElse("CANCEL");
@@ -414,7 +414,7 @@ final class SpaceAPI {
     @API
     static String getAncestorInfo(final String providerId, final String spaceId, final String itemId)
         throws IOException {
-        final var space = getSpace(providerId, spaceId);
+        final var space = DesktopAPI.getSpace(providerId, spaceId);
         try {
             final var ancestorItemIds = space.getAncestorItemIds(itemId);
             // The known project name may be outdated. Return the new name to check this e.g. on "Reveal in Space
@@ -451,7 +451,7 @@ final class SpaceAPI {
      */
     @API
     static void openInBrowser(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
+        final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
         String url;
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         if (sourceSpaceProvider.getType() == TypeEnum.HUB) {
@@ -474,7 +474,7 @@ final class SpaceAPI {
      */
     @API
     static void openAPIDefinition(final String spaceProviderId, final String spaceId, final String itemId) {
-        final var sourceSpaceProvider = getSpaceProvider(spaceProviderId);
+        final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         final var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
         WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
@@ -506,7 +506,7 @@ final class SpaceAPI {
         final var isWorkflowGroup = destInfo.isWorkflowGroup();
         // else it's a Workflow (due to Validator)
 
-        final var space = getSpace(spaceProviderId, spaceId);
+        final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
 
         if (!isWorkflowGroup) {
             // workflow, ask for overwrite
@@ -611,31 +611,8 @@ final class SpaceAPI {
     @API
     static String editSchedule(final String spaceProviderId, final String spaceId, final String itemId,
         final String scheduleId) throws ResourceAccessException {
-        final var space = getSpace(spaceProviderId, spaceId);
+        final var space = DesktopAPI.getSpace(spaceProviderId, spaceId);
         return space.editScheduleInfo(itemId, scheduleId);
-    }
-
-    /**
-     * @throws NoSuchElementException If the space provider could not be found
-     */
-    static SpaceProvider getSpaceProvider(final String spaceProviderId) {
-        final var spaceProviderManager = DesktopAPI.getDeps(SpaceProvidersManager.class);
-        if (spaceProviderManager == null) {
-            throw new NoSuchElementException("Available space providers could not be determined.");
-        }
-        var spaceProvider = spaceProviderManager.getSpaceProviders(Key.defaultKey()).getSpaceProvider(spaceProviderId);
-        if (spaceProvider == null) {
-            throw new NoSuchElementException("Space provider '" + spaceProviderId + "' not found.");
-        }
-        return spaceProvider;
-    }
-
-    /**
-     * @throws NoSuchElementException If the space provider or space could not be found
-     */
-    static Space getSpace(final String spaceProviderId, final String spaceId) {
-        final var spaceProvider = getSpaceProvider(spaceProviderId);
-        return spaceProvider.getSpace(spaceId);
     }
 
 }
