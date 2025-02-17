@@ -124,7 +124,7 @@ public final class ImportURI {
 
     /**
      * Helper to import objects (e.g. nodes) from a URI (e.g. a Hub-URL) into the App.
-     *
+     * <p>
      * Sends an event to the FE in order to get the actual workflow canvas coordinates (and more) back (the FE
      * indirectly calls {@link #importURIAtWorkflowCanvas(String, String, String, int, int)} to return those). The event
      * is only sent in case the canvas coordinates are needed (component, node); otherwise not (workflow).
@@ -275,8 +275,8 @@ public final class ImportURI {
 
     /**
      * Imports the entity represented by the given URI (usually a node) at the given position in the workflow canvas.
-     *
-     * If no URI is given, the {@value #entityImportInProgress} is used instead (if given). It set in the
+     * <p>
+     * If no URI is given, the {@code #entityImportInProgress} is used instead (if given). It set in the
      * {@link #importURI(Supplier, String)}-method.
      *
      * @param uri can be {@code null}
@@ -453,7 +453,7 @@ public final class ImportURI {
 
     }
 
-    private static record EntityImportResult(EntityImport entityImport, Status status) {
+    private record EntityImportResult(EntityImport entityImport, Status status) {
         private enum Status {
             SUCCESS,
             UNAUTHORIZED,

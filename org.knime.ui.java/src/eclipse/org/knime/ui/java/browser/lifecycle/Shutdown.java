@@ -74,7 +74,6 @@ final class Shutdown {
      * Runs the phase.
      *
      * @param state
-     * @param localStorageAccess
      */
     static void run(final LifeCycleStateInternal state) {
         if (state != null) {

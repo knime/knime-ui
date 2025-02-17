@@ -89,9 +89,9 @@ final class ClassicAPBuildServerURL {
     }
 
     /**
-     * @param itemId
+     * @param itemId The ID of the queried item
      * @param sourceSpaceProvider a 'non-local' space provider
-     * @param sourceSpace
+     * @param sourceSpace The space containing the item
      * @return The built server URL
      */
     static String getWebPortalURL(final String itemId, final SpaceProvider sourceSpaceProvider,
@@ -127,9 +127,9 @@ final class ClassicAPBuildServerURL {
     }
 
     /**
-     * @param itemId
+     * @param itemId The ID of the queried item
      * @param sourceSpaceProvider a 'non-local' space provider
-     * @param sourceSpace
+     * @param sourceSpace The space containing the item
      * @return The built server API definition URL
      */
     static String getAPIDefinition(final String itemId, final SpaceProvider sourceSpaceProvider,

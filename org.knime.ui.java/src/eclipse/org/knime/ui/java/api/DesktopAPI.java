@@ -146,7 +146,7 @@ public final class DesktopAPI {
         return spaceProvider.getSpace(spaceId);
     }
 
-    private static record APIMethod(Method method, boolean runInUIThread) {
+    private record APIMethod(Method method, boolean runInUIThread) {
     }
 
     private static final List<APIMethod> METHODS = collectMethods();
@@ -333,8 +333,7 @@ public final class DesktopAPI {
     }
 
     /**
-     * @return whether dependencies already have been injected via
-     *         {@link #injectDependencies(ProjectManager, AppStateUpdater, SpaceProvidersManager, UpdateStateProvider, EventConsumer)}
+     * @return whether dependencies already have been injected via {@code injectDependencies}.
      */
     public static boolean areDependenciesInjected() {
         return !DEPENDENCIES.isEmpty();
@@ -368,16 +367,15 @@ public final class DesktopAPI {
     }
 
     /**
-     * Gives access to registered dependency-instances (see
-     * {@link #injectDependencies(AppStateUpdater, SpaceProviders, UpdateStateProvider, EventConsumer)}).
+     * Gives access to registered dependency-instances (see {@code injectDependencies}).
      *
-     * @param <T>
-     * @param clazz
+     * @param <T> The type of the dependency
+     * @param query The class/type of dependency to obtain
      * @return the dependency-instance or {@code null} if there is none for the given class
      */
     @SuppressWarnings("unchecked")
-    static <T> T getDeps(final Class<T> clazz) {
-        return (T)DEPENDENCIES.get(clazz);
+    static <T> T getDeps(final Class<T> query) {
+        return (T)DEPENDENCIES.get(query);
     }
 
 }

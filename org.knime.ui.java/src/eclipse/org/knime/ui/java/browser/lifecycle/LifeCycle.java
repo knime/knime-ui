@@ -85,7 +85,7 @@ public final class LifeCycle {
      * All the state transitions to move from one life-cycle state to the other. The state transitions must be executed
      * in a strict order (see {@link #rank()}. Each enum-value corresponds to a method in this class.
      */
-    @SuppressWarnings("javadoc")
+    @SuppressWarnings({"javadoc", "MissingJavadoc"})
     public enum StateTransition {
             STARTUP(-1), CREATE(0), INIT(1), WEB_APP_LOADED(2), RELOAD(-1), SAVE_STATE(3), SUSPEND(4), SHUTDOWN(5);
 
@@ -115,7 +115,7 @@ public final class LifeCycle {
     // Needs to be initialized lazily in order to avoid its initialization too early when the #startup life-cycle state
     // transition is called. Because if the NodeLogger is initialized that early, it messes with the startup procedure
     // and the workspace-selection-prompt is not shown anymore as a result.
-    private static final LazyInitializer<NodeLogger> LOGGER = new LazyInitializer<NodeLogger>() {
+    private static final LazyInitializer<NodeLogger> LOGGER = new LazyInitializer<>() {
         @Override
         protected NodeLogger initialize() {
             return NodeLogger.getLogger(LifeCycle.class);
@@ -134,7 +134,7 @@ public final class LifeCycle {
      * Called on start-up.
      */
     public void startup() {
-        doStateTransition(StateTransition.STARTUP, () -> Startup.run(), new StateTransition[]{null}); // NOSONAR
+        doStateTransition(StateTransition.STARTUP, Startup::run, new StateTransition[]{null}); // NOSONAR
     }
 
     /**

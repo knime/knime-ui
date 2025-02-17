@@ -61,8 +61,9 @@ public interface UserProfile {
      */
     String ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY = "onboarding.hints.user";
 
+    @SuppressWarnings({"MissingJavadoc", "javadoc"})
     static UserProfile of(final UserProfile userProfile, final Map<String, String> uiSettings,
-            final Map<String, String> onboardingHintsSettings) {
+        final Map<String, String> onboardingHintsSettings) {
         return new UserProfile() {
 
             @Override

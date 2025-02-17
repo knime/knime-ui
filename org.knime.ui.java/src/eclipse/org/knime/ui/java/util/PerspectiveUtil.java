@@ -65,6 +65,7 @@ import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
+import org.knime.workbench.explorer.view.AbstractContentProvider;
 import org.knime.workbench.explorer.view.actions.GlobalRefreshAction;
 
 /**
@@ -224,7 +225,7 @@ public final class PerspectiveUtil {
             final var stores = ExplorerMountTable.getMountedContent() //
                     .values().stream() //
                     .filter(p -> p.isRemote() && p.isAuthenticated()) //
-                    .map(p -> p.getRootStore()).toList();
+                    .map(AbstractContentProvider::getRootStore).toList();
             // jobs spawned by this action restart any "sleeping" Fetchers
             GlobalRefreshAction.run(stores);
         }

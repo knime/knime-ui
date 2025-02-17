@@ -61,7 +61,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collector;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -251,7 +250,7 @@ final class ProjectAPI {
     }
 
     private static <T> List<T> reverseList(final List<T> list) {
-        var res = new ArrayList<T>(list);
+        var res = new ArrayList<>(list);
         Collections.reverse(res);
         return res;
     }

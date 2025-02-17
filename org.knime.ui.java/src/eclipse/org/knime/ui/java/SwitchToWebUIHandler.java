@@ -57,7 +57,7 @@ import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
  * Handler to switch to the KNIME Web UI.
- *
+ * <p>
  * <br/>
  * <br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
@@ -75,7 +75,7 @@ public final class SwitchToWebUIHandler {
     @Inject
     private EModelService m_modelService;
 
-    @SuppressWarnings("javadoc")
+    @SuppressWarnings({"javadoc", "MissingJavadoc"})
     @Execute
     public void execute() {
         final var doProcced =

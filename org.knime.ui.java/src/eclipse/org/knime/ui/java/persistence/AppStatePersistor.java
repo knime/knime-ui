@@ -56,8 +56,8 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import org.knime.core.node.KNIMEConstants;
 import org.knime.core.node.NodeLogger;
@@ -81,7 +81,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Utility methods to persist (save and load) the state of the KNIME UI to a file.
- *
+ * <p>
  * An important part of the app state is derived from the {@link ProjectManager} which keeps track of the opened and
  * active workflow projects.
  *
@@ -217,9 +217,9 @@ public final class AppStatePersistor {
     /**
      * Loads the app state from a file and registers the opened workflow projects with the {@link ProjectManager}.
      *
-     * @param pm
-     * @param mruProjects
-     * @param localSpace
+     * @param pm the project manager instance
+     * @param mruProjects the most recently used projects
+     * @param localSpace the local space instance
      */
     public static void loadAppState(final ProjectManager pm, final MostRecentlyUsedProjects mruProjects,
         final LocalSpace localSpace) {
@@ -258,7 +258,6 @@ public final class AppStatePersistor {
 
     private static Project deserializeProject(final JsonNode projectJson, final LocalSpace localSpace) {
         var name = projectJson.get(NAME).asText();
-        var projectId = LocalSpaceUtil.getUniqueProjectId(name);
         var originAndRelativePath = deserializeOrigin(projectJson.get(ORIGIN), localSpace);
         var absolutePath = localSpace.getRootPath().resolve(originAndRelativePath.getSecond().orElseThrow());
         var origin = originAndRelativePath.getFirst();
@@ -278,6 +277,7 @@ public final class AppStatePersistor {
             }).orElse(null);
         };
 
+        var projectId = LocalSpaceUtil.getUniqueProjectId(name);
         return CachedProject.builder() //
             .setWfmLoader(getWfm) //
             .setName(name) //

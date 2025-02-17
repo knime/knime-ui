@@ -185,9 +185,9 @@ final class ImportAPI {
 
         private NodeID m_componentId;
 
-        private Supplier<NodeID> m_redo;
+        private final Supplier<NodeID> m_redo;
 
-        private Supplier<WorkflowManager> m_wfm;
+        private final Supplier<WorkflowManager> m_wfm;
 
         AddComponentCommand(final Supplier<WorkflowManager> wfm, final NodeID componentId,
             final Supplier<NodeID> redo) {

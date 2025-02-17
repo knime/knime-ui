@@ -68,6 +68,7 @@ import org.knime.ui.java.util.MostRecentlyUsedProjects;
  */
 public interface LifeCycleStateInternal extends LifeCycleState {
 
+    @SuppressWarnings({"MissingJavadoc", "javadoc"})
     static LifeCycleStateInternal of(final ProjectManager projectManager,
         final MostRecentlyUsedProjects mostRecentlyUsedProjects, final LocalSpace localSpace,
         final WelcomeAPEndpoint welcomeAPEndpoint, final UserProfile userProfile) {
@@ -103,8 +104,7 @@ public interface LifeCycleStateInternal extends LifeCycleState {
 
     /**
      * @return the logic which saves and closes all workflows.
-     * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List, EventConsumer,
-     *      SaveAndCloseProjects.PostProjectCloseAction)
+     * @see SaveAndCloseProjects#saveAndCloseProjectsInteractively(List, EventConsumer)
      */
     default Supplier<SaveAndCloseProjects.State> getSaveAndCloseAllProjectsFunction() {
         return null;

@@ -125,9 +125,8 @@ final class SpaceAPI {
     }
 
     /**
-     * Tries to connect a space provider to its remote location if it's not connected already (i.e. essentially calls
-     * {@link SpaceProvider#connect()}. And returns the space provider information (no matter whether it has been
-     * connected already or not).
+     * Tries to connect a space provider to its remote location if it's not connected already and returns the space
+     * provider information (no matter whether it has been connected already or not).
      *
      * @return A JSON object with all the space provider information.
      * @throws JsonProcessingException if the result couldn't be serialized
@@ -168,7 +167,7 @@ final class SpaceAPI {
      * @param spaceProviderId The space provider ID
      * @param spaceId The space ID
      * @param itemIds The space item IDs
-     * @param destWorkflowGroupId The destination workflow group ID
+     * @param destWorkflowGroupItemId The item ID of the destination workflow group
      * @param context The {@link UsageContext} in string form for this collision check
      * @return Can be one of the {@link Space.NameCollisionHandling}-values or 'CANCEL'
      */
@@ -242,9 +241,10 @@ final class SpaceAPI {
         }
 
         // old upload/download flow
-        FreshFileStoreResolver
-            .refreshContentProvidersWithProgress(sources.providerId(), destination.provider().getId());
-        var sourceFileStores = sources.itemIds().stream().map(itemId -> FreshFileStoreResolver.resolve(sources.space().toKnimeUrl(itemId))).toList();
+        FreshFileStoreResolver.refreshContentProvidersWithProgress(sources.providerId(),
+            destination.provider().getId());
+        var sourceFileStores = sources.itemIds().stream()
+            .map(itemId -> FreshFileStoreResolver.resolve(sources.space().toKnimeUrl(itemId))).toList();
         var destinationFileStore = FreshFileStoreResolver.resolve(destination.space().toKnimeUrl(destination.itemId()));
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy( //
@@ -296,7 +296,7 @@ final class SpaceAPI {
             return true;
         }
         var contentProvider = ExplorerMountTable.getMountedContent().values().stream()
-                .filter(provider -> provider.getMountID().equals(destination.provider().getId())).findFirst();
+            .filter(provider -> provider.getMountID().equals(destination.provider().getId())).findFirst();
         if (contentProvider.isEmpty()) {
             return false;
         }
@@ -308,7 +308,7 @@ final class SpaceAPI {
         DesktopAPI.getDeps(ToastService.class).showToast(ShowToastEventEnt.TypeEnum.ERROR, title, message, autoRemove);
     }
 
-    @Deprecated(forRemoval = true)  // this should be done by frontend in the future
+    @Deprecated(forRemoval = true) // this should be done by frontend in the future
     private static void showDirtyWorkflowsWarningToUser(final List<String> opened) {
         final var numOpened = opened.size();
         final var list = opened.stream().limit(5) //
@@ -335,9 +335,8 @@ final class SpaceAPI {
                 itemId //
             );
             var isDirty = openProjectWithId //
-                    .map(Project::getID) //
-                    .map(id -> projects.getDirtyProjectsMap().getOrDefault(id, false))
-                    .orElse(false);
+                .map(Project::getID) //
+                .map(id -> projects.getDirtyProjectsMap().getOrDefault(id, false)).orElse(false);
             if (isDirty) {
                 final var localDir = space.toLocalAbsolutePath(null, itemId).orElseThrow();
                 final var relPath = spaceRoot.relativize(localDir);
@@ -402,7 +401,7 @@ final class SpaceAPI {
     }
 
     private enum MoveOrCopyResult {
-            SUCCESS, COLLISION, FAILURE;
+            SUCCESS, COLLISION, FAILURE
     }
 
     /**
@@ -567,7 +566,7 @@ final class SpaceAPI {
         return ent.getId();
     }
 
-    private static record Destination(String name, RemoteExplorerFileStore fileStore) {
+    private record Destination(String name, RemoteExplorerFileStore fileStore) {
     }
 
     private static Destination promptDestination(final String defaultWorkflowName, final String spaceProviderId) {

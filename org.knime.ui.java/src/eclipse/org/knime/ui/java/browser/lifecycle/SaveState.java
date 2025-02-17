@@ -79,11 +79,8 @@ final class SaveState {
     static LifeCycleStateInternal run(final LifeCycleStateInternal state,
         final UnaryOperator<String> localStorageAccess) throws StateTransitionAbortedException {
         final var serializedAppState = // NOSONAR: Serialize app state before closing all workflows
-            AppStatePersistor.serializeAppState(
-                    state.getProjectManager(),
-                    state.getMostRecentlyUsedProjects(),
-                    state.getLocalSpace()
-            );
+            AppStatePersistor.serializeAppState(state.getProjectManager(), state.getMostRecentlyUsedProjects(),
+                state.getLocalSpace());
 
         final var saveProjectsFunction = state.getSaveAndCloseAllProjectsFunction();
         final var saveProjectsResult = saveProjectsFunction.get();
@@ -113,6 +110,7 @@ final class SaveState {
         };
     }
 
+    @SuppressWarnings("unchecked")
     private static UserProfile updateUserProfileFromLocalStorage(final UserProfile userProfile,
         final UnaryOperator<String> localStorageAccess) {
         if (localStorageAccess == null) {

@@ -72,7 +72,7 @@ import org.osgi.service.event.Event;
 
 /**
  * Registered as fragment with the application model and called as soon as the startup is completed.
- *
+ * <p>
  * <br/>
  * <br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
@@ -87,10 +87,10 @@ public final class AppStartupCompleteAddon {
     @Inject
     private EModelService m_modelService;
 
+    @SuppressWarnings({"MissingJavadoc", "javadoc"})
     @Inject
     @Optional
     public void applicationStarted(@EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE) final Event event) {
-
         // programmatic manipulations of the application model
         addSwitchButton();
         addWebUIPerspective();

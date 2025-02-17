@@ -93,8 +93,8 @@ import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.ProgressMonitorAdapter;
-import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.api.util.VersionId;
+import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.product.rcp.intro.UpdateDetector;
@@ -124,7 +124,7 @@ import org.knime.workbench.explorer.view.dialogs.SnapshotPanel;
  */
 public final class DesktopAPUtil {
 
-    @SuppressWarnings("javadoc")
+    @SuppressWarnings({"javadoc", "MissingJavadoc"})
     public static final String LOADING_WORKFLOW_PROGRESS_MSG = "Loading workflow...";
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(DesktopAPUtil.class);
@@ -134,11 +134,15 @@ public final class DesktopAPUtil {
     }
 
     /**
-     * @see this#fetchAndLoadWorkflowWithTask(Space, String, IProgressMonitor, VersionId) 
+     * @param space The space the item is located in
+     * @param itemId The ID of the item to load
+     * @param monitor to report loading progress
+     * @see this#fetchAndLoadWorkflowWithTask(Space, String, IProgressMonitor, VersionId)
+     * @return The loaded workflow maanager
      */
     public static WorkflowManager fetchAndLoadWorkflowWithTask(final Space space, final String itemId,
         final IProgressMonitor monitor) {
-        return fetchAndLoadWorkflowWithTask(space, itemId, monitor, null);
+        return fetchAndLoadWorkflowWithTask(space, itemId, monitor, VersionId.currentState());
     }
 
     /**
@@ -154,6 +158,7 @@ public final class DesktopAPUtil {
         final IProgressMonitor monitor, final VersionId version) {
         monitor.beginTask(LOADING_WORKFLOW_PROGRESS_MSG, IProgressMonitor.UNKNOWN);
         final var exec = DesktopAPUtil.toExecutionMonitor(monitor);
+        // For some Space implementations, this might download the workflow from a remote server.
         final var path = space.toLocalAbsolutePath(exec, itemId, version).orElse(null);
         if (path == null) {
             return null;
@@ -270,8 +275,8 @@ public final class DesktopAPUtil {
         List<UpdateInfo> newReleases = new ArrayList<>();
         List<String> bugfixes = new ArrayList<>();
         try {
-            UpdateDetector.checkForNewRelease().forEach(newReleases::add);
-            UpdateDetector.checkForBugfixes().forEach(bugfixes::add);
+            newReleases.addAll(UpdateDetector.checkForNewRelease());
+            bugfixes.addAll(UpdateDetector.checkForBugfixes());
         } catch (IOException | URISyntaxException e) {
             NodeLogger.getLogger(DesktopAPUtil.class).error("Could not check for updates", e);
         }
@@ -486,7 +491,8 @@ public final class DesktopAPUtil {
      * @param name The name of the consumer task.
      * @param logger The logger to use.
      * @param consumer The task to perform.
-     * @throws Throwable Throwable thrown by the consumer task (checked or unchecked).
+     * @param <T> The exception type
+     * @throws T Throwable thrown by the consumer task (checked or unchecked).
      */
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> void consumerWithProgress(final String name, final NodeLogger logger,
@@ -724,7 +730,7 @@ public final class DesktopAPUtil {
      */
     public static <T> Optional<T> runUiEventLoopUntilValueAvailable(final Duration timeout,
         final Supplier<T> valueSupplier, final Consumer<Throwable> onError) {
-        T value = null;
+        T value;
         var timeoutTime = System.currentTimeMillis() + timeout.toMillis();
         var display = Display.getCurrent();
         while ((value = valueSupplier.get()) == null) {

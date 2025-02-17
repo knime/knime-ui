@@ -57,7 +57,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -76,19 +75,17 @@ import org.knime.ui.java.util.DesktopAPUtil;
 
 /**
  * Called to 'headlessly' (i.e. without any user-interaction) save and close all the projects specified as parameter.
- * Additionally, a specified {@link PostProjectCloseAction} is executed.
- *
+ * <p>
  * The call of this browser function is usually indirectly triggered by an event sent from the Backend (see
- * {@link #saveAndCloseProjectsInteractively(Set, EventConsumer, PostProjectCloseAction)}). The event being sent to
+ * {@link #saveAndCloseProjectsInteractively(List, EventConsumer)} ). The event being sent to
  * the Frontend instructs it to generate all the project-svg images of the passed projects (projectIds). Once done,
- * the Frontend calls this browser function with all the generated svg-images, project-ids and the forwarded
- * {@link PostProjectCloseAction}.
+ * the Frontend calls this browser function with all the generated svg-images and project-ids.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class SaveAndCloseProjects {
 
-    static AtomicReference<State> projectsSavedState = new AtomicReference<>();
+    static final AtomicReference<State> projectsSavedState = new AtomicReference<>();
 
     private SaveAndCloseProjects() {
         // utility
@@ -111,7 +108,7 @@ public final class SaveAndCloseProjects {
         saveProjectsWithProgressBar(projectIds, svgs, firstFailure, progressService);
 
         final var optFailure = firstFailure.get();
-        if (optFailure != null) { // NOSONAR
+        if (optFailure != null && optFailure.isPresent()) { // NOSONAR
             DesktopAPUtil.showWarning("Failed to save workflow", "Workflow could not be saved.\nSee log for details.");
             // Make the first project active which couldn't be saved
             optFailure.ifPresent(projectId -> ProjectManager.getInstance().setProjectActive(projectId));
@@ -150,7 +147,8 @@ public final class SaveAndCloseProjects {
         final EventConsumer eventConsumer) {
         var projectManager = ProjectManager.getInstance();
         var dirtyProjectIds = projectIds.stream() //
-            .filter(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).map(WorkflowManager::isDirty).orElse(false)) //
+            .filter(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded)
+                .map(WorkflowManager::isDirty).orElse(false)) //
             .toArray(String[]::new);
         var dirtyWfms = Arrays.stream(dirtyProjectIds) //
             .flatMap(id -> projectManager.getProject(id).flatMap(Project::getWorkflowManagerIfLoaded).stream()) //
@@ -204,7 +202,8 @@ public final class SaveAndCloseProjects {
         for (var i = 0; i < projectIds.length; i++) {
             var projectId = projectIds[i];
             var projectSVG = svgs[i];
-            var projectWfm = ProjectManager.getInstance().getProject(projectId).flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
+            var projectWfm = ProjectManager.getInstance().getProject(projectId)
+                .flatMap(Project::getWorkflowManagerIfLoaded).orElse(null);
             var success = saveAndCloseProject(monitor, projectId, projectSVG, projectWfm);
             if (!success) {
                 firstFailure.compareAndExchange(null, Optional.of(projectId));

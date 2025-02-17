@@ -72,9 +72,9 @@ final class ClassicAPBuildHubURL {
     private static final String LATEST = "/latest/";
 
     /**
-     * @param itemId
+     * @param itemId The ID of the queried item
      * @param sourceSpaceProvider a 'non-local' space provider
-     * @param sourceSpace
+     * @param sourceSpace The space containing the item
      * @return The built hub URL
      */
     static String getHubURL(final String itemId, final SpaceProvider sourceSpaceProvider, final Space sourceSpace) {

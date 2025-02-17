@@ -245,7 +245,7 @@ final class SoftwareUpdateProgressEventListener implements IJobChangeListener {
 
         private double m_worked;
 
-        private String m_task;
+        private final String m_task;
 
         private String m_subTask;
 

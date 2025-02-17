@@ -76,10 +76,10 @@ import org.osgi.service.event.Event;
 /**
  * Registered as fragment with the application model. Listens to perspective switch events in order to remove/add stuff
  * (e.g. toolbars, trims etc.).
- *
+ * <p>
  * Done via listener in order to add/remove that stuff no matter how the perspective is changed (e.g. via toolbar
  * action, perspective switch shortcut, etc.).
- *
+ * <p>
  * <br/>
  * <br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
@@ -101,6 +101,7 @@ public final class PerspectiveSwitchAddon {
     @Inject
     private MApplication m_app;
 
+    @SuppressWarnings({"MissingJavadoc", "javadoc"})
     @Inject
     @Optional
     public void listen(@EventTopic(UIEvents.ElementContainer.TOPIC_SELECTEDELEMENT) final Event event) {

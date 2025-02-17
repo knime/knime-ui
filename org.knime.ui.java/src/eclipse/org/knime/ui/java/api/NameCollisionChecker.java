@@ -105,7 +105,7 @@ final class NameCollisionChecker {
      *
      * @param space surrounding space
      * @param destWorkflowGroupItemId The destination workflow group ID
-     * @param itemIds The list of source item IDs
+     * @param itemNames The already-present item names
      * @return List of already existing names
      */
     static List<String> checkForNameCollisions(final Space space, final String destWorkflowGroupItemId,

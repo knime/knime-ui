@@ -108,7 +108,6 @@ final class SaveProjectCopy {
      *
      * @param projectId The ID identifying the project to save
      * @param projectSVG The project SVG
-     * @throws IOException In case the project could not be saved
      */
     static void saveCopyOf(final String projectId, final String projectSVG) {
         final var project = ProjectManager.getInstance()//
@@ -280,10 +279,9 @@ final class SaveProjectCopy {
     /**
      * Save component template as
      *
-     * @param context The context with the information about the new component
+     * @param newContext The context with the information about the new component
      * @param monitor The monitor to show the progress of this operation
      * @param wfm The workflow manager that will save the component
-     * @param svg workflow SVG
      *
      * @return The saved workflow manager or {@code null} if the save operation failed
      */

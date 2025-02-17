@@ -51,7 +51,6 @@ import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
@@ -77,7 +76,7 @@ import jakarta.annotation.PreDestroy;
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
  * debug message if in debug mode) and the communication backend injected.
- *
+ * <p>
  * <br/><br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
  *
@@ -86,10 +85,10 @@ import jakarta.annotation.PreDestroy;
  */
 public class KnimeBrowserView {
 
-    @SuppressWarnings("javadoc")
+    @SuppressWarnings({"javadoc", "MissingJavadoc"})
     public static final NodeLogger LOGGER = NodeLogger.getLogger(KnimeBrowserView.class);
 
-    @SuppressWarnings("javadoc")
+    @SuppressWarnings({"javadoc", "MissingJavadoc"})
     public static final String DOMAIN_NAME = "org.knime.ui.java";
 
     static final String EMPTY_PAGE = "about:blank";
@@ -98,7 +97,7 @@ public class KnimeBrowserView {
 
     private static final String SCHEME = "https";
 
-    @SuppressWarnings("javadoc")
+    @SuppressWarnings({"javadoc", "MissingJavadoc"})
     public static final String BASE_URL = SCHEME + "://" + DOMAIN_NAME;
 
     private static final String APP_PAGE = BASE_URL + "/index.html";
@@ -141,9 +140,9 @@ public class KnimeBrowserView {
 
     /**
      * Clears the view. Called when the view is not needed anymore (for some time), e.g. on perspective switch.
-     *
+     * <p>
      * If the view is activated/used again, it need to be initialized either via
-     * {@link #activateViewInitializer(Supplier, boolean)} or {@link #initViewForTesting(Supplier)}.
+     * {@link #activateViewInitializer(boolean)} or {@link #initViewForTesting()}.
      */
     public static void clearView() {
         isInitialized = false;
@@ -184,6 +183,7 @@ public class KnimeBrowserView {
                 });
     }
 
+    @SuppressWarnings({"MissingJavadoc", "javadoc"})
     @PostConstruct
     public void createPartControl(final Composite parent) {
         // This is a 'quasi' singleton. Even though it has a public constructor it's only expected to have one single
@@ -270,11 +270,13 @@ public class KnimeBrowserView {
         }
     }
 
-	@Focus
+	@SuppressWarnings({"MissingJavadoc", "javadoc"})
+    @Focus
 	public void setFocus() {
 		browser.setFocus();
 	}
 
+    @SuppressWarnings({"MissingJavadoc", "javadoc"})
     @PreDestroy
     public void dispose() {
         clearView();

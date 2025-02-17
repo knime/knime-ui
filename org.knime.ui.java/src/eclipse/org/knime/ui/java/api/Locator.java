@@ -99,6 +99,9 @@ final class Locator {
         }
     }
 
+    /**
+     * A valid destination for a copy or move operation
+     */
     public sealed interface Destination permits Space, Item {
         String itemId();
 

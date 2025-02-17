@@ -63,6 +63,7 @@ import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.Sele
 @Deprecated(forRemoval = true)
 final class SpaceDestinationPicker {
 
+    @SuppressWarnings({"MissingJavadoc", "javadoc"})
     public enum Operation {
         UPLOAD("Upload to...", "uploaded"),
         DOWNLOAD("Download to...", "downloaded"),

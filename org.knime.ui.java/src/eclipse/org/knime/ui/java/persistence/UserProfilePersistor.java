@@ -113,6 +113,7 @@ public final class UserProfilePersistor {
      *
      * @return a new instance of {@link UserProfile}
      */
+    @SuppressWarnings("unchecked")
     public static UserProfile loadUserProfile(final Path profilePath) {
         var uiSettings = readUserProfileFile(UI_SETTINGS_FILE, profilePath);
         var onboardingHints = readUserProfileFile(ONBOARDING_HINTS_SETTINGS_FILE, profilePath);
@@ -139,6 +140,7 @@ public final class UserProfilePersistor {
     /**
      * @return an instance representing an empty user profile
      */
+    @SuppressWarnings("unchecked")
     public static UserProfile createEmptyUserProfile() {
         return new UserProfile() {
 

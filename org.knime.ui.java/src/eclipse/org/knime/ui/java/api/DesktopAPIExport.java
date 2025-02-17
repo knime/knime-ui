@@ -54,7 +54,7 @@ import org.knime.gateway.impl.webui.AppStateUpdater;
  * The {@link DesktopAPI} is usually only meant to be called by the frontend (hence, all desktop API functions are
  * package scope). However, there is at least one case where a desktop API function is required by other java-code. This
  * class publicly exposes the required functions accordingly.
- *
+ * <p>
  * The function calls will only have an effect if the desktop API has been initialized.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany

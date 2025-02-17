@@ -62,6 +62,10 @@ import org.knime.gateway.impl.webui.service.events.EventConsumer;
  */
 public final class ChatAPI {
 
+    private ChatAPI() {
+
+    }
+
     /**
      * Listener for chat messages.
      *

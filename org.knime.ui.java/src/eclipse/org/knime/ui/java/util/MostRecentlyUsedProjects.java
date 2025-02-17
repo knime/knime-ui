@@ -168,7 +168,7 @@ public final class MostRecentlyUsedProjects {
      */
     public record RecentlyUsedProject(String name, Origin origin, OffsetDateTime timeUsed) {
 
-        @SuppressWarnings("javadoc")
+        @SuppressWarnings({"javadoc", "MissingJavadoc"})
         public RecentlyUsedProject {
             CheckUtils.checkNotNull(name);
             CheckUtils.checkNotNull(origin);

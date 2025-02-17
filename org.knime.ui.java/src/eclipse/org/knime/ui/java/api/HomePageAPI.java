@@ -66,7 +66,7 @@ import org.knime.ui.java.profile.UserProfile;
  */
 final class HomePageAPI {
 
-    private static final TileId defaultTile = new TileId("c4-modern-ui", 0);
+    private static final TileId DEFAULT_TILE = new TileId("c4-modern-ui", 0);
 
     private HomePageAPI() {
         // Stateless
@@ -168,13 +168,13 @@ final class HomePageAPI {
         var usage = Optional.ofNullable(profile) //
             .map(UserProfile::internalUsage); //
         if (usage.isEmpty()) {
-            return defaultTile;
+            return DEFAULT_TILE;
         }
         return getConditionalCategories(endpoint) //
             .stream().filter(conditionalCategory -> conditionalCategory.isActive().test(usage.get())) //
             .findFirst() //
             .map(conditionalCategory -> new TileId(conditionalCategory.id(), 0)) //
-            .orElse(defaultTile);
+            .orElse(DEFAULT_TILE);
     }
 
     private static Predicate<InternalUsageTracking> startsGreaterThan(final int numberOfStarts) {
