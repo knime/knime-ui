@@ -15,6 +15,8 @@ declare global {
     store: any;
     router: any;
     toast: any;
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
   }
 
   interface ObjectConstructor {

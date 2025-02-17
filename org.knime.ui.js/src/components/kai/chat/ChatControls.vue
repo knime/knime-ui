@@ -4,7 +4,10 @@ import { useTextareaAutosize } from "@vueuse/core";
 
 import { FunctionButton } from "@knime/components";
 import AbortIcon from "@knime/styles/img/icons/close.svg";
+import MicrophoneIcon from "@knime/styles/img/icons/microphone.svg";
 import SendIcon from "@knime/styles/img/icons/paper-flier.svg";
+
+import { useSpeechRecognition } from "./useSpeechRecognition";
 
 const emit = defineEmits(["sendMessage", "abort"]);
 
@@ -78,6 +81,14 @@ const isInputValid = computed(
   () => input.value && input.value.trim().length > 0,
 );
 const disabled = computed(() => !isInputValid.value && !props.isProcessing);
+
+// Speech recognition
+const {
+  startSpeechRecognition,
+  stopSpeechRecognition,
+  ongoingSpeechRecognition,
+  error,
+} = useSpeechRecognition(input, handleSendButtonClick);
 </script>
 
 <template>
@@ -90,15 +101,33 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
       :placeholder="placeholder"
       @keydown="handleKeyDown"
     />
-    <FunctionButton
-      class="send-button"
-      primary
-      :disabled="disabled"
-      @click="handleSendButtonClick"
-    >
-      <AbortIcon v-if="isProcessing" class="abort-icon" />
-      <SendIcon v-else class="send-icon" />
-    </FunctionButton>
+    <div class="button-container">
+      <FunctionButton
+        v-if="!ongoingSpeechRecognition && !error"
+        primary
+        class="send-button"
+        @click="startSpeechRecognition"
+      >
+        <MicrophoneIcon />
+      </FunctionButton>
+      <FunctionButton
+        v-else-if="!error"
+        class="send-button"
+        primary
+        @click="stopSpeechRecognition"
+      >
+        <AbortIcon />
+      </FunctionButton>
+      <FunctionButton
+        class="send-button"
+        primary
+        :disabled="disabled"
+        @click="handleSendButtonClick"
+      >
+        <AbortIcon v-if="isProcessing" class="abort-icon" />
+        <SendIcon v-else class="send-icon" />
+      </FunctionButton>
+    </div>
   </div>
 </template>
 
@@ -128,6 +157,11 @@ const disabled = computed(() => !isInputValid.value && !props.isProcessing);
     &:focus {
       outline: none;
     }
+  }
+
+  & .button-container {
+    display: flex;
+    flex-direction: row;
   }
 
   & .send-button {
