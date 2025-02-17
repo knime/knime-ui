@@ -152,10 +152,10 @@ final class OpenProject {
      * switching to it.
      *
      * @implNote Needs to be stand-alone (not wrapped in progress manager) to be testable.
-     * @param spaceId
-     * @param itemId
-     * @param spaceProviderId
-     * @param monitor
+     * @param spaceId The ID of the space the item is located in
+     * @param itemId The ID of the item to open
+     * @param spaceProviderId The ID of the space provider
+     * @param monitor To report progress
      * @throws OpenProjectException Specific exception thrown when a project failed to open
      */
     static void openProjectWithProgress(final String spaceProviderId, final String spaceId, final String itemId,
@@ -180,7 +180,8 @@ final class OpenProject {
 
         var project = DesktopAPI.getDeps(ProjectManager.class) //
             .getAndUpdateWorkflowServiceProject(space, spaceProviderId, spaceId, itemId, projectType) //
-            .or(() -> loadProject(space, spaceProviderId, spaceId, itemId, projectType, monitor)) //
+            .or(() -> loadWorkflowAndCreateProjectWithVersions(space, spaceProviderId, spaceId, itemId, projectType,
+                monitor)) //
             .orElseThrow(() -> new OpenProjectException("The project could not be loaded."));
 
         final var providerType = spaceProviders.getProviderTypes().get(spaceProviderId);
@@ -222,8 +223,9 @@ final class OpenProject {
         });
     }
 
-    private static Optional<Project> loadProject(final Space space, final String spaceProviderId, final String spaceId,
-        final String itemId, final ProjectTypeEnum projectType, final IProgressMonitor monitor) {
+    private static Optional<Project> loadWorkflowAndCreateProjectWithVersions(final Space space,
+        final String spaceProviderId, final String spaceId, final String itemId, final ProjectTypeEnum projectType,
+        final IProgressMonitor monitor) {
         var loadedWorkflow = Optional
             .ofNullable(DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, VersionId.currentState()));
         return loadedWorkflow.map(wfm -> { //
@@ -231,6 +233,7 @@ final class OpenProject {
                 .setWfm(wfm) //
                 .setOrigin(Origin.of(spaceProviderId, spaceId, itemId, projectType)) //
                 .setVersionWfmLoader(
+                    // this configures how to load a specific version of the project
                     version -> DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, version)) //
                 .build();
         });
