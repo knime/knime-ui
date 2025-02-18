@@ -3,7 +3,6 @@
 import { computed, shallowRef } from "vue";
 import { storeToRefs } from "pinia";
 import { Container, Rectangle } from "pixi.js";
-import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
@@ -12,6 +11,7 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
+import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 
 import Port from "./Port.vue";
 import { useFlowVarPortTransparency } from "./useFlowVarPortTransparency";
@@ -138,6 +138,7 @@ const { initialAlpha, onPointerEnter, onPointerLeave } =
       :position="position"
       :hit-area="hitArea"
       :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
+      event-mode="static"
       @pointerdown="onPointerDown"
       @pointerup="onConnectionDrop"
     >
@@ -148,9 +149,8 @@ const { initialAlpha, onPointerEnter, onPointerLeave } =
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
-            graphics.lineStyle(1, 0x000000);
-            graphics.drawRect(0, 0, hitArea.width, hitArea.height);
-            graphics.endFill();
+            graphics.rect(0, 0, hitArea.width, hitArea.height);
+            graphics.stroke({ width: 1, color: 0x000000 });
           }
         "
       />

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Container } from "pixi.js";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { NodeState } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
+import type { GraphicsInst } from "@/vue3-pixi";
 import { nodeStateText } from "../../util/textStyles";
 
 import { useNodeStateExecutingAnimation } from "./useNodeStateExecutingAnimation";
@@ -48,9 +48,8 @@ const { containerRef: animatedCircleRef } = useNodeStateExecutingAnimation();
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
-          graphics.beginFill($colors.nodeProgressBar);
-          graphics.drawCircle(6, $shapes.nodeStatusHeight / 2, 4);
-          graphics.endFill();
+          graphics.circle(6, $shapes.nodeStatusHeight / 2, 4);
+          graphics.fill($colors.nodeProgressBar);
         }
       "
     />
@@ -74,15 +73,14 @@ const { containerRef: animatedCircleRef } = useNodeStateExecutingAnimation();
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
-          graphics.beginFill($colors.nodeProgressBar);
-          graphics.drawRoundedRect(
+          graphics.roundRect(
             0,
             0,
             progressBarWidth,
             $shapes.nodeStatusHeight,
             1,
           );
-          graphics.endFill();
+          graphics.fill($colors.nodeProgressBar);
         }
       "
     />
@@ -94,15 +92,14 @@ const { containerRef: animatedCircleRef } = useNodeStateExecutingAnimation();
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
-            graphics.beginFill(0xffffff);
-            graphics.drawRoundedRect(
+            graphics.roundRect(
               0,
               0,
               progressBarWidth,
               $shapes.nodeStatusHeight,
               1,
             );
-            graphics.endFill();
+            graphics.fill(0xffffff);
           }
         "
       />

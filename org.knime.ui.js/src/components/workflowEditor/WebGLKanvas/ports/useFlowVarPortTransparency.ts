@@ -1,11 +1,11 @@
 import { type ShallowRef, computed, ref, watch } from "vue";
 import { gsap } from "gsap";
-import type { ContainerInst } from "@/vue3-pixi";
 
 import {
   Node,
   type NodePort as NodePortType,
 } from "@/api/gateway-api/generated-api";
+import type { ContainerInst } from "@/vue3-pixi";
 
 type UseFlowVarPortTransparencyOptions = {
   portContainer: ShallowRef<ContainerInst | undefined>;

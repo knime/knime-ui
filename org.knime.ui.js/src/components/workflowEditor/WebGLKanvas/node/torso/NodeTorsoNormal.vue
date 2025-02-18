@@ -1,8 +1,7 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { Resource, Texture } from "pixi.js";
-import type { GraphicsInst } from "@/vue3-pixi";
+import * as PIXI from "pixi.js";
 
 import {
   type NativeNodeInvariants,
@@ -10,6 +9,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import { nodeBackgroundColors } from "@/style/colors";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 const componentBackgroundPortion = 0.75;
 
@@ -74,6 +74,7 @@ const drawVirtualOut = (graphics: GraphicsInst) => {
 };
 
 type Props = {
+  nodeId: string;
   kind: Node.KindEnum;
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
@@ -99,17 +100,14 @@ const renderFunctionMapper = {
 
 const renderTorso = (graphics: GraphicsInst, backgroundColor: string) => {
   graphics.clear();
-  graphics.lineStyle(2, backgroundColor, 1);
-  graphics.beginFill(backgroundColor);
-
   const draw = renderFunctionMapper[props.type!] ?? drawDefault;
   draw(graphics);
-
   graphics.closePath();
-  graphics.endFill();
+  graphics.stroke({ width: 2, color: backgroundColor });
+  graphics.fill(backgroundColor);
 };
 
-const texture = ref<Texture<Resource>>();
+const texture = ref<PIXI.Texture>();
 
 const NODE_ICON_SIZE = 16;
 const nodeIconScaleFactor = ref(0);
@@ -120,10 +118,14 @@ onMounted(() => {
 
     imageLocal.src = props.icon;
     imageLocal.onload = () => {
+      const source = new PIXI.ImageSource({
+        resource: imageLocal,
+      });
+
       nodeIconScaleFactor.value =
         NODE_ICON_SIZE /
         Math.max(imageLocal.naturalWidth, imageLocal.naturalHeight);
-      texture.value = Texture.from(props.icon!);
+      texture.value = new PIXI.Texture({ source });
     };
   }
 });
@@ -155,9 +157,9 @@ onUnmounted(() => {
     />
 
     <Sprite
-      v-if="texture && texture.valid"
+      v-if="texture"
       event-mode="none"
-      name="NodeIcon"
+      label="NodeIcon"
       :texture="texture as any"
       :anchor="0.5"
       :scale="nodeIconScaleFactor"

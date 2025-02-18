@@ -9,7 +9,8 @@ module.exports = {
   globals: {
     consola: false,
   },
-  ignorePatterns: ["generated-api.ts", "generated-exceptions.ts"],
+  // TODO: fix issues inside vue3-pixi
+  ignorePatterns: ["generated-api.ts", "generated-exceptions.ts", "vue3-pixi"],
   env: { browser: true, node: true },
   settings: {
     "import/resolver": {

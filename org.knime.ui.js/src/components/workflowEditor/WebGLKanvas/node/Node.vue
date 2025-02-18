@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, ref, toRef, unref, watch } from "vue";
 import { storeToRefs } from "pinia";
@@ -177,18 +178,17 @@ const { hoverSize } = useNodeHoverSize({
 const renderHoverArea = (graphics: GraphicsInst) => {
   graphics.clear();
 
-  if (isDebugModeEnabled.value) {
-    // eslint-disable-next-line no-magic-numbers
-    graphics.beginFill(0xf1f1f1);
-  }
-
-  graphics.drawRect(
+  graphics.rect(
     hoverSize.value.x,
     hoverSize.value.y,
     hoverSize.value.width,
     hoverSize.value.height,
   );
-  graphics.endFill();
+
+  if (isDebugModeEnabled.value) {
+    // eslint-disable-next-line no-magic-numbers
+    graphics.fill(0xf1f1f1);
+  }
 };
 
 const renderable = computed(
@@ -220,7 +220,12 @@ const hitArea = computed(
 const isMetanode = computed(() => isNodeMetaNode(props.node));
 
 const style = new PIXI.TextStyle(nodeNameText.styles);
-const nameMeasures = { height: 10, width: 10 }; // PIXI.TextMetrics.measureText(props.name, style, true);
+const nameMeasures = PIXI.CanvasTextMetrics.measureText(
+  props.name,
+  style,
+  undefined,
+  true,
+);
 const SINGLE_LINE_TEXT_HEIGHT_THRESHOLD = 40;
 const textYAnchor = computed(() =>
   nameMeasures.height <= SINGLE_LINE_TEXT_HEIGHT_THRESHOLD ? 0 : 0.5,
@@ -241,22 +246,23 @@ const textYAnchor = computed(() =>
   />
 
   <Container
-    :name="node.id"
+    :label="node.id"
     :renderable="renderable"
+    event-mode="static"
     @rightclick="emit('contextmenu', $event)"
     @pointerenter="onPointerEnter(node.id)"
     @pointerleave.self="onPointerLeave()"
     @pointerdown="onPointerDown"
   >
     <Graphics
-      name="NodeHoverArea"
+      label="NodeHoverArea"
       :hit-area="hitArea"
       :position="translatedPosition"
       @render="renderHoverArea"
     />
 
     <Text
-      name="NodeName"
+      label="NodeName"
       :position="nodeNamePosition"
       :resolution="zoomFactor + 0.1"
       :scale="nodeNameText.downscalingFactor"
@@ -277,8 +283,9 @@ const textYAnchor = computed(() =>
       :port-groups="null"
     />
 
-    <Container name="NodeTorsoContainer" :position="translatedPosition">
+    <Container label="NodeTorsoContainer" :position="translatedPosition">
       <NodeTorso
+        :node-id="node.id"
         :kind="node.kind"
         :type="type"
         :icon="icon"

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
@@ -11,6 +10,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
+import type { GraphicsInst } from "@/vue3-pixi";
 import { findObjectsForSelection } from "../../util/findObjectsForSelection";
 
 const canvasStore = useWebGLCanvasStore();
@@ -126,14 +126,16 @@ const onSelectionEnd = () => {
 
 const renderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.lineStyle(1, $colors.kanvasNodeSelection.activeBorder);
-  graphics.drawRect(
+  graphics.rect(
     0,
     0,
     selectionRectangle.value.width ?? 0,
     selectionRectangle.value.height ?? 0,
   );
-  graphics.endFill();
+  graphics.stroke({
+    width: 1,
+    color: $colors.kanvasNodeSelection.activeBorder,
+  });
 };
 
 useGlobalBusListener({

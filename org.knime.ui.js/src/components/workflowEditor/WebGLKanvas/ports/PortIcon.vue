@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
 import { computed } from "vue";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import * as portColors from "@knime/styles/colors/portColors";
 
 import type { PortType } from "@/api/gateway-api/generated-api";
 import { portSize } from "@/style/shapes";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 const strokeWidth = 1.4; // 1.4px
 
@@ -51,26 +51,23 @@ const portColor = computed(() => {
 
 const tablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.lineStyle(strokeWidth, portColor.value);
-  graphics.beginFill(portColor.value, props.filled ? 1 : 0);
-  graphics.drawPolygon(trianglePath.value);
-  graphics.endFill();
+  graphics.poly(trianglePath.value);
+  graphics.stroke({ width: strokeWidth, color: portColor.value });
+  graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 
 const flowVariablePortRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.lineStyle(strokeWidth, portColor.value);
-  graphics.beginFill(portColor.value, props.filled ? 1 : 0);
-  graphics.drawCircle(0, 0, portSize / 2 - 1);
-  graphics.endFill();
+  graphics.circle(0, 0, portSize / 2 - 1);
+  graphics.stroke({ width: strokeWidth, color: portColor.value });
+  graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 
 const otherPortsRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.lineStyle(strokeWidth, portColor.value);
-  graphics.beginFill(portColor.value, props.filled ? 1 : 0);
-  graphics.drawRect(0, 0, portSize, portSize);
-  graphics.endFill();
+  graphics.rect(0, 0, portSize, portSize);
+  graphics.stroke({ width: strokeWidth, color: portColor.value });
+  graphics.fill({ color: portColor.value, alpha: props.filled ? 1 : 0 });
 };
 </script>
 

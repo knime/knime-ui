@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { Node, XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
  * Colored rect that is used as selection plane for nodes
@@ -72,16 +72,18 @@ const config = computed(() => {
 
 const renderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.lineStyle(2, $colors.kanvasNodeSelection.activeBorder, 1);
-  graphics.beginFill($colors.kanvasNodeSelection.activeBackground);
-  graphics.drawRoundedRect(
+  graphics.roundRect(
     config.value.x,
     config.value.y,
     config.value.width,
     config.value.height,
     $shapes.selectedItemBorderRadius,
   );
-  graphics.endFill();
+  graphics.stroke({
+    width: 2,
+    color: $colors.kanvasNodeSelection.activeBorder,
+  });
+  graphics.fill($colors.kanvasNodeSelection.activeBackground);
 };
 </script>
 

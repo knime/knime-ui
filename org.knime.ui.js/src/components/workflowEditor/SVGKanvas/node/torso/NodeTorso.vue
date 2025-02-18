@@ -8,12 +8,12 @@ import type {
   Node,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
+import NodeTorsoForbidden from "../../../common/NodeTorsoForbidden.vue";
+import NodeTorsoMissing from "../../../common/NodeTorsoMissing.vue";
+import NodeTorsoUnknown from "../../../common/NodeTorsoUnknown.vue";
 
-import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
-import NodeTorsoMissing from "./NodeTorsoMissing.vue";
 import NodeTorsoReplace from "./NodeTorsoReplace.vue";
-import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
 
 /**
  * Main part of the node icon.

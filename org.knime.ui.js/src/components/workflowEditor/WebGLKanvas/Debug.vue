@@ -8,7 +8,7 @@ const stage = useStage();
 
 const { visibleArea } = storeToRefs(useWebGLCanvasStore());
 
-const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
+const bounds = stage.value.getChildByLabel("contentBounds")?.getBounds();
 </script>
 
 <template>
@@ -19,9 +19,8 @@ const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
-          graphics.beginFill(0xf2eecb);
-          graphics.drawRect(0, 0, visibleArea.width, visibleArea.height);
-          graphics.endFill();
+          graphics.rect(0, 0, visibleArea.width, visibleArea.height);
+          graphics.fill(0xf2eecb);
         }
       "
     />
@@ -33,9 +32,8 @@ const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
         (graphics: GraphicsInst) => {
           if (bounds) {
             graphics.clear();
-            graphics.beginFill(0x1099bb);
-            graphics.drawRect(0, 0, bounds.width, bounds.height);
-            graphics.endFill();
+            graphics.rect(0, 0, bounds.width, bounds.height);
+            graphics.fill(0x1099bb);
           }
         }
       "

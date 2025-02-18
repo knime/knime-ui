@@ -22,9 +22,8 @@ defineProps<Props>();
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
-            graphics.beginFill($colors.error);
-            graphics.drawCircle(0, 0, 5);
-            graphics.endFill();
+            graphics.circle(0, 0, 5);
+            graphics.fill($colors.error);
           }
         "
       />
@@ -33,10 +32,9 @@ defineProps<Props>();
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
-            graphics.lineStyle(1, 0xffffff);
             graphics.moveTo(-2.25, -2.25);
             graphics.lineTo(2.25, 2.25);
-            graphics.endFill();
+            graphics.stroke({ width: 1, color: 'white' });
           }
         "
       />
@@ -45,10 +43,9 @@ defineProps<Props>();
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
-            graphics.lineStyle(1, 0xffffff);
             graphics.moveTo(2.25, -2.25);
             graphics.lineTo(-2.25, 2.25);
-            graphics.endFill();
+            graphics.stroke({ width: 1, color: 'white' });
           }
         "
       />
@@ -63,18 +60,17 @@ defineProps<Props>();
         event-mode="none"
         @render="
           (graphics: GraphicsInst) => {
-            graphics.lineStyle({
+            graphics.moveTo(6, 1.25);
+            graphics.lineTo(0.5, 10.75);
+            graphics.lineTo(11.5, 10.75);
+            graphics.closePath();
+            graphics.stroke({
               width: 1,
               color: $colors.Masala,
               alignment: 0.5,
               join: 'round',
             });
-            graphics.beginFill($colors.warning);
-            graphics.moveTo(6, 1.25);
-            graphics.lineTo(0.5, 10.75);
-            graphics.lineTo(11.5, 10.75);
-            graphics.closePath();
-            graphics.endFill();
+            graphics.fill($colors.warning);
           }
         "
       />
@@ -83,10 +79,9 @@ defineProps<Props>();
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
-            graphics.lineStyle(1, $colors.Masala);
             graphics.moveTo(6, 4.2);
             graphics.lineTo(6, 7.3);
-            graphics.endFill();
+            graphics.stroke({ width: 1, color: $colors.Masala });
           }
         "
       />
@@ -95,9 +90,8 @@ defineProps<Props>();
         @render="
           (graphics: GraphicsInst) => {
             graphics.clear();
-            graphics.beginFill($colors.Masala);
-            graphics.drawCircle(6, 8.75, 0.5);
-            graphics.endFill();
+            graphics.circle(6, 8.75, 0.5);
+            graphics.fill($colors.Masala);
           }
         "
       />

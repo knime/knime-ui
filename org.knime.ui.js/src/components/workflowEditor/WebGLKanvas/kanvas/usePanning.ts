@@ -1,11 +1,11 @@
 import type { Ref } from "vue";
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import { type ApplicationInst } from "@/vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useMovingStore } from "@/store/workflow/moving";
+import { type ApplicationInst } from "@/vue3-pixi";
 
 export const useCanvasPanning = ({
   pixiApp,

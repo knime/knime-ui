@@ -2,11 +2,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { type Container, Graphics } from "pixi.js";
-import type { GraphicsInst } from "@/vue3-pixi";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import type { GraphicsInst } from "@/vue3-pixi";
 import { nodeStateText } from "../../util/textStyles";
 
 import NodeStateIssues from "./NodeStateIssues.vue";
@@ -72,7 +72,7 @@ const strokeColor = (active: boolean, index: number) => {
 
 <template>
   <Container
-    name="NodeState"
+    label="NodeState"
     event-mode="none"
     :y="$shapes.nodeSize + $shapes.nodeStatusMarginTop"
   >
@@ -81,16 +81,15 @@ const strokeColor = (active: boolean, index: number) => {
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
-          graphics.beginFill($colors.trafficLight.background);
-          graphics.lineStyle(0.3, $colors.darkeningMask);
-          graphics.drawRoundedRect(
+          graphics.roundRect(
             0,
             0,
             $shapes.nodeSize,
             $shapes.nodeStatusHeight,
             1,
           );
-          graphics.endFill();
+          graphics.fill($colors.trafficLight.background);
+          graphics.stroke({ width: 0.3, color: $colors.darkeningMask });
         }
       "
     />
@@ -99,26 +98,24 @@ const strokeColor = (active: boolean, index: number) => {
       <template v-for="(active, index) of trafficLight" :key="index">
         <Graphics
           event-mode="none"
-          name="TrafficLightBorder"
+          label="TrafficLightBorder"
           @render="
             (graphics: GraphicsInst) => {
               graphics.clear();
-              graphics.beginFill(fillColor(active, index));
-              graphics.drawCircle(6 + 10 * index, 6, 4);
-              graphics.endFill();
+              graphics.circle(6 + 10 * index, 6, 4);
+              graphics.fill(fillColor(active, index));
             }
           "
         />
 
         <Graphics
           event-mode="none"
-          name="TrafficLightCircle"
+          label="TrafficLightCircle"
           @render="
             (graphics: GraphicsInst) => {
               graphics.clear();
-              graphics.lineStyle(1, strokeColor(active, index));
-              graphics.drawCircle(6 + 10 * index, 6, 3.5);
-              graphics.endFill();
+              graphics.circle(6 + 10 * index, 6, 3.5);
+              graphics.stroke({ width: 1, color: strokeColor(active, index) });
             }
           "
         />

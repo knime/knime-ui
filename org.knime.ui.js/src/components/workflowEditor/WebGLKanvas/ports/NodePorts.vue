@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { ContainerInst } from "@/vue3-pixi";
 
 import {
   Node,
@@ -13,6 +12,7 @@ import {
   portPositions as _portPositions,
   placeholderPosition,
 } from "@/util/portShift";
+import type { ContainerInst } from "@/vue3-pixi";
 
 import NodePort from "./NodePort.vue";
 import NodePortActiveConnector from "./NodePortActiveConnector.vue";
@@ -94,7 +94,7 @@ const isDefaultFlowVariable = (index: number) => {
   return !isMetanode.value && index === 0;
 };
 
-const getPortContainerName = (index: number, type: "in" | "out") => {
+const getPortContainerLabel = (index: number, type: "in" | "out") => {
   const typeName = type === "in" ? "In" : "Out";
   return isDefaultFlowVariable(index)
     ? `${props.nodeId}__defaulFlowVar${typeName}`
@@ -165,7 +165,7 @@ const sourcePortPosition = computed(() => {
       direction="in"
       :node-id="nodeId"
       :node-kind="nodeKind"
-      :name="getPortContainerName(port.index, 'in')"
+      :label="getPortContainerLabel(port.index, 'in')"
       :port="port"
       :position="{
         x: anchor.x + portPositions.in[port.index][0] - $shapes.portSize / 2,
@@ -179,7 +179,7 @@ const sourcePortPosition = computed(() => {
       direction="out"
       :node-id="nodeId"
       :node-kind="nodeKind"
-      :name="getPortContainerName(port.index, 'out')"
+      :label="getPortContainerLabel(port.index, 'out')"
       :port="port"
       :position="{
         x: anchor.x + portPositions.out[port.index][0] - $shapes.portSize / 2,

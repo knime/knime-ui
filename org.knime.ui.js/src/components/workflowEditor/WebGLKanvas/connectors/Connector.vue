@@ -111,10 +111,9 @@ const renderFn = (graphics: GraphicsInst) => {
   const color = props.flowVariableConnection ? $colors.Coral : $colors.Masala;
   graphics
     .clear()
-    .lineStyle(1, color)
     .moveTo(linePoints.value.at(0)!, linePoints.value.at(1)!)
     .bezierCurveTo(...bezierPoints.value)
-    .endFill();
+    .stroke({ width: 1, color });
 };
 
 function getBoundingBox(start: XY, ctrl1: XY, ctrl2: XY, end: XY) {
@@ -154,5 +153,5 @@ const renderable = computed(() => {
 </script>
 
 <template>
-  <Graphics :renderable="renderable" :name="id" @render="renderFn" />
+  <Graphics :renderable="renderable" :label="id" @render="renderFn" />
 </template>

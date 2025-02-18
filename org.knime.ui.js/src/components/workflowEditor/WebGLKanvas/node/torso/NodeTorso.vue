@@ -15,6 +15,7 @@ import NodeTorsoNormal from "./NodeTorsoNormal.vue";
 import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
 
 type Props = {
+  nodeId: string;
   kind: Node.KindEnum;
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
@@ -47,6 +48,7 @@ const isKnownNode = computed(() => {
 
     <NodeTorsoNormal
       v-else-if="isKnownNode"
+      :node-id="nodeId"
       :type="type"
       :kind="kind"
       :icon="icon"
