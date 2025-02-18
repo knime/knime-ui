@@ -241,3 +241,5 @@ declare function getAncestorInfo(
 ): string;
 
 declare function getPersistedLocalStorageData(): any;
+
+declare function updateOpenProjectsOrder(...args: string[]): void;

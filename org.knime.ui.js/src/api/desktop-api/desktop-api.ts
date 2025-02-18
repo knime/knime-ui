@@ -946,3 +946,17 @@ export const getPersistedLocalStorageData = () => {
     { block: false },
   );
 };
+
+export const updateOpenProjectsOrder = ({
+  projectIds,
+}: {
+  projectIds: Array<string>;
+}) => {
+  return callBrowserFunction(
+    window.updateOpenProjectsOrder,
+    projectIds,
+    "Could not update open projects order",
+    false,
+    { block: false },
+  );
+};

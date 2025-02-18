@@ -341,4 +341,18 @@ final class ProjectAPI {
         });
     }
 
+    /**
+     * Update the order of open projects
+     *
+     * @param projectIdsInNewOrder The new order of the project IDs
+     */
+    @API
+    static void updateOpenProjectsOrder(final Object[] projectIdsInNewOrder) {
+        var projectIds = Arrays.stream(projectIdsInNewOrder) //
+            .map(String.class::cast) //
+            .toList();
+        DesktopAPI.getDeps(ProjectManager.class).updateOpenProjectsOrder(projectIds);
+        DesktopAPI.getDeps(AppStateUpdater.class).updateAppState();
+    }
+
 }
