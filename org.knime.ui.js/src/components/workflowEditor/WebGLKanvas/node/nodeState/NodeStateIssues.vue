@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { LINE_JOIN } from "pixi.js";
-import type { GraphicsInst } from "vue3-pixi";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 type Props = {
   error?: string;
@@ -68,7 +67,7 @@ defineProps<Props>();
               width: 1,
               color: $colors.Masala,
               alignment: 0.5,
-              join: LINE_JOIN.ROUND,
+              join: 'round',
             });
             graphics.beginFill($colors.warning);
             graphics.moveTo(6, 1.25);

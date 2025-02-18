@@ -3,11 +3,11 @@ import { type Ref, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
-import { Application, type ApplicationInst, type StageInst } from "vue3-pixi";
 
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
+import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
 
@@ -74,19 +74,18 @@ onMounted(() => {
   // Store reference Pixi.js application instance
   const app = pixiApp.value!.app;
   globalThis.__PIXI_APP__ = app;
-
-  canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-
   // Store reference to the Pixi.js Stage
   // https://pixijs.com/7.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
-  canvasStore.stage = app.stage as StageInst;
+  // canvasStore.stage = app.stage as StageInst;
+  canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
 
   canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
+
+  // TextureStyle.defaultOptions.scaleMode = "nearest";
 
   nextTick(() => {
     isReady.value = true;
   });
-
   initResizeObserver();
 });
 
@@ -102,13 +101,14 @@ const { beginPan } = useCanvasPanning({
 <template>
   <div :id="KANVAS_ID" ref="rootEl" tabindex="0" class="scroll-container">
     <FloatingMenuPortalTarget v-if="isReady" />
-
     <Application
       ref="pixiApp"
       :background-color="0xffffff"
       :width="containerSize.width"
       :height="containerSize.height"
-      :resolution="1"
+      :resolution="1.25"
+      :auto-density="true"
+      :antialias="true"
       @wheel.prevent="zoom"
       @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
       @pointermove="$bus.emit('selection-pointermove', $event)"
@@ -119,7 +119,7 @@ const { beginPan } = useCanvasPanning({
     >
       <Container name="contentBounds">
         <Debug v-if="isCanvasDebugEnabled" />
-        <slot />
+        <!-- <slot />-->
       </Container>
     </Application>
   </div>

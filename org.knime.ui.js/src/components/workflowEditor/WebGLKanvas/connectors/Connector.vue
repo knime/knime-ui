@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import { computed, toRefs } from "vue";
 import { storeToRefs } from "pinia";
-import type { GraphicsInst } from "vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
@@ -12,6 +11,7 @@ import { useMovingStore } from "@/store/workflow/moving";
 import * as $colors from "@/style/colors";
 import { portSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
+import type { GraphicsInst } from "@/vue3-pixi";
 import type { ConnectorProps } from "../types";
 
 // eslint-disable-next-line no-magic-numbers

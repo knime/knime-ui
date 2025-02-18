@@ -1,6 +1,6 @@
 import { type ShallowRef, computed, ref, watch } from "vue";
 import { gsap } from "gsap";
-import type { ContainerInst } from "vue3-pixi";
+import type { ContainerInst } from "@/vue3-pixi";
 
 import {
   Node,

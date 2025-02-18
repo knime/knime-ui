@@ -1,6 +1,6 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
-import type { GraphicsInst } from "vue3-pixi";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { MetaNodeState } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";

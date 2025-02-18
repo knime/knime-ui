@@ -18,7 +18,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Kanvas>
+  <Kanvas v-if="activeWorkflow">
     <Workflow v-if="activeWorkflow" />
   </Kanvas>
 </template>

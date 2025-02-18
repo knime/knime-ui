@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
 import { computed } from "vue";
-import type { GraphicsInst } from "vue3-pixi";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 import * as portColors from "@knime/styles/colors/portColors";
 

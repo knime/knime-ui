@@ -2,7 +2,6 @@
 import { computed, ref, toRef, unref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
-import { type GraphicsInst } from "vue3-pixi";
 
 import type { KnimeNode } from "@/api/custom-types";
 import {
@@ -18,6 +17,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import { type GraphicsInst } from "@/vue3-pixi";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import NodePorts from "../ports/NodePorts.vue";
 import { nodeNameText } from "../util/textStyles";
@@ -220,7 +220,7 @@ const hitArea = computed(
 const isMetanode = computed(() => isNodeMetaNode(props.node));
 
 const style = new PIXI.TextStyle(nodeNameText.styles);
-const nameMeasures = PIXI.TextMetrics.measureText(props.name, style, true);
+const nameMeasures = { height: 10, width: 10 }; // PIXI.TextMetrics.measureText(props.name, style, true);
 const SINGLE_LINE_TEXT_HEIGHT_THRESHOLD = 40;
 const textYAnchor = computed(() =>
   nameMeasures.height <= SINGLE_LINE_TEXT_HEIGHT_THRESHOLD ? 0 : 0.5,

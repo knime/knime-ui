@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { ContainerInst } from "vue3-pixi";
+import type { ContainerInst } from "@/vue3-pixi";
 
 import {
   Node,

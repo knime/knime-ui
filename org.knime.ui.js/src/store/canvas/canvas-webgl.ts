@@ -3,12 +3,12 @@
 
 import { type UnwrapRef, computed, nextTick, ref, shallowRef } from "vue";
 import { defineStore } from "pinia";
-import type { ApplicationInst, StageInst } from "vue3-pixi";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
+import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { type GraphicsInst, useStage } from "vue3-pixi";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { type GraphicsInst, useStage } from "@/vue3-pixi";
 
 const stage = useStage();
 
@@ -48,9 +48,8 @@ const bounds = stage.value.getChildByName("contentBounds")?.getBounds();
       @render="
         (graphics: GraphicsInst) => {
           graphics.clear();
-          graphics.beginFill(0x000000);
-          graphics.drawRect(0, 0, 10, 10);
-          graphics.endFill();
+          graphics.rect(0, 0, 10, 10);
+          graphics.fill(0x000000);
         }
       "
     />

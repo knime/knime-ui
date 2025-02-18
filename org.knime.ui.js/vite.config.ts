@@ -4,10 +4,13 @@ import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { ViteUserConfig } from "vitest/config";
 import svgLoader from "vite-svg-loader";
-import { isCustomElement } from "vue3-pixi";
+
+import { svgoConfig } from "@knime/styles/config/svgo.config";
+
+// TODO: replace with app.component calls
+import { isCustomElement } from "./src/vue3-pixi/index";
 
 // @ts-ignore
-import { svgoConfig } from "@knime/styles/config/svgo.config";
 
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };

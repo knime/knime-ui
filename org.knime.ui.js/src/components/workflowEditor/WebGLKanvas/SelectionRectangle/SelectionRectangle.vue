@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import type { GraphicsInst } from "vue3-pixi";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useGlobalBusListener } from "@/composables/useGlobalBusListener";

@@ -1,6 +1,6 @@
 <!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
-import type { GraphicsInst } from "vue3-pixi";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 const renderFn = (graphics: GraphicsInst) => {
   // Define colors

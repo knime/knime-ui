@@ -28,6 +28,7 @@
     "postinstall": "license-check -o licenses/used-packages.json"
   },
   "dependencies": {
+    "@antfu/utils": "^0.7.8",
     "@floating-ui/vue": "^1.1.1",
     "@fontsource/roboto": "4.x",
     "@fontsource/roboto-condensed": "4.x",
@@ -54,13 +55,15 @@
     "lodash-es": "^4.17.21",
     "markdown-it": "^13.0.2",
     "mitt": "^3.0.1",
+    "nanoid": "^4.0.2",
     "pinia": "^2.3.0",
-    "pixi.js": "7.4.0",
+    "pixi-filters": "^6.0.4",
+    "pixi.js": "^8.8.0",
     "raf-throttle": "2.0.6",
     "vue": "3.5.13",
+    "vue-demi": "^0.14.8",
     "vue-router": "^4.1.6",
-    "vue3-click-away": "1.2.4",
-    "vue3-pixi": "^0.9.6"
+    "vue3-click-away": "1.2.4"
   },
   "devDependencies": {
     "@cyclonedx/cyclonedx-npm": "^1.16.1",
@@ -103,5 +106,12 @@
   "volta": {
     "node": "22.11.0",
     "npm": "10.9.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "libxmljs2",
+      "vue-demi"
+    ]
   }
 }

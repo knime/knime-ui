@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { GraphicsInst } from "vue3-pixi";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 import type { Node, XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";

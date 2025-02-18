@@ -3,7 +3,7 @@
 import { computed, shallowRef } from "vue";
 import { storeToRefs } from "pinia";
 import { Container, Rectangle } from "pixi.js";
-import { type ContainerInst, type GraphicsInst } from "vue3-pixi";
+import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";

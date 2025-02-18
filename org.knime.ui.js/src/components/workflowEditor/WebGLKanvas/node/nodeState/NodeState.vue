@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { type Container, Graphics } from "pixi.js";
-import type { GraphicsInst } from "vue3-pixi";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 import { NodeState } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
