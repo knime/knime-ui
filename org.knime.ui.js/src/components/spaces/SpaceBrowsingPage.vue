@@ -144,7 +144,6 @@ const onRenameSpace = (name: string) => {
         class="space-explorer-actions"
         :project-id="globalSpaceBrowserProjectId"
         :selected-item-ids="currentSelectedItemIds"
-        @imported-item-ids="setCurrentSelectedItemIds($event)"
       />
     </template>
 

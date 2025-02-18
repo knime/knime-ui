@@ -40,9 +40,6 @@ const changeDirectory = (pathId: string) => {
         class="actions"
         :project-id="activeProjectId!"
         :selected-item-ids="currentSelectedItemIds"
-        @imported-item-ids="
-          spaceOperationsStore.setCurrentSelectedItemIds($event)
-        "
       />
     </template>
     <SpaceExplorer

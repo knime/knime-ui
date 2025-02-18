@@ -1,38 +1,21 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRefs } from "vue";
 import { storeToRefs } from "pinia";
 
 import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
-import CloudUploadIcon from "@knime/styles/img/icons/cloud-upload.svg";
-import FolderPlusIcon from "@knime/styles/img/icons/folder-plus.svg";
 import MenuOptionsIcon from "@knime/styles/img/icons/menu-options.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
-import { SpaceProvider as BaseSpaceProvider } from "@/api/gateway-api/generated-api";
-import AddFileIcon from "@/assets/add-file.svg";
-import ImportWorkflowIcon from "@/assets/import-workflow.svg";
-import PlusIcon from "@/assets/plus.svg";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
 import SearchButton from "@/components/common/SearchButton.vue";
 import {
-  buildCopyToSpaceMenuItem,
-  buildHubDownloadMenuItem,
-  buildHubUploadMenuItem,
-  buildMoveToSpaceMenuItem,
-  buildOpenAPIDefinitionMenuItem,
-} from "@/components/spaces/remoteMenuItems";
-import { isBrowser, isDesktop } from "@/environment";
+  type ActionMenuItem,
+  useContextualSpaceExplorerActions,
+} from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
 import { useShortcuts } from "@/plugins/shortcuts";
-import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
-import { useSpacesStore } from "@/store/spaces/spaces";
-import { useSpaceUploadsStore } from "@/store/spaces/uploads";
-import { isLocalProvider } from "@/store/spaces/util";
-import { getToastPresets } from "@/toastPresets";
-import { valueOrEmpty } from "@/util/valueOrEmpty";
 
 import SpaceExplorerFloatingButton from "./SpaceExplorerFloatingButton.vue";
-import type { ActionMenuItem } from "./remoteMenuItems";
 
 type DisplayModes = "normal" | "mini";
 
@@ -49,163 +32,27 @@ const props = withDefaults(defineProps<Props>(), {
   mode: "normal",
   filterQuery: "",
 });
+const { selectedItemIds, projectId } = toRefs(props);
 
-const emit = defineEmits(["importedItemIds", "update:filterQuery"]);
+const emit = defineEmits<{
+  "update:filterQuery": [value: string];
+}>();
 const $shortcuts = useShortcuts();
+const { fetchWorkflowGroupContent } = useSpaceOperationsStore();
+const { isLoadingContent } = storeToRefs(useSpaceOperationsStore());
 
-const { toastPresets } = getToastPresets();
-
-const spacesStore = useSpacesStore();
-const spaceOperationsStore = useSpaceOperationsStore();
-const { isLoadingContent, selectionContainsWorkflow } =
-  storeToRefs(spaceOperationsStore);
-const { getProviderInfoFromProjectPath } = storeToRefs(
-  useSpaceProvidersStore(),
-);
-
-const isLocal = computed(() => {
-  const providerInfo = getProviderInfoFromProjectPath.value(props.projectId);
-  return providerInfo ? isLocalProvider(providerInfo) : false;
-});
-
-const isWorkflowSelected = computed(() =>
-  selectionContainsWorkflow.value(props.projectId, props.selectedItemIds),
-);
-
-const createWorkflowAction = computed(() => ({
-  id: "createWorkflow",
-  text: "Create workflow",
-  icon: PlusIcon,
-  disabled: isLoadingContent.value,
-  hidden: props.mode !== "mini",
-  execute: () => {
-    spacesStore.setCreateWorkflowModalConfig({
-      isOpen: true,
-      projectId: props.projectId,
-    });
-  },
-}));
+const { createWorkflow, spaceExplorerActionsItems } =
+  useContextualSpaceExplorerActions(projectId, selectedItemIds, {
+    mode: props.mode,
+  });
 
 const reload = () => {
-  if (props.projectId) {
-    spaceOperationsStore.fetchWorkflowGroupContent({
-      projectId: props.projectId,
+  if (projectId.value) {
+    fetchWorkflowGroupContent({
+      projectId: projectId.value,
     });
   }
 };
-
-const actions = computed(() => {
-  const getLocalActions = () => {
-    const uploadToHub = buildHubUploadMenuItem(
-      props.projectId,
-      props.selectedItemIds,
-    );
-    if (isLocal.value) {
-      return [uploadToHub];
-    }
-    return [];
-  };
-
-  const getHubActions = () => {
-    if (isLocal.value) {
-      return [];
-    }
-    const downloadToLocalSpace = buildHubDownloadMenuItem(
-      props.projectId,
-      props.selectedItemIds,
-    );
-    const moveToSpace = buildMoveToSpaceMenuItem(
-      props.projectId,
-      props.selectedItemIds,
-    );
-    const copyToSpace = buildCopyToSpaceMenuItem(
-      props.projectId,
-      props.selectedItemIds,
-    );
-    return [downloadToLocalSpace, moveToSpace, copyToSpace];
-  };
-
-  const getServerActions = () => {
-    const providerInfo = getProviderInfoFromProjectPath.value(props.projectId);
-    if (
-      !providerInfo ||
-      providerInfo.type !== BaseSpaceProvider.TypeEnum.SERVER ||
-      !isWorkflowSelected.value
-    ) {
-      return [];
-    }
-    const openAPIDefinition = buildOpenAPIDefinitionMenuItem(
-      props.projectId,
-      props.selectedItemIds,
-    );
-    return [openAPIDefinition];
-  };
-
-  return [
-    createWorkflowAction.value,
-    {
-      id: "createFolder",
-      text: "Create folder",
-      icon: FolderPlusIcon,
-      separator: true,
-      execute: async () => {
-        try {
-          await spaceOperationsStore.createFolder({
-            projectId: props.projectId,
-          });
-        } catch (error) {
-          toastPresets.spaces.crud.createFolderFailed({ error });
-        }
-      },
-    },
-    ...valueOrEmpty(isBrowser, {
-      id: "upload",
-      text: "Upload",
-      icon: CloudUploadIcon,
-      execute: useSpaceUploadsStore().startUpload,
-    }),
-    ...valueOrEmpty(isDesktop, {
-      id: "importWorkflow",
-      text: "Import workflow",
-      icon: ImportWorkflowIcon,
-      execute: async () => {
-        const items: string[] | null =
-          await spaceOperationsStore.importToWorkflowGroup({
-            projectId: props.projectId,
-            importType: "WORKFLOW",
-          });
-        if (items && items.length > 0) {
-          emit("importedItemIds", items);
-        }
-      },
-    }),
-    ...valueOrEmpty(isDesktop, {
-      id: "importFiles",
-      text: "Add files",
-      icon: AddFileIcon,
-      separator: true,
-      execute: async () => {
-        const items: string[] | null =
-          await spaceOperationsStore.importToWorkflowGroup({
-            projectId: props.projectId,
-            importType: "FILES",
-          });
-        if (items && items.length > 0) {
-          emit("importedItemIds", items);
-        }
-      },
-    }),
-    ...getLocalActions(),
-    ...getHubActions(),
-    ...getServerActions(),
-    {
-      id: "reload",
-      text: "Reload",
-      icon: ReloadIcon,
-      execute: () => reload(),
-    },
-  ];
-});
 
 const createWorkflowButtonTitle = computed(() => {
   const { text, hotkeyText } = $shortcuts.get("createWorkflow");
@@ -213,7 +60,9 @@ const createWorkflowButtonTitle = computed(() => {
 });
 
 const filteredActions = (hideItems: string[]) =>
-  actions.value.filter((item) => !hideItems.includes(item.id));
+  spaceExplorerActionsItems.value.filter(
+    (item) => !hideItems.includes(item.id),
+  );
 </script>
 
 <template>
@@ -223,7 +72,7 @@ const filteredActions = (hideItems: string[]) =>
         <SearchButton
           :model-value="filterQuery"
           placeholder="Filter current level"
-          @update:model-value="$emit('update:filterQuery', $event)"
+          @update:model-value="emit('update:filterQuery', $event)"
         />
         <OptionalSubMenuActionButton
           v-for="action in filteredActions(['createWorkflow', 'connectToHub'])"
@@ -236,8 +85,8 @@ const filteredActions = (hideItems: string[]) =>
 
         <SpaceExplorerFloatingButton
           :title="createWorkflowButtonTitle"
-          :disabled="createWorkflowAction.disabled"
-          @click="createWorkflowAction.execute()"
+          :disabled="createWorkflow.disabled"
+          @click="createWorkflow.execute()"
         />
       </div>
     </template>
@@ -247,7 +96,7 @@ const filteredActions = (hideItems: string[]) =>
         <SearchButton
           :model-value="filterQuery"
           placeholder="Filter current level"
-          @update:model-value="$emit('update:filterQuery', $event)"
+          @update:model-value="emit('update:filterQuery', $event)"
         />
         <FunctionButton class="reload-button" @click="reload">
           <ReloadIcon />

@@ -124,8 +124,14 @@ describe("SpaceExplorerActions.vue", () => {
       ).toBe(5);
     });
 
-    it("should render actions for hub", () => {
-      const { wrapper } = doMount();
+    it("should render actions for hub", async () => {
+      const { wrapper, mockedStores, projectId } = doMount();
+
+      await setupStoreWithProvider(
+        mockedStores,
+        projectId,
+        SpaceProviderNS.TypeEnum.HUB,
+      );
 
       expect(wrapper.find(".toolbar-actions-normal").exists()).toBe(true);
       expect(wrapper.find(".toolbar-actions-mini").exists()).toBe(false);
@@ -146,12 +152,18 @@ describe("SpaceExplorerActions.vue", () => {
       ).toBe(7);
     });
 
-    it("should disable actions that require selected items", () => {
-      const { wrapper } = doMount({
+    it("should disable actions that require selected items", async () => {
+      const { wrapper, mockedStores, projectId } = doMount({
         props: {
           selectedItemIds: [],
         },
       });
+
+      await setupStoreWithProvider(
+        mockedStores,
+        projectId,
+        SpaceProviderNS.TypeEnum.HUB,
+      );
 
       expect(
         wrapper.find("#downloadToLocalSpace").attributes("aria-disabled"),
@@ -264,13 +276,19 @@ describe("SpaceExplorerActions.vue", () => {
       expect(items.length).toBe(7);
     });
 
-    it("should disable download action because it requires selected items", () => {
-      const { wrapper } = doMount({
+    it("should disable download action because it requires selected items", async () => {
+      const { wrapper, mockedStores, projectId } = doMount({
         props: {
           mode: "mini",
           selectedItemIds: [],
         },
       });
+
+      await setupStoreWithProvider(
+        mockedStores,
+        projectId,
+        SpaceProviderNS.TypeEnum.HUB,
+      );
 
       expect(wrapper.findComponent(SubMenu).props("items")).toEqual(
         expect.arrayContaining([
@@ -355,42 +373,6 @@ describe("SpaceExplorerActions.vue", () => {
         await flushPromises();
 
         expect(createFolderFailed).toHaveBeenCalled();
-      },
-    );
-
-    it.each([
-      ["files", "importFiles", "importFiles"],
-      ["workflows", "importWorkflow", "importWorkflows"],
-    ])(
-      "should emit imported %s after successful import",
-      async (_name, menuId, apiName) => {
-        // @ts-ignore
-        mockedAPI.desktop[apiName].mockResolvedValue(["item1", "item2"]);
-        const { wrapper, mockedStores, projectId } = doMount({
-          props: { mode: "mini" },
-        });
-
-        mockedAPI.space.listWorkflowGroup.mockResolvedValue([]);
-
-        await setupStoreWithProvider(
-          mockedStores,
-          projectId,
-          SpaceProviderNS.TypeEnum.LOCAL,
-        );
-
-        const subMenu = wrapper.findComponent(SubMenu);
-        const item = subMenu
-          .props("items")
-          // @ts-ignore
-          .find(({ id }: { id: string }) => id === menuId);
-
-        subMenu.vm.$emit("item-click", null, item);
-
-        await flushPromises();
-
-        expect(wrapper.emitted("importedItemIds")).toStrictEqual([
-          [["item1", "item2"]],
-        ]);
       },
     );
   });

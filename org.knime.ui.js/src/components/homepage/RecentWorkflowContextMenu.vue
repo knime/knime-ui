@@ -10,13 +10,9 @@ import {
 import RevealInSpaceIcon from "@knime/styles/img/icons/eye.svg";
 
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
+import { type ActionMenuItem } from "@/composables/useSpaceExplorerActions/useContextualSpaceExplorerActions";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { valueOrEmpty } from "@/util/valueOrEmpty";
-
-export type ActionMenuItem = MenuItem & {
-  id: string;
-  execute: (() => void) | null;
-};
 
 interface Props {
   anchor: FileExplorerContextMenu.Anchor;
