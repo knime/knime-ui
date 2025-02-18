@@ -37,9 +37,11 @@ const actions = {
     const { projectId, workflowId, nodeId, extensionType } = extensionConfig;
     let result: any;
 
+    const realProjectId = useApplicationStore().activeProjectId ?? projectId;
+
     if (nodeService === "NodeService.callNodeDataService") {
       result = await API.node.callNodeDataService({
-        projectId,
+        projectId: realProjectId,
         workflowId,
         nodeId,
         extensionType,
@@ -48,7 +50,7 @@ const actions = {
       });
     } else if (nodeService === "NodeService.updateDataPointSelection") {
       result = await API.node.updateDataPointSelection({
-        projectId: useApplicationStore().activeProjectId ?? "",
+        projectId: realProjectId,
         workflowId,
         nodeId,
         mode: serviceRequest,
@@ -82,7 +84,7 @@ const actions = {
   ): Promise<void> {
     consola.info("Loading page for PageBuilder");
 
-    const result = await API.component.getComponentViewPage({
+    const result = await API.component.getCompositeViewPage({
       projectId,
       workflowId,
       nodeId,

@@ -7,6 +7,10 @@ import { resourceLocationResolver } from "@/components/uiExtensions/common/useRe
 import { isDesktop } from "@/environment";
 import { pageBuilderStoreConfig } from "@/store/pageBuilderStore.ts";
 
+export const getPageBuilderBaseUrl = () =>
+  // eslint-disable-next-line no-undefined
+  isDesktop ? "https://org.knime.js.pagebuilder" : undefined;
+
 const pageBuilderResource = {
   name: "PageBuilder", // module name
   componentName: "PageBuilder", // top level component name
@@ -15,8 +19,7 @@ const pageBuilderResource = {
     resourceLocationResolver(
       projectId,
       "/org/knime/core/ui/pagebuilder/lib/PageBuilder.umd.js",
-      // eslint-disable-next-line no-undefined
-      isDesktop ? "https://org.knime.js.pagebuilder" : undefined,
+      getPageBuilderBaseUrl(),
     ),
   // dummy vue component to show if loading failed
   fallback: defineComponent({
@@ -63,7 +66,11 @@ const pageBuilderLoader = async (
 
   const fallback = (errorMessage: string) => {
     consola.error(
-      `Loading of ${pageBuilderResource.componentName} (url: ${pageBuilderResource.url}) failed: ${errorMessage}. Will use fallback dummy component.`,
+      `Loading of ${
+        pageBuilderResource.componentName
+      } (url: ${pageBuilderResource.url(
+        "<projectId>",
+      )}) failed: ${errorMessage}. Will use fallback dummy component.`,
     );
     app.component(
       pageBuilderResource.componentName,
@@ -116,6 +123,25 @@ export const setupPageBuilderEnvironment = async (
   if (!isStoreInitialized) {
     consola.info("Loading PageBuilder store and component");
     store.registerModule("api", pageBuilderStoreConfig);
+
     await pageBuilderLoader(store, app, projectId);
+
+    // old webNodes use this location to load resources
+    // eslint-disable-next-line no-undefined
+    const resourceBaseUrl = resourceLocationResolver(
+      projectId,
+      "",
+      getPageBuilderBaseUrl(),
+    );
+    await store.dispatch("pagebuilder/setResourceBaseUrl", {
+      resourceBaseUrl,
+    });
+    store.registerModule("wizardExecution", {
+      getters: {
+        // eslint-disable-next-line no-undefined
+        currentJobId: () => undefined,
+      },
+      namespaced: true,
+    });
   }
 };

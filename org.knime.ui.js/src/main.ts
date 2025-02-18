@@ -126,6 +126,7 @@ try {
 
   // initialize empty vuex store for the pageBuilder, this will be filled asynchronously
   // when the component to show the pageBuilder is loaded.
+  // Note: might vanish in the future, but needed because pagebuilder needs vuex.
   const pageBuilderStore = createStore();
   app.use(pageBuilderStore);
 
