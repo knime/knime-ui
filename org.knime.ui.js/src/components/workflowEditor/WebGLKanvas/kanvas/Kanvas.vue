@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { type Ref, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { type Ref, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { KANVAS_ID } from "@/util/getKanvasDomElement";
+import { KANVAS_ID, getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
@@ -21,8 +21,6 @@ const pixiApp = ref<ApplicationInst>();
 const canvasStore = useWebGLCanvasStore();
 const { containerSize, isDebugModeEnabled: isCanvasDebugEnabled } =
   storeToRefs(canvasStore);
-
-const isReady = ref(false);
 
 const zoom = throttle(function (event: WheelEvent) {
   const shouldZoom = event.ctrlKey;
@@ -67,26 +65,30 @@ const initResizeObserver = () => {
   resizeObserver.observe(rootEl.value);
 };
 
+const isPixiAppInitialized = ref(false);
+
 onMounted(() => {
   canvasStore.initScrollContainerElement(rootEl.value!);
   rootEl.value!.focus();
+  initResizeObserver();
+});
+
+const stopInitWatch = watch(isPixiAppInitialized, () => {
+  if (!isPixiAppInitialized.value) {
+    return;
+  }
 
   // Store reference Pixi.js application instance
   const app = pixiApp.value!.app;
   globalThis.__PIXI_APP__ = app;
-  // Store reference to the Pixi.js Stage
-  // https://pixijs.com/7.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
-  // canvasStore.stage = app.stage as StageInst;
+
+  // Store reference to the Pixi.js Stage.
+  // https://pixijs.com/8.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
   canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-
+  canvasStore.stage = app.stage;
   canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
-
   // TextureStyle.defaultOptions.scaleMode = "nearest";
-
-  nextTick(() => {
-    isReady.value = true;
-  });
-  initResizeObserver();
+  stopInitWatch();
 });
 
 onBeforeUnmount(() => {
@@ -100,7 +102,7 @@ const { beginPan } = useCanvasPanning({
 
 <template>
   <div :id="KANVAS_ID" ref="rootEl" tabindex="0" class="scroll-container">
-    <FloatingMenuPortalTarget v-if="isReady" />
+    <FloatingMenuPortalTarget v-if="isPixiAppInitialized" />
     <Application
       ref="pixiApp"
       :background-color="0xffffff"
@@ -109,6 +111,7 @@ const { beginPan } = useCanvasPanning({
       :resolution="1.25"
       :auto-density="true"
       :antialias="true"
+      :resize-to="() => getKanvasDomElement()!"
       @wheel.prevent="zoom"
       @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
       @pointermove="$bus.emit('selection-pointermove', $event)"
@@ -116,10 +119,11 @@ const { beginPan } = useCanvasPanning({
       @contextmenu.prevent
       @pointerdown.right="beginPan"
       @pointerdown.middle="beginPan"
+      @init-complete="isPixiAppInitialized = true"
     >
-      <Container name="contentBounds">
+      <Container label="contentBounds">
         <Debug v-if="isCanvasDebugEnabled" />
-        <!-- <slot />-->
+        <slot />
       </Container>
     </Application>
   </div>

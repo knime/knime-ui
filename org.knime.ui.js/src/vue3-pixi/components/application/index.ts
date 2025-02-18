@@ -36,7 +36,10 @@ export const Application = defineComponent({
     autoDensity: { type: Boolean, default: undefined },
     autoStart: { type: Boolean, default: true },
     alpha: { type: Boolean, default: undefined },
-    backgroundColor: [Number, String, Array, Object] as PropType<ColorSource>,
+    backgroundColor: {
+      type: [Number, String, Array, Object] as PropType<ColorSource>,
+      default: "white",
+    },
     backgroundAlpha: { type: Number, default: 1 },
     clearBeforeRender: { type: Boolean, default: undefined },
     hello: { type: Boolean, default: undefined },
@@ -53,7 +56,10 @@ export const Application = defineComponent({
       type: String as PropType<GpuPowerPreference>,
       default: undefined,
     },
-    resizeTo: Object as PropType<HTMLElement | Window | undefined>,
+    resizeTo: {
+      type: Function as PropType<() => HTMLElement | Window | undefined>,
+      default: undefined,
+    },
     transferControlToOffscreen: Boolean,
     roundPixels: { type: Boolean, default: undefined },
     useBackBuffer: { type: Boolean, default: undefined },
@@ -76,7 +82,8 @@ export const Application = defineComponent({
       default: undefined,
     },
   },
-  setup(props, { slots, expose }) {
+  emits: ["initComplete"],
+  setup(props, { slots, expose, emit }) {
     const { appContext } = getCurrentInstance()!;
     const canvas = ref<HTMLCanvasElement>();
     const pixiApp = ref<_Application>();
@@ -90,10 +97,7 @@ export const Application = defineComponent({
       }
 
       const inst = new _Application();
-      await inst.init({ canvas: view, ...props });
-
-      inst.canvas.width = props.width!;
-      inst.canvas.height = props.height!;
+      await inst.init({ canvas: view, ...props, resizeTo: props.resizeTo?.() });
 
       pixiApp.value = markRaw(inst);
 
@@ -103,6 +107,8 @@ export const Application = defineComponent({
 
       app.provide(appInjectKey, pixiApp.value);
       app.mount(pixiApp.value.stage);
+
+      emit("initComplete");
     }
     function unmount() {
       app?.unmount();
