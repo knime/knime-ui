@@ -48,13 +48,9 @@
  */
 package org.knime.ui.java.api;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PlatformUI;
-import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog;
 import org.knime.workbench.explorer.view.dialogs.DestinationSelectionDialog.SelectedDestination;
 

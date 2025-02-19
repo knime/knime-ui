@@ -72,8 +72,8 @@ import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.MostRecentlyUsedProjects;
 import org.knime.ui.java.util.ProjectFactory;
 import org.knime.workbench.core.imports.RepoObjectImport;
+import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.RemoteWorkflowInput;
-import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
@@ -276,9 +276,8 @@ final class OpenProject {
     }
 
     private static WorkflowManager fetchAndLoadProjectWithProgress(final RepoObjectImport repoObjectImport) {
-        var fileStore = (RemoteExplorerFileStore)FreshFileStoreResolver.resolveAndRefreshWithProgress( //
-            repoObjectImport.getKnimeURI() //
-        );
+        final var fileStore =
+            (RemoteExplorerFileStore)ExplorerMountTable.getFileSystem().getStore(repoObjectImport.getKnimeURI());
         var locationInfo = (HubSpaceLocationInfo)repoObjectImport.locationInfo().orElseThrow();
         return DesktopAPUtil
             .downloadWorkflowWithProgress(fileStore, locationInfo) //
