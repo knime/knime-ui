@@ -1,9 +1,5 @@
 import type { ColorMatrixFilter } from "pixi.js";
-import type {
-  ComponentOptionsMixin,
-  DefineComponent,
-  VNodeProps,
-} from "vue-demi";
+import type { ComponentOptionsMixin, DefineComponent, VNodeProps } from "vue";
 
 import type { AllowedFilterProps, ExtractFilterProps } from "./props";
 

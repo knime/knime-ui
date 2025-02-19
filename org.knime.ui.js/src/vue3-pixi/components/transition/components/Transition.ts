@@ -1,5 +1,5 @@
-import type { ExtractPropTypes, PropType } from "vue-demi";
-import { BaseTransition, defineComponent, h } from "vue-demi";
+import type { ExtractPropTypes, PropType } from "vue";
+import { BaseTransition, defineComponent, h } from "vue";
 
 import type { Fn, Hook, TransitionTicker } from "../types";
 

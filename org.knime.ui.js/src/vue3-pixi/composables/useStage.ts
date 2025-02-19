@@ -1,12 +1,12 @@
-import type { Application, Container, Renderer } from 'pixi.js'
-import type { Ref } from 'vue-demi'
-import { computed, unref } from 'vue-demi'
+import type { Application, Container, Renderer } from "pixi.js";
+import type { Ref } from "vue";
+import { computed, unref } from "vue";
 
-import { useApplication } from './useApplication'
+import { useApplication } from "./useApplication";
 
-export type StageInst = Container & EventTarget
+export type StageInst = Container & EventTarget;
 
 export function useStage(app?: Ref<Application<Renderer>>): Ref<StageInst> {
-  const useApp = app || useApplication()
-  return computed(() => unref(useApp)?.stage as any)
+  const useApp = app || useApplication();
+  return computed(() => unref(useApp)?.stage as any);
 }

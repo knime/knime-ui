@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 import type { Awaitable } from "@antfu/utils";
 import { isString } from "@antfu/utils";
-import { nanoid } from "nanoid";
 import { Assets } from "pixi.js";
 import type {
   Texture,
   TextureOptions,
   UnresolvedAsset as _UnresolvedAsset,
 } from "pixi.js";
-import type { ExtractPropTypes, PropType } from "vue-demi";
+import type { ExtractPropTypes, PropType } from "vue";
 import {
   defineComponent,
   onBeforeUnmount,
   ref,
   renderSlot,
+  useId,
   watch,
-} from "vue-demi";
+} from "vue";
 
 import { setTextureOptions } from "../../renderer";
 
@@ -55,7 +55,7 @@ export const Loader = defineComponent({
     const loading = ref(false);
     const textures = ref<Record<string, Texture>>();
     const progress = ref(0);
-    const bundle = props.bundleIds || nanoid(5);
+    const bundle = props.bundleIds || useId();
 
     function onProgress(p: number) {
       progress.value = p;

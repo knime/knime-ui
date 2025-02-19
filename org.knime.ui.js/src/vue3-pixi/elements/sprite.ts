@@ -1,9 +1,5 @@
 import type * as PIXI from "pixi.js";
-import type {
-  ComponentOptionsMixin,
-  DefineComponent,
-  VNodeProps,
-} from "vue-demi";
+import type { ComponentOptionsMixin, DefineComponent, VNodeProps } from "vue";
 
 import type { PixiEvents } from "./events";
 import type { AllowedPixiProps } from "./props";

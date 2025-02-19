@@ -1,4 +1,4 @@
-import type {} from "vue-demi";
+import type {} from "vue";
 import type { Filter } from "pixi.js";
 
 import type { AllowedFilterProps } from "./props";

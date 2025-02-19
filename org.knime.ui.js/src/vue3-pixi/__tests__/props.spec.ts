@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { Container, Texture } from "pixi.js";
-import { nextTick } from "vue-demi";
+import { nextTick } from "vue";
 
 import { patchProp } from "..";
 

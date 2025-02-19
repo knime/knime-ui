@@ -40,11 +40,6 @@
     "1098615|@knime/utils>@knime/styles>postcss-mixins>fast-glob>micromatch": {
       "decision": "ignore",
       "madeAt": 1724311567279
-    },
-    "1101164|vue3-pixi>nanoid": {
-      "decision": "ignore",
-      "madeAt": 1738316098338,
-      "expiresAt": 1740908074942
     }
   },
   "rules": {},

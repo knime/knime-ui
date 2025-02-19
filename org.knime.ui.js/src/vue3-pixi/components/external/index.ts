@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file */
-import type { App, PropType } from "vue-demi";
+import type { App, PropType } from "vue";
 import {
   createApp,
   defineComponent,
@@ -9,7 +9,7 @@ import {
   onMounted,
   onUnmounted,
   ref,
-} from "vue-demi";
+} from "vue";
 
 import { appInjectKey } from "../../composables";
 import { inheritParent } from "../../utils";

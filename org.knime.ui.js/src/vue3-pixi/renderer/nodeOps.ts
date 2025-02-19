@@ -1,7 +1,7 @@
 /* eslint-disable max-params */
 /* eslint-disable func-style */
 import { BitmapText, Container, Filter, Text, Texture } from "pixi.js";
-import { camelize, markRaw, warn } from "vue-demi";
+import { camelize, markRaw, warn } from "vue";
 
 import {
   Empty,

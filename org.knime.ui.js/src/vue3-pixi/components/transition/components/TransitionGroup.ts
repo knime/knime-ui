@@ -1,4 +1,4 @@
-import type { VNode } from "vue-demi";
+import type { VNode } from "vue";
 import {
   Fragment,
   createVNode,
@@ -8,7 +8,7 @@ import {
   resolveTransitionHooks,
   setTransitionHooks,
   useTransitionState,
-} from "vue-demi";
+} from "vue";
 
 import { resolveTransitionProps, transitionProps } from "./Transition";
 

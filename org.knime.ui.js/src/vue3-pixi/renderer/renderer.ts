@@ -1,8 +1,8 @@
 /* eslint-disable func-style */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { Container } from "pixi.js";
-import type { Renderer as _Renderer } from "vue-demi";
-import { createRenderer as _createRenderer } from "vue-demi";
+import type { Renderer as _Renderer } from "vue";
+import { createRenderer as _createRenderer } from "vue";
 
 import type { use } from "./internal";
 import { rendererWithCapture, rendererWithOptions } from "./internal";

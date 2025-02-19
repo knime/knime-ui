@@ -1,7 +1,7 @@
 /* eslint-disable func-style */
 import type { Container } from "pixi.js";
-import type { Renderer, RendererOptions } from "vue-demi";
-import { camelize } from "vue-demi";
+import type { Renderer, RendererOptions } from "vue";
+import { camelize } from "vue";
 
 import { isCustomElement } from "../../compiler";
 

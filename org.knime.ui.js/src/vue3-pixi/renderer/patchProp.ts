@@ -2,7 +2,7 @@
 /* eslint-disable func-style */
 import { isFunction } from "@antfu/utils";
 import type { Container } from "pixi.js";
-import { effectScope, watchEffect } from "vue-demi";
+import { effectScope, watchEffect } from "vue";
 
 import { setPointProperty, setSkipFirstValue } from "./internal";
 import { normalizeTexture, setTextureOptions } from "./utils";

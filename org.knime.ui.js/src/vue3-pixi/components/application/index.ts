@@ -18,8 +18,8 @@ import {
   onUnmounted,
   ref,
   renderSlot,
-} from "vue-demi";
-import type { App, PropType } from "vue-demi";
+} from "vue";
+import type { App, PropType } from "vue";
 
 import { appInjectKey } from "../../composables";
 import { createApp } from "../../renderer";

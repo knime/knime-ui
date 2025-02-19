@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 import type { Application } from "pixi.js";
-import { onMounted } from "vue-demi";
+import { onMounted } from "vue";
 
 import { useApplication } from "./useApplication";
 

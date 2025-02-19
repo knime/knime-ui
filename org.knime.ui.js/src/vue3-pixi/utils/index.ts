@@ -1,5 +1,5 @@
 /* eslint-disable func-style */
-import type { App, AppContext } from "vue-demi";
+import type { App, AppContext } from "vue";
 
 export function inheritParent(app: App<any>, appContext?: AppContext) {
   const parent = appContext?.app;

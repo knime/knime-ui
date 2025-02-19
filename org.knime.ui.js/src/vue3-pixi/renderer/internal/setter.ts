@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 import { isObject } from "@antfu/utils";
-import { effectScope, nextTick, watchEffect } from "vue-demi";
+import { effectScope, nextTick, watchEffect } from "vue";
 
 export function setObjectProperty(
   inst: any,

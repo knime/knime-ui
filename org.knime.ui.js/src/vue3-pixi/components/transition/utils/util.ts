@@ -1,7 +1,7 @@
 /* eslint-disable func-style */
 /* eslint-disable max-statements-per-line */
 import type { Fn } from "@antfu/utils";
-import { camelize } from "vue-demi";
+import { camelize } from "vue";
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
