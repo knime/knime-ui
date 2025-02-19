@@ -115,17 +115,28 @@ const nodeIconScaleFactor = ref(0);
 onMounted(() => {
   if (props.icon) {
     const imageLocal = new window.Image();
-
     imageLocal.src = props.icon;
-    imageLocal.onload = () => {
-      const source = new PIXI.ImageSource({
-        resource: imageLocal,
-      });
 
+    imageLocal.onload = () => {
       nodeIconScaleFactor.value =
         NODE_ICON_SIZE /
         Math.max(imageLocal.naturalWidth, imageLocal.naturalHeight);
-      texture.value = new PIXI.Texture({ source });
+
+      // draw image on a temp canvas to make pixi happy
+      const canvas = document.createElement("canvas");
+      canvas.width = imageLocal.naturalWidth;
+      canvas.height = imageLocal.naturalHeight;
+      const context = canvas.getContext("2d")!;
+
+      context.drawImage(
+        imageLocal,
+        0,
+        0,
+        imageLocal.naturalWidth,
+        imageLocal.naturalHeight,
+      );
+
+      texture.value = PIXI.Texture.from(canvas);
     };
   }
 });
