@@ -1,3 +1,4 @@
+<!-- eslint-disable no-undefined -->
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
@@ -57,11 +58,15 @@ const selectionRectangle = computed(() =>
     : {},
 );
 
+let selectionPointerId: number | undefined;
+
 const onSelectionStart = (event: PointerEvent) => {
   if (isDragging.value || event.defaultPrevented) {
     return;
   }
 
+  selectionPointerId = event.pointerId;
+  (event.target as HTMLElement).setPointerCapture(event.pointerId);
   selectionStore.deselectAllObjects();
   isSelectionVisible.value = true;
 
@@ -92,7 +97,7 @@ const onSelectionMove = (event: PointerEvent) => {
   findNodesInsideSelection();
 };
 
-const onSelectionEnd = () => {
+const onSelectionEnd = (event: PointerEvent) => {
   isSelectionVisible.value = false;
   startPos.value = { x: 0, y: 0 };
   endPos.value = { x: 0, y: 0 };
@@ -122,6 +127,9 @@ const onSelectionEnd = () => {
 
     nodesOutside.value = [];
   }
+
+  (event.target as HTMLElement).releasePointerCapture(selectionPointerId!);
+  selectionPointerId = undefined;
 };
 
 const renderFn = (graphics: GraphicsInst) => {
