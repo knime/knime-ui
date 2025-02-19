@@ -73,23 +73,26 @@ onMounted(() => {
   initResizeObserver();
 });
 
-const stopInitWatch = watch(isPixiAppInitialized, () => {
-  if (!isPixiAppInitialized.value) {
-    return;
-  }
+watch(
+  isPixiAppInitialized,
+  () => {
+    if (!isPixiAppInitialized.value) {
+      return;
+    }
 
-  // Store reference Pixi.js application instance
-  const app = pixiApp.value!.app;
-  globalThis.__PIXI_APP__ = app;
+    // Store reference Pixi.js application instance
+    const app = pixiApp.value!.app;
+    globalThis.__PIXI_APP__ = app;
 
-  // Store reference to the Pixi.js Stage.
-  // https://pixijs.com/8.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
-  canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
-  canvasStore.stage = app.stage;
-  canvasStore.isDebugModeEnabled = import.meta.env.VITE_CANVAS_DEBUG === "true";
-  // TextureStyle.defaultOptions.scaleMode = "nearest";
-  stopInitWatch();
-});
+    // Store reference to the Pixi.js Stage.
+    // https://pixijs.com/8.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
+    canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
+    canvasStore.stage = app.stage;
+    canvasStore.isDebugModeEnabled =
+      import.meta.env.VITE_CANVAS_DEBUG === "true";
+  },
+  { once: true },
+);
 
 onBeforeUnmount(() => {
   stopResizeObserver?.();

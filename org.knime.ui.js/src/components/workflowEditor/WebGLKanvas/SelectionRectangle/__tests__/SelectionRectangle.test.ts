@@ -44,23 +44,32 @@ describe("SelectionRectangle.vue", () => {
     mockedStores.webglCanvasStore.canvasOffset = { x: 10, y: 10 };
     mockedStores.webglCanvasStore.zoomFactor = 1;
 
-    const ptrDown = new PointerEvent("pointerdown");
-    // @ts-ignore
-    ptrDown.offsetX = 20;
-    // @ts-ignore
-    ptrDown.offsetY = 20;
+    $bus.emit("selection-pointerdown", {
+      pointerId: 1,
+      offsetX: 20,
+      offsetY: 20,
+      target: {
+        // @ts-expect-error
+        setPointerCapture: () => null,
+        releasePointerCapture: () => null,
+      },
+    });
 
-    $bus.emit("selection-pointerdown", ptrDown);
+    const ptrMove = {
+      pointerId: 1,
+      offsetX: 80,
+      offsetY: 80,
+      target: {
+        setPointerCapture: () => null,
+        releasePointerCapture: () => null,
+      },
+    };
 
-    const ptrMove = new PointerEvent("pointermove");
-    // @ts-ignore
-    ptrMove.offsetX = 80;
-    // @ts-ignore
-    ptrMove.offsetY = 80;
-
+    // @ts-expect-error
     $bus.emit("selection-pointermove", ptrMove);
 
     if (endSelection) {
+      // @ts-expect-error
       $bus.emit("selection-pointerup", ptrMove);
     }
   };

@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { vi } from "vitest";
 import { config } from "@vue/test-utils";
 
@@ -53,6 +54,7 @@ class MockPointerEvent extends Event {
   clientX = null;
   clientY = null;
   buttons = null;
+
   constructor(name: string, args: any) {
     super(name, args);
     this.clientX = args?.clientX;

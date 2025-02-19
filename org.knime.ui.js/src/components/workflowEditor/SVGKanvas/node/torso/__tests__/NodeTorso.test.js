@@ -6,11 +6,11 @@ import { NodeTorsoNormal } from "@knime/components";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { mockStores } from "@/test/utils/mockStores";
+import NodeTorsoForbidden from "../../../../common/NodeTorsoForbidden.vue";
+import NodeTorsoMissing from "../../../../common/NodeTorsoMissing.vue";
+import NodeTorsoUnknown from "../../../../common/NodeTorsoUnknown.vue";
 import NodeTorso from "../NodeTorso.vue";
-import NodeTorsoForbidden from "../NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "../NodeTorsoMetanode.vue";
-import NodeTorsoMissing from "../NodeTorsoMissing.vue";
-import NodeTorsoUnknown from "../NodeTorsoUnknown.vue";
 
 describe("NodeTorso.vue", () => {
   const doShallowMount = (props, { writable = true } = {}) => {
