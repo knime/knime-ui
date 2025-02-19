@@ -28,7 +28,8 @@ export const useRevealInSpaceExplorer = () => {
   const { activeProjectId } = storeToRefs(useApplicationStore());
   const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
   const { activeTab } = storeToRefs(usePanelStore());
-  const { setCurrentProjectActiveTab } = usePanelStore();
+  const { setCurrentProjectActiveTab, expanded, toggleExpanded } =
+    usePanelStore();
   const { projectPath } = storeToRefs(useSpaceCachingStore());
   const { setProjectPath } = useSpaceCachingStore();
   const { connectProvider } = useSpaceAuthStore();
@@ -194,6 +195,12 @@ export const useRevealInSpaceExplorer = () => {
           return;
         }
       }
+
+      if (!expanded) {
+        toggleExpanded();
+      }
+
+      setCurrentProjectActiveTab(TABS.SPACE_EXPLORER);
 
       setCurrentSelectedItemIds([origin.itemId]);
 

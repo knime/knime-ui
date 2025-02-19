@@ -420,7 +420,7 @@ describe("AppHeaderContextMenu.vue", () => {
 
       expect(
         mockedStores.panelStore.setCurrentProjectActiveTab,
-      ).not.toHaveBeenCalledWith(panelStore.TABS.SPACE_EXPLORER);
+      ).toHaveBeenCalledWith(panelStore.TABS.SPACE_EXPLORER);
       expect(routerPush).toHaveBeenCalledWith({
         name: APP_ROUTES.Home.SpaceBrowsingPage,
         params: {
