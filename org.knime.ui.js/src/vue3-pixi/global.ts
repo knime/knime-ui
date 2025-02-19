@@ -1,6 +1,6 @@
 import "vue";
 import "pixi.js";
-// import type { NineSliceSpriteComponent } from './elements/nineSliceSprite'
+// TODO: import type { NineSliceSpriteComponent } from './elements/nineSliceSprite'
 import type { AlphaFilterComponent } from "./elements/alphaFilter";
 import type { AnimatedSpriteComponent } from "./elements/animatedSprite";
 import type { BitmapTextComponent } from "./elements/bitmapText";
@@ -35,8 +35,8 @@ declare module "@vue/runtime-core" {
     ColorMatrixFilter: ColorMatrixFilterComponent;
     PixiColorMatrixFilter: ColorMatrixFilterComponent;
 
-    // FXAAFilter: FXAAFilterComponent
-    // PixiFXAAFilter: FXAAFilterComponent
+    // TODO: FXAAFilter: FXAAFilterComponent
+    //  TODO: PixiFXAAFilter: FXAAFilterComponent
 
     Container: ContainerComponent;
     PixiContainer: ContainerComponent;
@@ -68,8 +68,8 @@ declare module "@vue/runtime-core" {
     MeshPlane: MeshPlaneComponent;
     PixiMeshPlane: MeshPlaneComponent;
 
-    // NineSliceSprite: NineSliceSpriteComponent
-    // PixiNineSliceSprite: NineSliceSpriteComponent
+    // TODO: NineSliceSprite: NineSliceSpriteComponent
+    // TODO: PixiNineSliceSprite: NineSliceSpriteComponent
 
     MeshRope: MeshRopeComponent;
     PixiMeshRope: MeshRopeComponent;
