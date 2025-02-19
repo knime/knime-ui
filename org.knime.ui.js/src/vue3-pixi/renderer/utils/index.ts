@@ -6,11 +6,9 @@ export function setTextureOptions(
   texture: Texture,
   options: TextureOptions = {},
 ) {
-  // @ts-expect-error key access is not defined in the type
   for (const key in options) {
-    texture.baseTexture[key] = options[key];
+    texture[key] = options[key];
   }
-  // maybe: texture[key] = options[key]
 }
 
 export function normalizeTexture(value: Texture | string): Texture {

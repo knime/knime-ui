@@ -23,7 +23,7 @@ export function rendererWithCapture(
     if (notOverrides.includes(key)) {
       continue;
     }
-    // @ts-expect-error key access not defined in type
+
     const fn = options[key];
     if (key === "patchProp") {
       options[key] = (el, pKey, ...args) => {

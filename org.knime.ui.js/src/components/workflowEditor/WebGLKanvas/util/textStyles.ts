@@ -1,13 +1,13 @@
-import type { ITextStyle, TextStyle } from "pixi.js";
+import type { TextStyle } from "pixi.js";
 
 import * as $colors from "@/style/colors";
 
 type TextStylePreset = {
   downscalingFactor: number;
-  styles: Partial<ITextStyle> | TextStyle;
+  styles: Partial<TextStyle> | TextStyle;
 };
 
-const defaultTextStyles: Partial<ITextStyle> | TextStyle = {
+const defaultTextStyles: Partial<TextStyle> | TextStyle = {
   fontFamily: "Roboto Condensed",
   fill: $colors.text.default,
 };

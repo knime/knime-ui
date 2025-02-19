@@ -14,7 +14,7 @@ export function setObjectProperty(
       inst[`__vp_scope_${key}`]?.stop();
     }
     for (const [setKey, value] of Object.entries(nextValue)) {
-      inst[key][setKey] = value;
+      inst[key][setKey as any] = value;
     }
   }
   scope.run(() => {
