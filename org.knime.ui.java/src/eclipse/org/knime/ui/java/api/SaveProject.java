@@ -77,7 +77,7 @@ import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager;
 import org.knime.gateway.impl.webui.spaces.SpaceProvidersManager.Key;
 import org.knime.ui.java.util.DesktopAPUtil;
 import org.knime.ui.java.util.DesktopAPUtil.OverwriteRemotelyResult;
-import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
+import org.knime.workbench.explorer.ExplorerMountTable;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 /**
@@ -220,7 +220,7 @@ final class SaveProject {
         }
 
         var remoteMountpointURI = context.getMountpointURI().orElseThrow();
-        var remoteStore = FreshFileStoreResolver.resolveAndRefreshWithProgress(remoteMountpointURI);
+        final var remoteStore = ExplorerMountTable.getFileSystem().getStore(remoteMountpointURI);
 
         final var fetchedInfo = remoteStore.fetchInfo();
         if (fetchedInfo.exists()) {

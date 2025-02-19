@@ -95,7 +95,6 @@ import org.knime.workbench.explorer.dialogs.Validator;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
-import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.filesystem.RemoteExplorerFileStore;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -241,11 +240,10 @@ final class SpaceAPI {
         }
 
         // old upload/download flow
-        FreshFileStoreResolver.refreshContentProvidersWithProgress(sources.providerId(),
-            destination.provider().getId());
-        var sourceFileStores = sources.itemIds().stream()
-            .map(itemId -> FreshFileStoreResolver.resolve(sources.space().toKnimeUrl(itemId))).toList();
-        var destinationFileStore = FreshFileStoreResolver.resolve(destination.space().toKnimeUrl(destination.itemId()));
+        final var sourceFileStores = sources.itemIds().stream() //
+            .map(itemId -> ExplorerMountTable.getFileSystem().getStore(sources.space().toKnimeUrl(itemId))).toList();
+        final var destinationFileStore =
+            ExplorerMountTable.getFileSystem().getStore((destination.space().toKnimeUrl(destination.itemId())));
         final var shellProvider = PlatformUI.getWorkbench().getModalDialogShellProvider();
         return ClassicAPCopyMoveLogic.copy( //
             shellProvider, //

@@ -103,7 +103,6 @@ import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
 import org.knime.workbench.explorer.dialogs.Validator;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileInfo;
 import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
-import org.knime.workbench.explorer.filesystem.FreshFileStoreResolver;
 import org.knime.workbench.explorer.view.AbstractContentProvider;
 import org.knime.workbench.explorer.view.ContentObject;
 
@@ -332,7 +331,7 @@ final class ManipulateComponents {
      */
     private static Optional<HubSpaceLocationInfo> queryHubInfo(final URI uri) {
         return Optional.ofNullable(uri) //
-                .map(FreshFileStoreResolver::resolveAndRefreshWithProgress) //
+                .map(ExplorerMountTable.getFileSystem()::getStore) //
                 .flatMap(AbstractExplorerFileStore::locationInfo) //
                 .flatMap(info -> ClassUtils.castOptional(HubSpaceLocationInfo.class, info));
     }
