@@ -131,6 +131,7 @@ const { initialAlpha, onPointerEnter, onPointerLeave } =
   <Container
     ref="portContainer"
     :alpha="initialAlpha ? 1 : 0"
+    event-mode="static"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
   >
