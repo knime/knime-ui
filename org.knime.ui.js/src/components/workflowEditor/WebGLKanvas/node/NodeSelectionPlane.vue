@@ -5,6 +5,7 @@ import { computed } from "vue";
 import type { Node, XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
@@ -65,17 +66,14 @@ const position = computed(() => ({
   y: props.anchorPosition?.y + $shapes.selectedItemBorderRadius,
 }));
 
-const renderFn = (graphics: GraphicsInst, isFocusPlane = false) => {
+const selectionPlaneRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
 
-  const xyOffset = isFocusPlane ? -4 : 0;
-  const sizeOffset = isFocusPlane ? 8 : 0;
-
   graphics.roundRect(
-    nodeSelectionMeasures.value.x + xyOffset,
-    nodeSelectionMeasures.value.y + xyOffset,
-    nodeSelectionMeasures.value.width + sizeOffset,
-    nodeSelectionMeasures.value.height + sizeOffset,
+    nodeSelectionMeasures.value.x,
+    nodeSelectionMeasures.value.y,
+    nodeSelectionMeasures.value.width,
+    nodeSelectionMeasures.value.height,
     $shapes.selectedItemBorderRadius,
   );
   graphics.stroke({
@@ -84,6 +82,28 @@ const renderFn = (graphics: GraphicsInst, isFocusPlane = false) => {
   });
   graphics.fill($colors.kanvasNodeSelection.activeBackground);
 };
+
+const focusPlaneRenderFn = (graphics: GraphicsInst) => {
+  graphics.clear();
+  const dash = new DashLine(graphics, {
+    dash: [5, 5],
+    width: 5,
+    color: 0xff0000,
+  });
+
+  dash.roundRect(
+    nodeSelectionMeasures.value.x - 4,
+    nodeSelectionMeasures.value.y - 4,
+    nodeSelectionMeasures.value.width + 8,
+    nodeSelectionMeasures.value.height + 8,
+    $shapes.selectedItemBorderRadius,
+  );
+
+  graphics.stroke({
+    width: $shapes.selectedNodeStrokeWidth,
+    color: $colors.kanvasNodeSelection.activeBorder,
+  });
+};
 </script>
 
 <template>
@@ -91,13 +111,13 @@ const renderFn = (graphics: GraphicsInst, isFocusPlane = false) => {
     v-if="showFocus"
     :position="position"
     :renderable="renderable"
-    @render="renderFn($event, true)"
+    @render="focusPlaneRenderFn"
   />
 
   <Graphics
     v-if="showSelection"
     :position="position"
     :renderable="renderable"
-    @render="renderFn($event)"
+    @render="selectionPlaneRenderFn"
   />
 </template>
