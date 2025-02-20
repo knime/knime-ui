@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { type Ref, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  type Ref,
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
@@ -8,6 +15,7 @@ import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { KANVAS_ID, getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
+import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
 
@@ -38,6 +46,11 @@ const zoom = throttle(function (event: WheelEvent) {
 const rootEl = ref<HTMLElement | null>(null);
 
 let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
+
+useArrowKeyNavigation({
+  isHoldingDownSpace: computed(() => false),
+  rootEl: rootEl as Ref<HTMLElement>,
+});
 
 const initResizeObserver = () => {
   if (!rootEl.value) {

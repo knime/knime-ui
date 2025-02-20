@@ -1,3 +1,4 @@
+<!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
 import { computed } from "vue";
 
@@ -14,6 +15,8 @@ type Props = {
   renderable?: boolean;
   anchorPosition: XY;
   kind: Node.KindEnum;
+  showSelection: boolean;
+  showFocus: boolean;
   /**
    * Makes the selection plane larger vertically based on this value
    */
@@ -57,30 +60,26 @@ const nodeSelectionMeasures = computed(() => {
   };
 });
 
-const config = computed(() => {
-  return {
-    x: nodeSelectionMeasures.value.x,
-    y: nodeSelectionMeasures.value.y,
-    width: nodeSelectionMeasures.value.width,
-    height: nodeSelectionMeasures.value.height,
-    fill: $colors.kanvasNodeSelection.activeBackground,
-    stroke: $colors.kanvasNodeSelection.activeBorder,
-    strokeWidth: $shapes.selectedNodeStrokeWidth,
-    cornerRadius: $shapes.selectedItemBorderRadius,
-  };
-});
+const position = computed(() => ({
+  x: props.anchorPosition?.x,
+  y: props.anchorPosition?.y + $shapes.selectedItemBorderRadius,
+}));
 
-const renderFn = (graphics: GraphicsInst) => {
+const renderFn = (graphics: GraphicsInst, isFocusPlane = false) => {
   graphics.clear();
+
+  const xyOffset = isFocusPlane ? -4 : 0;
+  const sizeOffset = isFocusPlane ? 8 : 0;
+
   graphics.roundRect(
-    config.value.x,
-    config.value.y,
-    config.value.width,
-    config.value.height,
+    nodeSelectionMeasures.value.x + xyOffset,
+    nodeSelectionMeasures.value.y + xyOffset,
+    nodeSelectionMeasures.value.width + sizeOffset,
+    nodeSelectionMeasures.value.height + sizeOffset,
     $shapes.selectedItemBorderRadius,
   );
   graphics.stroke({
-    width: 2,
+    width: $shapes.selectedNodeStrokeWidth,
     color: $colors.kanvasNodeSelection.activeBorder,
   });
   graphics.fill($colors.kanvasNodeSelection.activeBackground);
@@ -89,9 +88,16 @@ const renderFn = (graphics: GraphicsInst) => {
 
 <template>
   <Graphics
-    :x="anchorPosition?.x"
-    :y="anchorPosition?.y + $shapes.selectedItemBorderRadius"
+    v-if="showFocus"
+    :position="position"
     :renderable="renderable"
-    @render="renderFn"
+    @render="renderFn($event, true)"
+  />
+
+  <Graphics
+    v-if="showSelection"
+    :position="position"
+    :renderable="renderable"
+    @render="renderFn($event)"
   />
 </template>

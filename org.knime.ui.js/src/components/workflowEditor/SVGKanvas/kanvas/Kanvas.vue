@@ -14,9 +14,9 @@ import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponen
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { KANVAS_ID } from "@/util/getKanvasDomElement";
+import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 
 import { RESIZE_DEBOUNCE } from "./constants";
-import { useArrowKeyNavigation } from "./useArrowKeyNavigation";
 import { useCanvasMoveLocking } from "./useCanvasMoveLocking";
 import { useKanvasContextMenu } from "./useKanvasContextMenu";
 import { useKanvasHint } from "./useKanvasHint";
