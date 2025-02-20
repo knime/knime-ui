@@ -50,6 +50,8 @@ package org.knime.ui.java.api;
 
 import java.util.regex.Pattern;
 
+import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
+import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
@@ -69,8 +71,6 @@ final class ClassicAPBuildHubURL {
 
     private static final String KNIME_SPACES = "/spaces/";
 
-    private static final String LATEST = "/latest/";
-
     /**
      * @param itemId The ID of the queried item
      * @param sourceSpaceProvider a 'non-local' space provider
@@ -79,16 +79,14 @@ final class ClassicAPBuildHubURL {
      */
     static String getHubURL(final String itemId, final SpaceProvider sourceSpaceProvider, final Space sourceSpace) {
         assert sourceSpaceProvider.getType() != TypeEnum.LOCAL;
-        var serverAddress = getServerAddress(sourceSpaceProvider);
-
-        var connection = sourceSpaceProvider.getConnection(true).orElseThrow();
-        var username = connection.getUsername();
-
+        var locationInfo = (HubSpaceLocationInfo) sourceSpace.getLocationInfo(itemId);
+        var workflowPath = locationInfo.getWorkflowPath();
+        var owner = workflowPath.split("/")[2];
         var spaceName = sourceSpace.getName();
         var itemName = sourceSpace.getItemName(itemId);
-        var path = username + KNIME_SPACES + spaceName + LATEST + itemName + itemId.replace('*', '~');
-
-        return serverAddress + path + "/";
+        // Check knime-hub-webapp/util/buildClientPaths.ts for details on the path structure
+        var path = owner + KNIME_SPACES + spaceName + '/' + itemName + itemId.replace('*', '~');
+        return getServerAddress(sourceSpaceProvider) + path + "/" +  VersionId.currentState();
     }
 
     private static String getServerAddress(final SpaceProvider sourceSpaceProvider) {
