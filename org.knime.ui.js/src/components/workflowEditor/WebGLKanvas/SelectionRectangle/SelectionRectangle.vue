@@ -11,6 +11,7 @@ import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $colors from "@/style/colors";
+import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { findObjectsForSelection } from "../../util/findObjectsForSelection";
 
@@ -132,17 +133,29 @@ const onSelectionEnd = (event: PointerEvent) => {
   selectionPointerId = undefined;
 };
 
+const DASH_ARRAY = 5;
+
+// make sure dash stays consistent across zoom levels
+const dashStrokeArray = computed(() => [
+  DASH_ARRAY / zoomFactor.value,
+  DASH_ARRAY / zoomFactor.value,
+]);
+
 const renderFn = (graphics: GraphicsInst) => {
   graphics.clear();
-  graphics.rect(
+  const dash = new DashLine(graphics, {
+    dash: dashStrokeArray.value,
+    width: 1,
+  });
+  dash.rect(
     0,
     0,
     selectionRectangle.value.width ?? 0,
     selectionRectangle.value.height ?? 0,
   );
   graphics.stroke({
-    width: 1,
     color: $colors.kanvasNodeSelection.activeBorder,
+    pixelLine: true,
   });
 };
 

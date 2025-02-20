@@ -2,18 +2,23 @@ import { storeToRefs } from "pinia";
 
 import { capitalize } from "@knime/utils";
 
-import { useCanvasStore } from "@/store/canvas";
+import { useCanvasStore as useSVGCanvasStore } from "@/store/canvas";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import {
   type Direction,
   workflowNavigationService,
 } from "@/util/workflowNavigationService";
+import { canvasRendererUtils } from "../util/canvasRenderer";
 
 export const useInitialSelection = () => {
   const selectionStore = useSelectionStore();
   const { workflowObjects } = storeToRefs(useWorkflowStore());
-  const { getCenterOfScrollContainer, moveObjectIntoView } = useCanvasStore();
+  const { getCenterOfScrollContainer, moveObjectIntoView } =
+    canvasRendererUtils.isSVGRenderer()
+      ? useSVGCanvasStore()
+      : useWebGLCanvasStore();
 
   const hasSelectedObjects = () => {
     return selectionStore.selectedObjects.length > 0;

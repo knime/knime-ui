@@ -1,9 +1,11 @@
+<!-- eslint-disable no-magic-numbers -->
 <script setup lang="ts">
 import { computed } from "vue";
 
 import type { Node, XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
+import { DashLine } from "@/util/pixiDashedLine";
 import type { GraphicsInst } from "@/vue3-pixi";
 
 /**
@@ -14,6 +16,8 @@ type Props = {
   renderable?: boolean;
   anchorPosition: XY;
   kind: Node.KindEnum;
+  showSelection: boolean;
+  showFocus: boolean;
   /**
    * Makes the selection plane larger vertically based on this value
    */
@@ -57,41 +61,59 @@ const nodeSelectionMeasures = computed(() => {
   };
 });
 
-const config = computed(() => {
-  return {
-    x: nodeSelectionMeasures.value.x,
-    y: nodeSelectionMeasures.value.y,
-    width: nodeSelectionMeasures.value.width,
-    height: nodeSelectionMeasures.value.height,
-    fill: $colors.kanvasNodeSelection.activeBackground,
-    stroke: $colors.kanvasNodeSelection.activeBorder,
-    strokeWidth: $shapes.selectedNodeStrokeWidth,
-    cornerRadius: $shapes.selectedItemBorderRadius,
-  };
-});
+const position = computed(() => ({
+  x: props.anchorPosition?.x,
+  y: props.anchorPosition?.y + $shapes.selectedItemBorderRadius,
+}));
 
-const renderFn = (graphics: GraphicsInst) => {
+const selectionPlaneRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
+
   graphics.roundRect(
-    config.value.x,
-    config.value.y,
-    config.value.width,
-    config.value.height,
+    nodeSelectionMeasures.value.x,
+    nodeSelectionMeasures.value.y,
+    nodeSelectionMeasures.value.width,
+    nodeSelectionMeasures.value.height,
     $shapes.selectedItemBorderRadius,
   );
   graphics.stroke({
-    width: 2,
+    width: $shapes.selectedNodeStrokeWidth,
     color: $colors.kanvasNodeSelection.activeBorder,
   });
   graphics.fill($colors.kanvasNodeSelection.activeBackground);
+};
+
+const focusPlaneRenderFn = (graphics: GraphicsInst) => {
+  graphics.clear();
+  const dash = new DashLine(graphics, { dash: [5, 5] });
+
+  dash.roundRect(
+    nodeSelectionMeasures.value.x - 4,
+    nodeSelectionMeasures.value.y - 4,
+    nodeSelectionMeasures.value.width + 8,
+    nodeSelectionMeasures.value.height + 8,
+    $shapes.selectedItemBorderRadius,
+  );
+
+  graphics.stroke({
+    width: $shapes.selectedNodeStrokeWidth,
+    color: $colors.kanvasNodeSelection.activeBorder,
+  });
 };
 </script>
 
 <template>
   <Graphics
-    :x="anchorPosition?.x"
-    :y="anchorPosition?.y + $shapes.selectedItemBorderRadius"
+    v-if="showFocus"
+    :position="position"
     :renderable="renderable"
-    @render="renderFn"
+    @render="focusPlaneRenderFn"
+  />
+
+  <Graphics
+    v-if="showSelection"
+    :position="position"
+    :renderable="renderable"
+    @render="selectionPlaneRenderFn"
   />
 </template>

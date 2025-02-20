@@ -53,7 +53,7 @@ const { zoomFactor, isDebugModeEnabled, pixiApplication, visibleArea } =
   storeToRefs(useWebGLCanvasStore());
 
 const selectionStore = useSelectionStore();
-const { isNodeSelected } = storeToRefs(selectionStore);
+const { isNodeSelected, getFocusedObject } = storeToRefs(selectionStore);
 const { isWritable } = storeToRefs(useWorkflowStore());
 
 const movingStore = useMovingStore();
@@ -163,6 +163,10 @@ const { isSelectionPreviewShown } = useSelectionPreview({
   isObjectSelected: unref(isNodeSelected),
 });
 
+const isSelectionFocusShown = computed(
+  () => getFocusedObject.value?.id === props.node.id,
+);
+
 const { onPointerEnter, onPointerLeave, hoveredNodeId } =
   useNodeHoveredStateProvider();
 
@@ -234,10 +238,11 @@ const textYAnchor = computed(() =>
 
 <template>
   <NodeSelectionPlane
-    v-if="isSelectionPreviewShown"
     :kind="node.kind"
     :anchor-position="translatedPosition"
     :renderable="renderable"
+    :show-selection="isSelectionPreviewShown"
+    :show-focus="isSelectionFocusShown"
     :width="
       nameMeasures.width * nodeNameText.downscalingFactor +
       $shapes.nodeNameHorizontalMargin * 2
@@ -264,7 +269,7 @@ const textYAnchor = computed(() =>
     <Text
       label="NodeName"
       :position="nodeNamePosition"
-      :resolution="zoomFactor + 0.1"
+      :resolution="1.2"
       :scale="nodeNameText.downscalingFactor"
       :style="nodeNameText.styles"
       :anchor="{ x: 0.5, y: textYAnchor }"

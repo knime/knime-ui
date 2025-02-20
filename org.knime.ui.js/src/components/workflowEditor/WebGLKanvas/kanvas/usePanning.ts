@@ -1,6 +1,7 @@
 import type { Ref } from "vue";
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
+import throttle from "raf-throttle";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
@@ -20,7 +21,7 @@ export const useCanvasPanning = ({
 
   const { isDragging } = storeToRefs(useMovingStore());
 
-  const beginPan = (pointerDownEvent: PointerEvent) => {
+  const mousePan = (pointerDownEvent: PointerEvent) => {
     const { canvas } = pixiApp.value;
 
     const isMouseLeftClick = pointerDownEvent.button === 0;
@@ -73,5 +74,16 @@ export const useCanvasPanning = ({
     canvas.addEventListener("lostpointercapture", stopPan);
   };
 
-  return { beginPan };
+  const scrollPan = throttle((event: WheelEvent) => {
+    if (!stage.value) {
+      return;
+    }
+
+    canvasStore.setCanvasOffset({
+      x: stage.value.x - event.deltaX,
+      y: stage.value.y - event.deltaY,
+    });
+  });
+
+  return { mousePan, scrollPan };
 };

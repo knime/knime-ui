@@ -2,11 +2,13 @@
 /* eslint-disable max-lines */
 
 import { type UnwrapRef, computed, nextTick, ref, shallowRef } from "vue";
+import { gsap } from "gsap";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { geometry } from "@/util/geometry";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
 
@@ -297,16 +299,18 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
   });
 
+  const calculateVisibleArea = (offset: number = 0) => ({
+    x: -canvasOffset.value.x / zoomFactor.value - offset,
+    y: -canvasOffset.value.y / zoomFactor.value - offset,
+    width: containerSize.value.width / zoomFactor.value + offset * 2,
+    height: containerSize.value.height / zoomFactor.value + offset * 2,
+  });
+
   // returns the currently visible area of the workflow
   const visibleArea = computed(() => {
     const OFFSET_BUFFER = 100;
 
-    return {
-      x: -canvasOffset.value.x / zoomFactor.value - OFFSET_BUFFER,
-      y: -canvasOffset.value.y / zoomFactor.value - OFFSET_BUFFER,
-      width: containerSize.value.width / zoomFactor.value + OFFSET_BUFFER * 2,
-      height: containerSize.value.height / zoomFactor.value + OFFSET_BUFFER * 2,
-    };
+    return calculateVisibleArea(OFFSET_BUFFER);
   });
 
   /**
@@ -581,21 +585,37 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     });
   };
 
-  // TODO: implement for webgl canvas
   const moveObjectIntoView = (workflowObject: WorkflowObject) => {
     const kanvas = getKanvasDomElement()!;
-    const objectScreenCoordinates =
-      screenFromCanvasCoordinates.value(workflowObject);
 
-    if (isOutsideKanvasView(kanvas, objectScreenCoordinates)) {
-      const halfX = kanvas.clientWidth / 2 / zoomFactor.value;
-      const halfY = kanvas.clientHeight / 2 / zoomFactor.value;
+    if (!kanvas || !stage.value) {
+      return;
+    }
 
-      // scroll object into canvas center
-      scroll({
-        canvasX: workflowObject.x - halfX,
-        canvasY: workflowObject.y - halfY,
-        smooth: true,
+    const isOutsideView = geometry.utils.isPointOutsideBounds(
+      workflowObject,
+      calculateVisibleArea(),
+    );
+
+    if (isOutsideView) {
+      const currentOffset = canvasOffset.value;
+      const newOffset = {
+        x: -workflowObject.x * zoomFactor.value + containerSize.value.width / 2,
+        y:
+          -workflowObject.y * zoomFactor.value + containerSize.value.height / 2,
+      };
+
+      gsap.to(currentOffset, {
+        x: newOffset.x,
+        y: newOffset.y,
+        duration: 0.5,
+        ease: "power2.out",
+        onUpdate: () => {
+          setCanvasOffset({
+            x: currentOffset.x,
+            y: currentOffset.y,
+          });
+        },
       });
     }
   };
