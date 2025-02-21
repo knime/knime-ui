@@ -9,7 +9,7 @@ import { pageBuilderStoreConfig } from "@/store/pageBuilderStore.ts";
 
 export const getPageBuilderBaseUrl = () =>
   // eslint-disable-next-line no-undefined
-  isDesktop ? "https://org.knime.js.pagebuilder" : undefined;
+  isDesktop ? "https://org.knime.js.pagebuilder/" : undefined;
 
 const pageBuilderResource = {
   name: "PageBuilder", // module name
@@ -18,7 +18,7 @@ const pageBuilderResource = {
   url: (projectId: string) =>
     resourceLocationResolver(
       projectId,
-      "/org/knime/core/ui/pagebuilder/lib/PageBuilder.umd.js",
+      "org/knime/core/ui/pagebuilder/lib/PageBuilder.umd.js",
       getPageBuilderBaseUrl(),
     ),
   // dummy vue component to show if loading failed
