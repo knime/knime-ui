@@ -3,7 +3,7 @@
 // TODO: NXT-1069 split up this file
 import { mapActions, mapState } from "pinia";
 
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
 import { KNIME_MIME } from "@/composables/useDropNode";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -421,7 +421,7 @@ export default {
         return;
       }
 
-      const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
+      const metaOrCtrlKey = getMetaOrCtrlKey();
 
       if (event.shiftKey || event[metaOrCtrlKey]) {
         // Multi select
@@ -447,7 +447,7 @@ export default {
         return;
       }
 
-      const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
+      const metaOrCtrlKey = getMetaOrCtrlKey();
 
       if (event.shiftKey || event[metaOrCtrlKey]) {
         // Multi select

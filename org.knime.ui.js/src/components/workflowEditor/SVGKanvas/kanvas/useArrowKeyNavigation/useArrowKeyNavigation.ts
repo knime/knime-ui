@@ -3,7 +3,7 @@ import { useEventListener } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
 
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { useSelectionStore } from "@/store/selection";
 import { isInputElement } from "@/util/isInputElement";
@@ -13,7 +13,7 @@ import { useArrowKeySelection } from "./useArrowKeySelection";
 import { useInitialSelection } from "./useInitialSelection";
 
 const isMovementEvent = (event: KeyboardEvent) => {
-  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
+  const metaOrCtrlKey = getMetaOrCtrlKey();
   return event.shiftKey && event[metaOrCtrlKey];
 };
 
@@ -45,7 +45,7 @@ export const useArrowKeyNavigation = (
     return (
       !hasSelectedObjects() &&
       !event.shiftKey &&
-      !event[navigatorUtils.getMetaOrCtrlKey()] &&
+      !event[getMetaOrCtrlKey()] &&
       getFocusedObject.value === null
     );
   };

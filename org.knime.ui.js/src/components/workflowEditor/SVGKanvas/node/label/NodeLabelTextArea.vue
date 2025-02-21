@@ -1,7 +1,7 @@
 <script>
 import { nextTick } from "vue";
 
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey } from "@knime/utils";
 
 import NodeLabelText from "./NodeLabelText.vue";
 
@@ -57,7 +57,7 @@ export default {
       textarea.style.height = `${textarea.scrollHeight}px`;
     },
     onSave(event) {
-      const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
+      const metaOrCtrlKey = getMetaOrCtrlKey();
 
       if (event[metaOrCtrlKey]) {
         this.$emit("save");

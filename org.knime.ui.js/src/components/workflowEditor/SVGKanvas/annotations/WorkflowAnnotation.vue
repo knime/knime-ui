@@ -10,7 +10,7 @@ import {
 import { onClickOutside, useMagicKeys } from "@vueuse/core";
 import { storeToRefs } from "pinia";
 
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
 import type {
   Bounds,
@@ -149,7 +149,7 @@ onMounted(() => {
 });
 
 const onLeftClick = (event: PointerEvent) => {
-  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
+  const metaOrCtrlKey = getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   selectionStore.toggleAnnotationSelection({
@@ -160,7 +160,7 @@ const onLeftClick = (event: PointerEvent) => {
 };
 
 const onContextMenu = (event: PointerEvent) => {
-  const metaOrCtrlKey = navigatorUtils.getMetaOrCtrlKey();
+  const metaOrCtrlKey = getMetaOrCtrlKey();
   const isMultiselect = event.shiftKey || event[metaOrCtrlKey];
 
   if (!isMultiselect && !isSelected.value) {

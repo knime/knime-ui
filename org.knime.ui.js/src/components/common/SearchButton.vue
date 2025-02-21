@@ -3,7 +3,7 @@ import { nextTick, onMounted, onUnmounted, ref } from "vue";
 
 import { FunctionButton, InputField } from "@knime/components";
 import LensIcon from "@knime/styles/img/icons/lens.svg";
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey } from "@knime/utils";
 /**
  * A function button that toggles a input field that can be used for search/filter queries.
  */
@@ -36,7 +36,7 @@ const toggleInput = async () => {
 
 const onKeydown = (event: KeyboardEvent) => {
   if (
-    event[navigatorUtils.getMetaOrCtrlKey()] &&
+    event[getMetaOrCtrlKey()] &&
     event.shiftKey &&
     event.key.toLowerCase() === "f"
   ) {

@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, toRefs, watch } from "vue";
 import { storeToRefs } from "pinia";
 
-import { navigatorUtils } from "@knime/utils";
+import { getMetaOrCtrlKey, navigatorUtils } from "@knime/utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useMoveObject } from "@/composables/useMoveObject";
@@ -115,7 +115,7 @@ const {
 });
 
 const isMultiselect = (event: MouseEvent | PointerEvent) =>
-  event.shiftKey || event[navigatorUtils.getMetaOrCtrlKey()];
+  event.shiftKey || event[getMetaOrCtrlKey()];
 
 const onConnectionSegmentClick = (event: MouseEvent) => {
   if (!isMultiselect(event)) {
