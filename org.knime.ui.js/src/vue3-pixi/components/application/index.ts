@@ -18,6 +18,9 @@ import {
   onUnmounted,
   ref,
   renderSlot,
+  toRef,
+  toRefs,
+  watch,
 } from "vue";
 import type { App, PropType } from "vue";
 
@@ -100,6 +103,17 @@ export const Application = defineComponent({
       await inst.init({ canvas: view, ...props, resizeTo: props.resizeTo?.() });
 
       pixiApp.value = markRaw(inst);
+
+      const { width, height } = toRefs(props);
+      watch([width, height], () => {
+        const newWidth = props.width ?? inst.renderer.width;
+        const newHeight = props.height ?? inst.renderer.height;
+        inst.renderer.resize(
+          newWidth,
+          newHeight,
+          props.resolution ?? inst.renderer.resolution,
+        );
+      });
 
       app = createApp({ render: () => renderSlot(slots, "default") });
 

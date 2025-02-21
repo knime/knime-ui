@@ -30,19 +30,6 @@ const canvasStore = useWebGLCanvasStore();
 const { containerSize, isDebugModeEnabled: isCanvasDebugEnabled } =
   storeToRefs(canvasStore);
 
-const zoom = throttle(function (event: WheelEvent) {
-  const shouldZoom = event.ctrlKey;
-  if (!shouldZoom) {
-    return;
-  }
-
-  canvasStore.zoomAroundPointer({
-    cursorX: event.offsetX,
-    cursorY: event.offsetY,
-    delta: Math.sign(-event.deltaY) as -1 | 0 | 1,
-  });
-});
-
 const rootEl = ref<HTMLElement | null>(null);
 
 let resizeObserver: ResizeObserver, stopResizeObserver: () => void;
@@ -111,9 +98,27 @@ onBeforeUnmount(() => {
   stopResizeObserver?.();
 });
 
-const { beginPan } = useCanvasPanning({
+const { mousePan, scrollPan } = useCanvasPanning({
   pixiApp: pixiApp as NonNullable<Ref<ApplicationInst>>,
 });
+
+const zoom = throttle(function (event: WheelEvent) {
+  canvasStore.zoomAroundPointer({
+    cursorX: event.offsetX,
+    cursorY: event.offsetY,
+    delta: Math.sign(-event.deltaY) as -1 | 0 | 1,
+  });
+});
+
+const onWheelEvent = (event: WheelEvent) => {
+  const shouldZoom = event.ctrlKey;
+  if (shouldZoom) {
+    zoom(event);
+    return;
+  }
+
+  scrollPan(event);
+};
 </script>
 
 <template>
@@ -128,13 +133,13 @@ const { beginPan } = useCanvasPanning({
       :auto-density="true"
       :antialias="true"
       :resize-to="() => getKanvasDomElement()!"
-      @wheel.prevent="zoom"
+      @wheel.prevent="onWheelEvent"
       @pointerdown.left="$bus.emit('selection-pointerdown', $event)"
       @pointermove="$bus.emit('selection-pointermove', $event)"
       @pointerup="$bus.emit('selection-pointerup', $event)"
       @contextmenu.prevent
-      @pointerdown.right="beginPan"
-      @pointerdown.middle="beginPan"
+      @pointerdown.right="mousePan"
+      @pointerdown.middle="mousePan"
       @init-complete="isPixiAppInitialized = true"
     >
       <Container label="contentBounds">

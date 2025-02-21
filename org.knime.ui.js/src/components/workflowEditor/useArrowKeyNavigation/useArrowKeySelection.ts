@@ -6,7 +6,8 @@ import { capitalize } from "@knime/utils";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import { isUIExtensionFocused } from "@/components/uiExtensions";
-import { useCanvasStore } from "@/store/canvas";
+import { useCanvasStore as useSVGCanvasStore } from "@/store/canvas/canvas-svg";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isInputElement } from "@/util/isInputElement";
@@ -14,6 +15,7 @@ import {
   type Direction,
   workflowNavigationService,
 } from "@/util/workflowNavigationService";
+import { canvasRendererUtils } from "../util/canvasRenderer";
 
 const getFurthestObjectByDirection = (
   selectedObjects: Array<WorkflowObject>,
@@ -84,7 +86,9 @@ export const useArrowKeySelection = (options: UseArrowKeySelectionOptions) => {
     isAnnotationSelected,
   } = storeToRefs(selectionStore);
 
-  const canvasStore = useCanvasStore();
+  const canvasStore = canvasRendererUtils.isSVGRenderer()
+    ? useSVGCanvasStore()
+    : useWebGLCanvasStore();
 
   const handleSelection = async (event: KeyboardEvent) => {
     const isMultiselect = event.shiftKey;
