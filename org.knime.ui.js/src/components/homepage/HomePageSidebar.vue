@@ -13,6 +13,7 @@ import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import HomePageContentTile from "./HomePageContentTile.vue";
+import HubLoginBanner from "./HubLoginBanner.vue";
 
 const $router = useRouter();
 const $route = useRoute();
@@ -43,4 +44,5 @@ const recent = computed<NavMenuItemProps>(() => ({
   </NavMenu>
 
   <HomePageContentTile />
+  <HubLoginBanner />
 </template>

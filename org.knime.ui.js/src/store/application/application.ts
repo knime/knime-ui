@@ -83,6 +83,7 @@ export interface ApplicationState {
 
   dismissedUpdateBanner: boolean; // Property to track banner dismissal
   dismissedHomePageTile: boolean;
+  dismissedHubLoginBanner: boolean;
 }
 
 /*
@@ -110,6 +111,7 @@ export const useApplicationStore = defineStore("application", {
     appMode: AppState.AppModeEnum.Default,
     dismissedUpdateBanner: false,
     dismissedHomePageTile: false,
+    dismissedHubLoginBanner: false,
   }),
   actions: {
     setActiveProjectId(projectId: string | null) {
