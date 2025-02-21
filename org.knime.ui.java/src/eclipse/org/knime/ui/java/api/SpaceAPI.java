@@ -51,6 +51,7 @@ package org.knime.ui.java.api;
 import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,7 +73,6 @@ import org.knime.core.util.exception.ResourceAccessException;
 import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemEnt;
-import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -449,16 +449,16 @@ final class SpaceAPI {
     @API
     static void openInBrowser(final String spaceProviderId, final String spaceId, final String itemId) {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
-        String url;
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-        if (sourceSpaceProvider.getType() == TypeEnum.HUB) {
-            url = ClassicAPBuildHubURL.getHubURL(itemId, sourceSpaceProvider, sourceSpace);
-        } else if (sourceSpaceProvider.getType() == TypeEnum.SERVER) {
-            url = ClassicAPBuildServerURL.getWebPortalURL(itemId, sourceSpaceProvider, sourceSpace);
-        } else {
-            throw new IllegalStateException("Operation not supported for local items");
+        try {
+            URI url = sourceSpace.getItemURI(itemId).orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
+            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
+        } catch (ResourceAccessException e) {
+            // in the future, this could also be handled by exception handling for desktop API calls in the frontend
+            showErrorToast("Could not show item in browser", "Check that the item still exists.", true);
+            LOGGER.error("Could not open in browser", e);
+            throw new IllegalStateException(e);
         }
-        WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
     }
 
     /**
@@ -473,8 +473,15 @@ final class SpaceAPI {
     static void openAPIDefinition(final String spaceProviderId, final String spaceId, final String itemId) {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
-        final var url = ClassicAPBuildServerURL.getAPIDefinition(itemId, sourceSpaceProvider, sourceSpace);
-        WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url, EclipseUIAPI.class);
+        try {
+            URI uri = sourceSpace.getAPIDefinitionURI(itemId).orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
+            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(uri.toString(), EclipseUIAPI.class);
+        } catch (ResourceAccessException e) {
+            // in the future, this could also be handled by exception handling for desktop API calls in the frontend
+            showErrorToast("Could not show item in browser", "Check that the item still exists.", true);
+            LOGGER.error("Could not open in browser", e);
+            throw new IllegalStateException(e);
+        }
     }
 
     /**

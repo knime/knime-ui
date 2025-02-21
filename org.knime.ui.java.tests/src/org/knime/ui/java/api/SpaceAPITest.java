@@ -49,7 +49,6 @@
 package org.knime.ui.java.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,9 +58,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.knime.core.node.workflow.contextv2.HubSpaceLocationInfo;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt.TypeEnum;
-import org.knime.gateway.impl.webui.spaces.Space;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider.SpaceProviderConnection;
 import org.knime.gateway.impl.webui.spaces.SpaceProviderFactory;
@@ -125,24 +122,6 @@ class SpaceAPITest {
         }, null, List.of(spaceProvidersFactory));
         res.update();
         return res;
-    }
-
-    @Test
-    void testOpenInHub() {
-        var locationInfo = mock(HubSpaceLocationInfo.class);
-        // real value would be, for example, /Users/benjaminmoser/Public/Sketching a molecule
-        // the current implementation uses it only for parsing the owner name.
-        when(locationInfo.getWorkflowPath()).thenReturn("/ignored/ownername/ignored/ignored");
-        var connectedSpaceProvider = mock(SpaceProvider.class);
-        when(connectedSpaceProvider.getServerAddress()).thenReturn(Optional.of("test.test"));
-        var space = mock(Space.class);
-        when(space.getLocationInfo(any())).thenReturn(locationInfo);
-        when(space.getName()).thenReturn("spaceName");
-        when(space.getItemName("*itemId")).thenReturn("itemName");
-        when(connectedSpaceProvider.getSpace("spaceId")).thenReturn(space);
-        assertThat(ClassicAPBuildHubURL.getHubURL("*itemId", connectedSpaceProvider, space))
-            .isEqualTo("test.test/ownername/spaces/spaceName/itemName~itemId/current-state");
-
     }
 
     @AfterEach
