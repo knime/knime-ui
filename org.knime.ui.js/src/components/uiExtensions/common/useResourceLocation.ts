@@ -19,7 +19,8 @@ export const resourceLocationResolver = (
 ) => {
   consola.trace("resolving dynamic resource: ", { path, baseUrl });
 
-  if (baseUrl?.length !== 0) {
+  // eslint-disable-next-line no-undefined
+  if (baseUrl !== undefined && baseUrl?.length !== 0) {
     return `${baseUrl}${path}`;
     // eslint-disable-next-line no-negated-condition
   } else if (restAPIBaseURL.length !== 0) {
