@@ -2,6 +2,7 @@ import { consola } from "consola";
 
 import { API } from "@/api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types.ts";
+import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { useApplicationStore } from "@/store/application/application.ts";
 import { useExecutionStore } from "@/store/workflow/execution";
@@ -23,6 +24,16 @@ interface SelectionServiceParams {
   service: (...args: any[]) => void;
   id: Identifiers;
 }
+
+const state = {
+  projectId: null,
+};
+
+const mutations = {
+  setProjectId(state, projectId) {
+    state.projectId = projectId;
+  },
+};
 
 const actions = {
   async callService(
@@ -79,7 +90,7 @@ const actions = {
   },
 
   async mount(
-    { dispatch }: any,
+    { dispatch, commit }: any,
     { projectId, workflowId, nodeId }: Identifiers,
   ): Promise<void> {
     consola.info("Loading page for PageBuilder");
@@ -97,6 +108,7 @@ const actions = {
       wizardPageContent: JSON.parse(result),
     };
 
+    commit("setProjectId", projectId);
     await dispatch("pagebuilder/setPage", { page }, { root: true });
   },
 };
@@ -104,17 +116,23 @@ const actions = {
 const getters = {
   // tableView will use this getter to get the resource location
   uiExtResourceLocation:
-    () =>
+    (state) =>
     ({
       resourceInfo,
     }: {
       resourceInfo: { baseUrl: string; path: string };
     }): string => {
-      return resourceInfo.baseUrl + resourceInfo.path;
+      return resourceLocationResolver(
+        state.projectId,
+        resourceInfo.path,
+        resourceInfo.baseUrl,
+      );
     },
 };
 
 export const pageBuilderStoreConfig = {
+  state,
+  mutations,
   actions,
   getters,
   namespaced: true,
