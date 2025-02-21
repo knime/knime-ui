@@ -1,3 +1,4 @@
+import { nextTick } from "vue";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
@@ -236,7 +237,10 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           events: {},
         });
 
-        useCanvasStore().focus();
+        // Wait for quick action menu to unmount, it's auto-focus would take over otherwise
+        nextTick(() => {
+          useCanvasStore().focus();
+        });
       },
 
       lockQuickActionMenu() {

@@ -168,7 +168,7 @@ watch(
     aria-label="Quick add node"
     :anchor="floatingMenuAnchor"
     :top-offset="floatingMenuTopOffset"
-    focus-trap
+    :focus-trap="quickActionMenu.isOpen"
     :prevent-overflow="true"
     @menu-close="$emit('menuClose')"
   >
