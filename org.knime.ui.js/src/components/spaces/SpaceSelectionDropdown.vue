@@ -6,6 +6,7 @@ import { SubMenu } from "@knime/components";
 import type { MenuItem } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CubeIcon from "@knime/styles/img/icons/cube.svg";
+import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import ComputerDesktopIcon from "@knime/styles/img/icons/local-space.svg";
 import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
@@ -61,18 +62,24 @@ type SpaceMetadata = {
   spaceProviderId: string;
   space: SpaceProviderNS.Space;
 };
+type ExternalLinkMetadata = {
+  type: "external-link";
+  url: string;
+};
 
 type AllMetadata =
   | SingleSpaceProviderMetadata
   | SignInMetadata
   | SpaceGroupMetadata
-  | SpaceMetadata;
+  | SpaceMetadata
+  | ExternalLinkMetadata;
 
 // groups and headlines are not clickable
 type ClickableItemsMetadata =
   | SpaceMetadata
   | SignInMetadata
-  | SingleSpaceProviderMetadata;
+  | SingleSpaceProviderMetadata
+  | ExternalLinkMetadata;
 
 const isSignInItem = (metadata: AllMetadata): metadata is SignInMetadata => {
   return metadata.type === "sign-in";
@@ -111,6 +118,11 @@ const onSpaceChange = async ({
   const { projectId } = props;
 
   if (!metadata) {
+    return;
+  }
+
+  if (metadata.type === "external-link") {
+    window.open(metadata.url, "_blank");
     return;
   }
 
@@ -239,7 +251,10 @@ const createMenuEntries = (
   groups: SpaceProviderNS.SpaceGroup[],
   provider: SpaceProviderNS.SpaceProvider,
 ): MenuItem<
-  SpaceGroupMetadata | SpaceMetadata | SingleSpaceProviderMetadata
+  | SpaceGroupMetadata
+  | SpaceMetadata
+  | SingleSpaceProviderMetadata
+  | ExternalLinkMetadata
 >[] => {
   // local and server always have a single space, so no need to show a nested menu
   const shouldHaveChildren = () =>
@@ -287,6 +302,17 @@ const createMenuEntries = (
 const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
   const providers = Object.values(spaceProvidersWithGroups.value ?? {});
 
+  const shouldShowCreateTeamOption = (
+    provider: SpaceProviderNS.SpaceProvider,
+  ) => {
+    if (provider.type !== SpaceProviderNS.TypeEnum.HUB || !provider.connected) {
+      return false;
+    }
+    return (provider.spaceGroups ?? []).every(
+      (group) => group.type === SpaceProviderNS.UserTypeEnum.USER,
+    );
+  };
+
   const getHeadline = (
     provider: SpaceProviderNS.SpaceProvider,
   ): MenuItem | null => {
@@ -322,7 +348,32 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
     }
 
     if (provider.connected) {
-      return createMenuEntries(provider.spaceGroups, provider);
+      const baseItems: MenuItem<AllMetadata>[] = createMenuEntries(
+        provider.spaceGroups,
+        provider,
+      );
+
+      // If this is a Hub provider and the user has NO team, add a “Create team” item
+      if (
+        provider.type === SpaceProviderNS.TypeEnum.HUB &&
+        shouldShowCreateTeamOption(provider)
+      ) {
+        const createTeamItem: MenuItem<ExternalLinkMetadata> = {
+          text: "Create Team",
+          icon: LinkExternalIcon,
+          selected: false,
+          sectionHeadline: false,
+          separator: false,
+          metadata: {
+            type: "external-link",
+            url: "https://knime.com/team-plan",
+          },
+        };
+
+        baseItems.push(createTeamItem);
+      }
+
+      return baseItems;
     }
 
     return [createSignInMenuItem(provider)];
@@ -364,7 +415,13 @@ const selectedText = computed(() => {
     return "";
   }
 
-  return `${selectedChildItem.metadata.space.owner} – ${selectedChildItem.metadata.space.name}`;
+  if (
+    selectedChildItem.metadata.type === "space" ||
+    selectedChildItem.metadata.type === "single-space-provider"
+  ) {
+    return `${selectedChildItem.metadata.space.owner} – ${selectedChildItem.metadata.space.name}`;
+  }
+  return "";
 });
 
 const spaceIcon = computed(() => {

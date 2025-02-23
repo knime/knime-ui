@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { FunctionButton, LoadingIcon } from "@knime/components";
 import LeaveIcon from "@knime/styles/img/icons/leave.svg";
+import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
 import type { SpaceGroup } from "@/api/gateway-api/generated-api";
@@ -33,6 +34,29 @@ const {
   shouldShowLogout,
   logout,
 } = useSpaceProviderAuth();
+
+const isCommunityHubProvider = (
+  provider: SpaceProviderNS.SpaceProvider,
+): boolean => {
+  return (
+    isHubProvider(provider) &&
+    provider.connected &&
+    (provider.hostname?.includes("hub.knime.com") ?? false)
+  );
+};
+
+const shouldShowCreateTeamOption = (
+  provider: SpaceProviderNS.SpaceProvider,
+): boolean => {
+  // Only show if it's the Community Hub (not Business Hub)
+  if (!isCommunityHubProvider(provider)) {
+    return false;
+  }
+  // Then check if the user has no team
+  return (provider.spaceGroups ?? []).every(
+    (group) => group.type === SpaceProviderNS.UserTypeEnum.USER,
+  );
+};
 
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
   if (isConnectingToProvider.value === spaceProvider.id) {
@@ -90,7 +114,7 @@ const isSpaceGroupActive = (groupId: string) =>
 const { getSpaceProviderIcon, getSpaceGroupIcon } = useSpaceIcons();
 
 const isLoggedInHubProvider = (spaceProvider: SpaceProviderNS.SpaceProvider) =>
-  isHubProvider(spaceProvider) && spaceProvider.spaceGroups;
+  isHubProvider(spaceProvider) && spaceProvider.connected;
 
 type SpaceProviderNavItems = NavMenuItemProps & {
   id: string;
@@ -139,6 +163,10 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
     return item;
   }),
 );
+
+const openCreateTeamPage = () => {
+  window.open("https://knime.com/team-plan", "_blank");
+};
 </script>
 
 <template>
@@ -197,6 +225,17 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
         >
           <template #prepend>
             <Component :is="getSpaceGroupIcon(child.metadata!.spaceGroup!)" />
+          </template>
+        </NavMenuItem>
+        <NavMenuItem
+          v-if="shouldShowCreateTeamOption(item.metadata.spaceProvider!)"
+          text="Create Team"
+          :with-indicator="false"
+          target="_blank"
+          @click="openCreateTeamPage"
+        >
+          <template #prepend>
+            <LinkExternalIcon />
           </template>
         </NavMenuItem>
       </NavMenu>

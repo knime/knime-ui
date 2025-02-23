@@ -326,4 +326,61 @@ describe("SpaceSelectionDropdown.vue", () => {
 
     expect(menuItems.at(-1)!.text).toMatch("Loading");
   });
+
+  it("handles external link clicks", async () => {
+    const originalWindowOpen = window.open;
+    window.open = vi.fn();
+
+    const { wrapper } = doMount({
+      spaceProviders: {
+        local: startSpaceProviders.local,
+        hub1: createSpaceProvider({
+          id: "hub1",
+          connected: true,
+          connectionMode: "AUTOMATIC",
+          name: "Hub 1",
+          type: SpaceProviderNS.TypeEnum.HUB,
+          spaceGroups: [
+            createSpaceGroup({
+              id: "jdoe",
+              name: "John Doe",
+              type: SpaceProviderNS.UserTypeEnum.USER,
+              spaces: [
+                {
+                  id: "hub1space1",
+                  name: "Space 1 on Hub 1 from John Doe",
+                  owner: "jdoe",
+                  private: false,
+                },
+              ],
+            }),
+          ],
+        }),
+      },
+    });
+
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+    const externalLinkItem = {
+      text: "External Link",
+      metadata: {
+        type: "external-link",
+        url: "https://knime.com/team-plan",
+      },
+    };
+
+    menuItems.push(externalLinkItem);
+
+    await nextTick();
+
+    wrapper
+      .findComponent(SubMenu)
+      .vm.$emit("item-click", null, externalLinkItem);
+
+    expect(window.open).toHaveBeenCalledWith(
+      "https://knime.com/team-plan",
+      "_blank",
+    );
+
+    window.open = originalWindowOpen;
+  });
 });
