@@ -349,7 +349,7 @@ describe("WorkflowMetadata.vue", () => {
     mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
 
-    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
+    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(true);
     expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(false);
   });
 });
