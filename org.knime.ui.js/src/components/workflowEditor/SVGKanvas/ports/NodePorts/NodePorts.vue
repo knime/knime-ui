@@ -208,7 +208,7 @@ const removePort = async (
     return;
   }
 
-  nodeInteractionsStore.removeNodePort({
+  await nodeInteractionsStore.removeNodePort({
     nodeId: props.nodeId,
     side,
     index,
@@ -222,11 +222,7 @@ const isFirstRegularPort = (port: NodePortType) => {
     return true;
   }
 
-  if (port.index === 1) {
-    return true;
-  }
-
-  return false;
+  return port.index === 1;
 };
 </script>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
@@ -89,6 +90,16 @@ const canExecute = computed(() => {
   return nodeUtils.canExecute(props.selectedNode, 0);
 });
 
+const canExecuteDebounced = ref(false);
+
+watch(
+  canExecute,
+  debounce((newVal) => {
+    canExecuteDebounced.value = newVal;
+  }, 100),
+  { immediate: true },
+);
+
 const isPortExecuted = computed(() => {
   if (props.selectedPortIndex === null || !props.selectedNode) {
     return false;
@@ -156,7 +167,7 @@ const openLegacyPortView = (executeNode: boolean) => {
   </div>
 
   <ExecuteButton
-    v-if="canExecute && !isUnsupportedView"
+    v-if="canExecuteDebounced && !isUnsupportedView"
     :message="executeButtonMessage"
     @click="onExecuteNode"
   />

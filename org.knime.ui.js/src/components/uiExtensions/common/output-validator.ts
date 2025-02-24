@@ -355,6 +355,46 @@ export const validateNodeExecuted: ValidationFn<{
   return next(context);
 };
 
+/*
+ * Validation middleware function. Asserts that:
+ * - The selected component is not in a busy state (QUEUE || EXECUTING)
+ * - The selected component is not in a re-executing state
+ */
+export const validateComponentNotBusyOrReexecuting: ValidationFn<{
+  selectedNode: KnimeNode;
+  isReexecuting: (nodeId: string) => boolean;
+}> = (context, next) => {
+  const { selectedNode, isReexecuting } = context;
+
+  const state = selectedNode.state?.executionState;
+
+  if (isReexecuting(selectedNode.id)) {
+    return next(context);
+  }
+
+  if (state === "QUEUED" || state === "EXECUTING") {
+    return {
+      error: {
+        type: "NODE",
+        code: "NODE_BUSY",
+        message: "Output is available after execution.",
+      },
+    };
+  }
+
+  if (state !== "EXECUTED") {
+    return {
+      error: {
+        type: "NODE",
+        code: "NODE_UNEXECUTED",
+        message: "Please execute the component.",
+      },
+    };
+  }
+
+  return next(context);
+};
+
 type MiddlewareFn<TEnv, TCxt> = (
   environment: TEnv,
   next: NextFn<TCxt>,

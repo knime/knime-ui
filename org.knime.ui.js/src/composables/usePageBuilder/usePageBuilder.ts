@@ -10,6 +10,9 @@ export type PageBuilderControl = {
     workflowId: string,
     nodeId: string,
   ) => Promise<void>;
+  isDirty: () => Promise<boolean>;
+  hasPage: () => boolean;
+  updateAndReexecute: () => Promise<void>;
   unmountShadowApp: () => void;
 };
 
@@ -19,6 +22,9 @@ const errop = () => {
 const fallbackCreatePageBuilder: PageBuilderControl = {
   mountShadowApp: errop,
   loadPage: () => Promise.resolve(),
+  isDirty: () => Promise.resolve(false),
+  hasPage: () => false,
+  updateAndReexecute: () => Promise.resolve(),
   unmountShadowApp: errop,
 };
 
@@ -31,11 +37,12 @@ let PageBuilder: {
 
 /**
  * Load and initialize the PageBuilder and return a function to mount a shadow app on a given shadowRoot.
- * If it is already initialized, this function will return the cached shadow app control helper.
  * @param projectId The project ID. when using KNIME in browser the resolution of the PageBuilder module will be done using this project ID. This is not needed when using KNIME in desktop.
+ * @param onChange A callback function that will be called when any change is made in the PageBuilder. Will provide a boolean value indicating if the PageBuilder is dirty.
  */
 export const usePageBuilder = async (
   projectId: string,
+  onChange: (isDirty: boolean) => void,
 ): Promise<PageBuilderControl> => {
   const pageBuilderBaseUrl =
     // eslint-disable-next-line no-undefined
@@ -61,6 +68,11 @@ export const usePageBuilder = async (
         state: {
           ...pageBuilderApiVuexStoreConfig.state,
           disallowWebNodes: isBrowser(),
+          disableWidgetsWhileExecuting: true,
+        },
+        actions: {
+          ...pageBuilderApiVuexStoreConfig.actions,
+          onChange: (_, { isDirty }) => onChange(isDirty),
         },
       },
       resourceLocationResolver(projectId, "", pageBuilderBaseUrl),

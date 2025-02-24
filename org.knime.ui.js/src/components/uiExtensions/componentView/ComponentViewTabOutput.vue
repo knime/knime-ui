@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 import { Button } from "@knime/components";
 import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg";
@@ -7,10 +7,12 @@ import OpenInNewWindowIcon from "@knime/styles/img/icons/open-in-new-window.svg"
 import type { AvailablePortTypes } from "@/api/custom-types";
 import type { ComponentNode } from "@/api/gateway-api/generated-api";
 import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
+import { useReexecutingCompositeViewState } from "@/composables/usePageBuilder/useReexecutingCompositeViewState";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useExecutionStore } from "@/store/workflow/execution";
 import {
   buildMiddleware,
+  validateComponentNotBusyOrReexecuting,
   validateNodeConfigurationState,
 } from "../common/output-validator";
 import type { UIExtensionLoadingState, ValidationError } from "../common/types";
@@ -28,9 +30,16 @@ const runNodeValidationChecks = ({
   selectedNode: ComponentNode;
   portTypes: AvailablePortTypes;
 }) => {
-  const validationMiddleware = buildMiddleware(validateNodeConfigurationState);
+  const validationMiddleware = buildMiddleware(
+    validateNodeConfigurationState,
+    validateComponentNotBusyOrReexecuting,
+  );
 
-  const result = validationMiddleware({ selectedNode, portTypes })();
+  const result = validationMiddleware({
+    selectedNode,
+    portTypes,
+    isReexecuting: useReexecutingCompositeViewState().isReexecuting,
+  })();
   return Object.freeze(result);
 };
 
@@ -44,6 +53,7 @@ type Props = {
 const props = defineProps<Props>();
 
 const uiControls = useUIControlsStore();
+const pageBuilderHasPage = ref(false);
 
 const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
@@ -74,7 +84,7 @@ const openInNewWindow = () => {
 
 <template>
   <div
-    v-if="!nodeErrors && uiControls.canDetachNodeViews"
+    v-if="!nodeErrors && pageBuilderHasPage && uiControls.canDetachNodeViews"
     class="detach-button-wrapper"
   >
     <Button
@@ -88,7 +98,7 @@ const openInNewWindow = () => {
     </Button>
   </div>
 
-  <div class="node-view-wrapper">
+  <div v-if="!nodeErrors" class="node-view-wrapper">
     <Suspense>
       <ComponentViewLoader
         :project-id="projectId"
@@ -96,6 +106,7 @@ const openInNewWindow = () => {
         :node-id="selectedNode.id"
         :execution-state="selectedNode.state?.executionState"
         @loading-state-change="emit('loadingStateChange', $event)"
+        @pagebuilder-has-page="pageBuilderHasPage = $event"
       />
     </Suspense>
   </div>

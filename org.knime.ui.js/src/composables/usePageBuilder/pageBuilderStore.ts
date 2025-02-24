@@ -8,6 +8,7 @@ import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
 import { useNotifyUIExtensionAlert } from "@/components/uiExtensions/common/useNotifyUIExtensionAlert";
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
+import { useReexecutingCompositeViewState } from "@/composables/usePageBuilder/useReexecutingCompositeViewState";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { useExecutionStore } from "@/store/workflow/execution";
@@ -34,17 +35,46 @@ interface SelectionServiceParams {
 export type PageBuilderStoreState = {
   projectId: string | null;
   disallowWebNodes: boolean;
+  onChange: (isDirty: boolean) => void;
 };
 
 const state: PageBuilderStoreState = {
   projectId: null,
   disallowWebNodes: true,
+  onChange: () => {},
 };
 
 const mutations = {
-  setProjectId(state, projectId) {
+  setProjectId(state: PageBuilderStoreState, projectId: string | null) {
     state.projectId = projectId;
   },
+};
+
+const handleError = (
+  {
+    caller,
+    error,
+    nodeId,
+  }: {
+    caller: string;
+    error: any;
+    nodeId?: string;
+  },
+  onlyLog?: boolean,
+): void => {
+  consola.error(`KNIME-UI pageBuilderStore: ${caller} failed with `, error);
+  if (onlyLog !== true) {
+    const { notify } = useNotifyUIExtensionAlert();
+    notify(
+      {
+        message: `${caller} failed with error: ${error}`,
+        type: "error",
+      },
+      {
+        nodeId: nodeId ?? "",
+      },
+    );
+  }
 };
 
 const getSelectedNodeIdentifierFromStore = (): Identifiers | null => {
@@ -57,9 +87,15 @@ const getSelectedNodeIdentifierFromStore = (): Identifiers | null => {
       selectedNode === null
         ? "Please select a single node."
         : "Invalid WorkflowId.";
-    consola.error(
-      `KNIME-UI pageBuilderStore: getSelectedNodeIdentifierFromStore failed. ${cause}`,
+
+    handleError(
+      {
+        caller: "getSelectedNodeIdentifierFromStore",
+        error: `KNIME-UI pageBuilderStore: getSelectedNodeIdentifierFromStore failed. ${cause}`,
+      },
+      true,
     );
+
     return null;
   }
 
@@ -68,7 +104,7 @@ const getSelectedNodeIdentifierFromStore = (): Identifiers | null => {
   return { projectId, workflowId, nodeId };
 };
 
-const testValidityOfPage = async ({ dispatch }) => {
+const testValidityOfPage = async ({ dispatch }, nodeId?: string) => {
   try {
     const res = await dispatch("pagebuilder/getValidity", null, { root: true });
 
@@ -77,17 +113,19 @@ const testValidityOfPage = async ({ dispatch }) => {
     const isValid = viewValidities.every((isValid) => isValid === true);
 
     if (!isValid) {
-      dispatch("handleError", {
-        caller: "triggerReExecution",
+      handleError({
+        caller: "testValidityOfPage",
         error:
           "Client-side validation failed. Please check the page for errors.",
+        nodeId,
       });
       return "invalid";
     }
   } catch (_error) {
-    dispatch("handleError", {
-      caller: "triggerReExecution",
+    handleError({
+      caller: "testValidityOfPage",
       error: "Validation check failed unexpectedly.",
+      nodeId,
     });
     return "invalid";
   }
@@ -217,54 +255,100 @@ const actions = {
   async triggerReExecution({ dispatch }, { nodeId: resetNodeIdSuffix }) {
     consola.debug(
       "KNIME-UI pageBuilderStore: trigger re-execution due to node",
-      resetNodeIdSuffix,
+      resetNodeIdSuffix
+        ? `"${resetNodeIdSuffix}"`
+        : "none (complete re-execution)",
     );
 
     const resolvedIdentifiers = getSelectedNodeIdentifierFromStore();
     if (resolvedIdentifiers === null) {
       return;
     }
-    const {
-      projectId,
-      workflowId,
-      nodeId: componentNodeId,
-    } = resolvedIdentifiers;
 
-    const pageValidity = await testValidityOfPage({ dispatch });
-    if (pageValidity === "invalid") {
+    const { nodeId: componentNodeId } = resolvedIdentifiers;
+
+    if (
+      (await testValidityOfPage({ dispatch }, componentNodeId)) === "invalid"
+    ) {
       return;
     }
 
-    const viewValues = await dispatch("pagebuilder/getViewValues", null, {
-      root: true,
-    }).catch(() => false);
+    const addingResult =
+      useReexecutingCompositeViewState().addReexecutingNode(componentNodeId);
 
-    const params = Object.keys(viewValues).reduce((obj, nId) => {
-      obj[nId] = JSON.stringify(viewValues[nId]);
-      return obj;
-    }, {});
-
-    let reexecutingPage;
-    try {
-      reexecutingPage = await API.component.triggerComponentReexecution({
-        projectId,
-        workflowId,
-        nodeId: componentNodeId,
-        resetNodeIdSuffix,
-        viewValues: { ...params },
+    if (addingResult === "alreadyExists") {
+      handleError({
+        caller: "triggerReExecution",
+        error: "Node is already re-executing. Will not trigger again.",
       });
-    } catch (error) {
-      const { notify } = useNotifyUIExtensionAlert();
-      notify(
+      return;
+    }
+
+    try {
+      const viewValueResult = await dispatch(
+        "pagebuilder/getViewValues",
+        null,
         {
-          message: `Failed to trigger re-execution: ${error}`,
-          type: "error",
-        },
-        {
-          nodeId: componentNodeId,
+          root: true,
         },
       );
-      return;
+
+      // make all values to strings as expected by the API
+      const viewValues = Object.keys(viewValueResult).reduce(
+        (accumulator, nodeId) => {
+          accumulator[nodeId] = JSON.stringify(viewValueResult[nodeId]);
+          return accumulator;
+        },
+        {},
+      );
+
+      const reexecutingPage =
+        (await API.component.triggerCompleteComponentReexecution({
+          ...resolvedIdentifiers,
+          viewValues,
+        })) as unknown as ReexecutingPage;
+
+      await Promise.all(
+        reexecutingPage.resetNodes.map((nodeId) => {
+          return dispatch(
+            "pagebuilder/resetDirtyState",
+            { nodeId },
+            { root: true },
+          );
+        }),
+      );
+
+      const isDirty = await dispatch("pagebuilder/isDirty", null, {
+        root: true,
+      });
+      await dispatch("api/onChange", { isDirty }, { root: true });
+
+      await dispatch("pollReExecution", {
+        reexecutingPage,
+        resolvedIdentifiers,
+      });
+    } catch (error) {
+      handleError({
+        caller: "triggerReExecution",
+        error,
+      });
+    } finally {
+      useReexecutingCompositeViewState().removeReexecutingNode(componentNodeId);
+    }
+  },
+
+  async pollReExecution(
+    { dispatch },
+    {
+      reexecutingPage,
+      resolvedIdentifiers,
+    }: { reexecutingPage: ReexecutingPage; resolvedIdentifiers: Identifiers },
+  ) {
+    if (!reexecutingPage) {
+      reexecutingPage =
+        (await API.component.pollCompleteComponentReexecutionStatus(
+          resolvedIdentifiers,
+        )) as unknown as ReexecutingPage;
     }
 
     while (true) {
@@ -278,12 +362,10 @@ const actions = {
 
       await sleep(pollingInformation.pollInterval);
 
-      reexecutingPage = await API.component.pollComponentReexecutionStatus({
-        projectId,
-        workflowId,
-        nodeId: componentNodeId,
-        resetNodeIdSuffix,
-      });
+      reexecutingPage =
+        (await API.component.pollCompleteComponentReexecutionStatus(
+          resolvedIdentifiers,
+        )) as unknown as ReexecutingPage;
     }
   },
 

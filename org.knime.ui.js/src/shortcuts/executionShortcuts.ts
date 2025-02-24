@@ -101,7 +101,7 @@ const executionShortcuts: ExecutionShortcuts = {
       const selectedNodeId = payload?.metadata?.nodeId
         ? [payload?.metadata?.nodeId]
         : "selected";
-      useExecutionStore().executeNodes(selectedNodeId);
+      await useExecutionStore().executeNodes(selectedNodeId);
     },
     condition: () =>
       useSelectionStore().getSelectedNodes.some(
