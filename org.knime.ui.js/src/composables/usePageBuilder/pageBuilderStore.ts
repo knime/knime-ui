@@ -29,10 +29,12 @@ interface SelectionServiceParams {
 
 export type PageBuilderStoreState = {
   projectId: string | null;
+  disallowWebNodes: boolean;
 };
 
 const state: PageBuilderStoreState = {
   projectId: null,
+  disallowWebNodes: true,
 };
 
 const mutations = {
@@ -62,9 +64,7 @@ const getSelectedNodeIdentifierFromStore = (): Identifiers | null => {
   return { projectId, workflowId, nodeId };
 };
 
-const testValidityOfPage = async ({
-  dispatch,
-}): Promise<"valid" | "invalid"> => {
+const testValidityOfPage = async ({ dispatch }) => {
   try {
     const res = await dispatch("pagebuilder/getValidity", null, { root: true });
 
@@ -94,11 +94,12 @@ const testValidityOfPage = async ({
  * This generator is used to determine the polling interval for the re-execution of the composite view.
  * The initial polling interval, i.e., the first call, is 100ms, after that it is 500ms.
  */
+const INITIAL_POLLING_INTERVAL = 100;
+const POLLING_INTERVAL = 500;
 const intervalGenerator = function* () {
-  yield 100;
+  yield INITIAL_POLLING_INTERVAL;
   while (true) {
-    // eslint-disable-next-line no-magic-numbers -- 100ms is the initial polling interval, 500ms after that
-    yield 500;
+    yield POLLING_INTERVAL;
   }
 };
 const pollingInterval = intervalGenerator();
@@ -333,6 +334,7 @@ const getters = {
         resourceInfo.baseUrl,
       );
     },
+  disallowWebNodes: (state: PageBuilderStoreState) => state.disallowWebNodes,
 };
 
 /*

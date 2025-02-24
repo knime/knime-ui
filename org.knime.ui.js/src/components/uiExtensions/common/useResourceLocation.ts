@@ -1,5 +1,4 @@
 import { type Ref, computed } from "vue";
-import consola from "consola";
 import { storeToRefs } from "pinia";
 
 import { useApplicationStore } from "@/store/application/application";
@@ -25,10 +24,9 @@ export const resourceLocationResolver = (
   } else if (restAPIBaseURL.length !== 0) {
     return `${restAPIBaseURL}/jobs/${projectId}/workflow/wizard/web-resources/${path}`;
   } else {
-    consola.warn(
-      `knime-ui/useResourceLocationResolver: baseUrl and restAPIBaseURL are not defined/empty. Try to continue, return path:${path}.`,
-    );
-    return path;
+    const url =
+      import.meta.env.VITE_BROWSER_DEV_HTTP_URL ?? "http://localhost:7000";
+    return `${url}/${path}`;
   }
 };
 

@@ -1,5 +1,5 @@
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
-import { isDesktop } from "@/environment";
+import { isBrowser, isDesktop } from "@/environment";
 
 import { pageBuilderApiVuexStoreConfig } from "./pageBuilderStore";
 
@@ -56,7 +56,13 @@ export const usePageBuilder = async (
 
   return (
     PageBuilder?.createPageBuilderApp(
-      pageBuilderApiVuexStoreConfig,
+      {
+        ...pageBuilderApiVuexStoreConfig,
+        state: {
+          ...pageBuilderApiVuexStoreConfig.state,
+          disallowWebNodes: isBrowser,
+        },
+      },
       resourceLocationResolver(projectId, "", pageBuilderBaseUrl),
     ) ?? fallbackCreatePageBuilder
   );
