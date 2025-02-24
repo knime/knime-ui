@@ -92,3 +92,4 @@ export const annotationToolbarContainerHeight = 60;
 
 export const defaultAddWorkflowAnnotationWidth = 250;
 export const defaultAddWorkflowAnnotationHeight = 150;
+export const quickActionMenuWidth = 360; // px

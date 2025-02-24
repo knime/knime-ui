@@ -165,9 +165,15 @@ describe("application::lifecycle", () => {
 
     it("loads inner workflow successfully", async () => {
       const { lifecycleStore, workflowStore } = loadStore();
-      mockedAPI.workflow.getWorkflow.mockResolvedValue({
-        workflow: { dummy: true, info: { containerId: "root" }, nodes: [] },
+
+      const loadedWF = createWorkflow({
+        info: { containerId: "root" },
+        nodes: Object.create({}),
+        projectId: "wf2",
       });
+
+      mockedAPI.workflow.getWorkflow.mockResolvedValue({ workflow: loadedWF });
+
       await lifecycleStore.loadWorkflow({
         projectId: "wf2",
         workflowId: "root:0:123",
@@ -177,12 +183,7 @@ describe("application::lifecycle", () => {
         expect.objectContaining({ workflowId: "root:0:123", projectId: "wf2" }),
       );
 
-      expect(workflowStore.activeWorkflow).toStrictEqual({
-        dummy: true,
-        info: { containerId: "root" },
-        nodes: [],
-        projectId: "wf2",
-      });
+      expect(workflowStore.activeWorkflow).toStrictEqual(loadedWF);
 
       expect(mockedAPI.event.subscribeEvent).toHaveBeenCalledWith({
         typeId: "WorkflowChangedEventType",
@@ -193,8 +194,13 @@ describe("application::lifecycle", () => {
 
     it("unloads workflow when another one is loaded", async () => {
       const { lifecycleStore, workflowStore, selectionStore } = loadStore();
+      const loadedWF = createWorkflow({
+        info: { containerId: "root" },
+        nodes: Object.create({}),
+      });
+
       mockedAPI.workflow.getWorkflow.mockResolvedValue({
-        workflow: { dummy: true, info: { containerId: "root" }, nodes: [] },
+        workflow: loadedWF,
         snapshotId: "snap",
       });
       await lifecycleStore.loadWorkflow({

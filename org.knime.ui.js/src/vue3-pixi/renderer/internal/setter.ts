@@ -62,6 +62,14 @@ export function setPropertyValue(inst: any, key: string, setter: () => void) {
   function update() {
     setter();
   }
+
+  if (!inst) {
+    console.warn(
+      `Invalid property ${key}. Unable to bind to Pixi object instance`,
+    );
+    return;
+  }
+
   if (!inst[initKey]) {
     Reflect.set(inst, initKey, true);
     nextTick(update);

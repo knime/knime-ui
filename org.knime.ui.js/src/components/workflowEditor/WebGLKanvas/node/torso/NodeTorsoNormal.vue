@@ -103,7 +103,6 @@ const renderTorso = (graphics: GraphicsInst, backgroundColor: string) => {
   const draw = renderFunctionMapper[props.type!] ?? drawDefault;
   draw(graphics);
   graphics.closePath();
-  graphics.stroke({ width: 2, color: backgroundColor });
   graphics.fill(backgroundColor);
 };
 

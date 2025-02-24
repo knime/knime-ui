@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
 import type {
@@ -9,13 +9,13 @@ import type {
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import type { TargetPort } from "../../../CanvasAnchoredComponents/PortTypeMenu/types";
+import { usePortPositions } from "../../../common/usePortPositions";
 import NodePort from "../NodePort/NodePort.vue";
 
 import AddPortPlaceholder from "./AddPortPlaceholder.vue";
 import { useNodeInfo } from "./useNodeInfo";
 import { usePortAnimationClasses } from "./usePortAnimationClasses";
 import { usePortKeyboardNavigation } from "./usePortKeyboardNavigation";
-import { usePortPositions } from "./usePortPositions";
 import { usePortSelection } from "./usePortSelection";
 
 /**
@@ -90,15 +90,9 @@ const { portPositions, addPortPlaceholderPositions } = usePortPositions({
   canAddPort,
   inPorts: props.inPorts,
   outPorts: props.outPorts,
+  emitPositionUpdate: (portPositions) =>
+    emit("updatePortPositions", portPositions),
 });
-
-watch(
-  portPositions,
-  () => {
-    emit("updatePortPositions", portPositions.value);
-  },
-  { immediate: true },
-);
 
 /* Port positions */
 

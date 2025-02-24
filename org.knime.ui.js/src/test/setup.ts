@@ -53,12 +53,16 @@ vi.mock("@knime/components", async (importActual) => {
 class MockPointerEvent extends Event {
   clientX = null;
   clientY = null;
+  offsetX = null;
+  offsetY = null;
   buttons = null;
 
   constructor(name: string, args: any) {
     super(name, args);
     this.clientX = args?.clientX;
     this.clientY = args?.clientY;
+    this.offsetX = args?.offsetX;
+    this.offsetY = args?.offsetY;
     this.buttons = args?.buttons ?? 1;
   }
 }

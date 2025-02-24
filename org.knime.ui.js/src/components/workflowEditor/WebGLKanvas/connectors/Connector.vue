@@ -1,11 +1,15 @@
+<!-- eslint-disable no-magic-numbers -->
 <!-- eslint-disable func-style -->
 <script setup lang="ts">
-import { computed, toRefs } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
+import gsap from "gsap";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useConnectorPosition } from "@/composables/useConnectorPosition";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
+import { isPlaceholderPort } from "@/store/floatingConnector/types";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import * as $colors from "@/style/colors";
@@ -14,9 +18,7 @@ import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
 import type { ConnectorProps } from "../types";
 
-// eslint-disable-next-line no-magic-numbers
 const deltaX1 = portSize / 2 - 0.5;
-// eslint-disable-next-line no-magic-numbers
 const deltaX2 = portSize / 2 - 0.5;
 
 const getBezier = (x1: number, y1: number, x2: number, y2: number) => {
@@ -25,7 +27,7 @@ const getBezier = (x1: number, y1: number, x2: number, y2: number) => {
   const width = Math.abs(x1 - x2);
   const height = Math.abs(y1 - y2);
   const widthHalf = width / 2;
-  // eslint-disable-next-line no-magic-numbers
+
   const heightThird = height / 3;
   const bezier = {
     start: { x: x1, y: y1 },
@@ -57,7 +59,9 @@ const { start, end } = useConnectorPosition({
   destNode,
   sourcePort,
   destPort,
-  absolutePoint,
+  absolutePoint: computed(() =>
+    absolutePoint.value ? [absolutePoint.value.x, absolutePoint.value.y] : null,
+  ),
 });
 
 const moveDeltas = computed(() => {
@@ -91,30 +95,97 @@ const linePoints = computed<[number, number, number, number]>(() => {
   return [x1 + mx1, y1 + my1, x2 + mx2, y2 + my2];
 });
 
-const bezierPoints = computed<[number, number, number, number, number, number]>(
-  () => {
-    const [x1, y1, x2, y2] = linePoints.value;
-
-    const bezier = getBezier(x1, y1, x2, y2);
-    return [
-      bezier.control1.x,
-      bezier.control1.y,
-      bezier.control2.x,
-      bezier.control2.y,
-      bezier.end.x,
-      bezier.end.y,
-    ];
-  },
+const { floatingConnector, snapTarget } = storeToRefs(
+  useFloatingConnectorStore(),
 );
 
-const renderFn = (graphics: GraphicsInst) => {
+const isTargetForReplacement = computed(() => {
+  // is the global drag connector itself
+  if (!floatingConnector.value || props.absolutePoint) {
+    return false;
+  }
+
+  // targetting the end of the connection from another port
+  if (
+    snapTarget.value &&
+    !isPlaceholderPort(snapTarget.value) &&
+    props.destNode === snapTarget.value.parentNodeId &&
+    snapTarget.value.index === props.destPort
+  ) {
+    return true;
+  }
+
+  // attempting a connection from a connected input port
+  if (
+    props.destNode === floatingConnector.value.context.parentNodeId &&
+    props.destPort === floatingConnector.value.context.portInstance.index &&
+    floatingConnector.value.context.origin === "in"
+  ) {
+    return true;
+  }
+
+  return false;
+});
+
+const bezierPoints = computed(() => {
+  const [x1, y1, x2, y2] = linePoints.value;
+
+  return getBezier(x1, y1, x2, y2);
+});
+
+const renderFn = (
+  graphics: GraphicsInst,
+  points: ReturnType<typeof getBezier>,
+) => {
   const color = props.flowVariableConnection ? $colors.Coral : $colors.Masala;
   graphics
     .clear()
     .moveTo(linePoints.value.at(0)!, linePoints.value.at(1)!)
-    .bezierCurveTo(...bezierPoints.value)
+    .bezierCurveTo(
+      points.control1.x,
+      points.control1.y,
+      points.control2.x,
+      points.control2.y,
+      points.end.x,
+      points.end.y,
+    )
     .stroke({ width: 1, color });
 };
+
+const connectorPath = ref<GraphicsInst>();
+
+const suggestShiftX = -12;
+const suggestShiftY = -6;
+watch(isTargetForReplacement, (newValue, oldValue) => {
+  const [x1, y1, x2, y2] = linePoints.value;
+
+  // flip the curves depending on the value of suggest delete
+  // so that we have the animation in both directions
+
+  const oldBezier = getBezier(
+    x1,
+    y1,
+    x2 + (newValue && !oldValue ? 0 : suggestShiftX),
+    y2 + (newValue && !oldValue ? 0 : suggestShiftY),
+  );
+
+  const newBezier = getBezier(
+    x1,
+    y1,
+    x2 + (newValue && !oldValue ? suggestShiftX : 0),
+    y2 + (newValue && !oldValue ? suggestShiftY : 0),
+  );
+
+  gsap.to(oldBezier.end, {
+    x: newBezier.end.x,
+    y: newBezier.end.y,
+    duration: 0.2,
+    ease: "power2.out",
+    onUpdate: () => {
+      renderFn(connectorPath.value!, oldBezier);
+    },
+  });
+});
 
 function getBoundingBox(start: XY, ctrl1: XY, ctrl2: XY, end: XY) {
   const minX = Math.min(start.x, ctrl1.x, ctrl2.x, end.x);
@@ -153,5 +224,15 @@ const renderable = computed(() => {
 </script>
 
 <template>
-  <Graphics :renderable="renderable" :label="id" @render="renderFn" />
+  <Graphics
+    ref="connectorPath"
+    :z-index="
+      isNodeSelected(sourceNode ?? '') || isNodeSelected(destNode ?? '')
+        ? $zIndices.webGlCanvasConnections
+        : 0
+    "
+    :renderable="renderable"
+    :label="`Connector__${id}`"
+    @render="renderFn($event, bezierPoints)"
+  />
 </template>

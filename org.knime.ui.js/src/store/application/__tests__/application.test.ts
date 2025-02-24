@@ -171,7 +171,6 @@ describe("application", () => {
     });
 
     it("loads the proper (lastActive) workflow when the activeProject has an existing saved state", async () => {
-      vi.useFakeTimers();
       const applicationState = {
         openProjects: [
           { projectId: "foo", name: "bar" },
@@ -193,15 +192,12 @@ describe("application", () => {
 
       await lifecycleStore.setActiveProject({ $router: router });
 
-      vi.runAllTimers();
       await flushPromises();
 
       expect(lifecycleStore.loadWorkflow).toHaveBeenCalledWith({
         projectId: "baz",
         workflowId: "root:2",
       });
-
-      vi.useRealTimers();
     });
 
     it("replaces hasNodeCollectionActive", () => {

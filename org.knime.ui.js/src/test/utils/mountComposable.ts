@@ -56,7 +56,8 @@ export const mountComposable = <T extends (...args: any) => any>({
     },
   };
 
-  const getComposableResult = () => wrapper.vm.composableResult;
+  const getComposableResult = () =>
+    wrapper.vm.composableResult as ReturnType<T>;
 
   return {
     getComposableResult,

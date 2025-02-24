@@ -21,13 +21,13 @@ export const useConnectedNodeObjects = (
 
   const sourceNodeObject = computed(() =>
     options.sourceNode.value
-      ? activeWorkflow.value!.nodes[options.sourceNode.value]
+      ? activeWorkflow.value?.nodes[options.sourceNode.value] ?? null
       : null,
   );
 
   const destNodeObject = computed(() =>
     options.destNode.value
-      ? activeWorkflow.value!.nodes[options.destNode.value]
+      ? activeWorkflow.value?.nodes[options.destNode.value] ?? null
       : null,
   );
 

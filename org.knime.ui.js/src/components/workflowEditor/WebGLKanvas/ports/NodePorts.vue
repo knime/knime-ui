@@ -8,15 +8,13 @@ import {
   type XY,
 } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import {
-  portPositions as _portPositions,
-  placeholderPosition,
-} from "@/util/portShift";
 import type { ContainerInst } from "@/vue3-pixi";
+import {
+  type PortPositions,
+  usePortPositions,
+} from "../../common/usePortPositions";
 
 import NodePort from "./NodePort.vue";
-import NodePortActiveConnector from "./NodePortActiveConnector.vue";
-import { dragConnector } from "./usePortDragging";
 
 interface Props {
   nodeId: string;
@@ -29,6 +27,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  updatePortPositions: [value: PortPositions];
+}>();
 
 const isMetanode = computed(() => props.nodeKind === Node.KindEnum.Metanode);
 const isComponent = computed(() => props.nodeKind === Node.KindEnum.Component);
@@ -54,40 +56,13 @@ const canAddPort = computed(() => {
   return { input: false, output: false };
 });
 
-const portPositions = computed(() => {
-  const positions = {
-    in: _portPositions({
-      portCount: props.inPorts.length,
-      isMetanode: props.nodeKind === "metanode",
-    }),
-    out: _portPositions({
-      portCount: props.outPorts.length,
-      isMetanode: props.nodeKind === "metanode",
-      isOutports: true,
-    }),
-  };
-
-  // add placeholder positions to enable the drop to a placeholder
-  if (canAddPort.value.input) {
-    positions.in.push(
-      placeholderPosition({
-        portCount: props.inPorts.length,
-        isMetanode: isMetanode.value,
-      }),
-    );
-  }
-
-  if (canAddPort.value.output) {
-    positions.out.push(
-      placeholderPosition({
-        portCount: props.outPorts.length,
-        isMetanode: isMetanode.value,
-        isOutport: true,
-      }),
-    );
-  }
-
-  return positions;
+const { portPositions } = usePortPositions({
+  nodeId: props.nodeId,
+  canAddPort,
+  inPorts: props.inPorts,
+  outPorts: props.outPorts,
+  emitPositionUpdate: (portPositions) =>
+    emit("updatePortPositions", portPositions),
 });
 
 const isDefaultFlowVariable = (index: number) => {
@@ -103,73 +78,30 @@ const getPortContainerLabel = (index: number, type: "in" | "out") => {
 
 const ports = ref<ContainerInst>();
 
-const draggedConnectorPort = computed(() => {
-  if (!dragConnector.value) {
-    // eslint-disable-next-line no-undefined
-    return undefined;
-  }
-
-  const { direction } = dragConnector.value;
-
-  // render only the connector for a single node; the one being dragged out of
-  if (
-    (direction === "out" && dragConnector.value.sourceNode !== props.nodeId) ||
-    (direction === "in" && dragConnector.value.destNode !== props.nodeId)
-  ) {
-    // eslint-disable-next-line no-undefined
-    return undefined;
-  }
-
-  const ports = direction === "out" ? props.outPorts : props.inPorts;
-  const connectorIndex =
-    direction === "out"
-      ? dragConnector.value.sourcePort
-      : dragConnector.value.destPort;
-
-  return ports.find(({ index }) => index === connectorIndex);
-});
-
-// Since flow variables disappear when not hovered, we supply a position
-// to render the original port that was dragged, in case it was a flow variable
-const sourcePortPosition = computed(() => {
-  if (
-    !dragConnector.value ||
-    !isDefaultFlowVariable(dragConnector.value.portInstance.index)
-  ) {
-    // eslint-disable-next-line no-undefined
-    return undefined;
-  }
-
-  const { direction, portInstance } = dragConnector.value;
-  const [x, y] = portPositions.value[direction][portInstance.index];
-
-  return {
-    x: props.anchor.x + x - $shapes.portSize / 2,
-    y: props.anchor.y + y - $shapes.portSize / 2,
-  };
-});
+const getPortPositionOffset = (type: "in" | "out", portIndex: number) => {
+  return portPositions.value[type][portIndex] ?? [0, 0];
+};
 </script>
 
 <template>
-  <Container ref="ports">
-    <NodePortActiveConnector
-      v-if="dragConnector && draggedConnectorPort"
-      :drag-connector="dragConnector"
-      :port="draggedConnectorPort"
-      :source-port-position="sourcePortPosition"
-    />
-
+  <Container ref="ports" label="NodePorts">
     <NodePort
       v-for="port of inPorts"
-      :key="`out-${port.index}`"
+      :key="`in-${port.index}`"
       direction="in"
       :node-id="nodeId"
       :node-kind="nodeKind"
       :label="getPortContainerLabel(port.index, 'in')"
       :port="port"
       :position="{
-        x: anchor.x + portPositions.in[port.index][0] - $shapes.portSize / 2,
-        y: anchor.y + portPositions.in[port.index][1] - $shapes.portSize / 2,
+        x:
+          anchor.x +
+          getPortPositionOffset('in', port.index)[0] -
+          $shapes.portSize / 2,
+        y:
+          anchor.y +
+          getPortPositionOffset('in', port.index)[1] -
+          $shapes.portSize / 2,
       }"
     />
 
@@ -182,8 +114,14 @@ const sourcePortPosition = computed(() => {
       :label="getPortContainerLabel(port.index, 'out')"
       :port="port"
       :position="{
-        x: anchor.x + portPositions.out[port.index][0] - $shapes.portSize / 2,
-        y: anchor.y + portPositions.out[port.index][1] - $shapes.portSize / 2,
+        x:
+          anchor.x +
+          getPortPositionOffset('out', port.index)[0] -
+          $shapes.portSize / 2,
+        y:
+          anchor.y +
+          getPortPositionOffset('out', port.index)[1] -
+          $shapes.portSize / 2,
       }"
     />
   </Container>

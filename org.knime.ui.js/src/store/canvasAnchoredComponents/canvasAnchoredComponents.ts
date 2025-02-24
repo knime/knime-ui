@@ -6,10 +6,11 @@ import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
 import type { QuickActionMenuProps } from "@/components/workflowEditor/CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
 import { useCanvasStore } from "@/store/canvas";
-import { nodeSize } from "@/style/shapes";
+import * as $shapes from "@/style/shapes";
 import { workflowNavigationService } from "@/util/workflowNavigationService";
 import { useCanvasModesStore } from "../application/canvasModes";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
+import { useFloatingConnectorStore } from "../floatingConnector/floatingConnector";
 import { useSelectionStore } from "../selection";
 
 type State = {
@@ -74,8 +75,8 @@ const getContextMenuPositionOnSVGCanvas = async (event: MouseEvent) => {
 
   // the node offset is also fine for annotations so we use it all the time
   const extractXYWithOffset = ({ x, y }: XY) => ({
-    x: x + nodeSize / 2,
-    y: y + nodeSize / 2,
+    x: x + $shapes.nodeSize / 2,
+    y: y + $shapes.nodeSize / 2,
   });
 
   const centerOfVisibleArea = useCanvasStore().getCenterOfScrollContainer;
@@ -203,9 +204,17 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         if (canvasRendererUtils.isWebGLRenderer()) {
           const canvasStore = useWebGLCanvasStore();
 
+          const offsets = {
+            x: $shapes.portSize / 2,
+            y: $shapes.addNodeGhostSize / 2 + 2,
+          };
+
           canvasStore.setCanvasAnchor({
             isOpen: true,
-            anchor: { x: props.position.x, y: props.position.y },
+            anchor: {
+              x: props.position.x + offsets.x,
+              y: props.position.y + offsets.y,
+            },
           });
         }
 
@@ -236,6 +245,11 @@ export const useCanvasAnchoredComponentsStore = defineStore(
           props: null,
           events: {},
         });
+
+        const floatingConnectorStore = useFloatingConnectorStore();
+        if (floatingConnectorStore.floatingConnector) {
+          floatingConnectorStore.removeActiveConnector();
+        }
 
         // Wait for quick action menu to unmount, it's auto-focus would take over otherwise
         nextTick(() => {

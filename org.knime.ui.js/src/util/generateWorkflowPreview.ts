@@ -1,6 +1,8 @@
 import robotoCondensed from "@fontsource/roboto-condensed/files/roboto-condensed-all-400-normal.woff";
 import { camelCase } from "lodash-es";
 
+import { canvasRendererUtils } from "@/components/workflowEditor/util/canvasRenderer";
+
 const removeNonXMLChars = (xmlStr: string) => {
   // taken from https://www.w3.org/TR/REC-xml/#charsets
   const nonXMLChars =
@@ -311,6 +313,10 @@ export const generateWorkflowPreview = async (
 ) => {
   if (!svgElement) {
     return null;
+  }
+
+  if (canvasRendererUtils.isWebGLRenderer()) {
+    return "";
   }
 
   if (isEmpty) {

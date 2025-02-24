@@ -129,7 +129,10 @@ const onSelectionEnd = (event: PointerEvent) => {
     nodesOutside.value = [];
   }
 
-  (event.target as HTMLElement).releasePointerCapture(selectionPointerId!);
+  const target = event.target as HTMLElement;
+  if (target.hasPointerCapture(selectionPointerId!)) {
+    target.releasePointerCapture(selectionPointerId!);
+  }
   selectionPointerId = undefined;
 };
 

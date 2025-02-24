@@ -13,6 +13,7 @@ import { useWorkflowPreviewSnapshotsStore } from "@/store/application/workflowPr
 import { useCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { useNodeDescriptionStore } from "@/store/nodeDescription/nodeDescription";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
@@ -92,6 +93,7 @@ export const mockStores = ({ stubActions = false } = {}) => {
   const quickAddNodesStore = useQuickAddNodesStore(testingPinia);
   const selectionStore = useSelectionStore(testingPinia);
   const settingsStore = useSettingsStore(testingPinia);
+  const floatingConnectorStore = useFloatingConnectorStore(testingPinia);
 
   uiControlsStore.init();
 
@@ -143,5 +145,6 @@ export const mockStores = ({ stubActions = false } = {}) => {
     selectionStore,
     settingsStore,
     webglCanvasStore,
+    floatingConnectorStore,
   };
 };

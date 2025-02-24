@@ -132,14 +132,14 @@ export const useLifecycleStore = defineStore("lifecycle", {
         }
 
         if (isEnteringWorkflow) {
-          // when entering workflow, we must navigate to the route before we dispatch
-          // to the store and load all the relevant workflow state
-          next();
+          // when entering workflow, we must dispatch to the store and load
+          // the relevant workflow state
           const newWorkflow = to.params as {
             projectId: string;
             workflowId?: string;
           };
           await this.switchWorkflow({ newWorkflow });
+          next();
           return;
         }
 
@@ -417,7 +417,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       this.beforeSetActivateWorkflow({ workflow: project.workflow });
 
-      await this.setWorkflow({
+      this.setWorkflow({
         projectId,
         workflow: project.workflow,
         snapshotId: project.snapshotId,

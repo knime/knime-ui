@@ -8,7 +8,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import Workflow from "./Workflow.vue";
 import Kanvas from "./kanvas/Kanvas.vue";
 
-const { activeWorkflow } = storeToRefs(useWorkflowStore());
+const { activeWorkflow, isWorkflowEmpty } = storeToRefs(useWorkflowStore());
 const canvasStore = useWebGLCanvasStore();
 
 onMounted(() => {
@@ -19,6 +19,6 @@ onMounted(() => {
 
 <template>
   <Kanvas v-if="activeWorkflow">
-    <Workflow v-if="activeWorkflow" />
+    <Workflow v-if="!isWorkflowEmpty" />
   </Kanvas>
 </template>

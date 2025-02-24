@@ -4,6 +4,7 @@ import {
   computed,
   onBeforeUnmount,
   onMounted,
+  onUnmounted,
   ref,
   watch,
 } from "vue";
@@ -96,6 +97,11 @@ watch(
 
 onBeforeUnmount(() => {
   stopResizeObserver?.();
+});
+
+onUnmounted(() => {
+  canvasStore.pixiApplication = null;
+  canvasStore.stage = null;
 });
 
 const { mousePan, scrollPan } = useCanvasPanning({

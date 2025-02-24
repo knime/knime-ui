@@ -44,8 +44,6 @@ const props = withDefaults(defineProps<QuickActionMenuProps>(), {
 const QUICK_BUILD_PROCESSING_OFFSET = 70;
 const QUICK_BUILD_RESULT_OFFSET = -40;
 
-const menuWidth = 360;
-
 defineEmits(["menuClose"]);
 
 const { quickActionMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
@@ -182,7 +180,7 @@ watch(
 
     <div
       :class="['quick-action-content', menuMode]"
-      :style="{ width: `${menuWidth}px` }"
+      :style="{ width: `${$shapes.quickActionMenuWidth}px` }"
     >
       <template v-if="menuMode == 'quick-add'">
         <QuickAddNodeMenu

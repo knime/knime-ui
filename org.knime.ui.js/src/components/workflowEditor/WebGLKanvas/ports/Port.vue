@@ -10,6 +10,8 @@ import PortIcon from "./PortIcon.vue";
 
 interface Props {
   port: NodePort;
+  targeted?: boolean;
+  hovered?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -39,5 +41,11 @@ const shouldFill = computed(() => {
 </script>
 
 <template>
-  <PortIcon :type="portKind" :color="portColor" :filled="shouldFill" />
+  <PortIcon
+    :type="portKind"
+    :color="portColor"
+    :filled="shouldFill"
+    :targeted="targeted"
+    :hovered="hovered"
+  />
 </template>

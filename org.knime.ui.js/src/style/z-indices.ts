@@ -100,3 +100,11 @@ export const layerCanvasTooltips = 5;
  * Layer for minimally elevated items
  */
 export const layerMinorElevation = 2;
+
+/* --------------------------**** WEBGL CANVAS ****-------------------------------------- */
+
+export const webGlCanvasNodeSelectionPlane = 10;
+
+export const webGlCanvasSelectedNode = 20;
+
+export const webGlCanvasConnections = 30;

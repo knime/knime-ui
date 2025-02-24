@@ -10,6 +10,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 
 import SelectionRectangle from "./SelectionRectangle/SelectionRectangle.vue";
 import Connector from "./connectors/Connector.vue";
+import FloatingConnector from "./floatingConnector/FloatingConnector.vue";
 import Node from "./node/Node.vue";
 
 const selectionStore = useSelectionStore();
@@ -56,6 +57,8 @@ const onRightClick = (event: FederatedPointerEvent, nodeId: string) => {
     :node="node"
     @contextmenu="onRightClick($event, node.id)"
   />
+
+  <FloatingConnector />
 
   <Connector
     v-for="connector of activeWorkflow!.connections"

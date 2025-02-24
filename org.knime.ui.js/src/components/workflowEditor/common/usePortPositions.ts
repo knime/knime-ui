@@ -1,11 +1,10 @@
-import { type ComputedRef, computed } from "vue";
+import { type ComputedRef, computed, watch } from "vue";
 
 import type { KnimeNode } from "@/api/custom-types";
 import * as portPositionUtils from "@/util/portShift";
+import { useNodeInfo } from "../SVGKanvas/ports/NodePorts/useNodeInfo";
 
-import { useNodeInfo } from "./useNodeInfo";
-
-type PortPositions = {
+export type PortPositions = {
   in: Array<[number, number]>;
   out: Array<[number, number]>;
 };
@@ -15,6 +14,7 @@ type UsePortPositionsOptions = {
   inPorts: KnimeNode["inPorts"];
   outPorts: KnimeNode["outPorts"];
   canAddPort: ComputedRef<{ input: boolean; output: boolean }>;
+  emitPositionUpdate: (positions: PortPositions) => void;
 };
 
 export const usePortPositions = (options: UsePortPositionsOptions) => {
@@ -67,6 +67,14 @@ export const usePortPositions = (options: UsePortPositionsOptions) => {
       output: portPositions.value.out[portPositions.value.out.length - 1],
     };
   });
+
+  watch(
+    portPositions,
+    () => {
+      options.emitPositionUpdate(portPositions.value);
+    },
+    { immediate: true },
+  );
 
   return { addPortPlaceholderPositions, portPositions };
 };

@@ -50,6 +50,7 @@ describe("SelectionRectangle.vue", () => {
       offsetY: 20,
       target: {
         // @ts-expect-error
+        hasPointerCapture: () => true,
         setPointerCapture: () => null,
         releasePointerCapture: () => null,
       },
@@ -60,6 +61,7 @@ describe("SelectionRectangle.vue", () => {
       offsetX: 80,
       offsetY: 80,
       target: {
+        hasPointerCapture: () => true,
         setPointerCapture: () => null,
         releasePointerCapture: () => null,
       },

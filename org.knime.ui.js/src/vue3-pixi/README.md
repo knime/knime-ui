@@ -1,3 +1,6 @@
 # vue3-pixi
 
-This is based on that [PR#123](https://github.com/hairyf/vue3-pixi/pull/123) with modifications to our needs, it is by no means complete and some parts might not work.
+This project includes code originally from [Vue3 Pixi](https://github.com/hairyf/vue3-pixi) by [hairyf](https://github.com/hairyf),
+licensed under the MIT License.
+
+It is modified to suit our needs as a custom Vue renderer for Pixi JS

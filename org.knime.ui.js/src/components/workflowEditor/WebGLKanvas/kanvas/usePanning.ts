@@ -66,7 +66,9 @@ export const useCanvasPanning = ({
       canvas.removeEventListener("pointermove", onPan);
       canvas.removeEventListener("pointerup", stopPan);
       canvas.removeEventListener("lostpointercapture", stopPan);
-      eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
+      if (eventTarget.hasPointerCapture(pointerDownEvent.pointerId)) {
+        eventTarget.releasePointerCapture(pointerDownEvent.pointerId);
+      }
     };
 
     canvas.addEventListener("pointermove", onPan);

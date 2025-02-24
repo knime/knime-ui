@@ -1,21 +1,20 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
-import { computed, shallowRef } from "vue";
+import { computed, ref, shallowRef } from "vue";
 import { storeToRefs } from "pinia";
-import { Container, Rectangle } from "pixi.js";
+import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
 
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
+import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { portSize } from "@/style/shapes";
 import { toExtendedPortObject } from "@/util/portDataMapper";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 
 import Port from "./Port.vue";
 import { useFlowVarPortTransparency } from "./useFlowVarPortTransparency";
-import { usePortDragging } from "./usePortDragging";
 
 interface Props {
   nodeId: string;
@@ -60,77 +59,76 @@ const isFlowVariable = computed(
 
 const { openQuickActionMenu } = useCanvasAnchoredComponentsStore();
 
-const { dragConnector, onPointerDown } = usePortDragging({
-  direction: props.direction,
-  isFlowVariable: isFlowVariable.value,
-  nodeId: props.nodeId,
-  port: props.port,
+const floatingConnectorStore = useFloatingConnectorStore();
+const {
+  floatingConnector,
+  snapTarget,
+  isDragging: isDraggingFloatingConnector,
+} = storeToRefs(floatingConnectorStore);
 
-  onCanvasDrop: () => {
-    // ignore drop if quick add menu is disabled (e.g for metanode port bars)
-    if (props.disableQuickNodeAdd) {
-      return { removeConnector: true };
-    }
+const isTargetedByFloatingConnector = computed(
+  () =>
+    snapTarget.value &&
+    !floatingConnectorStore.isPlaceholderPort(snapTarget.value) &&
+    snapTarget.value.parentNodeId === props.nodeId &&
+    snapTarget.value.index === props.port.index &&
+    floatingConnector.value?.context.origin !== props.direction,
+);
 
-    const [x, y] = dragConnector.value!.absolutePoint;
+const onPointerDown = (event: FederatedPointerEvent) => {
+  floatingConnectorStore.createConnectorFromPointerEvent(event, {
+    direction: props.direction,
+    isFlowVariable: isFlowVariable.value,
+    nodeId: props.nodeId,
+    port: props.port,
+    portPosition: props.position,
+    onCanvasDrop: () => {
+      // ignore drop if quick add menu is disabled (e.g for metanode port bars)
+      if (props.disableQuickNodeAdd) {
+        return { removeConnector: true };
+      }
 
-    openQuickActionMenu({
-      props: {
-        position: { x, y },
-        port: props.port,
-        nodeRelation: props.direction === "out" ? "SUCCESSORS" : "PREDECESSORS",
-        nodeId: props.nodeId,
-        positionOrigin: "mouse",
-      },
-    });
+      openQuickActionMenu({
+        props: {
+          position: floatingConnector.value!.absolutePoint,
+          port: props.port,
+          nodeRelation:
+            props.direction === "out" ? "SUCCESSORS" : "PREDECESSORS",
+          nodeId: props.nodeId,
+          positionOrigin: "mouse",
+        },
+      });
 
-    return { removeConnector: true };
-  },
-});
-
-const onConnectionDrop = () => {
-  if (!dragConnector.value) {
-    return;
-  }
-
-  const from =
-    dragConnector.value.sourceNode && dragConnector.value.sourcePort
-      ? {
-          nodeId: dragConnector.value.sourceNode,
-          portIndex: dragConnector.value.sourcePort,
-        }
-      : { nodeId: props.nodeId, portIndex: props.port.index };
-
-  const to =
-    dragConnector.value.destNode && dragConnector.value.destPort
-      ? {
-          nodeId: dragConnector.value.destNode,
-          portIndex: dragConnector.value.destPort,
-        }
-      : { nodeId: props.nodeId, portIndex: props.port.index };
-
-  useNodeInteractionsStore().connectNodes({
-    sourceNode: from.nodeId,
-    sourcePort: from.portIndex,
-    destNode: to.nodeId,
-    destPort: to.portIndex,
+      return { removeConnector: false };
+    },
   });
 };
 
 const portContainer = shallowRef<ContainerInst | undefined>();
 
-const { initialAlpha, onPointerEnter, onPointerLeave } =
-  useFlowVarPortTransparency({
-    portContainer,
-    port: props.port,
-    nodeKind: props.nodeKind,
-  });
+const flowVarTransparency = useFlowVarPortTransparency({
+  portContainer,
+  port: props.port,
+  nodeKind: props.nodeKind,
+});
+
+const isHovered = ref(false);
+
+const onPointerEnter = () => {
+  isHovered.value = true;
+  flowVarTransparency.onPointerEnter();
+};
+
+const onPointerLeave = () => {
+  isHovered.value = false;
+  flowVarTransparency.onPointerLeave();
+};
 </script>
 
 <template>
   <Container
     ref="portContainer"
-    :alpha="initialAlpha ? 1 : 0"
+    :alpha="flowVarTransparency.initialAlpha ? 1 : 0"
     event-mode="static"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
@@ -141,7 +139,6 @@ const { initialAlpha, onPointerEnter, onPointerLeave } =
       :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
       event-mode="static"
       @pointerdown="onPointerDown"
-      @pointerup="onConnectionDrop"
     >
       <Graphics
         v-if="isCanvasDebugEnabled"
@@ -155,7 +152,11 @@ const { initialAlpha, onPointerEnter, onPointerLeave } =
           }
         "
       />
-      <Port :port="port" />
+      <Port
+        :port="port"
+        :targeted="isTargetedByFloatingConnector"
+        :hovered="isHovered && !isDraggingFloatingConnector"
+      />
     </Container>
   </Container>
 </template>

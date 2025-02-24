@@ -1,6 +1,6 @@
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, toRef, unref, watch } from "vue";
+import { computed, ref, toRef, unref } from "vue";
 import { storeToRefs } from "pinia";
 import * as PIXI from "pixi.js";
 
@@ -12,13 +12,14 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
-import { type GraphicsInst } from "@/vue3-pixi";
+import type { PortPositions } from "../../common/usePortPositions";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import NodePorts from "../ports/NodePorts.vue";
 import { nodeNameText } from "../util/textStyles";
@@ -26,10 +27,9 @@ import { nodeNameText } from "../util/textStyles";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
+import { useNodeDragging } from "./useNodeDragging";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
-
-const MIN_MOVE_THRESHOLD = 5;
 
 interface Props {
   node: KnimeNode;
@@ -49,15 +49,16 @@ const emit = defineEmits<{
   contextmenu: [event: PIXI.FederatedPointerEvent];
 }>();
 
-const { zoomFactor, isDebugModeEnabled, pixiApplication, visibleArea } =
-  storeToRefs(useWebGLCanvasStore());
+const { isDebugModeEnabled, visibleArea } = storeToRefs(useWebGLCanvasStore());
+
+const portPositions = ref<PortPositions>({ in: [], out: [] });
 
 const selectionStore = useSelectionStore();
 const { isNodeSelected, getFocusedObject } = storeToRefs(selectionStore);
 const { isWritable } = storeToRefs(useWorkflowStore());
 
 const movingStore = useMovingStore();
-const { isDragging, movePreviewDelta } = storeToRefs(movingStore);
+const { movePreviewDelta } = storeToRefs(movingStore);
 
 const positionWithDelta = computed(() => ({
   x: props.position.x + movePreviewDelta.value.x,
@@ -70,18 +71,6 @@ const translatedPosition = computed(() => {
     : props.position;
 });
 
-watch(
-  toRef(props, "position"),
-  () => {
-    if (isDragging.value) {
-      movingStore.resetDragState();
-    }
-  },
-  { deep: true },
-);
-
-const startPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
-
 const isEditable = computed(() => {
   if (!isWritable.value) {
     return false;
@@ -90,72 +79,10 @@ const isEditable = computed(() => {
   return isNodeComponent(props.node) ? !props.node.link : true;
 });
 
-const onPointerDown = (pointerDownEvent: PIXI.FederatedPointerEvent) => {
-  if (pointerDownEvent.button !== 0) {
-    return;
-  }
-
-  const canvas = pixiApplication.value!.canvas;
-  canvas.setPointerCapture(pointerDownEvent.pointerId);
-
-  startPos.value = {
-    x: pointerDownEvent.global.x,
-    y: pointerDownEvent.global.y,
-  };
-
-  const isMultiselect =
-    pointerDownEvent.shiftKey ||
-    pointerDownEvent.ctrlKey ||
-    pointerDownEvent.metaKey;
-
-  if (!isNodeSelected.value(props.node.id) && !isMultiselect) {
-    selectionStore.deselectAllObjects();
-    selectionStore.selectNode(props.node.id);
-  }
-  if (isMultiselect) {
-    if (isNodeSelected.value(props.node.id)) {
-      selectionStore.deselectNode(props.node.id);
-    } else {
-      selectionStore.selectNode(props.node.id);
-    }
-  }
-
-  let didDrag = false;
-  movingStore.setIsDragging(true);
-
-  const onMove = (pointerMoveEvent: PointerEvent): void => {
-    const deltaX =
-      (pointerMoveEvent.offsetX - startPos.value.x) / zoomFactor.value;
-    const deltaY =
-      (pointerMoveEvent.offsetY - startPos.value.y) / zoomFactor.value;
-
-    if (
-      Math.abs(deltaX) >= MIN_MOVE_THRESHOLD ||
-      Math.abs(deltaY) >= MIN_MOVE_THRESHOLD
-    ) {
-      didDrag = true;
-    }
-
-    movingStore.setMovePreview({ deltaX, deltaY });
-  };
-
-  const onUp = () => {
-    if (!didDrag) {
-      if (!isMultiselect && isNodeSelected.value(props.node.id)) {
-        selectionStore.deselectAllObjects();
-      }
-      selectionStore.selectNode(props.node.id);
-    }
-
-    movingStore.moveObjects();
-    canvas.releasePointerCapture(pointerDownEvent.pointerId);
-    canvas.removeEventListener("pointermove", onMove);
-    canvas.removeEventListener("pointerup", onUp);
-  };
-
-  canvas.addEventListener("pointermove", onMove);
-  canvas.addEventListener("pointerup", onUp);
-};
+const { startDrag } = useNodeDragging({
+  nodeId: props.node.id,
+  position: toRef(props, "position"),
+});
 
 const { isSelectionPreviewShown } = useSelectionPreview({
   objectId: props.node.id,
@@ -167,33 +94,20 @@ const isSelectionFocusShown = computed(
   () => getFocusedObject.value?.id === props.node.id,
 );
 
-const { onPointerEnter, onPointerLeave, hoveredNodeId } =
-  useNodeHoveredStateProvider();
+const hoverStateProvider = useNodeHoveredStateProvider();
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
-const { hoverSize } = useNodeHoverSize({
-  isHovering: computed(() => hoveredNodeId.value === props.node.id),
+const { hoverSize, renderHoverArea } = useNodeHoverSize({
+  isHovering: computed(
+    () => hoverStateProvider.hoveredNodeId.value === props.node.id,
+  ),
+  portPositions,
   dialogType: Node.DialogTypeEnum.Web,
   isUsingEmbeddedDialogs: useEmbeddedDialogs,
   nodeNameDimensions: ref({ width: 0, height: 18 }),
   allowedActions: props.node.allowedActions!,
+  isDebugModeEnabled,
 });
-
-const renderHoverArea = (graphics: GraphicsInst) => {
-  graphics.clear();
-
-  graphics.rect(
-    hoverSize.value.x,
-    hoverSize.value.y,
-    hoverSize.value.width,
-    hoverSize.value.height,
-  );
-
-  if (isDebugModeEnabled.value) {
-    // eslint-disable-next-line no-magic-numbers
-    graphics.fill(0xf1f1f1);
-  }
-};
 
 const renderable = computed(
   () =>
@@ -211,7 +125,7 @@ const nodeNamePosition = computed(() => {
   };
 });
 
-const hitArea = computed(
+const nodeHitArea = computed(
   () =>
     new PIXI.Rectangle(
       hoverSize.value.x,
@@ -232,8 +146,51 @@ const nameMeasures = PIXI.CanvasTextMetrics.measureText(
 );
 const SINGLE_LINE_TEXT_HEIGHT_THRESHOLD = 40;
 const textYAnchor = computed(() =>
+  // eslint-disable-next-line no-magic-numbers
   nameMeasures.height <= SINGLE_LINE_TEXT_HEIGHT_THRESHOLD ? 0 : 0.5,
 );
+
+const floatingConnectorStore = useFloatingConnectorStore();
+const {
+  activeConnectionValidTargets,
+  floatingConnector,
+  isDragging: isDraggingFloatingConnector,
+} = storeToRefs(floatingConnectorStore);
+const isConnectionForbidden = computed(
+  () =>
+    activeConnectionValidTargets.value &&
+    !activeConnectionValidTargets.value.has(props.node.id) &&
+    floatingConnector.value?.context.parentNodeId !== props.node.id,
+);
+
+const onNodeHoverAreaPointerEnter = () => {
+  hoverStateProvider.onPointerEnter(props.node.id);
+};
+
+const onNodeHoverAreaPointerMove = () => {
+  if (
+    // ignore self-hover
+    floatingConnector.value?.context.parentNodeId === props.node.id ||
+    !isDraggingFloatingConnector.value ||
+    isConnectionForbidden.value
+  ) {
+    return;
+  }
+
+  floatingConnectorStore.onMoveOverConnectionSnapCandidate({
+    referenceNode: props.node,
+    parentNodePortPositions: portPositions.value,
+  });
+};
+
+const onNodeHoverAreaPointerLeave = () => {
+  hoverStateProvider.onPointerLeave();
+
+  floatingConnectorStore.onLeaveConnectionSnapCandidate({
+    referenceNode: props.node,
+    parentNodePortPositions: portPositions.value,
+  });
+};
 </script>
 
 <template>
@@ -241,6 +198,9 @@ const textYAnchor = computed(() =>
     :kind="node.kind"
     :anchor-position="translatedPosition"
     :renderable="renderable"
+    :z-index="
+      isNodeSelected(node.id) ? $zIndices.webGlCanvasNodeSelectionPlane : 0
+    "
     :show-selection="isSelectionPreviewShown"
     :show-focus="isSelectionFocusShown"
     :width="
@@ -253,15 +213,18 @@ const textYAnchor = computed(() =>
   <Container
     :label="node.id"
     :renderable="renderable"
+    :z-index="isNodeSelected(node.id) ? $zIndices.webGlCanvasSelectedNode : 0"
     event-mode="static"
+    :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
     @rightclick="emit('contextmenu', $event)"
-    @pointerenter="onPointerEnter(node.id)"
-    @pointerleave.self="onPointerLeave()"
-    @pointerdown="onPointerDown"
+    @pointerenter="onNodeHoverAreaPointerEnter"
+    @pointermove="onNodeHoverAreaPointerMove"
+    @pointerleave.self="onNodeHoverAreaPointerLeave"
+    @pointerdown="startDrag"
   >
     <Graphics
       label="NodeHoverArea"
-      :hit-area="hitArea"
+      :hit-area="nodeHitArea"
       :position="translatedPosition"
       @render="renderHoverArea"
     />
@@ -278,16 +241,6 @@ const textYAnchor = computed(() =>
       {{ name }}
     </Text>
 
-    <NodePorts
-      :node-id="node.id"
-      :node-kind="node.kind"
-      :anchor="translatedPosition"
-      :in-ports="node.inPorts"
-      :out-ports="node.outPorts"
-      :is-editable="isEditable"
-      :port-groups="null"
-    />
-
     <Container label="NodeTorsoContainer" :position="translatedPosition">
       <NodeTorso
         :node-id="node.id"
@@ -303,5 +256,16 @@ const textYAnchor = computed(() =>
 
       <NodeState v-if="!isMetanode" v-bind="node.state" />
     </Container>
+
+    <NodePorts
+      :node-id="node.id"
+      :node-kind="node.kind"
+      :anchor="translatedPosition"
+      :in-ports="node.inPorts"
+      :out-ports="node.outPorts"
+      :is-editable="isEditable"
+      :port-groups="null"
+      @update-port-positions="portPositions = $event"
+    />
   </Container>
 </template>

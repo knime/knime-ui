@@ -225,7 +225,7 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
     }: {
       nodeId: string;
       side: "input" | "output";
-      portGroup: string;
+      portGroup?: string;
       typeId: string;
     }) {
       const { projectId, workflowId } =
