@@ -50,7 +50,7 @@ const loadPage = async () => {
     emit("loadingStateChange", { value: "ready" });
   }
 };
-watch(() => props.executionState, loadPage, { immediate: true });
+watch(() => [props.projectId, props.workflowId, props.nodeId, props.executionState], loadPage, { immediate: true });
 </script>
 
 <template>
