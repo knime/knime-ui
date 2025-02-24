@@ -96,46 +96,6 @@ describe("ComponentViewTabOutput.vue", () => {
     );
   });
 
-  it("should validate that the node is not busy", () => {
-    const { wrapper } = doMount({
-      props: {
-        selectedNode: {
-          ...dummyNode,
-          state: {
-            executionState: NodeState.ExecutionStateEnum.EXECUTING,
-          },
-        },
-      },
-    });
-
-    expect(wrapper.emitted("validationError")![0][0]).toEqual(
-      expect.objectContaining({
-        type: "NODE",
-        code: "NODE_BUSY",
-      }),
-    );
-  });
-
-  it("should validate that node is executed", () => {
-    const { wrapper } = doMount({
-      props: {
-        selectedNode: {
-          ...dummyNode,
-          state: {
-            executionState: NodeState.ExecutionStateEnum.CONFIGURED,
-          },
-        },
-      },
-    });
-
-    expect(wrapper.emitted("validationError")![0][0]).toEqual(
-      expect.objectContaining({
-        type: "NODE",
-        code: "NODE_UNEXECUTED",
-      }),
-    );
-  });
-
   it("should forward loadingStateChange events from the ComponentViewLoader", async () => {
     const { wrapper } = doMount({
       props: {

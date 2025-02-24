@@ -5115,22 +5115,40 @@ const component = function(rpcClient: RPCClient) {
             return rpcClient.call('ComponentService.getCompositeViewPage', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
+         * Query the current page while reexecuting
+         * @param {string} projectId ID of the workflow-project.
+         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {string} resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        pollComponentReexecutionStatus(
+        	params: { projectId: string,  workflowId: string,  nodeId: string,  resetNodeIdSuffix: string  }
+        ): Promise<any> {
+            const defaultParams = {
+            }
+
+            return rpcClient.call('ComponentService.pollComponentReexecutionStatus', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
+        /**
          * Triggers the re-execution process.
          * @param {string} params.projectId ID of the workflow-project.
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {string} params.resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
-         * @param {{ [key: string]: string; }} params.viewValues 
+         * @param {{ [key: string]: string; }} params.viewValues
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         async triggerComponentReexecution(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  resetNodeIdSuffix: string,  viewValues: { [key: string]: string; }  }
-        ): Promise<Response> {
-            const defaultParams = { 
+        ): Promise<any> {
+            const defaultParams = {
             }
-            
+
             return rpcClient.call('ComponentService.triggerComponentReexecution', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
     }
@@ -5144,7 +5162,7 @@ const event = function(rpcClient: RPCClient) {
     return {
         /**
          * Adds a new event listener for a certain type of event.
-         * @param {EventType} [params.eventType] 
+         * @param {EventType} [params.eventType]
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {InvalidRequestException} If the request is invalid for a reason.
@@ -5160,7 +5178,7 @@ const event = function(rpcClient: RPCClient) {
         },
         /**
          * Unregisters event listeners.
-         * @param {EventType} [params.eventType] 
+         * @param {EventType} [params.eventType]
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5212,7 +5230,7 @@ const kai = function(rpcClient: RPCClient) {
         /**
          * Sends a request to a chain.
          * @param {string} params.kaiChainId Id of a K-AI chain.
-         * @param {KaiRequest} params.kaiRequest 
+         * @param {KaiRequest} params.kaiRequest
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5227,7 +5245,7 @@ const kai = function(rpcClient: RPCClient) {
         /**
          * Submits feedback for a chain.
          * @param {string} params.kaiFeedbackId Id of the K-AI feedback
-         * @param {KaiFeedback} params.kaiFeedback 
+         * @param {KaiFeedback} params.kaiFeedback
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
@@ -5254,8 +5272,8 @@ const node = function(rpcClient: RPCClient) {
          * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {'dialog' | 'view'} params.extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {'initial_data' | 'data' | 'apply_data'} params.serviceType 
-         * @param {string} [params.dataServiceRequest] 
+         * @param {'initial_data' | 'data' | 'apply_data'} params.serviceType
+         * @param {string} [params.dataServiceRequest]
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
@@ -5413,7 +5431,7 @@ const noderepository = function(rpcClient: RPCClient) {
     return {
         /**
          * Provides metadata and contents of node categories.
-         * @param {Array<string>} params.categoryPath 
+         * @param {Array<string>} params.categoryPath
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NoSuchElementException} The requested element was not found.
@@ -5534,8 +5552,8 @@ const port = function(rpcClient: RPCClient) {
          * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
          * @param {number} params.portIdx The port index to be used.
          * @param {number} params.viewIdx The index of the specific port view to obtain
-         * @param {'initial_data' | 'data'} params.serviceType 
-         * @param {string} [params.dataServiceRequest] 
+         * @param {'initial_data' | 'data'} params.serviceType
+         * @param {string} [params.dataServiceRequest]
          * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.

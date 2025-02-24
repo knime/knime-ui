@@ -1,4 +1,4 @@
-import { consola } from "consola";
+import { sleep } from "@knime/utils";
 
 import { API } from "@/api";
 import type { ExtensionConfig } from "@/components/uiExtensions/common/types";
@@ -41,6 +41,27 @@ const mutations = {
   },
 };
 
+const getSelectedNodeIdentifierFromStore = (): Identifiers | null => {
+  const { projectId, workflowId } = useWorkflowStore().getProjectAndWorkflowIds;
+
+  const selectedNode = useSelectionStore().singleSelectedNode;
+
+  if (selectedNode === null || !workflowId) {
+    const cause =
+      selectedNode === null
+        ? "Please select a single node."
+        : "Invalid WorkflowId.";
+    consola.error(
+      `KNIME-UI pageBuilderStore: getSelectedNodeIdentifierFromStore failed. ${cause}`,
+    );
+    return null;
+  }
+
+  const nodeId = selectedNode.id;
+
+  return { projectId, workflowId, nodeId };
+};
+
 const testValidityOfPage = async ({
   dispatch,
 }): Promise<"valid" | "invalid"> => {
@@ -67,6 +88,66 @@ const testValidityOfPage = async ({
     return "invalid";
   }
   return "valid";
+};
+
+/*
+ * This generator is used to determine the polling interval for the re-execution of the composite view.
+ * The initial polling interval, i.e., the first call, is 100ms, after that it is 500ms.
+ */
+const intervalGenerator = function* () {
+  yield 100;
+  while (true) {
+    // eslint-disable-next-line no-magic-numbers -- 100ms is the initial polling interval, 500ms after that
+    yield 500;
+  }
+};
+const pollingInterval = intervalGenerator();
+
+type ReexecutingPage = {
+  page: { webNodes: any } | null;
+  resetNodes: string[];
+  reexecutedNodes: string[];
+};
+type PollingInformation =
+  | {
+      shouldPoll: true;
+      pollInterval: number;
+    }
+  | { shouldPoll: false };
+
+const checkIfUpdatesAreNeeded = (
+  { dispatch },
+  reexecutingPage: ReexecutingPage,
+): PollingInformation => {
+  const { page, resetNodes, reexecutedNodes } = reexecutingPage;
+
+  if (page !== null) {
+    const nodeIds = reexecutedNodes?.length
+      ? reexecutedNodes
+      : Object.keys(page.webNodes);
+    dispatch("pagebuilder/setNodesReExecuting", [], { root: true });
+    dispatch("pagebuilder/updatePage", { page, nodeIds }, { root: true });
+    return { shouldPoll: false };
+  }
+
+  if (!resetNodes || resetNodes.length === 0) {
+    consola.warn(
+      "Page is null and no reset nodes provided. That should not happen. Stop polling.",
+    );
+    return { shouldPoll: false };
+  }
+
+  if (resetNodes.every((nodeId) => reexecutedNodes?.includes(nodeId))) {
+    // If all nodes have executed, but page isn't ready, don't wait or update- just fetch page.
+    return { shouldPoll: true, pollInterval: 1 };
+  }
+
+  dispatch(
+    "pagebuilder/setNodesReExecuting",
+    resetNodes.filter((id) => !reexecutedNodes.includes(id)),
+    { root: true },
+  );
+  return { shouldPoll: true, pollInterval: pollingInterval.next().value };
 };
 
 const actions = {
@@ -115,7 +196,7 @@ const actions = {
 
   /**
    * Triggers a partial re-execution of the composite view. This consists of the following steps: validation, value
-   * retrieval and page update or polling initialization.
+   * retrieval and page update or polling.
    *
    * @async
    * @param {Object} context - Vuex context.
@@ -124,25 +205,20 @@ const actions = {
    * @returns {undefined}
    */
   async triggerReExecution({ dispatch }, { nodeId: resetNodeIdSuffix }) {
-    consola.debug("KNIME-UI pageBuilderStore: trigger re-execution");
+    consola.debug(
+      "KNIME-UI pageBuilderStore: trigger re-execution due to node",
+      resetNodeIdSuffix,
+    );
 
-    const { projectId, workflowId } =
-      useWorkflowStore().getProjectAndWorkflowIds;
-
-    const selectedNode = useSelectionStore().singleSelectedNode;
-
-    if (selectedNode === null || !workflowId) {
-      const cause =
-        selectedNode === null
-          ? "Please select a single node."
-          : "Invalid WorkflowId.";
-      consola.error(
-        `KNIME-UI pageBuilderStore: trigger re-execution failed. ${cause}`,
-      );
+    const resolvedIdentifiers = getSelectedNodeIdentifierFromStore();
+    if (resolvedIdentifiers === null) {
       return;
     }
-
-    const componentNodeId = selectedNode.id;
+    const {
+      projectId,
+      workflowId,
+      nodeId: componentNodeId,
+    } = resolvedIdentifiers;
 
     const pageValidity = await testValidityOfPage({ dispatch });
     if (pageValidity === "invalid") {
@@ -158,13 +234,33 @@ const actions = {
       return obj;
     }, {});
 
-    await API.component.triggerComponentReexecution({
+    let reexecutingPage = await API.component.triggerComponentReexecution({
       projectId,
       workflowId,
       nodeId: componentNodeId,
       resetNodeIdSuffix,
       viewValues: { ...params },
     });
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const pollingInformation = checkIfUpdatesAreNeeded(
+        { dispatch },
+        reexecutingPage,
+      );
+      if (!pollingInformation.shouldPoll) {
+        break;
+      }
+
+      await sleep(pollingInformation.pollInterval);
+
+      reexecutingPage = await API.component.pollComponentReexecutionStatus({
+        projectId,
+        workflowId,
+        nodeId: componentNodeId,
+        resetNodeIdSuffix,
+      });
+    }
   },
 
   deregisterService(_: any, id: Identifiers): void {
@@ -176,6 +272,9 @@ const actions = {
     await useExecutionStore().executeNodes("selected");
   },
 
+  /*
+   * Mounts the page for the PageBuilder. No polling, no updates
+   */
   async mount(
     { dispatch, commit }: any,
     { projectId, workflowId, nodeId }: Identifiers,

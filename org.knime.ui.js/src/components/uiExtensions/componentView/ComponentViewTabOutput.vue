@@ -12,8 +12,6 @@ import { useExecutionStore } from "@/store/workflow/execution";
 import {
   buildMiddleware,
   validateNodeConfigurationState,
-  validateNodeExecuted,
-  validateNodeNotBusy,
 } from "../common/output-validator";
 import type { UIExtensionLoadingState, ValidationError } from "../common/types";
 
@@ -30,11 +28,7 @@ const runNodeValidationChecks = ({
   selectedNode: ComponentNode;
   portTypes: AvailablePortTypes;
 }) => {
-  const validationMiddleware = buildMiddleware(
-    validateNodeConfigurationState,
-    validateNodeNotBusy,
-    validateNodeExecuted,
-  );
+  const validationMiddleware = buildMiddleware(validateNodeConfigurationState);
 
   const result = validationMiddleware({ selectedNode, portTypes })();
   return Object.freeze(result);

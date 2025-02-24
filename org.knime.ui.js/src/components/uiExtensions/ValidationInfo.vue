@@ -51,7 +51,7 @@ const isView = computed(() => {
   }
 
   if (!nodeUtils.isNativeNode(props.selectedNode)) {
-    return false;
+    return nodeUtils.isNodeComponent(props.selectedNode);
   }
 
   return Boolean(props.selectedNode.hasView);
@@ -115,7 +115,7 @@ const onExecuteNode = async () => {
       return;
     }
 
-    executionStore.executeNodes([props.selectedNode.id]);
+    await executionStore.executeNodes([props.selectedNode.id]);
   }
 };
 
