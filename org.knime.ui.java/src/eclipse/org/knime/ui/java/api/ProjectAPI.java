@@ -245,8 +245,20 @@ final class ProjectAPI {
                     .put("providerId", p.origin().getProviderId()) //
                     .put("spaceId", p.origin().getSpaceId()) //
                     .put("itemId", p.origin().getItemId()) //
-                    .put("projectType", p.origin().getProjectType().orElse(ProjectTypeEnum.WORKFLOW).toString()))) //
+                    .put("projectType", p.origin().getProjectType().orElse(ProjectTypeEnum.WORKFLOW).toString()) //
+                    .set("ancestorItemIds", createAncestorItemIds(p.origin(), localSpace)) //
+                )) //
             .collect(arrayNodeCollector()).toPrettyString();
+    }
+
+    private static JsonNode createAncestorItemIds(final Origin origin, final LocalSpace localSpace) {
+        if (origin.isLocal()) {
+            var res = MAPPER.createArrayNode();
+            localSpace.getAncestorItemIds(origin.getItemId()).forEach(res::add);
+            return res;
+        } else {
+            return null;
+        }
     }
 
     private static <T> List<T> reverseList(final List<T> list) {

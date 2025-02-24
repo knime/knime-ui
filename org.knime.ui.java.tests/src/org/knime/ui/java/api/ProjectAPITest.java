@@ -125,7 +125,8 @@ class ProjectAPITest {
                     "providerId" : "local",
                     "spaceId" : "local",
                     "itemId" : "%s",
-                    "projectType" : "Workflow"
+                    "projectType" : "Workflow",
+                    "ancestorItemIds" : [ ]
                   }
                 }, {
                   "name" : "name2",
@@ -134,7 +135,8 @@ class ProjectAPITest {
                     "providerId" : "pid",
                     "spaceId" : "sid",
                     "itemId" : "iid2",
-                    "projectType" : "Workflow"
+                    "projectType" : "Workflow",
+                    "ancestorItemIds" : null
                   }
                 } ]""", OffsetDateTime.MAX, itemId, OffsetDateTime.MAX));
         assertThat(mruProjects.get()).hasSize(2);
