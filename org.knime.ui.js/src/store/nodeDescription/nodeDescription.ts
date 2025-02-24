@@ -87,7 +87,7 @@ export const useNodeDescriptionStore = defineStore("nodeDescription", {
       };
 
       try {
-        const componentDescription = (await API.node.getComponentDescription(
+        const componentDescription = (await API.component.getComponentDescription(
           params,
         )) as ComponentNodeDescription; // TODO: NXT-2023 - remove type cast
 

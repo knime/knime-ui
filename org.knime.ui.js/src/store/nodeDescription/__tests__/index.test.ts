@@ -150,7 +150,7 @@ describe("nodeDescription", () => {
 
   describe("component description", () => {
     beforeEach(() => {
-      mockedAPI.node.getComponentDescription.mockReturnValue(
+      mockedAPI.component.getComponentDescription.mockReturnValue(
         getComponentDescriptionResponse,
       );
     });
@@ -280,7 +280,7 @@ describe("nodeDescription", () => {
         },
       ];
 
-      expect(mockedAPI.node.getComponentDescription).toHaveBeenCalledWith({
+      expect(mockedAPI.component.getComponentDescription).toHaveBeenCalledWith({
         nodeId: "root1:1",
         projectId: "mockProjectId1",
         workflowId: "mockWorkflow1",

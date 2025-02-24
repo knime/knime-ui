@@ -903,7 +903,7 @@ export interface ComponentNodeDescription extends EditableMetadata {
 export namespace ComponentNodeDescription {
 }
 /**
- * The (user-editable) description of a component&#39;s port. Asummed to be Plaintext.
+ * The (user-editable) description of a component&#39;s port. Assumed to be Plaintext.
  * @export
  * @interface ComponentPortDescription
  */
@@ -4967,6 +4967,23 @@ const application = function(rpcClient: RPCClient) {
 const component = function(rpcClient: RPCClient) {
     return {
         /**
+         * Get a components description, will only work for component nodes.
+         * @param {string} projectId ID of the workflow-project.
+         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         */
+        getComponentDescription(
+        	params: { projectId: string,  workflowId: string,  nodeId: string  }
+        ): Promise<ComponentNodeDescription> {
+            const defaultParams = { 
+            }
+            
+            return rpcClient.call('ComponentService.getComponentDescription', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
+        },
+        /**
          * Returns all the information on a node view required to render it.
          * @param {string} projectId ID of the workflow-project.
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
@@ -5179,24 +5196,6 @@ const node = function(rpcClient: RPCClient) {
             }
             
             return rpcClient.call('NodeService.deactivateNodeDataServices', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
-        },
-        /**
-         * Get a components description, will only work for component nodes.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         * @throws {NodeNotFoundException} The requested node was not found.
-         * @throws {InvalidRequestException} If the request is invalid for a reason.
-         */
-        getComponentDescription(
-        	params: { projectId: string,  workflowId: string,  nodeId: string  }
-        ): Promise<ComponentNodeDescription> {
-            const defaultParams = { 
-            }
-            
-            return rpcClient.call('NodeService.getComponentDescription', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Obtain the description of a given node.
