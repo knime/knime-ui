@@ -71,13 +71,12 @@ const actions = {
     return { result: JSON.parse(result) };
   },
 
-  registerService(_: any, { service, id }: SelectionServiceParams): void {
-    // TODO(NXT-3316): We have these two versions of the projectId. The "more correct" version is one with an added uuid
-    // but the SelectionEvent will use the simpler projectId one. So we dont use the "correct one" right now
-    // const projectId = useApplicationStore().activeProjectId;
-
+  registerService(
+    { state }: { state: { projectId: string } },
+    { service, id }: SelectionServiceParams,
+  ): void {
     const { addListener } = useSelectionEvents();
-    addListener({ ...id }, service);
+    addListener({ ...id, projectId: state.projectId }, service);
   },
 
   deregisterService(_: any, id: Identifiers): void {
