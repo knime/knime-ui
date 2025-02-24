@@ -5,7 +5,9 @@ import type { ExtensionConfig } from "@/components/uiExtensions/common/types.ts"
 import { resourceLocationResolver } from "@/components/uiExtensions/common/useResourceLocation";
 import { useSelectionEvents } from "@/components/uiExtensions/common/useSelectionEvents";
 import { useApplicationStore } from "@/store/application/application.ts";
+import { useSelectionStore } from "@/store/selection.ts";
 import { useExecutionStore } from "@/store/workflow/execution";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 
 type ServiceRequestParams = {
   extensionConfig: ExtensionConfig;
@@ -37,6 +39,34 @@ const mutations = {
   setProjectId(state, projectId) {
     state.projectId = projectId;
   },
+};
+
+const testValidityOfPage = async ({
+  dispatch,
+}): Promise<"valid" | "invalid"> => {
+  try {
+    const res = await dispatch("pagebuilder/getValidity", null, { root: true });
+
+    const viewValidities = Object.values(res);
+
+    const isValid = viewValidities.every((isValid) => isValid === true);
+
+    if (!isValid) {
+      dispatch("handleError", {
+        caller: "triggerReExecution",
+        error:
+          "Client-side validation failed. Please check the page for errors.",
+      });
+      return "invalid";
+    }
+  } catch (error) {
+    dispatch("handleError", {
+      caller: "triggerReExecution",
+      error: "Validation check failed unexpectedly.",
+    });
+    return "invalid";
+  }
+  return "valid";
 };
 
 const actions = {
@@ -81,6 +111,60 @@ const actions = {
   ): void {
     const { addListener } = useSelectionEvents();
     addListener({ ...id, projectId: state.projectId }, service);
+  },
+
+  /**
+   * Triggers a partial re-execution of the composite view. This consists of the following steps: validation, value
+   * retrieval and page update or polling initialization.
+   *
+   * @async
+   * @param {Object} context - Vuex context.
+   * @param {Object} param - action config.
+   * @param {String} param.nodeId - id of the node which triggered re-execution.
+   * @returns {undefined}
+   */
+  async triggerReExecution({ dispatch }, { nodeId: resetNodeIdSuffix }) {
+    consola.debug("KNIME-UI pageBuilderStore: trigger re-execution");
+
+    const { projectId, workflowId } =
+      useWorkflowStore().getProjectAndWorkflowIds;
+
+    const selectedNode = useSelectionStore().singleSelectedNode;
+
+    if (selectedNode === null || !workflowId) {
+      const cause =
+        selectedNode === null
+          ? "Please select a single node."
+          : "Invalid WorkflowId.";
+      consola.error(
+        `KNIME-UI pageBuilderStore: trigger re-execution failed. ${cause}`,
+      );
+      return;
+    }
+
+    const componentNodeId = selectedNode.id;
+
+    const pageValidity = await testValidityOfPage({ dispatch });
+    if (pageValidity === "invalid") {
+      return;
+    }
+
+    const viewValues = await dispatch("pagebuilder/getViewValues", null, {
+      root: true,
+    }).catch(() => false);
+
+    const params = Object.keys(viewValues).reduce((obj, nId) => {
+      obj[nId] = JSON.stringify(viewValues[nId]);
+      return obj;
+    }, {});
+
+    await API.component.triggerComponentReexecution({
+      projectId,
+      workflowId,
+      nodeId: componentNodeId,
+      resetNodeIdSuffix,
+      viewValues: { ...params },
+    });
   },
 
   deregisterService(_: any, id: Identifiers): void {

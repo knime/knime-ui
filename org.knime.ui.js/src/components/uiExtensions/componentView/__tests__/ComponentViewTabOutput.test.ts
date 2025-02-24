@@ -65,6 +65,7 @@ describe("ComponentViewTabOutput.vue", () => {
 
   const defaultProps = {
     projectId: "project-1",
+    workflowId: "workflow-1",
     selectedNode: createComponentNode({ ...dummyNode }),
     availablePortTypes,
   };
