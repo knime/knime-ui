@@ -451,7 +451,8 @@ final class SpaceAPI {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         try {
-            URI url = sourceSpace.getItemURI(itemId).orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
+            URI url = sourceSpace.getItemUrl(itemId)
+                .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
         } catch (ResourceAccessException e) {
             // in the future, this could also be handled by exception handling for desktop API calls in the frontend
@@ -474,7 +475,8 @@ final class SpaceAPI {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         try {
-            URI uri = sourceSpace.getAPIDefinitionURI(itemId).orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
+            URI uri = sourceSpace.getAPIDefinitionURI(itemId)
+                .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(uri.toString(), EclipseUIAPI.class);
         } catch (ResourceAccessException e) {
             // in the future, this could also be handled by exception handling for desktop API calls in the frontend

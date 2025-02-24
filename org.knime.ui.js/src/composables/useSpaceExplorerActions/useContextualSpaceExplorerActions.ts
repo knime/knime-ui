@@ -138,7 +138,10 @@ export const useContextualSpaceExplorerActions = (
         isServer.value && doesSelectionContainWorkflow,
         displayDeploymentsAction.value,
       ),
-      ...valueOrEmpty(isServer.value, openAPIDefinitionAction.value),
+      ...valueOrEmpty(
+        isServer.value && doesSelectionContainWorkflow,
+        openAPIDefinitionAction.value,
+      ),
       ...valueOrEmpty(isServer.value, openPermissionsDialogAction.value),
     ];
   });
