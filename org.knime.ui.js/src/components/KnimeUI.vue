@@ -6,6 +6,7 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  watch,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -21,6 +22,7 @@ import UpdateBanner from "@/components/common/UpdateBanner.vue";
 import ConfirmDialog from "@/composables/useConfirmDialog/ConfirmDialog.vue";
 import { useStore } from "@/composables/useStore";
 import { DynamicEnvRenderer, isDesktop } from "@/environment";
+import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
@@ -34,11 +36,6 @@ import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
  * Defines the router outlet
  */
 
-const AppHeader = defineAsyncComponent({
-  loadingComponent: AppHeaderSkeleton,
-  loader: () => import("@/components/application/AppHeader.vue"),
-});
-
 const loaded = ref(false);
 const error = ref<{ message: string; stack?: string } | null>(null);
 
@@ -51,6 +48,21 @@ const availableUpdates = computed(
 const devMode = computed(() => store.state.application.devMode);
 
 const uiControls = computed(() => store.state.uiControls);
+
+const AppHeader = defineAsyncComponent({
+  loadingComponent: AppHeaderSkeleton,
+  loader: () => {
+    const componentPromise = import("@/components/application/AppHeader.vue");
+    const { promise, resolve } =
+      createUnwrappedPromise<Awaited<typeof componentPromise>>();
+
+    // make sure the AppHeader component is not fully loaded until the application
+    // is initialized
+    watch(loaded, () => componentPromise.then(resolve), { once: true });
+
+    return promise;
+  },
+});
 
 const setContentHeight = () => {
   let mainContentHeight = "100vh";

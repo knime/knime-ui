@@ -1,6 +1,8 @@
+import { debounce } from "lodash-es";
 import type { ActionTree, MutationTree } from "vuex";
 
 import { API } from "@/api";
+import { runInEnvironment } from "@/environment";
 import type { RootStoreState } from "@/store/types";
 
 /**
@@ -46,6 +48,12 @@ const saveItem = (key: string, value: any) => {
   window?.localStorage?.setItem(key, JSON.stringify(value));
 };
 
+const debouncedSetUserProfilePart = debounce(
+  API.desktop.setUserProfilePart,
+  // eslint-disable-next-line no-magic-numbers
+  5_000,
+);
+
 export const state = (): SettingsState => ({
   settings: defaults,
 });
@@ -57,18 +65,34 @@ export const mutations: MutationTree<SettingsState> = {
 };
 
 export const actions: ActionTree<SettingsState, RootStoreState> = {
-  fetchSettings({ commit }) {
-    const settings = loadItem(SETTINGS_KEY);
+  async fetchSettings({ commit }) {
+    try {
+      const settings = await runInEnvironment({
+        DESKTOP: () => API.desktop.getUserProfilePart({ key: SETTINGS_KEY }),
+        BROWSER: () => loadItem(SETTINGS_KEY),
+      });
 
-    commit("updateAllSettings", { ...defaults, ...(settings ?? {}) });
+      commit("updateAllSettings", { ...defaults, ...(settings ?? {}) });
+    } catch (error) {
+      consola.error("Failed to get user profile", error);
+    }
   },
 
-  updateSetting({ state, commit }, payload: { key: string; value: any }) {
+  async updateSetting({ state, commit }, payload: { key: string; value: any }) {
     commit("updateAllSettings", {
       ...state.settings,
       [payload.key]: payload.value,
     });
-    saveItem(SETTINGS_KEY, state.settings);
+
+    await runInEnvironment({
+      DESKTOP: () => {
+        debouncedSetUserProfilePart({
+          key: SETTINGS_KEY,
+          data: state.settings,
+        });
+      },
+      BROWSER: () => saveItem(SETTINGS_KEY, state.settings),
+    });
   },
 
   async increaseUiScale({ state, dispatch }) {

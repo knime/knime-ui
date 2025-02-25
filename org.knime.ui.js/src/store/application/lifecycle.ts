@@ -17,7 +17,6 @@ import { APP_ROUTES } from "@/router/appRoutes";
 import { ratioToZoomLevel } from "@/store/settings";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
-import { retryAsyncCall } from "@/util/retryAsyncCall";
 import type { RootStoreState } from "../types";
 
 import type { ApplicationState } from "./index";
@@ -65,34 +64,7 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
   ) {
     consola.trace("lifecycle::initializeApplication");
 
-    // populate local storage from backend
-    await runInEnvironment({
-      DESKTOP: async () => {
-        consola.trace("lifecycle::getting persisted local storage data");
-        const RETRY_DELAY_MS = 50;
-        // TODO: NXT-989 remove this delay once desktop calls are made via the
-        // EquoComm service
-        await retryAsyncCall(
-          () =>
-            API.desktop
-              .getPersistedLocalStorageData()
-              .then((localStorageItems) =>
-                Object.entries(localStorageItems).forEach(([key, value]) => {
-                  if (Object.keys(value as any).length === 0) {
-                    window.localStorage.removeItem(key as string);
-                  } else {
-                    window.localStorage.setItem(
-                      key as string,
-                      JSON.stringify(value),
-                    );
-                  }
-                }),
-              ),
-          RETRY_DELAY_MS,
-          100,
-        );
-      },
-    });
+    await API.desktop.waitForDesktopAPI();
 
     // Read settings saved in local storage
     await dispatch("settings/fetchSettings", {}, { root: true });
@@ -214,32 +186,52 @@ export const actions: ActionTree<ApplicationState, RootStoreState> = {
       kaiFetchUiStrings();
     }
 
-    // setup hints for browser and use the url for videos based on the resource
-    // location resolver
     runInEnvironment({
+      // setup hints for desktop and use the url for videos unchanged
+      DESKTOP: () => {
+        window.localStorage.removeItem("onboarding.hints.user");
+        setupHints({
+          hints: getHintConfiguration((url) => url),
+
+          getRemoteHintState: (storageKey: string) =>
+            API.desktop.getUserProfilePart({ key: `${storageKey}.user` }),
+          setRemoteHintState: (storageKey: string, currentState) =>
+            API.desktop
+              .setUserProfilePart({
+                key: `${storageKey}.user`,
+                data: currentState,
+              })
+              .then(() => true)
+              .catch(() => false),
+        });
+      },
+
+      // setup hints for browser and use the url for videos based on the resource
+      // location resolver
       BROWSER: () => {
         if (state.appMode === AppState.AppModeEnum.JobViewer) {
           setupHints({ hints: {} });
-        } else {
-          // to resolve urls in browser application state to be
-          // initialized and use the activeProjectId
-          const hintVideoResolver = (url: string) => {
-            const activeProject = state.openProjects.find(
-              (project) => project.activeWorkflowId,
-            );
-
-            if (!activeProject) {
-              return "";
-            }
-
-            return resourceLocationResolver(
-              activeProject.projectId,
-              `org/knime/ui/js${url}`,
-            );
-          };
-
-          setupHints({ hints: getHintConfiguration(hintVideoResolver) });
+          return;
         }
+
+        // to resolve urls in browser, the application state has to be
+        // initialized so that we can use the activeProjectId
+        const hintVideoResolver = (url: string) => {
+          const activeProject = state.openProjects.find(
+            (project) => project.activeWorkflowId,
+          );
+
+          if (!activeProject) {
+            return "";
+          }
+
+          return resourceLocationResolver(
+            activeProject.projectId,
+            `org/knime/ui/js${url}`,
+          );
+        };
+
+        setupHints({ hints: getHintConfiguration(hintVideoResolver) });
       },
     });
   },

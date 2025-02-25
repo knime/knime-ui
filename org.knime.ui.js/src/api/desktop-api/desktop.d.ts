@@ -237,4 +237,5 @@ declare function getExampleProjects(): string;
 
 declare function getAncestorInfo(projectId: string): string;
 
-declare function getPersistedLocalStorageData(): any;
+declare function getUserProfilePart(key: string): any;
+declare function setUserProfilePart(key: string, data: any): void;
