@@ -44,30 +44,81 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Apr 17, 2024 (hornm): created
+ *   Feb 19, 2025 (hornm): created
  */
 package org.knime.ui.java.api;
 
-import org.knime.js.cef.CEFZoomSync;
+import java.util.Map;
+import java.util.function.Function;
+
+import org.knime.ui.java.profile.UserProfile;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- * API functions concerning the Equo Chromium browser.
+ * Gives access to user-related things (e.g. the user profile).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-@SuppressWarnings("restriction")
-final class EquoChromiumAPI {
+final class UserAPI {
 
-    private EquoChromiumAPI() {
+    private enum UserProfilePart {
+            UI_SETTINGS("knime-ui-settings", UserProfile::uiSettings),
+            ONBOARDING_HINTS_SETTINGS("onboarding.hints.user", UserProfile::onboardingHintsSettings);
+
+        private final String m_key;
+
+        private final Function<UserProfile, Map<String, String>> m_access;
+
+        UserProfilePart(final String key, final Function<UserProfile, Map<String, String>> access) {
+            m_key = key;
+            m_access = access;
+        }
+
+        private static UserProfilePart of(final String key) {
+            if (UI_SETTINGS.m_key.equals(key)) {
+                return UI_SETTINGS;
+            } else if (ONBOARDING_HINTS_SETTINGS.m_key.equals(key)) {
+                return ONBOARDING_HINTS_SETTINGS;
+            } else {
+                throw new IllegalArgumentException("Unknown key: " + key);
+            }
+        }
+
+        Map<String, String> get(final UserProfile userProfile) {
+            return m_access.apply(userProfile);
+        }
+
+    }
+
+    private UserAPI() {
         //
     }
 
     /**
-     * @see CEFZoomSync#set(double)
+     * Updates a part (identified by a key) of the user profile.
+     *
+     * @param key the part of the user profile to update
+     * @param value the new value to replace the old value with completely
+     * @throws JsonProcessingException
      */
     @API
-    static void setZoomLevel(final double zoomLevel) {
-        CEFZoomSync.set(zoomLevel);
+    static void setUserProfilePart(final String key, final String data)
+        throws JsonProcessingException {
+        var userProfile = DesktopAPI.getDeps(UserProfile.class);
+        var mapToUpdate = UserProfilePart.of(key).get(userProfile);
+        var dataMap = DesktopAPI.MAPPER.readValue(data, Map.class);
+        mapToUpdate.clear();
+        mapToUpdate.putAll(dataMap);
+    }
+
+    /**
+     * @return parts of the user profile (identified by a key)
+     */
+    @API
+    static Map<String, String> getUserProfilePart(final String key) {
+        var userProfile = DesktopAPI.getDeps(UserProfile.class);
+        return UserProfilePart.of(key).get(userProfile);
     }
 
 }

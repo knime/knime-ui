@@ -141,7 +141,7 @@ class LifeCycleTest {
         assertStateTransition(lc, StateTransition.WEB_APP_LOADED, StateTransition.SAVE_STATE);
 
         AppStatePersistorTest.openWorkflowProject(false);
-        lc.saveState(null);
+        lc.saveState();
         assertStateTransition(lc, StateTransition.SAVE_STATE, StateTransition.SUSPEND);
 
         lc.suspend();
@@ -170,7 +170,7 @@ class LifeCycleTest {
         lc.startup();
         assertFails(() -> lc.init(false));
         assertFails(lc::webAppLoaded);
-        assertFails(() -> lc.saveState(null));
+        assertFails(lc::saveState);
         assertFails(lc::suspend);
 
         CEFPlugin.setMiddlewareService(mock(IMiddlewareService.class));
@@ -178,7 +178,7 @@ class LifeCycleTest {
         assertFails(lc::startup);
         assertFails(lc::webAppLoaded);
         assertFails(lc::reload);
-        assertFails(() -> lc.saveState(null));
+        assertFails(lc::saveState);
         assertFails(lc::suspend);
         assertFails(lc::shutdown);
 
@@ -186,7 +186,7 @@ class LifeCycleTest {
         assertFails(lc::startup);
         assertFails(() -> lc.create(biConsumer));
         assertFails(lc::reload);
-        assertFails(() -> lc.saveState(null));
+        assertFails(lc::saveState);
         assertFails(lc::suspend);
         assertFails(lc::shutdown);
 
@@ -197,7 +197,7 @@ class LifeCycleTest {
         assertFails(lc::suspend);
         assertFails(lc::shutdown);
 
-        lc.saveState(null);
+        lc.saveState();
         assertFails(lc::startup);
         assertFails(() -> lc.init(false));
         assertFails(() -> lc.create(biConsumer));
@@ -210,7 +210,7 @@ class LifeCycleTest {
         assertFails(() -> lc.create(biConsumer));
         assertFails(lc::webAppLoaded);
         assertFails(lc::reload);
-        assertFails(() -> lc.saveState(null));
+        assertFails(lc::saveState);
         lc.init(false); // init is allowed here again
 
         lc.setStateTransition(StateTransition.SUSPEND);
@@ -223,7 +223,7 @@ class LifeCycleTest {
         assertFails(() -> lc.init(false));
         assertFails(lc::webAppLoaded);
         assertFails(lc::reload);
-        assertFails(() -> lc.saveState(null));
+        assertFails(lc::saveState);
         assertFails(lc::suspend);
     }
 

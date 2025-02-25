@@ -44,58 +44,40 @@
  */
 package org.knime.ui.java.profile;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Aggregates several aspects of user-specific state. Each aspect is handled (read, persisted, ...) independently.
+ *
+ * @param internalUsage the {@link InternalUsageTracking} instance
+ * @param uiSettings a map representing the ui-settings; can be modified to update the ui settings
+ * @param onboardingHintsSettings a map representing the onboarding hints settings; can be modified to update the
+ *            onboarding hints settings
  */
-public interface UserProfile {
+public record UserProfile(InternalUsageTracking internalUsage, Map<String, String> uiSettings,
+    Map<String, String> onboardingHintsSettings) {
 
-    /**
-     * The key used to store the ui-settings in the browser's local storage.
-     */
-    String UI_SETTINGS_LOCAL_STORAGE_KEY = "knime-ui-settings";
-
-    /**
-     * The key used to store the onboarding hints settings in the browser's local storage.
-     */
-    String ONBOARDING_HINTS_SETTINGS_LOCAL_STORAGE_KEY = "onboarding.hints.user";
-
-    @SuppressWarnings({"MissingJavadoc", "javadoc"})
-    static UserProfile of(final UserProfile userProfile, final Map<String, String> uiSettings,
+    @SuppressWarnings("javadoc")
+    public UserProfile(final InternalUsageTracking internalUsage, final Map<String, String> uiSettings,
         final Map<String, String> onboardingHintsSettings) {
-        return new UserProfile() {
-
-            @Override
-            public Map<String, String> uiSettings() {
-                return uiSettings;
-            }
-
-            @Override
-            public Map<String, String> onboardingHintsSettings() {
-                return onboardingHintsSettings;
-            }
-
-            @Override
-            public InternalUsageTracking internalUsage() {
-                return userProfile.internalUsage();
-            }
-        };
+        this.internalUsage = internalUsage;
+        this.uiSettings = new LinkedHashMap<>(uiSettings);
+        this.onboardingHintsSettings = new LinkedHashMap<>(onboardingHintsSettings);
     }
 
     /**
-     * @return the {@link InternalUsageTracking} instance
+     * Helper to create a copy of the given {@link UserProfile} with the given {@link InternalUsageTracking} being
+     * 'copied' over.
+     *
+     * @param userProfile the user-profile to get the internal-usage-tracking from
+     * @param uiSettings
+     * @param onboardingHintsSettings
+     * @return a new {@link UserProfile}-instance
      */
-    InternalUsageTracking internalUsage();
-
-    /**
-     * @return a map representing the ui-settings
-     */
-    Map<String, String> uiSettings();
-
-    /**
-     * @return a map representing the onboarding hints settings
-     */
-    Map<String, String> onboardingHintsSettings();
+    public static UserProfile of(final UserProfile userProfile, final Map<String, String> uiSettings,
+        final Map<String, String> onboardingHintsSettings) {
+        return new UserProfile(userProfile.internalUsage(), uiSettings, onboardingHintsSettings);
+    }
 
 }

@@ -149,7 +149,7 @@ public final class PerspectiveSwitchAddon {
         ProjectWorkflowMap.isActive = true;
         var lifeCycle = LifeCycle.get();
         if (lifeCycle.isNextStateTransition(StateTransition.SAVE_STATE)) {
-            lifeCycle.saveState(KnimeBrowserView::getLocalStorageItem);
+            lifeCycle.saveState();
             lifeCycle.suspend();
         }
 

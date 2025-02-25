@@ -107,7 +107,8 @@ public final class DesktopAPI {
         ComponentAPI.class, //
         EquoChromiumAPI.class, //
         CustomizationAPI.class, //
-        HomePageAPI.class //
+        HomePageAPI.class, //
+        UserAPI.class //
     );
 
     // API endpoints which are only being registered when the AP is run for testing purposes.
@@ -265,7 +266,7 @@ public final class DesktopAPI {
         injectDependency(userProfile);
     }
 
-    private static void injectDependency(final UserProfile userProfile) {
+    static void injectDependency(final UserProfile userProfile) {
         DEPENDENCIES.put(UserProfile.class, userProfile);
     }
 

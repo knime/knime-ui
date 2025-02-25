@@ -45,11 +45,8 @@
  */
 package org.knime.ui.java.browser;
 
-import static org.knime.ui.java.util.DesktopAPUtil.assertUiThread;
-import static org.knime.ui.java.util.DesktopAPUtil.runUiEventLoopUntilValueAvailable;
 import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
-import java.time.Duration;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -66,7 +63,6 @@ import org.knime.js.cef.CEFUtils;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
-import com.equo.chromium.ChromiumBrowser;
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.WindowEvent;
 
@@ -156,31 +152,6 @@ public class KnimeBrowserView {
             }
             viewInitializer = null; // NOSONAR
         }
-    }
-
-    /**
-     * Gives access to the local storage items of the browser.
-     *
-     * @param key
-     * @return the value of the local storage item or {@code null} if not available or couldn't be accessed
-     */
-    public static String getLocalStorageItem(final String key) {
-        assertUiThread();
-        if (browser == null || browser.isDisposed()) {
-            return null;
-        }
-        var item = ((ChromiumBrowser)browser.getWebBrowser()).getLocalStorage().getItem(key);
-        if (item == null) {
-            return null;
-        }
-        // run event loop to be able to retrieve the items from the FE
-        // (and not block the FE to not be able to communicate anything back to the BE anymore)
-        return runUiEventLoopUntilValueAvailable(Duration.ofSeconds(5), () -> item.getNow(null),
-            e -> LOGGER.error("Local storage item for key '%s' couldn't be accessed".formatted(key), e))
-                .orElseGet(() -> {
-                    item.cancel(true);
-                    return null;
-                });
     }
 
     @SuppressWarnings({"MissingJavadoc", "javadoc"})
