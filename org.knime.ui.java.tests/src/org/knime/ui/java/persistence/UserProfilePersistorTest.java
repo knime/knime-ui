@@ -149,26 +149,11 @@ class UserProfilePersistorTest {
     }
 
     private static UserProfile createUserProfile() {
-        return new UserProfile() {
-
-            @Override
-            public InternalUsageTracking internalUsage() {
-                var usage = new InternalUsageTracking();
-                usage.trackUiCreated();
-                usage.trackUiCreated();
-                return usage;
-            }
-
-            @Override
-            public Map<String, String> uiSettings() {
-                return Map.of("setting1", "value1", "setting2", "value2");
-            }
-
-            @Override
-            public Map<String, String> onboardingHintsSettings() {
-                return Map.of("hint1", "value1", "hint2", "value2");
-            }
-        };
+        var usage = new InternalUsageTracking();
+        usage.trackUiCreated();
+        usage.trackUiCreated();
+        return new UserProfile(usage, Map.of("setting1", "value1", "setting2", "value2"),
+            Map.of("hint1", "value1", "hint2", "value2"));
     }
 
 }

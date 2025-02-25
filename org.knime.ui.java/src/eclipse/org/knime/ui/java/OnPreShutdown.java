@@ -49,7 +49,6 @@
 package org.knime.ui.java;
 
 import org.knime.product.rcp.shutdown.PreShutdown;
-import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 
@@ -65,13 +64,12 @@ public class OnPreShutdown implements PreShutdown {
             // This is being called by the eclipse framework before any window is being closed.
             // And before we close the browser, we need, e.g., to ask the user to save (and save) all the workflows
             // (or abort the shutdown, if the user cancels).
-            lifeCycle.saveState(KnimeBrowserView::getLocalStorageItem);
+            lifeCycle.saveState();
             // cancel if the workflows haven't been saved (yet) because the saving has been cancelled or failed
             return lifeCycle.isLastStateTransition(StateTransition.SAVE_STATE);
         }
         return true;
     }
-
 
     @Override
     public void onShutdownAborted() {

@@ -116,46 +116,15 @@ public final class UserProfilePersistor {
         var uiSettings = readUserProfileFile(UI_SETTINGS_FILE, profilePath);
         var onboardingHints = readUserProfileFile(ONBOARDING_HINTS_SETTINGS_FILE, profilePath);
         var usage = readUserProfileFile(USAGE_FILE, profilePath);
-        return new UserProfile() {
-
-            @Override
-            public Map<String, String> uiSettings() {
-                return uiSettings;
-            }
-
-            @Override
-            public Map<String, String> onboardingHintsSettings() {
-                return onboardingHints;
-            }
-
-            @Override
-            public InternalUsageTracking internalUsage() {
-                return usage;
-            }
-        };
+        return new UserProfile(usage, uiSettings, onboardingHints);
     }
 
     /**
      * @return an instance representing an empty user profile
      */
     public static UserProfile createEmptyUserProfile() {
-        return new UserProfile() {
-
-            @Override
-            public Map<String, String> uiSettings() {
-                return UI_SETTINGS_FILE.emptyValueSupplier.get();
-            }
-
-            @Override
-            public Map<String, String> onboardingHintsSettings() {
-                return ONBOARDING_HINTS_SETTINGS_FILE.emptyValueSupplier.get();
-            }
-
-            @Override
-            public InternalUsageTracking internalUsage() {
-                return USAGE_FILE.emptyValueSupplier.get();
-            }
-        };
+        return new UserProfile(USAGE_FILE.emptyValueSupplier.get(), UI_SETTINGS_FILE.emptyValueSupplier.get(),
+            ONBOARDING_HINTS_SETTINGS_FILE.emptyValueSupplier.get());
     }
 
     private static <T> T readUserProfileFile(final UserProfileFile<T> upFile, final Path profilePath) {
