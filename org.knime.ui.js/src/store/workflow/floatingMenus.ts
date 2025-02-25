@@ -1,3 +1,4 @@
+import { nextTick } from "vue";
 import type { ActionTree, GetterTree, MutationTree } from "vuex";
 
 import type { NodePort, PortGroup, XY } from "@/api/gateway-api/generated-api";
@@ -110,10 +111,7 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
     });
   },
 
-  async closeQuickActionMenu(
-    { state, commit, dispatch },
-    { force = false } = {},
-  ) {
+  closeQuickActionMenu({ state, commit, dispatch }, { force = false } = {}) {
     if (state.quickActionMenu.isLocked && !force) {
       return;
     }
@@ -126,7 +124,8 @@ export const actions: ActionTree<WorkflowState, RootStoreState> = {
       events: {},
     });
 
-    await dispatch("canvas/focus", null, { root: true });
+    // Wait a tick, otherwise the focus-trap on floating Menu will cause problems
+    nextTick(() => dispatch("canvas/focus", null, { root: true }));
   },
 
   lockQuickActionMenu({ state, commit }) {
