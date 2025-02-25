@@ -476,9 +476,9 @@ final class SpaceAPI {
         final var sourceSpaceProvider = DesktopAPI.getSpaceProvider(spaceProviderId);
         final var sourceSpace = sourceSpaceProvider.getSpace(spaceId);
         try {
-            URI uri = sourceSpace.getAPIDefinitionURI(itemId)
+            final var url = sourceSpace.getAPIDefinitionUrl(itemId)
                 .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(uri.toString(), EclipseUIAPI.class);
+            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
         } catch (ResourceAccessException e) {
             // In the future, this could also be handled by exception handling for desktop API calls in the frontend,
             // see NXT-2092.
