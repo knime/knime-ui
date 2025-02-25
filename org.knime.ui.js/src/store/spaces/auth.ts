@@ -47,10 +47,6 @@ export const useSpaceAuthStore = defineStore("space.auth", {
           id: spaceProviderId,
         });
 
-        if (spaceGroups.length === 0) {
-          throw new Error("You are not part of any team.");
-        }
-
         consola.info("action::connectProvider -> updating space provider", {
           spaceProvider,
           spaceGroups,

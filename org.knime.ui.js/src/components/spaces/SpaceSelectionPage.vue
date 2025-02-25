@@ -146,6 +146,14 @@ const reload = async () => {
     </template>
 
     <template #content>
+      <template v-if="activeSpaceProvider.spaceGroups.length === 0">
+        <div class="no-space-groups">
+          <span
+            >You are not a member of any team, yet. To get started ask an admin
+            to assign you to a team.</span
+          >
+        </div>
+      </template>
       <div class="cards">
         <template v-if="!isLoadingSpacesData">
           <SpaceCard
@@ -178,6 +186,14 @@ const reload = async () => {
 </template>
 
 <style lang="postcss" scoped>
+.no-space-groups {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 .cards {
   display: grid;
   gap: 24px;

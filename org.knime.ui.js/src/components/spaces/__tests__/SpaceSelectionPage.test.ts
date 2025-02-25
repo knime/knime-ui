@@ -54,6 +54,13 @@ describe("SpaceSelectionPage.vue", () => {
     spaceGroups: [spaceGroup1, spaceGroup2],
   });
 
+  const spaceProvider2 = createSpaceProvider({
+    id: "provider2",
+    name: "Some hub space",
+    type: SpaceProviderNS.TypeEnum.HUB,
+    spaceGroups: [],
+  });
+
   const doMount = () => {
     const mockedStores = mockStores();
 
@@ -61,6 +68,7 @@ describe("SpaceSelectionPage.vue", () => {
 
     mockedStores.spaceProvidersStore.setSpaceProviders({
       [spaceProvider.id]: spaceProvider,
+      [spaceProvider2.id]: spaceProvider2,
     });
 
     const mockRouter = { push: vi.fn() };
@@ -262,5 +270,21 @@ describe("SpaceSelectionPage.vue", () => {
         },
       });
     });
+  });
+
+  it("for page with no space groups it should show a message", () => {
+    // @ts-ignore
+    useRoute.mockImplementation(() => ({
+      name: APP_ROUTES.Home.SpaceSelectionPage,
+      params: {
+        spaceProviderId: spaceProvider2.id,
+      },
+    }));
+
+    const { wrapper } = doMount();
+
+    expect(wrapper.find(".no-space-groups").text()).toBe(
+      "You are not a member of any team, yet. To get started ask an admin to assign you to a team.",
+    );
   });
 });
