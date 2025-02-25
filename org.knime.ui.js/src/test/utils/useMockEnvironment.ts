@@ -1,6 +1,6 @@
 import type { App } from "vue";
 
-// Boilerplate for mocking the envirment module in a test-file:
+// Boilerplate for mocking the environment module in a test-file:
 /*
 const mockEnvironment = vi.hoisted(
   () => ({}),

@@ -1,6 +1,5 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { createStore } from "vuex";
 
 import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
@@ -114,12 +113,6 @@ try {
   const pinia = createPinia();
   app.use(pinia);
 
-  // initialize empty vuex store for the pageBuilder, this will be filled asynchronously
-  // when the component to show the pageBuilder is loaded.
-  // Note: might vanish in the future, but needed because pagebuilder needs vuex.
-  const pageBuilderStore = createStore();
-  app.use(pageBuilderStore);
-
   // use before other plugins so that $toast is available on the app instance
   app.use(toastPlugin);
 
@@ -136,8 +129,6 @@ try {
     window.router = router;
     window.store = pinia;
     window.toast = toastServiceProvider;
-    // eslint-disable-next-line
-    window["pageBuilderStore"] = pageBuilderStore;
     app.config.performance = true;
   }
 

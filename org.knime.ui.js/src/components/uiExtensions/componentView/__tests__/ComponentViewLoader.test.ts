@@ -1,35 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { mount } from "@vue/test-utils";
-import { createStore } from "vuex";
+import { flushPromises, mount } from "@vue/test-utils";
 
 import { NodeState } from "@/api/gateway-api/generated-api.ts";
 import ComponentViewLoader from "@/components/uiExtensions/componentView/ComponentViewLoader.vue";
 
 const pageBuilderMountMock = vi.hoisted(() => vi.fn());
 
-// mocks the initialization of the pagebuilder store, see pageBuilderLoader.ts
-const mockPagebuilderStore = createStore({
-  modules: {
-    api: {
-      namespaced: true,
-      actions: {
-        mount: pageBuilderMountMock,
-      },
-    },
-    pagebuilder: {
-      namespaced: true,
-    },
-  },
-});
+const mockUnmountShadowApp = vi.hoisted(() => vi.fn());
 
-vi.mock("vuex", async () => {
-  const actual = await vi.importActual("vuex");
-  return {
-    ...actual,
-    useStore: vi.fn(() => mockPagebuilderStore),
-  };
-});
+const mockLoadPage = vi.hoisted(() => vi.fn());
+
+vi.mock("@/composables/usePageBuilder/usePageBuilder.ts", () => ({
+  usePageBuilder: vi.fn().mockResolvedValue({
+    mountShadowApp: pageBuilderMountMock,
+    loadPage: mockLoadPage,
+    unmountShadowApp: mockUnmountShadowApp,
+  }),
+}));
 
 describe("ComponentViewLoader.vue", () => {
   afterEach(() => {
@@ -60,16 +48,11 @@ describe("ComponentViewLoader.vue", () => {
 
     const wrapper = mount(TestComponent, {
       props,
-      global: {
-        stubs: {
-          PageBuilder: {
-            template: '<div data-test="page-builder-stub"></div>',
-          },
-        },
-      },
     });
 
     await nextTick();
+    // wait for the fetch of the pagebuilder
+    await flushPromises();
 
     return { wrapper };
   };
@@ -77,16 +60,27 @@ describe("ComponentViewLoader.vue", () => {
   it("should mount componentView and initialize PageBuilder", async () => {
     await doMount();
     expect(pageBuilderMountMock).toHaveBeenCalled();
+
+    expect(mockLoadPage).toHaveBeenCalled();
   });
 
-  it("should mount componentView and initialize PageBuilder when node is executed", async () => {
+  it("shadowApp should be unmounted when component is unmounted", async () => {
+    const { wrapper } = await doMount();
+
+    expect(pageBuilderMountMock).toHaveBeenCalled();
+
+    wrapper.unmount();
+    expect(mockUnmountShadowApp).toHaveBeenCalled();
+  });
+
+  it("should mount componentView and load page when node is executed", async () => {
     const { wrapper } = await doMount(NodeState.ExecutionStateEnum.CONFIGURED);
-    expect(pageBuilderMountMock).not.toHaveBeenCalled();
+    expect(mockLoadPage).not.toHaveBeenCalled();
 
     await wrapper.setProps({
       executionState: NodeState.ExecutionStateEnum.EXECUTED,
     });
     await nextTick();
-    expect(pageBuilderMountMock).toHaveBeenCalled();
+    expect(mockLoadPage).toHaveBeenCalled();
   });
 });

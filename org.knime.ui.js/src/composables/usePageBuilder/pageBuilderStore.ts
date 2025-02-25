@@ -25,7 +25,11 @@ interface SelectionServiceParams {
   id: Identifiers;
 }
 
-const state = {
+export type PageBuilderStoreState = {
+  projectId: string | null;
+};
+
+const state: PageBuilderStoreState = {
   projectId: null,
 };
 
@@ -92,7 +96,12 @@ const actions = {
     { dispatch, commit }: any,
     { projectId, workflowId, nodeId }: Identifiers,
   ): Promise<void> {
-    consola.info("Loading page for PageBuilder");
+    consola.debug(
+      "Loading page for PageBuilder: ",
+      projectId,
+      workflowId,
+      nodeId,
+    );
 
     const result = await API.component.getCompositeViewPage({
       projectId,
@@ -115,21 +124,39 @@ const actions = {
 const getters = {
   // tableView will use this getter to get the resource location
   uiExtResourceLocation:
-    (state) =>
+    (state: PageBuilderStoreState) =>
     ({
       resourceInfo,
     }: {
       resourceInfo: { baseUrl: string; path: string };
     }): string => {
+      let projectId = state.projectId;
+      if (projectId === null) {
+        consola.warn(
+          "PageBuilderStore.uiExtResourceLocation: ProjectId is not set. Will try to read it from the application store!",
+        );
+        projectId = useApplicationStore().activeProjectId;
+        if (projectId === null) {
+          consola.warn(
+            "PageBuilderStore.uiExtResourceLocation: ApplicationStore does not have the projectId either. Leaving projectId empty.",
+          );
+          projectId = "";
+        }
+      }
+
       return resourceLocationResolver(
-        state.projectId,
+        projectId,
         resourceInfo.path,
         resourceInfo.baseUrl,
       );
     },
 };
 
-export const pageBuilderStoreConfig = {
+/*
+ * This store is used to communicate with the PageBuilder module which uses Vuex
+ * and will be used to instantiate the vuex store on the pageBuilder side.
+ */
+export const pageBuilderApiVuexStoreConfig = {
   state,
   mutations,
   actions,

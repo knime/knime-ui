@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { getCurrentInstance, ref, watch } from "vue";
-import { useStore } from "vuex";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 import { NodeState } from "@/api/gateway-api/generated-api.ts";
 import type { UIExtensionLoadingState } from "@/components/uiExtensions/common/types";
-import { setupPageBuilderEnvironment } from "@/pageBuilderLoader.ts";
+import { usePageBuilder } from "@/composables/usePageBuilder/usePageBuilder.ts";
 
 const props = defineProps<{
   projectId: string;
@@ -17,42 +16,50 @@ const emit = defineEmits<{
   loadingStateChange: [value: UIExtensionLoadingState];
 }>();
 
-const store = useStore();
+const shadowHost = ref<HTMLElement | null>(null);
 
-// Setup the page builder environment if it hasn't been done yet
-const pageBuilderSetupComplete = ref(false);
-emit("loadingStateChange", { value: "loading", message: "Loading view" });
-const instance = getCurrentInstance();
-if (instance) {
-  const app = instance.appContext.app;
-  await setupPageBuilderEnvironment(app, store, props.projectId);
-  pageBuilderSetupComplete.value = true;
-} else {
-  emit("loadingStateChange", {
-    value: "error",
-    message:
-      "ComponentViewLoader: Failed to get current Vue instance. This should not happen.",
-  });
-}
-emit("loadingStateChange", { value: "ready" });
+const pageBuilder = await usePageBuilder(props.projectId);
 
 const loadPage = async () => {
-  if (
-    pageBuilderSetupComplete.value &&
-    props.executionState === NodeState.ExecutionStateEnum.EXECUTED
-  ) {
+  if (props.executionState === NodeState.ExecutionStateEnum.EXECUTED) {
     emit("loadingStateChange", { value: "loading", message: "Loading view" });
-    await store.dispatch("api/mount", {
-      projectId: props.projectId,
-      workflowId: props.workflowId,
-      nodeId: props.nodeId,
-    });
+    await pageBuilder.loadPage(props.projectId, props.workflowId, props.nodeId);
     emit("loadingStateChange", { value: "ready" });
   }
 };
-watch(() => [props.projectId, props.workflowId, props.nodeId, props.executionState], loadPage, { immediate: true });
+watch(
+  () => [props.projectId, props.workflowId, props.nodeId, props.executionState],
+  loadPage,
+);
+
+const shadowRoot = ref<ShadowRoot | null>(null);
+
+onMounted(async () => {
+  emit("loadingStateChange", { value: "loading", message: "Loading view" });
+  await loadPage();
+
+  try {
+    shadowRoot.value = shadowHost.value!.attachShadow({ mode: "open" });
+
+    pageBuilder.mountShadowApp(shadowRoot.value);
+
+    emit("loadingStateChange", { value: "ready" });
+  } catch (error) {
+    emit("loadingStateChange", {
+      value: "error",
+      message: `Failed to initialize PageBuilder: ${(error as Error).message}`,
+    });
+  }
+});
+
+onBeforeUnmount(() => {
+  if (shadowRoot.value) {
+    pageBuilder?.unmountShadowApp();
+    shadowRoot.value.replaceChildren();
+  }
+});
 </script>
 
 <template>
-  <PageBuilder v-if="pageBuilderSetupComplete" />
+  <div ref="shadowHost" />
 </template>
