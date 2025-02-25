@@ -455,7 +455,8 @@ final class SpaceAPI {
                 .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(url.toString(), EclipseUIAPI.class);
         } catch (ResourceAccessException e) {
-            // in the future, this could also be handled by exception handling for desktop API calls in the frontend
+            // In the future, this could also be handled by exception handling for desktop API calls in the frontend,
+            // see NXT-2092.
             showErrorToast("Could not show item in browser", "Check that the item still exists.", true);
             LOGGER.error("Could not open in browser", e);
             throw new IllegalStateException(e);
@@ -479,7 +480,8 @@ final class SpaceAPI {
                 .orElseThrow(() -> new IllegalStateException("Operation not supported for this provider"));
             WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(uri.toString(), EclipseUIAPI.class);
         } catch (ResourceAccessException e) {
-            // in the future, this could also be handled by exception handling for desktop API calls in the frontend
+            // In the future, this could also be handled by exception handling for desktop API calls in the frontend,
+            // see NXT-2092.
             showErrorToast("Could not show item in browser", "Check that the item still exists.", true);
             LOGGER.error("Could not open in browser", e);
             throw new IllegalStateException(e);
