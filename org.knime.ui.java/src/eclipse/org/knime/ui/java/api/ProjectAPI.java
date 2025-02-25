@@ -251,6 +251,9 @@ final class ProjectAPI {
             .collect(arrayNodeCollector()).toPrettyString();
     }
 
+    /**
+     * @return Ancestor item IDs of the given origin if it is local, otherwise {@code null}.
+     */
     private static JsonNode createAncestorItemIds(final Origin origin, final LocalSpace localSpace) {
         if (origin.isLocal()) {
             var res = MAPPER.createArrayNode();
