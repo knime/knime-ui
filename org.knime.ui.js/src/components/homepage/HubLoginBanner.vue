@@ -48,8 +48,8 @@ const dismissHubLoginBanner = () => {
         compact
         :href="
           isUserLoggedIn
-            ? 'https://hub.knime.com/site/pricing'
-            : 'https://hub.knime.com'
+            ? 'https://www.knime.com/knime-team-plan'
+            : 'https://www.knime.com/knime-community-hub'
         "
         target="_blank"
       >
@@ -65,16 +65,12 @@ const dismissHubLoginBanner = () => {
 
 .hub-login-banner {
   background: var(--knime-white);
-  position: absolute;
-  left: -16px;
-  bottom: -16px;
-  margin: 0 0 var(--space-16) var(--space-16);
   border-radius: 4px;
   border-top: 1px solid var(--knime-silver-sand);
   display: flex;
   flex-direction: column;
-  z-index: 2;
   width: 420px;
+  position: relative;
 
   & .close {
     display: block;
@@ -88,6 +84,7 @@ const dismissHubLoginBanner = () => {
     flex-direction: column;
     gap: var(--space-12);
     padding: var(--space-16);
+    margin-bottom: 0;
 
     & h4 {
       margin: 0;

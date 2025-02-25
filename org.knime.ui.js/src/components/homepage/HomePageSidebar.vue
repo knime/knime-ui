@@ -33,16 +33,39 @@ const recent = computed<NavMenuItemProps>(() => ({
 </script>
 
 <template>
-  <NavMenu>
-    <NavMenuItem v-bind="recent">
-      <template #prepend>
-        <TimeIcon />
-      </template>
-    </NavMenuItem>
+  <div class="sidebar-layout">
+    <div class="sidebar-content">
+      <NavMenu>
+        <NavMenuItem v-bind="recent">
+          <template #prepend>
+            <TimeIcon />
+          </template>
+        </NavMenuItem>
 
-    <SpacePageNavItems />
-  </NavMenu>
+        <SpacePageNavItems />
+      </NavMenu>
 
-  <HomePageContentTile />
-  <HubLoginBanner />
+      <HomePageContentTile />
+    </div>
+    <div class="sidebar-footer">
+      <HubLoginBanner />
+    </div>
+  </div>
 </template>
+
+<style lang="postcss" scoped>
+.sidebar-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-footer {
+  margin: 24px -24px -24px;
+}
+</style>
