@@ -5,8 +5,6 @@ import { createPinia } from "pinia";
 import * as PIXI from "pixi.js";
 import { createStore } from "vuex";
 
-import { setupHints } from "@knime/components";
-
 import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
 import KnimeUI from "./components/KnimeUI.vue";
 import { setRestApiBaseUrl } from "./components/uiExtensions/common/useResourceLocation";
@@ -16,7 +14,6 @@ import {
   isDesktop,
   runInEnvironment,
 } from "./environment";
-import { getHintConfiguration } from "./hints/hints.config";
 import { initPlugins } from "./plugins";
 import { setupLogger } from "./plugins/logger";
 import { getToastsProvider } from "./plugins/toasts";
@@ -156,13 +153,6 @@ try {
   // Init plugins, provide store and router
   initPlugins({ app, router });
   initGlobalEnvProperty(app);
-
-  // setup hints for desktop and use the url for videos unchanged
-  runInEnvironment({
-    DESKTOP: () => {
-      setupHints({ hints: getHintConfiguration((url) => url) });
-    },
-  });
 
   app.mount("#app");
 } catch (error) {

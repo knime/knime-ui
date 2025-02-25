@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
-import { isBrowser } from "@/environment";
+import { isBrowser, runInEnvironment } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
+import { retryAsyncCall } from "@/util/retryAsyncCall";
 import {
   type AncestorInfo,
   type ExampleProject,
@@ -84,6 +85,30 @@ const callBrowserFunction = <TFunction extends (...args: any[]) => any>(
       throw e;
     }
   }
+};
+
+// TODO: NXT-989 remove this delay once desktop calls are made via EquoComm
+export const waitForDesktopAPI = async () => {
+  await runInEnvironment({
+    DESKTOP: async () => {
+      consola.trace("Waiting for desktop API to be available");
+      const RETRY_DELAY_MS = 50;
+      await retryAsyncCall<boolean>(
+        () => {
+          // check for any desktop api function since we just care that they're
+          // defined and available for use
+          // eslint-disable-next-line no-undefined
+          if (window.setProjectActiveAndEnsureItsLoaded === undefined) {
+            throw new Error("Desktop API not available yet. Waiting");
+          } else {
+            return Promise.resolve(true);
+          }
+        },
+        RETRY_DELAY_MS,
+        100,
+      );
+    },
+  });
 };
 
 export const switchToJavaUI = () => {
@@ -937,16 +962,6 @@ export const getAncestorInfo = async ({
   return (data ? JSON.parse(data) : {}) as AncestorInfo;
 };
 
-export const getPersistedLocalStorageData = () => {
-  return callBrowserFunction(
-    window.getPersistedLocalStorageData,
-    [],
-    "Failed to get persisted local storage data",
-    true,
-    { block: false },
-  );
-};
-
 export const updateOpenProjectsOrder = ({
   projectIds,
 }: {
@@ -957,6 +972,26 @@ export const updateOpenProjectsOrder = ({
     projectIds,
     "Could not update open projects order",
     false,
+    { block: false },
+  );
+};
+
+export const setUserProfilePart = ({ key, data }) => {
+  return callBrowserFunction(
+    window.setUserProfilePart,
+    [key, JSON.stringify(data)],
+    "Failed to update the user profile",
+    false,
+    { block: false },
+  );
+};
+
+export const getUserProfilePart = ({ key }) => {
+  return callBrowserFunction(
+    window.getUserProfilePart,
+    [key],
+    "Failed to retrieve the user profile",
+    true,
     { block: false },
   );
 };

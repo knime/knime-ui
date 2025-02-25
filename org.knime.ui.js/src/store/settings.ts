@@ -1,5 +1,8 @@
 import { API } from "@api";
+import { type DebouncedFunc, debounce } from "lodash-es";
 import { defineStore } from "pinia";
+
+import { runInEnvironment } from "@/environment";
 
 /**
  * Store that manages UI settings, for now saved to local storage
@@ -43,6 +46,10 @@ const saveItem = (key: string, value: any) => {
   window?.localStorage?.setItem(key, JSON.stringify(value));
 };
 
+let debouncedSetUserProfilePart: DebouncedFunc<
+  typeof API.desktop.setUserProfilePart
+>;
+
 export const useSettingsStore = defineStore("settings", {
   state: (): SettingsState => ({
     settings: defaults,
@@ -52,19 +59,45 @@ export const useSettingsStore = defineStore("settings", {
       this.settings = settings;
     },
 
-    fetchSettings() {
-      const settings = loadItem(SETTINGS_KEY);
+    async fetchSettings() {
+      try {
+        const settings = await runInEnvironment({
+          DESKTOP: () => API.desktop.getUserProfilePart({ key: SETTINGS_KEY }),
+          BROWSER: () => loadItem(SETTINGS_KEY),
+        });
 
-      this.updateAllSettings({ ...defaults, ...(settings ?? {}) });
+        this.updateAllSettings({ ...defaults, ...(settings ?? {}) });
+      } catch (error) {
+        consola.error("Failed to get user profile", error);
+      }
     },
 
-    updateSetting(payload: { key: string; value: any }) {
+    async updateSetting(payload: { key: string; value: any }) {
+      if (!debouncedSetUserProfilePart) {
+        // the API import is undefined on the module root and makes the tests fail
+        // This is due to order issues when importing the modules, so we use
+        // a singleton approach to avoid this problem
+        debouncedSetUserProfilePart = debounce(
+          API.desktop.setUserProfilePart,
+          // eslint-disable-next-line no-magic-numbers
+          5_000,
+        );
+      }
+
       this.updateAllSettings({
         ...this.settings,
         [payload.key]: payload.value,
       });
 
-      saveItem(SETTINGS_KEY, this.settings);
+      await runInEnvironment({
+        DESKTOP: () => {
+          debouncedSetUserProfilePart({
+            key: SETTINGS_KEY,
+            data: this.settings,
+          });
+        },
+        BROWSER: () => saveItem(SETTINGS_KEY, this.settings),
+      });
     },
 
     async increaseUiScale() {

@@ -5,6 +5,7 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  watch,
 } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
@@ -26,6 +27,7 @@ import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useSpaceUploadsStore } from "@/store/spaces/uploads";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
+import { createUnwrappedPromise } from "@/util/createUnwrappedPromise";
 
 import AppHeaderSkeleton from "./application/AppHeaderSkeleton.vue";
 import AppSkeletonLoader from "./application/AppSkeletonLoader/AppSkeletonLoader.vue";
@@ -38,11 +40,6 @@ import { useGlobalErrorReporting } from "./useGlobalErrorReporting";
  * Initiates application state
  * Defines the router outlet
  */
-
-const AppHeader = defineAsyncComponent({
-  loadingComponent: AppHeaderSkeleton,
-  loader: () => import("@/components/application/AppHeader.vue"),
-});
 
 const UploadProgressPanel = defineAsyncComponent(() =>
   import("@knime/components").then(
@@ -72,6 +69,21 @@ const {
 const isUploadPanelExpanded = ref(true);
 
 useBeforeUnload({ hasUnsavedChanges: () => hasPendingUploads.value });
+
+const AppHeader = defineAsyncComponent({
+  loadingComponent: AppHeaderSkeleton,
+  loader: () => {
+    const componentPromise = import("@/components/application/AppHeader.vue");
+    const { promise, resolve } =
+      createUnwrappedPromise<Awaited<typeof componentPromise>>();
+
+    // make sure the AppHeader component is not fully loaded until the application
+    // is initialized
+    watch(loaded, () => componentPromise.then(resolve), { once: true });
+
+    return promise;
+  },
+});
 
 const setContentHeight = () => {
   let mainContentHeight = "100vh";

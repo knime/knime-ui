@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 import { createRouter, createWebHistory } from "vue-router";
 
+import { setupHints } from "@knime/components";
+
 import { runInEnvironment } from "@/environment";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { router, routes } from "@/router/router";
@@ -15,6 +17,15 @@ vi.mock("@/util/generateWorkflowPreview");
 const mockedAPI = deepMocked(API);
 
 vi.mock("@/environment");
+vi.mock("@knime/components", async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    // @ts-ignore
+    ...actual,
+    setupHints: vi.fn(),
+  };
+});
 
 describe("application::lifecycle", () => {
   const getRouter = () => {
@@ -35,35 +46,21 @@ describe("application::lifecycle", () => {
       // @ts-ignore
       // eslint-disable-next-line new-cap
       runInEnvironment.mockImplementation((matcher) => matcher.DESKTOP?.());
-      const { lifecycleStore, applicationStore } = loadStore();
-      window.localStorage.setItem("foo", "bar");
-      const localStorageData = {
-        settings1: { a: 1, b: 2 },
-        settings2: { c: 3, d: 4 },
-        foo: {}, // will be removed from local storage because it's empty
-      };
-      mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue(
-        localStorageData,
-      );
+      const { lifecycleStore, applicationStore, settingsStore } = loadStore();
       const exampleProjects = [{ name: "test" }];
       mockedAPI.desktop.getExampleProjects.mockResolvedValue(exampleProjects);
       await lifecycleStore.initializeApplication({
         $router: router,
       });
 
+      expect(mockedAPI.desktop.waitForDesktopAPI).toHaveBeenCalledOnce();
+      expect(settingsStore.fetchSettings).toHaveBeenCalled();
       expect(lifecycleStore.setIsLoadingApp).not.toHaveBeenCalled();
       expect(mockedAPI.event.subscribeEvent).toHaveBeenCalled();
       expect(mockedAPI.application.getState).toHaveBeenCalled();
-      expect(mockedAPI.desktop.getPersistedLocalStorageData).toHaveBeenCalled();
-      expect(window.localStorage.getItem("settings1")).toBe(
-        JSON.stringify(localStorageData.settings1),
-      );
-      expect(window.localStorage.getItem("settings2")).toBe(
-        JSON.stringify(localStorageData.settings2),
-      );
-      expect(window.localStorage.getItem("foo")).toBeNull();
       expect(mockedAPI.desktop.getExampleProjects).toHaveBeenCalled();
 
+      expect(lifecycleStore.populateHelpMenuAndExamples).toHaveBeenCalled();
       expect(applicationStore.exampleProjects).toEqual(exampleProjects);
 
       expect(applicationStore.replaceApplicationState).toHaveBeenCalledWith(
@@ -73,6 +70,7 @@ describe("application::lifecycle", () => {
       expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
       });
+      expect(setupHints).toHaveBeenCalled();
     });
 
     it("initialization (BROWSER)", async () => {
@@ -91,7 +89,7 @@ describe("application::lifecycle", () => {
 
       expect(mockedAPI.event.subscribeEvent).toHaveBeenCalled();
       expect(mockedAPI.application.getState).toHaveBeenCalled();
-
+      expect(lifecycleStore.populateHelpMenuAndExamples).not.toHaveBeenCalled();
       expect(spaceProvidersStore.setAllSpaceProviders).toHaveBeenCalledWith(
         applicationState.spaceProviders,
       );
@@ -103,6 +101,7 @@ describe("application::lifecycle", () => {
       expect(lifecycleStore.setActiveProject).toHaveBeenCalledWith({
         $router: router,
       });
+      expect(setupHints).toHaveBeenCalled();
     });
 
     it("destroy application", () => {
@@ -360,7 +359,6 @@ describe("application::lifecycle", () => {
   it("should hide the canvas anchored components when leaving the worklow page", async () => {
     const { canvasAnchoredComponentsStore, lifecycleStore } = loadStore();
 
-    mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue({});
     await lifecycleStore.initializeApplication({
       $router: router,
     });

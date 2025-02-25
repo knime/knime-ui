@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { flushPromises } from "@vue/test-utils";
-import { API } from "@api";
 
 import type { Project } from "@/api/gateway-api/generated-api.ts";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -11,11 +10,8 @@ import {
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
-import { deepMocked } from "@/test/utils";
 
 import { applicationState, loadStore } from "./loadStore";
-
-const mockedAPI = deepMocked(API);
 
 vi.mock("@/util/workflowNavigationService", () => {
   return {
@@ -190,7 +186,6 @@ describe("application", () => {
         zoomFactor: 1,
       });
 
-      mockedAPI.desktop.getPersistedLocalStorageData.mockResolvedValue({});
       await lifecycleStore.initializeApplication({
         $router: router,
       });

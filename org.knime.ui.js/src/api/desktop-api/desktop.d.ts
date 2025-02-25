@@ -240,6 +240,7 @@ declare function getAncestorInfo(
   itemId: string,
 ): string;
 
-declare function getPersistedLocalStorageData(): any;
-
 declare function updateOpenProjectsOrder(...args: string[]): void;
+
+declare function getUserProfilePart(key: string): any;
+declare function setUserProfilePart(key: string, data: any): void;

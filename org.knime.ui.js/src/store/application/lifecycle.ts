@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { API } from "@api";
 import { defineStore } from "pinia";
 import type { Router } from "vue-router";
@@ -23,7 +24,6 @@ import { useComponentInteractionsStore } from "@/store/workflow/componentInterac
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
-import { retryAsyncCall } from "@/util/retryAsyncCall";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useSpaceProvidersStore } from "../spaces/providers";
 
@@ -69,104 +69,37 @@ export const useLifecycleStore = defineStore("lifecycle", {
     async initializeApplication({ $router }: { $router: Router }) {
       consola.trace("lifecycle::initializeApplication");
 
-      // populate local storage from backend
-      await runInEnvironment({
-        DESKTOP: async () => {
-          consola.trace("lifecycle::getting persisted local storage data");
-          const RETRY_DELAY_MS = 50;
-          // TODO: NXT-989 remove this delay once desktop calls are made via the
-          // EquoComm service
-          await retryAsyncCall(
-            () =>
-              API.desktop
-                .getPersistedLocalStorageData()
-                .then((localStorageItems) =>
-                  Object.entries(localStorageItems ?? {}).forEach(
-                    ([key, value]) => {
-                      if (Object.keys(value as any).length === 0) {
-                        window.localStorage.removeItem(key as string);
-                      } else {
-                        window.localStorage.setItem(
-                          key as string,
-                          JSON.stringify(value),
-                        );
-                      }
-                    },
-                  ),
-                ),
-            RETRY_DELAY_MS,
-            100,
-          );
-        },
-      });
+      await API.desktop.waitForDesktopAPI();
 
-      // Read settings saved in local storage
-      useSettingsStore().fetchSettings();
+      // Fetch ui-settings from backend
+      await useSettingsStore().fetchSettings();
 
-      // Set zoom level and retry until the 'API.desktop' functions are available
       await runInEnvironment({
-        DESKTOP: async () => {
+        DESKTOP: () => {
           consola.trace("lifecycle::setting zoom level");
-          const RETRY_DELAY_MS = 50;
-          // TODO: NXT-989 remove this delay once desktop calls are made via the
-          // EquoComm service
-          await retryAsyncCall(
-            () =>
-              API.desktop.setZoomLevel(
-                ratioToZoomLevel(useSettingsStore().settings.uiScale),
-              ),
-            RETRY_DELAY_MS,
-            100,
+          API.desktop.setZoomLevel(
+            ratioToZoomLevel(useSettingsStore().settings.uiScale),
           );
         },
       });
 
       // On desktop, the application state will load rather quickly, so we don't
       // need to set this
-      runInEnvironment({
-        BROWSER: () => {
-          this.setIsLoadingApp(true);
-        },
-      });
+      runInEnvironment({ BROWSER: () => this.setIsLoadingApp(true) });
 
       await runInEnvironment({
-        DESKTOP: async () => {
-          // Get custom help menu entries
-          const populateCustomMenuEntries = API.desktop
-            .getCustomHelpMenuEntries()
-            .then((customHelpMenuEntries) =>
-              useApplicationStore().setCustomHelpMenuEntries(
-                customHelpMenuEntries ?? {},
-              ),
-            )
-            .catch((error) => {
-              consola.error(
-                "lifecycle::Error getting custom menu entries",
-                error,
-              );
-            });
+        DESKTOP: () => this.populateHelpMenuAndExamples(),
+      });
 
-          const populateExampleProjects = API.desktop
-            .getExampleProjects()
-            .then((data) => useApplicationStore().setExampleProjects(data))
-            .catch((error) => {
-              consola.error("lifecycle::Error getting example projects", error);
-            });
-
-          // Subscribe to update available event
-          const checkForUpdates = API.event
+      // Subscribe to update available event
+      await runInEnvironment({
+        DESKTOP: () =>
+          API.event
             .subscribeEvent({ typeId: "UpdateAvailableEventType" })
             .then(() => API.desktop.checkForUpdates())
             .catch((error) => {
               consola.error("lifecycle::Error checking for updates", error);
-            });
-
-          await Promise.all([
-            populateCustomMenuEntries,
-            populateExampleProjects,
-            checkForUpdates,
-          ]);
-        },
+            }),
       });
 
       $router.beforeEach(async (to, from, next) => {
@@ -231,34 +164,55 @@ export const useLifecycleStore = defineStore("lifecycle", {
         kaiFetchUiStrings();
       }
 
-      // setup hints for browser and use the url for videos based on the resource
-      // location resolver
       runInEnvironment({
+        // setup hints for desktop and use the url for videos unchanged
+        DESKTOP: () => {
+          window.localStorage.removeItem("onboarding.hints.user");
+          setupHints({
+            hints: getHintConfiguration((url) => url),
+
+            getRemoteHintState: (storageKey: string) =>
+              API.desktop.getUserProfilePart({ key: `${storageKey}.user` }),
+            setRemoteHintState: (storageKey: string, currentState) =>
+              API.desktop
+                .setUserProfilePart({
+                  // TODO NXT-3396: supply complete key
+                  key: `${storageKey}.user`,
+                  data: currentState,
+                })
+                .then(() => true)
+                .catch(() => false),
+          });
+        },
+
+        // setup hints for browser and use the url for videos based on the resource
+        // location resolver
         BROWSER: () => {
           if (
             useApplicationStore().appMode === AppState.AppModeEnum.JobViewer
           ) {
             setupHints({ hints: {} });
-          } else {
-            // to resolve urls in browser application state to be
-            // initialized and use the activeProjectId
-            const hintVideoResolver = (url: string) => {
-              const activeProject = useApplicationStore().openProjects.find(
-                (project) => project.activeWorkflowId,
-              );
-
-              if (!activeProject) {
-                return "";
-              }
-
-              return resourceLocationResolver(
-                activeProject.projectId,
-                `org/knime/ui/js${url}`,
-              );
-            };
-
-            setupHints({ hints: getHintConfiguration(hintVideoResolver) });
+            return;
           }
+
+          // to resolve urls in browser, the application state has to be
+          // initialized so that we can use the activeProjectId
+          const hintVideoResolver = (url: string) => {
+            const activeProject = useApplicationStore().openProjects.find(
+              (project) => project.activeWorkflowId,
+            );
+
+            if (!activeProject) {
+              return "";
+            }
+
+            return resourceLocationResolver(
+              activeProject.projectId,
+              `org/knime/ui/js${url}`,
+            );
+          };
+
+          setupHints({ hints: getHintConfiguration(hintVideoResolver) });
         },
       });
     },
@@ -269,6 +223,29 @@ export const useLifecycleStore = defineStore("lifecycle", {
         typeId: "AppStateChangedEventType",
       });
       this.unloadActiveWorkflow({ clearWorkflow: true });
+    },
+
+    async populateHelpMenuAndExamples() {
+      // Get custom help menu entries
+      const populateCustomMenuEntries = API.desktop
+        .getCustomHelpMenuEntries()
+        .then((customHelpMenuEntries) =>
+          useApplicationStore().setCustomHelpMenuEntries(
+            customHelpMenuEntries ?? {},
+          ),
+        )
+        .catch((error) => {
+          consola.error("lifecycle::Error getting custom menu entries", error);
+        });
+
+      const populateExampleProjects = API.desktop
+        .getExampleProjects()
+        .then((data) => useApplicationStore().setExampleProjects(data))
+        .catch((error) => {
+          consola.error("lifecycle::Error getting example projects", error);
+        });
+
+      await Promise.all([populateCustomMenuEntries, populateExampleProjects]);
     },
 
     async setActiveProject({ $router }: { $router: Router }) {
