@@ -1283,32 +1283,52 @@ export interface DynamicPortGroupDescription {
 /**
  * Metadata properties of a workflow (project or component) that can be edited
  * @export
- * @interface EditableProjectMetadata
+ * @interface EditableMetadata
  */
-export interface EditableProjectMetadata {
+export interface EditableMetadata {
 
     /**
      *
      * @type {TypedText}
-     * @memberof EditableProjectMetadata
+     * @memberof EditableMetadata
      */
     description?: TypedText;
     /**
+     * Descriminator for different types of metadata.
+     * @type {string}
+     * @memberof EditableMetadata
+     */
+    metadataType: EditableMetadata.MetadataTypeEnum;
+    /**
      * A collection of tags the user chose to describe the workflow
      * @type {Array<string>}
-     * @memberof EditableProjectMetadata
+     * @memberof EditableMetadata
      */
     tags?: Array<string>;
     /**
      * A collection of URLs attached to the workflow
      * @type {Array<Link>}
-     * @memberof EditableProjectMetadata
+     * @memberof EditableMetadata
      */
     links?: Array<Link>;
 
 }
 
 
+/**
+ * @export
+ * @namespace EditableMetadata
+ */
+export namespace EditableMetadata {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum MetadataTypeEnum {
+        Project = 'project',
+        Component = 'component'
+    }
+}
 /**
  * Parent object for events from the backend to the frontend.
  * @export
@@ -3174,11 +3194,11 @@ export interface ProjectDisposedEventType extends EventType {
 
 
 /**
- * Metadata of a workflow project
+ * Metadata of a workflow project.
  * @export
  * @interface ProjectMetadata
  */
-export interface ProjectMetadata extends EditableProjectMetadata {
+export interface ProjectMetadata extends EditableMetadata {
 
     /**
      * The date and time of the last change made to this workflow
@@ -3190,6 +3210,12 @@ export interface ProjectMetadata extends EditableProjectMetadata {
 }
 
 
+/**
+ * @export
+ * @namespace ProjectMetadata
+ */
+export namespace ProjectMetadata {
+}
 /**
  * Remove a port from a node
  * @export
@@ -4440,16 +4466,10 @@ export interface Workflow {
     allowedActions?: AllowedWorkflowActions;
     /**
      *
-     * @type {ComponentNodeDescription}
+     * @type {any}
      * @memberof Workflow
      */
-    componentMetadata?: ComponentNodeDescription;
-    /**
-     *
-     * @type {ProjectMetadata}
-     * @memberof Workflow
-     */
-    projectMetadata?: ProjectMetadata;
+    metadata: any;
     /**
      * Flag indicating whether the workflow is in a dirty state, i.e. contains unsaved changes.
      * @type {boolean}
