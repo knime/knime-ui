@@ -61,6 +61,76 @@ export interface AddBendpointCommand extends WorkflowCommand {
 export namespace AddBendpointCommand {
 }
 /**
+ * Adds a new component to the workflow.
+ * @export
+ * @interface AddComponentCommand
+ */
+export interface AddComponentCommand extends WorkflowCommand {
+
+    /**
+     *
+     * @type {string}
+     * @memberof AddComponentCommand
+     */
+    providerId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof AddComponentCommand
+     */
+    spaceId: string;
+    /**
+     *
+     * @type {string}
+     * @memberof AddComponentCommand
+     */
+    itemId: string;
+    /**
+     *
+     * @type {XY}
+     * @memberof AddComponentCommand
+     */
+    position: XY;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddComponentCommand
+ */
+export namespace AddComponentCommand {
+}
+/**
+ *
+ * @export
+ * @interface AddComponentResult
+ */
+export interface AddComponentResult extends CommandResult {
+
+    /**
+     * The id of the new componet added.
+     * @type {string}
+     * @memberof AddComponentResult
+     */
+    newNodeId?: string;
+    /**
+     *
+     * @type {ProblemMessage}
+     * @memberof AddComponentResult
+     */
+    problem?: ProblemMessage;
+
+}
+
+
+/**
+ * @export
+ * @namespace AddComponentResult
+ */
+export namespace AddComponentResult {
+}
+/**
  * Adds a new node to the workflow.
  * @export
  * @interface AddNodeCommand
@@ -139,7 +209,7 @@ export interface AddNodeResult extends CommandResult {
      * @type {string}
      * @memberof AddNodeResult
      */
-    newNodeId: string;
+    newNodeId?: string;
 
 }
 
@@ -3102,6 +3172,49 @@ export interface PortViews {
 
 
 /**
+ * Represents a problem message.
+ * @export
+ * @interface ProblemMessage
+ */
+export interface ProblemMessage {
+
+    /**
+     *
+     * @type {string}
+     * @memberof ProblemMessage
+     */
+    type: ProblemMessage.TypeEnum;
+    /**
+     *
+     * @type {string}
+     * @memberof ProblemMessage
+     */
+    title: string;
+    /**
+     *
+     * @type {string}
+     * @memberof ProblemMessage
+     */
+    message: string;
+
+}
+
+
+/**
+ * @export
+ * @namespace ProblemMessage
+ */
+export namespace ProblemMessage {
+    /**
+     * @export
+     * @enum {string}
+     */
+    export enum TypeEnum {
+        Error = 'error',
+        Warning = 'warning'
+    }
+}
+/**
  * Represents an entire workflow project.
  * @export
  * @interface Project
@@ -4629,6 +4742,7 @@ export namespace WorkflowCommand {
         AutoConnect = 'auto_connect',
         AutoDisconnect = 'auto_disconnect',
         AddNode = 'add_node',
+        AddComponent = 'add_component',
         ReplaceNode = 'replace_node',
         InsertNode = 'insert_node',
         UpdateComponentOrMetanodeName = 'update_component_or_metanode_name',
@@ -5945,6 +6059,21 @@ const WorkflowCommandApiWrapper = function(rpcClient: RPCClient, configuration: 
             workflowId: params.workflowId,
             workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddNode }
 		}) as Promise<AddNodeResult>;
+		return postProcessCommandResponse(commandResponse);
+	},	
+
+ 	/**
+     * Adds a new component to the workflow.
+     */
+	AddComponent(
+		params: { projectId: string, workflowId: string } & Omit<AddComponentCommand, 'kind'>
+    ): Promise<AddComponentResult> {
+    	const { projectId, workflowId, ...commandParams } = params;
+		const commandResponse = workflow(rpcClient).executeWorkflowCommand({
+            projectId: params.projectId,
+            workflowId: params.workflowId,
+            workflowCommand: { ...commandParams, kind: WorkflowCommand.KindEnum.AddComponent }
+		}) as Promise<AddComponentResult>;
 		return postProcessCommandResponse(commandResponse);
 	},	
 

@@ -3,12 +3,15 @@ import { defineStore } from "pinia";
 
 import type {
   AddNodeCommand,
+  ComponentLoadProblem,
   Connection,
   NodeFactoryKey,
   PortCommand,
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
+import { isBrowser } from "@/environment";
+import { getToastsProvider } from "@/plugins/toasts";
 import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
@@ -126,39 +129,55 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         y: geometry.utils.snapToGrid(position.y),
       };
 
-      const apiCall =
-        isComponent && spaceItemReference
-          ? () =>
-              API.desktop.importComponent({
-                projectId,
-                workflowId,
-                x: gridAdjustedPosition.x,
-                y: gridAdjustedPosition.y,
-                spaceProviderId: spaceItemReference.providerId,
-                spaceId: spaceItemReference.spaceId,
-                itemId: spaceItemReference.itemId,
-              })
-          : () =>
-              API.workflowCommand.AddNode({
-                projectId,
-                workflowId,
-                position: gridAdjustedPosition,
-                nodeFactory,
-                spaceItemReference,
-                sourceNodeId,
-                sourcePortIdx,
-                nodeRelation,
-              });
+      let newNodeId: string | null | undefined,
+        problem: ComponentLoadProblem | undefined;
+      if (isComponent && spaceItemReference) {
+        if (isBrowser) {
+          const response = await API.workflowCommand.AddComponent({
+            projectId,
+            workflowId,
+            providerId: spaceItemReference.providerId,
+            position: {
+              x: gridAdjustedPosition.x,
+              y: gridAdjustedPosition.y,
+            },
+            spaceId: spaceItemReference.spaceId,
+            itemId: spaceItemReference.itemId,
+          });
+          newNodeId = response.newNodeId;
+          problem = response.problem;
+        } else {
+          // TODO remove with NXT-3389
+          newNodeId = await API.desktop.importComponent({
+            projectId,
+            workflowId,
+            x: gridAdjustedPosition.x,
+            y: gridAdjustedPosition.y,
+            spaceProviderId: spaceItemReference.providerId,
+            spaceId: spaceItemReference.spaceId,
+            itemId: spaceItemReference.itemId,
+          });
+        }
+      } else {
+        newNodeId = (
+          await API.workflowCommand.AddNode({
+            projectId,
+            workflowId,
+            position: gridAdjustedPosition,
+            nodeFactory,
+            spaceItemReference,
+            sourceNodeId,
+            sourcePortIdx,
+            nodeRelation,
+          })
+        ).newNodeId;
+      }
 
-      const response = await apiCall();
-      if (!response) {
+      if (!newNodeId && !problem) {
         return null;
       }
 
-      const newNodeId =
-        typeof response === "string" ? response : response.newNodeId;
-
-      if (selectionMode !== "none") {
+      if (newNodeId && selectionMode !== "none") {
         if (selectionMode === "new-only") {
           useSelectionStore().selectSingleObject({
             type: "node",
@@ -169,7 +188,17 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         }
       }
 
-      return response;
+      if (problem) {
+        const $toast = getToastsProvider();
+        $toast.show({
+          headline: problem.title,
+          message: problem.message,
+          type: problem.type,
+          autoRemove: true,
+        });
+      }
+
+      return newNodeId;
     },
 
     replaceNode({
