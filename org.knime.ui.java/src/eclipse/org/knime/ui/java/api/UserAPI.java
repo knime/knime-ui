@@ -54,14 +54,13 @@ import java.util.function.Function;
 import org.knime.ui.java.profile.UserProfile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Gives access to user-related things (e.g. the user profile).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-class UserAPI {
+final class UserAPI {
 
     private enum UserProfilePart {
             UI_SETTINGS("knime-ui-settings", UserProfile::uiSettings),
@@ -102,11 +101,10 @@ class UserAPI {
      * @param key the part of the user profile to update
      * @param value the new value to replace the old value with completely
      * @throws JsonProcessingException
-     * @throws JsonMappingException
      */
     @API
     static void setUserProfilePart(final String key, final String data)
-        throws JsonMappingException, JsonProcessingException {
+        throws JsonProcessingException {
         var userProfile = DesktopAPI.getDeps(UserProfile.class);
         var mapToUpdate = UserProfilePart.of(key).get(userProfile);
         var dataMap = DesktopAPI.MAPPER.readValue(data, Map.class);

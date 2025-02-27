@@ -50,11 +50,8 @@ package org.knime.ui.java.browser.lifecycle;
 
 import java.util.function.Supplier;
 
-import org.knime.core.node.NodeLogger;
 import org.knime.ui.java.api.SaveAndCloseProjects;
 import org.knime.ui.java.persistence.AppStatePersistor;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The 'save-state' lifecycle-state-transition for the KNIME-UI. Called before {@link Suspend}.
@@ -63,10 +60,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @SuppressWarnings("restriction")
 final class SaveState {
-
-    private static final NodeLogger LOGGER = NodeLogger.getLogger(SaveState.class);
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private SaveState() {
         //
