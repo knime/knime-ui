@@ -1,7 +1,8 @@
 /*
  * ------------------------------------------------------------------------
+ *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.com; Email: contact@knime.com
+ *  Website: http://www.knime.org; Email: contact@knime.org
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -40,44 +41,65 @@
  *  propagated with or for interoperation with KNIME.  The owner of a Node
  *  may freely choose the license terms applicable to such Node, including
  *  when such Node is propagated with or for interoperation with KNIME.
- * -------------------------------------------------------------------
+ * ---------------------------------------------------------------------
+ *
+ * History
+ *   Feb 27, 2025 (hornm): created
  */
-package org.knime.ui.java.profile;
+package org.knime.ui.java.api;
 
-import java.util.LinkedHashMap;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.Map;
 
-/**
- * Aggregates several aspects of user-specific state. Each aspect is handled (read, persisted, ...) independently.
- *
- * @param internalUsage the {@link InternalUsageTracking} instance
- * @param uiSettings a map representing the ui-settings; can be modified to update the ui settings
- * @param onboardingHintsSettings a map representing the onboarding hints settings; can be modified to update the
- *            onboarding hints settings
- */
-public record UserProfile(InternalUsageTracking internalUsage, Map<String, String> uiSettings,
-    Map<String, String> onboardingHintsSettings) {
+import org.junit.jupiter.api.Test;
+import org.knime.ui.java.profile.InternalUsageTracking;
+import org.knime.ui.java.profile.UserProfile;
 
-    @SuppressWarnings("javadoc")
-    public UserProfile(final InternalUsageTracking internalUsage, final Map<String, String> uiSettings,
-        final Map<String, String> onboardingHintsSettings) {
-        this.internalUsage = internalUsage;
-        this.uiSettings = new LinkedHashMap<>(uiSettings);
-        this.onboardingHintsSettings = new LinkedHashMap<>(onboardingHintsSettings);
-    }
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+/**
+ * Test for {@link UserAPI}.
+ *
+ * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ */
+class UserAPITest {
 
     /**
-     * Helper to create a copy of the given {@link UserProfile} with the given {@link InternalUsageTracking} being
-     * 'copied' over.
+     * Tests {@link UserAPI#setUserProfilePart(String, String)} and UserAPI#getUserProfilePart(String)}.
      *
-     * @param userProfile the user-profile to get the internal-usage-tracking from
-     * @param uiSettings
-     * @param onboardingHintsSettings
-     * @return a new {@link UserProfile}-instance
+     * @throws JsonProcessingException
      */
-    public static UserProfile of(final UserProfile userProfile, final Map<String, String> uiSettings,
-        final Map<String, String> onboardingHintsSettings) {
-        return new UserProfile(userProfile.internalUsage(), uiSettings, onboardingHintsSettings);
+    @Test
+    void testSetAndGetUserProfilePart() throws JsonProcessingException {
+        var userProfile = new UserProfile(new InternalUsageTracking(), Map.of(), Map.of());
+        DesktopAPI.injectDependency(userProfile);
+        UserAPI.setUserProfilePart("knime-ui-settings", """
+                {
+                "key1": "value1",
+                "key2": "value2"
+                }
+                """);
+
+        UserAPI.setUserProfilePart("onboarding.hints.user", """
+                {
+                "key3": "value3",
+                "key4": "value4"
+                }
+                """);
+
+        assertThat(userProfile.uiSettings()).isEqualTo(Map.of("key1", "value1", "key2", "value2"));
+        assertThat(userProfile.onboardingHintsSettings()).isEqualTo(Map.of("key3", "value3", "key4", "value4"));
+
+        var uiSettings = UserAPI.getUserProfilePart("knime-ui-settings");
+        assertThat(uiSettings).isEqualTo(Map.of("key1", "value1", "key2", "value2"));
+        var onboardingHintsSettings = UserAPI.getUserProfilePart("onboarding.hints.user");
+        assertThat(onboardingHintsSettings).isEqualTo(Map.of("key3", "value3", "key4", "value4"));
+
+        assertThrows(IllegalArgumentException.class, () -> UserAPI.getUserProfilePart("unknown-key"));
+
+        DesktopAPI.disposeDependencies();
     }
 
 }

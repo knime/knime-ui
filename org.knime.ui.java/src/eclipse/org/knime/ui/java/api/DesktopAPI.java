@@ -230,7 +230,7 @@ public final class DesktopAPI {
         injectDependency(userProfile);
     }
 
-    private static void injectDependency(final UserProfile userProfile) {
+    static void injectDependency(final UserProfile userProfile) {
         DEPENDENCIES.put(UserProfile.class, userProfile);
     }
 
