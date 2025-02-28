@@ -65,7 +65,6 @@ const dismissHubLoginBanner = () => {
 
 .hub-login-banner {
   background: var(--knime-white);
-  border-radius: 4px;
   border-top: 1px solid var(--knime-silver-sand);
   display: flex;
   flex-direction: column;

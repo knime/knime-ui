@@ -13,7 +13,6 @@ import SpacePageNavItems from "@/components/spaces/SpacePageNavItems.vue";
 import { APP_ROUTES } from "@/router/appRoutes";
 
 import HomePageContentTile from "./HomePageContentTile.vue";
-import HubLoginBanner from "./HubLoginBanner.vue";
 
 const $router = useRouter();
 const $route = useRoute();
@@ -33,39 +32,15 @@ const recent = computed<NavMenuItemProps>(() => ({
 </script>
 
 <template>
-  <div class="sidebar-layout">
-    <div class="sidebar-content">
-      <NavMenu>
-        <NavMenuItem v-bind="recent">
-          <template #prepend>
-            <TimeIcon />
-          </template>
-        </NavMenuItem>
+  <NavMenu>
+    <NavMenuItem v-bind="recent">
+      <template #prepend>
+        <TimeIcon />
+      </template>
+    </NavMenuItem>
 
-        <SpacePageNavItems />
-      </NavMenu>
+    <SpacePageNavItems />
+  </NavMenu>
 
-      <HomePageContentTile />
-    </div>
-    <div class="sidebar-footer">
-      <HubLoginBanner />
-    </div>
-  </div>
+  <HomePageContentTile />
 </template>
-
-<style lang="postcss" scoped>
-.sidebar-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.sidebar-content {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.sidebar-footer {
-  margin: 24px -24px -24px;
-}
-</style>
