@@ -63,8 +63,8 @@ import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Origin;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.AppStateUpdater;
 import org.knime.gateway.impl.webui.service.events.EventConsumer;
@@ -140,7 +140,7 @@ class OpenProjectTest {
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
 
         var origin = Origin.of("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
-        var project = CachedProject.builder() //
+        var project = Project.builder() //
             .setWfm(m_wfm) //
             .setOrigin(origin) //
             .setId("projectId1") //

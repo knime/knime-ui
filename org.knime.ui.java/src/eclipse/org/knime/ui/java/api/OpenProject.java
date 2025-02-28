@@ -60,7 +60,6 @@ import org.knime.core.util.hub.NamedItemVersion;
 import org.knime.gateway.api.util.VersionId;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -140,7 +139,7 @@ final class OpenProject {
             .map(HubSpaceLocationInfo.class::cast)//
             .orElse(null);
         final var origin = Origin.of(locationInfo, wfm, selectedVersion).orElse(null);
-        final var project = CachedProject.builder().setWfm(wfm).setOrigin(origin).build();
+        final var project = Project.builder().setWfm(wfm).setOrigin(origin).build();
         // Provider type can only be Hub here
         registerProjectAndSetActive(project, SpaceProviderEnt.TypeEnum.HUB);
 
@@ -229,7 +228,7 @@ final class OpenProject {
         var loadedWorkflow = Optional
             .ofNullable(DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, VersionId.currentState()));
         return loadedWorkflow.map(wfm -> { //
-            return CachedProject.builder() //
+            return Project.builder() //
                 .setWfm(wfm) //
                 .setOrigin(Origin.of(spaceProviderId, spaceId, itemId, projectType)) //
                 .setVersionWfmLoader(

@@ -64,8 +64,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Origin;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.testing.util.WorkflowManagerUtil;
 import org.mockito.ArgumentMatchers;
@@ -89,7 +89,7 @@ class SaveAndCloseProjectsTest {
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
             var origin = Origin.of("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
-            var project = CachedProject.builder() //
+            var project = Project.builder() //
                 .setWfm(wfms.get(i - 1)) //
                 .setOrigin(origin) //
                 .setId(projectId) //

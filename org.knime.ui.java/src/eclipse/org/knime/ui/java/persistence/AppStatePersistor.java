@@ -64,7 +64,6 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -278,7 +277,7 @@ public final class AppStatePersistor {
         };
 
         var projectId = LocalSpaceUtil.getUniqueProjectId(name);
-        return CachedProject.builder() //
+        return Project.builder() //
             .setWfmLoader(getWfm) //
             .setName(name) //
             .setId(projectId) //

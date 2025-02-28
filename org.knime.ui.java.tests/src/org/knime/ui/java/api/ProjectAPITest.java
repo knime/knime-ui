@@ -61,7 +61,6 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -87,7 +86,7 @@ class ProjectAPITest {
         var wpm = ProjectManager.getInstance();
         var origin = Origin.of("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
         var projectId = "projectId";
-        var project = CachedProject.builder() //
+        var project = Project.builder() //
             .setWfm(m_wfm) //
             .setOrigin(origin) //
             .setId(projectId) //

@@ -60,7 +60,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
-import org.knime.gateway.impl.project.CachedProject;
+import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
 import org.knime.ui.java.browser.KnimeBrowserView;
@@ -111,7 +111,7 @@ public final class TestingUtil {
         final Supplier<LocalSpace> localSpaceSupplier) {
         var wpm = ProjectManager.getInstance();
         projectIds.forEach(projectId -> wpm.addProject( //
-            CachedProject.builder() //
+            Project.builder() //
                 .setWfmLoader(() -> loadWorkflowForTesting(projectId)) //
                 .setName(projectId) //
                 .setId(projectId) //
@@ -120,7 +120,6 @@ public final class TestingUtil {
         if (activeProjectId != null) {
             wpm.setProjectActive(activeProjectId);
         }
-
     }
 
     private static WorkflowManager loadWorkflowForTesting(final String projectId) {

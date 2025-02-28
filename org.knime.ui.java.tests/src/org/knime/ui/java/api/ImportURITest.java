@@ -62,7 +62,6 @@ import org.junit.jupiter.api.Test;
 import org.knime.core.node.exec.dataexchange.in.PortObjectInNodeFactory;
 import org.knime.core.util.FileUtil;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
-import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
@@ -111,7 +110,7 @@ class ImportURITest {
         var projectId = "projectId";
         try {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
-            var project = CachedProject.builder() //
+            var project = Project.builder() //
                 .setWfm(wfm) //
                 .setOrigin(Origin.of("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW)) //
                 .setId(projectId) //
@@ -127,7 +126,7 @@ class ImportURITest {
             assertThat(success).isTrue();
             assertThat(wfm.getNodeContainers()).hasSize(1);
         } finally {
-            ProjectManager.getInstance().removeProject(projectId );
+            ProjectManager.getInstance().removeProject(projectId);
             ServiceInstances.disposeAllServiceInstancesAndDependencies();
         }
     }

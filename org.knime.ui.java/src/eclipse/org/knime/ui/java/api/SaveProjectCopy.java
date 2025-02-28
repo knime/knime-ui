@@ -73,7 +73,6 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.api.webui.entity.SpaceProviderEnt;
-import org.knime.gateway.impl.project.CachedProject;
 import org.knime.gateway.impl.project.Project;
 import org.knime.gateway.impl.project.ProjectManager;
 import org.knime.gateway.impl.webui.ToastService;
@@ -236,7 +235,7 @@ final class SaveProjectCopy {
     private static void saveAndReplaceWorkflowProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId, final String projectSVG,
         final LocalSpace localSpace) {
-        final var projectOfCopy = CachedProject.of(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
+        final var projectOfCopy = Project.of(wfm, newContext, ProjectTypeEnum.WORKFLOW, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, projectOfCopy,
             monitor -> saveWorkflowCopy(newContext, monitor, wfm, projectSVG));
     }
@@ -244,7 +243,7 @@ final class SaveProjectCopy {
     private static void saveAndReplaceComponentProject(final WorkflowContextV2 oldContext,
         final WorkflowContextV2 newContext, final WorkflowManager wfm, final String projectId,
         final LocalSpace localSpace) {
-        final var projectOfCopy = CachedProject.of(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
+        final var projectOfCopy = Project.of(wfm, newContext, ProjectTypeEnum.COMPONENT, projectId, localSpace);
         saveAndReplaceProject(oldContext, newContext, projectOfCopy,
             monitor -> saveComponentCopy(monitor, wfm, newContext));
     }
