@@ -145,11 +145,12 @@ export const useWorkflowMonitorStore = defineStore("workflowMonitor", {
         info: { containerId: activeWorkflowId },
       } = workflowStore.activeWorkflow;
 
-      // Because this action listens to the event bus and runs logic in those callbacks,
-      // the promise returned the store action call
-      // does not resolve when the action itself is done. This makes awaiting the dispatch call
-      // unintuitive because it doesn't resolve exactly when the action is completely done.
-      // By using the unwrapped promise we can achieve a more consistent and intuitive behavior
+      // This action returns an unwrapped promise over which we have direct control
+      // when to resolve. This is needed because when navigating to an issue in a sub workflow
+      // (inside metanode/component), we must first navigate to that workflow and wait for everything
+      // to load. Because this is an async process we hide that complexity inside this action
+      // and simply return a promise which will only resolve once everything is complete, regardless
+      // of whether it's navigating to an issue in the current WF or a nested one. (see lifecycle bus listener below)
       const { promise, resolve } = createUnwrappedPromise<void>();
 
       const selectNodeWithIssue = async (nodeId: string) => {

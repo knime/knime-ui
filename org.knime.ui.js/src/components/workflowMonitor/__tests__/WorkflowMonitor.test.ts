@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { nextTick } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { API } from "@api";
 
 import type { WorkflowMonitorState } from "@/api/gateway-api/generated-api";
-import * as panelStore from "@/store/panel";
 import {
   createAvailablePortTypes,
   createNodeTemplate,
@@ -64,25 +62,14 @@ describe("WorkflowMonitor.vue", () => {
       snapshotId: "snapshot1",
     });
 
-    const { mockedStores } = doMount();
+    const { mockedStores, wrapper } = doMount();
 
-    expect(
-      mockedStores.workflowMonitorStore.activateWorkflowMonitor,
-    ).not.toHaveBeenCalled();
-    expect(
-      mockedStores.workflowMonitorStore.deactivateWorkflowMonitor,
-    ).not.toHaveBeenCalled();
-    expect(mockedStores.nodeTemplatesStore.cache).toEqual({});
-
-    mockedStores.panelStore.setCurrentProjectActiveTab(
-      panelStore.TABS.WORKFLOW_MONITOR,
-    );
-
-    await flushPromises();
     expect(
       mockedStores.workflowMonitorStore.activateWorkflowMonitor,
     ).toHaveBeenCalled();
+    expect(mockedStores.nodeTemplatesStore.cache).toEqual({});
 
+    await flushPromises();
     expect(mockedStores.workflowMonitorStore.currentState).toEqual(
       workflowMonitorStateMock,
     );
@@ -94,20 +81,11 @@ describe("WorkflowMonitor.vue", () => {
       snapshotId: "snapshot1",
     });
 
-    expect(mockedStores.nodeTemplatesStore.cache).toEqual({
-      [nodeTemplate1.id]: expect.objectContaining({ id: nodeTemplate1.id }),
-      [nodeTemplate2.id]: expect.objectContaining({ id: nodeTemplate2.id }),
-    });
-
-    mockedStores.panelStore.setCurrentProjectActiveTab(
-      panelStore.TABS.CONTEXT_AWARE_DESCRIPTION,
-    );
-    await nextTick();
+    wrapper.unmount();
 
     expect(
       mockedStores.workflowMonitorStore.deactivateWorkflowMonitor,
     ).toHaveBeenCalled();
-
     expect(mockedAPI.event.unsubscribeEventListener).toHaveBeenCalledWith({
       typeId: "WorkflowMonitorStateChangeEventType",
       projectId: "project1",

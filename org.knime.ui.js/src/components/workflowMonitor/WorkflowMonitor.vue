@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
 import SidebarPanelLayout from "@/components/common/side-panel/SidebarPanelLayout.vue";
@@ -8,11 +9,17 @@ import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor
 
 import WorkflowMonitorContent from "./WorkflowMonitorContent.vue";
 import WorkflowMonitorMessage from "./WorkflowMonitorMessage.vue";
-import { useWorkflowMonitorActivation } from "./useWorkflowMonitorActivation";
 
-const { isLoading } = storeToRefs(useWorkflowMonitorStore());
+const workflowMonitorStore = useWorkflowMonitorStore();
+const { isLoading } = storeToRefs(workflowMonitorStore);
 
-useWorkflowMonitorActivation();
+onMounted(() => {
+  workflowMonitorStore.activateWorkflowMonitor();
+});
+
+onBeforeUnmount(() => {
+  workflowMonitorStore.deactivateWorkflowMonitor();
+});
 </script>
 
 <template>
