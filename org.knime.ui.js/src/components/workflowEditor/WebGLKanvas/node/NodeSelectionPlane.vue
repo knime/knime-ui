@@ -103,18 +103,20 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
 </script>
 
 <template>
-  <Container label="NodeSelectionPlane">
+  <Container
+    label="NodeSelectionPlane"
+    :renderable="renderable"
+    :visible="renderable && (showFocus || showSelection)"
+  >
     <Graphics
       v-if="showFocus"
       :position="position"
-      :renderable="renderable"
       @render="focusPlaneRenderFn"
     />
 
     <Graphics
       v-if="showSelection"
       :position="position"
-      :renderable="renderable"
       @render="selectionPlaneRenderFn"
     />
   </Container>

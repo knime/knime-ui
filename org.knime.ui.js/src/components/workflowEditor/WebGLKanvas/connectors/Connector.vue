@@ -16,26 +16,31 @@ import * as $colors from "@/style/colors";
 import { portSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
-import type { ConnectorProps } from "../types";
+
+import type { BezierPoints, ConnectorProps } from "./types";
 
 const deltaX1 = portSize / 2 - 0.5;
 const deltaX2 = portSize / 2 - 0.5;
 
-const getBezier = (x1: number, y1: number, x2: number, y2: number) => {
+const getBezier = (
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): BezierPoints => {
   x1 += deltaX1;
   x2 -= deltaX2;
   const width = Math.abs(x1 - x2);
   const height = Math.abs(y1 - y2);
   const widthHalf = width / 2;
-
   const heightThird = height / 3;
-  const bezier = {
+
+  return {
     start: { x: x1, y: y1 },
     control1: { x: x1 + widthHalf + heightThird, y: y1 },
     control2: { x: x2 - widthHalf - heightThird, y: y2 },
     end: { x: x2, y: y2 },
   };
-  return bezier;
 };
 
 const props = withDefaults(defineProps<ConnectorProps>(), {
@@ -49,7 +54,7 @@ const props = withDefaults(defineProps<ConnectorProps>(), {
 
 const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
 const { isNodeSelected } = storeToRefs(useSelectionStore());
-const { visibleArea } = storeToRefs(useWebGLCanvasStore());
+const { visibleArea, isDebugModeEnabled } = storeToRefs(useWebGLCanvasStore());
 
 const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
   toRefs(props);
@@ -84,16 +89,40 @@ const moveDeltas = computed(() => {
   return [x1, y1, x2, y2];
 });
 
-const linePoints = computed<[number, number, number, number]>(() => {
-  const x1 = start.value.x;
-  const y1 = start.value.y;
-  const x2 = end.value.x;
-  const y2 = end.value.y;
+const startEndWithMoveDeltas = computed<[number, number, number, number]>(
+  () => {
+    const x1 = start.value.x;
+    const y1 = start.value.y;
+    const x2 = end.value.x;
+    const y2 = end.value.y;
 
-  const [mx1, my1, mx2, my2] = moveDeltas.value;
+    const [mx1, my1, mx2, my2] = moveDeltas.value;
 
-  return [x1 + mx1, y1 + my1, x2 + mx2, y2 + my2];
-});
+    return [x1 + mx1, y1 + my1, x2 + mx2, y2 + my2];
+  },
+);
+
+const renderFn = (graphics: GraphicsInst, points: BezierPoints) => {
+  const color = props.flowVariableConnection ? $colors.Coral : $colors.Masala;
+  graphics
+    .clear()
+    .moveTo(
+      startEndWithMoveDeltas.value.at(0)!,
+      startEndWithMoveDeltas.value.at(1)!,
+    )
+    .bezierCurveTo(
+      points.control1.x,
+      points.control1.y,
+      points.control2.x,
+      points.control2.y,
+      points.end.x,
+      points.end.y,
+    )
+    .stroke({
+      width: 1,
+      color: props.absolutePoint && isDebugModeEnabled.value ? "blue" : color,
+    });
+};
 
 const { floatingConnector, snapTarget } = storeToRefs(
   useFloatingConnectorStore(),
@@ -105,17 +134,18 @@ const isTargetForReplacement = computed(() => {
     return false;
   }
 
-  // targetting the end of the connection from another port
+  // targetting the input port that is already connected
   if (
     snapTarget.value &&
     !isPlaceholderPort(snapTarget.value) &&
     props.destNode === snapTarget.value.parentNodeId &&
-    snapTarget.value.index === props.destPort
+    snapTarget.value.index === props.destPort &&
+    floatingConnector.value.context.origin === "out"
   ) {
     return true;
   }
 
-  // attempting a connection from a connected input port
+  // targetting the output port that is already connected
   if (
     props.destNode === floatingConnector.value.context.parentNodeId &&
     props.destPort === floatingConnector.value.context.portInstance.index &&
@@ -127,64 +157,33 @@ const isTargetForReplacement = computed(() => {
   return false;
 });
 
-const bezierPoints = computed(() => {
-  const [x1, y1, x2, y2] = linePoints.value;
-
-  return getBezier(x1, y1, x2, y2);
-});
-
-const renderFn = (
-  graphics: GraphicsInst,
-  points: ReturnType<typeof getBezier>,
-) => {
-  const color = props.flowVariableConnection ? $colors.Coral : $colors.Masala;
-  graphics
-    .clear()
-    .moveTo(linePoints.value.at(0)!, linePoints.value.at(1)!)
-    .bezierCurveTo(
-      points.control1.x,
-      points.control1.y,
-      points.control2.x,
-      points.control2.y,
-      points.end.x,
-      points.end.y,
-    )
-    .stroke({ width: 1, color });
-};
-
 const connectorPath = ref<GraphicsInst>();
 
 const suggestShiftX = -12;
 const suggestShiftY = -6;
-watch(isTargetForReplacement, (newValue, oldValue) => {
-  const [x1, y1, x2, y2] = linePoints.value;
-
-  // flip the curves depending on the value of suggest delete
-  // so that we have the animation in both directions
-
-  const oldBezier = getBezier(
+watch(isTargetForReplacement, (shouldAnimate) => {
+  const [x1, y1, x2, y2] = startEndWithMoveDeltas.value;
+  const normalBezier = getBezier(x1, y1, x2, y2);
+  const animatedBezier = getBezier(
     x1,
     y1,
-    x2 + (newValue && !oldValue ? 0 : suggestShiftX),
-    y2 + (newValue && !oldValue ? 0 : suggestShiftY),
+    x2 + suggestShiftX,
+    y2 + suggestShiftY,
   );
 
-  const newBezier = getBezier(
-    x1,
-    y1,
-    x2 + (newValue && !oldValue ? suggestShiftX : 0),
-    y2 + (newValue && !oldValue ? suggestShiftY : 0),
-  );
-
-  gsap.to(oldBezier.end, {
-    x: newBezier.end.x,
-    y: newBezier.end.y,
-    duration: 0.2,
-    ease: "power2.out",
-    onUpdate: () => {
-      renderFn(connectorPath.value!, oldBezier);
-    },
-  });
+  if (shouldAnimate) {
+    gsap.to(normalBezier.end, {
+      x: animatedBezier.end.x,
+      y: animatedBezier.end.y,
+      duration: 0.2,
+      ease: "power2.out",
+      onUpdate: () => {
+        renderFn(connectorPath.value!, normalBezier);
+      },
+    });
+  } else {
+    renderFn(connectorPath.value!, normalBezier);
+  }
 });
 
 function getBoundingBox(start: XY, ctrl1: XY, ctrl2: XY, end: XY) {
@@ -202,14 +201,15 @@ function getBoundingBox(start: XY, ctrl1: XY, ctrl2: XY, end: XY) {
   };
 }
 
-const boundingBox = computed(() =>
-  getBoundingBox(
-    start.value,
-    { x: bezierPoints.value[0], y: bezierPoints.value[1] },
-    { x: bezierPoints.value[2], y: bezierPoints.value[3] },
-    { x: bezierPoints.value[4], y: bezierPoints.value[5] },
-  ),
-);
+const boundingBox = computed(() => {
+  const bezier = getBezier(...startEndWithMoveDeltas.value);
+  return getBoundingBox(
+    bezier.start,
+    bezier.control1,
+    bezier.control2,
+    bezier.end,
+  );
+});
 
 const renderable = computed(() => {
   const intersect = geometry.utils.rectangleIntersection(boundingBox.value, {
@@ -232,7 +232,8 @@ const renderable = computed(() => {
         : 0
     "
     :renderable="renderable"
+    :visible="renderable"
     :label="`Connector__${id}`"
-    @render="renderFn($event, bezierPoints)"
+    @render="renderFn($event, getBezier(...startEndWithMoveDeltas))"
   />
 </template>

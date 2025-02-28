@@ -12,7 +12,7 @@ import Port from "../ports/Port.vue";
 
 import FloatingConnectorDecoration from "./FloatingConnectorDecoration.vue";
 
-const { floatingConnector, isInsideSnapRegion } = storeToRefs(
+const { floatingConnector, isInsideSnapRegion, snapTarget } = storeToRefs(
   useFloatingConnectorStore(),
 );
 const { getNodeById } = storeToRefs(useNodeInteractionsStore());
@@ -83,7 +83,7 @@ const nodeRelation = computed<NodeRelation | undefined>(() => {
     </Container>
 
     <Container :position="floatingConnector.absolutePoint" event-mode="none">
-      <Port :port="floatingConnectorPort" />
+      <Port :port="floatingConnectorPort" :targeted="Boolean(snapTarget)" />
     </Container>
 
     <FloatingConnectorDecoration

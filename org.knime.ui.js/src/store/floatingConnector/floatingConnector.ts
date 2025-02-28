@@ -109,12 +109,12 @@ export const useFloatingConnectorStore = defineStore(
       startPosition = undefined;
     };
 
-    const setupAbortListener = (cleanupListeners: () => void) => {
+    const setupAbortListener = (cleanupDragListeners: () => void) => {
       const onEscape = (event: KeyboardEvent) => {
         if (event.key === "Escape") {
           resetState();
           removeActiveConnector();
-          cleanupListeners();
+          cleanupDragListeners();
           window.removeEventListener("keydown", onEscape);
         }
       };
@@ -246,10 +246,10 @@ export const useFloatingConnectorStore = defineStore(
         activeConnectionValidTargets.value = undefined;
         resetState();
         // eslint-disable-next-line no-use-before-define
-        cleanupListeners();
+        cleanupDragListeners();
       };
 
-      function cleanupListeners() {
+      function cleanupDragListeners() {
         canvas.removeEventListener("pointermove", onPointerMove);
         canvas.removeEventListener("pointerup", onPointerUp);
         canvas.removeEventListener("lostPointerCapture", onPointerUp);
@@ -258,7 +258,7 @@ export const useFloatingConnectorStore = defineStore(
       canvas.addEventListener("pointermove", onPointerMove);
       canvas.addEventListener("pointerup", onPointerUp);
       canvas.addEventListener("lostPointerCapture", onPointerUp);
-      setupAbortListener(cleanupListeners);
+      setupAbortListener(cleanupDragListeners);
     };
 
     const createConnectorFromContext = (

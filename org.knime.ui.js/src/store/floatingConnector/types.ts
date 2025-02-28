@@ -1,5 +1,6 @@
 import type { NodePortGroups } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
+import type { Direction } from "@/util/compatibleConnections";
 
 export type FloatingConnector = {
   id: string;
@@ -19,19 +20,22 @@ export type FloatingConnector = {
   destPort?: number;
 };
 
-type SnapTargetParent = {
+type SnapTargetCommon = {
   parentNodeId: string;
+  side: Direction;
 };
 
-export type PlaceholderPort = {
+export type SnappedPlaceholderPort = {
   isPlaceHolderPort: true;
   validPortGroups: NodePortGroups | null;
   typeId: string;
-};
+} & SnapTargetCommon;
 
-export type SnapTarget = (PlaceholderPort | NodePort) & SnapTargetParent;
+export type SnappedPort = NodePort & SnapTargetCommon;
+
+export type SnapTarget = SnappedPort | SnappedPlaceholderPort;
 
 export const isPlaceholderPort = (
-  port: NodePort | { isPlaceHolderPort: true },
-): port is { isPlaceHolderPort: true } =>
+  port: SnapTarget,
+): port is SnappedPlaceholderPort =>
   (port as { isPlaceHolderPort: true }).isPlaceHolderPort;

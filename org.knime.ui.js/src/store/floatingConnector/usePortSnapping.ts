@@ -1,11 +1,13 @@
 /* eslint-disable no-undefined */
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import type { Ref } from "vue";
 import { storeToRefs } from "pinia";
+import throttle from "raf-throttle";
 
 import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { PortPositions } from "@/components/workflowEditor/common/usePortPositions";
+import { $bus } from "@/plugins/event-bus";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
@@ -19,6 +21,7 @@ import { isNativeNode } from "@/util/nodeUtil";
 import {
   type FloatingConnector,
   type SnapTarget,
+  type SnappedPlaceholderPort,
   isPlaceholderPort,
 } from "./types";
 
@@ -109,7 +112,7 @@ export const usePortSnapping = (options: {
     let isCompatible: boolean = false;
     let validPortGroups: NodePortGroups | null = null;
 
-    if (isPlaceholderPort(targetPort)) {
+    if ("isPlaceHolderPort" in targetPort) {
       validPortGroups = generateValidPortGroupsForPlaceholderPort({
         fromPort: sourcePort,
         availablePortTypes: availablePortTypes.value,
@@ -174,143 +177,164 @@ export const usePortSnapping = (options: {
    * This function will determine whether the user's mouse movement over a candidate's
    * hover area will produce a snap interaction as it approaches a snap target.
    */
-  const onMoveOverConnectionSnapCandidate = (
-    details: ConnectionSnapCandidateDetails,
-  ) => {
-    if (!floatingConnector.value || !pointerMoveAbsoluteCoords.value) {
-      return;
-    }
+  const onMoveOverConnectionSnapCandidate = throttle(
+    (details: ConnectionSnapCandidateDetails) => {
+      if (!floatingConnector.value || !pointerMoveAbsoluteCoords.value) {
+        return;
+      }
 
-    consola.trace("Enter connection snap candidate", details);
-    isInsideSnapRegion.value = true;
+      consola.trace("Enter connection snap candidate", details);
+      isInsideSnapRegion.value = true;
 
-    const targetPortDirection =
-      floatingConnector.value.context.origin === "out" ? "in" : "out";
-    const { referenceNode, parentNodePortPositions } = details;
+      const targetPortDirection =
+        floatingConnector.value.context.origin === "out" ? "in" : "out";
+      const { referenceNode, parentNodePortPositions } = details;
 
-    const { position: nodePosition } = referenceNode;
+      const { position: nodePosition } = referenceNode;
 
-    const snapPartitions = buildSnapPartitions(parentNodePortPositions)[
-      targetPortDirection
-    ];
+      const snapPartitions = buildSnapPartitions(parentNodePortPositions)[
+        targetPortDirection
+      ];
 
-    const portPositions = parentNodePortPositions[targetPortDirection];
+      const portPositions = parentNodePortPositions[targetPortDirection];
 
-    // no port, no snap. assumes partitions don't change while dragging connector
-    if (!snapPartitions) {
-      return;
-    }
+      // no port, no snap. assumes partitions don't change while dragging connector
+      if (!snapPartitions) {
+        return;
+      }
 
-    // find mouse position relative to container position on workflow
-    const relativeX = pointerMoveAbsoluteCoords.value.x - nodePosition.x;
-    const relativeY = pointerMoveAbsoluteCoords.value.y - nodePosition.y;
+      // find mouse position relative to container position on workflow
+      const relativeX = pointerMoveAbsoluteCoords.value.x - nodePosition.x;
+      const relativeY = pointerMoveAbsoluteCoords.value.y - nodePosition.y;
 
-    // leave snapped state when leaving hover area
-    if (
-      isOutsideConnectorHoverRegion(relativeX, relativeY, targetPortDirection)
-    ) {
-      resetState();
-      return;
-    }
+      // leave snapped state when leaving hover area
+      if (
+        isOutsideConnectorHoverRegion(relativeX, relativeY, targetPortDirection)
+      ) {
+        resetState();
+        return;
+      }
 
-    // find index of port to snap to
-    const partitionIndex = snapPartitions.findIndex(
-      (boundary) => relativeY <= boundary,
-    );
+      // find index of port to snap to
+      const partitionIndex = snapPartitions.findIndex(
+        (boundary) => relativeY <= boundary,
+      );
 
-    let snapPortIndex: number;
+      let snapPortIndex: number;
 
-    if (snapPartitions.length === 0) {
-      // only one port
-      snapPortIndex = 0;
-    } else if (partitionIndex === -1) {
-      // below last partition boundary, select last port
-      snapPortIndex = portPositions.length - 1;
-    } else {
-      // port index matches partition index
-      snapPortIndex = partitionIndex;
-    }
+      if (snapPartitions.length === 0) {
+        // only one port
+        snapPortIndex = 0;
+      } else if (partitionIndex === -1) {
+        // below last partition boundary, select last port
+        snapPortIndex = portPositions.length - 1;
+      } else {
+        // port index matches partition index
+        snapPortIndex = partitionIndex;
+      }
 
-    const [relPortX, relPortY] = portPositions[snapPortIndex];
-    const absolutePortPosition: XY = {
-      x: relPortX + nodePosition.x,
-      y: relPortY + nodePosition.y,
-    };
+      const [relPortX, relPortY] = portPositions[snapPortIndex];
+      const absolutePortPosition: XY = {
+        x: relPortX + nodePosition.x,
+        y: relPortY + nodePosition.y,
+      };
 
-    const possibleTargetPorts = referenceNode[`${targetPortDirection}Ports`];
+      const possibleTargetPorts = referenceNode[`${targetPortDirection}Ports`];
 
-    let targetPortCandidate: NodePort | { isPlaceHolderPort: true };
+      let targetPortCandidate: NodePort | { isPlaceHolderPort: true };
 
-    // If the snapPortIndex is smaller than the port list then a regular port is being targeted,
-    // otherwise it’s most likely the placeholder port that is being targeted
-    if (snapPortIndex < possibleTargetPorts.length) {
-      targetPortCandidate = possibleTargetPorts[snapPortIndex];
-    } else {
-      targetPortCandidate = { isPlaceHolderPort: true };
-    }
+      // If the snapPortIndex is smaller than the port list then a regular port is being targeted,
+      // otherwise it’s most likely the placeholder port that is being targeted
+      if (snapPortIndex < possibleTargetPorts.length) {
+        targetPortCandidate = possibleTargetPorts[snapPortIndex];
+      } else {
+        targetPortCandidate = { isPlaceHolderPort: true };
+      }
 
-    const { isCompatible, validPortGroups } = shouldPortSnap({
-      sourcePort: floatingConnector.value.context.portInstance,
-      targetPort: targetPortCandidate,
-      targetPortDirection,
-      targetPortGroups: isNativeNode(referenceNode)
-        ? referenceNode.portGroups ?? null
-        : null,
-    });
+      const { isCompatible, validPortGroups } = shouldPortSnap({
+        sourcePort: floatingConnector.value.context.portInstance,
+        targetPort: targetPortCandidate,
+        targetPortDirection,
+        targetPortGroups: isNativeNode(referenceNode)
+          ? referenceNode.portGroups ?? null
+          : null,
+      });
 
-    const maybeNextSnapTarget: SnapTarget = isPlaceholderPort(
-      targetPortCandidate,
-    )
-      ? {
-          isPlaceHolderPort: true,
-          validPortGroups,
-          typeId: floatingConnector.value.context.portInstance.typeId,
-          parentNodeId: referenceNode.id,
-        }
-      : { ...targetPortCandidate, parentNodeId: referenceNode.id };
+      const maybeNextSnapTarget: SnapTarget =
+        "isPlaceHolderPort" in targetPortCandidate
+          ? ({
+              isPlaceHolderPort: true,
+              validPortGroups,
+              typeId: floatingConnector.value.context.portInstance.typeId,
+              parentNodeId: referenceNode.id,
+              side: targetPortDirection,
+            } satisfies SnappedPlaceholderPort)
+          : ({
+              ...targetPortCandidate,
+              parentNodeId: referenceNode.id,
+              side: targetPortDirection,
+            } satisfies SnapTarget);
 
-    // skip needless updates if already on the same target
-    // (e.g: same node, direction and snapIndex -- there has been no change)
-    if (
-      lastHitTarget &&
-      lastHitTarget.node.id === referenceNode.id &&
-      lastHitTarget.targetPortDirection === targetPortDirection &&
-      lastHitTarget.snapIndex === snapPortIndex
-    ) {
-      return;
-    }
+      // skip needless updates if already on the same target
+      // (e.g: same node, direction and snapIndex -- there has been no change)
+      if (
+        lastHitTarget &&
+        lastHitTarget.node.id === referenceNode.id &&
+        lastHitTarget.targetPortDirection === targetPortDirection &&
+        lastHitTarget.snapIndex === snapPortIndex
+      ) {
+        return;
+      }
 
-    if (!isCompatible) {
-      resetState();
-      return;
-    }
+      if (!isCompatible) {
+        resetState();
+        return;
+      }
 
-    // if a compatible target was found, then a new snap position is set, which
-    // will override the absolutePoint of the floatingConnector and thus make it "snap"
-    activeSnapPosition.value = { ...absolutePortPosition };
+      // if a compatible target was found, then a new snap position is set, which
+      // will override the absolutePoint of the floatingConnector and thus make it "snap"
+      activeSnapPosition.value = { ...absolutePortPosition };
 
-    lastHitTarget = {
-      node: referenceNode,
-      targetPortDirection,
-      snapIndex: snapPortIndex,
-    };
+      lastHitTarget = {
+        node: referenceNode,
+        targetPortDirection,
+        snapIndex: snapPortIndex,
+      };
 
-    snapTarget.value = maybeNextSnapTarget;
-  };
+      snapTarget.value = maybeNextSnapTarget;
+    },
+  );
 
   /**
    * Function that indicates that a snap connection candidate (e.g: a node or metanode portbar)
    * is now not hovered anymore by the user and thus cannot be considered anymore.
    */
-  const onLeaveConnectionSnapCandidate = (
-    details: ConnectionSnapCandidateDetails,
-  ) => {
-    consola.trace("Leaving connection snap candidate", details);
+  const onLeaveConnectionSnapCandidate = throttle(
+    (details: ConnectionSnapCandidateDetails) => {
+      consola.trace("Leaving connection snap candidate", details);
 
-    resetState();
-    // only reset when completely leaving snap region
-    isInsideSnapRegion.value = false;
-  };
+      resetState();
+      // only reset when completely leaving snap region
+      isInsideSnapRegion.value = false;
+    },
+  );
+
+  // Directly dispatch event to the node port that is being targeted
+  watch(snapTarget, (next, prev) => {
+    if (prev && !isPlaceholderPort(prev)) {
+      const { parentNodeId, index, side } = prev;
+      $bus.emit(`connector-snap-inactive_${parentNodeId}__${side}__${index}`, {
+        snapTarget: prev,
+      });
+    }
+
+    if (next && !isPlaceholderPort(next)) {
+      const { parentNodeId, index, side } = next;
+      $bus.emit(`connector-snap-active_${parentNodeId}__${side}__${index}`, {
+        snapTarget: next,
+      });
+    }
+  });
 
   return {
     isInsideSnapRegion,

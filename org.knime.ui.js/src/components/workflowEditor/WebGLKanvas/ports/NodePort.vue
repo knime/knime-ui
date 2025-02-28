@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 import { Container, FederatedPointerEvent, Rectangle } from "pixi.js";
 
 import { Node, type NodePort, type XY } from "@/api/gateway-api/generated-api";
+import { useGlobalBusListener } from "@/composables/useGlobalBusListener";
 import { useApplicationStore } from "@/store/application/application";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
@@ -60,20 +61,30 @@ const isFlowVariable = computed(
 const { openQuickActionMenu } = useCanvasAnchoredComponentsStore();
 
 const floatingConnectorStore = useFloatingConnectorStore();
-const {
-  floatingConnector,
-  snapTarget,
-  isDragging: isDraggingFloatingConnector,
-} = storeToRefs(floatingConnectorStore);
+const { floatingConnector, isDragging: isDraggingFloatingConnector } =
+  storeToRefs(floatingConnectorStore);
 
-const isTargetedByFloatingConnector = computed(
-  () =>
-    snapTarget.value &&
-    !floatingConnectorStore.isPlaceholderPort(snapTarget.value) &&
-    snapTarget.value.parentNodeId === props.nodeId &&
-    snapTarget.value.index === props.port.index &&
-    floatingConnector.value?.context.origin !== props.direction,
-);
+const isTargetedByFloatingConnector = ref(false);
+
+// Don't use the `snapTarget` from the store to avoid a watcher that fires
+// on every node and port
+useGlobalBusListener({
+  eventName: `connector-snap-active_${props.nodeId}__${props.direction}__${props.port.index}`,
+  handler: ({ snapTarget }) => {
+    isTargetedByFloatingConnector.value =
+      !floatingConnectorStore.isPlaceholderPort(snapTarget) &&
+      snapTarget.parentNodeId === props.nodeId &&
+      snapTarget.index === props.port.index &&
+      floatingConnector.value?.context.origin !== props.direction;
+  },
+});
+
+useGlobalBusListener({
+  eventName: `connector-snap-inactive_${props.nodeId}__${props.direction}__${props.port.index}`,
+  handler: () => {
+    isTargetedByFloatingConnector.value = false;
+  },
+});
 
 const onPointerDown = (event: FederatedPointerEvent) => {
   floatingConnectorStore.createConnectorFromPointerEvent(event, {

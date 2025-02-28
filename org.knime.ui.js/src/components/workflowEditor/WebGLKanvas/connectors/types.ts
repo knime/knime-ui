@@ -37,3 +37,10 @@ export interface ConnectorProps
    */
   interactive?: boolean;
 }
+
+export type BezierPoints = {
+  start: XY;
+  control1: XY;
+  control2: XY;
+  end: XY;
+};

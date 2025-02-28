@@ -2,8 +2,50 @@ import mitt, { type Emitter } from "mitt";
 
 import type { DesktopAPIFunctionResultPayload } from "@/api/desktop-api";
 import type { NodePort } from "@/api/gateway-api/generated-api";
+import type { SnapTarget } from "@/store/floatingConnector/types";
 
 import type { PluginInitFunction } from "./types";
+
+type SelectionRectangleEvents = {
+  "selection-pointerdown": PointerEvent;
+  "selection-pointerup": PointerEvent;
+  "selection-pointermove": PointerEvent;
+  "selection-lostpointercapture": PointerEvent;
+};
+
+type UIBlockingOverlayEvents = {
+  "block-ui":
+    | {
+        darkenBackground?: boolean;
+      }
+    | undefined;
+  "unblock-ui": undefined;
+};
+
+type PortConnectionEvents = {
+  "connector-start": {
+    validConnectionTargets: Set<string>;
+    startNodeId: string;
+    startPort: NodePort;
+  };
+  "connector-dropped": undefined;
+  "connector-end": undefined;
+
+  // connector-snap-<type>_<nodeId>__<portSide>__<portIndex>
+  [
+    key: `connector-snap-${"active" | "inactive"}_${string}__${
+      | "in"
+      | "out"}__${number}`
+  ]: {
+    snapTarget: SnapTarget;
+  };
+};
+
+type DesktopAPIEvents = {
+  [
+    key: `desktop-api-function-result-${string}`
+  ]: DesktopAPIFunctionResultPayload;
+};
 
 export type PreviewMode = "show" | "hide" | "clear" | null;
 
@@ -19,31 +61,11 @@ export type SelectionPreviewEvents = {
   };
 };
 
-export type BusEvents = {
-  "selection-pointerdown": PointerEvent;
-  "selection-pointerup": PointerEvent;
-  "selection-pointermove": PointerEvent;
-  "selection-lostpointercapture": PointerEvent;
-
-  "connector-start": {
-    validConnectionTargets: Set<string>;
-    startNodeId: string;
-    startPort: NodePort;
-  };
-  "connector-dropped": undefined;
-  "connector-end": undefined;
-
-  [
-    key: `desktop-api-function-result-${string}`
-  ]: DesktopAPIFunctionResultPayload;
-
-  "block-ui":
-    | {
-        darkenBackground?: boolean;
-      }
-    | undefined;
-  "unblock-ui": undefined;
-} & SelectionPreviewEvents;
+export type BusEvents = SelectionRectangleEvents &
+  UIBlockingOverlayEvents &
+  PortConnectionEvents &
+  DesktopAPIEvents &
+  SelectionPreviewEvents;
 
 const emitter = mitt<BusEvents>();
 

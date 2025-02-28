@@ -8,8 +8,8 @@ import { useNodeInteractionsStore } from "../workflow/nodeInteractions";
 
 import {
   type FloatingConnector,
-  type PlaceholderPort,
   type SnapTarget,
+  type SnappedPlaceholderPort,
   isPlaceholderPort,
 } from "./types";
 
@@ -99,7 +99,7 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
       return;
     }
 
-    const { validPortGroups } = snapTarget.value as PlaceholderPort;
+    const { validPortGroups } = snapTarget.value as SnappedPlaceholderPort;
 
     if (!validPortGroups) {
       return;

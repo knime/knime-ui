@@ -28,12 +28,18 @@ export const rectangleIntersection = (
     return null;
   }
 
-  return {
+  const intersection = {
     left: intersectionX1,
     top: intersectionY1,
     width: intersectionX2 - intersectionX1,
     height: intersectionY2 - intersectionY1,
   };
+
+  if (Object.values(intersection).some(isNaN)) {
+    return null;
+  }
+
+  return intersection;
 };
 
 /**

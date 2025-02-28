@@ -211,8 +211,9 @@ const onNodeHoverAreaPointerLeave = () => {
   />
 
   <Container
-    :label="node.id"
+    :label="`Node__${node.id}`"
     :renderable="renderable"
+    :visible="renderable"
     :z-index="isNodeSelected(node.id) ? $zIndices.webGlCanvasSelectedNode : 0"
     event-mode="static"
     :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
@@ -243,6 +244,7 @@ const onNodeHoverAreaPointerLeave = () => {
 
     <Container label="NodeTorsoContainer" :position="translatedPosition">
       <NodeTorso
+        v-if="renderable"
         :node-id="node.id"
         :kind="node.kind"
         :type="type"
@@ -254,10 +256,11 @@ const onNodeHoverAreaPointerLeave = () => {
         "
       />
 
-      <NodeState v-if="!isMetanode" v-bind="node.state" />
+      <NodeState v-if="!isMetanode && renderable" v-bind="node.state" />
     </Container>
 
     <NodePorts
+      v-if="renderable"
       :node-id="node.id"
       :node-kind="node.kind"
       :anchor="translatedPosition"
