@@ -1,4 +1,3 @@
-export interface PointAttribute {
-  x: number;
-  y: number;
-}
+import type { Container } from "pixi.js";
+
+export type StageInst = Container & EventTarget;

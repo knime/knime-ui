@@ -17,7 +17,7 @@ import * as $shapes from "@/style/shapes";
 // TODO: refactor structure and implement fix for dynamically resolved NodePortActiveConnector
 import type { DragConnector } from "../../SVGKanvas/ports/NodePort/types";
 import NodePortActiveConnector from "../../SVGKanvas/ports/NodePortActiveConnector.vue";
-import { canvasRendererUtils } from "../../util/canvasRenderer";
+import { useCanvasRendererUtils } from "../../util/canvasRenderer";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 import QuickAddNodeMenu from "./quickAdd/QuickAddNodeMenu.vue";
@@ -157,6 +157,8 @@ watch(
     immediate: true, // do an initial check when the component is mounted
   },
 );
+
+const { isSVGRenderer } = useCanvasRendererUtils();
 </script>
 
 <template>
@@ -172,7 +174,7 @@ watch(
   >
     <!-- this will be portalled to the canvas -->
     <NodePortActiveConnector
-      v-if="hasConnector && canvasRendererUtils.isSVGRenderer()"
+      v-if="hasConnector && isSVGRenderer"
       :port="port"
       :direction="nodeRelation === 'SUCCESSORS' ? 'out' : 'in'"
       :drag-connector="fakePortConnector"

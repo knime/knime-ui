@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent } from "vue";
+import { type PropType, defineAsyncComponent, defineComponent } from "vue";
 import { mapState } from "pinia";
 
 import { MenuItems, SearchInput } from "@knime/components";
@@ -14,8 +14,6 @@ import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 import type { MenuItemWithPort } from "./types";
-
-const { FloatingMenu } = getFloatingMenuComponent();
 
 const isPortGroupWithSinglePort = (
   portGroups: NodePortGroups,
@@ -35,7 +33,9 @@ export default defineComponent({
     MenuItems,
     SearchInput,
     ReturnIcon,
-    FloatingMenu,
+    FloatingMenu: defineAsyncComponent(() =>
+      Promise.resolve(getFloatingMenuComponent().FloatingMenu),
+    ),
   },
   props: {
     /**

@@ -2,13 +2,9 @@
 import { storeToRefs } from "pinia";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { type GraphicsInst, useStage } from "@/vue3-pixi";
-
-const stage = useStage();
+import { type GraphicsInst } from "@/vue3-pixi";
 
 const { visibleArea } = storeToRefs(useWebGLCanvasStore());
-
-const bounds = stage.value.getChildByLabel("contentBounds")?.getBounds();
 </script>
 
 <template>
@@ -21,20 +17,6 @@ const bounds = stage.value.getChildByLabel("contentBounds")?.getBounds();
           graphics.clear();
           graphics.rect(0, 0, visibleArea.width, visibleArea.height);
           graphics.fill(0xf2eecb);
-        }
-      "
-    />
-
-    <Graphics
-      v-if="bounds"
-      :position="{ x: bounds.x, y: bounds.y }"
-      @render="
-        (graphics: GraphicsInst) => {
-          if (bounds) {
-            graphics.clear();
-            graphics.rect(0, 0, bounds.width, bounds.height);
-            graphics.fill(0x1099bb);
-          }
         }
       "
     />

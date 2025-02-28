@@ -18,14 +18,14 @@ import ContextMenu from "./CanvasAnchoredComponents/ContextMenu/ContextMenu.vue"
 import PortTypeMenu from "./CanvasAnchoredComponents/PortTypeMenu/PortTypeMenu.vue";
 import QuickActionMenu from "./CanvasAnchoredComponents/QuickActionMenu/QuickActionMenu.vue";
 import WorkflowInfoBar from "./WorkflowInfoBar/WorkflowInfoBar.vue";
-import { canvasRendererUtils } from "./util/canvasRenderer";
+import { useCanvasRendererUtils } from "./util/canvasRenderer";
 
-const WorkflowCanvas = defineAsyncComponent({
-  loader: () => {
-    return canvasRendererUtils.isSVGRenderer()
-      ? import("./SVGKanvas/WorkflowCanvas.vue")
-      : import("./WebGLKanvas/WorkflowCanvas.vue");
-  },
+const SVGKanvas = defineAsyncComponent({
+  loader: () => import("./SVGKanvas/WorkflowCanvas.vue"),
+});
+
+const WebGLKanvas = defineAsyncComponent({
+  loader: () => import("./WebGLKanvas/WorkflowCanvas.vue"),
 });
 
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
@@ -42,6 +42,12 @@ const { selectedNodeIds } = useSelectionStore();
 const { hasAnnotationModeEnabled } = useCanvasModesStore();
 
 const activeWorkflowId = computed(() => activeWorkflow.value!.info.containerId);
+
+const { currentRenderer } = useCanvasRendererUtils();
+
+const WorkflowCanvas = computed(() =>
+  currentRenderer.value === "SVG" ? SVGKanvas : WebGLKanvas,
+);
 
 const nodeDialogSize = computed({
   get() {

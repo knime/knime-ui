@@ -8,7 +8,7 @@ import { useShortcuts } from "@/plugins/shortcuts";
 import type { FormattedShortcut } from "@/shortcuts";
 import { useCanvasStore } from "@/store/canvas";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { canvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
+import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
 /**
  * ZoomMenu offers predefined zoom levels and an input field to enter custom zoom levels
@@ -23,8 +23,9 @@ withDefaults(defineProps<Props>(), { disabled: false });
 const svgCanvasStore = useCanvasStore();
 const webGLCanvasStore = useWebGLCanvasStore();
 
+const { isSVGRenderer } = useCanvasRendererUtils();
 const zoomFactor = computed(() => {
-  return canvasRendererUtils.isSVGRenderer()
+  return isSVGRenderer.value
     ? svgCanvasStore.zoomFactor
     : webGLCanvasStore.zoomFactor;
 });

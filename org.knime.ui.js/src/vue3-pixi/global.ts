@@ -18,7 +18,7 @@ import type { SpriteComponent } from "./elements/sprite";
 import type { TextComponent } from "./elements/text";
 import type { TilingSpriteComponent } from "./elements/tilingSprite";
 
-declare module "@vue/runtime-core" {
+declare module "vue" {
   export interface GlobalComponents {
     Filter: FilterComponent;
     PixiFilter: FilterComponent;

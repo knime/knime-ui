@@ -22,7 +22,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useSelectionStore } from "@/store/selection";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { useWorkflowStore } from "@/store/workflow/workflow";
-import { canvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
+import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
 
 import FPSMeter from "./FPSMeter.vue";
 import ToolbarShortcutButton from "./ToolbarShortcutButton.vue";
@@ -159,15 +159,8 @@ const onCanvasModeUpdate = (
 // toggle renderer svg/webgl
 const { devMode } = storeToRefs(useApplicationSettingsStore());
 
-const toggleCanvasRenderer = () => {
-  canvasRendererUtils.toggleCanvasRenderer();
-  // reload
-  window.location.href = "/";
-};
-
-const currentCanvasRenderer = computed(() =>
-  canvasRendererUtils.getCurrentCanvasRenderer(),
-);
+const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
+  useCanvasRendererUtils();
 </script>
 
 <template>

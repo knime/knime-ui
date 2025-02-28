@@ -24,7 +24,6 @@ import {
 } from "vue";
 import type { App, PropType } from "vue";
 
-import { appInjectKey } from "../../composables";
 import { createApp } from "../../renderer";
 import { inheritParent } from "../../utils";
 
@@ -119,7 +118,6 @@ export const Application = defineComponent({
 
       inheritParent(app, appContext);
 
-      app.provide(appInjectKey, pixiApp.value);
       app.mount(pixiApp.value.stage);
 
       emit("initComplete");
