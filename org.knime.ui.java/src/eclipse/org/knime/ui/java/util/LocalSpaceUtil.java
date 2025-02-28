@@ -47,10 +47,8 @@
 package org.knime.ui.java.util;
 
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.UUID;
 
-import org.knime.gateway.api.webui.entity.SpaceItemReferenceEnt.ProjectTypeEnum;
 import org.knime.gateway.impl.project.Origin;
 import org.knime.gateway.impl.webui.spaces.SpaceProvider;
 import org.knime.gateway.impl.webui.spaces.local.LocalSpace;
@@ -73,27 +71,8 @@ public final class LocalSpaceUtil {
      */
     public static Origin getLocalOrigin(final Path absolutePath, final LocalSpace localSpace) {
         var itemId = localSpace.getItemId(absolutePath);
-        return new Origin() { // NOSONAR
-            @Override
-            public String getProviderId() {
-                return SpaceProvider.LOCAL_SPACE_PROVIDER_ID;
-            }
-
-            @Override
-            public String getSpaceId() {
-                return LocalSpace.LOCAL_SPACE_ID;
-            }
-
-            @Override
-            public String getItemId() {
-                return itemId;
-            }
-
-            @Override
-            public Optional<ProjectTypeEnum> getProjectType() {
-                return localSpace.getProjectType(getItemId());
-            }
-        };
+        return Origin.of(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalSpace.LOCAL_SPACE_ID, itemId,
+            localSpace.getProjectType(itemId));
     }
 
     /**

@@ -242,10 +242,10 @@ final class ProjectAPI {
                 .put("name", p.name()) //
                 .put("timeUsed", p.timeUsed().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)) //
                 .set("origin", MAPPER.createObjectNode() //
-                    .put("providerId", p.origin().getProviderId()) //
-                    .put("spaceId", p.origin().getSpaceId()) //
-                    .put("itemId", p.origin().getItemId()) //
-                    .put("projectType", p.origin().getProjectType().orElse(ProjectTypeEnum.WORKFLOW).toString()) //
+                    .put("providerId", p.origin().providerId()) //
+                    .put("spaceId", p.origin().spaceId()) //
+                    .put("itemId", p.origin().itemId()) //
+                    .put("projectType", p.origin().projectType().orElse(ProjectTypeEnum.WORKFLOW).toString()) //
                     .set("ancestorItemIds", createAncestorItemIds(p.origin(), localSpace)) //
                 )) //
             .collect(arrayNodeCollector()).toPrettyString();
@@ -257,7 +257,7 @@ final class ProjectAPI {
     private static JsonNode createAncestorItemIds(final Origin origin, final LocalSpace localSpace) {
         if (origin.isLocal()) {
             var res = MAPPER.createArrayNode();
-            localSpace.getAncestorItemIds(origin.getItemId()).forEach(res::add);
+            localSpace.getAncestorItemIds(origin.itemId()).forEach(res::add);
             return res;
         } else {
             return null;
@@ -271,8 +271,8 @@ final class ProjectAPI {
     }
 
     private static boolean wasRemovedFromLocalSpace(final Origin origin, final LocalSpace localSpace) {
-        if (LocalSpaceUtil.isLocalSpace(origin.getProviderId(), origin.getSpaceId())) {
-            return localSpace.toLocalAbsolutePath(null, origin.getItemId()).isEmpty();
+        if (LocalSpaceUtil.isLocalSpace(origin.providerId(), origin.spaceId())) {
+            return localSpace.toLocalAbsolutePath(null, origin.itemId()).isEmpty();
         } else {
             return false;
         }
@@ -288,9 +288,9 @@ final class ProjectAPI {
     @API
     static void removeMostRecentlyUsedProject(final String spacePoviderId, final String spaceId, final String itemId) {
         DesktopAPI.getDeps(MostRecentlyUsedProjects.class).removeIf(p -> {
-            var origin = p.origin();
-            return origin.getItemId().equals(itemId) && origin.getSpaceId().equals(spaceId)
-                && origin.getProviderId().equals(spacePoviderId);
+            var left = p.origin();
+            var right = Origin.of(spacePoviderId, spaceId, itemId);
+            return left.equals(right);
         });
     }
 

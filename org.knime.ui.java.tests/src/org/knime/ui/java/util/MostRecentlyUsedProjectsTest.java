@@ -53,7 +53,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.knime.core.util.FileUtil;
@@ -167,29 +166,7 @@ public class MostRecentlyUsedProjectsTest {
      * @return a new instance
      */
     public static Origin createOrigin(final String providerId, final String spaceId, final String itemId) {
-        return new Origin() {
-
-            @Override
-            public String getProviderId() {
-                return providerId;
-            }
-
-            @Override
-            public String getSpaceId() {
-                return spaceId;
-            }
-
-            @Override
-            public String getItemId() {
-                return itemId;
-            }
-
-            @Override
-            public Optional<ProjectTypeEnum> getProjectType() {
-                return Optional.of(ProjectTypeEnum.WORKFLOW);
-            }
-
-        };
+        return Origin.of(providerId, spaceId, itemId, ProjectTypeEnum.WORKFLOW);
     }
 
 }

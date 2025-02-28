@@ -147,7 +147,7 @@ public final class MostRecentlyUsedProjects {
     }
 
     private static String getKey(final Origin origin) {
-        return getKey(origin.getProviderId(), origin.getSpaceId(), origin.getItemId());
+        return getKey(origin.providerId(), origin.spaceId(), origin.itemId());
     }
 
     private static String getKey(final String providerId, final String spaceId, final String itemId) {

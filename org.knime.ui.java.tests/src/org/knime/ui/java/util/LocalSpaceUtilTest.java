@@ -72,9 +72,9 @@ public class LocalSpaceUtilTest {
         var root = localSpace.getRootPath();
 
         var origin = LocalSpaceUtil.getLocalOrigin(root.resolve("test"), localSpace);
-        assertThat(origin.getItemId()).isNotNull();
-        assertThat(origin.getSpaceId()).isEqualTo("local");
-        assertThat(origin.getProviderId()).isEqualTo("local");
+        assertThat(origin.itemId()).isNotNull();
+        assertThat(origin.spaceId()).isEqualTo("local");
+        assertThat(origin.providerId()).isEqualTo("local");
 
         assertThat(LocalSpaceUtil.isLocalSpace("local", "local")).isTrue();
     }

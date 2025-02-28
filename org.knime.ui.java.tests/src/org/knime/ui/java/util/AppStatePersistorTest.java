@@ -228,11 +228,11 @@ public class AppStatePersistorTest {
         assertThat(loadedMRUProjects.get()).hasSize(2);
         var loadedProj1 = loadedMRUProjects.get().get(0);
         assertThat(loadedProj1.name()).isEqualTo("name1");
-        assertThat(loadedProj1.origin().getItemId())
+        assertThat(loadedProj1.origin().itemId())
             .isEqualTo(localSpace.getItemId(localSpace.getRootPath().resolve(Path.of("relPath"))));
         var loadedProj2 = loadedMRUProjects.get().get(1);
         assertThat(loadedProj2.name()).isEqualTo("name2");
-        assertThat(loadedProj2.origin().getItemId()).isEqualTo("iid2");
+        assertThat(loadedProj2.origin().itemId()).isEqualTo("iid2");
 
     }
 
@@ -257,9 +257,9 @@ public class AppStatePersistorTest {
         when(project.getID()).thenReturn("test_id");
         when(project.getName()).thenReturn("Test Project");
         var origin = mock(Origin.class);
-        when(origin.getSpaceId()).thenReturn(LocalSpace.LOCAL_SPACE_ID);
-        when(origin.getProviderId()).thenReturn(SpaceProvider.LOCAL_SPACE_PROVIDER_ID);
-        when(origin.getItemId()).thenReturn(itemId);
+        when(origin.spaceId()).thenReturn(LocalSpace.LOCAL_SPACE_ID);
+        when(origin.providerId()).thenReturn(SpaceProvider.LOCAL_SPACE_PROVIDER_ID);
+        when(origin.itemId()).thenReturn(itemId);
         when(origin.isLocal()).thenReturn(isLocal);
         when(project.getOrigin()).thenReturn(Optional.of(origin));
         pm.addProject(project);

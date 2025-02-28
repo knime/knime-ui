@@ -145,7 +145,7 @@ public final class AppStatePersistor {
             .filter(Objects::nonNull) //
             // only persist local workflow projects
             .filter(project -> project.getOrigin() //
-                .map(o -> LocalSpaceUtil.isLocalSpace(o.getProviderId(), o.getSpaceId())) //
+                .map(o -> LocalSpaceUtil.isLocalSpace(o.providerId(), o.spaceId())) //
                 .orElse(Boolean.FALSE) //
             ) //
             .map(project -> serializeProject(projectManager, project, localSpace)) //
@@ -178,16 +178,16 @@ public final class AppStatePersistor {
     private static JsonNode serializeOrigin(final Origin origin, final boolean addProjectTypeIfPresent,
         final LocalSpace localSpace) {
         var originJson = MAPPER.createObjectNode() //
-            .put(PROVIDER_ID, origin.getProviderId()) //
-            .put(SPACE_ID, origin.getSpaceId());
+            .put(PROVIDER_ID, origin.providerId()) //
+            .put(SPACE_ID, origin.spaceId());
         if (addProjectTypeIfPresent) {
-            origin.getProjectType().map(ProjectTypeEnum::name).ifPresent(t -> originJson.put(PROJECT_TYPE, t));
+            origin.projectType().map(ProjectTypeEnum::name).ifPresent(t -> originJson.put(PROJECT_TYPE, t));
         }
         if (origin.isLocal()) {
-            final var relativePath = localSpace.toLocalRelativePath(origin.getItemId()).orElseThrow();
+            final var relativePath = localSpace.toLocalRelativePath(origin.itemId()).orElseThrow();
             originJson.put(RELATIVE_PATH, relativePath.toString());
         } else {
-            originJson.put(ITEM_ID, origin.getItemId());
+            originJson.put(ITEM_ID, origin.itemId());
         }
         return originJson;
     }
@@ -267,7 +267,7 @@ public final class AppStatePersistor {
                 return null;
             }
             return DesktopAPUtil.runWithProgress(DesktopAPUtil.LOADING_WORKFLOW_PROGRESS_MSG, LOGGER, monitor -> {// NOSONAR better than inline class
-                var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.getItemId(), monitor);
+                var wfm = DesktopAPUtil.fetchAndLoadWorkflowWithTask(localSpace, origin.itemId(), monitor);
                 if (wfm == null) {
                     DesktopAPUtil.showWarning("Failed to load workflow",
                         "The workflow at '" + absolutePath + "' couldn't be loaded.");
@@ -314,47 +314,41 @@ public final class AppStatePersistor {
 
     private static Pair<Origin, Optional<String>> deserializeOrigin(final JsonNode originJson,
         final LocalSpace localSpace) {
-        String itemId;
+        var providerId = originJson.get(PROVIDER_ID).asText();
+        var spaceId = originJson.get(SPACE_ID).asText();
+
         var relativePath = Optional.ofNullable(originJson.get(RELATIVE_PATH)).map(JsonNode::asText);
-        var isLocal = relativePath.isPresent();
-        if (isLocal) {
-            // relative path only given for local projects
-            var absolutePath = localSpace.getRootPath().resolve(Path.of(relativePath.get()));
-            itemId = localSpace.getItemId(absolutePath);
-        } else {
-            itemId = originJson.get(ITEM_ID).asText();
-        }
-        var projectType =
-            Optional.ofNullable(originJson.get(PROJECT_TYPE)).map(JsonNode::asText).map(ProjectTypeEnum::valueOf);
-        var origin = new Origin() { // NOSONAR
+        var itemId = getItemId(originJson, localSpace, relativePath);
 
-            @Override
-            public String getSpaceId() {
-                return originJson.get(SPACE_ID).asText();
-            }
+        var projectTypeOptional = getProjectType(originJson, relativePath.isPresent(), localSpace, itemId);
+        var origin = Origin.of(providerId, spaceId, itemId, projectTypeOptional);
 
-            @Override
-            public String getProviderId() {
-                return originJson.get(PROVIDER_ID).asText();
-            }
-
-            @Override
-            public String getItemId() {
-                return itemId;
-            }
-
-            @Override
-            public Optional<ProjectTypeEnum> getProjectType() {
-                // project type might not be available in the rare case that the workflow at the
-                // given absolute path doesn't exist anymore
-                if (projectType.isEmpty() && isLocal) {
-                    return localSpace.getProjectType(itemId);
-                } else {
-                    return projectType;
-                }
-            }
-        };
         return new Pair<>(origin, relativePath);
+    }
+
+    private static String getItemId(final JsonNode originJson, final LocalSpace localSpace,
+        final Optional<String> relativePath) {
+        if (relativePath.isPresent()) { // Relative path only given for local projects
+            var absolutePath = localSpace.getRootPath().resolve(Path.of(relativePath.get()));
+            return localSpace.getItemId(absolutePath);
+        }
+
+        return originJson.get(ITEM_ID).asText();
+    }
+
+    private static Optional<ProjectTypeEnum> getProjectType(final JsonNode originJson, final boolean isLocal,
+        final LocalSpace localSpace, final String itemId) {
+        var projectType = Optional.ofNullable(originJson.get(PROJECT_TYPE)) //
+            .map(JsonNode::asText) //
+            .map(ProjectTypeEnum::valueOf);
+
+        // Project type might not be available in the rare case that the workflow at the
+        // given absolute path doesn't exist anymore
+        if (projectType.isEmpty() && isLocal) {
+            return localSpace.getProjectType(itemId);
+        }
+
+        return projectType;
     }
 
 }
