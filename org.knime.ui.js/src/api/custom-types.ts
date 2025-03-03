@@ -1,7 +1,7 @@
 import type {
   ComponentNode,
   ComponentNodeAndDescription,
-  EditableProjectMetadata,
+  EditableMetadata,
   MetaNode,
   NativeNode,
   NodeCategory,
@@ -89,18 +89,20 @@ export namespace SpaceProviderNS {
 // TODO: NXT-2023 see https://bitbucket.org/KNIME/knime-com-shared/src/4af0ebfcb4232593119415299504f22ded303b9c/com.knime.gateway.codegen/src-gen/api/web-ui/gateway.yaml#lines-1493:1496
 export type ComponentMetadata = ComponentNodeAndDescription &
   NodeDescription &
-  EditableProjectMetadata;
+  EditableMetadata;
 
 // TODO: NXT-2023 remove if API codegen supports multiple inheritance:
 export type ComponentNodeDescription = ComponentNodeAndDescription &
   NodeDescription &
   ProjectMetadata;
 
+export type MetadataType = ProjectMetadata | ComponentMetadata;
+
 // TODO: NXT-2023 remove once API codegen properly types the workflow nodes
-export type Workflow = Omit<_Workflow, "nodes" | "componentMetadata"> & {
+export type Workflow = Omit<_Workflow, "nodes" | "metadata"> & {
   projectId: string;
   nodes: Record<string, KnimeNode>;
-  componentMetadata?: ComponentMetadata;
+  metadata: MetadataType;
 };
 
 export interface Job {

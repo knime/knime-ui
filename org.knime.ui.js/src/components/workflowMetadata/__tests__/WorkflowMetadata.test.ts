@@ -41,7 +41,7 @@ describe("WorkflowMetadata.vue", () => {
         name: "filename",
         containerType: WorkflowInfo.ContainerTypeEnum.Project,
       },
-      projectMetadata: {
+      metadata: {
         lastEdit: "",
       },
     });
@@ -82,7 +82,7 @@ describe("WorkflowMetadata.vue", () => {
     it("renders all metadata", () => {
       const workflow = createWorkflow({
         info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
-        projectMetadata: {
+        metadata: {
           lastEdit: "2000-01-01T00:00Z",
           description: {
             value: "Description",
@@ -272,7 +272,7 @@ describe("WorkflowMetadata.vue", () => {
 
     const workflow = createWorkflow({
       info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
-      projectMetadata: {
+      metadata: {
         lastEdit: "2000-01-01T00:00Z",
         description: {
           value: "Description",
@@ -349,7 +349,7 @@ describe("WorkflowMetadata.vue", () => {
     mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
 
-    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(true);
+    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
     expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(false);
   });
 });

@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
+import { type ComponentMetadata as ComponentMetadataType } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
@@ -27,11 +28,16 @@ const { activeWorkflow: workflow, isWritable: isWorkflowWritable } =
 const containerType = computed(() => workflow.value?.info.containerType);
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
 
-const isWorkflowProject = computed(() =>
-  projectUtil.isWorkflowProject(workflow.value!),
+const isWorkflowProject = computed(
+  () =>
+    projectUtil.isWorkflowProjectType(workflow.value!.info.containerType) &&
+    projectUtil.isWorkflowProjectMetadata(workflow.value!.metadata),
 );
-const isComponentProject = computed(() =>
-  projectUtil.isComponentProject(workflow.value!),
+
+const isComponentProject = computed(
+  () =>
+    projectUtil.isComponentProjectType(workflow.value!.info.containerType) &&
+    projectUtil.isComponentMetadata(workflow.value!.metadata),
 );
 
 const isMetanode = computed(
@@ -88,15 +94,8 @@ const updateComponentMetadata = ({
 <template>
   <div v-if="workflow" class="metadata">
     <ProjectMetadata
-      v-if="
-        (isWorkflowProject || isMetanode) &&
-        workflow.projectMetadata &&
-        !(
-          containerType === WorkflowInfo.ContainerTypeEnum.Project &&
-          workflow.componentMetadata
-        )
-      "
-      :project-metadata="workflow.projectMetadata!"
+      v-if="isWorkflowProject || isMetanode"
+      :project-metadata="workflow.metadata!"
       :project-id="workflow.projectId"
       :workflow-id="workflow.info.containerId"
       :is-workflow-writable="isWorkflowWritable"
@@ -105,12 +104,8 @@ const updateComponentMetadata = ({
     />
 
     <ComponentMetadata
-      v-if="
-        ((isComponentProject || isMetanode) && workflow.componentMetadata) ||
-        (containerType === WorkflowInfo.ContainerTypeEnum.Project &&
-          workflow.componentMetadata)
-      "
-      :component-metadata="workflow.componentMetadata!"
+      v-if="isComponentProject || isMetanode"
+      :component-metadata="workflow.metadata! as ComponentMetadataType"
       :project-id="workflow.projectId"
       :component-id="workflow.info.containerId"
       :available-port-types="availablePortTypes"

@@ -17,7 +17,7 @@ import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteraction
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
-import { isComponentProject } from "@/util/projectUtil";
+import { isComponentProjectType } from "@/util/projectUtil";
 
 import type { UnionToShortcutRegistry } from "./types";
 
@@ -393,7 +393,7 @@ const componentOrMetanodeShortcuts: ComponentOrMetanodeShortcuts = {
 
       return (
         isWritable &&
-        Boolean(isComponentProject(workflow)) &&
+        Boolean(isComponentProjectType(workflow.info.containerType)) &&
         useUIControlsStore().canOpenComponentLayoutEditor
       );
     },
