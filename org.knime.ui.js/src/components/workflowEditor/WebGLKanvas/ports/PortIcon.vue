@@ -6,7 +6,7 @@ import * as portColors from "@knime/styles/colors/portColors";
 
 import type { PortType } from "@/api/gateway-api/generated-api";
 import { portSize } from "@/style/shapes";
-import { type ContainerInst, type GraphicsInst, onTick } from "@/vue3-pixi";
+import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
 
 const strokeWidth = 0.7;
 
@@ -73,22 +73,22 @@ const otherPortsRenderFn = (graphics: GraphicsInst) => {
 
 const portIcon = useTemplateRef<ContainerInst>("portIcon");
 
-const targetScale = computed(() => (props.hovered || props.targeted ? 1.4 : 1));
+// const targetScale = computed(() => (props.hovered || props.targeted ? 1.4 : 1));
 
-onTick(() => {
-  if (!portIcon.value) {
-    return;
-  }
+// onTick(() => {
+//   if (!portIcon.value) {
+//     return;
+//   }
 
-  const currentScale = portIcon.value.scale.x;
-  const diff = targetScale.value - currentScale;
+//   const currentScale = portIcon.value.scale.x;
+//   const diff = targetScale.value - currentScale;
 
-  if (Math.abs(diff) > 0.01) {
-    // Smooth interpolation
-    portIcon.value.scale.x += diff * 0.2;
-    portIcon.value.scale.y += diff * 0.2;
-  }
-});
+//   if (Math.abs(diff) > 0.01) {
+//     // Smooth interpolation
+//     portIcon.value.scale.x += diff * 0.2;
+//     portIcon.value.scale.y += diff * 0.2;
+//   }
+// });
 </script>
 
 <template>

@@ -11,8 +11,8 @@ import {
 import { nextTick } from "vue";
 import { mount } from "@vue/test-utils";
 import { API } from "@api";
-import gsap from "gsap";
 import { mockUserAgent } from "jest-useragent-mock";
+import { animate } from "motion";
 
 import type { Workflow } from "@/api/custom-types";
 import { PortType } from "@/api/gateway-api/generated-api";
@@ -37,9 +37,8 @@ import ConnectorBendpoint from "../ConnectorBendpoint.vue";
 import ConnectorPathSegment from "../ConnectorPathSegment.vue";
 import type { ConnectorProps } from "../types";
 
-vi.mock("gsap", () => ({
-  default: { to: vi.fn() },
-  gsap: { utils: { snap: (input) => input } },
+vi.mock("motion", () => ({
+  animate: vi.fn(),
 }));
 const mockedAPI = deepMocked(API);
 
@@ -490,7 +489,7 @@ describe("Connector.vue", () => {
   describe("indicates being replaced", () => {
     beforeEach(() => {
       // @ts-ignore
-      gsap.to.mockReset();
+      animate.mockReset();
     });
 
     it("snaps away", async () => {
@@ -510,12 +509,15 @@ describe("Connector.vue", () => {
       // watcher for suggestDelete
       const path = wrapper.find("path:not(.hover-area)").element;
 
-      expect(gsap.to).toHaveBeenCalledTimes(1);
-      expect(gsap.to).toHaveBeenCalledWith(path, {
-        attr: { d: expect.any(String) },
-        duration: 0.2,
-        ease: "power2.out",
-      });
+      expect(animate).toHaveBeenCalledTimes(1);
+      expect(animate).toHaveBeenCalledWith(
+        path,
+        { d: expect.any(String) },
+        {
+          duration: 0.2,
+          easing: "easeOut",
+        },
+      );
     });
 
     it("snaps back", async () => {
@@ -534,12 +536,15 @@ describe("Connector.vue", () => {
       // watcher for suggestDelete
       const path = wrapper.find("path:not(.hover-area)").element;
 
-      expect(gsap.to).toHaveBeenCalledTimes(2);
-      expect(gsap.to).toHaveBeenCalledWith(path, {
-        attr: { d: expect.any(String) },
-        duration: 0.2,
-        ease: "power2.out",
-      });
+      expect(animate).toHaveBeenCalledTimes(2);
+      expect(animate).toHaveBeenCalledWith(
+        path,
+        { d: expect.any(String) },
+        {
+          duration: 0.2,
+          easing: "easeOut",
+        },
+      );
     });
 
     it("can't lock after snapping back", async () => {

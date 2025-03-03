@@ -1,8 +1,5 @@
 import { createApp } from "vue";
-import { gsap } from "gsap";
-import { PixiPlugin } from "gsap/PixiPlugin";
 import { createPinia } from "pinia";
-import * as PIXI from "pixi.js";
 import { createStore } from "vuex";
 
 import { type ConnectionInfo, initJSONRPCClient } from "./api/json-rpc-client";
@@ -20,10 +17,6 @@ import { getToastsProvider } from "./plugins/toasts";
 import { router } from "./router/router";
 
 import "./assets/index.css";
-
-gsap.registerPlugin(PixiPlugin);
-
-PixiPlugin.registerPIXI(PIXI);
 
 // Setup logger for production
 setupLogger();

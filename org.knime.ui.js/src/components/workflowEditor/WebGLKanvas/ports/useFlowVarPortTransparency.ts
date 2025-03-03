@@ -1,5 +1,5 @@
 import { type ShallowRef, computed, ref, watch } from "vue";
-import { gsap } from "gsap";
+import { animate } from "motion";
 
 import {
   Node,
@@ -20,9 +20,9 @@ export const useFlowVarPortTransparency = (
   const isHovering = ref(false);
 
   // Transitions/animations cannot be applied at CSS level for canvas-rendered elements
-  // therefore we need to take an imperative approach and animate using gsap instead.
+  // therefore we need to take an imperative approach and do a tween animation instead.
   // For this, an initial alpha value is determined, but not made reactive; then further
-  // visibility changes will be tracked in order to perform the gsap tweens
+  // visibility changes will be tracked in order to perform the tweens
 
   const initialAlpha =
     options.nodeKind === Node.KindEnum.Metanode ||
@@ -46,9 +46,19 @@ export const useFlowVarPortTransparency = (
 
   watch(isVisible, () => {
     if (isVisible.value) {
-      gsap.to(portContainer.value!, { alpha: 1, duration: 0.5 });
+      animate(0, 1, {
+        duration: 0.5,
+        onUpdate: (value) => {
+          portContainer.value!.alpha = value;
+        },
+      });
     } else {
-      gsap.to(portContainer.value!, { alpha: 0, duration: 0.5, delay: 0.25 });
+      animate(1, 0, {
+        duration: 0.5,
+        onUpdate: (value) => {
+          portContainer.value!.alpha = value;
+        },
+      });
     }
   });
 

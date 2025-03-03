@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, toRef, watch } from "vue";
-import gsap from "gsap";
+import { animate } from "motion";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import connectorPath from "@/util/connectorPath";
@@ -74,11 +74,15 @@ watch(toRef(props, "suggestDelete"), (newValue, oldValue) => {
       ? connectorPath(x1, y1, x2 + shiftX, y2 + shiftY)
       : path.value;
 
-  gsap.to(visiblePath.value, {
-    attr: { d: newPath },
-    duration: 0.2,
-    ease: "power2.out",
-  });
+  animate(
+    visiblePath.value,
+    // @ts-ignore
+    { d: newPath },
+    {
+      duration: 0.2,
+      easing: "easeOut",
+    },
+  );
 });
 
 const isSegmentHovered = ref(false);

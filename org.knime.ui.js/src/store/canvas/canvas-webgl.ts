@@ -2,7 +2,7 @@
 /* eslint-disable max-lines */
 
 import { type UnwrapRef, computed, nextTick, ref, shallowRef } from "vue";
-import { gsap } from "gsap";
+import { animate } from "motion";
 import { defineStore } from "pinia";
 
 import type { WorkflowObject } from "@/api/custom-types";
@@ -605,18 +605,20 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
           -workflowObject.y * zoomFactor.value + containerSize.value.height / 2,
       };
 
-      gsap.to(currentOffset, {
-        x: newOffset.x,
-        y: newOffset.y,
-        duration: 0.5,
-        ease: "power2.out",
-        onUpdate: () => {
-          setCanvasOffset({
-            x: currentOffset.x,
-            y: currentOffset.y,
-          });
+      animate(
+        currentOffset,
+        { x: newOffset.x, y: newOffset.y },
+        {
+          duration: 0.5,
+          ease: "easeOut",
+          onUpdate: () => {
+            setCanvasOffset({
+              x: currentOffset.x,
+              y: currentOffset.y,
+            });
+          },
         },
-      });
+      );
     }
   };
 

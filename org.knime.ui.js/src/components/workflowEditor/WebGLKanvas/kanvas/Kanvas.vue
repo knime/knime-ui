@@ -10,6 +10,7 @@ import {
 } from "vue";
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
+import { Actions } from "pixi-actions";
 import throttle from "raf-throttle";
 
 import { $bus } from "@/plugins/event-bus";
@@ -89,6 +90,9 @@ watch(
     // https://pixijs.com/8.x/guides/basics/getting-started#adding-the-sprite-to-the-stage
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
     canvasStore.stage = app.stage;
+
+    // eslint-disable-next-line no-magic-numbers
+    app.ticker.add((tick) => Actions.tick(tick.deltaTime / 60));
     canvasStore.isDebugModeEnabled =
       import.meta.env.VITE_CANVAS_DEBUG === "true";
   },

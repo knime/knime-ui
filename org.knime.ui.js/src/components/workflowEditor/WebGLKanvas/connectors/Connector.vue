@@ -1,8 +1,9 @@
+<!-- eslint-disable no-undefined -->
 <!-- eslint-disable no-magic-numbers -->
 <!-- eslint-disable func-style -->
 <script setup lang="ts">
 import { computed, ref, toRefs, watch } from "vue";
-import gsap from "gsap";
+import { type AnimationPlaybackControls, animate } from "motion";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -161,6 +162,7 @@ const connectorPath = ref<GraphicsInst>();
 
 const suggestShiftX = -12;
 const suggestShiftY = -6;
+let replacementAnimation: AnimationPlaybackControls | undefined;
 watch(isTargetForReplacement, (shouldAnimate) => {
   const [x1, y1, x2, y2] = startEndWithMoveDeltas.value;
   const normalBezier = getBezier(x1, y1, x2, y2);
@@ -172,16 +174,20 @@ watch(isTargetForReplacement, (shouldAnimate) => {
   );
 
   if (shouldAnimate) {
-    gsap.to(normalBezier.end, {
-      x: animatedBezier.end.x,
-      y: animatedBezier.end.y,
-      duration: 0.2,
-      ease: "power2.out",
-      onUpdate: () => {
-        renderFn(connectorPath.value!, normalBezier);
+    replacementAnimation = animate(
+      normalBezier.end,
+      { x: animatedBezier.end.x, y: animatedBezier.end.y },
+      {
+        duration: 0.2,
+        ease: "easeOut",
+        onUpdate: () => {
+          renderFn(connectorPath.value!, normalBezier);
+        },
       },
-    });
+    );
   } else {
+    replacementAnimation?.stop();
+    replacementAnimation = undefined;
     renderFn(connectorPath.value!, normalBezier);
   }
 });

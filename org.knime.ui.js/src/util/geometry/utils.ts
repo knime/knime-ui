@@ -1,5 +1,3 @@
-import { gsap } from "gsap";
-
 import type { XY } from "@/api/gateway-api/generated-api";
 import * as shapes from "@/style/shapes";
 
@@ -76,7 +74,7 @@ export const areaCoverage = (A: GeometryBounds, B: GeometryBounds) => {
 export const snapToGrid = (
   value: number,
   snapSize = shapes.gridSize.x,
-): number => gsap.utils.snap(snapSize, value);
+): number => Math.round(value / snapSize) * snapSize;
 
 /**
  * Calculates the position of an HTML object within the visible frame, centered based on its width and height.
