@@ -3,6 +3,7 @@ import { computed, nextTick, ref, toRefs, watch } from "vue";
 
 import type { NodeTemplateWithExtendedPorts } from "@/api/custom-types";
 import SkeletonNodes from "@/components/common/skeleton-loader/SkeletonNodes.vue";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import type { NodeRepositoryDisplayModesType } from "@/store/settings";
 import { createStaggeredLoader } from "@/util/createStaggeredLoader";
 
@@ -61,6 +62,7 @@ const {
 
 const isLoadingNextPage = ref(false);
 const isLoadingSearchResultsDeferred = ref(false);
+const { KNIME_HUB_SEARCH_URL } = knimeExternalUrls;
 
 const setIsLoadingNextPage = createStaggeredLoader({
   firstStageCallback: () => {
@@ -97,11 +99,8 @@ const selectedNodeModel = computed({
     emit("update:selectedNode", value);
   },
 });
-const searchHubLink = computed(
-  () =>
-    `https://hub.knime.com/search?q=${encodeURIComponent(
-      query.value,
-    )}&type=all&src=knimeappmodernui`,
+const searchHubLink = computed(() =>
+  KNIME_HUB_SEARCH_URL.replace("%s", encodeURIComponent(query.value)),
 );
 
 const onSaveScrollPosition = (position: number) => {

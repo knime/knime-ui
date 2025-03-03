@@ -6,6 +6,7 @@ import { Button, FunctionButton } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
@@ -32,7 +33,8 @@ const isCommunityHub = computed(() => {
   }
   const [provider] = externalProviders.value;
   return (
-    isHubProvider(provider) && provider.hostname?.includes("hub.knime.com")
+    isHubProvider(provider) &&
+    provider.hostname?.includes(knimeExternalUrls.KNIME_HUB_HOME_HOSTNAME)
   );
 });
 
@@ -58,8 +60,8 @@ const buttonText = computed(() =>
 
 const buttonLink = computed(() =>
   hasOneProviderConnected.value
-    ? "https://www.knime.com/team-plan"
-    : "https://www.knime.com/knime-community-hub",
+    ? knimeExternalUrls.TEAM_PLAN_URL
+    : knimeExternalUrls.COMMUNITY_HUB_URL,
 );
 
 const dismissBanner = () => {

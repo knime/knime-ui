@@ -11,6 +11,7 @@ import CloseIcon from "@knime/styles/img/icons/close.svg";
 import type { ExampleProject } from "@/api/custom-types";
 import Card from "@/components/common/Card.vue";
 import CardContent from "@/components/common/CardContent.vue";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useApplicationStore } from "@/store/application/application";
 import { useSettingsStore } from "@/store/settings";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
@@ -86,10 +87,7 @@ const dismissExamples = () => {
         </CardContent>
       </Card>
     </div>
-    <a
-      class="more-on-hub"
-      href="https://knime.com/modern-ui-hub-home-link?src=knimeappmodernui"
-    >
+    <a class="more-on-hub" :href="knimeExternalUrls.MODERN_UI_HUB_HOME_URL">
       <ArrowRightIcon />
       <span>Show me more examples on the KNIME Community Hub</span>
     </a>

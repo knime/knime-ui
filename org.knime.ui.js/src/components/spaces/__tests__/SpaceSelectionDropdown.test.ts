@@ -6,6 +6,7 @@ import { API } from "@api";
 import { SubMenu } from "@knime/components";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import {
   createSpace,
   createSpaceGroup,
@@ -364,7 +365,7 @@ describe("SpaceSelectionDropdown.vue", () => {
       text: "External Link",
       metadata: {
         type: "external-link",
-        url: "https://knime.com/team-plan",
+        url: knimeExternalUrls.TEAM_PLAN_URL,
       },
     };
 
@@ -377,7 +378,7 @@ describe("SpaceSelectionDropdown.vue", () => {
       .vm.$emit("item-click", null, externalLinkItem);
 
     expect(window.open).toHaveBeenCalledWith(
-      "https://knime.com/team-plan",
+      knimeExternalUrls.TEAM_PLAN_URL,
       "_blank",
     );
 

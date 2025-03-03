@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { createSpaceProvider } from "@/test/factories";
 import { formatSpaceProviderName } from "../formatSpaceProviderName";
 
@@ -10,7 +11,7 @@ describe("formatSpaceProviderName", () => {
       id: "community-hub-dev-id",
       name: "KNIME Community Hub",
       type: SpaceProviderNS.TypeEnum.HUB,
-      hostname: "http://hubdev.knime.com",
+      hostname: knimeExternalUrls.KNIME_HUB_DEV_HOSTNAME,
     });
 
     const formattedName = formatSpaceProviderName(provider);

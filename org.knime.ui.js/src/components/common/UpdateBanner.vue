@@ -7,8 +7,7 @@ import { Button, FunctionButton } from "@knime/components";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 
 import type { UpdateAvailableEvent } from "@/api/gateway-api/generated-api";
-
-const DOWNLOAD_URL = "https://www.knime.com/downloads?src=knimeappmodernui";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 
 export default defineComponent({
   components: {
@@ -107,7 +106,7 @@ export default defineComponent({
           this.isDialogOpen = false;
         });
       } else {
-        window.open(DOWNLOAD_URL);
+        window.open(knimeExternalUrls.KNIME_DOWNLOADS_URL);
       }
     },
     // Method to dismiss the banner

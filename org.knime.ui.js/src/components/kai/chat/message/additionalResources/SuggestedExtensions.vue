@@ -6,6 +6,7 @@ import ExtensionIcon from "@knime/styles/img/icons/extension.svg";
 import LinkIcon from "@knime/styles/img/icons/link-external.svg";
 
 import type { ExtensionWithNodes, Extensions } from "@/components/kai/types";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 
 interface Props {
   extensions: Extensions;
@@ -14,13 +15,14 @@ interface Props {
 const props = defineProps<Props>();
 
 const hasExtensions = computed(() => Object.keys(props.extensions).length > 0);
+const { KNIME_HUB_HOME_URL } = knimeExternalUrls;
 
 const openNodeInBrowser = (
   extension: ExtensionWithNodes,
   factoryName: string,
 ) => {
   const vendor = encodeURI(`${extension.owner.toLowerCase()}`);
-  const extensionUrl = `https://hub.knime.com/${vendor}/extensions/${extension.featureSymbolicName}/latest`;
+  const extensionUrl = `${KNIME_HUB_HOME_URL}/${vendor}/extensions/${extension.featureSymbolicName}/latest`;
   const url = `${extensionUrl}/${factoryName}`;
   window.open(url);
 };

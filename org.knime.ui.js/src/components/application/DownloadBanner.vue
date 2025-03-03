@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import DownloadAPButton from "../common/DownloadAPButton.vue";
+
+const { IMPRINT_URL, LEGAL_URL, PRIVACY_URL } = knimeExternalUrls;
 </script>
 
 <template>
@@ -10,11 +13,9 @@ import DownloadAPButton from "../common/DownloadAPButton.vue";
         for free to start building your own workflows.
       </span>
       <div class="links">
-        <a href="https://www.knime.com/imprint" target="_blank">Imprint</a
-        >&nbsp;
-        <a href="https://www.knime.com/legal" target="_blank">Terms of use</a
-        >&nbsp;
-        <a href="https://www.knime.com/privacy" target="_blank">Privacy</a>
+        <a :href="IMPRINT_URL" target="_blank">Imprint</a>&nbsp;
+        <a :href="LEGAL_URL" target="_blank">Terms of use</a>&nbsp;
+        <a :href="PRIVACY_URL" target="_blank">Privacy</a>
       </div>
     </div>
 

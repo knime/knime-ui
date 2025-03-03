@@ -1,4 +1,5 @@
 import type { SpaceProviderNS } from "@/api/custom-types";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { isHubProvider } from "@/store/spaces/util";
 
 export const formatSpaceProviderName = (
@@ -6,7 +7,7 @@ export const formatSpaceProviderName = (
 ) => {
   if (
     isHubProvider(spaceProvider) &&
-    spaceProvider.hostname?.includes("hubdev.knime.com")
+    spaceProvider.hostname?.includes(knimeExternalUrls.KNIME_HUB_DEV_HOSTNAME)
   ) {
     return `${spaceProvider.name} (DEV)`;
   }

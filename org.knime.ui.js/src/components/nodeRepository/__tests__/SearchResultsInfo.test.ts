@@ -7,6 +7,7 @@ import { createTestingPinia } from "@pinia/testing";
 import { Button } from "@knime/components";
 import FilterCheckIcon from "@knime/styles/img/icons/filter-check.svg";
 
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useUIControlsStore } from "@/store/uiControls/uiControls";
 import { deepMocked } from "@/test/utils";
 import SearchResultsInfo from "../SearchResultsInfo.vue";
@@ -99,9 +100,10 @@ describe("SearchResultsInfo", () => {
     describe("has empty result", () => {
       it("shows placeholder for empty result if numFilteredOutNodes is 0", () => {
         const query = "xxx xxx";
-        const encodedQuery = `https://hub.knime.com/search?q=${encodeURIComponent(
-          query,
-        )}&type=all&src=knimeappmodernui`;
+        const encodedQuery = knimeExternalUrls.KNIME_HUB_SEARCH_URL.replace(
+          "%s",
+          encodeURIComponent(query),
+        );
         const { wrapper } = doMount({
           propsOverrides: {
             numFilteredOutNodes: 0,

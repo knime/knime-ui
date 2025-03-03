@@ -12,6 +12,7 @@ import PrivateSpaceIcon from "@knime/styles/img/icons/private-space.svg";
 import ServerIcon from "@knime/styles/img/icons/server-racks.svg";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { useSpaceAuthStore } from "@/store/spaces/auth";
 import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -366,7 +367,7 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
           separator: false,
           metadata: {
             type: "external-link",
-            url: "https://knime.com/team-plan",
+            url: knimeExternalUrls.TEAM_PLAN_URL,
           },
         };
 

@@ -14,6 +14,7 @@ import {
   NavMenuItem,
   type NavMenuItemProps,
 } from "@/components/common/side-nav";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { isHubProvider } from "@/store/spaces/util";
@@ -35,13 +36,14 @@ const {
   logout,
 } = useSpaceProviderAuth();
 
+const { KNIME_HUB_HOME_HOSTNAME, TEAM_PLAN_URL } = knimeExternalUrls;
 const isCommunityHubProvider = (
   provider: SpaceProviderNS.SpaceProvider,
 ): boolean => {
   return (
     isHubProvider(provider) &&
     provider.connected &&
-    (provider.hostname?.includes("hub.knime.com") ?? false)
+    (provider.hostname?.includes(KNIME_HUB_HOME_HOSTNAME) ?? false)
   );
 };
 
@@ -165,7 +167,7 @@ const providerItems = computed<SpaceProviderNavItems[]>(() =>
 );
 
 const openCreateTeamPage = () => {
-  window.open("https://knime.com/team-plan", "_blank");
+  window.open(TEAM_PLAN_URL, "_blank");
 };
 </script>
 

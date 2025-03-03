@@ -9,7 +9,7 @@ import HubIcon from "@knime/styles/img/icons/cloud-knime.svg";
 import DocsIcon from "@knime/styles/img/icons/file-text.svg";
 import ForumIcon from "@knime/styles/img/icons/forum.svg";
 import GraduateHatIcon from "@knime/styles/img/icons/graduate-hat.svg";
-import LinkExteranlIcon from "@knime/styles/img/icons/link-external.svg";
+import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 import GettingStartedIcon from "@knime/styles/img/icons/rocket.svg";
 import ShortcutsIcon from "@knime/styles/img/icons/shortcuts.svg";
 import CheatSheetsIcon from "@knime/styles/img/icons/speedo.svg";
@@ -18,6 +18,7 @@ import TeamPlan from "@knime/styles/img/icons/team-group.svg";
 
 import InfoIcon from "@/assets/info.svg";
 import OptionalSubMenuActionButton from "@/components/common/OptionalSubMenuActionButton.vue";
+import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useSettingsStore } from "@/store/settings";
@@ -34,12 +35,22 @@ const applicationStore = useApplicationStore();
 const settingsStore = useSettingsStore();
 const $router = useRouter();
 
+const {
+  CHEAT_SHEETS_URL,
+  COMMUNITY_FORUM_URL,
+  DOCUMENTATION_URL,
+  GETTING_STARTED_URL,
+  KNIME_HUB_HOME_URL,
+  SELF_PACED_COURSES_URL,
+  TEAM_PLAN_URL,
+} = knimeExternalUrls;
+
 const customHelpMenuEntries = computed(() => {
   const records = applicationStore.customHelpMenuEntries;
   return Object.keys(records).map((key, idx) => ({
     text: key,
     separator: idx === Object.keys(records).length - 1,
-    icon: LinkExteranlIcon,
+    icon: LinkExternalIcon,
     href: buildExternalUrl(records[key]),
   }));
 });
@@ -73,39 +84,39 @@ const helpMenuItem = computed<MenuItem>(() => ({
     {
       text: "KNIME Getting Started Guide",
       icon: GettingStartedIcon,
-      href: buildExternalUrl("https://www.knime.com/getting-started-guide"),
+      href: buildExternalUrl(GETTING_STARTED_URL),
     },
     {
       text: "KNIME Self-paced Courses",
       icon: GraduateHatIcon,
-      href: buildExternalUrl("https://knime.com/modern-ui-courses/"),
+      href: buildExternalUrl(SELF_PACED_COURSES_URL),
     },
     {
       text: "KNIME Cheat Sheets",
       icon: CheatSheetsIcon,
-      href: buildExternalUrl("https://www.knime.com/cheat-sheets"),
+      href: buildExternalUrl(CHEAT_SHEETS_URL),
     },
     {
       text: "KNIME Documentation",
       icon: DocsIcon,
-      href: buildExternalUrl("https://docs.knime.com/"),
+      href: buildExternalUrl(DOCUMENTATION_URL),
     },
     {
       text: "Get help from the KNIME Community",
       icon: ForumIcon,
-      href: buildExternalUrl("https://forum.knime.com/"),
+      href: buildExternalUrl(COMMUNITY_FORUM_URL),
     },
     {
       text: "KNIME Hub",
       separator: true,
       icon: HubIcon,
-      href: buildExternalUrl("https://hub.knime.com/"),
+      href: buildExternalUrl(KNIME_HUB_HOME_URL),
     },
     {
       text: "Learn more about the KNIME Team Plan",
       separator: true,
       icon: TeamPlan,
-      href: buildExternalUrl("https://knime.com/team-plan"),
+      href: buildExternalUrl(TEAM_PLAN_URL),
     },
 
     // Add custom help menu entries if present
