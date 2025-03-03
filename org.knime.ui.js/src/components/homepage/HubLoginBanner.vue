@@ -12,49 +12,78 @@ import { isHubProvider } from "@/store/spaces/util";
 
 const applicationStore = useApplicationStore();
 const { dismissedHubLoginBanner } = storeToRefs(applicationStore);
-
 const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 
-const isUserLoggedIn = computed(() => {
-  const providers = Object.values(spaceProviders.value ?? {});
-  return providers.some(
-    (provider) => isHubProvider(provider) && provider.connected,
+const externalProviders = computed(() =>
+  Object.values(spaceProviders.value ?? {}).filter(
+    (provider) => provider.type !== "LOCAL",
+  ),
+);
+
+const hasOneProviderConnected = computed(
+  () =>
+    externalProviders.value.filter((provider) => provider.connected).length ===
+    1,
+);
+
+const isCommunityHub = computed(() => {
+  if (externalProviders.value.length !== 1) {
+    return false;
+  }
+  const [provider] = externalProviders.value;
+  return (
+    isHubProvider(provider) && provider.hostname?.includes("hub.knime.com")
   );
 });
 
-const dismissHubLoginBanner = () => {
+const showBanner = computed(() => {
+  if (dismissedHubLoginBanner.value) {
+    return false;
+  }
+  return (
+    (hasOneProviderConnected.value && isCommunityHub.value) ||
+    isCommunityHub.value
+  );
+});
+
+const bannerTitle = computed(() =>
+  hasOneProviderConnected.value
+    ? "Automate Workflows with KNIME Team Plan"
+    : "Store your workflows in your free private cloud space",
+);
+
+const buttonText = computed(() =>
+  hasOneProviderConnected.value ? "Try for free" : "Sign up to KNIME Hub",
+);
+
+const buttonLink = computed(() =>
+  hasOneProviderConnected.value
+    ? "https://www.knime.com/team-plan"
+    : "https://www.knime.com/knime-community-hub",
+);
+
+const dismissBanner = () => {
   applicationStore.dismissedHubLoginBanner = true;
 };
 </script>
 
 <template>
-  <div v-if="!dismissedHubLoginBanner" class="hub-login-banner">
-    <FunctionButton class="close" compact @click="dismissHubLoginBanner">
+  <div v-if="showBanner" class="hub-login-banner">
+    <FunctionButton class="close" compact @click="dismissBanner">
       <CloseIcon />
     </FunctionButton>
 
     <div class="content">
-      <h4 class="title">
-        {{
-          isUserLoggedIn
-            ? "Automate Workflows with KNIME Team Plan"
-            : "Store your workflows in your free private cloud space"
-        }}
-      </h4>
-
+      <h4 class="title">{{ bannerTitle }}</h4>
       <Button
         class="button"
         with-border
         compact
-        :href="
-          isUserLoggedIn
-            ? 'https://www.knime.com/knime-team-plan'
-            : 'https://www.knime.com/knime-community-hub'
-        "
+        :href="buttonLink"
         target="_blank"
       >
         <LinkExternalIcon />
-        {{ isUserLoggedIn ? "Try for free" : "Sign up to KNIME Hub" }}
+        {{ buttonText }}
       </Button>
     </div>
   </div>
@@ -88,16 +117,11 @@ const dismissHubLoginBanner = () => {
     & h4 {
       margin: 0;
       font-size: 15px;
-      font-weight: 500;
       line-height: 20px;
     }
 
     & .button {
       width: max-content;
-      font-size: 15px;
-      font-style: normal;
-      font-weight: 600;
-      line-height: 16px;
     }
   }
 }
