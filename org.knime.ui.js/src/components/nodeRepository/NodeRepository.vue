@@ -8,7 +8,7 @@ import SidebarSearchResults from "@/components/nodeRepository/SidebarSearchResul
 import { useApplicationStore } from "@/store/application/application";
 import { useLifecycleStore } from "@/store/application/lifecycle";
 import { useNodeRepositoryStore } from "@/store/nodeRepository";
-import { TABS, usePanelStore } from "@/store/panel";
+import { usePanelStore } from "@/store/panel";
 import { useSettingsStore } from "@/store/settings";
 
 import CategoryTree from "./CategoryTree.vue";
@@ -16,8 +16,6 @@ import type { NavigationKey } from "./NodeList.vue";
 import NodeRepositoryHeader from "./NodeRepositoryHeader.vue";
 import NodeRepositoryLoader from "./NodeRepositoryLoader.vue";
 import TagResults from "./TagResults.vue";
-
-const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
 const nodeRepositoryStore = useNodeRepositoryStore();
 const { nodesPerTag, showDescriptionForNode, searchIsActive } =
@@ -36,29 +34,26 @@ const isNodeVisible = computed(() => {
   );
 });
 
-const { activeProjectId, nodeRepositoryLoaded, nodeRepositoryLoadingProgress } =
-  storeToRefs(useApplicationStore());
+const { nodeRepositoryLoaded, nodeRepositoryLoadingProgress } = storeToRefs(
+  useApplicationStore(),
+);
 
 const panelStore = usePanelStore();
-const { activeTab, isExtensionPanelOpen } = storeToRefs(panelStore);
-const isNodeRepositoryTabActive = computed(() => {
-  return (
-    activeProjectId.value &&
-    activeTab.value[activeProjectId.value] === TABS.NODE_REPOSITORY
-  );
-});
+const { isExtensionPanelOpen } = storeToRefs(panelStore);
 
 defineEmits<{
   navReachedTop: [];
 }>();
 
-watch(isExtensionPanelOpen, (isOpen) => {
-  if (!isOpen) {
-    setTimeout(() => {
+watch(
+  isExtensionPanelOpen,
+  (isOpen) => {
+    if (!isOpen) {
       nodeRepositoryStore.setShowDescriptionForNode(null);
-    }, DESELECT_NODE_DELAY);
-  }
-});
+    }
+  },
+  { immediate: true },
+);
 
 watch(nodeRepositoryLoaded, (isLoaded, wasLoaded) => {
   if (isLoaded === true && wasLoaded === false && !nodesPerTag.value.length) {
@@ -156,10 +151,7 @@ const handleNavReachedTop = (event: { key: NavigationKey }) => {
       />
     </template>
 
-    <Portal
-      v-if="isExtensionPanelOpen && isNodeRepositoryTabActive"
-      to="extension-panel"
-    >
+    <Portal v-if="isExtensionPanelOpen" to="extension-panel">
       <Transition name="extension-panel">
         <NodeDescription
           show-close-button

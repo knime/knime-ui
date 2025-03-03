@@ -199,32 +199,27 @@ const hasSection = (name: TabValues) => {
             hasSection(TABS.CONTEXT_AWARE_DESCRIPTION) &&
             panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)
           "
-          v-show="panelStore.isTabActive(TABS.CONTEXT_AWARE_DESCRIPTION)"
         />
         <NodeRepository
           v-if="
             hasSection(TABS.NODE_REPOSITORY) &&
             panelStore.isTabActive(TABS.NODE_REPOSITORY)
           "
-          v-show="panelStore.isTabActive(TABS.NODE_REPOSITORY)"
         />
         <SidebarSpaceExplorer
           v-if="
             hasSection(TABS.SPACE_EXPLORER) &&
             panelStore.isTabActive(TABS.SPACE_EXPLORER)
           "
-          v-show="panelStore.isTabActive(TABS.SPACE_EXPLORER)"
         />
         <KaiSidebar
           v-if="hasSection(TABS.KAI) && panelStore.isTabActive(TABS.KAI)"
-          v-show="panelStore.isTabActive(TABS.KAI)"
         />
         <WorkflowMonitor
           v-if="
             hasSection(TABS.WORKFLOW_MONITOR) &&
             panelStore.isTabActive(TABS.WORKFLOW_MONITOR)
           "
-          v-show="panelStore.isTabActive(TABS.WORKFLOW_MONITOR)"
         />
       </span>
     </LeftCollapsiblePanel>
