@@ -13,6 +13,8 @@ import { storeToRefs } from "pinia";
 import { Actions } from "pixi-actions";
 import throttle from "raf-throttle";
 
+import { getMetaOrCtrlKey } from "@knime/utils";
+
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { KANVAS_ID, getKanvasDomElement } from "@/util/getKanvasDomElement";
@@ -123,7 +125,7 @@ const zoom = throttle(function (event: WheelEvent) {
 });
 
 const onWheelEvent = (event: WheelEvent) => {
-  const shouldZoom = event.ctrlKey;
+  const shouldZoom = event[getMetaOrCtrlKey()];
   if (shouldZoom) {
     zoom(event);
     return;
