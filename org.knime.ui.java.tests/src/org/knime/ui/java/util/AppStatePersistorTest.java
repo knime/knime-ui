@@ -260,7 +260,7 @@ public class AppStatePersistorTest {
 
         var providerId = isLocal ? SpaceProvider.LOCAL_SPACE_PROVIDER_ID : "other provider id";
         var spaceId = isLocal ? LocalSpace.LOCAL_SPACE_ID : "other space id";
-        var origin = Origin.of(providerId, spaceId, itemId);
+        var origin = new Origin(providerId, spaceId, itemId);
         when(project.getOrigin()).thenReturn(Optional.of(origin));
 
         pm.addProject(project);

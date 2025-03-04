@@ -289,7 +289,7 @@ final class ProjectAPI {
     static void removeMostRecentlyUsedProject(final String spacePoviderId, final String spaceId, final String itemId) {
         DesktopAPI.getDeps(MostRecentlyUsedProjects.class).removeIf(p -> {
             var left = p.origin();
-            var right = Origin.of(spacePoviderId, spaceId, itemId);
+            var right = new Origin(spacePoviderId, spaceId, itemId);
             return left.equals(right);
         });
     }

@@ -101,7 +101,7 @@ class CloseProjectTest {
 
         var wfm1 = WorkflowManagerUtil.loadWorkflow(workflowDir);
         var wfm2 = WorkflowManagerUtil.loadWorkflow(workflowDir);
-        var origin = Origin.of("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+        var origin = new Origin("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
         pm.addProject(Project.builder() //
             .setWfm(wfm1) //
             .setOrigin(origin) //

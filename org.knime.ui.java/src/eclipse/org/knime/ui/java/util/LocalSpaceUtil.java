@@ -71,8 +71,8 @@ public final class LocalSpaceUtil {
      */
     public static Origin getLocalOrigin(final Path absolutePath, final LocalSpace localSpace) {
         var itemId = localSpace.getItemId(absolutePath);
-        return Origin.of(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalSpace.LOCAL_SPACE_ID, itemId,
-            localSpace.getProjectType(itemId));
+        return new Origin(SpaceProvider.LOCAL_SPACE_PROVIDER_ID, LocalSpace.LOCAL_SPACE_ID, itemId,
+            localSpace.getProjectType(itemId).orElse(null));
     }
 
     /**

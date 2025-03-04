@@ -318,18 +318,17 @@ public final class AppStatePersistor {
         var spaceId = originJson.get(SPACE_ID).asText();
 
         var relativePath = Optional.ofNullable(originJson.get(RELATIVE_PATH)).map(JsonNode::asText);
-        var itemId = getItemId(originJson, localSpace, relativePath);
+        var itemId = getItemId(originJson, localSpace, relativePath.orElse(null));
 
         var projectTypeOptional = getProjectType(originJson, relativePath.isPresent(), localSpace, itemId);
-        var origin = Origin.of(providerId, spaceId, itemId, projectTypeOptional);
+        var origin = new Origin(providerId, spaceId, itemId, projectTypeOptional.orElse(null));
 
         return new Pair<>(origin, relativePath);
     }
 
-    private static String getItemId(final JsonNode originJson, final LocalSpace localSpace,
-        final Optional<String> relativePath) {
-        if (relativePath.isPresent()) { // Relative path only given for local projects
-            var absolutePath = localSpace.getRootPath().resolve(Path.of(relativePath.get()));
+    private static String getItemId(final JsonNode originJson, final LocalSpace localSpace, final String relativePath) {
+        if (relativePath != null) { // Relative path only given for local projects
+            var absolutePath = localSpace.getRootPath().resolve(Path.of(relativePath));
             return localSpace.getItemId(absolutePath);
         }
 

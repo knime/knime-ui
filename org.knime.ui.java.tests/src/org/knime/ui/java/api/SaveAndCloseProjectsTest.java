@@ -88,7 +88,7 @@ class SaveAndCloseProjectsTest {
         var pm = ProjectManager.getInstance();
         for (int i = 1; i <= 3; i++) {
             var projectId = "projectId" + i;
-            var origin = Origin.of("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+            var origin = new Origin("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
             var project = Project.builder() //
                 .setWfm(wfms.get(i - 1)) //
                 .setOrigin(origin) //

@@ -84,7 +84,7 @@ class ProjectAPITest {
     void testSetProjectActiveAndEnsureItsLoaded() throws IOException {
         WorkflowManager m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
         var wpm = ProjectManager.getInstance();
-        var origin = Origin.of("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+        var origin = new Origin("providerId", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
         var projectId = "projectId";
         var project = Project.builder() //
             .setWfm(m_wfm) //

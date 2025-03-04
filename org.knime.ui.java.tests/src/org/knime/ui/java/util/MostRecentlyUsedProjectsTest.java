@@ -166,7 +166,7 @@ public class MostRecentlyUsedProjectsTest {
      * @return a new instance
      */
     public static Origin createOrigin(final String providerId, final String spaceId, final String itemId) {
-        return Origin.of(providerId, spaceId, itemId, ProjectTypeEnum.WORKFLOW);
+        return new Origin(providerId, spaceId, itemId, ProjectTypeEnum.WORKFLOW);
     }
 
 }

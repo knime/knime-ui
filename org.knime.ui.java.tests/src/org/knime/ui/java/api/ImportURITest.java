@@ -112,7 +112,7 @@ class ImportURITest {
             var wfm = WorkflowManagerUtil.createEmptyWorkflow();
             var project = Project.builder() //
                 .setWfm(wfm) //
-                .setOrigin(Origin.of("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW)) //
+                .setOrigin(new Origin("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW)) //
                 .setId(projectId) //
                 .build();
             ProjectManager.getInstance().addProject(project);

@@ -139,7 +139,7 @@ class OpenProjectTest {
 
         m_wfm = WorkflowManagerUtil.createEmptyWorkflow();
 
-        var origin = Origin.of("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
+        var origin = new Origin("providerID", "spaceId", "itemId", ProjectTypeEnum.WORKFLOW);
         var project = Project.builder() //
             .setWfm(m_wfm) //
             .setOrigin(origin) //

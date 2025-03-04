@@ -230,7 +230,7 @@ final class OpenProject {
         return loadedWorkflow.map(wfm -> { //
             return Project.builder() //
                 .setWfm(wfm) //
-                .setOrigin(Origin.of(spaceProviderId, spaceId, itemId, projectType)) //
+                .setOrigin(new Origin(spaceProviderId, spaceId, itemId, projectType)) //
                 .setVersionWfmLoader(
                     // this configures how to load a specific version of the project
                     version -> DesktopAPUtil.fetchAndLoadWorkflowWithTask(space, itemId, monitor, version)) //
