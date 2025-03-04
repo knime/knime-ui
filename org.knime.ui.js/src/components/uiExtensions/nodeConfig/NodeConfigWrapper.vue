@@ -23,7 +23,8 @@ const emit = defineEmits<{
   expand: [];
 }>();
 
-const { openKaiQuickInteractionMenu } = useFloatingMenusStore();
+const { openKaiQuickInteractionMenu, kaiQuickInteractionMenu } =
+  useFloatingMenusStore();
 
 const { activeProjectId: projectId } = storeToRefs(useApplicationStore());
 const { activeWorkflow } = storeToRefs(useWorkflowStore());
@@ -90,6 +91,8 @@ const { settings } = storeToRefs(useSettingsStore());
 
 const rightPanelWidth = computed(() => settings.value.nodeDialogSize);
 
+const configKey = computed(() => nodeConfigurationStore.timestamp || 0);
+
 const onAskKai = () => {
   openKaiQuickInteractionMenu({
     props: {
@@ -103,6 +106,7 @@ const onAskKai = () => {
   <div>
     <NodeConfigLayout
       v-if="activeNode"
+      :key="configKey"
       :active-node="activeNode"
       :project-id="projectId!"
       :workflow-id="workflowId"

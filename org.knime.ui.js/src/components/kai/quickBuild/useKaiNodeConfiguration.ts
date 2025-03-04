@@ -5,6 +5,7 @@ import {
   type AiAssistantBuildEventPayload,
   useAIAssistantStore,
 } from "@/store/aiAssistant";
+import { useNodeConfigurationStore } from "@/store/nodeConfiguration/nodeConfiguration";
 import { getToastPresets } from "@/toastPresets";
 import { useChat } from "../chat/useChat";
 import { useHubAuth } from "../useHubAuth";
@@ -26,6 +27,8 @@ export const useKaiNodeConfiguration = ({
   const errorMessage = ref("");
   const result = ref<AiAssistantBuildEventPayload | null>(null);
 
+  const nodeConfigurationStore = useNodeConfigurationStore();
+
   const { isProcessing, lastUserMessage, abortSendMessage, statusUpdate } =
     useChat("build");
 
@@ -43,6 +46,20 @@ export const useKaiNodeConfiguration = ({
         targetNodes,
         startPosition: startPosition.value,
       })) as AiAssistantBuildEventPayload;
+
+      if (
+        result.value &&
+        result.value.type !== "INPUT_NEEDED" &&
+        nodeId.value
+      ) {
+        // HACK: really bad way to force a re-render of the config dialogue
+        nodeConfigurationStore.setActiveExtensionConfig(null);
+        nodeConfigurationStore.setActiveNodeId(null);
+
+        setTimeout(() => {
+          nodeConfigurationStore.setActiveNodeId(nodeId.value);
+        }, 100); // adjust the delay as needed
+      }
     } catch (error: any) {
       if (isAuthError(error.message)) {
         toastPresets.connectivity.hubSessionExpired();

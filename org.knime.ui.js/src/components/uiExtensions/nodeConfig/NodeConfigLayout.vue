@@ -42,7 +42,9 @@ const isLoadingReady = computed(() => loadingState.value?.value === "ready");
 const { isKaiEnabled } = useIsKaiEnabled();
 
 const isNodeConfigured = computed(
-  () => nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED,
+  () =>
+    nodeState.value === NodeState.ExecutionStateEnum.CONFIGURED ||
+    nodeState.value === NodeState.ExecutionStateEnum.IDLE,
 );
 
 const showExecuteOnlyButton = computed(

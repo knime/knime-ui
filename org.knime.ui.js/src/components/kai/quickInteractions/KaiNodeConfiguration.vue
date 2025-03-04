@@ -33,9 +33,9 @@ const emit = defineEmits<{
 const { nodeId, startPosition } = toRefs(props);
 const { closeQuickActionMenu } = useFloatingMenusStore();
 
-const { panelComponent } = useKaiPanels();
-
 const nodeConfigurationStore = useNodeConfigurationStore();
+
+const { panelComponent } = useKaiPanels();
 
 const {
   errorMessage,
@@ -61,7 +61,6 @@ const menuState = computed<QuickBuildMenuState>(() => {
     // Ideally, we would check for "SUCCESS" here. To be backwards compatible,
     // we check for "INPUT_NEEDED" instead.
     if (result.value.type !== "INPUT_NEEDED") {
-      nodeConfigurationStore.applySettings({ nodeId: props.nodeId as string });
       return "RESULT";
     }
   }
@@ -71,6 +70,10 @@ const menuState = computed<QuickBuildMenuState>(() => {
 
 watch(menuState, (menuState) => {
   emit("quickBuildStateChanged", menuState);
+
+  if (menuState === "RESULT") {
+    nodeConfigurationStore.updateTimestamp();
+  }
 
   if (menuState === "NONE") {
     closeQuickActionMenu();
