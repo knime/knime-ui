@@ -20,6 +20,7 @@ import { Application, type ApplicationInst } from "@/vue3-pixi";
 import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
+import { clearIconCache } from "../common/iconCache";
 
 import { useCanvasPanning } from "./usePanning";
 
@@ -106,6 +107,7 @@ onBeforeUnmount(() => {
 onUnmounted(() => {
   canvasStore.pixiApplication = null;
   canvasStore.stage = null;
+  clearIconCache();
 });
 
 const { mousePan, scrollPan } = useCanvasPanning({

@@ -4,9 +4,9 @@ import { toRefs } from "vue";
 import type { Node } from "@/api/gateway-api/generated-api";
 import { useNodeActionBar } from "../../common/useNodeActionBar";
 import ActionBar from "../common/ActionBar.vue";
+import { getIcons } from "../common/iconCache";
 import { nodeIdText } from "../util/textStyles";
 
-import { getActionBarIcons } from "./nodeActionBarIcons";
 /**
  *  Displays a bar of action buttons above nodes
  */
@@ -61,7 +61,7 @@ const { visibleActions } = useNodeActionBar({
   canPause,
   canResume,
   canOpenView,
-  icons: getActionBarIcons(),
+  icons: getIcons(),
 });
 </script>
 

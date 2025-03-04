@@ -2,9 +2,13 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { FunctionButton, type MenuItem, SubMenu } from "@knime/components";
+import {
+  FunctionButton,
+  type MenuItem,
+  SubMenu,
+  ValueSwitch,
+} from "@knime/components";
 import ArrowMoveIcon from "@knime/styles/img/icons/arrow-move.svg";
-import BrushIcon from "@knime/styles/img/icons/brush.svg";
 import ChartDotsIcon from "@knime/styles/img/icons/chart-dots.svg";
 
 import AnnotationModeIcon from "@/assets/annotation-mode.svg";
@@ -202,14 +206,15 @@ const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
         >
           <ChartDotsIcon />
         </FunctionButton>
-        <FunctionButton
-          class="header-button no-text control"
-          data-test-id="dev-mode-only"
-          title="Toggle renderer"
-          @click="toggleCanvasRenderer()"
-        >
-          <BrushIcon /> {{ currentCanvasRenderer }}
-        </FunctionButton>
+        <ValueSwitch
+          compact
+          :model-value="currentCanvasRenderer"
+          :possible-values="[
+            { id: 'SVG', text: 'SVG' },
+            { id: 'WebGL', text: 'WebGL' },
+          ]"
+          @update:model-value="toggleCanvasRenderer()"
+        />
       </template>
 
       <SubMenu

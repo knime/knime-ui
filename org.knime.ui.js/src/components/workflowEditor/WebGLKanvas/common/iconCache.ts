@@ -13,7 +13,7 @@ import { loadSvgInGraphicsContext } from "../util/loadSvgInGraphicsContext";
 
 let iconsCache: Record<IconKeys, GraphicsContext> | null = null;
 
-export const getActionBarIcons = () => {
+export const getIcons = () => {
   if (iconsCache === null) {
     iconsCache = {
       CancelIcon: loadSvgInGraphicsContext(CancelIcon),
@@ -28,4 +28,8 @@ export const getActionBarIcons = () => {
   }
 
   return iconsCache;
+};
+
+export const clearIconCache = () => {
+  iconsCache = null;
 };
