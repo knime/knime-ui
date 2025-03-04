@@ -198,9 +198,6 @@ const onNodeHoverAreaPointerLeave = () => {
     :kind="node.kind"
     :anchor-position="translatedPosition"
     :renderable="renderable"
-    :z-index="
-      isNodeSelected(node.id) ? $zIndices.webGlCanvasNodeSelectionPlane : 0
-    "
     :show-selection="isSelectionPreviewShown"
     :show-focus="isSelectionFocusShown"
     :width="
@@ -214,7 +211,6 @@ const onNodeHoverAreaPointerLeave = () => {
     :label="`Node__${node.id}`"
     :renderable="renderable"
     :visible="renderable"
-    :z-index="isNodeSelected(node.id) ? $zIndices.webGlCanvasSelectedNode : 0"
     event-mode="static"
     :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
     @rightclick="emit('contextmenu', $event)"

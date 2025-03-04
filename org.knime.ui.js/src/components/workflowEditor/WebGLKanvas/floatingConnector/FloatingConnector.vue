@@ -59,7 +59,6 @@ const nodeRelation = computed<NodeRelation | undefined>(() => {
   <Container
     v-if="floatingConnector && floatingConnectorPort"
     label="FloatingfloatingConnector"
-    :z-index="$zIndices.webGlCanvasConnections"
   >
     <Connector
       :id="floatingConnector.id"

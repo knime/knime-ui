@@ -232,11 +232,6 @@ const renderable = computed(() => {
 <template>
   <Graphics
     ref="connectorPath"
-    :z-index="
-      isNodeSelected(sourceNode ?? '') || isNodeSelected(destNode ?? '')
-        ? $zIndices.webGlCanvasConnections
-        : 0
-    "
     :renderable="renderable"
     :visible="renderable"
     :label="`Connector__${id}`"
