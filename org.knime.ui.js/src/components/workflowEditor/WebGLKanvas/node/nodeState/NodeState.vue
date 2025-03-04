@@ -33,8 +33,8 @@ const props = withDefaults(defineProps<Props>(), {
  * @example [true, false, false] means [red: on, yellow: off, green: off]
  * @example 'undefined' means no traffic light should be shown
  */
-const trafficLight = computed(() => {
-  const defaultValue = [false, false, false];
+const trafficLight = computed<[boolean, boolean, boolean] | null>(() => {
+  const defaultValue: [boolean, boolean, boolean] = [false, false, false];
   const stateMapper: Partial<
     Record<NodeState.ExecutionStateEnum, [boolean, boolean, boolean]>
   > = {
@@ -45,29 +45,43 @@ const trafficLight = computed(() => {
   };
 
   if (props.executionState && props.executionState in stateMapper) {
-    return stateMapper[props.executionState];
+    return stateMapper[props.executionState]!;
   }
 
   return props.executionState === null ? defaultValue : null;
 });
 
-const fillColor = (active: boolean, index: number) => {
-  const activeColor = (["red", "yellow", "green"] as const)[index];
+const fillColors = computed(() => {
+  if (!trafficLight.value) {
+    return null;
+  }
 
-  return active
-    ? $colors.trafficLight[activeColor]
-    : $colors.trafficLight.inactive;
-};
+  const colorNames = ["red", "yellow", "green"] as const;
 
-const strokeColor = (active: boolean, index: number) => {
-  const activeColor = (["redBorder", "yellowBorder", "greenBorder"] as const)[
-    index
-  ];
+  return trafficLight.value.map((value, i) => {
+    const name = colorNames[i];
+    return value ? $colors.trafficLight[name] : $colors.trafficLight.inactive;
+  });
+});
 
-  return active
-    ? $colors.trafficLight[activeColor]
-    : $colors.trafficLight.inactiveBorder;
-};
+const strokeColors = computed(() => {
+  if (!trafficLight.value) {
+    return null;
+  }
+
+  const strokeColorNames = [
+    "redBorder",
+    "yellowBorder",
+    "greenBorder",
+  ] as const;
+
+  return trafficLight.value.map((value, i) => {
+    const name = strokeColorNames[i];
+    return value
+      ? $colors.trafficLight[name]
+      : $colors.trafficLight.inactiveBorder;
+  });
+});
 </script>
 
 <template>
@@ -95,7 +109,7 @@ const strokeColor = (active: boolean, index: number) => {
     />
 
     <template v-if="trafficLight">
-      <template v-for="(active, index) of trafficLight" :key="index">
+      <template v-for="(_, index) of trafficLight" :key="index">
         <Graphics
           event-mode="none"
           label="TrafficLightBorder"
@@ -103,7 +117,7 @@ const strokeColor = (active: boolean, index: number) => {
             (graphics: GraphicsInst) => {
               graphics.clear();
               graphics.circle(6 + 10 * index, 6, 4);
-              graphics.fill(fillColor(active, index));
+              graphics.fill(fillColors![index]);
             }
           "
         />
@@ -115,7 +129,7 @@ const strokeColor = (active: boolean, index: number) => {
             (graphics: GraphicsInst) => {
               graphics.clear();
               graphics.circle(6 + 10 * index, 6, 3.5);
-              graphics.stroke({ width: 1, color: strokeColor(active, index) });
+              graphics.stroke({ width: 1, color: strokeColors![index] });
             }
           "
         />

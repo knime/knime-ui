@@ -40,10 +40,13 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
 
   const hoverSize = computed(() => {
     const hoverBounds = {
-      top: -$shapes.nodeHoverMargin[0],
-      left: -$shapes.nodeHoverMargin[1],
+      top: -($shapes.nodeHoverMargin[0] + $shapes.webGlNodeHoverAreaPadding),
+      left: -($shapes.nodeHoverMargin[1] + $shapes.webGlNodeHoverAreaPadding),
       bottom: $shapes.nodeSize + $shapes.nodeHoverMargin[2],
-      right: $shapes.nodeSize + $shapes.nodeHoverMargin[3],
+      right:
+        $shapes.nodeSize +
+        $shapes.nodeHoverMargin[3] +
+        $shapes.webGlNodeHoverAreaPadding,
     };
 
     // adjust upper hover bounds to node name

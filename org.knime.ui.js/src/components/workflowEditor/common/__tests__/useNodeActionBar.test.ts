@@ -4,7 +4,6 @@ import { ref } from "vue";
 import { createNativeNode, createPort } from "@/test/factories";
 import { mockStores } from "@/test/utils/mockStores";
 import { mountComposable } from "@/test/utils/mountComposable";
-import { getActionBarIcons } from "../../WebGLKanvas/node/nodeActionBarIcons";
 import { useNodeActionBar } from "../useNodeActionBar";
 
 vi.mock("@knime/components", async (importOriginal) => {
@@ -63,7 +62,8 @@ describe("useNodeActionBar", () => {
         canPause: ref(canPause),
         canResume: ref(canResume),
         canOpenView: ref(canOpenView),
-        icons: getActionBarIcons(),
+        // @ts-ignore
+        icons: {},
       },
       mockedStores,
     });

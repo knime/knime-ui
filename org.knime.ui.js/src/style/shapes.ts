@@ -38,6 +38,7 @@ export const nodeSelectionPadding = [
 // This is different as the way we calculate the size of the text is better now
 export const webGlNodeSelectionPaddingTop = 27;
 export const webGlNodeActionBarYOffset = 4;
+export const webGlNodeHoverAreaPadding = 6;
 
 export const maxNodeNameWidth =
   (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.7; // 170px

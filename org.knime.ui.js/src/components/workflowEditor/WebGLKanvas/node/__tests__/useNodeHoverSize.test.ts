@@ -45,10 +45,10 @@ describe("useNodeHoverSize", () => {
     const { getComposableResult } = doMount();
 
     expect(getComposableResult().hoverSize.value).toEqual({
-      x: -19,
-      y: -29,
-      width: 70,
-      height: 69,
+      x: -25,
+      y: -35,
+      width: 82,
+      height: 75,
     });
   });
 
@@ -60,10 +60,10 @@ describe("useNodeHoverSize", () => {
     });
 
     expect(getComposableResult().hoverSize.value).toEqual({
-      x: -31.5,
-      y: -29,
-      width: 95,
-      height: 69,
+      height: 75,
+      width: 107,
+      x: -37.5,
+      y: -35,
     });
   });
 
@@ -75,10 +75,10 @@ describe("useNodeHoverSize", () => {
     });
 
     expect(getComposableResult().hoverSize.value).toEqual({
-      x: -31.5,
-      y: -29,
-      width: 95,
-      height: 69,
+      height: 75,
+      width: 107,
+      x: -37.5,
+      y: -35,
     });
   });
 
@@ -91,10 +91,10 @@ describe("useNodeHoverSize", () => {
     });
 
     expect(getComposableResult().hoverSize.value).toEqual({
-      x: -44,
-      y: -29,
-      width: 120,
-      height: 69,
+      height: 75,
+      width: 132,
+      x: -50,
+      y: -35,
     });
   });
 
@@ -122,10 +122,10 @@ describe("useNodeHoverSize", () => {
     });
 
     expect(getComposableResult().hoverSize.value).toEqual({
-      x: -44,
-      y: -29,
-      width: 120,
-      height: 108.5,
+      height: 114.5,
+      width: 132,
+      x: -50,
+      y: -35,
     });
   });
 
