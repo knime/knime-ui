@@ -7,8 +7,6 @@ import * as $shapes from "@/style/shapes";
 import type { GraphicsInst } from "@/vue3-pixi";
 import { nodeStateText } from "../../util/textStyles";
 
-import { useNodeStateExecutingAnimation } from "./useNodeStateExecutingAnimation";
-
 type Props = {
   progress?: number;
   executionState?: NodeState.ExecutionStateEnum;
@@ -34,7 +32,8 @@ const progressDisplayPercentage = computed(() => {
   return Math.floor(100 * clippedProgress.value);
 });
 
-const { containerRef: animatedCircleRef } = useNodeStateExecutingAnimation();
+// TODO: animation is not working in some cases replace it
+// const { containerRef: animatedCircleRef } = useNodeStateExecutingAnimation();
 </script>
 
 <template>

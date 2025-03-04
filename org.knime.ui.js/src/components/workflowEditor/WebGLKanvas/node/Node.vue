@@ -18,18 +18,20 @@ import { useMovingStore } from "@/store/workflow/moving";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { geometry } from "@/util/geometry";
-import { isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
+import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 import type { PortPositions } from "../../common/usePortPositions";
 import { useSelectionPreview } from "../SelectionRectangle/useSelectionPreview";
 import NodePorts from "../ports/NodePorts.vue";
 import { nodeNameText } from "../util/textStyles";
 
+import NodeActionBar from "./NodeActionBar.vue";
 import NodeSelectionPlane from "./NodeSelectionPlane.vue";
 import NodeState from "./nodeState/NodeState.vue";
 import NodeTorso from "./torso/NodeTorso.vue";
 import { useNodeDragging } from "./useNodeDragging";
 import { useNodeHoverSize } from "./useNodeHoverSize";
 import { useNodeHoveredStateProvider } from "./useNodeHoveredState";
+import { useNodeSelectionPlaneMeasures } from "./useNodeSelectionPlaneMeasures";
 
 interface Props {
   node: KnimeNode;
@@ -96,15 +98,39 @@ const isSelectionFocusShown = computed(
 
 const hoverStateProvider = useNodeHoveredStateProvider();
 
+const isHovering = computed(
+  () => hoverStateProvider.hoveredNodeId.value === props.node.id,
+);
+
+// this is not reactive!
+const style = new PIXI.TextStyle(nodeNameText.styles);
+const nameMeasures = PIXI.CanvasTextMetrics.measureText(
+  props.name,
+  style,
+  undefined,
+  true,
+);
+
+const SINGLE_LINE_TEXT_HEIGHT_THRESHOLD = 40;
+const textYAnchor = computed(() =>
+  // eslint-disable-next-line no-magic-numbers
+  nameMeasures.height <= SINGLE_LINE_TEXT_HEIGHT_THRESHOLD ? 0 : 0.5,
+);
+
+const nodeNameDimensions = ref({
+  width: nameMeasures.width * nodeNameText.downscalingFactor,
+  height: nameMeasures.height * nodeNameText.downscalingFactor,
+});
+
 const { useEmbeddedDialogs } = storeToRefs(useApplicationSettingsStore());
 const { hoverSize, renderHoverArea } = useNodeHoverSize({
-  isHovering: computed(
-    () => hoverStateProvider.hoveredNodeId.value === props.node.id,
-  ),
+  isHovering,
   portPositions,
   dialogType: Node.DialogTypeEnum.Web,
   isUsingEmbeddedDialogs: useEmbeddedDialogs,
-  nodeNameDimensions: ref({ width: 0, height: 18 }),
+  nodeTopOffset: computed(
+    () => nodeNameDimensions.value.height + $shapes.webGlNodeActionBarYOffset,
+  ),
   allowedActions: props.node.allowedActions!,
   isDebugModeEnabled,
 });
@@ -136,19 +162,6 @@ const nodeHitArea = computed(
 );
 
 const isMetanode = computed(() => isNodeMetaNode(props.node));
-
-const style = new PIXI.TextStyle(nodeNameText.styles);
-const nameMeasures = PIXI.CanvasTextMetrics.measureText(
-  props.name,
-  style,
-  undefined,
-  true,
-);
-const SINGLE_LINE_TEXT_HEIGHT_THRESHOLD = 40;
-const textYAnchor = computed(() =>
-  // eslint-disable-next-line no-magic-numbers
-  nameMeasures.height <= SINGLE_LINE_TEXT_HEIGHT_THRESHOLD ? 0 : 0.5,
-);
 
 const floatingConnectorStore = useFloatingConnectorStore();
 const {
@@ -191,20 +204,50 @@ const onNodeHoverAreaPointerLeave = () => {
     parentNodePortPositions: portPositions.value,
   });
 };
+
+const allAllowedActions = computed(() => {
+  const loopInfo = isNativeNode(props.node) ? props.node.loopInfo : undefined;
+  const baseConfig = {
+    ...props.node.allowedActions,
+    ...loopInfo?.allowedActions,
+  };
+
+  let canConfigure = false;
+
+  if (props.node.dialogType) {
+    canConfigure = useEmbeddedDialogs.value
+      ? props.node.dialogType === "swing"
+      : true;
+  }
+
+  return { ...baseConfig, canConfigure };
+});
+
+const { nodeSelectionMeasures } = useNodeSelectionPlaneMeasures({
+  extraHeight: nodeNameDimensions.value.height,
+  kind: props.node.kind,
+  width: nodeNameDimensions.value.width + $shapes.nodeNameHorizontalMargin * 2,
+});
+
+const actionBarPosition = computed(() => {
+  return {
+    x: translatedPosition.value.x + $shapes.nodeSize / 2,
+    // eslint-disable-next-line no-magic-numbers
+    y:
+      translatedPosition.value.y +
+      nodeSelectionMeasures.value.y +
+      $shapes.webGlNodeActionBarYOffset,
+  };
+});
 </script>
 
 <template>
   <NodeSelectionPlane
-    :kind="node.kind"
     :anchor-position="translatedPosition"
     :renderable="renderable"
     :show-selection="isSelectionPreviewShown"
     :show-focus="isSelectionFocusShown"
-    :width="
-      nameMeasures.width * nodeNameText.downscalingFactor +
-      $shapes.nodeNameHorizontalMargin * 2
-    "
-    :extra-height="nameMeasures.height * nodeNameText.downscalingFactor"
+    :measures="nodeSelectionMeasures"
   />
 
   <Container
@@ -226,6 +269,15 @@ const onNodeHoverAreaPointerLeave = () => {
       @render="renderHoverArea"
     />
 
+    <NodeActionBar
+      v-if="isHovering"
+      v-bind="allAllowedActions"
+      :position="actionBarPosition"
+      :node-id="node.id"
+      :node-kind="node.kind"
+      :is-node-selected="isNodeSelected(node.id)"
+    />
+
     <Text
       label="NodeName"
       :position="nodeNamePosition"
@@ -245,6 +297,7 @@ const onNodeHoverAreaPointerLeave = () => {
         :kind="node.kind"
         :type="type"
         :icon="icon"
+        :is-hovered="isHovering && !isDraggingFloatingConnector"
         :execution-state="
           isMetanode
             ? (node.state?.executionState as MetaNodeState.ExecutionStateEnum)

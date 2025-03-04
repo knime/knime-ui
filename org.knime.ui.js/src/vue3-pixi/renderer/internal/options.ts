@@ -9,12 +9,12 @@ export function insertFilter(child: Filter, parent: Container, _anchor: any) {
 
   function remove() {
     const index = (parent.filters as Filter[]).indexOf(child);
-    (parent.filters as Filter[])?.splice(index >>> 0, 1);
+    parent.filters = (parent.filters as Filter[]).filter((_, i) => i !== index);
   }
   child.parent = parent;
   child.destroy = remove;
 
-  parent.filters.push(child);
+  parent.filters = [...parent.filters, child];
 }
 
 export function nextSiblingFilter(node: Filter) {

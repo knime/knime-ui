@@ -2,17 +2,11 @@
 import { toRefs } from "vue";
 
 import type { Node } from "@/api/gateway-api/generated-api";
-import CancelIcon from "@/assets/cancel.svg";
-import OpenDialogIcon from "@/assets/configure-node.svg";
-import ExecuteIcon from "@/assets/execute.svg";
-import OpenViewIcon from "@/assets/open-view.svg";
-import PauseIcon from "@/assets/pause-execution.svg";
-import ResetIcon from "@/assets/reset-all.svg";
-import ResumeIcon from "@/assets/resume-execution.svg";
-import StepIcon from "@/assets/step-execution.svg";
-import ActionBar from "@/components/workflowEditor/SVGKanvas/common/ActionBar.vue";
 import { useNodeActionBar } from "../../common/useNodeActionBar";
+import ActionBar from "../common/ActionBar.vue";
+import { nodeIdText } from "../util/textStyles";
 
+import { getActionBarIcons } from "./nodeActionBarIcons";
 /**
  *  Displays a bar of action buttons above nodes
  */
@@ -25,9 +19,6 @@ type Props = {
   canCancel?: boolean;
   canReset?: boolean;
   canConfigure?: boolean;
-  /*
-   * The props below can either be true, false or unset.
-   */
   canStep?: boolean | null;
   canPause?: boolean | null;
   canResume?: boolean | null;
@@ -70,34 +61,24 @@ const { visibleActions } = useNodeActionBar({
   canPause,
   canResume,
   canOpenView,
-  icons: {
-    CancelIcon,
-    OpenDialogIcon,
-    ExecuteIcon,
-    OpenViewIcon,
-    PauseIcon,
-    ResetIcon,
-    ResumeIcon,
-    StepIcon,
-  },
+  icons: getActionBarIcons(),
 });
 </script>
 
 <template>
-  <g>
+  <Container>
     <ActionBar :actions="visibleActions" />
 
-    <text class="node-id" text-anchor="middle" :y="-$shapes.nodeIdMargin">
+    <Text
+      label="NodeId"
+      :anchor-x="0.5"
+      :position-y="-$shapes.nodeIdMargin - 8"
+      :resolution="2"
+      :scale="nodeIdText.downscalingFactor"
+      :style="nodeIdText.styles"
+      :round-pixels="true"
+    >
       {{ nodeId }}
-    </text>
-  </g>
+    </Text>
+  </Container>
 </template>
-
-<style scoped>
-.node-id {
-  font:
-    normal 10px "Roboto Condensed",
-    sans-serif;
-  pointer-events: none;
-}
-</style>

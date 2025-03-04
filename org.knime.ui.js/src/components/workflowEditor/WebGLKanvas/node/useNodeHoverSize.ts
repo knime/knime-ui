@@ -8,7 +8,7 @@ import type { PortPositions } from "../../common/usePortPositions";
 type UseNodeHoverSizeOptions = {
   isHovering: Ref<boolean>;
   portPositions: Ref<PortPositions>;
-  nodeNameDimensions: Ref<{ width: number; height: number }>;
+  nodeTopOffset: Ref<number>;
   dialogType: Node.DialogTypeEnum;
   isUsingEmbeddedDialogs: Ref<boolean>;
   allowedActions: NonNullable<Node["allowedActions"]>;
@@ -19,7 +19,7 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
   const {
     isHovering,
     portPositions,
-    nodeNameDimensions,
+    nodeTopOffset,
     dialogType,
     isUsingEmbeddedDialogs,
     allowedActions,
@@ -47,7 +47,7 @@ export const useNodeHoverSize = (options: UseNodeHoverSizeOptions) => {
     };
 
     // adjust upper hover bounds to node name
-    hoverBounds.top -= nodeNameDimensions.value.height;
+    hoverBounds.top -= nodeTopOffset.value;
 
     if (isHovering.value) {
       // buttons are shown as disabled if false, hidden if null

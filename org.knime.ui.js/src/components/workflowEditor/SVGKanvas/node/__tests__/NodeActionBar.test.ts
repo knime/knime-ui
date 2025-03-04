@@ -3,7 +3,7 @@ import { nextTick } from "vue";
 import { VueWrapper, mount } from "@vue/test-utils";
 
 import { Node } from "@/api/gateway-api/generated-api";
-import ActionButton from "@/components/common/ActionButton.vue";
+import ActionButton from "@/components/workflowEditor/SVGKanvas/common/ActionButton.vue";
 import * as $shapes from "@/style/shapes";
 import { mockStores } from "@/test/utils/mockStores";
 import NodeActionBar from "../NodeActionBar.vue";

@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 
-import ActionBar from "@/components/common/ActionBar.vue";
+import ActionBar from "@/components/workflowEditor/SVGKanvas/common/ActionBar.vue";
 import * as $shapes from "@/style/shapes";
 import { mockStores } from "@/test/utils/mockStores";
 import NodeLabelEditor from "../NodeLabelEditor.vue";

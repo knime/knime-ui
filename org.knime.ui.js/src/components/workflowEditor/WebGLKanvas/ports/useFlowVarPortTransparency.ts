@@ -1,5 +1,5 @@
 import { type ShallowRef, computed, ref, watch } from "vue";
-import { animate } from "motion";
+import { type AnimationPlaybackControls, animate } from "motion";
 
 import {
   Node,
@@ -44,19 +44,26 @@ export const useFlowVarPortTransparency = (
     return false;
   });
 
+  let activeAnimation: AnimationPlaybackControls;
   watch(isVisible, () => {
     if (isVisible.value) {
-      animate(0, 1, {
+      activeAnimation?.stop();
+      activeAnimation = animate(0, 1, {
         duration: 0.5,
         onUpdate: (value) => {
-          portContainer.value!.alpha = value;
+          if (portContainer.value) {
+            portContainer.value!.alpha = value;
+          }
         },
       });
     } else {
-      animate(1, 0, {
+      activeAnimation?.stop();
+      activeAnimation = animate(1, 0, {
         duration: 0.5,
         onUpdate: (value) => {
-          portContainer.value!.alpha = value;
+          if (portContainer.value) {
+            portContainer.value!.alpha = value;
+          }
         },
       });
     }

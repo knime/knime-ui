@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import type { Node, XY } from "@/api/gateway-api/generated-api";
+import type { XY } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
 import * as $shapes from "@/style/shapes";
 import { DashLine } from "@/util/pixiDashedLine";
@@ -15,51 +15,12 @@ import type { GraphicsInst } from "@/vue3-pixi";
 type Props = {
   renderable?: boolean;
   anchorPosition: XY;
-  kind: Node.KindEnum;
   showSelection: boolean;
   showFocus: boolean;
-  /**
-   * Makes the selection plane larger vertically based on this value
-   */
-  extraHeight?: number;
-  width?: number;
+  measures: XY & { width: number; height: number };
 };
 
-const props = withDefaults(defineProps<Props>(), {
-  width: 0,
-  extraHeight: 20,
-});
-
-const nodeSelectionMeasures = computed(() => {
-  const {
-    nodeStatusHeight,
-    nodeStatusMarginTop,
-    nodeSize,
-    nodeSelectionPadding: [top, right, bottom, left],
-  } = $shapes;
-
-  const hasStatusBar = props.kind !== "metanode";
-  // the selection plane's height has to account for
-  // (1) node's size plus the selection padding for top and bottom
-  // (2) the height and margin of the node status bar if it's present
-  // (3) the provided `extraHeight` prop on the component
-  const height =
-    top +
-    nodeSize +
-    bottom +
-    (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
-    props.extraHeight;
-
-  const defaultWidth = left + right + nodeSize;
-  const width = props.width > defaultWidth ? props.width : defaultWidth;
-
-  return {
-    y: -(top + props.extraHeight),
-    x: -((width - nodeSize) / 2),
-    height,
-    width,
-  };
-});
+const props = defineProps<Props>();
 
 const position = computed(() => ({
   x: props.anchorPosition?.x,
@@ -70,10 +31,10 @@ const selectionPlaneRenderFn = (graphics: GraphicsInst) => {
   graphics.clear();
 
   graphics.roundRect(
-    nodeSelectionMeasures.value.x,
-    nodeSelectionMeasures.value.y,
-    nodeSelectionMeasures.value.width,
-    nodeSelectionMeasures.value.height,
+    props.measures.x,
+    props.measures.y,
+    props.measures.width,
+    props.measures.height,
     $shapes.selectedItemBorderRadius,
   );
   graphics.stroke({
@@ -88,10 +49,10 @@ const focusPlaneRenderFn = (graphics: GraphicsInst) => {
   const dash = new DashLine(graphics, { dash: [5, 5] });
 
   dash.roundRect(
-    nodeSelectionMeasures.value.x - 4,
-    nodeSelectionMeasures.value.y - 4,
-    nodeSelectionMeasures.value.width + 8,
-    nodeSelectionMeasures.value.height + 8,
+    props.measures.x - 4,
+    props.measures.y - 4,
+    props.measures.width + 8,
+    props.measures.height + 8,
     $shapes.selectedItemBorderRadius,
   );
 

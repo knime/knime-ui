@@ -1,5 +1,5 @@
 <script>
-import NestedSvg from "./NestedSVG";
+import NestedSvg from "../../../common/NestedSVG";
 
 /** SVG Button that is displayed above a hovered or selected node */
 export default {
@@ -18,7 +18,7 @@ export default {
     },
     /** title of the button; displays on hover */
     title: {
-      type: String,
+      type: [String, null],
       default: null,
     },
     primary: {

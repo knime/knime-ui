@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { BlurFilter } from "pixi.js";
 
 import {
   MetaNodeState,
@@ -7,12 +8,14 @@ import {
   Node,
 } from "@/api/gateway-api/generated-api";
 import * as $colors from "@/style/colors";
+import type { GraphicsInst } from "@/vue3-pixi";
 
 import NodeTorsoForbidden from "./NodeTorsoForbidden.vue";
 import NodeTorsoMetanode from "./NodeTorsoMetanode.vue";
 import NodeTorsoMissing from "./NodeTorsoMissing.vue";
 import NodeTorsoNormal from "./NodeTorsoNormal.vue";
 import NodeTorsoUnknown from "./NodeTorsoUnknown.vue";
+import { torsoDrawUtils } from "./drawUtils";
 
 type Props = {
   nodeId: string;
@@ -20,6 +23,7 @@ type Props = {
   icon: string | null;
   type: NativeNodeInvariants.TypeEnum | null;
   executionState?: MetaNodeState.ExecutionStateEnum;
+  isHovered?: boolean;
 };
 
 const props = defineProps<Props>();
@@ -32,10 +36,31 @@ const isKnownNode = computed(() => {
   }
   return isMetanode.value || (props.type ?? "") in $colors.nodeBackgroundColors;
 });
+
+const shadowFilter = new BlurFilter({
+  strength: 25,
+  quality: 12,
+  kernelSize: 13,
+});
+
+const renderTorso = (graphics: GraphicsInst) => {
+  graphics.clear();
+  torsoDrawUtils.drawDefault(graphics);
+  graphics.closePath();
+  graphics.stroke({ width: 2, color: $colors.GrayDarkSemi });
+};
 </script>
 
 <template>
   <Container event-mode="none">
+    <Graphics
+      label="torsoShadow"
+      event-mode="none"
+      :renderable="isHovered"
+      :filters="[shadowFilter]"
+      @render="renderTorso($event)"
+    />
+
     <NodeTorsoMissing v-if="type === NativeNodeInvariants.TypeEnum.Missing" />
     <NodeTorsoForbidden
       v-if="type === NativeNodeInvariants.TypeEnum.Forbidden"

@@ -5,7 +5,7 @@ import { mapState } from "pinia";
 import type { XY } from "@/api/gateway-api/generated-api";
 import CancelIcon from "@/assets/cancel.svg";
 import SaveIcon from "@/assets/ok.svg";
-import ActionBar from "@/components/common/ActionBar.vue";
+import ActionBar from "@/components/workflowEditor/SVGKanvas/common/ActionBar.vue";
 import { useCanvasStore } from "@/store/canvas";
 
 import NodeNameTextarea from "./NodeNameTextarea.vue";

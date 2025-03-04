@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import type { TextStyle } from "pixi.js";
 
 import * as $colors from "@/style/colors";
@@ -19,6 +20,17 @@ export const nodeNameText: TextStylePreset = {
     fontWeight: "bold",
     wordWrap: true,
     wordWrapWidth: 250,
+    align: "center",
+    textBaseline: "bottom",
+  },
+  downscalingFactor: 0.4,
+};
+
+export const nodeIdText: TextStylePreset = {
+  styles: {
+    ...defaultTextStyles,
+    fontSize: 10 * 2.5,
+    fontWeight: "normal",
     align: "center",
     textBaseline: "bottom",
   },
