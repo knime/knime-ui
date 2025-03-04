@@ -13,6 +13,7 @@ import type { GraphicsInst } from "@/vue3-pixi";
 type Props = {
   x?: number;
   disabled?: boolean;
+  // TODO NXT-3411 implement tooltips
   title?: String | null;
   primary?: boolean;
   icon: GraphicsContext;
@@ -26,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  click: [event: MouseEvent];
+  click: [event: FederatedPointerEvent];
 }>();
 
 const onClick = (event: FederatedPointerEvent) => {

@@ -6,9 +6,6 @@ import type { Action } from "@/components/workflowEditor/common/types";
 import * as $shapes from "@/style/shapes";
 
 import ActionButton from "./ActionButton.vue";
-/**
- * pixi based action bar
- */
 
 type Props = {
   actions: Array<Action>;

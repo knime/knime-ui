@@ -216,7 +216,7 @@ const allAllowedActions = computed(() => {
 
   if (props.node.dialogType) {
     canConfigure = useEmbeddedDialogs.value
-      ? props.node.dialogType === "swing"
+      ? props.node.dialogType === Node.DialogTypeEnum.Swing
       : true;
   }
 

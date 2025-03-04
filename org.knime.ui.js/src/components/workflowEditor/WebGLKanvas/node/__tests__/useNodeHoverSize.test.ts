@@ -32,7 +32,7 @@ describe("useNodeHoverSize", () => {
         // @ts-ignore
         allowedActions,
         portPositions: computed(() => portPositions),
-        nodeNameDimensions: ref({ width: 0, height: 0 }),
+        nodeTopOffset: ref(0),
         dialogType,
         isUsingEmbeddedDialogs,
       },

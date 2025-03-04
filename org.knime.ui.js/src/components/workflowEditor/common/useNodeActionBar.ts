@@ -124,8 +124,9 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
   const uiControls = useUIControlsStore();
 
   type Actions = typeof actions.value;
+  type NamedAction = Action & { name: string };
 
-  const visibleActions = computed<Action[]>(() => {
+  const visibleActions = computed<NamedAction[]>(() => {
     if (!uiControls.canEditWorkflow) {
       return [];
     }
@@ -158,7 +159,7 @@ export const useNodeActionBar = (options: UseNodeActionBarOptions) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .filter(([_, visible]) => visible)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(([name, _]) => actions.value[name])
+        .map(([name, _]) => ({ ...actions.value[name], name }))
     );
   });
 
