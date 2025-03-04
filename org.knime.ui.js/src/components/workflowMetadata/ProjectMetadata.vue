@@ -8,7 +8,6 @@ import {
   TypedText,
 } from "@/api/gateway-api/generated-api";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
-import { isDesktop } from "@/environment";
 import { recreateLinebreaks } from "@/util/recreateLineBreaks";
 import SidebarPanelLayout from "../common/side-panel/SidebarPanelLayout.vue";
 import SidebarPanelScrollContainer from "../common/side-panel/SidebarPanelScrollContainer.vue";
@@ -24,8 +23,9 @@ interface Props {
   projectMetadata: ProjectMetadata;
   projectId: string;
   workflowId: string;
-  isWorkflowWritable: boolean;
   singleMetanodeSelectedId: string | null;
+  canOpenWorkflowConfiguration: boolean;
+  canEdit: boolean;
 }
 
 const props = defineProps<Props>();
@@ -67,10 +67,6 @@ const {
     data: getInitialDraftData(),
   }),
 });
-
-const canOpenWorkflowConfiguration = computed(
-  () => isDesktop && props.isWorkflowWritable,
-);
 
 export type SaveEventPayload = {
   projectId: string;
@@ -135,7 +131,7 @@ const preserveWhitespaceBeforeEdit = () => {
     <template #header>
       <MetadataLastEdit :last-edit="lastEdit" />
       <MetadataHeaderButtons
-        v-if="isWorkflowWritable"
+        v-if="canEdit"
         :is-editing="isEditing"
         :is-valid="isValid"
         :can-open-workflow-configuration="canOpenWorkflowConfiguration"

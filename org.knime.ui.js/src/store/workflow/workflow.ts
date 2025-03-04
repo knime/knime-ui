@@ -7,6 +7,7 @@ import {
   type Bounds,
   CollapseCommand,
   type Connection,
+  EditableMetadata,
   type Link,
   PortCommand,
   TransformMetanodePortsBarCommand,
@@ -378,6 +379,7 @@ export const useWorkflowStore = defineStore("workflow", {
         // @ts-expect-error
         description,
         type: (type as UpdateComponentMetadataCommand.TypeEnum) ?? undefined,
+        metadataType: EditableMetadata.MetadataTypeEnum.Component,
         icon: icon ?? undefined,
         inPorts,
         outPorts,
@@ -404,6 +406,7 @@ export const useWorkflowStore = defineStore("workflow", {
         workflowId,
         // TODO: NXT-2023: remove when types are correctly generated
         // @ts-expect-error
+        metadataType: EditableMetadata.MetadataTypeEnum.Project,
         description,
         tags,
         links,

@@ -33,8 +33,8 @@ interface Props {
   componentId: string; // this is the same as the workflowId if the component is "open"
   availablePortTypes: AvailablePortTypes;
   availableComponentTypes: string[];
-  isWorkflowWritable: boolean;
   singleMetanodeSelectedId: string | null;
+  canEdit: boolean;
 }
 
 const props = defineProps<Props>();
@@ -210,7 +210,7 @@ const preserveWhitespaceBeforeEdit = () => {
       </div>
 
       <MetadataHeaderButtons
-        v-if="isWorkflowWritable"
+        v-if="canEdit"
         :is-editing="isEditing"
         :is-valid="isValid"
         @start-edit="preserveWhitespaceBeforeEdit()"

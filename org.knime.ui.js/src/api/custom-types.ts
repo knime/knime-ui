@@ -96,6 +96,7 @@ export type ComponentNodeDescription = ComponentNodeAndDescription &
   NodeDescription &
   ProjectMetadata;
 
+// TODO: NXT-2023 remove once API codegen properly types the workflow nodes
 export type MetadataType = ProjectMetadata | ComponentMetadata;
 
 // TODO: NXT-2023 remove once API codegen properly types the workflow nodes

@@ -2,7 +2,6 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { type ComponentMetadata as ComponentMetadataType } from "@/api/custom-types";
 import { WorkflowInfo } from "@/api/gateway-api/generated-api";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
@@ -27,18 +26,6 @@ const { activeWorkflow: workflow, isWritable: isWorkflowWritable } =
 
 const containerType = computed(() => workflow.value?.info.containerType);
 const { singleSelectedNode } = storeToRefs(useSelectionStore());
-
-const isWorkflowProject = computed(
-  () =>
-    projectUtil.isWorkflowProjectType(workflow.value!.info.containerType) &&
-    projectUtil.isWorkflowProjectMetadata(workflow.value!.metadata),
-);
-
-const isComponentProject = computed(
-  () =>
-    projectUtil.isComponentProjectType(workflow.value!.info.containerType) &&
-    projectUtil.isComponentMetadata(workflow.value!.metadata),
-);
 
 const isMetanode = computed(
   () => containerType.value === WorkflowInfo.ContainerTypeEnum.Metanode,
@@ -92,25 +79,26 @@ const updateComponentMetadata = ({
 </script>
 
 <template>
-  <div v-if="workflow" class="metadata">
+  <div v-if="workflow && workflow.metadata" class="metadata">
     <ProjectMetadata
-      v-if="isWorkflowProject || isMetanode"
-      :project-metadata="workflow.metadata!"
+      v-if="projectUtil.isProjectMetadata(workflow.metadata)"
+      :project-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :workflow-id="workflow.info.containerId"
-      :is-workflow-writable="isWorkflowWritable"
       :single-metanode-selected-id="singleMetanodeSelectedId"
+      :can-edit="isWorkflowWritable && !isMetanode"
+      :can-open-workflow-configuration="isWorkflowWritable && !isMetanode"
       @save="updateProjectMetadata"
     />
 
     <ComponentMetadata
-      v-if="isComponentProject || isMetanode"
-      :component-metadata="workflow.metadata! as ComponentMetadataType"
+      v-if="projectUtil.isComponentMetadata(workflow.metadata)"
+      :component-metadata="workflow.metadata"
       :project-id="workflow.projectId"
       :component-id="workflow.info.containerId"
       :available-port-types="availablePortTypes"
       :available-component-types="availableComponentTypes"
-      :is-workflow-writable="isWorkflowWritable"
+      :can-edit="isWorkflowWritable && !isMetanode"
       :single-metanode-selected-id="singleMetanodeSelectedId"
       @save="updateComponentMetadata"
     />
