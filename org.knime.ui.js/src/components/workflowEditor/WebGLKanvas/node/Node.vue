@@ -62,7 +62,7 @@ const { isNodeSelected, getFocusedObject } = storeToRefs(selectionStore);
 const { isWritable } = storeToRefs(useWorkflowStore());
 
 const movingStore = useMovingStore();
-const { movePreviewDelta } = storeToRefs(movingStore);
+const { movePreviewDelta, isDragging } = storeToRefs(movingStore);
 
 const positionWithDelta = computed(() => ({
   x: props.position.x + movePreviewDelta.value.x,
@@ -274,7 +274,7 @@ const actionBarPosition = computed(() => {
     />
 
     <NodeActionBar
-      v-if="isHovering"
+      v-if="isHovering && !isDragging"
       v-bind="allAllowedActions"
       :position="actionBarPosition"
       :node-id="node.id"
