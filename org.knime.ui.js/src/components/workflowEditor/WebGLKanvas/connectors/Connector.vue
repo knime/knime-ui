@@ -181,6 +181,11 @@ watch(isTargetForReplacement, (shouldAnimate) => {
         duration: 0.2,
         ease: "easeOut",
         onUpdate: () => {
+          if (replacementAnimation && !connectorPath.value) {
+            replacementAnimation.stop();
+            return;
+          }
+
           renderFn(connectorPath.value!, normalBezier);
         },
       },
