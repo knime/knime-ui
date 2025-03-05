@@ -17,11 +17,14 @@ import { useSpaceProvidersStore } from "@/store/spaces/providers";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { useWorkflowMonitorStore } from "@/store/workflowMonitor/workflowMonitor";
 import { nodeSize } from "@/style/shapes";
+import { getToastPresets } from "@/toastPresets";
 import { notifyPatch } from "@/util/event-syncer";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 import { $bus } from "./event-bus";
 import type { PluginInitFunction } from "./types";
+
+const { toastPresets } = getToastPresets();
 
 const init: PluginInitFunction = ({ $router, $toast }) => {
   API.event.registerEventHandlers({
@@ -108,24 +111,20 @@ const init: PluginInitFunction = ({ $router, $toast }) => {
     async AppStateChangedEvent({ appState }) {
       consola.info("events::AppStateChangedEvent", { appState });
 
+      const spaceProviders = appState.spaceProviders;
       // needs to happen before 'replaceApplicationState'
-      if (appState.spaceProviders) {
+      if (spaceProviders) {
         try {
-          const { failedProviderIds } =
-            await useSpaceProvidersStore().setAllSpaceProviders(
-              appState.spaceProviders,
+          useSpaceProvidersStore().setAllSpaceProviders(spaceProviders);
+
+          const { failedProviderNames } =
+            await useSpaceProvidersStore().fetchSpaceGroupsForProviders(
+              spaceProviders,
             );
 
-          if (failedProviderIds.length > 0) {
-            const providerNames = failedProviderIds
-              // @ts-expect-error
-              .map((id) => `- ${appState.spaceProviders[id].name}`)
-              .join("\n");
-
-            $toast.show({
-              type: "error",
-              headline: "Failed loading spaces",
-              message: `Could not load spaces for:\n${providerNames}`,
+          if (failedProviderNames.length > 0) {
+            toastPresets.spaces.crud.fetchProviderSpaceGroupsFailed({
+              failedProviderNames,
             });
           }
         } catch (error) {

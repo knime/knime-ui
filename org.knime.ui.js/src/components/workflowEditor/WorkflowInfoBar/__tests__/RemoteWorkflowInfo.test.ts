@@ -66,6 +66,7 @@ describe("RemoteWorkflowInfo.vue", () => {
         spaceGroups: [createSpaceGroup({ spaces: [createSpace()] })],
       }),
     };
+    mockedStores.spaceProvidersStore.hasLoadedProviders = true;
 
     const wrapper = mount(RemoteWorkflowInfo, {
       global: {
@@ -169,6 +170,22 @@ describe("RemoteWorkflowInfo.vue", () => {
     expect(wrapper.text()).toMatch(
       "You have opened a workflow from a KNIME Server. “Save” the workflow back to KNIME Server to keep your changes.",
     );
+  });
+
+  it("should not display banner during short time at startup when provider space groups have not yet been fetched", async () => {
+    const activeProjectId = openProjects.at(0)!.projectId;
+    const workflow = createWorkflow({
+      info: { containerId: activeProjectId },
+    });
+
+    const { wrapper, mockedStores } = doMount({
+      workflow,
+      activeProjectId,
+    });
+    mockedStores.spaceProvidersStore.hasLoadedProviders = false;
+    await nextTick();
+
+    expect(wrapper.find(".banner").exists()).toBe(false);
   });
 
   it("should hide bar when ui control is set", async () => {

@@ -22,6 +22,7 @@ import { ratioToZoomLevel, useSettingsStore } from "@/store/settings";
 import { useAnnotationInteractionsStore } from "@/store/workflow/annotationInteractions";
 import { useComponentInteractionsStore } from "@/store/workflow/componentInteractions";
 import { useWorkflowStore } from "@/store/workflow/workflow";
+import { getToastPresets } from "@/toastPresets";
 import { encodeString } from "@/util/encodeString";
 import { geometry } from "@/util/geometry";
 import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
@@ -35,6 +36,8 @@ import { useApplicationSettingsStore } from "./settings";
 import { useWorkflowPreviewSnapshotsStore } from "./workflowPreviewSnapshots";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
+
+const { toastPresets } = getToastPresets();
 
 type LifecycleState = {
   /**
@@ -151,7 +154,7 @@ export const useLifecycleStore = defineStore("lifecycle", {
 
       // needs to be done before 'replaceApplicationState'
       if (applicationState.spaceProviders) {
-        await useSpaceProvidersStore().setAllSpaceProviders(
+        useSpaceProvidersStore().setAllSpaceProviders(
           applicationState.spaceProviders,
         );
       }
@@ -426,6 +429,31 @@ export const useLifecycleStore = defineStore("lifecycle", {
       this.setIsLoadingApp(false);
       this.afterSetActivateWorkflow();
       lifecycleBus.emit("onWorkflowLoaded");
+    },
+
+    // deliberately using .then instead of async/await, so that space groups are set in the background to speed up app init
+    fetchSpaceGroupsForProviders() {
+      try {
+        const spaceProviders = Object.values(
+          useSpaceProvidersStore().spaceProviders ?? {},
+        );
+        if (spaceProviders.length > 0) {
+          useSpaceProvidersStore()
+            .fetchSpaceGroupsForProviders(spaceProviders)
+            .then(({ failedProviderNames }) => {
+              if (failedProviderNames.length > 0) {
+                toastPresets.spaces.crud.fetchProviderSpaceGroupsFailed({
+                  failedProviderNames,
+                });
+              }
+            });
+        }
+      } catch (error) {
+        consola.error(
+          "lifecycle::fetchSpaceGroupsForProviders -> unexpected error",
+          { error },
+        );
+      }
     },
 
     beforeSetActivateWorkflow({

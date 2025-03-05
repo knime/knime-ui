@@ -20,7 +20,7 @@ type SpacesCrudToastPresets = {
   deleteItemsFailed: ToastPresetErrorHandler;
 
   fetchWorkflowGroupFailed: ToastPresetErrorHandler;
-  fetchProviderSpacesFailed: ToastPresetErrorHandler;
+  fetchProviderSpaceGroupsFailed: ToastPresetErrorHandler;
   reloadProviderSpacesFailed: ToastPresetErrorHandler;
   moveItemsFailed: ToastPresetErrorHandler;
   copyItemsFailed: ToastPresetErrorHandler;
@@ -45,6 +45,11 @@ export type SpacesToastPresets = {
   auth: SpacesAuthToastPresets;
   crud: SpacesCrudToastPresets;
   reveal: SpacesRevealToastPresets;
+};
+
+type FetchProviderSpacesFailedParam = {
+  error?: unknown;
+  failedProviderNames?: string[];
 };
 
 const toastIds = new Set<string>();
@@ -72,11 +77,24 @@ export const getPresets = (
           type: "error",
           headline: "Error deleting items",
         }),
-      fetchProviderSpacesFailed: ({ error }) =>
-        defaultErrorPresetHandler($toast, error, {
+      fetchProviderSpaceGroupsFailed: (
+        param: FetchProviderSpacesFailedParam,
+      ) => {
+        let error: unknown;
+        if (param.failedProviderNames) {
+          error = new Error(
+            `Could not load spaces for:\n${param.failedProviderNames
+              .map((providerName) => `- ${providerName}`)
+              .join("\n")}`,
+          );
+        } else {
+          error = param.error;
+        }
+        return defaultErrorPresetHandler($toast, error, {
           type: "error",
-          headline: "Error fetching provider spaces",
-        }),
+          headline: "Error fetching provider space groups",
+        });
+      },
       reloadProviderSpacesFailed: ({ error }) =>
         defaultErrorPresetHandler($toast, error, {
           type: "error",

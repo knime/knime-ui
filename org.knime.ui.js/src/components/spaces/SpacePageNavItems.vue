@@ -23,7 +23,9 @@ import { formatSpaceProviderName } from "./formatSpaceProviderName";
 import { useSpaceIcons } from "./useSpaceIcons";
 import { useSpaceProviderAuth } from "./useSpaceProviderAuth";
 
-const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
+const { spaceProviders, hasLoadedProviders } = storeToRefs(
+  useSpaceProvidersStore(),
+);
 const $router = useRouter();
 const $route = useRoute();
 
@@ -61,7 +63,10 @@ const shouldShowCreateTeamOption = (
 };
 
 const onProviderClick = (spaceProvider: SpaceProviderNS.SpaceProvider) => {
-  if (isConnectingToProvider.value === spaceProvider.id) {
+  if (
+    isConnectingToProvider.value === spaceProvider.id ||
+    !hasLoadedProviders.value
+  ) {
     return;
   }
 
@@ -197,7 +202,9 @@ const openCreateTeamPage = () => {
       </span>
 
       <LoadingIcon
-        v-if="shouldShowLoading(item.metadata.spaceProvider)"
+        v-if="
+          shouldShowLoading(item.metadata.spaceProvider) || !hasLoadedProviders
+        "
         class="loading-indicator"
       />
 

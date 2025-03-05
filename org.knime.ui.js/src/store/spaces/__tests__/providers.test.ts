@@ -21,43 +21,45 @@ describe("spaces::providers", () => {
   });
 
   describe("setAllSpaceProviders", () => {
+    const spaceProviders: SpaceProvider[] = [
+      {
+        id: "hub1",
+        connected: true,
+        name: "Hub 1",
+        connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+        type: SpaceProvider.TypeEnum.HUB,
+      },
+      {
+        id: "hub2",
+        connected: true,
+        name: "Hub 2",
+        connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+        type: SpaceProvider.TypeEnum.HUB,
+      },
+      {
+        id: "hub3",
+        connected: false,
+        name: "Hub 3",
+        connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
+        type: SpaceProvider.TypeEnum.HUB,
+      },
+    ];
+
+    const mockGroup = createSpaceGroup({
+      id: "group-1",
+      spaces: [createSpace({ id: "space-1" })],
+    });
+
+    const { spaceProvidersStore } = loadStore();
+
     it('should set all providers in state and fetch spaces of connected "AUTOMATIC" providers', async () => {
-      const spaceProviders: SpaceProvider[] = [
-        {
-          id: "hub1",
-          connected: true,
-          name: "Hub 1",
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
-          type: SpaceProvider.TypeEnum.HUB,
-        },
-        {
-          id: "hub2",
-          connected: true,
-          name: "Hub 2",
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
-          type: SpaceProvider.TypeEnum.HUB,
-        },
-        {
-          id: "hub3",
-          connected: false,
-          name: "Hub 3",
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
-          type: SpaceProvider.TypeEnum.HUB,
-        },
-      ];
-
-      const mockGroup = createSpaceGroup({
-        id: "group-1",
-        spaces: [createSpace({ id: "space-1" })],
-      });
-
       mockedAPI.space.getSpaceGroups.mockImplementation(() =>
         Promise.resolve([mockGroup]),
       );
 
-      const { spaceProvidersStore } = loadStore();
-
-      const promise = spaceProvidersStore.setAllSpaceProviders(spaceProviders);
+      spaceProvidersStore.setAllSpaceProviders(spaceProviders);
+      const promise =
+        spaceProvidersStore.fetchSpaceGroupsForProviders(spaceProviders);
 
       expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBe(true);
       expect(spaceProvidersStore.loadingProviderSpacesData.hub2).toBe(true);
@@ -65,11 +67,8 @@ describe("spaces::providers", () => {
         spaceProvidersStore.loadingProviderSpacesData.hub3,
       ).toBeUndefined();
 
-      await flushPromises();
-
       await expect(promise).resolves.toEqual({
-        successfulProviderIds: ["hub1", "hub2"],
-        failedProviderIds: [],
+        failedProviderNames: [],
       });
 
       expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({
@@ -96,36 +95,6 @@ describe("spaces::providers", () => {
     });
 
     it("should handle errors when loading provider data", async () => {
-      const spaceProviders: SpaceProvider[] = [
-        {
-          id: "hub1",
-          connected: true,
-          name: "Hub 1",
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
-          type: SpaceProvider.TypeEnum.HUB,
-        },
-        {
-          id: "hub2",
-          connected: true,
-          name: "Hub 2",
-
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
-          type: SpaceProvider.TypeEnum.HUB,
-        },
-        {
-          id: "hub3",
-          connected: false,
-          name: "Hub 3",
-          connectionMode: SpaceProvider.ConnectionModeEnum.AUTHENTICATED,
-          type: SpaceProvider.TypeEnum.HUB,
-        },
-      ];
-
-      const mockGroup = createSpaceGroup({
-        id: "group-1",
-        spaces: [createSpace({ id: "space-1" })],
-      });
-
       mockedAPI.space.getSpaceGroups.mockImplementation(
         // @ts-ignore
         ({ spaceProviderId }) => {
@@ -137,9 +106,9 @@ describe("spaces::providers", () => {
         },
       );
 
-      const { spaceProvidersStore } = loadStore();
-
-      const promise = spaceProvidersStore.setAllSpaceProviders(spaceProviders);
+      spaceProvidersStore.setAllSpaceProviders(spaceProviders);
+      const promise =
+        spaceProvidersStore.fetchSpaceGroupsForProviders(spaceProviders);
 
       expect(spaceProvidersStore.loadingProviderSpacesData.hub1).toBe(true);
       expect(spaceProvidersStore.loadingProviderSpacesData.hub2).toBe(true);
@@ -147,11 +116,8 @@ describe("spaces::providers", () => {
         spaceProvidersStore.loadingProviderSpacesData.hub3,
       ).toBeUndefined();
 
-      await flushPromises();
-
       await expect(promise).resolves.toEqual({
-        successfulProviderIds: ["hub1"],
-        failedProviderIds: ["hub2"],
+        failedProviderNames: ["Hub 2"],
       });
 
       expect(spaceProvidersStore.spaceProviders!.hub1).toEqual({
@@ -318,13 +284,11 @@ describe("spaces::providers", () => {
       };
 
       const projectId = "project2";
-      const data = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: provider.id,
         spaceId: "space1",
         itemId: "item1",
       };
-
-      spaceCachingStore.projectPath[projectId] = data;
       expect(
         spaceProvidersStore.getProviderInfoFromProjectPath(projectId),
       ).toEqual(provider);
@@ -356,13 +320,11 @@ describe("spaces::providers", () => {
 
       const projectId = "project2";
 
-      const data = {
+      spaceCachingStore.projectPath[projectId] = {
         spaceProviderId: "someProvider",
         spaceId: "space1",
         itemId: "item1",
       };
-
-      spaceCachingStore.projectPath[projectId] = data;
       expect(
         spaceProvidersStore.getProviderInfoFromProjectPath(projectId),
       ).toBeNull();

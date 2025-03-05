@@ -122,9 +122,9 @@ describe("toastPresets", () => {
           "actual deleteItemsFailed error",
         ],
         [
-          "fetchProviderSpacesFailed",
-          "Error fetching provider spaces",
-          "actual fetchProviderSpacesFailed error",
+          "fetchProviderSpaceGroupsFailed",
+          "Error fetching provider space groups",
+          "actual fetchProviderSpaceGroupsFailed error",
         ],
         [
           "fetchWorkflowGroupFailed",

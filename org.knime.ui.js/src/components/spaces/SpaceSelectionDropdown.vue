@@ -36,6 +36,7 @@ const {
   spaceProviders,
   isConnectingToProvider,
   loadingProviderSpacesData,
+  hasLoadedProviders,
   getProviderInfoFromProjectPath,
   getSpaceInfo,
 } = storeToRefs(useSpaceProvidersStore());
@@ -335,7 +336,8 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
   ): MenuItem[] => {
     const isLoading =
       isConnectingToProvider.value === provider.id ||
-      loadingProviderSpacesData.value[provider.id];
+      loadingProviderSpacesData.value[provider.id] ||
+      !hasLoadedProviders.value;
 
     if (isLoading) {
       return [
@@ -381,11 +383,11 @@ const spacesDropdownData = computed<Array<MenuItem<AllMetadata>>>(() => {
   };
 
   return providers.flatMap((provider) => {
-    const base: Array<MenuItem<AllMetadata>> = [];
+    const headline = getHeadline(provider);
 
-    return base
-      .concat(getHeadline(provider) ?? [])
-      .concat(getProviderMenuEntries(provider));
+    return headline
+      ? [headline].concat(getProviderMenuEntries(provider))
+      : getProviderMenuEntries(provider);
   });
 });
 

@@ -58,11 +58,6 @@ describe("AppHeaderContextMenu.vue", () => {
 
   const PROVIDERS = {
     [LOCAL_PROVIDER.id]: createSpaceProvider({
-      id: LOCAL_PROVIDER.id,
-      connected: true,
-      connectionMode: "AUTOMATIC",
-      name: "Local Space",
-      type: SpaceProviderNS.TypeEnum.LOCAL,
       spaceGroups: [
         {
           id: "group1",
@@ -193,6 +188,7 @@ describe("AppHeaderContextMenu.vue", () => {
     mockedStores.applicationStore.setOpenProjects(Object.values(openProjects));
     mockedStores.applicationStore.setActiveProjectId(props.projectId ?? null);
     mockedStores.spaceProvidersStore.spaceProviders = PROVIDERS;
+    mockedStores.spaceProvidersStore.hasLoadedProviders = true;
 
     const wrapper = mount(AppHeaderContextMenu, {
       props: { ...defaultProps, ...props },
@@ -352,6 +348,21 @@ describe("AppHeaderContextMenu.vue", () => {
       const { wrapper } = await doMount({
         props: { projectId },
       });
+
+      expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);
+      expect(wrapper.findComponent(MenuItems).props("items")).toEqual(
+        expect.arrayContaining([expect.objectContaining({ text: "Close" })]),
+      );
+    });
+
+    it("should not display option if space groups have not yet been initialized during startup", async () => {
+      const projectId = openProjects.hubProject.projectId;
+
+      const { wrapper, mockedStores } = await doMount({
+        props: { projectId },
+      });
+      mockedStores.spaceProvidersStore.hasLoadedProviders = false;
+      await nextTick();
 
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(1);
       expect(wrapper.findComponent(MenuItems).props("items")).toEqual(

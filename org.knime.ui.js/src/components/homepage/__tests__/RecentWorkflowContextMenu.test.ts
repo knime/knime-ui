@@ -51,11 +51,6 @@ describe("RecentWorkflowContextMenu.vue", () => {
 
   const PROVIDERS = {
     [LOCAL_PROVIDER.id]: createSpaceProvider({
-      id: LOCAL_PROVIDER.id,
-      connected: true,
-      connectionMode: "AUTOMATIC",
-      name: "Local Space",
-      type: SpaceProviderNS.TypeEnum.LOCAL,
       spaceGroups: [
         {
           id: "group1",
@@ -230,6 +225,7 @@ describe("RecentWorkflowContextMenu.vue", () => {
       },
     });
 
+    useSpaceProvidersStore().$state.hasLoadedProviders = true;
     await nextTick();
 
     return { wrapper };
@@ -274,6 +270,17 @@ describe("RecentWorkflowContextMenu.vue", () => {
 
       useSpaceProvidersStore().spaceProviders = PROVIDERS;
 
+      await nextTick();
+
+      expect(wrapper.findComponent(MenuItems).props("items").length).toBe(0);
+    });
+
+    it("should not display option if space groups have not yet been initialized during startup", async () => {
+      const { wrapper } = await doMount({
+        recentWorkflow: recentWorkflows.serverProject,
+      });
+
+      useSpaceProvidersStore().$state.hasLoadedProviders = true;
       await nextTick();
 
       expect(wrapper.findComponent(MenuItems).props("items").length).toBe(0);

@@ -11,7 +11,9 @@ const { isUnknownProject, openProjects, activeProjectId } = storeToRefs(
   useApplicationStore(),
 );
 const uiControls = useUIControlsStore();
-const { activeProjectProvider } = storeToRefs(useSpaceProvidersStore());
+const { activeProjectProvider, hasLoadedProviders } = storeToRefs(
+  useSpaceProvidersStore(),
+);
 
 const isServerSpace = computed(
   () =>
@@ -24,7 +26,11 @@ const shouldShow = computed(() => {
     (project) => project.projectId === activeProjectId.value,
   );
 
-  if (!uiControls.shouldDisplayRemoteWorkflowInfoBar || !foundProject) {
+  if (
+    !uiControls.shouldDisplayRemoteWorkflowInfoBar ||
+    !foundProject ||
+    !hasLoadedProviders.value
+  ) {
     return false;
   }
 

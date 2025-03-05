@@ -98,6 +98,7 @@ describe("SpaceSelectionDropdown.vue", () => {
     mockedStores.spaceProvidersStore.setSpaceProviders(
       spaceProviders || startSpaceProviders,
     );
+    mockedStores.spaceProvidersStore.hasLoadedProviders = true;
 
     const mockRouter = { push: vi.fn() };
 
@@ -235,13 +236,6 @@ describe("SpaceSelectionDropdown.vue", () => {
   });
 
   it("connects to hub if user clicks 'Sign in'", async () => {
-    const spacesAfterLogin = [
-      createSpaceGroup({
-        name: "group1",
-        spaces: [createSpace({ name: "space1" })],
-      }),
-    ];
-
     const hub2 = createSpaceProvider({
       id: "hub2",
       connected: false,
@@ -257,11 +251,18 @@ describe("SpaceSelectionDropdown.vue", () => {
         hub2,
       },
     });
+    mockedStores.spaceProvidersStore.loadingProviderSpacesData.hub2 = false;
+    await nextTick();
 
     const connectedHub = { ...hub2, connected: true };
-
     mockedAPI.desktop.connectSpaceProvider.mockResolvedValueOnce(connectedHub);
 
+    const spacesAfterLogin = [
+      createSpaceGroup({
+        name: "group1",
+        spaces: [createSpace({ name: "space1" })],
+      }),
+    ];
     vi.mocked(
       mockedStores.spaceProvidersStore.fetchProviderSpaces,
     ).mockResolvedValueOnce(spacesAfterLogin);
@@ -325,7 +326,32 @@ describe("SpaceSelectionDropdown.vue", () => {
 
     const menuItems = wrapper.findComponent(SubMenu).props("items");
 
-    expect(menuItems.at(-1)!.text).toMatch("Loading");
+    expect(menuItems.map(({ text }) => text)).toEqual([
+      "Local Space",
+      "Loading…",
+    ]);
+  });
+
+  it("renders loading state during initialization before space groups have been fetched", async () => {
+    const { wrapper, mockedStores } = doMount({
+      spaceProviders: {
+        local: startSpaceProviders.local,
+        hub2: createSpaceProvider({
+          id: "hub2",
+          connected: true,
+          connectionMode: "AUTHENTICATED",
+          name: "Hub 2",
+        }),
+      },
+    });
+
+    mockedStores.spaceProvidersStore.hasLoadedProviders = false;
+    await nextTick();
+
+    const menuItems = wrapper.findComponent(SubMenu).props("items");
+    expect(menuItems.map(({ text }) => text)).toEqual(
+      Array(2).fill("Loading…"),
+    );
   });
 
   it("handles external link clicks", async () => {

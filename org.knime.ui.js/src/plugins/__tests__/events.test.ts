@@ -9,6 +9,7 @@ import {
   ShowToastEvent,
   SpaceProvider,
 } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts.ts";
 import { deepMocked } from "@/test/utils";
 import { mockStores } from "@/test/utils/mockStores";
 import { notifyPatch } from "@/util/event-syncer";
@@ -24,7 +25,7 @@ const mockedAPI = deepMocked(API);
 
 describe("Event Plugin", () => {
   beforeAll(() => {
-    const registerEventHandlers = (handlers) => {
+    const registerEventHandlers = (handlers: any) => {
       Object.entries(handlers).forEach(([key, value]) => {
         // @ts-ignore
         registeredHandlers[key] = value;
@@ -151,66 +152,53 @@ describe("Event Plugin", () => {
     });
 
     describe("appState event", () => {
-      it("sets the space providers", () => {
+      const providerId = "id1";
+      const spaceProviders = [
+        {
+          id: providerId,
+          name: "provider name",
+          connected: false,
+          connectionMode: SpaceProvider.ConnectionModeEnum.AUTOMATIC,
+          type: SpaceProvider.TypeEnum.HUB,
+        },
+      ];
+      const appStateEventPayload = {
+        appState: {
+          spaceProviders,
+        },
+      };
+
+      it("sets the space providers and fetches space data", () => {
         const { mockedStores } = loadPlugin();
-        registeredHandlers.AppStateChangedEvent!({
-          appState: {
-            spaceProviders: {
-              id1: {
-                id: "id1",
-                name: "provider name",
-                connected: false,
-                connectionMode: SpaceProvider.ConnectionModeEnum.AUTOMATIC,
-                type: SpaceProvider.TypeEnum.HUB,
-              },
-            },
-          },
-        });
+        vi.mocked(
+          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
+        ).mockResolvedValueOnce({ failedProviderNames: [] });
+
+        registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
+
         expect(
           mockedStores.spaceProvidersStore.setAllSpaceProviders,
-        ).toHaveBeenCalledWith({
-          id1: {
-            connected: false,
-            connectionMode: "AUTOMATIC",
-            id: "id1",
-            name: "provider name",
-            type: "HUB",
-          },
-        });
+        ).toHaveBeenCalledWith(spaceProviders);
+        expect(
+          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
+        ).toHaveBeenCalledWith(spaceProviders);
       });
 
-      it("shows an error toast if space provider can't be loaded", async () => {
-        const { mockedStores, toastMock } = loadPlugin();
-
-        const providerId = "id1";
-
+      it("shows an error toast if a provider's space groups can't be loaded", async () => {
+        const { mockedStores } = loadPlugin();
         vi.mocked(
-          mockedStores.spaceProvidersStore.setAllSpaceProviders,
+          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
         ).mockResolvedValueOnce({
-          failedProviderIds: [providerId],
-          successfulProviderIds: [],
+          failedProviderNames: [spaceProviders[0].name],
         });
 
-        registeredHandlers.AppStateChangedEvent!({
-          appState: {
-            spaceProviders: {
-              id1: {
-                id: providerId,
-                name: "provider name",
-                connected: false,
-                connectionMode: SpaceProvider.ConnectionModeEnum.AUTOMATIC,
-                type: SpaceProvider.TypeEnum.HUB,
-              },
-            },
-          },
-        });
-
+        registeredHandlers.AppStateChangedEvent!(appStateEventPayload);
         await flushPromises();
 
-        expect(toastMock.show).toHaveBeenCalledWith({
+        expect(getToastsProvider().show).toHaveBeenCalledWith({
+          headline: "Error fetching provider space groups",
+          message: "Could not load spaces for:\n- provider name",
           type: "error",
-          headline: "Failed loading spaces",
-          message: expect.stringMatching("provider name"),
         });
       });
 
@@ -221,6 +209,9 @@ describe("Event Plugin", () => {
         });
         expect(
           mockedStores.spaceProvidersStore.setAllSpaceProviders,
+        ).not.toHaveBeenCalled();
+        expect(
+          mockedStores.spaceProvidersStore.fetchSpaceGroupsForProviders,
         ).not.toHaveBeenCalled();
       });
 

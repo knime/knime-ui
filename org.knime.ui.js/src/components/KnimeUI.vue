@@ -118,6 +118,9 @@ const setup = async () => {
 
     // render the application
     loaded.value = true;
+
+    // fetch provider space groups
+    lifecycleStore.fetchSpaceGroupsForProviders();
   } catch (_error) {
     if (_error instanceof Error) {
       error.value = { message: _error.message, stack: _error.stack };

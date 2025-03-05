@@ -78,77 +78,84 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       this.spaceProviders = spaceProviders;
     },
 
-    setAllSpaceProviders(spaceProvidersMetaInfo: SpaceProvider[]) {
-      const spaceProviders = Object.fromEntries(
-        spaceProvidersMetaInfo.map((sp) => [sp.id, { ...sp, spaceGroups: [] }]),
+    setAllSpaceProviders(spaceProviders: SpaceProvider[]) {
+      consola.trace("action::setAllSpaceProviders -> Setting provider spaces");
+      this.setHasLoadedProviders(false);
+      const spaceProvidersById = Object.fromEntries(
+        spaceProviders.map((sp) => [sp.id, { ...sp, spaceGroups: [] }]),
       );
-      const connectedProviderIds = Object.values(spaceProviders)
+
+      // add the providers without data to make them visible
+      this.setSpaceProviders(spaceProvidersById);
+      this.setIsLoadingProviders(false);
+    },
+
+    fetchSpaceGroupsForProviders(
+      spaceProviders: SpaceProvider[] | SpaceProviderNS.SpaceProvider[],
+    ) {
+      const spaceProvidersById = Object.fromEntries(
+        spaceProviders.map((sp) => [sp.id, sp]),
+      );
+      const connectedProviderIds = spaceProviders
         .filter(
           ({ connected, connectionMode }) =>
             connected || connectionMode === "AUTOMATIC",
         )
         .map(({ id }) => id);
 
-      // add the providers without data to make them visible
-      this.setSpaceProviders(spaceProviders);
-      this.setIsLoadingProviders(false);
-
       consola.trace(
-        "action::setAllSpaceProviders -> Fetching provider spaces",
+        "action::fetchSpaceGroupsForProviders -> Fetching provider space groups",
         {
           connectedProviderIds,
         },
       );
 
-      const successfulProviderIds: string[] = [];
-      const failedProviderIds: string[] = [];
+      const failedProviderNames: string[] = [];
 
       const { promise, resolve } = createUnwrappedPromise<{
-        successfulProviderIds: string[];
-        failedProviderIds: string[];
+        failedProviderNames: string[];
       }>();
 
-      const dataLoadQueue: Promise<unknown>[] = [];
+      const spaceGroupsQueue: Promise<void>[] = [];
 
       for (const id of connectedProviderIds) {
-        const loadDataPromise = this.fetchProviderSpaces({ id })
-          .then((spacesData) => {
-            successfulProviderIds.push(id);
-            const { spaceGroups, ...providerMeta } = spaceProviders[id];
+        const currentSpaceProvider = spaceProvidersById[id];
+        const spaceGroupsPromise = this.fetchProviderSpaces({ id })
+          .then((spaceGroups) => {
             this.updateSpaceProvider({
               id,
               value: {
-                ...providerMeta,
-                spaceGroups: spacesData,
-              } satisfies SpaceProviderNS.SpaceProvider,
+                ...currentSpaceProvider,
+                spaceGroups,
+              },
             });
 
             consola.info(
-              "action::setAllSpaceProviders -> updated provider spaces",
-              { spacesData, updatedProvider: spaceProviders[id] },
+              "action::fetchSpaceGroupsForProviders -> Fetched provider space groups",
+              { spaceGroups, updatedProvider: currentSpaceProvider },
             );
           })
           .catch((error) => {
-            failedProviderIds.push(id);
+            failedProviderNames.push(currentSpaceProvider.name);
 
             consola.error(
-              "action::setAllSpaceProviders -> Failed to load provider spaces",
+              "action::fetchSpaceGroupsForProviders -> Failed to fetch provider space groups",
               { spaceProviderId: id, error },
             );
 
             // set as disconnected so that user re-attempts the data fetch on login
             this.updateSpaceProvider({
               id,
-              value: { ...spaceProviders[id], connected: false },
+              value: { ...currentSpaceProvider, connected: false },
             });
           });
 
-        dataLoadQueue.push(loadDataPromise);
+        spaceGroupsQueue.push(spaceGroupsPromise);
       }
 
-      Promise.allSettled(dataLoadQueue).then(() => {
+      Promise.allSettled(spaceGroupsQueue).then(() => {
         this.setHasLoadedProviders(true);
-        resolve({ successfulProviderIds, failedProviderIds });
+        resolve({ failedProviderNames });
       });
 
       return promise;
@@ -158,14 +165,16 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
       try {
         this.setLoadingProviderData({ id, loading: true });
 
-        const data = await API.space.getSpaceGroups({ spaceProviderId: id });
+        const spaceGroups = await API.space.getSpaceGroups({
+          spaceProviderId: id,
+        });
 
         consola.info("action::fetchProviderSpaces", {
           params: { id },
-          response: data,
+          response: spaceGroups,
         });
 
-        return data;
+        return spaceGroups;
       } catch (error) {
         consola.error(
           "action::fetchProviderSpaces -> Error fetching provider spaces",
@@ -189,15 +198,16 @@ export const useSpaceProvidersStore = defineStore("space.providers", {
           { spaceProviderId: id },
         );
 
-        const { spaceGroups, ...spaceProviderMeta } = this.spaceProviders[id];
-        const spacesData = await this.fetchProviderSpaces({ id });
+        const { spaceGroups: _oldSpaceGroups, ...spaceProviderMeta } =
+          this.spaceProviders[id];
+        const newSpaceGroups = await this.fetchProviderSpaces({ id });
 
         this.updateSpaceProvider({
           id,
           value: {
             ...spaceProviderMeta,
-            spaceGroups: spacesData,
-          } satisfies SpaceProviderNS.SpaceProvider,
+            spaceGroups: newSpaceGroups,
+          },
         });
       } catch (error) {
         consola.error(
