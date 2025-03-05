@@ -50,8 +50,6 @@ package org.knime.ui.java.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.knime.ui.java.util.MostRecentlyUsedProjectsTest.createOrigin;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -59,7 +57,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -254,15 +251,13 @@ public class AppStatePersistorTest {
     public static void openWorkflowProject(final boolean isLocal) {
         var pm = ProjectManager.getInstance();
 
-        var project = mock(Project.class);
-        when(project.getID()).thenReturn("test_id");
-        when(project.getName()).thenReturn("Test Project");
 
         var providerId = isLocal ? SpaceProvider.LOCAL_SPACE_PROVIDER_ID : "other provider id";
         var spaceId = isLocal ? LocalSpace.LOCAL_SPACE_ID : "other space id";
         var origin = new Origin(providerId, spaceId, itemId);
-        when(project.getOrigin()).thenReturn(Optional.of(origin));
 
+        var project = Project.builder().setWfmLoader(() -> null).setName("Test Project").setId("test_id")
+            .setOrigin(origin).build();
         pm.addProject(project);
     }
 
