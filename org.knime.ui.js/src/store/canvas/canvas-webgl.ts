@@ -1,7 +1,15 @@
+/* eslint-disable no-undefined */
 /* eslint-disable no-magic-numbers */
 /* eslint-disable max-lines */
 
-import { type UnwrapRef, computed, nextTick, ref, shallowRef } from "vue";
+import {
+  type ShallowRef,
+  type UnwrapRef,
+  computed,
+  nextTick,
+  ref,
+  shallowRef,
+} from "vue";
 import { animate } from "motion";
 import { defineStore } from "pinia";
 import { type IRenderLayer } from "pixi.js";
@@ -49,8 +57,19 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     anchor: { x: 0, y: 0 },
   });
   const pixiApplication = shallowRef<ApplicationInst | null>(null);
-  const backgroundRenderLayer = shallowRef<IRenderLayer | null>(null);
-  const selectionRenderLayer = shallowRef<IRenderLayer | null>(null);
+
+  type CanvasLayerNames = "background" | "selectedNodes";
+  type CanvasLayers = Record<CanvasLayerNames, IRenderLayer | undefined>;
+  const canvasLayers: ShallowRef<CanvasLayers> = shallowRef({
+    background: undefined,
+    selectedNodes: undefined,
+  });
+
+  const removeLayers = () => {
+    canvasLayers.value.background = undefined;
+    canvasLayers.value.selectedNodes = undefined;
+  };
+
   const stage = shallowRef<StageInst | null>(null);
   const isDebugModeEnabled = ref(false);
 
@@ -633,8 +652,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasOffset,
     canvasAnchor,
     pixiApplication,
-    backgroundRenderLayer,
-    selectionRenderLayer,
+    canvasLayers,
     stage,
     isDebugModeEnabled,
     fromCanvasCoordinates,
@@ -647,6 +665,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     globalToWorldCoordinates,
     screenFromCanvasCoordinates,
     screenToCanvasCoordinates,
+    removeLayers,
     setFactor,
     setContainerSize,
     setInteractionsEnabled,

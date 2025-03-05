@@ -55,7 +55,7 @@ const props = withDefaults(defineProps<ConnectorProps>(), {
 
 const { isDragging, movePreviewDelta } = storeToRefs(useMovingStore());
 const { isNodeSelected } = storeToRefs(useSelectionStore());
-const { visibleArea, isDebugModeEnabled, selectionRenderLayer } = storeToRefs(useWebGLCanvasStore());
+const { visibleArea, isDebugModeEnabled } = storeToRefs(useWebGLCanvasStore());
 
 const { sourceNode, sourcePort, destNode, destPort, id, absolutePoint } =
   toRefs(props);
@@ -235,9 +235,6 @@ const renderable = computed(() => {
 </script>
 
 <template>
-  <Container
-    :layer="isNodeSelected(sourceNode ?? '') || isNodeSelected(destNode ?? '') ? selectionRenderLayer : null"
-  >
   <Graphics
     ref="connectorPath"
     :renderable="renderable"
@@ -245,5 +242,4 @@ const renderable = computed(() => {
     :label="`Connector__${id}`"
     @render="renderFn($event, getBezier(...startEndWithMoveDeltas))"
   />
-  </Container>
 </template>

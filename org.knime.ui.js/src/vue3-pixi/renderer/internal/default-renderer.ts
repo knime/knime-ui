@@ -43,7 +43,7 @@ import {
   type IRenderLayer,
 } from "pixi.js";
 
-import { patchProp as defuPatchProp, patchBooleanProp } from "../patchProp";
+import { patchProp as defaultPatchProp, patchBooleanProp } from "../patchProp";
 import { normalizeTexture } from "../utils";
 
 import {
@@ -64,7 +64,7 @@ const ContainerRender: RendererOptions = {
         break;
 
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };
@@ -102,7 +102,7 @@ const TextRender: RendererOptions = {
         );
         break;
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };
@@ -126,7 +126,7 @@ const BitmapTextRender: RendererOptions = {
         patchBooleanProp(el, key, prev, next);
         break;
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };
@@ -149,7 +149,7 @@ const TilingSpriteRender: RendererOptions = {
         patchBooleanProp(el, key, prev, next);
         break;
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };
@@ -187,7 +187,7 @@ const AnimatedSpriteRender: RendererOptions = {
         Reflect.set(el, key, next);
         break;
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };
@@ -207,7 +207,7 @@ const MeshRender: RendererOptions = {
         patchBooleanProp(el, key, prev, next);
         break;
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };
@@ -280,7 +280,7 @@ const DisplacementFilterRender: RendererOptions = {
         // setSkipFirstValue(el, key, () => el.scale = next)
         break;
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };
@@ -300,7 +300,7 @@ const NoiseFilterRender: RendererOptions = {
         setSkipFirstValue(el, key, () => (el[key] = next));
         break;
       default:
-        defuPatchProp(el, key, prev, next);
+        defaultPatchProp(el, key, prev, next);
     }
   },
 };

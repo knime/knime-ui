@@ -6,7 +6,6 @@ import {
   onMounted,
   onUnmounted,
   ref,
-  useTemplateRef,
   watch,
 } from "vue";
 import { debounce } from "lodash-es";
@@ -20,7 +19,7 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { KANVAS_ID, getKanvasDomElement } from "@/util/getKanvasDomElement";
-import { Application, type ApplicationInst, type ContainerInst } from "@/vue3-pixi";
+import { Application, type ApplicationInst } from "@/vue3-pixi";
 import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
@@ -34,8 +33,11 @@ const pixiApp = ref<ApplicationInst>();
 // offset calculations for events (panning, zooming, etc). Causes issues on Mac
 
 const canvasStore = useWebGLCanvasStore();
-const { containerSize, isDebugModeEnabled: isCanvasDebugEnabled } =
-  storeToRefs(canvasStore);
+const {
+  containerSize,
+  isDebugModeEnabled: isCanvasDebugEnabled,
+  canvasLayers,
+} = storeToRefs(canvasStore);
 
 const rootEl = ref<HTMLElement | null>(null);
 
@@ -80,7 +82,18 @@ onMounted(() => {
   initResizeObserver();
 });
 
-const selectionLayerContainer = useTemplateRef<ContainerInst>("selectionLayerContainer");
+const MAIN_CONTAINER_LABEL = "MainContainer";
+
+const addBackgroundRenderLayer = (app: ApplicationInst["app"]) => {
+  // add a background layer so we can move the selection plane of the nodes all the way
+  // to the back
+  const backgroundRenderLayer = new RenderLayer();
+  // @ts-expect-error
+  backgroundRenderLayer.label = "BackgroundRenderLayer";
+
+  app.stage.addChildAt(backgroundRenderLayer, 0);
+  canvasLayers.value.background = backgroundRenderLayer;
+};
 
 watch(
   isPixiAppInitialized,
@@ -98,12 +111,7 @@ watch(
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
     canvasStore.stage = app.stage;
 
-    // add a background layer so we can move nodes to that layer to keep the other on top of them
-    canvasStore.selectionRenderLayer  = new RenderLayer();
-    canvasStore.backgroundRenderLayer = new RenderLayer();
-    app.stage.addChildAt(canvasStore.backgroundRenderLayer, 0);
-
-    selectionLayerContainer.value?.addChild(canvasStore.selectionRenderLayer);
+    addBackgroundRenderLayer(app);
 
     // eslint-disable-next-line no-magic-numbers
     app.ticker.add((tick) => Actions.tick(tick.deltaTime / 60));
@@ -119,7 +127,7 @@ onBeforeUnmount(() => {
 
 onUnmounted(() => {
   canvasStore.pixiApplication = null;
-  canvasStore.backgroundRenderLayer = null;
+  canvasStore.removeLayers();
   canvasStore.stage = null;
   clearIconCache();
 });
@@ -168,11 +176,10 @@ const onWheelEvent = (event: WheelEvent) => {
       @pointerdown.middle="mousePan"
       @init-complete="isPixiAppInitialized = true"
     >
-      <Container label="contentBounds">
+      <Container :label="MAIN_CONTAINER_LABEL">
         <Debug v-if="isCanvasDebugEnabled" />
         <slot />
       </Container>
-      <Container ref="selectionLayerContainer"/>
     </Application>
   </div>
 </template>
