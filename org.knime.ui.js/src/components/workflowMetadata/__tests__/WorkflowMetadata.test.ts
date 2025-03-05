@@ -13,7 +13,7 @@ import {
 import type { Workflow } from "@/api/custom-types";
 import {
   ComponentNodeAndDescription,
-  TypedText,
+  EditableMetadata,
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
@@ -42,6 +42,7 @@ describe("WorkflowMetadata.vue", () => {
         containerType: WorkflowInfo.ContainerTypeEnum.Project,
       },
       metadata: {
+        metadataType: EditableMetadata.MetadataTypeEnum.Project,
         lastEdit: "",
       },
     });
@@ -81,12 +82,14 @@ describe("WorkflowMetadata.vue", () => {
 
     it("renders all metadata", () => {
       const workflow = createWorkflow({
-        info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
+        info: {
+          containerType: WorkflowInfo.ContainerTypeEnum.Project,
+        },
         metadata: {
+          metadataType: EditableMetadata.MetadataTypeEnum.Project,
           lastEdit: "2000-01-01T00:00Z",
           description: {
             value: "Description",
-            contentType: TypedText.ContentTypeEnum.Plain,
           },
           links: [{ text: "link1" }],
           tags: ["tag1"],
@@ -117,14 +120,18 @@ describe("WorkflowMetadata.vue", () => {
         info: {
           containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
-        // @ts-ignore
-        projectMetadata: null,
-        componentMetadata: {
+        metadata: {
+          metadataType: EditableMetadata.MetadataTypeEnum.Component,
           name: "name",
-          // @ts-ignore
           inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
-          outPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
-          description: { value: "Description" },
+          outPorts: [
+            {
+              typeId: "org.knime.core.node.BufferedDataTable",
+            },
+          ],
+          description: {
+            value: "Description",
+          },
           type: ComponentNodeAndDescription.TypeEnum.Source,
           views: [{ name: "view", description: "description" }],
           options: [],
@@ -151,11 +158,9 @@ describe("WorkflowMetadata.vue", () => {
         info: {
           containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
-        // @ts-ignore
-        projectMetadata: null,
-        componentMetadata: {
+        metadata: {
+          metadataType: EditableMetadata.MetadataTypeEnum.Component,
           name: "name",
-          // @ts-ignore
           inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
           outPorts: [
             {
@@ -165,7 +170,6 @@ describe("WorkflowMetadata.vue", () => {
           ],
           description: {
             value: "Description",
-            contentType: TypedText.ContentTypeEnum.Plain,
           },
           type: ComponentNodeAndDescription.TypeEnum.Source,
           views: [{ name: "view", description: "description" }],
@@ -219,11 +223,9 @@ describe("WorkflowMetadata.vue", () => {
         info: {
           containerType: WorkflowInfo.ContainerTypeEnum.Component,
         },
-        // @ts-ignore
-        projectMetadata: null,
-        componentMetadata: {
+        metadata: {
+          metadataType: EditableMetadata.MetadataTypeEnum.Component,
           name: "name",
-          // @ts-ignore
           inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
           outPorts: [
             {
@@ -233,7 +235,6 @@ describe("WorkflowMetadata.vue", () => {
           ],
           description: {
             value: "Description",
-            contentType: TypedText.ContentTypeEnum.Plain,
           },
           type: ComponentNodeAndDescription.TypeEnum.Source,
           views: [{ name: "view", description: "description" }],
@@ -247,7 +248,6 @@ describe("WorkflowMetadata.vue", () => {
         tags: [],
         description: {
           value: "This is a description",
-          contentType: "",
         },
         inPorts: [],
         outPorts: [],
@@ -271,12 +271,14 @@ describe("WorkflowMetadata.vue", () => {
     const { wrapper, mockedStores } = doMount();
 
     const workflow = createWorkflow({
-      info: { containerType: WorkflowInfo.ContainerTypeEnum.Project },
+      info: {
+        containerType: WorkflowInfo.ContainerTypeEnum.Project,
+      },
       metadata: {
+        metadataType: EditableMetadata.MetadataTypeEnum.Project,
         lastEdit: "2000-01-01T00:00Z",
         description: {
           value: "Description",
-          contentType: TypedText.ContentTypeEnum.Plain,
         },
         links: [{ text: "link1" }],
         tags: ["tag1"],
@@ -308,11 +310,9 @@ describe("WorkflowMetadata.vue", () => {
       info: {
         containerType: WorkflowInfo.ContainerTypeEnum.Project,
       },
-      // @ts-ignore
-      projectMetadata: null,
-      componentMetadata: {
+      metadata: {
+        metadataType: EditableMetadata.MetadataTypeEnum.Component,
         name: "name",
-        // @ts-ignore
         inPorts: [{ typeId: "org.knime.core.node.BufferedDataTable" }],
         outPorts: [
           {
@@ -322,7 +322,6 @@ describe("WorkflowMetadata.vue", () => {
         ],
         description: {
           value: "Description",
-          contentType: TypedText.ContentTypeEnum.Plain,
         },
         type: ComponentNodeAndDescription.TypeEnum.Source,
         views: [{ name: "view", description: "description" }],
@@ -349,7 +348,7 @@ describe("WorkflowMetadata.vue", () => {
     mockedStores.workflowStore.setActiveWorkflow(workflow);
     await nextTick();
 
-    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(false);
+    expect(wrapper.findComponent(ProjectMetadata).exists()).toBe(true);
     expect(wrapper.findComponent(ComponentMetadata).exists()).toBe(false);
   });
 });

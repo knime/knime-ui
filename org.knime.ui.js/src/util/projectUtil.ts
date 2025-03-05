@@ -5,13 +5,11 @@ import {
   WorkflowInfo,
 } from "@/api/gateway-api/generated-api";
 
-export const isWorkflowProjectType = (
-  containerType: WorkflowInfo["containerType"],
-) => containerType === WorkflowInfo.ContainerTypeEnum.Project;
+const isWorkflowProjectType = (containerType: WorkflowInfo["containerType"]) =>
+  containerType === WorkflowInfo.ContainerTypeEnum.Project;
 
-export const isComponentProjectType = (
-  containerType: WorkflowInfo["containerType"],
-) => containerType === WorkflowInfo.ContainerTypeEnum.Component;
+const isComponentProjectType = (containerType: WorkflowInfo["containerType"]) =>
+  containerType === WorkflowInfo.ContainerTypeEnum.Component;
 
 export const isProjectMetadata = (
   metadata: Workflow["metadata"],
@@ -22,7 +20,7 @@ export const isProjectMetadata = (
 export const isComponentMetadata = (
   metadata: Workflow["metadata"],
 ): metadata is ComponentMetadata => {
-  return metadata.metadataType === EditableMetadata.MetadataTypeEnum.Component;
+  return metadata?.metadataType === EditableMetadata.MetadataTypeEnum.Component;
 };
 
 /**

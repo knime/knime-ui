@@ -6,6 +6,7 @@ import { FunctionButton } from "@knime/components";
 
 import {
   ComponentNodeAndDescription,
+  EditableMetadata,
   type Link,
   PortType,
   TypedText,
@@ -24,7 +25,8 @@ describe("ComponentMetadata.vue", () => {
 
   const workflow = createWorkflow({
     info: { containerId: "root:3:1" },
-    componentMetadata: {
+    metadata: {
+      metadataType: EditableMetadata.MetadataTypeEnum.Component,
       name: "Component name",
       description: {
         value: "This is a dummy description",
@@ -48,7 +50,7 @@ describe("ComponentMetadata.vue", () => {
   const defaultProps: ComponentProps = {
     projectId: workflow.projectId,
     componentId: workflow.info.containerId,
-    componentMetadata: workflow.componentMetadata!,
+    componentMetadata: workflow.metadata!,
     availableComponentTypes,
     availablePortTypes: createAvailablePortTypes({
       "org.some.otherPorType": {
@@ -57,7 +59,7 @@ describe("ComponentMetadata.vue", () => {
         name: "Some other port",
       },
     }),
-    isWorkflowWritable: true,
+    canEdit: true,
     singleMetanodeSelectedId: null,
   };
 
@@ -134,7 +136,7 @@ describe("ComponentMetadata.vue", () => {
   it("should render content", () => {
     const { wrapper } = doMount();
 
-    const { description, links, tags } = workflow.componentMetadata!;
+    const { description, links, tags } = workflow.metadata!;
 
     expect(wrapper.findAllComponents(FunctionButton).length).toBe(1);
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
@@ -246,7 +248,7 @@ describe("ComponentMetadata.vue", () => {
 
     await wrapper.findComponent(FunctionButton).find("button").trigger("click");
 
-    const { description, links, tags } = workflow.componentMetadata!;
+    const { description, links, tags } = workflow.metadata!;
 
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
@@ -276,8 +278,9 @@ describe("ComponentMetadata.vue", () => {
 
     const workflow2 = createWorkflow({
       info: { containerId: "root:3:1" },
-      componentMetadata: {
+      metadata: {
         name: "Component name 2",
+        metadataType: EditableMetadata.MetadataTypeEnum.Component,
         description: {
           value: "This is another description",
           contentType: TypedText.ContentTypeEnum.Plain,
@@ -303,7 +306,7 @@ describe("ComponentMetadata.vue", () => {
     await wrapper.setProps({
       projectId: workflow2.projectId,
       componentId: workflow2.info.containerId,
-      componentMetadata: workflow2.componentMetadata!,
+      componentMetadata: workflow2.metadata!,
     });
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
@@ -333,7 +336,7 @@ describe("ComponentMetadata.vue", () => {
       workflowId: "root:3:1",
     });
 
-    const { componentMetadata: componentMetadata2 } = workflow2;
+    const { metadata: componentMetadata2 } = workflow2;
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
       false,
     );
@@ -392,7 +395,7 @@ describe("ComponentMetadata.vue", () => {
   });
 
   it("should not allow edit if workflow is not writable", () => {
-    const { wrapper } = doMount({ props: { isWorkflowWritable: false } });
+    const { wrapper } = doMount({ props: { canEdit: false } });
 
     expect(wrapper.find("[data-test-id='edit-button']").exists()).toBe(false);
   });
@@ -453,7 +456,8 @@ describe("ComponentMetadata.vue", () => {
   it("should save only valid data on click-away", async () => {
     const workflow2 = createWorkflow({
       info: { containerId: "root:3:1" },
-      componentMetadata: {
+      metadata: {
+        metadataType: EditableMetadata.MetadataTypeEnum.Component,
         name: "Component name 2",
         description: {
           value: "This is another description",
@@ -483,7 +487,7 @@ describe("ComponentMetadata.vue", () => {
     await wrapper.setProps({
       projectId: workflow2.projectId,
       componentId: workflow2.info.containerId,
-      componentMetadata: workflow2.componentMetadata!,
+      componentMetadata: workflow2.metadata!,
     });
 
     expect(wrapper.emitted("save")![0][0]).toEqual({

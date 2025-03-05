@@ -4,7 +4,11 @@ import { VueWrapper, mount } from "@vue/test-utils";
 
 import { FunctionButton } from "@knime/components";
 
-import { type Link, TypedText } from "@/api/gateway-api/generated-api";
+import {
+  EditableMetadata,
+  type Link,
+  TypedText,
+} from "@/api/gateway-api/generated-api";
 import ExternalResourcesList from "@/components/common/ExternalResourcesList.vue";
 import { createWorkflow } from "@/test/factories";
 import MetadataDescription from "../MetadataDescription.vue";
@@ -15,7 +19,8 @@ describe("ProjectMetadata.vue", () => {
   type ComponentProps = InstanceType<typeof ProjectMetadata>["$props"];
 
   const workflow = createWorkflow({
-    projectMetadata: {
+    metadata: {
+      metadataType: EditableMetadata.MetadataTypeEnum.Project,
       description: {
         value: "This is a dummy description",
         contentType: TypedText.ContentTypeEnum.Plain,
@@ -32,9 +37,10 @@ describe("ProjectMetadata.vue", () => {
   const defaultProps: ComponentProps = {
     projectId: workflow.projectId,
     workflowId: workflow.info.containerId,
-    isWorkflowWritable: true,
-    projectMetadata: workflow.projectMetadata!,
+    canEdit: true,
+    projectMetadata: workflow.metadata!,
     singleMetanodeSelectedId: null,
+    canOpenWorkflowConfiguration: false,
   };
 
   const doMount = ({ props }: { props?: Partial<ComponentProps> } = {}) => {
@@ -51,9 +57,9 @@ describe("ProjectMetadata.vue", () => {
   it("should render content", () => {
     const { wrapper, workflow } = doMount();
 
-    const { description, links, tags } = workflow.projectMetadata!;
+    const { description, links, tags } = workflow.metadata!;
 
-    expect(wrapper.findAllComponents(FunctionButton).length).toBe(2);
+    expect(wrapper.findAllComponents(FunctionButton).length).toBe(1);
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
       false,
     );
@@ -165,7 +171,7 @@ describe("ProjectMetadata.vue", () => {
 
     await startEdit(wrapper);
 
-    const { description, links, tags } = workflow.projectMetadata!;
+    const { description, links, tags } = workflow.metadata!;
 
     const descriptionComponent = wrapper.findComponent(MetadataDescription);
     const linksComponent = wrapper.findComponent(ExternalResourcesList);
@@ -185,7 +191,8 @@ describe("ProjectMetadata.vue", () => {
     const { wrapper } = doMount();
 
     const workflow2 = createWorkflow({
-      projectMetadata: {
+      metadata: {
+        metadataType: EditableMetadata.MetadataTypeEnum.Project,
         description: {
           value: "This is the description of the 2nd workflow",
           contentType: TypedText.ContentTypeEnum.Html,
@@ -203,12 +210,12 @@ describe("ProjectMetadata.vue", () => {
     await wrapper.setProps({
       projectId: workflow2.projectId,
       workflowId: workflow2.info.containerId,
-      projectMetadata: workflow2.projectMetadata!,
+      projectMetadata: workflow2.metadata!,
     });
 
     expect(wrapper.emitted("save")).toBeUndefined();
 
-    const { projectMetadata: projectMetadata2 } = workflow2;
+    const { metadata: projectMetadata2 } = workflow2;
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
       false,
     );
@@ -233,7 +240,8 @@ describe("ProjectMetadata.vue", () => {
     const { wrapper } = doMount();
 
     const workflow2 = createWorkflow({
-      projectMetadata: {
+      metadata: {
+        metadataType: EditableMetadata.MetadataTypeEnum.Project,
         description: {
           value: "This is the description of the 2nd workflow",
           contentType: TypedText.ContentTypeEnum.Plain,
@@ -257,7 +265,7 @@ describe("ProjectMetadata.vue", () => {
     await wrapper.setProps({
       projectId: workflow2.projectId,
       workflowId: workflow2.info.containerId,
-      projectMetadata: workflow2.projectMetadata!,
+      projectMetadata: workflow2.metadata!,
     });
 
     expect(wrapper.emitted("save")![0][0]).toEqual({
@@ -271,8 +279,8 @@ describe("ProjectMetadata.vue", () => {
       workflowId: defaultProps.workflowId,
     });
 
-    const { projectMetadata: projectMetadata2 } = workflow2;
-    expect(wrapper.findAllComponents(FunctionButton).length).toBe(2);
+    const { metadata: projectMetadata2 } = workflow2;
+    expect(wrapper.findAllComponents(FunctionButton).length).toBe(1);
     expect(wrapper.findComponent(MetadataDescription).props("editable")).toBe(
       false,
     );
@@ -317,7 +325,7 @@ describe("ProjectMetadata.vue", () => {
   });
 
   it("should not allow edit if workflow is not writable", () => {
-    const { wrapper } = doMount({ props: { isWorkflowWritable: false } });
+    const { wrapper } = doMount({ props: { canEdit: false } });
 
     expect(wrapper.find("[data-test-id='edit-button']").exists()).toBe(false);
   });
@@ -361,7 +369,8 @@ describe("ProjectMetadata.vue", () => {
 
   it("should save only valid data on click-away", async () => {
     const workflow2 = createWorkflow({
-      projectMetadata: {
+      metadata: {
+        metadataType: EditableMetadata.MetadataTypeEnum.Project, // explicitly set type
         description: {
           value: "This is the description of the 2nd workflow",
           contentType: TypedText.ContentTypeEnum.Plain,
@@ -386,9 +395,8 @@ describe("ProjectMetadata.vue", () => {
     await wrapper.setProps({
       projectId: workflow2.projectId,
       workflowId: workflow2.info.containerId,
-      projectMetadata: workflow2.projectMetadata!,
+      projectMetadata: workflow2.metadata!,
     });
-
     expect(wrapper.emitted("save")![0][0]).toEqual({
       description: {
         contentType: TypedText.ContentTypeEnum.Html,

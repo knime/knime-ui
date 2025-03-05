@@ -2,6 +2,7 @@ import { merge } from "lodash-es";
 
 import type { ComponentNodeDescription } from "@/api/custom-types";
 import {
+  EditableMetadata,
   type NativeNodeDescription,
   TypedText,
 } from "@/api/gateway-api/generated-api";
@@ -44,6 +45,7 @@ export const createComponentNodeDescription = (
 ): ComponentNodeDescription => {
   const base: ComponentNodeDescription = {
     name: "Component",
+    metadataType: EditableMetadata.MetadataTypeEnum.Component,
     description: {
       value: "<p>Awesome description</p>",
       contentType: TypedText.ContentTypeEnum.Html,

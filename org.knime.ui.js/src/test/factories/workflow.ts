@@ -2,6 +2,7 @@ import { merge } from "lodash-es";
 
 import type { KnimeNode, Workflow } from "@/api/custom-types";
 import {
+  EditableMetadata,
   MetaNodePort,
   NativeNodeInvariants,
   TypedText,
@@ -154,8 +155,12 @@ export const createWorkflow = (data: DeepPartial<Workflow> = {}): Workflow => {
       containerType: WorkflowInfo.ContainerTypeEnum.Project,
       name: "KNIME_MockWorkflow",
     },
-    projectMetadata: {
-      description: { value: "", contentType: TypedText.ContentTypeEnum.Plain },
+    metadata: {
+      metadataType: EditableMetadata.MetadataTypeEnum.Project,
+      description: {
+        value: "",
+        contentType: TypedText.ContentTypeEnum.Plain,
+      },
       links: [],
       tags: [],
       lastEdit: new Date(),
