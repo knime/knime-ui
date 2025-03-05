@@ -16,8 +16,8 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
-const isComponent = (nodeTemplateId: string | null, item: FileExplorerItem) => {
-  return !nodeTemplateId && item.meta?.type === SpaceItem.TypeEnum.Component;
+const isComponent = (item: FileExplorerItem) => {
+  return item.meta?.type === SpaceItem.TypeEnum.Component;
 };
 
 type UseCustomDragPreviewOptions = {
@@ -65,7 +65,6 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     }
 
     const nodeTemplateId = getNodeTemplateId(item);
-
     return getSingleNodeTemplate({
       nodeTemplateId,
     });
@@ -84,7 +83,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     // reset state on subsequent drags
     hasDragEnded.value = false;
     const nodeTemplateId = getNodeTemplateId(item);
-    const isItemAComponent = isComponent(nodeTemplateId, item);
+    const isItemAComponent = isComponent(item);
 
     // when it doesn't have a template id and it's not a component
     // then it's just a random item that shouldn't have a preview
@@ -143,7 +142,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
     }
 
     const nodeTemplateId = getNodeTemplateId(sourceItem);
-    const isItemAComponent = isComponent(nodeTemplateId, sourceItem);
+    const isItemAComponent = isComponent(sourceItem);
 
     if (!nodeTemplateId && !isItemAComponent) {
       onComplete(false);
