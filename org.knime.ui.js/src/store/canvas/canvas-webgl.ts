@@ -4,6 +4,7 @@
 import { type UnwrapRef, computed, nextTick, ref, shallowRef } from "vue";
 import { animate } from "motion";
 import { defineStore } from "pinia";
+import { type IRenderLayer } from "pixi.js";
 
 import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -48,6 +49,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     anchor: { x: 0, y: 0 },
   });
   const pixiApplication = shallowRef<ApplicationInst | null>(null);
+  const backgroundRenderLayer = shallowRef<IRenderLayer | null>(null);
+  const selectionRenderLayer = shallowRef<IRenderLayer | null>(null);
   const stage = shallowRef<StageInst | null>(null);
   const isDebugModeEnabled = ref(false);
 
@@ -630,6 +633,8 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     canvasOffset,
     canvasAnchor,
     pixiApplication,
+    backgroundRenderLayer,
+    selectionRenderLayer,
     stage,
     isDebugModeEnabled,
     fromCanvasCoordinates,

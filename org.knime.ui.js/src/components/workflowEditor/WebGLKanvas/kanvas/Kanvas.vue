@@ -6,11 +6,13 @@ import {
   onMounted,
   onUnmounted,
   ref,
+  useTemplateRef,
   watch,
 } from "vue";
 import { debounce } from "lodash-es";
 import { storeToRefs } from "pinia";
 import { Actions } from "pixi-actions";
+import { RenderLayer } from "pixi.js";
 import throttle from "raf-throttle";
 
 import { getMetaOrCtrlKey } from "@knime/utils";
@@ -18,7 +20,7 @@ import { getMetaOrCtrlKey } from "@knime/utils";
 import { $bus } from "@/plugins/event-bus";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { KANVAS_ID, getKanvasDomElement } from "@/util/getKanvasDomElement";
-import { Application, type ApplicationInst } from "@/vue3-pixi";
+import { Application, type ApplicationInst, type ContainerInst } from "@/vue3-pixi";
 import { useArrowKeyNavigation } from "../../useArrowKeyNavigation";
 import Debug from "../Debug.vue";
 import FloatingMenuPortalTarget from "../FloatingMenu/FloatingMenuPortalTarget.vue";
@@ -78,6 +80,8 @@ onMounted(() => {
   initResizeObserver();
 });
 
+const selectionLayerContainer = useTemplateRef<ContainerInst>("selectionLayerContainer");
+
 watch(
   isPixiAppInitialized,
   () => {
@@ -94,6 +98,13 @@ watch(
     canvasStore.pixiApplication = pixiApp.value as ApplicationInst;
     canvasStore.stage = app.stage;
 
+    // add a background layer so we can move nodes to that layer to keep the other on top of them
+    canvasStore.selectionRenderLayer  = new RenderLayer();
+    canvasStore.backgroundRenderLayer = new RenderLayer();
+    app.stage.addChildAt(canvasStore.backgroundRenderLayer, 0);
+
+    selectionLayerContainer.value?.addChild(canvasStore.selectionRenderLayer);
+
     // eslint-disable-next-line no-magic-numbers
     app.ticker.add((tick) => Actions.tick(tick.deltaTime / 60));
     canvasStore.isDebugModeEnabled =
@@ -108,6 +119,7 @@ onBeforeUnmount(() => {
 
 onUnmounted(() => {
   canvasStore.pixiApplication = null;
+  canvasStore.backgroundRenderLayer = null;
   canvasStore.stage = null;
   clearIconCache();
 });
@@ -160,6 +172,7 @@ const onWheelEvent = (event: WheelEvent) => {
         <Debug v-if="isCanvasDebugEnabled" />
         <slot />
       </Container>
+      <Container ref="selectionLayerContainer"/>
     </Application>
   </div>
 </template>

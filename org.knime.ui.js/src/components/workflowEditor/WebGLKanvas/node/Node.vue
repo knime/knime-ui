@@ -51,7 +51,9 @@ const emit = defineEmits<{
   contextmenu: [event: PIXI.FederatedPointerEvent];
 }>();
 
-const { isDebugModeEnabled, visibleArea } = storeToRefs(useWebGLCanvasStore());
+const { isDebugModeEnabled, visibleArea, backgroundRenderLayer, selectionRenderLayer } = storeToRefs(
+  useWebGLCanvasStore(),
+);
 
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
@@ -242,6 +244,9 @@ const actionBarPosition = computed(() => {
 </script>
 
 <template>
+  <Container
+  :layer="isNodeSelected(node.id) ? selectionRenderLayer : null"
+  >
   <NodeSelectionPlane
     :anchor-position="translatedPosition"
     :renderable="renderable"
@@ -320,4 +325,5 @@ const actionBarPosition = computed(() => {
       @update-port-positions="portPositions = $event"
     />
   </Container>
+</Container>
 </template>

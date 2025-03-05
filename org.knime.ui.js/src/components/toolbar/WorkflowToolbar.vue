@@ -194,8 +194,10 @@ const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
 
     <div class="control-list">
       <template v-if="devMode">
-        <FPSMeter style="margin-right: 10px" />
+        <FPSMeter style="margin-right: var(--space-8)" />
         <FunctionButton
+          :disabled="currentCanvasRenderer !== 'WebGL'"
+          style="margin-right: var(--space-8)"
           class="header-button no-text control"
           data-test-id="dev-mode-only"
           title="Toggle canvas debug"
@@ -207,6 +209,7 @@ const { currentRenderer: currentCanvasRenderer, toggleCanvasRenderer } =
           <ChartDotsIcon />
         </FunctionButton>
         <ValueSwitch
+          style="margin-right: var(--space-32)"
           compact
           :model-value="currentCanvasRenderer"
           :possible-values="[

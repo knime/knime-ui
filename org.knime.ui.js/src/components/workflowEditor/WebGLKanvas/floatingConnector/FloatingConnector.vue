@@ -4,6 +4,7 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import type { NodeRelation } from "@/api/custom-types";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useNodeInteractionsStore } from "@/store/workflow/nodeInteractions";
 import { isNodeMetaNode } from "@/util/nodeUtil";
@@ -15,6 +16,9 @@ import FloatingConnectorDecoration from "./FloatingConnectorDecoration.vue";
 const { floatingConnector, isInsideSnapRegion, snapTarget } = storeToRefs(
   useFloatingConnectorStore(),
 );
+
+const { selectionRenderLayer } = storeToRefs(useWebGLCanvasStore());
+
 const { getNodeById } = storeToRefs(useNodeInteractionsStore());
 
 const floatingConnectorPort = computed(() => {

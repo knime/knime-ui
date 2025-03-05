@@ -40,6 +40,7 @@ import {
   Sprite,
   Text,
   TilingSprite,
+  type IRenderLayer,
 } from "pixi.js";
 
 import { patchProp as defuPatchProp, patchBooleanProp } from "../patchProp";
@@ -55,6 +56,17 @@ import type { Renderer, RendererOptions } from "./types";
 const ContainerRender: RendererOptions = {
   name: "Container",
   createElement: () => new Container(),
+  patchProp(el: Container, key, prev, next) {
+    switch (key) {
+      case "layer":
+        if (prev?.detach) (prev as IRenderLayer).detach(el);
+        if (next?.attach) (next as IRenderLayer).attach(el);
+        break;
+
+      default:
+        defuPatchProp(el, key, prev, next);
+    }
+  },
 };
 
 const SpriteRender: RendererOptions = {

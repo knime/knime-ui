@@ -1,10 +1,12 @@
-import type { Container } from "pixi.js";
+import type { Container, IRenderLayer } from "pixi.js";
 import type { ComponentOptionsMixin, DefineComponent, VNodeProps } from "vue";
 
 import type { PixiEvents } from "./events";
 import type { AllowedPixiProps } from "./props";
 
-export interface ContainerProps {}
+export interface ContainerProps {
+  layer?: IRenderLayer | null;
+}
 
 export interface ContainerEvents extends PixiEvents {
   render: [ContainerInst];
