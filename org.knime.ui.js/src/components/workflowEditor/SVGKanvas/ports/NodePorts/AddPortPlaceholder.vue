@@ -163,16 +163,14 @@ export default defineComponent({
         events: {
           itemActive: this.onItemActive,
           itemClick: this.onItemClick,
-          menuClose: this.onRequestClose,
+          menuClose: this.closePortTypeMenu,
         },
       });
     },
-    closeMenu() {
-      this.closePortTypeMenu();
-    },
+
     onClick() {
       if (this.isMenuOpen) {
-        this.closeMenu();
+        this.closePortTypeMenu();
         return;
       }
 
@@ -192,13 +190,6 @@ export default defineComponent({
       }
 
       this.openMenu();
-    },
-    onRequestClose(item: MenuItemWithPort | null) {
-      if (!item) {
-        // If menu closes without selecting an item (eg. when pressing esc), reset preview
-        this.selectedPort = null;
-      }
-      this.closeMenu();
     },
 
     onItemActive(item: MenuItemWithPort) {

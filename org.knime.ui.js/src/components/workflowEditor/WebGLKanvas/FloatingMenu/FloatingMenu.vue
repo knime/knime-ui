@@ -5,7 +5,7 @@ import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import {
   type FloatingContainerProperties,
   useCanvasFloatingContainer,
-} from "../../CanvasAnchoredComponents/useCanvasFloatingContainer";
+} from "../../CanvasAnchoredComponents";
 
 defineOptions({ inheritAttrs: false });
 

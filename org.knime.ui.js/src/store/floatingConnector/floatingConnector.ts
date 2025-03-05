@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 /* eslint-disable no-undefined */
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { defineStore, storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 import throttle from "raf-throttle";
@@ -14,6 +14,7 @@ import {
 } from "@/util/compatibleConnections";
 import { useApplicationStore } from "../application/application";
 import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
+import { useCanvasAnchoredComponentsStore } from "../canvasAnchoredComponents/canvasAnchoredComponents";
 import { useWorkflowStore } from "../workflow/workflow";
 
 import { type FloatingConnector, isPlaceholderPort } from "./types";
@@ -109,18 +110,6 @@ export const useFloatingConnectorStore = defineStore(
       startPosition = undefined;
     };
 
-    const setupAbortListener = (cleanupDragListeners: () => void) => {
-      const onEscape = (event: KeyboardEvent) => {
-        if (event.key === "Escape") {
-          resetState();
-          removeActiveConnector();
-          cleanupDragListeners();
-          window.removeEventListener("keydown", onEscape);
-        }
-      };
-      window.addEventListener("keydown", onEscape);
-    };
-
     /**
      * Called on the pointer's first move.
      * It sets up the connector, emits the event to signal the start of connection
@@ -155,7 +144,23 @@ export const useFloatingConnectorStore = defineStore(
     const { finishConnection } = useConnectAction({
       floatingConnector,
       snapTarget,
+      activeSnapPosition,
     });
+
+    // This will hold a function reference used to clean up all the DOM event listeners
+    let runListenerTeardown: (() => void) | undefined;
+
+    const setupAbortListener = () => {
+      const onEscape = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          resetState();
+          removeActiveConnector();
+          runListenerTeardown?.();
+          window.removeEventListener("keydown", onEscape);
+        }
+      };
+      window.addEventListener("keydown", onEscape);
+    };
 
     const createConnectorFromPointerEvent = (
       pointerDownEvent: FederatedPointerEvent,
@@ -237,7 +242,7 @@ export const useFloatingConnectorStore = defineStore(
           try {
             await finishConnection();
           } catch (error) {
-            consola.error("Failed to complete connection", error);
+            consola.error("Did not complete connection: ", error);
           }
           removeActiveConnector();
         }
@@ -245,20 +250,21 @@ export const useFloatingConnectorStore = defineStore(
         activeConnectionValidTargets.value?.clear();
         activeConnectionValidTargets.value = undefined;
         resetState();
-        // eslint-disable-next-line no-use-before-define
-        cleanupDragListeners();
+        runListenerTeardown?.();
       };
-
-      function cleanupDragListeners() {
-        canvas.removeEventListener("pointermove", onPointerMove);
-        canvas.removeEventListener("pointerup", onPointerUp);
-        canvas.removeEventListener("lostPointerCapture", onPointerUp);
-      }
 
       canvas.addEventListener("pointermove", onPointerMove);
       canvas.addEventListener("pointerup", onPointerUp);
       canvas.addEventListener("lostPointerCapture", onPointerUp);
-      setupAbortListener(cleanupDragListeners);
+
+      runListenerTeardown = () => {
+        canvas.removeEventListener("pointermove", onPointerMove);
+        canvas.removeEventListener("pointerup", onPointerUp);
+        canvas.removeEventListener("lostPointerCapture", onPointerUp);
+        runListenerTeardown = undefined;
+      };
+
+      setupAbortListener();
     };
 
     const createConnectorFromContext = (
@@ -300,6 +306,10 @@ export const useFloatingConnectorStore = defineStore(
       };
     };
 
+    const { portTypeMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
+    const isPortTypeMenuOpen = computed(() => portTypeMenu.value.isOpen);
+    let hasScheduledPorTypeWatch = false;
+
     return {
       floatingConnector,
       didMove,
@@ -312,7 +322,38 @@ export const useFloatingConnectorStore = defineStore(
       createConnectorFromContext,
       removeActiveConnector,
       onMoveOverConnectionSnapCandidate,
-      onLeaveConnectionSnapCandidate,
+      onLeaveConnectionSnapCandidate: (
+        details: Parameters<typeof onLeaveConnectionSnapCandidate>[0],
+      ) => {
+        const scheduleClearAfterPortTypeMenu = () => {
+          // make sure only a single watch is scheduled
+          // no matter how many times the leave is called
+          if (!hasScheduledPorTypeWatch) {
+            hasScheduledPorTypeWatch = true;
+            watch(
+              isPortTypeMenuOpen,
+              () => {
+                hasScheduledPorTypeWatch = false;
+                resetState();
+                removeActiveConnector();
+                runListenerTeardown?.();
+              },
+              // auto-remove watcher
+              { once: true },
+            );
+          }
+        };
+
+        // prevent clearing out the state when the PortTypeMenu gets opened
+        // which would happen because of its clickaway behavior firing a "leave"
+        // on the snap candidate
+        if (isPortTypeMenuOpen.value) {
+          scheduleClearAfterPortTypeMenu();
+          return;
+        }
+
+        onLeaveConnectionSnapCandidate(details);
+      },
       isPlaceholderPort,
     };
   },

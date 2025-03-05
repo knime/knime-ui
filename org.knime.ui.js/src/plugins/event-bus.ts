@@ -2,7 +2,10 @@ import mitt, { type Emitter } from "mitt";
 
 import type { DesktopAPIFunctionResultPayload } from "@/api/desktop-api";
 import type { NodePort } from "@/api/gateway-api/generated-api";
-import type { SnapTarget } from "@/store/floatingConnector/types";
+import type {
+  SnappedPlaceholderPort,
+  SnappedPort,
+} from "@/store/floatingConnector/types";
 
 import type { PluginInitFunction } from "./types";
 
@@ -36,9 +39,14 @@ type PortConnectionEvents = {
     key: `connector-snap-${"active" | "inactive"}_${string}__${
       | "in"
       | "out"}__${number}`
-  ]: {
-    snapTarget: SnapTarget;
-  };
+  ]: { snapTarget: SnappedPort };
+
+  // connector-snap-<type>-placeholder_<nodeId>__<portSide>
+  [
+    key: `connector-snap-${"active" | "inactive"}-placeholder_${string}__${
+      | "in"
+      | "out"}`
+  ]: { snapTarget: SnappedPlaceholderPort };
 };
 
 type DesktopAPIEvents = {

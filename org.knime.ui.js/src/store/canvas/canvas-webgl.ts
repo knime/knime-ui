@@ -52,7 +52,11 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
   const isMoveLocked = ref(false);
   const canvasOffset = ref({ x: 0, y: 0 });
-  const canvasAnchor = ref({
+  const canvasAnchor = ref<{
+    isOpen: boolean;
+    anchor: { x: number; y: number };
+    placement?: "top-left" | "top-right";
+  }>({
     isOpen: false,
     anchor: { x: 0, y: 0 },
   });
@@ -114,6 +118,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   const setCanvasAnchor = (anchor: UnwrapRef<typeof canvasAnchor>) => {
     canvasAnchor.value.isOpen = anchor.isOpen;
     canvasAnchor.value.anchor = anchor.anchor;
+    canvasAnchor.value.placement = anchor.placement ?? "top-left";
   };
 
   const clearCanvasAnchor = () => {

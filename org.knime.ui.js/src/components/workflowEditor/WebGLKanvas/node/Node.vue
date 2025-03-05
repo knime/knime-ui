@@ -12,6 +12,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { useApplicationSettingsStore } from "@/store/application/settings";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
 import { useFloatingConnectorStore } from "@/store/floatingConnector/floatingConnector";
 import { useSelectionStore } from "@/store/selection";
 import { useMovingStore } from "@/store/workflow/moving";
@@ -47,16 +48,18 @@ const props = withDefaults(defineProps<Props>(), {
   link: null,
 });
 
-const emit = defineEmits<{
-  contextmenu: [event: PIXI.FederatedPointerEvent];
-}>();
-
-const { isDebugModeEnabled, visibleArea, canvasLayers } = storeToRefs(
-  useWebGLCanvasStore(),
-);
-
 const portPositions = ref<PortPositions>({ in: [], out: [] });
 
+const canvasStore = useWebGLCanvasStore();
+const {
+  isDebugModeEnabled,
+  visibleArea,
+  globalToWorldCoordinates,
+  canvasLayers,
+} = storeToRefs(canvasStore);
+
+const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
+const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
 const selectionStore = useSelectionStore();
 const { isNodeSelected, getFocusedObject } = storeToRefs(selectionStore);
 const { isWritable } = storeToRefs(useWorkflowStore());
@@ -101,7 +104,9 @@ const isSelectionFocusShown = computed(
 const hoverStateProvider = useNodeHoveredStateProvider();
 
 const isHovering = computed(
-  () => hoverStateProvider.hoveredNodeId.value === props.node.id,
+  () =>
+    hoverStateProvider.hoveredNodeId.value === props.node.id ||
+    (portTypeMenu.value.isOpen && portTypeMenu.value.nodeId === props.node.id),
 );
 
 // this is not reactive!
@@ -243,6 +248,25 @@ const actionBarPosition = computed(() => {
       $shapes.webGlNodeActionBarYOffset,
   };
 });
+
+const onRightClick = (event: PIXI.FederatedPointerEvent) => {
+  const [x, y] = globalToWorldCoordinates.value([
+    event.global.x,
+    event.global.y,
+  ]);
+
+  canvasStore.setCanvasAnchor({
+    isOpen: true,
+    anchor: { x, y },
+  });
+
+  if (!isNodeSelected.value(props.node.id)) {
+    selectionStore.deselectAllObjects();
+    selectionStore.selectNode(props.node.id);
+  }
+
+  canvasAnchoredComponentsStore.toggleContextMenu();
+};
 </script>
 
 <template>
@@ -262,7 +286,7 @@ const actionBarPosition = computed(() => {
     :layer="isNodeSelected(node.id) ? canvasLayers.selectedNodes : null"
     event-mode="static"
     :alpha="floatingConnector && isConnectionForbidden ? 0.7 : 1"
-    @rightclick="emit('contextmenu', $event)"
+    @rightclick="onRightClick"
     @pointerenter="onNodeHoverAreaPointerEnter"
     @pointermove="onNodeHoverAreaPointerMove"
     @pointerleave.self="onNodeHoverAreaPointerLeave"
@@ -322,7 +346,7 @@ const actionBarPosition = computed(() => {
       :in-ports="node.inPorts"
       :out-ports="node.outPorts"
       :is-editable="isEditable"
-      :port-groups="null"
+      :port-groups="isNativeNode(node) ? node.portGroups : undefined"
       @update-port-positions="portPositions = $event"
     />
   </Container>

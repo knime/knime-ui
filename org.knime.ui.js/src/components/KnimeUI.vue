@@ -167,11 +167,22 @@ onBeforeMount(async () => {
   await setup();
 });
 
+const preventBrowserZooming = (event: WheelEvent) => {
+  if (event.target instanceof HTMLCanvasElement) {
+    return;
+  }
+
+  event.stopPropagation();
+  event.preventDefault();
+};
+
 onMounted(() => {
+  document.addEventListener("wheel", preventBrowserZooming, { passive: false });
   checkClipboardSupport();
 });
 
 onBeforeUnmount(() => {
+  document.removeEventListener("wheel", preventBrowserZooming);
   lifecycleStore.destroyApplication();
 });
 

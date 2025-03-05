@@ -1,11 +1,11 @@
-import { type ShallowRef, computed, ref, watch } from "vue";
-import { type AnimationPlaybackControls, animate } from "motion";
+import { type ShallowRef, computed, ref } from "vue";
 
 import {
   Node,
   type NodePort as NodePortType,
 } from "@/api/gateway-api/generated-api";
 import type { ContainerInst } from "@/vue3-pixi";
+import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 type UseFlowVarPortTransparencyOptions = {
   portContainer: ShallowRef<ContainerInst | undefined>;
@@ -44,29 +44,16 @@ export const useFlowVarPortTransparency = (
     return false;
   });
 
-  let activeAnimation: AnimationPlaybackControls;
-  watch(isVisible, () => {
-    if (isVisible.value) {
-      activeAnimation?.stop();
-      activeAnimation = animate(0, 1, {
-        duration: 0.5,
-        onUpdate: (value) => {
-          if (portContainer.value) {
-            portContainer.value!.alpha = value;
-          }
-        },
-      });
-    } else {
-      activeAnimation?.stop();
-      activeAnimation = animate(1, 0, {
-        duration: 0.5,
-        onUpdate: (value) => {
-          if (portContainer.value) {
-            portContainer.value!.alpha = value;
-          }
-        },
-      });
-    }
+  useAnimatePixiContainer<number>({
+    initialValue: 0,
+    targetValue: 1,
+    targetDisplayObject: portContainer,
+    changeTracker: isVisible,
+    animationParams: { duration: 0.5 },
+    onUpdate: (value) => {
+      portContainer.value!.alpha = value;
+    },
+    animateOut: true,
   });
 
   const onPointerEnter = () => {

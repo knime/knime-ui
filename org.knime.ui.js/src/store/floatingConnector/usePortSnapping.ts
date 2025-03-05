@@ -1,5 +1,5 @@
 /* eslint-disable no-undefined */
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import type { Ref } from "vue";
 import { storeToRefs } from "pinia";
 import throttle from "raf-throttle";
@@ -7,7 +7,6 @@ import throttle from "raf-throttle";
 import type { KnimeNode, NodePortGroups } from "@/api/custom-types";
 import type { NodePort, XY } from "@/api/gateway-api/generated-api";
 import type { PortPositions } from "@/components/workflowEditor/common/usePortPositions";
-import { $bus } from "@/plugins/event-bus";
 import { useApplicationStore } from "@/store/application/application";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import * as $shapes from "@/style/shapes";
@@ -22,8 +21,8 @@ import {
   type FloatingConnector,
   type SnapTarget,
   type SnappedPlaceholderPort,
-  isPlaceholderPort,
 } from "./types";
+import { usePortSnappingEventPublisher } from "./usePortSnappingEventPublisher";
 
 /**
  * Builds snap partitions based on the port positions of a node. For example,
@@ -319,22 +318,7 @@ export const usePortSnapping = (options: {
     },
   );
 
-  // Directly dispatch event to the node port that is being targeted
-  watch(snapTarget, (next, prev) => {
-    if (prev && !isPlaceholderPort(prev)) {
-      const { parentNodeId, index, side } = prev;
-      $bus.emit(`connector-snap-inactive_${parentNodeId}__${side}__${index}`, {
-        snapTarget: prev,
-      });
-    }
-
-    if (next && !isPlaceholderPort(next)) {
-      const { parentNodeId, index, side } = next;
-      $bus.emit(`connector-snap-active_${parentNodeId}__${side}__${index}`, {
-        snapTarget: next,
-      });
-    }
-  });
+  usePortSnappingEventPublisher(snapTarget);
 
   return {
     isInsideSnapRegion,

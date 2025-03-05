@@ -62,6 +62,8 @@ const selectionRectangle = computed(() =>
 let selectionPointerId: number | undefined;
 
 const onSelectionStart = (event: PointerEvent) => {
+  // preventing the default is being used as a signal on events that
+  // originate from within the WebGL canvas to hint that the event was handled already
   if (isDragging.value || event.defaultPrevented) {
     return;
   }

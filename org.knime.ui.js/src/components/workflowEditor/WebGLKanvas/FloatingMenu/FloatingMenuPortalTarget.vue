@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { CANVAS_ANCHOR_WRAPPER_ID } from "../../CanvasAnchoredComponents";
 
 /**
  * This component serves as a receiver for the `FloatingMenu` component,
@@ -37,16 +38,26 @@ const position = computed(() => {
       zoomFactor.value,
   };
 });
+
+const style = computed(() => {
+  const { placement = "top-left" } = canvasAnchor.value;
+  const baseStyles = {
+    left: `${position.value.x}px`,
+    top: `${position.value.y}px`,
+  };
+
+  return placement === "top-left"
+    ? baseStyles
+    : { ...baseStyles, transform: "translateX(-100%)" };
+});
 </script>
 
 <template>
   <div
     v-if="canvasAnchor.isOpen"
+    :id="CANVAS_ANCHOR_WRAPPER_ID"
     class="wrapper"
-    :style="{
-      left: `${position.x}px`,
-      top: `${position.y}px`,
-    }"
+    :style="style"
   >
     <PortalTarget tag="div" name="canvas-anchored-container" />
   </div>

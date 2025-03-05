@@ -141,11 +141,11 @@ const onPointerLeave = () => {
     ref="portContainer"
     :alpha="flowVarTransparency.initialAlpha ? 1 : 0"
     event-mode="static"
+    :position="position"
     @pointerenter="onPointerEnter"
     @pointerleave="onPointerLeave"
   >
     <Container
-      :position="position"
       :hit-area="hitArea"
       :pivot="{ x: -portSize / 2, y: -portSize / 2 }"
       event-mode="static"

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useTemplateRef } from "vue";
 import type { Container } from "pixi.js";
 
 import type { NodeState } from "@/api/gateway-api/generated-api";
 import * as $shapes from "@/style/shapes";
-import type { GraphicsInst } from "@/vue3-pixi";
+import type { ContainerInst, GraphicsInst } from "@/vue3-pixi";
+import { useAnimatePixiContainer } from "../../common/useAnimatePixiContainer";
 import { nodeStateText } from "../../util/textStyles";
 
 type Props = {
@@ -32,8 +33,24 @@ const progressDisplayPercentage = computed(() => {
   return Math.floor(100 * clippedProgress.value);
 });
 
-// TODO: animation is not working in some cases replace it
-// const { containerRef: animatedCircleRef } = useNodeStateExecutingAnimation();
+const ANIMATION_X_OFFSET = 20;
+
+const animatedCircleRef = useTemplateRef<ContainerInst>("animatedCircleRef");
+useAnimatePixiContainer<number>({
+  initialValue: 0,
+  targetValue: ANIMATION_X_OFFSET,
+  targetDisplayObject: animatedCircleRef,
+  animationParams: {
+    duration: 0.8,
+    // eslint-disable-next-line no-magic-numbers
+    ease: [0.5, 0, 0.5, 1],
+    repeat: Infinity,
+    repeatType: "reverse",
+  },
+  onUpdate: (value) => {
+    animatedCircleRef.value!.x = value;
+  },
+});
 </script>
 
 <template>

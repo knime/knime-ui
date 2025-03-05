@@ -38,9 +38,14 @@ type State = {
     } | null;
 
     events: {
-      itemActive?: (...args: any[]) => void;
-      itemClick?: (...args: any[]) => void;
-      menuClose?: (...args: any[]) => void;
+      itemActive?: (payload: { port?: { typeId: string } } | null) => void;
+
+      itemClick?: (payload: {
+        typeId: string;
+        portGroup: string | null;
+      }) => void;
+
+      menuClose?: () => void;
     };
   };
 
@@ -172,6 +177,16 @@ export const useCanvasAnchoredComponentsStore = defineStore(
         props: State["portTypeMenu"]["props"];
         events: State["portTypeMenu"]["events"];
       }) {
+        if (canvasRendererUtils.isWebGLRenderer()) {
+          const canvasStore = useWebGLCanvasStore();
+          const placement = props!.side === "input" ? "top-right" : "top-left";
+          canvasStore.setCanvasAnchor({
+            isOpen: true,
+            anchor: props!.position,
+            placement,
+          });
+        }
+
         this.setPortTypeMenu({
           isOpen: true,
           previewPort: null,
@@ -183,6 +198,12 @@ export const useCanvasAnchoredComponentsStore = defineStore(
       },
 
       closePortTypeMenu() {
+        if (canvasRendererUtils.isWebGLRenderer()) {
+          const canvasStore = useWebGLCanvasStore();
+
+          canvasStore.clearCanvasAnchor();
+        }
+
         this.setPortTypeMenu({
           isOpen: false,
           nodeId: null,

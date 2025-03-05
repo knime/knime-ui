@@ -3,11 +3,14 @@ import { type MaybeElementRef, onClickOutside } from "@vueuse/core";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap.mjs";
 import { storeToRefs } from "pinia";
 
+import { sleep } from "@knime/utils";
+
 import { useEscapeStack } from "@/composables/useEscapeStack";
 import type { useCanvasStore } from "@/store/canvas/canvas-svg";
-import type { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { useNodeTemplatesStore } from "@/store/nodeTemplates/nodeTemplates";
 import { useMovingStore } from "@/store/workflow/moving";
+import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 
 /**
  * Common properties of a FloatingMenu implementation, regardless of which
@@ -41,15 +44,38 @@ const useClickaway = (options: UseClickaway) => {
   const { activate: activateFocusTrap, deactivate: deactivateFocusTrap } =
     useFocusTrap(rootEl);
 
-  onMounted(async () => {
-    // wait once after first event loop run before registering the click outside handler,
-    // to avoid closing immediately after opening
-    await new Promise((r) => setTimeout(r, 0));
+  const kanvas = getKanvasDomElement();
 
-    onClickOutside(rootEl, () => {
-      deactivateFocusTrap();
+  const onKanvasPointerDown = (event: PointerEvent) => {
+    const wrapper = kanvas!.querySelector("#kanvas-anchor-wrapper");
+    // ignore children of the anchored container
+    if (wrapper?.contains(event.target as HTMLElement)) {
+      return;
+    }
+
+    // preventing the default is being used as a signal on events that
+    // originate from within the WebGL canvas to hint that the event was handled already
+    if (!event.defaultPrevented) {
       options.onClickaway();
-    });
+    }
+  };
+
+  onMounted(async () => {
+    // make a brief pause before registering the click outside handler,
+    // to avoid closing immediately after opening
+    const PAUSE_MS = 300;
+    await sleep(PAUSE_MS);
+
+    kanvas!.addEventListener("pointerdown", onKanvasPointerDown);
+
+    onClickOutside(
+      rootEl,
+      () => {
+        deactivateFocusTrap();
+        options.onClickaway();
+      },
+      { capture: false, ignore: [kanvas] },
+    );
 
     if (focusTrap.value) {
       await nextTick();
@@ -58,6 +84,7 @@ const useClickaway = (options: UseClickaway) => {
   });
 
   onBeforeUnmount(() => {
+    kanvas?.removeEventListener("pointerdown", onKanvasPointerDown);
     deactivateFocusTrap();
   });
 };

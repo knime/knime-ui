@@ -1,12 +1,13 @@
 <script setup lang="ts">
 /* eslint-disable no-magic-numbers */
-import { computed, useTemplateRef } from "vue";
+import { computed, toRefs, useTemplateRef } from "vue";
 
 import * as portColors from "@knime/styles/colors/portColors";
 
 import type { PortType } from "@/api/gateway-api/generated-api";
 import { portSize } from "@/style/shapes";
 import { type ContainerInst, type GraphicsInst } from "@/vue3-pixi";
+import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 const strokeWidth = 0.7;
 
@@ -72,23 +73,19 @@ const otherPortsRenderFn = (graphics: GraphicsInst) => {
 };
 
 const portIcon = useTemplateRef<ContainerInst>("portIcon");
+const { hovered, targeted } = toRefs(props);
 
-// const targetScale = computed(() => (props.hovered || props.targeted ? 1.4 : 1));
-
-// onTick(() => {
-//   if (!portIcon.value) {
-//     return;
-//   }
-
-//   const currentScale = portIcon.value.scale.x;
-//   const diff = targetScale.value - currentScale;
-
-//   if (Math.abs(diff) > 0.01) {
-//     // Smooth interpolation
-//     portIcon.value.scale.x += diff * 0.2;
-//     portIcon.value.scale.y += diff * 0.2;
-//   }
-// });
+useAnimatePixiContainer<number>({
+  initialValue: 1,
+  targetValue: 1.2,
+  targetDisplayObject: portIcon,
+  changeTracker: computed(() => hovered.value || targeted.value),
+  animationParams: { duration: 0.17, ease: [0.8, 2, 1, 2.5] },
+  onUpdate: (value) => {
+    portIcon.value!.scale.x = value;
+    portIcon.value!.scale.y = value;
+  },
+});
 </script>
 
 <template>
