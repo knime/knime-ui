@@ -17,6 +17,7 @@ import throttle from "raf-throttle";
 import { getMetaOrCtrlKey } from "@knime/utils";
 
 import { $bus } from "@/plugins/event-bus";
+import { useCanvasStateTrackingStore } from "@/store/application/canvasStateTracking";
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
 import { KANVAS_ID, getKanvasDomElement } from "@/util/getKanvasDomElement";
 import { Application, type ApplicationInst } from "@/vue3-pixi";
@@ -97,7 +98,7 @@ const addBackgroundRenderLayer = (app: ApplicationInst["app"]) => {
 
 watch(
   isPixiAppInitialized,
-  () => {
+  async () => {
     if (!isPixiAppInitialized.value) {
       return;
     }
@@ -118,8 +119,10 @@ watch(
     canvasStore.isDebugModeEnabled =
       import.meta.env.VITE_CANVAS_DEBUG === "true";
 
-    // TODO: restore saved state
-    canvasStore.fillScreen();
+    if (!(await useCanvasStateTrackingStore().restoreCanvasState())) {
+      // just fill screen if we did not find a saved state
+      canvasStore.fillScreen();
+    }
   },
   { once: true },
 );

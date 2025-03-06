@@ -1,18 +1,22 @@
 import { defineStore } from "pinia";
 
-import { useCanvasStore } from "@/store/canvas";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { encodeString } from "@/util/encodeString";
+import { useCurrentCanvasStore } from "../canvas/useCurrentCanvasStore";
 
 const getCanvasStateKey = (input: string) => encodeString(input);
 
-type CanvasPosition = {
+export type CanvasPosition = {
   project: string;
   workflow: string;
+  // svg values
   scrollLeft?: number;
   scrollTop?: number;
   scrollWidth?: number;
   scrollHeight?: number;
+  // webgl values
+  offsetX?: number;
+  offsetY?: number;
   zoomFactor: number;
 };
 
@@ -73,7 +77,7 @@ export const useCanvasStateTrackingStore = defineStore("canvasStateTracking", {
     saveCanvasState() {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
-      const scrollState = useCanvasStore().getCanvasScrollState;
+      const scrollState = useCurrentCanvasStore().value.getCanvasScrollState;
       this.setSavedCanvasStates({
         ...scrollState,
         project: projectId,
@@ -82,9 +86,13 @@ export const useCanvasStateTrackingStore = defineStore("canvasStateTracking", {
     },
 
     async restoreCanvasState() {
-      if (this.workflowCanvasState) {
-        await useCanvasStore().restoreScrollState(this.workflowCanvasState);
+      if (!this.workflowCanvasState) {
+        return false;
       }
+      await useCurrentCanvasStore().value.restoreScrollState(
+        this.workflowCanvasState,
+      );
+      return true;
     },
 
     removeCanvasState(projectId: string) {

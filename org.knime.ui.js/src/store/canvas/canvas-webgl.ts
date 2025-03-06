@@ -19,6 +19,7 @@ import { useWorkflowStore } from "@/store/workflow/workflow";
 import { geometry } from "@/util/geometry";
 import { getKanvasDomElement } from "@/util/getKanvasDomElement";
 import type { ApplicationInst, StageInst } from "@/vue3-pixi";
+import type { CanvasPosition } from "../application/canvasStateTracking";
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -307,15 +308,11 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
   });
 
   const getCanvasScrollState = computed(() => {
-    const kanvas = getKanvasDomElement()!;
-
-    const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = kanvas;
+    const { x: offsetX, y: offsetY } = canvasOffset.value;
 
     return {
-      scrollLeft,
-      scrollTop,
-      scrollWidth,
-      scrollHeight,
+      offsetX,
+      offsetY,
       zoomFactor: zoomFactor.value,
     };
   });
@@ -527,14 +524,15 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     }
 
     const hasFactor = factor && !isNaN(factor);
+
     // delta is -1, 0 or 1 depending on scroll direction.
-    const newFactor = hasFactor
-      ? factor
-      : clampZoomFactor(
-          (delta ?? 0) > 0
-            ? zoomFactor.value * zoomMultiplier
-            : zoomFactor.value / zoomMultiplier,
-        );
+    const deltaBasedFactor = clampZoomFactor(
+      (delta ?? 0) > 0
+        ? zoomFactor.value * zoomMultiplier
+        : zoomFactor.value / zoomMultiplier,
+    );
+
+    const newFactor = hasFactor ? factor : deltaBasedFactor;
 
     const worldPosition = {
       x: (cursorX - stage.value.x) / zoomFactor.value,
@@ -601,17 +599,16 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     kanvas.scrollTop += deltaY;
   };
 
-  const restoreScrollState = async (savedState = {}) => {
-    // @ts-expect-error
-    const { zoomFactor, scrollLeft, scrollTop, scrollWidth, scrollHeight } =
-      savedState;
+  const restoreScrollState = async (
+    savedState: Partial<CanvasPosition> = {},
+  ) => {
+    const { zoomFactor, offsetX, offsetY } = savedState;
 
     // when switching perspective from a nested workflow (e.g component or metanode) directly from classic AP
     // it could be the case that there's no stored canvas state for the parent workflow. So if we change to a
     // non-existent state then we default back to the `fillScreen` behavior.
     // NOTE: this logic can probably be deleted once the perspective switch / classic AP are phased out
-    const hasValidPreviousState =
-      zoomFactor && scrollLeft && scrollTop && scrollWidth && scrollHeight;
+    const hasValidPreviousState = zoomFactor && offsetX && offsetY;
 
     if (!hasValidPreviousState) {
       fillScreen();
@@ -619,9 +616,10 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     }
 
     setFactor(zoomFactor);
-    await nextTick();
+    setCanvasOffset({ x: offsetX, y: offsetY });
 
-    // setCanvasOffset({ x: ,y: })
+    // just to keep the signature identical with svg one
+    await Promise.resolve();
   };
 
   return {
