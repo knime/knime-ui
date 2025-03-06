@@ -1,84 +1,119 @@
-<script>
-import LinkedComponentIcon from "@knime/styles/img/icons/linked-component.svg";
-import LinkedMetanodeIcon from "@knime/styles/img/icons/linked-metanode.svg";
-import MetaNodeIcon from "@knime/styles/img/icons/metanode.svg";
-import NodeWorkflowIcon from "@knime/styles/img/icons/node-workflow.svg";
+<script setup lang="ts">
+import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
-import ActionBreadcrumb from "@/components/common/ActionBreadcrumb.vue";
-import { APP_ROUTES } from "@/router/appRoutes";
+import { SubMenu } from "@knime/components";
+import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
+import CloseIcon from "@knime/styles/img/icons/close.svg";
+import HistoryIcon from "@knime/styles/img/icons/history.svg";
+import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 
-/**
- * A breadcrumb for navigating through the component / metanode hierarchy inside a workflow
- */
-export default {
-  components: {
-    ActionBreadcrumb,
-  },
-  props: {
-    workflow: {
-      type: Object,
-      required: true,
-    },
-  },
-  computed: {
-    items() {
-      let parents = this.workflow.parents || [];
-      let items = parents.map(
-        ({ containerType, name, containerId = "root", linked }) => ({
-          icon: this.getIcon(containerType, linked),
-          text: name,
-          id: containerId,
-        }),
-      );
+import { type Workflow } from "@/api/custom-types";
+import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
+import { useApplicationStore } from "@/store/application/application";
+import { useSpaceProvidersStore } from "@/store/spaces/providers";
+import { useDesktopInteractionsStore } from "@/store/workflow/desktopInteractions";
 
-      const { containerType, linked } = this.workflow.info;
-      items.push({
-        text: this.workflow.info.name,
-        icon: this.getIcon(containerType, linked),
-      });
-      return items;
-    },
-  },
-  methods: {
-    getIcon(type, linked) {
-      if (linked && type === "component") {
-        return LinkedComponentIcon;
-      } else if (linked && type === "metanode") {
-        return LinkedMetanodeIcon;
-      } else if (type === "component") {
-        return NodeWorkflowIcon;
-      } else if (type === "metanode") {
-        return MetaNodeIcon;
-      } else {
-        return null;
-      }
-    },
-    onClick({ id }) {
-      this.$router.push({
-        name: APP_ROUTES.WorkflowPage,
-        params: { projectId: this.workflow.projectId, workflowId: id },
-        force: true,
-        replace: true,
-      });
-    },
-  },
+import ComponentBreadcrumb from "./ComponentBreadcrumb.vue";
+import StatusPill from "./StatusPill.vue";
+
+type Props = {
+  workflow: Workflow;
 };
+const props = defineProps<Props>();
+const { revealInSpaceExplorer } = useRevealInSpaceExplorer();
+
+const { activeProjectOrigin, openProjects, activeProjectId } = storeToRefs(
+  useApplicationStore(),
+);
+const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
+
+const providerType = computed(() => {
+  const provider =
+    spaceProviders.value?.[activeProjectOrigin.value?.providerId!];
+  return provider!.type;
+});
+
+const dropdownItems = [
+  {
+    text: "Version history",
+    icon: HistoryIcon,
+    metadata: {
+      handler: () => {
+        // TODO figure this out later
+        console.log("Version History clicked");
+      },
+    },
+  },
+  {
+    text: "Reveal in space explorer",
+    icon: ListIcon,
+    metadata: {
+      handler: async () => {
+        const projectName = openProjects.value.find(
+          (project) => project.projectId === activeProjectId.value,
+        )!.name;
+
+        await revealInSpaceExplorer(activeProjectOrigin.value!, projectName);
+      },
+    },
+  },
+  {
+    text: "Close project",
+    icon: CloseIcon,
+    metadata: {
+      handler: () => {
+        useDesktopInteractionsStore().closeProject(activeProjectId.value!);
+      },
+    },
+  },
+];
+
+const isInSublevel = computed(() => {
+  return (props.workflow.parents?.length ?? 0) > 0;
+});
 </script>
 
 <template>
-  <ActionBreadcrumb :items="items" @click="onClick" />
+  <div>
+    <ComponentBreadcrumb v-if="isInSublevel" :workflow="workflow" />
+    <div v-else class="breadcrumb-main">
+      <StatusPill :provider-type="providerType" />
+      <span>{{ workflow.info.name }}</span>
+      <div class="space-selection-dropdown">
+        <SubMenu
+          :teleport-to-body="false"
+          :items="dropdownItems"
+          button-title="Workflow menu actions"
+          orientation="right"
+          @item-click="(_: MouseEvent, item) => item.metadata.handler()"
+        >
+          <template #default>
+            <DropdownIcon class="dropdown-icon" />
+          </template>
+        </SubMenu>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
-:deep(ul) {
-  user-select: none;
-}
+@import url("@/assets/mixins.css");
 
-nav {
-  overflow: hidden;
+.breadcrumb-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 
-  & :deep(span) {
-    max-width: 400px;
+  & span {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 500;
+  }
+
+  & .dropdown-icon {
+    @mixin svg-icon-size 10;
   }
 }
 </style>

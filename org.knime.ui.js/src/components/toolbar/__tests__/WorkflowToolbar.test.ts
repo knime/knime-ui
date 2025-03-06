@@ -72,6 +72,7 @@ describe("WorkflowToolbar.vue", () => {
           $shortcuts,
         },
       },
+      shallow: true,
     });
 
     return { wrapper, $shortcuts, ...mockedStores };
@@ -133,27 +134,11 @@ describe("WorkflowToolbar.vue", () => {
       expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
     });
 
-    it("hides breadcrumb by default", async () => {
+    it("shows breadcrumb by default", async () => {
       const workflow = createWorkflow();
       const { wrapper, workflowStore } = doMount();
       workflowStore.setActiveWorkflow(workflow);
       await nextTick();
-      expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
-    });
-
-    it("shows breadcrumb if required", async () => {
-      const workflow = createWorkflow();
-      workflow.parents = [
-        {
-          name: "parent",
-          containerId: "",
-          containerType: WorkflowInfo.ContainerTypeEnum.Project,
-        },
-      ];
-      const { wrapper, workflowStore } = doMount();
-      workflowStore.setActiveWorkflow(workflow);
-      await nextTick();
-
       expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
     });
   });

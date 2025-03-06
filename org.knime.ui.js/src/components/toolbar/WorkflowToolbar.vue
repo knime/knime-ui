@@ -98,10 +98,6 @@ const canvasModes = computed<Array<MenuItem>>(() => {
   });
 });
 
-const hasBreadcrumb = computed(() => {
-  return (activeWorkflow.value?.parents?.length ?? 0) > 0;
-});
-
 const hideText = computed<Partial<Record<ShortcutName, boolean>>>(() => ({
   save: true,
   saveAs: true,
@@ -233,7 +229,7 @@ onMounted(() => {
     </transition-group>
 
     <WorkflowBreadcrumb
-      v-if="hasBreadcrumb && activeWorkflow"
+      v-if="activeWorkflow"
       :workflow="activeWorkflow"
       class="breadcrumb"
     />
