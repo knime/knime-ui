@@ -194,7 +194,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
           @menu-close="$emit('menuClose')"
         />
         <div v-if="isKaiEnabled && isQuickBuildModeAvailable" class="footer">
-          <Button primary @click="setQuickBuildMode">
+          <Button primary class="kai-button" @click="setQuickBuildMode">
             <AiIcon />
             Build with K-AI
           </Button>
@@ -226,11 +226,12 @@ const { isSVGRenderer } = useCanvasRendererUtils();
   border-radius: 8px;
   overflow: hidden;
 
-  &.quick-add {
+  & .quick-add {
     height: 420px;
   }
 
   & .footer {
+    margin-top: auto;
     flex: none;
     height: 46px;
     display: flex;
@@ -238,7 +239,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
     align-items: center;
     border-top: 1px solid var(--knime-silver-sand);
 
-    & button {
+    & .kai-button {
       height: 30px;
       padding: 0 15px;
       display: flex;
