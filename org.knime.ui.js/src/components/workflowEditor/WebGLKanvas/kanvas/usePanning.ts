@@ -81,6 +81,15 @@ export const useCanvasPanning = ({
       return;
     }
 
+    // invert xy on shift key (allows to scroll horizontally)
+    if (event.shiftKey) {
+      canvasStore.setCanvasOffset({
+        x: stage.value.x - event.deltaY,
+        y: stage.value.y - event.deltaX,
+      });
+      return;
+    }
+
     canvasStore.setCanvasOffset({
       x: stage.value.x - event.deltaX,
       y: stage.value.y - event.deltaY,

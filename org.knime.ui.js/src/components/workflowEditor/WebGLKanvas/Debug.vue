@@ -2,9 +2,12 @@
 import { storeToRefs } from "pinia";
 
 import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
+import { useWorkflowStore } from "@/store/workflow/workflow";
 import { type GraphicsInst } from "@/vue3-pixi";
 
 const { visibleArea } = storeToRefs(useWebGLCanvasStore());
+
+const { workflowBounds } = storeToRefs(useWorkflowStore());
 </script>
 
 <template>
@@ -17,6 +20,19 @@ const { visibleArea } = storeToRefs(useWebGLCanvasStore());
           graphics.clear();
           graphics.rect(0, 0, visibleArea.width, visibleArea.height);
           graphics.fill(0xf2eecb);
+        }
+      "
+    />
+
+    <!-- BOUNDS -->
+    <Graphics
+      :x="workflowBounds.left"
+      :y="workflowBounds.top"
+      @render="
+        (graphics: GraphicsInst) => {
+          graphics.clear();
+          graphics.rect(0, 0, workflowBounds.width, workflowBounds.height);
+          graphics.fill($colors.CornflowerLight);
         }
       "
     />

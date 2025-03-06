@@ -6,9 +6,7 @@ import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 
 import { useShortcuts } from "@/plugins/shortcuts";
 import type { FormattedShortcut } from "@/shortcuts";
-import { useCanvasStore } from "@/store/canvas";
-import { useWebGLCanvasStore } from "@/store/canvas/canvas-webgl";
-import { useCanvasRendererUtils } from "../workflowEditor/util/canvasRenderer";
+import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
 
 /**
  * ZoomMenu offers predefined zoom levels and an input field to enter custom zoom levels
@@ -20,17 +18,11 @@ type Props = {
 
 const $shortcuts = useShortcuts();
 withDefaults(defineProps<Props>(), { disabled: false });
-const svgCanvasStore = useCanvasStore();
-const webGLCanvasStore = useWebGLCanvasStore();
+const canvasStore = useCurrentCanvasStore();
 
-const { isSVGRenderer } = useCanvasRendererUtils();
-const zoomFactor = computed(() => {
-  return isSVGRenderer.value
-    ? svgCanvasStore.zoomFactor
-    : webGLCanvasStore.zoomFactor;
-});
-
-const zoomInputValue = computed(() => `${Math.round(zoomFactor.value * 100)}%`);
+const zoomInputValue = computed(
+  () => `${Math.round(canvasStore.value.zoomFactor * 100)}%`,
+);
 
 const zoomActions = [
   "fillScreen",
@@ -58,7 +50,7 @@ const onZoomInputEnter = (event: KeyboardEvent) => {
   let newZoomFactor = parseInt(target.value, 10) / 100;
 
   if (!isNaN(newZoomFactor)) {
-    svgCanvasStore.zoomCentered({ factor: newZoomFactor });
+    canvasStore.value.zoomCentered({ factor: newZoomFactor });
   }
 
   // de-focus input. Resets and formats zoom level
@@ -86,7 +78,7 @@ const onZoomItemClick = (_event: KeyboardEvent, item: FormattedShortcut) => {
 
 const onWheel = (e: WheelEvent) => {
   const delta = e.deltaY < 0 ? 1 : -1;
-  svgCanvasStore.zoomCentered({ delta });
+  canvasStore.value.zoomCentered({ delta });
 };
 </script>
 

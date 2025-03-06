@@ -14,7 +14,6 @@ import { animate } from "motion";
 import { defineStore } from "pinia";
 import { type IRenderLayer } from "pixi.js";
 
-import type { WorkflowObject } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { geometry } from "@/util/geometry";
@@ -436,14 +435,68 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     });
   };
 
+  const moveObjectIntoView = (
+    moveConfig: XY & { doAnimate?: boolean; forceMove?: boolean },
+  ) => {
+    const kanvas = getKanvasDomElement()!;
+
+    const { x, y, doAnimate = true, forceMove = false } = moveConfig;
+
+    if (!kanvas || !stage.value) {
+      return;
+    }
+
+    const isOutsideView = geometry.utils.isPointOutsideBounds(
+      { x, y },
+      calculateVisibleArea(),
+    );
+
+    if (!isOutsideView && !forceMove) {
+      return;
+    }
+    const currentOffset = canvasOffset.value;
+    const newOffset = {
+      x: -x * zoomFactor.value + containerSize.value.width / 2,
+      y: -y * zoomFactor.value + containerSize.value.height / 2,
+    };
+
+    if (!doAnimate) {
+      setCanvasOffset({
+        x: newOffset.x,
+        y: newOffset.y,
+      });
+      return;
+    }
+
+    animate(
+      currentOffset,
+      { x: newOffset.x, y: newOffset.y },
+      {
+        duration: 0.5,
+        ease: "easeOut",
+        onUpdate: () => {
+          setCanvasOffset({
+            x: currentOffset.x,
+            y: currentOffset.y,
+          });
+        },
+      },
+    );
+  };
+
+  const moveViewToWorkflowCenter = () => {
+    const { workflowBounds } = useWorkflowStore();
+    moveObjectIntoView({
+      x: workflowBounds.left + workflowBounds.width / 2,
+      y: workflowBounds.top + workflowBounds.height / 2,
+      doAnimate: false,
+      forceMove: true,
+    });
+  };
+
   const fitToScreen = () => {
     setFactor(fitToScreenZoomFactor.value.min * 0.98);
-    scroll({
-      canvasX: "center",
-      toScreenX: "center",
-      canvasY: "center",
-      toScreenY: "center",
-    });
+    moveViewToWorkflowCenter();
   };
 
   const fillScreen = () => {
@@ -452,25 +505,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
 
     // set zoom
     setFactor(newZoomFactor);
-
-    // check whether x-axis and/or y-axis fit on the screen
-    const yAxisFits = fitToScreenZoomFactor.value.y >= newZoomFactor;
-    const xAxisFits = fitToScreenZoomFactor.value.x >= newZoomFactor;
-
-    // if an axis fits, center it
-    // if an axis doesn't fit, scroll to its beginning (top / left)
-
-    // include top and left padding of 20px in screen coordinates
-    const screenPadding = 20; // eslint-disable-line no-magic-numbers
-
-    const scrollX = xAxisFits
-      ? { canvasX: "center", toScreenX: "center" }
-      : { canvasX: contentBounds.value.left, toScreenX: screenPadding };
-    const scrollY = yAxisFits
-      ? { canvasY: "center", toScreenY: "center" }
-      : { canvasY: contentBounds.value.top, toScreenY: screenPadding };
-
-    scroll({ ...scrollX, ...scrollY });
+    moveViewToWorkflowCenter();
   };
 
   /*
@@ -491,22 +526,15 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
       return;
     }
 
-    if (factor && !isNaN(factor)) {
-      setCanvasOffset({
-        x: -cursorX,
-        y: -cursorY,
-      });
-
-      setFactor(factor);
-      return;
-    }
-
+    const hasFactor = factor && !isNaN(factor);
     // delta is -1, 0 or 1 depending on scroll direction.
-    const newScale = clampZoomFactor(
-      (delta ?? 0) > 0
-        ? zoomFactor.value * zoomMultiplier
-        : zoomFactor.value / zoomMultiplier,
-    );
+    const newFactor = hasFactor
+      ? factor
+      : clampZoomFactor(
+          (delta ?? 0) > 0
+            ? zoomFactor.value * zoomMultiplier
+            : zoomFactor.value / zoomMultiplier,
+        );
 
     const worldPosition = {
       x: (cursorX - stage.value.x) / zoomFactor.value,
@@ -514,15 +542,16 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     };
 
     const newScreenPosition = {
-      x: worldPosition.x * newScale + stage.value.x,
-      y: worldPosition.y * newScale + stage.value.y,
+      x: worldPosition.x * newFactor + stage.value.x,
+      y: worldPosition.y * newFactor + stage.value.y,
     };
 
     setCanvasOffset({
       x: stage.value.x - (newScreenPosition.x - cursorX),
       y: stage.value.y - (newScreenPosition.y - cursorY),
     });
-    setFactor(newScale);
+
+    setFactor(newFactor);
   };
 
   /*
@@ -530,7 +559,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
    */
   const zoomCentered = ({
     delta = 0,
-    factor = 1,
+    factor,
   }: {
     delta?: -1 | 0 | 1;
     factor?: number;
@@ -592,56 +621,7 @@ export const useWebGLCanvasStore = defineStore("canvasWebGL", () => {
     setFactor(zoomFactor);
     await nextTick();
 
-    const kanvas = getKanvasDomElement()!;
-
-    const widthRatioBefore = scrollLeft / scrollWidth;
-    const widthRatioAfter = kanvas.scrollWidth * widthRatioBefore;
-
-    const heightRatioBefore = scrollTop / scrollHeight;
-    const heightRatioAfter = kanvas.scrollHeight * heightRatioBefore;
-
-    kanvas.scrollTo({
-      top: heightRatioAfter,
-      left: widthRatioAfter,
-      behavior: "auto",
-    });
-  };
-
-  const moveObjectIntoView = (workflowObject: WorkflowObject) => {
-    const kanvas = getKanvasDomElement()!;
-
-    if (!kanvas || !stage.value) {
-      return;
-    }
-
-    const isOutsideView = geometry.utils.isPointOutsideBounds(
-      workflowObject,
-      calculateVisibleArea(),
-    );
-
-    if (isOutsideView) {
-      const currentOffset = canvasOffset.value;
-      const newOffset = {
-        x: -workflowObject.x * zoomFactor.value + containerSize.value.width / 2,
-        y:
-          -workflowObject.y * zoomFactor.value + containerSize.value.height / 2,
-      };
-
-      animate(
-        currentOffset,
-        { x: newOffset.x, y: newOffset.y },
-        {
-          duration: 0.5,
-          ease: "easeOut",
-          onUpdate: () => {
-            setCanvasOffset({
-              x: currentOffset.x,
-              y: currentOffset.y,
-            });
-          },
-        },
-      );
-    }
+    // setCanvasOffset({ x: ,y: })
   };
 
   return {

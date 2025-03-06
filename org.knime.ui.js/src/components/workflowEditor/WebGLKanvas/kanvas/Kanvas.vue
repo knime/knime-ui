@@ -117,6 +117,9 @@ watch(
     app.ticker.add((tick) => Actions.tick(tick.deltaTime / 60));
     canvasStore.isDebugModeEnabled =
       import.meta.env.VITE_CANVAS_DEBUG === "true";
+
+    // TODO: restore saved state
+    canvasStore.fillScreen();
   },
   { once: true },
 );
