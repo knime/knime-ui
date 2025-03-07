@@ -226,7 +226,7 @@ const { isSVGRenderer } = useCanvasRendererUtils();
   border-radius: 8px;
   overflow: hidden;
 
-  & .quick-add {
+  &.quick-add {
     height: 420px;
   }
 
