@@ -5,6 +5,7 @@ import {
   type FederatedPointerEvent,
   Graphics,
   GraphicsContext,
+  Rectangle,
 } from "pixi.js";
 
 import * as $colors from "@/style/colors";
@@ -59,6 +60,9 @@ const renderCircle = (graphics: GraphicsInst) => {
     graphics.stroke({ width: 1, color: $colors.SilverSand });
   }
 };
+
+// eslint-disable-next-line no-magic-numbers
+const rect = new Rectangle(-12.5, -10, 25, 20);
 </script>
 
 <template>
@@ -66,6 +70,7 @@ const renderCircle = (graphics: GraphicsInst) => {
     event-mode="static"
     :cursor="disabled ? 'default' : 'pointer'"
     :position-x="x"
+    :hit-area="rect"
     @pointerdown.left.stop.prevent="onClick"
     @pointerenter="isHovered = true"
     @pointerleave="isHovered = false"

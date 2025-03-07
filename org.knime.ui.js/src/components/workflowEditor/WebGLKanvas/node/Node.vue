@@ -264,7 +264,7 @@ const actionBarPosition = computed(() => {
     @pointerenter="onNodeHoverAreaPointerEnter"
     @pointermove="onNodeHoverAreaPointerMove"
     @pointerleave.self="onNodeHoverAreaPointerLeave"
-    @pointerdown="startDrag"
+    @pointerdown.prevent="startDrag"
   >
     <Graphics
       label="NodeHoverArea"

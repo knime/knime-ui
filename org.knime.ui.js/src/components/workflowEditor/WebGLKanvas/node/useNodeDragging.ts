@@ -66,7 +66,6 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
     }
 
     let didDrag = false;
-    movingStore.setIsDragging(true);
 
     const onMove = (pointerMoveEvent: PointerEvent): void => {
       const deltaX =
@@ -81,6 +80,7 @@ export const useNodeDragging = (options: UseNodeDraggingOptions) => {
         didDrag = true;
       }
 
+      movingStore.setIsDragging(true);
       movingStore.setMovePreview({ deltaX, deltaY });
     };
 

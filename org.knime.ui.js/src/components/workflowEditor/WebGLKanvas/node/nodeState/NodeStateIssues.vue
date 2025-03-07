@@ -65,7 +65,7 @@ defineProps<Props>();
             graphics.lineTo(11.5, 10.75);
             graphics.closePath();
             graphics.stroke({
-              width: 1,
+              width: 2,
               color: $colors.Masala,
               alignment: 0.5,
               join: 'round',

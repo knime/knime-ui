@@ -1,4 +1,7 @@
+/* eslint-disable no-magic-numbers */
 import { GraphicsContext } from "pixi.js";
+
+const DEFAULT_ICON_SIZE = 32;
 
 /**
  * This loads a svg string into a pixi GraphicsContext.
@@ -6,17 +9,20 @@ import { GraphicsContext } from "pixi.js";
  * - It adds a invisible rect of the viewBox (if given otherwise 32x32) to have proper size of the path(s)
  * @param icon svg icon string
  */
-const loadSvgInGraphicsContext = (icon: string) => {
+const loadSvgInGraphicsContext = (icon: string, size = 20) => {
   const context = new GraphicsContext();
 
   const div = document.createElement("div");
   div.innerHTML = icon.trim();
   const svg = div.querySelector("svg") as SVGElement;
   svg.setAttribute("stroke", "white");
+  svg.setAttribute("stroke-width", (DEFAULT_ICON_SIZE / size).toString());
 
   // map view box to a rect to have a size for the graphic
-  const viewBox = svg.getAttribute("viewBox") ?? "0 0 32 32";
-  // eslint-disable-next-line no-magic-numbers
+  const viewBox =
+    svg.getAttribute("viewBox") ??
+    `0 0 ${DEFAULT_ICON_SIZE} ${DEFAULT_ICON_SIZE}`;
+
   const viewBoxValues = viewBox.split(" ").map((x) => parseInt(x, 10)) as [
     number,
     number,

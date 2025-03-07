@@ -19,6 +19,8 @@ export const nodeNameText: TextStylePreset = {
     fontSize: 32,
     fontWeight: "bold",
     wordWrap: true,
+    // fixes slight cut off of some chars
+    padding: 5,
     wordWrapWidth: 250,
     align: "center",
     textBaseline: "bottom",
