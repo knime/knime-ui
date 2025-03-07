@@ -8,7 +8,7 @@ import LinkExternalIcon from "@knime/styles/img/icons/link-external.svg";
 
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
-import { isHubProvider } from "@/store/spaces/util";
+import { isHubProvider, isLocalProvider } from "@/store/spaces/util";
 
 const applicationStore = useApplicationStore();
 const { dismissedHubLoginBanner } = storeToRefs(applicationStore);
@@ -16,7 +16,7 @@ const { spaceProviders } = storeToRefs(useSpaceProvidersStore());
 
 const externalProviders = computed(() =>
   Object.values(spaceProviders.value ?? {}).filter(
-    (provider) => provider.type !== "LOCAL",
+    (provider) => !isLocalProvider(provider),
   ),
 );
 
