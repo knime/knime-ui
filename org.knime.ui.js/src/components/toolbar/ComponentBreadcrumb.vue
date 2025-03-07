@@ -33,8 +33,8 @@ const getIcon = (type: string, linked: boolean) => {
 };
 
 const items = computed(() => {
-  let parents = props.workflow.parents || [];
-  let items = parents.map(
+  const parents = props.workflow.parents || [];
+  const items = parents.map(
     ({ containerType, name, containerId = "root", linked = false }) => ({
       icon: getIcon(containerType, linked),
       text: name,

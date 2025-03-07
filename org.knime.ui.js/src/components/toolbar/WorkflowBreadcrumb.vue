@@ -2,13 +2,14 @@
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 
-import { SubMenu } from "@knime/components";
+import { type MenuItem, SubMenu } from "@knime/components";
 import DropdownIcon from "@knime/styles/img/icons/arrow-dropdown.svg";
 import CloseIcon from "@knime/styles/img/icons/close.svg";
 import HistoryIcon from "@knime/styles/img/icons/history.svg";
 import ListIcon from "@knime/styles/img/icons/list-thumbs.svg";
 
 import { type Workflow } from "@/api/custom-types";
+import { SpaceProvider } from "@/api/gateway-api/generated-api";
 import { useRevealInSpaceExplorer } from "@/components/spaces/useRevealInSpaceExplorer";
 import { useApplicationStore } from "@/store/application/application";
 import { useSpaceProvidersStore } from "@/store/spaces/providers";
@@ -34,40 +35,48 @@ const providerType = computed(() => {
   return provider!.type;
 });
 
-const dropdownItems = [
-  {
-    text: "Version history",
-    icon: HistoryIcon,
-    metadata: {
-      handler: () => {
-        // TODO figure this out later
-        console.log("Version History clicked");
+const dropdownItems = computed(() => {
+  const items: Array<MenuItem> = [];
+  if (providerType.value !== SpaceProvider.TypeEnum.SERVER) {
+    items.push({
+      text: "Version history",
+      icon: HistoryIcon,
+      metadata: {
+        handler: () => {
+          // TODO figure this out later
+          console.log("Version History clicked");
+        },
       },
-    },
-  },
-  {
-    text: "Reveal in space explorer",
-    icon: ListIcon,
-    metadata: {
-      handler: async () => {
-        const projectName = openProjects.value.find(
-          (project) => project.projectId === activeProjectId.value,
-        )!.name;
+    });
+  }
 
-        await revealInSpaceExplorer(activeProjectOrigin.value!, projectName);
+  items.push(
+    {
+      text: "Reveal in space explorer",
+      icon: ListIcon,
+      metadata: {
+        handler: async () => {
+          const projectName = openProjects.value.find(
+            (project) => project.projectId === activeProjectId.value,
+          )!.name;
+
+          await revealInSpaceExplorer(activeProjectOrigin.value!, projectName);
+        },
       },
     },
-  },
-  {
-    text: "Close project",
-    icon: CloseIcon,
-    metadata: {
-      handler: () => {
-        useDesktopInteractionsStore().closeProject(activeProjectId.value!);
+    {
+      text: "Close project",
+      icon: CloseIcon,
+      metadata: {
+        handler: () => {
+          useDesktopInteractionsStore().closeProject(activeProjectId.value!);
+        },
       },
     },
-  },
-];
+  );
+
+  return items;
+});
 
 const isInSublevel = computed(() => {
   return (props.workflow.parents?.length ?? 0) > 0;
@@ -75,10 +84,10 @@ const isInSublevel = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="breadcrumb-wrapper">
+    <StatusPill :provider-type="providerType" />
     <ComponentBreadcrumb v-if="isInSublevel" :workflow="workflow" />
-    <div v-else class="breadcrumb-main">
-      <StatusPill :provider-type="providerType" />
+    <div v-else class="breadcrumb-root">
       <span>{{ workflow.info.name }}</span>
       <div class="space-selection-dropdown">
         <SubMenu
@@ -100,7 +109,14 @@ const isInSublevel = computed(() => {
 <style lang="postcss" scoped>
 @import url("@/assets/mixins.css");
 
-.breadcrumb-main {
+.breadcrumb-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.breadcrumb-root {
   display: flex;
   align-items: center;
   justify-content: center;
