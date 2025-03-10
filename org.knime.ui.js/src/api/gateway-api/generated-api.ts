@@ -890,7 +890,7 @@ export namespace ComponentNodeAndDescription {
  * @export
  * @interface ComponentNodeDescription
  */
-export interface ComponentNodeDescription extends ComponentNodeAndDescription {
+export interface ComponentNodeDescription extends EditableMetadata {
 
 
 }
