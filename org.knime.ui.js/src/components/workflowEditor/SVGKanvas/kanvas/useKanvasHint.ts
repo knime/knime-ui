@@ -3,6 +3,7 @@ import { storeToRefs } from "pinia";
 
 import { useHint } from "@knime/components";
 
+import { NodeState } from "@/api/gateway-api/generated-api";
 import { HINTS } from "@/hints/hints.config";
 import { useSVGCanvasStore } from "@/store/canvas/canvas-svg";
 import { useWorkflowStore } from "@/store/workflow/workflow";
@@ -20,10 +21,24 @@ export const useKanvasHint = () => {
     }
 
     const nodes = computed(() => activeWorkflow.value?.nodes);
-    const nodesWithOutPorts = Object.values(nodes.value ?? {}).filter(
-      (node) => node.outPorts.length > 1,
+    const executedNodesWithOutPorts = Object.values(nodes.value ?? {}).filter(
+      (node) =>
+        node.outPorts.length > 1 &&
+        node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED,
     );
-    const nodeObjects = nodesWithOutPorts.map(({ id, position }) => ({
+
+    const targetNodes =
+      executedNodesWithOutPorts.length > 0
+        ? executedNodesWithOutPorts
+        : Object.values(nodes.value ?? {}).filter(
+            (node) => node.outPorts.length > 1,
+          );
+
+    if (targetNodes.length === 0) {
+      return;
+    }
+
+    const nodeObjects = targetNodes.map(({ id, position }) => ({
       id,
       type: "node" as const,
       x: position.x,
@@ -41,7 +56,7 @@ export const useKanvasHint = () => {
       direction: "left",
     });
 
-    const nearestObjectId = nearestObject?.id ?? nodesWithOutPorts.at(0)?.id;
+    const nearestObjectId = nearestObject?.id ?? targetNodes.at(0)?.id;
 
     if (!nearestObjectId) {
       return;

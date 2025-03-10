@@ -19,6 +19,7 @@ import {
   type NodeOutputTabIdentifier,
   useSelectionStore,
 } from "@/store/selection";
+import { useExecutionStore } from "@/store/workflow/execution";
 import { useWorkflowStore } from "@/store/workflow/workflow";
 import { isNativeNode, isNodeComponent, isNodeMetaNode } from "@/util/nodeUtil";
 
@@ -49,6 +50,10 @@ const runValidationChecks = ({
  */
 
 const { createHint } = useHint();
+
+const executionStore = useExecutionStore();
+const { hasExecutedNativeNode } = storeToRefs(executionStore);
+
 const currentValidationError = ref<ValidationError | null>(null);
 const loadingState = ref<UIExtensionLoadingState | null>(null);
 const currentNodeViewAlert = ref<{ alert: Alert; nodeName?: string } | null>(
@@ -205,6 +210,7 @@ const onPortViewLoadingState = async (
     createHint({
       hintId: HINTS.NODE_MONITOR,
       referenceSelector: `#${EMBEDDED_CONTENT_PANEL_ID__BOTTOM}`,
+      isVisibleCondition: hasExecutedNativeNode,
     });
   }
 };

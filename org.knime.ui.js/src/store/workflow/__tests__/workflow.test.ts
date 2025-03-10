@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { flushPromises } from "@vue/test-utils";
@@ -572,6 +573,26 @@ describe("workflow::index", () => {
           metaOutPorts: { ports: [{ id: "port" }] },
         }),
       );
+    });
+
+    it("totalNodes returns correct node count", () => {
+      const { workflowStore } = loadStore();
+
+      workflowStore.setActiveWorkflow(
+        createWorkflow({
+          projectId: "foo",
+          nodes: {
+            "node-1": { id: "node-1" },
+            "node-2": { id: "node-2" },
+            "node-3": { id: "node-3" },
+          },
+        }),
+      );
+
+      expect(workflowStore.totalNodes).toBe(3);
+
+      workflowStore.setActiveWorkflow(null);
+      expect(workflowStore.totalNodes).toBe(0);
     });
   });
 });

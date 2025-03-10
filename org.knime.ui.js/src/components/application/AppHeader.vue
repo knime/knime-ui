@@ -13,7 +13,7 @@ import PlusIcon from "@knime/styles/img/icons/plus-small.svg";
 import ReloadIcon from "@knime/styles/img/icons/reload.svg";
 
 import { useFloatingContextMenu } from "@/composables/useFloatingContextMenu";
-import { useTabDrag } from "@/composables/useTabDrag.ts";
+import { useTabDrag } from "@/composables/useTabDrag";
 import { HINTS } from "@/hints/hints.config";
 import { useShortcuts } from "@/plugins/shortcuts";
 import { APP_ROUTES } from "@/router/appRoutes";
@@ -172,10 +172,15 @@ const { createHint } = useHint();
 
 const helpMenu = ref<InstanceType<typeof HelpMenu>>();
 
+const { totalNodes } = storeToRefs(useWorkflowStore());
+
+const helpIsVisibleCondition = computed(() => totalNodes.value >= 10);
+
 onMounted(() => {
   createHint({
     hintId: HINTS.HELP,
     referenceElement: helpMenu,
+    isVisibleCondition: helpIsVisibleCondition,
   });
 });
 

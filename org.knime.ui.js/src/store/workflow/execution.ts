@@ -2,6 +2,7 @@ import { API } from "@api";
 import { defineStore } from "pinia";
 
 import type { KnimeNode } from "@/api/custom-types";
+import { NodeState } from "@/api/gateway-api/generated-api";
 import {
   buildMiddleware,
   validateNodeExecuted,
@@ -11,6 +12,7 @@ import { getToastsProvider } from "@/plugins/toasts";
 import { useApplicationStore } from "@/store/application/application";
 import { useSelectionStore } from "@/store/selection";
 import { getPortViewByViewDescriptors } from "@/util/getPortViewByViewDescriptors";
+import { isNativeNode } from "@/util/nodeUtil";
 
 import { useWorkflowStore } from "./workflow";
 
@@ -212,6 +214,19 @@ export const useExecutionStore = defineStore("execution", {
     /* See docs in API */
     stepLoopExecution(nodeId: string) {
       return this.changeLoopState({ action: "step", nodeId });
+    },
+  },
+
+  getters: {
+    hasExecutedNativeNode(): boolean {
+      const workflowStore = useWorkflowStore();
+      const nodes = Object.values(workflowStore.activeWorkflow?.nodes ?? {});
+
+      return nodes.some(
+        (node) =>
+          isNativeNode(node) &&
+          node.state?.executionState === NodeState.ExecutionStateEnum.EXECUTED,
+      );
     },
   },
 });

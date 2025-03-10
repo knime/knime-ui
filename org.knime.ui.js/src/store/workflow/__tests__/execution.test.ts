@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
+import { NodeState } from "@/api/gateway-api/generated-api";
 import { getToastsProvider } from "@/plugins/toasts";
 import {
   createAvailablePortTypes,
@@ -284,6 +285,95 @@ describe("workflow store: Execution", () => {
             type: "error",
           }),
         );
+      });
+    });
+  });
+
+  describe("executionStore getters", () => {
+    afterEach(() => {
+      vi.clearAllMocks();
+      vi.restoreAllMocks();
+    });
+
+    describe("hasExecutedNativeNode", () => {
+      it("returns false if activeWorkflow has no nodes", () => {
+        const { workflowStore, executionStore } = loadStore();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: {},
+          }),
+        );
+
+        expect(executionStore.hasExecutedNativeNode).toBe(false);
+      });
+
+      it("returns false if all native nodes are not executed", () => {
+        const { workflowStore, executionStore } = loadStore();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: {
+              "node-1": createNativeNode({
+                id: "node-1",
+                state: { executionState: NodeState.ExecutionStateEnum.IDLE },
+              }),
+              "node-2": createNativeNode({
+                id: "node-2",
+                state: {
+                  executionState: NodeState.ExecutionStateEnum.CONFIGURED,
+                },
+              }),
+            },
+          }),
+        );
+
+        expect(executionStore.hasExecutedNativeNode).toBe(false);
+      });
+
+      it("returns true if at least one native node is executed", () => {
+        const { workflowStore, executionStore } = loadStore();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: {
+              "node-1": createNativeNode({
+                id: "node-1",
+                state: { executionState: NodeState.ExecutionStateEnum.IDLE },
+              }),
+              "node-2": createNativeNode({
+                id: "node-2",
+                state: {
+                  executionState: NodeState.ExecutionStateEnum.EXECUTED,
+                },
+              }),
+            },
+          }),
+        );
+
+        expect(executionStore.hasExecutedNativeNode).toBe(true);
+      });
+
+      it("returns false if only non-native nodes are executed", () => {
+        const { workflowStore, executionStore } = loadStore();
+        workflowStore.setActiveWorkflow(
+          createWorkflow({
+            nodes: {
+              "node-1": {
+                id: "node-1",
+                state: {
+                  executionState: NodeState.ExecutionStateEnum.EXECUTED,
+                },
+              },
+            },
+          }),
+        );
+
+        expect(executionStore.hasExecutedNativeNode).toBe(false);
+      });
+
+      it("handles null activeWorkflow gracefully", () => {
+        const { workflowStore, executionStore } = loadStore();
+        workflowStore.setActiveWorkflow(null);
+
+        expect(executionStore.hasExecutedNativeNode).toBe(false);
       });
     });
   });

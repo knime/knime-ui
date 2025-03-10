@@ -485,6 +485,10 @@ export const useWorkflowStore = defineStore("workflow", {
       return Boolean(state.activeWorkflow?.info.linked);
     },
 
+    totalNodes: (state) => {
+      return Object.keys(state.activeWorkflow?.nodes ?? {}).length;
+    },
+
     insideLinkedType: (state) => {
       if (!state.activeWorkflow?.parents) {
         return null;
