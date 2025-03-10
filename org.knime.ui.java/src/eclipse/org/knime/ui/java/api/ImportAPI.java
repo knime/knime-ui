@@ -57,9 +57,7 @@ import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
@@ -171,7 +169,7 @@ final class ImportAPI {
         commands.setCommandToExecute(new AddComponentCommand(wfmSupplier, componentId, command));
         try {
             commands.execute(new WorkflowKey(projectId, workflowIdEnt), null);
-        } catch (OperationNotAllowedException | NotASubWorkflowException | NodeNotFoundException e) { // NOSONAR
+        } catch (ServiceCallException e) { // NOSONAR
             // will never happen since the workflow has already been resolved above and the command-execute does nothing
         }
 
@@ -197,8 +195,7 @@ final class ImportAPI {
         }
 
         @Override
-        public boolean execute(final WorkflowKey wfKey)
-            throws NodeNotFoundException, NotASubWorkflowException, OperationNotAllowedException {
+        public boolean execute(final WorkflowKey wfKey) {
             return true;
         }
 
@@ -208,7 +205,7 @@ final class ImportAPI {
         }
 
         @Override
-        public void undo() throws OperationNotAllowedException {
+        public void undo() {
             m_wfm.get().removeNode(m_componentId);
             m_componentId = null;
         }
@@ -219,7 +216,7 @@ final class ImportAPI {
         }
 
         @Override
-        public void redo() throws OperationNotAllowedException {
+        public void redo() {
             m_componentId = m_redo.get();
         }
 

@@ -86,9 +86,7 @@ import org.knime.gateway.api.webui.entity.NodeFactoryKeyEnt;
 import org.knime.gateway.api.webui.entity.ShowToastEventEnt;
 import org.knime.gateway.api.webui.entity.WorkflowCommandEnt.KindEnum;
 import org.knime.gateway.api.webui.entity.XYEnt.XYEntBuilder;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.ToastService;
 import org.knime.gateway.impl.webui.repo.NodeRepository;
 import org.knime.gateway.impl.webui.service.DefaultNodeRepositoryService;
@@ -432,7 +430,7 @@ public final class ImportURI {
             DefaultWorkflowService.getInstance().executeWorkflowCommand(projectId, new NodeIDEnt(workflowId),
                 addNodeCommand);
             return true;
-        } catch (NotASubWorkflowException | NodeNotFoundException | OperationNotAllowedException e) {
+        } catch (ServiceCallException e) {
             LOGGER.warn("Failed to add node", e);
             return false;
         }

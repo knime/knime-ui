@@ -89,6 +89,7 @@ import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.commands.UpdateComponentLinkInformation;
@@ -139,7 +140,7 @@ final class ManipulateComponents {
     }
 
     static void openChangeComponentLinkTypeDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
+        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
         assertLinkedComponent(component, true);
 
         final var templateInfo = component.getTemplateInformation();
@@ -203,7 +204,7 @@ final class ManipulateComponents {
      * This will not be callable from the FE until NXT-2038 is solved.
      */
     static void openChangeComponentHubItemVersionDialog(final SubNodeContainer component, final WorkflowKey wfKey)
-        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
+        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
         assertLinkedComponent(component, true);
 
         final var srcUri = component.getTemplateInformation().getSourceURI();
@@ -237,7 +238,7 @@ final class ManipulateComponents {
         cmd.setCommandToExecute(getUpdateComponentCommand(component));
         try {
             cmd.execute(wfKey, null);
-        } catch (final OperationNotAllowedException | NotASubWorkflowException | NodeNotFoundException e) {
+        } catch (final ServiceCallException e) {
             // undo setLink if we could not update the component
             cmd.undo(wfKey);
             throw e;

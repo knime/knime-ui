@@ -61,6 +61,7 @@ import org.knime.gateway.api.util.CoreUtil.ContainerType;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.workbench.editor2.actions.LockMetaNodeDialog;
@@ -107,10 +108,12 @@ final class ComponentAPI {
      * @throws OperationNotAllowedException
      * @throws NotASubWorkflowException
      * @throws NodeNotFoundException
+     * @throws ServiceCallException
      */
     @API
     static void openChangeComponentLinkTypeDialog(final String projectId, final String rootWorkflowId,
-        final String nodeId) throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
+        final String nodeId)
+        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentLinkTypeDialog(component, wfKey);
@@ -126,10 +129,12 @@ final class ComponentAPI {
      * @throws OperationNotAllowedException
      * @throws NotASubWorkflowException
      * @throws NodeNotFoundException
+     * @throws ServiceCallException
      */
     @API
     static void openChangeComponentHubItemVersionDialog(final String projectId, final String rootWorkflowId,
-        final String nodeId) throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException {
+        final String nodeId)
+        throws OperationNotAllowedException, NotASubWorkflowException, NodeNotFoundException, ServiceCallException {
         final var component = assertIsWritableAndGetComponent(projectId, nodeId);
         final var wfKey = getWorkflowKey(projectId, rootWorkflowId);
         ManipulateComponents.openChangeComponentHubItemVersionDialog(component, wfKey);

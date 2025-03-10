@@ -5866,9 +5866,7 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {WorkflowCommand} workflowCommand An object that describes the command to be executed.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
-         * @throws {NodeNotFoundException} The requested node was not found.
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         executeWorkflowCommand(
         	params: { projectId: string,  workflowId: string,  workflowCommand: WorkflowCommand  }
@@ -5937,7 +5935,7 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         redoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }
@@ -5953,7 +5951,7 @@ const workflow = function(rpcClient: RPCClient) {
          * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
-         * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
+         * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
         undoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }

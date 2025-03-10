@@ -49,7 +49,7 @@
 package org.knime.ui.java.api;
 
 import org.knime.core.node.util.CheckUtils;
-import org.knime.gateway.api.webui.service.util.ServiceExceptions.OperationNotAllowedException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.ServiceCallException;
 import org.knime.gateway.impl.webui.WorkflowKey;
 import org.knime.gateway.impl.webui.service.commands.WorkflowCommand;
 import org.knime.workbench.editor2.commands.AbstractKNIMECommand;
@@ -89,17 +89,17 @@ final class WorkflowCommandAdapter implements WorkflowCommand {
     }
 
     @Override
-    public void undo() throws OperationNotAllowedException {
+    public void undo() throws ServiceCallException {
         if (!canUndo()) {
-            throw new OperationNotAllowedException("Cannot undo wrapped command.");
+            throw new ServiceCallException("Cannot undo wrapped command.");
         }
         m_delegate.undo();
     }
 
     @Override
-    public void redo() throws OperationNotAllowedException {
+    public void redo() throws ServiceCallException {
         if (!canRedo()) {
-            throw new OperationNotAllowedException("Cannot redo wrapped command.");
+            throw new ServiceCallException("Cannot redo wrapped command.");
         }
         m_delegate.redo();
     }
