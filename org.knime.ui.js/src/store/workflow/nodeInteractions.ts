@@ -3,15 +3,14 @@ import { defineStore } from "pinia";
 
 import type {
   AddNodeCommand,
-  ComponentLoadProblem,
   Connection,
   NodeFactoryKey,
   PortCommand,
+  ProblemMessage,
   SpaceItemReference,
   XY,
 } from "@/api/gateway-api/generated-api";
 import { isBrowser } from "@/environment";
-import { getToastsProvider } from "@/plugins/toasts";
 import { useSelectionStore } from "@/store/selection";
 import { geometry } from "@/util/geometry";
 import { isNativeNode } from "@/util/nodeUtil";
@@ -119,7 +118,14 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
        */
       selectionMode?: "new-only" | "add" | "none";
       isComponent?: boolean;
-    }) {
+    }): Promise<{
+      newNodeId?: string | null;
+      problem?: {
+        type: "error" | "warning";
+        headline: string;
+        message: string;
+      };
+    }> {
       const { projectId, workflowId } =
         useWorkflowStore().getProjectAndWorkflowIds;
 
@@ -129,23 +135,34 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         y: geometry.utils.snapToGrid(position.y),
       };
 
-      let newNodeId: string | null | undefined,
-        problem: ComponentLoadProblem | undefined;
+      let newNodeId: string | null, loadProblem: ProblemMessage | undefined;
       if (isComponent && spaceItemReference) {
         if (isBrowser) {
-          const response = await API.workflowCommand.AddComponent({
-            projectId,
-            workflowId,
-            providerId: spaceItemReference.providerId,
-            position: {
-              x: gridAdjustedPosition.x,
-              y: gridAdjustedPosition.y,
-            },
-            spaceId: spaceItemReference.spaceId,
-            itemId: spaceItemReference.itemId,
-          });
-          newNodeId = response.newNodeId;
-          problem = response.problem;
+          try {
+            const result = await API.workflowCommand.AddComponent({
+              projectId,
+              workflowId,
+              providerId: spaceItemReference.providerId,
+              position: {
+                x: gridAdjustedPosition.x,
+                y: gridAdjustedPosition.y,
+              },
+              spaceId: spaceItemReference.spaceId,
+              itemId: spaceItemReference.itemId,
+            });
+            newNodeId = result.newNodeId;
+            if (result.problem) {
+              loadProblem = result.problem;
+            }
+          } catch (error) {
+            return {
+              problem: {
+                type: "error",
+                headline: "Failed to add component",
+                message: (error as Error).message,
+              },
+            };
+          }
         } else {
           // TODO remove with NXT-3389
           newNodeId = await API.desktop.importComponent({
@@ -159,25 +176,24 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
           });
         }
       } else {
-        newNodeId = (
-          await API.workflowCommand.AddNode({
-            projectId,
-            workflowId,
-            position: gridAdjustedPosition,
-            nodeFactory,
-            spaceItemReference,
-            sourceNodeId,
-            sourcePortIdx,
-            nodeRelation,
-          })
-        ).newNodeId;
+        const result = await API.workflowCommand.AddNode({
+          projectId,
+          workflowId,
+          position: gridAdjustedPosition,
+          nodeFactory,
+          spaceItemReference,
+          sourceNodeId,
+          sourcePortIdx,
+          nodeRelation,
+        });
+        newNodeId = result.newNodeId;
       }
 
-      if (!newNodeId && !problem) {
-        return null;
+      if (!newNodeId) {
+        return {};
       }
 
-      if (newNodeId && selectionMode !== "none") {
+      if (selectionMode !== "none") {
         if (selectionMode === "new-only") {
           useSelectionStore().selectSingleObject({
             type: "node",
@@ -188,17 +204,18 @@ export const useNodeInteractionsStore = defineStore("nodeInteractions", {
         }
       }
 
-      if (problem) {
-        const $toast = getToastsProvider();
-        $toast.show({
-          headline: problem.title,
-          message: problem.message,
-          type: problem.type,
-          autoRemove: true,
-        });
+      if (loadProblem) {
+        return {
+          newNodeId,
+          problem: {
+            type: loadProblem.type,
+            headline: loadProblem.title,
+            message: loadProblem.message,
+          },
+        };
+      } else {
+        return { newNodeId };
       }
-
-      return newNodeId;
     },
 
     replaceNode({

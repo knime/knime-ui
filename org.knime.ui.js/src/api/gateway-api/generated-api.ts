@@ -113,7 +113,7 @@ export interface AddComponentResult extends CommandResult {
      * @type {string}
      * @memberof AddComponentResult
      */
-    newNodeId?: string;
+    newNodeId: string;
     /**
      *
      * @type {ProblemMessage}
@@ -209,7 +209,7 @@ export interface AddNodeResult extends CommandResult {
      * @type {string}
      * @memberof AddNodeResult
      */
-    newNodeId?: string;
+    newNodeId: string;
 
 }
 

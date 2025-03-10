@@ -129,9 +129,9 @@ describe("SpaceExplorer.vue", () => {
     vi.mocked(
       mockedStores.globalLoaderStore.updateGlobalLoader,
     ).mockImplementation(vi.fn());
-    vi.mocked(mockedStores.nodeInteractionsStore.addNode).mockResolvedValue(
-      "mockNewNodeId",
-    );
+    vi.mocked(mockedStores.nodeInteractionsStore.addNode).mockResolvedValue({
+      newNodeId: "mockNewNodeId",
+    });
     // @ts-expect-error
     mockedStores.workflowStore.isWritable = isWriteable;
     // @ts-expect-error

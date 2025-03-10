@@ -6,6 +6,7 @@ import { useRoute } from "vue-router";
 import type { FileExplorerItem } from "@knime/components";
 
 import { SpaceItem } from "@/api/gateway-api/generated-api";
+import { getToastsProvider } from "@/plugins/toasts";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
 import { useCurrentCanvasStore } from "@/store/canvas/useCurrentCanvasStore";
@@ -161,7 +162,7 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         itemId: sourceItem.id,
       };
 
-      await addNode({
+      const { newNodeId, problem } = await addNode({
         position,
         spaceItemReference,
         nodeFactory: isItemAComponent
@@ -170,7 +171,16 @@ export const useCustomDragPreview = (options: UseCustomDragPreviewOptions) => {
         isComponent: isItemAComponent,
       });
 
-      onComplete(true);
+      if (problem) {
+        const $toast = getToastsProvider();
+        $toast.show({
+          type: problem.type,
+          headline: problem.headline,
+          message: problem.message,
+          autoRemove: true,
+        });
+      }
+      onComplete(Boolean(newNodeId));
     } catch (error) {
       onComplete(false);
       consola.error({
