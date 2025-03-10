@@ -147,9 +147,11 @@ const renderable = computed(
 
 const nodeNamePosition = computed(() => {
   const { x, y } = translatedPosition.value;
+  const padding =
+    (nodeNameText.styles.padding ?? 0) * nodeNameText.downscalingFactor;
   return {
-    x: x + hoverSize.value.x + hoverSize.value.width / 2,
-    y: y - $shapes.nodeSize / 2 - $shapes.nodeNameMargin,
+    x: x + hoverSize.value.x + hoverSize.value.width / 2 + padding,
+    y: y - $shapes.nodeSize / 2 - $shapes.nodeNameMargin + padding,
   };
 });
 
