@@ -13,6 +13,19 @@ import { useWebGLCanvasStore } from "../canvas/canvas-webgl";
 import { useFloatingConnectorStore } from "../floatingConnector/floatingConnector";
 import { useSelectionStore } from "../selection";
 
+export type PortTypeMenuState = {
+  props: {
+    position: XY;
+    side: "input" | "output";
+    portGroups?: Record<string, PortGroup> | null;
+  };
+  events: {
+    itemActive?: (payload: { port?: { typeId: string } } | null) => void;
+    itemClick?: (payload: { typeId: string; portGroup: string | null }) => void;
+    menuClose?: () => void;
+  };
+};
+
 type State = {
   /**
    * Workflow Context Menu state
@@ -31,22 +44,8 @@ type State = {
     startNodeId: string | null;
     previewPort: NodePort | { typeId: string } | null;
     // TODO: improve typing by exporting Props from PortTypeMenu component
-    props: {
-      position: XY;
-      side: "input" | "output";
-      portGroups: Record<string, PortGroup> | null;
-    } | null;
-
-    events: {
-      itemActive?: (payload: { port?: { typeId: string } } | null) => void;
-
-      itemClick?: (payload: {
-        typeId: string;
-        portGroup: string | null;
-      }) => void;
-
-      menuClose?: () => void;
-    };
+    props: PortTypeMenuState["props"] | null;
+    events: PortTypeMenuState["events"];
   };
 
   /**
@@ -174,8 +173,8 @@ export const useCanvasAnchoredComponentsStore = defineStore(
       }: {
         nodeId: string | null;
         startNodeId?: string | null;
-        props: State["portTypeMenu"]["props"];
-        events: State["portTypeMenu"]["events"];
+        props: PortTypeMenuState["props"];
+        events: PortTypeMenuState["events"];
       }) {
         if (canvasRendererUtils.isWebGLRenderer()) {
           const canvasStore = useWebGLCanvasStore();

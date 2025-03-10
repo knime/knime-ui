@@ -1,6 +1,6 @@
-<script lang="ts">
-import { type PropType, defineAsyncComponent, defineComponent } from "vue";
-import { mapState } from "pinia";
+<script setup lang="ts">
+import { computed, ref, toRef, useTemplateRef, watch } from "vue";
+import { storeToRefs } from "pinia";
 
 import { MenuItems, SearchInput } from "@knime/components";
 import ReturnIcon from "@knime/styles/img/icons/arrow-back.svg";
@@ -10,10 +10,14 @@ import type { XY } from "@/api/gateway-api/generated-api";
 import portIcon from "@/components/common/PortIconRenderer";
 import { useApplicationStore } from "@/store/application/application";
 import { useCanvasStore } from "@/store/canvas";
+import type { PortTypeMenuState } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
+import * as $shapes from "@/style/shapes";
 import { makeTypeSearch } from "@/util/fuzzyPortTypeSearch";
 import { getFloatingMenuComponent } from "../getFloatingMenuComponent";
 
 import type { MenuItemWithPort } from "./types";
+
+const { FloatingMenu } = getFloatingMenuComponent();
 
 const isPortGroupWithSinglePort = (
   portGroups: NodePortGroups,
@@ -22,214 +26,180 @@ const isPortGroupWithSinglePort = (
 
 const portNameSizeThreshold = 20;
 
-type ComponentData = {
-  searchQuery: string;
-  selectedPortGroup: string | null;
-  ariaActiveDescendant: string | undefined;
+type Props = PortTypeMenuState["props"];
+
+const props = withDefaults(defineProps<Props>(), {
+  portGroups: null,
+});
+
+type Events = Required<PortTypeMenuState["events"]>;
+
+const $emit = defineEmits<{
+  itemActive: Parameters<Events["itemActive"]>;
+  itemClick: Parameters<Events["itemClick"]>;
+  menuClose: Parameters<Events["menuClose"]>;
+}>();
+
+const searchQuery = ref("");
+const selectedPortGroup = ref<string | null>(null);
+// eslint-disable-next-line no-undefined
+const ariaActiveDescendant = ref<string | undefined>(undefined);
+
+const { zoomFactor } = storeToRefs(useCanvasStore());
+const { availablePortTypes, suggestedPortTypes } = storeToRefs(
+  useApplicationStore(),
+);
+
+const headerMargin = computed(() => {
+  // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
+  const distanceToPort = $shapes.portSize * Math.pow(zoomFactor.value, 0.8); // eslint-disable-line no-magic-numbers
+  return `${distanceToPort + 1}px`;
+});
+
+const headerText = computed(() => {
+  if (props.portGroups && !selectedPortGroup.value) {
+    return "Select port group";
+  }
+
+  return `Add ${props.side === "input" ? "Input" : "Output"} Port`;
+});
+
+const adjustedPosition = computed((): XY => {
+  // for zoom > 100%, the y-position of the menu has to be adjusted for the growing add-port-button
+  const verticalShift =
+    zoomFactor.value > 1
+      ? (($shapes.portSize / 2) * Math.log(zoomFactor.value)) / 1.2 // eslint-disable-line no-magic-numbers
+      : 0;
+
+  return {
+    y: props.position.y + verticalShift,
+    x: props.position.x,
+  };
+});
+
+const portTypesInSelectedGroup = computed(() => {
+  if (!props.portGroups || !selectedPortGroup.value) {
+    return null;
+  }
+
+  return props.portGroups[selectedPortGroup.value].supportedPortTypeIds ?? [];
+});
+
+const searchPortsFunction = computed(() => {
+  const searchTypeIds = portTypesInSelectedGroup.value
+    ? portTypesInSelectedGroup.value
+    : Object.keys(availablePortTypes.value);
+
+  const suggestedTypeIds = portTypesInSelectedGroup.value
+    ? suggestedPortTypes.value.filter((typeId) =>
+        portTypesInSelectedGroup.value!.includes(typeId),
+      )
+    : suggestedPortTypes.value;
+
+  return makeTypeSearch({
+    typeIds: searchTypeIds,
+    availablePortTypes: availablePortTypes.value,
+    suggestedTypeIds,
+  });
+});
+
+const searchResults = computed(() =>
+  searchPortsFunction.value(searchQuery.value),
+);
+
+const sidePortGroups = computed(() => {
+  if (props.portGroups) {
+    return (
+      Object.entries(props.portGroups)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .filter(([_, group]) =>
+          props.side === "input" ? group.canAddInPort : group.canAddOutPort,
+        )
+    );
+  }
+
+  return null;
+});
+
+const menuItems = computed((): Array<MenuItemWithPort> => {
+  if (props.portGroups && !selectedPortGroup.value) {
+    return sidePortGroups.value!.map(([groupName]) => ({ text: groupName }));
+  }
+
+  return searchResults.value.map(({ typeId, name }) => ({
+    port: { typeId },
+    text: name,
+    icon: portIcon({ typeId }) as any,
+    title: name.length > portNameSizeThreshold ? name : null,
+  }));
+});
+
+const shouldDisplaySearchBar = computed(() =>
+  props.portGroups ? Boolean(selectedPortGroup.value) : true,
+);
+
+watch(
+  toRef(props, "portGroups"),
+  () => {
+    // automatically select the first port group when there's only 1
+    if (sidePortGroups.value?.length === 1) {
+      const [groupName] = sidePortGroups.value[0];
+      selectedPortGroup.value = groupName;
+    }
+  },
+  { immediate: true },
+);
+
+//   methods: {
+const emitPortClick = ({
+  typeId,
+  portGroup,
+}: {
+  typeId: string;
+  portGroup: string | null;
+}) => {
+  $emit("itemClick", { typeId, portGroup });
+  $emit("menuClose");
 };
 
-export default defineComponent({
-  components: {
-    MenuItems,
-    SearchInput,
-    ReturnIcon,
-    FloatingMenu: defineAsyncComponent(() =>
-      Promise.resolve(getFloatingMenuComponent().FloatingMenu),
-    ),
-  },
-  props: {
-    /**
-     * Absolute position of the menu. It's relative to the next absolute/relative positioned parent.
-     */
-    position: {
-      type: Object as PropType<XY>,
-      required: true,
-      validator: (position: XY) =>
-        typeof position.x === "number" && typeof position.y === "number",
-    },
-    side: {
-      type: String as PropType<"input" | "output">,
-      required: true,
-      validator: (side: "input" | "output") =>
-        ["input", "output"].includes(side),
-    },
-    portGroups: {
-      type: Object as PropType<NodePortGroups | null>,
-      default: null,
-    },
-  },
+const onMenuItemClick = (_: MouseEvent, item: MenuItemWithPort) => {
+  if (item.port) {
+    const { typeId } = item.port;
+    emitPortClick({ typeId, portGroup: selectedPortGroup.value });
+  } else if (props.portGroups) {
+    // when clicking on a port group
+    // grab the first typeId of the matching group (group's name is the item.text property)
+    // if there's only 1 type inside
+    if (isPortGroupWithSinglePort(props.portGroups, item.text)) {
+      const [typeId] = props.portGroups[item.text].supportedPortTypeIds ?? [];
 
-  emits: ["itemClick", "itemActive", "menuClose"],
+      emitPortClick({ typeId, portGroup: item.text });
+      return;
+    }
 
-  data: (): ComponentData => ({
-    searchQuery: "",
-    selectedPortGroup: null,
-    // eslint-disable-next-line no-undefined
-    ariaActiveDescendant: undefined,
-  }),
+    selectedPortGroup.value = item.text;
+  }
+};
 
-  computed: {
-    ...mapState(useCanvasStore, ["zoomFactor"]),
-    ...mapState(useApplicationStore, [
-      "availablePortTypes",
-      "suggestedPortTypes",
-    ]),
+const searchResultsRef = useTemplateRef("searchResultsRef");
+const onSearchBarKeyDown = (event: KeyboardEvent) => {
+  if (searchResultsRef.value) {
+    searchResultsRef.value.onKeydown(event);
+  }
+};
 
-    headerMargin() {
-      // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
-      const distanceToPort =
-        this.$shapes.portSize * Math.pow(this.zoomFactor, 0.8); // eslint-disable-line no-magic-numbers
-      return `${distanceToPort + 1}px`;
-    },
+const setActiveDescendant = (
+  id: string | null,
+  item: MenuItemWithPort | null,
+) => {
+  ariaActiveDescendant.value =
+    id === null
+      ? // eslint-disable-next-line no-undefined
+        undefined // needs to be `undefined` to get accepted corrected for tha aria attribute
+      : id;
 
-    headerText() {
-      if (this.portGroups && !this.selectedPortGroup) {
-        return "Select port group";
-      }
-
-      return `Add ${this.side === "input" ? "Input" : "Output"} Port`;
-    },
-
-    adjustedPosition(): XY {
-      // for zoom > 100%, the y-position of the menu has to be adjusted for the growing add-port-button
-      const verticalShift =
-        this.zoomFactor > 1
-          ? ((this.$shapes.portSize / 2) * Math.log(this.zoomFactor)) / 1.2 // eslint-disable-line no-magic-numbers
-          : 0;
-
-      return {
-        y: this.position.y + verticalShift,
-        x: this.position.x,
-      };
-    },
-
-    searchPortsFunction() {
-      const searchTypeIds = this.portTypesInSelectedGroup
-        ? this.portTypesInSelectedGroup
-        : Object.keys(this.availablePortTypes);
-
-      const suggestedPortTypes: string[] = this.suggestedPortTypes;
-
-      const suggestedTypeIds = this.portTypesInSelectedGroup
-        ? suggestedPortTypes.filter((typeId) =>
-            this.portTypesInSelectedGroup!.includes(typeId),
-          )
-        : suggestedPortTypes;
-
-      return makeTypeSearch({
-        typeIds: searchTypeIds,
-        availablePortTypes: this.availablePortTypes,
-        suggestedTypeIds,
-      });
-    },
-
-    searchResults() {
-      return this.searchPortsFunction(this.searchQuery);
-    },
-
-    sidePortGroups() {
-      if (this.portGroups) {
-        return (
-          Object.entries(this.portGroups)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .filter(([_, group]) =>
-              this.side === "input" ? group.canAddInPort : group.canAddOutPort,
-            )
-        );
-      }
-
-      return null;
-    },
-
-    menuItems(): Array<MenuItemWithPort> {
-      if (this.portGroups && !this.selectedPortGroup) {
-        return this.sidePortGroups!.map(([groupName]) => ({ text: groupName }));
-      }
-
-      return this.searchResults.map(({ typeId, name }) => ({
-        port: { typeId },
-        text: name,
-        icon: portIcon({ typeId }) as any,
-        title: name.length > portNameSizeThreshold ? name : null,
-      }));
-    },
-
-    portTypesInSelectedGroup() {
-      if (!this.portGroups || !this.selectedPortGroup) {
-        return null;
-      }
-
-      return this.portGroups[this.selectedPortGroup].supportedPortTypeIds ?? [];
-    },
-
-    shouldDisplaySearchBar() {
-      return this.portGroups ? Boolean(this.selectedPortGroup) : true;
-    },
-  },
-  watch: {
-    portGroups: {
-      immediate: true,
-      handler() {
-        // automatically select the first port group when there's only 1
-        if (this.sidePortGroups?.length === 1) {
-          const [groupName] = this.sidePortGroups[0];
-          this.selectedPortGroup = groupName;
-        }
-      },
-    },
-  },
-  methods: {
-    emitPortClick({
-      typeId,
-      portGroup,
-    }: {
-      typeId: string;
-      portGroup: string | null;
-    }) {
-      this.$emit("itemClick", { typeId, portGroup });
-      this.$emit("menuClose");
-    },
-
-    onMenuItemClick(_: MouseEvent, item: MenuItemWithPort) {
-      if (item.port) {
-        const { typeId } = item.port;
-        this.emitPortClick({ typeId, portGroup: this.selectedPortGroup });
-      } else if (this.portGroups) {
-        // when clicking on a port group
-        // grab the first typeId of the matching group (group's name is the item.text property)
-        // if there's only 1 type inside
-        if (isPortGroupWithSinglePort(this.portGroups, item.text)) {
-          const [typeId] =
-            this.portGroups[item.text].supportedPortTypeIds ?? [];
-
-          this.emitPortClick({ typeId, portGroup: item.text });
-          return;
-        }
-
-        this.selectedPortGroup = item.text;
-      }
-    },
-
-    onSearchBarKeyDown(event: KeyboardEvent) {
-      const searchResults = this.$refs.searchResults as InstanceType<
-        typeof MenuItems
-      >;
-      if (searchResults) {
-        searchResults.onKeydown(event);
-      }
-    },
-
-    setActiveDescendant(id: string | null, item: MenuItemWithPort | null) {
-      this.ariaActiveDescendant =
-        id === null
-          ? // eslint-disable-next-line no-undefined
-            undefined // needs to be `undefined` to get accepted corrected for tha aria attribute
-          : id;
-
-      this.$emit("itemActive", item);
-    },
-  },
-});
+  $emit("itemActive", item);
+};
 </script>
 
 <template>
@@ -266,14 +236,14 @@ export default defineComponent({
 
       <MenuItems
         v-if="searchResults.length"
-        ref="searchResults"
+        ref="searchResultsRef"
         :items="menuItems"
         class="search-results"
         menu-aria-label="Port Type Menu"
         disable-space-to-click
         @close="$emit('menuClose')"
         @item-click="onMenuItemClick"
-        @item-hovered="$emit('itemActive', $event)"
+        @item-hovered="$emit('itemActive', $event as MenuItemWithPort)"
         @item-focused="setActiveDescendant"
       />
       <div v-else class="placeholder">No port matching</div>

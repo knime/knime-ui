@@ -19,19 +19,8 @@ vi.mock("@/composables/useEscapeStack", () => {
   return { useEscapeStack };
 });
 
-const useFocusTrapMock = {
-  activate: vi.fn(),
-  deactivate: vi.fn(),
-};
-
-vi.mock("@vueuse/integrations/useFocusTrap", () => {
-  return {
-    useFocusTrap: () => useFocusTrapMock,
-  };
-});
-
 describe("useCanvasFloatingContainer", () => {
-  const doMount = ({ focusTrap = false, disableInteractions = false } = {}) => {
+  const doMount = ({ disableInteractions = false } = {}) => {
     const mockedStores = mockStores();
 
     const closeMenu = vi.fn();
@@ -40,7 +29,6 @@ describe("useCanvasFloatingContainer", () => {
       composableProps: {
         closeMenu,
         rootEl: ref(document.createElement("div")),
-        focusTrap: ref(focusTrap),
         disableInteractions,
         canvasStore: mockedStores.canvasStore,
       },
@@ -59,18 +47,6 @@ describe("useCanvasFloatingContainer", () => {
     // @ts-ignore
     useEscapeStack.onEscape();
     expect(closeMenu).toHaveBeenCalled();
-  });
-
-  it("uses focus trap if prop is true", async () => {
-    doMount({ focusTrap: true });
-    await new Promise((r) => setTimeout(r, 0));
-    expect(useFocusTrapMock.activate).toHaveBeenCalled();
-  });
-
-  it("does not use focus trap if prop is false", async () => {
-    doMount({ focusTrap: false });
-    await new Promise((r) => setTimeout(r, 0));
-    expect(useFocusTrapMock.activate).not.toHaveBeenCalled();
   });
 
   it("closes menu if a node template is being dragged", async () => {

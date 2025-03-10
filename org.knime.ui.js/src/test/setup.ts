@@ -56,6 +56,8 @@ class MockPointerEvent extends Event {
   offsetX = null;
   offsetY = null;
   buttons = null;
+  public defaultPrevented = false;
+  public overrideTarget: EventTarget | null = null;
 
   constructor(name: string, args: any) {
     super(name, args);
@@ -64,6 +66,10 @@ class MockPointerEvent extends Event {
     this.offsetX = args?.offsetX;
     this.offsetY = args?.offsetY;
     this.buttons = args?.buttons ?? 1;
+  }
+
+  public get target() {
+    return this.overrideTarget ? this.overrideTarget : super.target;
   }
 }
 window.PointerEvent = MockPointerEvent as any;

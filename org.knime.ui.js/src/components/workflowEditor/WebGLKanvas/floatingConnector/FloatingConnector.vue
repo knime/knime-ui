@@ -45,6 +45,21 @@ const isDefaultFlowVariableConnection = computed(() => {
   );
 });
 
+const defaultFlowVariablePortPosition = computed(() => {
+  if (!isDefaultFlowVariableConnection.value) {
+    return undefined;
+  }
+
+  return {
+    x:
+      referenceNode.value!.position.x +
+      floatingConnector.value!.context.portPosition.x,
+    y:
+      referenceNode.value!.position.y +
+      floatingConnector.value!.context.portPosition.y,
+  };
+});
+
 const nodeRelation = computed<NodeRelation | undefined>(() => {
   if (!floatingConnector.value) {
     return undefined;
@@ -75,14 +90,19 @@ const nodeRelation = computed<NodeRelation | undefined>(() => {
 
     <Container
       v-if="isDefaultFlowVariableConnection"
-      :position="floatingConnector.context.portPosition"
+      label="DefaultFlowVariablePlaceholder"
+      :position="defaultFlowVariablePortPosition"
       :pivot="{ x: -$shapes.portSize / 2, y: -$shapes.portSize / 2 }"
       event-mode="none"
     >
-      <Port :port="floatingConnectorPort" />
+      <Port event-mode="none" :port="floatingConnectorPort" />
     </Container>
 
-    <Container :position="floatingConnector.absolutePoint" event-mode="none">
+    <Container
+      label="DraggedPort"
+      :position="floatingConnector.absolutePoint"
+      event-mode="none"
+    >
       <Port :port="floatingConnectorPort" :targeted="Boolean(snapTarget)" />
     </Container>
 

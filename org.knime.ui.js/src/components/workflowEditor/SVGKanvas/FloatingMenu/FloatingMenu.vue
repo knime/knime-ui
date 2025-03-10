@@ -12,6 +12,8 @@ import {
   useCanvasFloatingContainer,
 } from "../../CanvasAnchoredComponents/useCanvasFloatingContainer";
 
+import { useFloatingMenuClickaway } from "./useFloatingMenuClickaway";
+
 /*
  * The FloatingMenu component is a container that can be sticked to a position on the canvas,
  * but is shown on top of the whole application.
@@ -75,11 +77,16 @@ const menuElementHeight = computed(() => {
 
 useCanvasFloatingContainer({
   rootEl,
-  focusTrap: toRef(props, "focusTrap"),
   closeMenu: () => emit("menuClose"),
   canvasStore,
   disableInteractions: props.disableInteractions,
   closeOnEscape: props.closeOnEscape,
+});
+
+useFloatingMenuClickaway({
+  rootEl,
+  focusTrap: toRef(props, "focusTrap"),
+  onClickaway: () => emit("menuClose"),
 });
 
 const distanceToCanvas = ({ left, top }: { left: number; top: number }) => {

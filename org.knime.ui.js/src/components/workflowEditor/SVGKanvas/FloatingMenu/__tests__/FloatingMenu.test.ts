@@ -1,7 +1,7 @@
 /* eslint-disable func-style */
 import { type Mock, afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
-import { shallowMount } from "@vue/test-utils";
+import { flushPromises, shallowMount } from "@vue/test-utils";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import { useEscapeStack } from "@/composables/useEscapeStack";
@@ -129,12 +129,15 @@ describe("FloatingMenu.vue", () => {
     });
 
     it("uses focus trap if prop is true", async () => {
+      vi.useFakeTimers();
       doMount({
         props: {
           focusTrap: true,
         },
       });
-      await new Promise((r) => setTimeout(r, 0));
+
+      vi.runAllTimers();
+      await flushPromises();
       expect(useFocusTrapMock.activate).toHaveBeenCalled();
     });
 

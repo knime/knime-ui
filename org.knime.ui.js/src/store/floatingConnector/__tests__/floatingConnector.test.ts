@@ -233,6 +233,7 @@ describe("floatingConnector store", () => {
 
     didDragToCompatibleTarget.value = true;
     snapTarget.value = {
+      side: "in",
       parentNodeId: "root:2",
       ...createPort({
         typeId: PORT_TYPE_IDS.BufferedDataTable,
@@ -267,10 +268,12 @@ describe("floatingConnector store", () => {
     pointerMove(canvas);
 
     didDragToCompatibleTarget.value = true;
+    activeSnapPosition.value = { x: 10, y: 10 };
     snapTarget.value = {
       parentNodeId: "root:2",
       isPlaceHolderPort: true,
       typeId: PORT_TYPE_IDS.BufferedDataTable,
+      side: "in",
       validPortGroups: {
         someCustomGroup: {
           canAddOutPort: true,

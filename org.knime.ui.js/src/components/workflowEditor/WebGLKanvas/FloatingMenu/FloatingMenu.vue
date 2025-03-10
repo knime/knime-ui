@@ -7,6 +7,8 @@ import {
   useCanvasFloatingContainer,
 } from "../../CanvasAnchoredComponents";
 
+import { useFloatingMenuClickaway } from "./useFloatingMenuClickaway";
+
 defineOptions({ inheritAttrs: false });
 
 type Props = FloatingContainerProperties;
@@ -25,9 +27,14 @@ const rootEl = ref<HTMLDivElement>();
 
 useCanvasFloatingContainer({
   rootEl,
-  focusTrap: toRef(props, "focusTrap"),
   closeMenu: () => emit("menuClose"),
   canvasStore,
+});
+
+useFloatingMenuClickaway({
+  rootEl,
+  focusTrap: toRef(props, "focusTrap"),
+  onClickaway: () => emit("menuClose"),
 });
 </script>
 

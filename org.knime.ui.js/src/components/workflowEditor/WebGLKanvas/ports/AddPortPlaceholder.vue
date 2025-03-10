@@ -1,7 +1,7 @@
 <!-- eslint-disable no-magic-numbers -->
 <!-- eslint-disable no-undefined -->
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 import { storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 
@@ -38,13 +38,15 @@ const webGLCanvasStore = useWebGLCanvasStore();
 const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
 const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
 
-const isMenuOpenOnThisPort = computed(() => {
-  return (
+const isMenuOpenOnParentNode = computed(
+  () => portTypeMenu.value.isOpen && portTypeMenu.value.nodeId === props.nodeId,
+);
+const isMenuOpenOnThisPort = computed(
+  () =>
     portTypeMenu.value.isOpen &&
     portTypeMenu.value.nodeId === props.nodeId &&
-    portTypeMenu.value.props?.side === props.side
-  );
-});
+    portTypeMenu.value.props?.side === props.side,
+);
 
 const validPortGroups = computed(() => {
   if (!props.portGroups) {
@@ -134,7 +136,9 @@ useAnimatePixiContainer<number>({
   initialValue: 0,
   targetValue: 1,
   targetDisplayObject: container,
-  changeTracker: computed(() => isNodeHovered.value),
+  changeTracker: computed(
+    () => isMenuOpenOnParentNode.value || isNodeHovered.value,
+  ),
   animationParams: { duration: 0.5 },
   onUpdate: (value) => {
     container.value!.alpha = value;
@@ -148,22 +152,9 @@ useNodeHoveredStateListener({
     isNodeHovered.value = true;
   },
   onLeaveCallback: () => {
-    if (!portTypeMenu.value.isOpen) {
-      isNodeHovered.value = false;
-    }
+    isNodeHovered.value = false;
   },
 });
-
-// ensure animation correctness no matter from where the menu is closed
-watch(
-  computed(() => portTypeMenu.value.isOpen),
-  () => {
-    if (!portTypeMenu.value.isOpen) {
-      isNodeHovered.value = false;
-      isPlaceholderPortHovered.value = false;
-    }
-  },
-);
 
 const openMenu = (event: FederatedPointerEvent) => {
   const [x, y] = webGLCanvasStore.globalToWorldCoordinates([

@@ -2,7 +2,8 @@
 <!-- eslint-disable no-magic-numbers -->
 <!-- eslint-disable func-style -->
 <script setup lang="ts">
-import { computed, ref, toRefs } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
+import { type AnimationPlaybackControls, animate } from "motion";
 import { storeToRefs } from "pinia";
 
 import type { XY } from "@/api/gateway-api/generated-api";
@@ -16,7 +17,6 @@ import * as $colors from "@/style/colors";
 import { portSize } from "@/style/shapes";
 import { geometry } from "@/util/geometry";
 import type { GraphicsInst } from "@/vue3-pixi";
-import { useAnimatePixiContainer } from "../common/useAnimatePixiContainer";
 
 import type { BezierPoints, ConnectorProps } from "./types";
 
@@ -162,24 +162,39 @@ const connectorPath = ref<GraphicsInst>();
 
 const suggestShiftX = -12;
 const suggestShiftY = -6;
+let replacementAnimation: AnimationPlaybackControls | undefined;
+watch(isTargetForReplacement, (shouldAnimate) => {
+  const [x1, y1, x2, y2] = startEndWithMoveDeltas.value;
+  const normalBezier = getBezier(x1, y1, x2, y2);
+  const animatedBezier = getBezier(
+    x1,
+    y1,
+    x2 + suggestShiftX,
+    y2 + suggestShiftY,
+  );
 
-const [x1, y1, x2, y2] = startEndWithMoveDeltas.value;
-const staticBezier = getBezier(x1, y1, x2, y2);
-const offsetBezier = getBezier(x1, y1, x2 + suggestShiftX, y2 + suggestShiftY);
-// the tween animation will mutate this value, so we need to create a copy of it
-// and keep the static and offset bezier points untouched/immutable
-const bezierEndPoint = { ...staticBezier.end };
+  if (shouldAnimate) {
+    replacementAnimation = animate(
+      normalBezier.end,
+      { x: animatedBezier.end.x, y: animatedBezier.end.y },
+      {
+        duration: 0.2,
+        ease: "easeOut",
+        onUpdate: () => {
+          if (replacementAnimation && !connectorPath.value) {
+            replacementAnimation.stop();
+            return;
+          }
 
-useAnimatePixiContainer({
-  initialValue: bezierEndPoint,
-  targetValue: offsetBezier.end,
-  targetDisplayObject: connectorPath,
-  changeTracker: isTargetForReplacement,
-  animationParams: { duration: 0.2, ease: "easeOut" },
-  onUpdate: (_value, type) => {
-    const renderValue = type === "in" ? bezierEndPoint : staticBezier.end;
-    renderFn(connectorPath.value!, { ...staticBezier, end: renderValue });
-  },
+          renderFn(connectorPath.value!, normalBezier);
+        },
+      },
+    );
+  } else {
+    replacementAnimation?.stop();
+    replacementAnimation = undefined;
+    renderFn(connectorPath.value!, normalBezier);
+  }
 });
 
 function getBoundingBox(start: XY, ctrl1: XY, ctrl2: XY, end: XY) {

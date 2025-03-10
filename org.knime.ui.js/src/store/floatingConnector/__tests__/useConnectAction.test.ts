@@ -24,6 +24,7 @@ describe("floatingConnector::useConnectAction", () => {
       return ref<SnapTarget>({
         isPlaceHolderPort: true,
         typeId: "table",
+        side: "in",
         validPortGroups: {
           customOptionalGroup: {
             supportedPortTypeIds: ["table"],
@@ -35,6 +36,7 @@ describe("floatingConnector::useConnectAction", () => {
 
     return ref<SnapTarget>({
       ...createPort({ index: portIndex }),
+      side: "in",
       parentNodeId,
     });
   };
@@ -53,6 +55,7 @@ describe("floatingConnector::useConnectAction", () => {
       composableProps: {
         floatingConnector,
         snapTarget,
+        activeSnapPosition: ref({ x: 0, y: 10 }),
       },
       mockedStores,
     });
