@@ -90,27 +90,19 @@ describe("useFloatingMenuClickaway", () => {
     vi.runAllTimers();
     await nextTick();
 
-    const event1 = new PointerEvent("pointerdown");
-    // @ts-ignore - see MockPointerEvent in test setup file
-    event1.defaultPrevented = true;
-    kanvas.dispatchEvent(event1);
-
-    // ignores events that were defaultPrevented
-    expect(onClickawayCallback).not.toHaveBeenCalled();
-
     const mockEventTarget = document.createElement("span");
     mockCanvasAnchorWrapper.appendChild(mockEventTarget);
 
-    const event2 = new PointerEvent("pointerdown");
+    const event1 = new PointerEvent("pointerdown");
     // @ts-ignore - see MockPointerEvent in test setup file
-    event2.overrideTarget = mockEventTarget;
-    kanvas.dispatchEvent(event2);
+    event1.overrideTarget = mockEventTarget;
+    kanvas.dispatchEvent(event1);
 
     // ignores children of the anchored container
     expect(onClickawayCallback).not.toHaveBeenCalled();
 
-    const event3 = new PointerEvent("pointerdown");
-    kanvas.dispatchEvent(event3);
+    const event2 = new PointerEvent("pointerdown");
+    kanvas.dispatchEvent(event2);
 
     // clickaway for anything else
     expect(onClickawayCallback).toHaveBeenCalled();

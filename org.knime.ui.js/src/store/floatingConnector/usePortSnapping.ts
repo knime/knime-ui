@@ -154,6 +154,7 @@ export const usePortSnapping = (options: {
     lastHitTarget = undefined;
     activeSnapPosition.value = undefined;
     snapTarget.value = undefined;
+    consola.debug("floatingConnector::usePortSnapping - resetting snap state");
   };
 
   const isOutsideConnectorHoverRegion = (
@@ -182,7 +183,7 @@ export const usePortSnapping = (options: {
         return;
       }
 
-      consola.trace("Enter connection snap candidate", details);
+      consola.debug("Enter connection snap candidate", details);
       isInsideSnapRegion.value = true;
 
       const targetPortDirection =
@@ -300,6 +301,10 @@ export const usePortSnapping = (options: {
         snapIndex: snapPortIndex,
       };
 
+      consola.debug(
+        "floatingConnector::usePortSnapping - setting snap target",
+        { snapTarget: maybeNextSnapTarget },
+      );
       snapTarget.value = maybeNextSnapTarget;
     },
   );
@@ -310,7 +315,7 @@ export const usePortSnapping = (options: {
    */
   const onLeaveConnectionSnapCandidate = throttle(
     (details: ConnectionSnapCandidateDetails) => {
-      consola.trace("Leaving connection snap candidate", details);
+      consola.debug("Leaving connection snap candidate", details);
 
       resetState();
       // only reset when completely leaving snap region

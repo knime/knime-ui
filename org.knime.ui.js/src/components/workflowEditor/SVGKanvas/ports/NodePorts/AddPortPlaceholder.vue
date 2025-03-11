@@ -6,10 +6,7 @@ import type { NodePortGroups } from "@/api/custom-types";
 import type { XY } from "@/api/gateway-api/generated-api";
 import Port from "@/components/common/Port.vue";
 import { useCanvasAnchoredComponentsStore } from "@/store/canvasAnchoredComponents/canvasAnchoredComponents";
-import type {
-  MenuItemWithPort,
-  TargetPort,
-} from "../../../CanvasAnchoredComponents/PortTypeMenu/types";
+import type { TargetPort } from "../../../CanvasAnchoredComponents/PortTypeMenu/types";
 
 export const addPortPlaceholderPath = (() => {
   let cx = 0;
@@ -161,7 +158,9 @@ export default defineComponent({
           portGroups: this.validPortGroups,
         },
         events: {
-          itemActive: this.onItemActive,
+          itemActive: (item) => {
+            this.selectedPort = item?.port ?? null;
+          },
           itemClick: this.onItemClick,
           menuClose: this.closePortTypeMenu,
         },
@@ -190,10 +189,6 @@ export default defineComponent({
       }
 
       this.openMenu();
-    },
-
-    onItemActive(item: MenuItemWithPort) {
-      this.selectedPort = item?.port ?? null;
     },
 
     async onItemClick({

@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 /* eslint-disable no-undefined */
-import type { Ref } from "vue";
+import { type Ref, computed, ref } from "vue";
 
 import type { XY } from "@/api/gateway-api/generated-api";
 import type { Direction } from "@/util/compatibleConnections";
@@ -55,6 +55,7 @@ const createConnectionPayload = (params: {
 export const useConnectAction = (options: UseConnectActionOptions) => {
   const { floatingConnector, snapTarget, activeSnapPosition } = options;
 
+  const waitingForPortSelection = ref(false);
   const nodeInteractionsStore = useNodeInteractionsStore();
 
   const addPortAndConnectIt = async (params: {
@@ -180,6 +181,7 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
     const { promise, resolve, reject } = createUnwrappedPromise<void>();
 
     const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
+    waitingForPortSelection.value = true;
     canvasAnchoredComponentsStore.openPortTypeMenu({
       nodeId: snapTarget.value.parentNodeId,
       props: {
@@ -206,13 +208,23 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
               portSide: targetPortDirection === "in" ? "input" : "output",
               portGroup: targetPortGroup ?? undefined,
             });
+            consola.debug(
+              "floatingConnector::useConnectAction - added port and connected via placeholder port",
+            );
             resolve();
           } catch (error) {
             reject(error);
+          } finally {
+            waitingForPortSelection.value = false;
           }
         },
         menuClose: () => {
+          consola.debug(
+            "floatingConnector::useConnectAction - closing port-type menu for placeholder port",
+          );
           canvasAnchoredComponentsStore.closePortTypeMenu();
+          waitingForPortSelection.value = false;
+          resolve();
         },
       },
     });
@@ -220,5 +232,8 @@ export const useConnectAction = (options: UseConnectActionOptions) => {
     return promise;
   }
 
-  return { finishConnection };
+  return {
+    finishConnection,
+    waitingForPortSelection: computed(() => waitingForPortSelection.value),
+  };
 };

@@ -1,6 +1,6 @@
 /* eslint-disable func-style */
 /* eslint-disable no-undefined */
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { defineStore, storeToRefs } from "pinia";
 import type { FederatedPointerEvent } from "pixi.js";
 import throttle from "raf-throttle";
@@ -72,6 +72,9 @@ export const useFloatingConnectorStore = defineStore(
     const { isWritable: isWorkflowWritable, activeWorkflow } = storeToRefs(
       useWorkflowStore(),
     );
+    const canvasAnchoredComponentsStore = useCanvasAnchoredComponentsStore();
+    const { portTypeMenu } = storeToRefs(canvasAnchoredComponentsStore);
+    const isPortTypeMenuOpen = computed(() => portTypeMenu.value.isOpen);
 
     const removeActiveConnector = () => {
       floatingConnector.value = undefined;
@@ -141,7 +144,7 @@ export const useFloatingConnectorStore = defineStore(
       });
     };
 
-    const { finishConnection } = useConnectAction({
+    const { finishConnection, waitingForPortSelection } = useConnectAction({
       floatingConnector,
       snapTarget,
       activeSnapPosition,
@@ -174,6 +177,10 @@ export const useFloatingConnectorStore = defineStore(
       ) {
         return;
       }
+
+      consola.debug("floatingConnector:: starting connector drag", {
+        params,
+      });
 
       const { pixiApplication, globalToWorldCoordinates } =
         useWebGLCanvasStore();
@@ -223,12 +230,16 @@ export const useFloatingConnectorStore = defineStore(
         pointerDown.value = false;
         didMove.value = false;
         isDragging.value = false;
+        runListenerTeardown?.();
 
         if (!floatingConnector.value) {
           return;
         }
 
         const isDroppedOnCanvas = !didDragToCompatibleTarget.value;
+        consola.debug("floatingConnector:: pointer up", {
+          isDroppedOnCanvas,
+        });
 
         if (isDroppedOnCanvas) {
           const removeConnector =
@@ -250,19 +261,20 @@ export const useFloatingConnectorStore = defineStore(
         activeConnectionValidTargets.value?.clear();
         activeConnectionValidTargets.value = undefined;
         resetState();
-        runListenerTeardown?.();
       };
 
-      canvas.addEventListener("pointermove", onPointerMove);
-      canvas.addEventListener("pointerup", onPointerUp);
-      canvas.addEventListener("lostPointerCapture", onPointerUp);
-
       runListenerTeardown = () => {
+        consola.debug("floatingConnector:: tearing down listeners");
+        canvas.releasePointerCapture(pointerDownEvent.pointerId);
         canvas.removeEventListener("pointermove", onPointerMove);
         canvas.removeEventListener("pointerup", onPointerUp);
         canvas.removeEventListener("lostPointerCapture", onPointerUp);
         runListenerTeardown = undefined;
       };
+
+      canvas.addEventListener("pointermove", onPointerMove);
+      canvas.addEventListener("pointerup", onPointerUp);
+      canvas.addEventListener("lostPointerCapture", onPointerUp);
 
       setupAbortListener();
     };
@@ -306,10 +318,6 @@ export const useFloatingConnectorStore = defineStore(
       };
     };
 
-    const { portTypeMenu } = storeToRefs(useCanvasAnchoredComponentsStore());
-    const isPortTypeMenuOpen = computed(() => portTypeMenu.value.isOpen);
-    let hasScheduledPorTypeWatch = false;
-
     return {
       floatingConnector,
       didMove,
@@ -325,30 +333,7 @@ export const useFloatingConnectorStore = defineStore(
       onLeaveConnectionSnapCandidate: (
         details: Parameters<typeof onLeaveConnectionSnapCandidate>[0],
       ) => {
-        const scheduleClearAfterPortTypeMenu = () => {
-          // make sure only a single watch is scheduled
-          // no matter how many times the leave is called
-          if (!hasScheduledPorTypeWatch) {
-            hasScheduledPorTypeWatch = true;
-            watch(
-              isPortTypeMenuOpen,
-              () => {
-                hasScheduledPorTypeWatch = false;
-                resetState();
-                removeActiveConnector();
-                runListenerTeardown?.();
-              },
-              // auto-remove watcher
-              { once: true },
-            );
-          }
-        };
-
-        // prevent clearing out the state when the PortTypeMenu gets opened
-        // which would happen because of its clickaway behavior firing a "leave"
-        // on the snap candidate
-        if (isPortTypeMenuOpen.value) {
-          scheduleClearAfterPortTypeMenu();
+        if (isPortTypeMenuOpen.value && waitingForPortSelection.value) {
           return;
         }
 

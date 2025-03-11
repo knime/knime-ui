@@ -29,12 +29,6 @@ export const useFloatingMenuClickaway = (options: UseFloatingMenuClickaway) => {
       return;
     }
 
-    // preventing the default is being used as a signal on events that
-    // originate from within the WebGL canvas to hint that the event was handled already
-    if (event.defaultPrevented) {
-      return;
-    }
-
     options.onClickaway();
   };
 
