@@ -53,7 +53,6 @@ import static org.knime.ui.java.api.DesktopAPI.MAPPER;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -344,65 +343,7 @@ final class SpaceAPI {
         return dirtyAndOpen;
     }
 
-    /**
-     * Move/copy space items within a non-local space provider.
-     *
-     * @param spaceProviderId space provider ID of the Hub
-     * @param sourceSpaceId space ID of the source items
-     * @param doCopy {@code true} for copying, {@code false} for moving
-     * @param sourceItemIdsParam array of source item IDs
-     * @return {@code SUCCESS} if the operation was performed successfully. {@code COLLISION} if no collision handling
-     *         strategy was specified but a name collision occured - in this case the caller should try again with a
-     *         collision handling strategy. {@code FAILURE} if the operation failed.
-     */
-    @API
-    @SuppressWarnings({"java:S1941"})
-    static String moveOrCopyToSpace( //
-        final String spaceProviderId, //
-        final String sourceSpaceId, //
-        final boolean doCopy, //
-        final Object[] sourceItemIdsParam, //
-        final String destinationSpaceId, //
-        final String destinationItemId, //
-        final String nameCollisionHandlingParam //
-    ) {
-        if (sourceItemIdsParam.length == 0) {
-            return MoveOrCopyResult.SUCCESS.toString();
-        }
-
-        final var sources = new Locator.Siblings(spaceProviderId, sourceSpaceId,
-            Arrays.stream(sourceItemIdsParam).map(String.class::cast).toList());
-        final var destination = new Locator.Item(spaceProviderId, destinationSpaceId, destinationItemId);
-
-        var collisionHandling = NameCollisionHandling.of(nameCollisionHandlingParam);
-        if ( //
-        collisionHandling.isEmpty() //
-            && NameCollisionChecker.test(destination.space(), destination.itemId(), sources.itemIds()) //
-        ) {
-            // Clients (frontend) need to try again with a collision handling strategy parameter specified.
-            return MoveOrCopyResult.COLLISION.toString();
-        }
-        // If empty, there is no collision. Perform operation with "NOOP" strategy, which will fail in case
-        //  the operation itself determines a collision (unexpected case, this would be an implementation mistake).
-        var effectiveCollisionHandling = collisionHandling.orElse(NameCollisionHandling.NOOP);
-
-        try {
-            destination.space().moveOrCopyItems(sources.itemIds(), destination.itemId(), effectiveCollisionHandling,
-                doCopy);
-        } catch (IOException e) {
-            DesktopAPUtil.showAndLogError("Unable to %s item".formatted(doCopy ? "copy" : "move"),
-                "An unexpected exception occurred while %s the item".formatted(doCopy ? "copying" : "moving"),
-                NodeLogger.getLogger(SpaceAPI.class), e);
-            return MoveOrCopyResult.FAILURE.toString();
-        }
-        return MoveOrCopyResult.SUCCESS.toString();
-    }
-
-    private enum MoveOrCopyResult {
-            SUCCESS, COLLISION, FAILURE
-    }
-
-    /**
+        /**
      * Retrieves ancestor information necessary to reveal a project in the space explorer
      *
      * @return An object containing the ancestor item IDs and a boolean whether the project name has changed or not

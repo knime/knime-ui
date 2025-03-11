@@ -117,21 +117,6 @@ declare function copyBetweenSpaces(
   excludeData: boolean,
 ): boolean;
 
-declare function moveOrCopyToSpace(
-  spaceProviderId: string,
-  sourceSpaceId: string,
-  isCopy: boolean,
-  sourceItemIdsParam: string[],
-  destinationSpaceId: string,
-  destinationItemId: string,
-  nameCollisionHandlingParam:
-    | "OVERWRITE"
-    | "NOOP"
-    | "AUTORENAME"
-    | "CANCEL"
-    | null,
-): "SUCCESS" | "COLLISION" | "FAILURE";
-
 declare function openInBrowser(
   spaceProviderId: string,
   spaceId: string,

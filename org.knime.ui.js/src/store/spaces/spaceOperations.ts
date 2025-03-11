@@ -9,6 +9,8 @@ import {
   SpaceItem,
   type WorkflowGroupContent,
 } from "@/api/gateway-api/generated-api";
+import { CollisionException } from "@/api/gateway-api/generated-exceptions";
+import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -26,6 +28,8 @@ type SpaceOperationsState = {
   activeRenamedItemId: string;
   currentSelectedItemIds: string[];
 };
+
+type MoveOrCopyItemsParams = Parameters<typeof API.space.moveOrCopyItems>[0];
 
 export const useSpaceOperationsStore = defineStore("space.operations", {
   state: (): SpaceOperationsState => ({
@@ -490,13 +494,13 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       projectId,
       itemIds,
       destWorkflowGroupItemId,
-      collisionStrategy,
+      collisionHandling,
       isCopy,
     }: {
       projectId: string;
       itemIds: string[];
       destWorkflowGroupItemId: string;
-      collisionStrategy: "NOOP" | "OVERWRITE" | "AUTORENAME";
+      collisionHandling?: "NOOP" | "OVERWRITE" | "AUTORENAME";
       isCopy: boolean;
     }) {
       const { spaceId, spaceProviderId } =
@@ -504,13 +508,13 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
 
       try {
         this.setIsLoadingContent(true);
-        await API.space.moveOrCopyItems({
+        await this.checkForCollisionsAndMove({
           spaceProviderId,
           spaceId,
           itemIds,
+          destSpaceId: spaceId,
           destWorkflowGroupItemId,
-          // @ts-expect-error
-          collisionHandling: collisionStrategy, // TODO Fix type
+          ...(collisionHandling && { collisionHandling }),
           copy: isCopy,
         });
         itemIds.forEach(async (itemId: string) => {
@@ -548,6 +552,36 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
       const { spaceId, spaceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
       API.desktop.openPermissionsDialog({ spaceProviderId, spaceId, itemId });
+    },
+
+    /**
+     * Try moving items. If there is no collision strategy set, the user will be prompted
+     * for choosing a collision strategy in case of failure and the request will be retried with the
+     * chosen collision strategy
+     * @param params the params for the moveOrCopyItems call on the gateway space api
+     * @returns
+     */
+    async checkForCollisionsAndMove(params: MoveOrCopyItemsParams) {
+      const { promptCollisionStrategies } = usePromptCollisionStrategies();
+
+      try {
+        await API.space.moveOrCopyItems(params);
+      } catch (error) {
+        // retry with collision strategy if there is a collision
+        if (!params?.collisionHandling && error instanceof CollisionException) {
+          const collisionHandling = await promptCollisionStrategies();
+          if (collisionHandling === "CANCEL") {
+            return;
+          }
+          await this.checkForCollisionsAndMove({
+            ...params,
+            collisionHandling,
+          });
+          return;
+        }
+
+        throw error;
+      }
     },
   },
   getters: {

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
 import type { DestinationPickerResult } from "@/components/spaces/DestinationPicker/useDestinationPicker";
@@ -27,7 +27,19 @@ vi.mock("@/components/spaces/DestinationPicker/useDestinationPicker", () => {
   };
 });
 
+const { checkOpenWorkflowsBeforeMoveMock } = vi.hoisted(() => ({
+  checkOpenWorkflowsBeforeMoveMock: vi.fn().mockReturnValue(false),
+}));
+
+vi.mock("@/store/spaces/util", () => ({
+  checkOpenWorkflowsBeforeMove: checkOpenWorkflowsBeforeMoveMock,
+}));
+
 describe("spaces::index", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe("copyBetweenSpace", () => {
     it("should copy items between spaces", async () => {
       const itemIds = ["id1", "id2"];
@@ -59,7 +71,6 @@ describe("spaces::index", () => {
   describe("moveOrCopyToSpace", () => {
     it("should move items between spaces on same Hub", async () => {
       const itemIds = ["id1", "id2"];
-      mockedAPI.desktop.moveOrCopyToSpace.mockReturnValueOnce("SUCCESS");
       const { spacesStore, spaceCachingStore, spaceOperationsStore } =
         loadStore();
 
@@ -75,18 +86,36 @@ describe("spaces::index", () => {
         isCopy: false,
         itemIds,
       });
-      expect(mockedAPI.desktop.moveOrCopyToSpace).toHaveBeenCalledWith({
-        sourceSpaceId: "space1",
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledWith({
+        spaceId: "space1",
         spaceProviderId: "hub1",
-        isCopy: false,
-        sourceItemIds: itemIds,
-        destinationSpaceId: "mockDestinationSpaceId",
-        destinationItemId: "mockDestinationItemId",
-        nameCollisionHandling: null,
+        copy: false,
+        itemIds,
+        destSpaceId: "mockDestinationSpaceId",
+        destWorkflowGroupItemId: "mockDestinationItemId",
       });
       expect(
         spaceOperationsStore.fetchWorkflowGroupContent,
       ).toHaveBeenCalledWith({ projectId });
+    });
+
+    it("should not move items if there are opened items among them", async () => {
+      checkOpenWorkflowsBeforeMoveMock.mockReturnValueOnce(true);
+      const itemIds = ["id1", "id2"];
+      const { spacesStore, spaceCachingStore } = loadStore();
+
+      const projectId = "project2";
+      spaceCachingStore.projectPath[projectId] = {
+        spaceProviderId: "hub1",
+        spaceId: "space1",
+        itemId: "level2",
+      };
+      await spacesStore.moveOrCopyToSpace({
+        projectId,
+        isCopy: false,
+        itemIds,
+      });
+      expect(mockedAPI.space.moveOrCopyItems).not.toHaveBeenCalled();
     });
   });
 });

@@ -455,9 +455,6 @@ describe("SpaceExplorer.vue", () => {
 
   describe("duplicating", () => {
     it("should duplicate selected items", async () => {
-      // makes sure we disregard any strategy and always choose "AUTORENAME" when "moving" into "." (i.e. duplicating)
-      mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("NOOP");
-
       const { wrapper, mockedStores } = await doMountAndLoad();
 
       const sourceItems = ["id1", "id2"];
@@ -474,7 +471,7 @@ describe("SpaceExplorer.vue", () => {
         projectId: "someProjectId",
         itemIds: sourceItems,
         destWorkflowGroupItemId: "root",
-        collisionStrategy: "AUTORENAME",
+        collisionHandling: "AUTORENAME",
         isCopy: true,
       });
     });
@@ -603,7 +600,6 @@ describe("SpaceExplorer.vue", () => {
 
   describe("move items", () => {
     it("should move items", async () => {
-      mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
       const { wrapper, mockedStores } = await doMountAndLoad();
       await flushPromises();
 
@@ -621,7 +617,6 @@ describe("SpaceExplorer.vue", () => {
         projectId: "someProjectId",
         itemIds: sourceItems,
         destWorkflowGroupItemId: targetItem,
-        collisionStrategy: "OVERWRITE",
         isCopy: false,
       });
       await flushPromises();
@@ -630,7 +625,6 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should move items to root", async () => {
-      mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
       const { wrapper, mockedStores } = doMount({
         props: { projectId: "someProjectId" },
         mockResponse: {
@@ -656,7 +650,6 @@ describe("SpaceExplorer.vue", () => {
         itemIds: sourceItems,
         projectId: "someProjectId",
         destWorkflowGroupItemId: "root",
-        collisionStrategy: "OVERWRITE",
         isCopy: false,
       });
       await flushPromises();
@@ -664,7 +657,6 @@ describe("SpaceExplorer.vue", () => {
     });
 
     it("should move items back to the parent directory", async () => {
-      mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("OVERWRITE");
       const { wrapper, mockedStores } = await doMount({
         props: { projectId: "someProjectId" },
         mockResponse: {
@@ -692,36 +684,10 @@ describe("SpaceExplorer.vue", () => {
         itemIds: sourceItems,
         projectId: "someProjectId",
         destWorkflowGroupItemId: "parentId",
-        collisionStrategy: "OVERWRITE",
         isCopy: false,
       });
       await flushPromises();
       expect(onComplete).toHaveBeenCalledWith(true);
-    });
-
-    it("should not move items if collision handling returns cancel", async () => {
-      mockedAPI.desktop.getNameCollisionStrategy.mockReturnValue("CANCEL");
-      const { wrapper, mockedStores } = doMount({
-        props: { projectId: "someProjectId" },
-      });
-      await flushPromises();
-
-      const sourceItems = ["id1", "id2"];
-      const targetItem = "group1";
-      const onComplete = vi.fn();
-      wrapper
-        .findComponent(FileExplorer)
-        .vm.$emit("moveItems", { sourceItems, targetItem, onComplete });
-
-      expect(
-        mockedStores.spaceOperationsStore.moveOrCopyItems,
-      ).not.toHaveBeenCalledWith({
-        itemIds: sourceItems,
-        destWorkflowGroupItemId: targetItem,
-        collisionStrategy: "CANCEL",
-      });
-      await nextTick();
-      expect(onComplete).toHaveBeenCalledWith(false);
     });
 
     it("should show toast if at least one of the moved workflows is opened", async () => {

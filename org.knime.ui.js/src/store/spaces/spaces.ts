@@ -1,18 +1,16 @@
 import { API } from "@api";
 import { defineStore } from "pinia";
 
-import type { NameCollisionHandling } from "@/api/custom-types";
 import {
   type DestinationPickerConfig,
   useDestinationPicker,
 } from "@/components/spaces/DestinationPicker/useDestinationPicker";
-import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
+import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
 
 import { localRootProjectPath, useSpaceCachingStore } from "./caching";
 import { useSpaceOperationsStore } from "./spaceOperations";
 
 const { promptDestination, presets } = useDestinationPicker();
-const { promptCollisionStrategies } = usePromptCollisionStrategies();
 
 type CreateWorkflowModalConfig = {
   isOpen: boolean;
@@ -101,8 +99,19 @@ export const useSpacesStore = defineStore("spaces", {
       isCopy: boolean;
       itemIds: string[];
     }) {
+      if (checkOpenWorkflowsBeforeMove({ itemIds, isCopy })) {
+        // can't move workflows that are currently open
+        return;
+      }
+
       const { spaceId: sourceSpaceId, spaceProviderId } =
         useSpaceCachingStore().projectPath[projectId];
+
+      const {
+        setIsLoadingContent,
+        fetchWorkflowGroupContent,
+        checkForCollisionsAndMove,
+      } = useSpaceOperationsStore();
 
       const operation = isCopy ? "Copy" : "Move";
       const pickerConfig = {
@@ -122,40 +131,31 @@ export const useSpacesStore = defineStore("spaces", {
       }
 
       try {
-        const doWithCollisionHandling = (
-          strategy: NameCollisionHandling | null,
-        ) => {
-          return API.desktop.moveOrCopyToSpace({
-            spaceProviderId,
-            sourceSpaceId,
-            isCopy,
-            sourceItemIds: itemIds,
-            destinationSpaceId: destinationResult.spaceId,
-            destinationItemId: destinationResult.itemId,
-            nameCollisionHandling: strategy,
-          });
-        };
+        setIsLoadingContent(true);
 
-        let result = await doWithCollisionHandling(null);
+        await checkForCollisionsAndMove({
+          spaceProviderId,
+          spaceId: sourceSpaceId,
+          itemIds,
+          destSpaceId: destinationResult.spaceId,
+          destWorkflowGroupItemId: destinationResult.itemId,
+          copy: isCopy,
+        });
 
-        if (result === "COLLISION") {
-          const strategy = await promptCollisionStrategies();
-          result = await doWithCollisionHandling(strategy);
-        }
-
-        if (result === "SUCCESS") {
-          await useSpaceOperationsStore().fetchWorkflowGroupContent({
-            projectId,
-          });
-        }
-      } catch (error) {
+        await fetchWorkflowGroupContent({
+          projectId,
+        });
+      } catch (error: unknown) {
         consola.error(
           `action::moveOrCopyToSpace -> Error ${
             isCopy ? "copying" : "moving"
           } items`,
           { error },
         );
+
         throw error;
+      } finally {
+        setIsLoadingContent(false);
       }
     },
 

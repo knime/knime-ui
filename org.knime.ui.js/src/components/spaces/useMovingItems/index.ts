@@ -1,30 +1,17 @@
 import { type Ref } from "vue";
-import { h } from "vue";
-import { API } from "@api";
 import { storeToRefs } from "pinia";
 
-import { useApplicationStore } from "@/store/application/application";
-import { useSpaceCachingStore } from "@/store/spaces/caching";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
+import { checkOpenWorkflowsBeforeMove } from "@/store/spaces/util";
 import { getToastPresets } from "@/toastPresets";
-
-import MovingItemsTemplate from "./MovingItemsTemplate.vue";
 
 type UseMovingItemsOptions = {
   projectId: Ref<string | null>;
 };
 
-const createModalTemplate = (
-  props: InstanceType<typeof MovingItemsTemplate>["$props"],
-) => h(MovingItemsTemplate, { ...props });
-
 export const useMovingItems = (options: UseMovingItemsOptions) => {
-  const { openProjects } = storeToRefs(useApplicationStore());
-  const { projectPath } = storeToRefs(useSpaceCachingStore());
   const { pathToItemId } = storeToRefs(useSpaceOperationsStore());
   const { moveOrCopyItems } = useSpaceOperationsStore();
-
-  const activeSpacePath = projectPath.value[options.projectId.value ?? ""];
 
   const { toastPresets } = getToastPresets();
 
@@ -39,40 +26,9 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
     onComplete: (success: boolean) => void;
     isCopy?: boolean;
   }) => {
-    const openedWorkflows = openProjects.value.filter((project) =>
-      sourceItems.includes(project?.origin?.itemId ?? ""),
-    );
-
-    const isInsideFolder = openProjects.value.filter((project) => {
-      if (!project.origin) {
-        return false;
-      }
-
-      const { ancestorItemIds = [] } = project.origin;
-
-      return ancestorItemIds.some((ancestorId) =>
-        sourceItems.includes(ancestorId),
-      );
-    });
-
-    if (openedWorkflows.length || isInsideFolder.length) {
-      const openedWorkflowsNames = openedWorkflows.map(
-        (workflow) => workflow.name,
-      );
-      const isInsideFolderNames = isInsideFolder.map(
-        (workflow) => workflow.name,
-      );
-
-      toastPresets.spaces.crud.moveOrCopyOpenItemsWarning({
-        isCopy,
-        component: createModalTemplate({
-          isCopy,
-          openedItemNames: openedWorkflowsNames.concat(isInsideFolderNames),
-        }),
-      });
-
+    if (checkOpenWorkflowsBeforeMove({ itemIds: sourceItems, isCopy })) {
+      // can't move workflows that are currently open
       onComplete(false);
-
       return;
     }
 
@@ -84,21 +40,6 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
     // if we copy into the current workflow group, we actually "duplicate"
     // and hence always want to auto rename without bothering the user with a dialog
     const isDuplicate = isCopy && targetItem === ".";
-    const collisionStrategy = isDuplicate
-      ? "AUTORENAME"
-      : (await API.desktop.getNameCollisionStrategy({
-          spaceProviderId: activeSpacePath?.spaceProviderId,
-          spaceId: activeSpacePath?.spaceId,
-          itemIds: sourceItems,
-          destinationItemId: destWorkflowGroupItemId ?? "",
-          usageContext: "MOVE",
-        }))!;
-
-    if (collisionStrategy === "CANCEL") {
-      onComplete(false);
-
-      return;
-    }
 
     try {
       // remove ghosts regardless of success criteria. yields better results on slow operations
@@ -109,7 +50,7 @@ export const useMovingItems = (options: UseMovingItemsOptions) => {
         itemIds: sourceItems,
         projectId: options.projectId.value ?? "",
         destWorkflowGroupItemId: destWorkflowGroupItemId ?? "",
-        collisionStrategy,
+        ...(isDuplicate && { collisionHandling: "AUTORENAME" }),
         isCopy,
       });
     } catch (error) {

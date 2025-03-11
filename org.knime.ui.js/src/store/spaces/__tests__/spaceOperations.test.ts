@@ -2,7 +2,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { API } from "@api";
 
-import { ServiceCallException } from "@/api/gateway-api/generated-exceptions";
+import {
+  CollisionException,
+  IOException,
+  ServiceCallException,
+} from "@/api/gateway-api/generated-exceptions";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import {
@@ -17,6 +21,14 @@ import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
 
 const busEmitSpy = vi.spyOn($bus, "emit");
 const mockedAPI = deepMocked(API);
+
+const { usePromptCollisionStrategiesMock } = vi.hoisted(() => ({
+  usePromptCollisionStrategiesMock: vi.fn(),
+}));
+
+vi.mock("@/composables/useConfirmDialog/usePromptCollisionHandling", () => ({
+  usePromptCollisionStrategies: usePromptCollisionStrategiesMock,
+}));
 
 describe("spaces::spaceOperations", () => {
   afterEach(() => {
@@ -557,11 +569,113 @@ describe("spaces::spaceOperations", () => {
     });
   });
 
+  describe("checkForCollisionAndMove", () => {
+    const setUp = () => {
+      const { spaceOperationsStore } = loadStore();
+      const { checkForCollisionsAndMove } = spaceOperationsStore;
+      const promptCollisionStrategiesMock = vi.fn();
+      usePromptCollisionStrategiesMock.mockReturnValue({
+        promptCollisionStrategies: promptCollisionStrategiesMock,
+      });
+      return { promptCollisionStrategiesMock, checkForCollisionsAndMove };
+    };
+
+    const params = {
+      spaceId: "space-id",
+      spaceProviderId: "space-provider-id",
+      itemIds: ["item-1", "item-2"],
+      destSpaceId: "dest-space-id",
+      destWorkflowGroupItemId: "dest-item-id",
+      copy: false,
+    };
+
+    const paramsWithCollisionHandling = {
+      ...params,
+      collisionHandling: "AUTORENAME",
+    } as const;
+
+    it("uses provided params", async () => {
+      const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
+        setUp();
+      await checkForCollisionsAndMove(
+        structuredClone(paramsWithCollisionHandling),
+      );
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledWith(
+        paramsWithCollisionHandling,
+      );
+      expect(promptCollisionStrategiesMock).not.toHaveBeenCalled();
+    });
+
+    it("will not retry if collision strategy is provided and instead re-throw error", async () => {
+      const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
+        setUp();
+      mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
+        new CollisionException({ message: "Whoops" }),
+      );
+      await expect(() =>
+        checkForCollisionsAndMove(structuredClone(paramsWithCollisionHandling)),
+      ).rejects.toThrowError();
+
+      expect(promptCollisionStrategiesMock).not.toHaveBeenCalled();
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledOnce();
+    });
+
+    it("will retry with selected collision strategy in case of collision error", async () => {
+      const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
+        setUp();
+      promptCollisionStrategiesMock.mockResolvedValue("OVERWRITE");
+      mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
+        new CollisionException({ message: "Collision" }),
+      );
+
+      await checkForCollisionsAndMove(params);
+
+      expect(promptCollisionStrategiesMock).toHaveBeenCalled();
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledTimes(2);
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenNthCalledWith(
+        1,
+        params,
+      );
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenNthCalledWith(2, {
+        ...params,
+        collisionHandling: "OVERWRITE",
+      });
+    });
+
+    it("will not retry if user cancels", async () => {
+      const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
+        setUp();
+      promptCollisionStrategiesMock.mockResolvedValue("CANCEL");
+      mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
+        new CollisionException({ message: "Collision" }),
+      );
+
+      await checkForCollisionsAndMove(params);
+
+      expect(promptCollisionStrategiesMock).toHaveBeenCalled();
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledOnce();
+    });
+
+    it("will re-trow error if it is not a CollisionException", async () => {
+      const { promptCollisionStrategiesMock, checkForCollisionsAndMove } =
+        setUp();
+      mockedAPI.space.moveOrCopyItems.mockRejectedValueOnce(
+        new IOException({ message: "Whoops" }),
+      );
+      await expect(() =>
+        checkForCollisionsAndMove(structuredClone(params)),
+      ).rejects.toThrowError();
+
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledOnce();
+      expect(promptCollisionStrategiesMock).not.toHaveBeenCalled();
+    });
+  });
+
   describe("moveOrCopyItems", () => {
     it("should move items", async () => {
       const itemIds = ["id1", "id2"];
       const destWorkflowGroupItemId = "group1";
-      const collisionStrategy = "OVERWRITE";
+      const collisionHandling = "OVERWRITE";
 
       const { spaceOperationsStore, spaceCachingStore } = loadStore();
 
@@ -576,17 +690,22 @@ describe("spaces::spaceOperations", () => {
         projectId,
         itemIds,
         destWorkflowGroupItemId,
-        collisionStrategy,
+        collisionHandling,
         isCopy: false,
       });
-      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledWith({
+      const args = {
         spaceProviderId: "local",
         spaceId: "local",
+        destSpaceId: "local",
         itemIds,
         destWorkflowGroupItemId,
-        collisionHandling: collisionStrategy,
+        collisionHandling,
         copy: false,
-      });
+      };
+      expect(
+        spaceOperationsStore.checkForCollisionsAndMove,
+      ).toHaveBeenCalledWith(args);
+      expect(mockedAPI.space.moveOrCopyItems).toHaveBeenCalledWith(args);
       expect(mockedAPI.space.listWorkflowGroup).toHaveBeenCalledWith(
         expect.objectContaining({ itemId: "level2" }),
       );

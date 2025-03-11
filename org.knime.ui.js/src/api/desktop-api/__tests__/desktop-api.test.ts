@@ -180,18 +180,6 @@ const browserFunctions: BrowserFunctionDescriptor[] = [
     ],
   },
   {
-    name: "moveOrCopyToSpace",
-    params: [
-      ["spaceProviderId", "provider1"],
-      ["sourceSpaceId", "space1"],
-      ["isCopy", false],
-      ["sourceItemIds", ["123", "456"]],
-      ["destinationSpaceId", "destSpaceId"],
-      ["destinationItemId", "destItemId"],
-      ["nameCollisionHandling", "CANCEL"],
-    ],
-  },
-  {
     name: "openInBrowser",
     params: [
       ["spaceProviderId", "provider1"],

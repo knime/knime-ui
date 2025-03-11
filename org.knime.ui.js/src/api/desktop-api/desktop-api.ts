@@ -6,7 +6,6 @@ import {
   type AncestorInfo,
   type ExampleProject,
   type FullSpacePath,
-  type NameCollisionHandling,
   type RecentWorkflow,
   type SpaceId,
   type SpaceItemId,
@@ -561,40 +560,6 @@ export const copyBetweenSpaces = ({
       excludeData,
     ],
     "Error uploading to Hub space",
-    true,
-    { block: true, darkenBackground: true },
-  );
-};
-
-export const moveOrCopyToSpace = ({
-  spaceProviderId,
-  sourceSpaceId,
-  isCopy,
-  sourceItemIds,
-  destinationSpaceId,
-  destinationItemId,
-  nameCollisionHandling,
-}: SpaceProviderId & { isCopy: boolean } & {
-  sourceSpaceId: SpaceId["spaceId"];
-  sourceItemIds: Array<SpaceItemId["itemId"]>;
-} & {
-  destinationSpaceId: SpaceId["spaceId"];
-  destinationItemId: SpaceItemId["itemId"];
-  nameCollisionHandling: NameCollisionHandling | null;
-}) => {
-  const copyOrMove = isCopy ? "copying" : "moving";
-  return callBrowserFunction(
-    window.moveOrCopyToSpace,
-    [
-      spaceProviderId,
-      sourceSpaceId,
-      isCopy,
-      sourceItemIds,
-      destinationSpaceId,
-      destinationItemId,
-      nameCollisionHandling,
-    ],
-    `Error ${copyOrMove} item`,
     true,
     { block: true, darkenBackground: true },
   );

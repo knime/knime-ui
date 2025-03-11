@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { SpaceProviderNS } from "@/api/custom-types";
+import type { Project } from "@/api/gateway-api/generated-api";
 import { knimeExternalUrls } from "@/plugins/knimeExternalUrls";
 import {
   createProject,
@@ -8,7 +9,9 @@ import {
   createSpaceGroup,
   createSpaceProvider,
 } from "@/test/factories";
+import { mockStores } from "@/test/utils/mockStores";
 import {
+  checkOpenWorkflowsBeforeMove,
   findSpaceById,
   findSpaceGroupFromSpaceId,
   formatSpaceProviderName,
@@ -17,6 +20,14 @@ import {
   isProjectOpen,
   isServerProvider,
 } from "../util";
+
+const { getToastPresetsMock } = vi.hoisted(() => ({
+  getToastPresetsMock: vi.fn(() => ({ toastPresets: vi.fn() })),
+}));
+
+vi.mock("@/toastPresets", () => ({
+  getToastPresets: getToastPresetsMock,
+}));
 
 describe("spaces::util", () => {
   const createSpaces = (groupId: string) =>
@@ -198,6 +209,102 @@ describe("spaces::util", () => {
         spaceProvider3,
       ),
     ).toBe(false);
+  });
+
+  describe("checkOpenWorkflowsBeforeMove", () => {
+    const setUp = ({
+      openProjects = [],
+      itemIds = ["id1", "id2"],
+      isCopy = false,
+    }: {
+      openProjects?: Project[];
+      itemIds?: string[];
+      isCopy?: boolean;
+    } = {}) => {
+      const { applicationStore } = mockStores();
+      applicationStore.openProjects = openProjects;
+
+      const warningToastMock = vi.fn();
+      const mock = {
+        toastPresets: {
+          spaces: {
+            crud: {
+              moveOrCopyOpenItemsWarning: warningToastMock,
+            },
+          },
+        },
+      };
+      // @ts-ignore
+      getToastPresetsMock.mockReturnValue(mock);
+
+      return {
+        warningToastMock,
+        run: () => checkOpenWorkflowsBeforeMove({ itemIds, isCopy }),
+      };
+    };
+
+    it("returns false for no open projects and displays no toast", () => {
+      const { warningToastMock, run } = setUp();
+      const result = run();
+      expect(result).toBe(false);
+      expect(warningToastMock).not.toHaveBeenCalled();
+    });
+
+    it("returns false if no open projects referencing one of the moved ids exist", () => {
+      const openProject = {
+        projectId: "project1",
+        name: "Cold Harbor",
+      };
+      const { warningToastMock, run } = setUp({ openProjects: [openProject] });
+      const result = run();
+      expect(result).toBe(false);
+      expect(warningToastMock).not.toHaveBeenCalled();
+    });
+
+    it("returns true and displays toast if open workflow is moved", () => {
+      const openProject = {
+        projectId: "project1",
+        name: "Cold Harbor",
+        origin: { itemId: "id1", providerId: "Knime-Hub", spaceId: "spaceId1" },
+      };
+      const { warningToastMock, run } = setUp({ openProjects: [openProject] });
+      const result = run();
+      expect(result).toBe(true);
+      expect(warningToastMock).toHaveBeenCalledWith({
+        isCopy: false,
+        component: expect.objectContaining({
+          props: {
+            isCopy: false,
+            openedItemNames: ["Cold Harbor"],
+          },
+        }),
+      });
+    });
+
+    it("returns true and displays toast if ancestor of open project is moved", () => {
+      const openProject = {
+        projectId: "project1",
+        name: "Cold Harbor",
+        origin: {
+          itemId: "other-id",
+          providerId: "Knime-Hub",
+          spaceId: "spaceId1",
+          ancestorItemIds: ["id2"],
+        },
+      };
+      const { warningToastMock, run } = setUp({ openProjects: [openProject] });
+      const result = run();
+      expect(result).toBe(true);
+      expect(warningToastMock).toHaveBeenCalledWith({
+        isCopy: false,
+        component: expect.objectContaining({
+          props: {
+            isCopy: false,
+            openedItemNames: ["Cold Harbor"],
+          },
+        }),
+      });
+    });
   });
 
   it("add a suffix (DEV) for the community hub (dev)", () => {

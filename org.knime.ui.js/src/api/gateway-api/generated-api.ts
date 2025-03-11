@@ -5800,17 +5800,20 @@ const space = function(rpcClient: RPCClient) {
          * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
          * @param {string} spaceProviderId Identifies a space-provider.
          * @param {Array<string>} itemIds A list of identifiers of items in the space.
+         * @param {string} destSpaceId The destination space id.
          * @param {string} destWorkflowGroupItemId The destination workflow group item id, therefore the new parent.
-         * @param {'noop' | 'autorename' | 'overwrite'} collisionHandling How to solve potential name collisions.
          * @param {boolean} copy Copy instead of move items.
+         * @param {'NOOP' | 'AUTORENAME' | 'OVERWRITE'} [collisionHandling] How to solve potential name collisions.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
+         * @throws {CollisionException} If there was a collision, e.g. due to naming conflicts
          */
         moveOrCopyItems(
-        	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destWorkflowGroupItemId: string,  collisionHandling: 'noop' | 'autorename' | 'overwrite',  copy: boolean  }
+        	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destSpaceId: string,  destWorkflowGroupItemId: string,  copy: boolean,  collisionHandling?: 'NOOP' | 'AUTORENAME' | 'OVERWRITE'  }
         ): Promise<Response> {
             const defaultParams = { 
+                collisionHandling: null,
             }
             
             return rpcClient.call('SpaceService.moveOrCopyItems', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
