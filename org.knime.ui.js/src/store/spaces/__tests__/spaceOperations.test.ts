@@ -16,11 +16,23 @@ import {
   createSpaceProvider,
 } from "@/test/factories";
 import { deepMocked } from "@/test/utils";
+import { useMockEnvironment } from "@/test/utils/useMockEnvironment";
 
 import { fetchWorkflowGroupContentResponse, loadStore } from "./loadStore";
 
 const busEmitSpy = vi.spyOn($bus, "emit");
 const mockedAPI = deepMocked(API);
+
+// TODO NXT-3468 when Desktop and Browser are in sync, this environment mock won't be necessary any more
+const mockEnvironment = vi.hoisted(
+  () => ({}),
+) as typeof import("@/environment");
+
+vi.mock("@/environment", async (importOriginal) => {
+  Object.assign(mockEnvironment, await importOriginal());
+  return mockEnvironment;
+});
+const { setEnvironment } = useMockEnvironment(mockEnvironment);
 
 const { usePromptCollisionStrategiesMock } = vi.hoisted(() => ({
   usePromptCollisionStrategiesMock: vi.fn(),
@@ -33,6 +45,7 @@ vi.mock("@/composables/useConfirmDialog/usePromptCollisionHandling", () => ({
 describe("spaces::spaceOperations", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    setEnvironment("DESKTOP");
   });
 
   describe("fetchWorkflowGroupContent", () => {
@@ -446,13 +459,13 @@ describe("spaces::spaceOperations", () => {
   });
 
   describe("deleteItems", () => {
+    const itemIds = ["item0", "item1"];
+    const spaceId = "local";
+    const spaceProviderId = "local";
+
     it("should delete items", async () => {
-      const itemIds = ["item0", "item1"];
       const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
         loadStore();
-      const spaceId = "local";
-      const spaceProviderId = "local";
-
       spaceCachingStore.projectPath.project2 = {
         spaceProviderId,
         spaceId,
@@ -470,15 +483,14 @@ describe("spaces::spaceOperations", () => {
       });
 
       expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
-        spaceId: "local",
-        spaceProviderId: "local",
+        spaceId,
+        spaceProviderId,
         itemIds,
+        softDelete: false,
       });
     });
 
     it("should force close projects that are open", async () => {
-      const itemIds = ["item0", "item1"];
-
       const space = createSpace({ id: "local" });
       const localProvider = createSpaceProvider({
         spaceGroups: [
@@ -533,9 +545,10 @@ describe("spaces::spaceOperations", () => {
       });
 
       expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
-        spaceId: "local",
-        spaceProviderId: "local",
+        spaceId,
+        spaceProviderId,
         itemIds,
+        softDelete: false,
       });
 
       expect($router.push).toHaveBeenCalledWith({
@@ -545,14 +558,13 @@ describe("spaces::spaceOperations", () => {
     });
 
     it("should re-fetch workflow group content", async () => {
-      const itemIds = ["item0", "item1"];
       const projectId = "project2";
 
       const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
         loadStore();
       spaceCachingStore.projectPath.project2 = {
-        spaceProviderId: "local",
-        spaceId: "local",
+        spaceProviderId,
+        spaceId,
         itemId: "level2",
       };
       spaceProvidersStore.setSpaceProviders({
@@ -566,6 +578,35 @@ describe("spaces::spaceOperations", () => {
       expect(
         spaceOperationsStore.fetchWorkflowGroupContent,
       ).toHaveBeenCalledWith({ projectId });
+    });
+
+    it("should call backend with softDelete = true if AP runs in browser", async () => {
+      setEnvironment("BROWSER");
+      const { spaceOperationsStore, spaceCachingStore, spaceProvidersStore } =
+        loadStore();
+
+      spaceCachingStore.projectPath.project2 = {
+        spaceProviderId,
+        spaceId,
+        itemId: "",
+      };
+      spaceProvidersStore.setSpaceProviders({
+        [spaceProviderId]: createSpaceProvider(),
+      });
+
+      await spaceOperationsStore.deleteItems({
+        projectId: "project2",
+        itemIds,
+        // @ts-ignore
+        $router: {},
+      });
+
+      expect(mockedAPI.space.deleteItems).toHaveBeenCalledWith({
+        spaceId,
+        spaceProviderId,
+        itemIds,
+        softDelete: true,
+      });
     });
   });
 

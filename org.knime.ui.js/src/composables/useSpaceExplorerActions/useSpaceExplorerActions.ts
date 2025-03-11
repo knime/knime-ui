@@ -5,6 +5,7 @@ import { storeToRefs } from "pinia";
 import type {
   FileExplorerContextMenu,
   FileExplorerItem,
+  MenuItem,
 } from "@knime/components";
 import CirclePlayIcon from "@knime/styles/img/icons/circle-play.svg";
 import CloudDownloadIcon from "@knime/styles/img/icons/cloud-download.svg";
@@ -31,6 +32,7 @@ import AddFileIcon from "@/assets/add-file.svg";
 import ImportWorkflowIcon from "@/assets/import-workflow.svg";
 import PlusIcon from "@/assets/plus.svg";
 import { useMovingItems } from "@/components/spaces/useMovingItems";
+import { isBrowser } from "@/environment";
 import { useDeploymentsStore } from "@/store/spaces/deployments";
 import { useSpaceOperationsStore } from "@/store/spaces/spaceOperations";
 import { useSpacesStore } from "@/store/spaces/spaces";
@@ -188,13 +190,22 @@ export const useSpaceExplorerActions = (
     if (!options.anchorItem || !options.createDeleteOption) {
       return { text: "" };
     }
-    return options.createDeleteOption(options.anchorItem, {
+    const customProps: Partial<MenuItem> = {
       title: options.anchorItem.canBeDeleted
         ? ""
         : "Open folders cannot be deleted",
       icon: DeleteIcon,
       hotkeyText: hotkeys.formatHotkeys(["Delete"]),
-    });
+    };
+    // TODO NXT-3468 when Desktop and Browser are in sync, the below block should not be needed anymore.
+    // Instead FileExplorerContextMenu from webapps-common
+    // https://bitbucket.org/KNIME/webapps-common/src/07664ef06d6ad0c800c9ab9f992daf410e4c1745/packages/components/src/components/FileExplorer/components/FileExplorerContextMenu.vue?at=master#lines-106
+    // should be adapted to reflect the new default text
+    if (isBrowser) {
+      customProps.text = "Move to bin";
+    }
+
+    return options.createDeleteOption(options.anchorItem, customProps);
   });
 
   const createWorkflow = computed(() => ({

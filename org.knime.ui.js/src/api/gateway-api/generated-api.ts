@@ -624,7 +624,7 @@ export interface AppState {
      */
     analyticsPlatformDownloadURL?: string;
     /**
-     * Wheter to enable the locking of metanodes and components
+     * Whether to enable the locking of metanodes and components
      * @type {boolean}
      * @memberof AppState
      */
@@ -2589,7 +2589,7 @@ export interface NodePortTemplate {
 
 
 /**
- * Event emmitted while loading the node repository.
+ * Event emitted while loading the node repository.
  * @export
  * @interface NodeRepositoryLoadingProgressEvent
  */
@@ -2642,7 +2642,7 @@ export interface NodeSearchResult {
      */
     totalNumNodesFound: number;
     /**
-     * The total number of nodes that match the search criteria but were filtered out by the requested partion. Absent if there aren&#39;t any filtered nodes in the node repository.
+     * The total number of nodes that match the search criteria but were filtered out by the requested partition. Absent if there aren&#39;t any filtered nodes in the node repository.
      * @type {number}
      * @memberof NodeSearchResult
      */
@@ -3495,7 +3495,7 @@ export namespace SelectionEvent {
     }
 }
 /**
- * Event emmitted in order to show a toast.
+ * Event emitted in order to show a toast.
  * @export
  * @interface ShowToastEvent
  */
@@ -4388,7 +4388,7 @@ export namespace UpdateLinkedComponentsCommand {
 export interface UpdateLinkedComponentsResult extends CommandResult {
 
     /**
-     * Whether the update succeeded or an error occured and no component link was updated.
+     * Whether the update succeeded or an error occurred and no component link was updated.
      * @type {string}
      * @memberof UpdateLinkedComponentsResult
      */
@@ -4892,7 +4892,7 @@ export interface WorkflowMonitorMessage {
      */
     componentInfo?: ComponentNodeAndDescription;
     /**
-     * The id of the worklfow the node is contained in.
+     * The id of the workflow the node is contained in.
      * @type {string}
      * @memberof WorkflowMonitorMessage
      */
@@ -5060,10 +5060,10 @@ const application = function(rpcClient: RPCClient) {
     return {
         /**
          * Provides information on the global application state, such as opened workflows etc.
-         * @param {*} [options] Override http request option.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        getState(
+        async getState(
         	params: {  }
         ): Promise<AppState> {
             const defaultParams = { 
@@ -5082,14 +5082,14 @@ const component = function(rpcClient: RPCClient) {
     return {
         /**
          * Get a components description, will only work for component nodes.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        getComponentDescription(
+        async getComponentDescription(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<ComponentNodeDescription> {
             const defaultParams = { 
@@ -5099,14 +5099,14 @@ const component = function(rpcClient: RPCClient) {
         },
         /**
          * Returns all the information on a node view required to render it.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        getCompositeViewPage(
+        async getCompositeViewPage(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<any> {
             const defaultParams = { 
@@ -5116,16 +5116,16 @@ const component = function(rpcClient: RPCClient) {
         },
         /**
          * Triggers the re-execution process.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {string} resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
-         * @param {{ [key: string]: string; }} viewValues 
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {string} params.resetNodeIdSuffix The ID of the node that triggered the reexecution from within a component, i.e., there is no leading root.
+         * @param {{ [key: string]: string; }} params.viewValues 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        triggerComponentReexecution(
+        async triggerComponentReexecution(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  resetNodeIdSuffix: string,  viewValues: { [key: string]: string; }  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5144,12 +5144,12 @@ const event = function(rpcClient: RPCClient) {
     return {
         /**
          * Adds a new event listener for a certain type of event.
-         * @param {EventType} [eventType] 
-         * @param {*} [options] Override http request option.
+         * @param {EventType} [params.eventType] 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        addEventListener(
+        async addEventListener(
         	params: { eventType?: EventType  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5160,11 +5160,11 @@ const event = function(rpcClient: RPCClient) {
         },
         /**
          * Unregisters event listeners.
-         * @param {EventType} [eventType] 
-         * @param {*} [options] Override http request option.
+         * @param {EventType} [params.eventType] 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        removeEventListener(
+        async removeEventListener(
         	params: { eventType?: EventType  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5184,11 +5184,11 @@ const kai = function(rpcClient: RPCClient) {
     return {
         /**
          * Aborts the currently running request to the given chain.
-         * @param {string} kaiChainId Id of a K-AI chain.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.kaiChainId Id of a K-AI chain.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        abortAiRequest(
+        async abortAiRequest(
         	params: { kaiChainId: string  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5198,10 +5198,10 @@ const kai = function(rpcClient: RPCClient) {
         },
         /**
          * Fetches the disclaimer and welcome messages displayed in K-AI's chat interface.
-         * @param {*} [options] Override http request option.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        getUiStrings(
+        async getUiStrings(
         	params: {  }
         ): Promise<KaiUiStrings> {
             const defaultParams = { 
@@ -5211,12 +5211,12 @@ const kai = function(rpcClient: RPCClient) {
         },
         /**
          * Sends a request to a chain.
-         * @param {string} kaiChainId Id of a K-AI chain.
-         * @param {KaiRequest} kaiRequest 
-         * @param {*} [options] Override http request option.
+         * @param {string} params.kaiChainId Id of a K-AI chain.
+         * @param {KaiRequest} params.kaiRequest 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        makeAiRequest(
+        async makeAiRequest(
         	params: { kaiChainId: string,  kaiRequest: KaiRequest  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5226,12 +5226,12 @@ const kai = function(rpcClient: RPCClient) {
         },
         /**
          * Submits feedback for a chain.
-         * @param {string} kaiFeedbackId Id of the K-AI feedback
-         * @param {KaiFeedback} kaiFeedback 
-         * @param {*} [options] Override http request option.
+         * @param {string} params.kaiFeedbackId Id of the K-AI feedback
+         * @param {KaiFeedback} params.kaiFeedback 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        submitFeedback(
+        async submitFeedback(
         	params: { kaiFeedbackId: string,  kaiFeedback: KaiFeedback  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5250,18 +5250,18 @@ const node = function(rpcClient: RPCClient) {
     return {
         /**
          * Calls a data service of a specific type for a specific node.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {'initial_data' | 'data' | 'apply_data'} serviceType 
-         * @param {string} [dataServiceRequest] 
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {'dialog' | 'view'} params.extensionType The node ui-extension-type, i.e. dialog or view.
+         * @param {'initial_data' | 'data' | 'apply_data'} params.serviceType 
+         * @param {string} [params.dataServiceRequest] 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        callNodeDataService(
+        async callNodeDataService(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  extensionType: 'dialog' | 'view',  serviceType: 'initial_data' | 'data' | 'apply_data',  dataServiceRequest?: string  }
         ): Promise<string> {
             const defaultParams = { 
@@ -5272,16 +5272,16 @@ const node = function(rpcClient: RPCClient) {
         },
         /**
          * Changes state of a loop. The provided node-id must reference a loop-end node.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {'pause' | 'resume' | 'step'} [action] The action (pause, resume, step) to be performed in order to change the loop state.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {'pause' | 'resume' | 'step'} [params.action] The action (pause, resume, step) to be performed in order to change the loop state.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
-        changeLoopState(
+        async changeLoopState(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  action?: 'pause' | 'resume' | 'step'  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5292,16 +5292,16 @@ const node = function(rpcClient: RPCClient) {
         },
         /**
          * Changes the node state of multiple nodes represented by a list of node-ids.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {Array<string>} [nodeIds] The list of node ids of the nodes to be changed. All ids must reference nodes on the same workflow level. If no node ids are given the state of the parent workflow (i.e. the one referenced by workflow-id) is changed which is equivalent to change the states of all contained nodes.
-         * @param {'reset' | 'cancel' | 'execute'} [action] The action (reset, cancel, execute) to be performed in order to change the node&#39;s state.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {Array<string>} [params.nodeIds] The list of node ids of the nodes to be changed. All ids must reference nodes on the same workflow level. If no node ids are given the state of the parent workflow (i.e. the one referenced by workflow-id) is changed which is equivalent to change the states of all contained nodes.
+         * @param {'reset' | 'cancel' | 'execute'} [params.action] The action (reset, cancel, execute) to be performed in order to change the node&#39;s state.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
-        changeNodeStates(
+        async changeNodeStates(
         	params: { projectId: string,  workflowId: string,  nodeIds?: Array<string>,  action?: 'reset' | 'cancel' | 'execute'  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5313,16 +5313,16 @@ const node = function(rpcClient: RPCClient) {
         },
         /**
          * De-activates all the data service associated with the specified ui-extension.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {'dialog' | 'view'} extensionType The node ui-extension-type, i.e. dialog or view.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {'dialog' | 'view'} params.extensionType The node ui-extension-type, i.e. dialog or view.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        deactivateNodeDataServices(
+        async deactivateNodeDataServices(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  extensionType: 'dialog' | 'view'  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5332,13 +5332,13 @@ const node = function(rpcClient: RPCClient) {
         },
         /**
          * Obtain the description of a given node.
-         * @param {NodeFactoryKey} nodeFactoryKey The key identifying the node.
-         * @param {*} [options] Override http request option.
+         * @param {NodeFactoryKey} params.nodeFactoryKey The key identifying the node.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {NodeDescriptionNotAvailableException} A description for a given node could not be determined.
          */
-        getNodeDescription(
+        async getNodeDescription(
         	params: { nodeFactoryKey: NodeFactoryKey  }
         ): Promise<NativeNodeDescription> {
             const defaultParams = { 
@@ -5348,15 +5348,15 @@ const node = function(rpcClient: RPCClient) {
         },
         /**
          * Returns all the information on a node dialog required to render it.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        getNodeDialog(
+        async getNodeDialog(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<any> {
             const defaultParams = { 
@@ -5366,15 +5366,15 @@ const node = function(rpcClient: RPCClient) {
         },
         /**
          * Returns all the information on a node view required to render it.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        getNodeView(
+        async getNodeView(
         	params: { projectId: string,  workflowId: string,  nodeId: string  }
         ): Promise<any> {
             const defaultParams = { 
@@ -5384,16 +5384,16 @@ const node = function(rpcClient: RPCClient) {
         },
         /**
          * Updates the data point selection (aka hiliting) for a single node as specified.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {'add' | 'remove' | 'replace'} mode Whether to add, remove or replace the data point selection.
-         * @param {Array<string>} [selection] A list of strings that are translated to the row keys affected by the data point selection modification.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {'add' | 'remove' | 'replace'} params.mode Whether to add, remove or replace the data point selection.
+         * @param {Array<string>} [params.selection] A list of strings that are translated to the row keys affected by the data point selection modification.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          */
-        updateDataPointSelection(
+        async updateDataPointSelection(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  mode: 'add' | 'remove' | 'replace',  selection?: Array<string>  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5413,12 +5413,12 @@ const noderepository = function(rpcClient: RPCClient) {
     return {
         /**
          * Provides metadata and contents of node categories.
-         * @param {Array<string>} categoryPath 
-         * @param {*} [options] Override http request option.
+         * @param {Array<string>} params.categoryPath 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NoSuchElementException} The requested element was not found.
          */
-        getNodeCategory(
+        async getNodeCategory(
         	params: { categoryPath: Array<string>  }
         ): Promise<NodeCategory> {
             const defaultParams = { 
@@ -5428,18 +5428,18 @@ const noderepository = function(rpcClient: RPCClient) {
         },
         /**
          * Given a node, a port and a node-relation it recommends a certain number of compatible nodes the user might want to add next to its workflow. If queried with no node, no port and no node-relation, it recommends the most relevant source nodes, that naturally have no predecessor.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} [nodeId] The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {number} [portIdx] The port index to be used.
-         * @param {number} [nodesLimit] The maximum number of node recommendations to return.
-         * @param {'PREDECESSORS' | 'SUCCESSORS'} [nodeRelation] The relation between connected nodes, either predecessors or succesors
-         * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} [params.nodeId] The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {number} [params.portIdx] The port index to be used.
+         * @param {number} [params.nodesLimit] The maximum number of node recommendations to return.
+         * @param {'PREDECESSORS' | 'SUCCESSORS'} [params.nodeRelation] The relation between connected nodes, either predecessors or successors
+         * @param {boolean} [params.fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {OperationNotAllowedException} If the an operation is not allowed, e.g., because it&#39;s not applicable.
          */
-        getNodeRecommendations(
+        async getNodeRecommendations(
         	params: { projectId: string,  workflowId: string,  nodeId?: string,  portIdx?: number,  nodesLimit?: number,  nodeRelation?: 'PREDECESSORS' | 'SUCCESSORS',  fullTemplateInfo?: boolean  }
         ): Promise<Array<NodeTemplate>> {
             const defaultParams = { 
@@ -5454,11 +5454,11 @@ const noderepository = function(rpcClient: RPCClient) {
         },
         /**
          * Compiles a list of node templates (with complete information, i.e. including icons, etc.). It doesn't actually change any state or create a new resource (despite the 'post').
-         * @param {Array<string>} [nodeTemplateIds] A list of template ids to request the node templates for.
-         * @param {*} [options] Override http request option.
+         * @param {Array<string>} [params.nodeTemplateIds] A list of template ids to request the node templates for.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        getNodeTemplates(
+        async getNodeTemplates(
         	params: { nodeTemplateIds?: Array<string>  }
         ): Promise<{ [key: string]: NodeTemplate; }> {
             const defaultParams = { 
@@ -5469,14 +5469,14 @@ const noderepository = function(rpcClient: RPCClient) {
         },
         /**
          * Returns a pre-defined set of groups (defined by tags) and nodes per group (the most frequently used ones in that group).
-         * @param {number} [numNodesPerTag] The number of nodes per tag/group to be returned.
-         * @param {number} [tagsOffset] The number of tags to be skipped (for pagination).
-         * @param {number} [tagsLimit] The maximum number of tags to be returned (mainly for pagination).
-         * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
-         * @param {*} [options] Override http request option.
+         * @param {number} [params.numNodesPerTag] The number of nodes per tag/group to be returned.
+         * @param {number} [params.tagsOffset] The number of tags to be skipped (for pagination).
+         * @param {number} [params.tagsLimit] The maximum number of tags to be returned (mainly for pagination).
+         * @param {boolean} [params.fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        getNodesGroupedByTags(
+        async getNodesGroupedByTags(
         	params: { numNodesPerTag?: number,  tagsOffset?: number,  tagsLimit?: number,  fullTemplateInfo?: boolean  }
         ): Promise<NodeGroups> {
             const defaultParams = { 
@@ -5490,19 +5490,19 @@ const noderepository = function(rpcClient: RPCClient) {
         },
         /**
          * Searches for nodes (and components) in the node repository.
-         * @param {string} [q] The term to search for.
-         * @param {Array<string>} [tags] A list of tags. Only nodes/components having any/all tags will be included in the search result.
-         * @param {boolean} [allTagsMatch] If true, only the nodes/components that have all of the given tags are included in the search result. Otherwise nodes/components that have at least one of the given tags are included.
-         * @param {number} [offset] Number of nodes/components to be skipped in the search result (for pagination).
-         * @param {number} [limit] The maximum number of nodes/components in the search result (mainly for pagination).
-         * @param {boolean} [fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
-         * @param {string} [portTypeId] The port type ID of the port type all returned nodes (and components) have to be compatible with.
-         * @param {'PREDECESSORS' | 'SUCCESSORS'} [nodeRelation] The relation between connected nodes, either predecessors or succesors
-         * @param {*} [options] Override http request option.
+         * @param {string} [params.q] The term to search for.
+         * @param {Array<string>} [params.tags] A list of tags. Only nodes/components having any/all tags will be included in the search result.
+         * @param {boolean} [params.allTagsMatch] If true, only the nodes/components that have all of the given tags are included in the search result. Otherwise nodes/components that have at least one of the given tags are included.
+         * @param {number} [params.offset] Number of nodes/components to be skipped in the search result (for pagination).
+         * @param {number} [params.limit] The maximum number of nodes/components in the search result (mainly for pagination).
+         * @param {boolean} [params.fullTemplateInfo] If true, the result will contain the full information for nodes/components (such as icon and port information). Otherwise only minimal information (such as name) will be included and the others omitted.
+         * @param {string} [params.portTypeId] The port type ID of the port type all returned nodes (and components) have to be compatible with.
+         * @param {'PREDECESSORS' | 'SUCCESSORS'} [params.nodeRelation] The relation between connected nodes, either predecessors or successors
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        searchNodes(
+        async searchNodes(
         	params: { q?: string,  tags?: Array<string>,  allTagsMatch?: boolean,  offset?: number,  limit?: number,  fullTemplateInfo?: boolean,  portTypeId?: string,  nodeRelation?: 'PREDECESSORS' | 'SUCCESSORS'  }
         ): Promise<NodeSearchResult> {
             const defaultParams = { 
@@ -5529,19 +5529,19 @@ const port = function(rpcClient: RPCClient) {
     return {
         /**
          * Performs text-based remote procedure calls for ports. The format of the rpc request and response depends on the port type that is being addressed.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {number} portIdx The port index to be used.
-         * @param {number} viewIdx The index of the specific port view to obtain
-         * @param {'initial_data' | 'data'} serviceType 
-         * @param {string} [dataServiceRequest] 
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {number} params.portIdx The port index to be used.
+         * @param {number} params.viewIdx The index of the specific port view to obtain
+         * @param {'initial_data' | 'data'} params.serviceType 
+         * @param {string} [params.dataServiceRequest] 
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        callPortDataService(
+        async callPortDataService(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  serviceType: 'initial_data' | 'data',  dataServiceRequest?: string  }
         ): Promise<string> {
             const defaultParams = { 
@@ -5552,17 +5552,17 @@ const port = function(rpcClient: RPCClient) {
         },
         /**
          * De-activates all data services associated with the port view.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {number} portIdx The port index to be used.
-         * @param {number} viewIdx The index of the specific port view to obtain
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {number} params.portIdx The port index to be used.
+         * @param {number} params.viewIdx The index of the specific port view to obtain
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        deactivatePortDataServices(
+        async deactivatePortDataServices(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5572,18 +5572,18 @@ const port = function(rpcClient: RPCClient) {
         },
         /**
          * Returns all the information on a port data value view required to render it.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {number} portIdx The port index to be used.
-         * @param {number} rowIdx The row index to be used.
-         * @param {number} colIdx The column index to be used.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {number} params.portIdx The port index to be used.
+         * @param {number} params.rowIdx The row index to be used.
+         * @param {number} params.colIdx The column index to be used.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        getDataValueView(
+        async getDataValueView(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  rowIdx: number,  colIdx: number  }
         ): Promise<any> {
             const defaultParams = { 
@@ -5593,17 +5593,17 @@ const port = function(rpcClient: RPCClient) {
         },
         /**
          * Returns all the information on a port view required to render it.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {number} portIdx The port index to be used.
-         * @param {number} viewIdx The index of the specific port view to obtain
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {number} params.portIdx The port index to be used.
+         * @param {number} params.viewIdx The index of the specific port view to obtain
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        getPortView(
+        async getPortView(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number  }
         ): Promise<any> {
             const defaultParams = { 
@@ -5613,18 +5613,18 @@ const port = function(rpcClient: RPCClient) {
         },
         /**
          * Updates the data point selection (aka hiliting) for a single port as specified.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {string} nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
-         * @param {number} portIdx The port index to be used.
-         * @param {number} viewIdx The index of the specific port view to obtain
-         * @param {'add' | 'remove' | 'replace'} mode Whether to add, remove or replace the data point selection.
-         * @param {Array<string>} [selection] A list of strings that are translated to the row keys affected by the data point selection modification.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {string} params.nodeId The ID of a node. The node-id format: Node IDs always start with &#39;root&#39; and optionally followed by numbers separated by &#39;:&#39; referring to nested nodes/subworkflows,e.g. root:3:6:4. Nodes within components require an additional trailing &#39;0&#39;, e.g. &#39;root:3:6:0:4&#39; (if &#39;root:3:6&#39; is a component).
+         * @param {number} params.portIdx The port index to be used.
+         * @param {number} params.viewIdx The index of the specific port view to obtain
+         * @param {'add' | 'remove' | 'replace'} params.mode Whether to add, remove or replace the data point selection.
+         * @param {Array<string>} [params.selection] A list of strings that are translated to the row keys affected by the data point selection modification.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NodeNotFoundException} The requested node was not found.
          */
-        updateDataPointSelection(
+        async updateDataPointSelection(
         	params: { projectId: string,  workflowId: string,  nodeId: string,  portIdx: number,  viewIdx: number,  mode: 'add' | 'remove' | 'replace',  selection?: Array<string>  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5644,13 +5644,13 @@ const space = function(rpcClient: RPCClient) {
     return {
         /**
          * Create a new space within a given space provider.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} spaceGroupName Identifier name of a space-group.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.spaceGroupName Identifier name of a space-group.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        createSpace(
+        async createSpace(
         	params: { spaceProviderId: string,  spaceGroupName: string  }
         ): Promise<Space> {
             const defaultParams = { 
@@ -5660,15 +5660,15 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Create a new workflow within a given workflow group.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {string} itemName Name given to a space item.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {string} params.itemName Name given to a space item.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        createWorkflow(
+        async createWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
             const defaultParams = { 
@@ -5678,14 +5678,14 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Create a new workflow group within a given workflow group.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        createWorkflowGroup(
+        async createWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<SpaceItem> {
             const defaultParams = { 
@@ -5695,32 +5695,34 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Deletes items from the space.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {Array<string>} itemIds A list of identifiers of items in the space.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {Array<string>} params.itemIds A list of identifiers of items in the space.
+         * @param {boolean} [params.softDelete] If true the specified items will be moved to the bin. Otherwise they will be permanently deleted.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        deleteItems(
-        	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>  }
+        async deleteItems(
+        	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  softDelete?: boolean  }
         ): Promise<Response> {
             const defaultParams = { 
+                softDelete: null,
             }
             
             return rpcClient.call('SpaceService.deleteItems', { ...defaultParams, ...params }).catch(e => { throw mapToExceptionClass(e) });
         },
         /**
          * Deletes job from the space.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {string} jobId The ID of the job to delete
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {string} params.jobId The ID of the job to delete
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        deleteJobsForWorkflow(
+        async deleteJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  jobId: string  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5730,15 +5732,15 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Deletes schedule from the space.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {string} scheduleId The ID of the schedule to delete
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {string} params.scheduleId The ID of the schedule to delete
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        deleteSchedulesForWorkflow(
+        async deleteSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string,  scheduleId: string  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5748,13 +5750,13 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Returns the spaces provided by this space-provider.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
-        getSpaceGroups(
+        async getSpaceGroups(
         	params: { spaceProviderId: string  }
         ): Promise<Array<SpaceGroup>> {
             const defaultParams = { 
@@ -5764,14 +5766,14 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Lists the available jobs for the given workflow.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        listJobsForWorkflow(
+        async listJobsForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<Array<any>> {
             const defaultParams = { 
@@ -5781,14 +5783,14 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Lists the available schedules for the given workflow.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        listSchedulesForWorkflow(
+        async listSchedulesForWorkflow(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<Array<any>> {
             const defaultParams = { 
@@ -5798,15 +5800,15 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Get shallow list of workflows, components and data-files within a given workflow group.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {NetworkException} If a Gateway service call failed due to a network error.
          */
-        listWorkflowGroup(
+        async listWorkflowGroup(
         	params: { spaceId: string,  spaceProviderId: string,  itemId: string  }
         ): Promise<WorkflowGroupContent> {
             const defaultParams = { 
@@ -5816,19 +5818,19 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Move or copy space items to a different workflow group within its space.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {Array<string>} itemIds A list of identifiers of items in the space.
-         * @param {string} destSpaceId The destination space id.
-         * @param {string} destWorkflowGroupItemId The destination workflow group item id, therefore the new parent.
-         * @param {boolean} copy Copy instead of move items.
-         * @param {'NOOP' | 'AUTORENAME' | 'OVERWRITE'} [collisionHandling] How to solve potential name collisions.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {Array<string>} params.itemIds A list of identifiers of items in the space.
+         * @param {string} params.destSpaceId The destination space id.
+         * @param {string} params.destWorkflowGroupItemId The destination workflow group item id, therefore the new parent.
+         * @param {boolean} params.copy Copy instead of move items.
+         * @param {'NOOP' | 'AUTORENAME' | 'OVERWRITE'} [params.collisionHandling] How to solve potential name collisions.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          * @throws {CollisionException} If there was a collision, e.g. due to naming conflicts
          */
-        moveOrCopyItems(
+        async moveOrCopyItems(
         	params: { spaceId: string,  spaceProviderId: string,  itemIds: Array<string>,  destSpaceId: string,  destWorkflowGroupItemId: string,  copy: boolean,  collisionHandling?: 'NOOP' | 'AUTORENAME' | 'OVERWRITE'  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5839,15 +5841,15 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Rename a space Item
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
-         * @param {string} itemName Name given to a space item.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.itemId The unique identifier of the space item. If &#39;root&#39;, it refers to the root directory (workflow group).
+         * @param {string} params.itemName Name given to a space item.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        renameItem(
+        async renameItem(
         	params: { spaceProviderId: string,  spaceId: string,  itemId: string,  itemName: string  }
         ): Promise<SpaceItem> {
             const defaultParams = { 
@@ -5857,14 +5859,14 @@ const space = function(rpcClient: RPCClient) {
         },
         /**
          * Rename a space
-         * @param {string} spaceProviderId Identifies a space-provider.
-         * @param {string} spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
-         * @param {string} spaceName Name given to a space.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.spaceProviderId Identifies a space-provider.
+         * @param {string} params.spaceId The unique identifier of the space (local workspace, hub space). If &#39;local&#39; it refers to the local workspace.
+         * @param {string} params.spaceName Name given to a space.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        renameSpace(
+        async renameSpace(
         	params: { spaceProviderId: string,  spaceId: string,  spaceName: string  }
         ): Promise<Space> {
             const defaultParams = { 
@@ -5883,14 +5885,14 @@ const workflow = function(rpcClient: RPCClient) {
     return {
         /**
          * Executed a command on the referenced workflow. Every request with the same operation is idempotent.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {WorkflowCommand} workflowCommand An object that describes the command to be executed.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {WorkflowCommand} params.workflowCommand An object that describes the command to be executed.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        executeWorkflowCommand(
+        async executeWorkflowCommand(
         	params: { projectId: string,  workflowId: string,  workflowCommand: WorkflowCommand  }
         ): Promise<CommandResult> {
             const defaultParams = { 
@@ -5900,15 +5902,15 @@ const workflow = function(rpcClient: RPCClient) {
         },
         /**
          * Returns the node IDs of all updatable linked components present on a workflow, even if they are deeply nested.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
          * @throws {NodeNotFoundException} The requested node was not found.
          * @throws {InvalidRequestException} If the request is invalid for a reason.
          */
-        getUpdatableLinkedComponents(
+        async getUpdatableLinkedComponents(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Array<NodeIdAndIsExecuted>> {
             const defaultParams = { 
@@ -5918,17 +5920,17 @@ const workflow = function(rpcClient: RPCClient) {
         },
         /**
          * Retrieves the complete structure (sub-)workflows.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {boolean} [includeInteractionInfo] Whether to enclose information that is required when the user is interacting with the returned workflow. E.g. the allowed actions (reset, execute, cancel) for contained nodes and the entire workflow itself.
-         * @param {string} [version] The version identifier. &#x60;null&#x60; corresponds to the current-state (working area).
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {boolean} [params.includeInteractionInfo] Whether to enclose information that is required when the user is interacting with the returned workflow. E.g. the allowed actions (reset, execute, cancel) for contained nodes and the entire workflow itself.
+         * @param {string} [params.version] The version identifier. &#x60;null&#x60; corresponds to the current-state (working area).
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {NotASubWorkflowException} The requested node is not a sub-workflow (i.e. a meta- or sub-node), but is required to be.
          * @throws {NodeNotFoundException} The requested node was not found.
          */
-        getWorkflow(
-        	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean,  version?: string | null  }
+        async getWorkflow(
+        	params: { projectId: string,  workflowId: string,  includeInteractionInfo?: boolean,  version?: string  }
         ): Promise<WorkflowSnapshot> {
             const defaultParams = { 
                 includeInteractionInfo: null,
@@ -5939,11 +5941,11 @@ const workflow = function(rpcClient: RPCClient) {
         },
         /**
          * Returns the current state of the workflow monitor.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkflowMonitorState(
+        async getWorkflowMonitorState(
         	params: { projectId: string  }
         ): Promise<WorkflowMonitorStateSnapshot> {
             const defaultParams = { 
@@ -5953,13 +5955,13 @@ const workflow = function(rpcClient: RPCClient) {
         },
         /**
          * Re-does the last command from the redo-stack.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        redoWorkflowCommand(
+        async redoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Response> {
             const defaultParams = { 
@@ -5969,13 +5971,13 @@ const workflow = function(rpcClient: RPCClient) {
         },
         /**
          * Un-does the last command from the undo-stack.
-         * @param {string} projectId ID of the workflow-project.
-         * @param {string} workflowId The ID of a workflow which has the same format as a node-id.
-         * @param {*} [options] Override http request option.
+         * @param {string} params.projectId ID of the workflow-project.
+         * @param {string} params.workflowId The ID of a workflow which has the same format as a node-id.
+         * @param {*} [params.options] Override http request option.
          * @throws {RequiredError}
          * @throws {ServiceCallException} If a Gateway service call failed for some reason.
          */
-        undoWorkflowCommand(
+        async undoWorkflowCommand(
         	params: { projectId: string,  workflowId: string  }
         ): Promise<Response> {
             const defaultParams = { 

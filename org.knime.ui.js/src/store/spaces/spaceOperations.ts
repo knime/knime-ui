@@ -11,6 +11,7 @@ import {
 } from "@/api/gateway-api/generated-api";
 import { CollisionException } from "@/api/gateway-api/generated-exceptions";
 import { usePromptCollisionStrategies } from "@/composables/useConfirmDialog/usePromptCollisionHandling";
+import { isBrowser } from "@/environment";
 import { $bus } from "@/plugins/event-bus";
 import { APP_ROUTES } from "@/router/appRoutes";
 import { useApplicationStore } from "@/store/application/application";
@@ -466,10 +467,16 @@ export const useSpaceOperationsStore = defineStore("space.operations", {
         this.setIsLoadingContent(true);
         this.setActiveRenamedItemId("");
 
-        await API.space.deleteItems({ spaceProviderId, spaceId, itemIds });
+        // TODO NXT-3468 when Desktop and Browser are in sync, softDelete can be hard set to true here
+        await API.space.deleteItems({
+          spaceProviderId,
+          spaceId,
+          itemIds,
+          softDelete: isBrowser,
+        });
         await this.fetchWorkflowGroupContent({
           projectId: isDeletingActiveProject
-            ? // if the active project is beind deleted activate the next project
+            ? // if the active project is being deleted activate the next project
               // with a fallback to the global space browser
               nextProjectId ?? globalSpaceBrowserProjectId
             : // otherwise simply refresh the current space

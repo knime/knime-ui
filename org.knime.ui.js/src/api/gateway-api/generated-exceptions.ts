@@ -14,6 +14,7 @@ export class UnknownGatewayException extends GatewayException {
         this.data = e.data;
     }
 }
+export class RequiredError extends KnownGatewayException {}
 export class ServiceCallException extends KnownGatewayException {}
 export class NetworkException extends KnownGatewayException {}
 export class NodeDescriptionNotAvailableException extends KnownGatewayException {}
@@ -36,7 +37,7 @@ function isKnownGatewayException(e: unknown): e is { message: string, data: stri
 	    typeof e.data === "string" &&
 	    (KNOWN_EXECUTOR_EXCEPTIONS as ReadonlyArray<string>).includes(e.data)
     );
-};
+}
 
 function isUnknownGatewayException(e: unknown): e is { message: string, data: Object } {
     return (
@@ -48,7 +49,7 @@ function isUnknownGatewayException(e: unknown): e is { message: string, data: Ob
         "data" in e &&
         typeof e.data === "object"
     );
-};
+}
 
 const exceptionClassMapping = {
     ServiceCallException,
