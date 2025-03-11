@@ -57,9 +57,9 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.core.workbench.preferences.MountPointsPreferencesUtil;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.util.PerspectiveUtil;
-import org.knime.workbench.explorer.view.preferences.MountSettings;
 import org.osgi.service.prefs.BackingStoreException;
 
 /**
@@ -116,7 +116,7 @@ public final class KnimeUIPreferences {
             }
         });
 
-        MountSettings.addMountSettingsSavedListener(() -> {
+        MountPointsPreferencesUtil.addMountSettingsSavedListener(() -> {
             if (explorerMountPointChangeListener != null) {
                 explorerMountPointChangeListener.run();
             }
