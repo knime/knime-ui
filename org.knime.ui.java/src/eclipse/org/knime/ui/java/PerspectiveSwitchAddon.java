@@ -68,6 +68,7 @@ import org.knime.ui.java.browser.lifecycle.LifeCycle;
 import org.knime.ui.java.browser.lifecycle.LifeCycle.StateTransition;
 import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.PerspectiveUtil;
+import org.knime.workbench.core.KNIMECorePlugin;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.explorer.view.actions.OpenKnimeUrlAction;
 import org.knime.workbench.ui.navigator.ProjectWorkflowMap;
@@ -140,6 +141,7 @@ public final class PerspectiveSwitchAddon {
         KnimeBrowserView.activateViewInitializer(false);
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(false);
         switchToWebUITheme();
+        KNIMECorePlugin.disableConsoleView();
         CEFSystemProperties.setExternalMessagePump();
         LoadWorkflowRunnable.doPostLoadCheckForMetaNodeUpdates = false;
     }
@@ -157,6 +159,7 @@ public final class PerspectiveSwitchAddon {
         NodeTimer.GLOBAL_TIMER.setLastUsedPerspective(GlobalNodeStats.CLASSIC_PERSPECTIVE_PLACEHOLDER);
         KnimeBrowserView.clearView();
 
+        KNIMECorePlugin.restoreConsoleView();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
 
         PerspectiveUtil.toggleClassicPerspectiveKeyBindings(true);
